@@ -874,9 +874,13 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
       IsLocationBarDark());
 }
 
+// TODO(spqchan): Add tests for the security state decoration.
 void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
   using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel new_security_level = GetToolbarModel()->GetSecurityLevel(false);
+
+  if (tab_changed)
+    security_state_bubble_decoration_->ResetAnimation();
 
   // If there's enough space, but the secure state decoration had animated
   // out, animate it back in. Otherwise, if the security state has changed,
@@ -905,8 +909,9 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
 
 bool LocationBarViewMac::CanAnimateSecurityLevel(
     security_state::SecurityLevel level) const {
-  return security_level_ == security_state::SecurityLevel::DANGEROUS ||
-         security_level_ == security_state::SecurityLevel::HTTP_SHOW_WARNING;
+  return !GetOmniboxView()->IsEditingOrEmpty() &&
+         (security_level_ == security_state::SecurityLevel::DANGEROUS ||
+          security_level_ == security_state::SecurityLevel::HTTP_SHOW_WARNING);
 }
 
 bool LocationBarViewMac::IsSecureConnection(
