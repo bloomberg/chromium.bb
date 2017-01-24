@@ -13,6 +13,7 @@ source_set("tab_model") {
   deps = [
     "//base",
     "//ios/clean/chrome/browser/web",
+    "//ios/shared/chrome/browser/tabs",
   ]
 }
 

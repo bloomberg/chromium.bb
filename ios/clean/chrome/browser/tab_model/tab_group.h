@@ -7,13 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/clean/chrome/browser/web/web_mediator.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+
 namespace ios {
 class ChromeBrowserState;
 }
 
-@class WebMediator;
-
-@interface TabGroup : NSObject<NSFastEnumeration>
+@interface TabGroup : WebStateList<WebMediator*>
 
 // PLACEHOLDER: Convenience method for generating a tab group with empty tabs.
 + (instancetype)tabGroupWithEmptyTabCount:(NSUInteger)count
@@ -27,19 +28,6 @@ class ChromeBrowserState;
 
 // NO if the model has at least one tab.
 @property(nonatomic, readonly, getter=isEmpty) BOOL empty;
-
-// The number of tabs in the model.
-@property(nonatomic, readonly) NSUInteger count;
-
-// Accesses the tab at the given index.
-- (WebMediator*)tabAtIndex:(NSUInteger)index;
-- (NSUInteger)indexOfTab:(WebMediator*)tab;
-
-// Adds |tab| to the receiver.
-- (void)appendTab:(WebMediator*)tab;
-
-// Removes |tab| from the receiver.
-- (void)removeTab:(WebMediator*)tab;
 
 @end
 

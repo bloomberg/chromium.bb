@@ -47,10 +47,15 @@
   return [self initWithWebState:nullptr];
 }
 
-#pragma mark - Property Implementation
+#pragma mark - WebStateHandle Property Implementation
 
 - (web::WebState*)webState {
   return _webState.get();
+}
+
+- (web::WebStateImpl*)webStateImpl {
+  NOTREACHED() << "Don't use [WebMediator webStateImpl]!";
+  return nullptr;
 }
 
 @end

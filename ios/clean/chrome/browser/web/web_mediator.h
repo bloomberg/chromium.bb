@@ -12,6 +12,8 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#import "ios/shared/chrome/browser/tabs/web_state_handle.h"
+
 namespace ios {
 class ChromeBrowserState;
 }
@@ -27,7 +29,7 @@ class WebState;
 // (for example, view controllers displaying webState's view).
 // Category implementations should make use of web_mediator+internals.h to
 // access internal APIs for this class.
-@interface WebMediator : NSObject
+@interface WebMediator : NSObject<WebStateHandle>
 
 // Creates a new, empty webState object for |browserState| and returns a
 // WebMediator instance for it.
@@ -41,8 +43,6 @@ class WebState;
 // Creates a mediator with no webState, for use in testing classes that operate
 // on WebMediators.
 - (instancetype)init;
-
-@property(nonatomic, readonly) web::WebState* webState;
 
 @end
 

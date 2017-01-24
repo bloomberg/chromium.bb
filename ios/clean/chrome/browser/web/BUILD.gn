@@ -13,6 +13,7 @@ source_set("web") {
 
   deps = [
     "//ios/chrome/browser/browser_state",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/web",
   ]
 }
