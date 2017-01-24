@@ -673,7 +673,10 @@ public class MediaNotificationManager {
         clearNotification();
     }
 
+    @Nullable
     private MediaMetadataCompat createMetadata() {
+        if (mMediaNotificationInfo.isPrivate) return null;
+
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
 
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
