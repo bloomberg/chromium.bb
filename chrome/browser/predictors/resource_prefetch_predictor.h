@@ -172,6 +172,9 @@ class ResourcePrefetchPredictor
   // in flight.
   void OnPrefetchingFinished(const GURL& main_frame_url);
 
+  // Returns true if prefetching data exists for the |main_frame_url|.
+  virtual bool IsUrlPrefetchable(const GURL& main_frame_url);
+
   // Sets the |observer| to be notified when the resource prefetch predictor
   // data changes. Previously registered observer will be discarded. Call
   // this with nullptr parameter to de-register observer.
@@ -257,15 +260,16 @@ class ResourcePrefetchPredictor
 
   // Returns true iff there is PrefetchData that can be used for a
   // |main_frame_url| and fills |urls| with resources that need to be
-  // prefetched.
-  bool GetPrefetchData(const GURL& main_frame_url, std::vector<GURL>* urls);
+  // prefetched. |urls| pointer may be equal nullptr to get return value only.
+  bool GetPrefetchData(const GURL& main_frame_url,
+                       std::vector<GURL>* urls) const;
 
   // Returns true iff the |data_map| contains PrefetchData that can be used
   // for a |main_frame_key| and fills |urls| with resources that need to be
-  // prefetched.
+  // prefetched. |urls| pointer may be equal nullptr to get return value only.
   bool PopulatePrefetcherRequest(const std::string& main_frame_key,
                                  const PrefetchDataMap& data_map,
-                                 std::vector<GURL>* urls);
+                                 std::vector<GURL>* urls) const;
 
   // Callback for task to read predictor database. Takes ownership of
   // all arguments.
@@ -319,11 +323,6 @@ class ResourcePrefetchPredictor
                      const std::string& final_redirect,
                      size_t max_redirect_map_size,
                      RedirectDataMap* redirect_map);
-
-  // Returns true iff the |data_map| contains PrefetchData that can be used
-  // for |main_frame_key| prefetching.
-  bool IsDataPrefetchable(const std::string& main_frame_key,
-                          const PrefetchDataMap& data_map) const;
 
   // Returns true iff |resource| has sufficient confidence level and required
   // number of hits.

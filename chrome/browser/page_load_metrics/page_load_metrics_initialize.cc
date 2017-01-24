@@ -23,6 +23,7 @@
 #include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/resource_prefetch_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -94,6 +95,12 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         base::MakeUnique<AndroidPageLoadMetricsObserver>(web_contents_));
 #endif  // OS_ANDROID
+    std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
+        resource_prefetch_predictor_observer =
+            ResourcePrefetchPredictorPageLoadMetricsObserver::CreateIfNeeded(
+                web_contents_);
+    if (resource_prefetch_predictor_observer)
+      tracker->AddObserver(std::move(resource_prefetch_predictor_observer));
   } else {
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         prerender_observer =

@@ -539,6 +539,14 @@ void ResourcePrefetchPredictor::OnPrefetchingFinished(
     observer_->OnPrefetchingFinished(main_frame_url);
 }
 
+bool ResourcePrefetchPredictor::IsUrlPrefetchable(const GURL& main_frame_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (initialization_state_ != INITIALIZED)
+    return false;
+
+  return GetPrefetchData(main_frame_url, nullptr);
+}
+
 void ResourcePrefetchPredictor::SetObserverForTesting(TestObserver* observer) {
   observer_ = observer;
 }
@@ -662,9 +670,8 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 }
 
 bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
-                                                std::vector<GURL>* urls) {
-  DCHECK(urls);
-  DCHECK(urls->empty());
+                                                std::vector<GURL>* urls) const {
+  DCHECK(!urls || urls->empty());
 
   // Fetch URLs based on a redirect endpoint for URL/host first.
   std::string redirect_endpoint;
@@ -693,19 +700,21 @@ bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
 bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
     const std::string& main_frame_key,
     const PrefetchDataMap& data_map,
-    std::vector<GURL>* urls) {
-  DCHECK(urls);
+    std::vector<GURL>* urls) const {
   PrefetchDataMap::const_iterator it = data_map.find(main_frame_key);
   if (it == data_map.end())
     return false;
 
-  size_t initial_size = urls->size();
+  bool has_prefetchable_resource = false;
   for (const ResourceData& resource : it->second.resources()) {
-    if (IsResourcePrefetchable(resource))
-      urls->push_back(GURL(resource.resource_url()));
+    if (IsResourcePrefetchable(resource)) {
+      has_prefetchable_resource = true;
+      if (urls)
+        urls->push_back(GURL(resource.resource_url()));
+    }
   }
 
-  return urls->size() > initial_size;
+  return has_prefetchable_resource;
 }
 
 void ResourcePrefetchPredictor::CreateCaches(
@@ -1148,20 +1157,6 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
   }
 }
 
-bool ResourcePrefetchPredictor::IsDataPrefetchable(
-    const std::string& main_frame_key,
-    const PrefetchDataMap& data_map) const {
-  PrefetchDataMap::const_iterator it = data_map.find(main_frame_key);
-  if (it == data_map.end())
-    return false;
-
-  return std::any_of(it->second.resources().begin(),
-                     it->second.resources().end(),
-                     [this](const ResourceData& resource) {
-                       return IsResourcePrefetchable(resource);
-                     });
-}
-
 bool ResourcePrefetchPredictor::IsResourcePrefetchable(
     const ResourceData& resource) const {
   float confidence = static_cast<float>(resource.number_of_hits()) /
@@ -1186,9 +1181,10 @@ void ResourcePrefetchPredictor::ReportDatabaseReadiness(
     // Hostnames in TopHostsLists are stripped of their 'www.' prefix. We
     // assume that www.foo.com entry from |host_table_cache_| is also suitable
     // for foo.com.
-    if (IsDataPrefetchable(host, *host_table_cache_) ||
+    if (PopulatePrefetcherRequest(host, *host_table_cache_, nullptr) ||
         (!base::StartsWith(host, "www.", base::CompareCase::SENSITIVE) &&
-         IsDataPrefetchable("www." + host, *host_table_cache_))) {
+         PopulatePrefetcherRequest("www." + host, *host_table_cache_,
+                                   nullptr))) {
       ++count_in_cache;
     }
   }
