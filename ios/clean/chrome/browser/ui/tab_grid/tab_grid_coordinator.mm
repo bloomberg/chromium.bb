@@ -78,7 +78,7 @@
 }
 
 - (NSString*)titleAtIndex:(NSInteger)index {
-  WebMediator* tab = [self.tabGroup webStateAtIndex:index];
+  WebMediator* tab = [self.tabGroup tabAtIndex:index];
   GURL url = tab.webState->GetVisibleURL();
   NSString* urlText = @"<New Tab>";
   if (!url.is_valid()) {
@@ -92,7 +92,7 @@
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
   TabStripContainerCoordinator* tabCoordinator =
       [[TabStripContainerCoordinator alloc] init];
-  tabCoordinator.webMediator = [self.tabGroup webStateAtIndex:indexPath.item];
+  tabCoordinator.webMediator = [self.tabGroup tabAtIndex:indexPath.item];
   tabCoordinator.presentationKey = indexPath;
   [self addChildCoordinator:tabCoordinator];
   [tabCoordinator start];
@@ -134,10 +134,10 @@
   web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(URL));
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   activeTab.webState->GetNavigationManager()->LoadURLWithParams(params);
-  // Assume that either there is no child coordinator (tab) being displayed,
-  // or that the child coordinator is displaying |activeTab|.
   if (!self.children.count) {
-    NSUInteger index = [self.tabGroup indexOfWebState:activeTab];
+    // Placeholder — since there's only one tab in the grid, just open
+    // the tab at index path (0,0).
+    NSUInteger index = [self.tabGroup indexOfTab:activeTab];
     [self showTabAtIndexPath:[NSIndexPath indexPathForItem:index inSection:0]];
   }
 }
