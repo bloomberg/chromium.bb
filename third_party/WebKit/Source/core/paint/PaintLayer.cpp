@@ -782,19 +782,19 @@ void PaintLayer::updateLayerPosition() {
   }
 
   if (!layoutObject()->isOutOfFlowPositioned() &&
-      !layoutObject()->isColumnSpanAll() && layoutObject()->parent()) {
+      !layoutObject()->isColumnSpanAll()) {
     // We must adjust our position by walking up the layout tree looking for the
     // nearest enclosing object with a layer.
-    LayoutObject* curr = layoutObject()->parent();
+    LayoutObject* curr = layoutObject()->container();
     while (curr && !curr->hasLayer()) {
       if (curr->isBox() && !curr->isTableRow()) {
         // Rows and cells share the same coordinate space (that of the section).
         // Omit them when computing our xpos/ypos.
         localPoint.moveBy(toLayoutBox(curr)->physicalLocation());
       }
-      curr = curr->parent();
+      curr = curr->container();
     }
-    if (curr->isBox() && curr->isTableRow()) {
+    if (curr && curr->isTableRow()) {
       // Put ourselves into the row coordinate space.
       localPoint.moveBy(-toLayoutBox(curr)->physicalLocation());
     }
@@ -1418,11 +1418,24 @@ static inline const PaintLayer* accumulateOffsetTowardsAncestor(
     return ancestorLayer;
   }
 
-  PaintLayer* parentLayer;
-  if (position == AbsolutePosition || position == FixedPosition) {
-    bool foundAncestorFirst;
-    parentLayer = layer->containingLayerForOutOfFlowPositioned(
-        ancestorLayer, &foundAncestorFirst);
+  PaintLayer* parentLayer = nullptr;
+  if (position == AbsolutePosition || position == FixedPosition ||
+      (layoutObject->isFloating() && layoutObject->parent() &&
+       !layoutObject->parent()->isLayoutBlockFlow())) {
+    bool foundAncestorFirst = false;
+    if (layoutObject->isFloating()) {
+      Optional<LayoutObject::AncestorSkipInfo> skipInfo;
+      if (ancestorLayer)
+        skipInfo.emplace(ancestorLayer->layoutObject());
+      if (auto* containingBlock = layoutObject->containingBlock(
+              ancestorLayer ? &*skipInfo : nullptr)) {
+        parentLayer = containingBlock->enclosingLayer();
+        foundAncestorFirst = ancestorLayer && skipInfo->ancestorSkipped();
+      }
+    } else {
+      parentLayer = layer->containingLayerForOutOfFlowPositioned(
+          ancestorLayer, &foundAncestorFirst);
+    }
 
     if (foundAncestorFirst) {
       // Found ancestorLayer before the container of the out-of-flow object, so

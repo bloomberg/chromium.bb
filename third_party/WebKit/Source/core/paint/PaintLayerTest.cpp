@@ -525,6 +525,71 @@ TEST_P(PaintLayerTest, CompositingContainerFloat) {
   }
 }
 
+TEST_P(PaintLayerTest, FloatLayerAndAbsoluteUnderInlineLayer) {
+  setBodyInnerHTML(
+      "<div id='container' style='position: absolute; top: 20px; left: 20px'>"
+      "  <div style='margin: 33px'>"
+      "    <span id='span' style='position: relative; top: 100px; left: 100px'>"
+      "      <div id='floating'"
+      "        style='float: left; position: relative; top: 50px; left: 50px'>"
+      "      </div>"
+      "      <div id='absolute'"
+      "        style='position: absolute; top: 50px; left: 50px'>"
+      "      </div>"
+      "    </span>"
+      "  </div>"
+      "</div>");
+
+  PaintLayer* floating =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("floating"))->layer();
+  PaintLayer* absolute =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("absolute"))->layer();
+  PaintLayer* span =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("span"))->layer();
+  PaintLayer* container =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("container"))->layer();
+
+  EXPECT_EQ(span, floating->parent());
+  EXPECT_EQ(span, absolute->parent());
+  EXPECT_EQ(container, span->parent());
+
+  EXPECT_EQ(LayoutPoint(83, 83), floating->location());
+  EXPECT_EQ(LayoutPoint(50, 50), absolute->location());
+  EXPECT_EQ(LayoutPoint(133, 133), span->location());
+  EXPECT_EQ(LayoutPoint(20, 20), container->location());
+
+  EXPECT_EQ(LayoutPoint(-50, -50), floating->visualOffsetFromAncestor(span));
+  EXPECT_EQ(LayoutPoint(50, 50), absolute->visualOffsetFromAncestor(span));
+  EXPECT_EQ(LayoutPoint(83, 83), floating->visualOffsetFromAncestor(container));
+  EXPECT_EQ(LayoutPoint(183, 183),
+            absolute->visualOffsetFromAncestor(container));
+}
+
+TEST_P(PaintLayerTest, FloatLayerUnderBlockUnderInlineLayer) {
+  setBodyInnerHTML(
+      "<style>body {margin: 0}</style>"
+      "<span id='span' style='position: relative; top: 100px; left: 100px'>"
+      "  <div style='display: inline-block; margin: 33px'>"
+      "    <div id='floating'"
+      "        style='float: left; position: relative; top: 50px; left: 50px'>"
+      "    </div>"
+      "  </div>"
+      "</span>");
+
+  PaintLayer* floating =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("floating"))->layer();
+  PaintLayer* span =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("span"))->layer();
+
+  EXPECT_EQ(span, floating->parent());
+
+  EXPECT_EQ(LayoutPoint(83, 83), floating->location());
+  EXPECT_EQ(LayoutPoint(100, 100), span->location());
+  EXPECT_EQ(LayoutPoint(83, 83), floating->visualOffsetFromAncestor(span));
+  EXPECT_EQ(LayoutPoint(183, 183), floating->visualOffsetFromAncestor(
+                                       document().layoutView()->layer()));
+}
+
 TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
   enableCompositing();
   setBodyInnerHTML(
