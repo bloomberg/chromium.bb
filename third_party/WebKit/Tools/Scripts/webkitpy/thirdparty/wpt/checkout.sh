@@ -50,4 +50,6 @@ for action in $actions; do
   $action
 done
 
+chmod 755 $TARGET_DIR/tools/manifest/update.py
+
 # TODO(burnik): Handle the SSL certs and other configuration.
