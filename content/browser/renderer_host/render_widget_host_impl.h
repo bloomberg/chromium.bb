@@ -431,11 +431,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Set the RenderView background transparency.
   void SetBackgroundOpaque(bool opaque);
 
-  // Notifies the renderer that the next key event is bound to one or more
-  // pre-defined edit commands
-  void SetEditCommandsForNextKeyEvent(
-      const std::vector<EditCommand>& commands);
-
   // Executes the edit command.
   void ExecuteEditCommand(const std::string& command,
                           const std::string& value);

@@ -2245,11 +2245,6 @@ void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {
   Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }
 
-void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
-    const std::vector<EditCommand>& commands) {
-  Send(new InputMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), commands));
-}
-
 void RenderWidgetHostImpl::ExecuteEditCommand(const std::string& command,
                                               const std::string& value) {
   Send(new InputMsg_ExecuteEditCommand(GetRoutingID(), command, value));
