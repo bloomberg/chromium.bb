@@ -36,6 +36,8 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
+
 #include <pthread.h>
 #include <poll.h>
 
@@ -924,5 +926,143 @@ TEST(error_on_destroyed_object)
 	wl_resource_post_error((struct wl_resource *) cl->data,
 			       23, "Dummy error");
 	display_resume(d);
+	display_destroy(d);
+}
+
+static bool
+global_filter(const struct wl_client *client,
+	      const struct wl_global *global,
+	      void *data)
+{
+	/* Hide the wl_data_offer interface if no data was provided */
+	if (wl_global_get_interface(global) == &wl_data_offer_interface)
+		return data != NULL;
+
+	/* Show all the others */
+	return true;
+}
+
+static void
+bind_data_offer(struct wl_client *client, void *data,
+		uint32_t vers, uint32_t id)
+{
+	/* Client should not be able to bind to this interface! */
+	assert(false);
+}
+
+static void
+registry_handle_filtered(void *data, struct wl_registry *registry,
+			 uint32_t id, const char *intf, uint32_t ver)
+{
+	uint32_t *name = data;
+
+	if (strcmp (intf, "wl_data_offer") == 0) {
+		assert(name);
+		*name = id;
+	}
+}
+
+static const struct wl_registry_listener registry_listener_filtered = {
+	registry_handle_filtered,
+	NULL
+};
+
+static void
+get_globals(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry, &registry_listener_filtered, data);
+	wl_display_roundtrip(c->wl_display);
+
+	wl_registry_destroy(registry);
+	client_disconnect_nocheck(c);
+}
+
+TEST(filtered_global_is_hidden)
+{
+	struct display *d;
+	struct wl_global *g;
+
+	d = display_create();
+
+	g = wl_global_create(d->wl_display, &wl_data_offer_interface,
+		      1, d, bind_data_offer);
+	wl_display_set_global_filter(d->wl_display, global_filter, NULL);
+
+	client_create_noarg(d, get_globals);
+	display_run(d);
+
+	wl_global_destroy(g);
+
+	display_destroy(d);
+}
+
+static void
+check_bind_error(struct client *c)
+{
+	uint32_t errorcode, id;
+	int err;
+	const struct wl_interface *intf;
+
+	err = wl_display_get_error(c->wl_display);
+	assert(err == EPROTO);
+
+	errorcode = wl_display_get_protocol_error(c->wl_display, &intf, &id);
+	assert(errorcode == WL_DISPLAY_ERROR_INVALID_OBJECT);
+}
+
+static void
+force_bind(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+	void *ptr;
+	uint32_t *name = data;
+
+	registry = wl_display_get_registry(c->wl_display);
+
+	ptr = wl_registry_bind (registry, *name, &wl_data_offer_interface, 1);
+	wl_display_roundtrip(c->wl_display);
+	check_bind_error(c);
+
+	wl_proxy_destroy((struct wl_proxy *) ptr);
+	wl_registry_destroy(registry);
+
+	client_disconnect_nocheck(c);
+}
+
+TEST(bind_fails_on_filtered_global)
+{
+	struct display *d;
+	struct wl_global *g;
+	uint32_t *name;
+
+	/* Create a anonymous shared memory to pass the interface name */
+	name = mmap(NULL, sizeof(uint32_t),
+		    PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+
+	d = display_create();
+
+	g = wl_global_create(d->wl_display, &wl_data_offer_interface,
+			     1, d, bind_data_offer);
+	wl_display_set_global_filter(d->wl_display, global_filter, name);
+
+	client_create(d, get_globals, name);
+	*name = 0;
+
+	display_run(d);
+	/* wl_data_offer should be 2 */
+	assert(*name == 2);
+	wl_display_set_global_filter(d->wl_display, global_filter, NULL);
+
+	/* Try to bind to the interface name when a global filter is in place */
+	client_create(d, force_bind, name);
+	display_run(d);
+
+	wl_global_destroy(g);
+
 	display_destroy(d);
 }
