@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_resource_throttle.h"
+#include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
 
 #include "base/macros.h"
 #include "components/safe_browsing/base_resource_throttle.h"
