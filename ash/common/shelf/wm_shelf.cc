@@ -58,7 +58,7 @@ class WmShelf::AutoHideEventHandler : public ui::EventHandler {
 
 // WmShelf ---------------------------------------------------------------------
 
-WmShelf::WmShelf() : time_last_auto_hide_change_(base::TimeTicks::Now()) {}
+WmShelf::WmShelf() {}
 
 WmShelf::~WmShelf() {}
 
@@ -212,19 +212,6 @@ void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
 
   if (auto_hide_behavior_ == auto_hide_behavior)
     return;
-
-  // Force a stack dump when this method is invoked too frequently.
-  // This block is here temporary to help investigate http://crbug.com/665093 .
-  constexpr int kAutoHideRepeatInterval = 1000;
-  constexpr int kMaxAutoHideChanges = 20;
-  if ((base::TimeTicks::Now() - time_last_auto_hide_change_).InMilliseconds() <
-      kAutoHideRepeatInterval) {
-    if (++count_auto_hide_changes_ > kMaxAutoHideChanges)
-      CHECK(false);
-  } else {
-    count_auto_hide_changes_ = 0;
-  }
-  time_last_auto_hide_change_ = base::TimeTicks::Now();
 
   auto_hide_behavior_ = auto_hide_behavior;
   WmShell::Get()->shelf_controller()->NotifyShelfAutoHideBehaviorChanged(this);

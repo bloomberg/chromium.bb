@@ -11,7 +11,6 @@
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/observer_list.h"
-#include "base/time/time.h"
 
 namespace gfx {
 class Rect;
@@ -171,10 +170,6 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
 
   base::ObserverList<WmShelfObserver> observers_;
-
-  // Temporary. Used to investigate http://crbug.com/665093 .
-  base::TimeTicks time_last_auto_hide_change_;
-  int count_auto_hide_changes_ = 0;
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
   // TODO(mash): Facilitate simliar functionality in mash: crbug.com/631216
