@@ -402,7 +402,7 @@ void ChooserContentViewController::UpdateTableView() {
   // | |                              | |
   // | |                              | |
   // | -------------------------------- |
-  // |           [ Connect ] [ Cancel ] |
+  // |           [ Cancel ] [ Connect ] |
   // |----------------------------------|
   // | Get help                         |
   // ------------------------------------
@@ -434,14 +434,14 @@ void ChooserContentViewController::UpdateTableView() {
         IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, base::string16()));
     CGFloat adapterOffMessageWidth = NSWidth([adapterOffMessage_ frame]);
 
-    // Connect button.
-    connectButton_ = [self createConnectButton];
-    CGFloat connectButtonWidth = NSWidth([connectButton_ frame]);
-    CGFloat connectButtonHeight = NSHeight([connectButton_ frame]);
-
     // Cancel button.
     cancelButton_ = [self createCancelButton];
     CGFloat cancelButtonWidth = NSWidth([cancelButton_ frame]);
+    CGFloat cancelButtonHeight = NSHeight([cancelButton_ frame]);
+
+    // Connect button.
+    connectButton_ = [self createConnectButton];
+    CGFloat connectButtonWidth = NSWidth([connectButton_ frame]);
 
     // Separator.
     separator_ = [self createSeparator];
@@ -480,13 +480,13 @@ void ChooserContentViewController::UpdateTableView() {
         kChooserHeight - 2 * kMarginY -
         (chooserController_->ShouldShowFootnoteView() ? 4 * kVerticalPadding
                                                       : 2 * kVerticalPadding) -
-        titleHeight - connectButtonHeight - helpButtonHeight;
+        titleHeight - cancelButtonHeight - helpButtonHeight;
     CGFloat scrollViewOriginX = kMarginX;
     CGFloat scrollViewOriginY =
         kMarginY + helpButtonHeight +
         (chooserController_->ShouldShowFootnoteView() ? 3 * kVerticalPadding
                                                       : kVerticalPadding) +
-        connectButtonHeight;
+        cancelButtonHeight;
     NSRect scrollFrame = NSMakeRect(scrollViewOriginX, scrollViewOriginY,
                                     scrollViewWidth, scrollViewHeight);
     scrollView_.reset([[NSScrollView alloc] initWithFrame:scrollFrame]);
@@ -558,25 +558,26 @@ void ChooserContentViewController::UpdateTableView() {
     [spinner_ setHidden:YES];
     [self addSubview:spinner_];
 
-    // Connect button.
-    CGFloat connectButtonOriginX = kChooserWidth - kMarginX -
-                                   kHorizontalPadding - connectButtonWidth -
-                                   cancelButtonWidth;
-    CGFloat connectButtonOriginY =
+    // Cancel button.
+    CGFloat cancelButtonOriginX = kChooserWidth - kMarginX -
+                                  kHorizontalPadding - cancelButtonWidth -
+                                  connectButtonWidth;
+    CGFloat cancelButtonOriginY =
         kMarginY + helpButtonHeight +
         (chooserController_->ShouldShowFootnoteView() ? 2 * kVerticalPadding
                                                       : 0.0f);
+    [cancelButton_
+        setFrameOrigin:NSMakePoint(cancelButtonOriginX, cancelButtonOriginY)];
+    [self addSubview:cancelButton_];
+
+    // Connect button.
+    CGFloat connectButtonOriginX =
+        kChooserWidth - kMarginX - connectButtonWidth;
+    CGFloat connectButtonOriginY = cancelButtonOriginY;
     [connectButton_
         setFrameOrigin:NSMakePoint(connectButtonOriginX, connectButtonOriginY)];
     [connectButton_ setEnabled:NO];
     [self addSubview:connectButton_];
-
-    // Cancel button.
-    CGFloat cancelButtonOriginX = kChooserWidth - kMarginX - cancelButtonWidth;
-    CGFloat cancelButtonOriginY = connectButtonOriginY;
-    [cancelButton_
-        setFrameOrigin:NSMakePoint(cancelButtonOriginX, cancelButtonOriginY)];
-    [self addSubview:cancelButton_];
 
     if (chooserController_->ShouldShowFootnoteView()) {
       // Separator.
