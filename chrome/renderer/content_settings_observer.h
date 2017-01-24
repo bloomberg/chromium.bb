@@ -124,7 +124,7 @@ class ContentSettingsObserver
   bool IsWhitelistedForContentSettings() const;
   static bool IsWhitelistedForContentSettings(
       const blink::WebSecurityOrigin& origin,
-      const GURL& document_url);
+      const blink::WebURL& document_url);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Owned by ChromeContentRendererClient and outlive us.

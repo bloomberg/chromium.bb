@@ -502,38 +502,38 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings() const {
   if (render_frame()->IsFTPDirectoryListing())
     return true;
 
-  WebFrame* web_frame = render_frame()->GetWebFrame();
-  return IsWhitelistedForContentSettings(
-      web_frame->document().getSecurityOrigin(), web_frame->document().url());
+  const WebDocument& document = render_frame()->GetWebFrame()->document();
+  return IsWhitelistedForContentSettings(document.getSecurityOrigin(),
+                                         document.url());
 }
 
 bool ContentSettingsObserver::IsWhitelistedForContentSettings(
     const WebSecurityOrigin& origin,
-    const GURL& document_url) {
-  if (document_url == content::kUnreachableWebDataURL)
+    const WebURL& document_url) {
+  if (document_url.string() == content::kUnreachableWebDataURL)
     return true;
 
   if (origin.isUnique())
     return false;  // Uninitialized document?
 
-  base::string16 protocol = origin.protocol();
-  if (base::EqualsASCII(protocol, content::kChromeUIScheme))
+  blink::WebString protocol = origin.protocol();
+
+  if (protocol == content::kChromeUIScheme)
     return true;  // Browser UI elements should still work.
 
-  if (base::EqualsASCII(protocol, content::kChromeDevToolsScheme))
+  if (protocol == content::kChromeDevToolsScheme)
     return true;  // DevTools UI elements should still work.
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (base::EqualsASCII(protocol, extensions::kExtensionScheme))
+  if (protocol == extensions::kExtensionScheme)
     return true;
 #endif
 
   // If the scheme is file:, an empty file name indicates a directory listing,
   // which requires JavaScript to function properly.
-  if (base::EqualsASCII(protocol, url::kFileScheme)) {
-    return document_url.SchemeIs(url::kFileScheme) &&
-           document_url.ExtractFileName().empty();
+  if (protocol == url::kFileScheme &&
+      document_url.protocolIs(url::kFileScheme)) {
+    return GURL(document_url).ExtractFileName().empty();
   }
-
   return false;
 }
