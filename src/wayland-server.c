@@ -176,6 +176,9 @@ handle_array(struct wl_resource *resource, uint32_t opcode,
 	struct wl_closure *closure;
 	struct wl_object *object = &resource->object;
 
+	if (resource->client->error)
+		return;
+
 	closure = wl_closure_marshal(object, opcode, args,
 				     &object->interface->events[opcode]);
 
@@ -249,8 +252,6 @@ wl_resource_post_error(struct wl_resource *resource,
 	vsnprintf(buffer, sizeof buffer, msg, ap);
 	va_end(ap);
 
-	client->error = 1;
-
 	/*
 	 * When a client aborts, its resources are destroyed in id order,
 	 * which means the display resource is destroyed first. If destruction
@@ -258,11 +259,12 @@ wl_resource_post_error(struct wl_resource *resource,
 	 * with a NULL display_resource. Do not try to send errors to an
 	 * already dead client.
 	 */
-	if (!client->display_resource)
+	if (client->error || !client->display_resource)
 		return;
 
 	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_ERROR, resource, code, buffer);
+	client->error = 1;
 }
 
 static int
