@@ -124,9 +124,6 @@
 #define SK_REF_CNT_MIXIN_INCLUDE "sk_ref_cnt_ext_release.h"
 #endif
 
-#define SK_SCALAR_IS_FLOAT
-#undef SK_SCALAR_IS_FIXED
-
 #define SK_MSCALAR_IS_FLOAT
 #undef SK_MSCALAR_IS_DOUBLE
 
