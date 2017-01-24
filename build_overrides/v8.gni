@@ -23,5 +23,5 @@ v8_experimental_extra_library_files =
     [ "//third_party/WebKit/Source/core/streams/WritableStream.js" ]
 
 v8_enable_inspector_override = true
-v8_enable_gdbjit = false
+v8_enable_gdbjit_default = false
 v8_imminent_deprecation_warnings_default = false
