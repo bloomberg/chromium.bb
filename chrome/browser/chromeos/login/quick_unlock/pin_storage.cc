@@ -58,10 +58,8 @@ base::TimeDelta QuickUnlockPasswordConfirmationFrequencyToTimeDelta(
 // static
 void PinStorage::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kQuickUnlockPinSalt, "",
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kQuickUnlockPinSecret, "",
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kQuickUnlockPinSalt, "");
+  registry->RegisterStringPref(prefs::kQuickUnlockPinSecret, "");
 }
 
 PinStorage::PinStorage(PrefService* pref_service)
