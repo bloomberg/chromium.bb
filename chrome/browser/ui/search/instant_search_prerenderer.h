@@ -90,10 +90,6 @@ class InstantSearchPrerenderer {
 
   content::WebContents* prerender_contents() const;
 
-  // Returns true if the |query| matches the last prefetched search query or if
-  // the 'reuse_instant_search_base_page' flag is enabled in the field trials.
-  bool QueryMatchesPrefetch(const base::string16& query) const;
-
   Profile* const profile_;
 
   // Instant search base page URL.

@@ -11,9 +11,6 @@
 
 #include "base/strings/string_split.h"
 
-class GURL;
-class TemplateURL;
-
 namespace search {
 
 // Returns whether the Instant Extended API is enabled. This is always true on
@@ -37,25 +34,12 @@ typedef base::StringPairs FieldTrialFlags;
 // Exposed for testing only.
 bool GetFieldTrialInfo(FieldTrialFlags* flags);
 
-// Given a FieldTrialFlags object, returns the string value of the provided
-// flag.
-// Exposed for testing only.
-std::string GetStringValueForFlagWithDefault(const std::string& flag,
-                                             const std::string& default_value,
-                                             const FieldTrialFlags& flags);
-
 // Given a FieldTrialFlags object, returns the uint64_t value of the provided
 // flag.
 // Exposed for testing only.
 uint64_t GetUInt64ValueForFlagWithDefault(const std::string& flag,
                                           uint64_t default_value,
                                           const FieldTrialFlags& flags);
-
-// Given a FieldTrialFlags object, returns the bool value of the provided flag.
-// Exposed for testing only.
-bool GetBoolValueForFlagWithDefault(const std::string& flag,
-                                    bool default_value,
-                                    const FieldTrialFlags& flags);
 
 // Returns a string indicating whether InstantExtended is enabled, suitable
 // for adding as a query string param to the homepage or search requests.
@@ -70,19 +54,6 @@ std::string InstantExtendedEnabledParam();
 // prerender page. Callers should set |for_prerender| in this case to force
 // the returned string to be non-empty.
 std::string ForceInstantResultsParam(bool for_prerender);
-
-// Returns whether to prefetch high-confidence search suggestions. True iff
-// the Instant Extended API is enabled.
-bool ShouldPrefetchSearchResults();
-
-// Returns whether to reuse the prerendered page to commit any search query.
-// True iff the Instant Extended API is enabled.
-bool ShouldReuseInstantSearchBasePage();
-
-// |url| should either have a secure scheme or have a non-HTTPS base URL that
-// the user specified using --google-base-url. (This allows testers to use
-// --google-base-url to point at non-HTTPS servers, which eases testing.)
-bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url);
 
 }  // namespace search
 

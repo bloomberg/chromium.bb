@@ -36,11 +36,6 @@ bool IsSuggestPrefEnabled(Profile* profile);
 // Extracts and returns search terms from |url|.
 base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url);
 
-// Returns true if it is okay to extract search terms from |url|. |url| must
-// have a secure scheme and must contain the search terms replacement key for
-// the default search provider.
-bool IsQueryExtractionAllowedForURL(Profile* profile, const GURL& url);
-
 // Returns true if |url| should be rendered in the Instant renderer process.
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile);
 
@@ -124,10 +119,6 @@ bool HandleNewTabURLRewrite(GURL* url,
 // Reverses the operation from HandleNewTabURLRewrite.
 bool HandleNewTabURLReverseRewrite(GURL* url,
                                    content::BrowserContext* browser_context);
-
-// -----------------------------------------------------
-// The following APIs are exposed for use in tests only.
-// -----------------------------------------------------
 
 // Returns the Cacheable New Tab Page URL for the given |profile|.
 GURL GetNewTabPageURL(Profile* profile);

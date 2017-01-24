@@ -502,7 +502,7 @@ void InstantService::TopSitesChanged(history::TopSites* top_sites,
 }
 
 void InstantService::ResetInstantSearchPrerendererIfNecessary() {
-  if (!search::ShouldPrefetchSearchResults())
+  if (!search::IsInstantExtendedAPIEnabled())
     return;
 
   GURL url(search::GetSearchResultPrefetchBaseURL(profile_));

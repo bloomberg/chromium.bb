@@ -105,15 +105,10 @@ TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoLotsOfFlags) {
   FieldTrialFlags flags;
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group77 bar:1 baz:7 cat:dogs"));
+      "EmbeddedSearch", "Group77 baz:7 cat:dogs"));
   EXPECT_TRUE(GetFieldTrialInfo(&flags));
-  EXPECT_EQ(3ul, flags.size());
-  EXPECT_EQ(true, GetBoolValueForFlagWithDefault("bar", false, flags));
+  EXPECT_EQ(2ul, flags.size());
   EXPECT_EQ(7ul, GetUInt64ValueForFlagWithDefault("baz", 0, flags));
-  EXPECT_EQ("dogs",
-            GetStringValueForFlagWithDefault("cat", std::string(), flags));
-  EXPECT_EQ("default",
-            GetStringValueForFlagWithDefault("moose", "default", flags));
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoDisabled) {
@@ -141,15 +136,7 @@ TEST_F(SearchTest, ShouldPrefetchSearchResults_InstantExtendedAPIEnabled) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group1 espv:2"));
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-  EXPECT_TRUE(ShouldPrefetchSearchResults());
-}
-
-TEST_F(SearchTest, ShouldPrefetchSearchResults_Default) {
-  EXPECT_TRUE(ShouldPrefetchSearchResults());
-}
-
-TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_Default) {
-  EXPECT_TRUE(ShouldReuseInstantSearchBasePage());
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
 }
 
 TEST_F(SearchTest, ForceInstantResultsParam) {

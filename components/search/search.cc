@@ -99,38 +99,20 @@ bool GetFieldTrialInfo(FieldTrialFlags* flags) {
   return true;
 }
 
-// Given a FieldTrialFlags object, returns the string value of the provided
-// flag.
-std::string GetStringValueForFlagWithDefault(const std::string& flag,
-                                             const std::string& default_value,
-                                             const FieldTrialFlags& flags) {
-  FieldTrialFlags::const_iterator i;
-  for (i = flags.begin(); i != flags.end(); i++) {
-    if (i->first == flag)
-      return i->second;
-  }
-  return default_value;
-}
-
 // Given a FieldTrialFlags object, returns the uint64_t value of the provided
 // flag.
 uint64_t GetUInt64ValueForFlagWithDefault(const std::string& flag,
                                           uint64_t default_value,
                                           const FieldTrialFlags& flags) {
-  uint64_t value;
-  std::string str_value =
-      GetStringValueForFlagWithDefault(flag, std::string(), flags);
-  if (base::StringToUint64(str_value, &value))
-    return value;
+  for (const std::pair<std::string, std::string>& flag_and_value : flags) {
+    if (flag_and_value.first == flag) {
+      const std::string& str_value = flag_and_value.second;
+      uint64_t value;
+      if (base::StringToUint64(str_value, &value))
+        return value;
+    }
+  }
   return default_value;
-}
-
-// Given a FieldTrialFlags object, returns the boolean value of the provided
-// flag.
-bool GetBoolValueForFlagWithDefault(const std::string& flag,
-                                    bool default_value,
-                                    const FieldTrialFlags& flags) {
-  return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
 }
 
 std::string InstantExtendedEnabledParam() {
@@ -141,23 +123,6 @@ std::string InstantExtendedEnabledParam() {
 std::string ForceInstantResultsParam(bool for_prerender) {
   return (for_prerender || !IsInstantExtendedAPIEnabled()) ? "ion=1&"
                                                            : std::string();
-}
-
-bool ShouldPrefetchSearchResults() {
-  return IsInstantExtendedAPIEnabled();
-}
-
-bool ShouldReuseInstantSearchBasePage() {
-  return IsInstantExtendedAPIEnabled();
-}
-
-// |url| should either have a secure scheme or have a non-HTTPS base URL that
-// the user specified using --google-base-url. (This allows testers to use
-// --google-base-url to point at non-HTTPS servers, which eases testing.)
-bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
-  return template_url->HasSearchTermsReplacementKey(url) &&
-         (url.SchemeIsCryptographic() ||
-          google_util::StartsWithCommandLineGoogleBaseURL(url));
 }
 
 }  // namespace search

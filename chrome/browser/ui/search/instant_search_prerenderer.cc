@@ -114,8 +114,7 @@ bool InstantSearchPrerenderer::CanCommitQuery(
     content::WebContents* source,
     const base::string16& query) const {
   if (!source || query.empty() || !prerender_handle_ ||
-      !prerender_handle_->IsFinishedLoading() ||
-      !prerender_contents() || !QueryMatchesPrefetch(query)) {
+      !prerender_handle_->IsFinishedLoading() || !prerender_contents()) {
     return false;
   }
 
@@ -131,7 +130,6 @@ bool InstantSearchPrerenderer::UsePrerenderedPage(
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
   if (search_terms.empty() || !params->target_contents ||
       !prerender_contents() || !prerender_manager ||
-      !QueryMatchesPrefetch(search_terms) ||
       params->disposition != WindowOpenDisposition::CURRENT_TAB) {
     Cancel();
     return false;
@@ -181,10 +179,4 @@ bool InstantSearchPrerenderer::IsAllowed(const AutocompleteMatch& match,
 content::WebContents* InstantSearchPrerenderer::prerender_contents() const {
   return (prerender_handle_ && prerender_handle_->contents()) ?
       prerender_handle_->contents()->prerender_contents() : NULL;
-}
-
-bool InstantSearchPrerenderer::QueryMatchesPrefetch(
-    const base::string16& query) const {
-  return search::ShouldReuseInstantSearchBasePage() ||
-         last_instant_suggestion_.text == query;
 }
