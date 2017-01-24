@@ -936,7 +936,6 @@ class DataSeries1Test(CIDBIntegrationTest):
     db.UpdateMetadata(build_id, metadata)
 
     status = metadata_dict['status']['status']
-    status = _TranslateStatus(status)
 
     for child_config_dict in metadata_dict['child-configs']:
       # Note, we are not using test data here, because the test data
@@ -949,18 +948,6 @@ class DataSeries1Test(CIDBIntegrationTest):
     db.FinishBuild(build_id, status)
 
     return build_id
-
-
-def _TranslateStatus(status):
-  # TODO(akeshet): The status strings used in BuildStatus are not the same as
-  # those recorded in CBuildbotMetadata. Use a general purpose adapter.
-  if status == 'passed':
-    return 'pass'
-
-  if status == 'failed':
-    return 'fail'
-
-  return status
 
 
 def _SimulateBuildStart(db, metadata, master_build_id=None, important=None):
@@ -995,7 +982,6 @@ def _SimulateCQBuildFinish(db, metadata, build_id):
   db.UpdateMetadata(build_id, metadata)
 
   status = metadata_dict['status']['status']
-  status = _TranslateStatus(status)
   # The build summary reported by a real CQ run is more complicated -- it is
   # computed from slave summaries by a master. For sanity checking, we just
   # insert the current builer's summary.
