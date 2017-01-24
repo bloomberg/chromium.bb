@@ -29,22 +29,29 @@ bool IsScreenCaptureMediaType(MediaStreamType type) {
 }
 
 MediaStreamDevice::MediaStreamDevice()
-    : type(MEDIA_NO_SERVICE),
-      video_facing(MEDIA_VIDEO_FACING_NONE) {
-}
+    : type(MEDIA_NO_SERVICE), video_facing(media::MEDIA_VIDEO_FACING_NONE) {}
 
 MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
                                      const std::string& id,
                                      const std::string& name)
-    : type(type), id(id), video_facing(MEDIA_VIDEO_FACING_NONE), name(name) {
+    : type(type),
+      id(id),
+      video_facing(media::MEDIA_VIDEO_FACING_NONE),
+      name(name) {
 #if defined(OS_ANDROID)
   if (name.find("front") != std::string::npos) {
-    video_facing = MEDIA_VIDEO_FACING_USER;
+    video_facing = media::MEDIA_VIDEO_FACING_USER;
   } else if (name.find("back") != std::string::npos) {
-    video_facing = MEDIA_VIDEO_FACING_ENVIRONMENT;
+    video_facing = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
   }
 #endif
 }
+
+MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
+                                     const std::string& id,
+                                     const std::string& name,
+                                     media::VideoFacingMode facing)
+    : type(type), id(id), video_facing(facing), name(name) {}
 
 MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
                                      const std::string& id,
@@ -54,7 +61,7 @@ MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
                                      int frames_per_buffer)
     : type(type),
       id(id),
-      video_facing(MEDIA_VIDEO_FACING_NONE),
+      video_facing(media::MEDIA_VIDEO_FACING_NONE),
       name(name),
       input(sample_rate, channel_layout, frames_per_buffer) {}
 

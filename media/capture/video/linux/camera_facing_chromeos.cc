@@ -16,6 +16,10 @@ namespace media {
 
 namespace {
 
+// The value for each field in the enum matches the value in
+// /etc/camera/camera_characteristics.conf.
+enum LensFacing { FRONT = 0, BACK = 1 };
+
 bool GetCameraId(const base::StringPiece& sub_key, int* camera_id) {
   const base::StringPiece camera_id_prefix = "camera";
   if (!sub_key.starts_with(camera_id_prefix))
@@ -43,7 +47,7 @@ CameraFacingChromeOS::CameraFacingChromeOS(
 
 CameraFacingChromeOS::~CameraFacingChromeOS() {}
 
-CameraFacingChromeOS::LensFacing CameraFacingChromeOS::GetCameraFacing(
+VideoFacingMode CameraFacingChromeOS::GetCameraFacing(
     const std::string& device_id,
     const std::string& model_id) const {
   std::string usb_id = GetUsbId(device_id);
@@ -156,10 +160,12 @@ void CameraFacingChromeOS::InitializeDeviceInfo(
       }
       switch (lens_facing) {
         case LensFacing::FRONT:
-          camera_id_to_facing_[camera_id] = LensFacing::FRONT;
+          camera_id_to_facing_[camera_id] =
+              VideoFacingMode::MEDIA_VIDEO_FACING_USER;
           break;
         case LensFacing::BACK:
-          camera_id_to_facing_[camera_id] = LensFacing::BACK;
+          camera_id_to_facing_[camera_id] =
+              VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT;
           break;
         default:
           DLOG(ERROR) << "Invalid value for lens_facing: " << lens_facing;

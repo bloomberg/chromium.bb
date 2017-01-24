@@ -26,14 +26,14 @@ TEST(CameraFacingChromeOSTest, ParseSuccessfully) {
 
   std::string file_name_str(file_name);
   CameraFacingChromeOS camera_facing(file_name_str);
-  EXPECT_EQ(CameraFacingChromeOS::LensFacing::BACK,
+  EXPECT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
             camera_facing.GetCameraFacing(std::string("/dev/video2"),
                                           std::string("04f2:b53a")));
 }
 
 TEST(CameraFacingChromeOSTest, ConfigFileNotExist) {
   CameraFacingChromeOS camera_facing(std::string("file_not_exist"));
-  EXPECT_EQ(CameraFacingChromeOS::LensFacing::FRONT,
+  EXPECT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
             camera_facing.GetCameraFacing(std::string("/dev/video2"),
                                           std::string("04f2:b53a")));
 }

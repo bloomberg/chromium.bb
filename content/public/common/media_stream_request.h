@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/video_facing.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -46,15 +47,6 @@ enum MediaStreamRequestType {
   MEDIA_DEVICE_ACCESS = 0,
   MEDIA_GENERATE_STREAM,
   MEDIA_OPEN_DEVICE_PEPPER_ONLY  // Only used in requests made by Pepper.
-};
-
-// Facing mode for video capture.
-enum VideoFacingMode {
-  MEDIA_VIDEO_FACING_NONE = 0,
-  MEDIA_VIDEO_FACING_USER,
-  MEDIA_VIDEO_FACING_ENVIRONMENT,
-
-  NUM_MEDIA_VIDEO_FACING_MODE
 };
 
 // Elements in this enum should not be deleted or rearranged; the only
@@ -95,6 +87,11 @@ struct CONTENT_EXPORT MediaStreamDevice {
   MediaStreamDevice(MediaStreamType type,
                     const std::string& id,
                     const std::string& name,
+                    media::VideoFacingMode facing);
+
+  MediaStreamDevice(MediaStreamType type,
+                    const std::string& id,
+                    const std::string& name,
                     int sample_rate,
                     int channel_layout,
                     int frames_per_buffer);
@@ -112,7 +109,7 @@ struct CONTENT_EXPORT MediaStreamDevice {
   std::string id;
 
   // The facing mode for video capture device.
-  VideoFacingMode video_facing;
+  media::VideoFacingMode video_facing;
 
   // The device id of a matched output device if any (otherwise empty).
   // Only applicable to audio devices.

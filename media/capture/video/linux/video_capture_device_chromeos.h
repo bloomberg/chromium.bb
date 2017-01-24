@@ -33,7 +33,7 @@ class VideoCaptureDeviceChromeOS : public VideoCaptureDeviceLinux {
 
   void SetDisplayRotation(const display::Display& display);
   scoped_refptr<ScreenObserverDelegate> screen_observer_delegate_;
-  const CameraFacingChromeOS::LensFacing lens_facing_;
+  const VideoFacingMode lens_facing_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceChromeOS);
 };
 

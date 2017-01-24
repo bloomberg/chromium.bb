@@ -9,7 +9,8 @@
 namespace media {
 
 VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor()
-    : capture_api(VideoCaptureApi::UNKNOWN),
+    : facing(VideoFacingMode::MEDIA_VIDEO_FACING_NONE),
+      capture_api(VideoCaptureApi::UNKNOWN),
       transport_type(VideoCaptureTransportType::OTHER_TRANSPORT) {}
 
 VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
@@ -19,6 +20,7 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     VideoCaptureTransportType transport_type)
     : display_name(display_name),
       device_id(device_id),
+      facing(VideoFacingMode::MEDIA_VIDEO_FACING_NONE),
       capture_api(capture_api),
       transport_type(transport_type) {}
 
@@ -27,10 +29,12 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     const std::string& device_id,
     const std::string& model_id,
     VideoCaptureApi capture_api,
-    VideoCaptureTransportType transport_type)
+    VideoCaptureTransportType transport_type,
+    VideoFacingMode facing)
     : display_name(display_name),
       device_id(device_id),
       model_id(model_id),
+      facing(facing),
       capture_api(capture_api),
       transport_type(transport_type) {}
 

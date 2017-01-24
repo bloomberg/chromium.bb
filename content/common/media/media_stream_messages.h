@@ -20,8 +20,8 @@
 IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamType,
                           content::NUM_MEDIA_TYPES - 1)
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::VideoFacingMode,
-                          content::NUM_MEDIA_VIDEO_FACING_MODE - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFacingMode,
+                          media::NUM_MEDIA_VIDEO_FACING_MODE - 1)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamRequestResult,
                           content::NUM_MEDIA_REQUEST_RESULTS - 1)

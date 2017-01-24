@@ -309,13 +309,13 @@ void MediaStreamVideoTrack::getSettings(
       settings.height = format->frame_size.height();
     }
     switch (source_->device_info().device.video_facing) {
-      case MEDIA_VIDEO_FACING_NONE:
+      case media::MEDIA_VIDEO_FACING_NONE:
         settings.facingMode = blink::WebMediaStreamTrack::FacingMode::None;
         break;
-      case MEDIA_VIDEO_FACING_USER:
+      case media::MEDIA_VIDEO_FACING_USER:
         settings.facingMode = blink::WebMediaStreamTrack::FacingMode::User;
         break;
-      case MEDIA_VIDEO_FACING_ENVIRONMENT:
+      case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
         settings.facingMode =
             blink::WebMediaStreamTrack::FacingMode::Environment;
         break;

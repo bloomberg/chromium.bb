@@ -119,7 +119,7 @@ VideoCaptureDeviceChromeOS::~VideoCaptureDeviceChromeOS() {
 void VideoCaptureDeviceChromeOS::SetRotation(int rotation) {
   // We assume external camera is facing the users. If not, the users can
   // rotate the camera manually by themselves.
-  if (lens_facing_ == CameraFacingChromeOS::LensFacing::BACK) {
+  if (lens_facing_ == VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT) {
     // Original frame when |rotation| = 0
     // -----------------------
     // |          *          |

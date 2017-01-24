@@ -11,6 +11,7 @@
 #include <unordered_map>
 
 #include <base/strings/string_piece.h>
+#include "media/base/video_facing.h"
 #include "media/capture/capture_export.h"
 
 namespace media {
@@ -49,8 +50,6 @@ namespace media {
 //  camera1.sensor_orientation=180
 class CAPTURE_EXPORT CameraFacingChromeOS {
  public:
-  enum LensFacing { FRONT = 0, BACK = 1 };
-
   CameraFacingChromeOS();
   CAPTURE_EXPORT CameraFacingChromeOS(const std::string& config_file_path);
   CAPTURE_EXPORT ~CameraFacingChromeOS();
@@ -59,12 +58,12 @@ class CAPTURE_EXPORT CameraFacingChromeOS {
   // should be formatted as "vid:pid". |device_id| is something like
   // "/dev/video2". It first tries to match usb path, obtained from |device_id|.
   // If fails, |model_id| is then used.
-  // Returns LensFacing::FRONT or LensFacing::BACK.
-  // Default is LensFacing::FRONT.
-  CAPTURE_EXPORT LensFacing GetCameraFacing(const std::string& device_id,
-                                            const std::string& model_id) const;
+  CAPTURE_EXPORT VideoFacingMode
+  GetCameraFacing(const std::string& device_id,
+                  const std::string& model_id) const;
 
-  static const LensFacing kLensFacingDefault = LensFacing::FRONT;
+  static const VideoFacingMode kLensFacingDefault =
+      VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
 
  private:
   std::string GetUsbId(const std::string& device_id) const;
@@ -72,7 +71,7 @@ class CAPTURE_EXPORT CameraFacingChromeOS {
   // |usb_id_to_camera_id_| and |model_id_to_camera_id_|.
   void InitializeDeviceInfo(const std::string& config_file_path);
 
-  std::unordered_map<int, LensFacing> camera_id_to_facing_;
+  std::unordered_map<int, VideoFacingMode> camera_id_to_facing_;
   std::unordered_map<std::string, int> usb_id_to_camera_id_;
   std::unordered_map<std::string, int> model_id_to_camera_id_;
 };
