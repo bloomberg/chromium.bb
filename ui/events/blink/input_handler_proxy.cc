@@ -233,6 +233,13 @@ cc::InputHandler::ScrollInputType GestureScrollInputType(
              : cc::InputHandler::TOUCHSCREEN;
 }
 
+enum ScrollingThreadStatus {
+  SCROLLING_ON_COMPOSITOR,
+  SCROLLING_ON_COMPOSITOR_BLOCKED_ON_MAIN,
+  SCROLLING_ON_MAIN,
+  LAST_SCROLLING_THREAD_STATUS_VALUE = SCROLLING_ON_MAIN,
+};
+
 }  // namespace
 
 namespace ui {
@@ -257,6 +264,7 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()),
       touchpad_and_wheel_scroll_latching_enabled_(false),
       touch_start_result_(kEventDispositionUndefined),
+      mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_pinch_(false),
       tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
@@ -586,6 +594,54 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   }
 }
 
+void InputHandlerProxy::RecordScrollingThreadStatus(
+    blink::WebGestureDevice device,
+    uint32_t reasons) {
+  DCHECK(device == blink::WebGestureDeviceTouchpad ||
+         device == blink::WebGestureDeviceTouchscreen);
+
+  if (device != blink::WebGestureDeviceTouchpad &&
+      device != blink::WebGestureDeviceTouchscreen) {
+    return;
+  }
+
+  ScrollingThreadStatus scrolling_thread_status = SCROLLING_ON_MAIN;
+  if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
+    int32_t event_disposition_result =
+        (device == blink::WebGestureDeviceTouchpad ? mouse_wheel_result_
+                                                   : touch_start_result_);
+    switch (event_disposition_result) {
+      case kEventDispositionUndefined:
+      case DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
+      case DID_HANDLE_NON_BLOCKING:
+      case DROP_EVENT:
+        scrolling_thread_status = SCROLLING_ON_COMPOSITOR;
+        break;
+      case DID_NOT_HANDLE:
+        scrolling_thread_status = SCROLLING_ON_COMPOSITOR_BLOCKED_ON_MAIN;
+        break;
+      default:
+        NOTREACHED();
+        scrolling_thread_status = SCROLLING_ON_COMPOSITOR;
+    }
+  }
+
+  // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
+  // greater than the sample value.
+  const uint32_t kScrolingThreadStatusEnumMax =
+      ScrollingThreadStatus::LAST_SCROLLING_THREAD_STATUS_VALUE + 1;
+
+  if (device == blink::WebGestureDeviceTouchscreen) {
+    UMA_HISTOGRAM_ENUMERATION("Renderer4.GestureScrollingThreadStatus",
+                              scrolling_thread_status,
+                              kScrolingThreadStatusEnumMax);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Renderer4.WheelScrollingThreadStatus",
+                              scrolling_thread_status,
+                              kScrolingThreadStatusEnumMax);
+  }
+}
+
 bool InputHandlerProxy::ShouldAnimate(bool has_precise_scroll_deltas) const {
 #if defined(OS_MACOSX)
   // Mac does not smooth scroll wheel events (crbug.com/574283).
@@ -602,21 +658,28 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
   if (!wheel_event.hasPreciseScrollingDeltas && fling_curve_)
     CancelCurrentFling();
 
+  InputHandlerProxy::EventDisposition result = DROP_EVENT;
   cc::EventListenerProperties properties =
       input_handler_->GetEventListenerProperties(
           cc::EventListenerClass::kMouseWheel);
   switch (properties) {
     case cc::EventListenerProperties::kPassive:
-      return DID_HANDLE_NON_BLOCKING;
+      result = DID_HANDLE_NON_BLOCKING;
+      break;
     case cc::EventListenerProperties::kBlockingAndPassive:
     case cc::EventListenerProperties::kBlocking:
-      return DID_NOT_HANDLE;
+      result = DID_NOT_HANDLE;
+      break;
     case cc::EventListenerProperties::kNone:
-      return DROP_EVENT;
+      result = DROP_EVENT;
+      break;
     default:
       NOTREACHED();
-      return DROP_EVENT;
+      result = DROP_EVENT;
   }
+
+  mouse_wheel_result_ = result;
+  return result;
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::FlingScrollByMouseWheel(
@@ -670,6 +733,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::FlingScrollByMouseWheel(
     RecordMainThreadScrollingReasons(
         blink::WebGestureDeviceTouchpad,
         scroll_status.main_thread_scrolling_reasons);
+
+    mouse_wheel_result_ =
+        (listener_properties == cc::EventListenerProperties::kPassive)
+            ? DID_HANDLE_NON_BLOCKING
+            : DROP_EVENT;
+    RecordScrollingThreadStatus(blink::WebGestureDeviceTouchpad,
+                                scroll_status.main_thread_scrolling_reasons);
 
     switch (scroll_status.thread) {
       case cc::InputHandler::SCROLL_ON_IMPL_THREAD: {
@@ -752,6 +822,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 
   RecordMainThreadScrollingReasons(gesture_event.sourceDevice,
                                    scroll_status.main_thread_scrolling_reasons);
+  RecordScrollingThreadStatus(gesture_event.sourceDevice,
+                              scroll_status.main_thread_scrolling_reasons);
 
   InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
   switch (scroll_status.thread) {
