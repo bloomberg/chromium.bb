@@ -318,6 +318,35 @@ int drv_bo_munmap(struct bo *bo, struct map_info *data)
 	return munmap(data->addr, data->length);
 }
 
+int drv_map_info_destroy(struct bo *bo)
+{
+	int ret;
+	void *ptr;
+	size_t plane;
+	struct map_info *data;
+
+	/*
+	 * This function is called right before the buffer is destroyed. It will free any mappings
+	 * associated with the buffer.
+	 */
+
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		if (!drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr)) {
+			data = (struct map_info *)ptr;
+			ret = bo->drv->backend->bo_unmap(bo, data);
+			if (ret) {
+				fprintf(stderr, "drv: munmap failed");
+				return ret;
+			}
+
+			drmHashDelete(bo->drv->map_table, data->handle);
+			free(data);
+		}
+	}
+
+	return 0;
+}
+
 uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo, size_t plane)
 {
 	void *count;
