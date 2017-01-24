@@ -93,7 +93,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
   chrome_test_util::TapWebViewElementWithId(kSubmitButton);
 
   GURL url = web::test::HttpServer::MakeUrl(kPrintFormDataUrl);
-  id<GREYMatcher> URLMatcher = chrome_test_util::omniboxText(url.GetContent());
+  id<GREYMatcher> URLMatcher = chrome_test_util::OmniboxText(url.GetContent());
   [[EarlGrey selectElementWithMatcher:URLMatcher]
       assertWithMatcher:grey_notNil()];
 }
@@ -104,7 +104,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
       conditionWithName:@"Waiting for webview to display resulting text."
                   block:^BOOL {
                     id<GREYMatcher> webViewMatcher =
-                        chrome_test_util::webViewContainingText(
+                        chrome_test_util::WebViewContainingText(
                             expectedResponse);
                     NSError* error = nil;
                     [[EarlGrey selectElementWithMatcher:webViewMatcher]
@@ -149,9 +149,8 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 
 // Open back navigation history.
 - (void)openBackHistory {
-  id<GREYMatcher> back =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
-  [[EarlGrey selectElementWithMatcher:back] performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_longPress()];
 }
 
 // Navigates forward to a previous webpage.
@@ -167,7 +166,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 // Accepts the warning that the form POST data will be resent.
 - (void)confirmResendWarning {
   id<GREYMatcher> resendWarning =
-      chrome_test_util::buttonWithAccessibilityLabelId(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
           IDS_HTTP_POST_WARNING_RESEND);
   [[EarlGrey selectElementWithMatcher:resendWarning]
       performAction:grey_longPress()];
@@ -259,7 +258,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
         performAction:grey_tapAtPoint(CGPointMake(50.0f, 50.0f))];
   } else {
     // On handset, dismiss via the cancel button.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::cancelButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
         performAction:grey_tap()];
   }
   // Check that the POST is changed to a GET
@@ -277,7 +276,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 
   // Check that the popup did not show
   id<GREYMatcher> resendWarning =
-      chrome_test_util::buttonWithAccessibilityLabelId(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
           IDS_HTTP_POST_WARNING_RESEND);
   [[EarlGrey selectElementWithMatcher:resendWarning]
       assertWithMatcher:grey_nil()];

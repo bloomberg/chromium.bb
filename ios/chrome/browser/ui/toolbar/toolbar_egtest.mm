@@ -27,9 +27,9 @@
 #include "ios/web/public/test/http_server_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-using chrome_test_util::buttonWithAccessibilityLabelId;
-using chrome_test_util::omniboxText;
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::OmniboxText;
+using chrome_test_util::WebViewContainingText;
 
 // Toolbar integration tests for Chrome.
 @interface ToolbarTestCase : ChromeTestCase
@@ -73,9 +73,9 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   const GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
   [ChromeEarlGrey loadURL:URL];
-  [[EarlGrey selectElementWithMatcher:omniboxText(URL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("You've arrived")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("You've arrived")]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -120,18 +120,18 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   [ChromeEarlGrey loadURL:URL];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"foo")];
 
   id<GREYMatcher> cancelButton =
-      grey_allOf(chrome_test_util::cancelButton(),
+      grey_allOf(chrome_test_util::CancelButton(),
                  grey_not(grey_accessibilityID(@"Typing Shield")), nil);
   [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
 }
 
 // Tests whether input mode in an omnibox can be canceled via "hide keyboard"
@@ -152,16 +152,16 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   [ChromeEarlGrey loadURL:URL];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"foo")];
 
   id<GREYMatcher> hideKeyboard = grey_accessibilityLabel(@"Hide keyboard");
   [[EarlGrey selectElementWithMatcher:hideKeyboard] performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
 }
 
 // Tests whether input mode in an omnibox can be canceled via tapping the typing
@@ -177,30 +177,30 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   [ChromeEarlGrey loadURL:URL];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"foo")];
 
   id<GREYMatcher> typingShield = grey_accessibilityID(@"Typing Shield");
   [[EarlGrey selectElementWithMatcher:typingShield] performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
 }
 
 // Verifies the existence and state of toolbar UI elements.
 - (void)testToolbarUI {
   id<GREYMatcher> backButton =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
   id<GREYMatcher> forwardButton =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
   id<GREYMatcher> reloadButton =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
   id<GREYMatcher> bookmarkButton =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
   id<GREYMatcher> voiceSearchButton =
-      grey_allOf(chrome_test_util::buttonWithAccessibilityLabelId(
+      grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
                      IDS_IOS_ACCNAME_VOICE_SEARCH),
                  grey_ancestor(grey_kindOfClass([ToolbarView class])), nil);
   NSString* ntpOmniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
@@ -226,9 +226,9 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
     [[EarlGrey selectElementWithMatcher:voiceSearchButton]
         assertWithMatcher:grey_sufficientlyVisible()];
   } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::toolsMenuButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
         assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::showTabsButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
         assertWithMatcher:grey_sufficientlyVisible()];
   }
 
@@ -251,25 +251,25 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   // First test: check that the keyboard is opened when tapping the omnibox,
   // and that it is dismissed when the "Back" button is tapped.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notNil()];
 
   id<GREYMatcher> backButton =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
   [[EarlGrey selectElementWithMatcher:backButton] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notVisible()];
 
   // Second test: check that the keyboard is opened when tapping the omnibox,
   // and that it is dismissed when the tools menu button is tapped.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::toolsMenuButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notVisible()];
@@ -283,18 +283,18 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   [ChromeEarlGrey loadURL:URL];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
 
   [ChromeEarlGreyUI openShareMenu];
 
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    @"Copy")] performAction:grey_tap()];
 
   [ChromeEarlGrey loadURL:secondURL];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_longPress()];
 
   id<GREYMatcher> pasteBarButton = grey_allOf(
@@ -303,8 +303,8 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitStaticText)), nil);
   [[EarlGrey selectElementWithMatcher:pasteBarButton] performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(URL.spec().c_str())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(URL.spec().c_str())];
 }
 
 // Verifies that the clear text button clears any text in the omnibox.
@@ -313,17 +313,17 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   [ChromeEarlGrey loadURL:URL];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"foo")];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText("foo")];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText("foo")];
 
   id<GREYMatcher> CancelButton = grey_accessibilityLabel(@"Clear Text");
   [[EarlGrey selectElementWithMatcher:CancelButton] performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText("")];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText("")];
 }
 
 // Types JavaScript into Omnibox and verify that an alert is displayed.
@@ -333,7 +333,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iOS10 iPad due to a typing bug.");
   }
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"javascript:alert('Hello');")];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
@@ -362,7 +362,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"b")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"ab"),
@@ -371,7 +371,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"C")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"abC"),
@@ -380,7 +380,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"1")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"abC1"),
@@ -389,7 +389,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"2")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"abC12"),
@@ -398,7 +398,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"@")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"abC12@"),
@@ -407,7 +407,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"{")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"abC12@{"),
@@ -416,7 +416,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"#")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"abC12@{#"),
@@ -436,8 +436,8 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
     [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(clearText)]
         performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-        assertWithMatcher:chrome_test_util::omniboxText("")];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        assertWithMatcher:chrome_test_util::OmniboxText("")];
 
     SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
   }

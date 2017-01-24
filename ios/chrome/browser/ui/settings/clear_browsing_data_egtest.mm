@@ -13,8 +13,8 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using chrome_test_util::buttonWithAccessibilityLabel;
-using chrome_test_util::buttonWithAccessibilityLabelId;
+using chrome_test_util::ButtonWithAccessibilityLabel;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 @interface ClearBrowsingDataSettingsTestCase : ChromeTestCase
 @end
@@ -29,18 +29,18 @@ using chrome_test_util::buttonWithAccessibilityLabelId;
   NSString* settingsLabel =
       l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
   [[EarlGrey
-      selectElementWithMatcher:buttonWithAccessibilityLabel(settingsLabel)]
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(settingsLabel)]
       performAction:grey_tap()];
 
   NSString* clearBrowsingDataDialogLabel =
       l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabel(
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
                                           clearBrowsingDataDialogLabel)]
       performAction:grey_tap()];
 }
 
 - (void)exitSettingsMenu {
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabelId(
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
       performAction:grey_tap()];
   // Wait for UI components to finish loading.

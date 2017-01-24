@@ -17,9 +17,9 @@
 #error "This file requires ARC support."
 #endif
 
-using web::addressFieldText;
+using web::AddressFieldText;
 using web::test::HttpServer;
-using web::webViewContainingText;
+using web::WebViewContainingText;
 
 // Redirect test cases for the web shell.
 @interface RedirectTestCase : ShellBaseTestCase
@@ -51,9 +51,9 @@ using web::webViewContainingText;
 
   // Load first URL and expect destination URL to load.
   [ShellEarlGrey loadURL:firstRedirectURL];
-  [[EarlGrey selectElementWithMatcher:addressFieldText(destinationURL.spec())]
+  [[EarlGrey selectElementWithMatcher:AddressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kFinalPageContent)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFinalPageContent)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -75,9 +75,9 @@ using web::webViewContainingText;
 
   // Load first URL and expect destination URL to load.
   [ShellEarlGrey loadURL:firstRedirectURL];
-  [[EarlGrey selectElementWithMatcher:addressFieldText(destinationURL.spec())]
+  [[EarlGrey selectElementWithMatcher:AddressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kFinalPageContent)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFinalPageContent)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -99,9 +99,9 @@ using web::webViewContainingText;
 
   // Load first URL and expect destination URL to load.
   [ShellEarlGrey loadURL:firstRedirectURL];
-  [[EarlGrey selectElementWithMatcher:addressFieldText(destinationURL.spec())]
+  [[EarlGrey selectElementWithMatcher:AddressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kFinalPageContent)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFinalPageContent)]
       assertWithMatcher:grey_notNil()];
 }
 

@@ -37,14 +37,14 @@ const CGFloat kScrollDisplacement = 50.0;
       onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
       performAction:grey_tap()];
   [[[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_SETTINGS_TITLE)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollDisplacement)
       onElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_TRANSLATE_SETTING)]
       performAction:grey_tap()];
 
@@ -69,7 +69,7 @@ const CGFloat kScrollDisplacement = 50.0;
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
       performAction:grey_tap()];
 }

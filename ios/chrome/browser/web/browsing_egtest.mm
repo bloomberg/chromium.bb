@@ -36,8 +36,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using chrome_test_util::omniboxText;
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::OmniboxText;
+using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -122,15 +122,15 @@ class ScopedBlockPopupsPref {
 @implementation BrowsingTestCase
 
 // Matcher for the title of the current tab (on tablet only).
-id<GREYMatcher> tabWithTitle(const std::string& tab_title) {
+id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   id<GREYMatcher> notPartOfOmnibox =
-      grey_not(grey_ancestor(chrome_test_util::omnibox()));
+      grey_not(grey_ancestor(chrome_test_util::Omnibox()));
   return grey_allOf(grey_accessibilityLabel(base::SysUTF8ToNSString(tab_title)),
                     notPartOfOmnibox, nil);
 }
 
 // Matcher for a Go button that is interactable.
-id<GREYMatcher> goButtonMatcher() {
+id<GREYMatcher> GoButtonMatcher() {
   return grey_allOf(grey_accessibilityID(@"Go"), grey_interactable(), nil);
 }
 
@@ -146,14 +146,14 @@ id<GREYMatcher> goButtonMatcher() {
   std::string expectedBodyBeforeReload(
       ReloadResponseProvider::GetResponseBody(0 /* request number */));
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText(expectedBodyBeforeReload)]
+      selectElementWithMatcher:WebViewContainingText(expectedBodyBeforeReload)]
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGreyUI reload];
   std::string expectedBodyAfterReload(
       ReloadResponseProvider::GetResponseBody(1 /* request_number */));
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText(expectedBodyAfterReload)]
+      selectElementWithMatcher:WebViewContainingText(expectedBodyAfterReload)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -174,7 +174,7 @@ id<GREYMatcher> goButtonMatcher() {
   std::string URLWithoutScheme =
       destinationURL.spec().substr(destinationURL.scheme().length() + 3);
 
-  [[EarlGrey selectElementWithMatcher:tabWithTitle(URLWithoutScheme)]
+  [[EarlGrey selectElementWithMatcher:TabWithTitle(URLWithoutScheme)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -194,7 +194,7 @@ id<GREYMatcher> goButtonMatcher() {
   std::string URLWithoutScheme =
       destinationURL.spec().substr(destinationURL.scheme().length() + 3);
 
-  [[EarlGrey selectElementWithMatcher:tabWithTitle(URLWithoutScheme)]
+  [[EarlGrey selectElementWithMatcher:TabWithTitle(URLWithoutScheme)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -211,7 +211,7 @@ id<GREYMatcher> goButtonMatcher() {
       kPageTitle));
   [ChromeEarlGrey loadURL:URL];
 
-  [[EarlGrey selectElementWithMatcher:tabWithTitle(kPageTitle)]
+  [[EarlGrey selectElementWithMatcher:TabWithTitle(kPageTitle)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -242,7 +242,7 @@ id<GREYMatcher> goButtonMatcher() {
   chrome_test_util::AssertMainTabCount(2);
 
   // Verify the new tab was opened with the expected URL.
-  [[EarlGrey selectElementWithMatcher:omniboxText(destinationURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -272,7 +272,7 @@ id<GREYMatcher> goButtonMatcher() {
   chrome_test_util::AssertMainTabCount(2);
 
   // Verify the new tab was opened with the expected URL.
-  [[EarlGrey selectElementWithMatcher:omniboxText(destinationURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -310,7 +310,7 @@ id<GREYMatcher> goButtonMatcher() {
   chrome_test_util::AssertMainTabCount(2);
 
   // Verify the new tab was opened with the expected URL.
-  [[EarlGrey selectElementWithMatcher:omniboxText(anchorURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(anchorURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -349,7 +349,7 @@ id<GREYMatcher> goButtonMatcher() {
   chrome_test_util::AssertMainTabCount(2);
 
   // Verify the new tab was opened with the expected URL.
-  [[EarlGrey selectElementWithMatcher:omniboxText(destinationURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -372,12 +372,12 @@ id<GREYMatcher> goButtonMatcher() {
   [ChromeEarlGrey loadURL:URL];
   chrome_test_util::TapWebViewElementWithId("button");
 
-  [[EarlGrey selectElementWithMatcher:omniboxText(destinationURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify the browser navigates to the original URL.
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:omniboxText(URL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -399,11 +399,11 @@ id<GREYMatcher> goButtonMatcher() {
   [ChromeEarlGrey loadURL:URL];
   chrome_test_util::TapWebViewElementWithId("link");
 
-  [[EarlGrey selectElementWithMatcher:omniboxText(destURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:omniboxText(URL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -455,9 +455,9 @@ id<GREYMatcher> goButtonMatcher() {
 
   // Verify that page did not change by checking its URL and message printed by
   // onclick event.
-  [[EarlGrey selectElementWithMatcher:omniboxText("chrome://version")]
+  [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://version")]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("Hello world!")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Hello world!")]
       assertWithMatcher:grey_notNil()];
 
   // Verify that no new tabs were open which could load chrome://version.
@@ -487,17 +487,17 @@ id<GREYMatcher> goButtonMatcher() {
   // the expected URL.
   [ChromeEarlGrey loadURL:formURL];
   chrome_test_util::TapWebViewElementWithId("button");
-  [[EarlGrey selectElementWithMatcher:omniboxText(formURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back once and verify the browser navigates to the form URL.
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:omniboxText(formURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back a second time and verify the browser navigates to the first URL.
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:omniboxText(firstURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -524,17 +524,17 @@ id<GREYMatcher> goButtonMatcher() {
   NSString* script =
       [NSString stringWithFormat:@"javascript:window.location='%s'",
                                  targetURL.spec().c_str()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(script)];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
-  [[EarlGrey selectElementWithMatcher:omniboxText(targetURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(targetURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:omniboxText(startURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(startURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -559,21 +559,21 @@ id<GREYMatcher> goButtonMatcher() {
   [ChromeEarlGrey loadURL:secondURL];
 
   // Execute some JavaScript in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"javascript:document.write('foo')")];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
       performAction:grey_tap()];
 
-  id<GREYMatcher> webView = chrome_test_util::webViewContainingText("foo");
+  id<GREYMatcher> webView = chrome_test_util::WebViewContainingText("foo");
   [[EarlGrey selectElementWithMatcher:webView] assertWithMatcher:grey_notNil()];
 
   // Verify that the JavaScript did not affect history by going back and then
   // forward again.
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:omniboxText(firstURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
   [self goForward];
-  [[EarlGrey selectElementWithMatcher:omniboxText(secondURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -591,7 +591,7 @@ id<GREYMatcher> goButtonMatcher() {
       conditionWithName:@"Wait for web view to be interactable."
                   block:^BOOL {
                     NSError* error = nil;
-                    id<GREYMatcher> webViewMatcher = webViewInWebState(
+                    id<GREYMatcher> webViewMatcher = WebViewInWebState(
                         chrome_test_util::GetCurrentWebState());
                     [[EarlGrey selectElementWithMatcher:webViewMatcher]
                         assertWithMatcher:grey_interactable()
@@ -603,7 +603,7 @@ id<GREYMatcher> goButtonMatcher() {
       @"Web view did not become interactable.");
 
   web::WebState* currentWebState = chrome_test_util::GetCurrentWebState();
-  [[EarlGrey selectElementWithMatcher:web::webViewInWebState(currentWebState)]
+  [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(currentWebState)]
       performAction:web::webViewTapElement(currentWebState, ID)];
 
   // Wait until the keyboard shows up before tapping.
@@ -611,7 +611,7 @@ id<GREYMatcher> goButtonMatcher() {
       conditionWithName:@"Wait for the keyboard to show up."
                   block:^BOOL {
                     NSError* error = nil;
-                    [[EarlGrey selectElementWithMatcher:goButtonMatcher()]
+                    [[EarlGrey selectElementWithMatcher:GoButtonMatcher()]
                         assertWithMatcher:grey_notNil()
                                     error:&error];
                     return (error == nil);
@@ -651,18 +651,18 @@ id<GREYMatcher> goButtonMatcher() {
 
   // Open the URL, focus the textfield,and submit via keyboard.
   [ChromeEarlGrey loadURL:URL];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("hello!")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("hello!")]
       assertWithMatcher:grey_notNil()];
 
   [self openKeyboardAndTapGoButtonWithTextFieldID:"textfield"];
 
   // Verify that the browser navigates to the expected URL.
-  [[EarlGrey selectElementWithMatcher:omniboxText(destinationURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify that the browser navigates to the original URL.
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:omniboxText(URL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 

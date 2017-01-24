@@ -13,68 +13,67 @@ namespace chrome_test_util {
 
 // Matcher for element with accessbitility label corresponding to |message_id|
 // and acessibility trait UIAccessibilityTraitButton.
-id<GREYMatcher> buttonWithAccessibilityLabelId(int message_id);
+id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id);
 
 // Matcher for element with accessbitility label corresponding to |label| and
 // acessibility trait UIAccessibilityTraitButton.
-id<GREYMatcher> buttonWithAccessibilityLabel(NSString* label);
+id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label);
 
 // Matcher for element with accessbitility label corresponding to |message_id|
 // and acessibility trait UIAccessibilityTraitStaticText.
-id<GREYMatcher> staticTextWithAccessibilityLabelId(int message_id);
+id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id);
 
 // Matcher for element with accessbitility label corresponding to |label| and
 // acessibility trait UIAccessibilityTraitStaticText.
-id<GREYMatcher> staticTextWithAccessibilityLabel(NSString* label);
-
-// Returns matcher for webview owned by a web controller.
-id<GREYMatcher> webViewBelongingToWebController();
+id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
 
 // Returns matcher for webview containing |text|.
-id<GREYMatcher> webViewContainingText(std::string text);
+id<GREYMatcher> WebViewContainingText(std::string text);
 
 // Returns matcher for webview not containing |text|.
-id<GREYMatcher> webViewNotContainingText(std::string text);
+id<GREYMatcher> WebViewNotContainingText(std::string text);
 
 // Returns matcher for a StaticHtmlViewController containing |text|.
-id<GREYMatcher> staticHtmlViewContainingText(NSString* text);
+id<GREYMatcher> StaticHtmlViewContainingText(NSString* text);
 
 // Returns matcher for a cancel button.
-id<GREYMatcher> cancelButton();
+id<GREYMatcher> CancelButton();
 
 // Matcher for the navigate forward button.
-id<GREYMatcher> forwardButton();
+id<GREYMatcher> ForwardButton();
 
 // Matcher for the navigate backward button.
-id<GREYMatcher> backButton();
+id<GREYMatcher> BackButton();
 
 // Matcher for the reload button.
-id<GREYMatcher> reloadButton();
+id<GREYMatcher> ReloadButton();
 
 // Matcher for the stop loading button.
-id<GREYMatcher> stopButton();
+id<GREYMatcher> StopButton();
 
 // Returns a matcher for the omnibox.
-id<GREYMatcher> omnibox();
+id<GREYMatcher> Omnibox();
 
 // Returns a matcher for the page security info button.
-id<GREYMatcher> pageSecurityInfoButton();
+id<GREYMatcher> PageSecurityInfoButton();
 
 // Returns matcher for omnibox containing |text|. Performs an exact match of the
 // omnibox contents.
-id<GREYMatcher> omniboxText(std::string text);
+id<GREYMatcher> OmniboxText(std::string text);
 
 // Matcher for Tools menu button.
-id<GREYMatcher> toolsMenuButton();
+id<GREYMatcher> ToolsMenuButton();
 
 // Matcher for the Share menu button.
-id<GREYMatcher> shareButton();
+id<GREYMatcher> ShareButton();
 
 // Matcher for show tabs button.
-id<GREYMatcher> showTabsButton();
+id<GREYMatcher> ShowTabsButton();
 
 // Matcher for CollectionViewSwitchCell.
-id<GREYMatcher> collectionViewSwitchCell(NSString* accessibilityIdentifier,
+// TODO(crbug.com/684139): Update |isOn| to something more obvious from
+// callsites.
+id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
                                          BOOL isOn);
 
 }  // namespace chrome_test_util

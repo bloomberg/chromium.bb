@@ -41,7 +41,7 @@ ChromeIdentity* GetFakeIdentity() {
 
 // Taps the button with accessibility labelId |message_id|.
 void TapButtonWithLabelId(int message_id) {
-  id<GREYMatcher> matcher = chrome_test_util::buttonWithAccessibilityLabel(
+  id<GREYMatcher> matcher = chrome_test_util::ButtonWithAccessibilityLabel(
       l10n_util::GetNSString(message_id));
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 }
@@ -131,7 +131,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       grey_accessibilityID(kUMAMetricsButtonAccessibilityIdentifier);
   [[EarlGrey selectElementWithMatcher:metrics] performAction:grey_tap()];
 
-  id<GREYMatcher> optInAccept = chrome_test_util::buttonWithAccessibilityLabel(
+  id<GREYMatcher> optInAccept = chrome_test_util::ButtonWithAccessibilityLabel(
       l10n_util::GetNSString(IDS_IOS_FIRSTRUN_OPT_IN_ACCEPT_BUTTON));
   [[EarlGrey selectElementWithMatcher:optInAccept] performAction:grey_tap()];
 
@@ -146,7 +146,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 - (void)testDismissFirstRun {
   [chrome_test_util::GetMainController() showFirstRunUI];
 
-  id<GREYMatcher> optInAccept = chrome_test_util::buttonWithAccessibilityLabel(
+  id<GREYMatcher> optInAccept = chrome_test_util::ButtonWithAccessibilityLabel(
       l10n_util::GetNSString(IDS_IOS_FIRSTRUN_OPT_IN_ACCEPT_BUTTON));
   [[EarlGrey selectElementWithMatcher:optInAccept] performAction:grey_tap()];
 

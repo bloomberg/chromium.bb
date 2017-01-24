@@ -25,7 +25,7 @@
 #include "ios/web/public/test/response_providers/html_response_provider.h"
 #include "url/gurl.h"
 
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::WebViewContainingText;
 using web::test::HttpServer;
 
 namespace {
@@ -185,32 +185,32 @@ class ScopedBlockPopupsPref {
   // 1st hit to server. Verify that the server has the correct hit count.
   [ChromeEarlGrey loadURL:cacheTestFirstPageURL];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 1")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 1")]
       assertWithMatcher:grey_notNil()];
 
   // Navigate to another page. 2nd hit to server.
   chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID);
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 2")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 2")]
       assertWithMatcher:grey_notNil()];
 
   // Navigate back. This should not hit the server. Verify the page has been
   // loaded from cache. The serverHitCounter will remain the same.
   [self goBack];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 1")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 1")]
       assertWithMatcher:grey_notNil()];
 
   // Reload page. 3rd hit to server. Verify that page reload causes the
   // hitCounter to show updated value.
   [self reloadPage];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 3")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 3")]
       assertWithMatcher:grey_notNil()];
 
   // Verify that page reload causes Cache-Control value to be sent with request.
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("cacheControl: max-age=0")]
+      selectElementWithMatcher:WebViewContainingText("cacheControl: max-age=0")]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -227,16 +227,16 @@ class ScopedBlockPopupsPref {
 
   // 1st hit to server. Verify title and hitCount.
   [ChromeEarlGrey loadURL:cacheTestFirstPageURL];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("First Page")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("First Page")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 1")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 1")]
       assertWithMatcher:grey_notNil()];
 
   // 2nd hit to server. Verify hitCount.
   [ChromeEarlGrey loadURL:cacheTestThirdPageURL];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 2")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 2")]
       assertWithMatcher:grey_notNil()];
 
   // Open the first page in a new tab. Verify that cache was not used. Must
@@ -244,10 +244,10 @@ class ScopedBlockPopupsPref {
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
   chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID);
   [ChromeEarlGrey waitForPageToFinishLoading];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("First Page")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("First Page")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 3")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 3")]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -264,24 +264,24 @@ class ScopedBlockPopupsPref {
 
   // 1st hit to server. Verify title and hitCount.
   [ChromeEarlGrey loadURL:cacheTestFirstPageURL];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("First Page")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("First Page")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 1")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 1")]
       assertWithMatcher:grey_notNil()];
 
   // Type a search into omnnibox and select the first suggestion (second row)
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"cachetestfirstpage")];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"omnibox suggestion 1")]
       performAction:grey_tap()];
 
   // Verify title and hitCount. Cache should not be used.
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("First Page")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("First Page")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:webViewContainingText("serverHitCounter: 2")]
+      selectElementWithMatcher:WebViewContainingText("serverHitCounter: 2")]
       assertWithMatcher:grey_notNil()];
 }
 

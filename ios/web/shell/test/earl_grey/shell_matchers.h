@@ -12,28 +12,28 @@
 namespace web {
 
 // Matcher for WKWebView containing |text|.
-id<GREYMatcher> webViewContainingText(const std::string& text);
+id<GREYMatcher> WebViewContainingText(const std::string& text);
 
 // Matcher for WKWebView containing an html element which matches |selector|.
-id<GREYMatcher> webViewCssSelector(const std::string& selector);
+id<GREYMatcher> WebViewCssSelector(const std::string& selector);
 
 // Matcher for the WKWebView.
-id<GREYMatcher> webView();
+id<GREYMatcher> WebView();
 
 // Matcher for WKWebView's scroll view.
-id<GREYMatcher> webViewScrollView();
+id<GREYMatcher> WebViewScrollView();
 
 // Matcher for web shell address field text property equal to |text|.
-id<GREYMatcher> addressFieldText(std::string text);
+id<GREYMatcher> AddressFieldText(std::string text);
 
 // Matcher for back button in web shell.
-id<GREYMatcher> backButton();
+id<GREYMatcher> BackButton();
 
 // Matcher for forward button in web shell.
-id<GREYMatcher> forwardButton();
+id<GREYMatcher> ForwardButton();
 
 // Matcher for address field in web shell.
-id<GREYMatcher> addressField();
+id<GREYMatcher> AddressField();
 
 }  // namespace web
 

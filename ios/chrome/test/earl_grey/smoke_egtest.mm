@@ -20,7 +20,7 @@
 
 // Tests that the tools menu is tappable.
 - (void)testTapToolsMenu {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::toolsMenuButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
       performAction:grey_tap()];
 }
 

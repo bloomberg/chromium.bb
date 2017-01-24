@@ -97,7 +97,7 @@ class ScopedBlockPopupsPref {
       conditionWithName:@"Waiting for webview to display 'Click done'."
                   block:^BOOL {
                     id<GREYMatcher> webViewMatcher =
-                        chrome_test_util::webViewContainingText("Click done");
+                        chrome_test_util::WebViewContainingText("Click done");
                     NSError* error = nil;
                     [[EarlGrey selectElementWithMatcher:webViewMatcher]
                         assertWithMatcher:grey_notNil()
@@ -152,7 +152,7 @@ class ScopedBlockPopupsPref {
       conditionWithName:@"Waiting for webview to display 'Click done'."
                   block:^BOOL {
                     id<GREYMatcher> webViewMatcher =
-                        chrome_test_util::webViewContainingText("Click done");
+                        chrome_test_util::WebViewContainingText("Click done");
                     NSError* error = nil;
                     [[EarlGrey selectElementWithMatcher:webViewMatcher]
                         assertWithMatcher:grey_notNil()

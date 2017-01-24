@@ -22,31 +22,31 @@
 
 using testing::WaitUntilConditionOrTimeout;
 using testing::kWaitForPageLoadTimeout;
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::WebViewContainingText;
 
 namespace {
 
 // Returns matcher for HTTP Authentication dialog.
-id<GREYMatcher> httpAuthDialog() {
+id<GREYMatcher> HttpAuthDialog() {
   NSString* title = l10n_util::GetNSStringWithFixup(IDS_LOGIN_DIALOG_TITLE);
-  return chrome_test_util::staticTextWithAccessibilityLabel(title);
+  return chrome_test_util::StaticTextWithAccessibilityLabel(title);
 }
 
 // Returns matcher for Username text field.
-id<GREYMatcher> usernameField() {
-  return chrome_test_util::staticTextWithAccessibilityLabelId(
+id<GREYMatcher> UsernameField() {
+  return chrome_test_util::StaticTextWithAccessibilityLabelId(
       IDS_IOS_HTTP_LOGIN_DIALOG_USERNAME_PLACEHOLDER);
 }
 
 // Returns matcher for Password text field.
-id<GREYMatcher> passwordField() {
-  return chrome_test_util::staticTextWithAccessibilityLabelId(
+id<GREYMatcher> PasswordField() {
+  return chrome_test_util::StaticTextWithAccessibilityLabelId(
       IDS_IOS_HTTP_LOGIN_DIALOG_PASSWORD_PLACEHOLDER);
 }
 
 // Returns matcher for Login button.
-id<GREYMatcher> loginButton() {
-  return chrome_test_util::buttonWithAccessibilityLabelId(
+id<GREYMatcher> LoginButton() {
+  return chrome_test_util::ButtonWithAccessibilityLabelId(
       IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
 }
 
@@ -54,7 +54,7 @@ id<GREYMatcher> loginButton() {
 void WaitForHttpAuthDialog() {
   BOOL dialog_shown = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:httpAuthDialog()]
+    [[EarlGrey selectElementWithMatcher:HttpAuthDialog()]
         assertWithMatcher:grey_notNil()
                     error:&error];
     return !error;
@@ -86,14 +86,14 @@ void WaitForHttpAuthDialog() {
   WaitForHttpAuthDialog();
 
   // Enter valid username and password.
-  [[EarlGrey selectElementWithMatcher:usernameField()]
+  [[EarlGrey selectElementWithMatcher:UsernameField()]
       performAction:grey_typeText(@"gooduser")];
-  [[EarlGrey selectElementWithMatcher:passwordField()]
+  [[EarlGrey selectElementWithMatcher:PasswordField()]
       performAction:grey_typeText(@"goodpass")];
-  [[EarlGrey selectElementWithMatcher:loginButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:LoginButton()] performAction:grey_tap()];
 
   const std::string pageText = web::HttpAuthResponseProvider::page_text();
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(pageText)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(pageText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -113,11 +113,11 @@ void WaitForHttpAuthDialog() {
   WaitForHttpAuthDialog();
 
   // Enter invalid username and password.
-  [[EarlGrey selectElementWithMatcher:usernameField()]
+  [[EarlGrey selectElementWithMatcher:UsernameField()]
       performAction:grey_typeText(@"gooduser")];
-  [[EarlGrey selectElementWithMatcher:passwordField()]
+  [[EarlGrey selectElementWithMatcher:PasswordField()]
       performAction:grey_typeText(@"goodpass")];
-  [[EarlGrey selectElementWithMatcher:loginButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:LoginButton()] performAction:grey_tap()];
 
   // Verifies that authentication was requested again.
   WaitForHttpAuthDialog();
@@ -138,9 +138,9 @@ void WaitForHttpAuthDialog() {
   chrome_test_util::LoadUrl(URL);
   WaitForHttpAuthDialog();
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::cancelButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:httpAuthDialog()]
+  [[EarlGrey selectElementWithMatcher:HttpAuthDialog()]
       assertWithMatcher:grey_nil()];
 }
 

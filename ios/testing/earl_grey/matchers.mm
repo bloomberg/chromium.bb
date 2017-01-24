@@ -10,7 +10,7 @@
 
 namespace testing {
 
-id<GREYMatcher> contextMenuItemWithText(NSString* text) {
+id<GREYMatcher> ContextMenuItemWithText(NSString* text) {
   // Both tablet and phone house context menu views inside an alert controller
   // view (on tablet that view is itself inside a popover view).
   id<GREYMatcher> context_menu_container =
@@ -20,7 +20,7 @@ id<GREYMatcher> contextMenuItemWithText(NSString* text) {
                     grey_text(text), nil);
 }
 
-id<GREYMatcher> elementToDismissContextMenu(NSString* cancel_text) {
+id<GREYMatcher> ElementToDismissContextMenu(NSString* cancel_text) {
   UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
   if (idiom == UIUserInterfaceIdiomPad) {
     // On iPad the context menu is dismissed by tapping on something
@@ -28,7 +28,7 @@ id<GREYMatcher> elementToDismissContextMenu(NSString* cancel_text) {
     return grey_accessibilityID(@"PopoverDismissRegion");
   } else {
     // On iPhone the context menu is dismissed by tapping on the "Cancel" item.
-    return contextMenuItemWithText(cancel_text);
+    return ContextMenuItemWithText(cancel_text);
   }
 }
 

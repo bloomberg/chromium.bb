@@ -166,7 +166,7 @@ id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
     }
 
     // Run the action.
-    [[EarlGrey selectElementWithMatcher:webViewInWebState(state)]
+    [[EarlGrey selectElementWithMatcher:WebViewInWebState(state)]
         performAction:action
                 error:error];
 
@@ -194,7 +194,7 @@ id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
   };
 
   return [GREYActionBlock actionWithName:action_name
-                             constraints:webViewInWebState(state)
+                             constraints:WebViewInWebState(state)
                             performBlock:verified_tap];
 }
 

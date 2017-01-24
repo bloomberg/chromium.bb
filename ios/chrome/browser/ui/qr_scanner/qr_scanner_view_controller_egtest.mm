@@ -58,20 +58,20 @@ CFTimeInterval kGREYConditionPollInterval = 0.1;
 
 // Returns the GREYMatcher for an element which is visible, interactable, and
 // enabled.
-id<GREYMatcher> visibleInteractableEnabled() {
+id<GREYMatcher> VisibleInteractableEnabled() {
   return grey_allOf(grey_sufficientlyVisible(), grey_interactable(),
                     grey_enabled(), nil);
 }
 
 // Returns the GREYMatcher for the button that closes the QR Scanner.
-id<GREYMatcher> qrScannerCloseButton() {
-  return buttonWithAccessibilityLabel(
+id<GREYMatcher> QrScannerCloseButton() {
+  return ButtonWithAccessibilityLabel(
       [[ChromeIcon closeIcon] accessibilityLabel]);
 }
 
 // Returns the GREYMatcher for the button which indicates that torch is off and
 // which turns on the torch.
-id<GREYMatcher> qrScannerTorchOffButton() {
+id<GREYMatcher> QrScannerTorchOffButton() {
   return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
                         IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
                     grey_accessibilityValue(l10n_util::GetNSString(
@@ -81,7 +81,7 @@ id<GREYMatcher> qrScannerTorchOffButton() {
 
 // Returns the GREYMatcher for the button which indicates that torch is on and
 // which turns off the torch.
-id<GREYMatcher> qrScannerTorchOnButton() {
+id<GREYMatcher> QrScannerTorchOnButton() {
   return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
                         IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
                     grey_accessibilityValue(l10n_util::GetNSString(
@@ -90,18 +90,18 @@ id<GREYMatcher> qrScannerTorchOnButton() {
 }
 
 // Returns the GREYMatcher for the QR Scanner viewport caption.
-id<GREYMatcher> qrScannerViewportCaption() {
-  return staticTextWithAccessibilityLabelId(
+id<GREYMatcher> QrScannerViewportCaption() {
+  return StaticTextWithAccessibilityLabelId(
       IDS_IOS_QR_SCANNER_VIEWPORT_CAPTION);
 }
 
 // Returns the GREYMatcher for the back button in the web toolbar.
-id<GREYMatcher> webToolbarBackButton() {
-  return buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
+id<GREYMatcher> WebToolbarBackButton() {
+  return ButtonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
 }
 
 // Returns the GREYMatcher for the Cancel button to dismiss a UIAlertController.
-id<GREYMatcher> dialogCancelButton() {
+id<GREYMatcher> DialogCancelButton() {
   return grey_allOf(
       grey_text(l10n_util::GetNSString(IDS_IOS_QR_SCANNER_ALERT_CANCEL)),
       grey_accessibilityTrait(UIAccessibilityTraitStaticText), nil);
@@ -109,27 +109,27 @@ id<GREYMatcher> dialogCancelButton() {
 
 // Opens the QR Scanner view using a command.
 // TODO(crbug.com/629776): Replace the command call with a UI action.
-void showQRScannerWithCommand() {
+void ShowQRScannerWithCommand() {
   base::scoped_nsobject<GenericChromeCommand> command(
       [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_QR_SCANNER]);
   chrome_test_util::RunCommandWithActiveViewController(command);
 }
 
 // Taps the |button|.
-void tapButton(id<GREYMatcher> button) {
+void TapButton(id<GREYMatcher> button) {
   [[EarlGrey selectElementWithMatcher:button] performAction:grey_tap()];
 }
 
 // Appends the given |editText| to the |text| already in the omnibox and presses
 // the keyboard return key.
-void editOmniboxTextAndTapKeyboardReturn(std::string text, NSString* editText) {
-  [[EarlGrey selectElementWithMatcher:omniboxText(text)]
+void EditOmniboxTextAndTapKeyboardReturn(std::string text, NSString* editText) {
+  [[EarlGrey selectElementWithMatcher:OmniboxText(text)]
       performAction:grey_typeText([editText stringByAppendingString:@"\n"])];
 }
 
 // Presses the keyboard return key.
-void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
-  [[EarlGrey selectElementWithMatcher:omniboxText(text)]
+void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
+  [[EarlGrey selectElementWithMatcher:OmniboxText(text)]
       performAction:grey_typeText(@"\n")];
 }
 
@@ -187,44 +187,44 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
 // Checks that the close button is visible, interactable, and enabled.
 - (void)assertCloseButtonIsVisible {
-  [[EarlGrey selectElementWithMatcher:qrScannerCloseButton()]
-      assertWithMatcher:visibleInteractableEnabled()];
+  [[EarlGrey selectElementWithMatcher:QrScannerCloseButton()]
+      assertWithMatcher:VisibleInteractableEnabled()];
 }
 
 // Checks that the close button is not visible.
 - (void)assertCloseButtonIsNotVisible {
-  [[EarlGrey selectElementWithMatcher:qrScannerCloseButton()]
+  [[EarlGrey selectElementWithMatcher:QrScannerCloseButton()]
       assertWithMatcher:grey_notVisible()];
 }
 
 // Checks that the torch off button is visible, interactable, and enabled, and
 // that the torch on button is not.
 - (void)assertTorchOffButtonIsVisible {
-  [[EarlGrey selectElementWithMatcher:qrScannerTorchOffButton()]
-      assertWithMatcher:visibleInteractableEnabled()];
-  [[EarlGrey selectElementWithMatcher:qrScannerTorchOnButton()]
+  [[EarlGrey selectElementWithMatcher:QrScannerTorchOffButton()]
+      assertWithMatcher:VisibleInteractableEnabled()];
+  [[EarlGrey selectElementWithMatcher:QrScannerTorchOnButton()]
       assertWithMatcher:grey_notVisible()];
 }
 
 // Checks that the torch on button is visible, interactable, and enabled, and
 // that the torch off button is not.
 - (void)assertTorchOnButtonIsVisible {
-  [[EarlGrey selectElementWithMatcher:qrScannerTorchOnButton()]
-      assertWithMatcher:visibleInteractableEnabled()];
-  [[EarlGrey selectElementWithMatcher:qrScannerTorchOffButton()]
+  [[EarlGrey selectElementWithMatcher:QrScannerTorchOnButton()]
+      assertWithMatcher:VisibleInteractableEnabled()];
+  [[EarlGrey selectElementWithMatcher:QrScannerTorchOffButton()]
       assertWithMatcher:grey_notVisible()];
 }
 
 // Checks that the torch off button is visible and disabled.
 - (void)assertTorchButtonIsDisabled {
-  [[EarlGrey selectElementWithMatcher:qrScannerTorchOffButton()]
+  [[EarlGrey selectElementWithMatcher:QrScannerTorchOffButton()]
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 }
 
 // Checks that the camera viewport caption is visible.
 - (void)assertCameraViewportCaptionIsVisible {
-  [[EarlGrey selectElementWithMatcher:qrScannerViewportCaption()]
+  [[EarlGrey selectElementWithMatcher:QrScannerViewportCaption()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -254,7 +254,7 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
 
   [self addCameraControllerInitializationExpectations:mock];
-  showQRScannerWithCommand();
+  ShowQRScannerWithCommand();
   [self waitForModalOfClass:[QRScannerViewController class] toAppearAbove:bvc];
   [self assertQRScannerUIIsVisibleWithTorch:NO];
   [self assertModalOfClass:[UIAlertController class]
@@ -266,7 +266,7 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // disappear.
 - (void)closeQRScannerWithCameraMock:(id)mock {
   [self addCameraControllerDismissalExpectations:mock];
-  tapButton(qrScannerCloseButton());
+  TapButton(QrScannerCloseButton());
   [self waitForModalOfClass:[QRScannerViewController class]
        toDisappearFromAbove:[self currentBVC]];
 }
@@ -280,14 +280,14 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
 // Checks that the omnibox is visible and contains |text|.
 - (void)assertOmniboxIsVisibleWithText:(std::string)text {
-  [[EarlGrey selectElementWithMatcher:omniboxText(text)]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(text)]
       assertWithMatcher:grey_notNil()];
 }
 
 // Checks that the page that is currently loaded contains the |response|.
 - (void)assertTestURLIsLoaded:(std::string)response {
   id<GREYMatcher> testURLResponseMatcher =
-      chrome_test_util::webViewContainingText(response);
+      chrome_test_util::WebViewContainingText(response);
   [[EarlGrey selectElementWithMatcher:testURLResponseMatcher]
       assertWithMatcher:grey_notNil()];
 }
@@ -545,7 +545,7 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   // Turn torch on.
   [self addCameraControllerTorchOnExpectations:cameraControllerMock];
   [self assertTorchOffButtonIsVisible];
-  tapButton(qrScannerTorchOffButton());
+  TapButton(QrScannerTorchOffButton());
   [self assertTorchOffButtonIsVisible];
 
   // Torch becomes active.
@@ -554,7 +554,7 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
   // Turn torch off.
   [self addCameraControllerTorchOffExpectations:cameraControllerMock];
-  tapButton(qrScannerTorchOnButton());
+  TapButton(QrScannerTorchOnButton());
   [self assertTorchOnButtonIsVisible];
 
   // Torch becomes inactive.
@@ -583,7 +583,7 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
   // Turn torch on.
   [self addCameraControllerTorchOnExpectations:cameraControllerMock];
-  tapButton(qrScannerTorchOffButton());
+  TapButton(QrScannerTorchOffButton());
   [self callTorchStateChanged:YES];
   [self assertTorchOnButtonIsVisible];
 
@@ -645,12 +645,12 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
                 AVAuthorizationStatusDenied];
   [self swizzleCameraController:cameraControllerMock];
 
-  showQRScannerWithCommand();
+  ShowQRScannerWithCommand();
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:bvc];
   [self waitForModalOfClass:[UIAlertController class] toAppearAbove:bvc];
 
-  tapButton(dialogCancelButton());
+  TapButton(DialogCancelButton());
   [self waitForModalOfClass:[UIAlertController class] toDisappearFromAbove:bvc];
 }
 
@@ -680,7 +680,7 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
     // Close the dialog.
     [self addCameraControllerDismissalExpectations:cameraControllerMock];
-    tapButton(dialogCancelButton());
+    TapButton(DialogCancelButton());
     UIViewController* bvc = [self currentBVC];
     [self waitForModalOfClass:[QRScannerViewController class]
          toDisappearFromAbove:bvc];
@@ -723,7 +723,7 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
   // Cancel the dialog.
   [self addCameraControllerDismissalExpectations:cameraControllerMock];
-  tapButton(dialogCancelButton());
+  TapButton(DialogCancelButton());
   [self waitForModalOfClass:[QRScannerViewController class]
        toDisappearFromAbove:[self currentBVC]];
   [self assertModalOfClass:[UIAlertController class]
@@ -789,14 +789,14 @@ void tapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   // Optionally edit the text in the omnibox before pressing return.
   [self assertOmniboxIsVisibleWithText:result];
   if (editString != nil) {
-    editOmniboxTextAndTapKeyboardReturn(result, editString);
+    EditOmniboxTextAndTapKeyboardReturn(result, editString);
   } else {
-    tapKeyboardReturnKeyInOmniboxWithText(result);
+    TapKeyboardReturnKeyInOmniboxWithText(result);
   }
   [self assertTestURLIsLoaded:response];
 
   // Press the back button to get back to the NTP.
-  tapButton(webToolbarBackButton());
+  TapButton(WebToolbarBackButton());
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:[self currentBVC]];
 }

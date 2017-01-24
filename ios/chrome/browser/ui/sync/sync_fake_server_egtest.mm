@@ -75,18 +75,18 @@ void OpenSignInFromSettings() {
 void SignInIdentity(NSString* userEmail) {
   OpenSignInFromSettings();
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    userEmail)] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::buttonWithAccessibilityLabelId(
+                 chrome_test_util::ButtonWithAccessibilityLabelId(
                      IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::buttonWithAccessibilityLabelId(
+                 chrome_test_util::ButtonWithAccessibilityLabelId(
                      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON)]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_DONE)] performAction:grey_tap()];
 }
 

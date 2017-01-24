@@ -93,7 +93,7 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
                     NSError* error = nil;
                     [[EarlGrey
                         selectElementWithMatcher:
-                            chrome_test_util::staticTextWithAccessibilityLabel(
+                            chrome_test_util::StaticTextWithAccessibilityLabel(
                                 base::SysUTF8ToNSString(kTestInfoBarTitle))]
                         assertWithMatcher:expected_visibility
                                     error:&error];

@@ -48,7 +48,7 @@ const char kHTMLURL[] = "http://test";
 
   chrome_test_util::LoadUrl(url);
   id<GREYMatcher> response1Matcher =
-      chrome_test_util::webViewContainingText(response);
+      chrome_test_util::WebViewContainingText(response);
   [[EarlGrey selectElementWithMatcher:response1Matcher]
       assertWithMatcher:grey_notNil()];
 

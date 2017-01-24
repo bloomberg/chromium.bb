@@ -42,36 +42,36 @@
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
 
-using chrome_test_util::buttonWithAccessibilityLabel;
-using chrome_test_util::buttonWithAccessibilityLabelId;
+using chrome_test_util::ButtonWithAccessibilityLabel;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 namespace {
 // TODO(crbug.com/616929): Move common matchers that are useful across tests
 // into a shared location.
 
 // Matcher for bookmarks tool tip star.
-id<GREYMatcher> starButton() {
-  return buttonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
+id<GREYMatcher> StarButton() {
+  return ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
 }
 
 // Matcher for the button to add bookmark.
-id<GREYMatcher> addBookmarkButton() {
-  return buttonWithAccessibilityLabelId(IDS_BOOKMARK_ADD_EDITOR_TITLE);
+id<GREYMatcher> AddBookmarkButton() {
+  return ButtonWithAccessibilityLabelId(IDS_BOOKMARK_ADD_EDITOR_TITLE);
 }
 
 // Matcher for the lit star buttom on iPhone that will open the edit button
 // screen.
-id<GREYMatcher> litStarButtoniPhone() {
-  return buttonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK);
+id<GREYMatcher> LitStarButtoniPhone() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK);
 }
 
 // Matcher for the button to edit bookmark.
-id<GREYMatcher> editBookmarkButton() {
-  return buttonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_ACTION_EDIT);
+id<GREYMatcher> EditBookmarkButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_ACTION_EDIT);
 }
 
 // Matcher for the button to close the tools menu.
-id<GREYMatcher> closeToolsMenuButton() {
+id<GREYMatcher> CloseToolsMenuButton() {
   NSString* closeMenuButtonText =
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_CLOSE_MENU);
   return grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
@@ -79,15 +79,15 @@ id<GREYMatcher> closeToolsMenuButton() {
 }
 
 // Matcher for the Done button on the bookmarks UI.
-id<GREYMatcher> bookmarksDoneButton() {
+id<GREYMatcher> BookmarksDoneButton() {
   return grey_allOf(
-      buttonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_DONE_BUTTON),
+      ButtonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_DONE_BUTTON),
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)), nil);
 }
 
 // Matcher for the More Menu.
-id<GREYMatcher> moreMenuButton() {
-  return buttonWithAccessibilityLabelId(
+id<GREYMatcher> MoreMenuButton() {
+  return ButtonWithAccessibilityLabelId(
       IDS_IOS_BOOKMARK_NEW_MORE_BUTTON_ACCESSIBILITY_LABEL);
 }
 
@@ -100,7 +100,7 @@ typedef NS_ENUM(NSUInteger, Action) {
 };
 
 // Matcher for the action sheet's buttons.
-id<GREYMatcher> actionSheet(Action action) {
+id<GREYMatcher> ActionSheet(Action action) {
   int accessibilityLabelMessageID;
   switch (action) {
     case ActionSelect:
@@ -162,7 +162,7 @@ id<GREYMatcher> actionSheet(Action action) {
   NSString* bookmarkTitle = @"my bookmark";
 
   [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
@@ -185,7 +185,7 @@ id<GREYMatcher> actionSheet(Action action) {
   // Clear the bookmark via the UI.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kStarLitLabel)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionDelete)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionDelete)]
       performAction:grey_tap()];
 
   // Verify the bookmark is not in the BookmarkModel.
@@ -205,7 +205,7 @@ id<GREYMatcher> actionSheet(Action action) {
   // TODO(crbug.com/617652): This code should be removed when a common helper
   // is added to close any menus, which should be run as test setup.
   if (IsCompact()) {
-    [[EarlGrey selectElementWithMatcher:closeToolsMenuButton()]
+    [[EarlGrey selectElementWithMatcher:CloseToolsMenuButton()]
         performAction:grey_tap()];
   }
 
@@ -229,15 +229,15 @@ id<GREYMatcher> actionSheet(Action action) {
 
   // Verify bookmark is visible.
   [[EarlGrey
-      selectElementWithMatcher:buttonWithAccessibilityLabel(bookmarkTitle)]
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(bookmarkTitle)]
       assertWithMatcher:grey_sufficientlyVisible()
                   error:nil];
 
   // Tap on the bookmark and verify the URL that appears in the omnibox.
   [[EarlGrey
-      selectElementWithMatcher:buttonWithAccessibilityLabel(bookmarkTitle)]
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(bookmarkTitle)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           bookmarkURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -271,8 +271,8 @@ id<GREYMatcher> actionSheet(Action action) {
   // Check the URL is correct.
   const GURL secondURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(secondURL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(secondURL.GetContent())];
 }
 
 // Try deleting a bookmark, then undoing that delete.
@@ -285,7 +285,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionDelete)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionDelete)]
       performAction:grey_tap()];
 
   // Wait until it's gone.
@@ -310,11 +310,11 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Tap the edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionDelete)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionDelete)]
       performAction:grey_tap()];
 
   // Wait until it's gone.
@@ -350,7 +350,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Select a first bookmark.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionSelect)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionSelect)]
       performAction:grey_tap()];
 
   // Select a second bookmark.
@@ -399,7 +399,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Tap on the Edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
 
   // Tap the Folder button.
@@ -429,7 +429,7 @@ id<GREYMatcher> actionSheet(Action action) {
   std::string expectedURLContent = bookmarkedURL.GetContent();
 
   [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
@@ -485,7 +485,7 @@ id<GREYMatcher> actionSheet(Action action) {
 
   if (IsCompact()) {
     // Exit from bookmarks modal. IPad shows bookmarks in tab.
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
   }
 
@@ -508,7 +508,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Tap the edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
 
   // Tap the Folder button.
@@ -524,7 +524,7 @@ id<GREYMatcher> actionSheet(Action action) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap the Done button.
-  [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
@@ -548,7 +548,7 @@ id<GREYMatcher> actionSheet(Action action) {
   // Open the page.
   std::string expectedURLContent = bookmarkedURL.GetContent();
   [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
@@ -581,7 +581,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Tap the edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
 
   // Tap the Folder button.
@@ -600,7 +600,7 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] assertChildCount:0 ofFolderWithName:@"New Folder"];
 
   // Tap the Done button.
-  [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
@@ -630,7 +630,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Tap the edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
 
   // Replace the title field with new text.
@@ -656,14 +656,14 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_typeText(@"www.a.fr")];
 
   // Dismiss editor.
-  [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
       assertWithMatcher:grey_notVisible()];
 
   // Verify that the bookmark was updated.
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabel(@"n5")]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"n5")]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[self class] assertExistenceOfBookmarkWithURL:@"http://www.a.fr" name:@"n5"];
 }
@@ -679,7 +679,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Tap the edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
 
   // Replace the title field with new text.
@@ -712,7 +712,7 @@ id<GREYMatcher> actionSheet(Action action) {
       assertWithMatcher:grey_notVisible()];
 
   // Verify that the bookmark was not updated.
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabel(@"n5")]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"n5")]
       assertWithMatcher:grey_notVisible()];
   [[self class] assertAbsenceOfBookmarkWithURL:@"http://www.a.fr"];
 }
@@ -732,7 +732,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Dismiss the editor screen.
-  [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
 
   // Tap on the top-right button.
@@ -740,11 +740,11 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Tap the edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
 
   // Dismiss the editor screen.
-  [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -815,9 +815,9 @@ id<GREYMatcher> actionSheet(Action action) {
 - (void)testDeleteCurrentSubfolder {
   [[self class] setupStandardBookmarks];
   [[self class] openBookmarkFolder:@"Folder 1"];
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabel(@"Folder 2")]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 2")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabel(@"Folder 3")]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 3")]
       performAction:grey_tap()];
 
   // Delete the folder.
@@ -837,9 +837,9 @@ id<GREYMatcher> actionSheet(Action action) {
 - (void)testDeleteParentFolder {
   [[self class] setupStandardBookmarks];
   [[self class] openBookmarkFolder:@"Folder 1"];
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabel(@"Folder 2")]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 2")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:buttonWithAccessibilityLabel(@"Folder 3")]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 3")]
       performAction:grey_tap()];
 
   // Remove the parent programmatically.
@@ -926,7 +926,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_tap()];
 
   // Choose to move the bookmark in the context menu.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionMove)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionMove)]
       performAction:grey_tap()];
 
   // Choose to move the bookmark into a new folder.
@@ -1074,10 +1074,10 @@ id<GREYMatcher> actionSheet(Action action) {
 
   // Edit the bookmark.
   if (!IsCompact()) {
-    [[EarlGrey selectElementWithMatcher:starButton()] performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
-    [[EarlGrey selectElementWithMatcher:litStarButtoniPhone()]
+    [[EarlGrey selectElementWithMatcher:LitStarButtoniPhone()]
         performAction:grey_tap()];
   }
   GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() == 0,
@@ -1155,7 +1155,7 @@ id<GREYMatcher> actionSheet(Action action) {
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   if (IsCompact()) {
     // Exit from bookmarks modal. IPad shows bookmarks in tab.
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
   }
 }
@@ -1165,18 +1165,18 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
-  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+  [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
       performAction:grey_tap()];
 
   // Tap the edit action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   if (IsCompact()) {
     // Exit from bookmarks modal. IPad shows bookmarks in tab.
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
   }
 }
@@ -1186,18 +1186,18 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
-  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+  [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
       performAction:grey_tap()];
 
   // Tap the Move action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionMove)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionMove)]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   if (IsCompact()) {
     // Exit from bookmarks modal. IPad shows bookmarks in tab.
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
   }
 }
@@ -1208,11 +1208,11 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
-  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+  [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
       performAction:grey_tap()];
 
   // Tap the Move action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionMove)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionMove)]
       performAction:grey_tap()];
   // Tap on "Create New Folder."
   [[EarlGrey
@@ -1221,9 +1221,9 @@ id<GREYMatcher> actionSheet(Action action) {
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   if (IsCompact()) {
     // Exit from bookmarks modal. IPad shows bookmarks in tab.
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
   }
 }
@@ -1233,16 +1233,16 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
-  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+  [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
       performAction:grey_tap()];
 
   // Tap the Delete action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionDelete)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionDelete)]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   if (IsCompact()) {
     // Exit from bookmarks modal. IPad shows bookmarks in tab.
-    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+    [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
         performAction:grey_tap()];
   }
 }
@@ -1252,11 +1252,11 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
-  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+  [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
       performAction:grey_tap()];
 
   // Tap the Select action.
-  [[EarlGrey selectElementWithMatcher:actionSheet(ActionSelect)]
+  [[EarlGrey selectElementWithMatcher:ActionSheet(ActionSelect)]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   // Dismiss selector with Cancel button.
@@ -1327,7 +1327,7 @@ id<GREYMatcher> actionSheet(Action action) {
 
   // Verify bookmark is visible.
   [[EarlGrey
-      selectElementWithMatcher:buttonWithAccessibilityLabel(bookmarkTitle)]
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(bookmarkTitle)]
       assertWithMatcher:grey_sufficientlyVisible()
                   error:nil];
 }
@@ -1336,13 +1336,13 @@ id<GREYMatcher> actionSheet(Action action) {
 + (void)openEditBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(folderTitle)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:editBookmarkButton()]
+  [[EarlGrey selectElementWithMatcher:EditBookmarkButton()]
       performAction:grey_tap()];
 }
 
 // Dismisses the edit folder UI.
 + (void)closeEditBookmarkFolder {
-  [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -1373,7 +1373,7 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] starCurrentTab];
 
   // Set the bookmark name.
-  [[EarlGrey selectElementWithMatcher:editBookmarkButton()]
+  [[EarlGrey selectElementWithMatcher:EditBookmarkButton()]
       performAction:grey_tap()];
   NSString* titleIdentifier = @"Title Field_textField";
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
@@ -1387,7 +1387,7 @@ id<GREYMatcher> actionSheet(Action action) {
       performAction:grey_typeText(bookmarkTitle)];
 
   // Dismiss the window.
-  [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -1690,10 +1690,10 @@ id<GREYMatcher> actionSheet(Action action) {
 // Adds a bookmark for the current tab. Must be called when on a tab.
 + (void)starCurrentTab {
   if (!IsCompact()) {
-    [[EarlGrey selectElementWithMatcher:starButton()] performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
-    [[EarlGrey selectElementWithMatcher:addBookmarkButton()]
+    [[EarlGrey selectElementWithMatcher:AddBookmarkButton()]
         performAction:grey_tap()];
   }
 }

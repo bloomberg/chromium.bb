@@ -9,7 +9,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "url/gurl.h"
 
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::WebViewContainingText;
 
 // Test suite to verify Internet connectivity.
 @interface DeviceCheckTestCase : ChromeTestCase
@@ -20,7 +20,7 @@ using chrome_test_util::webViewContainingText;
 // Verifies Internet connectivity by navigating to browsingtest.appspot.com.
 - (void)testNetworkConnection {
   [ChromeEarlGrey loadURL:GURL("http://browsingtest.appspot.com")];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("Window1")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Window1")]
       assertWithMatcher:grey_notNil()];
 }
 

@@ -17,8 +17,8 @@
 #include "ios/web/public/test/response_providers/html_response_provider.h"
 #include "url/gurl.h"
 
-using chrome_test_util::buttonWithAccessibilityLabelId;
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -102,7 +102,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   }
 
   // Wait until the page is half loaded.
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kPageText)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kPageText)]
       assertWithMatcher:grey_notNil()];
 
   // On iPhone Stop/Reload button is a part of tools menu, so open it.
@@ -111,13 +111,13 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   }
 
   // Verify that stop button is visible and reload button is hidden.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::stopButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::reloadButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
       assertWithMatcher:grey_notVisible()];
 
   // Stop the page loading.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::stopButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
       performAction:grey_tap()];
 
   // Enable synchronization back. The spinner should become idle and test should
@@ -130,9 +130,9 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   if (!IsIPadIdiom()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::stopButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::reloadButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

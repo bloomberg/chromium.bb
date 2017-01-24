@@ -69,14 +69,14 @@ void TapViewWithAccessibilityId(NSString* accessiblity_id) {
 // Taps the button with accessibility label |label|.
 void TapButtonWithAccessibilityLabel(NSString* label) {
   id<GREYMatcher> matcher =
-      chrome_test_util::buttonWithAccessibilityLabel(label);
+      chrome_test_util::ButtonWithAccessibilityLabel(label);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 }
 
 // Taps the button with accessibility labelId |message_id|.
 void TapButtonWithLabelId(int message_id) {
   id<GREYMatcher> matcher =
-      chrome_test_util::buttonWithAccessibilityLabelId(message_id);
+      chrome_test_util::ButtonWithAccessibilityLabelId(message_id);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 }
 
@@ -258,7 +258,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Accept warning for signing into a managed identity, with synchronization
   // off due to an infinite spinner.
   SetEarlGreySynchronizationEnabled(NO);
-  WaitForMatcher(chrome_test_util::buttonWithAccessibilityLabelId(
+  WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
       IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
   TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
   SetEarlGreySynchronizationEnabled(YES);
@@ -274,7 +274,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Accept warning for signout out of a managed identity, with synchronization
   // off due to an infinite spinner.
   SetEarlGreySynchronizationEnabled(NO);
-  WaitForMatcher(chrome_test_util::buttonWithAccessibilityLabelId(
+  WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
       IDS_IOS_MANAGED_SWITCH_ACCEPT_BUTTON));
   TapButtonWithLabelId(IDS_IOS_MANAGED_SWITCH_ACCEPT_BUTTON);
   SetEarlGreySynchronizationEnabled(YES);
@@ -336,7 +336,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON);
   // Synchronization off due to an infinite spinner.
   SetEarlGreySynchronizationEnabled(NO);
-  WaitForMatcher(chrome_test_util::buttonWithAccessibilityLabelId(
+  WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
       IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
   TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
   SetEarlGreySynchronizationEnabled(YES);
@@ -388,7 +388,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // All Settings should be gone and user signed in.
   id<GREYMatcher> settings_matcher =
-      chrome_test_util::staticTextWithAccessibilityLabelId(
+      chrome_test_util::StaticTextWithAccessibilityLabelId(
           IDS_IOS_SETTINGS_TITLE);
   [[EarlGrey selectElementWithMatcher:settings_matcher]
       assertWithMatcher:grey_notVisible()];
@@ -415,7 +415,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // this will fail.
   OpenSignInFromSettings();
   id<GREYMatcher> signin_matcher =
-      chrome_test_util::staticTextWithAccessibilityLabelId(
+      chrome_test_util::StaticTextWithAccessibilityLabelId(
           IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_DESCRIPTION);
   [[EarlGrey selectElementWithMatcher:signin_matcher]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -438,7 +438,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // Open Add Account screen.
   id<GREYMatcher> add_account_matcher =
-      chrome_test_util::staticTextWithAccessibilityLabelId(
+      chrome_test_util::StaticTextWithAccessibilityLabelId(
           IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_ADD_ACCOUNT_BUTTON);
   [[EarlGrey selectElementWithMatcher:add_account_matcher]
       performAction:grey_tap()];
@@ -453,7 +453,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // this will fail.
   OpenSignInFromSettings();
   id<GREYMatcher> signin_matcher =
-      chrome_test_util::staticTextWithAccessibilityLabelId(
+      chrome_test_util::StaticTextWithAccessibilityLabelId(
           IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_DESCRIPTION);
   [[EarlGrey selectElementWithMatcher:signin_matcher]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -512,7 +512,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // this will fail.
   OpenSignInFromSettings();
   id<GREYMatcher> signin_matcher =
-      chrome_test_util::staticTextWithAccessibilityLabelId(
+      chrome_test_util::StaticTextWithAccessibilityLabelId(
           IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_DESCRIPTION);
   [[EarlGrey selectElementWithMatcher:signin_matcher]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -561,7 +561,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // Assert sign-in screen was shown.
   id<GREYMatcher> signin_matcher =
-      chrome_test_util::staticTextWithAccessibilityLabelId(
+      chrome_test_util::StaticTextWithAccessibilityLabelId(
           IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_DESCRIPTION);
   [[EarlGrey selectElementWithMatcher:signin_matcher]
       assertWithMatcher:grey_sufficientlyVisible()];

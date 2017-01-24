@@ -28,7 +28,7 @@
 namespace {
 // Returns a GREYMatcher that matches |view|.
 // TODO(crbug.com/642619): Evaluate whether this should be shared code.
-id<GREYMatcher> viewMatchingView(UIView* view) {
+id<GREYMatcher> ViewMatchingView(UIView* view) {
   MatchesBlock matches = ^BOOL(UIView* viewToMatch) {
     return viewToMatch == view;
   };
@@ -42,8 +42,8 @@ id<GREYMatcher> viewMatchingView(UIView* view) {
 }
 
 // Returns a matcher for the StackViewController's view.
-id<GREYMatcher> stackView() {
-  return viewMatchingView([chrome_test_util::GetStackViewController() view]);
+id<GREYMatcher> StackView() {
+  return ViewMatchingView([chrome_test_util::GetStackViewController() view]);
 }
 
 // Waits for the Stack View to be visible/hidden.
@@ -51,7 +51,7 @@ void CheckForStackViewVisibility(bool visible) {
   id<GREYMatcher> visibilityMatcher =
       grey_allOf(visible ? grey_sufficientlyVisible() : grey_notVisible(),
                  visible ? grey_notNil() : grey_nil(), nil);
-  [[EarlGrey selectElementWithMatcher:stackView()]
+  [[EarlGrey selectElementWithMatcher:StackView()]
       assertWithMatcher:visibilityMatcher];
 }
 
@@ -89,7 +89,7 @@ void ShowDeckWithType(DeckType type) {
   if (showIncognito != [stackViewController isCurrentSetIncognito]) {
     CGPoint tapPoint = CGPointMake(CGRectGetMidX(inactiveDeckRegion),
                                    CGRectGetMidY(inactiveDeckRegion));
-    [[EarlGrey selectElementWithMatcher:viewMatchingView(activeDisplayView)]
+    [[EarlGrey selectElementWithMatcher:ViewMatchingView(activeDisplayView)]
         performAction:grey_tapAtPoint(tapPoint)];
   }
 }
@@ -107,7 +107,7 @@ void OpenNewTabUsingStackView() {
 // Opens the tools menu from the stack view.
 void OpenToolsMenu() {
   OpenStackView();
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::toolsMenuButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
       performAction:grey_tap()];
 }
 
@@ -130,7 +130,7 @@ void SelectTabUsingStackView(Tab* tab) {
       chrome_test_util::GetStackViewController();
   StackCard* nextCard = [[stackViewController activeCardSet] cardForTab:tab];
   UIView* card_title_label = static_cast<UIView*>([[nextCard view] titleLabel]);
-  [[EarlGrey selectElementWithMatcher:viewMatchingView(card_title_label)]
+  [[EarlGrey selectElementWithMatcher:ViewMatchingView(card_title_label)]
       performAction:grey_tap()];
   // Wait for the StackViewController to be dismissed.
   CheckForStackViewVisibility(false);
@@ -176,7 +176,7 @@ void SelectTabUsingStackView(Tab* tab) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(identifier)]
       performAction:grey_tap()];
   // Verify that the CardView and its associated Tab were removed.
-  [[EarlGrey selectElementWithMatcher:viewMatchingView(cardView)]
+  [[EarlGrey selectElementWithMatcher:ViewMatchingView(cardView)]
       assertWithMatcher:grey_notVisible()];
   GREYAssertEqual(chrome_test_util::GetMainTabCount(), 0,
                   @"All Tabs should be closed.");
@@ -217,7 +217,7 @@ void SelectTabUsingStackView(Tab* tab) {
       performAction:grey_tap()];
   // Wait for CardViews to be dismissed.
   for (CardView* cardView in cardViews) {
-    [[EarlGrey selectElementWithMatcher:viewMatchingView(cardView)]
+    [[EarlGrey selectElementWithMatcher:ViewMatchingView(cardView)]
         assertWithMatcher:grey_notVisible()];
   }
   // Check that all Tabs were closed.

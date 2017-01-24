@@ -12,7 +12,7 @@
 namespace testing {
 
 // Matcher for context menu item whose text is exactly |text|.
-id<GREYMatcher> contextMenuItemWithText(NSString* text);
+id<GREYMatcher> ContextMenuItemWithText(NSString* text);
 
 // Matcher for a UI element to tap to dismiss the the context menu, where
 // |cancel_text| is the localized text used for the action sheet cancel control.
@@ -20,7 +20,7 @@ id<GREYMatcher> contextMenuItemWithText(NSString* text);
 // for the menu item with |cancel_text| as its label.
 // On tablets, where the context menu is a popover, this will be a matcher for
 // some element outside of the popover.
-id<GREYMatcher> elementToDismissContextMenu(NSString* cancel_text);
+id<GREYMatcher> ElementToDismissContextMenu(NSString* cancel_text);
 
 }  // namespace testing
 

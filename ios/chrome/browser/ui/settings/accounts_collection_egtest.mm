@@ -51,14 +51,14 @@ void TapViewWithAccessibilityId(NSString* accessiblity_id) {
 // Taps the button with accessibility label |label|.
 void TapButtonWithAccessibilityLabel(NSString* label) {
   id<GREYMatcher> matcher =
-      chrome_test_util::buttonWithAccessibilityLabel(label);
+      chrome_test_util::ButtonWithAccessibilityLabel(label);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 }
 
 // Taps the button with accessibility labelId |message_id|.
 void TapButtonWithLabelId(int message_id) {
   id<GREYMatcher> matcher =
-      chrome_test_util::buttonWithAccessibilityLabelId(message_id);
+      chrome_test_util::ButtonWithAccessibilityLabelId(message_id);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 }
 

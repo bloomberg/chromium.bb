@@ -18,7 +18,7 @@
 
 using chrome_test_util::AssertMainTabCount;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::WebViewContainingText;
 using web::test::HttpServer;
 
 namespace {
@@ -58,7 +58,7 @@ const char kWindow2Closed[] = "window2.closed: true";
   const char kChildWindowTestURL[] =
       "http://ios/testing/data/http_server_files/window_proxy.html";
   [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kChildWindowTestURL)];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kNamedWindowLink)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kNamedWindowLink)]
       assertWithMatcher:grey_notNil()];
   AssertMainTabCount(1);
 }
@@ -78,7 +78,7 @@ const char kWindow2Closed[] = "window2.closed: true";
   // Check that they're the same window.
   TapWebViewElementWithId("compareNamedWindows");
   const char kWindowsEqualText[] = "named windows equal: true";
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindowsEqualText)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindowsEqualText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -97,7 +97,7 @@ const char kWindow2Closed[] = "window2.closed: true";
   // Check that they aren't the same window object.
   TapWebViewElementWithId("compareUnnamedWindows");
   const char kWindowsEqualText[] = "unnamed windows equal: false";
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindowsEqualText)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindowsEqualText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -117,7 +117,7 @@ const char kWindow2Closed[] = "window2.closed: true";
   // Check that they aren't the same window object.
   TapWebViewElementWithId("compareNamedAndUnnamedWindows");
   const char kWindowsEqualText[] = "named and unnamed equal: false";
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindowsEqualText)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindowsEqualText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -133,14 +133,14 @@ const char kWindow2Closed[] = "window2.closed: true";
 
   // Check that named window 1 is opened and named window 2 isn't.
   const char kCheckWindow1Link[] = "checkNamedWindow1Closed";
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kCheckWindow1Link)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kCheckWindow1Link)]
       assertWithMatcher:grey_notNil()];
   TapWebViewElementWithId(kCheckWindow1Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow1Open)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow1Open)]
       assertWithMatcher:grey_notNil()];
   const char kCheckWindow2Link[] = "checkNamedWindow2Closed";
   TapWebViewElementWithId(kCheckWindow2Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow2NeverOpen)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow2NeverOpen)]
       assertWithMatcher:grey_notNil()];
 
   // Open another window with the same name. Check that named window 2 is now
@@ -149,17 +149,17 @@ const char kWindow2Closed[] = "window2.closed: true";
   AssertMainTabCount(2);
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   TapWebViewElementWithId(kCheckWindow2Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow2Open)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow2Open)]
       assertWithMatcher:grey_notNil()];
 
   // Close the opened window. Check that named window 1 and 2 are both closed.
   chrome_test_util::CloseTabAtIndex(1);
   AssertMainTabCount(1);
   TapWebViewElementWithId(kCheckWindow1Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow1Closed)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow1Closed)]
       assertWithMatcher:grey_notNil()];
   TapWebViewElementWithId(kCheckWindow2Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow2Closed)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow2Closed)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -172,14 +172,14 @@ const char kWindow2Closed[] = "window2.closed: true";
 
   // Check that unnamed window 1 is opened and unnamed window 2 isn't.
   const char kCheckWindow1Link[] = "checkUnnamedWindow1Closed";
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kCheckWindow1Link)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kCheckWindow1Link)]
       assertWithMatcher:grey_notNil()];
   TapWebViewElementWithId(kCheckWindow1Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow1Open)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow1Open)]
       assertWithMatcher:grey_notNil()];
   const char kCheckWindow2Link[] = "checkUnnamedWindow2Closed";
   TapWebViewElementWithId(kCheckWindow2Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow2NeverOpen)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow2NeverOpen)]
       assertWithMatcher:grey_notNil()];
 
   // Open another unnamed window. Check that unnamed window 2 is now opened.
@@ -187,23 +187,23 @@ const char kWindow2Closed[] = "window2.closed: true";
   AssertMainTabCount(3);
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   TapWebViewElementWithId(kCheckWindow2Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow2Open)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow2Open)]
       assertWithMatcher:grey_notNil()];
 
   // Close the first opened window. Check that unnamed window 1 is closed and
   // unnamed window 2 is still open.
   chrome_test_util::CloseTabAtIndex(1);
   TapWebViewElementWithId(kCheckWindow1Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow1Closed)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow1Closed)]
       assertWithMatcher:grey_notNil()];
   TapWebViewElementWithId(kCheckWindow2Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow2Open)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow2Open)]
       assertWithMatcher:grey_notNil()];
 
   // Close the second opened window. Check that unnamed window 2 is closed.
   chrome_test_util::CloseTabAtIndex(1);
   TapWebViewElementWithId(kCheckWindow2Link);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kWindow2Closed)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kWindow2Closed)]
       assertWithMatcher:grey_notNil()];
 }
 

@@ -23,9 +23,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/scheme_host_port.h"
 
+using chrome_test_util::BackButton;
+using chrome_test_util::ForwardButton;
+using chrome_test_util::StaticHtmlViewContainingText;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::webViewContainingText;
-using chrome_test_util::staticHtmlViewContainingText;
+using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -35,20 +37,10 @@ void LoadWebUIUrl(const std::string& host) {
   [ChromeEarlGrey loadURL:web_ui_url];
 }
 
-// Matcher for the navigate backward button.
-id<GREYMatcher> backButton() {
-  return chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
-}
-
-// Matcher for the navigate forward button.
-id<GREYMatcher> forwardButton() {
-  return chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
-}
-
 // Adds wait for omnibox text matcher so that omnibox text can be updated.
 // TODO(crbug.com/642207): This method has to be unified with the omniboxText
 // matcher or resides in the same location with the omniboxText matcher.
-id<GREYMatcher> waitForOmniboxText(std::string text) {
+id<GREYMatcher> WaitForOmniboxText(std::string text) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[OmniboxTextFieldIOS class]]) {
       return NO;
@@ -69,7 +61,7 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
     [description appendText:base::SysUTF8ToNSString(text)];
   };
 
-  return grey_allOf(chrome_test_util::omnibox(),
+  return grey_allOf(chrome_test_util::Omnibox(),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
@@ -91,13 +83,13 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
 
   // Verify that app version is present on the page.
   const std::string version = version_info::GetVersionNumber();
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(version)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(version)]
       assertWithMatcher:grey_notNil()];
 
   // Verify that mobile User Agent string is present on the page.
   const bool isDesktopUA = false;
   const std::string userAgent = web::GetWebClient()->GetUserAgent(isDesktopUA);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(userAgent)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(userAgent)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -110,7 +102,7 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
 
   // Verify that the title string is present on the page.
   std::string pageTitle = l10n_util::GetStringUTF8(IDS_PHYSICAL_WEB_UI_TITLE);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(pageTitle)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(pageTitle)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -123,10 +115,10 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
   chrome_test_util::TapWebViewElementWithId(kChromeUITermsHost);
 
   // Verify that the resulting page is chrome://terms.
-  [[EarlGrey selectElementWithMatcher:waitForOmniboxText("chrome://terms")]
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
       assertWithMatcher:grey_sufficientlyVisible()];
   NSString* kTermsText = @"Google Chrome Terms of Service";
-  [[EarlGrey selectElementWithMatcher:staticHtmlViewContainingText(kTermsText)]
+  [[EarlGrey selectElementWithMatcher:StaticHtmlViewContainingText(kTermsText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -139,20 +131,20 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
   chrome_test_util::TapWebViewElementWithId(kChromeUIVersionHost);
 
   // Verify that the resulting page is chrome://version.
-  [[EarlGrey selectElementWithMatcher:waitForOmniboxText("chrome://version")]
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]
       assertWithMatcher:grey_sufficientlyVisible()];
   const std::string kAuthorsText = "The Chromium Authors";
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kAuthorsText)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kAuthorsText)]
       assertWithMatcher:grey_notNil()];
 
   // Tap the back button in the toolbar and verify that the resulting page is
   // the previously visited page chrome://chrome-urls.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:waitForOmniboxText("chrome://chrome-urls")]
+      selectElementWithMatcher:WaitForOmniboxText("chrome://chrome-urls")]
       assertWithMatcher:grey_sufficientlyVisible()];
   const std::string kChromeURLsText = "List of Chrome URLs";
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kChromeURLsText)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kChromeURLsText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -167,15 +159,15 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
 
   // Tap the back button in the toolbar and verify that the resulting page's URL
   // corresponds to the first URL chrome://version that was loaded.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:waitForOmniboxText("chrome://version")]
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap the forward button in the toolbar and verify that the resulting page's
   // URL corresponds the second URL chrome://flags that was loaded.
-  [[EarlGrey selectElementWithMatcher:forwardButton()]
+  [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:waitForOmniboxText("chrome://flags")]
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -197,13 +189,13 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
     LoadWebUIUrl(host);
     const std::string chrome_url_path =
         url::SchemeHostPort(kChromeUIScheme, kChromeHostURLs[i], 0).Serialize();
-    [[EarlGrey selectElementWithMatcher:waitForOmniboxText(chrome_url_path)]
+    [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(chrome_url_path)]
         assertWithMatcher:grey_sufficientlyVisible()];
   }
   // Load chrome://terms differently since it is a Native page and is never in
   // the "loading" phase.
   chrome_test_util::LoadUrl(GURL(kChromeUITermsURL));
-  [[EarlGrey selectElementWithMatcher:waitForOmniboxText("chrome://terms")]
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -214,7 +206,7 @@ id<GREYMatcher> waitForOmniboxText(std::string text) {
   chrome_test_util::LoadUrl(GURL(kChromeInvalidURL));
 
   // Verify that the resulting page is an error page.
-  [[EarlGrey selectElementWithMatcher:waitForOmniboxText(kChromeInvalidURL)]
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeInvalidURL)]
       assertWithMatcher:grey_sufficientlyVisible()];
   NSString* kError =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);

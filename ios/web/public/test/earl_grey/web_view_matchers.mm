@@ -93,7 +93,7 @@ UIImage* LoadImage(const GURL& image_url) {
 
 // Helper function for matching web views containing or not containing |text|,
 // depending on the value of |should_contain_text|.
-id<GREYMatcher> webViewWithText(std::string text,
+id<GREYMatcher> WebViewWithText(std::string text,
                                 web::WebState* web_state,
                                 bool should_contain_text) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
@@ -115,7 +115,7 @@ id<GREYMatcher> webViewWithText(std::string text,
     [description appendText:base::SysUTF8ToNSString(text)];
   };
 
-  return grey_allOf(webViewInWebState(web_state),
+  return grey_allOf(WebViewInWebState(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
@@ -125,7 +125,7 @@ id<GREYMatcher> webViewWithText(std::string text,
 // Matcher for WKWebView containing loaded or blocked image with |image_id|.
 // Pass IMAGE_STATE_LOADED |image_state| to match fully loaded image and
 // IMAGE_STATE_BLOCKED to match fully blocked image.
-id<GREYMatcher> webViewContainingImage(std::string image_id,
+id<GREYMatcher> WebViewContainingImage(std::string image_id,
                                        web::WebState* web_state,
                                        ImageState image_state) {
   std::string get_url_script =
@@ -191,7 +191,7 @@ id<GREYMatcher> webViewContainingImage(std::string image_id,
     [description appendText:base::SysUTF8ToNSString(image_id)];
   };
 
-  return grey_allOf(webViewInWebState(web_state),
+  return grey_allOf(WebViewInWebState(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
@@ -202,7 +202,7 @@ id<GREYMatcher> webViewContainingImage(std::string image_id,
 
 namespace web {
 
-id<GREYMatcher> webViewInWebState(WebState* web_state) {
+id<GREYMatcher> WebViewInWebState(WebState* web_state) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     return [view isKindOfClass:[WKWebView class]] &&
            [view isDescendantOfView:web_state->GetView()];
@@ -217,26 +217,26 @@ id<GREYMatcher> webViewInWebState(WebState* web_state) {
       autorelease];
 }
 
-id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state) {
-  return webViewWithText(text, web_state, true);
+id<GREYMatcher> WebViewContainingText(std::string text, WebState* web_state) {
+  return WebViewWithText(text, web_state, true);
 }
 
-id<GREYMatcher> webViewNotContainingText(std::string text,
+id<GREYMatcher> WebViewNotContainingText(std::string text,
                                          WebState* web_state) {
-  return webViewWithText(text, web_state, false);
+  return WebViewWithText(text, web_state, false);
 }
 
-id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
+id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id,
                                               WebState* web_state) {
-  return webViewContainingImage(image_id, web_state, IMAGE_STATE_BLOCKED);
+  return WebViewContainingImage(image_id, web_state, IMAGE_STATE_BLOCKED);
 }
 
-id<GREYMatcher> webViewContainingLoadedImage(std::string image_id,
+id<GREYMatcher> WebViewContainingLoadedImage(std::string image_id,
                                              WebState* web_state) {
-  return webViewContainingImage(image_id, web_state, IMAGE_STATE_LOADED);
+  return WebViewContainingImage(image_id, web_state, IMAGE_STATE_LOADED);
 }
 
-id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state) {
+id<GREYMatcher> WebViewCssSelector(std::string selector, WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
     std::string script = base::StringPrintf(kTestCssSelectorJavaScriptTemplate,
                                             selector.c_str());
@@ -256,14 +256,14 @@ id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state) {
     [description appendText:base::SysUTF8ToNSString(selector)];
   };
 
-  return grey_allOf(webViewInWebState(web_state),
+  return grey_allOf(WebViewInWebState(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
                     nil);
 }
 
-id<GREYMatcher> webViewScrollView(WebState* web_state) {
+id<GREYMatcher> WebViewScrollView(WebState* web_state) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     return [view isKindOfClass:[UIScrollView class]] &&
            [view.superview isKindOfClass:[WKWebView class]] &&
@@ -279,7 +279,7 @@ id<GREYMatcher> webViewScrollView(WebState* web_state) {
       autorelease];
 }
 
-id<GREYMatcher> interstitial(WebState* web_state) {
+id<GREYMatcher> Interstitial(WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView* view) {
     web::WebInterstitialImpl* interstitial =
         static_cast<web::WebInterstitialImpl*>(web_state->GetWebInterstitial());
@@ -291,14 +291,14 @@ id<GREYMatcher> interstitial(WebState* web_state) {
     [description appendText:@"interstitial displayed"];
   };
 
-  return grey_allOf(webViewInWebState(web_state),
+  return grey_allOf(WebViewInWebState(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
                     nil);
 }
 
-id<GREYMatcher> interstitialContainingText(NSString* text,
+id<GREYMatcher> InterstitialContainingText(NSString* text,
                                            WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView* view) {
     return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
@@ -313,7 +313,7 @@ id<GREYMatcher> interstitialContainingText(NSString* text,
     [description appendText:text];
   };
 
-  return grey_allOf(interstitial(web_state),
+  return grey_allOf(Interstitial(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],

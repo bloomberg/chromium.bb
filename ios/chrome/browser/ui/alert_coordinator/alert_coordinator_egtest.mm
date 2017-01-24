@@ -80,7 +80,7 @@ NSString* kTitle = @"Foo Title";
   GREYAssertTrue([self isPresentingAlert], @"An alert should be presented");
 
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_OK)] performAction:grey_tap()];
 
   GREYAssertFalse([self isPresentingAlert], @"The alert should be removed");

@@ -14,6 +14,8 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/response_providers/error_page_response_provider.h"
@@ -25,7 +27,7 @@ namespace {
 // Assert the activity service is visible by checking the "copy" button.
 void AssertActivityServiceVisible() {
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    @"Copy")]
       assertWithMatcher:grey_interactable()];
 }
@@ -34,13 +36,13 @@ void AssertActivityServiceVisible() {
 void AssertActivityServiceNotVisible() {
   [[EarlGrey
       selectElementWithMatcher:
-          grey_allOf(chrome_test_util::buttonWithAccessibilityLabel(@"Copy"),
+          grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Copy"),
                      grey_interactable(), nil)] assertWithMatcher:grey_nil()];
 }
 
 // Returns a button with a print label.
-id<GREYMatcher> printButton() {
-  return chrome_test_util::buttonWithAccessibilityLabel(@"Print");
+id<GREYMatcher> PrintButton() {
+  return chrome_test_util::ButtonWithAccessibilityLabel(@"Print");
 }
 
 }  // namespace
@@ -67,17 +69,18 @@ id<GREYMatcher> printButton() {
 
   // Open an error page.
   [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          webViewBelongingToWebController()]
+  id<GREYMatcher> webViewMatcher =
+      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+  [[EarlGrey selectElementWithMatcher:webViewMatcher]
       assertWithMatcher:grey_nil()];
   NSString* const kError =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::staticHtmlViewContainingText(
+      selectElementWithMatcher:chrome_test_util::StaticHtmlViewContainingText(
                                    kError)] assertWithMatcher:grey_notNil()];
 
   // Execute the Print action.
-  [[EarlGrey selectElementWithMatcher:printButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:PrintButton()] performAction:grey_tap()];
 
   // Verify that a toast notification appears.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
@@ -100,7 +103,7 @@ id<GREYMatcher> printButton() {
   // Verify that you can share, but that the Print action is not available.
   [ChromeEarlGreyUI openShareMenu];
   AssertActivityServiceVisible();
-  [[EarlGrey selectElementWithMatcher:printButton()]
+  [[EarlGrey selectElementWithMatcher:PrintButton()]
       assertWithMatcher:grey_nil()];
 }
 
@@ -112,7 +115,7 @@ id<GREYMatcher> printButton() {
   if (IsCompact()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
-  id<GREYMatcher> share_button = chrome_test_util::shareButton();
+  id<GREYMatcher> share_button = chrome_test_util::ShareButton();
   [[EarlGrey selectElementWithMatcher:share_button]
       assertWithMatcher:grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled)];
@@ -131,12 +134,12 @@ id<GREYMatcher> printButton() {
 
   // Verify that the share menu is up and contains a Print action.
   AssertActivityServiceVisible();
-  [[EarlGrey selectElementWithMatcher:printButton()]
+  [[EarlGrey selectElementWithMatcher:PrintButton()]
       assertWithMatcher:grey_interactable()];
 
   // Start the Copy action and verify that the share menu gets dismissed.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    @"Copy")] performAction:grey_tap()];
   AssertActivityServiceNotVisible();
 }

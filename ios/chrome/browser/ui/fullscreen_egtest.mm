@@ -34,7 +34,7 @@ namespace {
 // of ios/web/shell/test/page_state_egtest.mm.
 // Returns a matcher for asserting that element's content offset matches the
 // given |offset|.
-id<GREYMatcher> contentOffset(CGPoint offset) {
+id<GREYMatcher> ContentOffset(CGPoint offset) {
   MatchesBlock matches = ^BOOL(UIScrollView* element) {
     return CGPointEqualToPoint([element contentOffset], offset);
   };
@@ -51,7 +51,7 @@ id<GREYMatcher> contentOffset(CGPoint offset) {
 // Hides the toolbar by scrolling down.
 void HideToolbarUsingUI() {
   [[EarlGrey
-      selectElementWithMatcher:webViewScrollView(
+      selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 }
@@ -64,7 +64,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   ConditionBlock condition = ^{
     NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                             expectedURL.GetContent())]
         assertWithMatcher:grey_notNil()
                     error:&error];
@@ -76,7 +76,7 @@ void AssertURLIs(const GURL& expectedURL) {
 // Asserts that the current web view containers contains |text|.
 void AssertStringIsPresentOnPage(const std::string& text) {
   id<GREYMatcher> response_matcher =
-      chrome_test_util::webViewContainingText(text);
+      chrome_test_util::WebViewContainingText(text);
   [[EarlGrey selectElementWithMatcher:response_matcher]
       assertWithMatcher:grey_notNil()];
 }
@@ -107,9 +107,9 @@ void AssertStringIsPresentOnPage(const std::string& text) {
   // generates these values is exposed.
   CGFloat yOffset = IsIPadIdiom() ? -95.0 : -56.0;
   [[EarlGrey
-      selectElementWithMatcher:web::webViewScrollView(
+      selectElementWithMatcher:web::WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
-      assertWithMatcher:contentOffset(CGPointMake(0, yOffset))];
+      assertWithMatcher:ContentOffset(CGPointMake(0, yOffset))];
 }
 
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
@@ -122,7 +122,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Test that the toolbar is still visible after a user swipes down.
   [[EarlGrey
-      selectElementWithMatcher:webViewScrollView(
+      selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   chrome_test_util::AssertToolbarVisible();
@@ -146,7 +146,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Test that the toolbar is visible after a user swipes down.
   [[EarlGrey
-      selectElementWithMatcher:webViewScrollView(
+      selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   chrome_test_util::AssertToolbarVisible();
@@ -192,7 +192,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Scroll up to be sure the toolbar can be dismissed by scrolling down.
   [[EarlGrey
-      selectElementWithMatcher:webViewScrollView(
+      selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
 
@@ -222,7 +222,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
   chrome_test_util::AssertToolbarNotVisible();
   // Simulate a user scroll up.
   [[EarlGrey
-      selectElementWithMatcher:webViewScrollView(
+      selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   chrome_test_util::AssertToolbarVisible();

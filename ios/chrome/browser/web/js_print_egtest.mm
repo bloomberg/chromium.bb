@@ -12,8 +12,6 @@
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/http_server_util.h"
 
-using chrome_test_util::webViewContainingText;
-
 // Test case for bringing up the print dialog when a web site's JavaScript runs
 // "window.print".
 @interface JSPrintTestCase : ChromeTestCase

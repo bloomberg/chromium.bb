@@ -5,22 +5,23 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/response_providers/data_response_provider.h"
 #include "ios/web/public/test/response_providers/error_page_response_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-using chrome_test_util::omniboxText;
-using chrome_test_util::staticHtmlViewContainingText;
+using chrome_test_util::OmniboxText;
+using chrome_test_util::StaticHtmlViewContainingText;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::webViewBelongingToWebController;
-using chrome_test_util::webViewContainingText;
+using chrome_test_util::WebViewContainingText;
 
 using web::test::HttpServer;
 
@@ -43,22 +44,26 @@ using web::test::HttpServer;
 - (void)checkErrorPageIsVisible {
   // The DNS error page is static HTML content, so it isn't part of the webview
   // owned by the webstate.
-  [[EarlGrey selectElementWithMatcher:webViewBelongingToWebController()]
+  id<GREYMatcher> webViewMatcher =
+      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+  [[EarlGrey selectElementWithMatcher:webViewMatcher]
       assertWithMatcher:grey_nil()];
   NSString* const kError =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [[EarlGrey selectElementWithMatcher:staticHtmlViewContainingText(kError)]
+  [[EarlGrey selectElementWithMatcher:StaticHtmlViewContainingText(kError)]
       assertWithMatcher:grey_notNil()];
 }
 
 - (void)checkErrorPageIsNotVisible {
   // Check that the webview belongs to the web controller, and that the error
   // text doesn't appear in the webview.
-  [[EarlGrey selectElementWithMatcher:webViewBelongingToWebController()]
+  id<GREYMatcher> webViewMatcher =
+      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+  [[EarlGrey selectElementWithMatcher:webViewMatcher]
       assertWithMatcher:grey_notNil()];
   const std::string kError =
       l10n_util::GetStringUTF8(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kError)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kError)]
       assertWithMatcher:grey_nil()];
 }
 
@@ -88,7 +93,7 @@ using web::test::HttpServer;
   // Verify that the redirect occurred before checking for the DNS error.
   const std::string& redirectedURL =
       ErrorPageResponseProvider::GetDnsFailureUrl().GetContent();
-  [[EarlGrey selectElementWithMatcher:omniboxText(redirectedURL)]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(redirectedURL)]
       assertWithMatcher:grey_notNil()];
 
   [self checkErrorPageIsVisible];
@@ -135,7 +140,7 @@ using web::test::HttpServer;
 
   [ChromeEarlGrey loadURL:URL];
   // Check that the timer has completed.
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kTimerCompleted)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTimerCompleted)]
       assertWithMatcher:grey_notNil()];
   // DNS error page should still not appear.
   [self checkErrorPageIsNotVisible];
@@ -172,7 +177,7 @@ using web::test::HttpServer;
   [ChromeEarlGrey loadURL:URL];
   TapWebViewElementWithId(kButtonId);
   // Check that the timer has completed.
-  [[EarlGrey selectElementWithMatcher:webViewContainingText(kTimerCompleted)]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTimerCompleted)]
       assertWithMatcher:grey_notNil()];
   // DNS error page should still not appear.
   [self checkErrorPageIsNotVisible];

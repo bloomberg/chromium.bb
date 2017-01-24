@@ -23,7 +23,7 @@ const char kTestPDFURL[] =
     "http://ios/web/shell/test/http_server_files/testpage.pdf";
 
 // Matcher for WKWebView displaying PDF.
-id<GREYMatcher> webViewWithPdf() {
+id<GREYMatcher> WebViewWithPdf() {
   web::WebState* web_state = web::shell_test_util::GetCurrentWebState();
   MatchesBlock matches = ^BOOL(UIView* view) {
     return testing::WaitUntilConditionOrTimeout(
@@ -37,7 +37,7 @@ id<GREYMatcher> webViewWithPdf() {
   };
 
   return grey_allOf(
-      webViewInWebState(web_state),
+      WebViewInWebState(web_state),
       [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                            descriptionBlock:describe],
       nil);
@@ -57,7 +57,7 @@ using web::test::HttpServer;
 - (void)testMIMEType {
   web::test::SetUpFileBasedHttpServer();
   [ShellEarlGrey loadURL:HttpServer::MakeUrl(kTestPDFURL)];
-  [[EarlGrey selectElementWithMatcher:webViewWithPdf()]
+  [[EarlGrey selectElementWithMatcher:WebViewWithPdf()]
       assertWithMatcher:grey_notNil()];
 }
 

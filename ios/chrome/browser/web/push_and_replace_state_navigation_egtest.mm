@@ -15,6 +15,9 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 
+using chrome_test_util::BackButton;
+using chrome_test_util::ForwardButton;
+
 namespace {
 
 const char* kHistoryTestUrl =
@@ -31,14 +34,6 @@ const char* kPushStatePathURL =
     "http://ios/testing/data/http_server_files/path";
 const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
 
-// Matcher for the navigate forward button.
-id<GREYMatcher> forwardButton() {
-  return chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
-}
-// Matcher for the navigate backward button.
-id<GREYMatcher> backButton() {
-  return chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
-}
 }  // namespace
 
 // Tests for pushState/replaceState navigations.
@@ -76,12 +71,12 @@ id<GREYMatcher> backButton() {
 
   // Go back and check that the page doesn't load and the status text is updated
   // by the popstate event.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:@"pushStateRootPath"
                  withURL:pushStateRootPathURL
               pageLoaded:NO];
 
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:@"pushStateHashWithObject"
                  withURL:pushStateHashWithObjectURL
               pageLoaded:NO];
@@ -113,12 +108,12 @@ id<GREYMatcher> backButton() {
                  withURL:replaceStateHashWithObjectURL
               pageLoaded:NO];
 
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           initialURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:forwardButton()]
+  [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
   [self assertStatusText:@"replaceStateHashWithObject"
                  withURL:replaceStateHashWithObjectURL
@@ -154,11 +149,11 @@ id<GREYMatcher> backButton() {
               pageLoaded:NO];
 
   // Go back and check URLs.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:@"replaceStateHashString"
                  withURL:replaceStateHashStringURL
               pageLoaded:NO];
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:@"replaceStateHashWithObject"
                  withURL:replaceStateHashWithObjectURL
               pageLoaded:NO];
@@ -203,16 +198,16 @@ id<GREYMatcher> backButton() {
   // [NTP, history.html, #string, #string, nonPushedURL, history.html, #string]
 
   // Go back (to second history.html) and verify page did not load.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:nil withURL:historyTestURL pageLoaded:NO];
 
   // Go back twice (to second #string) and verify page did load.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:nil withURL:pushStateHashStringURL pageLoaded:YES];
 
   // Go back once (to first #string) and verify page did not load.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:@"pushStateHashString"
                  withURL:pushStateHashStringURL
               pageLoaded:NO];
@@ -250,19 +245,19 @@ id<GREYMatcher> backButton() {
   // Do 2 push states with unicode characters.
   [ChromeEarlGrey tapWebViewElementWithID:@"pushStateUnicode"];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::omniboxText(
+      selectElementWithMatcher:chrome_test_util::OmniboxText(
                                    pushStateUnicodeURLEncoded.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::webViewContainingText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           pushStateUnicodeLabel)]
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGrey tapWebViewElementWithID:@"pushStateUnicode2"];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::omniboxText(
+      selectElementWithMatcher:chrome_test_util::OmniboxText(
                                    pushStateUnicode2URLEncoded.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::webViewContainingText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           pushStateUnicode2Label)]
       assertWithMatcher:grey_notNil()];
 
@@ -276,12 +271,12 @@ id<GREYMatcher> backButton() {
               pageLoaded:NO];
 
   // Go back and check the unicode in the URL and status.
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:pushStateUnicode2Status
                  withURL:pushStateUnicode2URLEncoded
               pageLoaded:NO];
 
-  [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [self assertStatusText:pushStateUnicodeStatus
                  withURL:pushStateUnicodeURLEncoded
               pageLoaded:NO];
@@ -315,12 +310,12 @@ id<GREYMatcher> backButton() {
 
   [ChromeEarlGrey loadURL:originURL];
   [ChromeEarlGrey tapWebViewElementWithID:@"pushState"];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pushResultURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGrey tapWebViewElementWithID:@"replaceState"];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           replaceResultURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -333,20 +328,20 @@ id<GREYMatcher> backButton() {
                  withURL:(const GURL&)urlToVerify
               pageLoaded:(BOOL)pageLoaded {
   id<GREYMatcher> pageLoadedMatcher =
-      pageLoaded ? chrome_test_util::webViewContainingText("onload")
-                 : chrome_test_util::webViewNotContainingText("onload");
+      pageLoaded ? chrome_test_util::WebViewContainingText("onload")
+                 : chrome_test_util::WebViewNotContainingText("onload");
   [[EarlGrey selectElementWithMatcher:pageLoadedMatcher]
       assertWithMatcher:grey_notNil()];
 
   if (status != NULL) {
     NSString* statusLabel = [NSString stringWithFormat:@"Action: %@", status];
     [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::webViewContainingText(
+        selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                      base::SysNSStringToUTF8(statusLabel))]
         assertWithMatcher:grey_notNil()];
   }
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           urlToVerify.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

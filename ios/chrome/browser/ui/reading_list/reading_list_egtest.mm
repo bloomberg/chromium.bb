@@ -58,7 +58,7 @@ ReadingListModel* GetReadingListModel() {
 // Asserts the |button_id| button is not visible.
 void AssertButtonNotVisibleWithID(int button_id) {
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    button_id)]
       assertWithMatcher:grey_notVisible()];
 }
@@ -66,7 +66,7 @@ void AssertButtonNotVisibleWithID(int button_id) {
 // Assert the |button_id| button is visible.
 void AssertButtonVisibleWithID(int button_id) {
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    button_id)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -74,14 +74,14 @@ void AssertButtonVisibleWithID(int button_id) {
 // Taps the |button_id| button.
 void TapButtonWithID(int button_id) {
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    button_id)] performAction:grey_tap()];
 }
 
 // Taps the entry |title|.
 void TapEntry(std::string title) {
   [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::staticTextWithAccessibilityLabel(
+                 grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                                 base::SysUTF8ToNSString(title)),
                             grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
@@ -92,7 +92,7 @@ void AssertEntryVisible(std::string title) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [[EarlGrey
       selectElementWithMatcher:
-          grey_allOf(chrome_test_util::staticTextWithAccessibilityLabel(
+          grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                          base::SysUTF8ToNSString(title)),
                      grey_ancestor(grey_kindOfClass([ReadingListCell class])),
                      nil)] assertWithMatcher:grey_sufficientlyVisible()];
@@ -117,7 +117,7 @@ void AssertEntryNotVisible(std::string title) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [[EarlGrey
       selectElementWithMatcher:
-          grey_allOf(chrome_test_util::staticTextWithAccessibilityLabel(
+          grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                          base::SysUTF8ToNSString(title)),
                      grey_ancestor(grey_kindOfClass([ReadingListCell class])),
                      nil)] assertWithMatcher:grey_notVisible()];
@@ -126,7 +126,7 @@ void AssertEntryNotVisible(std::string title) {
 // Asserts |header| is visible.
 void AssertHeaderNotVisible(std::string header) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          staticTextWithAccessibilityLabel(
+                                          StaticTextWithAccessibilityLabel(
                                               base::SysUTF8ToNSString(header))]
       assertWithMatcher:grey_notVisible()];
 }
@@ -210,7 +210,7 @@ size_t ModelReadSize(ReadingListModel* model) {
 
   // Wait for the snackbar to appear.
   id<GREYMatcher> snackbarMatcher =
-      chrome_test_util::buttonWithAccessibilityLabelId(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
           IDS_IOS_READING_LIST_SNACKBAR_MESSAGE);
   ConditionBlock waitForAppearance = ^{
     NSError* error = nil;

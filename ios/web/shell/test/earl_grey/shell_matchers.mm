@@ -19,25 +19,25 @@
 
 namespace web {
 
-id<GREYMatcher> webViewContainingText(const std::string& text) {
+id<GREYMatcher> WebViewContainingText(const std::string& text) {
   WebState* web_state = shell_test_util::GetCurrentWebState();
-  return webViewContainingText(std::move(text), web_state);
+  return WebViewContainingText(std::move(text), web_state);
 }
 
-id<GREYMatcher> webViewCssSelector(const std::string& selector) {
+id<GREYMatcher> WebViewCssSelector(const std::string& selector) {
   WebState* web_state = shell_test_util::GetCurrentWebState();
-  return webViewCssSelector(std::move(selector), web_state);
+  return WebViewCssSelector(std::move(selector), web_state);
 }
 
-id<GREYMatcher> webView() {
-  return webViewInWebState(shell_test_util::GetCurrentWebState());
+id<GREYMatcher> WebView() {
+  return WebViewInWebState(shell_test_util::GetCurrentWebState());
 }
 
-id<GREYMatcher> webViewScrollView() {
-  return webViewScrollView(shell_test_util::GetCurrentWebState());
+id<GREYMatcher> WebViewScrollView() {
+  return WebViewScrollView(shell_test_util::GetCurrentWebState());
 }
 
-id<GREYMatcher> addressFieldText(std::string text) {
+id<GREYMatcher> AddressFieldText(std::string text) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[UITextField class]]) {
       return NO;
@@ -69,15 +69,15 @@ id<GREYMatcher> addressFieldText(std::string text) {
                                               descriptionBlock:describe];
 }
 
-id<GREYMatcher> backButton() {
+id<GREYMatcher> BackButton() {
   return grey_accessibilityLabel(kWebShellBackButtonAccessibilityLabel);
 }
 
-id<GREYMatcher> forwardButton() {
+id<GREYMatcher> ForwardButton() {
   return grey_accessibilityLabel(kWebShellForwardButtonAccessibilityLabel);
 }
 
-id<GREYMatcher> addressField() {
+id<GREYMatcher> AddressField() {
   return grey_accessibilityLabel(kWebShellAddressFieldAccessibilityLabel);
 }
 

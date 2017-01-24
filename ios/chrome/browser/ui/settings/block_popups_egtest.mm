@@ -53,12 +53,12 @@ void OpenBlockPopupsSettings() {
   id<GREYMatcher> settings_button_matcher =
       grey_accessibilityID(kToolsMenuSettingsId);
   id<GREYMatcher> content_settings_button_matcher =
-      chrome_test_util::buttonWithAccessibilityLabelId(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
           IDS_IOS_CONTENT_SETTINGS_TITLE);
   id<GREYMatcher> settings_collection_view_matcher =
       grey_accessibilityID(kSettingsCollectionViewId);
   id<GREYMatcher> block_popups_button_matcher =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
 
   [ChromeEarlGreyUI openToolsMenu];
   [[[EarlGrey selectElementWithMatcher:settings_button_matcher]
@@ -92,7 +92,7 @@ void CloseSettings() {
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
       performAction:grey_tap()];
 }
@@ -207,7 +207,7 @@ class ScopedBlockPopupsException {
 
   // No infobar should be displayed.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          staticTextWithAccessibilityLabel(
+                                          StaticTextWithAccessibilityLabel(
                                               @"Pop-ups blocked (1)")]
       assertWithMatcher:grey_notVisible()];
 }
@@ -239,7 +239,7 @@ class ScopedBlockPopupsException {
                     NSError* error = nil;
                     [[EarlGrey
                         selectElementWithMatcher:
-                            chrome_test_util::staticTextWithAccessibilityLabel(
+                            chrome_test_util::StaticTextWithAccessibilityLabel(
                                 @"Pop-ups blocked (1)")]
                         assertWithMatcher:grey_sufficientlyVisible()
                                     error:&error];
@@ -265,7 +265,7 @@ class ScopedBlockPopupsException {
   // Toggle the switch off via the UI and make sure the exceptions are not
   // visible.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::collectionViewSwitchCell(
+      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
                                    @"blockPopupsContentView_switch", YES)]
       performAction:chrome_test_util::turnCollectionViewSwitchOn(NO)];
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
@@ -283,7 +283,7 @@ class ScopedBlockPopupsException {
   // Toggle the switch back on via the UI and make sure the exceptions are now
   // visible.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::collectionViewSwitchCell(
+      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
                                    @"blockPopupsContentView_switch", NO)]
       performAction:chrome_test_util::turnCollectionViewSwitchOn(YES)];
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(

@@ -53,7 +53,9 @@ id ExecuteScriptInStaticController(
   return [result autorelease];
 }
 
-id<GREYMatcher> webViewWithNavDelegateOfClass(Class cls) {
+// TODO(crbug.com/684142): This matcher uses too many implementation details,
+// it would be good to replace it.
+id<GREYMatcher> WebViewWithNavDelegateOfClass(Class cls) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     return [view isKindOfClass:[WKWebView class]] &&
            [base::mac::ObjCCast<WKWebView>(view).navigationDelegate
@@ -71,7 +73,7 @@ id<GREYMatcher> webViewWithNavDelegateOfClass(Class cls) {
       autorelease];
 }
 
-id<GREYMatcher> collectionViewSwitchIsOn(BOOL isOn) {
+id<GREYMatcher> CollectionViewSwitchIsOn(BOOL isOn) {
   MatchesBlock matches = ^BOOL(id element) {
     CollectionViewSwitchCell* switchCell =
         base::mac::ObjCCastStrict<CollectionViewSwitchCell>(element);
@@ -93,40 +95,36 @@ id<GREYMatcher> collectionViewSwitchIsOn(BOOL isOn) {
 
 namespace chrome_test_util {
 
-id<GREYMatcher> buttonWithAccessibilityLabel(NSString* label) {
+id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label) {
   return grey_allOf(grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
-id<GREYMatcher> buttonWithAccessibilityLabelId(int message_id) {
-  return buttonWithAccessibilityLabel(
+id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id) {
+  return ButtonWithAccessibilityLabel(
       l10n_util::GetNSStringWithFixup(message_id));
 }
 
-id<GREYMatcher> staticTextWithAccessibilityLabel(NSString* label) {
+id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label) {
   return grey_allOf(grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitStaticText),
                     nil);
 }
 
-id<GREYMatcher> staticTextWithAccessibilityLabelId(int message_id) {
-  return staticTextWithAccessibilityLabel(
+id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id) {
+  return StaticTextWithAccessibilityLabel(
       l10n_util::GetNSStringWithFixup(message_id));
 }
 
-id<GREYMatcher> webViewBelongingToWebController() {
-  return webViewWithNavDelegateOfClass(NSClassFromString(@"CRWWebController"));
+id<GREYMatcher> WebViewContainingText(std::string text) {
+  return web::WebViewContainingText(std::move(text), GetCurrentWebState());
 }
 
-id<GREYMatcher> webViewContainingText(std::string text) {
-  return web::webViewContainingText(std::move(text), GetCurrentWebState());
+id<GREYMatcher> WebViewNotContainingText(std::string text) {
+  return web::WebViewNotContainingText(std::move(text), GetCurrentWebState());
 }
 
-id<GREYMatcher> webViewNotContainingText(std::string text) {
-  return web::webViewNotContainingText(std::move(text), GetCurrentWebState());
-}
-
-id<GREYMatcher> staticHtmlViewContainingText(NSString* text) {
+id<GREYMatcher> StaticHtmlViewContainingText(NSString* text) {
   // The WKWebView in a static HTML view isn't part of a webState, but it
   // does have the StaticHtmlViewController as its navigation delegate.
   MatchesBlock matches = ^BOOL(WKWebView* webView) {
@@ -157,64 +155,64 @@ id<GREYMatcher> staticHtmlViewContainingText(NSString* text) {
   };
 
   return grey_allOf(
-      webViewWithNavDelegateOfClass([StaticHtmlViewController class]),
+      WebViewWithNavDelegateOfClass([StaticHtmlViewController class]),
       [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                             descriptionBlock:describe]
           autorelease],
       nil);
 }
 
-id<GREYMatcher> cancelButton() {
-  return buttonWithAccessibilityLabelId(IDS_CANCEL);
+id<GREYMatcher> CancelButton() {
+  return ButtonWithAccessibilityLabelId(IDS_CANCEL);
 }
 
-id<GREYMatcher> forwardButton() {
-  return buttonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
+id<GREYMatcher> ForwardButton() {
+  return ButtonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
 }
 
-id<GREYMatcher> backButton() {
-  return buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
+id<GREYMatcher> BackButton() {
+  return ButtonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
 }
 
-id<GREYMatcher> reloadButton() {
-  return buttonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
+id<GREYMatcher> ReloadButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
 }
 
-id<GREYMatcher> stopButton() {
-  return buttonWithAccessibilityLabelId(IDS_IOS_ACCNAME_STOP);
+id<GREYMatcher> StopButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_ACCNAME_STOP);
 }
 
-id<GREYMatcher> omnibox() {
+id<GREYMatcher> Omnibox() {
   return grey_kindOfClass([OmniboxTextFieldIOS class]);
 }
 
-id<GREYMatcher> pageSecurityInfoButton() {
+id<GREYMatcher> PageSecurityInfoButton() {
   return grey_accessibilityLabel(@"Page Security Info");
 }
 
-id<GREYMatcher> omniboxText(std::string text) {
-  return grey_allOf(omnibox(),
+id<GREYMatcher> OmniboxText(std::string text) {
+  return grey_allOf(Omnibox(),
                     hasProperty(@"text", base::SysUTF8ToNSString(text)), nil);
 }
 
-id<GREYMatcher> toolsMenuButton() {
+id<GREYMatcher> ToolsMenuButton() {
   return grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
 }
 
-id<GREYMatcher> shareButton() {
-  return buttonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_SHARE);
+id<GREYMatcher> ShareButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_SHARE);
 }
 
-id<GREYMatcher> showTabsButton() {
+id<GREYMatcher> ShowTabsButton() {
   return grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
 }
 
-id<GREYMatcher> collectionViewSwitchCell(NSString* accessibilityIdentifier,
+id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
                                          BOOL isOn) {
   return grey_allOf(grey_accessibilityID(accessibilityIdentifier),
-                    collectionViewSwitchIsOn(isOn), grey_sufficientlyVisible(),
+                    CollectionViewSwitchIsOn(isOn), grey_sufficientlyVisible(),
                     nil);
 }
 

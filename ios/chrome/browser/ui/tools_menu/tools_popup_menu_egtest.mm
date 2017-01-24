@@ -57,18 +57,13 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Matcher for the button to find in page.
 id<GREYMatcher> FindInPageButton() {
-  return chrome_test_util::buttonWithAccessibilityLabel(
+  return chrome_test_util::ButtonWithAccessibilityLabel(
       l10n_util::GetNSStringWithFixup(IDS_IOS_TOOLS_MENU_FIND_IN_PAGE));
 }
 
 // Matcher for the button to request desktop version.
 id<GREYMatcher> RequestDesktopButton() {
   return grey_accessibilityID(kToolsMenuRequestDesktopId);
-}
-
-// Matcher for the navigate backward button.
-id<GREYMatcher> BackButton() {
-  return chrome_test_util::buttonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
 }
 
 const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
@@ -91,7 +86,7 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 
   // Verify initial reception of the mobile site.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::webViewContainingText(
+      selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                    base::SysNSStringToUTF8(kMobileSiteLabel))]
       assertWithMatcher:grey_notNil()];
 
@@ -100,14 +95,15 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::webViewContainingText(
+      selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                    base::SysNSStringToUTF8(kDesktopSiteLabel))]
       assertWithMatcher:grey_notNil()];
 
   // Verify that going back returns to the mobile site.
-  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::webViewContainingText(
+      selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                    base::SysNSStringToUTF8(kMobileSiteLabel))]
       assertWithMatcher:grey_notNil()];
 }
@@ -122,7 +118,7 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
                                      IDS_IOS_TOOLBAR_CLOSE_MENU))]
         performAction:grey_tap()];
   } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::toolsMenuButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
         performAction:grey_tap()];
   }
 

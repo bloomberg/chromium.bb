@@ -14,7 +14,7 @@
 #endif
 
 using web::test::HttpServer;
-using web::webViewContainingText;
+using web::WebViewContainingText;
 
 @implementation ShellBaseTestCase
 
@@ -39,7 +39,7 @@ using web::webViewContainingText;
 // Set up called once for the class.
 + (void)setUp {
   [super setUp];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("Chromium")]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Chromium")]
       assertWithMatcher:grey_notNil()];
   HttpServer::GetSharedInstance().StartOrDie();
 }

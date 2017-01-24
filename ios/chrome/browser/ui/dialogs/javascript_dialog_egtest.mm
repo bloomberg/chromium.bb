@@ -147,7 +147,7 @@ const char* kJavaScriptTestResponse =
 // Waits until |string| is displayed on the web view.
 void WaitForWebDisplay(const std::string& string) {
   id<GREYMatcher> response1Matcher =
-      chrome_test_util::webViewContainingText(string);
+      chrome_test_util::WebViewContainingText(string);
   [[EarlGrey selectElementWithMatcher:response1Matcher]
       assertWithMatcher:grey_notNil()];
 }
@@ -168,7 +168,7 @@ void WaitForAlertToBeShown(NSString* alert_label) {
   ConditionBlock condition = ^{
     NSError* error = nil;
     id<GREYMatcher> titleLabel =
-        chrome_test_util::staticTextWithAccessibilityLabel(alert_label);
+        chrome_test_util::StaticTextWithAccessibilityLabel(alert_label);
     [[EarlGrey selectElementWithMatcher:titleLabel]
         assertWithMatcher:grey_notNil()
                     error:&error];
@@ -195,7 +195,7 @@ void ShowJavaScriptDialog(JavaScriptAlertType type) {
 
   // Check the message of the alert.
   id<GREYMatcher> messageLabel =
-      chrome_test_util::staticTextWithAccessibilityLabel(
+      chrome_test_util::StaticTextWithAccessibilityLabel(
           GetMessageForAlertWithType(type));
   [[EarlGrey selectElementWithMatcher:messageLabel]
       assertWithMatcher:grey_notNil()];
@@ -209,7 +209,7 @@ void AssertJavaScriptAlertNotPresent() {
         localizedTitleForJavaScriptAlertFromPage:web::test::HttpServer::MakeUrl(
                                                      kJavaScriptTestURL)];
     id<GREYMatcher> titleLabel =
-        chrome_test_util::staticTextWithAccessibilityLabel(alertLabel);
+        chrome_test_util::StaticTextWithAccessibilityLabel(alertLabel);
     [[EarlGrey selectElementWithMatcher:titleLabel] assertWithMatcher:grey_nil()
                                                                 error:&error];
     return !error;
@@ -234,18 +234,18 @@ void TypeInPrompt(NSString* input) {
 
 void TapOK() {
   id<GREYMatcher> ok_button =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_OK);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_OK);
   [[EarlGrey selectElementWithMatcher:ok_button] performAction:grey_tap()];
 }
 
 void TapCancel() {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::cancelButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
 }
 
 void TapSuppressDialogsButton() {
   id<GREYMatcher> suppress_dialogs_button =
-      chrome_test_util::buttonWithAccessibilityLabelId(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
           IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT);
   [[EarlGrey selectElementWithMatcher:suppress_dialogs_button]
       performAction:grey_tap()];
@@ -271,7 +271,7 @@ void TapSuppressDialogsButton() {
 
   [ChromeEarlGrey loadURL:_URL];
   id<GREYMatcher> response2Matcher =
-      chrome_test_util::webViewContainingText(std::string(""));
+      chrome_test_util::WebViewContainingText(std::string());
   [[EarlGrey selectElementWithMatcher:response2Matcher]
       assertWithMatcher:grey_notNil()];
 }
@@ -281,12 +281,12 @@ void TapSuppressDialogsButton() {
   NSError* errorCancel = nil;
 
   // Dismiss JavaScript alert by tapping Cancel.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::cancelButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()
               error:&errorCancel];
   // Dismiss JavaScript alert by tapping OK.
   id<GREYMatcher> OKButton =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_OK);
+      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_OK);
   [[EarlGrey selectElementWithMatcher:OKButton] performAction:grey_tap()
                                                         error:&errorOK];
 
@@ -447,7 +447,7 @@ void TapSuppressDialogsButton() {
       selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          staticTextWithAccessibilityLabelId(
+                                          StaticTextWithAccessibilityLabelId(
                                               IDS_IOS_SETTINGS_TITLE)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -459,7 +459,7 @@ void TapSuppressDialogsButton() {
 
   // Close the settings.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
       performAction:grey_tap()];
 

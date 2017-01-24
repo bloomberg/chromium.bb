@@ -502,7 +502,7 @@ using translate::LanguageDetectionController;
   GURL someLanguageURL = web::test::HttpServer::MakeUrl(kSomeLanguageUrl);
   [ChromeEarlGrey loadURL:URL];
   chrome_test_util::TapWebViewElementWithId("click");
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           someLanguageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
   expectedLanguageDetails.content_language = "es";
@@ -578,54 +578,54 @@ using translate::LanguageDetectionController;
 
   // Check that the "Before Translate" infobar is displayed.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    @"English")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_ACCEPT)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CLOSE)] assertWithMatcher:grey_notNil()];
 
   // Open the language picker.
   NSString* kFrench = @"French";
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    kFrench)] performAction:grey_tap()];
 
   // The language picker uses the system accessibility labels (thus no
   // IDS_CANCEL here).
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    @"Cancel")] assertWithMatcher:grey_notNil()];
 
   // Change the language using the picker.
   NSString* const kPickedLanguage = @"Finnish";
   id<GREYMatcher> languageMatcher = grey_allOf(
-      chrome_test_util::staticTextWithAccessibilityLabel(kPickedLanguage),
+      chrome_test_util::StaticTextWithAccessibilityLabel(kPickedLanguage),
       grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:languageMatcher]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    @"Done")] performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    kPickedLanguage)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    kFrench)] assertWithMatcher:grey_nil()];
 
   // Deny the translation, and check that the infobar is dismissed.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_DENY)]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    kPickedLanguage)]
       assertWithMatcher:grey_nil()];
 }
@@ -660,16 +660,16 @@ using translate::LanguageDetectionController;
   // Check that the "Always Translate" switch is displayed in the infobar.
   NSString* switchLabel = GetTranslateInfobarSwitchLabel("Spanish");
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    switchLabel)]
       assertWithMatcher:grey_notNil()];
 
   // Toggle "Always Translate" and check the preference.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    switchLabel)] performAction:grey_tap()];
   id<GREYMatcher> switchOn =
-      grey_allOf(chrome_test_util::buttonWithAccessibilityLabel(switchLabel),
+      grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(switchLabel),
                  grey_accessibilityValue(@"1"), nil);
   [[EarlGrey selectElementWithMatcher:switchOn]
       assertWithMatcher:grey_notNil()];
@@ -705,7 +705,7 @@ using translate::LanguageDetectionController;
   // Check that the infobar does not contain the "Always Translate" switch.
   NSString* switchLabel = GetTranslateInfobarSwitchLabel("Spanish");
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    switchLabel)] assertWithMatcher:grey_nil()];
 }
 
@@ -748,7 +748,7 @@ using translate::LanguageDetectionController;
       web::test::HttpServer::MakeUrl("http://frenchpagewithlink");
   [ChromeEarlGrey loadURL:frenchPageURL];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_ACCEPT)]
       performAction:grey_tap()];
 
@@ -761,7 +761,7 @@ using translate::LanguageDetectionController;
              @"Did not receive all translate status callbacks");
 
   // Check that the translation happened.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::webViewContainingText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           "Translated")]
       assertWithMatcher:grey_notNil()];
 
@@ -770,14 +770,14 @@ using translate::LanguageDetectionController;
   GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::webViewContainingText("link")]
+      selectElementWithMatcher:chrome_test_util::WebViewContainingText("link")]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           frenchPagePathURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Check that the auto-translation happened.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::webViewContainingText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           "Translated")]
       assertWithMatcher:grey_notNil()];
 }
@@ -831,14 +831,14 @@ using translate::LanguageDetectionController;
 
   // Assert that the infobar is visible.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_DONE)] assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_REVERT)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabelId(
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CLOSE)] assertWithMatcher:grey_notNil()];
 }
 

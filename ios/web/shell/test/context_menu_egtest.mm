@@ -24,8 +24,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::contextMenuItemWithText;
-using testing::elementToDismissContextMenu;
+using testing::ContextMenuItemWithText;
+using testing::ElementToDismissContextMenu;
 
 // Context menu test cases for the web shell.
 @interface ContextMenuTestCase : ShellBaseTestCase
@@ -57,18 +57,18 @@ using testing::elementToDismissContextMenu;
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
 
-  [[EarlGrey selectElementWithMatcher:web::webView()]
+  [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
                         linkID, true /* menu should appear */)];
 
-  id<GREYMatcher> copyItem = contextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
 
   // Context menu should have a "copy link" item.
   [[EarlGrey selectElementWithMatcher:copyItem]
       assertWithMatcher:grey_notNil()];
 
   // Dismiss the context menu.
-  [[EarlGrey selectElementWithMatcher:elementToDismissContextMenu(@"Cancel")]
+  [[EarlGrey selectElementWithMatcher:ElementToDismissContextMenu(@"Cancel")]
       performAction:grey_tap()];
 
   // Context menu should go away after the tap.
@@ -102,11 +102,11 @@ using testing::elementToDismissContextMenu;
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
 
-  [[EarlGrey selectElementWithMatcher:web::webView()]
+  [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
                         linkID, false /* menu shouldn't appear */)];
 
-  id<GREYMatcher> copyItem = contextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
 
   // Verify no context menu.
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
@@ -141,11 +141,11 @@ using testing::elementToDismissContextMenu;
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
 
-  [[EarlGrey selectElementWithMatcher:web::webView()]
+  [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
                         linkID, false /* menu shouldn't appear */)];
 
-  id<GREYMatcher> copyItem = contextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
 
   // Verify no context menu.
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
@@ -181,18 +181,18 @@ using testing::elementToDismissContextMenu;
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
 
-  [[EarlGrey selectElementWithMatcher:web::webView()]
+  [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
                         linkID, true /* menu should appear */)];
 
-  id<GREYMatcher> copyItem = contextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
 
   // Context menu should have a "copy link" item.
   [[EarlGrey selectElementWithMatcher:copyItem]
       assertWithMatcher:grey_notNil()];
 
   // Dismiss the context menu.
-  [[EarlGrey selectElementWithMatcher:elementToDismissContextMenu(@"Cancel")]
+  [[EarlGrey selectElementWithMatcher:ElementToDismissContextMenu(@"Cancel")]
       performAction:grey_tap()];
 
   // Context menu should go away after the tap.

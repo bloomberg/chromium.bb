@@ -50,25 +50,25 @@
 
   // Waits for the page to load and check it is the expected content.
   id<GREYMatcher> responseMatcher =
-      chrome_test_util::webViewContainingText(responses[startURL]);
+      chrome_test_util::WebViewContainingText(responses[startURL]);
   [[EarlGrey selectElementWithMatcher:responseMatcher]
       assertWithMatcher:grey_notNil()];
 
   // In the omnibox, the URL should be present, without the http:// prefix.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(startURL.GetContent())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(startURL.GetContent())];
 
   // Types some javascript in the omnibox to trigger a navigation.
   NSString* script =
       [NSString stringWithFormat:@"javascript:location.href='%s'\n",
                                  destinationURL.spec().c_str()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(script)];
 
   // In the omnibox, the new URL should be present, without the http:// prefix.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
-      assertWithMatcher:chrome_test_util::omniboxText(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(
                             destinationURL.GetContent())];
 
   // Verifies that the navigation to the destination page happened.
@@ -78,7 +78,7 @@
 
   // Verifies that the destination page is shown.
   id<GREYMatcher> navigationMatcher =
-      chrome_test_util::webViewContainingText(responses[destinationURL]);
+      chrome_test_util::WebViewContainingText(responses[destinationURL]);
   [[EarlGrey selectElementWithMatcher:grey_kindOfClass([WKWebView class])]
       assertWithMatcher:navigationMatcher];
 }
