@@ -682,6 +682,9 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                         comp_data, mi->mbmi.sb_type, h, w);
 #endif  // CONFIG_SUPERTX
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_COMPOUND_SEGMENT
+  (void)plane;
+#endif  // CONFIG_COMPOUND_SEGMENT
 }
 #endif  // CONFIG_EXT_INTER
 
