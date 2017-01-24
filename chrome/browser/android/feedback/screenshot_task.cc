@@ -31,7 +31,7 @@ bool RegisterScreenshotTask(JNIEnv* env) {
 
 void SnapshotCallback(JNIEnv* env,
                       const JavaRef<jobject>& callback,
-                      scoped_refptr<base::RefCountedMemory> png_data) {
+                      scoped_refptr<base::RefCountedBytes> png_data) {
   jbyteArray jbytes = nullptr;
   if (png_data.get()) {
     size_t size = png_data->size();
@@ -50,7 +50,7 @@ void GrabWindowSnapshotAsync(JNIEnv* env,
   WindowAndroid* window_android = reinterpret_cast<WindowAndroid*>(
       native_window_android);
   gfx::Rect window_bounds(window_width, window_height);
-  ui::GrabWindowSnapshotAsyncPNG(
+  ui::GrabWindowSnapshotAsync(
       window_android, window_bounds, base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&SnapshotCallback, env,
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));

@@ -3125,12 +3125,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "snapshot_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "sql_unittests"
       },
       {
@@ -3721,12 +3715,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "snapshot_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "sql_unittests"
       },
       {
@@ -4109,12 +4097,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "snapshot_unittests"
       },
       {
         "swarming": {

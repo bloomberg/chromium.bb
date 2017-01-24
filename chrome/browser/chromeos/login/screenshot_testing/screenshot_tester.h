@@ -24,7 +24,7 @@ class ScreenshotTester {
   ScreenshotTester();
   virtual ~ScreenshotTester();
 
-  typedef scoped_refptr<base::RefCountedMemory> PNGFile;
+  typedef scoped_refptr<base::RefCountedBytes> PNGFile;
 
   // Contains the results of comparison
   struct Result {
@@ -106,7 +106,7 @@ class ScreenshotTester {
   void LogComparisonResults(const ScreenshotTester::Result& result);
 
   // Saves |png_data| as a current screenshot.
-  void ReturnScreenshot(PNGFile* screenshot, PNGFile png_data);
+  void ReturnScreenshot(const PNGFile& screenshot, PNGFile png_data);
 
   // Loads golden screenshot from the disk, assuming it lies at |image_path|.
   // Fails if there is no such a file.
@@ -138,7 +138,7 @@ class ScreenshotTester {
   base::FilePath artifacts_dir_;
 
   // |run_loop_quitter_| is used to stop waiting when
-  // ui::GrabWindowSnapshotAsyncPNG completes.
+  // ui::GrabWindowSnapshotAsync completes.
   base::Closure run_loop_quitter_;
 
   // Is true when we're in test mode:

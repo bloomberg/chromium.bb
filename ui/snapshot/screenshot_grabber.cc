@@ -43,7 +43,7 @@ using ShowNotificationCallback =
 void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
                     const ShowNotificationCallback& callback,
                     const base::FilePath& screenshot_path,
-                    scoped_refptr<base::RefCountedMemory> png_data,
+                    scoped_refptr<base::RefCountedBytes> png_data,
                     ScreenshotGrabberDelegate::FileResult result,
                     const base::FilePath& local_path) {
   DCHECK(!base::MessageLoopForUI::IsCurrent());
@@ -57,7 +57,7 @@ void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
       // Successfully got a local file to write to, write png data.
       DCHECK_GT(static_cast<int>(png_data->size()), 0);
       if (static_cast<size_t>(base::WriteFile(
-              local_path, reinterpret_cast<const char*>(png_data->front()),
+              local_path, reinterpret_cast<char*>(&(png_data->data()[0])),
               static_cast<int>(png_data->size()))) != png_data->size()) {
         LOG(ERROR) << "Failed to save to " << local_path.value();
         screenshot_result =
@@ -168,7 +168,7 @@ void ScreenshotGrabber::TakeScreenshot(gfx::NativeWindow window,
 
   cursor_hider_ = ScopedCursorHider::Create(aura_window->GetRootWindow());
 #endif
-  ui::GrabWindowSnapshotAsyncPNG(
+  ui::GrabWindowSnapshotAsync(
       window, rect, blocking_task_runner_,
       base::Bind(&ScreenshotGrabber::GrabWindowSnapshotAsyncCallback,
                  factory_.GetWeakPtr(), window_identifier, screenshot_path,
@@ -209,7 +209,7 @@ void ScreenshotGrabber::GrabWindowSnapshotAsyncCallback(
     const std::string& window_identifier,
     base::FilePath screenshot_path,
     bool is_partial,
-    scoped_refptr<base::RefCountedMemory> png_data) {
+    scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   if (!png_data.get()) {
     if (is_partial) {

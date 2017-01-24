@@ -53,6 +53,10 @@ struct FrameHostMsg_HittestData_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_UpdateRect_Params;
 
+namespace base {
+class RefCountedBytes;
+}
+
 namespace blink {
 class WebInputEvent;
 class WebMouseEvent;
@@ -66,7 +70,6 @@ class PowerSaveBlocker;
 #endif
 
 namespace gfx {
-class Image;
 class Range;
 }
 
@@ -205,12 +208,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void NotifyScreenInfoChanged();
 
   // Forces redraw in the renderer and when the update reaches the browser
-  // grabs snapshot from the compositor. On MacOS, the snapshot is taken from
-  // the Cocoa view for end-to-end testing purposes. Returns a gfx::Image that
-  // is backed by an NSImage on MacOS or by an SkBitmap otherwise. The
-  // gfx::Image may be empty if the snapshot failed.
+  // grabs snapshot from the compositor. Returns PNG-encoded snapshot.
   using GetSnapshotFromBrowserCallback =
-      base::Callback<void(const gfx::Image&)>;
+      base::Callback<void(const unsigned char*, size_t)>;
   void GetSnapshotFromBrowser(const GetSnapshotFromBrowserCallback& callback);
 
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;
@@ -701,7 +701,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   void WindowSnapshotReachedScreen(int snapshot_id);
 
-  void OnSnapshotReceived(int snapshot_id, const gfx::Image& image);
+  void OnSnapshotDataReceived(int snapshot_id,
+                              const unsigned char* png,
+                              size_t size);
+
+  void OnSnapshotDataReceivedAsync(
+      int snapshot_id,
+      scoped_refptr<base::RefCountedBytes> png_data);
 
   // 1. Grants permissions to URL (if any)
   // 2. Grants permissions to filenames

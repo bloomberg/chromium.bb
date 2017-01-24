@@ -87,7 +87,6 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
@@ -2375,36 +2374,49 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   gfx::Rect snapshot_bounds(GetView()->GetViewBounds().size());
 #endif
 
-  gfx::Image image;
-  if (ui::GrabViewSnapshot(GetView()->GetNativeView(), snapshot_bounds,
-                           &image)) {
-    OnSnapshotReceived(snapshot_id, image);
+  std::vector<unsigned char> png;
+  if (ui::GrabViewSnapshot(
+      GetView()->GetNativeView(), &png, snapshot_bounds)) {
+    OnSnapshotDataReceived(snapshot_id, &png.front(), png.size());
     return;
   }
 
   ui::GrabViewSnapshotAsync(
-      GetView()->GetNativeView(), snapshot_bounds,
-      base::Bind(&RenderWidgetHostImpl::OnSnapshotReceived,
-                 weak_factory_.GetWeakPtr(), snapshot_id));
+      GetView()->GetNativeView(),
+      snapshot_bounds,
+      base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&RenderWidgetHostImpl::OnSnapshotDataReceivedAsync,
+                 weak_factory_.GetWeakPtr(),
+                 snapshot_id));
 }
 
-void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
-                                              const gfx::Image& image) {
+void RenderWidgetHostImpl::OnSnapshotDataReceived(int snapshot_id,
+                                                  const unsigned char* data,
+                                                  size_t size) {
   // Any pending snapshots with a lower ID than the one received are considered
   // to be implicitly complete, and returned the same snapshot data.
   PendingSnapshotMap::iterator it = pending_browser_snapshots_.begin();
   while (it != pending_browser_snapshots_.end()) {
-    if (it->first <= snapshot_id) {
-      it->second.Run(image);
-      pending_browser_snapshots_.erase(it++);
-    } else {
-      ++it;
-    }
+      if (it->first <= snapshot_id) {
+        it->second.Run(data, size);
+        pending_browser_snapshots_.erase(it++);
+      } else {
+        ++it;
+      }
   }
 #if defined(OS_MACOSX)
   if (pending_browser_snapshots_.empty())
     power_save_blocker_.reset();
 #endif
+}
+
+void RenderWidgetHostImpl::OnSnapshotDataReceivedAsync(
+    int snapshot_id,
+    scoped_refptr<base::RefCountedBytes> png_data) {
+  if (png_data.get())
+    OnSnapshotDataReceived(snapshot_id, png_data->front(), png_data->size());
+  else
+    OnSnapshotDataReceived(snapshot_id, NULL, 0);
 }
 
 // static

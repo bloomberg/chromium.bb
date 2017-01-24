@@ -11,15 +11,15 @@
 namespace ui {
 
 bool GrabViewSnapshot(gfx::NativeView view,
-                      const gfx::Rect& snapshot_bounds,
-                      gfx::Image* image) {
+                      std::vector<unsigned char>* png_representation,
+                      const gfx::Rect& snapshot_bounds) {
   // TODO(bajones): Implement iOS snapshot functionality
   return false;
 }
 
 bool GrabWindowSnapshot(gfx::NativeWindow window,
-                        const gfx::Rect& snapshot_bounds,
-                        gfx::Image* image) {
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
   // TODO(bajones): Implement iOS snapshot functionality
   return false;
 }
@@ -33,16 +33,20 @@ void GrabWindowSnapshotAndScaleAsync(
   callback.Run(gfx::Image());
 }
 
-void GrabViewSnapshotAsync(gfx::NativeView view,
-                           const gfx::Rect& source_rect,
-                           const GrabWindowSnapshotAsyncCallback& callback) {
-  callback.Run(gfx::Image());
+void GrabViewSnapshotAsync(
+    gfx::NativeView view,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
+  callback.Run(scoped_refptr<base::RefCountedBytes>());
 }
 
-void GrabWindowSnapshotAsync(gfx::NativeWindow window,
-                             const gfx::Rect& source_rect,
-                             const GrabWindowSnapshotAsyncCallback& callback) {
-  callback.Run(gfx::Image());
+void GrabWindowSnapshotAsync(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
+  callback.Run(scoped_refptr<base::RefCountedBytes>());
 }
 
 }  // namespace ui

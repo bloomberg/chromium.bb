@@ -9,8 +9,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,8 +37,6 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_util.h"
 #include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
 
@@ -56,27 +52,37 @@ static int kFrameRetryDelayMs = 100;
 static int kCaptureRetryLimit = 2;
 static int kMaxScreencastFramesInFlight = 2;
 
-std::string EncodeImage(const gfx::Image& image,
-                        const std::string& format,
-                        int quality) {
-  DCHECK(!image.IsEmpty());
-
-  scoped_refptr<base::RefCountedMemory> data;
+std::string EncodeScreencastFrame(const SkBitmap& bitmap,
+                                  const std::string& format,
+                                  int quality) {
+  std::vector<unsigned char> data;
+  SkAutoLockPixels lock_image(bitmap);
+  bool encoded;
   if (format == kPng) {
-    data = image.As1xPNGBytes();
+    encoded = gfx::PNGCodec::Encode(
+        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+        gfx::PNGCodec::FORMAT_SkBitmap,
+        gfx::Size(bitmap.width(), bitmap.height()),
+        bitmap.width() * bitmap.bytesPerPixel(),
+        false, std::vector<gfx::PNGCodec::Comment>(), &data);
   } else if (format == kJpeg) {
-    scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes());
-    if (gfx::JPEG1xEncodedDataFromImage(image, quality, &bytes->data()))
-      data = bytes;
+    encoded = gfx::JPEGCodec::Encode(
+        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+        gfx::JPEGCodec::FORMAT_SkBitmap,
+        bitmap.width(),
+        bitmap.height(),
+        bitmap.width() * bitmap.bytesPerPixel(),
+        quality, &data);
+  } else {
+    encoded = false;
   }
 
-  if (!data || !data->front())
+  if (!encoded)
     return std::string();
 
   std::string base_64_data;
   base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(data->front()),
-                        data->size()),
+      base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
       &base_64_data);
 
   return base_64_data;
@@ -279,21 +285,15 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
 }
 
 void PageHandler::CaptureScreenshot(
-    Maybe<std::string> format,
-    Maybe<int> quality,
     std::unique_ptr<CaptureScreenshotCallback> callback) {
   if (!host_ || !host_->GetRenderWidgetHost()) {
     callback->sendFailure(Response::InternalError());
     return;
   }
 
-  std::string screenshot_format = format.fromMaybe(kPng);
-  int screenshot_quality = quality.fromMaybe(kDefaultScreenshotQuality);
-
   host_->GetRenderWidgetHost()->GetSnapshotFromBrowser(
-      base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(callback)), screenshot_format,
-                 screenshot_quality));
+      base::Bind(&PageHandler::ScreenshotCaptured,
+          weak_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
 }
 
 Response PageHandler::StartScreencast(Maybe<std::string> format,
@@ -519,8 +519,8 @@ void PageHandler::ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, base::TaskTraits().WithShutdownBehavior(
                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-      base::Bind(&EncodeImage, gfx::Image::CreateFrom1xBitmap(bitmap),
-                 screencast_format_, screencast_quality_),
+      base::Bind(&EncodeScreencastFrame, bitmap, screencast_format_,
+                 screencast_quality_),
       base::Bind(&PageHandler::ScreencastFrameEncoded,
                  weak_factory_.GetWeakPtr(), base::Passed(&metadata),
                  base::Time::Now()));
@@ -561,15 +561,18 @@ void PageHandler::ScreencastFrameEncoded(cc::CompositorFrameMetadata metadata,
 
 void PageHandler::ScreenshotCaptured(
     std::unique_ptr<CaptureScreenshotCallback> callback,
-    const std::string& format,
-    int quality,
-    const gfx::Image& image) {
-  if (image.IsEmpty()) {
+    const unsigned char* png_data,
+    size_t png_size) {
+  if (!png_data || !png_size) {
     callback->sendFailure(Response::Error("Unable to capture screenshot"));
     return;
   }
 
-  callback->sendSuccess(EncodeImage(image, format, quality));
+  std::string base_64_data;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(png_data), png_size),
+      &base_64_data);
+  callback->sendSuccess(base_64_data);
 }
 
 void PageHandler::OnColorPicked(int r, int g, int b, int a) {

@@ -119,7 +119,6 @@ component("gfx") {
     "image/image_util.cc",
     "image/image_util.h",
     "image/image_util_ios.mm",
-    "image/image_util_mac.mm",
     "interpolated_transform.cc",
     "interpolated_transform.h",
     "ios/NSString+CrStringDrawing.h",
