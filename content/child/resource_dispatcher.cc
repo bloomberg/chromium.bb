@@ -157,8 +157,12 @@ void ResourceDispatcher::OnUploadProgress(int request_id,
 
   request_info->peer->OnUploadProgress(position, size);
 
-  // Acknowledge receipt
-  message_sender_->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
+  // URLLoaderClientImpl has its own acknowledgement, and doesn't need the IPC
+  // message here.
+  if (!request_info->url_loader) {
+    // Acknowledge receipt
+    message_sender_->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
+  }
 }
 
 void ResourceDispatcher::OnReceivedResponse(

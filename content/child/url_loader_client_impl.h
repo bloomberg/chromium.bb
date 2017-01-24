@@ -61,6 +61,9 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override;
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        const base::Closure& ack_callback) override;
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(

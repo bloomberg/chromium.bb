@@ -1985,14 +1985,6 @@ crbug.com/602693 external/wpt/service-workers/service-worker/referer.https.html 
 
 # mojo-loading: This is an experimental feature. failing virtual tests are
 # listed below.
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onload-event.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-load.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onprogress-event.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-progress-events.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-abort.html [ Timeout ]
-
-crbug.com/669357 virtual/mojo-loading/http/tests/local/formdata/upload-events.html [ Failure ]
 
 crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]

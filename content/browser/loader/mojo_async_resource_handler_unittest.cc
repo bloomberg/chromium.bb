@@ -12,9 +12,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/test_simple_task_runner.h"
 #include "content/browser/loader/mock_resource_loader.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -44,6 +47,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -55,6 +59,40 @@ namespace content {
 namespace {
 
 constexpr int kSizeMimeSnifferRequiresForFirstOnWillRead = 2048;
+
+class DummyUploadDataStream : public net::UploadDataStream {
+ public:
+  DummyUploadDataStream() : UploadDataStream(false, 0) {}
+
+  int InitInternal(const net::NetLogWithSource& net_log) override {
+    NOTREACHED();
+    return 0;
+  }
+  int ReadInternal(net::IOBuffer* buf, int buf_len) override {
+    NOTREACHED();
+    return 0;
+  }
+  void ResetInternal() override { NOTREACHED(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyUploadDataStream);
+};
+
+class FakeUploadProgressTracker : public UploadProgressTracker {
+ public:
+  using UploadProgressTracker::UploadProgressTracker;
+
+  net::UploadProgress GetUploadProgress() const override {
+    return upload_progress_;
+  }
+  base::TimeTicks GetCurrentTime() const override { return current_time_; }
+
+  net::UploadProgress upload_progress_;
+  base::TimeTicks current_time_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeUploadProgressTracker);
+};
 
 class TestResourceDispatcherHostDelegate final
     : public ResourceDispatcherHostDelegate {
@@ -187,7 +225,8 @@ class MojoAsyncResourceHandlerWithStubOperations
                                  rdh,
                                  std::move(mojo_request),
                                  std::move(url_loader_client),
-                                 RESOURCE_TYPE_MAIN_FRAME) {}
+                                 RESOURCE_TYPE_MAIN_FRAME),
+        task_runner_(new base::TestSimpleTaskRunner) {}
   ~MojoAsyncResourceHandlerWithStubOperations() override {}
 
   void ResetBeginWriteExpectation() { is_begin_write_expectation_set_ = false; }
@@ -203,6 +242,15 @@ class MojoAsyncResourceHandlerWithStubOperations
   bool has_received_bad_message() const { return has_received_bad_message_; }
   void SetMetadata(scoped_refptr<net::IOBufferWithSize> metadata) {
     metadata_ = std::move(metadata);
+  }
+
+  FakeUploadProgressTracker* upload_progress_tracker() const {
+    return upload_progress_tracker_;
+  }
+
+  void PollUploadProgress() {
+    task_runner_->RunPendingTasks();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -225,12 +273,26 @@ class MojoAsyncResourceHandlerWithStubOperations
     has_received_bad_message_ = true;
   }
 
+  std::unique_ptr<UploadProgressTracker> CreateUploadProgressTracker(
+      const tracked_objects::Location& from_here,
+      UploadProgressTracker::UploadProgressReportCallback callback) override {
+    DCHECK(!upload_progress_tracker_);
+
+    auto upload_progress_tracker = base::MakeUnique<FakeUploadProgressTracker>(
+        from_here, std::move(callback), request(), task_runner_);
+    upload_progress_tracker_ = upload_progress_tracker.get();
+    return std::move(upload_progress_tracker);
+  }
+
   bool is_begin_write_expectation_set_ = false;
   bool is_end_write_expectation_set_ = false;
   bool has_received_bad_message_ = false;
   MojoResult begin_write_expectation_ = MOJO_RESULT_UNKNOWN;
   MojoResult end_write_expectation_ = MOJO_RESULT_UNKNOWN;
   scoped_refptr<net::IOBufferWithSize> metadata_;
+
+  FakeUploadProgressTracker* upload_progress_tracker_ = nullptr;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAsyncResourceHandlerWithStubOperations);
 };
@@ -274,7 +336,8 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
 
 class MojoAsyncResourceHandlerTestBase {
  public:
-  MojoAsyncResourceHandlerTestBase()
+  explicit MojoAsyncResourceHandlerTestBase(
+      std::unique_ptr<net::UploadDataStream> upload_stream)
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(32 * 1024);
@@ -286,6 +349,7 @@ class MojoAsyncResourceHandlerTestBase {
         browser_context_->GetResourceContext()->GetRequestContext();
     request_ = request_context->CreateRequest(
         GURL("http://foo/"), net::DEFAULT_PRIORITY, &url_request_delegate_);
+    request_->set_upload(std::move(upload_stream));
     ResourceRequestInfo::AllocateForTesting(
         request_.get(),                          // request
         RESOURCE_TYPE_XHR,                       // resource_type
@@ -331,15 +395,17 @@ class MojoAsyncResourceHandlerTestBase {
   }
 
   // Returns false if something bad happens.
-  bool CallOnWillStartAndOnResponseStarted() {
-    rdh_delegate_.set_num_on_response_started_calls_expectation(1);
+  bool CallOnWillStart() {
     MockResourceLoader::Status result =
         mock_loader_->OnWillStart(request_->url());
     EXPECT_EQ(MockResourceLoader::Status::IDLE, result);
-    if (result != MockResourceLoader::Status::IDLE)
-      return false;
+    return result == MockResourceLoader::Status::IDLE;
+  }
 
-    result = mock_loader_->OnResponseStarted(
+  // Returns false if something bad happens.
+  bool CallOnResponseStarted() {
+    rdh_delegate_.set_num_on_response_started_calls_expectation(1);
+    MockResourceLoader::Status result = mock_loader_->OnResponseStarted(
         make_scoped_refptr(new ResourceResponse()));
     EXPECT_EQ(MockResourceLoader::Status::IDLE, result);
     if (result != MockResourceLoader::Status::IDLE)
@@ -351,6 +417,18 @@ class MojoAsyncResourceHandlerTestBase {
     }
     url_loader_client_.RunUntilResponseReceived();
     return true;
+  }
+
+  // Returns false if something bad happens.
+  bool CallOnWillStartAndOnResponseStarted() {
+    return CallOnWillStart() && CallOnResponseStarted();
+  }
+
+  void set_upload_progress(const net::UploadProgress& upload_progress) {
+    handler_->upload_progress_tracker()->upload_progress_ = upload_progress;
+  }
+  void AdvanceCurrentTime(const base::TimeDelta& delta) {
+    handler_->upload_progress_tracker()->current_time_ += delta;
   }
 
   TestBrowserThreadBundle thread_bundle_;
@@ -369,7 +447,10 @@ class MojoAsyncResourceHandlerTestBase {
 };
 
 class MojoAsyncResourceHandlerTest : public MojoAsyncResourceHandlerTestBase,
-                                     public ::testing::Test {};
+                                     public ::testing::Test {
+ protected:
+  MojoAsyncResourceHandlerTest() : MojoAsyncResourceHandlerTestBase(nullptr) {}
+};
 
 // This test class is parameterized with MojoAsyncResourceHandler's allocation
 // size.
@@ -377,9 +458,19 @@ class MojoAsyncResourceHandlerWithAllocationSizeTest
     : public MojoAsyncResourceHandlerTestBase,
       public ::testing::TestWithParam<size_t> {
  protected:
-  MojoAsyncResourceHandlerWithAllocationSizeTest() {
+  MojoAsyncResourceHandlerWithAllocationSizeTest()
+      : MojoAsyncResourceHandlerTestBase(nullptr) {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(GetParam());
   }
+};
+
+class MojoAsyncResourceHandlerUploadTest
+    : public MojoAsyncResourceHandlerTestBase,
+      public ::testing::Test {
+ protected:
+  MojoAsyncResourceHandlerUploadTest()
+      : MojoAsyncResourceHandlerTestBase(
+            base::MakeUnique<DummyUploadDataStream>()) {}
 };
 
 TEST_F(MojoAsyncResourceHandlerTest, InFlightRequests) {
@@ -429,6 +520,8 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
 
   url_loader_client_.RunUntilCachedMetadataReceived();
   EXPECT_EQ("hello", url_loader_client_.cached_metadata());
+
+  EXPECT_FALSE(url_loader_client_.has_received_upload_progress());
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, OnWillReadAndInFlightRequests) {
@@ -797,6 +890,59 @@ TEST_F(MojoAsyncResourceHandlerTest,
   EXPECT_FALSE(url_loader_client_.has_received_completion());
   EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->status());
   EXPECT_EQ(net::ERR_FAILED, mock_loader_->error_code());
+}
+
+TEST_F(MojoAsyncResourceHandlerUploadTest, UploadProgressHandling) {
+  ASSERT_TRUE(CallOnWillStart());
+
+  // Expect no report for no progress.
+  set_upload_progress(net::UploadProgress(0, 1000));
+  handler_->PollUploadProgress();
+  EXPECT_FALSE(url_loader_client_.has_received_upload_progress());
+  EXPECT_EQ(0, url_loader_client_.current_upload_position());
+  EXPECT_EQ(0, url_loader_client_.total_upload_size());
+
+  // Expect a upload progress report for a good amount of progress.
+  url_loader_client_.reset_has_received_upload_progress();
+  set_upload_progress(net::UploadProgress(100, 1000));
+  handler_->PollUploadProgress();
+  EXPECT_TRUE(url_loader_client_.has_received_upload_progress());
+  EXPECT_EQ(100, url_loader_client_.current_upload_position());
+  EXPECT_EQ(1000, url_loader_client_.total_upload_size());
+
+  // Expect a upload progress report for the passed time.
+  url_loader_client_.reset_has_received_upload_progress();
+  set_upload_progress(net::UploadProgress(101, 1000));
+  AdvanceCurrentTime(base::TimeDelta::FromSeconds(5));
+  handler_->PollUploadProgress();
+  EXPECT_TRUE(url_loader_client_.has_received_upload_progress());
+  EXPECT_EQ(101, url_loader_client_.current_upload_position());
+  EXPECT_EQ(1000, url_loader_client_.total_upload_size());
+
+  // A redirect rewinds the upload progress. Expect no report for the rewound
+  // progress.
+  url_loader_client_.reset_has_received_upload_progress();
+  set_upload_progress(net::UploadProgress(0, 1000));
+  AdvanceCurrentTime(base::TimeDelta::FromSeconds(5));
+  handler_->PollUploadProgress();
+  EXPECT_FALSE(url_loader_client_.has_received_upload_progress());
+
+  // Set the progress to almost-finished state to prepare for the completion
+  // report below.
+  url_loader_client_.reset_has_received_upload_progress();
+  set_upload_progress(net::UploadProgress(999, 1000));
+  handler_->PollUploadProgress();
+  EXPECT_TRUE(url_loader_client_.has_received_upload_progress());
+  EXPECT_EQ(999, url_loader_client_.current_upload_position());
+  EXPECT_EQ(1000, url_loader_client_.total_upload_size());
+
+  // Expect a upload progress report for the upload completion.
+  url_loader_client_.reset_has_received_upload_progress();
+  set_upload_progress(net::UploadProgress(1000, 1000));
+  ASSERT_TRUE(CallOnResponseStarted());
+  EXPECT_TRUE(url_loader_client_.has_received_upload_progress());
+  EXPECT_EQ(1000, url_loader_client_.current_upload_position());
+  EXPECT_EQ(1000, url_loader_client_.total_upload_size());
 }
 
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,

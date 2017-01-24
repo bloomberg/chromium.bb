@@ -49,6 +49,12 @@ interface URLLoaderClient {
   // instead.
   OnDataDownloaded(int64 data_length, int64 encoded_length);
 
+  // Called when the service made some progress on the file upload. This is
+  // called only when the request has an upload data.
+  // The implementation should call the response closure when the client is
+  // ready to receive the next upload progress.
+  OnUploadProgress(int64 current_position, int64 total_size) => ();
+
   // Called when cached metadata from a resource request is ready.
   OnReceiveCachedMetadata(array<uint8> data);
 

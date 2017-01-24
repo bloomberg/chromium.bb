@@ -178,4 +178,12 @@ void URLLoaderClientImpl::Dispatch(const IPC::Message& message) {
   }
 }
 
+void URLLoaderClientImpl::OnUploadProgress(int64_t current_position,
+                                           int64_t total_size,
+                                           const base::Closure& ack_callback) {
+  Dispatch(
+      ResourceMsg_UploadProgress(request_id_, current_position, total_size));
+  ack_callback.Run();
+}
+
 }  // namespace content
