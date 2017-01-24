@@ -50,6 +50,7 @@ import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.base.BuildConfig;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MemoryPressureListener;
@@ -198,6 +199,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         initialize(WebViewDelegateFactory.createProxyDelegate(delegate));
     }
 
+    /**
+     * Constructor for internal use when a proxy delegate has already been created.
+     */
+    WebViewChromiumFactoryProvider(WebViewDelegate delegate) {
+        initialize(delegate);
+    }
+
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private void initialize(WebViewDelegate webViewDelegate) {
         mWebViewDelegate = webViewDelegate;
@@ -225,9 +233,17 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             CommandLine.init(null);
         }
 
-        if (Settings.Global.getInt(ContextUtils.getApplicationContext().getContentResolver(),
-                    Settings.Global.WEBVIEW_MULTIPROCESS, 0)
-                == 1) {
+        boolean multiProcess = false;
+        if (BuildInfo.isAtLeastO()) {
+            // Ask the system if multiprocess should be enabled on O+.
+            multiProcess = mWebViewDelegate.isMultiProcessEnabled();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            // Check the multiprocess developer setting directly on N.
+            multiProcess = Settings.Global.getInt(
+                    ContextUtils.getApplicationContext().getContentResolver(),
+                    Settings.Global.WEBVIEW_MULTIPROCESS, 0) == 1;
+        }
+        if (multiProcess) {
             CommandLine cl = CommandLine.getInstance();
             cl.appendSwitch("webview-sandboxed-renderer");
         }

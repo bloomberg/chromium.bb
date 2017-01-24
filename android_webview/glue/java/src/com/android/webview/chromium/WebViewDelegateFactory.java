@@ -82,6 +82,9 @@ class WebViewDelegateFactory {
 
         /** @see android.webkit.WebViewDelegate#addWebViewAssetPath */
         void addWebViewAssetPath(Context context);
+
+        /** @see android.webkit.WebViewDelegate#isMultiProcessEnabled */
+        boolean isMultiProcessEnabled();
     }
 
     /**
@@ -110,7 +113,7 @@ class WebViewDelegateFactory {
      * A {@link WebViewDelegate com.android.webview.chromium.WebViewDelegate} that proxies requests
      * to a {@link android.webkit.WebViewDelegate android.webkit.WebViewDelegate}.
      */
-    private static class ProxyDelegate implements WebViewDelegate {
+    static class ProxyDelegate implements WebViewDelegate {
         android.webkit.WebViewDelegate mDelegate;
 
         ProxyDelegate(android.webkit.WebViewDelegate delegate) {
@@ -197,6 +200,11 @@ class WebViewDelegateFactory {
                     return getResources().getAssets();
                 }
             });
+        }
+
+        @Override
+        public boolean isMultiProcessEnabled() {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -382,6 +390,11 @@ class WebViewDelegateFactory {
             } catch (Exception e) {
                 throw new RuntimeException("Invalid reflection", e);
             }
+        }
+
+        @Override
+        public boolean isMultiProcessEnabled() {
+            throw new UnsupportedOperationException();
         }
     }
 }
