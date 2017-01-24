@@ -78,6 +78,14 @@ void ClientGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread(
     gfx::GpuMemoryBufferHandle* handle,
     base::WaitableEvent* wait) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+
+  if (!gpu_) {
+    // The Gpu interface may have been disconnected, in which case we can't
+    // fulfill the request.
+    wait->Signal();
+    return;
+  }
+
   // |handle| and |wait| are both on the stack, and will be alive until |wait|
   // is signaled. So it is safe for OnGpuMemoryBufferAllocated() to operate on
   // these.
@@ -111,7 +119,9 @@ void ClientGpuMemoryBufferManager::DeletedGpuMemoryBuffer(
                    base::Unretained(this), id, sync_token));
     return;
   }
-  gpu_->DestroyGpuMemoryBuffer(id, sync_token);
+
+  if (gpu_)
+    gpu_->DestroyGpuMemoryBuffer(id, sync_token);
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
