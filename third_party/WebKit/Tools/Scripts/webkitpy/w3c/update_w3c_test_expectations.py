@@ -293,7 +293,9 @@ class W3CExpectationsLineAdder(object):
         Args:
             line_list: A list of lines to add to the TestExpectations file.
         """
-        _log.debug('Lines to write to TestExpectations: %r', line_list)
+        _log.info('Lines to write to TestExpectations:')
+        for line in line_list:
+            _log.info('  %s', line)
         port = self.host.port_factory.get()
         expectations_file_path = port.path_to_generic_test_expectations_file()
         file_contents = self.host.filesystem.read_text_file(expectations_file_path)
@@ -330,7 +332,9 @@ class W3CExpectationsLineAdder(object):
             from `webkit-patch rebaseline-cl`.
         """
         tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(tests_results)
-        _log.debug('Tests to rebaseline: %r', tests_to_rebaseline)
+        _log.info('Tests to rebaseline:')
+        for test in tests_to_rebaseline:
+            _log.info('  %s', test)
         if tests_to_rebaseline:
             webkit_patch = self.host.filesystem.join(
                 self.finder.chromium_base(), self.finder.webkit_base(), self.finder.path_to_script('webkit-patch'))
