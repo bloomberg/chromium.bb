@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,6 +121,7 @@ TEST_F(ViscaWebcamTest, Zoom) {
       base::Bind(&GetPTZExpectations::OnCallback,
                  base::Owned(new GetPTZExpectations(true, 0x1234)));
   webcam()->GetZoom(receive_callback);
+  base::RunLoop().RunUntilIdle();
   serial_connection()->CheckSendBufferAndClear(
       CHAR_VECTOR_FROM_ARRAY(kGetZoomCommand));
 
@@ -136,6 +138,7 @@ TEST_F(ViscaWebcamTest, Zoom) {
   serial_connection()->SetReceiveBuffer(
       CHAR_VECTOR_FROM_ARRAY(kSetZoomResponse));
   webcam()->SetZoom(0x6253, send_callback);
+  base::RunLoop().RunUntilIdle();
   serial_connection()->CheckSendBufferAndClear(
       CHAR_VECTOR_FROM_ARRAY(kSetZoomCommand));
 }

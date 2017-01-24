@@ -68,6 +68,8 @@ class ViscaWebcam : public Webcam {
   // Send or queue a command and wait for the camera's response.
   void Send(const std::vector<char>& command,
             const CommandCompleteCallback& callback);
+  void SendOnIOThread(const std::vector<char>& data,
+                      const CommandCompleteCallback& callback);
   void OnSendCompleted(const CommandCompleteCallback& callback,
                        int bytes_sent,
                        api::serial::SendError error);

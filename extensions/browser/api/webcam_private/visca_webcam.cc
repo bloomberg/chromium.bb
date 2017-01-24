@@ -155,7 +155,7 @@ void ViscaWebcam::Open(const std::string& path,
 void ViscaWebcam::OpenOnIOThread(const std::string& path,
                                  const std::string& extension_id,
                                  const OpenCompleteCallback& open_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   api::serial::ConnectionOptions options;
 
@@ -222,20 +222,31 @@ void ViscaWebcam::Send(const std::vector<char>& command,
   commands_.push_back(std::make_pair(command, callback));
   // If this is the only command in the queue, send it now.
   if (commands_.size() == 1) {
-    serial_connection_->Send(
-        command, base::Bind(&ViscaWebcam::OnSendCompleted,
-                            weak_ptr_factory_.GetWeakPtr(), callback));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ViscaWebcam::SendOnIOThread, weak_ptr_factory_.GetWeakPtr(),
+                   command, callback));
   }
+}
+
+void ViscaWebcam::SendOnIOThread(const std::vector<char>& data,
+                                 const CommandCompleteCallback& callback) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  serial_connection_->Send(
+      data, base::Bind(&ViscaWebcam::OnSendCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ViscaWebcam::OnSendCompleted(const CommandCompleteCallback& callback,
                                   int bytes_sent,
                                   api::serial::SendError error) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(xdai): Check |bytes_sent|?
   if (error == api::serial::SEND_ERROR_NONE) {
     ReceiveLoop(callback);
   } else {
-    callback.Run(false, std::vector<char>());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, false, std::vector<char>()));
   }
 }
 
@@ -248,13 +259,15 @@ void ViscaWebcam::ReceiveLoop(const CommandCompleteCallback& callback) {
 void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
                                      const std::vector<char>& data,
                                      api::serial::ReceiveError error) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   data_buffer_.insert(data_buffer_.end(), data.begin(), data.end());
 
   if (error != api::serial::RECEIVE_ERROR_NONE || data_buffer_.empty()) {
     // Clear |data_buffer_|.
     std::vector<char> response;
     response.swap(data_buffer_);
-    callback.Run(false, response);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, false, response));
     return;
   }
 
@@ -274,11 +287,13 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
 
   if (response.size() < 2 ||
       (static_cast<int>(response[1]) & 0xF0) == kViscaResponseError) {
-    callback.Run(false, response);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, false, response));
   } else if ((static_cast<int>(response[1]) & 0xF0) != kViscaResponseAck &&
              (static_cast<int>(response[1]) & 0xFF) !=
                  kViscaResponseNetworkChange) {
-    callback.Run(true, response);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, true, response));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
@@ -289,9 +304,9 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
 void ViscaWebcam::OnCommandCompleted(const SetPTZCompleteCallback& callback,
                                      bool success,
                                      const std::vector<char>& response) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(xdai): Error handling according to |response|.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, success));
+  callback.Run(success);
   ProcessNextCommand();
 }
 
@@ -299,9 +314,9 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
                                      const GetPTZCompleteCallback& callback,
                                      bool success,
                                      const std::vector<char>& response) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, false, 0));
+    callback.Run(false, 0);
     ProcessNextCommand();
     return;
   }
@@ -319,8 +334,7 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
       break;
   }
   if (!is_valid_response) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, false, 0));
+    callback.Run(false, 0);
     ProcessNextCommand();
     return;
   }
@@ -342,8 +356,7 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
       value = BuildResponseInt(response, 2);
       break;
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, true, value));
+  callback.Run(true, value);
   ProcessNextCommand();
 }
 
@@ -356,9 +369,10 @@ void ViscaWebcam::ProcessNextCommand() {
   // If there are pending commands, process the next one.
   const std::vector<char> next_command = commands_.front().first;
   const CommandCompleteCallback next_callback = commands_.front().second;
-  serial_connection_->Send(
-      next_command, base::Bind(&ViscaWebcam::OnSendCompleted,
-                               weak_ptr_factory_.GetWeakPtr(), next_callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ViscaWebcam::SendOnIOThread, weak_ptr_factory_.GetWeakPtr(),
+                 next_command, next_callback));
 }
 
 void ViscaWebcam::PostOpenFailureTask(
