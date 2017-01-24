@@ -168,9 +168,10 @@ log_closure(struct wl_resource *resource,
 	}
 }
 
-WL_EXPORT void
-wl_resource_post_event_array(struct wl_resource *resource, uint32_t opcode,
-			     union wl_argument *args)
+static void
+handle_array(struct wl_resource *resource, uint32_t opcode,
+	     union wl_argument *args,
+	     int (*send_func)(struct wl_closure *, struct wl_connection *))
 {
 	struct wl_closure *closure;
 	struct wl_object *object = &resource->object;
@@ -183,12 +184,19 @@ wl_resource_post_event_array(struct wl_resource *resource, uint32_t opcode,
 		return;
 	}
 
-	if (wl_closure_send(closure, resource->client->connection))
+	if (send_func(closure, resource->client->connection))
 		resource->client->error = 1;
 
 	log_closure(resource, closure, true);
 
 	wl_closure_destroy(closure);
+}
+
+WL_EXPORT void
+wl_resource_post_event_array(struct wl_resource *resource, uint32_t opcode,
+			     union wl_argument *args)
+{
+	handle_array(resource, opcode, args, wl_closure_send);
 }
 
 WL_EXPORT void
@@ -211,23 +219,7 @@ WL_EXPORT void
 wl_resource_queue_event_array(struct wl_resource *resource, uint32_t opcode,
 			      union wl_argument *args)
 {
-	struct wl_closure *closure;
-	struct wl_object *object = &resource->object;
-
-	closure = wl_closure_marshal(object, opcode, args,
-				     &object->interface->events[opcode]);
-
-	if (closure == NULL) {
-		resource->client->error = 1;
-		return;
-	}
-
-	if (wl_closure_queue(closure, resource->client->connection))
-		resource->client->error = 1;
-
-	log_closure(resource, closure, true);
-
-	wl_closure_destroy(closure);
+	handle_array(resource, opcode, args, wl_closure_queue);
 }
 
 WL_EXPORT void
