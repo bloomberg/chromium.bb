@@ -42,6 +42,8 @@ class NavigationItemImpl : public web::NavigationItem {
 
   // NavigationItem implementation:
   int GetUniqueID() const override;
+  void SetOriginalRequestURL(const GURL& url) override;
+  const GURL& GetOriginalRequestURL() const override;
   void SetURL(const GURL& url) override;
   const GURL& GetURL() const override;
   void SetReferrer(const web::Referrer& referrer) override;
@@ -119,6 +121,7 @@ class NavigationItemImpl : public web::NavigationItem {
 
  private:
   int unique_id_;
+  GURL original_request_url_;
   GURL url_;
   Referrer referrer_;
   GURL virtual_url_;

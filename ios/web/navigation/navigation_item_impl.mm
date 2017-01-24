@@ -53,6 +53,7 @@ NavigationItemImpl::~NavigationItemImpl() {
 
 NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
     : unique_id_(item.unique_id_),
+      original_request_url_(item.original_request_url_),
       url_(item.url_),
       referrer_(item.referrer_),
       virtual_url_(item.virtual_url_),
@@ -87,6 +88,14 @@ NavigationItemFacadeDelegate* NavigationItemImpl::GetFacadeDelegate() const {
 
 int NavigationItemImpl::GetUniqueID() const {
   return unique_id_;
+}
+
+void NavigationItemImpl::SetOriginalRequestURL(const GURL& url) {
+  original_request_url_ = url;
+}
+
+const GURL& NavigationItemImpl::GetOriginalRequestURL() const {
+  return original_request_url_;
 }
 
 void NavigationItemImpl::SetURL(const GURL& url) {

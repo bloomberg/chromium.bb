@@ -38,6 +38,11 @@ class NavigationItem : public base::SupportsUserData {
   // the pending entry's ID must be copied).
   virtual int GetUniqueID() const = 0;
 
+  // The original URL for the navigation request.  This may differ from GetURL()
+  // if a redirect occurs after attempting to load this original URL.
+  virtual void SetOriginalRequestURL(const GURL& url) = 0;
+  virtual const GURL& GetOriginalRequestURL() const = 0;
+
   // The actual URL of the page. For some about pages, this may be a scary
   // data: URL or something like that. Use GetVirtualURL() below for showing to
   // the user.

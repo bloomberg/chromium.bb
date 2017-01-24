@@ -16,6 +16,7 @@
 namespace web {
 namespace {
 
+const char kItemURLString[] = "http://init.test";
 static NSString* const kHTTPHeaderKey1 = @"key1";
 static NSString* const kHTTPHeaderKey2 = @"key2";
 static NSString* const kHTTPHeaderValue1 = @"value1";
@@ -25,7 +26,8 @@ class NavigationItemTest : public PlatformTest {
  protected:
   void SetUp() override {
     item_.reset(new web::NavigationItemImpl());
-    item_->SetURL(GURL("http://init.test"));
+    item_->SetOriginalRequestURL(GURL(kItemURLString));
+    item_->SetURL(GURL(kItemURLString));
     item_->SetTransitionType(ui::PAGE_TRANSITION_AUTO_BOOKMARK);
     item_->SetTimestamp(base::Time::Now());
     item_->AddHttpRequestHeaders(@{kHTTPHeaderKey1 : kHTTPHeaderValue1});
@@ -107,6 +109,17 @@ TEST_F(NavigationItemTest, RemoveHttpRequestHeaderForKey) {
 
   item_->RemoveHttpRequestHeaderForKey(kHTTPHeaderKey2);
   EXPECT_FALSE(item_->GetHttpRequestHeaders());
+}
+
+// Tests the getter, setter, and copy constructor for the original request URL.
+TEST_F(NavigationItemTest, OriginalURL) {
+  GURL original_url = GURL(kItemURLString);
+  EXPECT_EQ(original_url, item_->GetOriginalRequestURL());
+  web::NavigationItemImpl copy(*item_);
+  GURL new_url = GURL("http://new_url.test");
+  item_->SetOriginalRequestURL(new_url);
+  EXPECT_EQ(new_url, item_->GetOriginalRequestURL());
+  EXPECT_EQ(original_url, copy.GetOriginalRequestURL());
 }
 
 }  // namespace

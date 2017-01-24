@@ -63,8 +63,6 @@ extern NSString* const kSessionEntryUseDesktopUserAgentKey;
 // TODO(crbug.com/454984): Remove this class.
 @interface CRWSessionEntry : NSObject<NSCoding, NSCopying>
 
-@property(nonatomic, readonly) const GURL& originalUrl;
-
 // Pointer to the NavigationItem associated with this CRWSessionEntry.
 // Eventually, this will replace CRWSessionEntry entirely.
 @property(nonatomic, readonly) web::NavigationItem* navigationItem;

@@ -1042,7 +1042,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (browserState_->IsOffTheRecord())
     return;
 
-  CRWSessionEntry* sessionEntry = self.currentSessionEntry;
   web::NavigationItem* item = [self navigationManager]->GetVisibleItem();
 
   // Do not update the history db for back/forward navigations.
@@ -1069,20 +1068,20 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 #endif
 
   history::RedirectList redirects;
-  if (item->GetURL() != sessionEntry.originalUrl) {
+  GURL originalURL = item->GetOriginalRequestURL();
+  if (item->GetURL() != originalURL) {
     // Simulate a valid redirect chain in case of URL that have been modified
     // in |CRWWebController finishHistoryNavigationFromEntry:|.
     const std::string& urlSpec = item->GetURL().spec();
     size_t urlSpecLength = urlSpec.size();
     if (item->GetTransitionType() & ui::PAGE_TRANSITION_CLIENT_REDIRECT ||
         (urlSpecLength && (urlSpec.at(urlSpecLength - 1) == '#') &&
-         !urlSpec.compare(0, urlSpecLength - 1,
-                          sessionEntry.originalUrl.spec()))) {
+         !urlSpec.compare(0, urlSpecLength - 1, originalURL.spec()))) {
       redirects.push_back(referrer.url);
     }
     // TODO(crbug.com/661670): the redirect chain is not constructed the same
     // way as upstream so this part needs to be revised.
-    redirects.push_back(sessionEntry.originalUrl);
+    redirects.push_back(originalURL);
     redirects.push_back(url);
   }
 
@@ -1598,7 +1597,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     return;
 
   // |originalUrl| will be empty if a page was open by DOM.
-  GURL reloadURL(lastUserEntry.originalUrl);
+  GURL reloadURL(lastUserEntry.navigationItem->GetOriginalRequestURL());
   if (reloadURL.is_empty()) {
     DCHECK(sessionController.openedByDOM);
     reloadURL = [lastUserEntry navigationItem]->GetVirtualURL();

@@ -41,6 +41,7 @@ class CRWSessionEntryTest : public PlatformTest {
         ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     std::unique_ptr<web::NavigationItemImpl> item(
         new web::NavigationItemImpl());
+    item->SetOriginalRequestURL(url);
     item->SetURL(url);
     item->SetTransitionType(transition);
     item->SetTimestamp(base::Time::Now());

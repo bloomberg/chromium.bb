@@ -2081,13 +2081,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)shouldReload:(const GURL&)destinationURL
           transition:(ui::PageTransition)transition {
   // Do a reload if the user hits enter in the address bar or re-types a URL.
-  CRWSessionController* sessionController =
-      _webStateImpl->GetNavigationManagerImpl().GetSessionController();
   web::NavigationItem* item =
       _webStateImpl->GetNavigationManagerImpl().GetVisibleItem();
   return (transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) && item &&
          (destinationURL == item->GetURL() ||
-          destinationURL == [sessionController currentEntry].originalUrl);
+          destinationURL == item->GetOriginalRequestURL());
 }
 
 // Reload either the web view or the native content depending on which is
