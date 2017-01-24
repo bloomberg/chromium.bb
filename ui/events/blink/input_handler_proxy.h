@@ -118,8 +118,6 @@ class InputHandlerProxy
  protected:
   void RecordMainThreadScrollingReasons(blink::WebGestureDevice device,
                                         uint32_t reasons);
-  void RecordScrollingThreadStatus(blink::WebGestureDevice device,
-                                   uint32_t reasons);
 
  private:
   friend class test::InputHandlerProxyTest;
@@ -246,10 +244,6 @@ class InputHandlerProxy
   // This value will get returned for subsequent TouchMove events to allow
   // passive events not to block scrolling.
   int32_t touch_start_result_;
-
-  // The result of the last mouse wheel event. This value is used to determine
-  // whether the next wheel scroll is blocked on the Main thread or not.
-  int32_t mouse_wheel_result_;
 
   base::TimeTicks last_fling_animate_time_;
 

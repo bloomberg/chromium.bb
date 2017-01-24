@@ -327,7 +327,7 @@ const cc::InputHandler::ScrollStatus kImplThreadScrollState(
 
 const cc::InputHandler::ScrollStatus kMainThreadScrollState(
     cc::InputHandler::SCROLL_ON_MAIN_THREAD,
-    cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
+    cc::MainThreadScrollingReason::kNotScrollingOnMain);
 
 const cc::InputHandler::ScrollStatus kScrollIgnoredScrollState(
     cc::InputHandler::SCROLL_IGNORED,
@@ -3009,140 +3009,6 @@ TEST_P(InputHandlerProxyTest, MainThreadScrollingMouseWheelHistograms) {
       histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
       testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1),
                            base::Bucket(5, 1), base::Bucket(14, 1)));
-}
-
-TEST_P(InputHandlerProxyTest, GestureScrollingThreadStatusHistograms) {
-  VERIFY_AND_RESET_MOCKS();
-
-  WebTouchEvent touch_start(WebInputEvent::TouchStart,
-                            WebInputEvent::NoModifiers,
-                            WebInputEvent::TimeStampForTesting);
-  touch_start.touchesLength = 1;
-  touch_start.touches[0] =
-      CreateWebTouchPoint(WebTouchPoint::StatePressed, 10, 10);
-
-  gesture_.setType(WebInputEvent::GestureScrollBegin);
-  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
-
-  // Touch start with passive event listener.
-  EXPECT_CALL(mock_input_handler_,
-              EventListenerTypeForTouchStartAt(
-                  testing::Property(&gfx::Point::x, testing::Gt(0))))
-      .WillOnce(testing::Return(
-          cc::InputHandler::TouchStartEventListenerType::NO_HANDLER));
-  EXPECT_CALL(
-      mock_input_handler_,
-      GetEventListenerProperties(cc::EventListenerClass::kTouchStartOrMove))
-      .WillOnce(testing::Return(cc::EventListenerProperties::kPassive));
-
-  expected_disposition_ = InputHandlerProxy::DID_HANDLE_NON_BLOCKING;
-  EXPECT_EQ(expected_disposition_,
-            input_handler_->HandleInputEvent(touch_start));
-
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
-
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Renderer4.GestureScrollingThreadStatus"),
-              testing::ElementsAre(base::Bucket(0, 1)));
-
-  VERIFY_AND_RESET_MOCKS();
-
-  // Touch event with HANDLER_ON_SCROLLING_LAYER event listener.
-  EXPECT_CALL(mock_input_handler_,
-              EventListenerTypeForTouchStartAt(
-                  testing::Property(&gfx::Point::x, testing::Gt(0))))
-      .WillOnce(testing::Return(cc::InputHandler::TouchStartEventListenerType::
-                                    HANDLER_ON_SCROLLING_LAYER));
-
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
-  EXPECT_EQ(expected_disposition_,
-            input_handler_->HandleInputEvent(touch_start));
-
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
-
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Renderer4.GestureScrollingThreadStatus"),
-              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
-
-  VERIFY_AND_RESET_MOCKS();
-
-  // Gesture scrolling on main thread.
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kMainThreadScrollState));
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
-
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Renderer4.GestureScrollingThreadStatus"),
-              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1),
-                                   base::Bucket(2, 1)));
-
-  VERIFY_AND_RESET_MOCKS();
-}
-
-TEST_P(InputHandlerProxyTest, WheelScrollingThreadStatusHistograms) {
-  VERIFY_AND_RESET_MOCKS();
-
-  WebMouseWheelEvent wheel(WebInputEvent::MouseWheel, WebInputEvent::ControlKey,
-                           WebInputEvent::TimeStampForTesting);
-
-  gesture_.setType(WebInputEvent::GestureScrollBegin);
-  gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
-
-  // Wheel event with passive event listener.
-  EXPECT_CALL(mock_input_handler_,
-              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
-      .WillOnce(testing::Return(cc::EventListenerProperties::kPassive));
-  expected_disposition_ = InputHandlerProxy::DID_HANDLE_NON_BLOCKING;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
-
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.WheelScrollingThreadStatus"),
-      testing::ElementsAre(base::Bucket(0, 1)));
-
-  VERIFY_AND_RESET_MOCKS();
-
-  // Wheel event with blocking event listener.
-  EXPECT_CALL(mock_input_handler_,
-              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
-      .WillOnce(testing::Return(cc::EventListenerProperties::kBlocking));
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
-
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.WheelScrollingThreadStatus"),
-      testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
-
-  VERIFY_AND_RESET_MOCKS();
-
-  // Wheel scrolling on main thread.
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kMainThreadScrollState));
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.WheelScrollingThreadStatus"),
-      testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1),
-                           base::Bucket(2, 1)));
-
-  VERIFY_AND_RESET_MOCKS();
 }
 
 TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
