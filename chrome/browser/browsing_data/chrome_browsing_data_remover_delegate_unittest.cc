@@ -10,13 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
-#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -863,17 +863,14 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
-      const BrowsingDataFilterBuilder& filter_builder) {
-    BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
-
-    // TODO(crbug.com/668114): ChromeBrowsingDataRemoverTest should not know
-    // about BrowsingDataRemoverImpl. We will be able to remove this cast once
-    // BrowsingDataFilterBuilder is copyable and comparable.
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
+    BrowsingDataRemoverCompletionObserver completion_observer(remover_);
     static_cast<BrowsingDataRemoverImpl*>(remover_)
-        ->RemoveImpl(delete_begin, delete_end, remove_mask, filter_builder,
-                     BrowsingDataHelper::UNPROTECTED_WEB);
-    completion_inhibitor.BlockUntilNearCompletion();
-    completion_inhibitor.ContinueToCompletion();
+        ->RemoveWithFilterAndReply(delete_begin, delete_end, remove_mask,
+                                   BrowsingDataHelper::UNPROTECTED_WEB,
+                                   std::move(filter_builder),
+                                   &completion_observer);
+    completion_observer.BlockUntilCompletion();
   }
 
   const base::Time& GetBeginTime() {
@@ -946,21 +943,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 
   tester.AddCookie();
   ASSERT_TRUE(tester.ContainsCookie());
-  RegistrableDomainFilterBuilder filter(
-      RegistrableDomainFilterBuilder::BLACKLIST);
-  filter.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+  filter->AddRegisterableDomain(kTestRegisterableDomain1);
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_COOKIES, filter);
+                              BrowsingDataRemover::REMOVE_COOKIES,
+                              std::move(filter));
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
   EXPECT_TRUE(tester.ContainsCookie());
 
-  RegistrableDomainFilterBuilder filter2(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  filter2.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter2(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter2->AddRegisterableDomain(kTestRegisterableDomain1);
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_COOKIES, filter2);
+                              BrowsingDataRemover::REMOVE_COOKIES,
+                              std::move(filter2));
   EXPECT_FALSE(tester.ContainsCookie());
 }
 
@@ -1098,7 +1097,10 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ExpireBookmarkFavicons) {
   EXPECT_TRUE(favicon_tester.HasExpiredFaviconForPageURL(bookmarked_page));
 }
 
-TEST_F(ChromeBrowsingDataRemoverDelegateTest, TimeBasedHistoryRemoval) {
+// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// a filterable datatype.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       DISABLED_TimeBasedHistoryRemoval) {
   RemoveHistoryTester tester;
   ASSERT_TRUE(tester.Init(GetProfile()));
 
@@ -1109,10 +1111,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, TimeBasedHistoryRemoval) {
   ASSERT_TRUE(tester.HistoryContainsURL(kOrigin1));
   ASSERT_TRUE(tester.HistoryContainsURL(kOrigin2));
 
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::BLACKLIST);
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
   BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_HISTORY, builder);
+                              BrowsingDataRemover::REMOVE_HISTORY,
+                              std::move(builder));
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
@@ -1237,21 +1240,24 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Beacons) {
       BrowsingDataFilterBuilder::BuildNoopFilter(), tester.last_filter()));
 }
 
+// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       DomainReliability_Beacons_WithFilter) {
+       DISABLED_DomainReliability_Beacons_WithFilter) {
   const ClearDomainReliabilityTester& tester =
       clear_domain_reliability_tester();
 
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
 
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_HISTORY, builder);
+                              BrowsingDataRemover::REMOVE_HISTORY,
+                              builder->Copy());
   EXPECT_EQ(1u, tester.clear_count());
   EXPECT_EQ(CLEAR_BEACONS, tester.last_clear_mode());
   EXPECT_TRUE(ProbablySameFilters(
-      builder.BuildGeneralFilter(), tester.last_filter()));
+      builder->BuildGeneralFilter(), tester.last_filter()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Contexts) {
@@ -1271,16 +1277,17 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   const ClearDomainReliabilityTester& tester =
       clear_domain_reliability_tester();
 
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
 
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_COOKIES, builder);
+                              BrowsingDataRemover::REMOVE_COOKIES,
+                              builder->Copy());
   EXPECT_EQ(1u, tester.clear_count());
   EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
   EXPECT_TRUE(ProbablySameFilters(
-      builder.BuildGeneralFilter(), tester.last_filter()));
+      builder->BuildGeneralFilter(), tester.last_filter()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_ContextsWin) {
@@ -1341,20 +1348,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordStatistics) {
                                 BrowsingDataRemover::REMOVE_HISTORY, false);
 }
 
+// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       RemovePasswordStatisticsByOrigin) {
+       DISABLED_RemovePasswordStatisticsByOrigin) {
   RemovePasswordsTester tester(GetProfile());
 
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
+  base::Callback<bool(const GURL&)> filter = builder->BuildGeneralFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveStatisticsByOriginAndTimeImpl(
                   ProbablySameFilter(filter), base::Time(), base::Time::Max()));
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_HISTORY, builder);
+                              BrowsingDataRemover::REMOVE_HISTORY,
+                              std::move(builder));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordsByTimeOnly) {
@@ -1369,18 +1379,21 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordsByTimeOnly) {
                                 BrowsingDataRemover::REMOVE_PASSWORDS, false);
 }
 
-TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordsByOrigin) {
+// Disabled, since passwords are not yet marked as a filterable datatype.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       DISABLED_RemovePasswordsByOrigin) {
   RemovePasswordsTester tester(GetProfile());
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
+  base::Callback<bool(const GURL&)> filter = builder->BuildGeneralFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_PASSWORDS, builder);
+                              BrowsingDataRemover::REMOVE_PASSWORDS,
+                              std::move(builder));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DisableAutoSignIn) {
@@ -1435,13 +1448,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       base::MakeUnique<base::DictionaryValue>());
 
   // Clear all except for origin1 and origin3.
-  RegistrableDomainFilterBuilder filter(
-      RegistrableDomainFilterBuilder::BLACKLIST);
-  filter.AddRegisterableDomain(kTestRegisterableDomain1);
-  filter.AddRegisterableDomain(kTestRegisterableDomain3);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+  filter->AddRegisterableDomain(kTestRegisterableDomain1);
+  filter->AddRegisterableDomain(kTestRegisterableDomain3);
   BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                               BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
-                              filter);
+                              std::move(filter));
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_USAGE_DATA, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
@@ -1474,13 +1487,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDurablePermission) {
                                           CONTENT_SETTING_ALLOW);
 
   // Clear all except for origin1 and origin3.
-  RegistrableDomainFilterBuilder filter(
-      RegistrableDomainFilterBuilder::BLACKLIST);
-  filter.AddRegisterableDomain(kTestRegisterableDomain1);
-  filter.AddRegisterableDomain(kTestRegisterableDomain3);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+  filter->AddRegisterableDomain(kTestRegisterableDomain1);
+  filter->AddRegisterableDomain(kTestRegisterableDomain3);
   BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                               BrowsingDataRemover::REMOVE_DURABLE_PERMISSION,
-                              filter);
+                              std::move(filter));
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_DURABLE_PERMISSION, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
@@ -1533,13 +1546,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
   RemovePermissionPromptCountsTest tester(GetProfile());
 
-  RegistrableDomainFilterBuilder filter_builder_1(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  filter_builder_1.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_1(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter_builder_1->AddRegisterableDomain(kTestRegisterableDomain1);
 
-  RegistrableDomainFilterBuilder filter_builder_2(
-      RegistrableDomainFilterBuilder::BLACKLIST);
-  filter_builder_2.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_2(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+  filter_builder_2->AddRegisterableDomain(kTestRegisterableDomain1);
 
   {
     // Test REMOVE_HISTORY.
@@ -1558,7 +1571,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 
     BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                                 BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
-                                filter_builder_1);
+                                std::move(filter_builder_1));
 
     // kOrigin1 should be gone, but kOrigin2 remains.
     EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
@@ -1604,7 +1617,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 
     BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                                 BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
-                                filter_builder_2);
+                                std::move(filter_builder_2));
 
     // kOrigin2 should be gone, but kOrigin1 remains.
     EXPECT_EQ(2, tester.GetIgnoreCount(kOrigin1,
@@ -1649,12 +1662,12 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePluginData) {
   EXPECT_EQ(expected, tester.GetDomains());
 
   // Delete data with a filter for the registrable domain of |kOrigin3|.
-  RegistrableDomainFilterBuilder filter_builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  filter_builder.AddRegisterableDomain(kTestRegisterableDomain3);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter_builder->AddRegisterableDomain(kTestRegisterableDomain3);
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               BrowsingDataRemover::REMOVE_PLUGIN_DATA,
-                              filter_builder);
+                              std::move(filter_builder));
 
   // Plugin data for |kOrigin3.host()| should have been removed.
   expected.pop_back();

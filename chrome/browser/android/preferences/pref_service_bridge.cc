@@ -30,7 +30,6 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -644,8 +643,8 @@ static void ClearBrowsingData(
       env, jignoring_domains.obj(), &ignoring_domains);
   base::android::JavaIntArrayToIntVector(env, jignoring_domain_reasons.obj(),
                                          &ignoring_domain_reasons);
-  std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder(
-      new RegistrableDomainFilterBuilder(BrowsingDataFilterBuilder::BLACKLIST));
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
   for (const std::string& domain : excluding_domains) {
     filter_builder->AddRegisterableDomain(domain);
   }

@@ -149,15 +149,6 @@ class BrowsingDataRemoverImpl :
   // Testing the private RemovalTask.
   FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverImplTest, MultipleTasks);
 
-  // The BrowsingDataRemover tests need to be able to access the implementation
-  // of Remove(), as it exposes details that aren't yet available in the public
-  // API. As soon as those details are exposed via new methods, this should be
-  // removed.
-  //
-  // TODO(mkwst): See http://crbug.com/113621
-  friend class BrowsingDataRemoverImplTest;
-  friend class ChromeBrowsingDataRemoverDelegateTest;
-
   friend class BrowsingDataRemoverFactory;
 
   // Represents a single removal task. Contains all parameters needed to execute

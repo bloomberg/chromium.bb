@@ -10,12 +10,12 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
-#include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -248,8 +248,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
 
   // Partially delete cache data. Delete data for localhost, which is the origin
   // of |url1|, but not for |kExampleHost|, which is the origin of |url2|.
-  std::unique_ptr<OriginFilterBuilder> filter_builder(
-      new OriginFilterBuilder(OriginFilterBuilder::WHITELIST));
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
   filter_builder->AddOrigin(url::Origin(url1));
   RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE,
                           std::move(filter_builder));
@@ -259,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   EXPECT_LT(new_size, original_size);
 
   // Another partial deletion with the same filter should have no effect.
-  filter_builder.reset(new OriginFilterBuilder(OriginFilterBuilder::WHITELIST));
+  filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
   filter_builder->AddOrigin(url::Origin(url1));
   RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE,
                           std::move(filter_builder));

@@ -33,7 +33,6 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
-#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -587,15 +586,16 @@ class BrowsingDataRemoverImplTest : public testing::Test {
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
-      const BrowsingDataFilterBuilder& filter_builder) {
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
     TestStoragePartition storage_partition;
     remover_->OverrideStoragePartitionForTesting(&storage_partition);
 
-    BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
-    remover_->RemoveImpl(delete_begin, delete_end, remove_mask, filter_builder,
-                         BrowsingDataHelper::UNPROTECTED_WEB);
-    completion_inhibitor.BlockUntilNearCompletion();
-    completion_inhibitor.ContinueToCompletion();
+    BrowsingDataRemoverCompletionObserver completion_observer(remover_);
+    remover_->RemoveWithFilterAndReply(
+        delete_begin, delete_end, remove_mask,
+        BrowsingDataHelper::UNPROTECTED_WEB,
+        std::move(filter_builder), &completion_observer);
+    completion_observer.BlockUntilCompletion();
 
     // Save so we can verify later.
     storage_partition_removal_data_ =
@@ -705,12 +705,13 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookieLastHour) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveCookiesDomainBlacklist) {
-  RegistrableDomainFilterBuilder filter(
-      RegistrableDomainFilterBuilder::BLACKLIST);
-  filter.AddRegisterableDomain(kTestRegisterableDomain1);
-  filter.AddRegisterableDomain(kTestRegisterableDomain3);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+  filter->AddRegisterableDomain(kTestRegisterableDomain1);
+  filter->AddRegisterableDomain(kTestRegisterableDomain3);
   BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_COOKIES, filter);
+                              BrowsingDataRemover::REMOVE_COOKIES,
+                              std::move(filter));
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
@@ -810,13 +811,13 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsForServerIdentifiers) {
   tester.AddChannelID(kTestRegisterableDomain3);
   EXPECT_EQ(2, tester.ChannelIDCount());
 
-  RegistrableDomainFilterBuilder filter_builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  filter_builder.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter_builder->AddRegisterableDomain(kTestRegisterableDomain1);
 
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               BrowsingDataRemover::REMOVE_CHANNEL_IDS,
-                              filter_builder);
+                              std::move(filter_builder));
 
   EXPECT_EQ(1, tester.ChannelIDCount());
   net::ChannelIDStore::ChannelIDList channel_ids;
@@ -1107,9 +1108,9 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForeverNeither) {
 
 TEST_F(BrowsingDataRemoverImplTest,
        RemoveQuotaManagedDataForeverSpecificOrigin) {
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
   // Remove Origin 1.
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               BrowsingDataRemover::REMOVE_APPCACHE |
@@ -1118,7 +1119,7 @@ TEST_F(BrowsingDataRemoverImplTest,
                                   BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
                                   BrowsingDataRemover::REMOVE_INDEXEDDB |
                                   BrowsingDataRemover::REMOVE_WEBSQL,
-                              builder);
+                              std::move(builder));
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
                 BrowsingDataRemover::REMOVE_SERVICE_WORKERS |
@@ -1280,9 +1281,9 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   policy->AddProtected(kOrigin1.GetOrigin());
 #endif
 
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(kTestRegisterableDomain1);
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
 
   // Try to remove kOrigin1. Expect failure.
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
@@ -1292,7 +1293,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
                                   BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
                                   BrowsingDataRemover::REMOVE_INDEXEDDB |
                                   BrowsingDataRemover::REMOVE_WEBSQL,
-                              builder);
+                              std::move(builder));
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
                 BrowsingDataRemover::REMOVE_SERVICE_WORKERS |
@@ -1511,17 +1512,18 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByTimeOnly) {
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByOrigin) {
   RemoveDownloadsTester tester(GetBrowserContext());
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
+  base::Callback<bool(const GURL&)> filter = builder->BuildGeneralFilter();
 
   EXPECT_CALL(
       *tester.download_manager(),
       RemoveDownloadsByURLAndTime(ProbablySameFilter(filter), _, _));
 
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::REMOVE_DOWNLOADS, builder);
+                              BrowsingDataRemover::REMOVE_DOWNLOADS,
+                              std::move(builder));
 }
 
 class MultipleTasksObserver {
@@ -1582,12 +1584,10 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
       BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowserContext()));
   EXPECT_FALSE(remover->is_removing());
 
-  std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder_1(
-      new RegistrableDomainFilterBuilder(
-          RegistrableDomainFilterBuilder::WHITELIST));
-  std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder_2(
-      new RegistrableDomainFilterBuilder(
-          RegistrableDomainFilterBuilder::BLACKLIST));
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_1(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_2(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
   filter_builder_2->AddRegisterableDomain("example.com");
 
   MultipleTasksObserver observer(remover);
@@ -1599,20 +1599,20 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   tasks.emplace_back(base::Time(), base::Time::Max(),
                      BrowsingDataRemover::REMOVE_HISTORY,
                      BrowsingDataHelper::UNPROTECTED_WEB,
-                     base::MakeUnique<RegistrableDomainFilterBuilder>(
-                         RegistrableDomainFilterBuilder::BLACKLIST),
+                     BrowsingDataFilterBuilder::Create(
+                         BrowsingDataFilterBuilder::BLACKLIST),
                      observer.target_a());
   tasks.emplace_back(base::Time(), base::Time::Max(),
                      BrowsingDataRemover::REMOVE_COOKIES,
                      BrowsingDataHelper::PROTECTED_WEB,
-                     base::MakeUnique<RegistrableDomainFilterBuilder>(
-                         RegistrableDomainFilterBuilder::BLACKLIST),
+                     BrowsingDataFilterBuilder::Create(
+                         BrowsingDataFilterBuilder::BLACKLIST),
                      nullptr);
   tasks.emplace_back(
       base::Time::Now(), base::Time::Max(),
       BrowsingDataRemover::REMOVE_PASSWORDS, BrowsingDataHelper::ALL,
-      base::MakeUnique<RegistrableDomainFilterBuilder>(
-          RegistrableDomainFilterBuilder::BLACKLIST),
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::BLACKLIST),
       observer.target_b());
   tasks.emplace_back(
       base::Time(), base::Time::UnixEpoch(),

@@ -1,0 +1,43 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_
+#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_
+
+#include <set>
+
+#include "base/macros.h"
+#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
+
+class BrowsingDataFilterBuilderImpl : public BrowsingDataFilterBuilder {
+ public:
+  explicit BrowsingDataFilterBuilderImpl(Mode mode);
+  ~BrowsingDataFilterBuilderImpl() override;
+
+  // BrowsingDataFilterBuilder implementation:
+  void AddOrigin(const url::Origin& origin) override;
+  void AddRegisterableDomain(const std::string& registrable_domain) override;
+  bool IsEmptyBlacklist() const override;
+  base::RepeatingCallback<bool(const GURL&)>
+      BuildGeneralFilter() const override;
+  base::RepeatingCallback<bool(const net::CanonicalCookie& pattern)>
+      BuildCookieFilter() const override;
+  base::RepeatingCallback<bool(const std::string& server_id)>
+      BuildChannelIDFilter() const override;
+  base::RepeatingCallback<bool(const std::string& site)>
+      BuildPluginFilter() const override;
+  Mode GetMode() const override;
+  std::unique_ptr<BrowsingDataFilterBuilder> Copy() const override;
+  bool operator==(const BrowsingDataFilterBuilder& other) const override;
+
+ private:
+  Mode mode_;
+
+  std::set<url::Origin> origins_;
+  std::set<std::string> domains_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataFilterBuilderImpl);
+};
+
+#endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_

@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -389,7 +388,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Therefore, clearing history for a small set of origins (WHITELIST) should
     // never delete any extension launch times, while clearing for almost all
     // origins (BLACKLIST) should always delete all of extension launch times.
-    if (filter_builder.mode() == BrowsingDataFilterBuilder::BLACKLIST) {
+    if (filter_builder.GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
       extensions::ExtensionPrefs* extension_prefs =
           extensions::ExtensionPrefs::Get(profile_);
       extension_prefs->ClearLastLaunchTimes();

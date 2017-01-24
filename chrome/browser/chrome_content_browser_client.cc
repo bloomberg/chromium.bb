@@ -34,11 +34,10 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/origin_filter_builder.h"
-#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/budget_service/budget_service_impl.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
@@ -2639,8 +2638,8 @@ void ChromeContentBrowserClient::ClearSiteData(
     if (domain.empty())
       domain = origin.host();  // IP address or internal hostname.
 
-    std::unique_ptr<RegistrableDomainFilterBuilder> domain_filter_builder(
-        new RegistrableDomainFilterBuilder(
+    std::unique_ptr<BrowsingDataFilterBuilder> domain_filter_builder(
+        BrowsingDataFilterBuilder::Create(
             BrowsingDataFilterBuilder::WHITELIST));
     domain_filter_builder->AddRegisterableDomain(domain);
 
@@ -2667,8 +2666,9 @@ void ChromeContentBrowserClient::ClearSiteData(
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
 
   if (remove_mask) {
-    std::unique_ptr<OriginFilterBuilder> origin_filter_builder(
-        new OriginFilterBuilder(BrowsingDataFilterBuilder::WHITELIST));
+    std::unique_ptr<BrowsingDataFilterBuilder> origin_filter_builder(
+        BrowsingDataFilterBuilder::Create(
+            BrowsingDataFilterBuilder::WHITELIST));
     origin_filter_builder->AddOrigin(origin);
 
     remover->RemoveWithFilterAndReply(
