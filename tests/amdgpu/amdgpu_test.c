@@ -108,12 +108,17 @@ static void display_test_suites(void)
 
 
 /** Help string for command line parameters */
-static const char usage[] = "Usage: %s [-hl] [<-s <suite id>> [-t <test id>]]\n"
-				"where:\n"
-				"       l - Display all suites and their tests\n"
-				"       h - Display this help\n";
+static const char usage[] =
+	"Usage: %s [-hlp] [<-s <suite id>> [-t <test id>]] "
+	"[-b <pci_bus_id> [-d <pci_device_id>]]\n"
+	"where:\n"
+	"       l - Display all suites and their tests\n"
+	"       b - Specify device's PCI bus id to run tests\n"
+	"       d - Specify device's PCI device id to run tests (optional)\n"
+	"       p - Display information of AMDGPU devices in system\n"
+	"       h - Display this help\n";
 /** Specified options strings for getopt */
-static const char options[]   = "hls:t:";
+static const char options[]   = "hlps:t:b:d:";
 
 /* Open AMD devices.
  * Return the number of AMD device openned.
@@ -203,21 +208,79 @@ static void amdgpu_close_devices()
 static void amdgpu_print_devices()
 {
 	int i;
-	for (i = 0; i < MAX_CARDS_SUPPORTED; i++)
-		if (drm_amdgpu[i] >=0) {
-			/** Display version of DRM driver */
-			drmVersionPtr retval = drmGetVersion(drm_amdgpu[0]);
+	drmDevicePtr device;
 
-			if (retval == NULL) {
-				perror("Cannot get version for AMDGPU device");
-				exit(EXIT_FAILURE);
-			}
+	/* Open the first AMD devcie to print driver information. */
+	if (drm_amdgpu[0] >=0) {
+		/* Display AMD driver version information.*/
+		drmVersionPtr retval = drmGetVersion(drm_amdgpu[0]);
 
-			printf("AMDGPU device #%d: "
-				"Name: [%s] : Date [%s] : Description [%s]\n",
-				i, retval->name, retval->date, retval->desc);
-			drmFreeVersion(retval);
+		if (retval == NULL) {
+			perror("Cannot get version for AMDGPU device");
+			return;
 		}
+
+		printf("Driver name: %s, Date: %s, Description: %s.\n",
+			retval->name, retval->date, retval->desc);
+		drmFreeVersion(retval);
+	}
+
+	/* Display information of AMD devices */
+	printf("Devices:\n");
+	for (i = 0; i < MAX_CARDS_SUPPORTED && drm_amdgpu[i] >=0; i++)
+		if (drmGetDevice2(drm_amdgpu[i],
+			DRM_DEVICE_GET_PCI_REVISION,
+			&device) == 0) {
+			if (device->bustype == DRM_BUS_PCI) {
+				printf("PCI ");
+				printf(" domain:%04x",
+					device->businfo.pci->domain);
+				printf(" bus:%02x",
+					device->businfo.pci->bus);
+				printf(" device:%02x",
+					device->businfo.pci->dev);
+				printf(" function:%01x",
+					device->businfo.pci->func);
+				printf(" vendor_id:%04x",
+					device->deviceinfo.pci->vendor_id);
+				printf(" device_id:%04x",
+					device->deviceinfo.pci->device_id);
+				printf(" subvendor_id:%04x",
+					device->deviceinfo.pci->subvendor_id);
+				printf(" subdevice_id:%04x",
+					device->deviceinfo.pci->subdevice_id);
+				printf(" revision_id:%02x",
+					device->deviceinfo.pci->revision_id);
+				printf("\n");
+			}
+			drmFreeDevice(&device);
+		}
+}
+
+/* Find a match AMD device in PCI bus
+ * Return the index of the device or -1 if not found
+ */
+static int amdgpu_find_device(uint8_t bus, uint8_t dev)
+{
+	int i;
+	drmDevicePtr device;
+
+	for (i = 0; i < MAX_CARDS_SUPPORTED && drm_amdgpu[i] >=0; i++)
+		if (drmGetDevice2(drm_amdgpu[i],
+			DRM_DEVICE_GET_PCI_REVISION,
+			&device) == 0) {
+			if (device->bustype == DRM_BUS_PCI)
+				if (device->businfo.pci->bus == bus &&
+					device->businfo.pci->dev == dev) {
+
+					drmFreeDevice(&device);
+					return i;
+				}
+
+			drmFreeDevice(&device);
+		}
+
+	return -1;
 }
 
 /* The main() function for setting up and running the tests.
@@ -230,8 +293,12 @@ int main(int argc, char **argv)
 	int i = 0;
 	int suite_id = -1;	/* By default run everything */
 	int test_id  = -1;	/* By default run all tests in the suite */
+	int pci_bus_id = -1;    /* By default PC bus ID is not specified */
+	int pci_device_id = 0;  /* By default PC device ID is zero */
+	int display_devices = 0;/* By default not to display devices' info */
 	CU_pSuite pSuite = NULL;
 	CU_pTest  pTest  = NULL;
+	int test_device_index;
 
 	for (i = 0; i < MAX_CARDS_SUPPORTED; i++)
 		drm_amdgpu[i] = -1;
@@ -249,6 +316,15 @@ int main(int argc, char **argv)
 			break;
 		case 't':
 			test_id = atoi(optarg);
+			break;
+		case 'b':
+			pci_bus_id = atoi(optarg);
+			break;
+		case 'd':
+			pci_device_id = atoi(optarg);
+			break;
+		case 'p':
+			display_devices = 1;
 			break;
 		case '?':
 		case 'h':
@@ -270,7 +346,30 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	amdgpu_print_devices();
+	if (display_devices) {
+		amdgpu_print_devices();
+		amdgpu_close_devices();
+		exit(EXIT_SUCCESS);
+	}
+
+	if (pci_bus_id > 0) {
+		/* A device was specified to run the test */
+		test_device_index = amdgpu_find_device((uint8_t)pci_bus_id,
+							(uint8_t)pci_device_id);
+
+		if (test_device_index >= 0) {
+			/* Most tests run on device of drm_amdgpu[0].
+			 * Swap the chosen device to drm_amdgpu[0].
+			 */
+			i = drm_amdgpu[0];
+			drm_amdgpu[0] = drm_amdgpu[test_device_index];
+			drm_amdgpu[test_device_index] = i;
+		} else {
+			fprintf(stderr,
+				"The specified GPU device does not exist.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	/* Initialize test suites to run */
 
