@@ -532,7 +532,7 @@
                   'ui/events/blink/'
     },
     'installer': {
-      'filepath': 'chrome/installer/',
+      'filepath': 'chrome/install(_static|er)/',
     },
     'installer_linux': {
       'filepath': 'chrome/installer/linux/',
