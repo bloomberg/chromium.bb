@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-textarea.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -69,7 +70,11 @@
                 <paper-input type="text" label="[[item.component.fieldName]]"
                     always-float-label value="{{item.value}}"
                     on-value-changed="updateCanSave_"
-                    class$="address-column [[long_(item)]]"></paper-input>
+                    class$="address-column [[long_(item)]]">
+                  <iron-a11y-keys keys="enter"
+                      on-keys-pressed="onSaveButtonTap_">
+                  </iron-a11y-keys>
+                </paper-input>
               </template>
             </template>
           </div>
@@ -91,6 +96,8 @@
           </span>
         </div>
         <div class="address-row">
+          <iron-a11y-keys keys="enter" on-keys-pressed="onSaveButtonTap_">
+          </iron-a11y-keys>
           <paper-input id="phoneInput" type="text" label="$i18n{addressPhone}"
               always-float-label class="address-column"
               on-value-changed="updateCanSave_" value="{{phoneNumber_}}">

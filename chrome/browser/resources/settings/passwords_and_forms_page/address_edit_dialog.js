@@ -164,6 +164,10 @@ Polymer({
    * @private
    */
   onSaveButtonTap_: function() {
+    // The Enter key can call this function even if the button is disabled.
+    if (!this.canSave_)
+      return;
+
     // Set a default country if none is set.
     if (!this.address.countryCode)
       this.address.countryCode = this.countries_[0].countryCode;
