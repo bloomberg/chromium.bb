@@ -1186,6 +1186,37 @@ message CertificateBasedDeviceRegistrationData {
   optional DeviceRegisterRequest device_register_request = 3;
 }
 
+// Gets an enrollment token to a managed Google Play account for using it with
+// Active Directory. Sent when a new user logs in with Active Directory and
+// opens Play Store for the first time.
+message ActiveDirectoryEnrollPlayUserRequest {}
+
+// The result when a new user logs in to Play Store with Active Directory.
+// 903 Arc Disabled HTTP error code is returned if the reason of the failure is
+//     that ARC is not enabled for the domain.
+// 403 Forbidden HTTP error code is returned if the device can't get Managed
+//     Google Play accounts.
+message ActiveDirectoryEnrollPlayUserResponse {
+  // The enrollment token which can be used to fetch a Managed Google Play
+  // account.
+  optional string enrollment_token = 1;
+  // The user id which identifies the user enrolled by this token. This user id
+  // is opaque to the client and is only used in the ActiveDirectoryPlayActivity
+  // requests.
+  optional string user_id = 2;
+}
+
+// Reports that a managed Google Play account is used. This makes the garbage
+// collection of accounts possible by reporting the ones which are still in use.
+message ActiveDirectoryPlayActivityRequest {
+  // The user id received in ActiveDirectoryEnrollPlayUserResponse which
+  // identifies the user.
+  optional string user_id = 1;
+}
+
+// Response to the Play account activity request.
+message ActiveDirectoryPlayActivityResponse {}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -1212,6 +1243,8 @@ message CertificateBasedDeviceRegistrationData {
 //     * gcm_id_update
 //     * check_android_management
 //     * certificate_based_register
+//     * active_directory_enroll_play_user
+//     * active_directory_play_activity
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
@@ -1221,8 +1254,9 @@ message CertificateBasedDeviceRegistrationData {
 //   * For register, ping and check_android_management requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
-//   * For unregister, policy, status, cert_upload, remote commands requests,
-//     and gcm id update requests
+//   * For unregister, policy, status, cert_upload, remote_commands,
+//     gcm_id_update, active_directory_enroll_play_user and
+//     active_directory_play_activity requests
 //      Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check or for
@@ -1306,6 +1340,14 @@ message DeviceManagementRequest {
   optional CertificateBasedDeviceRegisterRequest
       certificate_based_register_request = 18;
 
+  // Gets an enrollment token to a Managed Google Play Account for using it with
+  // Active Directory.
+  optional ActiveDirectoryEnrollPlayUserRequest
+      active_directory_enroll_play_user_request = 19;
+
+  // Reports that a Play account is used.
+  optional ActiveDirectoryPlayActivityRequest
+      active_directory_play_activity_request = 20;
 }
 
 // Response from server to device.
@@ -1327,6 +1369,7 @@ message DeviceManagementRequest {
 // 500 Internal Server Error: most likely a bug in DM server.
 // 503 Service Unavailable: most likely a backend error.
 // 902 Policy Not Found: the policy is not found.
+// 903 Arc Disabled: ARC is not enabled on the domain.
 message DeviceManagementResponse {
   // TODO(hong): move error handling to HTTP level.
   // Error code to client.
@@ -1409,4 +1452,12 @@ message DeviceManagementResponse {
   // Response to check Android management request.
   optional CheckAndroidManagementResponse
       check_android_management_response = 18;
+
+  // Response to an Active Directory Play user enrollment request.
+  optional ActiveDirectoryEnrollPlayUserResponse
+      active_directory_enroll_play_user_response = 19;
+
+  // Response to a Play activity request.
+  optional ActiveDirectoryPlayActivityResponse
+      active_directory_play_activity_response = 20;
 }
