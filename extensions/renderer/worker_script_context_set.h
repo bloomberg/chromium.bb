@@ -6,9 +6,9 @@
 #define EXTENSIONS_RENDERER_WORKER_SCRIPT_CONTEXT_SET_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_local.h"
 #include "content/public/child/worker_thread.h"
 #include "url/gurl.h"
@@ -37,7 +37,8 @@ class WorkerScriptContextSet : public content::WorkerThread::Observer {
   void WillStopCurrentWorkerThread() override;
 
   // Implement thread safety by storing each ScriptContext in TLS.
-  base::ThreadLocalPointer<ScopedVector<ScriptContext>> contexts_tls_;
+  base::ThreadLocalPointer<std::vector<std::unique_ptr<ScriptContext>>>
+      contexts_tls_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerScriptContextSet);
 };

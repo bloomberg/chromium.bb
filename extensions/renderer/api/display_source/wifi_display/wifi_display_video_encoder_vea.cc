@@ -7,6 +7,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/task_runner_util.h"
@@ -69,7 +70,7 @@ class WiFiDisplayVideoEncoderVEA final
   // FIFO list.
   std::list<InProgressFrameEncode> in_progress_frame_encodes_;
   media::VideoEncodeAccelerator* vea_;  // Owned on media thread.
-  ScopedVector<base::SharedMemory> output_buffers_;
+  std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
   size_t output_buffers_count_;
   CreateEncodeMemoryCallback create_video_encode_memory_cb_;
 };
@@ -191,7 +192,7 @@ void WiFiDisplayVideoEncoderVEA::BitstreamBufferReady(
              << ": invalid bitstream_buffer_id=" << bitstream_buffer_id;
     return;
   }
-  base::SharedMemory* output_buffer = output_buffers_[bitstream_buffer_id];
+  const auto& output_buffer = output_buffers_[bitstream_buffer_id];
   if (payload_size > output_buffer->mapped_size()) {
     DVLOG(1) << "WiFiDisplayVideoEncoderVEA::BitstreamBufferReady()"
              << ": invalid payload_size=" << payload_size;

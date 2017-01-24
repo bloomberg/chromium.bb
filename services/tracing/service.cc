@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
@@ -55,7 +56,7 @@ void Service::CreateRecorder(mojom::ProviderPtr provider) {
   if (tracing_active_) {
     mojom::RecorderPtr recorder_ptr;
     recorder_impls_.push_back(
-        new Recorder(MakeRequest(&recorder_ptr), sink_.get()));
+        base::MakeUnique<Recorder>(MakeRequest(&recorder_ptr), sink_.get()));
     provider->StartTracing(tracing_categories_, std::move(recorder_ptr));
   }
   provider_ptrs_.AddPtr(std::move(provider));
@@ -68,7 +69,8 @@ void Service::Start(mojo::ScopedDataPipeProducerHandle stream,
   provider_ptrs_.ForAllPtrs(
     [categories, this](mojom::Provider* controller) {
       mojom::RecorderPtr ptr;
-      recorder_impls_.push_back(new Recorder(MakeRequest(&ptr), sink_.get()));
+      recorder_impls_.push_back(
+          base::MakeUnique<Recorder>(MakeRequest(&ptr), sink_.get()));
       controller->StartTracing(categories, std::move(ptr));
     });
   tracing_active_ = true;
@@ -106,7 +108,7 @@ void Service::StopAndFlush() {
     MojoDeadline mojo_deadline = end - now;
     std::vector<mojo::Handle> handles;
     std::vector<MojoHandleSignals> signals;
-    for (auto* it : recorder_impls_) {
+    for (const auto& it : recorder_impls_) {
       handles.push_back(it->RecorderHandle());
       signals.push_back(MOJO_HANDLE_SIGNAL_READABLE |
                         MOJO_HANDLE_SIGNAL_PEER_CLOSED);
