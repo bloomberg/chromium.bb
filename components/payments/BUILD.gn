@@ -35,6 +35,7 @@ if (!is_ios) {
       "payment_request.cc",
       "payment_request.h",
       "payment_request_delegate.h",
+      "payment_request_dialog.h",
       "payment_request_web_contents_manager.cc",
       "payment_request_web_contents_manager.h",
     ]

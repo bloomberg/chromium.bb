@@ -7,10 +7,14 @@
 
 #include "base/macros.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
-#include "chrome/browser/ui/views/payments/payment_request_dialog.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace views {
+class WidgetObserver;
 }
 
 namespace payments {
@@ -22,12 +26,14 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
  public:
   TestChromePaymentRequestDelegate(
       content::WebContents* web_contents,
-      PaymentRequestDialog::ObserverForTest* observer);
+      PaymentRequestDialogView::ObserverForTest* observer,
+      views::WidgetObserver* widget_observer);
 
-  void ShowPaymentRequestDialog(PaymentRequest* request) override;
+  void ShowDialog(PaymentRequest* request) override;
 
  private:
-  PaymentRequestDialog::ObserverForTest* observer_;
+  PaymentRequestDialogView::ObserverForTest* observer_;
+  views::WidgetObserver* widget_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromePaymentRequestDelegate);
 };

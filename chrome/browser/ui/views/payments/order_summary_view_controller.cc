@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/views/payments/payment_request_dialog.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/currency_formatter.h"
@@ -74,7 +74,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
 
 OrderSummaryViewController::OrderSummaryViewController(
     PaymentRequest* request,
-    PaymentRequestDialog* dialog)
+    PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(request, dialog) {}
 
 OrderSummaryViewController::~OrderSummaryViewController() {}

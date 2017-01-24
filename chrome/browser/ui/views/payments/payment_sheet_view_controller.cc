@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/views/payments/payment_request_dialog.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -168,7 +168,7 @@ int ComputeWidestNameColumnViewWidth() {
 
 PaymentSheetViewController::PaymentSheetViewController(
     PaymentRequest* request,
-    PaymentRequestDialog* dialog)
+    PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(request, dialog),
       widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {}
 

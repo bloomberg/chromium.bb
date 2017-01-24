@@ -10,14 +10,19 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/ui/views/payments/payment_request_dialog.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/payments/payment_request.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace views {
+class Widget;
+}
 
 namespace payments {
 
@@ -27,7 +32,8 @@ class PaymentRequest;
 // the UI and interact with it.
 class PaymentRequestInteractiveTestBase
     : public InProcessBrowserTest,
-      public PaymentRequestDialog::ObserverForTest {
+      public PaymentRequestDialogView::ObserverForTest,
+      public views::WidgetObserver {
  protected:
   // Test will open a browser window to |test_file_path| (relative to
   // chrome/test/data/payments).
@@ -37,8 +43,12 @@ class PaymentRequestInteractiveTestBase
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
-  // PaymentRequestDialog::ObserverForTest
+  // PaymentRequestDialogView::ObserverForTest
   void OnDialogOpened() override;
+
+  // views::WidgetObserver
+  // Effective way to be warned of all dialog closures.
+  void OnWidgetDestroyed(views::Widget* widget) override;
 
   // Will call JavaScript to invoke the PaymentRequest dialog and verify that
   // it's open.
@@ -57,10 +67,10 @@ class PaymentRequestInteractiveTestBase
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
- private:
   // Various events that can be waited on by the DialogEventObserver.
   enum DialogEvent {
     DIALOG_OPENED,
+    DIALOG_CLOSED,
   };
 
   // DialogEventObserver is used to wait on specific events that may have
@@ -94,9 +104,15 @@ class PaymentRequestInteractiveTestBase
     DISALLOW_COPY_AND_ASSIGN(DialogEventObserver);
   };
 
+  // Resets the event observer for a given |event|.
+  void ResetEventObserver(DialogEvent event);
+  // Wait for the event passed to ResetEventObserver() to occur.
+  void WaitForObservedEvent();
+
+ private:
+  std::unique_ptr<DialogEventObserver> event_observer_;
   const std::string test_file_path_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  std::unique_ptr<DialogEventObserver> event_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestInteractiveTestBase);
 };

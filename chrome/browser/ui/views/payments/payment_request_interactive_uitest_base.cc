@@ -63,6 +63,12 @@ void PaymentRequestInteractiveTestBase::OnDialogOpened() {
     event_observer_->Observe(DialogEvent::DIALOG_OPENED);
 }
 
+void PaymentRequestInteractiveTestBase::OnWidgetDestroyed(
+    views::Widget* widget) {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
+}
+
 void PaymentRequestInteractiveTestBase::InvokePaymentRequestUI() {
   event_observer_.reset(new DialogEventObserver(DialogEvent::DIALOG_OPENED));
 
@@ -103,10 +109,11 @@ void PaymentRequestInteractiveTestBase::CreatePaymentRequestForTest(
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
   DCHECK(web_contents);
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
-      ->CreatePaymentRequest(web_contents,
-                             base::MakeUnique<TestChromePaymentRequestDelegate>(
-                                 web_contents, this /* observer */),
-                             std::move(request));
+      ->CreatePaymentRequest(
+          web_contents,
+          base::MakeUnique<TestChromePaymentRequestDelegate>(
+              web_contents, this /* observer */, this /* widget_observer */),
+          std::move(request));
 }
 
 PaymentRequestInteractiveTestBase::DialogEventObserver::DialogEventObserver(
@@ -125,9 +132,21 @@ void PaymentRequestInteractiveTestBase::DialogEventObserver::Wait() {
 
 void PaymentRequestInteractiveTestBase::DialogEventObserver::Observe(
     PaymentRequestInteractiveTestBase::DialogEvent event) {
+  if (seen_)
+    return;
+
+  DCHECK_EQ(event_, event);
   seen_ = true;
-  if (event == event_ && run_loop_.running())
+  if (run_loop_.running())
     run_loop_.Quit();
+}
+
+void PaymentRequestInteractiveTestBase::ResetEventObserver(DialogEvent event) {
+  event_observer_.reset(new DialogEventObserver(event));
+}
+
+void PaymentRequestInteractiveTestBase::WaitForObservedEvent() {
+  event_observer_->Wait();
 }
 
 }  // namespace payments

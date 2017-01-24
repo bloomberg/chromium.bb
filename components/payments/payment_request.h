@@ -43,12 +43,20 @@ class PaymentRequest : payments::mojom::PaymentRequest {
             payments::mojom::PaymentOptionsPtr options) override;
   void Show() override;
   void UpdateWith(payments::mojom::PaymentDetailsPtr details) override {}
-  void Abort() override {}
+  void Abort() override;
   void Complete(payments::mojom::PaymentComplete result) override {}
   void CanMakePayment() override {}
 
-  void Cancel();
-  void OnError();
+  // Called when the user explicitely cancelled the flow. Will send a message
+  // to the renderer which will indirectly destroy this object (through
+  // OnConnectionTerminated).
+  void UserCancelled();
+
+  // As a result of a browser-side error or renderer-initiated mojo channel
+  // closure (e.g. there was an error on the renderer side, or payment was
+  // successful), this method is called. It is responsible for cleaning up,
+  // such as possibly closing the dialog.
+  void OnConnectionTerminated();
 
   // Returns the CurrencyFormatter instance for this PaymentRequest.
   // |locale_name| should be the result of the browser's GetApplicationLocale().

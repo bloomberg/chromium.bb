@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/payments/payment_request_dialog.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 
 #include <utility>
 
@@ -14,16 +14,17 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/payment_request.h"
+#include "components/payments/payment_request_dialog.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace chrome {
 
-void ShowPaymentRequestDialog(payments::PaymentRequest* request) {
-  payments::PaymentRequestDialog::ShowWebModalPaymentDialog(
-      new payments::PaymentRequestDialog(request, /* no observer */ nullptr),
-      request);
+payments::PaymentRequestDialog* CreatePaymentRequestDialog(
+    payments::PaymentRequest* request) {
+  return new payments::PaymentRequestDialogView(request,
+                                                /* no observer */ nullptr);
 }
 
 }  // namespace chrome
@@ -39,7 +40,7 @@ template <typename Controller>
 std::unique_ptr<views::View> CreateViewAndInstallController(
     payments::ControllerMap* map,
     payments::PaymentRequest* request,
-    payments::PaymentRequestDialog* dialog) {
+    payments::PaymentRequestDialogView* dialog) {
   std::unique_ptr<Controller> controller =
       base::MakeUnique<Controller>(request, dialog);
   std::unique_ptr<views::View> view = controller->CreateView();
@@ -49,10 +50,10 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 
 }  // namespace
 
-PaymentRequestDialog::PaymentRequestDialog(
+PaymentRequestDialogView::PaymentRequestDialogView(
     PaymentRequest* request,
-    PaymentRequestDialog::ObserverForTest* observer)
-    : request_(request), observer_(observer) {
+    PaymentRequestDialogView::ObserverForTest* observer)
+    : request_(request), observer_for_testing_(observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SetLayoutManager(new views::FillLayout());
 
@@ -62,19 +63,21 @@ PaymentRequestDialog::PaymentRequestDialog(
   ShowInitialPaymentSheet();
 }
 
-PaymentRequestDialog::~PaymentRequestDialog() {}
+PaymentRequestDialogView::~PaymentRequestDialogView() {}
 
-ui::ModalType PaymentRequestDialog::GetModalType() const {
+ui::ModalType PaymentRequestDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-bool PaymentRequestDialog::Cancel() {
+bool PaymentRequestDialogView::Cancel() {
+  // Called when the widget is about to close. We send a message to the
+  // PaymentRequest object to signal user cancellation.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  request_->Cancel();
+  request_->UserCancelled();
   return true;
 }
 
-bool PaymentRequestDialog::ShouldShowCloseButton() const {
+bool PaymentRequestDialogView::ShouldShowCloseButton() const {
   // Don't show the normal close button on the dialog. This is because the
   // typical dialog header doesn't allow displaying anything other that the
   // title and the close button. This is insufficient for the PaymentRequest
@@ -84,54 +87,51 @@ bool PaymentRequestDialog::ShouldShowCloseButton() const {
   return false;
 }
 
-int PaymentRequestDialog::GetDialogButtons() const {
+int PaymentRequestDialogView::GetDialogButtons() const {
   // The buttons should animate along with the different dialog sheets since
   // each sheet presents a different set of buttons. Because of this, hide the
   // usual dialog buttons.
   return ui::DIALOG_BUTTON_NONE;
 }
 
-void PaymentRequestDialog::GoBack() {
+void PaymentRequestDialogView::GoBack() {
   view_stack_.Pop();
 }
 
-void PaymentRequestDialog::ShowOrderSummary() {
+void PaymentRequestDialogView::ShowOrderSummary() {
   view_stack_.Push(CreateViewAndInstallController<OrderSummaryViewController>(
                        &controller_map_, request_, this),
                    true);
 }
 
-void PaymentRequestDialog::ShowPaymentMethodSheet() {
-    view_stack_.Push(
-        CreateViewAndInstallController<PaymentMethodViewController>(
-            &controller_map_, request_, this),
-        true);
+void PaymentRequestDialogView::ShowPaymentMethodSheet() {
+  view_stack_.Push(CreateViewAndInstallController<PaymentMethodViewController>(
+                       &controller_map_, request_, this),
+                   true);
 }
 
-void PaymentRequestDialog::CloseDialog() {
+void PaymentRequestDialogView::ShowDialog() {
+  constrained_window::ShowWebModalDialogViews(this, request_->web_contents());
+}
+
+void PaymentRequestDialogView::CloseDialog() {
+  // This calls PaymentRequestDialogView::Cancel() before closing.
   GetWidget()->Close();
 }
 
-// static
-void PaymentRequestDialog::ShowWebModalPaymentDialog(
-    PaymentRequestDialog* dialog,
-    PaymentRequest* request) {
-  constrained_window::ShowWebModalDialogViews(dialog, request->web_contents());
-}
-
-void PaymentRequestDialog::ShowInitialPaymentSheet() {
+void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   view_stack_.Push(CreateViewAndInstallController<PaymentSheetViewController>(
                        &controller_map_, request_, this),
                    false);
-  if (observer_)
-    observer_->OnDialogOpened();
+  if (observer_for_testing_)
+    observer_for_testing_->OnDialogOpened();
 }
 
-gfx::Size PaymentRequestDialog::GetPreferredSize() const {
+gfx::Size PaymentRequestDialogView::GetPreferredSize() const {
   return gfx::Size(450, 450);
 }
 
-void PaymentRequestDialog::ViewHierarchyChanged(
+void PaymentRequestDialogView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   // When a view that is associated with a controller is removed from this
   // view's descendants, dispose of the controller.

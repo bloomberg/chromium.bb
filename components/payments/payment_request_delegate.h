@@ -18,7 +18,11 @@ class PaymentRequestDelegate {
   virtual ~PaymentRequestDelegate() {}
 
   // Shows the Payment Request dialog for the given |request|.
-  virtual void ShowPaymentRequestDialog(PaymentRequest* request) = 0;
+  virtual void ShowDialog(PaymentRequest* request) = 0;
+
+  // Closes the same dialog that was opened by this delegate. Must be safe to
+  // call when the dialog is not showing.
+  virtual void CloseDialog() = 0;
 
   // Gets the PersonalDataManager associated with this PaymentRequest flow.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;

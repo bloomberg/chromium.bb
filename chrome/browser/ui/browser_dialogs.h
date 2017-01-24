@@ -50,6 +50,7 @@ class URLRequest;
 
 namespace payments {
 class PaymentRequest;
+class PaymentRequestDialog;
 }
 
 namespace security_state {
@@ -150,7 +151,8 @@ void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
                              const BookmarkEditor::EditDetails& details,
                              BookmarkEditor::Configuration configuration);
 
-void ShowPaymentRequestDialog(payments::PaymentRequest* request);
+payments::PaymentRequestDialog* CreatePaymentRequestDialog(
+    payments::PaymentRequest* request);
 
 #if defined(OS_MACOSX)
 

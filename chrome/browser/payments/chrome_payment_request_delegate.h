@@ -15,14 +15,22 @@ class WebContents;
 namespace payments {
 
 class PaymentRequest;
+class PaymentRequestDialog;
 
 class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
  public:
   explicit ChromePaymentRequestDelegate(content::WebContents* web_contents);
   ~ChromePaymentRequestDelegate() override {}
 
-  void ShowPaymentRequestDialog(PaymentRequest* request) override;
+  void ShowDialog(PaymentRequest* request) override;
+  void CloseDialog() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
+
+ protected:
+  // Reference to the dialog so that we can satisfy calls to CloseDialog(). This
+  // reference is invalid once CloseDialog() has been called on it, because the
+  // dialog will be destroyed. Protected for testing.
+  PaymentRequestDialog* dialog_;
 
  private:
   // Not owned but outlives the PaymentRequest object that owns this.

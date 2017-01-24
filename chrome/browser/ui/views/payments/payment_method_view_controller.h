@@ -12,7 +12,7 @@
 namespace payments {
 
 class PaymentRequest;
-class PaymentRequestDialog;
+class PaymentRequestDialogView;
 
 // The PaymentRequestSheetController subtype for the Payment Method screen of
 // the Payment Request flow.
@@ -21,7 +21,7 @@ class PaymentMethodViewController : public PaymentRequestSheetController,
  public:
   // Does not take ownership of the arguments, which should outlive this object.
   PaymentMethodViewController(PaymentRequest* request,
-                              PaymentRequestDialog* dialog);
+                              PaymentRequestDialogView* dialog);
   ~PaymentMethodViewController() override;
 
   // PaymentRequestSheetController:

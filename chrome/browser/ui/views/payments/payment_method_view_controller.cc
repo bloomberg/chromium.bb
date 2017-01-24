@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/views/payments/payment_request_dialog.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
@@ -18,8 +18,9 @@
 namespace payments {
 
 PaymentMethodViewController::PaymentMethodViewController(
-    PaymentRequest* request, PaymentRequestDialog* dialog)
-  : PaymentRequestSheetController(request, dialog) {}
+    PaymentRequest* request,
+    PaymentRequestDialogView* dialog)
+    : PaymentRequestSheetController(request, dialog) {}
 
 PaymentMethodViewController::~PaymentMethodViewController() {}
 

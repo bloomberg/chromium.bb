@@ -16,7 +16,7 @@ class View;
 
 namespace payments {
 
-class PaymentRequestDialog;
+class PaymentRequestDialogView;
 class PaymentRequest;
 
 // The base class for objects responsible for the creation and event handling in
@@ -28,7 +28,7 @@ class PaymentRequestSheetController {
   // |request| is also not owned by this and is guaranteed to outlive dialog.
   // Neither |request| or |dialog| should be null.
   PaymentRequestSheetController(PaymentRequest* request,
-                                PaymentRequestDialog* dialog)
+                                PaymentRequestDialogView* dialog)
       : request_(request), dialog_(dialog) {
     DCHECK(request_);
     DCHECK(dialog_);
@@ -43,13 +43,13 @@ class PaymentRequestSheetController {
 
   // The dialog that contains and owns this object.
   // Caller should not take ownership of the result.
-  PaymentRequestDialog* dialog() { return dialog_; }
+  PaymentRequestDialogView* dialog() { return dialog_; }
 
  private:
   // Not owned. Will outlive this.
   PaymentRequest* request_;
   // Not owned. Will outlive this.
-  PaymentRequestDialog* dialog_;
+  PaymentRequestDialogView* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);
 };
