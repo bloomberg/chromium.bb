@@ -1588,8 +1588,14 @@ void WebGLRenderingContextBase::reshape(int width, int height) {
   if (isContextLost())
     return;
 
+  GLint buffer = 0;
   if (isWebGL2OrHigher()) {
-    contextGL()->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    // This query returns client side cached binding, so it's trivial.
+    // If it changes in the future, such query is heavy and should be avoided.
+    contextGL()->GetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &buffer);
+    if (buffer) {
+      contextGL()->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
   }
 
   // This is an approximation because at WebGLRenderingContextBase level we
@@ -1618,6 +1624,11 @@ void WebGLRenderingContextBase::reshape(int width, int height) {
   // We don't have to mark the canvas as dirty, since the newly created image
   // buffer will also start off clear (and this matches what reshape will do).
   drawingBuffer()->resize(IntSize(width, height));
+
+  if (buffer) {
+    contextGL()->BindBuffer(GL_PIXEL_UNPACK_BUFFER,
+                            static_cast<GLuint>(buffer));
+  }
 }
 
 int WebGLRenderingContextBase::drawingBufferWidth() const {
