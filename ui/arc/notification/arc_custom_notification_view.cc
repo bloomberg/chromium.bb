@@ -259,7 +259,10 @@ ArcCustomNotificationView::CreateContentViewDelegate() {
 }
 
 void ArcCustomNotificationView::CreateFloatingCloseButton() {
-  if (!surface_)
+  // Floating close button is a transient child of |surface_| and also part
+  // of the hosting widget's focus chain. It could only be created when both
+  // are present.
+  if (!surface_ || !GetWidget())
     return;
 
   floating_close_button_ = new CloseButton(this);
@@ -301,9 +304,6 @@ void ArcCustomNotificationView::SetSurface(exo::NotificationSurface* surface) {
 
     if (GetWidget())
       AttachSurface();
-
-    if (item_)
-      UpdatePinnedState();
   }
 }
 
@@ -377,6 +377,11 @@ void ArcCustomNotificationView::AttachSurface() {
 
   // Invokes Update() in case surface is attached during a slide.
   slide_helper_->Update();
+
+  // Updates pinned state to create or destroy the floating close button
+  // after |surface_| is attached to a widget.
+  if (item_)
+    UpdatePinnedState();
 }
 
 void ArcCustomNotificationView::ViewHierarchyChanged(
