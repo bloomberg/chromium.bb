@@ -37,8 +37,9 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Text.h"
+#include "core/editing/EditingStyle.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/editing/FrameSelection.h"
+#include "core/editing/Editor.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
@@ -1352,7 +1353,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
   // doesn't seem to be any work performed after this that queries or uses the
   // typing style.
   if (LocalFrame* frame = document().frame())
-    frame->selection().clearTypingStyle();
+    frame->editor().clearTypingStyle();
 
   removeHeadContents(fragment);
 

@@ -166,7 +166,7 @@ void InsertTextCommand::doApply(EditingState* editingState) {
       return;
     if (endOfSelectionWasAtStartOfBlock) {
       if (EditingStyle* typingStyle =
-              document().frame()->selection().typingStyle())
+              document().frame()->editor().typingStyle())
         typingStyle->removeBlockProperties();
     }
   } else if (document().frame()->editor().isOverwriteModeEnabled()) {
@@ -265,8 +265,7 @@ void InsertTextCommand::doApply(EditingState* editingState) {
   setEndingSelectionWithoutValidation(startPosition, endPosition);
 
   // Handle the case where there is a typing style.
-  if (EditingStyle* typingStyle =
-          document().frame()->selection().typingStyle()) {
+  if (EditingStyle* typingStyle = document().frame()->editor().typingStyle()) {
     typingStyle->prepareToApplyAt(endPosition,
                                   EditingStyle::PreserveWritingDirection);
     if (!typingStyle->isEmpty()) {

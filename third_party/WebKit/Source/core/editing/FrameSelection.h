@@ -30,7 +30,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/dom/SynchronousMutationObserver.h"
-#include "core/editing/EditingStyle.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
@@ -249,10 +248,6 @@ class CORE_EXPORT FrameSelection final
   void setFocusedNodeIfNeeded();
   void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
-  EditingStyle* typingStyle() const;
-  void setTypingStyle(EditingStyle*);
-  void clearTypingStyle();
-
   String selectedHTMLForClipboard() const;
   String selectedText(TextIteratorBehavior = TextIteratorDefaultBehavior) const;
   String selectedTextForClipboard() const;
@@ -350,8 +345,6 @@ class CORE_EXPORT FrameSelection final
   TextGranularity m_granularity;
   LayoutUnit m_xPosForVerticalArrowNavigation;
 
-  Member<EditingStyle> m_typingStyle;
-
   bool m_focused : 1;
 
   HandleVisibility m_handleVisibility = HandleVisibility::NotVisible;
@@ -364,17 +357,6 @@ class CORE_EXPORT FrameSelection final
   bool m_useSecureKeyboardEntryWhenActive = false;
 };
 
-inline EditingStyle* FrameSelection::typingStyle() const {
-  return m_typingStyle.get();
-}
-
-inline void FrameSelection::clearTypingStyle() {
-  m_typingStyle.clear();
-}
-
-inline void FrameSelection::setTypingStyle(EditingStyle* style) {
-  m_typingStyle = style;
-}
 }  // namespace blink
 
 #ifndef NDEBUG

@@ -1151,7 +1151,7 @@ void EditingStyle::prepareToApplyAt(
 void EditingStyle::mergeTypingStyle(Document* document) {
   DCHECK(document);
 
-  EditingStyle* typingStyle = document->frame()->selection().typingStyle();
+  EditingStyle* typingStyle = document->frame()->editor().typingStyle();
   if (!typingStyle || typingStyle == this)
     return;
 

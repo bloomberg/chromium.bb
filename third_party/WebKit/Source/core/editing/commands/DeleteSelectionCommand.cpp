@@ -974,7 +974,7 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(
 void DeleteSelectionCommand::calculateTypingStyleAfterDelete() {
   // Clearing any previously set typing style and doing an early return.
   if (!m_typingStyle) {
-    document().frame()->selection().clearTypingStyle();
+    document().frame()->editor().clearTypingStyle();
     return;
   }
 
@@ -1000,7 +1000,7 @@ void DeleteSelectionCommand::calculateTypingStyleAfterDelete() {
   // should have the same style as the just deleted ones, but, if we change the
   // selection, come back and start typing that style should be lost.  Also see
   // preserveTypingStyle() below.
-  document().frame()->selection().setTypingStyle(m_typingStyle);
+  document().frame()->editor().setTypingStyle(m_typingStyle);
 }
 
 void DeleteSelectionCommand::clearTransientState() {

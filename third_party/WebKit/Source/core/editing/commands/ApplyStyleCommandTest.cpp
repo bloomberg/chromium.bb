@@ -6,6 +6,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
+#include "core/editing/EditingStyle.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"

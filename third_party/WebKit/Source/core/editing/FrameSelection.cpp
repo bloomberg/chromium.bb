@@ -207,7 +207,7 @@ void FrameSelection::setSelectionAlgorithm(
     TypingCommand::closeTyping(m_frame);
 
   if (shouldClearTypingStyle)
-    clearTypingStyle();
+    m_frame->editor().clearTypingStyle();
 
   if (m_selectionEditor->visibleSelection<Strategy>() == s &&
       m_handleVisibility == handleVisibility) {
@@ -727,7 +727,7 @@ void FrameSelection::contextDestroyed(Document* document) {
   if (!view.isNull())
     view.clearSelection();
 
-  clearTypingStyle();
+  m_frame->editor().clearTypingStyle();
   m_selectionEditor->documentDetached(*document);
 }
 
@@ -1298,7 +1298,6 @@ DEFINE_TRACE(FrameSelection) {
   visitor->trace(m_frame);
   visitor->trace(m_pendingSelection);
   visitor->trace(m_selectionEditor);
-  visitor->trace(m_typingStyle);
   visitor->trace(m_frameCaret);
   SynchronousMutationObserver::trace(visitor);
 }

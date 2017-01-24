@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/editing/EditingBehavior.h"
+#include "core/editing/EditingStyle.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
 #include "core/editing/FrameSelection.h"
@@ -305,6 +306,10 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   };
   friend class RevealSelectionScope;
 
+  EditingStyle* typingStyle() const;
+  void setTypingStyle(EditingStyle*);
+  void clearTypingStyle();
+
   DECLARE_TRACE();
 
  private:
@@ -319,6 +324,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool m_areMarkedTextMatchesHighlighted;
   EditorParagraphSeparator m_defaultParagraphSeparator;
   bool m_overwriteModeEnabled;
+  Member<EditingStyle> m_typingStyle;
 
   explicit Editor(LocalFrame&);
 
@@ -366,6 +372,18 @@ inline void Editor::setMark(const VisibleSelection& selection) {
 
 inline bool Editor::markedTextMatchesAreHighlighted() const {
   return m_areMarkedTextMatchesHighlighted;
+}
+
+inline EditingStyle* Editor::typingStyle() const {
+  return m_typingStyle.get();
+}
+
+inline void Editor::clearTypingStyle() {
+  m_typingStyle.clear();
+}
+
+inline void Editor::setTypingStyle(EditingStyle* style) {
+  m_typingStyle = style;
 }
 
 }  // namespace blink

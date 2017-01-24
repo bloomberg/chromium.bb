@@ -456,7 +456,7 @@ static TriState stateTextWritingDirection(LocalFrame& frame,
 
   bool hasNestedOrMultipleEmbeddings;
   WritingDirection selectionDirection = EditingStyle::textDirectionForSelection(
-      frame.selection().selection(), frame.selection().typingStyle(),
+      frame.selection().selection(), frame.editor().typingStyle(),
       hasNestedOrMultipleEmbeddings);
   // FXIME: We should be returning MixedTriState when selectionDirection ==
   // direction && hasNestedOrMultipleEmbeddings

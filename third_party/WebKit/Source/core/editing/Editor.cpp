@@ -860,7 +860,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
   changeSelectionAfterCommand(newSelection, 0);
 
   if (!cmd->preservesTypingStyle())
-    frame().selection().clearTypingStyle();
+    clearTypingStyle();
 
   // Command will be equal to last edit command only in the case of typing
   if (m_lastEditCommand.get() == cmd) {
@@ -1428,33 +1428,27 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const {
 void Editor::computeAndSetTypingStyle(StylePropertySet* style,
                                       InputEvent::InputType inputType) {
   if (!style || style->isEmpty()) {
-    frame().selection().clearTypingStyle();
+    clearTypingStyle();
     return;
   }
 
   // Calculate the current typing style.
-  EditingStyle* typingStyle = nullptr;
-  if (frame().selection().typingStyle()) {
-    typingStyle = frame().selection().typingStyle()->copy();
-    typingStyle->overrideWithStyle(style);
-  } else {
-    typingStyle = EditingStyle::create(style);
-  }
+  if (m_typingStyle)
+    m_typingStyle->overrideWithStyle(style);
+  else
+    m_typingStyle = EditingStyle::create(style);
 
-  typingStyle->prepareToApplyAt(
+  m_typingStyle->prepareToApplyAt(
       frame().selection().selection().visibleStart().deepEquivalent(),
       EditingStyle::PreserveWritingDirection);
 
   // Handle block styles, substracting these from the typing style.
-  EditingStyle* blockStyle = typingStyle->extractAndRemoveBlockProperties();
+  EditingStyle* blockStyle = m_typingStyle->extractAndRemoveBlockProperties();
   if (!blockStyle->isEmpty()) {
     DCHECK(frame().document());
     ApplyStyleCommand::create(*frame().document(), blockStyle, inputType)
         ->apply();
   }
-
-  // Set the remaining style as the typing style.
-  frame().selection().setTypingStyle(typingStyle);
 }
 
 bool Editor::findString(const String& target, FindOptions options) {
@@ -1706,6 +1700,7 @@ DEFINE_TRACE(Editor) {
   visitor->trace(m_lastEditCommand);
   visitor->trace(m_undoStack);
   visitor->trace(m_mark);
+  visitor->trace(m_typingStyle);
 }
 
 }  // namespace blink
