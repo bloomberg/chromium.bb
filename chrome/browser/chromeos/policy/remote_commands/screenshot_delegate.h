@@ -21,7 +21,7 @@
 namespace policy {
 
 // An implementation of the |DeviceCommandScreenshotJob::Delegate| that uses
-// aura's GrabWindowSnapshotAsync() to acquire the window snapshot.
+// aura's GrabWindowSnapshotAsyncPNG() to acquire the window snapshot.
 class ScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
  public:
   explicit ScreenshotDelegate(
@@ -40,7 +40,7 @@ class ScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
 
  private:
   void StoreScreenshot(const ui::GrabWindowSnapshotAsyncPNGCallback& callback,
-                       scoped_refptr<base::RefCountedBytes> png_data);
+                       scoped_refptr<base::RefCountedMemory> png_data);
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 

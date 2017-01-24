@@ -49,10 +49,12 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/snapshot/snapshot.h"
 
 #define EXPECT_SIZE_EQ(expected, actual)               \
   do {                                                 \
@@ -531,10 +533,37 @@ bool DecodePNG(std::string base64_data, SkBitmap* bitmap) {
       bitmap);
 }
 
+std::unique_ptr<SkBitmap> DecodeJPEG(std::string base64_data) {
+  std::string jpeg_data;
+  if (!base::Base64Decode(base64_data, &jpeg_data))
+    return nullptr;
+  return gfx::JPEGCodec::Decode(
+      reinterpret_cast<unsigned const char*>(jpeg_data.data()),
+      jpeg_data.size());
+}
+
+bool ColorsMatchWithinLimit(SkColor color1,
+                            SkColor color2,
+                            int32_t error_limit) {
+  auto a_distance = std::abs(static_cast<int32_t>(SkColorGetA(color1)) -
+                             static_cast<int32_t>(SkColorGetA(color2)));
+  auto r_distance = std::abs(static_cast<int32_t>(SkColorGetR(color1)) -
+                             static_cast<int32_t>(SkColorGetR(color2)));
+  auto g_distance = std::abs(static_cast<int32_t>(SkColorGetG(color1)) -
+                             static_cast<int32_t>(SkColorGetG(color2)));
+  auto b_distance = std::abs(static_cast<int32_t>(SkColorGetB(color1)) -
+                             static_cast<int32_t>(SkColorGetB(color2)));
+
+  return a_distance * a_distance + r_distance * r_distance +
+             g_distance * g_distance + b_distance * b_distance <=
+         error_limit * error_limit;
+}
+
 // Adapted from cc::ExactPixelComparator.
 bool MatchesBitmap(const SkBitmap& expected_bmp,
                    const SkBitmap& actual_bmp,
-                   const gfx::Rect& matching_mask) {
+                   const gfx::Rect& matching_mask,
+                   int error_limit) {
   // Number of pixels with an error
   int error_pixels_count = 0;
 
@@ -557,7 +586,7 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
     for (int y = matching_mask.y(); y < matching_mask.height(); ++y) {
       SkColor actual_color = actual_bmp.getColor(x, y);
       SkColor expected_color = expected_bmp.getColor(x, y);
-      if (actual_color != expected_color) {
+      if (!ColorsMatchWithinLimit(actual_color, expected_color, error_limit)) {
         if (error_pixels_count < 10) {
           LOG(ERROR) << "Pixel (" << x << "," << y << "): expected "
                      << expected_color << " actual " << actual_color;
@@ -580,19 +609,38 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
 
 class CaptureScreenshotTest : public DevToolsProtocolTest {
  protected:
-  void CaptureScreenshotAndCompareTo(const SkBitmap& expected_bitmap) {
-    SendCommand("Page.captureScreenshot", nullptr);
+  enum ScreenshotEncoding { ENCODING_PNG, ENCODING_JPEG };
+  void CaptureScreenshotAndCompareTo(const SkBitmap& expected_bitmap,
+                                     ScreenshotEncoding encoding) {
+    std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+    params->SetString("format", encoding == ENCODING_PNG ? "png" : "jpeg");
+    params->SetInteger("quality", 100);
+    SendCommand("Page.captureScreenshot", std::move(params));
+
     std::string base64;
     EXPECT_TRUE(result_->GetString("data", &base64));
-    SkBitmap result_bitmap;
-    EXPECT_TRUE(DecodePNG(base64, &result_bitmap));
+    std::unique_ptr<SkBitmap> result_bitmap;
+    int error_limit = 0;
+    if (encoding == ENCODING_PNG) {
+      result_bitmap.reset(new SkBitmap());
+      EXPECT_TRUE(DecodePNG(base64, result_bitmap.get()));
+    } else {
+      result_bitmap = DecodeJPEG(base64);
+      // Even with quality 100, jpeg isn't lossless. So, we allow some skew in
+      // pixel values. Not that this assumes that there is no skew in pixel
+      // positions, so will only work reliably if all pixels have equal values.
+      error_limit = 3;
+    }
+    EXPECT_TRUE(result_bitmap);
+
     gfx::Rect matching_mask(gfx::SkIRectToRect(expected_bitmap.bounds()));
 #if defined(OS_MACOSX)
     // Mask out the corners, which may be drawn differently on Mac because of
     // rounded corners.
     matching_mask.Inset(4, 4, 4, 4);
 #endif
-    EXPECT_TRUE(MatchesBitmap(expected_bitmap, result_bitmap, matching_mask));
+    EXPECT_TRUE(MatchesBitmap(expected_bitmap, *result_bitmap, matching_mask,
+                              error_limit));
   }
 
   // Takes a screenshot of a colored box that is positioned inside the frame.
@@ -651,7 +699,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     expected_bitmap.allocN32Pixels(scaled_box_size.width(),
                                    scaled_box_size.height());
     expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
-    CaptureScreenshotAndCompareTo(expected_bitmap);
+    CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG);
 
     // Reset for next screenshot.
     SendCommand("Emulation.resetViewport", nullptr);
@@ -669,13 +717,13 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
   // This test fails consistently on low-end Android devices.
   // See crbug.com/653637.
+  // TODO(eseckler): Reenable with error limit if necessary.
   if (base::SysInfo::IsLowEndDevice()) return;
 
-  shell()->LoadURL(GURL("about:blank"));
+  shell()->LoadURL(
+      GURL("data:text/html,<body style='background:#123456'></body>"));
+  WaitForLoadStop(shell()->web_contents());
   Attach();
-  EXPECT_TRUE(
-      content::ExecuteScript(shell()->web_contents()->GetRenderViewHost(),
-                             "document.body.style.background = '#123456'"));
   SkBitmap expected_bitmap;
   // We compare against the actual physical backing size rather than the
   // view size, because the view size is stored adjusted for DPI and only in
@@ -685,7 +733,30 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
                             ->GetPhysicalBackingSize();
   expected_bitmap.allocN32Pixels(view_size.width(), view_size.height());
   expected_bitmap.eraseColor(SkColorSetRGB(0x12, 0x34, 0x56));
-  CaptureScreenshotAndCompareTo(expected_bitmap);
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG);
+}
+
+IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshotJpeg) {
+  // This test fails consistently on low-end Android devices.
+  // See crbug.com/653637.
+  // TODO(eseckler): Reenable with error limit if necessary.
+  if (base::SysInfo::IsLowEndDevice())
+    return;
+
+  shell()->LoadURL(
+      GURL("data:text/html,<body style='background:#123456'></body>"));
+  WaitForLoadStop(shell()->web_contents());
+  Attach();
+  SkBitmap expected_bitmap;
+  // We compare against the actual physical backing size rather than the
+  // view size, because the view size is stored adjusted for DPI and only in
+  // integer precision.
+  gfx::Size view_size = static_cast<RenderWidgetHostViewBase*>(
+                            shell()->web_contents()->GetRenderWidgetHostView())
+                            ->GetPhysicalBackingSize();
+  expected_bitmap.allocN32Pixels(view_size.width(), view_size.height());
+  expected_bitmap.eraseColor(SkColorSetRGB(0x12, 0x34, 0x56));
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_JPEG);
 }
 
 // Setting frame size (through RWHV) is not supported on Android.

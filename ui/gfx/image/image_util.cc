@@ -44,8 +44,18 @@ Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
   return Image();
 }
 
-bool JPEG1xEncodedDataFromImage(const Image& image, int quality,
+// The MacOS implementation of this function is in image_utils_mac.mm.
+#if !defined(OS_MACOSX)
+bool JPEG1xEncodedDataFromImage(const Image& image,
+                                int quality,
                                 std::vector<unsigned char>* dst) {
+  return JPEG1xEncodedDataFromSkiaRepresentation(image, quality, dst);
+}
+#endif  // !defined(OS_MACOSX)
+
+bool JPEG1xEncodedDataFromSkiaRepresentation(const Image& image,
+                                             int quality,
+                                             std::vector<unsigned char>* dst) {
   const gfx::ImageSkiaRep& image_skia_rep =
       image.AsImageSkia().GetRepresentation(1.0f);
   if (image_skia_rep.scale() != 1.0f)

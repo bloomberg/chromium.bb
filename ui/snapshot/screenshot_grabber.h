@@ -84,7 +84,7 @@ class SNAPSHOT_EXPORT ScreenshotGrabber {
       const std::string& window_identifier,
       base::FilePath screenshot_path,
       bool is_partial,
-      scoped_refptr<base::RefCountedBytes> png_data);
+      scoped_refptr<base::RefCountedMemory> png_data);
 
   // A weak pointer to the screenshot taker client.
   ScreenshotGrabberDelegate* client_;

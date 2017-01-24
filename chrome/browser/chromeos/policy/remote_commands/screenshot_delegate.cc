@@ -42,7 +42,7 @@ void ScreenshotDelegate::TakeSnapshot(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     const ui::GrabWindowSnapshotAsyncPNGCallback& callback) {
-  ui::GrabWindowSnapshotAsync(
+  ui::GrabWindowSnapshotAsyncPNG(
       window, source_rect, blocking_task_runner_,
       base::Bind(&ScreenshotDelegate::StoreScreenshot,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -69,7 +69,7 @@ std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
 
 void ScreenshotDelegate::StoreScreenshot(
     const ui::GrabWindowSnapshotAsyncPNGCallback& callback,
-    scoped_refptr<base::RefCountedBytes> png_data) {
+    scoped_refptr<base::RefCountedMemory> png_data) {
   callback.Run(png_data);
 }
 

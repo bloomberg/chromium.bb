@@ -31,9 +31,8 @@ class SnapshotAsync {
       scoped_refptr<base::TaskRunner> background_task_runner,
       std::unique_ptr<cc::CopyOutputResult> result);
 
-  static void EncodeCopyOutputResult(
-      const GrabWindowSnapshotAsyncPNGCallback& callback,
-      scoped_refptr<base::TaskRunner> background_task_runner,
+  static void RunCallbackWithCopyOutputResult(
+      const GrabWindowSnapshotAsyncCallback& callback,
       std::unique_ptr<cc::CopyOutputResult> result);
 
  private:

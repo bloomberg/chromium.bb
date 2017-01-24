@@ -187,10 +187,9 @@ bool ScreenshotTester::SaveImage(const base::FilePath& image_path,
     LOG(ERROR) << "Can't create directory" << image_path.DirName().value();
     return false;
   }
-  if (static_cast<size_t>(
-          base::WriteFile(image_path,
-                          reinterpret_cast<char*>(&(png_data->data()[0])),
-                          png_data->size())) != png_data->size()) {
+  if (static_cast<size_t>(base::WriteFile(
+          image_path, reinterpret_cast<const char*>(png_data->front()),
+          png_data->size())) != png_data->size()) {
     LOG(ERROR) << "Can't save screenshot " << image_path.BaseName().value()
                << ".";
     return false;
@@ -200,10 +199,9 @@ bool ScreenshotTester::SaveImage(const base::FilePath& image_path,
   return true;
 }
 
-void ScreenshotTester::ReturnScreenshot(const PNGFile& screenshot,
-                                        PNGFile png_data) {
+void ScreenshotTester::ReturnScreenshot(PNGFile* screenshot, PNGFile png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  screenshot->data() = png_data->data();
+  *screenshot = png_data;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE, run_loop_quitter_);
 }
@@ -212,13 +210,11 @@ ScreenshotTester::PNGFile ScreenshotTester::TakeScreenshot() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   aura::Window* primary_window = ash::Shell::GetPrimaryRootWindow();
   gfx::Rect rect = primary_window->bounds();
-  PNGFile screenshot = new base::RefCountedBytes;
-  ui::GrabWindowSnapshotAsync(primary_window,
-                              rect,
-                              content::BrowserThread::GetBlockingPool(),
-                              base::Bind(&ScreenshotTester::ReturnScreenshot,
-                                         weak_factory_.GetWeakPtr(),
-                                         screenshot));
+  PNGFile screenshot;
+  ui::GrabWindowSnapshotAsyncPNG(
+      primary_window, rect, content::BrowserThread::GetBlockingPool(),
+      base::Bind(&ScreenshotTester::ReturnScreenshot,
+                 weak_factory_.GetWeakPtr(), &screenshot));
   base::RunLoop run_loop;
   run_loop_quitter_ = run_loop.QuitClosure();
   run_loop.Run();
@@ -240,7 +236,7 @@ ScreenshotTester::PNGFile ScreenshotTester::LoadGoldenScreenshot(
   if (golden_screenshot_size == -1) {
     CHECK(false) << "Can't get golden screenshot size";
   }
-  PNGFile png_data = new base::RefCountedBytes;
+  scoped_refptr<base::RefCountedBytes> png_data = new base::RefCountedBytes;
   png_data->data().resize(golden_screenshot_size);
   base::ReadFile(image_path,
                  reinterpret_cast<char*>(&(png_data->data()[0])),
@@ -252,9 +248,7 @@ ScreenshotTester::PNGFile ScreenshotTester::LoadGoldenScreenshot(
 SkBitmap ScreenshotTester::ProcessImageForComparison(const PNGFile& image) {
   CHECK(image.get());
   SkBitmap current_bitmap;
-  gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&(image->data()[0])),
-                        image->data().size(),
-                        &current_bitmap);
+  gfx::PNGCodec::Decode(image->front(), image->size(), &current_bitmap);
   EraseIgnoredAreas(current_bitmap);
   return current_bitmap;
 }
@@ -329,11 +323,12 @@ ScreenshotTester::Result ScreenshotTester::CompareScreenshotsRegularly(
 
   testing_result.similarity = result.result;
 
-  testing_result.diff_image = new base::RefCountedBytes;
-  testing_result.diff_image->data().resize(result.rgbDiffBitmap.getSize());
-  CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(
-      result.rgbDiffBitmap, false, &testing_result.diff_image->data()))
+  scoped_refptr<base::RefCountedBytes> diff_image(new base::RefCountedBytes);
+  diff_image->data().resize(result.rgbDiffBitmap.getSize());
+  CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(result.rgbDiffBitmap, false,
+                                          &diff_image->data()))
       << "Could not encode difference to PNG";
+  testing_result.diff_image = diff_image;
 
   return testing_result;
 }
