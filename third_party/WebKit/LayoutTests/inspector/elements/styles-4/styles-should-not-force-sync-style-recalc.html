@@ -32,9 +32,9 @@ function test()
 
     function callback()
     {
-        InspectorTest.printTimelineRecords("", function(record) {
-            if (record.type() === "UpdateLayoutTree")
-                InspectorTest.addResult(record.type());
+        InspectorTest.timelineModel().mainThreadEvents().forEach(event => {
+            if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
+                InspectorTest.addResult(event.name);
         });
         InspectorTest.completeTest();
     }

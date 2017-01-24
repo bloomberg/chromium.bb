@@ -196,27 +196,20 @@ InspectorTest.performActionsAndPrint = function(actions, typeName, includeTimeSt
     InspectorTest.evaluateWithTimeline(actions, callback);
 };
 
-InspectorTest.printTimelineRecords = function(typeName, formatter)
+InspectorTest.printTimelineRecords = function(name)
 {
-    InspectorTest.timelineModel().forAllRecords(InspectorTest._printTimlineRecord.bind(InspectorTest, typeName, formatter));
+    for (let event of InspectorTest.timelineModel().mainThreadEvents()) {
+        if (event.name === name)
+            InspectorTest.printTraceEventProperties(event);
+    }
 };
 
-InspectorTest.printTimelineRecordsWithDetails = function(typeName)
+InspectorTest.printTimelineRecordsWithDetails = function(name)
 {
-    function detailsFormatter(recordType, record)
-    {
-        if (recordType && recordType !== record.type())
-            return;
-        const event = record.traceEvent();
-        const details = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event,
-            SDK.targetManager.mainTarget(),
-            new Components.Linkifier());
-        InspectorTest.addResult(`Text details for ${record.type()}: ${details}`);
-        if (TimelineModel.TimelineData.forEvent(event).warning)
-            InspectorTest.addResult(record.type() + " has a warning");
+    for (let event of InspectorTest.timelineModel().mainThreadEvents()) {
+        if (name === event.name)
+            InspectorTest.printTraceEventPropertiesWithDetails(event);
     }
-
-    InspectorTest.timelineModel().forAllRecords(InspectorTest._printTimlineRecord.bind(InspectorTest, typeName, detailsFormatter.bind(null, typeName)));
 };
 
 InspectorTest.walkTimelineEventTree = function(callback)
@@ -238,26 +231,14 @@ InspectorTest.walkTimelineEventTreeUnderNode = function(callback, root, level)
         InspectorTest.walkTimelineEventTreeUnderNode(callback, child, (level || 0) + 1);
 }
 
-InspectorTest.printTimestampRecords = function(typeName, formatter)
+InspectorTest.printTimestampRecords = function(typeName)
 {
     const records = InspectorTest.timelineModel().eventDividerRecords();
-    for (let record of records)
-        InspectorTest._printTimlineRecord(typeName, formatter, record);
+    for (let record of records) {
+        if (record.type() === typeName)
+            InspectorTest.printTraceEventProperties(record.traceEvent());
+    }
 };
-
-InspectorTest._printTimlineRecord = function(typeName, formatter, record)
-{
-    if (typeName && record.type() === typeName)
-        InspectorTest.printTraceEventProperties(record.traceEvent());
-    if (formatter)
-        formatter(record);
-};
-
-InspectorTest.printTraceEventPropertiesIfNameMatches = function(set, traceEvent)
-{
-    if (set.has(traceEvent.name))
-        InspectorTest.printTraceEventProperties(traceEvent);
-}
 
 InspectorTest.forAllEvents = function(events, callback)
 {
@@ -290,6 +271,17 @@ InspectorTest.printTraceEventProperties = function(traceEvent)
     }
     InspectorTest.addObject(object, InspectorTest.timelinePropertyFormatters);
 };
+
+InspectorTest.printTraceEventPropertiesWithDetails = function(event)
+{
+    InspectorTest.printTraceEventProperties(event);
+    const details = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event,
+        SDK.targetManager.mainTarget(),
+        new Components.Linkifier());
+    InspectorTest.addResult(`Text details for ${event.name}: ${details}`);
+    if (TimelineModel.TimelineData.forEvent(event).warning)
+        InspectorTest.addResult(`${event.name} has a warning`);
+}
 
 InspectorTest.findTimelineEvent = function(name, index)
 {

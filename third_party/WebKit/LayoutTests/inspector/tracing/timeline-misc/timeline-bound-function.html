@@ -20,16 +20,14 @@ function test()
 
     function finish()
     {
-        function formatter(record)
-        {
-            if (record.type() === "FunctionCall") {
-                var data = record.traceEvent().args["data"];
-                var scriptName = data.scriptName;
-                var scriptNameShort = scriptName.substring(scriptName.lastIndexOf("/") + 1);
-                InspectorTest.addResult(record.type() + " " + scriptNameShort + ":" + data.scriptLine);
-            }
-        }
-        InspectorTest.printTimelineRecords(null, formatter);
+        InspectorTest.timelineModel().mainThreadEvents().forEach(event => {
+            if (event.name !== TimelineModel.TimelineModel.RecordType.FunctionCall)
+                return;
+            var data = event.args["data"];
+            var scriptName = data.scriptName;
+            var scriptNameShort = scriptName.substring(scriptName.lastIndexOf("/") + 1);
+            InspectorTest.addResult(`${event.name} ${scriptNameShort}: ${data.scriptLine}`);
+        });
         InspectorTest.completeTest();
     }
 }
