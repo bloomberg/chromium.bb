@@ -70,9 +70,8 @@ class InfoBarService : public infobars::InfoBarManager,
 
   // content::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
   void WebContentsDestroyed() override;
