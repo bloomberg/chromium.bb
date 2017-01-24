@@ -274,7 +274,7 @@ class PDFiumEngine : public PDFEngine,
   // Called to continue searching so we don't block the main thread.
   void ContinueFind(int32_t result);
 
-  // Inserts a find result into find_results_, which is sorted.
+  // Inserts a find result into |find_results_|, which is sorted.
   void AddFindResult(const PDFiumRange& result);
 
   // Search a page using PDFium's methods.  Doesn't work with unicode.  This
@@ -644,8 +644,7 @@ class PDFiumEngine : public PDFEngine,
   MouseDownState mouse_down_state_;
 
   // Used for searching.
-  typedef std::vector<PDFiumRange> FindResults;
-  FindResults find_results_;
+  std::vector<PDFiumRange> find_results_;
   // Which page to search next.
   int next_page_to_search_;
   // Where to stop searching.

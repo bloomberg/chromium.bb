@@ -2172,8 +2172,10 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
                                   bool first_search,
                                   int character_to_start_searching_from,
                                   int current_page) {
-  base::string16 page_text;
-  int text_length = pages_[current_page]->GetCharCount();
+  DCHECK(!term.empty());
+
+  const int original_text_length = pages_[current_page]->GetCharCount();
+  int text_length = original_text_length;
   if (character_to_start_searching_from) {
     text_length -= character_to_start_searching_from;
   } else if (!first_search &&
@@ -2184,6 +2186,7 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
   if (text_length <= 0)
     return;
 
+  base::string16 page_text;
   PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(&page_text,
                                                                   text_length,
                                                                   false);
@@ -2207,6 +2210,16 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
     int end = FPDFText_GetCharIndexFromTextIndex(
         pages_[current_page]->GetTextPage(),
         temp_start + result.length);
+
+    // If |term| occurs at the end of a page, then |end| will be -1 due to the
+    // index being out of bounds. Compensate for this case so the range
+    // character count calculation below works out.
+    if (temp_start + result.length == original_text_length) {
+      DCHECK_EQ(-1, end);
+      end = original_text_length;
+    }
+    DCHECK_LT(start, end);
+    DCHECK_EQ(term.size(), static_cast<size_t>(end - start));
     AddFindResult(PDFiumRange(pages_[current_page].get(), start, end - start));
   }
 }
@@ -2274,9 +2287,9 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   pp::Rect bounding_rect;
   pp::Rect visible_rect = GetVisibleRect();
   // Use zoom of 1.0 since visible_rect is without zoom.
-  std::vector<pp::Rect> rects;
-  rects = find_results_[current_find_index_.GetIndex()].GetScreenRects(
-      pp::Point(), 1.0, current_rotation_);
+  std::vector<pp::Rect> rects =
+      find_results_[current_find_index_.GetIndex()].GetScreenRects(
+          pp::Point(), 1.0, current_rotation_);
   for (const auto& rect : rects)
     bounding_rect = bounding_rect.Union(rect);
   if (!visible_rect.Contains(bounding_rect)) {
