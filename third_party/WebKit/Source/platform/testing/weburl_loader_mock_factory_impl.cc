@@ -8,9 +8,11 @@
 
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/weburl_loader_mock.h"
 #include "public/platform/FilePathConversion.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
@@ -21,10 +23,12 @@ namespace blink {
 
 std::unique_ptr<WebURLLoaderMockFactory> WebURLLoaderMockFactory::create()
 {
-  return WTF::wrapUnique(new WebURLLoaderMockFactoryImpl);
+  return WTF::wrapUnique(new WebURLLoaderMockFactoryImpl(nullptr));
 }
 
-WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl() {}
+WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl(
+    TestingPlatformSupport* platform)
+    : m_platform(platform) {}
 
 WebURLLoaderMockFactoryImpl::~WebURLLoaderMockFactoryImpl() {}
 
@@ -91,7 +95,7 @@ void WebURLLoaderMockFactoryImpl::serveAsynchronousRequests() {
     while (response.httpStatusCode() >= 300 &&
            response.httpStatusCode() < 400) {
       WebURLRequest newRequest = loader->ServeRedirect(request, response);
-      base::RunLoop().RunUntilIdle();
+      RunUntilIdle();
       if (!loader || loader->is_cancelled() || loader->is_deferred())
         break;
       LoadRequest(newRequest, &response, &error, &data);
@@ -99,10 +103,10 @@ void WebURLLoaderMockFactoryImpl::serveAsynchronousRequests() {
     // Serve the request if the loader is still active.
     if (loader && !loader->is_cancelled() && !loader->is_deferred()) {
       loader->ServeAsynchronousRequest(delegate_, response, data, error);
-      base::RunLoop().RunUntilIdle();
+      RunUntilIdle();
     }
   }
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 bool WebURLLoaderMockFactoryImpl::IsMockedURL(const blink::WebURL& url) {
@@ -128,6 +132,13 @@ void WebURLLoaderMockFactoryImpl::LoadAsynchronouly(
     WebURLLoaderMock* loader) {
   DCHECK(!pending_loaders_.contains(loader));
   pending_loaders_.set(loader, request);
+}
+
+void WebURLLoaderMockFactoryImpl::RunUntilIdle() {
+  if (m_platform)
+    m_platform->runUntilIdle();
+  else
+    base::RunLoop().RunUntilIdle();
 }
 
 void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURLRequest& request,

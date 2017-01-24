@@ -29,12 +29,22 @@ class MockFetchContext : public FetchContext {
     kShouldLoadNewResource,
     kShouldNotLoadNewResource,
   };
-  static MockFetchContext* create(LoadPolicy loadPolicy) {
-    return new MockFetchContext(loadPolicy);
+  // TODO(toyoshim): Disallow to pass nullptr for |taskRunner|, and force to use
+  // FetchTestingPlatformSupport's WebTaskRunner. Probably, MockFetchContext
+  // would be available only through the FetchTestingPlatformSupport in the
+  // future.
+  static MockFetchContext* create(LoadPolicy loadPolicy,
+                                  RefPtr<WebTaskRunner> taskRunner = nullptr) {
+    return new MockFetchContext(loadPolicy, std::move(taskRunner));
   }
 
   ~MockFetchContext() override {}
 
+  void setCachePolicy(CachePolicy policy) { m_policy = policy; }
+  void setLoadComplete(bool complete) { m_complete = complete; }
+  long long getTransferSize() const { return m_transferSize; }
+
+  // FetchContext:
   bool allowImage(bool imagesEnabled, const KURL&) const override {
     return true;
   }
@@ -51,29 +61,25 @@ class MockFetchContext : public FetchContext {
     return m_loadPolicy == kShouldLoadNewResource;
   }
   RefPtr<WebTaskRunner> loadingTaskRunner() const override { return m_runner; }
-
-  void setCachePolicy(CachePolicy policy) { m_policy = policy; }
   CachePolicy getCachePolicy() const override { return m_policy; }
-  void setLoadComplete(bool complete) { m_complete = complete; }
   bool isLoadComplete() const override { return m_complete; }
-
   void addResourceTiming(
       const ResourceTimingInfo& resourceTimingInfo) override {
     m_transferSize = resourceTimingInfo.transferSize();
   }
-  long long getTransferSize() const { return m_transferSize; }
 
  private:
-  MockFetchContext(LoadPolicy loadPolicy)
+  MockFetchContext(LoadPolicy loadPolicy, RefPtr<WebTaskRunner> taskRunner)
       : m_loadPolicy(loadPolicy),
         m_policy(CachePolicyVerify),
-        m_runner(adoptRef(new scheduler::FakeWebTaskRunner)),
+        m_runner(taskRunner ? std::move(taskRunner)
+                            : adoptRef(new scheduler::FakeWebTaskRunner)),
         m_complete(false),
         m_transferSize(-1) {}
 
   enum LoadPolicy m_loadPolicy;
   CachePolicy m_policy;
-  RefPtr<scheduler::FakeWebTaskRunner> m_runner;
+  RefPtr<WebTaskRunner> m_runner;
   bool m_complete;
   long long m_transferSize;
 };

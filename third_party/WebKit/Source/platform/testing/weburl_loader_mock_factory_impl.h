@@ -21,6 +21,7 @@
 
 namespace blink {
 
+class TestingPlatformSupport;
 class WebData;
 class WebURLLoader;
 class WebURLLoaderMock;
@@ -31,11 +32,11 @@ class WebURLLoaderTestDelegate;
 // in WebURLLoaderMockFactory carefully to use this class correctly.
 class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
  public:
-  WebURLLoaderMockFactoryImpl();
-  virtual ~WebURLLoaderMockFactoryImpl();
+  WebURLLoaderMockFactoryImpl(TestingPlatformSupport*);
+  ~WebURLLoaderMockFactoryImpl() override;
 
   // WebURLLoaderMockFactory:
-  virtual WebURLLoader* createURLLoader(WebURLLoader* default_loader) override;
+  WebURLLoader* createURLLoader(WebURLLoader* default_loader) override;
   void registerURL(const WebURL& url,
                    const WebURLResponse& response,
                    const WebString& filePath = WebString()) override;
@@ -70,6 +71,8 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
     base::FilePath file_path;
   };
 
+  virtual void RunUntilIdle();
+
   // Loads the specified request and populates the response, error and data
   // accordingly.
   void LoadRequest(const WebURLRequest& request,
@@ -96,6 +99,8 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
   // Table of the registered URLs and the responses that they should receive.
   using URLToResponseMap = HashMap<KURL, ResponseInfo>;
   URLToResponseMap url_to_response_info_;
+
+  TestingPlatformSupport* m_platform;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactoryImpl);
 };

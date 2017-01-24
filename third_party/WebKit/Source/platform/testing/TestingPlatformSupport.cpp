@@ -34,6 +34,7 @@
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/blink/web_compositor_support_impl.h"
@@ -194,6 +195,10 @@ WebURLError TestingPlatformSupport::cancelledError(const WebURL& url) const {
 
 InterfaceProvider* TestingPlatformSupport::interfaceProvider() {
   return m_interfaceProvider.get();
+}
+
+void TestingPlatformSupport::runUntilIdle() {
+  base::RunLoop().RunUntilIdle();
 }
 
 // TestingPlatformSupportWithMockScheduler definition:

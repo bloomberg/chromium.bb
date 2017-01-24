@@ -1096,6 +1096,8 @@ source_set("unit_tests") {
     "events/PointerEventFactoryTest.cpp",
     "fetch/ClientHintsPreferencesTest.cpp",
     "fetch/CrossOriginAccessControlTest.cpp",
+    "fetch/FetchTestingPlatformSupport.cpp",
+    "fetch/FetchTestingPlatformSupport.h",
     "fetch/FetchUtilsTest.cpp",
     "fetch/MemoryCacheCorrectnessTest.cpp",
     "fetch/MemoryCacheTest.cpp",

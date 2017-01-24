@@ -114,6 +114,8 @@ class TestingPlatformSupport : public Platform {
   WebURLError cancelledError(const WebURL&) const override;
   InterfaceProvider* interfaceProvider() override;
 
+  virtual void runUntilIdle();
+
  protected:
   class TestingInterfaceProvider;
 
@@ -145,7 +147,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   // This function ignores future delayed tasks when deciding if the system is
   // idle.  If you need to ensure delayed tasks run, try runForPeriodSeconds()
   // instead.
-  void runUntilIdle();
+  void runUntilIdle() override;
 
   // Runs for |seconds| the testing clock is advanced by |seconds|.  Note real
   // time elapsed will typically much less than |seconds| because delays between

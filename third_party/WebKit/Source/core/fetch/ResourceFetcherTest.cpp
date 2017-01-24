@@ -33,6 +33,7 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/FetchTestingPlatformSupport.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockFetchContext.h"
 #include "core/fetch/MockResource.h"
@@ -44,13 +45,17 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/heap/Member.h"
+#include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/weburl_loader_mock.h"
+#include "platform/testing/weburl_loader_mock_factory_impl.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +72,24 @@ constexpr char kTestResourceMimeType[] = "image/png";
 constexpr int kTestResourceSize = 103;  // size of web/tests/data/white-1x1.png
 }
 
-class ResourceFetcherTest : public ::testing::Test {};
+class ResourceFetcherTest : public ::testing::Test {
+ public:
+  ResourceFetcherTest() = default;
+  ~ResourceFetcherTest() override = default;
+
+  void TearDown() override {
+    m_platform->getURLLoaderMockFactory()->unregisterAllURLs();
+    memoryCache()->evictResources();
+  }
+
+ protected:
+  MockFetchContext* context() { return m_platform->context(); }
+
+  ScopedTestingPlatformSupport<FetchTestingPlatformSupport> m_platform;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResourceFetcherTest);
+};
 
 TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   KURL secureURL(ParsedURLString, "https://secureorigin.test/image.png");
@@ -90,8 +112,7 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
 }
 
 TEST_F(ResourceFetcherTest, UseExistingResource) {
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
   ResourceResponse response;
@@ -106,13 +127,11 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   Resource* resource = MockResource::fetch(fetchRequest, fetcher);
   ASSERT_TRUE(resource);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   EXPECT_TRUE(resource->isLoaded());
   EXPECT_TRUE(memoryCache()->contains(resource));
 
   Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
   EXPECT_EQ(resource, newResource);
-  memoryCache()->remove(resource);
 }
 
 TEST_F(ResourceFetcherTest, Vary) {
@@ -128,8 +147,7 @@ TEST_F(ResourceFetcherTest, Vary) {
   resource->finish();
   ASSERT_TRUE(resource->hasVaryHeader());
 
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
   ResourceRequest resourceRequest(url);
   resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
   FetchRequest fetchRequest =
@@ -139,10 +157,6 @@ TEST_F(ResourceFetcherTest, Vary) {
   Resource* newResource = RawResource::fetch(fetchRequest, fetcher);
   EXPECT_NE(resource, newResource);
   newResource->loader()->cancel();
-  memoryCache()->remove(newResource);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
-
-  memoryCache()->remove(resource);
 }
 
 TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
@@ -151,8 +165,7 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
   response.setURL(url);
   response.setHTTPStatusCode(200);
 
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
   ResourceRequest resourceRequest(url);
   resourceRequest.setFrameType(WebURLRequest::FrameTypeNested);
   resourceRequest.setRequestContext(WebURLRequest::RequestContextForm);
@@ -182,14 +195,11 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
   fetcher->recordResourceTimingOnRedirect(resource, redirectResponse, false);
   EXPECT_EQ(navigationTimingInfo->transferSize(),
             encodedDataLength + redirectEncodedDataLength);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
 TEST_F(ResourceFetcherTest, VaryOnBack) {
-  MockFetchContext* context =
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource);
-  context->setCachePolicy(CachePolicyHistoryBuffer);
-  ResourceFetcher* fetcher = ResourceFetcher::create(context);
+  context()->setCachePolicy(CachePolicyHistoryBuffer);
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::create(url, Resource::Raw);
@@ -209,13 +219,10 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
       FetchRequest(resourceRequest, FetchInitiatorInfo());
   Resource* newResource = RawResource::fetch(fetchRequest, fetcher);
   EXPECT_EQ(resource, newResource);
-
-  memoryCache()->remove(newResource);
 }
 
 TEST_F(ResourceFetcherTest, VaryResource) {
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
   ResourceResponse response;
@@ -236,9 +243,6 @@ TEST_F(ResourceFetcherTest, VaryResource) {
   FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
   Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
   EXPECT_EQ(resource, newResource);
-
-  memoryCache()->remove(newResource);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
 class RequestSameResourceOnComplete
@@ -285,8 +289,7 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   URLTestHelpers::registerMockedURLLoadWithCustomResponse(
       url, kTestResourceFilename, WebString::fromUTF8(""),
       WrappedResourceResponse(response));
-  ResourceFetcher* fetcher1 = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher1 = ResourceFetcher::create(context());
   ResourceRequest request1(url);
   request1.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
   FetchRequest fetchRequest1 = FetchRequest(request1, FetchInitiatorInfo());
@@ -295,15 +298,12 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
       new RequestSameResourceOnComplete(resource1);
   resource1->addClient(client);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   EXPECT_TRUE(client->notifyFinishedCalled());
   resource1->removeClient(client);
-  memoryCache()->remove(resource1);
 }
 
 TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl) {
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
   ResourceRequest request(KURL(ParsedURLString, "data:text/html,foo"));
   request.setRequestContext(WebURLRequest::RequestContextVideo);
   ResourceLoaderOptions options;
@@ -313,7 +313,6 @@ TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl) {
   Resource* resource1 = RawResource::fetchMedia(fetchRequest, fetcher);
   Resource* resource2 = RawResource::fetchMedia(fetchRequest, fetcher);
   EXPECT_NE(resource1, resource2);
-  memoryCache()->remove(resource2);
 }
 
 class ServeRequestsOnCompleteClient final
@@ -368,8 +367,7 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel) {
   URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
                                         kTestResourceMimeType);
 
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
   ResourceRequest resourceRequest(url);
   resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
   FetchRequest fetchRequest =
@@ -380,7 +378,6 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel) {
   resource->addClient(client);
   resource->loader()->cancel();
   resource->removeClient(client);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
 class ScopedMockRedirectRequester {
@@ -388,9 +385,8 @@ class ScopedMockRedirectRequester {
   WTF_MAKE_NONCOPYABLE(ScopedMockRedirectRequester);
 
  public:
-  ScopedMockRedirectRequester() : m_context(nullptr) {}
-
-  ~ScopedMockRedirectRequester() { cleanUp(); }
+  explicit ScopedMockRedirectRequester(MockFetchContext* context)
+      : m_context(context) {}
 
   void registerRedirect(const WebString& fromURL, const WebString& toURL) {
     KURL redirectURL(ParsedURLString, fromURL);
@@ -409,9 +405,6 @@ class ScopedMockRedirectRequester {
   }
 
   void request(const WebString& url) {
-    DCHECK(!m_context);
-    m_context =
-        MockFetchContext::create(MockFetchContext::kShouldLoadNewResource);
     ResourceFetcher* fetcher = ResourceFetcher::create(m_context);
     ResourceRequest resourceRequest(url);
     resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
@@ -421,13 +414,6 @@ class ScopedMockRedirectRequester {
     Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   }
 
-  void cleanUp() {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    memoryCache()->evictResources();
-  }
-
-  MockFetchContext* context() const { return m_context; }
-
  private:
   Member<MockFetchContext> m_context;
 };
@@ -435,24 +421,24 @@ class ScopedMockRedirectRequester {
 TEST_F(ResourceFetcherTest, SameOriginRedirect) {
   const char redirectURL[] = "http://127.0.0.1:8000/redirect.html";
   const char finalURL[] = "http://127.0.0.1:8000/final.html";
-  ScopedMockRedirectRequester requester;
+  ScopedMockRedirectRequester requester(context());
   requester.registerRedirect(redirectURL, finalURL);
   requester.registerFinalResource(finalURL);
   requester.request(redirectURL);
 
   EXPECT_EQ(kRedirectResponseOverheadBytes + kTestResourceSize,
-            requester.context()->getTransferSize());
+            context()->getTransferSize());
 }
 
 TEST_F(ResourceFetcherTest, CrossOriginRedirect) {
   const char redirectURL[] = "http://otherorigin.test/redirect.html";
   const char finalURL[] = "http://127.0.0.1:8000/final.html";
-  ScopedMockRedirectRequester requester;
+  ScopedMockRedirectRequester requester(context());
   requester.registerRedirect(redirectURL, finalURL);
   requester.registerFinalResource(finalURL);
   requester.request(redirectURL);
 
-  EXPECT_EQ(kTestResourceSize, requester.context()->getTransferSize());
+  EXPECT_EQ(kTestResourceSize, context()->getTransferSize());
 }
 
 TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect) {
@@ -460,14 +446,14 @@ TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect) {
   const char redirectURL2[] = "http://otherorigin.test/redirect2.html";
   const char redirectURL3[] = "http://127.0.0.1:8000/redirect3.html";
   const char finalURL[] = "http://127.0.0.1:8000/final.html";
-  ScopedMockRedirectRequester requester;
+  ScopedMockRedirectRequester requester(context());
   requester.registerRedirect(redirectURL1, redirectURL2);
   requester.registerRedirect(redirectURL2, redirectURL3);
   requester.registerRedirect(redirectURL3, finalURL);
   requester.registerFinalResource(finalURL);
   requester.request(redirectURL1);
 
-  EXPECT_EQ(kTestResourceSize, requester.context()->getTransferSize());
+  EXPECT_EQ(kTestResourceSize, context()->getTransferSize());
 }
 
 TEST_F(ResourceFetcherTest, SynchronousRequest) {
@@ -475,8 +461,7 @@ TEST_F(ResourceFetcherTest, SynchronousRequest) {
   URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
                                         kTestResourceMimeType);
 
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
   ResourceRequest resourceRequest(url);
   resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
   FetchRequest fetchRequest(resourceRequest, FetchInitiatorInfo());
@@ -485,14 +470,10 @@ TEST_F(ResourceFetcherTest, SynchronousRequest) {
   EXPECT_TRUE(resource->isLoaded());
   EXPECT_EQ(ResourceLoadPriorityHighest,
             resource->resourceRequest().priority());
-
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
-  memoryCache()->remove(resource);
 }
 
 TEST_F(ResourceFetcherTest, PreloadResourceTwice) {
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
   URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
@@ -510,14 +491,12 @@ TEST_F(ResourceFetcherTest, PreloadResourceTwice) {
   fetcher->preloadStarted(resource);
 
   fetcher->clearPreloads(ResourceFetcher::ClearAllPreloads);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   EXPECT_FALSE(memoryCache()->contains(resource));
   EXPECT_FALSE(resource->isPreloaded());
 }
 
 TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
   URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
@@ -550,16 +529,13 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
 
   // DCL reached
   fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   EXPECT_TRUE(memoryCache()->contains(resource));
   EXPECT_FALSE(resource->isPreloaded());
 }
 
 TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndUse) {
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
-  ResourceFetcher* fetcher2 = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
+  ResourceFetcher* fetcher2 = ResourceFetcher::create(context());
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
   URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
@@ -626,7 +602,6 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndUse) {
   // DCL reached on first fetcher
   EXPECT_TRUE(resource->isPreloaded());
   fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   EXPECT_TRUE(memoryCache()->contains(resource));
   EXPECT_TRUE(resource->isPreloaded());
 
@@ -647,8 +622,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   resource->responseReceived(response, nullptr);
   resource->finish();
 
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
   ResourceRequest resourceRequest(url);
   resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
   FetchRequest fetchRequest =
@@ -657,16 +631,13 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
       url, WebURLResponse(), "");
   Resource* newResource = RawResource::fetch(fetchRequest, fetcher);
   fetcher->stopFetching();
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 
   EXPECT_NE(resource, newResource);
 }
 
 TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndMove) {
-  ResourceFetcher* fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
-  ResourceFetcher* fetcher2 = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
+  ResourceFetcher* fetcher2 = ResourceFetcher::create(context());
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
   URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
@@ -686,7 +657,6 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndMove) {
   EXPECT_EQ(resource, newResource2);
   EXPECT_FALSE(fetcher2->isFetching());
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
 }  // namespace blink
