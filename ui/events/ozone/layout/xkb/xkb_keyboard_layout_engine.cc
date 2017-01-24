@@ -821,7 +821,7 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
                {ui::EF_MOD3_DOWN, "Mod3"},
                {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS}};
   xkb_flag_map_.clear();
-  xkb_flag_map_.resize(arraysize(flags));
+  xkb_flag_map_.reserve(arraysize(flags));
   for (size_t i = 0; i < arraysize(flags); ++i) {
     xkb_mod_index_t index = xkb_keymap_mod_get_index(keymap, flags[i].xkb_name);
     if (index == XKB_MOD_INVALID) {
