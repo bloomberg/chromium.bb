@@ -687,10 +687,11 @@ void EnrollmentScreenHandler::DoShow() {
   screen_data.SetBoolean("attestationBased", config_.is_mode_attestation());
   screen_data.SetString("management_domain", config_.management_domain);
 
-  const bool cfm = g_browser_process->platform_part()
-                       ->browser_policy_connector_chromeos()
-                       ->GetDeviceCloudPolicyManager()
-                       ->IsRemoraRequisition();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyManager();
+  const bool cfm = policy_manager && policy_manager->IsRemoraRequisition();
   screen_data.SetString("flow", cfm ? "cfm" : "enterprise");
 
   ShowScreenWithData(OobeScreen::SCREEN_OOBE_ENROLLMENT, &screen_data);
