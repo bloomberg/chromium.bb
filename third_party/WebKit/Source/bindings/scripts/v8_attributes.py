@@ -228,7 +228,10 @@ def is_data_attribute(attribute):
 
 
 def is_lazy_data_attribute(attribute):
-    return attribute['constructor_type'] and not attribute['needs_constructor_getter_callback']
+    return ((attribute['constructor_type'] and not attribute['needs_constructor_getter_callback']) or
+            (attribute['idl_type'] == 'Window' and attribute['name'] == 'frames') or
+            (attribute['idl_type'] == 'Window' and attribute['name'] == 'self') or
+            (attribute['idl_type'] == 'Window' and attribute['name'] == 'window'))
 
 
 def filter_data_attributes(attributes):
