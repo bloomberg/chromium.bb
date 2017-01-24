@@ -37,7 +37,7 @@ function test()
         for (var style of styles) {
             if (style.type !== SDK.CSSStyleDeclaration.Type.Regular)
                 continue;
-            var properties = style.allProperties;
+            var properties = style.allProperties();
             for (var property of properties) {
                 if (!property.range)
                     continue;

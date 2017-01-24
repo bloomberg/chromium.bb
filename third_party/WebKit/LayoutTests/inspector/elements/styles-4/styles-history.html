@@ -127,7 +127,7 @@ function test()
 
     function getLiveProperty(style, name)
     {
-        for (var property of style.allProperties) {
+        for (var property of style.allProperties()) {
             if (!property.activeInStyle())
                 continue;
             if (property.name === name)

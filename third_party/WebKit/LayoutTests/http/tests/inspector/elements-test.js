@@ -906,7 +906,7 @@ InspectorTest.dumpCSSStyleDeclaration = function(style, currentIndent)
         InspectorTest.addResult(currentIndent + "[NO STYLE]");
         return;
     }
-    var properties = style.allProperties;
+    var properties = style.allProperties();
     for (var i = 0; i < properties.length; ++i) {
         var property = properties[i];
         if (!property.disabled)

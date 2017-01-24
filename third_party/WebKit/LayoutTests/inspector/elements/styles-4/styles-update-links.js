@@ -27,7 +27,7 @@ var initialize_StylesUpdateLinks = function() {
                 name: "style range"
             });
         }
-        var properties = rule.style.allProperties;
+        var properties = rule.style.allProperties();
         for (var i = 0; i < properties.length; ++i) {
             var property = properties[i];
             if (!property.range)

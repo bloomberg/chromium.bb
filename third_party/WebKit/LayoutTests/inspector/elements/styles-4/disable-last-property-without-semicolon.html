@@ -42,7 +42,7 @@ function test()
 
         function testFormattedDisableLast(next)
         {
-            formattedStyle.allProperties[1].setDisabled(true)
+            formattedStyle.allProperties()[1].setDisabled(true)
                 .then(dumpFormattedAndCallNext.bind(null, next));
         },
 
@@ -53,7 +53,7 @@ function test()
 
         function testFormattedEnable(next)
         {
-            formattedStyle.allProperties[1].setDisabled(false)
+            formattedStyle.allProperties()[1].setDisabled(false)
                 .then(dumpFormattedAndCallNext.bind(null, next));
         },
     ]);
@@ -85,7 +85,7 @@ function test()
 
 <style>
 
-#formatted { 
+#formatted {
     color: red;
     margin: 0
 }

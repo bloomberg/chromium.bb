@@ -115,7 +115,7 @@ function test()
     {
        if (!style)
            return;
-       var allProperties = style.allProperties;
+       var allProperties = style.allProperties();
        for (var i = 0; i < allProperties.length; ++i)
            InspectorTest.addResult(allProperties[i].text);
     }
