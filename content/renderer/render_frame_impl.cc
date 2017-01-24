@@ -3167,20 +3167,10 @@ void RenderFrameImpl::willCommitProvisionalLoad(blink::WebLocalFrame* frame) {
 
 void RenderFrameImpl::didChangeName(const blink::WebString& name,
                                     const blink::WebString& unique_name) {
-  // TODO(alexmos): According to https://crbug.com/169110, sending window.name
-  // updates may have performance implications for benchmarks like SunSpider.
-  // For now, send these updates only for --site-per-process, which needs to
-  // replicate frame names to frame proxies, and when
-  // |report_frame_name_changes| is set (used by <webview>).  If needed, this
-  // can be optimized further by only sending the update if there are any
-  // remote frames in the frame tree, or delaying and batching up IPCs if
-  // updates are happening too frequently.
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible() ||
-      render_view_->renderer_preferences_.report_frame_name_changes) {
-    Send(new FrameHostMsg_DidChangeName(
-        routing_id_, base::UTF16ToUTF8(base::StringPiece16(name)),
-        base::UTF16ToUTF8(base::StringPiece16(unique_name))));
-  }
+  // TODO(creis): Remove report_frame_name_changes from RendererPreferences.
+  Send(new FrameHostMsg_DidChangeName(
+      routing_id_, base::UTF16ToUTF8(base::StringPiece16(name)),
+      base::UTF16ToUTF8(base::StringPiece16(unique_name))));
 
   if (!committed_first_load_)
     name_changed_before_first_commit_ = true;
