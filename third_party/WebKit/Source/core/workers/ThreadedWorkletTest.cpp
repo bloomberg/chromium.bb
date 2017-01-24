@@ -23,9 +23,11 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
  public:
   ThreadedWorkletThreadForTest(
       WorkerLoaderProxyProvider* workerLoaderProxyProvider,
-      WorkerReportingProxy& workerReportingProxy)
+      WorkerReportingProxy& workerReportingProxy,
+      ParentFrameTaskRunners* parentFrameTaskRunners)
       : WorkerThread(WorkerLoaderProxy::create(workerLoaderProxyProvider),
-                     workerReportingProxy) {}
+                     workerReportingProxy,
+                     parentFrameTaskRunners) {}
   ~ThreadedWorkletThreadForTest() override{};
 
   WorkerBackingThread& workerBackingThread() override {
@@ -63,8 +65,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   void countFeature(UseCounter::Feature feature) {
     EXPECT_TRUE(isCurrentThread());
     globalScope()->countFeature(feature);
-    workerReportingProxy()
-        .getParentFrameTaskRunners()
+    getParentFrameTaskRunners()
         ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
@@ -80,8 +81,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     String consoleMessage = consoleMessageStorage()->at(0)->message();
     EXPECT_TRUE(consoleMessage.contains("deprecated"));
 
-    workerReportingProxy()
-        .getParentFrameTaskRunners()
+    getParentFrameTaskRunners()
         ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
@@ -95,7 +95,8 @@ class ThreadedWorkletMessagingProxyForTest
     m_mockWorkerLoaderProxyProvider =
         WTF::makeUnique<MockWorkerLoaderProxyProvider>();
     m_workerThread = WTF::makeUnique<ThreadedWorkletThreadForTest>(
-        m_mockWorkerLoaderProxyProvider.get(), workletObjectProxy());
+        m_mockWorkerLoaderProxyProvider.get(), workletObjectProxy(),
+        getParentFrameTaskRunners());
     ThreadedWorkletThreadForTest::ensureSharedBackingThread();
   }
 

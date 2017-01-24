@@ -19,8 +19,11 @@ template class WorkletThreadHolder<AbstractAnimationWorkletThread>;
 
 AbstractAnimationWorkletThread::AbstractAnimationWorkletThread(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy)
-    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy) {}
+    WorkerReportingProxy& workerReportingProxy,
+    ParentFrameTaskRunners* parentFrameTaskRunners)
+    : WorkerThread(std::move(workerLoaderProxy),
+                   workerReportingProxy,
+                   parentFrameTaskRunners) {}
 
 AbstractAnimationWorkletThread::~AbstractAnimationWorkletThread() {}
 

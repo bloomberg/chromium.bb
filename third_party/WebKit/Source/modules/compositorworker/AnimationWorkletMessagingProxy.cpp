@@ -17,7 +17,8 @@ AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy() {}
 
 std::unique_ptr<WorkerThread>
 AnimationWorkletMessagingProxy::createWorkerThread(double originTime) {
-  return AnimationWorkletThread::create(loaderProxy(), workletObjectProxy());
+  return AnimationWorkletThread::create(loaderProxy(), workletObjectProxy(),
+                                        getParentFrameTaskRunners());
 }
 
 }  // namespace blink

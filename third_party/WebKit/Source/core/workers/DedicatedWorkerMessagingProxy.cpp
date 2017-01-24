@@ -20,7 +20,7 @@ DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() {}
 std::unique_ptr<WorkerThread> DedicatedWorkerMessagingProxy::createWorkerThread(
     double originTime) {
   return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(),
-                                       originTime);
+                                       getParentFrameTaskRunners(), originTime);
 }
 
 }  // namespace blink

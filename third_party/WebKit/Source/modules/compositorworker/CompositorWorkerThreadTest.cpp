@@ -35,8 +35,10 @@ namespace {
 // CompositorWorkerThreads.
 class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
  public:
-  static std::unique_ptr<TestCompositorWorkerObjectProxy> create() {
-    return WTF::wrapUnique(new TestCompositorWorkerObjectProxy());
+  static std::unique_ptr<TestCompositorWorkerObjectProxy> create(
+      ParentFrameTaskRunners* parentFrameTaskRunners) {
+    return WTF::wrapUnique(
+        new TestCompositorWorkerObjectProxy(parentFrameTaskRunners));
   }
 
   // (Empty) WorkerReportingProxy implementation:
@@ -55,9 +57,9 @@ class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
   void didTerminateWorkerThread() override {}
 
  private:
-  TestCompositorWorkerObjectProxy()
-      : InProcessWorkerObjectProxy(nullptr,
-                                   ParentFrameTaskRunners::create(nullptr)) {}
+  explicit TestCompositorWorkerObjectProxy(
+      ParentFrameTaskRunners* parentFrameTaskRunners)
+      : InProcessWorkerObjectProxy(nullptr, parentFrameTaskRunners) {}
 };
 
 class TestCompositorProxyClient
@@ -97,7 +99,9 @@ class CompositorWorkerThreadTest : public ::testing::Test {
  public:
   void SetUp() override {
     CompositorWorkerThread::createSharedBackingThreadForTest();
-    m_objectProxy = TestCompositorWorkerObjectProxy::create();
+    m_parentFrameTaskRunners = ParentFrameTaskRunners::create(nullptr);
+    m_objectProxy =
+        TestCompositorWorkerObjectProxy::create(m_parentFrameTaskRunners.get());
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
   }
@@ -108,7 +112,8 @@ class CompositorWorkerThreadTest : public ::testing::Test {
 
   std::unique_ptr<CompositorWorkerThread> createCompositorWorker() {
     std::unique_ptr<CompositorWorkerThread> workerThread =
-        CompositorWorkerThread::create(nullptr, *m_objectProxy, 0);
+        CompositorWorkerThread::create(nullptr, *m_objectProxy,
+                                       m_parentFrameTaskRunners.get(), 0);
     WorkerClients* clients = WorkerClients::create();
     provideCompositorProxyClientTo(clients, new TestCompositorProxyClient);
     workerThread->start(WorkerThreadStartupData::create(
@@ -144,6 +149,7 @@ class CompositorWorkerThreadTest : public ::testing::Test {
 
   RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<InProcessWorkerObjectProxy> m_objectProxy;
+  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
   ScopedTestingPlatformSupport<CompositorWorkerTestPlatform> m_platform;
 };
 

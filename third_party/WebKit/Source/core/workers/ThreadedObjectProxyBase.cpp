@@ -57,10 +57,6 @@ void ThreadedObjectProxyBase::postMessageToPageInspector(
                      messagingProxyWeakPtr(), message));
 }
 
-ParentFrameTaskRunners* ThreadedObjectProxyBase::getParentFrameTaskRunners() {
-  return m_parentFrameTaskRunners.get();
-}
-
 void ThreadedObjectProxyBase::didCloseWorkerGlobalScope() {
   getParentFrameTaskRunners()
       ->get(TaskType::UnspecedTimer)
@@ -78,6 +74,10 @@ void ThreadedObjectProxyBase::didTerminateWorkerThread() {
           BLINK_FROM_HERE,
           crossThreadBind(&ThreadedMessagingProxyBase::workerThreadTerminated,
                           messagingProxyWeakPtr()));
+}
+
+ParentFrameTaskRunners* ThreadedObjectProxyBase::getParentFrameTaskRunners() {
+  return m_parentFrameTaskRunners.get();
 }
 
 ThreadedObjectProxyBase::ThreadedObjectProxyBase(

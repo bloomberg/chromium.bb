@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ParentFrameTaskRunners;
 class ThreadedMessagingProxyBase;
 
 // A proxy to talk to the parent object. This object is created and destroyed on
@@ -35,13 +36,13 @@ class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
                             const String& message,
                             SourceLocation*) override;
   void postMessageToPageInspector(const String&) override;
-  ParentFrameTaskRunners* getParentFrameTaskRunners() override;
   void didCloseWorkerGlobalScope() override;
   void didTerminateWorkerThread() override;
 
  protected:
   explicit ThreadedObjectProxyBase(ParentFrameTaskRunners*);
   virtual WeakPtr<ThreadedMessagingProxyBase> messagingProxyWeakPtr() = 0;
+  ParentFrameTaskRunners* getParentFrameTaskRunners();
 
  private:
   // Used to post a task to ThreadedMessagingProxyBase on the parent context

@@ -28,8 +28,7 @@ void waitForSignalTask(WorkerThread* workerThread,
   EXPECT_TRUE(workerThread->isCurrentThread());
 
   // Notify the main thread that the debugger task is waiting for the signal.
-  workerThread->workerReportingProxy()
-      .getParentFrameTaskRunners()
+  workerThread->getParentFrameTaskRunners()
       ->get(TaskType::UnspecedTimer)
       ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   waitableEvent->wait();
@@ -46,8 +45,9 @@ class WorkerThreadTest : public ::testing::Test {
     m_reportingProxy = WTF::makeUnique<MockWorkerReportingProxy>();
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
-    m_workerThread = WTF::wrapUnique(new WorkerThreadForTest(
-        m_loaderProxyProvider.get(), *m_reportingProxy));
+    m_workerThread = WTF::wrapUnique(
+        new WorkerThreadForTest(m_loaderProxyProvider.get(), *m_reportingProxy,
+                                ParentFrameTaskRunners::create(nullptr)));
     m_lifecycleObserver = new MockWorkerThreadLifecycleObserver(
         m_workerThread->getWorkerThreadLifecycleContext());
   }

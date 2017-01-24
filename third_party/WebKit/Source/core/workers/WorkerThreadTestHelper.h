@@ -54,8 +54,7 @@ class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
 
 class MockWorkerReportingProxy : public WorkerReportingProxy {
  public:
-  MockWorkerReportingProxy()
-      : m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
+  MockWorkerReportingProxy() {}
   ~MockWorkerReportingProxy() override {}
 
   MOCK_METHOD1(countFeature, void(UseCounter::Feature));
@@ -86,10 +85,6 @@ class MockWorkerReportingProxy : public WorkerReportingProxy {
     reportExceptionMock(errorMessage, location.get(), exceptionId);
   }
 
-  ParentFrameTaskRunners* getParentFrameTaskRunners() override {
-    return m_parentFrameTaskRunners.get();
-  }
-
   void willEvaluateWorkerScript(size_t scriptSize,
                                 size_t cachedMetadataSize) override {
     m_scriptEvaluationEvent.signal();
@@ -99,7 +94,6 @@ class MockWorkerReportingProxy : public WorkerReportingProxy {
   void waitUntilScriptEvaluation() { m_scriptEvaluationEvent.wait(); }
 
  private:
-  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
   WaitableEvent m_scriptEvaluationEvent;
 };
 
@@ -120,9 +114,11 @@ class MockWorkerThreadLifecycleObserver final
 class WorkerThreadForTest : public WorkerThread {
  public:
   WorkerThreadForTest(WorkerLoaderProxyProvider* mockWorkerLoaderProxyProvider,
-                      WorkerReportingProxy& mockWorkerReportingProxy)
+                      WorkerReportingProxy& mockWorkerReportingProxy,
+                      ParentFrameTaskRunners* parentFrameTaskRunners)
       : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider),
-                     mockWorkerReportingProxy),
+                     mockWorkerReportingProxy,
+                     parentFrameTaskRunners),
         m_workerBackingThread(
             WorkerBackingThread::createForTest("Test thread")) {}
 

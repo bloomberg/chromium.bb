@@ -9,7 +9,6 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
@@ -49,20 +48,13 @@ class TestAudioWorkletReportingProxy : public WorkerReportingProxy {
                             const String& message,
                             SourceLocation*) override {}
   void postMessageToPageInspector(const String&) override {}
-  ParentFrameTaskRunners* getParentFrameTaskRunners() override {
-    return m_parentFrameTaskRunners.get();
-  }
-
   void didEvaluateWorkerScript(bool success) override {}
   void didCloseWorkerGlobalScope() override {}
   void willDestroyWorkerGlobalScope() override {}
   void didTerminateWorkerThread() override {}
 
  private:
-  TestAudioWorkletReportingProxy()
-      : m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
-
-  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  TestAudioWorkletReportingProxy() {}
 };
 
 }  // namespace
@@ -71,6 +63,7 @@ class AudioWorkletThreadTest : public ::testing::Test {
  public:
   void SetUp() override {
     AudioWorkletThread::createSharedBackingThreadForTest();
+    m_parentFrameTaskRunners = ParentFrameTaskRunners::create(nullptr);
     m_reportingProxy = TestAudioWorkletReportingProxy::create();
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
@@ -79,8 +72,8 @@ class AudioWorkletThreadTest : public ::testing::Test {
   void TearDown() override { AudioWorkletThread::clearSharedBackingThread(); }
 
   std::unique_ptr<AudioWorkletThread> createAudioWorkletThread() {
-    std::unique_ptr<AudioWorkletThread> thread =
-        AudioWorkletThread::create(nullptr, *m_reportingProxy);
+    std::unique_ptr<AudioWorkletThread> thread = AudioWorkletThread::create(
+        nullptr, *m_reportingProxy, m_parentFrameTaskRunners.get());
     thread->start(WorkerThreadStartupData::create(
         KURL(ParsedURLString, "http://fake.url/"), "fake user agent", "",
         nullptr, DontPauseWorkerGlobalScopeOnStart, nullptr, "",
@@ -111,6 +104,7 @@ class AudioWorkletThreadTest : public ::testing::Test {
 
   RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<WorkerReportingProxy> m_reportingProxy;
+  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 };
 
 TEST_F(AudioWorkletThreadTest, Basic) {

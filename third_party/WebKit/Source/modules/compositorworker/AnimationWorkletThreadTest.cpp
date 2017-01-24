@@ -48,20 +48,13 @@ class TestAnimationWorkletReportingProxy : public WorkerReportingProxy {
                             const String& message,
                             SourceLocation*) override {}
   void postMessageToPageInspector(const String&) override {}
-  ParentFrameTaskRunners* getParentFrameTaskRunners() override {
-    return m_parentFrameTaskRunners.get();
-  }
-
   void didEvaluateWorkerScript(bool success) override {}
   void didCloseWorkerGlobalScope() override {}
   void willDestroyWorkerGlobalScope() override {}
   void didTerminateWorkerThread() override {}
 
  private:
-  TestAnimationWorkletReportingProxy()
-      : m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
-
-  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  TestAnimationWorkletReportingProxy() {}
 };
 
 class AnimationWorkletTestPlatform : public TestingPlatformSupport {
@@ -97,7 +90,8 @@ class AnimationWorkletThreadTest : public ::testing::Test {
 
   std::unique_ptr<AnimationWorkletThread> createAnimationWorkletThread() {
     std::unique_ptr<AnimationWorkletThread> thread =
-        AnimationWorkletThread::create(nullptr, *m_reportingProxy);
+        AnimationWorkletThread::create(nullptr, *m_reportingProxy,
+                                       ParentFrameTaskRunners::create(nullptr));
     thread->start(WorkerThreadStartupData::create(
         KURL(ParsedURLString, "http://fake.url/"), "fake user agent", "",
         nullptr, DontPauseWorkerGlobalScopeOnStart, nullptr, "",

@@ -18,7 +18,8 @@ class MODULES_EXPORT AnimationWorkletThread final
  public:
   static std::unique_ptr<AnimationWorkletThread> create(
       PassRefPtr<WorkerLoaderProxy>,
-      WorkerReportingProxy&);
+      WorkerReportingProxy&,
+      ParentFrameTaskRunners*);
   ~AnimationWorkletThread() override;
 
  protected:
@@ -26,7 +27,9 @@ class MODULES_EXPORT AnimationWorkletThread final
       std::unique_ptr<WorkerThreadStartupData>) final;
 
  private:
-  AnimationWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
+  AnimationWorkletThread(PassRefPtr<WorkerLoaderProxy>,
+                         WorkerReportingProxy&,
+                         ParentFrameTaskRunners*);
 };
 
 }  // namespace blink

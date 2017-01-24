@@ -17,7 +17,8 @@ AudioWorkletMessagingProxy::~AudioWorkletMessagingProxy() {}
 
 std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::createWorkerThread(
     double originTime) {
-  return AudioWorkletThread::create(loaderProxy(), workletObjectProxy());
+  return AudioWorkletThread::create(loaderProxy(), workletObjectProxy(),
+                                    getParentFrameTaskRunners());
 }
 
 }  // namespace blink

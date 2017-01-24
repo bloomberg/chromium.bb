@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class ParentFrameTaskRunners;
 class SourceLocation;
 class WorkerOrWorkletGlobalScope;
 
@@ -59,9 +58,6 @@ class CORE_EXPORT WorkerReportingProxy {
                                     const String& message,
                                     SourceLocation*) = 0;
   virtual void postMessageToPageInspector(const String&) = 0;
-
-  // Returns the parent frame's task runners.
-  virtual ParentFrameTaskRunners* getParentFrameTaskRunners() = 0;
 
   // Invoked when the new WorkerGlobalScope is created. This is called after
   // didLoadWorkerScript().

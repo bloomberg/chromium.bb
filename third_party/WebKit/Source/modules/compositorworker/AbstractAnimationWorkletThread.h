@@ -35,7 +35,8 @@ class MODULES_EXPORT AbstractAnimationWorkletThread : public WorkerThread {
 
  protected:
   AbstractAnimationWorkletThread(PassRefPtr<WorkerLoaderProxy>,
-                                 WorkerReportingProxy&);
+                                 WorkerReportingProxy&,
+                                 ParentFrameTaskRunners*);
 
   bool isOwningBackingThread() const override { return false; }
 };

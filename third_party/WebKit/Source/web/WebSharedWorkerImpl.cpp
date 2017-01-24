@@ -253,8 +253,7 @@ void WebSharedWorkerImpl::reportConsoleMessage(MessageSource,
 void WebSharedWorkerImpl::postMessageToPageInspector(const String& message) {
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
-  getParentFrameTaskRunners()
-      ->get(TaskType::Unthrottled)
+  m_parentFrameTaskRunners->get(TaskType::Unthrottled)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(
@@ -267,13 +266,8 @@ void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(
   m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
-ParentFrameTaskRunners* WebSharedWorkerImpl::getParentFrameTaskRunners() {
-  return m_parentFrameTaskRunners.get();
-}
-
 void WebSharedWorkerImpl::didCloseWorkerGlobalScope() {
-  getParentFrameTaskRunners()
-      ->get(TaskType::UnspecedTimer)
+  m_parentFrameTaskRunners->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(
@@ -288,8 +282,7 @@ void WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread() {
 }
 
 void WebSharedWorkerImpl::didTerminateWorkerThread() {
-  getParentFrameTaskRunners()
-      ->get(TaskType::UnspecedTimer)
+  m_parentFrameTaskRunners->get(TaskType::UnspecedTimer)
       ->postTask(BLINK_FROM_HERE,
                  crossThreadBind(
                      &WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread,
@@ -416,7 +409,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
   m_parentFrameTaskRunners = ParentFrameTaskRunners::create(nullptr);
 
   m_loaderProxy = WorkerLoaderProxy::create(this);
-  m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);
+  m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this,
+                                              m_parentFrameTaskRunners.get());
   InspectorInstrumentation::scriptImported(m_loadingDocument.get(),
                                            m_mainScriptLoader->identifier(),
                                            m_mainScriptLoader->script());

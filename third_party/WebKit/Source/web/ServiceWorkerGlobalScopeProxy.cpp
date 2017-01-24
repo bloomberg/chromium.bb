@@ -416,17 +416,11 @@ void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(
   DCHECK(m_embeddedWorker);
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
-  getParentFrameTaskRunners()
-      ->get(TaskType::Unthrottled)
+  m_parentFrameTaskRunners->get(TaskType::Unthrottled)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(&WebEmbeddedWorkerImpl::postMessageToPageInspector,
                           crossThreadUnretained(m_embeddedWorker), message));
-}
-
-ParentFrameTaskRunners*
-ServiceWorkerGlobalScopeProxy::getParentFrameTaskRunners() {
-  return m_parentFrameTaskRunners.get();
 }
 
 void ServiceWorkerGlobalScopeProxy::didCreateWorkerGlobalScope(

@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
@@ -169,8 +170,14 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   void waitForShutdownForTesting() { m_shutdownEvent->wait(); }
 
+  ParentFrameTaskRunners* getParentFrameTaskRunners() const {
+    return m_parentFrameTaskRunners.get();
+  }
+
  protected:
-  WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
+  WorkerThread(PassRefPtr<WorkerLoaderProxy>,
+               WorkerReportingProxy&,
+               ParentFrameTaskRunners*);
 
   // Factory method for creating a new worker context for the thread.
   // Called on the worker thread.
@@ -285,6 +292,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
   WorkerReportingProxy& m_workerReportingProxy;
+  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
   // This lock protects |m_globalScope|, |m_requestedToTerminate|,
   // |m_threadState|, |m_runningDebuggerTask| and |m_exitCode|.

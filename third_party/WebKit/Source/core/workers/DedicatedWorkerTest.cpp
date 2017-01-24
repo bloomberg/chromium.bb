@@ -38,10 +38,12 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(
       WorkerLoaderProxyProvider* workerLoaderProxyProvider,
-      InProcessWorkerObjectProxy& workerObjectProxy)
+      InProcessWorkerObjectProxy& workerObjectProxy,
+      ParentFrameTaskRunners* parentFrameTaskRunners)
       : DedicatedWorkerThread(
             WorkerLoaderProxy::create(workerLoaderProxyProvider),
             workerObjectProxy,
+            parentFrameTaskRunners,
             monotonicallyIncreasingTime()) {
     m_workerBackingThread = WorkerBackingThread::createForTest("Test thread");
   }
@@ -58,8 +60,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   void countFeature(UseCounter::Feature feature) {
     EXPECT_TRUE(isCurrentThread());
     globalScope()->countFeature(feature);
-    workerReportingProxy()
-        .getParentFrameTaskRunners()
+    getParentFrameTaskRunners()
         ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
@@ -75,8 +76,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     String consoleMessage = consoleMessageStorage()->at(0)->message();
     EXPECT_TRUE(consoleMessage.contains("deprecated"));
 
-    workerReportingProxy()
-        .getParentFrameTaskRunners()
+    getParentFrameTaskRunners()
         ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
@@ -96,7 +96,8 @@ class InProcessWorkerMessagingProxyForTest
     m_mockWorkerLoaderProxyProvider =
         WTF::makeUnique<MockWorkerLoaderProxyProvider>();
     m_workerThread = WTF::wrapUnique(new DedicatedWorkerThreadForTest(
-        m_mockWorkerLoaderProxyProvider.get(), workerObjectProxy()));
+        m_mockWorkerLoaderProxyProvider.get(), workerObjectProxy(),
+        getParentFrameTaskRunners()));
     m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(
         m_workerThread->getWorkerThreadLifecycleContext());
     EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver,

@@ -23,18 +23,23 @@ template class WorkletThreadHolder<AudioWorkletThread>;
 
 std::unique_ptr<AudioWorkletThread> AudioWorkletThread::create(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy) {
+    WorkerReportingProxy& workerReportingProxy,
+    ParentFrameTaskRunners* parentFrameTaskRunners) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),
                "AudioWorkletThread::create");
   DCHECK(isMainThread());
   return WTF::wrapUnique(new AudioWorkletThread(std::move(workerLoaderProxy),
-                                                workerReportingProxy));
+                                                workerReportingProxy,
+                                                parentFrameTaskRunners));
 }
 
 AudioWorkletThread::AudioWorkletThread(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy)
-    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy) {}
+    WorkerReportingProxy& workerReportingProxy,
+    ParentFrameTaskRunners* parentFrameTaskRunners)
+    : WorkerThread(std::move(workerLoaderProxy),
+                   workerReportingProxy,
+                   parentFrameTaskRunners) {}
 
 AudioWorkletThread::~AudioWorkletThread() {}
 
