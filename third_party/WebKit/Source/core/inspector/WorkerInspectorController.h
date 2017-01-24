@@ -52,7 +52,8 @@ class WorkerInspectorController final
   WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
 
  public:
-  static WorkerInspectorController* create(WorkerThread*);
+  static WorkerInspectorController* create(WorkerThread*,
+                                           bool networkCapability);
   ~WorkerInspectorController() override;
   DECLARE_TRACE();
 
@@ -67,7 +68,9 @@ class WorkerInspectorController final
   void flushProtocolNotifications();
 
  private:
-  WorkerInspectorController(WorkerThread*, WorkerThreadDebugger*);
+  WorkerInspectorController(WorkerThread*,
+                            WorkerThreadDebugger*,
+                            bool networkCapability);
 
   // InspectorSession::Client implementation.
   void sendProtocolMessage(int sessionId,
@@ -82,6 +85,7 @@ class WorkerInspectorController final
   WorkerThreadDebugger* m_debugger;
   WorkerThread* m_thread;
   Member<InstrumentingAgents> m_instrumentingAgents;
+  const bool m_networkCapability;
   Member<InspectorSession> m_session;
 };
 

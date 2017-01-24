@@ -49,7 +49,8 @@ void ThreadedWorkletMessagingProxy::initialize() {
           csp->headers().get(), /* referrerPolicy */ String(), starterOrigin,
           nullptr, document->addressSpace(),
           OriginTrialContext::getTokens(document).get(),
-          std::move(workerSettings), WorkerV8Settings::Default());
+          std::move(workerSettings), WorkerV8Settings::Default(),
+          false /* inspectorNetworkCapability */);
 
   initializeWorkerThread(std::move(startupData));
   workerInspectorProxy()->workerThreadCreated(document, workerThread(),

@@ -451,6 +451,7 @@ void WorkerThread::initializeOnWorkerThread(
   bool heapLimitIncreasedForDebugging =
       startupData->m_workerV8Settings.m_heapLimitMode ==
       WorkerV8Settings::HeapLimitMode::IncreasedForDebugging;
+  bool inspectorNetworkCapability = startupData->m_inspectorNetworkCapability;
 
   {
     MutexLocker lock(m_threadStateMutex);
@@ -469,7 +470,8 @@ void WorkerThread::initializeOnWorkerThread(
     m_consoleMessageStorage = new ConsoleMessageStorage();
     m_globalScope = createWorkerGlobalScope(std::move(startupData));
     m_workerReportingProxy.didCreateWorkerGlobalScope(globalScope());
-    m_workerInspectorController = WorkerInspectorController::create(this);
+    m_workerInspectorController =
+        WorkerInspectorController::create(this, inspectorNetworkCapability);
 
     // TODO(nhiroki): Handle a case where the script controller fails to
     // initialize the context.

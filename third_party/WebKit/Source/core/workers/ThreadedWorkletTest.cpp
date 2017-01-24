@@ -120,7 +120,8 @@ class ThreadedWorkletMessagingProxyForTest
         std::move(cachedMetaData), DontPauseWorkerGlobalScopeOnStart,
         &contentSecurityPolicyHeaders, referrerPolicy, m_securityOrigin.get(),
         workerClients, WebAddressSpaceLocal, &originTrialTokens,
-        std::move(workerSettings), WorkerV8Settings::Default()));
+        std::move(workerSettings), WorkerV8Settings::Default(),
+        false /* inspectorNetworkCapability */));
     workerInspectorProxy()->workerThreadCreated(
         toDocument(getExecutionContext()), m_workerThread.get(), scriptURL);
   }

@@ -150,7 +150,7 @@ class WorkerThreadForTest : public WorkerThread {
         KURL(ParsedURLString, "http://fake.url/"), "fake user agent", source,
         nullptr, DontPauseWorkerGlobalScopeOnStart, headers.get(), "",
         securityOrigin, clients, WebAddressSpaceLocal, nullptr, nullptr,
-        WorkerV8Settings::Default()));
+        WorkerV8Settings::Default(), false /* inspectorNetworkCapability */));
   }
 
   void waitForInit() {

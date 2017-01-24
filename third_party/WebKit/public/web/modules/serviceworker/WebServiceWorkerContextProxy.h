@@ -46,6 +46,7 @@ struct WebNotificationData;
 struct WebPaymentAppRequestData;
 struct WebServiceWorkerClientInfo;
 struct WebServiceWorkerError;
+class WebURL;
 class WebURLResponse;
 
 // A proxy interface to talk to the worker's GlobalScope implementation.
@@ -100,6 +101,9 @@ class WebServiceWorkerContextProxy {
   virtual void dispatchPaymentRequestEvent(int eventID,
                                            const WebPaymentAppRequestData&) = 0;
 
+  // Called when the ServiceWorker received a FetchEvent which has triggered a
+  // navigation preload request.
+  virtual void onNavigationPreloadSent(int fetchEventID, const WebURL&) = 0;
   virtual void onNavigationPreloadResponse(
       int fetchEventID,
       std::unique_ptr<WebURLResponse>,
@@ -107,6 +111,8 @@ class WebServiceWorkerContextProxy {
   virtual void onNavigationPreloadError(
       int fetchEventID,
       std::unique_ptr<WebServiceWorkerError>) = 0;
+  virtual void onNavigationPreloadCompleted(int fetchEventID,
+                                            int64_t encodedDataLength) = 0;
 };
 
 }  // namespace blink
