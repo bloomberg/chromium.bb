@@ -1154,4 +1154,9 @@ TEST_F(StyleRelatedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
                 MainThreadScrollingReason::kHasBorderRadius);
 }
 
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, BoxShadowTest) {
+  testStyle("box-shadow",
+            MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer);
+}
+
 }  // namespace blink

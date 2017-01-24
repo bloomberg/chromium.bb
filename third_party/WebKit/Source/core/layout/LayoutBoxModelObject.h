@@ -197,7 +197,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // Returns which layers backgrounds should be painted into for overflow
   // scrolling boxes.
-  BackgroundPaintLocation backgroundPaintLocation() const;
+  BackgroundPaintLocation backgroundPaintLocation(uint32_t* reasons) const;
 
   // These return the CSS computed padding values.
   LayoutUnit computedCSSPaddingTop() const {

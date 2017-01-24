@@ -2622,11 +2622,12 @@ GraphicsLayer* PaintLayer::graphicsLayerBacking(const LayoutObject* obj) const {
   }
 }
 
-BackgroundPaintLocation PaintLayer::backgroundPaintLocation() const {
+BackgroundPaintLocation PaintLayer::backgroundPaintLocation(
+    uint32_t* reasons) const {
   BackgroundPaintLocation location =
       isRootLayer() || !scrollsOverflow()
           ? BackgroundPaintInGraphicsLayer
-          : layoutObject()->backgroundPaintLocation();
+          : layoutObject()->backgroundPaintLocation(reasons);
   m_stackingNode->updateLayerListsIfNeeded();
   if (m_stackingNode->hasNegativeZOrderList())
     location = BackgroundPaintInGraphicsLayer;

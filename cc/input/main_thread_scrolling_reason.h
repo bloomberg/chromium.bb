@@ -41,6 +41,7 @@ struct MainThreadScrollingReason {
     kBackgroundNotOpaqueInRectAndLCDText = 1 << 18,
     kHasBorderRadius = 1 << 19,
     kHasClipRelatedProperty = 1 << 20,
+    kHasBoxShadowFromNonRootLayer = 1 << 21,
 
     // Transient scrolling reasons. These are computed for each scroll begin.
     kNonFastScrollableRegion = 1 << 5,
@@ -55,7 +56,7 @@ struct MainThreadScrollingReason {
     // New flags should increment this number but it should never be decremented
     // because the values are used in UMA histograms. It should also be noted
     // that it excludes the kNotScrollingOnMain value.
-    kMainThreadScrollingReasonCount = 21,
+    kMainThreadScrollingReasonCount = 22,
   };
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
@@ -67,7 +68,8 @@ struct MainThreadScrollingReason {
         kScrollbarScrolling | kPageOverlay | kHandlingScrollFromMainThread |
         kCustomScrollbarScrolling | kHasOpacityAndLCDText |
         kHasTransformAndLCDText | kBackgroundNotOpaqueInRectAndLCDText |
-        kHasBorderRadius | kHasClipRelatedProperty;
+        kHasBorderRadius | kHasClipRelatedProperty |
+        kHasBoxShadowFromNonRootLayer;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
 
@@ -125,6 +127,8 @@ struct MainThreadScrollingReason {
       tracedValue->AppendString("Has border radius");
     if (reasons & MainThreadScrollingReason::kHasClipRelatedProperty)
       tracedValue->AppendString("Has clip related property");
+    if (reasons & MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer)
+      tracedValue->AppendString("Has box shadow from non-root layer");
 
     // Transient scrolling reasons.
     if (reasons & MainThreadScrollingReason::kNonFastScrollableRegion)
