@@ -114,7 +114,7 @@
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
-#import "ios/chrome/browser/web/blocked_popup_handler.h"
+#import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #include "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
@@ -199,8 +199,7 @@ enum class RendererTerminationTabState {
 };
 }  // namespace
 
-@interface Tab ()<BlockedPopupHandlerDelegate,
-                  CRWWebStateObserver,
+@interface Tab ()<CRWWebStateObserver,
                   CRWWebUserInterfaceDelegate,
                   FindInPageControllerDelegate,
                   ReaderModeControllerDelegate> {
@@ -278,9 +277,6 @@ enum class RendererTerminationTabState {
   // Handles autofill.
   base::scoped_nsobject<AutofillController> autofillController_;
 
-  // The popup blocker to show blocked popup to the user.
-  std::unique_ptr<BlockedPopupHandler> popupHandler_;
-
   // Handles find on page.
   base::scoped_nsobject<FindInPageController> findInPageController_;
 
@@ -355,9 +351,6 @@ enum class RendererTerminationTabState {
 
 // Saves the current title to the history database.
 - (void)saveTitleToHistoryDB;
-
-// Returns a lazily instantiated popup handler.
-- (BlockedPopupHandler*)popupHandler;
 
 // Adds the current session entry to this history database.
 - (void)addCurrentEntryToHistoryDB;
@@ -560,12 +553,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     // IOSChromeSessionTabHelper comes first because it sets up the tab ID, and
     // other helpers may rely on that.
     IOSChromeSessionTabHelper::CreateForWebState(self.webState);
+
     NetworkActivityIndicatorTabHelper::CreateForWebState(self.webState,
                                                          self.tabId);
     IOSChromeSyncedTabDelegate::CreateForWebState(self.webState);
     InfoBarManagerImpl::CreateForWebState(self.webState);
     IOSSecurityStateTabHelper::CreateForWebState(self.webState);
     FormResubmissionTabHelper::CreateForWebState(self.webState);
+    BlockedPopupTabHelper::CreateForWebState(self.webState);
 
     if (reading_list::switches::IsReadingListEnabled()) {
       ReadingListModel* model =
@@ -1619,14 +1614,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   snapshotOverlayProvider_.reset(snapshotOverlayProvider);
 }
 
-- (BlockedPopupHandler*)popupHandler {
-  if (!popupHandler_.get()) {
-    popupHandler_.reset(new BlockedPopupHandler(self.browserState));
-    popupHandler_->SetDelegate(self);
-  }
-  return popupHandler_.get();
-}
-
 - (void)evaluateU2FResultFromURL:(const GURL&)URL {
   DCHECK(U2FController_);
   [U2FController_ evaluateU2FResultFromU2FURL:URL webState:self.webState];
@@ -2076,7 +2063,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webController:(CRWWebController*)webController
         didBlockPopup:(const web::BlockedPopupInfo&)blockedPopupInfo {
-  [self popupHandler]->HandlePopup(blockedPopupInfo);
+  BlockedPopupTabHelper::FromWebState(self.webState)
+      ->HandlePopup(blockedPopupInfo);
 }
 
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController {

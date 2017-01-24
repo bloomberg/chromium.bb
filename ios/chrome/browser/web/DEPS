@@ -1,6 +1,10 @@
 specific_include_rules = {
   # TODO(crbug.com/622072): Remove this exception.
-  "^blocked_popup_handler\.h$": [
+  "^blocked_popup_tab_helper\.h$": [
+    "+ios/web/web_state/blocked_popup_info.h",
+  ],
+  # TODO(crbug.com/622072): Remove this exception.
+  "^blocked_popup_tab_helper_unittest\.mm$": [
     "+ios/web/web_state/blocked_popup_info.h",
   ],
   # TODO(crbug.com/622485): Remove this exception.
