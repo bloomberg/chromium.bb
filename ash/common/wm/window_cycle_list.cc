@@ -262,14 +262,8 @@ class WindowCycleView : public views::WidgetDelegateView {
     target_window_ = target;
     if (GetWidget()) {
       Layout();
-      if (target_window_) {
-        // In the window destruction case, we may have already removed the
-        // focused view and hence not be the focused window. We should still
-        // always be active, though.
-        DCHECK_EQ(ash::WmShell::Get()->GetActiveWindow()->GetInternalWidget(),
-                  GetWidget());
+      if (target_window_)
         window_view_map_[target_window_]->RequestFocus();
-      }
     }
   }
 
@@ -352,10 +346,6 @@ class WindowCycleView : public views::WidgetDelegateView {
       highlight_view_->layer()->SetAnimator(
           ui::LayerAnimator::CreateImplicitAnimator());
     }
-  }
-
-  void OnMouseCaptureLost() override {
-    WmShell::Get()->window_cycle_controller()->CancelCycling();
   }
 
   void OnPaintBackground(gfx::Canvas* canvas) override {
@@ -552,8 +542,6 @@ void WindowCycleList::InitWindowCycleView() {
 
   screen_observer_.Add(display::Screen::GetScreen());
   widget->Show();
-  widget->SetCapture(cycle_view_);
-  widget->set_auto_release_capture(false);
   cycle_ui_widget_ = widget;
 }
 

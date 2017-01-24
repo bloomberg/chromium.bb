@@ -20,13 +20,27 @@ class WindowCycleEventFilterAura : public ui::EventHandler,
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
+  class AltReleaseHandler : public ui::EventHandler {
+   public:
+    AltReleaseHandler();
+    ~AltReleaseHandler() override;
+
+    void OnKeyEvent(ui::KeyEvent* event) override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(AltReleaseHandler);
+  };
+
   // When the user holds Alt+Tab, this timer is used to send repeated
   // cycle commands to WindowCycleController. Note this is not accomplished
   // by marking the Alt+Tab accelerator as "repeatable" in the accelerator
   // table because we wish to control the repeat interval.
   base::RepeatingTimer repeat_timer_;
+
+  AltReleaseHandler alt_release_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilterAura);
 };

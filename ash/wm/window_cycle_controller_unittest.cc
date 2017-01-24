@@ -647,33 +647,18 @@ TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
   WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
 
-  // Events don't get through.
-  generator.ClickLeftButton();
+  // Most mouse events don't get through.
+  generator.PressLeftButton();
   EXPECT_EQ(0, event_count.GetMouseEventCountAndReset());
+
+  // Although releases do.
+  generator.ReleaseLeftButton();
+  EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
 
   // Stop cycling: once again, events get through.
   controller->CompleteCycling();
   generator.ClickLeftButton();
   EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
-}
-
-// If mouse capture is lost, the UI closes.
-TEST_F(WindowCycleControllerTest, MouseCaptureLost) {
-  // This delegate allows the window to receive mouse events.
-  aura::test::TestWindowDelegate delegate;
-  std::unique_ptr<Window> w0(CreateTestWindowInShellWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 100, 100)));
-  std::unique_ptr<Window> w1(CreateTestWindowInShellWithId(1));
-
-  // Start cycling.
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-
-  // Some other widget grabs capture and this causes Alt+Tab to cease.
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  widget->SetCapture(nullptr);
-  EXPECT_FALSE(controller->IsCycling());
 }
 
 // Tests that we can cycle past fullscreen windows: https://crbug.com/622396.
