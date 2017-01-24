@@ -26,8 +26,6 @@ source_set("lib") {
     "instance.cc",
     "instance.h",
     "manifest_provider.h",
-    "reader.cc",
-    "reader.h",
     "store.cc",
     "store.h",
   ]

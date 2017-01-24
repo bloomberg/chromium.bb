@@ -140,12 +140,9 @@ service("mus") {
   #             can't state that dependency here.
   data_deps = [
     ":manifest",
+    ":resources",
+    ":resources_200",
     "//services/ui",
-  ]
-
-  resources = [
-    "$root_out_dir/ash_mus_resources.pak",
-    "$root_out_dir/ash_mus_resources_200.pak",
   ]
 }
 

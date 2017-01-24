@@ -12,6 +12,7 @@ include_rules = [
   "+device/bluetooth", # For WebBluetooth tests
   # For loading V8's initial snapshot from external files.
   "+gin/v8_initializer.h",
+  "+services/catalog",
   "+ui/base/resource/data_pack.h",
   "+ui/base/resource/resource_bundle.h",
   "!v8/include/v8.h",

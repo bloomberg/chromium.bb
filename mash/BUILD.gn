@@ -38,38 +38,8 @@ catalog("catalog") {
   testonly = true
 
   standalone_services = [
-    "catalog_viewer",
-    "leveldb",
-    "mash_session",
-    "mus_demo",
-    "quick_launch",
-    "task_viewer",
-    "test_ime_driver",
-    "tracing",
-    "ui",
-
-    # TODO(rockot): It seems like a layering violation to have these service
-    # names referenced here, but it's the most convenient thing to do for now,
-    # and this is only for developers.
-    #
-    # Note that there are no build-time dependencies on the actual Chrome
-    # binary implied by mash:all or other targets here. This only ensures that
-    # if you have such a binary built, the runner will be able to locate it.
-    "chrome_content_browser",
-    "chrome_content_gpu",
-    "chrome_content_plugin",
-    "chrome_content_renderer",
-    "chrome_content_utility",
-  ]
-
-  executable_overrides = [ "chrome_content_browser:@EXE_DIR/chrome" ]
-
-  included_catalogs = [ "${root_gen_dir}/mash/example/catalog.json" ]
-
-  deps = [
     "//components/leveldb:manifest",
     "//mash/catalog_viewer:manifest",
-    "//mash/example:catalog",
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
@@ -78,31 +48,41 @@ catalog("catalog") {
     "//services/ui/demo:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
 
-    # See the note above about dependencies on Chrome.
-    "//chrome/app:service_manifests",
+    # TODO(rockot): It seems like a layering violation to have these service
+    # names referenced here, but it's the most convenient thing to do for now,
+    # and this is only for developers.
+    #
+    # Note that there are no build-time dependencies on the actual Chrome
+    # binary implied by mash:all or other targets here. This only ensures that
+    # if you have such a binary built, the runner will be able to locate it.
+    "//chrome/app:chrome_content_browser_manifest",
+    "//chrome/app:chrome_content_gpu_manifest",
+    "//chrome/app:chrome_content_plugin_manifest",
+    "//chrome/app:chrome_content_renderer_manifest",
+    "//chrome/app:chrome_content_utility_manifest",
   ]
 
-  if (is_chromeos) {
-    standalone_services += [ "ash" ]
+  executable_overrides = [ "content_browser:@EXE_DIR/chrome" ]
 
-    deps += [ "//ash/mus:manifest" ]
+  catalog_deps = [ "//mash/example:catalog" ]
+
+  if (is_chromeos) {
+    standalone_services += [ "//ash/mus:manifest" ]
   }
 
   if (is_linux && !is_android) {
-    standalone_services += [ "font_service" ]
-
-    deps += [ "//components/font_service:manifest" ]
+    standalone_services += [ "//components/font_service:manifest" ]
   }
 }
 
 copy("mash_catalog") {
   testonly = true
-  deps = [
-    ":catalog",
-  ]
   sources = get_target_outputs(":catalog")
   outputs = [
     "$root_out_dir/mash_catalog.json",
+  ]
+  deps = [
+    ":catalog",
   ]
 }
 
@@ -133,14 +113,15 @@ if (is_chromeos) {
       "//base/test:test_support",
       "//cc",
       "//cc:test_support",
-      "//services/service_manager/background:main",
+      "//mojo/edk/system",
+      "//services/catalog:lib",
       "//ui/aura",
       "//ui/base",
       "//ui/compositor:test_support",
       "//ui/gl:test_support",
     ]
     data_deps = [
-      ":unittests_manifest",
+      ":mash_unittests_catalog_copy",
       "//ash/mus:resources",
     ]
   }
@@ -148,5 +129,24 @@ if (is_chromeos) {
   service_manifest("unittests_manifest") {
     name = "mash_unittests"
     source = "unittests_manifest.json"
+  }
+
+  catalog("mash_unittests_catalog") {
+    testonly = true
+
+    embedded_services = [ ":unittests_manifest" ]
+
+    catalog_deps = [ ":catalog" ]
+  }
+
+  copy("mash_unittests_catalog_copy") {
+    testonly = true
+    sources = get_target_outputs(":mash_unittests_catalog")
+    outputs = [
+      "${root_out_dir}/mash_unittests_catalog.json",
+    ]
+    deps = [
+      ":mash_unittests_catalog",
+    ]
   }
 }

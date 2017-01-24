@@ -18,20 +18,19 @@
 namespace catalog {
 
 class EntryCache;
-class Reader;
+class ManifestProvider;
 
 class Instance : public service_manager::mojom::Resolver,
                  public mojom::Catalog {
  public:
-  // |manifest_provider| may be null.
-  explicit Instance(Reader* system_reader);
+  // Neither |system_cache| nor |service_manifest_provider| is owned.
+  // |service_manifest_provider| may be null
+  Instance(EntryCache* system_cache,
+           ManifestProvider* service_manifest_provider);
   ~Instance() override;
 
   void BindResolver(service_manager::mojom::ResolverRequest request);
   void BindCatalog(mojom::CatalogRequest request);
-
-  // Called when |cache| has been populated by a directory scan.
-  void CacheReady(EntryCache* cache);
 
  private:
   // service_manager::mojom::Resolver:
@@ -54,18 +53,14 @@ class Instance : public service_manager::mojom::Resolver,
   mojo::BindingSet<service_manager::mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
-  Reader* system_reader_;
-
   // A map of name -> Entry data structure for system-level packages (i.e. those
   // that are visible to all users).
   // TODO(beng): eventually add per-user applications.
-  EntryCache* system_cache_ = nullptr;
+  EntryCache* const system_cache_;
 
-  // We only bind requests for these interfaces once the catalog has been
-  // populated. These data structures queue requests until that happens.
-  std::vector<service_manager::mojom::ResolverRequest>
-      pending_resolver_requests_;
-  std::vector<mojom::CatalogRequest> pending_catalog_requests_;
+  // A runtime interface the embedder can use to provide dynamic manifest data
+  // to be queried on-demand if something can't be found in |system_cache_|.
+  ManifestProvider* const service_manifest_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };

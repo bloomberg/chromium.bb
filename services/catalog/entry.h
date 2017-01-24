@@ -16,7 +16,7 @@
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace catalog {
@@ -30,7 +30,7 @@ class Entry {
 
   std::unique_ptr<base::DictionaryValue> Serialize() const;
 
-  static std::unique_ptr<Entry> Deserialize(const base::DictionaryValue& value);
+  static std::unique_ptr<Entry> Deserialize(const base::Value& manifest_root);
 
   bool ProvidesCapability(const std::string& capability) const;
 

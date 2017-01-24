@@ -18,6 +18,7 @@ import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
 import("//rlz/features/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//services/catalog/public/tools/catalog.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
@@ -1197,7 +1198,7 @@ static_library("browser_tests_runner") {
     ]
 
     data_deps = [
-      ":mash_browser_tests_manifest",
+      ":mash_browser_tests_catalog_copy",
       "//chrome/app:service_manifests",
       "//mash/session",
     ]
@@ -5099,7 +5100,7 @@ if (is_chromeos) {
     name = "mash_browser_tests"
 
     source = "base/mash_browser_tests_manifest.json"
-    deps = [
+    packaged_services = [
       "//ash/autoclick/mus:manifest",
       "//ash/mus:manifest",
       "//ash/touch_hud/mus:manifest",
@@ -5110,22 +5111,28 @@ if (is_chromeos) {
       "//services/ui:manifest",
       "//services/ui/ime/test_ime_driver:manifest",
     ]
-    packaged_services = [
-      "accessibility_autoclick",
-      "ash",
-      "catalog_viewer",
-      "mash_session",
-      "quick_launch",
-      "task_viewer",
-      "test_ime_driver",
-      "touch_hud",
-      "ui",
-    ]
 
     if (is_linux && !is_android) {
-      deps += [ "//components/font_service:manifest" ]
-      packaged_services += [ "font_service" ]
+      packaged_services += [ "//components/font_service:manifest" ]
     }
+  }
+
+  catalog("mash_browser_tests_catalog") {
+    testonly = true
+    embedded_services = [ ":mash_browser_tests_manifest" ]
+    standalone_services = [ "//services/tracing:manifest" ]
+    catalog_deps = [ "//chrome/app:catalog" ]
+  }
+
+  copy("mash_browser_tests_catalog_copy") {
+    testonly = true
+    sources = get_target_outputs(":mash_browser_tests_catalog")
+    outputs = [
+      "${root_out_dir}/mash_browser_tests_catalog.json",
+    ]
+    deps = [
+      ":mash_browser_tests_catalog",
+    ]
   }
 }
 

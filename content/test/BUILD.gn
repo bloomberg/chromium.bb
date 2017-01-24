@@ -11,6 +11,7 @@ import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/public/public_features.gni")
@@ -723,6 +724,7 @@ test("content_browsertests") {
     "//mojo/public/js",
     "//net:test_support",
     "//ppapi/features",
+    "//services/catalog:lib",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp/gpu",
     "//storage/browser",
@@ -1460,6 +1462,7 @@ test("content_unittests") {
     "//ppapi/c",
     "//ppapi/features",
     "//printing",
+    "//services/catalog:lib",
     "//services/file:lib",
     "//services/file/public/interfaces",
     "//services/service_manager/public/cpp:service_test_support",
@@ -1493,7 +1496,7 @@ test("content_unittests") {
   ]
 
   data_deps = [
-    ":content_unittests_manifest",
+    ":content_unittests_catalog_copy",
     "//components/filesystem:filesystem",
     "//third_party/mesa:osmesa",
   ]
@@ -1741,9 +1744,20 @@ test("content_unittests") {
 service_manifest("content_unittests_manifest") {
   name = "content_unittests"
   source = "unittests_manifest.json"
-  packaged_services = [ "file" ]
+  packaged_services = [ "//services/file:manifest" ]
+}
+
+catalog("content_unittests_catalog") {
+  embedded_services = [ ":content_unittests_manifest" ]
+}
+
+copy("content_unittests_catalog_copy") {
+  sources = get_target_outputs(":content_unittests_catalog")
+  outputs = [
+    "${root_out_dir}/content_unittests_catalog.json",
+  ]
   deps = [
-    "//services/file:manifest",
+    ":content_unittests_catalog",
   ]
 }
 

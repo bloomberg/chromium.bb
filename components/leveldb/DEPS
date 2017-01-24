@@ -7,3 +7,10 @@ include_rules = [
   "+services/tracing/public/cpp",
   "+third_party/leveldatabase",
 ]
+
+specific_include_rules = {
+  "run_all_unittests.cc": [
+    "+mojo/edk/embedder",
+    "+services/catalog",
+  ]
+}

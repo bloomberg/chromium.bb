@@ -9,9 +9,11 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
@@ -24,154 +26,63 @@
 
 namespace service_manager {
 
-namespace {
-
-std::unique_ptr<base::MessagePump> CreateDefaultMessagePump() {
-  return base::WrapUnique(new base::MessagePumpDefault);
+BackgroundServiceManager::BackgroundServiceManager(
+    service_manager::ServiceProcessLauncher::Delegate* launcher_delegate,
+    std::unique_ptr<base::Value> catalog_contents)
+    : background_thread_("service_manager") {
+  background_thread_.Start();
+  background_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&BackgroundServiceManager::InitializeOnBackgroundThread,
+                 base::Unretained(this), launcher_delegate,
+                 base::Passed(&catalog_contents)));
 }
-
-class MojoMessageLoop : public base::MessageLoop {
- public:
-  MojoMessageLoop()
-      : base::MessageLoop(base::MessageLoop::TYPE_CUSTOM,
-                          base::Bind(&CreateDefaultMessagePump)) {}
-  ~MojoMessageLoop() override {}
-
-  void BindToCurrentThread() { base::MessageLoop::BindToCurrentThread(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MojoMessageLoop);
-};
-
-}  // namespace
-
-// Manages the thread to startup mojo.
-class BackgroundServiceManager::MojoThread : public base::SimpleThread {
- public:
-  explicit MojoThread(
-      std::unique_ptr<BackgroundServiceManager::InitParams> init_params)
-      : SimpleThread("background-service-manager"),
-        init_params_(std::move(init_params)) {}
-  ~MojoThread() override {}
-
-  void CreateServiceRequest(base::WaitableEvent* signal,
-                            const std::string& name,
-                            mojom::ServiceRequest* request) {
-    // Only valid to call this on the background thread.
-    DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
-    *request = context_->service_manager()->StartEmbedderService(name);
-    signal->Signal();
-  }
-
-  void Connect(std::unique_ptr<ConnectParams> params) {
-    context_->service_manager()->Connect(std::move(params));
-  }
-
-  base::MessageLoop* message_loop() { return message_loop_; }
-
-  // Stops the background thread.
-  void Stop() {
-    DCHECK_NE(message_loop_, base::MessageLoop::current());
-    message_loop_->task_runner()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    Join();
-  }
-
-  void RunServiceManagerCallback(
-      const BackgroundServiceManager::ServiceManagerThreadCallback& callback) {
-    DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
-    callback.Run(context_->service_manager());
-  }
-
-  // base::SimpleThread:
-  void Start() override {
-    DCHECK(!message_loop_);
-    message_loop_ = new MojoMessageLoop;
-    base::SimpleThread::Start();
-  }
-  void Run() override {
-    // The construction/destruction order is very finicky and has to be done
-    // in the order here.
-    std::unique_ptr<base::MessageLoop> message_loop(message_loop_);
-
-    std::unique_ptr<Context::InitParams> context_init_params(
-        new Context::InitParams);
-    if (init_params_) {
-      context_init_params->service_process_launcher_delegate =
-          init_params_->service_process_launcher_delegate;
-      context_init_params->init_edk = init_params_->init_edk;
-    }
-    if (context_init_params->init_edk)
-      Context::EnsureEmbedderIsInitialized();
-
-    message_loop_->BindToCurrentThread();
-
-    std::unique_ptr<Context> context(new Context);
-    context_ = context.get();
-    context_->Init(std::move(context_init_params));
-
-    base::RunLoop().Run();
-
-    // Has to happen after run, but while messageloop still valid.
-    context_->Shutdown();
-
-    // Context has to be destroyed after the MessageLoop has been destroyed.
-    message_loop.reset();
-    context_ = nullptr;
-  }
-
- private:
-  // We own this. It's created on the main thread, but destroyed on the
-  // background thread.
-  MojoMessageLoop* message_loop_ = nullptr;
-  // Created in Run() on the background thread.
-  Context* context_ = nullptr;
-
-  std::unique_ptr<BackgroundServiceManager::InitParams> init_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoThread);
-};
-
-BackgroundServiceManager::InitParams::InitParams() {}
-BackgroundServiceManager::InitParams::~InitParams() {}
-
-BackgroundServiceManager::BackgroundServiceManager() {}
 
 BackgroundServiceManager::~BackgroundServiceManager() {
-  thread_->Stop();
-}
-
-void BackgroundServiceManager::Init(std::unique_ptr<InitParams> init_params) {
-  DCHECK(!thread_);
-  thread_.reset(new MojoThread(std::move(init_params)));
-  thread_->Start();
-}
-
-mojom::ServiceRequest BackgroundServiceManager::CreateServiceRequest(
-    const std::string& name) {
-  std::unique_ptr<ConnectParams> params(new ConnectParams);
-  params->set_source(CreateServiceManagerIdentity());
-  params->set_target(Identity(name, mojom::kRootUserID));
-  mojom::ServiceRequest request;
-  base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::MANUAL,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  thread_->message_loop()->task_runner()->PostTask(
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  background_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&MojoThread::CreateServiceRequest,
-                 base::Unretained(thread_.get()), &signal, name, &request));
-  signal.Wait();
-  thread_->message_loop()->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&MojoThread::Connect, base::Unretained(thread_.get()),
-                 base::Passed(&params)));
-  return request;
+      base::Bind(&BackgroundServiceManager::ShutDownOnBackgroundThread,
+                 base::Unretained(this), &done_event));
+  done_event.Wait();
+  DCHECK(!context_);
 }
 
-void BackgroundServiceManager::ExecuteOnServiceManagerThread(
-    const ServiceManagerThreadCallback& callback) {
-  thread_->message_loop()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MojoThread::RunServiceManagerCallback,
-                            base::Unretained(thread_.get()), callback));
+void BackgroundServiceManager::RegisterService(
+    const Identity& identity,
+    mojom::ServicePtr service,
+    mojom::PIDReceiverRequest pid_receiver_request) {
+  mojom::ServicePtrInfo service_info = service.PassInterface();
+  background_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&BackgroundServiceManager::RegisterServiceOnBackgroundThread,
+                 base::Unretained(this), identity, base::Passed(&service_info),
+                 base::Passed(&pid_receiver_request)));
+}
+
+void BackgroundServiceManager::InitializeOnBackgroundThread(
+    service_manager::ServiceProcessLauncher::Delegate* launcher_delegate,
+    std::unique_ptr<base::Value> catalog_contents) {
+  context_ =
+      base::MakeUnique<Context>(launcher_delegate, std::move(catalog_contents));
+}
+
+void BackgroundServiceManager::ShutDownOnBackgroundThread(
+    base::WaitableEvent* done_event) {
+  context_.reset();
+  done_event->Signal();
+}
+
+void BackgroundServiceManager::RegisterServiceOnBackgroundThread(
+    const Identity& identity,
+    mojom::ServicePtrInfo service_info,
+    mojom::PIDReceiverRequest pid_receiver_request) {
+  mojom::ServicePtr service;
+  service.Bind(std::move(service_info));
+  context_->service_manager()->RegisterService(
+      identity, std::move(service), std::move(pid_receiver_request));
 }
 
 }  // namespace service_manager

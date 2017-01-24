@@ -322,8 +322,7 @@ class ServiceManager::Instance
     service.Bind(mojom::ServicePtrInfo(std::move(service_handle), 0));
     params->set_client_process_info(std::move(service),
                                     std::move(pid_receiver_request));
-    service_manager_->Connect(
-        std::move(params), nullptr, weak_factory_.GetWeakPtr());
+    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
   }
 
   void Connect(const service_manager::Identity& in_target,
@@ -342,8 +341,7 @@ class ServiceManager::Instance
     params->set_target(target);
     params->set_remote_interfaces(std::move(remote_interfaces));
     params->set_connect_callback(callback);
-    service_manager_->Connect(
-        std::move(params), nullptr, weak_factory_.GetWeakPtr());
+    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
   }
 
   void BindInterface(const service_manager::Identity& in_target,
@@ -364,8 +362,7 @@ class ServiceManager::Instance
     params->set_interface_request_info(interface_name,
                                        std::move(interface_pipe));
     params->set_bind_interface_callback(callback);
-    service_manager_->Connect(
-        std::move(params), nullptr, weak_factory_.GetWeakPtr());
+    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
   }
 
   void Clone(mojom::ConnectorRequest request) override {
@@ -685,22 +682,26 @@ void ServiceManager::SetInstanceQuitCallback(
 }
 
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
-  Connect(std::move(params), nullptr, nullptr);
+  Connect(std::move(params), nullptr);
 }
 
-mojom::ServiceRequest ServiceManager::StartEmbedderService(
-    const std::string& name) {
-  std::unique_ptr<ConnectParams> params(new ConnectParams);
+void ServiceManager::RegisterService(
+    const Identity& identity,
+    mojom::ServicePtr service,
+    mojom::PIDReceiverRequest pid_receiver_request) {
+  auto params = base::MakeUnique<ConnectParams>();
 
-  Identity embedder_identity(name, mojom::kRootUserID);
-  params->set_source(embedder_identity);
-  params->set_target(embedder_identity);
+  if (!pid_receiver_request.is_pending()) {
+    mojom::PIDReceiverPtr pid_receiver;
+    pid_receiver_request = mojom::PIDReceiverRequest(&pid_receiver);
+    pid_receiver->SetPID(base::Process::Current().Pid());
+  }
 
-  mojom::ServicePtr service;
-  mojom::ServiceRequest request(&service);
-  Connect(std::move(params), std::move(service), nullptr);
-
-  return request;
+  params->set_source(identity);
+  params->set_target(identity);
+  params->set_client_process_info(
+      std::move(service), std::move(pid_receiver_request));
+  Connect(std::move(params), nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -765,7 +766,6 @@ void ServiceManager::OnInstanceStopped(const Identity& identity) {
 }
 
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
-                             mojom::ServicePtr service,
                              base::WeakPtr<Instance> source_instance) {
   TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
@@ -773,10 +773,11 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
   DCHECK(!params->target().name().empty());
   DCHECK(base::IsValidGUID(params->target().user_id()));
   DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
-  DCHECK(!service.is_bound() || !identity_to_instance_.count(params->target()));
+  DCHECK(!params->HasClientProcessInfo() ||
+         !identity_to_instance_.count(params->target()));
 
   // Connect to an existing matching instance, if possible.
-  if (!service.is_bound() && ConnectToExistingInstance(&params))
+  if (!params->HasClientProcessInfo() && ConnectToExistingInstance(&params))
     return;
 
   // The catalog needs to see the source identity as that of the originating
@@ -791,7 +792,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
       name,
       base::Bind(&service_manager::ServiceManager::OnGotResolvedName,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
-                 base::Passed(&service), !!source_instance, source_instance));
+                 !!source_instance, source_instance));
 }
 
 ServiceManager::Instance* ServiceManager::GetExistingInstance(
@@ -932,7 +933,6 @@ void ServiceManager::OnServiceFactoryLost(const Identity& which) {
 }
 
 void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
-                                       mojom::ServicePtr service,
                                        bool has_source_instance,
                                        base::WeakPtr<Instance> source_instance,
                                        mojom::ResolveResultPtr result,
@@ -992,12 +992,8 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
 
   // Below are various paths through which a new Instance can be bound to a
   // Service proxy.
-  if (service.is_bound()) {
-    // If a ServicePtr was provided, there's no more work to do: someone
-    // is already holding a corresponding ServiceRequest.
-    instance->StartWithService(std::move(service));
-  } else if (params->HasClientProcessInfo()) {
-    // This branch should be reachable only via a call to RegisterService(). We
+  if (params->HasClientProcessInfo()) {
+    // This branch should be reachable only via a call to RegisterService() . We
     // start the instance but return early before we connect to it. Clients will
     // call Connect() with the target identity subsequently.
     instance->BindPIDReceiver(params->TakePIDReceiverRequest());
@@ -1005,6 +1001,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
     return;
   } else {
     // Otherwise we create a new Service pipe.
+    mojom::ServicePtr service;
     mojom::ServiceRequest request(&service);
 
     // The catalog was unable to read a manifest for this service. We can't do

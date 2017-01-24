@@ -72,10 +72,15 @@ class ServiceManager {
   // instance of the target application is running, one will be loaded.
   void Connect(std::unique_ptr<ConnectParams> params);
 
-  // Creates a new Instance identified as |name|. This is intended for use by
-  // the Service Manager's embedder to register itself. This must only be called
-  // once.
-  mojom::ServiceRequest StartEmbedderService(const std::string& name);
+  // Creates a service instance for |identity|. This is intended for use by the
+  // Service Manager's embedder to register instances directly, without
+  // requiring a Connector.
+  //
+  // |pid_receiver_request| may be null, in which case the service manager
+  // assumes the new service is running in this process.
+  void RegisterService(const Identity& identity,
+                       mojom::ServicePtr service,
+                       mojom::PIDReceiverRequest pid_receiver_request);
 
  private:
   class Instance;
@@ -103,15 +108,10 @@ class ServiceManager {
   // by |params|, exchanging InterfaceProviders between them. If no existing
   // instance of the target application is running, one will be loaded.
   //
-  // If |service| is not null, there must not be an instance of the target
-  // application already running. The Service Manager will create a new instance
-  // and use |service| to control it.
-  //
   // If |instance| is not null, the lifetime of the connection request is
   // bounded by that of |instance|. The connection will be cancelled dropped if
   // |instance| is destroyed.
   void Connect(std::unique_ptr<ConnectParams> params,
-               mojom::ServicePtr service,
                base::WeakPtr<Instance> source_instance);
 
   // Returns a running instance matching |identity|. This might be an instance
@@ -152,7 +152,6 @@ class ServiceManager {
   // new application instance. This may be null.
   // |result| contains the result of the resolve operation.
   void OnGotResolvedName(std::unique_ptr<ConnectParams> params,
-                         mojom::ServicePtr service,
                          bool has_source_instance,
                          base::WeakPtr<Instance> source_instance,
                          mojom::ResolveResultPtr result,
