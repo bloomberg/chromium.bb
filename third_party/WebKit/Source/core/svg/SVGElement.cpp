@@ -922,9 +922,7 @@ void SVGElement::sendSVGLoadEventToSelfAndAncestorChainIfPossible() {
 }
 
 void SVGElement::attributeChanged(const AttributeModificationParams& params) {
-  Element::attributeChanged(
-      AttributeModificationParams(params.name, params.oldValue, params.newValue,
-                                  AttributeModificationReason::kDirectly));
+  Element::attributeChanged(params);
 
   if (params.name == HTMLNames::idAttr) {
     rebuildAllIncomingReferences();
