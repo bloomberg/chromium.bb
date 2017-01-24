@@ -32,12 +32,6 @@ public class PhysicalWebUma {
             "PhysicalWeb.OptIn.DeclineButtonPressed";
     private static final String OPT_IN_ENABLE_BUTTON_PRESS_COUNT =
             "PhysicalWeb.OptIn.EnableButtonPressed";
-    private static final String OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT =
-            "PhysicalWeb.OptIn.HighPriorityNotificationShown";
-    private static final String OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT =
-            "PhysicalWeb.OptIn.MinPriorityNotificationShown";
-    private static final String OPT_IN_NOTIFICATION_PRESS_COUNT =
-            "PhysicalWeb.OptIn.NotificationPressed";
     private static final String PREFS_FEATURE_DISABLED_COUNT = "PhysicalWeb.Prefs.FeatureDisabled";
     private static final String PREFS_FEATURE_ENABLED_COUNT = "PhysicalWeb.Prefs.FeatureEnabled";
     private static final String PREFS_LOCATION_DENIED_COUNT = "PhysicalWeb.Prefs.LocationDenied";
@@ -45,10 +39,6 @@ public class PhysicalWebUma {
     private static final String PWS_BACKGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Background";
     private static final String PWS_FOREGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Foreground";
     private static final String PWS_REFRESH_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Refresh";
-    private static final String OPT_IN_NOTIFICATION_PRESS_DELAYS =
-            "PhysicalWeb.ReferralDelay.OptInNotification";
-    private static final String STANDARD_NOTIFICATION_PRESS_DELAYS =
-            "PhysicalWeb.ReferralDelay.StandardNotification";
     private static final String URL_SELECTED_COUNT = "PhysicalWeb.UrlSelected";
     private static final String TOTAL_URLS_INITIAL_COUNTS =
             "PhysicalWeb.TotalUrls.OnInitialDisplay";
@@ -85,27 +75,6 @@ public class PhysicalWebUma {
      */
     public static void onOptInEnableButtonPressed() {
         handleAction(OPT_IN_ENABLE_BUTTON_PRESS_COUNT);
-    }
-
-    /**
-     * Records a display of a high priority opt-in notification.
-     */
-    public static void onOptInHighPriorityNotificationShown() {
-        handleAction(OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT);
-    }
-
-    /**
-     * Records a display of a min priority opt-in notification.
-     */
-    public static void onOptInMinPriorityNotificationShown() {
-        handleAction(OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT);
-    }
-
-    /**
-     * Records a display of the opt-in activity.
-     */
-    public static void onOptInNotificationPressed() {
-        handleAction(OPT_IN_NOTIFICATION_PRESS_COUNT);
     }
 
     /**
@@ -196,16 +165,6 @@ public class PhysicalWebUma {
     public static void onActivityReferral(int referer) {
         handleEnum(ACTIVITY_REFERRALS, referer, ListUrlsActivity.REFERER_BOUNDARY);
         switch (referer) {
-            case ListUrlsActivity.NOTIFICATION_REFERER:
-                handleTime(STANDARD_NOTIFICATION_PRESS_DELAYS,
-                        UrlManager.getInstance().getTimeSinceNotificationUpdate(),
-                        TimeUnit.MILLISECONDS);
-                break;
-            case ListUrlsActivity.OPTIN_REFERER:
-                handleTime(OPT_IN_NOTIFICATION_PRESS_DELAYS,
-                        UrlManager.getInstance().getTimeSinceNotificationUpdate(),
-                        TimeUnit.MILLISECONDS);
-                break;
             case ListUrlsActivity.PREFERENCE_REFERER:
                 recordPhysicalWebState(LAUNCH_FROM_PREFERENCES);
                 break;
@@ -323,9 +282,6 @@ public class PhysicalWebUma {
             uploadActions(URL_SELECTED_COUNT);
             uploadActions(OPT_IN_DECLINE_BUTTON_PRESS_COUNT);
             uploadActions(OPT_IN_ENABLE_BUTTON_PRESS_COUNT);
-            uploadActions(OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT);
-            uploadActions(OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT);
-            uploadActions(OPT_IN_NOTIFICATION_PRESS_COUNT);
             uploadActions(PREFS_FEATURE_DISABLED_COUNT);
             uploadActions(PREFS_FEATURE_ENABLED_COUNT);
             uploadActions(PREFS_LOCATION_DENIED_COUNT);
@@ -333,8 +289,6 @@ public class PhysicalWebUma {
             uploadTimes(PWS_BACKGROUND_RESOLVE_TIMES, TimeUnit.MILLISECONDS);
             uploadTimes(PWS_FOREGROUND_RESOLVE_TIMES, TimeUnit.MILLISECONDS);
             uploadTimes(PWS_REFRESH_RESOLVE_TIMES, TimeUnit.MILLISECONDS);
-            uploadTimes(STANDARD_NOTIFICATION_PRESS_DELAYS, TimeUnit.MILLISECONDS);
-            uploadTimes(OPT_IN_NOTIFICATION_PRESS_DELAYS, TimeUnit.MILLISECONDS);
             uploadCounts(TOTAL_URLS_INITIAL_COUNTS);
             uploadCounts(TOTAL_URLS_REFRESH_COUNTS);
             uploadEnums(ACTIVITY_REFERRALS, ListUrlsActivity.REFERER_BOUNDARY);

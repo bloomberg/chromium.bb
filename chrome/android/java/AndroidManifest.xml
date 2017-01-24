@@ -641,12 +641,6 @@ by a child template that "extends" this file.
             android:exported="false">
         </activity>
 
-        <!-- Broadcast receiver that will clean up Physical web notifications at scheduled
-             intervals -->
-        <receiver android:name="org.chromium.chrome.browser.physicalweb.ClearNotificationAlarmReceiver"
-            android:exported="false">
-        </receiver>
-
         <!-- Service for handling Nearby Messages -->
         <service android:name="org.chromium.chrome.browser.physicalweb.NearbyMessageIntentService"
             android:exported="false" />

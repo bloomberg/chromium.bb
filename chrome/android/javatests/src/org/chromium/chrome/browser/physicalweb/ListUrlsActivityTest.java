@@ -18,7 +18,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
-import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
@@ -71,7 +70,6 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
         urlManager.clearAllUrls();
         mMockPwsClient = new MockPwsClient();
         urlManager.overridePwsClientForTesting(mMockPwsClient);
-        urlManager.overrideNotificationManagerForTesting(new MockNotificationManagerProxy());
     }
 
     @SmallTest

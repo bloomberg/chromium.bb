@@ -35,7 +35,6 @@ public class PhysicalWebOptInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.physical_web_optin);
-        PhysicalWebUma.onOptInNotificationPressed();
 
         TextView description = (TextView) findViewById(R.id.physical_web_optin_description);
         description.setMovementMethod(LinkMovementMethod.getInstance());

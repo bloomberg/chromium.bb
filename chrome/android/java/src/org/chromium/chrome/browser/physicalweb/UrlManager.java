@@ -4,21 +4,12 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.support.v4.app.NotificationCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,11 +21,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.notifications.NotificationConstants;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 
@@ -51,26 +37,19 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
- * This class stores URLs which are discovered by scanning for Physical Web beacons, and updates a
- * Notification as the set changes.
+ * This class stores URLs which are discovered by scanning for Physical Web beacons.
  *
  * There are two sets of URLs maintained:
  * - Those which are currently nearby, as tracked by calls to addUrl/removeUrl
  * - Those which have ever resolved through the Physical Web Service (e.g. are known to produce
  *     good results).
- *
- * Whenever either list changes, we update the Physical Web Notification, based on the intersection
- * of currently-nearby and known-resolved URLs.
  */
 class UrlManager {
     private static final String TAG = "PhysicalWeb";
     private static final String PREFS_VERSION_KEY = "physicalweb_version";
     private static final String PREFS_ALL_URLS_KEY = "physicalweb_all_urls";
     private static final String PREFS_PWS_RESULTS_KEY = "physicalweb_pws_results";
-    private static final String PREFS_NOTIFICATION_UPDATE_TIMESTAMP =
-            "physicalweb_notification_update_timestamp";
     private static final int PREFS_VERSION = 4;
-    private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;  // 30 Minutes
     private static final long MAX_CACHE_TIME = 24 * 60 * 60 * 1000;  // 1 Day
     private static final int MAX_CACHE_SIZE = 100;
     private final ObserverList<Listener> mObservers;
@@ -78,7 +57,6 @@ class UrlManager {
     private final Map<String, UrlInfo> mUrlInfoMap;
     private final Map<String, PwsResult> mPwsResultMap;
     private final PriorityQueue<String> mUrlsSortedByTimestamp;
-    private NotificationManagerProxy mNotificationManager;
     private PwsClient mPwsClient;
     private long mNativePhysicalWebDataSourceAndroid;
 
@@ -96,13 +74,10 @@ class UrlManager {
 
     /**
      * Construct the UrlManager.
-     * @param context An instance of android.content.Context
      */
     @VisibleForTesting
     public UrlManager() {
         Context context = ContextUtils.getApplicationContext();
-        mNotificationManager = new NotificationManagerProxyImpl(
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         mPwsClient = new PwsClientImpl(context);
         mObservers = new ObserverList<Listener>();
         mNearbyUrls = new HashSet<>();
@@ -153,7 +128,6 @@ class UrlManager {
 
     /**
      * Add a URL to the store of URLs.
-     * This method additionally updates the Physical Web notification.
      * @param urlInfo The URL to add.
      */
     @VisibleForTesting
@@ -162,8 +136,6 @@ class UrlManager {
         urlInfo = updateCacheEntry(urlInfo);
         garbageCollect();
         putCachedUrlInfoMap();
-
-        recordUpdate();
 
         // In the rare event that our entry is immediately garbage collected from the cache, we
         // should stop here.
@@ -193,12 +165,10 @@ class UrlManager {
 
     /**
      * Remove a URL from the store of URLs.
-     * This method additionally updates the Physical Web notification.
      * @param urlInfo The URL to remove.
      */
     public void removeUrl(UrlInfo urlInfo) {
         Log.d(TAG, "URL lost: %s", urlInfo);
-        recordUpdate();
 
         if (!mNearbyUrls.contains(urlInfo.getUrl())) {
             return;
@@ -210,11 +180,6 @@ class UrlManager {
         // nearby, notify listeners that the URL is lost.
         if (mPwsResultMap.containsKey(urlInfo.getUrl())) {
             safeNotifyNativeListenersOnLost(urlInfo.getUrl());
-        }
-
-        // If there are no URLs nearby to display, clear the notification.
-        if (getUrls(PhysicalWeb.isOnboarding()).isEmpty()) {
-            clearNotification();
         }
     }
 
@@ -291,7 +256,7 @@ class UrlManager {
     }
 
     /**
-     * Forget all stored URLs and clear the notification.
+     * Forget all stored URLs.
      */
     public void clearAllUrls() {
         clearNearbyUrls();
@@ -303,7 +268,7 @@ class UrlManager {
     }
 
     /**
-     * Forget all nearby URLs and clear the notification.
+     * Forget all nearby URLs.
      */
     public void clearNearbyUrls() {
         HashSet<String> intersection = new HashSet<>(mNearbyUrls);
@@ -316,19 +281,6 @@ class UrlManager {
         for (String url : intersection) {
             safeNotifyNativeListenersOnLost(url);
         }
-
-        clearNotification();
-        cancelClearNotificationAlarm();
-    }
-
-    /**
-     * Clear the URLManager's notification.
-     * Typically, this should not be called except when we want to clear the notification without
-     * modifying the list of URLs, as is the case when we want to remove stale notifications.
-     */
-    public void clearNotification() {
-        mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
-        cancelClearNotificationAlarm();
     }
 
     private List<UrlInfo> getUrlInfoList(Set<String> urls) {
@@ -363,11 +315,6 @@ class UrlManager {
         Log.d(TAG, "PWS unresolved: %s", url);
         mPwsResultMap.remove(url.getUrl());
         putCachedPwsResultMap();
-
-        // If there are no URLs nearby to display, clear the notification.
-        if (getUrls(PhysicalWeb.isOnboarding()).isEmpty()) {
-            clearNotification();
-        }
     }
 
     private void initSharedPreferences() {
@@ -447,21 +394,6 @@ class UrlManager {
         setStringSetInSharedPreferences(PREFS_PWS_RESULTS_KEY, serializedPwsResults);
     }
 
-    private PendingIntent createListUrlsIntent() {
-        Context appContext = ContextUtils.getApplicationContext();
-        Intent intent = new Intent(appContext, ListUrlsActivity.class);
-        intent.putExtra(ListUrlsActivity.REFERER_KEY, ListUrlsActivity.NOTIFICATION_REFERER);
-        PendingIntent pendingIntent = PendingIntent.getActivity(appContext, 0, intent, 0);
-        return pendingIntent;
-    }
-
-    private PendingIntent createOptInIntent() {
-        Context appContext = ContextUtils.getApplicationContext();
-        Intent intent = new Intent(appContext, PhysicalWebOptInActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(appContext, 0, intent, 0);
-        return pendingIntent;
-    }
-
     /**
      * Updates a cache entry with new information.
      * When we reencounter a URL, a subset of its metadata should update.  Only distance and
@@ -514,127 +446,6 @@ class UrlManager {
         });
     }
 
-    /**
-     * Gets the time since the last notification update.
-     * @return the elapsed realtime since the most recent notification update.
-     */
-    public long getTimeSinceNotificationUpdate() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        long timestamp = prefs.getLong(PREFS_NOTIFICATION_UPDATE_TIMESTAMP, 0);
-        return SystemClock.elapsedRealtime() - timestamp;
-    }
-
-    private void recordUpdate() {
-        // Record a timestamp.
-        // This is useful for tracking whether a notification is pressed soon after an update or
-        // much later.
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putLong(PREFS_NOTIFICATION_UPDATE_TIMESTAMP, SystemClock.elapsedRealtime());
-        editor.apply();
-    }
-
-    private void showNotification() {
-        // We should only show notifications if there's no other notification-based client.
-        if (!PhysicalWeb.shouldIgnoreOtherClients()
-                && PhysicalWebEnvironment
-                        .getInstance((ChromeApplication) ContextUtils.getApplicationContext())
-                        .hasNotificationBasedClient()) {
-            return;
-        }
-
-        if (PhysicalWeb.isOnboarding()) {
-            if (PhysicalWeb.getOptInNotifyCount() < PhysicalWeb.OPTIN_NOTIFY_MAX_TRIES) {
-                // high priority notification
-                createOptInNotification(true);
-                PhysicalWeb.recordOptInNotification();
-                PhysicalWebUma.onOptInHighPriorityNotificationShown();
-            } else {
-                // min priority notification
-                createOptInNotification(false);
-                PhysicalWebUma.onOptInMinPriorityNotificationShown();
-            }
-        } else if (PhysicalWeb.isPhysicalWebPreferenceEnabled()) {
-            createNotification();
-        }
-    }
-
-    private void createNotification() {
-        PendingIntent pendingIntent = createListUrlsIntent();
-
-        // Get values to display.
-        Context appContext = ContextUtils.getApplicationContext();
-        Resources resources = appContext.getResources();
-        String title = resources.getString(R.string.physical_web_notification_title);
-        Bitmap largeIcon = BitmapFactory.decodeResource(resources,
-                R.drawable.physical_web_notification_large);
-
-        // Create the notification.
-        Notification notification = new NotificationCompat.Builder(appContext)
-                .setLargeIcon(largeIcon)
-                .setSmallIcon(R.drawable.ic_chrome)
-                .setContentTitle(title)
-                .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setLocalOnly(true)
-                .build();
-        mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB,
-                                    notification);
-    }
-
-    private void createOptInNotification(boolean highPriority) {
-        PendingIntent pendingIntent = createOptInIntent();
-
-        int priority = highPriority ? NotificationCompat.PRIORITY_HIGH
-                : NotificationCompat.PRIORITY_MIN;
-
-        // Get values to display.
-        Context appContext = ContextUtils.getApplicationContext();
-        Resources resources = appContext.getResources();
-        String title = resources.getString(R.string.physical_web_optin_notification_title);
-        String text = resources.getString(R.string.physical_web_optin_notification_text);
-        Bitmap largeIcon = BitmapFactory.decodeResource(resources, R.mipmap.app_icon);
-
-        // Create the notification.
-        Notification notification = new NotificationCompat.Builder(appContext)
-                .setLargeIcon(largeIcon)
-                .setSmallIcon(R.drawable.ic_physical_web_notification)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setContentIntent(pendingIntent)
-                .setPriority(priority)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setAutoCancel(true)
-                .setLocalOnly(true)
-                .build();
-        mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB,
-                                    notification);
-    }
-
-    private PendingIntent createClearNotificationAlarmIntent() {
-        Context appContext = ContextUtils.getApplicationContext();
-        Intent intent = new Intent(appContext, ClearNotificationAlarmReceiver.class);
-        return PendingIntent.getBroadcast(appContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-    }
-
-    private void scheduleClearNotificationAlarm() {
-        PendingIntent pendingIntent = createClearNotificationAlarmIntent();
-        Context appContext = ContextUtils.getApplicationContext();
-        AlarmManager alarmManager =
-                (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
-        long time = SystemClock.elapsedRealtime() + STALE_NOTIFICATION_TIMEOUT_MILLIS;
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME, time, pendingIntent);
-    }
-
-    private void cancelClearNotificationAlarm() {
-        PendingIntent pendingIntent = createClearNotificationAlarmIntent();
-        Context appContext = ContextUtils.getApplicationContext();
-        AlarmManager alarmManager =
-                (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
-    }
-
     private void registerNewDisplayableUrl(UrlInfo urlInfo) {
         // Notify listeners about the new displayable URL.
         Collection<UrlInfo> urlInfos = new ArrayList<>();
@@ -648,18 +459,6 @@ class UrlManager {
         if (urlInfo.getDistance() >= 0.0) {
             safeNotifyNativeListenersOnDistanceChanged(urlInfo.getUrl(), urlInfo.getDistance());
         }
-
-        // Only trigger the notification if we know we didn't have a notification up already
-        // (i.e., we have exactly 1 displayble URL) or this URL doesn't exist in the cache
-        // (and hence the user hasn't swiped away a notification for this URL recently).
-        if (getUrls(PhysicalWeb.isOnboarding()).size() != 1
-                && urlInfo.hasBeenDisplayed()) {
-            return;
-        }
-
-        // Show a notification and mark the URL as displayed.
-        showNotification();
-        urlInfo.setHasBeenDisplayed();
     }
 
     private void garbageCollect() {
@@ -717,7 +516,7 @@ class UrlManager {
 
     /**
      * Notify native listeners that a new Physical Web URL was discovered.
-     * No notification will be sent if the feature is in the Onboarding state.
+     * No message will be sent if the feature is in the Onboarding state.
      * @param url The Physical Web URL.
      */
     private void safeNotifyNativeListenersOnFound(final String url) {
@@ -737,7 +536,7 @@ class UrlManager {
 
     /**
      * Notify native listeners that a previously-discovered Physical Web URL is no longer nearby.
-     * No notification will be sent if the feature is in the Onboarding state.
+     * No message will be sent if the feature is in the Onboarding state.
      * @param url The Physical Web URL.
      */
     private void safeNotifyNativeListenersOnLost(final String url) {
@@ -757,7 +556,7 @@ class UrlManager {
 
     /**
      * Notify native listeners with an updated estimate of the distance to the broadcasting device.
-     * No notification will be sent if the feature is in the Onboarding state.
+     * No message will be sent if the feature is in the Onboarding state.
      * @param url The Physical Web URL.
      * @param distanceEstimate The updated distance estimate.
      */
@@ -784,17 +583,10 @@ class UrlManager {
     }
 
     @VisibleForTesting
-    void overrideNotificationManagerForTesting(
-            NotificationManagerProxy notificationManager) {
-        mNotificationManager = notificationManager;
-    }
-
-    @VisibleForTesting
     static void clearPrefsForTesting() {
         ContextUtils.getAppSharedPreferences().edit()
                 .remove(PREFS_VERSION_KEY)
                 .remove(PREFS_ALL_URLS_KEY)
-                .remove(PREFS_NOTIFICATION_UPDATE_TIMESTAMP)
                 .remove(PREFS_PWS_RESULTS_KEY)
                 .apply();
     }
