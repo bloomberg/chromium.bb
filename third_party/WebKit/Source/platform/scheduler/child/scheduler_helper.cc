@@ -18,6 +18,19 @@ SchedulerHelper::SchedulerHelper(
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
+    : SchedulerHelper(task_queue_manager_delegate,
+                      tracing_category,
+                      disabled_by_default_tracing_category,
+                      disabled_by_default_verbose_tracing_category,
+                      TaskQueue::Spec(TaskQueue::QueueType::DEFAULT)
+                          .SetShouldMonitorQuiescence(true)) {}
+
+SchedulerHelper::SchedulerHelper(
+    scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
+    const char* tracing_category,
+    const char* disabled_by_default_tracing_category,
+    const char* disabled_by_default_verbose_tracing_category,
+    TaskQueue::Spec default_task_queue_spec)
     : task_queue_manager_delegate_(task_queue_manager_delegate),
       task_queue_manager_(
           new TaskQueueManager(task_queue_manager_delegate,
@@ -27,9 +40,7 @@ SchedulerHelper::SchedulerHelper(
       control_task_runner_(
           NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::CONTROL)
                            .SetShouldNotifyObservers(false))),
-      default_task_runner_(
-          NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::DEFAULT)
-                           .SetShouldMonitorQuiescence(true))),
+      default_task_runner_(NewTaskQueue(default_task_queue_spec)),
       observer_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(

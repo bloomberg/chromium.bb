@@ -28,6 +28,12 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
       const char* tracing_category,
       const char* disabled_by_default_tracing_category,
       const char* disabled_by_default_verbose_tracing_category);
+  SchedulerHelper(
+      scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
+      const char* tracing_category,
+      const char* disabled_by_default_tracing_category,
+      const char* disabled_by_default_verbose_tracing_category,
+      TaskQueue::Spec default_task_queue_spec);
   ~SchedulerHelper() override;
 
   // There is a small overhead to recording task delay histograms, we may not
