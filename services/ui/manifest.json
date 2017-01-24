@@ -28,6 +28,9 @@
         "discardable_memory": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager"
         ],
+        "display_test": [
+          "display::mojom::TestDisplayController"
+        ],
         "gpu_client": [
           "ui::mojom::Gpu"
         ],
@@ -40,7 +43,6 @@
         "window_manager": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "display::mojom::DisplayController",
-          "display::mojom::TestDisplayController",
           "ui::mojom::AccessibilityManager",
           "ui::mojom::Clipboard",
           "ui::mojom::DisplayCompositor",

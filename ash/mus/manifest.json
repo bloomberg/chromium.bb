@@ -27,7 +27,7 @@
         "*": [ "accessibility", "app" ],
         "content_browser": [ "ash" ],
         "preferences": [ "preferences_manager" ],
-        "ui": [ "window_manager" ],
+        "ui": [ "display_test", "window_manager" ],
         "touch_hud": [ "mash:launchable" ]
       }
     }
