@@ -18,7 +18,6 @@
 #include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
-#include "components/search/search.h"
 #include "components/url_formatter/url_fixer.h"
 
 // static

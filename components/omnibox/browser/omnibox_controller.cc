@@ -12,7 +12,6 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
-#include "components/search/search.h"
 #include "ui/gfx/geometry/rect.h"
 
 OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
