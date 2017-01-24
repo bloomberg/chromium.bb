@@ -2133,16 +2133,14 @@ test("browser_tests") {
     if (toolkit_views) {
       sources += [
         "../browser/ui/global_error/global_error_service_browsertest.cc",
+        "../browser/ui/views/external_protocol_dialog_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_browsertest_win.cc",
         "../browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc",
         "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
       ]
       deps += [ "//ui/views" ]
       if (!is_chromeos && (!is_mac || mac_views_browser)) {
-        sources += [
-          "../browser/ui/views/external_protocol_dialog_browsertest.cc",
-          "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
-        ]
+        sources += [ "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc" ]
       }
       if (!is_mac || mac_views_browser) {
         sources += [
@@ -2364,6 +2362,7 @@ test("browser_tests") {
         # chromeos does not support profile list avatar menu
         "../browser/profiles/profile_list_desktop_browsertest.cc",
         "../browser/service_process/service_process_control_browsertest.cc",
+        "../browser/ui/views/external_protocol_dialog_browsertest.cc",
 
         # inline login UI is disabled on chromeos
         "../browser/ui/webui/signin/inline_login_ui_browsertest.cc",

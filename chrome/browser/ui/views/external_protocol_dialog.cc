@@ -15,6 +15,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
@@ -30,6 +31,9 @@ const int kMessageWidth = 400;
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolHandler
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+// This should be kept in sync with RunExternalProtocolDialogViews in
+// external_protocol_dialog_views_mac.mm.
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id,
@@ -46,6 +50,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   new ExternalProtocolDialog(std::move(delegate), render_process_host_id,
                              routing_id);
 }
+#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
 
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialog
