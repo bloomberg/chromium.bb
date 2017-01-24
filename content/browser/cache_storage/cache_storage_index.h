@@ -14,8 +14,6 @@
 
 namespace content {
 
-class CacheMetadata;
-
 // CacheStorageIndex maintains an ordered list of metadata (CacheMetadata)
 // for each cache owned by a CacheStorage object. This class is not thread safe,
 // and is owned by the CacheStorage.

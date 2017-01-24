@@ -33,7 +33,6 @@ class QuotaManagerProxy;
 }
 
 namespace content {
-class CacheMetadata;
 class CacheStorage;
 class CacheStorageBlobToDiskCache;
 class CacheStorageCacheHandle;
