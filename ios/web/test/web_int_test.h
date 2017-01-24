@@ -35,6 +35,11 @@ class WebIntTest : public WebTest {
     return web_state()->GetNavigationManager();
   }
 
+  // Returns the last committed NavigationItem in |navigation_manager|.
+  NavigationItem* GetLastCommittedItem() {
+    return navigation_manager()->GetLastCommittedItem();
+  }
+
   // Synchronously executes |script| on |web_state|'s JS injection receiver and
   // returns the result.
   id ExecuteJavaScript(NSString* script);
