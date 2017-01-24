@@ -105,6 +105,10 @@ vars = {
   # the commit queue can handle CLs rolling devtools-node-modules
   # and whatever else without interference from each other.
   'devtools_node_modules_revision': '6226d6cd80aaf2e5295ed460cf73ef6a582e4d78',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libFuzzer
+  # and whatever else without interference from each other.
+  'scanbuild_revision': '15bd7ca2934162c51654ddffc52933e45f95e7ef',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -303,6 +307,9 @@ deps = {
 
   'src/third_party/visualmetrics/src':
     Var('chromium_git') + '/external/github.com/WPO-Foundation/visualmetrics.git' + '@' +  '1edde9d2fe203229c895b648fdec355917200ad6',
+
+  'src/third_party/scan-build/src':
+    Var('chromium_git') + '/chromium/llvm-project/cfe/tools/scan-build.git' + '@' +  Var('scanbuild_revision'),
 }
 
 
