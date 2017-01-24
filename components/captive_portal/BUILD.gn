@@ -15,6 +15,7 @@ component("captive_portal") {
 
   deps = [
     "//base",
+    "//components/data_use_measurement/core",
     "//net",
     "//url",
   ]

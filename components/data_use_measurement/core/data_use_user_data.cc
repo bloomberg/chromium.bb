@@ -112,6 +112,12 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "ImageFetcherUntagged";
     case GAIA:
       return "GAIA";
+    case CAPTIVE_PORTAL:
+      return "CaptivePortal";
+    case WEB_RESOURCE_SERVICE:
+      return "WebResourceService";
+    case SIGNIN:
+      return "Signin";
   }
   return "INVALID";
 }

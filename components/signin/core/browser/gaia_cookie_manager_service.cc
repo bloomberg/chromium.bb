@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -215,6 +216,8 @@ GaiaCookieManagerService::ExternalCcResultFetcher::CreateFetcher(
   fetcher->SetRequestContext(helper_->request_context());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher.get(), data_use_measurement::DataUseUserData::SIGNIN);
 
   // Fetchers are sometimes cancelled because a network change was detected,
   // especially at startup and after sign-in on ChromeOS.

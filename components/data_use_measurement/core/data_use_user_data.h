@@ -56,6 +56,9 @@ class DataUseUserData : public base::SupportsUserData::Data {
     SUPERVISED_USER,
     IMAGE_FETCHER_UNTAGGED,
     GAIA,
+    CAPTIVE_PORTAL,
+    WEB_RESOURCE_SERVICE,
+    SIGNIN,
   };
 
   // Data use broken by content type. This enum must remain synchronized

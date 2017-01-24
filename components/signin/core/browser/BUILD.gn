@@ -83,6 +83,7 @@ static_library("browser") {
     "//base:i18n",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
+    "//components/data_use_measurement/core",
     "//components/google/core/browser",
     "//components/invalidation/public",
     "//components/keyed_service/core",

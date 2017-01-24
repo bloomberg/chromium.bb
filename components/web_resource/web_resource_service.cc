@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/load_flags.h"
@@ -129,6 +130,9 @@ void WebResourceService::StartFetch() {
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
   url_fetcher_ =
       net::URLFetcher::Create(web_resource_server, net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(),
+      data_use_measurement::DataUseUserData::WEB_RESOURCE_SERVICE);
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
