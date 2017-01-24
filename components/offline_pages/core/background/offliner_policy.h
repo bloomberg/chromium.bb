@@ -24,12 +24,12 @@ const int kDefaultBackgroundProcessingTimeBudgetSeconds =
 const int kSinglePageTimeLimitWhenBackgroundScheduledSeconds =
     kDozeModeBackgroundServiceWindowSeconds - 10;
 
-// Immediate processing time limits.
-// Note: experiments on GIN-2g-poor show many page requests took 3 or 4
-// attempts in background scheduled mode with timeout of 2 minutes. So for
-// immediate processing mode, give page requests 4 times that limit (8 min).
-// Then budget up to 5 of those requests in processing window.
-const int kSinglePageTimeLimitForImmediateLoadSeconds = 60 * 8;
+// Immediate processing time limits.  Note: experiments on GIN-2g-poor show many
+// page requests took 3 or 4 attempts in background scheduled mode with timeout
+// of 2 minutes. So for immediate processing mode, give page requests just under
+// 5 minutes, which is the timeout limit for the prerender itself. Then budget
+// up to 3 of those requests in processing window.
+const int kSinglePageTimeLimitForImmediateLoadSeconds = 60 * 4 + 50;
 const int kImmediateLoadProcessingTimeBudgetSeconds =
     kSinglePageTimeLimitForImmediateLoadSeconds * 5;
 }  // namespace
