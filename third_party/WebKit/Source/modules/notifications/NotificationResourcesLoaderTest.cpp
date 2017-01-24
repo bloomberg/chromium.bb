@@ -4,9 +4,9 @@
 
 #include "modules/notifications/NotificationResourcesLoader.h"
 
-#include "core/fetch/MemoryCache.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"

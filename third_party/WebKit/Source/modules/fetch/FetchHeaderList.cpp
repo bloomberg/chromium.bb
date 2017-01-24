@@ -4,7 +4,7 @@
 
 #include "modules/fetch/FetchHeaderList.h"
 
-#include "core/fetch/FetchUtils.h"
+#include "platform/loader/fetch/FetchUtils.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/PtrUtil.h"
 #include <algorithm>

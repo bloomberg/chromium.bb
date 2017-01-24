@@ -6,7 +6,7 @@
 #define InspectorResourceContentLoader_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/Resource.h"
+#include "platform/loader/fetch/Resource.h"
 #include "wtf/Functional.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

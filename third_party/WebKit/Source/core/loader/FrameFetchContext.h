@@ -32,12 +32,12 @@
 #define FrameFetchContext_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/FetchContext.h"
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/LinkLoader.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/FetchContext.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/Forward.h"
 

@@ -5,7 +5,6 @@
 #include "core/paint/FramePainter.h"
 
 #include "core/editing/markers/DocumentMarkerController.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -21,6 +20,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {

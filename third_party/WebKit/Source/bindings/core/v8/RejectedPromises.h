@@ -6,7 +6,7 @@
 #define RejectedPromises_h
 
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/fetch/AccessControlStatus.h"
+#include "platform/loader/fetch/AccessControlStatus.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"

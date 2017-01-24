@@ -35,8 +35,6 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/layout/svg/LayoutSVGTransformableContainer.h"
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGLengthContext.h"
@@ -44,6 +42,8 @@
 #include "core/svg/SVGSymbolElement.h"
 #include "core/svg/SVGTreeScopeResources.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/Vector.h"
 
 namespace blink {

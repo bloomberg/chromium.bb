@@ -23,9 +23,9 @@
 #include "core/loader/resource/DocumentResource.h"
 
 #include "core/dom/XMLDocument.h"
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

@@ -27,12 +27,12 @@
 #ifndef CSSPreloadScanner_h
 #define CSSPreloadScanner_h
 
-#include "core/fetch/ResourceOwner.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ResourceOwner.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

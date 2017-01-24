@@ -7,8 +7,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
-#include "core/fetch/IntegrityMetadata.h"
 #include "platform/Crypto.h"
+#include "platform/loader/fetch/IntegrityMetadata.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 

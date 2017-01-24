@@ -5,9 +5,9 @@
 #ifndef FrameClientHintsPreferencesContext_h
 #define FrameClientHintsPreferencesContext_h
 
-#include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/Frame.h"
 #include "platform/heap/Persistent.h"
+#include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

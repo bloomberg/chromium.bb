@@ -31,8 +31,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/URLSearchParams.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/html/PublicURLManager.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "wtf/AutoReset.h"
 
 namespace blink {

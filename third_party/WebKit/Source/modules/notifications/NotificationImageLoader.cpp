@@ -5,10 +5,10 @@
 #include "modules/notifications/NotificationImageLoader.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/Histogram.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"

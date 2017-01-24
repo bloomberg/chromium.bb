@@ -26,11 +26,11 @@
 #ifndef TextTrackLoader_h
 #define TextTrackLoader_h
 
-#include "core/fetch/RawResource.h"
-#include "core/fetch/ResourceOwner.h"
 #include "core/html/track/vtt/VTTParser.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceOwner.h"
 
 namespace blink {
 

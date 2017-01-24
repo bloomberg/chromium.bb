@@ -26,13 +26,13 @@
 
 #include "core/loader/resource/ScriptResource.h"
 
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/IntegrityMetadata.h"
-#include "core/fetch/ResourceClientWalker.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/IntegrityMetadata.h"
+#include "platform/loader/fetch/ResourceClientWalker.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 
 namespace blink {

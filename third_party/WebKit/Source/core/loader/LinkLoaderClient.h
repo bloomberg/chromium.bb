@@ -34,6 +34,9 @@
 #include "core/CoreExport.h"
 #include "platform/WebTaskRunner.h"
 
+#include "platform/heap/GarbageCollected.h"
+#include "platform/heap/InlinedGlobalMarkingVisitor.h"
+
 namespace blink {
 
 class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {

@@ -5,10 +5,10 @@
 #ifndef MockFontResourceClient_h
 #define MockFontResourceClient_h
 
-#include "core/fetch/Resource.h"
-#include "core/fetch/ResourceClient.h"
 #include "core/loader/resource/FontResource.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceClient.h"
 
 namespace blink {
 

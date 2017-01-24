@@ -34,7 +34,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/events/Event.h"
-#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -51,6 +50,7 @@
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebScheduler.h"

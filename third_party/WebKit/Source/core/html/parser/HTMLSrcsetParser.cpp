@@ -32,14 +32,14 @@
 #include "core/html/parser/HTMLSrcsetParser.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/MemoryCache.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/json/JSONValues.h"
+#include "platform/loader/fetch/MemoryCache.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringToNumber.h"
 #include <algorithm>

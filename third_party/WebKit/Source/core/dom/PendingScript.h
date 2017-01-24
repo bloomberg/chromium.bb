@@ -28,10 +28,10 @@
 
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/CoreExport.h"
-#include "core/fetch/ResourceOwner.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ResourceOwner.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/TextPosition.h"
 

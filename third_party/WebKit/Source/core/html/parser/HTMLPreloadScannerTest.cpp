@@ -6,13 +6,13 @@
 
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
-#include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/Settings.h"
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 

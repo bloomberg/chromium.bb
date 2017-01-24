@@ -6,11 +6,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/events/MessageEvent.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include <memory>
 
 namespace blink {

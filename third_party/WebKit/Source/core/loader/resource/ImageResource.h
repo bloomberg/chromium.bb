@@ -24,12 +24,12 @@
 #define ImageResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/Resource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceInfo.h"
 #include "core/loader/resource/MultipartImageResourceParser.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/Resource.h"
 #include <memory>
 
 namespace blink {

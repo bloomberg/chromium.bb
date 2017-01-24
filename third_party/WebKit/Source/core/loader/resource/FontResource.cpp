@@ -26,14 +26,14 @@
 
 #include "core/loader/resource/FontResource.h"
 
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceClientWalker.h"
-#include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/ResourceLoader.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/FontPlatformData.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceClientWalker.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoader.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {

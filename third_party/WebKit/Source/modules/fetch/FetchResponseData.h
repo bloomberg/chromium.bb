@@ -5,9 +5,9 @@
 #ifndef FetchResponseData_h
 #define FetchResponseData_h
 
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "wtf/PassRefPtr.h"

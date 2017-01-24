@@ -7,7 +7,7 @@
 
 #include "core/css/cssom/CSSStyleValue.h"
 
-#include "core/fetch/Resource.h"
+#include "platform/loader/fetch/Resource.h"
 
 namespace blink {
 

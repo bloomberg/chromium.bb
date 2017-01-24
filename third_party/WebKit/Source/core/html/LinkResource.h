@@ -32,8 +32,8 @@
 #define LinkResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/FetchRequest.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/FetchRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 

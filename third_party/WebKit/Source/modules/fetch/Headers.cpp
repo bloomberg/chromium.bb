@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/Iterator.h"
-#include "core/fetch/FetchUtils.h"
+#include "platform/loader/fetch/FetchUtils.h"
 #include "wtf/NotFound.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

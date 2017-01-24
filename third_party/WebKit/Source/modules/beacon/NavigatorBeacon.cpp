@@ -10,7 +10,6 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -18,6 +17,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/FormData.h"
 #include "core/loader/PingLoader.h"
+#include "platform/loader/fetch/FetchUtils.h"
 
 namespace blink {
 

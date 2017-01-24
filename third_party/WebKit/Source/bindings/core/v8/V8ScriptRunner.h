@@ -31,7 +31,7 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
-#include "core/fetch/AccessControlStatus.h"
+#include "platform/loader/fetch/AccessControlStatus.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"

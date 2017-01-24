@@ -5,11 +5,11 @@
 #ifndef CSPDirectiveList_h
 #define CSPDirectiveList_h
 
-#include "core/fetch/Resource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"

@@ -1462,6 +1462,7 @@ component("platform") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:wtf_support",
     "//third_party/WebKit/Source/platform/heap",
+    "//third_party/WebKit/Source/platform/loader",
     "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/WebKit/public:offscreen_canvas_mojo_bindings_blink",
     "//third_party/ced",
@@ -1581,6 +1582,10 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "loader/fetch/MockResource.cpp",
+    "loader/fetch/MockResource.h",
+    "loader/fetch/MockResourceClient.cpp",
+    "loader/fetch/MockResourceClient.h",
     "network/mime/MockMimeRegistry.h",
     "scheduler/base/task_queue_manager_delegate_for_test.cc",
     "scheduler/base/test_time_source.cc",
@@ -1761,6 +1766,18 @@ test("blink_platform_unittests") {
     "instrumentation/tracing/web_process_memory_dump_test.cc",
     "json/JSONParserTest.cpp",
     "json/JSONValuesTest.cpp",
+    "loader/fetch/ClientHintsPreferencesTest.cpp",
+    "loader/fetch/CrossOriginAccessControlTest.cpp",
+    "loader/fetch/FetchTestingPlatformSupport.cpp",
+    "loader/fetch/FetchTestingPlatformSupport.h",
+    "loader/fetch/FetchUtilsTest.cpp",
+    "loader/fetch/MemoryCacheCorrectnessTest.cpp",
+    "loader/fetch/MemoryCacheTest.cpp",
+    "loader/fetch/MockFetchContext.h",
+    "loader/fetch/RawResourceTest.cpp",
+    "loader/fetch/ResourceFetcherTest.cpp",
+    "loader/fetch/ResourceLoaderOptionsTest.cpp",
+    "loader/fetch/ResourceTest.cpp",
     "mac/VersionUtilMacTest.mm",
     "mojo/CommonCustomTypesStructTraitsTest.cpp",
     "mojo/GeometryStructTraitsTest.cpp",
@@ -1933,6 +1950,9 @@ test("blink_platform_perftests") {
 group("blink_platform_unittests_data") {
   data = [
     "testing/data/",
+
+    # TODO(toyoshim): Used by ResourceFetcherTest. Remove this dependency.
+    "../web/tests/data/",
 
     # Required by some image decoder tests.
     "image-decoders/testing/",

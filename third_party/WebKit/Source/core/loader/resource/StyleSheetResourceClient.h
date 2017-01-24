@@ -27,7 +27,7 @@
 #define StyleSheetResourceClient_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ResourceClient.h"
+#include "platform/loader/fetch/ResourceClient.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 

@@ -32,10 +32,10 @@
 #include "core/css/FontFace.h"
 #include "core/css/FontStyleMatcher.h"
 #include "core/css/StyleRule.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/loader/resource/FontResource.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {

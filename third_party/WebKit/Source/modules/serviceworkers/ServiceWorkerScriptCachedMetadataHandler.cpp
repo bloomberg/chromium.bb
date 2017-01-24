@@ -4,9 +4,9 @@
 
 #include "modules/serviceworkers/ServiceWorkerScriptCachedMetadataHandler.h"
 
-#include "core/fetch/CachedMetadata.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "platform/loader/fetch/CachedMetadata.h"
 
 namespace blink {
 

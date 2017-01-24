@@ -25,8 +25,6 @@
 
 #include "core/loader/ProgressTracker.h"
 
-#include "core/fetch/Resource.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -34,6 +32,8 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"

@@ -24,10 +24,10 @@
 
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
-#include "core/fetch/FetchInitiatorTypeNames.h"
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
+#include "platform/loader/fetch/FetchInitiatorTypeNames.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
 

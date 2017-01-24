@@ -6,13 +6,13 @@
 #define ImageResourceContent_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ResourceStatus.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/loader/fetch/ResourceStatus.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashCountedSet.h"

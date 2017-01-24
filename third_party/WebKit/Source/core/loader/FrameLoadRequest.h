@@ -28,9 +28,9 @@
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
-#include "core/fetch/ResourceLoaderOptions.h"
-#include "core/fetch/SubstituteData.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/SubstituteData.h"
 
 namespace blink {
 

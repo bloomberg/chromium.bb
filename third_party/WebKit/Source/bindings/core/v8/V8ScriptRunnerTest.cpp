@@ -6,10 +6,10 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/fetch/CachedMetadata.h"
-#include "core/fetch/CachedMetadataHandler.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/CachedMetadata.h"
+#include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <v8.h>
 

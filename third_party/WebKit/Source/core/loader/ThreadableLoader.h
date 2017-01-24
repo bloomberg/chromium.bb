@@ -32,9 +32,9 @@
 #define ThreadableLoader_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/CrossThreadCopier.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include <memory>

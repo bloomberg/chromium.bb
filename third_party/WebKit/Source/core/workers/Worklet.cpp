@@ -10,12 +10,12 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameFetchContext.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
 #include "core/workers/WorkletScriptLoader.h"
+#include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 
 namespace blink {
 

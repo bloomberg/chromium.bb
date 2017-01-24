@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
-#include "core/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 

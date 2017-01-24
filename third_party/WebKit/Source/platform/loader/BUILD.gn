@@ -1,0 +1,83 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+import("//third_party/WebKit/Source/platform/platform_generated.gni")
+
+make_names("make_platform_loader_generated_fetch_initiator_type_names") {
+  in_files = [ "fetch/FetchInitiatorTypeNames.in" ]
+  outputs = [
+    "$blink_platform_output_dir/loader/fetch/FetchInitiatorTypeNames.cpp",
+    "$blink_platform_output_dir/loader/fetch/FetchInitiatorTypeNames.h",
+  ]
+}
+
+source_set("loader") {
+  # This target is a logical part of the platform and only the platform target
+  # should depend on it.
+  visibility = [ "//third_party/WebKit/Source/platform" ]
+
+  sources = [
+    "fetch/AccessControlStatus.h",
+    "fetch/CachedMetadata.cpp",
+    "fetch/CachedMetadata.h",
+    "fetch/CachedMetadataHandler.h",
+    "fetch/ClientHintsPreferences.cpp",
+    "fetch/ClientHintsPreferences.h",
+    "fetch/CrossOriginAccessControl.cpp",
+    "fetch/CrossOriginAccessControl.h",
+    "fetch/FetchContext.cpp",
+    "fetch/FetchContext.h",
+    "fetch/FetchInitiatorInfo.h",
+    "fetch/FetchRequest.cpp",
+    "fetch/FetchRequest.h",
+    "fetch/FetchUtils.cpp",
+    "fetch/FetchUtils.h",
+    "fetch/IntegrityMetadata.cpp",
+    "fetch/IntegrityMetadata.h",
+    "fetch/MemoryCache.cpp",
+    "fetch/MemoryCache.h",
+    "fetch/RawResource.cpp",
+    "fetch/RawResource.h",
+    "fetch/Resource.cpp",
+    "fetch/Resource.h",
+    "fetch/ResourceClient.h",
+    "fetch/ResourceClientWalker.h",
+    "fetch/ResourceFetcher.cpp",
+    "fetch/ResourceFetcher.h",
+    "fetch/ResourceLoader.cpp",
+    "fetch/ResourceLoader.h",
+    "fetch/ResourceLoaderOptions.h",
+    "fetch/ResourceLoadingLog.h",
+    "fetch/ResourceStatus.h",
+    "fetch/SubstituteData.h",
+    "fetch/UniqueIdentifier.cpp",
+    "fetch/UniqueIdentifier.h",
+  ]
+
+  sources += get_target_outputs(
+          ":make_platform_loader_generated_fetch_initiator_type_names")
+
+  defines = [ "BLINK_PLATFORM_IMPLEMENTATION=1" ]
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:non_test_config",
+    "//third_party/WebKit/Source:inside_blink",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+
+  deps = [
+    ":make_platform_loader_generated_fetch_initiator_type_names",
+  ]
+
+  public_deps = [
+    "//base",
+    "//skia",
+    "//third_party/icu",
+    "//v8",
+  ]
+}

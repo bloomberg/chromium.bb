@@ -31,13 +31,13 @@
 #include "core/html/imports/HTMLImportsController.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportTreeRoot.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
 

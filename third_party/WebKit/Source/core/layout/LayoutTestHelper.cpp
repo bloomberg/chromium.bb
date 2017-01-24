@@ -4,9 +4,9 @@
 
 #include "core/layout/LayoutTestHelper.h"
 
-#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameHost.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {

@@ -5,7 +5,6 @@
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -22,6 +21,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

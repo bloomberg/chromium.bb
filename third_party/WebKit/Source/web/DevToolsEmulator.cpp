@@ -4,7 +4,6 @@
 
 #include "web/DevToolsEmulator.h"
 
-#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -17,6 +16,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"

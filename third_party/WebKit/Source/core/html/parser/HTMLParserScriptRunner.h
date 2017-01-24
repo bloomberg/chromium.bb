@@ -28,9 +28,9 @@
 
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/PendingScript.h"
-#include "core/fetch/ResourceClient.h"
 #include "core/html/parser/HTMLParserReentryPermit.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ResourceClient.h"
 #include "wtf/Deque.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/TextPosition.h"

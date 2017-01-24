@@ -32,9 +32,9 @@
 #define HTMLImportLoader_h
 
 #include "core/dom/DocumentParserClient.h"
-#include "core/fetch/RawResource.h"
-#include "core/fetch/ResourceOwner.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceOwner.h"
 #include "wtf/Vector.h"
 #include <memory>
 

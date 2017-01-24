@@ -27,9 +27,9 @@
 #define LayoutImage_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ResourceClient.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/LayoutReplaced.h"
+#include "platform/loader/fetch/ResourceClient.h"
 
 namespace blink {
 

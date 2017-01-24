@@ -28,10 +28,10 @@
 
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/fetch/ResourceClient.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "core/xml/parser/XMLErrors.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ResourceClient.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/Compiler.h"
 #include "wtf/HashMap.h"

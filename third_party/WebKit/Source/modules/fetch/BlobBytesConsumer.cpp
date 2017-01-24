@@ -4,12 +4,12 @@
 
 #include "modules/fetch/BlobBytesConsumer.h"
 
-#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
+#include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"

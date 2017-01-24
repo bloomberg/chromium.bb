@@ -27,9 +27,9 @@
 #define ScriptResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/IntegrityMetadata.h"
-#include "core/fetch/ResourceClient.h"
 #include "core/loader/resource/TextResource.h"
+#include "platform/loader/fetch/IntegrityMetadata.h"
+#include "platform/loader/fetch/ResourceClient.h"
 
 namespace blink {
 

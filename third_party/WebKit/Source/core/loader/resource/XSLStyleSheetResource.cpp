@@ -26,12 +26,12 @@
 
 #include "core/loader/resource/XSLStyleSheetResource.h"
 
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceClientWalker.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceClientWalker.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
 

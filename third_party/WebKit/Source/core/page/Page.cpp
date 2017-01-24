@@ -30,7 +30,6 @@
 #include "core/editing/DragCaretController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -55,6 +54,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
 

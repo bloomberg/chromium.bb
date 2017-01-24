@@ -1,6 +1,0 @@
-include_rules = [
-    "-bindings",
-    "-core",
-    "+core/CoreExport.h",
-    "+core/fetch",
-]

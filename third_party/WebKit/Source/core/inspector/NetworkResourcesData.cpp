@@ -29,8 +29,8 @@
 #include "core/inspector/NetworkResourcesData.h"
 
 #include "core/dom/DOMImplementation.h"
-#include "core/fetch/Resource.h"
 #include "platform/SharedBuffer.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/network/ResourceResponse.h"
 #include <memory>
 

@@ -32,7 +32,6 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/fetch/CachedMetadata.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -41,6 +40,7 @@
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/loader/fetch/CachedMetadata.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 

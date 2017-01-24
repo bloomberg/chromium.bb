@@ -26,13 +26,13 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/Resource.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/Histogram.h"
+#include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "public/platform/Platform.h"
 #include <memory>
 

@@ -6,7 +6,7 @@
 #define TextResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/Resource.h"
+#include "platform/loader/fetch/Resource.h"
 #include <memory>
 
 namespace blink {

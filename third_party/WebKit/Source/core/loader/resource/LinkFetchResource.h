@@ -5,8 +5,8 @@
 #ifndef LinkFetchResource_h
 #define LinkFetchResource_h
 
-#include "core/fetch/Resource.h"
-#include "core/fetch/ResourceClient.h"
+#include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceClient.h"
 
 namespace blink {
 

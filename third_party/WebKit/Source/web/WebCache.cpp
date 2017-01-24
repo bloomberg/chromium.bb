@@ -30,7 +30,7 @@
 
 #include "public/web/WebCache.h"
 
-#include "core/fetch/MemoryCache.h"
+#include "platform/loader/fetch/MemoryCache.h"
 
 namespace blink {
 

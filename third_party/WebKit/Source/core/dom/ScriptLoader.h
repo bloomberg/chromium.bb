@@ -24,9 +24,9 @@
 #include "core/CoreExport.h"
 #include "core/dom/PendingScript.h"
 #include "core/dom/ScriptRunner.h"
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceClient.h"
 #include "core/loader/resource/ScriptResource.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceClient.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 

@@ -176,7 +176,6 @@ component("core") {
     "//third_party/WebKit/Source/core/dom",
     "//third_party/WebKit/Source/core/editing",
     "//third_party/WebKit/Source/core/events",
-    "//third_party/WebKit/Source/core/fetch",
     "//third_party/WebKit/Source/core/fileapi",
     "//third_party/WebKit/Source/core/frame",
     "//third_party/WebKit/Source/core/html",
@@ -608,14 +607,6 @@ make_names("make_core_generated_event_target_names") {
   ]
 }
 
-make_names("make_core_generated_fetch_initiator_type_names") {
-  in_files = [ "fetch/FetchInitiatorTypeNames.in" ]
-  outputs = [
-    "$blink_core_output_dir/fetch/FetchInitiatorTypeNames.cpp",
-    "$blink_core_output_dir/fetch/FetchInitiatorTypeNames.h",
-  ]
-}
-
 make_names("make_core_generated_event_type_names") {
   in_files = [ "events/EventTypeNames.in" ]
   outputs = [
@@ -871,7 +862,6 @@ targets_generating_sources = [
   ":make_core_generated_event_names",
   ":make_core_generated_event_target_names",
   ":make_core_generated_event_type_names",
-  ":make_core_generated_fetch_initiator_type_names",
   ":make_core_generated_html_element_factory",
   ":make_core_generated_html_element_lookup_trie",
   ":make_core_generated_html_entity_table",
@@ -1094,22 +1084,6 @@ source_set("unit_tests") {
     "events/EventPathTest.cpp",
     "events/EventTargetTest.cpp",
     "events/PointerEventFactoryTest.cpp",
-    "fetch/ClientHintsPreferencesTest.cpp",
-    "fetch/CrossOriginAccessControlTest.cpp",
-    "fetch/FetchTestingPlatformSupport.cpp",
-    "fetch/FetchTestingPlatformSupport.h",
-    "fetch/FetchUtilsTest.cpp",
-    "fetch/MemoryCacheCorrectnessTest.cpp",
-    "fetch/MemoryCacheTest.cpp",
-    "fetch/MockFetchContext.h",
-    "fetch/MockResource.cpp",
-    "fetch/MockResource.h",
-    "fetch/MockResourceClient.cpp",
-    "fetch/MockResourceClient.h",
-    "fetch/RawResourceTest.cpp",
-    "fetch/ResourceFetcherTest.cpp",
-    "fetch/ResourceLoaderOptionsTest.cpp",
-    "fetch/ResourceTest.cpp",
     "fileapi/FileListTest.cpp",
     "fileapi/FileTest.cpp",
     "frame/FeaturePolicyInFrameTest.cpp",

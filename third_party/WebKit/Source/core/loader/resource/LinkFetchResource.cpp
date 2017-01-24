@@ -4,8 +4,8 @@
 
 #include "core/loader/resource/LinkFetchResource.h"
 
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
 

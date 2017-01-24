@@ -26,8 +26,8 @@
 
 #include "core/loader/CrossOriginPreflightResultCache.h"
 
-#include "core/fetch/FetchUtils.h"
 #include "platform/HTTPNames.h"
+#include "platform/loader/fetch/FetchUtils.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"

@@ -22,12 +22,12 @@
 #include "core/xml/XSLImportRule.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/FetchInitiatorTypeNames.h"
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/RawResource.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/loader/resource/XSLStyleSheetResource.h"
 #include "platform/SharedBuffer.h"
+#include "platform/loader/fetch/FetchInitiatorTypeNames.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace blink {

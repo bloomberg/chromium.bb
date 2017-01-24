@@ -6,9 +6,9 @@
 #define ImageResourceInfo_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ResourceStatus.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
+#include "platform/loader/fetch/ResourceStatus.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 

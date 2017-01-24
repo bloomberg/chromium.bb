@@ -28,7 +28,6 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/dom/Document.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
 #include "core/style/CursorData.h"
@@ -41,6 +40,7 @@
 #include "core/style/StyleInvalidImage.h"
 #include "core/style/StylePendingImage.h"
 #include "core/svg/SVGElementProxy.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
 

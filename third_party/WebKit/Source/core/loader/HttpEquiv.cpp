@@ -7,7 +7,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/StyleEngine.h"
-#include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -16,6 +15,7 @@
 #include "core/loader/FrameClientHintsPreferencesContext.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "platform/HTTPNames.h"
+#include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
 

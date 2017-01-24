@@ -33,7 +33,6 @@
 #include "core/InstrumentingAgents.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
-#include "core/fetch/FetchInitiatorInfo.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
@@ -47,6 +46,7 @@
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/loader/fetch/FetchInitiatorInfo.h"
 
 namespace blink {
 

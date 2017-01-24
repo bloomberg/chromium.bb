@@ -5,8 +5,8 @@
 #include "modules/notifications/NotificationImageLoader.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"

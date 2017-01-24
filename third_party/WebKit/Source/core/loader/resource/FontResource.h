@@ -28,11 +28,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
-#include "core/fetch/Resource.h"
-#include "core/fetch/ResourceClient.h"
 #include "platform/Timer.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceClient.h"
 #include <memory>
 
 namespace blink {

@@ -4,11 +4,11 @@
 
 #include "core/loader/PingLoader.h"
 
-#include "core/fetch/SubstituteData.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoader.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/loader/fetch/SubstituteData.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"

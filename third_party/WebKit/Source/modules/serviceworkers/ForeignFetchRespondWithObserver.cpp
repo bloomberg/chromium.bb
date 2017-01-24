@@ -4,9 +4,9 @@
 
 #include "modules/serviceworkers/ForeignFetchRespondWithObserver.h"
 
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "modules/fetch/Response.h"
 #include "modules/serviceworkers/ForeignFetchResponse.h"
+#include "platform/loader/fetch/CrossOriginAccessControl.h"
 
 namespace blink {
 

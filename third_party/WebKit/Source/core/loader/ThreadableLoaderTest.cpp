@@ -5,8 +5,6 @@
 #include "core/loader/ThreadableLoader.h"
 
 #include "core/dom/ExecutionContextTask.h"
-#include "core/fetch/MemoryCache.h"
-#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/WorkerThreadableLoader.h"
@@ -15,6 +13,8 @@
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/WaitableEvent.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/loader/fetch/MemoryCache.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"

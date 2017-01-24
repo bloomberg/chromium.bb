@@ -5,8 +5,8 @@
 #ifndef ServiceWorkerScriptCachedMetadataHandler_h
 #define ServiceWorkerScriptCachedMetadataHandler_h
 
-#include "core/fetch/CachedMetadataHandler.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 #include <stdint.h>

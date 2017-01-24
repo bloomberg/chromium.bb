@@ -6,9 +6,9 @@
 #define WorkletScriptLoader_h
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourceOwner.h"
 #include "core/loader/resource/ScriptResource.h"
+#include "platform/loader/fetch/ResourceClient.h"
+#include "platform/loader/fetch/ResourceOwner.h"
 
 namespace blink {
 

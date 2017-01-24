@@ -5,11 +5,11 @@
 #include "core/html/parser/PreloadRequest.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/FetchInitiatorInfo.h"
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/CrossOriginAttributeValue.h"
+#include "platform/loader/fetch/FetchInitiatorInfo.h"
+#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
