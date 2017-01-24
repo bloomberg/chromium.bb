@@ -413,6 +413,8 @@ CREATED_BRANCHES = [
 
 # Constants for uprevving Chrome
 
+CHROMEOS_BASE = 'chromeos-base'
+
 # Portage category and package name for Chrome.
 CHROME_PN = 'chromeos-chrome'
 CHROME_CP = 'chromeos-base/%s' % CHROME_PN
@@ -450,9 +452,8 @@ VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
 
 # Constants for uprevving Android.
 
-# Portage category and package name for Chrome.
-ANDROID_PN = 'android-container'
-ANDROID_CP = 'chromeos-base/%s' % ANDROID_PN
+# Portage package name for Android container.
+ANDROID_PACKAGE_NAME = 'android-container'
 
 # Builds and validates the latest Android release.
 ANDROID_REV_LATEST = 'latest_release'

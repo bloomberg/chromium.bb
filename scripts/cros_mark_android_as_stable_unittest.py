@@ -49,11 +49,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Setup vars and create mock dir."""
+    self.android_package = 'test_package'
+
     self.tmp_overlay = os.path.join(self.tempdir, 'chromiumos-overlay')
-    self.mock_android_dir = os.path.join(self.tmp_overlay, constants.ANDROID_CP)
+    self.mock_android_dir = os.path.join(
+        self.tmp_overlay,
+        portage_util.GetFullAndroidPortagePackageName(self.android_package))
 
     ebuild = os.path.join(self.mock_android_dir,
-                          constants.ANDROID_PN + '-%s.ebuild')
+                          self.android_package + '-%s.ebuild')
     self.unstable = ebuild % '9999'
     self.old_version = '25'
     self.old = ebuild % self.old_version
@@ -373,12 +377,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     android_version = self.new_version
     package_dir = self.mock_android_dir
     version_atom = cros_mark_android_as_stable.MarkAndroidEBuildAsStable(
-        stable_candidate, unstable, constants.ANDROID_PN, android_version,
+        stable_candidate, unstable, self.android_package, android_version,
         package_dir, self.build_branch, self.arc_bucket_url)
     git_mock.assert_has_calls([
         mock.call(package_dir, ['add', self.new]),
         mock.call(package_dir, ['add', 'Manifest']),
     ])
     commit_mock.assert_call(mock.call('latest', package_dir))
-    self.assertEqual(version_atom,
-                     '%s-%s-r1' % (constants.ANDROID_CP, self.new_version))
+    self.assertEqual(
+        version_atom,
+        '%s-%s-r1' % (
+            portage_util.GetFullAndroidPortagePackageName(self.android_package),
+            self.new_version))

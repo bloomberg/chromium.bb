@@ -34,7 +34,7 @@ from chromite.scripts import cros_mark_as_stable
 # Dir where all the action happens.
 _OVERLAY_DIR = '%(srcroot)s/private-overlays/project-cheets-private/'
 
-_GIT_COMMIT_MESSAGE = ('Marking latest for %(android_pn)s ebuild '
+_GIT_COMMIT_MESSAGE = ('Marking latest for %(android_package)s ebuild '
                        'with version %(android_version)s as stable.')
 
 # URLs that print lists of Android revisions between two build ids.
@@ -339,9 +339,9 @@ def GetAndroidRevisionListLink(build_branch, old_android, new_android):
                                  'new': new_android.version}
 
 
-def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
-                              android_version, package_dir, build_branch,
-                              arc_bucket_url):
+def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
+                              android_package, android_version, package_dir,
+                              build_branch, arc_bucket_url):
   r"""Uprevs the Android ebuild.
 
   This is the main function that uprevs from a stable candidate
@@ -352,7 +352,7 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
       revving from.  If None, builds the a new ebuild given the version
       with revision set to 1.
     unstable_ebuild: ebuild corresponding to the unstable ebuild for Android.
-    android_pn: package name.
+    android_package: android package name.
     android_version: The \d+ build id of Android.
     package_dir: Path to the android-container package dir.
     build_branch: branch of Android builds.
@@ -380,7 +380,7 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
         stable_candidate.ebuild_path_no_revision,
         stable_candidate.current_revision + 1)
   else:
-    pf = '%s-%s-r1' % (android_pn, android_version)
+    pf = '%s-%s-r1' % (android_package, android_version)
     new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
 
   variables = {'BASE_URL': arc_bucket_url}
@@ -416,7 +416,7 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
   git.RunGit(package_dir, ['add', 'Manifest'])
 
   portage_util.EBuild.CommitChange(
-      _GIT_COMMIT_MESSAGE % {'android_pn': android_pn,
+      _GIT_COMMIT_MESSAGE % {'android_package': android_package,
                              'android_version': android_version},
       package_dir)
 
@@ -434,6 +434,8 @@ def GetParser():
                       default=constants.ANDROID_BUILD_BRANCH)
   parser.add_argument('--android_gts_build_branch',
                       default=constants.ANDROID_GTS_BUILD_BRANCH)
+  parser.add_argument('--android_package',
+                      default=constants.ANDROID_PACKAGE_NAME)
   parser.add_argument('--arc_bucket_url',
                       default=constants.ARC_BUCKET_URL,
                       type='gs_path')
@@ -453,7 +455,9 @@ def main(argv):
   options.Freeze()
 
   overlay_dir = os.path.abspath(_OVERLAY_DIR % {'srcroot': options.srcroot})
-  android_package_dir = os.path.join(overlay_dir, constants.ANDROID_CP)
+  android_package_dir = os.path.join(
+      overlay_dir,
+      portage_util.GetFullAndroidPortagePackageName(options.android_package))
   version_to_uprev = None
 
   (unstable_ebuild, stable_ebuilds) = FindAndroidCandidates(android_package_dir)
@@ -491,7 +495,7 @@ def main(argv):
     git.RunGit(overlay_dir, ['rebase', existing_branch])
 
   android_version_atom = MarkAndroidEBuildAsStable(
-      stable_candidate, unstable_ebuild, constants.ANDROID_PN,
+      stable_candidate, unstable_ebuild, options.android_package,
       version_to_uprev, android_package_dir,
       options.android_build_branch, options.arc_bucket_url)
   if android_version_atom:
