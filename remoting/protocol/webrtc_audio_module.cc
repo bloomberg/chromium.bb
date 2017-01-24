@@ -5,10 +5,8 @@
 #include "remoting/protocol/webrtc_audio_module.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/timer/timer.h"
 
 namespace remoting {
 namespace protocol {
@@ -504,15 +502,14 @@ int WebrtcAudioModule::GetRecordAudioParameters(
 
 void WebrtcAudioModule::StartPlayoutOnAudioThread() {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
-  poll_timer_ = base::MakeUnique<base::RepeatingTimer>();
-  poll_timer_->Start(
+  poll_timer_.Start(
       FROM_HERE, kPollInterval,
       base::Bind(&WebrtcAudioModule::PollFromSource, base::Unretained(this)));
 }
 
 void WebrtcAudioModule::StopPlayoutOnAudioThread() {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
-  poll_timer_.reset();
+  poll_timer_.Stop();
 }
 
 void WebrtcAudioModule::PollFromSource() {

@@ -7,12 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
 
 namespace remoting {
 namespace protocol {
@@ -32,10 +27,10 @@ class WebrtcAudioSinkAdapter : public webrtc::AudioTrackSinkInterface {
               size_t number_of_frames) override;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtr<AudioStub> audio_stub_;
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
   scoped_refptr<webrtc::AudioTrackInterface> audio_track_;
+
+  base::WeakPtr<AudioStub> audio_stub_;
 };
 
 }  // namespace protocol
