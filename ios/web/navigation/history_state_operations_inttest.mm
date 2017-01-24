@@ -308,3 +308,34 @@ TEST_F(HistoryStateOperationsTest, StateReplacementReload) {
     return GetJavaScriptState() == new_state;
   });
 }
+
+// Tests that the state object is correctly set for a page after a back/forward
+// navigation.
+TEST_F(HistoryStateOperationsTest, StateReplacementBackForward) {
+  // Navigate to about:blank then navigate back to the test page.  The created
+  // NavigationItem can be used later to verify that the state is replaced
+  // rather than pushed.
+  GURL about_blank("about:blank");
+  LoadUrl(about_blank);
+  ExecuteBlockAndWaitForLoad(state_operations_url(), ^{
+    navigation_manager()->GoBack();
+  });
+  ASSERT_EQ(state_operations_url(), GetLastCommittedItem()->GetURL());
+  // Set up the state parameters and tap the replace state button.
+  std::string new_state("STATE OBJECT");
+  std::string empty_title("");
+  GURL empty_url("");
+  SetStateParams(new_state, empty_title, empty_url);
+  ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
+  // Go forward and back, then check that the state object is present.
+  ExecuteBlockAndWaitForLoad(about_blank, ^{
+    navigation_manager()->GoForward();
+  });
+  ExecuteBlockAndWaitForLoad(state_operations_url(), ^{
+    navigation_manager()->GoBack();
+  });
+  ASSERT_TRUE(IsOnLoadTextVisible());
+  base::test::ios::WaitUntilCondition(^bool {
+    return GetJavaScriptState() == new_state;
+  });
+}
