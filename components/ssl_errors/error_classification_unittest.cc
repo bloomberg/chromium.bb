@@ -43,7 +43,7 @@ NetworkErrorResponseHandler(const net::test_server::HttpRequest& request) {
 class SSLErrorClassificationTest : public ::testing::Test {
  public:
   SSLErrorClassificationTest()
-      : field_trial_test_(network_time::FieldTrialTest::CreateForUnitTest()) {}
+      : field_trial_test_(new network_time::FieldTrialTest()) {}
   network_time::FieldTrialTest* field_trial_test() {
     return field_trial_test_.get();
   }

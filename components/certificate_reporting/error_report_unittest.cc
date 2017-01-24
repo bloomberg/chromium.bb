@@ -199,7 +199,7 @@ TEST(ErrorReportTest, FeatureInfo) {
   EXPECT_TRUE(io_thread.StartWithOptions(thread_options));
 
   std::unique_ptr<network_time::FieldTrialTest> field_trial_test(
-      network_time::FieldTrialTest::CreateForUnitTest());
+      new network_time::FieldTrialTest());
   field_trial_test->SetNetworkQueriesWithVariationsService(
       true, 0.0, network_time::NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY);
 

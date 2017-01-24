@@ -50,17 +50,11 @@ extern const double kGoodTimeResponseHandlerJsTime;
 std::unique_ptr<net::test_server::HttpResponse> GoodTimeResponseHandler(
     const net::test_server::HttpRequest& request);
 
-// Allows tests to configure the network time queries field trial.
+// Allows unit tests to configure the network time queries field trial.
 class FieldTrialTest {
  public:
+  FieldTrialTest();
   virtual ~FieldTrialTest();
-
-  // A FieldTrialList exists as a global singleton. Use
-  // CreateForUnitTest() in unit tests to create a FieldTrialTest that
-  // creates its own FieldTrialList; use CreateForBrowserTest() to use
-  // the singleton FieldTrialList that is created during browser setup.
-  static FieldTrialTest* CreateForUnitTest();
-  static FieldTrialTest* CreateForBrowserTest();
 
   void SetNetworkQueriesWithVariationsService(
       bool enable,
@@ -68,8 +62,6 @@ class FieldTrialTest {
       NetworkTimeTracker::FetchBehavior fetch_behavior);
 
  private:
-  FieldTrialTest();
-  bool create_field_trial_list_ = true;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 

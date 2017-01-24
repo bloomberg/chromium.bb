@@ -48,7 +48,7 @@ class NetworkTimeTrackerTest : public ::testing::Test {
 
   NetworkTimeTrackerTest()
       : io_thread_("IO thread"),
-        field_trial_test_(FieldTrialTest::CreateForUnitTest()),
+        field_trial_test_(new FieldTrialTest()),
         clock_(new base::SimpleTestClock),
         tick_clock_(new base::SimpleTestTickClock),
         test_server_(new net::EmbeddedTestServer) {

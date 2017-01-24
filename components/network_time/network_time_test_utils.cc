@@ -49,19 +49,9 @@ std::unique_ptr<net::test_server::HttpResponse> GoodTimeResponseHandler(
   return std::unique_ptr<net::test_server::HttpResponse>(response);
 }
 
+FieldTrialTest::FieldTrialTest() {}
+
 FieldTrialTest::~FieldTrialTest() {}
-
-FieldTrialTest* FieldTrialTest::CreateForUnitTest() {
-  FieldTrialTest* test = new FieldTrialTest();
-  test->create_field_trial_list_ = true;
-  return test;
-}
-
-FieldTrialTest* FieldTrialTest::CreateForBrowserTest() {
-  FieldTrialTest* test = new FieldTrialTest();
-  test->create_field_trial_list_ = false;
-  return test;
-}
 
 void FieldTrialTest::SetNetworkQueriesWithVariationsService(
     bool enable,
@@ -105,11 +95,10 @@ void FieldTrialTest::SetNetworkQueriesWithVariationsService(
   // ScopedFeatureList helper class. If this comment was useful to you
   // please send me a postcard.
 
-  if (create_field_trial_list_) {
-    field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
-    field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<base::MockEntropyProvider>()));
-  }
+  field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
+  field_trial_list_.reset(
+      new base::FieldTrialList(base::MakeUnique<base::MockEntropyProvider>()));
+
   // refcounted, and reference held by the singleton FieldTrialList.
   base::FieldTrial* trial = base::FieldTrialList::FactoryGetFieldTrial(
       kTrialName, 100, kGroupName, 1971, 1, 1,
@@ -125,7 +114,5 @@ void FieldTrialTest::SetNetworkQueriesWithVariationsService(
   scoped_feature_list_.reset(new base::test::ScopedFeatureList);
   scoped_feature_list_->InitWithFeatureList(std::move(feature_list));
 }
-
-FieldTrialTest::FieldTrialTest() {}
 
 }  // namespace network_time

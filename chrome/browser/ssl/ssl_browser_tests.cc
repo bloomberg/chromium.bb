@@ -61,6 +61,7 @@
 #include "components/security_state/core/switches.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -101,6 +102,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_test_util.h"
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/net/nss_context.h"
@@ -3008,11 +3010,22 @@ void CleanUpOnIOThread() {
 // request to be issued during the test.
 class SSLNetworkTimeBrowserTest : public SSLUITest {
  public:
-  SSLNetworkTimeBrowserTest()
-      : SSLUITest(),
-        field_trial_test_(network_time::FieldTrialTest::CreateForBrowserTest()),
-        interceptor_(nullptr) {}
+  SSLNetworkTimeBrowserTest() : SSLUITest(), interceptor_(nullptr) {}
   ~SSLNetworkTimeBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kEnableFeatures,
+        std::string(network_time::kNetworkTimeServiceQuerying.name) +
+            "<SSLNetworkTimeBrowserTestFieldTrial");
+    command_line->AppendSwitchASCII(
+        switches::kForceFieldTrials,
+        "SSLNetworkTimeBrowserTestFieldTrial/Enabled/");
+    command_line->AppendSwitchASCII(
+        variations::switches::kForceFieldTrialParams,
+        "SSLNetworkTimeBrowserTestFieldTrial.Enabled:FetchBehavior/"
+        "on-demand-only");
+  }
 
   void SetUpOnMainThread() override { SetUpNetworkTimeServer(); }
 
@@ -3022,16 +3035,8 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
   }
 
  protected:
-  network_time::FieldTrialTest* field_trial_test() const {
-    return field_trial_test_.get();
-  }
-
   void SetUpNetworkTimeServer() {
-    field_trial_test()->SetNetworkQueriesWithVariationsService(
-        true, 0.0, network_time::NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY);
-
-    // Install the URL interceptor that serves delayed network time
-    // responses.
+    // Install the URL interceptor that serves delayed network time responses.
     interceptor_ = new DelayedNetworkTimeInterceptor();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
@@ -3058,7 +3063,6 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
   }
 
  private:
-  std::unique_ptr<network_time::FieldTrialTest> field_trial_test_;
   DelayedNetworkTimeInterceptor* interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLNetworkTimeBrowserTest);
