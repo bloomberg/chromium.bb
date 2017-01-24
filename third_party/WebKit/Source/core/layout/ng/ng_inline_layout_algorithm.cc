@@ -36,25 +36,25 @@ NGPhysicalFragment* NGInlineLayoutAlgorithm::Layout() {
   builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
   builder_->SetWritingMode(constraint_space_->WritingMode());
   builder_->SetDirection(constraint_space_->Direction());
-  current_child_ = first_child_;
+  NGInlineNode* current_child = first_child_;
 
+  Member<NGLineBuilder> line_builder;
   // TODO(kojii): Since line_builder_ is bound to NGLayoutInlineItem
-  // in current_child_, changing the current_child_ needs more work.
-  if (current_child_) {
-    space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
-    line_builder_ = new NGLineBuilder(current_child_, space_for_current_child_);
-    current_child_->LayoutInline(space_for_current_child_, line_builder_);
+  // in current_child, changing the current_child needs more work.
+  if (current_child) {
+    Member<NGConstraintSpace> space_for_current_child =
+        CreateConstraintSpaceForChild(*current_child);
+    line_builder = new NGLineBuilder(current_child, space_for_current_child);
+    current_child->LayoutInline(space_for_current_child, line_builder);
   }
-
-  line_builder_->CreateFragments(builder_);
+  line_builder->CreateFragments(builder_);
   NGPhysicalFragment* fragment = builder_->ToBoxFragment();
-  line_builder_->CopyFragmentDataToLayoutBlockFlow();
+  line_builder->CopyFragmentDataToLayoutBlockFlow();
   return fragment;
 }
 
-NGConstraintSpace*
-NGInlineLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
-  DCHECK(current_child_);
+NGConstraintSpace* NGInlineLayoutAlgorithm::CreateConstraintSpaceForChild(
+    const NGInlineNode& child) const {
   // TODO(kojii): Implement child constraint space.
   NGConstraintSpace* child_space =
       NGConstraintSpaceBuilder(constraint_space_->WritingMode())
@@ -69,9 +69,6 @@ DEFINE_TRACE(NGInlineLayoutAlgorithm) {
   visitor->trace(constraint_space_);
   visitor->trace(break_token_);
   visitor->trace(builder_);
-  visitor->trace(space_for_current_child_);
-  visitor->trace(current_child_);
-  visitor->trace(line_builder_);
 }
 
 }  // namespace blink
