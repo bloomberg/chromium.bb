@@ -138,6 +138,54 @@ struct StructTraits<indexed_db::mojom::DatabaseMetadataDataView,
                    content::IndexedDBDatabaseMetadata* out);
 };
 
+template <>
+struct EnumTraits<indexed_db::mojom::CursorDirection,
+                  blink::WebIDBCursorDirection> {
+  static indexed_db::mojom::CursorDirection ToMojom(
+      blink::WebIDBCursorDirection input);
+  static bool FromMojom(indexed_db::mojom::CursorDirection input,
+                        blink::WebIDBCursorDirection* output);
+};
+
+template <>
+struct EnumTraits<indexed_db::mojom::DataLoss, blink::WebIDBDataLoss> {
+  static indexed_db::mojom::DataLoss ToMojom(blink::WebIDBDataLoss input);
+  static bool FromMojom(indexed_db::mojom::DataLoss input,
+                        blink::WebIDBDataLoss* output);
+};
+
+template <>
+struct EnumTraits<indexed_db::mojom::OperationType,
+                  blink::WebIDBOperationType> {
+  static indexed_db::mojom::OperationType ToMojom(
+      blink::WebIDBOperationType input);
+  static bool FromMojom(indexed_db::mojom::OperationType input,
+                        blink::WebIDBOperationType* output);
+};
+
+template <>
+struct EnumTraits<indexed_db::mojom::PutMode, blink::WebIDBPutMode> {
+  static indexed_db::mojom::PutMode ToMojom(blink::WebIDBPutMode input);
+  static bool FromMojom(indexed_db::mojom::PutMode input,
+                        blink::WebIDBPutMode* output);
+};
+
+template <>
+struct EnumTraits<indexed_db::mojom::TaskType, blink::WebIDBTaskType> {
+  static indexed_db::mojom::TaskType ToMojom(blink::WebIDBTaskType input);
+  static bool FromMojom(indexed_db::mojom::TaskType input,
+                        blink::WebIDBTaskType* output);
+};
+
+template <>
+struct EnumTraits<indexed_db::mojom::TransactionMode,
+                  blink::WebIDBTransactionMode> {
+  static indexed_db::mojom::TransactionMode ToMojom(
+      blink::WebIDBTransactionMode input);
+  static bool FromMojom(indexed_db::mojom::TransactionMode input,
+                        blink::WebIDBTransactionMode* output);
+};
+
 }  // namespace mojo
 
 #endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_STRUCT_TRAITS_H_

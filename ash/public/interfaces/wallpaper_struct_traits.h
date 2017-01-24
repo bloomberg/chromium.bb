@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_INTERFACES_WALLPAPER_ENUM_TRAITS_H_
-#define ASH_PUBLIC_INTERFACES_WALLPAPER_ENUM_TRAITS_H_
+#ifndef ASH_PUBLIC_INTERFACES_WALLPAPER_STRUCT_TRAITS_H_
+#define ASH_PUBLIC_INTERFACES_WALLPAPER_STRUCT_TRAITS_H_
 
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "components/wallpaper/wallpaper_layout.h"
@@ -52,4 +52,4 @@ struct EnumTraits<ash::mojom::WallpaperLayout, wallpaper::WallpaperLayout> {
 
 }  // namespace mojo
 
-#endif  // ASH_PUBLIC_INTERFACES_WALLPAPER_ENUM_TRAITS_H_
+#endif  // ASH_PUBLIC_INTERFACES_WALLPAPER_STRUCT_TRAITS_H_

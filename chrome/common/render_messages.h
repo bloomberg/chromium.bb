@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
-#include "chrome/common/instant_type_traits.h"
+#include "chrome/common/instant_struct_traits.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/common/web_application_info.h"

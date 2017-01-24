@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_INTERFACES_SHELF_ENUM_TRAITS_H_
-#define ASH_PUBLIC_INTERFACES_SHELF_ENUM_TRAITS_H_
+#ifndef ASH_PUBLIC_INTERFACES_SHELF_STRUCT_TRAITS_H_
+#define ASH_PUBLIC_INTERFACES_SHELF_STRUCT_TRAITS_H_
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
@@ -85,4 +85,4 @@ struct EnumTraits<ash::mojom::ShelfAutoHideBehavior,
 
 }  // namespace mojo
 
-#endif  // ASH_PUBLIC_INTERFACES_SHELF_ENUM_TRAITS_H_
+#endif  // ASH_PUBLIC_INTERFACES_SHELF_STRUCT_TRAITS_H_

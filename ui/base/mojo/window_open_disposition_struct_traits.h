@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MOJO_WINDOW_OPEN_DISPOSITION_ENUM_TRAITS_H_
-#define UI_BASE_MOJO_WINDOW_OPEN_DISPOSITION_ENUM_TRAITS_H_
+#ifndef UI_BASE_MOJO_WINDOW_OPEN_DISPOSITION_STRUCT_TRAITS_H_
+#define UI_BASE_MOJO_WINDOW_OPEN_DISPOSITION_STRUCT_TRAITS_H_
 
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
@@ -85,4 +85,4 @@ struct EnumTraits<ui::mojom::WindowOpenDisposition, WindowOpenDisposition> {
 
 }  // namespace mojo
 
-#endif  // UI_BASE_MOJO_WINDOW_OPEN_DISPOSITION_ENUM_TRAITS_H_
+#endif  // UI_BASE_MOJO_WINDOW_OPEN_DISPOSITION_STRUCT_TRAITS_H_

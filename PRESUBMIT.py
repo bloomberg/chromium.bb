@@ -1455,13 +1455,19 @@ def _CheckIpcOwners(input_api, output_api):
   Whether or not a file affects IPC is determined by a simple whitelist of
   filename patterns."""
   file_patterns = [
+      # Legacy IPC:
       '*_messages.cc',
       '*_messages*.h',
       '*_param_traits*.*',
+      # Mojo IPC:
       '*.mojom',
       '*_struct_traits*.*',
       '*_type_converter*.*',
-      # Blink uses a different file naming convention
+      '*.typemap',
+      # Android native IPC:
+      '*.aidl',
+      # Blink uses a different file naming convention:
+      '*EnumTraits*.*',
       '*StructTraits*.*',
       '*TypeConverter*.*',
   ]

@@ -9,7 +9,7 @@ public_headers = [
   "//components/ntp_tiles/ntp_tile_source.h",
   "//components/omnibox/common/omnibox_focus_state.h",
 ]
-traits_headers = [ "//chrome/common/instant_type_traits.h" ]
+traits_headers = [ "//chrome/common/instant_struct_traits.h" ]
 deps = [
   "//chrome/common",
   "//ipc",

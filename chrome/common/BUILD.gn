@@ -90,7 +90,7 @@ static_library("common") {
     "descriptors_android.h",
     "ini_parser.cc",
     "ini_parser.h",
-    "instant_type_traits.h",
+    "instant_struct_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",
     "mac/app_shim_launch.h",

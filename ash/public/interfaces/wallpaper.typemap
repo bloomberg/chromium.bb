@@ -4,7 +4,7 @@
 
 mojom = "//ash/public/interfaces/wallpaper.mojom"
 public_headers = [ "//components/wallpaper/wallpaper_layout.h" ]
-traits_headers = [ "//ash/public/interfaces/wallpaper_enum_traits.h" ]
+traits_headers = [ "//ash/public/interfaces/wallpaper_struct_traits.h" ]
 public_deps = [
   "//ash/public/cpp",
 ]

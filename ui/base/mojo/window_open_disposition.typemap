@@ -8,5 +8,5 @@ public_deps = [
   "//mojo/public/cpp/bindings",
   "//ui/base",
 ]
-traits_headers = [ "//ui/base/mojo/window_open_disposition_enum_traits.h" ]
+traits_headers = [ "//ui/base/mojo/window_open_disposition_struct_traits.h" ]
 type_mappings = [ "ui.mojom.WindowOpenDisposition=WindowOpenDisposition" ]

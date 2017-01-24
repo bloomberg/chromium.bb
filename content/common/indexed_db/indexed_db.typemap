@@ -10,10 +10,7 @@ public_headers = [
   "//content/common/indexed_db/indexed_db_metadata.h",
   "//third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
 ]
-traits_headers = [
-  "//content/common/indexed_db/indexed_db_enum_traits.h",
-  "//content/common/indexed_db/indexed_db_struct_traits.h",
-]
+traits_headers = [ "//content/common/indexed_db/indexed_db_struct_traits.h" ]
 type_mappings = [
   "indexed_db.mojom.CursorDirection=blink::WebIDBCursorDirection",
   "indexed_db.mojom.DatabaseMetadata=content::IndexedDBDatabaseMetadata",
