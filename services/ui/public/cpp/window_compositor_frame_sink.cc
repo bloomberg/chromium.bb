@@ -56,6 +56,7 @@ bool WindowCompositorFrameSink::BindToClient(
 void WindowCompositorFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   begin_frame_source_.reset();
+  client_binding_.reset();
   compositor_frame_sink_.reset();
   cc::CompositorFrameSink::DetachFromClient();
 }
