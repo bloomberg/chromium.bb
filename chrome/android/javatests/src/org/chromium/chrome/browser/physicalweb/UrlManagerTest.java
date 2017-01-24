@@ -436,7 +436,11 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertEquals(URL1, urlInfos.get(2).getUrl());
     }
 
-    @SmallTest
+    /*
+     * @SmallTest
+     * Bug=crbug.com/684148
+     */
+    @DisabledTest
     public void testSerializationWorksWithPoorlySerializedResult() throws Exception {
         addPwsResult1();
         addPwsResult2();
