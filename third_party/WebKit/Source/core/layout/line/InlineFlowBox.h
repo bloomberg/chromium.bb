@@ -393,6 +393,11 @@ class InlineFlowBox : public InlineBox {
                                 lineTop, lineBottom);
   }
 
+  LayoutUnit maxLogicalBottomForUnderline(LineLayoutItem decorationObject,
+                                          LayoutUnit maxLogicalBottom) const;
+  LayoutUnit minLogicalTopForUnderline(LineLayoutItem decorationObject,
+                                       LayoutUnit minLogicalTop) const;
+
  private:
   void placeBoxRangeInInlineDirection(InlineBox* firstChild,
                                       InlineBox* lastChild,
@@ -442,10 +447,6 @@ class InlineFlowBox : public InlineBox {
   InlineFlowBox*
       m_prevLineBox;  // The previous box that also uses our LayoutObject
   InlineFlowBox* m_nextLineBox;  // The next box that also uses our LayoutObject
-
-  // Maximum logicalTop among all children of an InlineFlowBox. Used to
-  // calculate the offset for TextUnderlinePositionUnder.
-  void computeMaxLogicalTop(LayoutUnit& maxLogicalTop) const;
 
  private:
   unsigned m_includeLogicalLeftEdge : 1;

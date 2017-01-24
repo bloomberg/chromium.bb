@@ -888,20 +888,58 @@ void InlineFlowBox::placeBoxesInBlockDirection(
   }
 }
 
-void InlineFlowBox::computeMaxLogicalTop(LayoutUnit& maxLogicalTop) const {
+LayoutUnit InlineFlowBox::maxLogicalBottomForUnderline(
+    LineLayoutItem decorationObject,
+    LayoutUnit maxLogicalBottom) const {
   for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
     if (curr->getLineLayoutItem().isOutOfFlowPositioned())
       continue;  // Positioned placeholders don't affect calculations.
 
-    if (descendantsHaveSameLineHeightAndBaseline())
+    // If the text decoration isn't in effect on the child, it must be outside
+    // of |decorationObject|.
+    if (!(curr->lineStyleRef().textDecorationsInEffect() &
+          TextDecorationUnderline))
       continue;
 
-    maxLogicalTop = std::max<LayoutUnit>(maxLogicalTop, curr->y());
-    LayoutUnit localMaxLogicalTop;
-    if (curr->isInlineFlowBox())
-      toInlineFlowBox(curr)->computeMaxLogicalTop(localMaxLogicalTop);
-    maxLogicalTop = std::max<LayoutUnit>(maxLogicalTop, localMaxLogicalTop);
+    if (decorationObject && decorationObject.isLayoutInline() &&
+        !isAncestorAndWithinBlock(decorationObject, curr->getLineLayoutItem()))
+      continue;
+
+    if (curr->isInlineFlowBox()) {
+      maxLogicalBottom = toInlineFlowBox(curr)->maxLogicalBottomForUnderline(
+          decorationObject, maxLogicalBottom);
+    } else if (curr->isInlineTextBox()) {
+      maxLogicalBottom = std::max(maxLogicalBottom, curr->logicalBottom());
+    }
   }
+  return maxLogicalBottom;
+}
+
+LayoutUnit InlineFlowBox::minLogicalTopForUnderline(
+    LineLayoutItem decorationObject,
+    LayoutUnit minLogicalTop) const {
+  for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
+    if (curr->getLineLayoutItem().isOutOfFlowPositioned())
+      continue;  // Positioned placeholders don't affect calculations.
+
+    // If the text decoration isn't in effect on the child, it must be outside
+    // of |decorationObject|.
+    if (!(curr->lineStyleRef().textDecorationsInEffect() &
+          TextDecorationUnderline))
+      continue;
+
+    if (decorationObject && decorationObject.isLayoutInline() &&
+        !isAncestorAndWithinBlock(decorationObject, curr->getLineLayoutItem()))
+      continue;
+
+    if (curr->isInlineFlowBox()) {
+      minLogicalTop = toInlineFlowBox(curr)->minLogicalTopForUnderline(
+          decorationObject, minLogicalTop);
+    } else if (curr->isInlineTextBox()) {
+      minLogicalTop = std::min(minLogicalTop, curr->logicalTop());
+    }
+  }
+  return minLogicalTop;
 }
 
 void InlineFlowBox::flipLinesInBlockDirection(LayoutUnit lineTop,

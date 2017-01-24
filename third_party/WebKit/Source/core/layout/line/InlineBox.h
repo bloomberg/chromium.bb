@@ -173,6 +173,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     m_bitfields.setFirstLine(firstLine);
   }
   bool isFirstLineStyle() const { return m_bitfields.firstLine(); }
+  const ComputedStyle& lineStyleRef() const {
+    return getLineLayoutItem().styleRef(isFirstLineStyle());
+  }
 
   void remove(MarkLineBoxes = MarkLineBoxesDirty);
 

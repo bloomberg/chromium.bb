@@ -202,9 +202,6 @@ class RootInlineBox : public InlineFlowBox {
     return InlineFlowBox::logicalBottomLayoutOverflow(lineBottom());
   }
 
-  // Used to calculate the underline offset for TextUnderlinePositionUnder.
-  LayoutUnit maxLogicalTop() const;
-
   Node* getLogicalStartBoxWithNode(InlineBox*&) const;
   Node* getLogicalEndBoxWithNode(InlineBox*&) const;
 

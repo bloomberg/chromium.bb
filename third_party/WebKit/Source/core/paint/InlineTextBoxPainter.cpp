@@ -36,7 +36,48 @@ std::pair<unsigned, unsigned> GetMarkerPaintOffsets(
 }
 }
 
-static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
+static LineLayoutItem enclosingUnderlineObject(
+    const InlineTextBox* inlineTextBox) {
+  bool firstLine = inlineTextBox->isFirstLineStyle();
+  for (LineLayoutItem current = inlineTextBox->parent()->getLineLayoutItem();
+       ;) {
+    if (current.isLayoutBlock())
+      return current;
+    if (!current.isLayoutInline() || current.isRubyText())
+      return nullptr;
+
+    const ComputedStyle& styleToUse = current.styleRef(firstLine);
+    if (styleToUse.getTextDecoration() & TextDecorationUnderline)
+      return current;
+
+    current = current.parent();
+    if (!current)
+      return current;
+
+    if (Node* node = current.node()) {
+      if (isHTMLAnchorElement(node) || node->hasTagName(HTMLNames::fontTag))
+        return current;
+    }
+  }
+}
+
+static LayoutUnit computeUnderlineOffsetForUnder(
+    const ComputedStyle& style,
+    const InlineTextBox* inlineTextBox) {
+  const RootInlineBox& root = inlineTextBox->root();
+  LineLayoutItem decorationObject = enclosingUnderlineObject(inlineTextBox);
+  if (style.isFlippedLinesWritingMode()) {
+    LayoutUnit position = inlineTextBox->logicalTop();
+    return position -
+           root.minLogicalTopForUnderline(decorationObject, position);
+  } else {
+    LayoutUnit position = inlineTextBox->logicalBottom();
+    return root.maxLogicalBottomForUnderline(decorationObject, position) -
+           position;
+  }
+}
+
+static int computeUnderlineOffset(const ComputedStyle& style,
                                   const FontMetrics& fontMetrics,
                                   const InlineTextBox* inlineTextBox,
                                   const float textDecorationThickness) {
@@ -57,18 +98,16 @@ static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
     gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
 
   // FIXME: We support only horizontal text for now.
-  switch (underlinePosition) {
+  switch (style.getTextUnderlinePosition()) {
     case TextUnderlinePositionAuto:
       return fontMetrics.ascent() +
              gap;  // Position underline near the alphabetic baseline.
     case TextUnderlinePositionUnder: {
       // Position underline relative to the under edge of the lowest element's
       // content box.
-      const LayoutUnit offset =
-          inlineTextBox->root().maxLogicalTop() - inlineTextBox->logicalTop();
-      if (offset > 0)
-        return (inlineTextBox->logicalHeight() + gap + offset).toInt();
-      return (inlineTextBox->logicalHeight() + gap).toInt();
+      LayoutUnit offset = computeUnderlineOffsetForUnder(style, inlineTextBox);
+      offset = inlineTextBox->logicalHeight() + std::max(offset, LayoutUnit());
+      return offset.toInt() + gap;
     }
   }
 
@@ -1099,9 +1138,9 @@ void InlineTextBoxPainter::paintDecorations(
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.lines();
     if ((lines & TextDecorationUnderline) && fontData) {
-      const int underlineOffset = computeUnderlineOffset(
-          styleToUse.getTextUnderlinePosition(), fontData->getFontMetrics(),
-          &m_inlineTextBox, textDecorationThickness);
+      const int underlineOffset =
+          computeUnderlineOffset(styleToUse, fontData->getFontMetrics(),
+                                 &m_inlineTextBox, textDecorationThickness);
       AppliedDecorationPainter decorationPainter(
           context, FloatPoint(localOrigin) + FloatPoint(0, underlineOffset),
           width.toFloat(), decoration, textDecorationThickness, doubleOffset, 1,

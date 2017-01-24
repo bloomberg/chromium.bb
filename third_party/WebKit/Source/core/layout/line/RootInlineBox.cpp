@@ -302,12 +302,6 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(
   return heightOfBlock + maxHeight;
 }
 
-LayoutUnit RootInlineBox::maxLogicalTop() const {
-  LayoutUnit maxLogicalTop;
-  computeMaxLogicalTop(maxLogicalTop);
-  return maxLogicalTop;
-}
-
 LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const {
   LayoutUnit result;
 
