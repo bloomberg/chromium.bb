@@ -9,6 +9,7 @@ import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
