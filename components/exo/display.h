@@ -90,6 +90,10 @@ class Display {
  private:
   NotificationSurfaceManager* const notification_surface_manager_;
 
+#if defined(USE_OZONE)
+  std::vector<gfx::BufferFormat> overlay_formats_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
 

@@ -72,6 +72,10 @@ source_set("exo") {
     "//ui/wm",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   if (is_chromeos) {
     deps += [ "//chromeos" ]
   }
