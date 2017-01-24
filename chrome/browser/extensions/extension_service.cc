@@ -948,7 +948,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
   }
 }
 
-void ExtensionService::DisableUserExtensions(
+void ExtensionService::DisableUserExtensionsExcept(
     const std::vector<std::string>& except_ids) {
   extensions::ManagementPolicy* management_policy =
       system_->management_policy();

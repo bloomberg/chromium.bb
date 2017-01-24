@@ -292,7 +292,7 @@ class ExtensionService
   // Disable non-default and non-managed extensions with ids not in
   // |except_ids|. Default extensions are those from the Web Store with
   // |was_installed_by_default| flag.
-  void DisableUserExtensions(const std::vector<std::string>& except_ids);
+  void DisableUserExtensionsExcept(const std::vector<std::string>& except_ids);
 
   // Puts all extensions in a blocked state: Unloading every extension, and
   // preventing them from ever loading until UnblockAllExtensions is called.

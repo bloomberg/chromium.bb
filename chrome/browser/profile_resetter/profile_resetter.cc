@@ -269,7 +269,7 @@ void ProfileResetter::ResetExtensions() {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(extension_service);
-  extension_service->DisableUserExtensions(brandcode_extensions);
+  extension_service->DisableUserExtensionsExcept(brandcode_extensions);
 
   MarkAsDone(EXTENSIONS);
 }
