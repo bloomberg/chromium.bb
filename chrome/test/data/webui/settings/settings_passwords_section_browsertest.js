@@ -55,7 +55,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
       assert(node);
       var passwordInfo = passwordList[0];
       assertEquals(passwordInfo.loginPair.originUrl,
-          node.querySelector('#originUrl').textContent);
+          node.querySelector('#originUrl').textContent.trim());
       assertEquals(passwordInfo.linkUrl,
           node.querySelector('#originUrl').href);
       assertEquals(passwordInfo.loginPair.username,

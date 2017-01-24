@@ -170,6 +170,17 @@
         white-space: nowrap;
       }
 
+      /**
+       * By default, flexbox children have min-width calculated to be the width
+       * of the content. However, in some cases we might want to allow the
+       * width to be smaller than the content (i.e. for long text to ellipsis).
+       * In such cases this class should be applied.
+       * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=1108514#c5)
+       */
+      .no-min-width {
+        min-width: 0;
+      }
+
       .button-strip {
         text-align: end;
       }
