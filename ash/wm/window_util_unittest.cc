@@ -27,9 +27,6 @@ std::string GetAdjustedBounds(const gfx::Rect& visible,
 typedef test::AshTestBase WindowUtilTest;
 
 TEST_F(WindowUtilTest, CenterWindow) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x400, 600x400");
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 100, 100)));

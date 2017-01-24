@@ -466,9 +466,6 @@ TEST_F(MaximizeModeControllerTest,
 
 // Test if this case does not crash. See http://crbug.com/462806
 TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100)));

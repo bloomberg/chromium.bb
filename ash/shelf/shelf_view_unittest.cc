@@ -197,9 +197,6 @@ TEST_F(WmShelfObserverIconTest, AddRemove) {
 // Make sure creating/deleting an window on one displays notifies a
 // shelf on external display as well as one on primary.
 TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,400x400");
   WmWindow* second_root = WmShell::Get()->GetAllRootWindows()[1];
   WmShelf* second_shelf = second_root->GetRootWindowController()->GetShelf();
@@ -1683,10 +1680,6 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 
 // Check the drag insertion bounds of shelf view in multi monitor environment.
 TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
-  // win8-aura doesn't support multiple display.
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   WmShelf* secondary_shelf =
       WmShelf::ForWindow(WmShell::Get()->GetAllRootWindows()[1]);
@@ -1751,10 +1744,6 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
 
 // Checks the rip an item off from left aligned shelf in secondary monitor.
 TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
-  // win8-aura doesn't support multiple display.
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2U, WmShell::Get()->GetAllRootWindows().size());
 

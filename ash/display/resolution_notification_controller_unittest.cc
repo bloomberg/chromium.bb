@@ -150,9 +150,6 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
 
 // Basic behaviors and verifies it doesn't cause crashes.
 TEST_F(ResolutionNotificationControllerTest, Basic) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
@@ -183,9 +180,6 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
 }
 
 TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
@@ -214,9 +208,6 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
 }
 
 TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("300x300#300x300%59|200x200%60");
   const display::Display& display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -254,9 +245,6 @@ TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
 }
 
 TEST_F(ResolutionNotificationControllerTest, Close) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("100x100,150x150#150x150%59|200x200%60");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
@@ -282,9 +270,6 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
 }
 
 TEST_F(ResolutionNotificationControllerTest, Timeout) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("300x300#300x300%59|200x200%60");
   const display::Display& display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -306,9 +291,6 @@ TEST_F(ResolutionNotificationControllerTest, Timeout) {
 }
 
 TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "200x200#250x250%58|200x200%59|100x100%60");
@@ -331,9 +313,6 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
 }
 
 TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|200x200%59");
@@ -372,9 +351,6 @@ TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
 }
 
 TEST_F(ResolutionNotificationControllerTest, Fallback) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|220x220%59|200x200%60");

@@ -244,9 +244,6 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
 }
 
 TEST_F(LockLayoutManagerTest, MultipleMonitors) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("300x400,400x500");
   gfx::Rect screen_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();

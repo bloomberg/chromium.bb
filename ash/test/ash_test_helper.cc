@@ -206,15 +206,5 @@ aura::Window* AshTestHelper::CurrentContext() {
   return root_window;
 }
 
-// static
-bool AshTestHelper::SupportsMultipleDisplays() {
-  // TODO(jamescook): Figure out if we want SupportsMultipleDisplays() to return
-  // false on mustash. If not, remove this function and the AshTestBase version
-  // and remove calls from all the tests. For now just leave the ifdef strings
-  // OS_CHROMEOS and OS_WIN in this comment as a reminder to clean up.
-  // http://crbug.com/682990
-  return true;
-}
-
 }  // namespace test
 }  // namespace ash

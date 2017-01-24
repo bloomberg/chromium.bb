@@ -584,9 +584,6 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
 
   std::unique_ptr<aura::Window> normal(OpenToplevelTestWindow(false));
@@ -893,9 +890,6 @@ TEST_F(SystemModalContainerLayoutManagerTest, BlockAllEvents) {
 
 // Make sure that events are properly blocked in multi displays environment.
 TEST_F(SystemModalContainerLayoutManagerTest, BlockEventsInMultiDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500, 500x500");
   InputTestDelegate delegate;
   delegate.RunTest(this);

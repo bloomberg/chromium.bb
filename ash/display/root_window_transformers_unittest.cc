@@ -255,9 +255,6 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
 }
 
 TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -423,8 +420,6 @@ TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
 }
 
 TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
-  if (!SupportsMultipleDisplays())
-    return;
   test::MirrorWindowTestApi test_api;
   display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x200,500x500");

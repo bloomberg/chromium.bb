@@ -30,8 +30,6 @@ INSTANTIATE_TEST_CASE_P(
                     MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
 TEST_P(ScreenUtilTest, Bounds) {
-  if (!SupportsMultipleDisplays())
-    return;
   const int height_offset = GetMdMaximizedWindowHeightOffset();
 
   UpdateDisplay("600x600,500x500");
@@ -74,9 +72,6 @@ TEST_P(ScreenUtilTest, Bounds) {
 // Test verifies a stable handling of secondary screen widget changes
 // (crbug.com/226132).
 TEST_P(ScreenUtilTest, StabilityTest) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x600,500x500");
   views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
@@ -91,9 +86,6 @@ TEST_P(ScreenUtilTest, StabilityTest) {
 }
 
 TEST_P(ScreenUtilTest, ConvertRect) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x600,500x500");
 
   views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
@@ -123,9 +115,6 @@ TEST_P(ScreenUtilTest, ConvertRect) {
 }
 
 TEST_P(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(

@@ -252,9 +252,6 @@ TEST_F(VideoDetectorTest, ReportOnceForMultipleWindows) {
 }
 
 TEST_F(VideoDetectorTest, ReportFullscreen) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("1024x768,1024x768");
 
   std::unique_ptr<aura::Window> window =

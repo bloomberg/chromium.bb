@@ -68,10 +68,6 @@ WmTestBase::~WmTestBase() {
       << "You have overridden TearDown but never called WmTestBase::TearDown";
 }
 
-bool WmTestBase::SupportsMultipleDisplays() const {
-  return true;
-}
-
 void WmTestBase::UpdateDisplay(const std::string& display_spec) {
   test_helper_->UpdateDisplay(display_spec);
 }

@@ -65,9 +65,6 @@ INSTANTIATE_TEST_CASE_P(
 // Test that a window gets properly snapped to the display's edges in a
 // multi monitor environment.
 TEST_P(WindowStateTest, SnapWindowBasic) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("0+0-500x400, 0+500-600x400");
   const gfx::Rect kPrimaryDisplayWorkAreaBounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();

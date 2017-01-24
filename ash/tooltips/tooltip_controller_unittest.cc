@@ -127,9 +127,6 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
 }
 
 TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("1000x600,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<views::Widget> widget1(

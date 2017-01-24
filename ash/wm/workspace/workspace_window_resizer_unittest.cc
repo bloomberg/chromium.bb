@@ -586,13 +586,10 @@ TEST_P(WorkspaceWindowResizerTest, Edge) {
               window_state->GetRestoreBoundsInScreen().ToString());
   }
 
-  // Test if the restore bounds is correct in multiple displays.
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Restore the window to clear snapped state.
   window_state->Restore();
 
+  // Test if the restore bounds is correct in multiple displays.
   UpdateDisplay("800x600,500x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
@@ -635,9 +632,6 @@ TEST_P(WorkspaceWindowResizerTest, NonResizableWindows) {
 }
 
 TEST_P(WorkspaceWindowResizerTest, CancelSnapPhantom) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
@@ -810,9 +804,6 @@ TEST_P(WorkspaceWindowResizerTest, DontDragOffBottom) {
 
 // Makes sure we don't allow dragging on the work area with multidisplay.
 TEST_P(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
 
@@ -976,9 +967,6 @@ TEST_P(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   EXPECT_EQ(base::IntToString(right - wm::kMinimumOnScreenArea) + ",100 " +
                 base::IntToString(window_width) + "x380",
             window_->bounds().ToString());
-
-  if (!SupportsMultipleDisplays())
-    return;
 
   // With secondary display.  Operation itself is same but doesn't change
   // the position because the window is still within the secondary display.

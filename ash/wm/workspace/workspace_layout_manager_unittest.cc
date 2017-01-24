@@ -118,9 +118,6 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   EXPECT_EQ("0,0 100x100", window_state->GetRestoreBoundsInScreen().ToString());
   EXPECT_EQ("10,15 25x35", window->GetBounds().ToString());
 
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x300,500x400");
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100), GetSecondaryDisplay());
   EXPECT_EQ(WmShell::Get()->GetAllRootWindows()[1], window->GetRootWindow());
@@ -141,9 +138,6 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("300x400,400x500");
   WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();
 
@@ -219,8 +213,6 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("300x400,400x500");
 
   WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();
@@ -281,8 +273,6 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("300x400,400x500");
 
   WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();

@@ -22,9 +22,6 @@ class ScreenAshTest : public test::AshTestBase {
 // Tests that ScreenAsh::GetWindowAtScreenPoint() returns the correct window on
 // the correct display.
 TEST_F(ScreenAshTest, TestGetWindowAtScreenPoint) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,400x400");
 
   aura::test::TestWindowDelegate delegate;

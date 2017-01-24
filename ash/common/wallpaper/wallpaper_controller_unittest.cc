@@ -348,9 +348,6 @@ TEST_F(WallpaperControllerTest, ChangeWallpaperQuick) {
 }
 
 TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("320x200");
 
   gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
@@ -387,9 +384,6 @@ TEST_F(WallpaperControllerTest, GetMaxDisplaySize) {
   UpdateDisplay("1000x300*2@1.5");
   EXPECT_EQ("1000x300",
             WallpaperController::GetMaxDisplaySizeInNative().ToString());
-
-  if (!SupportsMultipleDisplays())
-    return;
 
   // First display has maximum size.
   UpdateDisplay("400x300,100x100");

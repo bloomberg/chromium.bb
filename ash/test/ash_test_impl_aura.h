@@ -22,7 +22,6 @@ class AshTestImplAura : public AshTestImpl {
   // AshTestImpl:
   void SetUp() override;
   void TearDown() override;
-  bool SupportsMultipleDisplays() const override;
   void UpdateDisplay(const std::string& display_spec) override;
   std::unique_ptr<WindowOwner> CreateTestWindow(
       const gfx::Rect& bounds_in_screen,

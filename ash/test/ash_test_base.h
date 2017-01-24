@@ -138,9 +138,6 @@ class AshTestBase : public testing::Test {
   // Returns the rotation currently active for the internal display.
   static display::Display::Rotation GetCurrentInternalDisplayRotation();
 
-  // Proxy to AshTestHelper::SupportsMultipleDisplays().
-  static bool SupportsMultipleDisplays();
-
   void set_start_session(bool start_session) { start_session_ = start_session; }
 
   // Sets material mode for the test. This will override material mode set via

@@ -141,9 +141,6 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
 // when MaximizeMode has been enabled,  when we are using multiple displays.
 // By default the DisplayManger is in extended mode.
 TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,200x200");
   EXPECT_FALSE(GetTray()->visible());
   EXPECT_FALSE(GetSecondaryTray()->visible());
@@ -158,9 +155,6 @@ TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
 // Tests if Maximize Mode is enabled before a secondary display is attached
 // that the second OverviewButtonTray should be created in a visible state.
 TEST_F(OverviewButtonTrayTest, SecondaryTrayCreatedVisible) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   UpdateDisplay("400x400,200x200");

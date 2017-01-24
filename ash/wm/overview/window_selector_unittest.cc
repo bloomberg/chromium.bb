@@ -1110,9 +1110,6 @@ TEST_F(WindowSelectorTest, MinimizeUnminimizei) {
 // Tests that clicking on the close button on a secondary display effectively
 // closes the window.
 TEST_F(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -1437,9 +1434,6 @@ TEST_F(WindowSelectorTest, ClickModalWindowParent) {
 // Tests that windows remain on the display they are currently on in overview
 // mode, and that the close buttons are on matching displays.
 TEST_F(WindowSelectorTest, MultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   gfx::Rect bounds1(0, 0, 400, 400);
@@ -1514,9 +1508,6 @@ TEST_F(WindowSelectorTest, Shutdown) {
 
 // Tests removing a display during overview.
 TEST_F(WindowSelectorTest, RemoveDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,400x400");
   gfx::Rect bounds1(0, 0, 100, 100);
   gfx::Rect bounds2(450, 0, 100, 100);
@@ -1697,9 +1688,6 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
 
 // Tests basic selection across multiple monitors.
 TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,400x400");
   gfx::Rect bounds1(0, 0, 100, 100);
   gfx::Rect bounds2(450, 0, 100, 100);
@@ -1731,9 +1719,6 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
 // Tests first monitor when display order doesn't match left to right screen
 // positions.
 TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,400x400");
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
@@ -1764,9 +1749,6 @@ TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
 
 // Tests three monitors where the grid becomes empty on one of the monitors.
 TEST_F(WindowSelectorTest, ThreeMonitor) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,400x400,400x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   gfx::Rect bounds1(0, 0, 100, 100);

@@ -13,8 +13,6 @@ namespace ash {
 typedef test::AshTestBase DisplayUtilTest;
 
 TEST_F(DisplayUtilTest, RotatedDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
   {
     UpdateDisplay("10+10-500x400,600+10-1000x600/r");
     aura::Window::Windows root_windows = Shell::GetAllRootWindows();

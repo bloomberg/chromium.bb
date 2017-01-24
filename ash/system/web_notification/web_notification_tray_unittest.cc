@@ -266,9 +266,6 @@ TEST_P(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
 
 // Verifies if the notification appears on both displays when extended mode.
 TEST_P(WebNotificationTrayTest, PopupShownOnBothDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   Shell::GetInstance()
       ->screen_layout_observer()
       ->set_show_notifications_for_testing(true);

@@ -814,9 +814,6 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
 // Tests that dragging a snapped window to another display updates the window's
 // bounds correctly.
 TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("940x550,940x550");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();

@@ -249,8 +249,6 @@ class WindowTreeHostManagerShutdownTest : public test::AshTestBase,
 
   void TearDown() override {
     test::AshTestBase::TearDown();
-    if (!SupportsMultipleDisplays())
-      return;
 
     // Make sure that primary display is accessible after shutdown.
     display::Display primary =
@@ -425,23 +423,14 @@ INSTANTIATE_TEST_CASE_P(
                     MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
 TEST_F(WindowTreeHostManagerShutdownTest, Shutdown) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("444x333, 200x200");
 }
 
 TEST_F(WindowTreeHostManagerStartupTest, Startup) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   EXPECT_TRUE(startup_helper()->displays_initialized());
 }
 
 TEST_P(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Creates windows to catch activation change event.
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
@@ -604,9 +593,6 @@ display::ManagedDisplayInfo CreateMirroredDisplayInfo(
 }  // namespace
 
 TEST_P(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Creates windows to catch activation change event.
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
@@ -656,9 +642,6 @@ TEST_P(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
 }
 
 TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Creates windows to catch activation change event.
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
@@ -769,9 +752,6 @@ TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
 }
 
 TEST_P(WindowTreeHostManagerTest, FindNearestDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
 
@@ -831,8 +811,6 @@ TEST_P(WindowTreeHostManagerTest, FindNearestDisplay) {
 }
 
 TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
-  if (!SupportsMultipleDisplays())
-    return;
   const int height_offset = GetMdMaximizedWindowHeightOffset();
 
   WindowTreeHostManager* window_tree_host_manager =
@@ -983,8 +961,6 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
 }
 
 TEST_P(WindowTreeHostManagerTest, SetPrimaryWithThreeDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("500x400,400x300,300x200");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayIdList non_primary_ids =
@@ -1105,8 +1081,6 @@ TEST_P(WindowTreeHostManagerTest, SetPrimaryWithThreeDisplays) {
 }
 
 TEST_P(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("600x500,500x400,400x300,300x200");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayIdList non_primary_ids =
@@ -1216,9 +1190,6 @@ TEST_P(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
 }
 
 TEST_P(WindowTreeHostManagerTest, OverscanInsets) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
   TestEventHandler event_handler;
@@ -1266,9 +1237,6 @@ TEST_P(WindowTreeHostManagerTest, OverscanInsets) {
 }
 
 TEST_P(WindowTreeHostManagerTest, Rotate) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1323,7 +1291,6 @@ TEST_P(WindowTreeHostManagerTest, Rotate) {
             GetActiveDisplayRotation(display2_id));
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
-#if !defined(OS_WIN)
   ui::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseToInHost(50, 40);
   EXPECT_EQ("179,25", event_handler.GetLocationAndReset());
@@ -1344,15 +1311,11 @@ TEST_P(WindowTreeHostManagerTest, Rotate) {
 
   generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("69,159", event_handler.GetLocationAndReset());
-#endif
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1388,9 +1351,6 @@ TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
 }
 
 TEST_P(WindowTreeHostManagerTest, TouchScale) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1420,9 +1380,6 @@ TEST_P(WindowTreeHostManagerTest, TouchScale) {
 }
 
 TEST_P(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1482,9 +1439,6 @@ TEST_P(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
 // Make sure that the compositor based mirroring can switch
 // from/to dock mode.
 TEST_P(WindowTreeHostManagerTest, DockToSingle) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   const int64_t internal_id = 1;
 
   const display::ManagedDisplayInfo internal_display_info =
@@ -1527,9 +1481,6 @@ TEST_P(WindowTreeHostManagerTest, DockToSingle) {
 // Tests if switching two displays at the same time while the primary display
 // is swapped should not cause a crash. (crbug.com/426292)
 TEST_P(WindowTreeHostManagerTest, ReplaceSwappedPrimary) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   const display::ManagedDisplayInfo first_display_info =
       CreateDisplayInfo(10, 0, display::Display::ROTATE_0);
   const display::ManagedDisplayInfo second_display_info =
@@ -1590,9 +1541,6 @@ class RootWindowTestObserver : public aura::WindowObserver {
 // in one configuration event.
 // See crbug.com/547280.
 TEST_P(WindowTreeHostManagerTest, ReplacePrimary) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   display::ManagedDisplayInfo first_display_info =
       CreateDisplayInfo(10, 0, display::Display::ROTATE_0);
   first_display_info.SetBounds(gfx::Rect(0, 0, 400, 400));
@@ -1621,9 +1569,6 @@ TEST_P(WindowTreeHostManagerTest, ReplacePrimary) {
 }
 
 TEST_P(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -1665,9 +1610,6 @@ TEST_P(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
 
 TEST_P(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_2ndOnLeft) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Set the 2nd display on the left.
   display::DisplayLayoutStore* layout_store = display_manager()->layout_store();
   display::DisplayPlacement new_default(display::DisplayPlacement::LEFT, 0);
@@ -1704,9 +1646,6 @@ TEST_P(WindowTreeHostManagerTest,
 // are updated when the primary display is swapped.
 TEST_P(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_SwapPrimary) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,200x200*2/r");
 
   aura::Env* env = aura::Env::GetInstance();
@@ -1733,9 +1672,6 @@ TEST_P(WindowTreeHostManagerTest,
 // and rotation are updated when the primary display is disconnected.
 TEST_P(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::GetInstance();
   WindowTreeHostManager* window_tree_host_manager =
@@ -1769,9 +1705,6 @@ TEST_P(WindowTreeHostManagerTest,
 // OnDisplayRemoved() should not cause crash. See http://crbug.com/415222
 TEST_P(WindowTreeHostManagerTest,
        GetRootWindowForDisplayIdDuringDisplayDisconnection) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("300x300,200x200");
   aura::Window* root2 = Shell::GetInstance()
                             ->window_tree_host_manager()

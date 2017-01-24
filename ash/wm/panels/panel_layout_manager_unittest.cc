@@ -386,9 +386,6 @@ TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIcon) {
 }
 
 TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIconSecondDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Keep the displays wide so that shelves have enough space for shelves
   // buttons.
   UpdateDisplay("400x400,600x400");
@@ -651,9 +648,6 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
 }
 
 TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Keep the displays wide so that shelves have enough space for launcher
   // buttons.
   UpdateDisplay("600x400,600x400");
@@ -734,9 +728,6 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
 }
 
 TEST_F(PanelLayoutManagerTest, PanelAttachPositionMultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Keep the displays wide so that shelves have enough space for shelf buttons.
   // Use differently sized displays so the shelf is in a different
   // position on second display.
@@ -758,9 +749,6 @@ TEST_F(PanelLayoutManagerTest, PanelAttachPositionMultipleDisplays) {
 }
 
 TEST_F(PanelLayoutManagerTest, PanelAlignmentSecondDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 

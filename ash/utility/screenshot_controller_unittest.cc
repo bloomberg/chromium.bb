@@ -256,9 +256,6 @@ TEST_F(PartialScreenshotControllerTest, TwoFingerTouch) {
 // across multiple monitors
 // cursor. See http://crbug.com/462229
 TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Create two displays.
   Shell* shell = Shell::GetInstance();
   UpdateDisplay("500x500,500x500");
@@ -418,9 +415,6 @@ TEST_F(WindowScreenshotControllerTest, MouseOperation) {
 }
 
 TEST_F(WindowScreenshotControllerTest, MultiDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,500x500");
 
   ui::test::EventGenerator& generator(GetEventGenerator());
@@ -450,9 +444,6 @@ TEST_F(WindowScreenshotControllerTest, MultiDisplays) {
 }
 
 TEST_F(ScreenshotControllerTest, MultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   StartPartialScreenshotSession();
   EXPECT_TRUE(IsActive());
   UpdateDisplay("400x400,500x500");

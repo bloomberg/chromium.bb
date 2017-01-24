@@ -65,9 +65,6 @@ class CursorWindowControllerTest : public test::AshTestBase {
 // Test that the composited cursor moves to another display when the real cursor
 // moves to another display.
 TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,200x200*2/r");
 
   WindowTreeHostManager* window_tree_host_manager =

@@ -673,8 +673,6 @@ TEST_F(MagnificationControllerTest, CenterTextCaretInViewport) {
 
 // Make sure that unified desktop can enter magnified mode.
 TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
-  if (!SupportsMultipleDisplays())
-    return;
   Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
 
   EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());

@@ -310,9 +310,6 @@ TEST_F(TouchHudDebugTest, SingleDisplay) {
 
 // Checks if debug touch HUDs are correctly initialized for two displays.
 TEST_F(TouchHudDebugTest, DualDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -325,9 +322,6 @@ TEST_F(TouchHudDebugTest, DualDisplays) {
 // Checks if debug touch HUDs are correctly handled when primary display is
 // changed.
 TEST_F(TouchHudDebugTest, SwapPrimaryDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -354,9 +348,6 @@ TEST_F(TouchHudDebugTest, SwapPrimaryDisplay) {
 
 // Checks if debug touch HUDs are correctly handled when displays are mirrored.
 TEST_F(TouchHudDebugTest, MirrorDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -381,9 +372,6 @@ TEST_F(TouchHudDebugTest, MirrorDisplays) {
 // Checks if debug touch HUDs are correctly handled when displays are mirrored
 // after setting the external display as the primary one.
 TEST_F(TouchHudDebugTest, SwapPrimaryThenMirrorDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -412,9 +400,6 @@ TEST_F(TouchHudDebugTest, SwapPrimaryThenMirrorDisplays) {
 // Checks if debug touch HUDs are correctly handled when the external display,
 // which is the secondary one, is removed.
 TEST_F(TouchHudDebugTest, RemoveSecondaryDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -439,9 +424,6 @@ TEST_F(TouchHudDebugTest, RemoveSecondaryDisplay) {
 // Checks if debug touch HUDs are correctly handled when the external display,
 // which is set as the primary display, is removed.
 TEST_F(TouchHudDebugTest, RemovePrimaryDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -470,9 +452,6 @@ TEST_F(TouchHudDebugTest, RemovePrimaryDisplay) {
 // Checks if debug touch HUDs are correctly handled when all displays are
 // removed.
 TEST_F(TouchHudDebugTest, Headless) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Setup a single display setting.
   SetupSingleDisplay();
 

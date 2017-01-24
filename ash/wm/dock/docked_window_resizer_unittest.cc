@@ -653,9 +653,6 @@ TEST_P(DockedWindowResizerTest, RevertDockedDragRevertsAttachment) {
 
 // Move a docked window to the second display
 TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x800,800x800");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2, static_cast<int>(root_windows.size()));

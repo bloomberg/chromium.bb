@@ -89,8 +89,6 @@ TEST_F(PartialMagnificationControllerTest, ActiveOnPointerDown) {
 // Verifies that nothing bad happens if a second display is disconnected while
 // the magnifier is active.
 TEST_F(PartialMagnificationControllerTest, MultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
   GetEventGenerator().EnterPenPointerMode();
 
   // Active magnifier with two displays, move it to the second display.

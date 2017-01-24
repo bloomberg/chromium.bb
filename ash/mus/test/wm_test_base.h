@@ -44,9 +44,6 @@ class WmTestBase : public testing::Test {
   WmTestBase();
   ~WmTestBase() override;
 
-  // TODO(sky): temporary until http://crbug.com/611563 is fixed.
-  bool SupportsMultipleDisplays() const;
-
   // Update the display configuration as given in |display_spec|.
   // See test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_spec);

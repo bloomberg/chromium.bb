@@ -496,9 +496,6 @@ TEST_F(ImmersiveFullscreenControllerTest, Inactive) {
 // has a vertical display layout (primary display above/below secondary display)
 // and the immersive fullscreen window is on the bottom display.
 TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Set up initial state.
   UpdateDisplay("800x600,800x600");
   ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(

@@ -73,8 +73,6 @@ class AshTest : public testing::Test {
 
   static test::TestSystemTrayDelegate* GetSystemTrayDelegate();
 
-  bool SupportsMultipleDisplays() const;
-
   // Update the display configuration as given in |display_spec|.
   // See test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_spec);

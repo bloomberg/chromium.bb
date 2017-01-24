@@ -755,9 +755,6 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
 // Test the behavior of the shelf when it is auto hidden and it is on the
 // boundary between the primary and the secondary display.
 TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
@@ -997,9 +994,6 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
 // to AutoHide, viewing the AppList on one of them doesn't unhide the other
 // hidden shelf.
 TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Create two displays.
   UpdateDisplay("0+0-200x200,+200+0-100x100");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -1118,9 +1112,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowSingleDisplay) {
 // Tests the correct behavior of the shelf when there is a system modal window
 // open when we have dual display.
 TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Create two displays.
   UpdateDisplay("200x200,100x100");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -1195,9 +1186,6 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {
 // Test the behavior of the shelf when a window on one display is fullscreen
 // but the other display has the active window.
 TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   Shell::RootWindowControllerList root_window_controllers =
@@ -1340,9 +1328,6 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
 }
 
 TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("800x600,800x600");
   WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
@@ -1699,9 +1684,6 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
   UpdateDisplay("500x400, 500x400");
 

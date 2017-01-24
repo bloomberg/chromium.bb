@@ -155,9 +155,6 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
 
 // Verifies if MouseCursorEventFilter's bounds calculation works correctly.
 TEST_F(UnifiedMouseWarpControllerTest, BoundaryTest) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   {
     SCOPED_TRACE("1x1");
     BoundaryTestBody("400x400,0+450-700x400", "400x400,0+450-700x600");
@@ -179,8 +176,6 @@ TEST_F(UnifiedMouseWarpControllerTest, BoundaryTest) {
 // Verifies if the mouse pointer correctly moves to another display in
 // unified desktop mode.
 TEST_F(UnifiedMouseWarpControllerTest, WarpMouse) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("500x500,600+0-500x500");
   ASSERT_EQ(1, display::Screen::GetScreen()->GetNumDisplays());
 

@@ -255,8 +255,6 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
 }
 
 TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
-  if (!SupportsMultipleDisplays())
-    return;
   display_manager()->SetUnifiedDesktopEnabled(true);
   UpdateDisplay("1000x500,0+600-100x500");
 

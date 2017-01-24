@@ -50,9 +50,6 @@ class DragDropTrackerTest : public test::AshTestBase {
 };
 
 TEST_F(DragDropTrackerTest, GetTarget) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
@@ -115,9 +112,6 @@ TEST_F(DragDropTrackerTest, GetTarget) {
 }
 
 TEST_F(DragDropTrackerTest, ConvertEvent) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());

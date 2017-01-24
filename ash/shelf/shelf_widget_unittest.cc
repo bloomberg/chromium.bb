@@ -88,9 +88,6 @@ TEST_P(ShelfWidgetTest, TestAlignment) {
 }
 
 TEST_P(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Note that for a left- and right-aligned shelf, this offset must be
   // applied to a maximized window's width rather than its height.
   const int offset = GetMdMaximizedWindowHeightOffset();
@@ -169,9 +166,6 @@ TEST_P(ShelfWidgetTest, DontReferenceShelfAfterDeletion) {
 // container and status widget has finished sizing.
 // See http://crbug.com/252533
 TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   SetUserLoggedIn(false);
   UpdateDisplay("300x200,400x300");
 

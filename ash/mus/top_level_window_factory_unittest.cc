@@ -32,9 +32,6 @@ TEST_F(TopLevelWindowFactoryTest, CreateFullscreenWindow) {
 using TopLevelWindowFactoryWmTest = mus::WmTestBase;
 
 TEST_F(TopLevelWindowFactoryWmTest, IsWindowShownInCorrectDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,400x400");
   EXPECT_NE(GetPrimaryDisplay().id(), GetSecondaryDisplay().id());
 

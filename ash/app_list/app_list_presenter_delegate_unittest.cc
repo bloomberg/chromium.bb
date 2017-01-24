@@ -115,9 +115,6 @@ TEST_F(AppListPresenterDelegateTest, TapOutsideBubbleClosesBubble) {
 // Tests opening the app launcher on a non-primary display, then deleting the
 // display.
 TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Set up a screen with two displays (horizontally adjacent).
   UpdateDisplay("1024x768,1024x768");
 

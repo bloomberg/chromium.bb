@@ -144,8 +144,6 @@ INSTANTIATE_TEST_CASE_P(
                     MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
 TEST_P(RootWindowControllerTest, MoveWindows_Basic) {
-  if (!SupportsMultipleDisplays())
-    return;
   const int height_offset = GetMdMaximizedWindowHeightOffset();
 
   // Windows origin should be doubled when moved to the 1st display.
@@ -268,9 +266,6 @@ TEST_P(RootWindowControllerTest, MoveWindows_Basic) {
 }
 
 TEST_P(RootWindowControllerTest, MoveWindows_Modal) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -301,8 +296,6 @@ TEST_P(RootWindowControllerTest, MoveWindows_Modal) {
 
 // Make sure lock related windows moves.
 TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
-  if (!SupportsMultipleDisplays())
-    return;
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("500x500");
@@ -535,9 +528,6 @@ TEST_P(RootWindowControllerTest, GetWindowForFullscreenMode) {
 }
 
 TEST_P(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x600,600x600");
   Shell::RootWindowControllerList controllers =
       Shell::GetInstance()->GetAllRootWindowControllers();
@@ -575,8 +565,6 @@ TEST_P(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
 // Test that GetRootWindowController() works with multiple displays and
 // child widgets.
 TEST_P(RootWindowControllerTest, GetRootWindowController) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("600x600,600x600");
   Shell::RootWindowControllerList controllers =
       Shell::GetInstance()->GetAllRootWindowControllers();
@@ -748,9 +736,6 @@ class TargetHitTestEventHandler : public ui::test::TestEventHandler {
 // on primary root window if no window has touch capability.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardOnPrimaryRootWindowDefault) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -769,9 +754,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // a display which has touch capability.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardOnTouchableDisplayOnly) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
   display::Display secondary_display =
       Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
@@ -822,9 +804,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // Test for http://crbug.com/303429. If both of displays have touch capability,
 // virtual keyboard follows the input focus.
 TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
   const int64_t primary_display_id =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -893,9 +872,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
 // capability, the virtual keyboard shows up on the specified display.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardShowOnSpecifiedDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
   display::Display secondary_display =
       Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
@@ -1087,9 +1063,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
 
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        EnsureCaretInWorkAreaWithMultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,600x600");
   const int64_t primary_display_id =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();

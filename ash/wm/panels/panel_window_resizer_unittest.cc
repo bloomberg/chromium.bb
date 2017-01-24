@@ -270,9 +270,6 @@ TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(600, 0)));
@@ -281,9 +278,6 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -309,9 +303,6 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -328,9 +319,6 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -360,9 +348,6 @@ TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
 }
 
 TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -385,9 +370,6 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
 }
 
 TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("600x400,600x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));

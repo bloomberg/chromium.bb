@@ -198,11 +198,6 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
 }
 
 // static
-bool AshTestBase::SupportsMultipleDisplays() {
-  return AshTestHelper::SupportsMultipleDisplays();
-}
-
-// static
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
       .UpdateDisplay(display_specs);

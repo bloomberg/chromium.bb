@@ -32,9 +32,6 @@ class KeyboardOverlayDelegateTest
 
 // Verifies we can show and close the widget for the overlay dialog.
 TEST_P(KeyboardOverlayDelegateTest, ShowAndClose) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x400,300x200");
   GetPrimaryShelf()->SetAlignment(shelf_alignment());
   KeyboardOverlayDelegate delegate(base::ASCIIToUTF16("Title"),

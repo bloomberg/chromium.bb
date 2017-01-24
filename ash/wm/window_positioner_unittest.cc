@@ -34,8 +34,6 @@ INSTANTIATE_TEST_CASE_P(
                     MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
 TEST_P(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
   const int height_offset = GetMdMaximizedWindowHeightOffset();
   // Tests that for a screen that is narrower than kForceMaximizeWidthLimit
   // a new window gets maximized.
@@ -51,9 +49,6 @@ TEST_P(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
 }
 
 TEST_P(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,1400x900");
   WmWindow* second_root_window = WmShell::Get()->GetAllRootWindows()[1];
   ScopedRootWindowForNewWindows root_for_new_windows(second_root_window);

@@ -37,9 +37,6 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
 // Verifies if the mouse pointer correctly moves to another display when there
 // are two displays.
 TEST_F(MouseCursorEventFilterTest, WarpMouse) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
 
   ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
@@ -77,9 +74,6 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
 // Verifies if the mouse pointer correctly moves to another display even when
 // two displays are not the same size.
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,600x600");  // the second one is larger.
 
   ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
@@ -105,9 +99,6 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
 // different scale factors. In native coords mode, there is no
 // difference between drag and move.
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,600x600*2");
 
   ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
@@ -133,9 +124,6 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
 // Verifies if MouseCursorEventFilter::set_mouse_warp_enabled() works as
 // expected.
 TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("500x500,500x500");
 
   event_filter()->set_mouse_warp_enabled(false);
@@ -153,9 +141,6 @@ TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
 // across root windows with different device scale factors
 // (http://crbug.com/154183).
 TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("400x400,800x800*2");
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),

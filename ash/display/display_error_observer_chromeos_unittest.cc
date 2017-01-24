@@ -42,9 +42,6 @@ class DisplayErrorObserverTest : public test::AshTestBase {
 };
 
 TEST_F(DisplayErrorObserverTest, Normal) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,300x300");
   observer()->OnDisplayModeChangeFailed(
       display::DisplayConfigurator::DisplayStateList(),
@@ -54,9 +51,6 @@ TEST_F(DisplayErrorObserverTest, Normal) {
 }
 
 TEST_F(DisplayErrorObserverTest, CallTwice) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,300x300");
   observer()->OnDisplayModeChangeFailed(
       display::DisplayConfigurator::DisplayStateList(),
@@ -73,9 +67,6 @@ TEST_F(DisplayErrorObserverTest, CallTwice) {
 }
 
 TEST_F(DisplayErrorObserverTest, CallWithDifferentState) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("200x200,300x300");
   observer()->OnDisplayModeChangeFailed(
       display::DisplayConfigurator::DisplayStateList(),

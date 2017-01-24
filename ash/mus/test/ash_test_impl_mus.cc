@@ -46,10 +46,6 @@ void AshTestImplMus::TearDown() {
   wm_test_base_->TearDown();
 }
 
-bool AshTestImplMus::SupportsMultipleDisplays() const {
-  return wm_test_base_->SupportsMultipleDisplays();
-}
-
 void AshTestImplMus::UpdateDisplay(const std::string& display_spec) {
   wm_test_base_->UpdateDisplay(display_spec);
 }

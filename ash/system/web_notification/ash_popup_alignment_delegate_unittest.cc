@@ -196,9 +196,6 @@ TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
@@ -233,8 +230,6 @@ TEST_F(AshPopupAlignmentDelegateTest, TrayHeight) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, Extended) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("600x600,800x800");
   SetAlignmentDelegate(
       base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
@@ -253,8 +248,6 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, Unified) {
-  if (!SupportsMultipleDisplays())
-    return;
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Reset the delegate as the primary display's shelf will be destroyed during

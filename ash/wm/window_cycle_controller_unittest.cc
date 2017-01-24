@@ -394,9 +394,6 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
 }
 
 TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   // Set up a second root window
   UpdateDisplay("1000x600,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();

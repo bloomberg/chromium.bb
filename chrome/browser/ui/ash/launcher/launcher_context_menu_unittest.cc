@@ -288,9 +288,6 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 // Tests that fullscreen which makes "Autohide shelf" option disappeared on
 // shelf is a per-display setting (crbug.com/496681).
 TEST_F(LauncherContextMenuTest, AutohideShelfOptionOnExternalDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
   UpdateDisplay("940x550,940x550");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();

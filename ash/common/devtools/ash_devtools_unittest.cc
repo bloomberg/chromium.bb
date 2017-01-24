@@ -622,8 +622,6 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
 }
 
 TEST_F(AshDevToolsTest, MultipleDisplayHighlight) {
-  if (!SupportsMultipleDisplays())
-    return;
   UpdateDisplay("300x400,500x500");
 
   WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();

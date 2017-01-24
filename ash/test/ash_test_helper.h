@@ -70,10 +70,6 @@ class AshTestHelper {
 
   AshTestEnvironment* ash_test_environment() { return ash_test_environment_; }
 
-  // True if the running environment supports multiple displays,
-  // or false otherwise (e.g. win8 bot).
-  static bool SupportsMultipleDisplays();
-
  private:
   AshTestEnvironment* ash_test_environment_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.

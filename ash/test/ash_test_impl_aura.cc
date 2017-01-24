@@ -51,10 +51,6 @@ void AshTestImplAura::TearDown() {
   ash_test_base_->TearDown();
 }
 
-bool AshTestImplAura::SupportsMultipleDisplays() const {
-  return ash_test_base_->SupportsMultipleDisplays();
-}
-
 void AshTestImplAura::UpdateDisplay(const std::string& display_spec) {
   ash_test_base_->UpdateDisplay(display_spec);
 }
