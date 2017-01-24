@@ -5212,7 +5212,7 @@ def MatchingFileType(file_name, extensions):
 @subcommand.usage('[files or directories to diff]')
 def CMDformat(parser, args):
   """Runs auto-formatting tools (clang-format etc.) on the diff."""
-  CLANG_EXTS = ['.cc', '.cpp', '.h', '.m', '.mm', '.proto', '.java', '.js']
+  CLANG_EXTS = ['.cc', '.cpp', '.h', '.m', '.mm', '.proto', '.java']
   GN_EXTS = ['.gn', '.gni', '.typemap']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
@@ -5220,6 +5220,8 @@ def CMDformat(parser, args):
                     help='Don\'t modify any file on disk.')
   parser.add_option('--python', action='store_true',
                     help='Format python code with yapf (experimental).')
+  parser.add_option('--js', action='store_true',
+                    help='Format javascript code with clang-format.')
   parser.add_option('--diff', action='store_true',
                     help='Print diff to stdout rather than modifying files.')
   opts, args = parser.parse_args(args)
@@ -5254,6 +5256,9 @@ def CMDformat(parser, args):
   diff_files = diff_output.splitlines()
   # Filter out files deleted by this CL
   diff_files = [x for x in diff_files if os.path.isfile(x)]
+
+  if opts.js:
+    CLANG_EXTS.append('.js')
 
   clang_diff_files = [x for x in diff_files if MatchingFileType(x, CLANG_EXTS)]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
