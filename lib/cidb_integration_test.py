@@ -209,7 +209,7 @@ class CIDBAPITest(CIDBIntegrationTest):
       self.assertIn(k, build_status)
 
   def testBuildMessages(self):
-    db = self._PrepareFreshDatabase(47)
+    db = self._PrepareFreshDatabase(55)
     self.assertEqual([], db.GetBuildMessages(1))
     master_build_id = db.InsertBuild('builder name',
                                      constants.WATERFALL_TRYBOT,
@@ -293,9 +293,9 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema48(self):
-    """Run the CQ test with schema version 48."""
-    db = self._PrepareFreshDatabase(48)
+  def testCQWithSchema55(self):
+    """Run the CQ test with schema version 55."""
+    db = self._PrepareFreshDatabase(55)
     self._runCQTest(db)
 
   def _runCQTest(self, db):
@@ -868,7 +868,7 @@ class DataSeries1Test(CIDBIntegrationTest):
   """Simulate a single set of canary builds."""
 
   def runTest(self):
-    """Simulate a single set of canary builds with database schema v44."""
+    """Simulate a single set of canary builds with database schema v55."""
     metadatas = GetTestDataSeries(SERIES_1_TEST_DATA_PATH)
     self.assertEqual(len(metadatas), 18, 'Did not load expected amount of '
                                          'test data')
@@ -876,7 +876,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(47)
+    self._PrepareFreshDatabase(55)
 
     bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 

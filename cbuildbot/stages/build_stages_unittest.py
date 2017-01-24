@@ -307,6 +307,20 @@ class BuildPackagesStageTest(AllConfigsTestCase,
       self.assertIn('ec-firmware-version', board_metadata)
       self.assertEqual(board_metadata['ec-firmware-version'],
                        expected_ec_firmware_version)
+      self.assertFalse(self._run.attrs.metadata.GetDict()['unibuild'])
+
+  def testUnifiedBuilds(self):
+    """Test that unified builds are marked as such."""
+    def _HookRunCommandFdtget(rc):
+      rc.AddCmdResult(partial_mock.ListRegex('fdtget'), output='reef')
+
+    self._update_metadata = True
+    fdtget = os.path.join(self.build_root,
+                          'chroot/build/x86-generic/usr/bin/fdtget')
+    osutils.Touch(fdtget, makedirs=True)
+    self._mock_configurator = _HookRunCommandFdtget
+    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    self.assertTrue(self._run.attrs.metadata.GetDict()['unibuild'])
 
 
 class BuildImageStageMock(partial_mock.PartialMock):
@@ -361,6 +375,8 @@ class BuildImageStageTest(BuildPackagesStageTest):
     steps = [lambda tag=x: task(tag) for x in (release_tag,)]
     parallel.RunParallelSteps(steps)
 
+  def testUnifiedBuilds(self):
+    pass
 
 class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   """Test CleanUpStage."""

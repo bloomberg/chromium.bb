@@ -676,6 +676,14 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
     versions = ('Google_Nyan.5771.10.0', 'nyan_v1.1.1782-23f1337')
     self.assertEquals(result, versions)
 
+  def testGetModels(self):
+    self.rc.SetDefaultCmdResult(output='reef\npyro\nsnappy\n')
+    build_bin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
+                             'build', self._board, 'usr', 'bin')
+    osutils.Touch(os.path.join(build_bin, 'fdtget'), makedirs=True)
+    result = commands.GetModels(self._buildroot, self._board)
+    self.assertEquals(result, ['reef', 'pyro', 'snappy'])
+
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_env)."""
     self.testBuild(default=True)

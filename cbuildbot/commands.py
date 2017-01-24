@@ -555,6 +555,35 @@ def GetFirmwareVersions(buildroot, board):
           ec.group('version') if ec else None)
 
 
+def GetModels(buildroot, board):
+  """Obtain a list of models supported by a unified board
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board the build is for.
+
+  Returns:
+    A list of models supported by this board, if it is a unified build, or
+    None, if it is not.
+  """
+  fdtget = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
+                        cros_build_lib.GetSysroot(board).lstrip(os.path.sep),
+                        'usr', 'bin', 'fdtget')
+  if not os.path.isfile(fdtget):
+    return None
+  fdtget = path_util.ToChrootPath(fdtget)
+
+  args = ['-l', '/usr/share/chromeos-config/config.dtb', '/chromeos/models']
+  result = cros_build_lib.RunCommand([fdtget] + args, enter_chroot=True,
+                                     capture_output=True, log_output=True,
+                                     cwd=buildroot, error_code_ok=True)
+  if result.returncode:
+    # Show the output for debugging purposes.
+    if 'No such file or directory' not in result.error:
+      print('fdtget failed: %s\n' % result.error, file=sys.stderr)
+    return None
+  return result.output.strip().splitlines()
+
 def BuildImage(buildroot, board, images_to_build, version=None,
                builder_path=None, rootfs_verification=True, extra_env=None,
                disk_layout=None):
