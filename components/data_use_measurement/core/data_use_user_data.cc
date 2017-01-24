@@ -110,6 +110,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "SupervisedUser";
     case IMAGE_FETCHER_UNTAGGED:
       return "ImageFetcherUntagged";
+    case GAIA:
+      return "GAIA";
   }
   return "INVALID";
 }

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -183,6 +184,7 @@ void GaiaOAuthClient::Core::GetUserInfoImpl(
   request_->SetMaxRetriesOn5xx(max_retries);
   request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
+  MarkURLFetcherAsGaia(request_.get());
 
   // Fetchers are sometimes cancelled because a network change was detected,
   // especially at startup and after sign-in on ChromeOS. Retrying once should
@@ -222,6 +224,7 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   request_->SetMaxRetriesOn5xx(max_retries);
   request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
+  MarkURLFetcherAsGaia(request_.get());
   // See comment on SetAutomaticallyRetryOnNetworkChanges() above.
   request_->SetAutomaticallyRetryOnNetworkChanges(3);
   request_->Start();

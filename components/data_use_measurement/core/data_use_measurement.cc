@@ -13,6 +13,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
 #include "components/domain_reliability/uploader.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
@@ -104,6 +105,8 @@ void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
       // DataUseUserData::AttachToFetcher() cannot be called from domain
       // reliability, since it sets userdata on URLFetcher for its purposes.
       service_name = DataUseUserData::ServiceName::DOMAIN_RELIABILITY;
+    } else if (gaia::RequestOriginatedFromGaia(*request)) {
+      service_name = DataUseUserData::ServiceName::GAIA;
     }
 
     data_use_user_data = new DataUseUserData(service_name, CurrentAppState());

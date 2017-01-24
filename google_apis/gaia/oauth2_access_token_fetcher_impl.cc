@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
@@ -98,6 +99,7 @@ static std::unique_ptr<URLFetcher> CreateFetcher(
   std::unique_ptr<URLFetcher> result = net::URLFetcher::Create(
       0, url, empty_body ? URLFetcher::GET : URLFetcher::POST, delegate);
 
+  gaia::MarkURLFetcherAsGaia(result.get());
   result->SetRequestContext(getter);
   result->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                        net::LOAD_DO_NOT_SAVE_COOKIES);

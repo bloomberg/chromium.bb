@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -227,6 +228,7 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(const std::string& body,
       this);
   fetcher_->SetRequestContext(getter_);
   fetcher_->SetUploadData("application/x-www-form-urlencoded", body);
+  gaia::MarkURLFetcherAsGaia(fetcher_.get());
 
   VLOG(2) << "Gaia fetcher URL: " << gaia_gurl.spec();
   VLOG(2) << "Gaia fetcher headers: " << headers;

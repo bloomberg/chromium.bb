@@ -55,6 +55,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     NETWORK_TIME_TRACKER,
     SUPERVISED_USER,
     IMAGE_FETCHER_UNTAGGED,
+    GAIA,
   };
 
   // Data use broken by content type. This enum must remain synchronized
