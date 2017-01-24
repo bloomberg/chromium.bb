@@ -77,6 +77,12 @@ ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env,
 }
 
 // static
+jboolean GetSafeBrowsingEnabled(JNIEnv* env,
+                            const JavaParamRef<jclass>&) {
+  return AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled();
+}
+
+// static
 void SetSafeBrowsingEnabled(JNIEnv* env,
                             const JavaParamRef<jclass>&,
                             jboolean enable) {

@@ -7,7 +7,6 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import org.chromium.base.CommandLine;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.content.browser.AppWebMessagePortService;
@@ -35,7 +34,7 @@ public class AwBrowserContext {
         mSharedPreferences = sharedPreferences;
         mApplicationContext = applicationContext;
 
-        if (CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)) {
+        if (AwContentsStatics.getSafeBrowsingEnabled()) {
             initSafeBrowsingApiHandler();
         }
     }

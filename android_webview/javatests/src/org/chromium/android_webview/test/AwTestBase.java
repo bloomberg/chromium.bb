@@ -98,6 +98,7 @@ public class AwTestBase
         if (mBrowserContext != null) {
             throw new AndroidRuntimeException("There should only be one browser context.");
         }
+        getActivity(); // The Activity must be launched in order to load native code
         final InMemorySharedPreferences prefs = new InMemorySharedPreferences();
         final Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
         getInstrumentation().runOnMainSync(new Runnable() {
