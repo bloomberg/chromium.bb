@@ -60,9 +60,9 @@ class ReadingListDistillerPage : public dom_distiller::DistillerPageIOS {
   // triggers a navigation to it. Stop distillation of the page there as the new
   // load will trigger a new distillation.
   bool HandleGoogleCachedAMPPageJavaScriptResult(id result, id error);
-
-  // Waits a delay then calls DelayedOnLoadURLDone.
-  void WaitForPageLoadCompletion();
+  // Continue the distillation on the page that is currently loaded in
+  // |CurrentWebState()|.
+  void ContinuePageDistillation();
 
   // Continues distillation by calling superclass |OnLoadURLDone|.
   void DelayedOnLoadURLDone();
