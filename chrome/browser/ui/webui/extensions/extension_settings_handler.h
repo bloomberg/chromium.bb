@@ -11,7 +11,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 class ExtensionService;
-class GURL;
 
 namespace content {
 class WebUIDataSource;
@@ -38,9 +37,8 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
 
  private:
   // WebContentsObserver implementation.
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
