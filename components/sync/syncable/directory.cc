@@ -919,6 +919,7 @@ void Directory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
       base::StringPrintf("sync/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
 
   size_t kernel_memory_usage;
+  size_t model_type_entry_count[MODEL_TYPE_COUNT] = {0};
   {
     using base::trace_event::EstimateMemoryUsage;
 
@@ -938,6 +939,31 @@ void Directory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
         EstimateMemoryUsage(kernel_->metahandles_to_purge) +
         EstimateMemoryUsage(kernel_->persisted_info) +
         EstimateMemoryUsage(kernel_->cache_guid);
+
+    for (const auto& handle_and_kernel : kernel_->metahandles_map) {
+      const EntryKernel* kernel = handle_and_kernel.second.get();
+      // Counting logic from DirectoryBackingStore::LoadEntries()
+      ModelType model_type = kernel->GetModelType();
+      if (!IsRealDataType(model_type)) {
+        model_type = kernel->GetServerModelType();
+      }
+      ++model_type_entry_count[model_type];
+    }
+  }
+
+  // Similar to UploadModelTypeEntryCount()
+  for (size_t i = FIRST_REAL_MODEL_TYPE; i != MODEL_TYPE_COUNT; ++i) {
+    ModelType model_type = static_cast<ModelType>(i);
+    std::string notification_type;
+    if (RealModelTypeToNotificationType(model_type, &notification_type)) {
+      std::string dump_name =
+          base::StringPrintf("%s/model_type/%s", dump_name_base.c_str(),
+                             notification_type.c_str());
+      pmd->CreateAllocatorDump(dump_name)->AddScalar(
+          base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+          base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+          model_type_entry_count[i]);
+    }
   }
 
   {
