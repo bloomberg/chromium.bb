@@ -97,8 +97,8 @@ struct wl_display {
 	struct wl_list client_list;
 	struct wl_list protocol_loggers;
 
-	struct wl_signal destroy_signal;
-	struct wl_signal create_client_signal;
+	struct wl_priv_signal destroy_signal;
+	struct wl_priv_signal create_client_signal;
 
 	struct wl_array additional_shm_formats;
 
@@ -489,7 +489,7 @@ wl_client_create(struct wl_display *display, int fd)
 
 	wl_list_insert(display->client_list.prev, &client->link);
 
-	wl_signal_emit(&display->create_client_signal, client);
+	wl_priv_signal_emit(&display->create_client_signal, client);
 
 	return client;
 
@@ -942,8 +942,8 @@ wl_display_create(void)
 	wl_list_init(&display->registry_resource_list);
 	wl_list_init(&display->protocol_loggers);
 
-	wl_signal_init(&display->destroy_signal);
-	wl_signal_init(&display->create_client_signal);
+	wl_priv_signal_init(&display->destroy_signal);
+	wl_priv_signal_init(&display->create_client_signal);
 
 	display->id = 1;
 	display->serial = 0;
@@ -1008,7 +1008,7 @@ wl_display_destroy(struct wl_display *display)
 	struct wl_socket *s, *next;
 	struct wl_global *global, *gnext;
 
-	wl_signal_emit(&display->destroy_signal, display);
+	wl_priv_signal_emit(&display->destroy_signal, display);
 
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
 		wl_socket_destroy(s);
@@ -1478,7 +1478,7 @@ WL_EXPORT void
 wl_display_add_destroy_listener(struct wl_display *display,
 				struct wl_listener *listener)
 {
-	wl_signal_add(&display->destroy_signal, listener);
+	wl_priv_signal_add(&display->destroy_signal, listener);
 }
 
 /** Registers a listener for the client connection signal.
@@ -1496,14 +1496,14 @@ WL_EXPORT void
 wl_display_add_client_created_listener(struct wl_display *display,
 					struct wl_listener *listener)
 {
-	wl_signal_add(&display->create_client_signal, listener);
+	wl_priv_signal_add(&display->create_client_signal, listener);
 }
 
 WL_EXPORT struct wl_listener *
 wl_display_get_destroy_listener(struct wl_display *display,
 				wl_notify_func_t notify)
 {
-	return wl_signal_get(&display->destroy_signal, notify);
+	return wl_priv_signal_get(&display->destroy_signal, notify);
 }
 
 WL_EXPORT void
@@ -1810,6 +1810,97 @@ wl_client_for_each_resource(struct wl_client *client,
 	};
 
 	wl_map_for_each(&client->objects, resource_iterator_helper, &context);
+}
+
+/** Initialize a wl_priv_signal object
+ *
+ * wl_priv_signal is a safer implementation of a signal type, with the same API
+ * as wl_signal, but kept as a private utility of libwayland-server.
+ * It is safer because listeners can be removed from within wl_priv_signal_emit()
+ * without corrupting the signal's list.
+ *
+ * Before passing a wl_priv_signal object to any other function it must be
+ * initialized by useing wl_priv_signal_init().
+ *
+ * \memberof wl_priv_signal
+ */
+void
+wl_priv_signal_init(struct wl_priv_signal *signal)
+{
+	wl_list_init(&signal->listener_list);
+	wl_list_init(&signal->emit_list);
+}
+
+/** Add a listener to a signal
+ *
+ * The new listener will be called when calling wl_signal_emit(). If a listener is
+ * added to the signal while wl_signal_emit() is running it will be called from
+ * the next time wl_priv_signal_emit() is called.
+ * To remove a listener call wl_list_remove() on its link member.
+ *
+ * \memberof wl_priv_signal
+ */
+void
+wl_priv_signal_add(struct wl_priv_signal *signal, struct wl_listener *listener)
+{
+	wl_list_insert(signal->listener_list.prev, &listener->link);
+}
+
+/** Get a listener added to a signal
+ *
+ * Returns the listener added to the given \a signal and with the given
+ * \a notify function, or NULL if there isn't any.
+ * Calling this function from withing wl_priv_signal_emit() is safe and will
+ * return the correct value.
+ *
+ * \memberof wl_priv_signal
+ */
+struct wl_listener *
+wl_priv_signal_get(struct wl_priv_signal *signal, wl_notify_func_t notify)
+{
+	struct wl_listener *l;
+
+	wl_list_for_each(l, &signal->listener_list, link)
+		if (l->notify == notify)
+			return l;
+	wl_list_for_each(l, &signal->emit_list, link)
+		if (l->notify == notify)
+			return l;
+
+	return NULL;
+}
+
+/** Emit the signal, calling all the installed listeners
+ *
+ * Iterate over all the listeners added to this \a signal and call
+ * their \a notify function pointer, passing on the given \a data.
+ * Removing or adding a listener from within wl_priv_signal_emit()
+ * is safe.
+ */
+void
+wl_priv_signal_emit(struct wl_priv_signal *signal, void *data)
+{
+	struct wl_listener *l;
+	struct wl_list *pos;
+
+	wl_list_insert_list(&signal->emit_list, &signal->listener_list);
+	wl_list_init(&signal->listener_list);
+
+	/* Take every element out of the list and put them in a temporary list.
+	 * This way, the 'it' func can remove any element it wants from the list
+	 * without troubles, because we always get the first element, not the
+	 * one after the current, which may be invalid.
+	 * wl_list_for_each_safe tries to be safe but it fails: it works fine
+	 * if the current item is removed, but not if the next one is. */
+	while (!wl_list_empty(&signal->emit_list)) {
+		pos = signal->emit_list.next;
+		l = wl_container_of(pos, l, link);
+
+		wl_list_remove(pos);
+		wl_list_insert(&signal->listener_list, pos);
+
+		l->notify(l, data);
+	}
 }
 
 /** \cond */ /* Deprecated functions below. */

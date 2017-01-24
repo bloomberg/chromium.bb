@@ -35,6 +35,7 @@
 #define WL_HIDE_DEPRECATED 1
 
 #include "wayland-util.h"
+#include "wayland-server-core.h"
 
 /* Invalid memory address */
 #define WL_ARRAY_POISON_PTR (void *) 4
@@ -232,5 +233,22 @@ zalloc(size_t s)
 {
 	return calloc(1, s);
 }
+
+struct wl_priv_signal {
+	struct wl_list listener_list;
+	struct wl_list emit_list;
+};
+
+void
+wl_priv_signal_init(struct wl_priv_signal *signal);
+
+void
+wl_priv_signal_add(struct wl_priv_signal *signal, struct wl_listener *listener);
+
+struct wl_listener *
+wl_priv_signal_get(struct wl_priv_signal *signal, wl_notify_func_t notify);
+
+void
+wl_priv_signal_emit(struct wl_priv_signal *signal, void *data);
 
 #endif

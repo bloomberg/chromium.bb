@@ -159,6 +159,7 @@ built_test_programs =				\
 	socket-test				\
 	queue-test				\
 	signal-test				\
+	newsignal-test				\
 	resources-test				\
 	message-test				\
 	headers-test				\
@@ -226,6 +227,9 @@ queue_test_SOURCES = tests/queue-test.c
 queue_test_LDADD = libtest-runner.la
 signal_test_SOURCES = tests/signal-test.c
 signal_test_LDADD = libtest-runner.la
+# wayland-server.c is needed here to access wl_priv_* functions
+newsignal_test_SOURCES = tests/newsignal-test.c src/wayland-server.c
+newsignal_test_LDADD = libtest-runner.la
 resources_test_SOURCES = tests/resources-test.c
 resources_test_LDADD = libtest-runner.la
 message_test_SOURCES = tests/message-test.c
