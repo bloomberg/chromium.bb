@@ -254,14 +254,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // reached).
   virtual void StopArcInstance(const ArcCallback& callback) = 0;
 
-  // Deprecated. Use SetArcCpuRestriction() instead.
-  // TODO(yusukes): Remove the interface.
-  // Prioritizes the ARC instance by removing cgroups restrictions that
-  // session_manager applies to the instance by default. Upon completion,
-  // invokes |callback| with the result; true on success, false on failure.
-  // All calls after the first one will have no effect.
-  virtual void PrioritizeArcInstance(const ArcCallback& callback) = 0;
-
   // Adjusts the amount of CPU the ARC instance is allowed to use. When
   // |restriction_state| is CONTAINER_CPU_RESTRICTION_FOREGROUND the limit is
   // adjusted so ARC can use all the system's CPU if needed. When it is

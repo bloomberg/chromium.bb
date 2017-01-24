@@ -126,7 +126,6 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
                         bool disable_boot_completed_broadcast,
                         const StartArcInstanceCallback& callback) override;
   void StopArcInstance(const ArcCallback& callback) override;
-  void PrioritizeArcInstance(const ArcCallback& callback) override;
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
       const ArcCallback& callback) override;

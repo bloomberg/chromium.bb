@@ -69,7 +69,6 @@ class MockSessionManagerClient : public SessionManagerClient {
                     bool,
                     const StartArcInstanceCallback&));
   MOCK_METHOD1(StopArcInstance, void(const ArcCallback&));
-  MOCK_METHOD1(PrioritizeArcInstance, void(const ArcCallback&));
   MOCK_METHOD2(SetArcCpuRestriction,
                void(login_manager::ContainerCpuRestrictionState,
                     const ArcCallback&));
