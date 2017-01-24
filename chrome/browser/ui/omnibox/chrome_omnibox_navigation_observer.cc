@@ -13,6 +13,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -125,9 +126,11 @@ void ChromeOmniboxNavigationObserver::Observe(
   // DidStartNavigationToPendingEntry() will be called for this load as well.
 }
 
-void ChromeOmniboxNavigationObserver::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::ReloadType reload_type) {
+void ChromeOmniboxNavigationObserver::DidStartNavigation(
+      content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+    return;
+
   if (load_state_ == LOAD_NOT_SEEN) {
     load_state_ = LOAD_PENDING;
     if (fetcher_)
@@ -137,13 +140,12 @@ void ChromeOmniboxNavigationObserver::DidStartNavigationToPendingEntry(
   }
 }
 
-void ChromeOmniboxNavigationObserver::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  if ((load_state_ != LOAD_COMMITTED) && !render_frame_host->GetParent())
+void ChromeOmniboxNavigationObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if ((load_state_ != LOAD_COMMITTED) &&
+      navigation_handle->IsErrorPage() &&
+      navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSamePage())
     delete this;
 }
 
