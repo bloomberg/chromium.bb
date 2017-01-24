@@ -201,6 +201,12 @@ bool WebContentsDelegate::CheckMediaAccessPermission(
   return false;
 }
 
+std::string WebContentsDelegate::GetDefaultMediaDeviceID(
+    WebContents* web_contents,
+    MediaStreamType type) {
+  return std::string();
+}
+
 #if defined(OS_ANDROID)
 void WebContentsDelegate::RequestMediaDecodePermission(
     WebContents* web_contents,

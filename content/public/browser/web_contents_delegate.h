@@ -479,6 +479,12 @@ class CONTENT_EXPORT WebContentsDelegate {
                                           const GURL& security_origin,
                                           MediaStreamType type);
 
+  // Returns the ID of the default device for the given media device |type|.
+  // If the returned value is an empty string, it means that there is no
+  // default device for the given |type|.
+  virtual std::string GetDefaultMediaDeviceID(WebContents* web_contents,
+                                              MediaStreamType type);
+
 #if defined(OS_ANDROID)
   // Asks permission to decode media stream. After permission is determined,
   // |callback| will be called with the result.

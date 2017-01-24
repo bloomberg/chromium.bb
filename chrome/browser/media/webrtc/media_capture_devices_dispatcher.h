@@ -9,6 +9,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -108,6 +109,14 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
                                    bool audio,
                                    bool video,
                                    content::MediaStreamDevices* devices);
+
+  // Helper to get default device IDs. If the returned value is an empty string,
+  // it means that there is no default device for the given device |type|. The
+  // only supported |type| values are content::MEDIA_DEVICE_AUDIO_CAPTURE and
+  // content::MEDIA_DEVICE_VIDEO_CAPTURE.
+  // Must be called on the UI thread.
+  std::string GetDefaultDeviceIDForProfile(Profile* profile,
+                                           content::MediaStreamType type);
 
   // Helpers for picking particular requested devices, identified by raw id.
   // If the device requested is not available it will return NULL.

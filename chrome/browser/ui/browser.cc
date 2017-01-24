@@ -61,6 +61,7 @@
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
@@ -1827,6 +1828,14 @@ bool Browser::CheckMediaAccessPermission(content::WebContents* web_contents,
                                          const GURL& security_origin,
                                          content::MediaStreamType type) {
   return ::CheckMediaAccessPermission(web_contents, security_origin, type);
+}
+
+std::string Browser::GetDefaultMediaDeviceID(content::WebContents* web_contents,
+                                             content::MediaStreamType type) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->GetDefaultDeviceIDForProfile(profile, type);
 }
 
 bool Browser::RequestPpapiBrokerPermission(

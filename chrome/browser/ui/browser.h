@@ -687,6 +687,8 @@ class Browser : public TabStripModelObserver,
   bool CheckMediaAccessPermission(content::WebContents* web_contents,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
+  std::string GetDefaultMediaDeviceID(content::WebContents* web_contents,
+                                      content::MediaStreamType type) override;
   bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,

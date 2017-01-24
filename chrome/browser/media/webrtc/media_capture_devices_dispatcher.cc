@@ -234,6 +234,19 @@ void MediaCaptureDevicesDispatcher::GetDefaultDevicesForProfile(
   }
 }
 
+std::string MediaCaptureDevicesDispatcher::GetDefaultDeviceIDForProfile(
+    Profile* profile,
+    content::MediaStreamType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrefService* prefs = profile->GetPrefs();
+  if (type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
+    return prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+  else if (type == content::MEDIA_DEVICE_VIDEO_CAPTURE)
+    return prefs->GetString(prefs::kDefaultVideoCaptureDevice);
+  else
+    return std::string();
+}
+
 const content::MediaStreamDevice*
 MediaCaptureDevicesDispatcher::GetRequestedAudioDevice(
     const std::string& requested_audio_device_id) {
