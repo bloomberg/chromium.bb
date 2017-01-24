@@ -146,12 +146,8 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
   device()->gatt()->AddToActiveAlgorithms(resolver);
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
-
-  WTF::Optional<String> uuid = WTF::nullopt;
-  if (!characteristicsUUID.isEmpty())
-    uuid = characteristicsUUID;
   service->RemoteServiceGetCharacteristics(
-      m_service->instance_id, quantity, uuid,
+      m_service->instance_id, quantity, characteristicsUUID,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
                     wrapPersistent(this), m_service->instance_id, quantity,

@@ -348,7 +348,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptors(
 ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptorsImpl(
     ScriptState* scriptState,
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
-    const String& descriptor) {
+    const String& descriptorsUUID) {
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -369,11 +369,8 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptorsImpl(
   getGatt()->AddToActiveAlgorithms(resolver);
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
-  WTF::Optional<String> uuid = WTF::nullopt;
-  if (!descriptor.isEmpty())
-    uuid = descriptor;
   service->RemoteCharacteristicGetDescriptors(
-      m_characteristic->instance_id, quantity, uuid,
+      m_characteristic->instance_id, quantity, descriptorsUUID,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback,
                     wrapPersistent(this), m_characteristic->instance_id,

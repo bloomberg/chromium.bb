@@ -187,12 +187,8 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServicesImpl(
   AddToActiveAlgorithms(resolver);
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
-  WTF::Optional<String> uuid = WTF::nullopt;
-  if (!servicesUUID.isEmpty())
-    uuid = servicesUUID;
-
   service->RemoteServerGetPrimaryServices(
-      device()->id(), quantity, uuid,
+      device()->id(), quantity, servicesUUID,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
                     wrapPersistent(this), quantity, wrapPersistent(resolver))));

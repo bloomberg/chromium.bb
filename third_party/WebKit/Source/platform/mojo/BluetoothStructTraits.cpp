@@ -22,4 +22,13 @@ bool StructTraits<bluetooth::mojom::UUIDDataView, WTF::String>::Read(
   return data.ReadUuid(output);
 }
 
+// static
+void StructTraits<bluetooth::mojom::UUIDDataView, WTF::String>::SetToNull(
+    WTF::String* output) {
+  if (output->isNull())
+    return;
+  WTF::String result;
+  output->swap(result);
+}
+
 }  // namespace mojo
