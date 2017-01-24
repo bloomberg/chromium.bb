@@ -67,6 +67,7 @@ class TestingBrowserProcess : public BrowserProcess {
       override;
   metrics::MetricsService* metrics_service() override;
   rappor::RapporServiceImpl* rappor_service() override;
+  ukm::UkmService* ukm_service() override;
   IOThread* io_thread() override;
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
@@ -147,6 +148,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetNotificationPlatformBridge(
       std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
   void SetRapporServiceImpl(rappor::RapporServiceImpl* rappor_service);
+  void SetUkmService(ukm::UkmService* ukm_service);
   void SetShuttingDown(bool is_shutting_down);
   void ShutdownBrowserPolicyConnector();
 
@@ -193,6 +195,7 @@ class TestingBrowserProcess : public BrowserProcess {
   IOThread* io_thread_;
   net::URLRequestContextGetter* system_request_context_;
   rappor::RapporServiceImpl* rappor_service_;
+  ukm::UkmService* ukm_service_;
 
   std::unique_ptr<BrowserProcessPlatformPart> platform_part_;
 

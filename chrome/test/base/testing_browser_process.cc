@@ -117,6 +117,10 @@ rappor::RapporServiceImpl* TestingBrowserProcess::rappor_service() {
   return rappor_service_;
 }
 
+ukm::UkmService* TestingBrowserProcess::ukm_service() {
+  return ukm_service_;
+}
+
 IOThread* TestingBrowserProcess::io_thread() {
   return io_thread_;
 }
@@ -463,6 +467,10 @@ void TestingBrowserProcess::SetRulesetService(
 void TestingBrowserProcess::SetRapporServiceImpl(
     rappor::RapporServiceImpl* rappor_service) {
   rappor_service_ = rappor_service;
+}
+
+void TestingBrowserProcess::SetUkmService(ukm::UkmService* ukm_service) {
+  ukm_service_ = ukm_service;
 }
 
 void TestingBrowserProcess::SetShuttingDown(bool is_shutting_down) {

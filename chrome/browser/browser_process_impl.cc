@@ -541,6 +541,11 @@ rappor::RapporServiceImpl* BrowserProcessImpl::rappor_service() {
   return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
+ukm::UkmService* BrowserProcessImpl::ukm_service() {
+  DCHECK(CalledOnValidThread());
+  return GetMetricsServicesManager()->GetUkmService();
+}
+
 IOThread* BrowserProcessImpl::io_thread() {
   DCHECK(CalledOnValidThread());
   DCHECK(io_thread_.get());
