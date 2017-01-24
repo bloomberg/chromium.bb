@@ -78,10 +78,10 @@ struct wl_client {
 	uint32_t mask;
 	struct wl_list link;
 	struct wl_map objects;
-	struct wl_signal destroy_signal;
+	struct wl_priv_signal destroy_signal;
 	struct ucred ucred;
 	int error;
-	struct wl_signal resource_created_signal;
+	struct wl_priv_signal resource_created_signal;
 };
 
 struct wl_display {
@@ -460,7 +460,7 @@ wl_client_create(struct wl_display *display, int fd)
 	if (client == NULL)
 		return NULL;
 
-	wl_signal_init(&client->resource_created_signal);
+	wl_priv_signal_init(&client->resource_created_signal);
 	client->display = display;
 	client->source = wl_event_loop_add_fd(display->loop, fd,
 					      WL_EVENT_READABLE,
@@ -483,7 +483,7 @@ wl_client_create(struct wl_display *display, int fd)
 	if (wl_map_insert_at(&client->objects, 0, 0, NULL) < 0)
 		goto err_map;
 
-	wl_signal_init(&client->destroy_signal);
+	wl_priv_signal_init(&client->destroy_signal);
 	if (bind_display(client, display) < 0)
 		goto err_map;
 
@@ -745,14 +745,14 @@ WL_EXPORT void
 wl_client_add_destroy_listener(struct wl_client *client,
 			       struct wl_listener *listener)
 {
-	wl_signal_add(&client->destroy_signal, listener);
+	wl_priv_signal_add(&client->destroy_signal, listener);
 }
 
 WL_EXPORT struct wl_listener *
 wl_client_get_destroy_listener(struct wl_client *client,
 			       wl_notify_func_t notify)
 {
-	return wl_signal_get(&client->destroy_signal, notify);
+	return wl_priv_signal_get(&client->destroy_signal, notify);
 }
 
 WL_EXPORT void
@@ -760,7 +760,7 @@ wl_client_destroy(struct wl_client *client)
 {
 	uint32_t serial = 0;
 
-	wl_signal_emit(&client->destroy_signal, client);
+	wl_priv_signal_emit(&client->destroy_signal, client);
 
 	wl_client_flush(client);
 	wl_map_for_each(&client->objects, destroy_resource, &serial);
@@ -1575,7 +1575,7 @@ wl_resource_create(struct wl_client *client,
 		return NULL;
 	}
 
-	wl_signal_emit(&client->resource_created_signal, resource);
+	wl_priv_signal_emit(&client->resource_created_signal, resource);
 	return resource;
 }
 
@@ -1763,7 +1763,7 @@ WL_EXPORT void
 wl_client_add_resource_created_listener(struct wl_client *client,
 					struct wl_listener *listener)
 {
-	wl_signal_add(&client->resource_created_signal, listener);
+	wl_priv_signal_add(&client->resource_created_signal, listener);
 }
 
 struct wl_resource_iterator_context {
