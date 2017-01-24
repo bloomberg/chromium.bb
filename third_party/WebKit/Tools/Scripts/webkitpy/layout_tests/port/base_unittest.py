@@ -128,14 +128,14 @@ class PortTest(unittest.TestCase):
 
     def test_additional_platform_directory(self):
         port = self.make_port(port_name='foo')
-        port.default_baseline_search_path = lambda: ['LayoutTests/platform/foo']
+        port.FALLBACK_PATHS = {'': ['foo']}
         test_file = 'fast/test.html'
 
         # No additional platform directory
         self.assertEqual(
             port.expected_baselines(test_file, '.txt'),
             [(None, 'fast/test-expected.txt')])
-        self.assertEqual(port.baseline_version_dir(), 'LayoutTests/platform/foo')
+        self.assertEqual(port.baseline_version_dir(), '/mock-checkout/third_party/WebKit/LayoutTests/platform/foo')
 
         # Simple additional platform directory
         port._options.additional_platform_directory = ['/tmp/local-baselines']
@@ -155,7 +155,10 @@ class PortTest(unittest.TestCase):
         # Flag-specific baseline directory
         port._options.additional_platform_directory = []
         port._options.additional_driver_flag = ['--special-flag']
-        self.assertEqual(port.baseline_version_dir(), '/mock-checkout/third_party/WebKit/LayoutTests/flag-specific/special-flag')
+        self.assertEqual(port.baseline_search_path(), [
+            '/mock-checkout/third_party/WebKit/LayoutTests/flag-specific/special-flag/platform/foo',
+            '/mock-checkout/third_party/WebKit/LayoutTests/flag-specific/special-flag',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/foo'])
 
     def test_nonexistant_expectations(self):
         port = self.make_port(port_name='foo')

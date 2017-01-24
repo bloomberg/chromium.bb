@@ -1239,9 +1239,11 @@ class Port(object):
                 for flag in self.get_option('additional_driver_flag', [])]
 
     def _flag_specific_baseline_search_path(self):
-        # TODO(skobes): Baselines specific to both flag and platform?
-        return [self._filesystem.join(self.layout_tests_dir(), 'flag-specific', flag.lstrip('-'))
-                for flag in self.get_option('additional_driver_flag', [])]
+        flag_dirs = [self._filesystem.join(self.layout_tests_dir(), 'flag-specific', flag.lstrip('-'))
+                     for flag in self.get_option('additional_driver_flag', [])]
+        return [self._filesystem.join(flag_dir, 'platform', platform_dir)
+                for platform_dir in self.FALLBACK_PATHS[self.version()]
+                for flag_dir in flag_dirs] + flag_dirs
 
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.
