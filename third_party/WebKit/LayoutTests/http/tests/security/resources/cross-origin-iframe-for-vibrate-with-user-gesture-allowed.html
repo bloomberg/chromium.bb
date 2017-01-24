@@ -1,0 +1,60 @@
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script>
+        var test = async_test(
+            "Testing vibrate 3 times in a x-origin iframe: " +
+            " 1. blocked before user gesture;" +
+            " 2. succeed during the click event;" +
+            " 3. succeed after user click.");
+        function loaded()
+        {
+            document.getElementsByTagName('h4')[0].innerHTML = document.domain;
+        }
+
+        function startTest(event)
+        {
+            // A manual click should navigate.
+            if (window.eventSender) {
+                var button = document.getElementById("b");
+                eventSender.mouseMoveTo(button.offsetLeft + event.data.x + 2, button.offsetTop + event.data.y + 2);
+                test.step(function() {
+                  assert_false(
+                      navigator.vibrate(200),
+                      "1. Blocked vibrate before user gesture.");
+                });
+
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+            }
+        }
+
+        function performTestAfterClick()
+        {
+           test.step(function () {
+             assert_true(
+                 navigator.vibrate(200),
+                 "3. Vibrate after user gesture succeeded.");
+           });
+           test.done();
+        }
+
+        function performTestWithClick()
+        {
+          test.step(function () {
+            assert_true(
+                navigator.vibrate(200),
+                "2. Vibrate triggered by user gesture succeeded.");
+          });
+          window.requestAnimationFrame(performTestAfterClick);
+        }
+
+        window.addEventListener("message", startTest, false);
+    </script>
+</head>
+<body onload="loaded();">
+    <h4>DOMAIN</h4>
+    <button id="b" onclick="performTestWithClick();">Perform Test</button>
+</body>
+</html>

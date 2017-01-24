@@ -1,0 +1,14 @@
+CONSOLE ERROR: line 24: Blocked call to navigator.vibrate inside a cross-origin iframe because the frame has never been activated by the user: https://www.chromestatus.com/feature/5682658461876224.
+This tests that a cross-origin iframe with user gesture can vibrate.
+
+127.0.0.1
+
+
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+This is a testharness.js-based test.
+PASS Testing vibrate 3 times in a x-origin iframe:  1. blocked before user gesture; 2. succeed during the click event; 3. succeed after user click. 
+Harness: the test ran to completion.
+

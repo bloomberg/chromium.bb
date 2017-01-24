@@ -80,17 +80,21 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
     return false;
 
   // TODO(lunalu): When FeaturePolicy is ready, take out the check for the
-  // runtime flag.
-  if (!isFeatureEnabledInFrame(blink::kVibrateFeature, frame)) {
-    if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
-      frame->domWindow()->printErrorMessage(
-          "Navigator.vibrate() is not enabled in feature policy for this "
-          "frame.");
-    } else {
-      frame->domWindow()->printErrorMessage(
-          "A call of navigator.vibrate will be no-op inside cross-origin "
-          "iframes: https://www.chromestatus.com/feature/5682658461876224.");
-    }
+  // runtime flag. Please pay attention to the user gesture code below.
+  if (RuntimeEnabledFeatures::featurePolicyEnabled() &&
+      !isFeatureEnabledInFrame(blink::kVibrateFeature, frame)) {
+    frame->domWindow()->printErrorMessage(
+        "Navigator.vibrate() is not enabled in feature policy for this "
+        "frame.");
+    return false;
+  }
+
+  if (!RuntimeEnabledFeatures::featurePolicyEnabled() &&
+      frame->isCrossOriginSubframe() && !frame->hasReceivedUserGesture()) {
+    frame->domWindow()->printErrorMessage(
+        "Blocked call to navigator.vibrate inside a cross-origin iframe "
+        "because the frame has never been activated by the user: "
+        "https://www.chromestatus.com/feature/5682658461876224.");
     return false;
   }
 
