@@ -114,6 +114,10 @@ class ChromePasswordManagerClient
       content::RenderFrameHost* render_frame_host,
       password_manager::mojom::CredentialManagerRequest request);
 
+  // A helper method to determine whether a save/update bubble can be shown
+  // on this |url|.
+  static bool CanShowBubbleOnURL(const GURL& url);
+
  protected:
   // Callable for tests.
   ChromePasswordManagerClient(content::WebContents* web_contents,

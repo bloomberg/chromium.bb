@@ -382,8 +382,8 @@ void ManagePasswordsUIController::NeverSavePasswordInternal() {
 void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   // If we're not on a "webby" URL (e.g. "chrome://sign-in"), we shouldn't
   // display either the bubble or the icon.
-  if (!BrowsingDataHelper::IsWebScheme(
-          web_contents()->GetLastCommittedURL().scheme())) {
+  if (!ChromePasswordManagerClient::CanShowBubbleOnURL(
+          web_contents()->GetLastCommittedURL())) {
     passwords_data_.OnInactive();
   }
 

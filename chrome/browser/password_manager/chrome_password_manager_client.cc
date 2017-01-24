@@ -50,10 +50,12 @@
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -66,6 +68,10 @@
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
 #endif
 
 using password_manager::ContentPasswordManagerDriverFactory;
@@ -231,10 +237,8 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     bool update_password) {
   // Save password infobar and the password bubble prompts in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
-  if (!BrowsingDataHelper::IsWebScheme(
-      web_contents()->GetLastCommittedURL().scheme())) {
+  if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
     return false;
-  }
 
 #if !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
@@ -641,4 +645,15 @@ void ChromePasswordManagerClient::BindCredentialManager(
     return;
 
   instance->credential_manager_impl_.BindRequest(std::move(request));
+}
+
+// static
+bool ChromePasswordManagerClient::CanShowBubbleOnURL(const GURL& url) {
+  std::string scheme = url.scheme();
+  return (content::ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
+              scheme) &&
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+          scheme != extensions::kExtensionScheme &&
+#endif
+          scheme != content::kChromeDevToolsScheme);
 }
