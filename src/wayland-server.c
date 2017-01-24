@@ -168,6 +168,36 @@ log_closure(struct wl_resource *resource,
 	}
 }
 
+static bool
+verify_objects(struct wl_resource *resource, uint32_t opcode,
+	       union wl_argument *args)
+{
+	struct wl_object *object = &resource->object;
+	const char *signature = object->interface->events[opcode].signature;
+	struct argument_details arg;
+	struct wl_resource *res;
+	int count, i;
+
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
+		case 'n':
+		case 'o':
+			res = (struct wl_resource *) (args[i].o);
+			if (res && res->client != resource->client) {
+				wl_log("compositor bug: The compositor "
+				       "tried to use an object from one "
+				       "client in a '%s.%s' for a different "
+				       "client.\n", object->interface->name,
+				       object->interface->events[opcode].name);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 static void
 handle_array(struct wl_resource *resource, uint32_t opcode,
 	     union wl_argument *args,
@@ -178,6 +208,11 @@ handle_array(struct wl_resource *resource, uint32_t opcode,
 
 	if (resource->client->error)
 		return;
+
+	if (!verify_objects(resource, opcode, args)) {
+		resource->client->error = 1;
+		return;
+	}
 
 	closure = wl_closure_marshal(object, opcode, args,
 				     &object->interface->events[opcode]);
