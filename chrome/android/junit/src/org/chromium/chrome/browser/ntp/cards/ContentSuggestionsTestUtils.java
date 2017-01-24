@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /** Utilities to make testing content suggestions code easier. */
@@ -172,8 +171,7 @@ public final class ContentSuggestionsTestUtils {
 
     public static void bindViewHolders(InnerNode node, int startIndex, int endIndex) {
         for (int i = startIndex; i < endIndex; ++i) {
-            node.onBindViewHolder(
-                    makeViewHolder(node.getItemViewType(i)), i, Collections.emptyList());
+            node.onBindViewHolder(makeViewHolder(node.getItemViewType(i)), i);
         }
     }
 

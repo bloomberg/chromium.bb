@@ -919,6 +919,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/snackbar/undo/UndoBarController.java",
   "java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
   "java/src/org/chromium/chrome/browser/suggestions/ContentSuggestionsActivity.java",
+  "java/src/org/chromium/chrome/browser/suggestions/PartialUpdateId.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsNavigationDelegate.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsNavigationDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsUiDelegate.java",

@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.suggestions.PartialUpdateId;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
@@ -104,14 +105,12 @@ public class SuggestionsSection extends InnerNode {
         }
 
         @Override
-        public void onBindViewHolder(
-                NewTabPageViewHolder holder, int position, List<Object> payloads) {
+        public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
             checkIndex(position);
             assert holder instanceof SnippetArticleViewHolder;
             SnippetArticle suggestion = getSuggestionAt(position);
             mSuggestionsRanker.rankSuggestion(suggestion);
-            ((SnippetArticleViewHolder) holder)
-                    .onBindViewHolder(suggestion, mCategoryInfo, payloads);
+            ((SnippetArticleViewHolder) holder).onBindViewHolder(suggestion, mCategoryInfo);
         }
 
         @Override
@@ -190,7 +189,7 @@ public class SuggestionsSection extends InnerNode {
             article.setOfflinePageOfflineId(newId);
 
             if ((oldId == null) == (newId == null)) return;
-            notifyItemChanged(index, SnippetArticleViewHolder.PARTIAL_UPDATE_OFFLINE_ID);
+            notifyItemChanged(index, PartialUpdateId.OFFLINE_BADGE);
         }
     }
 
@@ -256,8 +255,8 @@ public class SuggestionsSection extends InnerNode {
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
-        super.onBindViewHolder(holder, position, payloads);
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+        super.onBindViewHolder(holder, position);
         childSeen(position);
     }
 

@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.ntp.cards;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
-import java.util.List;
-
 /**
  * A permanent leaf in the tree, i.e. a single item.
  * If the leaf is not to be a permanent member of the tree, see {@link OptionalLeaf} for an
@@ -28,7 +26,7 @@ public abstract class Leaf extends ChildNode {
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payload) {
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
         if (position != 0) throw new IndexOutOfBoundsException();
         onBindViewHolder(holder);
     }
@@ -53,7 +51,7 @@ public abstract class Leaf extends ChildNode {
     /**
      * Display the data for this item.
      * @param holder The view holder that should be updated.
-     * @see #onBindViewHolder(NewTabPageViewHolder, int, List)
+     * @see #onBindViewHolder(NewTabPageViewHolder, int)
      * @see android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder
      */
     protected abstract void onBindViewHolder(NewTabPageViewHolder holder);

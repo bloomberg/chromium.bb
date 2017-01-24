@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.ntp.cards;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
-import java.util.List;
-
 /**
  * A tree interface to allow the New Tab Page RecyclerView to delegate to other components.
  */
@@ -38,13 +36,12 @@ interface TreeNode {
     int getItemViewType(int position);
 
     /**
-     * Display the data at {@code position} under this subtree, making a partial update based on
-     * the {@code payload} data.
+     * Display the data at {@code position} under this subtree.
      * @param holder The view holder that should be updated.
      * @param position The position of the item under this subtree.
-     * @see android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(ViewHolder, int, List)
+     * @see android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(ViewHolder, int)
      */
-    void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads);
+    void onBindViewHolder(NewTabPageViewHolder holder, int position);
 
     /**
      * @param position The position to query.

@@ -71,10 +71,10 @@ public class InnerNode extends ChildNode implements NodeParent {
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
         int index = getChildIndexForPosition(position);
         mChildren.get(index).onBindViewHolder(
-                holder, position - getStartingOffsetForChildIndex(index), payloads);
+                holder, position - getStartingOffsetForChildIndex(index));
     }
 
     @Override

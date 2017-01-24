@@ -19,9 +19,9 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.PartialUpdateId;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -142,12 +142,29 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
-        mRoot.onBindViewHolder(holder, position, payloads);
+        if (payloads.isEmpty()) {
+            mRoot.onBindViewHolder(holder, position);
+            return;
+        }
+
+        for (Object payload : payloads) {
+            @PartialUpdateId
+            int updateId = (int) payload;
+
+            switch (updateId) {
+                case PartialUpdateId.OFFLINE_BADGE:
+                    assert holder instanceof SnippetArticleViewHolder;
+                    ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
+                    break;
+                default:
+                    assert false; // Unknown payload
+            }
+        }
     }
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        mRoot.onBindViewHolder(holder, position, Collections.emptyList());
+        mRoot.onBindViewHolder(holder, position);
     }
 
     @Override
