@@ -271,6 +271,17 @@ MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
 MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_pre_cq_build_count')
 
+# Sheriff-o-Matic tree which Chrome OS alerts are posted to.
+SOM_TREE = 'chromeos'
+
+# Sheriff-o-Matic severities (all severities must start at 1000 and should
+# be synchronized with:
+# https://cs.chromium.org/chromium/infra/go/src/infra/appengine/sheriff-o-matic/elements/
+SOM_SEVERITY_CQ_FAILURE = 1000
+SOM_SEVERITY_PFQ_FAILURE = 1001
+SOM_SEVERITY_CANARY_FAILURE = 1002
+SOM_SEVERITY_RELEASE_FAILURE = 1003
+
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
 # can pass to the target cbuildbot (since it may not have that
