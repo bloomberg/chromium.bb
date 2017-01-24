@@ -120,6 +120,11 @@ static const wedge_code_type wedge_codebook_16_heqw[16] = {
 };
 
 const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  { 0, NULL, NULL, 0, NULL },
+  { 0, NULL, NULL, 0, NULL },
+  { 0, NULL, NULL, 0, NULL },
+#endif
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
@@ -200,6 +205,11 @@ static const wedge_code_type wedge_codebook_32_heqw[32] = {
 };
 
 const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  { 0, NULL, NULL, 0, NULL },
+  { 0, NULL, NULL, 0, NULL },
+  { 0, NULL, NULL, 0, NULL },
+#endif
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
@@ -224,8 +234,8 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
 static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
                                              BLOCK_SIZE sb_type) {
   const uint8_t *master;
-  const int bh = 4 << b_height_log2_lookup[sb_type];
-  const int bw = 4 << b_width_log2_lookup[sb_type];
+  const int bh = block_size_high[sb_type];
+  const int bw = block_size_wide[sb_type];
   const wedge_code_type *a =
       wedge_params_lookup[sb_type].codebook + wedge_index;
   const int smoother = wedge_params_lookup[sb_type].smoother;
@@ -2314,6 +2324,7 @@ void av1_build_ncobmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_MOTION_VAR
 
 #if CONFIG_EXT_INTER
+/* clang-format off */
 #if CONFIG_EXT_PARTITION
 static const int ii_weights1d[MAX_SB_SIZE] = {
   102, 100, 97, 95, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 73, 71, 69, 68, 67,
@@ -2324,8 +2335,13 @@ static const int ii_weights1d[MAX_SB_SIZE] = {
   28,  28,  28, 28, 28, 28, 28, 28, 28, 28, 28, 27, 27, 27, 27, 27, 27, 27, 27,
   27,  27,  27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
 };
-static int ii_size_scales[BLOCK_SIZES] = { 32, 16, 16, 16, 8, 8, 8, 4,
-                                           4,  4,  2,  2,  2, 1, 1, 1 };
+static int ii_size_scales[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+    32, 32, 32,
+#endif
+    32, 16, 16, 16, 8, 8, 8, 4,
+    4,  4,  2,  2,  2, 1, 1, 1,
+};
 #else
 static const int ii_weights1d[MAX_SB_SIZE] = {
   102, 100, 97, 95, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 73, 71,
@@ -2333,8 +2349,14 @@ static const int ii_weights1d[MAX_SB_SIZE] = {
   51,  50,  49, 48, 47, 47, 46, 45, 45, 44, 43, 43, 42, 41, 41, 40,
   40,  39,  39, 38, 38, 38, 37, 37, 36, 36, 36, 35, 35, 35, 34, 34,
 };
-static int ii_size_scales[BLOCK_SIZES] = { 16, 8, 8, 8, 4, 4, 4,
-                                           2,  2, 2, 1, 1, 1 };
+static int ii_size_scales[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+    16, 16, 16,
+#endif
+    16, 8, 8, 8, 4, 4, 4,
+    2,  2, 2, 1, 1, 1,
+};
+/* clang-format on */
 #endif  // CONFIG_EXT_PARTITION
 
 static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
@@ -2574,12 +2596,12 @@ static void build_intra_predictors_for_interintra(MACROBLOCKD *xd, uint8_t *ref,
                                                   BLOCK_SIZE bsize, int plane) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
-  const int bwl = b_width_log2_lookup[plane_bsize];
-  const int bhl = b_height_log2_lookup[plane_bsize];
+  const int bwl = block_size_wide[plane_bsize];
+  const int bhl = block_size_high[plane_bsize];
   TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
 #if USE_RECT_INTERINTRA
-  const int pxbw = 4 << bwl;
-  const int pxbh = 4 << bhl;
+  const int pxbw = block_size_wide[plane_bsize];
+  const int pxbh = block_size_high[plane_bsize];
 #if CONFIG_AOM_HIGHBITDEPTH
   uint16_t tmp16[MAX_SB_SIZE];
 #endif
@@ -2614,7 +2636,8 @@ static void build_intra_predictors_for_interintra(MACROBLOCKD *xd, uint8_t *ref,
     }
 #endif
     av1_predict_intra_block(xd, pd->width, pd->height, max_tx_size, mode, src_2,
-                            ref_stride, dst_2, dst_stride, 0, 1 << bwl, plane);
+                            ref_stride, dst_2, dst_stride, 0,
+                            mi_size_wide[plane_bsize], plane);
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       uint16_t *src_216 = CONVERT_TO_SHORTPTR(src_2);
@@ -2649,7 +2672,8 @@ static void build_intra_predictors_for_interintra(MACROBLOCKD *xd, uint8_t *ref,
     }
 #endif
     av1_predict_intra_block(xd, pd->width, pd->height, max_tx_size, mode, src_2,
-                            ref_stride, dst_2, dst_stride, 1 << bhl, 0, plane);
+                            ref_stride, dst_2, dst_stride,
+                            mi_size_high[plane_bsize], 0, plane);
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       uint16_t *src_216 = CONVERT_TO_SHORTPTR(src_2);
@@ -2833,7 +2857,7 @@ void av1_build_inter_predictors_for_planes_single_buf(
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
 
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
+    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
       int x, y;
       assert(bsize == BLOCK_8X8);
       for (y = 0; y < num_4x4_h; ++y)
@@ -2919,7 +2943,7 @@ void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
     const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
     const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
 
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
+    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
       int x, y;
       assert(bsize == BLOCK_8X8);
       for (y = 0; y < num_4x4_h; ++y)
@@ -2928,8 +2952,8 @@ void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
               xd, plane, 4 * x, 4 * y, 4, 4, ext_dst0[plane],
               ext_dst_stride0[plane], ext_dst1[plane], ext_dst_stride1[plane]);
     } else {
-      const int bw = 4 * num_4x4_w;
-      const int bh = 4 * num_4x4_h;
+      const int bw = block_size_wide[plane_bsize];
+      const int bh = block_size_high[plane_bsize];
       build_wedge_inter_predictor_from_buf(
           xd, plane, 0, 0, bw, bh, ext_dst0[plane], ext_dst_stride0[plane],
           ext_dst1[plane], ext_dst_stride1[plane]);

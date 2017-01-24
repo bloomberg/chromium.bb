@@ -521,6 +521,9 @@ static const aom_prob
 #else  // !CONFIG_COMPOUND_SEGMENT
 static const aom_prob default_compound_type_probs[BLOCK_SIZES]
                                                  [COMPOUND_TYPES - 1] = {
+#if CONFIG_CB4X4
+                                                   { 208 }, { 208 }, { 208 },
+#endif
                                                    { 208 }, { 208 }, { 208 },
                                                    { 208 }, { 208 }, { 208 },
                                                    { 216 }, { 216 }, { 216 },
@@ -545,6 +548,9 @@ static const aom_prob
     };
 
 static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  208, 208, 208,
+#endif
   208, 208, 208, 208, 208, 208, 216, 216, 216, 224, 224, 224, 240,
 #if CONFIG_EXT_PARTITION
   208, 208, 208

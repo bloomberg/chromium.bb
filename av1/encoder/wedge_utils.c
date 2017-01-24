@@ -53,7 +53,7 @@ uint64_t av1_wedge_sse_from_residuals_c(const int16_t *r1, const int16_t *d,
                                         const uint8_t *m, int N) {
   uint64_t csse = 0;
   int i;
-  assert(N % 64 == 0);
+
   for (i = 0; i < N; i++) {
     int32_t t = MAX_MASK_VALUE * r1[i] + m[i] * d[i];
     t = clamp(t, INT16_MIN, INT16_MAX);
@@ -97,8 +97,6 @@ int av1_wedge_sign_from_residuals_c(const int16_t *ds, const uint8_t *m, int N,
                                     int64_t limit) {
   int64_t acc = 0;
 
-  assert(N % 64 == 0);
-
   do {
     acc += *ds++ * *m++;
   } while (--N);
@@ -121,8 +119,6 @@ int av1_wedge_sign_from_residuals_c(const int16_t *ds, const uint8_t *m, int N,
 void av1_wedge_compute_delta_squares_c(int16_t *d, const int16_t *a,
                                        const int16_t *b, int N) {
   int i;
-
-  assert(N % 64 == 0);
 
   for (i = 0; i < N; i++)
     d[i] = clamp(a[i] * a[i] - b[i] * b[i], INT16_MIN, INT16_MAX);

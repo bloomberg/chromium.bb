@@ -5391,8 +5391,12 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   DECLARE_ALIGNED(16, uint8_t, second_pred[MAX_SB_SQUARE]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
+#if CONFIG_EXT_INTER && CONFIG_CB4X4
+  (void)ref_mv_sub8x8;
+#endif
+
   for (ref = 0; ref < 2; ++ref) {
-#if CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER && !CONFIG_CB4X4
     if (bsize < BLOCK_8X8 && ref_mv_sub8x8 != NULL)
       ref_mv[ref].as_int = ref_mv_sub8x8[ref]->as_int;
     else
@@ -5569,13 +5573,13 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_REF_MV
     av1_set_mvcost(x, refs[ref], ref, mbmi->ref_mv_idx);
 #endif
-#if CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER && !CONFIG_CB4X4
     if (bsize >= BLOCK_8X8)
 #endif  // CONFIG_EXT_INTER
       *rate_mv += av1_mv_bit_cost(&frame_mv[refs[ref]].as_mv,
                                   &x->mbmi_ext->ref_mvs[refs[ref]][0].as_mv,
                                   x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-#if CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER && !CONFIG_CB4X4
     else
       *rate_mv += av1_mv_bit_cost(&frame_mv[refs[ref]].as_mv,
                                   &ref_mv_sub8x8[ref]->as_mv, x->nmvjointcost,
@@ -7146,8 +7150,8 @@ static int estimate_wedge_sign(const AV1_COMP *cpi, const MACROBLOCK *x,
   const uint8_t *src = p->src.buf;
   int src_stride = p->src.stride;
   const int f_index = bsize - BLOCK_8X8;
-  const int bw = 4 << (b_width_log2_lookup[bsize]);
-  const int bh = 4 << (b_height_log2_lookup[bsize]);
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
   uint32_t esq[2][4], var;
   int64_t tl, br;
 
@@ -7340,14 +7344,25 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
                 (int64_t)aom_sum_squares_i16(r1, N)) *
                (1 << WEDGE_WEIGHT_BITS) / 2;
 
-  av1_wedge_compute_delta_squares(ds, r0, r1, N);
+  if (N < 64)
+    av1_wedge_compute_delta_squares_c(ds, r0, r1, N);
+  else
+    av1_wedge_compute_delta_squares(ds, r0, r1, N);
 
   for (wedge_index = 0; wedge_index < wedge_types; ++wedge_index) {
     mask = av1_get_contiguous_soft_mask(wedge_index, 0, bsize);
-    wedge_sign = av1_wedge_sign_from_residuals(ds, mask, N, sign_limit);
+
+    // TODO(jingning): Make sse2 functions support N = 16 case
+    if (N < 64)
+      wedge_sign = av1_wedge_sign_from_residuals_c(ds, mask, N, sign_limit);
+    else
+      wedge_sign = av1_wedge_sign_from_residuals(ds, mask, N, sign_limit);
 
     mask = av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
-    sse = av1_wedge_sse_from_residuals(r1, d10, mask, N);
+    if (N < 64)
+      sse = av1_wedge_sse_from_residuals_c(r1, d10, mask, N);
+    else
+      sse = av1_wedge_sse_from_residuals(r1, d10, mask, N);
     sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
     model_rd_from_sse(cpi, xd, bsize, 0, sse, &rate, &dist);
@@ -7405,7 +7420,10 @@ static int64_t pick_wedge_fixed_sign(
 
   for (wedge_index = 0; wedge_index < wedge_types; ++wedge_index) {
     mask = av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
-    sse = av1_wedge_sse_from_residuals(r1, d10, mask, N);
+    if (N < 64)
+      sse = av1_wedge_sse_from_residuals_c(r1, d10, mask, N);
+    else
+      sse = av1_wedge_sse_from_residuals(r1, d10, mask, N);
     sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
     model_rd_from_sse(cpi, xd, bsize, 0, sse, &rate, &dist);

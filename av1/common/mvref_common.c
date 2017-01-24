@@ -731,13 +731,13 @@ void av1_update_mv_context(const MACROBLOCKD *xd, MODE_INFO *mi,
   const POSITION *const mv_ref_search = mv_ref_blocks[mi->mbmi.sb_type];
 #endif
   int context_counter = 0;
-  const int bw = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type] << 3;
-  const int bh = num_8x8_blocks_high_lookup[mi->mbmi.sb_type] << 3;
+  const int bw = block_size_wide[mi->mbmi.sb_type];
+  const int bh = block_size_high[mi->mbmi.sb_type];
   const TileInfo *const tile = &xd->tile;
 #if CONFIG_REF_MV
   POSITION mv_ref_search[MVREF_NEIGHBOURS];
-  const int num_8x8_blocks_wide = bw >> 3;
-  const int num_8x8_blocks_high = bh >> 3;
+  const int num_8x8_blocks_wide = mi_size_wide[mi->mbmi.sb_type];
+  const int num_8x8_blocks_high = mi_size_high[mi->mbmi.sb_type];
   mv_ref_search[0].row = num_8x8_blocks_high - 1;
   mv_ref_search[0].col = -1;
   mv_ref_search[1].row = -1;
