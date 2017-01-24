@@ -8,6 +8,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment;
+
 /**
  * A utility class for launching Chrome Settings.
  */
@@ -42,5 +45,18 @@ public class PreferencesLauncher {
             intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT, fragmentName);
         }
         return intent;
+    }
+
+    /**
+     * Creates an intent for launching clear browsing data, either on the top-level settings page or
+     * a specific subpage.
+     *
+     * @param context The current Activity, or an application context if no Activity is available.
+     */
+    public static Intent createIntentForClearBrowsingDataPage(Context context) {
+        String fragmentName = ClearBrowsingDataTabsFragment.isFeatureEnabled()
+                ? ClearBrowsingDataTabsFragment.class.getName()
+                : ClearBrowsingDataPreferences.class.getName();
+        return createIntentForSettingsPage(context, fragmentName);
     }
 }

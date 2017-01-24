@@ -41,6 +41,7 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
     private static final String PREF_PHYSICAL_WEB = "physical_web";
+    private static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
@@ -100,6 +101,11 @@ public class PrivacyPreferences extends PreferenceFragment
 
         if (!PhysicalWeb.featureIsEnabled()) {
             preferenceScreen.removePreference(findPreference(PREF_PHYSICAL_WEB));
+        }
+
+        if (ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
+            findPreference(PREF_CLEAR_BROWSING_DATA)
+                    .setFragment(ClearBrowsingDataTabsFragment.class.getName());
         }
 
         updateSummaries();

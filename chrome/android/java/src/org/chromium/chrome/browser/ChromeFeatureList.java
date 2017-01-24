@@ -60,6 +60,7 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_SINGLE_ACTIONS = "ContextualSearchSingleActions";
     /** Whether we show an important sites dialog in the "Clear Browsing Data" flow. */
     public static final String IMPORTANT_SITES_IN_CBD = "ImportantSitesInCBD";
+    public static final String TABS_IN_CBD = "TabsInCBD";
     public static final String IMPROVED_A2HS = "ImprovedA2HS";
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
     public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";

@@ -71,7 +71,12 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             mCheckbox.setOnPreferenceClickListener(this);
             mCheckbox.setEnabled(enabled);
             mCheckbox.setChecked(selected);
-            mCheckbox.setSummaryOff("");  // No summary when unchecked.
+
+            if (!ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
+                // No summary when unchecked. The redesigned basic and advanced
+                // CBD views will always show the checkbox summary.
+                mCheckbox.setSummaryOff("");
+            }
         }
 
         public void destroy() {
@@ -100,6 +105,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         @Override
         public void onCounterFinished(String result) {
             mCheckbox.setSummaryOn(result);
+            if (ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
+                mCheckbox.setSummaryOff(result);
+            }
             if (mShouldAnnounceCounterResult) {
                 mCheckbox.announceForAccessibility(result);
             }
@@ -277,7 +285,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * Returns the Array of dialog options. Options are displayed in the same
      * order as they appear in the array.
      */
-    private DialogOption[] getDialogOptions() {
+    protected DialogOption[] getDialogOptions() {
         return new DialogOption[] {
                 DialogOption.CLEAR_HISTORY,
                 DialogOption.CLEAR_COOKIES_AND_SITE_DATA,

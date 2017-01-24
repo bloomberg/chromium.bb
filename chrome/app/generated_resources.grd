@@ -8000,6 +8000,14 @@ the Bookmarks menu.">
       <message name="IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION" desc="Description of the flag that enables the data volume counters in the Clear browsing data dialog.">
         Shows data volume counters in the Clear browsing data dialog.
       </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_TABS_IN_CBD_NAME" desc="Name of the flag to enable a tabbed version of the Clear Browsing Data dialog in android." translateable="false">
+          Enable tabs for the Clear Browsing Data dialog.
+        </message>
+        <message name="IDS_FLAGS_TABS_IN_CBD_DESCRIPTION" desc="Description of the flag that enables a tabbed version of the Clear Browsing Data dialog." translateable="false">
+          Enables a basic and an advanced tab for the Clear Browsing Data dialog.
+        </message>
+      </if>
 
       <!-- Supervised User (Legacy and Accounts for Kids) Avatar Menu -->
       <message name="IDS_LEGACY_SUPERVISED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">
