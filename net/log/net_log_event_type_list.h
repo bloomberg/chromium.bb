@@ -1050,6 +1050,12 @@ EVENT_TYPE(HTTP_STREAM_JOB)
 //   }
 EVENT_TYPE(HTTP_STREAM_REQUEST_STARTED_JOB)
 
+// Logs the proxy server resolved for the job. The event parameters are:
+//   {
+//      "proxy_server": The proxy server resolved for the Job,
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_PROXY_SERVER_RESOLVED)
+
 // Identifies the NetLogSource() for the Job that fulfilled the Request.
 // The event parameters are:
 //   {
