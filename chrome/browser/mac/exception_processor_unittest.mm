@@ -154,6 +154,65 @@ TEST(ExceptionProcessorTest, ThrowAndCatchExceptionInRunLoop) {
               ".*TEST PASS.*");
 }
 
+void ThrowExceptionFromSelector() {
+  base::mac::DisableOSCrashDumps();
+  chrome::InstallObjcExceptionPreprocessor();
+
+  NSException* exception = [NSException exceptionWithName:@"ThrowFromSelector"
+                                                   reason:@""
+                                                 userInfo:nil];
+
+  [exception performSelector:@selector(raise) withObject:nil afterDelay:0.1];
+
+  [[NSRunLoop currentRunLoop] runUntilDate:
+      [NSDate dateWithTimeIntervalSinceNow:10]];
+
+  fprintf(stderr, "TEST FAILED\n");
+  exit(1);
+}
+
+TEST(ExceptionProcessorTest, ThrowExceptionFromSelector) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_DEATH(ThrowExceptionFromSelector(),
+               ".*FATAL:exception_processor\\.mm.*"
+               "Terminating from Objective-C exception:.*");
+}
+
+void ThrowInNotificationObserver() {
+  base::mac::DisableOSCrashDumps();
+  chrome::InstallObjcExceptionPreprocessor();
+
+  NSNotification* notification =
+      [NSNotification notificationWithName:@"TestExceptionInObserver"
+                                    object:nil];
+
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center addObserverForName:[notification name]
+                      object:nil
+                       queue:nil
+                  usingBlock:^(NSNotification*) {
+                    [NSException raise:@"ThrowInNotificationObserver"
+                                format:@""];
+                  }];
+
+  [center performSelector:@selector(postNotification:)
+               withObject:notification
+               afterDelay:0];
+
+  [[NSRunLoop currentRunLoop] runUntilDate:
+      [NSDate dateWithTimeIntervalSinceNow:10]];
+
+  fprintf(stderr, "TEST FAILED\n");
+  exit(1);
+}
+
+TEST(ExceptionProcessorTest, ThrowInNotificationObserver) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_DEATH(ThrowInNotificationObserver(),
+               ".*FATAL:exception_processor\\.mm.*"
+               "Terminating from Objective-C exception:.*");
+}
+
 void ThrowExceptionInRunLoopWithoutProcessor() {
   base::mac::DisableOSCrashDumps();
   chrome::UninstallObjcExceptionPreprocessor();
