@@ -412,7 +412,7 @@ void FrameFetchContext::dispatchWillSendRequest(
     frame()->loader().progress().willStartLoading(identifier,
                                                   request.priority());
   }
-  InspectorInstrumentation::willSendRequest(frame(), identifier,
+  InspectorInstrumentation::willSendRequest(frame()->document(), identifier,
                                             masterDocumentLoader(), request,
                                             redirectResponse, initiatorInfo);
   if (frame()->frameScheduler())
@@ -466,8 +466,8 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier,
                InspectorResourceFinishEvent::data(identifier, finishTime, false,
                                                   encodedDataLength));
   frame()->loader().progress().completeProgress(identifier);
-  InspectorInstrumentation::didFinishLoading(frame(), identifier, finishTime,
-                                             encodedDataLength);
+  InspectorInstrumentation::didFinishLoading(frame()->document(), identifier,
+                                             finishTime, encodedDataLength);
   if (frame()->frameScheduler())
     frame()->frameScheduler()->didStopLoading(identifier);
 }
@@ -480,7 +480,8 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier,
                InspectorResourceFinishEvent::data(identifier, 0, true,
                                                   encodedDataLength));
   frame()->loader().progress().completeProgress(identifier);
-  InspectorInstrumentation::didFailLoading(frame(), identifier, error);
+  InspectorInstrumentation::didFailLoading(frame()->document(), identifier,
+                                           error);
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!isInternalRequest)
@@ -1051,7 +1052,7 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
   frameLoaderClient()->dispatchDidReceiveResponse(response);
   DocumentLoader* documentLoader = masterDocumentLoader();
   InspectorInstrumentation::didReceiveResourceResponse(
-      frame(), identifier, documentLoader, response, resource);
+      frame()->document(), identifier, documentLoader, response, resource);
   // It is essential that inspector gets resource response BEFORE console.
   frame()->console().reportResourceResponseReceived(documentLoader, identifier,
                                                     response);

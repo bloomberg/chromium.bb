@@ -461,7 +461,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
           m_mainScriptLoader->getReferrerPolicy(), starterOrigin, workerClients,
           m_mainScriptLoader->responseAddressSpace(),
           m_mainScriptLoader->originTrialTokens(), std::move(workerSettings),
-          workerV8Settings);
+          workerV8Settings, true /* inspectorNetworkCapability */);
 
   m_mainScriptLoader.clear();
 

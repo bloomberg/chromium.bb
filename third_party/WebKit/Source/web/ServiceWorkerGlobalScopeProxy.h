@@ -112,6 +112,7 @@ class ServiceWorkerGlobalScopeProxy final
   void dispatchPaymentRequestEvent(int,
                                    const WebPaymentAppRequestData&) override;
   bool hasFetchEventHandler() override;
+  void onNavigationPreloadSent(int fetchEventID, const WebURL&) override;
   void onNavigationPreloadResponse(
       int fetchEventID,
       std::unique_ptr<WebURLResponse>,
@@ -119,6 +120,8 @@ class ServiceWorkerGlobalScopeProxy final
   void onNavigationPreloadError(
       int fetchEventID,
       std::unique_ptr<WebServiceWorkerError>) override;
+  void onNavigationPreloadCompleted(int fetchEventID,
+                                    int64_t encodedDataLength) override;
 
   // WorkerReportingProxy overrides:
   void countFeature(UseCounter::Feature) override;

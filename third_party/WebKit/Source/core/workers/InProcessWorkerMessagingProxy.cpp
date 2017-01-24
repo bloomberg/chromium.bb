@@ -110,7 +110,8 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(
           csp->headers().get(), referrerPolicy, starterOrigin,
           m_workerClients.release(), document->addressSpace(),
           OriginTrialContext::getTokens(document).get(),
-          std::move(workerSettings), workerV8Settings);
+          std::move(workerSettings), workerV8Settings,
+          false /* inspectorNetworkCapability */);
 
   initializeWorkerThread(std::move(startupData));
   workerInspectorProxy()->workerThreadCreated(document, workerThread(),

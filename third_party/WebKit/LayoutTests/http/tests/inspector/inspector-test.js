@@ -997,12 +997,12 @@ InspectorTest.preloadModule = function(moduleName)
 
 InspectorTest.isDedicatedWorker = function(target)
 {
-    return target && !target.hasBrowserCapability() && target.hasJSCapability() && !target.hasNetworkCapability() && !target.hasTargetCapability();
+    return target && !target.hasBrowserCapability() && target.hasJSCapability() && !target.hasTargetCapability();
 }
 
 InspectorTest.isServiceWorker = function(target)
 {
-    return target && !target.hasBrowserCapability() && !target.hasJSCapability() && target.hasNetworkCapability() && target.hasTargetCapability();
+    return target && !target.hasBrowserCapability() && !target.hasJSCapability() && target.hasTargetCapability();
 }
 
 InspectorTest.describeTargetType = function(target)

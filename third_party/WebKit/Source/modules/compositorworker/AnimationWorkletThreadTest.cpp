@@ -96,7 +96,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
         KURL(ParsedURLString, "http://fake.url/"), "fake user agent", "",
         nullptr, DontPauseWorkerGlobalScopeOnStart, nullptr, "",
         m_securityOrigin.get(), nullptr, WebAddressSpaceLocal, nullptr, nullptr,
-        WorkerV8Settings::Default()));
+        WorkerV8Settings::Default(), false /* inspectorNetworkCapability */));
     return thread;
   }
 

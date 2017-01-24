@@ -136,7 +136,8 @@ void didReceiveResourceResponseButCanceled(LocalFrame* frame,
                                            unsigned long identifier,
                                            const ResourceResponse& r,
                                            Resource* resource) {
-  didReceiveResourceResponse(frame, identifier, loader, r, resource);
+  didReceiveResourceResponse(frame->document(), identifier, loader, r,
+                             resource);
 }
 
 void canceledAfterReceivedResourceResponse(LocalFrame* frame,

@@ -775,7 +775,7 @@ void DocumentThreadableLoader::reportResponseReceived(
       InspectorReceiveResponseEvent::data(identifier, frame, response));
   DocumentLoader* loader = frame->loader().documentLoader();
   InspectorInstrumentation::didReceiveResourceResponse(
-      frame, identifier, loader, response, resource());
+      frame->document(), identifier, loader, response, resource());
   frame->console().reportResourceResponseReceived(loader, identifier, response);
 }
 
