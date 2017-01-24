@@ -53,7 +53,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChildProcessServiceImpl {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
     private static final String TAG = "ChildProcessService";
+
+    // Lock that protects the following members.
+    private final Object mBinderLock = new Object();
     private IChildProcessCallback mCallback;
+    // PID of the client of this service, set in bindToCaller().
+    private int mBoundCallingPid;
 
     // This is the native "Main" thread for the renderer / utility process.
     private Thread mMainThread;
@@ -97,10 +102,38 @@ public class ChildProcessServiceImpl {
     private final IChildProcessService.Stub mBinder = new IChildProcessService.Stub() {
         // NOTE: Implement any IChildProcessService methods here.
         @Override
+        public boolean bindToCaller() {
+            synchronized (mBinderLock) {
+                int callingPid = Binder.getCallingPid();
+                if (mBoundCallingPid == 0) {
+                    mBoundCallingPid = callingPid;
+                } else if (mBoundCallingPid != callingPid) {
+                    Log.e(TAG, "Service is already bound by pid %d, cannot bind for pid %d",
+                            mBoundCallingPid, callingPid);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
         public int setupConnection(Bundle args, IChildProcessCallback callback) {
-            mCallback = callback;
-            getServiceInfo(args);
-            return Process.myPid();
+            int callingPid = Binder.getCallingPid();
+            synchronized (mBinderLock) {
+                if (mBoundCallingPid != callingPid) {
+                    if (mBoundCallingPid == 0) {
+                        Log.e(TAG, "Service has not been bound with bindToCaller()");
+                    } else {
+                        Log.e(TAG, "Client pid %d does not match the bound pid %d", callingPid,
+                                mBoundCallingPid);
+                    }
+                    return -1;
+                }
+
+                mCallback = callback;
+                getServiceInfo(args);
+                return Process.myPid();
+            }
         }
 
         @Override

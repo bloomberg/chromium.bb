@@ -27,6 +27,24 @@ public interface ChildProcessConnection {
     }
 
     /**
+     * Used to notify the consumer about the process start. These callbacks will be invoked before
+     * the ConnectionCallbacks.
+     */
+    interface StartCallback {
+        /**
+         * Called when the child process has successfully started and is ready for connection
+         * setup.
+         */
+        void onChildStarted();
+
+        /**
+         * Called when the child process failed to start. This can happen if the process is already
+         * in use by another client.
+         */
+        void onChildStartFailed();
+    }
+
+    /**
      * Used to notify the consumer about the connection being established.
      */
     interface ConnectionCallback {
@@ -57,8 +75,9 @@ public interface ChildProcessConnection {
      * remainder later while reducing the connection setup latency.
      * @param commandLine (optional) command line for the child process. If omitted, then
      *                    the command line parameters must instead be passed to setupConnection().
+     * @param startCallback (optional) callback when the child process starts or fails to start.
      */
-    void start(String[] commandLine);
+    void start(String[] commandLine, StartCallback startCallback);
 
     /**
      * Setups the connection after it was started with start().

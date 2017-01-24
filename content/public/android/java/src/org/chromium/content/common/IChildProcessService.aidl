@@ -10,6 +10,11 @@ import android.view.Surface;
 import android.os.Bundle;
 
 interface IChildProcessService {
+  // On the first call to this method, the service will record the calling PID
+  // and return true. Subsequent calls will only return true if the calling PID
+  // is the same as the recorded one.
+  boolean bindToCaller();
+
   // Sets up the initial IPC channel and returns the pid of the child process.
   int setupConnection(in Bundle args, IChildProcessCallback callback);
 

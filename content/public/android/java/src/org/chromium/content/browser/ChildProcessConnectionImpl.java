@@ -97,6 +97,9 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         }
     }
 
+    // This is set in start() and is used in onServiceConnected().
+    private ChildProcessConnection.StartCallback mStartCallback;
+
     // This is set in setupConnection() and is later used in doConnectionSetupLocked(), after which
     // the variable is cleared. Therefore this is only valid while the connection is being set up.
     private ConnectionParams mConnectionParams;
@@ -168,6 +171,21 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                             "ChildProcessConnectionImpl.ChildServiceConnection.onServiceConnected");
                     mServiceConnectComplete = true;
                     mService = IChildProcessService.Stub.asInterface(service);
+
+                    boolean boundToUs = false;
+                    try {
+                        boundToUs = mService.bindToCaller();
+                    } catch (RemoteException ex) {
+                    }
+                    if (!boundToUs) {
+                        if (mStartCallback != null) {
+                            mStartCallback.onChildStartFailed();
+                        }
+                        return;
+                    } else if (mStartCallback != null) {
+                        mStartCallback.onChildStarted();
+                    }
+
                     // Run the setup if the connection parameters have already been provided. If
                     // not, doConnectionSetupLocked() will be called from setupConnection().
                     if (mConnectionParams != null) {
@@ -289,13 +307,15 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     }
 
     @Override
-    public void start(String[] commandLine) {
+    public void start(String[] commandLine, ChildProcessConnection.StartCallback startCallback) {
         try {
             TraceEvent.begin("ChildProcessConnectionImpl.start");
             synchronized (mLock) {
                 assert !ThreadUtils.runningOnUiThread();
                 assert mConnectionParams == null :
                         "setupConnection() called before start() in ChildProcessConnectionImpl.";
+
+                mStartCallback = startCallback;
 
                 if (!mInitialBinding.bind(commandLine)) {
                     Log.e(TAG, "Failed to establish the service connection.");

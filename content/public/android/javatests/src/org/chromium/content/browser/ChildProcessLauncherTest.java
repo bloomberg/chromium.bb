@@ -4,7 +4,15 @@
 
 package org.chromium.content.browser;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.test.filters.MediumTest;
 import android.test.InstrumentationTestCase;
@@ -17,7 +25,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.common.FileDescriptorInfo;
+import org.chromium.content_shell_apk.ChildProcessLauncherTestHelperService;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -294,6 +304,143 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // Verify that we can still allocate connection for a regular tab.
         ChildProcessConnectionImpl tabConnection = allocateConnection(appContext.getPackageName());
         assertNotNull(tabConnection);
+    }
+
+    /**
+     * Tests binding to the same sandboxed service process from multiple processes in the
+     * same package. This uses the ChildProcessLauncherTestHelperService declared in
+     * ContentShell.apk as a separate android:process to bind the first (slot 0) service. The
+     * instrumentation test then tries to bind the same slot, which fails, so the
+     * ChildProcessLauncher retries on a new connection.
+     */
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testBindServiceFromMultipleProcesses() throws RemoteException {
+        final Context context = getInstrumentation().getTargetContext();
+
+        // Start the Helper service.
+        class HelperConnection implements ServiceConnection {
+            Messenger mMessenger = null;
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                mMessenger = new Messenger(service);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {}
+        }
+        final HelperConnection serviceConn = new HelperConnection();
+
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName(context.getPackageName(),
+                context.getPackageName() + ".ChildProcessLauncherTestHelperService"));
+        assertTrue(context.bindService(intent, serviceConn, Context.BIND_AUTO_CREATE));
+
+        // Wait for the Helper service to connect.
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed to get helper service Messenger") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return serviceConn.mMessenger != null;
+                    }
+                });
+
+        assertNotNull(serviceConn.mMessenger);
+
+        class ReplyHandler implements Handler.Callback {
+            Message mMessage;
+
+            @Override
+            public boolean handleMessage(Message msg) {
+                // Copy the message so its contents outlive this Binder transaction.
+                mMessage = Message.obtain();
+                mMessage.copyFrom(msg);
+                return true;
+            }
+        }
+        final ReplyHandler replyHandler = new ReplyHandler();
+
+        // Send a message to the Helper and wait for the reply. This will cause the slot 0
+        // sandboxed service connection to be bound by a different PID (i.e., not this
+        // process).
+        Message msg = Message.obtain(null, ChildProcessLauncherTestHelperService.MSG_BIND_SERVICE);
+        msg.replyTo = new Messenger(new Handler(Looper.getMainLooper(), replyHandler));
+        serviceConn.mMessenger.send(msg);
+
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting for helper service reply") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return replyHandler.mMessage != null;
+                    }
+                });
+
+        // Verify that the Helper was able to launch the sandboxed service.
+        assertNotNull(replyHandler.mMessage);
+        assertEquals(ChildProcessLauncherTestHelperService.MSG_BIND_SERVICE_REPLY,
+                replyHandler.mMessage.what);
+        assertEquals("Connection slot from helper service is not 0", 0, replyHandler.mMessage.arg2);
+
+        final int helperConnPid = replyHandler.mMessage.arg1;
+        assertTrue(helperConnPid > 0);
+
+        // Launch a service from this process. Since slot 0 is already bound by the Helper, it
+        // will fail to start and the ChildProcessLauncher will retry.
+        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(context,
+                sProcessWaitArguments, new FileDescriptorInfo[0],
+                getDefaultChildProcessCreationParams(context.getPackageName()));
+
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting for instrumentation-bound service") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return conn.getService() != null;
+                    }
+                });
+
+        assertEquals(0, conn.getServiceNumber());
+        assertEquals(-1, conn.getPid());  // PID gets set to -1 if service is already bound.
+
+        final Map<Integer, ChildProcessConnection> serviceMap =
+                ChildProcessLauncher.getServiceMapForTesting();
+
+        // Wait for the retry to succeed.
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting for both child process services") {
+                    @Override
+                    public boolean isSatisfied() {
+                        boolean allChildrenConnected = serviceMap.size() == 2;
+                        for (ChildProcessConnection conn : serviceMap.values()) {
+                            allChildrenConnected &= conn.getService() != null;
+                        }
+                        return allChildrenConnected;
+                    }
+                });
+
+        assertEquals(2, serviceMap.size());
+
+        boolean testedSlot0 = false, testedSlot1 = false;
+
+        for (ChildProcessConnection childProcess : serviceMap.values()) {
+            if (childProcess == conn) {
+                assertFalse(testedSlot0);
+                assertEquals(0, childProcess.getServiceNumber());
+                assertEquals(-1, childProcess.getPid());
+                assertFalse(childProcess.getService().bindToCaller());
+                testedSlot0 = true;
+            } else {
+                assertFalse(testedSlot1);
+                assertEquals(1, childProcess.getServiceNumber());
+                assertTrue(childProcess.getPid() > 0);
+                assertTrue(childProcess.getPid() != helperConnPid);
+                assertTrue(childProcess.getService().bindToCaller());
+                testedSlot1 = true;
+            }
+        }
+
+        assertTrue(testedSlot0);
+        assertTrue(testedSlot1);
     }
 
     private ChildProcessConnectionImpl startConnection() {

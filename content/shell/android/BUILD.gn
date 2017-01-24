@@ -94,6 +94,7 @@ android_library("content_shell_apk_java") {
   android_manifest = content_shell_manifest
 
   java_files = [
+    "shell_apk/src/org/chromium/content_shell_apk/ChildProcessLauncherTestHelperService.java",
     "shell_apk/src/org/chromium/content_shell_apk/ContentShellActivity.java",
     "shell_apk/src/org/chromium/content_shell_apk/ContentShellApplication.java",
   ]
