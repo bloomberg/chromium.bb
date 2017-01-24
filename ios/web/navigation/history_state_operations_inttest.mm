@@ -69,6 +69,15 @@ class HistoryStateOperationsTest : public web::WebIntTest {
   // The URL of the window.location test page.
   const GURL& state_operations_url() { return state_operations_url_; }
 
+  // Reloads the page and waits for the load to finish.
+  void Reload() {
+    ExecuteBlockAndWaitForLoad(GetLastCommittedItem()->GetURL(), ^{
+      // TODO(crbug.com/677364): Use NavigationManager::Reload() once it no
+      // longer requires a web delegate.
+      web_state()->ExecuteJavaScript(ASCIIToUTF16("window.location.reload()"));
+    });
+  }
+
   // Sets the parameters to use for state operations on the test page.  This
   // function executes a script that populates JavaScript values on the test
   // page.  When the "push-state" or "replace-state" buttons are tapped, these
@@ -281,4 +290,21 @@ TEST_F(HistoryStateOperationsTest, StateReplacement) {
   // Verify that the forward navigation was not pruned.
   EXPECT_EQ(GetIndexOfNavigationItem(GetLastCommittedItem()) + 1,
             GetIndexOfNavigationItem(about_blank_item));
+}
+
+// Tests that the state object is reset to the correct value after reloading a
+// page whose state has been replaced.
+TEST_F(HistoryStateOperationsTest, StateReplacementReload) {
+  // Set up the state parameters and tap the replace state button.
+  std::string new_state("STATE OBJECT");
+  std::string empty_title;
+  GURL empty_url;
+  SetStateParams(new_state, empty_title, empty_url);
+  ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
+  // Reload the page and check that the state object is present.
+  Reload();
+  ASSERT_TRUE(IsOnLoadTextVisible());
+  base::test::ios::WaitUntilCondition(^bool {
+    return GetJavaScriptState() == new_state;
+  });
 }
