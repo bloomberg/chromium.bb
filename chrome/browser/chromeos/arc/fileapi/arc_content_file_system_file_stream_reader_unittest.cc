@@ -14,12 +14,13 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_file_system_instance.h"
+#include "components/arc/file_system/test/fake_arc_file_system_operation_runner.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace arc {
 
@@ -52,31 +53,34 @@ bool ReadData(ArcContentFileSystemFileStreamReader* reader,
   return true;
 }
 
-class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
+// TODO(crbug.com/683049): Use a generic FakeArcFileSystemOperationRunner.
+class ArcFileSystemOperationRunnerForTest
+    : public FakeArcFileSystemOperationRunner {
  public:
-  explicit ArcFileSystemInstanceTestImpl(const base::FilePath& file_path)
-      : file_path_(file_path) {}
+  ArcFileSystemOperationRunnerForTest(ArcBridgeService* bridge_service,
+                                      const base::FilePath& file_path)
+      : FakeArcFileSystemOperationRunner(bridge_service),
+        file_path_(file_path) {}
+  ~ArcFileSystemOperationRunnerForTest() override = default;
 
-  ~ArcFileSystemInstanceTestImpl() override = default;
-
-  void GetFileSize(const std::string& url,
+  void GetFileSize(const GURL& url,
                    const GetFileSizeCallback& callback) override {
-    EXPECT_EQ(kArcUrlFile, url);
+    EXPECT_EQ(kArcUrlFile, url.spec());
     base::File::Info info;
     EXPECT_TRUE(base::GetFileInfo(file_path_, &info));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, info.size));
   }
 
-  void OpenFileToRead(const std::string& url,
+  void OpenFileToRead(const GURL& url,
                       const OpenFileToReadCallback& callback) override {
     base::ScopedFD fd;
-    if (url == kArcUrlFile) {
+    if (url.spec() == kArcUrlFile) {
       fd = OpenRegularFileToRead();
-    } else if (url == kArcUrlPipe) {
+    } else if (url.spec() == kArcUrlPipe) {
       fd = OpenPipeToRead();
     } else {
-      LOG(ERROR) << "Unknown URL: " << url;
+      LOG(ERROR) << "Unknown URL: " << url.spec();
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, base::Passed(mojo::ScopedHandle())));
       return;
@@ -125,7 +129,7 @@ class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
 
   base::FilePath file_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcFileSystemInstanceTestImpl);
+  DISALLOW_COPY_AND_ASSIGN(ArcFileSystemOperationRunnerForTest);
 };
 
 class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
@@ -140,18 +144,16 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
     base::FilePath path = temp_dir_.GetPath().AppendASCII("bar");
     ASSERT_TRUE(base::WriteFile(path, kData, arraysize(kData)));
 
-    file_system_ = base::MakeUnique<ArcFileSystemInstanceTestImpl>(path);
-
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
-    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
-        file_system_.get());
+    arc_service_manager_->AddService(
+        base::MakeUnique<ArcFileSystemOperationRunnerForTest>(
+            arc_service_manager_->arc_bridge_service(), path));
   }
 
  private:
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
-  std::unique_ptr<ArcFileSystemInstanceTestImpl> file_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcContentFileSystemFileStreamReaderTest);
 };

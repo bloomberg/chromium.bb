@@ -13,6 +13,8 @@
 
 namespace arc {
 
+// A fake implementation which returns errors for all requests or just ignores
+// them.
 class FakeFileSystemInstance : public mojom::FileSystemInstance {
  public:
   FakeFileSystemInstance();

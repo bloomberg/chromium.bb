@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_deferred_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_service.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
@@ -100,6 +101,9 @@ void ArcServiceLauncher::Initialize() {
       base::MakeUnique<ArcClipboardBridge>(arc_bridge_service));
   arc_service_manager_->AddService(base::MakeUnique<ArcCrashCollectorBridge>(
       arc_bridge_service, arc_service_manager_->blocking_task_runner()));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcDeferredFileSystemOperationRunner>(
+          arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcDownloadsWatcherService>(arc_bridge_service));
   arc_service_manager_->AddService(

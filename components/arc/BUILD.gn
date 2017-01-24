@@ -21,7 +21,8 @@ static_library("arc") {
     "clipboard/arc_clipboard_bridge.h",
     "crash_collector/arc_crash_collector_bridge.cc",
     "crash_collector/arc_crash_collector_bridge.h",
-    "file_system/arc_file_system_observer.h",
+    "file_system/arc_file_system_operation_runner.cc",
+    "file_system/arc_file_system_operation_runner.h",
     "ime/arc_ime_bridge.h",
     "ime/arc_ime_bridge_impl.cc",
     "ime/arc_ime_bridge_impl.h",
@@ -165,6 +166,8 @@ mojom("arc_bindings") {
 static_library("arc_test_support") {
   testonly = true
   sources = [
+    "file_system/test/fake_arc_file_system_operation_runner.cc",
+    "file_system/test/fake_arc_file_system_operation_runner.h",
     "test/fake_app_instance.cc",
     "test/fake_app_instance.h",
     "test/fake_arc_session.cc",

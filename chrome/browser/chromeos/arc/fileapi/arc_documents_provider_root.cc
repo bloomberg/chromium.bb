@@ -14,8 +14,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_instance_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 #include "url/gurl.h"
@@ -116,7 +117,20 @@ void ArcDocumentsProviderRoot::GetFileInfoWithDocumentId(
     callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
     return;
   }
-  file_system_instance_util::GetDocumentOnIOThread(
+  // Specially handle the root directory since Files app does not update the
+  // list of file systems (left pane) until all volumes respond to GetMetadata
+  // requests to root directories.
+  if (document_id == root_document_id_) {
+    base::File::Info info;
+    info.size = -1;
+    info.is_directory = true;
+    info.is_symbolic_link = false;
+    info.last_modified = info.last_accessed = info.creation_time =
+        base::Time::UnixEpoch();  // arbitrary
+    callback.Run(base::File::FILE_OK, info);
+    return;
+  }
+  file_system_operation_runner_util::GetDocumentOnIOThread(
       authority_, document_id,
       base::Bind(&ArcDocumentsProviderRoot::GetFileInfoWithDocument,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -235,7 +249,7 @@ void ArcDocumentsProviderRoot::
 void ArcDocumentsProviderRoot::ReadDirectoryInternal(
     const std::string& document_id,
     const ReadDirectoryInternalCallback& callback) {
-  file_system_instance_util::GetChildDocumentsOnIOThread(
+  file_system_operation_runner_util::GetChildDocumentsOnIOThread(
       authority_, document_id,
       base::Bind(
           &ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments,

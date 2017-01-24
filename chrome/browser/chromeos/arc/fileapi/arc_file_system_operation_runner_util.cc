@@ -2,31 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_instance_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "base/optional.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/file_system/arc_file_system_operation_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
-
-#define GET_FILE_SYSTEM_INSTANCE(method_name)                      \
-  (arc::ArcServiceManager::Get()                                   \
-       ? ARC_GET_INSTANCE_FOR_METHOD(arc::ArcServiceManager::Get() \
-                                         ->arc_bridge_service()    \
-                                         ->file_system(),          \
-                                     method_name)                  \
-       : nullptr)
 
 using content::BrowserThread;
 
 namespace arc {
 
-namespace file_system_instance_util {
+namespace file_system_operation_runner_util {
 
 namespace {
 
@@ -38,70 +25,72 @@ void PostToIOThread(const base::Callback<void(T)>& callback, T result) {
       base::Bind(callback, base::Passed(std::move(result))));
 }
 
-void GetFileSizeOnUIThread(const GURL& arc_url,
+void GetFileSizeOnUIThread(const GURL& url,
                            const GetFileSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(GetFileSize);
-  if (!file_system_instance) {
+  auto* runner =
+      ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
+  if (!runner) {
     callback.Run(-1);
-    return;
   }
-  file_system_instance->GetFileSize(arc_url.spec(), callback);
+  runner->GetFileSize(url, callback);
 }
 
-void OpenFileToReadOnUIThread(const GURL& arc_url,
+void OpenFileToReadOnUIThread(const GURL& url,
                               const OpenFileToReadCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(OpenFileToRead);
-  if (!file_system_instance) {
+  auto* runner =
+      ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
+  if (!runner) {
     callback.Run(mojo::ScopedHandle());
     return;
   }
-  file_system_instance->OpenFileToRead(arc_url.spec(), callback);
+  runner->OpenFileToRead(url, callback);
 }
 
 void GetDocumentOnUIThread(const std::string& authority,
                            const std::string& document_id,
                            const GetDocumentCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(GetDocument);
-  if (!file_system_instance) {
+  auto* runner =
+      ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
+  if (!runner) {
     callback.Run(mojom::DocumentPtr());
     return;
   }
-  file_system_instance->GetDocument(authority, document_id, callback);
+  runner->GetDocument(authority, document_id, callback);
 }
 
 void GetChildDocumentsOnUIThread(const std::string& authority,
                                  const std::string& parent_document_id,
                                  const GetChildDocumentsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(GetChildDocuments);
-  if (!file_system_instance) {
+  auto* runner =
+      ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
+  if (!runner) {
     callback.Run(base::nullopt);
     return;
   }
-  file_system_instance->GetChildDocuments(authority, parent_document_id,
-                                          callback);
+  runner->GetChildDocuments(authority, parent_document_id, callback);
 }
 
 }  // namespace
 
-void GetFileSizeOnIOThread(const GURL& arc_url,
+void GetFileSizeOnIOThread(const GURL& url,
                            const GetFileSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetFileSizeOnUIThread, arc_url,
+      base::Bind(&GetFileSizeOnUIThread, url,
                  base::Bind(&PostToIOThread<int64_t>, callback)));
 }
 
-void OpenFileToReadOnIOThread(const GURL& arc_url,
+void OpenFileToReadOnIOThread(const GURL& url,
                               const OpenFileToReadCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OpenFileToReadOnUIThread, arc_url,
+      base::Bind(&OpenFileToReadOnUIThread, url,
                  base::Bind(&PostToIOThread<mojo::ScopedHandle>, callback)));
 }
 
@@ -128,6 +117,6 @@ void GetChildDocumentsOnIOThread(const std::string& authority,
               callback)));
 }
 
-}  // namespace file_system_instance_util
+}  // namespace file_system_operation_runner_util
 
 }  // namespace arc

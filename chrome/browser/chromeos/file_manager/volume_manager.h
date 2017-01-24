@@ -17,12 +17,12 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/file_system/arc_file_system_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/storage_monitor/removable_storage_observer.h"
@@ -214,7 +214,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 //   for a device).
 // - Mounted zip archives.
 class VolumeManager : public KeyedService,
-                      public arc::ArcFileSystemObserver,
+                      public arc::ArcSessionManager::Observer,
                       public drive::DriveIntegrationServiceObserver,
                       public chromeos::disks::DiskMountManager::Observer,
                       public chromeos::file_system_provider::Observer,
@@ -301,9 +301,8 @@ class VolumeManager : public KeyedService,
           file_system_info,
       base::File::Error error) override;
 
-  // arc::ArcFileSystemObserver overrides.
-  void OnFileSystemsReady() override;
-  void OnFileSystemsClosed() override;
+  // arc::ArcSessionManager::Observer overrides.
+  void OnArcOptInChanged(bool enabled) override;
 
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();
@@ -339,6 +338,7 @@ class VolumeManager : public KeyedService,
   GetMtpStorageInfoCallback get_mtp_storage_info_callback_;
   std::map<std::string, linked_ptr<Volume>> mounted_volumes_;
   std::unique_ptr<SnapshotManager> snapshot_manager_;
+  bool arc_volumes_mounted_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

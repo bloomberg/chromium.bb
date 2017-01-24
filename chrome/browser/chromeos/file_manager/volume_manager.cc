@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_service.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
@@ -34,7 +33,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/prefs/pref_service.h"
@@ -410,8 +408,8 @@ void VolumeManager::Initialize() {
   // Subscribe to ARC file system events.
   if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
       arc::ArcSessionManager::IsAllowedForProfile(profile_)) {
-    arc::ArcServiceManager::GetGlobalService<arc::ArcFileSystemService>()
-        ->AddObserver(this);
+    arc::ArcSessionManager::Get()->AddObserver(this);
+    OnArcOptInChanged(arc::ArcSessionManager::Get()->IsArcEnabled());
   }
 }
 
@@ -433,12 +431,11 @@ void VolumeManager::Shutdown() {
   // Unsubscribe from ARC file system events.
   if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
       arc::ArcSessionManager::IsAllowedForProfile(profile_)) {
-    arc::ArcFileSystemService* file_system_service =
-        arc::ArcServiceManager::GetGlobalService<arc::ArcFileSystemService>();
+    auto* session_manager = arc::ArcSessionManager::Get();
     // TODO(crbug.com/672829): We need nullptr check here because
-    // ArcServiceManager may or may not be alive at this point.
-    if (file_system_service)
-      file_system_service->RemoveObserver(this);
+    // ArcSessionManager may or may not be alive at this point.
+    if (session_manager)
+      session_manager->RemoveObserver(this);
   }
 }
 
@@ -744,36 +741,37 @@ void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void VolumeManager::OnFileSystemsReady() {
+void VolumeManager::OnArcOptInChanged(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(arc::kMediaViewFeature));
   DCHECK(arc::ArcSessionManager::IsAllowedForProfile(profile_));
 
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               linked_ptr<Volume>(
-                   Volume::CreateForMediaView(arc::kImagesRootDocumentId)));
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               linked_ptr<Volume>(
-                   Volume::CreateForMediaView(arc::kVideosRootDocumentId)));
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               linked_ptr<Volume>(
-                   Volume::CreateForMediaView(arc::kAudioRootDocumentId)));
-}
+  if (enabled == arc_volumes_mounted_)
+    return;
 
-void VolumeManager::OnFileSystemsClosed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(base::FeatureList::IsEnabled(arc::kMediaViewFeature));
-  DCHECK(arc::ArcSessionManager::IsAllowedForProfile(profile_));
-
-  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+  if (enabled) {
+    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                  linked_ptr<Volume>(
                      Volume::CreateForMediaView(arc::kImagesRootDocumentId)));
-  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                  linked_ptr<Volume>(
                      Volume::CreateForMediaView(arc::kVideosRootDocumentId)));
-  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                  linked_ptr<Volume>(
                      Volume::CreateForMediaView(arc::kAudioRootDocumentId)));
+  } else {
+    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                   linked_ptr<Volume>(
+                       Volume::CreateForMediaView(arc::kImagesRootDocumentId)));
+    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                   linked_ptr<Volume>(
+                       Volume::CreateForMediaView(arc::kVideosRootDocumentId)));
+    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                   linked_ptr<Volume>(
+                       Volume::CreateForMediaView(arc::kAudioRootDocumentId)));
+  }
+
+  arc_volumes_mounted_ = enabled;
 }
 
 void VolumeManager::OnExternalStorageDisabledChanged() {

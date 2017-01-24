@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_instance_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/base/io_buffer.h"
@@ -62,7 +62,7 @@ int ArcContentFileSystemFileStreamReader::Read(
     ReadInternal(buffer, buffer_length, callback);
     return net::ERR_IO_PENDING;
   }
-  file_system_instance_util::OpenFileToReadOnIOThread(
+  file_system_operation_runner_util::OpenFileToReadOnIOThread(
       arc_url_,
       base::Bind(&ArcContentFileSystemFileStreamReader::OnOpenFile,
                  weak_ptr_factory_.GetWeakPtr(), make_scoped_refptr(buffer),
@@ -73,7 +73,7 @@ int ArcContentFileSystemFileStreamReader::Read(
 int64_t ArcContentFileSystemFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  file_system_instance_util::GetFileSizeOnIOThread(
+  file_system_operation_runner_util::GetFileSizeOnIOThread(
       arc_url_, base::Bind(&ArcContentFileSystemFileStreamReader::OnGetFileSize,
                            weak_ptr_factory_.GetWeakPtr(), callback));
   return net::ERR_IO_PENDING;

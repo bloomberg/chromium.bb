@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_INSTANCE_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_INSTANCE_UTIL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_UTIL_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_UTIL_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 class GURL;
 
 namespace arc {
-namespace file_system_instance_util {
+namespace file_system_operation_runner_util {
 
 using GetFileSizeCallback = mojom::FileSystemInstance::GetFileSizeCallback;
 using OpenFileToReadCallback =
@@ -21,11 +21,11 @@ using GetDocumentCallback = mojom::FileSystemInstance::GetDocumentCallback;
 using GetChildDocumentsCallback =
     mojom::FileSystemInstance::GetChildDocumentsCallback;
 
-// Utility functions to post a task to run FileSystemInstance methods.
+// Utility functions to post a task to run ArcFileSystemOperationRunner methods.
 // These functions must be called on the IO thread.
-void GetFileSizeOnIOThread(const GURL& arc_url,
+void GetFileSizeOnIOThread(const GURL& url,
                            const GetFileSizeCallback& callback);
-void OpenFileToReadOnIOThread(const GURL& arc_url,
+void OpenFileToReadOnIOThread(const GURL& url,
                               const OpenFileToReadCallback& callback);
 void GetDocumentOnIOThread(const std::string& authority,
                            const std::string& document_id,
@@ -34,7 +34,7 @@ void GetChildDocumentsOnIOThread(const std::string& authority,
                                  const std::string& parent_document_id,
                                  const GetChildDocumentsCallback& callback);
 
-}  // namespace file_system_instance_util
+}  // namespace file_system_operation_runner_util
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_INSTANCE_UTIL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_UTIL_H_

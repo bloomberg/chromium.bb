@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_file_system_instance.h"
+#include "components/arc/file_system/test/fake_arc_file_system_operation_runner.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +49,10 @@ struct DocumentSpec {
 //     dup.mp4       video/mp4   dup3-id
 //     dup.mp4       video/mp4   dup4-id
 constexpr char kAuthority[] = "org.chromium.test";
-constexpr DocumentSpec kRootSpec = {"root-id", "(root)",
-                                    kAndroidDirectoryMimeType, -1, 11};
+// NOTE: ArcDocumentsProviderRoot::GetFileInfo() returns hard-coded info
+// for root documents.
+constexpr DocumentSpec kRootSpec = {"root-id", nullptr /* not used */,
+                                    kAndroidDirectoryMimeType, -1, 0};
 constexpr DocumentSpec kDirSpec = {"dir-id", "dir", kAndroidDirectoryMimeType,
                                    -1, 22};
 constexpr DocumentSpec kPhotoSpec = {"photo-id", "photo.jpg", "image/jpeg", 3,
@@ -77,8 +79,14 @@ mojom::DocumentPtr MakeDocument(const DocumentSpec& spec) {
   return document;
 }
 
-class FileSystemInstanceTestImpl : public FakeFileSystemInstance {
+// TODO(crbug.com/683049): Use a generic FakeArcFileSystemOperationRunner.
+class ArcFileSystemOperationRunnerForTest
+    : public FakeArcFileSystemOperationRunner {
  public:
+  explicit ArcFileSystemOperationRunnerForTest(ArcBridgeService* bridge_service)
+      : FakeArcFileSystemOperationRunner(bridge_service) {}
+  ~ArcFileSystemOperationRunnerForTest() override = default;
+
   void GetChildDocuments(const std::string& authority,
                          const std::string& document_id,
                          const GetChildDocumentsCallback& callback) override {
@@ -141,15 +149,15 @@ class ArcDocumentsProviderRootTest : public testing::Test {
         root_(
             base::MakeUnique<ArcDocumentsProviderRoot>(kAuthority,
                                                        kRootSpec.document_id)) {
-    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
-        &file_system_);
+    arc_service_manager_->AddService(
+        base::MakeUnique<ArcFileSystemOperationRunnerForTest>(
+            arc_service_manager_->arc_bridge_service()));
   }
 
   ~ArcDocumentsProviderRootTest() override = default;
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  FileSystemInstanceTestImpl file_system_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcDocumentsProviderRoot> root_;
 

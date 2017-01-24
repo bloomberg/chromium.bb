@@ -14,10 +14,11 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_file_system_instance.h"
+#include "components/arc/file_system/test/fake_arc_file_system_operation_runner.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace arc {
 
@@ -26,11 +27,17 @@ namespace {
 constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
 constexpr int64_t kSize = 123456;
 
-class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
+// TODO(crbug.com/683049): Use a generic FakeArcFileSystemOperationRunner.
+class ArcFileSystemOperationRunnerForTest
+    : public FakeArcFileSystemOperationRunner {
  public:
-  void GetFileSize(const std::string& url,
+  explicit ArcFileSystemOperationRunnerForTest(ArcBridgeService* bridge_service)
+      : FakeArcFileSystemOperationRunner(bridge_service) {}
+  ~ArcFileSystemOperationRunnerForTest() override = default;
+
+  void GetFileSize(const GURL& url,
                    const GetFileSizeCallback& callback) override {
-    EXPECT_EQ(kArcUrl, url);
+    EXPECT_EQ(kArcUrl, url.spec());
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, kSize));
   }
@@ -43,8 +50,9 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
 
   void SetUp() override {
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
-    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
-        &file_system_);
+    arc_service_manager_->AddService(
+        base::MakeUnique<ArcFileSystemOperationRunnerForTest>(
+            arc_service_manager_->arc_bridge_service()));
   }
 
  protected:
@@ -62,7 +70,6 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
-  ArcFileSystemInstanceTestImpl file_system_;
   ArcContentFileSystemAsyncFileUtil async_file_util_;
 
  private:
