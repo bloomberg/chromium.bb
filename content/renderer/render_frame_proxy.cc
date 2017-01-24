@@ -60,6 +60,7 @@ blink::WebParsedFeaturePolicy ToWebParsedFeaturePolicy(
     std::vector<blink::WebSecurityOrigin> web_origins;
     for (const url::Origin& origin : whitelist.origins)
       web_origins.push_back(origin);
+    web_whitelist.origins = web_origins;
     result.push_back(web_whitelist);
   }
   return result;
