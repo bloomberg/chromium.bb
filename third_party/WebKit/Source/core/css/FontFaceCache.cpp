@@ -40,6 +40,8 @@
 
 namespace blink {
 
+static unsigned s_version = 0;
+
 FontFaceCache::FontFaceCache() : m_version(0) {}
 
 void FontFaceCache::add(CSSFontSelector* cssFontSelector,
@@ -71,7 +73,7 @@ void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector,
     m_cssConnectedFontFaces.add(fontFace);
 
   m_fonts.remove(fontFace->family());
-  ++m_version;
+  incrementVersion();
 }
 
 void FontFaceCache::remove(const StyleRuleFontFace* fontFaceRule) {
@@ -105,7 +107,7 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected) {
   if (cssConnected)
     m_cssConnectedFontFaces.remove(fontFace);
 
-  ++m_version;
+  incrementVersion();
 }
 
 void FontFaceCache::clearCSSConnected() {
@@ -122,7 +124,11 @@ void FontFaceCache::clearAll() {
   m_fonts.clear();
   m_styleRuleToFontFace.clear();
   m_cssConnectedFontFaces.clear();
-  ++m_version;
+  incrementVersion();
+}
+
+void FontFaceCache::incrementVersion() {
+  m_version = ++s_version;
 }
 
 CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,

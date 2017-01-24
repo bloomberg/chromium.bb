@@ -65,7 +65,7 @@ class FontFaceCache final {
   }
 
   unsigned version() const { return m_version; }
-  void incrementVersion() { ++m_version; }
+  void incrementVersion();
 
   DECLARE_TRACE();
 
