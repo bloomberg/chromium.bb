@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/webrtc_audio_sink_adapter.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_stub.h"
@@ -13,20 +14,17 @@ namespace protocol {
 
 WebrtcAudioSinkAdapter::WebrtcAudioSinkAdapter(
     scoped_refptr<webrtc::MediaStreamInterface> stream,
-    base::WeakPtr<AudioStub> audio_stub) {
-  audio_stub_ = audio_stub;
-
-  media_stream_ = std::move(stream);
-
+    base::WeakPtr<AudioStub> audio_stub)
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      audio_stub_(audio_stub),
+      media_stream_(std::move(stream)) {
   webrtc::AudioTrackVector audio_tracks = media_stream_->GetAudioTracks();
 
   // Caller must verify that the media stream contains audio tracks.
   DCHECK(!audio_tracks.empty());
-
   if (audio_tracks.size() > 1U) {
     LOG(WARNING) << "Received media stream with multiple audio tracks.";
   }
-
   audio_track_ = audio_tracks[0];
   audio_track_->GetSource()->AddSink(this);
 }
@@ -40,9 +38,6 @@ void WebrtcAudioSinkAdapter::OnData(const void* audio_data,
                                     int sample_rate,
                                     size_t number_of_channels,
                                     size_t number_of_frames) {
-  if (!audio_stub_)
-    return;
-
   std::unique_ptr<AudioPacket> audio_packet(new AudioPacket());
   audio_packet->set_encoding(AudioPacket::ENCODING_RAW);
 
@@ -73,7 +68,10 @@ void WebrtcAudioSinkAdapter::OnData(const void* audio_data,
   size_t data_size =
       number_of_frames * number_of_channels * (bits_per_sample / 8);
   audio_packet->add_data(reinterpret_cast<const char*>(audio_data), data_size);
-  audio_stub_->ProcessAudioPacket(std::move(audio_packet), base::Closure());
+
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AudioStub::ProcessAudioPacket, audio_stub_,
+                            base::Passed(&audio_packet), base::Closure()));
 }
 
 }  // namespace protocol
