@@ -42,12 +42,12 @@ function test()
 
         function testGetterAndSetter(next)
         {
-            obj1.getOwnProperties(dumpProperties.bind(this, next));
+            obj1.getOwnProperties(false, dumpProperties.bind(this, next));
         },
 
         function testGetterOnly(next)
         {
-            obj2.getOwnProperties(dumpProperties.bind(this, next));
+            obj2.getOwnProperties(false, dumpProperties.bind(this, next));
         }
     ]);
 

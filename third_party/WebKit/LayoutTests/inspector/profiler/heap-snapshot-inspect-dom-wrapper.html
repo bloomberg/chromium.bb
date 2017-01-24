@@ -69,7 +69,7 @@ function test()
             InspectorTest.addResult("PASS: got at least one HTMLBodyElement wrapper");
 
             for (var i = 0; i < remoteObjects.length; i++)
-                remoteObjects[i].getOwnProperties(didGetOwnProperties);
+                remoteObjects[i].getOwnProperties(false, didGetOwnProperties);
         }
 
         var didGetOwnPropertiesCount = 0;

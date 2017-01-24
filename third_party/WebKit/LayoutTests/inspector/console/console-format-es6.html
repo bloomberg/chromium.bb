@@ -48,6 +48,7 @@ function onload()
     bigmap.set(null, null);
     bigmap.set(42, 42);
     bigmap.set({foo:"from"}, {foo:"to"});
+    bigmap.set(["from"], ["to"]);
 
     var p = Promise.reject(-0);
     p.catch(function() {});

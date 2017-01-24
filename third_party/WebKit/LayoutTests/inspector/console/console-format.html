@@ -18,6 +18,7 @@ function onload()
     var foo = { foo: "foo"};
     var bar = { bar: "bar" };
     bar.__proto__ = foo;
+    var singleArray = ["test"];
     var array = ["test", "test2"]; array.length = 10;
     array.foo = {};
     array[4] = "test4";
@@ -67,6 +68,7 @@ function onload()
     var arrayLikeFunction = function( /**/ foo/**/, /*/**/bar,
     /**/baz) {};
     arrayLikeFunction.splice = function() {};
+    var tinyTypedArray = new Uint8Array([3]);
     var smallTypedArray = new Uint8Array(new ArrayBuffer(400));
     smallTypedArray["foo"] = "bar";
     var bigTypedArray = new Uint8Array(new ArrayBuffer(400 * 1000 * 1000));
@@ -85,7 +87,7 @@ function onload()
         NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
         objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype, arrayLikeFunction,
         new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode, domException(),
-        smallTypedArray, bigTypedArray, instanceWithLongClassName, bigArray
+        tinyTypedArray, smallTypedArray, bigTypedArray, instanceWithLongClassName, bigArray, singleArray
     ];
 
     runTest();

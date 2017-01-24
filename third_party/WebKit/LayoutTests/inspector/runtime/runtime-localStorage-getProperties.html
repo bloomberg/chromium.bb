@@ -12,7 +12,7 @@ function test()
     function step1(error, result, exceptionDetails)
     {
         var localStorageHandle = InspectorTest.runtimeModel.createRemoteObject(result);
-        localStorageHandle.getOwnProperties(step2);
+        localStorageHandle.getOwnProperties(false, step2);
     }
 
     function step2(properties)
