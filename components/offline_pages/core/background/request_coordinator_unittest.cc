@@ -24,6 +24,7 @@
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/offliner_stub.h"
+#include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -111,11 +112,13 @@ class RequestCoordinatorTest : public testing::Test {
 
   void PumpLoop();
 
-  RequestCoordinator* coordinator() { return coordinator_.get(); }
+  RequestCoordinator* coordinator() const {
+    return coordinator_taco_->request_coordinator();
+  }
 
-  bool is_busy() { return coordinator_->is_busy(); }
+  bool is_busy() { return coordinator()->is_busy(); }
 
-  bool is_starting() { return coordinator_->is_starting(); }
+  bool is_starting() { return coordinator()->is_starting(); }
 
   // Test processing callback function.
   void ProcessingCallbackFunction(bool result) {
@@ -174,7 +177,7 @@ class RequestCoordinatorTest : public testing::Test {
   }
 
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
-    network_quality_estimator_->SetEffectiveConnectionTypeForTest(type);
+    network_quality_provider_->SetEffectiveConnectionTypeForTest(type);
   }
 
   void SetNetworkConnected(bool connected) {
@@ -211,20 +214,20 @@ class RequestCoordinatorTest : public testing::Test {
     coordinator()->operation_start_time_ = start_time;
   }
 
-  void ScheduleForTest() { coordinator_->ScheduleAsNeeded(); }
+  void ScheduleForTest() { coordinator()->ScheduleAsNeeded(); }
 
   void CallRequestNotPicked(bool non_user_requested_tasks_remaining,
                             bool disabled_tasks_remaining) {
     if (disabled_tasks_remaining)
-      coordinator_->disabled_requests_.insert(kRequestId1);
+      coordinator()->disabled_requests_.insert(kRequestId1);
     else
-      coordinator_->disabled_requests_.clear();
+      coordinator()->disabled_requests_.clear();
 
-    coordinator_->RequestNotPicked(non_user_requested_tasks_remaining, false);
+    coordinator()->RequestNotPicked(non_user_requested_tasks_remaining, false);
   }
 
   void SetDeviceConditionsForTest(DeviceConditions device_conditions) {
-    coordinator_->SetDeviceConditionsForTest(device_conditions);
+    coordinator()->SetDeviceConditionsForTest(device_conditions);
   }
 
   void WaitForCallback() { waiter_.Wait(); }
@@ -238,7 +241,7 @@ class RequestCoordinatorTest : public testing::Test {
   SavePageRequest AddRequest2();
 
   Offliner::RequestStatus last_offlining_status() const {
-    return coordinator_->last_offlining_status_;
+    return coordinator()->last_offlining_status_;
   }
 
   bool OfflinerWasCanceled() const { return offliner_->cancel_called(); }
@@ -268,8 +271,8 @@ class RequestCoordinatorTest : public testing::Test {
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  std::unique_ptr<NetworkQualityProviderStub> network_quality_estimator_;
-  std::unique_ptr<RequestCoordinator> coordinator_;
+  NetworkQualityProviderStub* network_quality_provider_;
+  std::unique_ptr<RequestCoordinatorStubTaco> coordinator_taco_;
   OfflinerStub* offliner_;
   base::WaitableEvent waiter_;
   ObserverStub observer_;
@@ -297,19 +300,23 @@ RequestCoordinatorTest::RequestCoordinatorTest()
 RequestCoordinatorTest::~RequestCoordinatorTest() {}
 
 void RequestCoordinatorTest::SetUp() {
-  std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
+  coordinator_taco_ = base::MakeUnique<RequestCoordinatorStubTaco>();
+
   std::unique_ptr<OfflinerStub> offliner(new OfflinerStub());
-  // Save the offliner for use by the tests.
-  offliner_ = reinterpret_cast<OfflinerStub*>(offliner.get());
-  std::unique_ptr<RequestQueueInMemoryStore> store(
-      new RequestQueueInMemoryStore());
-  std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
-  std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
-  network_quality_estimator_.reset(new NetworkQualityProviderStub());
-  coordinator_.reset(new RequestCoordinator(
-      std::move(policy), std::move(offliner), std::move(queue),
-      std::move(scheduler_stub), network_quality_estimator_.get()));
-  coordinator_->AddObserver(&observer_);
+  // Save raw pointer for use by the tests.
+  offliner_ = offliner.get();
+  coordinator_taco_->SetOffliner(std::move(offliner));
+
+  std::unique_ptr<NetworkQualityProviderStub> network_quality_provider =
+      base::MakeUnique<NetworkQualityProviderStub>();
+  // Save raw pointer for use by the tests.
+  network_quality_provider_ = network_quality_provider.get();
+  coordinator_taco_->SetNetworkQualityProvider(
+      std::move(network_quality_provider));
+
+  coordinator_taco_->CreateRequestCoordinator();
+
+  coordinator()->AddObserver(&observer_);
   SetNetworkConnected(true);
   processing_callback_ =
       base::Bind(&RequestCoordinatorTest::ProcessingCallbackFunction,
@@ -375,7 +382,7 @@ void RequestCoordinatorTest::SendOfflinerDoneCallback(
     const SavePageRequest& request,
     Offliner::RequestStatus status) {
   // Using the fact that the test class is a friend, call to the callback
-  coordinator_->OfflinerDoneCallback(request, status);
+  coordinator()->OfflinerDoneCallback(request, status);
 }
 
 SavePageRequest RequestCoordinatorTest::AddRequest1() {
