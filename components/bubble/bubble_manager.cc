@@ -67,7 +67,7 @@ void BubbleManager::UpdateAllBubbleAnchors() {
   // Guard against bubbles being added or removed while iterating the bubbles.
   ManagerState original_state = manager_state_;
   manager_state_ = ITERATING_BUBBLES;
-  for (auto* controller : controllers_)
+  for (auto& controller : controllers_)
     controller->UpdateAnchorPosition();
   manager_state_ = original_state;
 }
@@ -106,23 +106,23 @@ bool BubbleManager::CloseAllMatchingBubbles(
   // to close all bubbles, so we disallow passing both until a need appears.
   DCHECK(!bubble || !owner);
 
-  ScopedVector<BubbleController> close_queue;
+  std::vector<std::unique_ptr<BubbleController>> close_queue;
 
   // Guard against bubbles being added or removed while iterating the bubbles.
   ManagerState original_state = manager_state_;
   manager_state_ = ITERATING_BUBBLES;
   for (auto i = controllers_.begin(); i != controllers_.end();) {
-    if ((!bubble || bubble == *i) && (!owner || (*i)->OwningFrameIs(owner)) &&
-        (*i)->ShouldClose(reason)) {
-      close_queue.push_back(*i);
-      i = controllers_.weak_erase(i);
+    if ((!bubble || bubble == (*i).get()) &&
+        (!owner || (*i)->OwningFrameIs(owner)) && (*i)->ShouldClose(reason)) {
+      close_queue.push_back(std::move(*i));
+      i = controllers_.erase(i);
     } else {
       ++i;
     }
   }
   manager_state_ = original_state;
 
-  for (auto* controller : close_queue) {
+  for (auto& controller : close_queue) {
     controller->DoClose(reason);
 
     for (auto& observer : observers_)

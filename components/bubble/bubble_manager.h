@@ -6,9 +6,9 @@
 #define COMPONENTS_BUBBLE_BUBBLE_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/bubble/bubble_close_reason.h"
@@ -102,7 +102,7 @@ class BubbleManager {
   ManagerState manager_state_;
 
   // The bubbles that are being managed.
-  ScopedVector<BubbleController> controllers_;
+  std::vector<std::unique_ptr<BubbleController>> controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleManager);
 };
