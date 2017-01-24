@@ -6,7 +6,10 @@
 
 namespace web {
 
-TestNavigationManager::TestNavigationManager() {}
+TestNavigationManager::TestNavigationManager()
+    : pending_item_(nullptr),
+      last_committed_item_(nullptr),
+      visible_item_(nullptr) {}
 
 TestNavigationManager::~TestNavigationManager() {}
 
