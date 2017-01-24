@@ -153,7 +153,7 @@ Polymer({
   selectedDisplayChanged_: function() {
     // Set |modeValues_| before |selectedModeIndex_| so that the slider updates
     // correctly.
-    let numModes = this.selectedDisplay.modes.length;
+    var numModes = this.selectedDisplay.modes.length;
     if (numModes == 0) {
       this.modeValues_ = [];
       this.selectedModeIndex_ = 0;
@@ -270,15 +270,15 @@ Polymer({
         this.currentSelectedModeIndex_ == -1) {
       // If currentSelectedModeIndex_ == -1, selectedDisplay and
       // selectedModeIndex_ are not in sync.
-      let widthStr = this.selectedDisplay.bounds.width.toString();
-      let heightStr = this.selectedDisplay.bounds.height.toString();
-      return this.i18n('displayResolutionText', widthStr, heightStr);
+      return this.i18n(
+          'displayResolutionText', this.selectedDisplay.bounds.width.toString(),
+          this.selectedDisplay.bounds.height.toString());
     }
-    let mode = this.selectedDisplay.modes[this.selectedModeIndex_];
-    let best =
+    var mode = this.selectedDisplay.modes[this.selectedModeIndex_];
+    var best =
         this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
-    let widthStr = mode.width.toString();
-    let heightStr = mode.height.toString();
+    var widthStr = mode.width.toString();
+    var heightStr = mode.height.toString();
     if (best)
       return this.i18n('displayResolutionTextBest', widthStr, heightStr);
     else if (mode.isNative)
@@ -292,7 +292,8 @@ Polymer({
    */
   onSelectDisplay_: function(e) {
     var id = e.detail;
-    for (let display of this.displays) {
+    for (var i = 0; i < this.displays.length; ++i) {
+      var display = this.displays[i];
       if (id != display.id)
         continue;
       this.currentSelectedModeIndex_ = -1;
@@ -367,7 +368,7 @@ Polymer({
    * @private
    */
   onOrientationChange_: function(event) {
-    let target = /** @type {!HTMLSelectElement} */ (event.target);
+    var target = /** @type {!HTMLSelectElement} */ (event.target);
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
       rotation: parseInt(target.value, 10)
     };
@@ -385,7 +386,8 @@ Polymer({
       properties.mirroringSourceId = '';
     } else {
       // Set the mirroringSourceId of the secondary (first non-primary) display.
-      for (var display of this.displays) {
+      for (var i = 0; i < this.displays.length; ++i) {
+        var display = this.displays[i];
         if (display.id != this.primaryDisplayId) {
           id = display.id;
           break;
@@ -412,7 +414,8 @@ Polymer({
     var displayIds = '';
     var primaryDisplay = undefined;
     var selectedDisplay = undefined;
-    for (var display of this.displays) {
+    for (var i = 0; i < this.displays.length; ++i) {
+      var display = this.displays[i];
       if (displayIds)
         displayIds += ',';
       displayIds += display.id;

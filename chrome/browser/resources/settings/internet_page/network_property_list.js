@@ -91,8 +91,8 @@ Polymer({
     // We do not provide translations for every possible network property key.
     // For keys specific to a type, strip the type prefix.
     var result = prefix + key;
-    for (let entry in chrome.networkingPrivate.NetworkType) {
-      let type = chrome.networkingPrivate.NetworkType[entry];
+    for (var entry in chrome.networkingPrivate.NetworkType) {
+      var type = chrome.networkingPrivate.NetworkType[entry];
       if (result.startsWith(type + '.')) {
         result = result.substr(type.length + 1);
         break;
@@ -160,7 +160,7 @@ Polymer({
     if (typeof value == 'number' || typeof value == 'boolean')
       return value.toString();
     assert(typeof value == 'string');
-    let valueStr = /** @type {string} */ (value);
+    var valueStr = /** @type {string} */ (value);
     var oncKey = 'Onc' + prefix + key;
     oncKey = oncKey.replace(/\./g, '-');
     oncKey += '_' + valueStr;

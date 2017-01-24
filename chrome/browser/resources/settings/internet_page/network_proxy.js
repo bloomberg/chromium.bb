@@ -153,7 +153,7 @@ Polymer({
     // For shared networks with unmanaged proxy settings, ignore any saved
     // proxy settings (use the default values).
     if (this.isShared_()) {
-      let property = this.getProxySettingsTypeProperty_();
+      var property = this.getProxySettingsTypeProperty_();
       if (!this.isControlled(property) && !this.useSharedProxies_) {
         this.setProxyAsync_(proxy);
         return;  // Proxy settings will be ignored.
@@ -184,11 +184,11 @@ Polymer({
             /** @type {!CrOnc.ProxyLocation|undefined} */ (
                 CrOnc.getSimpleActiveProperties(proxySettings.Manual.SOCKS)) ||
             proxy.Manual.HTTPProxy;
-        let json_http = JSON.stringify(proxy.Manual.HTTPProxy);
+        var jsonHttp = proxy.Manual.HTTPProxy;
         this.useSameProxy_ =
-            json_http == JSON.stringify(proxy.Manual.SecureHTTPProxy) &&
-            json_http == JSON.stringify(proxy.Manual.FTPProxy) &&
-            json_http == JSON.stringify(proxy.Manual.SOCKS);
+            CrOnc.proxyMatches(jsonHttp, proxy.Manual.SecureHTTPProxy) &&
+            CrOnc.proxyMatches(jsonHttp, proxy.Manual.FTPProxy) &&
+            CrOnc.proxyMatches(jsonHttp, proxy.Manual.SOCKS);
       }
       if (proxySettings.ExcludeDomains) {
         proxy.ExcludeDomains = /** @type {!Array<string>|undefined} */ (
@@ -228,7 +228,7 @@ Polymer({
 
   /** @private */
   useSharedProxiesChanged_: function() {
-    let pref = this.getPref('settings.use_shared_proxies');
+    var pref = this.getPref('settings.use_shared_proxies');
     this.useSharedProxies_ = !!pref && !!pref.value;
     this.updateProxy_();
   },
@@ -257,10 +257,10 @@ Polymer({
    */
   sendProxyChange_: function() {
     if (this.proxy_.Type == CrOnc.ProxySettingsType.MANUAL) {
-      let proxy =
+      var proxy =
           /** @type {!CrOnc.ProxySettings} */ (Object.assign({}, this.proxy_));
-      let manual = proxy.Manual;
-      let defaultProxy = manual.HTTPProxy;
+      var manual = proxy.Manual;
+      var defaultProxy = manual.HTTPProxy;
       if (!defaultProxy || !defaultProxy.Host)
         return;
       if (this.useSameProxy_ || !this.get('SecureHTTPProxy.Host', manual)) {
@@ -292,7 +292,7 @@ Polymer({
    * @private
    */
   onTypeChange_: function(event) {
-    let target = /** @type {!HTMLSelectElement} */ (event.target);
+    var target = /** @type {!HTMLSelectElement} */ (event.target);
     var type = /** @type {chrome.networkingPrivate.ProxySettingsType} */ (
         target.value);
     this.set('proxy_.Type', type);
@@ -370,7 +370,7 @@ Polymer({
    * @private
    */
   shouldShowNetworkPolicyIndicator_: function() {
-    let property = this.getProxySettingsTypeProperty_();
+    var property = this.getProxySettingsTypeProperty_();
     return !!property && !this.isExtensionControlled(property) &&
         this.isNetworkPolicyEnforced(property);
   },
@@ -380,7 +380,7 @@ Polymer({
    * @private
    */
   shouldShowExtensionIndicator_: function() {
-    let property = this.getProxySettingsTypeProperty_();
+    var property = this.getProxySettingsTypeProperty_();
     return !!property && this.isExtensionControlled(property);
   },
 
@@ -403,7 +403,7 @@ Polymer({
       return false;
     if (!this.networkProperties.hasOwnProperty('ProxySettings'))
       return true;  // No proxy settings defined, so not enforced.
-    let property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
+    var property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
         this.get('ProxySettings.' + propertyName, this.networkProperties));
     if (!property)
       return true;

@@ -92,7 +92,7 @@ Polymer({
     };
     var maxWidth = bounds.width;
     var maxHeight = bounds.height;
-    for (let i = 1; i < this.displays.length; ++i) {
+    for (var i = 1; i < this.displays.length; ++i) {
       display = this.displays[i];
       bounds = this.getCalculatedDisplayBounds(display.id);
       boundsBoundingBox.left = Math.min(boundsBoundingBox.left, bounds.left);
@@ -156,8 +156,8 @@ Polymer({
         Math.round(this.visualOffset_.left + (bounds.left * this.visualScale));
     var top = OFFSET +
         Math.round(this.visualOffset_.top + (bounds.top * this.visualScale));
-    return `height: ${height}px; width: ${width}px;` +
-        ` left: ${left}px; top: ${top}px`;
+    return 'height: ' + height + 'px; width: ' + width + 'px;' +
+        ' left: ' + left + 'px; top: ' + top + 'px';
   },
 
   /**

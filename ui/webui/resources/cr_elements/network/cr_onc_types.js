@@ -238,7 +238,8 @@ CrOnc.getSimpleActiveProperties = function(properties) {
     return undefined;
   var result = {};
   var keys = Object.keys(properties);
-  for (let k of keys) {
+  for (var i = 0; i < keys.length; ++i) {
+    var k = keys[i];
     var prop = CrOnc.getActiveValue(properties[k]);
     if (prop == undefined) {
       console.error(
@@ -264,7 +265,7 @@ CrOnc.getIPConfigForType = function(properties, type) {
   /** @type {!CrOnc.IPConfigProperties|undefined} */ var ipConfig = undefined;
   var ipConfigs = properties.IPConfigs;
   if (ipConfigs) {
-    for (let i = 0; i < ipConfigs.length; ++i) {
+    for (var i = 0; i < ipConfigs.length; ++i) {
       ipConfig = ipConfigs[i];
       if (ipConfig.Type == type)
         break;
@@ -355,14 +356,14 @@ CrOnc.getAutoConnect = function(properties) {
 CrOnc.getNetworkName = function(properties) {
   if (!properties)
     return '';
-  let name = CrOnc.getStateOrActiveString(properties.Name);
-  let type = CrOnc.getStateOrActiveString(properties.Type);
+  var name = CrOnc.getStateOrActiveString(properties.Name);
+  var type = CrOnc.getStateOrActiveString(properties.Type);
   if (!name)
     return CrOncStrings['OncType' + type];
   if (type == 'VPN' && properties.VPN) {
-    let vpnType = CrOnc.getStateOrActiveString(properties.VPN.Type);
+    var vpnType = CrOnc.getStateOrActiveString(properties.VPN.Type);
     if (vpnType == 'ThirdPartyVPN' && properties.VPN.ThirdPartyVPN) {
-      let providerName = properties.VPN.ThirdPartyVPN.ProviderName;
+      var providerName = properties.VPN.ThirdPartyVPN.ProviderName;
       if (providerName) {
         return CrOncStrings.vpnNameTemplate.replace('$1', providerName)
             .replace('$2', name);
@@ -483,8 +484,8 @@ CrOnc.getRoutingPrefixAsNetmask = function(prefixLength) {
   if (prefixLength < 0 || prefixLength > 32)
     return '';
   var netmask = '';
-  for (let i = 0; i < 4; ++i) {
-    let remainder = 8;
+  for (var i = 0; i < 4; ++i) {
+    var remainder = 8;
     if (prefixLength >= 8) {
       prefixLength -= 8;
     } else {
@@ -493,7 +494,7 @@ CrOnc.getRoutingPrefixAsNetmask = function(prefixLength) {
     }
     if (i > 0)
       netmask += '.';
-    let value = 0;
+    var value = 0;
     if (remainder != 0)
       value = ((2 << (remainder - 1)) - 1) << (8 - remainder);
     netmask += value.toString();
@@ -512,8 +513,8 @@ CrOnc.getRoutingPrefixAsLength = function(netmask) {
   var tokens = netmask.split('.');
   if (tokens.length != 4)
     return -1;
-  for (let i = 0; i < tokens.length; ++i) {
-    let token = tokens[i];
+  for (var i = 0; i < tokens.length; ++i) {
+    var token = tokens[i];
     // If we already found the last mask and the current one is not
     // '0' then the netmask is invalid. For example, 255.224.255.0
     if (prefixLength / 8 != i) {
@@ -543,4 +544,13 @@ CrOnc.getRoutingPrefixAsLength = function(netmask) {
     }
   }
   return prefixLength;
+};
+
+/**
+ * @param {!CrOnc.ProxyLocation} a
+ * @param {!CrOnc.ProxyLocation} b
+ * @return {boolean}
+ */
+CrOnc.proxyMatches = function(a, b) {
+  return a.Host == b.Host && a.Port == b.Port;
 };

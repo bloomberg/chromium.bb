@@ -67,7 +67,7 @@ Polymer({
    * @private
    */
   getItems_: function() {
-    let customItems = this.customItems.slice();
+    var customItems = this.customItems.slice();
     // Flag the first custom item with isFirstCustomItem = true.
     if (customItems.length > 0)
       customItems[0].isFirstCustomItem = true;

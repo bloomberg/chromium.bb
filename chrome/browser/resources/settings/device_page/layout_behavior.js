@@ -58,17 +58,20 @@ var LayoutBehavior = {
     this.mirroring = displays.length > 0 && !!displays[0].mirroringSourceId;
 
     this.displayBoundsMap_.clear();
-    for (let display of displays)
+    for (var i = 0; i < displays.length; ++i) {
+      var display = displays[i];
       this.displayBoundsMap_.set(display.id, display.bounds);
-
+    }
     this.displayLayoutMap_.clear();
-    for (let layout of layouts)
+    for (var j = 0; j < layouts.length; ++j) {
+      var layout = layouts[j];
       this.displayLayoutMap_.set(layout.id, layout);
-
+    }
     this.calculatedBoundsMap_.clear();
-    for (let display of displays) {
+    for (var k = 0; k < displays.length; ++k) {
+      display = displays[k];
       if (!this.calculatedBoundsMap_.has(display.id)) {
-        let bounds = display.bounds;
+        var bounds = display.bounds;
         this.calculateBounds_(display.id, bounds.width, bounds.height);
       }
     }
@@ -146,8 +149,6 @@ var LayoutBehavior = {
       // We cannot re-parent the primary display, so instead make all other
       // displays orphans and clear their calculated bounds.
       orphanIds = this.findChildren_(id, true /* recurse */);
-      for (let o in orphanIds)
-        this.calculatedBoundsMap_.delete(o);
 
       // Re-parent |dragParentId_|. It will be forced to parent to the dragged
       // display since it is the only non-orphan.
@@ -156,8 +157,6 @@ var LayoutBehavior = {
     } else {
       // All immediate children of |layout| will need to be re-parented.
       orphanIds = this.findChildren_(id, false /* do not recurse */);
-      for (let o in orphanIds)
-        this.calculatedBoundsMap_.delete(o);
 
       // When re-parenting to a descendant, also parent any immediate child to
       // drag display's current parent.
@@ -220,11 +219,13 @@ var LayoutBehavior = {
    */
   updateOrphans_: function(orphanIds) {
     var orphans = orphanIds.slice();
-    for (let orphan of orphanIds) {
+    for (var i = 0; i < orphanIds.length; ++i) {
+      var orphan = orphanIds[i];
       var newOrphans = this.findChildren_(orphan, true /* recurse */);
       // If the dragged display was re-parented to one of its children,
       // there may be duplicates so merge the lists.
-      for (let o of newOrphans) {
+      for (var ii = 0; ii < newOrphans.length; ++ii) {
+        var o = newOrphans[ii];
         if (!orphans.includes(o))
           orphans.push(o);
       }
@@ -292,10 +293,9 @@ var LayoutBehavior = {
    */
   findChildren_: function(parentId, recurse) {
     var children = [];
-    for (let childId of this.displayLayoutMap_.keys()) {
-      if (childId == parentId)
-        continue;
-      if (this.displayLayoutMap_.get(childId).parentId == parentId) {
+    this.displayLayoutMap_.forEach(function(value, key) {
+      var childId = key;
+      if (childId != parentId && value.parentId == parentId) {
         // Insert immediate children at the front of the array.
         children.unshift(childId);
         if (recurse) {
@@ -303,7 +303,7 @@ var LayoutBehavior = {
           children = children.concat(this.findChildren_(childId, true));
         }
       }
-    }
+    }.bind(this));
     return children;
   },
 
@@ -370,7 +370,9 @@ var LayoutBehavior = {
     var y = bounds.top + bounds.height / 2;
     var closestId = '';
     var closestDelta2 = 0;
-    for (let otherId of this.calculatedBoundsMap_.keys()) {
+    var keys = this.calculatedBoundsMap_.keys();
+    for (var iter = keys.next(); !iter.done; iter = keys.next()) {
+      var otherId = iter.value;
       if (otherId == displayId)
         continue;
       if (opt_ignoreIds && opt_ignoreIds.includes(otherId))
@@ -551,7 +553,10 @@ var LayoutBehavior = {
     var checkCollisions = true;
     while (checkCollisions) {
       checkCollisions = false;
-      for (let otherId of others) {
+      var othersValues = others.values();
+      for (var iter = othersValues.next(); !iter.done;
+           iter = othersValues.next()) {
+        var otherId = iter.value;
         var otherBounds = this.getCalculatedDisplayBounds(otherId);
         if (this.collideWithBoundsAndModifyDelta_(
                 bounds, otherBounds, deltaPos)) {
@@ -591,24 +596,24 @@ var LayoutBehavior = {
     // the point is already inside.
     if (Math.abs(deltaPos.x) > Math.abs(deltaPos.y)) {
       deltaPos.y = 0;
-      let snapDeltaX;
+      var snapDeltaX;
       if (deltaPos.x > 0) {
-        let x = otherBounds.left - bounds.width;
-        snapDeltaX = Math.max(0, x - bounds.left);
+        snapDeltaX =
+            Math.max(0, (otherBounds.left - bounds.width) - bounds.left);
       } else {
-        let x = otherBounds.left + otherBounds.width;
-        snapDeltaX = Math.min(x - bounds.left, 0);
+        snapDeltaX =
+            Math.min(0, (otherBounds.left + otherBounds.width) - bounds.left);
       }
       deltaPos.x = snapDeltaX;
     } else {
       deltaPos.x = 0;
-      let snapDeltaY;
+      var snapDeltaY;
       if (deltaPos.y > 0) {
-        let y = otherBounds.top - bounds.height;
-        snapDeltaY = Math.min(0, y - bounds.top);
+        snapDeltaY =
+            Math.min(0, (otherBounds.top - bounds.height) - bounds.top);
       } else if (deltaPos.y < 0) {
-        let y = otherBounds.top + otherBounds.height;
-        snapDeltaY = Math.max(y - bounds.top, 0);
+        snapDeltaY =
+            Math.max(0, (otherBounds.top + otherBounds.height) - bounds.top);
       } else {
         snapDeltaY = 0;
       }
@@ -688,7 +693,8 @@ var LayoutBehavior = {
    * @private
    */
   highlightEdge_: function(id, layoutPosition) {
-    for (let layout of this.layouts) {
+    for (var i = 0; i < this.layouts.length; ++i) {
+      var layout = this.layouts[i];
       var highlight = (layout.id == id) ? layoutPosition : undefined;
       var div = this.$$('#_' + layout.id);
       div.classList.toggle(

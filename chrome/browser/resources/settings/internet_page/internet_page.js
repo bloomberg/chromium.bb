@@ -159,7 +159,7 @@ Polymer({
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
-    let provider = event.model.item;
+    var provider = event.model.item;
     chrome.send('addNetwork', [CrOnc.Type.VPN, provider.ExtensionID]);
   },
 
@@ -169,9 +169,9 @@ Polymer({
    * @private
    */
   onGetAllExtensions_: function(extensions) {
-    let vpnProviders = [];
-    for (var extension of extensions)
-      this.addVpnProvider_(vpnProviders, extension);
+    var vpnProviders = [];
+    for (var i = 0; i < extensions.length; ++i)
+      this.addVpnProvider_(vpnProviders, extensions[i]);
     this.thirdPartyVpnProviders_ = vpnProviders;
   },
 

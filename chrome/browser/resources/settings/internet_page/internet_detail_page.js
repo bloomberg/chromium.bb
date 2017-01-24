@@ -157,7 +157,7 @@ Polymer({
       this.networkingPrivate.onNetworksChanged.addListener(
           this.networksChangedListener_);
     }
-    let queryParams = settings.getQueryParameters();
+    var queryParams = settings.getQueryParameters();
     this.guid = queryParams.get('guid') || '';
     if (!this.guid) {
       console.error('No guid specified for page:' + route);
@@ -582,8 +582,8 @@ Polymer({
       onc.NameServersConfigType = newNsConfigType;
     } else if (field == 'StaticIPConfig') {
       if (ipConfigType == CrOnc.IPConfigType.STATIC) {
-        let staticIpConfig = this.networkProperties.StaticIPConfig;
-        let ipConfigValue = /** @type {!Object} */ (value);
+        var staticIpConfig = this.networkProperties.StaticIPConfig;
+        var ipConfigValue = /** @type {!Object} */ (value);
         if (staticIpConfig &&
             this.allPropertiesMatch_(staticIpConfig, ipConfigValue)) {
           return;
@@ -594,12 +594,12 @@ Polymer({
         onc.StaticIPConfig =
             /** @type {!chrome.networkingPrivate.IPConfigProperties} */ ({});
       }
-      for (let key in value)
+      for (var key in value)
         onc.StaticIPConfig[key] = value[key];
     } else if (field == 'NameServers') {
       // If a StaticIPConfig property is specified and its NameServers value
       // matches the new value, no need to set anything.
-      let nameServers = /** @type {!Array<string>} */ (value);
+      var nameServers = /** @type {!Array<string>} */ (value);
       if (onc.NameServersConfigType == CrOnc.IPConfigType.STATIC &&
           onc.StaticIPConfig && onc.StaticIPConfig.NameServers == nameServers) {
         return;
@@ -700,8 +700,8 @@ Polymer({
    * @private
    */
   hasVisibleFields_: function(fields) {
-    for (let key of fields) {
-      let value = this.get(key, this.networkProperties);
+    for (var i = 0; i < fields.length; ++i) {
+      var value = this.get(fields[i], this.networkProperties);
       if (value !== undefined && value !== '')
         return true;
     }
@@ -728,7 +728,7 @@ Polymer({
           'RestrictedConnectivity', 'Cellular.ServingOperator.Name');
     }
     if (this.networkProperties.Type == CrOnc.Type.VPN) {
-      let vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
+      var vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
       if (vpnType == 'ThirdPartyVPN') {
         fields.push('VPN.ThirdPartyVPN.ProviderName');
       } else {
@@ -865,7 +865,7 @@ Polymer({
    * @private
    */
   allPropertiesMatch_: function(curValue, newValue) {
-    for (let key in newValue) {
+    for (var key in newValue) {
       if (newValue[key] != curValue[key])
         return false;
     }

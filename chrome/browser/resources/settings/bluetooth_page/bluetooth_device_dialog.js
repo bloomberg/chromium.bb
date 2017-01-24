@@ -60,7 +60,7 @@ settings.BluetoothAddDeviceBehavior = {
       return;
     // If the iron-list is populated with at least one visible item then
     // focus it.
-    let item = this.$$('iron-list bluetooth-device-list-item');
+    var item = this.$$('iron-list bluetooth-device-list-item');
     if (item && item.offsetParent != null) {
       item.focus();
       this.itemWasFocused_ = true;

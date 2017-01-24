@@ -104,7 +104,7 @@ Polymer({
    * @private
    */
   showSimInfo_: function() {
-    let device = this.deviceState;
+    var device = this.deviceState;
     if (device.Type != CrOnc.Type.CELLULAR ||
         this.deviceIsEnabled_(this.deviceState)) {
       return false;
@@ -201,7 +201,7 @@ Polymer({
   expandIsVisible_: function() {
     if (!this.deviceIsEnabled_(this.deviceState))
       return false;
-    let type = this.deviceState.Type;
+    var type = this.deviceState.Type;
     var minLength =
         (type == CrOnc.Type.WI_FI || type == CrOnc.Type.VPN) ? 1 : 2;
     return this.networkStateList.length >= minLength;

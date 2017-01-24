@@ -268,7 +268,7 @@ Polymer({
       return;
     }
     // Find the active state for the type and update it.
-    for (let i = 0; i < this.activeNetworkStates_.length; ++i) {
+    for (var i = 0; i < this.activeNetworkStates_.length; ++i) {
       if (this.activeNetworkStates_[i].type == state.type) {
         this.activeNetworkStates_[i] = state;
         return;
@@ -343,8 +343,10 @@ Polymer({
     var newDeviceStates;
     if (opt_deviceStates) {
       newDeviceStates = /** @type {!DeviceStateObject} */ ({});
-      for (let state of opt_deviceStates)
+      for (var i = 0; i < opt_deviceStates.length; ++i) {
+        var state = opt_deviceStates[i];
         newDeviceStates[state.Type] = state;
+      }
     } else {
       newDeviceStates = this.deviceStates_;
     }
@@ -363,16 +365,16 @@ Polymer({
     };
 
     var firstConnectedNetwork = null;
-    networkStates.forEach(function(state) {
-      let type = state.Type;
+    networkStates.forEach(function(networkState) {
+      var type = networkState.Type;
       if (!activeNetworkStatesByType.has(type)) {
-        activeNetworkStatesByType.set(type, state);
-        if (!firstConnectedNetwork && state.Type != CrOnc.Type.VPN &&
-            state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
-          firstConnectedNetwork = state;
+        activeNetworkStatesByType.set(type, networkState);
+        if (!firstConnectedNetwork && networkState.Type != CrOnc.Type.VPN &&
+            networkState.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+          firstConnectedNetwork = networkState;
         }
       }
-      newNetworkStateLists[type].push(state);
+      newNetworkStateLists[type].push(networkState);
     }, this);
 
     this.defaultNetwork = firstConnectedNetwork;
@@ -387,17 +389,18 @@ Polymer({
 
     // Push the active networks onto newActiveNetworkStates in order based on
     // device priority, creating an empty state for devices with no networks.
-    let newActiveNetworkStates = [];
+    var newActiveNetworkStates = [];
     this.activeNetworkIds_ = new Set;
-    let orderedDeviceTypes = [
+    var orderedDeviceTypes = [
       CrOnc.Type.ETHERNET, CrOnc.Type.WI_FI, CrOnc.Type.CELLULAR,
       CrOnc.Type.WI_MAX, CrOnc.Type.VPN
     ];
-    for (let type of orderedDeviceTypes) {
-      let device = newDeviceStates[type];
+    for (var i = 0; i < orderedDeviceTypes.length; ++i) {
+      var type = orderedDeviceTypes[i];
+      var device = newDeviceStates[type];
       if (!device)
         continue;
-      let state = activeNetworkStatesByType.get(type) || {GUID: '', Type: type};
+      var state = activeNetworkStatesByType.get(type) || {GUID: '', Type: type};
       if (state.Source === undefined &&
           device.State == chrome.networkingPrivate.DeviceStateType.PROHIBITED) {
         // Prohibited technologies are enforced by the device policy.

@@ -84,13 +84,13 @@ Polymer({
    */
   getItemName_: function() {
     if (this.item.hasOwnProperty('customItemName')) {
-      let item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
-      let name = item.customItemName || '';
+      var item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
+      var name = item.customItemName || '';
       if (CrOncStrings.hasOwnProperty(item.customItemName))
         name = CrOncStrings[item.customItemName];
       return name;
     }
-    let network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
+    var network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
     if (this.isListItem)
       return CrOnc.getNetworkName(network);
     return CrOncStrings['OncType' + network.Type];

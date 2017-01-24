@@ -228,8 +228,8 @@ Polymer({
 
   /** @private */
   deviceListChanged_: function() {
-    for (let device of this.deviceList_) {
-      if (device.connected) {
+    for (var i = 0; i < this.deviceList_.length; ++i) {
+      if (this.deviceList_[i].connected) {
         this.deviceConnected_ = true;
         return;
       }
@@ -455,8 +455,8 @@ Polymer({
         // TODO(stevenjb): Show error.
         console.error(
             'Error setting pairing response: ' + options.device.name +
-            ': Response: ' + options.response + ': Error: ' +
-            chrome.runtime.lastError.message);
+            ': Response: ' + options.response +
+            ': Error: ' + chrome.runtime.lastError.message);
       }
       this.$$('#deviceDialog').close();
     }.bind(this));

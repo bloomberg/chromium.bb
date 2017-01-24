@@ -84,14 +84,14 @@ Polymer({
    * @private
    */
   getTechnology_: function() {
-    let networkState = this.networkState;
+    var networkState = this.networkState;
     if (!networkState)
       return '';
-    let type = networkState.Type;
+    var type = networkState.Type;
     if (type == CrOnc.Type.WI_MAX)
       return 'network:4g';
     if (type == CrOnc.Type.CELLULAR && networkState.Cellular) {
-      let technology =
+      var technology =
           this.getTechnologyId_(networkState.Cellular.NetworkTechnology);
       if (technology != '')
         return 'network:' + technology;
@@ -134,11 +134,11 @@ Polymer({
    * @private
    */
   showSecure_: function() {
-    let networkState = this.networkState;
+    var networkState = this.networkState;
     if (!this.networkState)
       return false;
     if (networkState.Type == CrOnc.Type.WI_FI && networkState.WiFi) {
-      let security = networkState.WiFi.Security;
+      var security = networkState.WiFi.Security;
       return !!security && security != 'None';
     }
     return false;

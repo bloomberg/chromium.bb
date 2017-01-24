@@ -181,7 +181,7 @@ Polymer({
    * @private
    */
   onSelectApnChange_: function(event) {
-    let target = /** @type {!HTMLSelectElement} */(event.target);
+    var target = /** @type {!HTMLSelectElement} */(event.target);
     var accessPointName = target.value;
     // When selecting 'Other', don't set a change event unless a valid
     // non-default value has been set for Other.
@@ -262,10 +262,8 @@ Polymer({
    * @private
    */
   findApnInList: function(apnList, accessPointName) {
-    for (let a of apnList) {
-      if (a.AccessPointName == accessPointName)
-        return a;
-    }
-    return undefined;
+    return apnList.find(function(a) {
+      return a.AccessPointName == accessPointName;
+    });
   }
 });

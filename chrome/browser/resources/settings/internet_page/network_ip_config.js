@@ -140,8 +140,8 @@ Polymer({
     var result = {};
     if (!ipconfig)
       return result;
-    for (let key in ipconfig) {
-      let value = ipconfig[key];
+    for (var key in ipconfig) {
+      var value = ipconfig[key];
       if (key == 'RoutingPrefix')
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsNetmask(value);
       else
@@ -158,8 +158,8 @@ Polymer({
    */
   getIPConfigProperties_: function(ipconfig) {
     var result = {};
-    for (let key in ipconfig) {
-      let value = ipconfig[key];
+    for (var key in ipconfig) {
+      var value = ipconfig[key];
       if (key == 'RoutingPrefix')
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsLength(value);
       else

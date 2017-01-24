@@ -81,7 +81,7 @@ var DragBehavior = {
 
   /** @private */
   addListeners_: function() {
-    let container = this.container_;
+    var container = this.container_;
     if (!container || this.mouseDownListener_)
       return;
     this.mouseDownListener_ = this.onMouseDown_.bind(this);
@@ -103,7 +103,7 @@ var DragBehavior = {
 
   /** @private */
   removeListeners_: function() {
-    let container = this.container_;
+    var container = this.container_;
     if (!container || !this.mouseDownListener_)
       return;
     container.removeEventListener('mousedown', this.mouseDownListener_);
