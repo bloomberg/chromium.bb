@@ -71,39 +71,18 @@ Not Found: shouldNotFindThisFunction
 Checking 'shou'
 Not Found: should not find this
 
-Checking 'myMap.get('
-Found: "first")
-Found: "second")
-Found: "third")
-
-Checking 'myMap.get(''
-Found: 'first')
-Found: 'second')
-Found: 'third')
-
-Checking 'myMap.set('firs'
-Found: 'first', 
-
-Checking 'myMap.set(should'
-Found: shouldFindThisFunction
-Not Found: shouldNotFindThis
-Not Found: "shouldNotFindThis")
-
-Checking 'myMap.delete(''
-Found: 'first')
-Found: 'second')
-Found: 'third')
-
 Checking 'document.   bo'
 Found: body
 
 Checking 'document.	bo'
 Found: body
 
-Checking 'document.\nbo'
+Checking 'document.
+bo'
 Found: body
 
-Checking 'document.\r\nbo'
+Checking 'document.
+bo'
 Found: body
 
 Checking 'document   [    'bo'
