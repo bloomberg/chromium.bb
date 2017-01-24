@@ -115,6 +115,111 @@ static const char usage[] = "Usage: %s [-hl] [<-s <suite id>> [-t <test id>]]\n"
 /** Specified options strings for getopt */
 static const char options[]   = "hls:t:";
 
+/* Open AMD devices.
+ * Return the number of AMD device openned.
+ */
+static int amdgpu_open_devices(int open_render_node)
+{
+	drmDevicePtr devices[MAX_CARDS_SUPPORTED];
+	int ret;
+	int i;
+	int drm_node;
+	int amd_index = 0;
+	int drm_count;
+	int fd;
+	drmVersionPtr version;
+
+	drm_count = drmGetDevices2(0, devices, MAX_CARDS_SUPPORTED);
+
+	if (drm_count < 0) {
+		fprintf(stderr,
+			"drmGetDevices2() returned an error %d\n",
+			drm_count);
+		return 0;
+	}
+
+	for (i = 0; i < drm_count; i++) {
+		/* If this is not PCI device, skip*/
+		if (devices[i]->bustype != DRM_BUS_PCI)
+			continue;
+
+		/* If this is not AMD GPU vender ID, skip*/
+		if (devices[i]->deviceinfo.pci->vendor_id != 0x1002)
+			continue;
+
+		if (open_render_node)
+			drm_node = DRM_NODE_RENDER;
+		else
+			drm_node = DRM_NODE_PRIMARY;
+
+		fd = -1;
+		if (devices[i]->available_nodes & 1 << drm_node)
+			fd = open(
+				devices[i]->nodes[drm_node],
+				O_RDWR | O_CLOEXEC);
+
+		/* This node is not available. */
+		if (fd < 0) continue;
+
+		version = drmGetVersion(fd);
+		if (!version) {
+			fprintf(stderr,
+				"Warning: Cannot get version for %s."
+				"Error is %s\n",
+				devices[i]->nodes[drm_node],
+				strerror(errno));
+			close(fd);
+			continue;
+		}
+
+		if (strcmp(version->name, "amdgpu")) {
+			/* This is not AMDGPU driver, skip.*/
+			drmFreeVersion(version);
+			close(fd);
+			continue;
+		}
+
+		drmFreeVersion(version);
+
+		drm_amdgpu[amd_index] = fd;
+		amd_index++;
+	}
+
+	drmFreeDevices(devices, drm_count);
+	return amd_index;
+}
+
+/* Close AMD devices.
+ */
+static void amdgpu_close_devices()
+{
+	int i;
+	for (i = 0; i < MAX_CARDS_SUPPORTED; i++)
+		if (drm_amdgpu[i] >=0)
+			close(drm_amdgpu[i]);
+}
+
+/* Print AMD devices information */
+static void amdgpu_print_devices()
+{
+	int i;
+	for (i = 0; i < MAX_CARDS_SUPPORTED; i++)
+		if (drm_amdgpu[i] >=0) {
+			/** Display version of DRM driver */
+			drmVersionPtr retval = drmGetVersion(drm_amdgpu[0]);
+
+			if (retval == NULL) {
+				perror("Cannot get version for AMDGPU device");
+				exit(EXIT_FAILURE);
+			}
+
+			printf("AMDGPU device #%d: "
+				"Name: [%s] : Date [%s] : Description [%s]\n",
+				i, retval->name, retval->date, retval->desc);
+			drmFreeVersion(retval);
+		}
+}
+
 /* The main() function for setting up and running the tests.
  * Returns a CUE_SUCCESS on successful running, another
  * CUnit error code on failure.
@@ -127,14 +232,6 @@ int main(int argc, char **argv)
 	int test_id  = -1;	/* By default run all tests in the suite */
 	CU_pSuite pSuite = NULL;
 	CU_pTest  pTest  = NULL;
-
-	int aval = drmAvailable();
-
-	if (aval == 0) {
-		fprintf(stderr, "DRM driver is not available\n");
-		exit(EXIT_FAILURE);
-	}
-
 
 	for (i = 0; i < MAX_CARDS_SUPPORTED; i++)
 		drm_amdgpu[i] = -1;
@@ -163,35 +260,23 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* Try to open all possible radeon connections
-	 * Right now: Open only the 0.
-	 */
-	printf("Try to open the card 0..\n");
-	drm_amdgpu[0] = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
+	if (amdgpu_open_devices(0) <= 0) {
+		perror("Cannot open AMDGPU device");
+		exit(EXIT_FAILURE);
+	}
 
 	if (drm_amdgpu[0] < 0) {
-		perror("Cannot open /dev/dri/card0\n");
+		perror("Cannot open AMDGPU device");
 		exit(EXIT_FAILURE);
 	}
 
-	/** Display version of DRM driver */
-	drmVersionPtr retval = drmGetVersion(drm_amdgpu[0]);
-
-	if (retval == NULL) {
-		perror("Could not get information about DRM driver");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("DRM Driver: Name: [%s] : Date [%s] : Description [%s]\n",
-	       retval->name, retval->date, retval->desc);
-
-	drmFreeVersion(retval);
+	amdgpu_print_devices();
 
 	/* Initialize test suites to run */
 
 	/* initialize the CUnit test registry */
 	if (CUE_SUCCESS != CU_initialize_registry()) {
-		close(drm_amdgpu[0]);
+		amdgpu_close_devices();
 		return CU_get_error();
 	}
 
@@ -200,7 +285,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "suite registration failed - %s\n",
 				CU_get_error_msg());
 		CU_cleanup_registry();
-		close(drm_amdgpu[0]);
+		amdgpu_close_devices();
 		exit(EXIT_FAILURE);
 	}
 
@@ -222,7 +307,7 @@ int main(int argc, char **argv)
 					fprintf(stderr, "Invalid test id: %d\n",
 								test_id);
 					CU_cleanup_registry();
-					close(drm_amdgpu[0]);
+					amdgpu_close_devices();
 					exit(EXIT_FAILURE);
 				}
 			} else
@@ -231,13 +316,13 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Invalid suite id : %d\n",
 					suite_id);
 			CU_cleanup_registry();
-			close(drm_amdgpu[0]);
+			amdgpu_close_devices();
 			exit(EXIT_FAILURE);
 		}
 	} else
 		CU_basic_run_tests();
 
 	CU_cleanup_registry();
-	close(drm_amdgpu[0]);
+	amdgpu_close_devices();
 	return CU_get_error();
 }
