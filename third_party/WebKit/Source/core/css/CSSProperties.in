@@ -258,7 +258,7 @@ display
 dominant-baseline inherited, svg
 empty-cells inherited, independent, type_name=EEmptyCells, keyword_only, keywords=[show|hide], initial_keyword=show
 fill interpolable, inherited, svg, setter=setFillPaint, custom_all, api_class=CSSPropertyAPIPaintStroke
-fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
+fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage, api_class=CSSPropertyAPIOpacity
 fill-rule inherited, svg, type_name=WindRule
 filter interpolable, converter=convertFilterOperations
 flex-basis interpolable, converter=convertLengthOrAuto, api_class
@@ -268,7 +268,7 @@ flex-shrink interpolable, type_name=float
 flex-wrap
 float type_name=EFloat, name_for_methods=Floating, keyword_only, keywords=[none|left|right], initial_keyword=none
 flood-color interpolable, svg, converter=convertColor, api_class=CSSPropertyAPIColor
-flood-opacity interpolable, svg, converter=convertNumberOrPercentage
+flood-opacity interpolable, svg, converter=convertNumberOrPercentage, api_class=CSSPropertyAPIOpacity
 grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSizeList
 grid-auto-flow runtime_flag=CSSGridLayout, converter=convertGridAutoFlow, type_name=GridAutoFlow, api_class
 grid-auto-rows runtime_flag=CSSGridLayout, converter=convertGridTrackSizeList
@@ -322,7 +322,7 @@ offset-path converter=convertPathOrNone
 offset-position runtime_flag=CSSOffsetPositionAnchor, interpolable, converter=convertPositionOrAuto, api_class
 offset-rotate runtime_flag=CSSOffsetRotate, interpolable, converter=convertOffsetRotate
 offset-rotation runtime_flag=CSSOffsetRotation, interpolable, converter=convertOffsetRotate
-opacity interpolable, type_name=float
+opacity interpolable, type_name=float, api_class=CSSPropertyAPIOpacity
 order type_name=int
 orphans interpolable, inherited, type_name=short
 outline-color interpolable, custom_all, api_class
@@ -362,14 +362,14 @@ size custom_all, api_class
 snap-height runtime_flag=CSSSnapSize, inherited, custom_all, api_class
 speak inherited
 stop-color interpolable, svg, converter=convertColor, api_class=CSSPropertyAPIColor
-stop-opacity interpolable, svg, converter=convertNumberOrPercentage
+stop-opacity interpolable, svg, converter=convertNumberOrPercentage, api_class=CSSPropertyAPIOpacity
 stroke interpolable, inherited, svg, setter=setStrokePaint, custom_all, api_class=CSSPropertyAPIPaintStroke
 stroke-dasharray interpolable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray, api_class
 stroke-dashoffset interpolable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertLength
 stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, inherited, type_name=LineJoin, name_for_methods=JoinStyle
 stroke-miterlimit interpolable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit, api_class
-stroke-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
+stroke-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage, api_class=CSSPropertyAPIOpacity
 stroke-width interpolable, inherited, svg, converter=convertUnzoomedLength
 table-layout
 tab-size inherited, converter=convertLengthOrTabSpaces, type_name=TabSize, api_class

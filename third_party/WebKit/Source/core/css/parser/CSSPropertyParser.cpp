@@ -2355,11 +2355,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
       return consumeNumber(m_range, ValueRangeNonNegative);
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyFillOpacity:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyOpacity:
     case CSSPropertyWebkitBoxFlex:
       return consumeNumber(m_range, ValueRangeAll);
     case CSSPropertyBaselineShift:

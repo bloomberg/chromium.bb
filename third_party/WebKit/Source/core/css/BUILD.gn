@@ -364,6 +364,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIImage.cpp",
     "properties/CSSPropertyAPILetterAndWordSpacing.cpp",
     "properties/CSSPropertyAPIOffsetPosition.cpp",
+    "properties/CSSPropertyAPIOpacity.cpp",
     "properties/CSSPropertyAPIOutlineColor.cpp",
     "properties/CSSPropertyAPIOutlineOffset.cpp",
     "properties/CSSPropertyAPIOutlineWidth.cpp",
