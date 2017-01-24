@@ -234,11 +234,6 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
     EXCEPTION_CATEGORY_LAB,
 )
 
-# TODO: Eliminate these or merge with manifest_version.py:STATUS_PASSED
-# crbug.com/318930
-FINAL_STATUS_PASSED = 'passed'
-FINAL_STATUS_FAILED = 'failed'
-
 # Monarch metric names
 MON_CL_ACTION = 'chromeos/cbuildbot/cl_action'
 MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'

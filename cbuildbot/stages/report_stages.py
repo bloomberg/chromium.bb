@@ -1020,18 +1020,13 @@ class ReportStage(generic_stages.BuilderStage,
 
 
     if db:
-      # TODO(akeshet): Eliminate this status string translate once
-      # these differing status strings are merged, crbug.com/318930
-      translateStatus = lambda s: (constants.BUILDER_STATUS_PASSED
-                                   if s == constants.FINAL_STATUS_PASSED
-                                   else constants.BUILDER_STATUS_FAILED)
-      status_for_db = translateStatus(final_status)
+      status_for_db = final_status
 
       child_metadatas = self._run.attrs.metadata.GetDict().get(
           'child-configs', [])
       for child_metadata in child_metadatas:
         db.FinishChildConfig(build_id, child_metadata['name'],
-                             translateStatus(child_metadata['status']))
+                             child_metadata['status'])
 
       # TODO(pprabhu): After BuildData and CBuildbotMetdata are merged, remove
       # this extra temporary object creation.
