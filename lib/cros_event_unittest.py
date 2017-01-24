@@ -133,10 +133,15 @@ class EventLoggerTest(cros_test_lib.TestCase):
   def testEvent(self):
     e_data = {"one": "two", "three":"four"}
 
-    e = self.log1.Event(e_data)
+    e = self.log1.Event(data=e_data)
 
     self.assertDictContainsSubset(e_data, e)
     self.assertDictContainsSubset(self.data1, e)
+
+  def testEventWithKind(self):
+    kind = 'testStep'
+    e = self.log1.Event(kind=kind)
+    self.assertEqual(e['id'][0], kind)
 
 
 class EventFileLoggerTest(cros_test_lib.TestCase):
@@ -203,10 +208,14 @@ class FunctionTest(cros_test_lib.TestCase):
     ce.setEventLogger(new_log)
     self.assertEqual(new_log, ce.root)
 
-  def EventTest(self):
+  def newEventTest(self):
     e1 = ce.newEvent()
     self.assertTrue(isinstance(e1, ce.Event))
 
     e2 = ce.newEvent(foo="bar")
     self.assertTrue(isinstance(e2, ce.Event))
     self.assertEqual("bar", e2["foo"])
+
+    test_kind = 'testKind'
+    e3 = ce.NewEvent(kind=test_kind)
+    self.assertEqual(e3['id'][0], test_kind)

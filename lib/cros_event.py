@@ -14,17 +14,19 @@ import multiprocessing
 
 
 # Static Keys and Strings
-EVENT_ID = "id"
+EVENT_ID = 'id'
 
-EVENT_START_TIME = "start_time"
-EVENT_END_TIME = "end_time"
+EVENT_START_TIME = 'start_time'
+EVENT_END_TIME = 'end_time'
 
-EVENT_STATUS = "status"
-EVENT_STATUS_RUNNING = "running"
-EVENT_STATUS_FINISHED = "finished"
-EVENT_STATUS_FAIL = "failed"
+EVENT_STATUS = 'status'
+EVENT_STATUS_RUNNING = 'running'
+EVENT_STATUS_FINISHED = 'finished'
+EVENT_STATUS_FAIL = 'failed'
 
-EVENT_FAIL_MSG = "failure_message"
+EVENT_FAIL_MSG = 'failure_message'
+
+EVENT_KIND_ROOT = 'Root'
 
 # Helper functions
 def EventIdGenerator():
@@ -131,29 +133,46 @@ class Event(dict):
 class EventLogger(object):
   """Logger to be generate, and emit multiple Events"""
 
-  def __init__(self, emit_func, data=None):
+  def __init__(self, emit_func, default_kind=EVENT_KIND_ROOT, data=None):
     """Initialize EventLogger
 
     Args:
     emit_func: Function called with single argument, the Event that has occurred
+    default_kind: string, kind that will be using to generate id list [kind, id]
     data: (optional) metadata that will be copied to all Events generate
     """
 
     self.emit_func = emit_func
 
+    self.default_kind = default_kind
+
     self.data = data if data else {}
 
     self.idGen = EventIdGenerator()
 
-  def Event(self, data=None):
-    """Returns new Event with with given Data"""
+  def Event(self, kind=None, data=None):
+    """Returns new Event with with given Data
+
+    Args:
+    kind: str used in the event's id, see gCloud's datastore doc
+    data: dictionary of additional data to be included
+    """
+
+    kind = kind if kind else self.default_kind
+
+    eid = [kind, self.idGen.next()]
+
     d = self.data.copy()
     if data:
       d.update(data)
-    return Event(eid=self.idGen.next(), data=d, emit_func=self.emit_func)
+    return Event(eid, data=d, emit_func=self.emit_func)
+
+  def setKind(self, kind):
+    """Sets the default kind to be included in the id"""
+    self.default_kind = kind
 
   def shutdown(self):
-    """Call to clean up any resources that the logger my be using"""
+    """Call to clean up any resources that the logger may be using"""
     pass
 
 
@@ -210,6 +229,13 @@ def setEventLogger(logger):
   global root
   root = logger
 
-def newEvent(**kwargs):
+def setKind(kind):
+  """Set new default kind for root EventLogger"""
+  root.setKind(kind)
+
+def newEvent(kind=None, **kwargs):
   """Return a new Event object using root EventLogger"""
-  return root.Event(data=kwargs)
+  if kind:
+    return root.Event(kind=kind, data=kwargs)
+  else:
+    return root.Event(data=kwargs)
