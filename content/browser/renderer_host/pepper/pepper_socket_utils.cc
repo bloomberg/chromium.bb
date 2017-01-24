@@ -156,14 +156,6 @@ bool IsLoopbackAddress(const net::IPAddress& address) {
   return false;
 }
 
-std::string AddressToFirewallString(const net::IPAddress& address) {
-  if (address.IsZero() || address.empty()) {
-    return std::string();
-  }
-
-  return address.ToString();
-}
-
 }  // namespace
 
 void OpenFirewallHole(const net::IPEndPoint& address,
@@ -173,9 +165,13 @@ void OpenFirewallHole(const net::IPEndPoint& address,
     callback.Run(nullptr);
     return;
   }
-  std::string address_string = AddressToFirewallString(address.address());
 
-  chromeos::FirewallHole::Open(type, address.port(), address_string, callback);
+  // TODO(sergeyu): Currently an empty string is passed as interface name, which
+  // means the port will be opened on all network interfaces. Interface name
+  // can be resolved by the address, but the best solution would be to update
+  // firewalld to allow filtering by destination address, not just destination
+  // port. iptables already support it.
+  chromeos::FirewallHole::Open(type, address.port(), std::string(), callback);
 }
 
 void OpenTCPFirewallHole(const net::IPEndPoint& address,
