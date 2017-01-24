@@ -223,7 +223,9 @@ const CGFloat kPrefHeight = 300;
 }
 
 - (void)stop {
-  [_presentedViewController dismissViewControllerAnimated:NO completion:nil];
+  [[_presentedViewController presentingViewController]
+      dismissViewControllerAnimated:NO
+                         completion:nil];
   _presentedViewController.reset();
   _cancelHandler.reset();
 }

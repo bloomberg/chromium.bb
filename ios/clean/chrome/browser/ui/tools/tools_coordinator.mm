@@ -38,8 +38,9 @@
 }
 
 - (void)stop {
-  [self.menuViewController dismissViewControllerAnimated:self.context.animated
-                                              completion:nil];
+  [self.menuViewController.presentingViewController
+      dismissViewControllerAnimated:self.context.animated
+                         completion:nil];
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate

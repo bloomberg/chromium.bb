@@ -112,7 +112,9 @@
 }
 
 - (void)stop {
-  [_navigationController dismissViewControllerAnimated:YES completion:nil];
+  [[_navigationController presentingViewController]
+      dismissViewControllerAnimated:YES
+                         completion:nil];
   _itemsDisplayCoordinator.reset();
   _shippingAddressSelectionCoordinator.reset();
   _shippingOptionSelectionCoordinator.reset();

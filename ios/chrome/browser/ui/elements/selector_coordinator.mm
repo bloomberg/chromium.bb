@@ -49,8 +49,9 @@
 }
 
 - (void)stop {
-  [self.selectorPickerViewController dismissViewControllerAnimated:YES
-                                                        completion:nil];
+  [self.selectorPickerViewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
 }
 
 #pragma mark SelectorViewControllerDelegate

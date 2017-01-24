@@ -76,8 +76,9 @@ const BOOL kUseBottomToolbar = NO;
 }
 
 - (void)stop {
-  [self.viewController dismissViewControllerAnimated:self.context.animated
-                                          completion:nil];
+  [self.viewController.presentingViewController
+      dismissViewControllerAnimated:self.context.animated
+                         completion:nil];
   _webStateObserver.reset();
 }
 
