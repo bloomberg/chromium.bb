@@ -216,7 +216,7 @@ border-collapse inherited, independent, keyword_only, keywords=[separate|collaps
 border-image-outset interpolable, custom_all
 border-image-repeat custom_all
 border-image-slice interpolable, custom_all
-border-image-source interpolable, custom_value, typedom_types=[Image], keywords=[none]
+border-image-source interpolable, custom_value, typedom_types=[Image], keywords=[none], api_class=CSSPropertyAPIImage
 border-image-width interpolable, custom_all
 border-left-color interpolable, custom_all
 border-left-style type_name=EBorderStyle, initial=initialBorderStyle
@@ -293,7 +293,7 @@ left typedom_types=[Length], keywords=[auto], supports_percentage, interpolable,
 letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing, api_class=CSSPropertyAPILetterAndWordSpacing
 lighting-color interpolable, svg, converter=convertColor, api_class=CSSPropertyAPIColor
 line-height interpolable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
-list-style-image interpolable, inherited, custom_value, typedom_types=[Image]
+list-style-image interpolable, inherited, custom_value, typedom_types=[Image], api_class=CSSPropertyAPIImage
 list-style-position inherited, independent, keyword_only, keywords=[outside|inside], initial_keyword=outside
 list-style-type inherited, keyword_only, keywords=[disc|circle|square|decimal|decimal-leading-zero|arabic-indic|bengali|cambodian|khmer|devanagari|gujarati|gurmukhi|kannada|lao|malayalam|mongolian|myanmar|oriya|persian|urdu|telugu|tibetan|thai|lower-roman|upper-roman|lower-greek|lower-alpha|lower-latin|upper-alpha|upper-latin|cjk-earthly-branch|cjk-heavenly-stem|ethiopic-halehame|ethiopic-halehame-am|ethiopic-halehame-ti-er|ethiopic-halehame-ti-et|hangul|hangul-consonant|korean-hangul-formal|korean-hanja-formal|korean-hanja-informal|hebrew|armenian|lower-armenian|upper-armenian|georgian|cjk-ideographic|simp-chinese-formal|simp-chinese-informal|trad-chinese-formal|trad-chinese-informal|hiragana|katakana|hiragana-iroha|katakana-iroha|none], initial_keyword=disc
 margin-bottom interpolable, initial=initialMargin, converter=convertQuirkyLength
@@ -439,7 +439,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-mask-box-image-outset interpolable, custom_all
 -webkit-mask-box-image-repeat custom_all
 -webkit-mask-box-image-slice interpolable, custom_all
--webkit-mask-box-image-source interpolable, custom_value
+-webkit-mask-box-image-source interpolable, custom_value, api_class=CSSPropertyAPIImage
 -webkit-mask-box-image-width interpolable, custom_all
 -webkit-mask-clip custom_all
 -webkit-mask-composite custom_all

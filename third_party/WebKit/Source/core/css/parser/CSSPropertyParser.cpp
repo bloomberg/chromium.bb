@@ -2376,10 +2376,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyRx:
     case CSSPropertyRy:
       return consumeRxOrRy(m_range);
-    case CSSPropertyListStyleImage:
-    case CSSPropertyBorderImageSource:
-    case CSSPropertyWebkitMaskBoxImageSource:
-      return consumeImageOrNone(m_range, m_context);
     case CSSPropertyPerspective:
       return consumePerspective(m_range, m_context, unresolvedProperty);
     case CSSPropertyScrollSnapPointsX:
