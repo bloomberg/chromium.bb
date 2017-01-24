@@ -682,8 +682,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
         ['linux', ('nvidia', 0xf02)], bug=680282)
-    self.Fail('conformance2/textures/image_data/tex-2d-rg32f-rg-float.html',
-        ['linux', 'nvidia'], bug=682190)
+    self.Fail('conformance2/textures/image_data/tex-2d-rg16f-rg-half_float.html',
+        ['linux', 'nvidia'], bug=684399)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-2d-rgb565-rgb-unsigned_byte.html',
+        ['linux', 'nvidia'], bug=684399)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
@@ -696,13 +699,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['linux', 'intel'], bug=635528)
 
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-       ['linux', 'intel'], bug=666384)
 
     self.Fail('conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html',
        ['linux', 'intel'], bug=662644) # WebGL 2.0.1
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
+       ['linux', 'intel'], bug=666384)
+    self.Fail('conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html',
        ['linux', 'intel'], bug=666384)
 
     # Fails on Intel Mesa GL 3.3, passes on Intel Mesa GL 4.5.
