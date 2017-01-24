@@ -17861,6 +17861,12 @@
      }
     ]
    ],
+   "IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm": [
+    [
+     "/IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm",
+     {}
+    ]
+   ],
    "IndexedDB/idbcursor-direction-index-keyrange.htm": [
     [
      "/IndexedDB/idbcursor-direction-index-keyrange.htm",
@@ -34760,6 +34766,10 @@
    "85dba064e12f6ee4c7f7a9ab288a8ecb11063298",
    "testharness"
   ],
+  "IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm": [
+   "7c2ddb95ce4b7c588ddb2907367a365902eba349",
+   "testharness"
+  ],
   "IndexedDB/idbcursor-direction-index-keyrange.htm": [
    "d87cc37174c74e57880f8883e75a9c033c021e74",
    "testharness"
@@ -36021,7 +36031,7 @@
    "support"
   ],
   "common/vendor-prefix.js": [
-   "b80ec842b65a3423dd789a2226f2ba3caf598049",
+   "2807645fda3cb1decbb944627b038fc87ef019a0",
    "support"
   ],
   "css-values/unset-value-storage.html": [
