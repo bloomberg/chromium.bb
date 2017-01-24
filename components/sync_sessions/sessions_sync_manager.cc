@@ -217,11 +217,9 @@ void SessionsSyncManager::AssociateWindows(
     LOG(ERROR) << "No windows present, see crbug.com/639009";
     return;
   }
-  for (std::set<const SyncedWindowDelegate*>::const_iterator i =
-           windows.begin();
-       i != windows.end(); ++i) {
+  for (const SyncedWindowDelegate* window_delegate : windows) {
     if (option == RELOAD_TABS) {
-      UMA_HISTOGRAM_COUNTS("Sync.SessionTabs", (*i)->GetTabCount());
+      UMA_HISTOGRAM_COUNTS("Sync.SessionTabs", window_delegate->GetTabCount());
     }
 
     // Make sure the window has tabs and a viewable window. The viewable window
@@ -230,20 +228,21 @@ void SessionsSyncManager::AssociateWindows(
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is null, the browser is about to be
     // deleted, so we ignore it.
-    if ((*i)->ShouldSync() && (*i)->GetTabCount() && (*i)->HasWindow()) {
+    if (window_delegate->ShouldSync() && window_delegate->GetTabCount() &&
+        window_delegate->HasWindow()) {
       sync_pb::SessionWindow window_s;
-      SessionID::id_type window_id = (*i)->GetSessionId();
+      SessionID::id_type window_id = window_delegate->GetSessionId();
       DVLOG(1) << "Associating window " << window_id << " with "
-               << (*i)->GetTabCount() << " tabs.";
+               << window_delegate->GetTabCount() << " tabs.";
       window_s.set_window_id(window_id);
       // Note: We don't bother to set selected tab index anymore. We still
       // consume it when receiving foreign sessions, as reading it is free, but
       // it triggers too many sync cycles with too little value to make setting
       // it worthwhile.
-      if ((*i)->IsTypeTabbed()) {
+      if (window_delegate->IsTypeTabbed()) {
         window_s.set_browser_type(
             sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-      } else if ((*i)->IsTypePopup()) {
+      } else if (window_delegate->IsTypePopup()) {
         window_s.set_browser_type(
             sync_pb::SessionWindow_BrowserType_TYPE_POPUP);
       } else {
@@ -254,9 +253,9 @@ void SessionsSyncManager::AssociateWindows(
       }
 
       bool found_tabs = false;
-      for (int j = 0; j < (*i)->GetTabCount(); ++j) {
-        SessionID::id_type tab_id = (*i)->GetTabIdAt(j);
-        SyncedTabDelegate* synced_tab = (*i)->GetTabAt(j);
+      for (int j = 0; j < window_delegate->GetTabCount(); ++j) {
+        SessionID::id_type tab_id = window_delegate->GetTabIdAt(j);
+        SyncedTabDelegate* synced_tab = window_delegate->GetTabAt(j);
 
         // GetTabAt can return a null tab; in that case just skip it.
         if (!synced_tab)
