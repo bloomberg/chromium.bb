@@ -303,7 +303,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       });
     });
 
-    test('verifySaveExpiredCreditCardEdit', function(done) {
+    test('verify save disabled for expired credit card', function() {
       var creditCard = FakeDataMaker.emptyCreditCardEntry();
 
       var now = new Date();
@@ -315,29 +315,29 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
 
       return test_util.whenAttributeIs(
           creditCardDialog.$.dialog, 'open', true).then(function() {
-        creditCardDialog.addEventListener('save-credit-card', function() {
-          // Fail the test because the save event should not be called when
-          // the card is expired.
-          assertTrue(false);
-        });
-        creditCardDialog.addEventListener('tap', function() {
-          // Test is |done| in a timeout in order to ensure that
-          // 'save-credit-card' is NOT fired after this test.
-          assertFalse(creditCardDialog.$.expired.hidden);
-          window.setTimeout(done, 100);
-        });
-        MockInteractions.tap(creditCardDialog.$.saveButton);
+        assertTrue(creditCardDialog.$.saveButton.disabled);
       });
     });
 
     // Test will timeout if event is not received.
-    test('verifySaveCreditCardEdit', function(done) {
+    test('verify save new credit card', function(done) {
       var creditCard = FakeDataMaker.emptyCreditCardEntry();
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
       return test_util.whenAttributeIs(
           creditCardDialog.$.dialog, 'open', true).then(function() {
+        // Not expired, but still can't be saved, because there's no name.
         assertTrue(creditCardDialog.$.expired.hidden);
+        assertTrue(creditCardDialog.$.saveButton.disabled);
+
+        // Add a name and trigger the on-input handler.
+        creditCardDialog.set('creditCard.name', 'Jane Doe');
+        creditCardDialog.onCreditCardNameOrNumberChanged_();
+        Polymer.dom.flush();
+
+        assertTrue(creditCardDialog.$.expired.hidden);
+        assertFalse(creditCardDialog.$.saveButton.disabled);
+
         creditCardDialog.addEventListener('save-credit-card', function(event) {
           assertEquals(creditCard.guid, event.detail.guid);
           done();

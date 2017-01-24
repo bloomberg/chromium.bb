@@ -71,6 +71,9 @@ Polymer({
     this.title_ = this.i18n(
         this.creditCard.guid ? 'editCreditCardTitle' : 'addCreditCardTitle');
 
+    // Needed to initialize the disabled state of the Save button.
+    this.onCreditCardNameOrNumberChanged_();
+
     // Add a leading '0' if a month is 1 char.
     if (this.creditCard.expirationMonth.length == 1)
       this.creditCard.expirationMonth = '0' + this.creditCard.expirationMonth;
@@ -119,6 +122,9 @@ Polymer({
    * @private
    */
   onSaveButtonTap_: function() {
+    if (!this.saveEnabled_())
+      return;
+
     // If the card is expired, reflect the error to the user.
     // Otherwise, update the card, save and close the dialog.
     if (!this.checkIfCardExpired_(this.expirationMonth_,
@@ -138,6 +144,17 @@ Polymer({
   /** @private */
   onYearChange_: function() {
     this.expirationYear_ = this.yearList_[this.$.year.selectedIndex];
+  },
+
+  /** @private */
+  onCreditCardNameOrNumberChanged_: function() {
+    this.$.saveButton.disabled = !this.saveEnabled_();
+  },
+
+  /** @private */
+  saveEnabled_: function() {
+    return (this.creditCard.name && this.creditCard.name.trim()) ||
+        (this.creditCard.cardNumber && this.creditCard.cardNumber.trim());
   },
 });
 })();
