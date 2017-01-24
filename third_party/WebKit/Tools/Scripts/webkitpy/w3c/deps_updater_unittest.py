@@ -20,13 +20,13 @@ class DepsUpdaterTest(unittest.TestCase):
             'some/non-test.file',
         ]
         directory_to_owner = {
-            'foo/bar': 'me@gmail.com',
-            'foo/baz': 'you@gmail.com',
+            'foo/bar': 'someone@gmail.com',
+            'foo/baz': 'not an email address',
             'foo/bat': 'noone@gmail.com',
         }
         self.assertEqual(
             updater.generate_email_list(changed_files, directory_to_owner),
-            ['me@gmail.com', 'you@gmail.com'])
+            ['someone@gmail.com'])
 
     def test_parse_directory_owners(self):
         updater = DepsUpdater(MockHost())

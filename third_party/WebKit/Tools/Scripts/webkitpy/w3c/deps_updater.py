@@ -15,9 +15,10 @@ upload a CL, trigger try jobs, and make any changes that are required for
 new failing tests before committing.
 """
 
-import logging
 import argparse
 import json
+import logging
+import re
 
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
@@ -389,7 +390,11 @@ class DepsUpdater(object):
                 continue
             test_dir = self.fs.dirname(test_path)
             if test_dir in directory_to_owner:
-                email_addresses.add(directory_to_owner[test_dir])
+                address = directory_to_owner[test_dir]
+                if not re.match(r'\S+@\S+', address):
+                    _log.warning('%s appears not be an email address, skipping.', address)
+                    continue
+                email_addresses.add(address)
         return sorted(email_addresses)
 
     def fetch_new_expectations_and_baselines(self):
