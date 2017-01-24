@@ -15,21 +15,13 @@
 
 namespace base {
 class CommandLine;
-class Thread;
-class Value;
-}
-
-namespace mojo {
-namespace edk {
-class ScopedIPCSupport;
-}
 }
 
 namespace content {
 class TestState;
 }
 
-// MojoTestConnector is responsible for providing the necessary wiring for
+// MojoTestConnector in responsible for providing the necessary wiring for
 // test processes to get a mojo channel passed to them.  To use this class
 // call PrepareForTest() prior to launching each test. It is expected
 // PrepareForTest() is called from content::TestLauncherDelegate::PreRunTest().
@@ -42,7 +34,7 @@ class MojoTestConnector {
   // browser_tests.
   static const char kMashApp[];
 
-  explicit MojoTestConnector(std::unique_ptr<base::Value> catalog_contents);
+  MojoTestConnector();
   ~MojoTestConnector();
 
   // Initializes the background thread the ServiceManager runs on.
@@ -57,10 +49,8 @@ class MojoTestConnector {
 
   std::unique_ptr<ServiceProcessLauncherDelegateImpl>
       service_process_launcher_delegate_;
-  service_manager::BackgroundServiceManager background_service_manager_;
 
-  std::unique_ptr<base::Thread> ipc_thread_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
+  service_manager::BackgroundServiceManager background_service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestConnector);
 };

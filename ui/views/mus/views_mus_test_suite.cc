@@ -14,9 +14,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
-#include "services/catalog/catalog.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -37,9 +34,6 @@
 
 namespace views {
 namespace {
-
-const base::FilePath::CharType kCatalogFilename[] =
-    FILE_PATH_LITERAL("views_mus_tests_catalog.json");
 
 void EnsureCommandLineSwitch(const std::string& name) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -105,17 +99,7 @@ std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
 class ServiceManagerConnection {
  public:
   ServiceManagerConnection()
-      : thread_("Persistent service_manager connections"),
-        ipc_thread_("IPC thread") {
-    catalog::Catalog::LoadDefaultCatalogManifest(
-        base::FilePath(kCatalogFilename));
-    mojo::edk::Init();
-    ipc_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    ipc_support_ = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
-        ipc_thread_.task_runner(),
-        mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
-
+      : thread_("Persistent service_manager connections") {
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Thread::Options options;
@@ -165,16 +149,11 @@ class ServiceManagerConnection {
 
   void SetUpConnections(base::WaitableEvent* wait) {
     background_service_manager_ =
-        base::MakeUnique<service_manager::BackgroundServiceManager>(
-            nullptr, nullptr);
-    service_manager::mojom::ServicePtr service;
+        base::MakeUnique<service_manager::BackgroundServiceManager>();
+    background_service_manager_->Init(nullptr);
     context_ = base::MakeUnique<service_manager::ServiceContext>(
         base::MakeUnique<DefaultService>(),
-        service_manager::mojom::ServiceRequest(&service));
-    background_service_manager_->RegisterService(
-        service_manager::Identity(
-            GetTestName(), service_manager::mojom::kRootUserID),
-        std::move(service), nullptr);
+        background_service_manager_->CreateServiceRequest(GetTestName()));
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
     service_manager::Connector* connector = context_->connector();
@@ -200,8 +179,6 @@ class ServiceManagerConnection {
   }
 
   base::Thread thread_;
-  base::Thread ipc_thread_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
   std::unique_ptr<service_manager::BackgroundServiceManager>
       background_service_manager_;
   std::unique_ptr<service_manager::ServiceContext> context_;

@@ -210,18 +210,18 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::unique_ptr<BuiltinManifestProvider> manifest_provider,
       service_manager::mojom::ServicePtrInfo embedder_service_proxy_info) {
     manifest_provider_ = std::move(manifest_provider);
-    catalog_ =
-        base::MakeUnique<catalog::Catalog>(nullptr, manifest_provider_.get());
+
+    base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
+    catalog_.reset(
+        new catalog::Catalog(blocking_pool, manifest_provider_.get()));
     service_manager_ = base::MakeUnique<service_manager::ServiceManager>(
         base::MakeUnique<NullServiceProcessLauncherFactory>(),
         catalog_->TakeService());
 
-    service_manager::mojom::ServicePtr service;
-    service.Bind(std::move(embedder_service_proxy_info));
-    service_manager_->RegisterService(
-        service_manager::Identity(
-            mojom::kBrowserServiceName, service_manager::mojom::kRootUserID),
-        std::move(service), nullptr);
+    service_manager::mojom::ServiceRequest request =
+        service_manager_->StartEmbedderService(mojom::kBrowserServiceName);
+    mojo::FuseInterface(
+        std::move(request), std::move(embedder_service_proxy_info));
   }
 
   void ShutDownOnIOThread() {

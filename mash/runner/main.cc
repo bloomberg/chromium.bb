@@ -21,10 +21,7 @@
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/standalone/context.h"
 #include "services/service_manager/switches.h"
@@ -56,11 +53,13 @@ int main(int argc, char** argv) {
   base::FilePath exe_path;
   base::PathService::Get(base::DIR_EXE, &exe_path);
   base::FilePath catalog_path = exe_path.Append(kMashCatalogFilename);
-  bool result = base::ReadFileToString(catalog_path, &catalog_contents);
-  DCHECK(result);
+  DCHECK(base::ReadFileToString(catalog_path, &catalog_contents));
   std::unique_ptr<base::Value> manifest_value =
       base::JSONReader::Read(catalog_contents);
   DCHECK(manifest_value);
+
+  auto params = base::MakeUnique<service_manager::Context::InitParams>();
+  params->static_catalog = std::move(manifest_value);
 
 #if defined(OS_WIN) && defined(COMPONENT_BUILD)
   // In Windows component builds, ensure that loaded service binaries always
@@ -68,27 +67,24 @@ int main(int argc, char** argv) {
   SetDllDirectory(exe_path.value().c_str());
 #endif
 
-  base::i18n::InitializeICU();
+  // We want the Context to outlive the MessageLoop so that pipes are all
+  // gracefully closed / error-out before we try to shut the Context down.
+  service_manager::Context service_manager_context;
+  {
+    base::MessageLoop message_loop;
+    base::i18n::InitializeICU();
+    service_manager_context.Init(std::move(params));
 
-  mojo::edk::Init();
+    message_loop.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&service_manager::Context::RunCommandLineApplication,
+                   base::Unretained(&service_manager_context)));
 
-  base::Thread ipc_thread("IPC thread");
-  ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+    base::RunLoop().Run();
 
-  // We can use fast IPC shutdown here since service manager termination must
-  // effectively bring down all services as well.
-  mojo::edk::ScopedIPCSupport ipc_support(
-      ipc_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
+    // Must be called before |message_loop| is destroyed.
+    service_manager_context.Shutdown();
+  }
 
-  base::MessageLoop message_loop;
-  service_manager::Context service_manager_context(nullptr,
-                                                   std::move(manifest_value));
-  message_loop.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&service_manager::Context::RunCommandLineApplication,
-                 base::Unretained(&service_manager_context)));
-  base::RunLoop().Run();
   return 0;
 }

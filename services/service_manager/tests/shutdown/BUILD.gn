@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -82,14 +81,5 @@ service("shutdown_client") {
   ]
   data_deps = [
     ":shutdown_client_manifest",
-  ]
-}
-
-catalog("catalog") {
-  embedded_services = [ ":shutdown_unittest_manifest" ]
-
-  standalone_services = [
-    ":shutdown_client_manifest",
-    ":shutdown_service_manifest",
   ]
 }

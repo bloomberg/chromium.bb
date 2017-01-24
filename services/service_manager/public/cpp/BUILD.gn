@@ -86,7 +86,6 @@ if (!is_ios) {
     deps = [
       "//base",
       "//base/test:test_support",
-      "//mojo/edk/system",
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/system",
       "//services/service_manager/background:lib",

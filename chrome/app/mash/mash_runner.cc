@@ -4,18 +4,14 @@
 
 #include "chrome/app/mash/mash_runner.h"
 
-#include <string>
-
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -26,7 +22,6 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -34,8 +29,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "mash/package/mash_packaged_service.h"
 #include "mash/session/public/interfaces/constants.mojom.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
@@ -68,8 +61,19 @@ const char* kMashChild = "mash-child";
 
 const char kChromeMashServiceName[] = "chrome_mash";
 
-const base::FilePath::CharType kChromeMashCatalogFilename[] =
-    FILE_PATH_LITERAL("chrome_mash_catalog.json");
+const char kChromeContentBrowserPackageName[] = "chrome_content_browser";
+const char kChromeContentGpuPackageName[] = "chrome_content_gpu";
+const char kChromeContentRendererPackageName[] = "chrome_content_renderer";
+const char kChromeContentUtilityPackageName[] = "chrome_content_utility";
+
+const char kPackagesPath[] = "Packages";
+const char kManifestFilename[] = "manifest.json";
+
+base::FilePath GetPackageManifestPath(const std::string& package_name) {
+  base::FilePath exe = base::CommandLine::ForCurrentProcess()->GetProgram();
+  return exe.DirName().AppendASCII(kPackagesPath).AppendASCII(package_name)
+      .AppendASCII(kManifestFilename);
+}
 
 bool IsChild() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -168,39 +172,45 @@ int MashRunner::Run() {
 void MashRunner::RunMain() {
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
-  mojo::edk::Init();
-
-  base::Thread ipc_thread("IPC thread");
-  ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  mojo::edk::ScopedIPCSupport ipc_support(
-      ipc_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
-
-  std::string catalog_contents;
-  base::FilePath exe_path;
-  base::PathService::Get(base::DIR_EXE, &exe_path);
-  base::FilePath catalog_path = exe_path.Append(kChromeMashCatalogFilename);
-  bool result = base::ReadFileToString(catalog_path, &catalog_contents);
-  DCHECK(result);
-  std::unique_ptr<base::Value> manifest_value =
-      base::JSONReader::Read(catalog_contents);
-  DCHECK(manifest_value);
-
   // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
-  service_manager::BackgroundServiceManager background_service_manager(
-      &service_process_launcher_delegate, std::move(manifest_value));
-  service_manager::mojom::ServicePtr service;
+  service_manager::BackgroundServiceManager background_service_manager;
+  std::unique_ptr<service_manager::BackgroundServiceManager::InitParams>
+      init_params(new service_manager::BackgroundServiceManager::InitParams);
+  init_params->service_process_launcher_delegate =
+      &service_process_launcher_delegate;
+  background_service_manager.Init(std::move(init_params));
   context_.reset(new service_manager::ServiceContext(
       base::MakeUnique<mash::MashPackagedService>(),
-      service_manager::mojom::ServiceRequest(&service)));
-  background_service_manager.RegisterService(
-      service_manager::Identity(
-          kChromeMashServiceName, service_manager::mojom::kRootUserID),
-      std::move(service), nullptr);
+      background_service_manager.CreateServiceRequest(kChromeMashServiceName)));
+
+  // We need to send a sync messages to the Catalog, so we wait for a completed
+  // connection first.
+  std::unique_ptr<service_manager::Connection> catalog_connection =
+      context_->connector()->Connect(catalog::mojom::kServiceName);
+  {
+    base::RunLoop run_loop;
+    catalog_connection->AddConnectionCompletedClosure(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Synchronously override manifests needed for content process services.
+  catalog::mojom::CatalogControlPtr catalog_control;
+  catalog_connection->GetInterface(&catalog_control);
+  CHECK(catalog_control->OverrideManifestPath(
+      content::mojom::kBrowserServiceName,
+      GetPackageManifestPath(kChromeContentBrowserPackageName)));
+  CHECK(catalog_control->OverrideManifestPath(
+      content::mojom::kGpuServiceName,
+      GetPackageManifestPath(kChromeContentGpuPackageName)));
+  CHECK(catalog_control->OverrideManifestPath(
+      content::mojom::kRendererServiceName,
+      GetPackageManifestPath(kChromeContentRendererPackageName)));
+  CHECK(catalog_control->OverrideManifestPath(
+      content::mojom::kUtilityServiceName,
+      GetPackageManifestPath(kChromeContentUtilityPackageName)));
 
   // Ping mash_session to ensure an instance is brought up
   context_->connector()->Connect(mash::session::mojom::kServiceName);

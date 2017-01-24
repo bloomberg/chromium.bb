@@ -7,9 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/threading/thread.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -63,12 +60,11 @@ void ServiceTest::OnStartCalled(Connector* connector,
 
 void ServiceTest::SetUp() {
   message_loop_ = CreateMessageLoop();
-
-  DCHECK(!init_edk_);
-
-  background_service_manager_ =
-      base::MakeUnique<service_manager::BackgroundServiceManager>(
-          nullptr, nullptr);
+  background_service_manager_.reset(
+      new service_manager::BackgroundServiceManager);
+  auto init_params = base::MakeUnique<BackgroundServiceManager::InitParams>();
+  init_params->init_edk = init_edk_;
+  background_service_manager_->Init(std::move(init_params));
 
   // Create the service manager connection. We don't proceed until we get our
   // Service's OnStart() method is called.
@@ -77,12 +73,11 @@ void ServiceTest::SetUp() {
       base::MessageLoop::current());
   initialize_called_ = run_loop.QuitClosure();
 
-  mojom::ServicePtr service;
-  context_ = base::MakeUnique<ServiceContext>(CreateService(),
-                                              mojom::ServiceRequest(&service));
-  background_service_manager_->RegisterService(
-      Identity(test_name_, mojom::kRootUserID), std::move(service), nullptr);
+  context_.reset(new ServiceContext(
+      CreateService(),
+      background_service_manager_->CreateServiceRequest(test_name_)));
   connector_ = context_->connector();
+
   run_loop.Run();
 }
 

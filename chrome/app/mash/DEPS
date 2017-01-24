@@ -9,7 +9,6 @@ include_rules = [
   "+components/tracing",
   "+services/ui",
   "+mash",
-  "+mojo/edk/embedder",
   "+services/catalog",
   "+services/service_manager",
 ]

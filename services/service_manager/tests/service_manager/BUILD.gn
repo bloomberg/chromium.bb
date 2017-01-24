@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -76,7 +75,10 @@ service_manifest("target_manifest") {
 service_manifest("embedder_manifest") {
   name = "service_manager_unittest_embedder"
   source = "embedder_manifest.json"
-  packaged_services = [ ":singleton_manifest" ]
+  deps = [
+    ":singleton_manifest",
+  ]
+  packaged_services = [ "service_manager_unittest_singleton" ]
 }
 
 service_manifest("singleton_manifest") {
@@ -102,13 +104,9 @@ service("service_manager_unittest_embedder") {
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",
   ]
-}
 
-catalog("catalog") {
-  embedded_services = [ ":manifest" ]
-
-  standalone_services = [
+  data_deps = [
     ":embedder_manifest",
-    ":target_manifest",
+    ":singleton_manifest",
   ]
 }

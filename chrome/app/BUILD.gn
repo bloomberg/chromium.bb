@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -354,37 +353,15 @@ static_library("test_support") {
   }
 }
 
-service_manifest("chrome_content_browser_manifest_overlay") {
+service_manifest_overlay("chrome_content_browser_manifest_overlay") {
   source = "//chrome/browser/chrome_content_browser_manifest_overlay.json"
   packaged_services = [
+    "image_decoder",
+    "preferences",
+  ]
+  deps = [
     "//chrome/browser:preferences_manifest",
     "//services/image_decoder:manifest",
-  ]
-}
-
-service_manifest("chrome_content_gpu_manifest_overlay") {
-  source = "//chrome/browser/chrome_content_gpu_manifest_overlay.json"
-}
-
-service_manifest("chrome_content_plugin_manifest_overlay") {
-  source = "//chrome/browser/chrome_content_plugin_manifest_overlay.json"
-}
-
-service_manifest("chrome_content_renderer_manifest_overlay") {
-  source = "//chrome/browser/chrome_content_renderer_manifest_overlay.json"
-}
-
-service_manifest("chrome_content_utility_manifest_overlay") {
-  source = "//chrome/browser/chrome_content_utility_manifest_overlay.json"
-}
-
-group("chrome_content_manifest_overlays") {
-  deps = [
-    ":chrome_content_browser_manifest_overlay",
-    ":chrome_content_gpu_manifest_overlay",
-    ":chrome_content_plugin_manifest_overlay",
-    ":chrome_content_renderer_manifest_overlay",
-    ":chrome_content_utility_manifest_overlay",
   ]
 }
 
@@ -396,42 +373,62 @@ if (use_aura) {
   # resources and merged at runtime.
 
   service_manifest("chrome_content_browser_manifest") {
-    source_manifest = "//content/public/app:browser_manifest"
-    overlays = [ ":chrome_content_browser_manifest_overlay" ]
+    name = "content_browser"
+    output_name = "chrome_content_browser"
+    source = "${root_out_dir}/Packages/content_browser/manifest.json"
+    overlays =
+        [ "${root_gen_dir}/chrome_content_browser_manifest_overlay.json" ]
+    deps = [
+      ":chrome_content_browser_manifest_overlay",
+      "//content/public/app:browser_manifest",
+    ]
   }
 
   service_manifest("chrome_content_gpu_manifest") {
-    source_manifest = "//content/public/app:gpu_manifest"
-    overlays = [ ":chrome_content_gpu_manifest_overlay" ]
+    name = "content_gpu"
+    output_name = "chrome_content_gpu"
+    source = "${root_out_dir}/Packages/content_gpu/manifest.json"
+    overlays = [ "//chrome/browser/chrome_content_gpu_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:gpu_manifest",
+    ]
   }
 
   service_manifest("chrome_content_plugin_manifest") {
-    source_manifest = "//content/public/app:plugin_manifest"
-    overlays = [ ":chrome_content_plugin_manifest_overlay" ]
+    name = "content_plugin"
+    output_name = "chrome_content_plugin"
+    source = "${root_out_dir}/Packages/content_plugin/manifest.json"
+    overlays =
+        [ "//chrome/browser/chrome_content_plugin_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:plugin_manifest",
+    ]
   }
 
   service_manifest("chrome_content_renderer_manifest") {
-    source_manifest = "//content/public/app:renderer_manifest"
-    overlays = [ ":chrome_content_renderer_manifest_overlay" ]
+    name = "content_renderer"
+    output_name = "chrome_content_renderer"
+    source = "${root_out_dir}/Packages/content_renderer/manifest.json"
+    overlays =
+        [ "//chrome/browser/chrome_content_renderer_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:renderer_manifest",
+    ]
   }
 
   service_manifest("chrome_content_utility_manifest") {
-    source_manifest = "//content/public/app:utility_manifest"
-    overlays = [ ":chrome_content_utility_manifest_overlay" ]
+    name = "content_utility"
+    output_name = "chrome_content_utility"
+    source = "${root_out_dir}/Packages/content_utility/manifest.json"
+    overlays =
+        [ "//chrome/browser/chrome_content_utility_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:utility_manifest",
+    ]
   }
 
   group("service_manifests") {
     data_deps = [
-      ":chrome_content_browser_manifest",
-      ":chrome_content_gpu_manifest",
-      ":chrome_content_plugin_manifest",
-      ":chrome_content_renderer_manifest",
-      ":chrome_content_utility_manifest",
-    ]
-  }
-
-  catalog("catalog") {
-    embedded_services = [
       ":chrome_content_browser_manifest",
       ":chrome_content_gpu_manifest",
       ":chrome_content_plugin_manifest",

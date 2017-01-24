@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/dcheck_always_on.gni")
+import("//services/service_manager/public/constants.gni")
 
 # Generates a static catalog manifest to be loaded at runtime. This manifest
 # contains the union of all individual service manifests specified by the
@@ -18,22 +19,14 @@ import("//build/config/dcheck_always_on.gni")
 # Parameters:
 #
 #   embedded_services (optional)
-#       A list of service manifest targets whose outputs correspond to services
-#       embedded by the Service Manager embedder's binary. Outputs of targets
-#       listed here will be embedded in the catalog within its
-#       "embedded_services" list.
+#       A list of names of services which must be embedded by the Service
+#       Manager embedder's binary in order to function. Services listed here
+#       should have a corresponding service_manifest rule entry in deps.
 #
 #   standalone_services (optional)
-#       A list of service manifest targets whose outputs correspond to services
-#       with standalone binaries which must be available to the Service Manager
-#       at runtime. Outputs of targets listed here will be embedded in the
-#       catalog within its "standalone_services" list.
-#
-#       Typically a standalone service binary is expected to live next to
-#       the Service Manager embedder's binary, with the name
-#       "${service_name}.service", with an additional ".exe" suffix on Windows.
-#       Binaries following this naming scheme are typically output by "service"
-#       targets (see //services/service_manager/public/cpp/service.gni).
+#       A list of names of services which must be available to the Service
+#       Manager at runtime, in a Packages/ directory relative to the Service
+#       Manager embedder's binary.
 #
 #    executable_overrides (optional)
 #       A list of overrides to apply in catalog metadata for individual
@@ -51,12 +44,8 @@ import("//build/config/dcheck_always_on.gni")
 #       "content_browser" service can be started by running the "chrome"
 #       executable in the embedder's own directory.
 #
-#       This overrides the default binary name expectation described in
-#       |standalone_services| above.
-#
-#    catalog_deps (optional)
-#       A list of other catalog targets whose outputs will be included within
-#       this catalog. Targets in this list
+#    included_catalogs (optional)
+#       A list of other catalog files to be included within this catalog.
 #
 template("catalog") {
   output_filename = "$target_gen_dir/${target_name}.json"
@@ -65,58 +54,25 @@ template("catalog") {
 
     script = "//services/catalog/public/tools/generate_manifest.py"
 
-    inputs = []
     outputs = [
       output_filename,
     ]
 
-    args = [ "--output=" + rebase_path(output_filename) ]
+    args = [
+      "--output=" + rebase_path(output_filename),
+      "--packages-dir=" + rebase_path("$root_out_dir/$packages_directory"),
+    ]
 
     if (is_debug || dcheck_always_on) {
       args += [ "--pretty" ]
     }
 
-    deps = []
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-
     if (defined(invoker.embedded_services)) {
-      args += [ "--embedded-services" ]
-      foreach(manifest_target, invoker.embedded_services) {
-        manifest_target_dir = get_label_info(manifest_target, "target_gen_dir")
-        manifest_target_name = get_label_info(manifest_target, "name")
-        manifest_filename = "$manifest_target_dir/${manifest_target_name}.json"
-
-        inputs += [ "$manifest_filename" ]
-        deps += [ manifest_target ]
-        args += [ rebase_path(manifest_filename, root_build_dir) ]
-
-        # Ensure that each entry does in fact reference a service manifest rule.
-        label_no_toolchain =
-            get_label_info(manifest_target, "label_no_toolchain")
-        toolchain = get_label_info(manifest_target, "toolchain")
-        deps += [ "${label_no_toolchain}__is_service_manifest(${toolchain})" ]
-      }
+      args += [ "--embedded-services" ] + invoker.embedder_services
     }
 
     if (defined(invoker.standalone_services)) {
-      args += [ "--standalone-services" ]
-      foreach(manifest_target, invoker.standalone_services) {
-        manifest_target_dir = get_label_info(manifest_target, "target_gen_dir")
-        manifest_target_name = get_label_info(manifest_target, "name")
-        manifest_filename = "$manifest_target_dir/${manifest_target_name}.json"
-
-        inputs += [ "$manifest_filename" ]
-        deps += [ manifest_target ]
-        args += [ rebase_path(manifest_filename, root_build_dir) ]
-
-        # Ensure that each entry does in fact reference a service manifest rule.
-        label_no_toolchain =
-            get_label_info(manifest_target, "label_no_toolchain")
-        toolchain = get_label_info(manifest_target, "toolchain")
-        deps += [ "${label_no_toolchain}__is_service_manifest(${toolchain})" ]
-      }
+      args += [ "--standalone-services" ] + invoker.standalone_services
     }
 
     if (defined(invoker.executable_overrides)) {
@@ -124,17 +80,15 @@ template("catalog") {
           [ "--override-service-executables" ] + invoker.executable_overrides
     }
 
-    if (defined(invoker.catalog_deps)) {
+    if (defined(invoker.included_catalogs)) {
       args += [ "--include-catalogs" ]
-      foreach(catalog_target, invoker.catalog_deps) {
-        catalog_target_dir = get_label_info(catalog_target, "target_gen_dir")
-        catalog_target_name = get_label_info(catalog_target, "name")
-        catalog_filename = "$catalog_target_dir/${catalog_target_name}.json"
-
-        inputs += [ "$catalog_filename" ]
-        deps += [ catalog_target ]
-        args += [ rebase_path(catalog_filename, root_build_dir) ]
+      foreach(catalog_filename, invoker.included_catalogs) {
+        args += [ rebase_path(catalog_filename) ]
       }
+    }
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
     }
   }
 }

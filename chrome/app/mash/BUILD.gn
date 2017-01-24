@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 source_set("mash") {
@@ -29,7 +28,7 @@ source_set("mash") {
     "//url",
   ]
   data_deps = [
-    ":catalog_copy",
+    ":mash_manifest",
     "//chrome/app:service_manifests",
   ]
 
@@ -55,7 +54,7 @@ source_set("mash") {
 service_manifest("mash_manifest") {
   name = "chrome_mash"
   source = "chrome_mash_manifest.json"
-  packaged_services = [
+  deps = [
     "//ash/autoclick/mus:manifest",
     "//ash/touch_hud/mus:manifest",
     "//mash/catalog_viewer:manifest",
@@ -65,27 +64,24 @@ service_manifest("mash_manifest") {
     "//services/ui:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
   ]
+  packaged_services = [
+    "accessibility_autoclick",
+    "catalog_viewer",
+    "mash_session",
+    "quick_launch",
+    "task_viewer",
+    "test_ime_driver",
+    "touch_hud",
+    "ui",
+  ]
 
   if (is_chromeos) {
-    packaged_services += [ "//ash/mus:manifest" ]
+    deps += [ "//ash/mus:manifest" ]
+    packaged_services += [ "ash" ]
   }
 
   if (is_linux && !is_android) {
-    packaged_services += [ "//components/font_service:manifest" ]
+    deps += [ "//components/font_service:manifest" ]
+    packaged_services += [ "font_service" ]
   }
-}
-
-catalog("catalog") {
-  embedded_services = [ ":mash_manifest" ]
-  catalog_deps = [ "//chrome/app:catalog" ]
-}
-
-copy("catalog_copy") {
-  sources = get_target_outputs(":catalog")
-  outputs = [
-    "${root_out_dir}/chrome_mash_catalog.json",
-  ]
-  deps = [
-    ":catalog",
-  ]
 }

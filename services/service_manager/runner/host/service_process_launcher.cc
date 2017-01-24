@@ -131,6 +131,24 @@ void ServiceProcessLauncher::DoLaunch(
   }
 
   base::LaunchOptions options;
+
+  base::FilePath exe_dir;
+  base::PathService::Get(base::DIR_EXE, &exe_dir);
+  options.current_directory = exe_dir;
+
+  // The service should look for ICU data next to the service runner's
+  // executable rather than its own.
+  child_command_line->AppendSwitchPath(switches::kIcuDataDir, exe_dir);
+
+#if defined(OS_POSIX)
+  // We need the dynamic loader to be able to locate things like libbase.so
+  // in component builds, as well as some other dynamic runtime dependencies in
+  // other build environments (e.g. libosmesa.so). For this we set
+  // LD_LIBRARY_PATH to the service runner's executable path where such
+  // artifacts are typically expected to reside.
+  options.environ["LD_LIBRARY_PATH"] = exe_dir.value();
+#endif
+
 #if defined(OS_WIN)
   options.handles_to_inherit = &handle_passing_info_;
 #if defined(OFFICIAL_BUILD)
