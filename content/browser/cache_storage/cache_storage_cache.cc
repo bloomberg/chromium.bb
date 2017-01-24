@@ -195,6 +195,60 @@ void ReadMetadataDidReadMetadata(disk_cache::Entry* entry,
   callback.Run(std::move(metadata));
 }
 
+std::unique_ptr<ServiceWorkerFetchRequest> CreateRequest(
+    const proto::CacheMetadata& metadata,
+    const GURL& request_url) {
+  auto request = base::MakeUnique<ServiceWorkerFetchRequest>(
+      request_url, metadata.request().method(), ServiceWorkerHeaderMap(),
+      Referrer(), false);
+
+  for (int i = 0; i < metadata.request().headers_size(); ++i) {
+    const proto::CacheHeaderMap header = metadata.request().headers(i);
+    DCHECK_EQ(std::string::npos, header.name().find('\0'));
+    DCHECK_EQ(std::string::npos, header.value().find('\0'));
+    request->headers.insert(std::make_pair(header.name(), header.value()));
+  }
+  return request;
+}
+
+std::unique_ptr<ServiceWorkerResponse> CreateResponse(
+    const proto::CacheMetadata& metadata,
+    const std::string& cache_name) {
+  std::unique_ptr<std::vector<GURL>> url_list =
+      base::MakeUnique<std::vector<GURL>>();
+  // From Chrome 57, proto::CacheMetadata's url field was deprecated.
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.Response.HasDeprecatedURL",
+                        metadata.response().has_url());
+  if (metadata.response().has_url()) {
+    url_list->push_back(GURL(metadata.response().url()));
+  } else {
+    url_list->reserve(metadata.response().url_list_size());
+    for (int i = 0; i < metadata.response().url_list_size(); ++i)
+      url_list->push_back(GURL(metadata.response().url_list(i)));
+  }
+
+  std::unique_ptr<ServiceWorkerHeaderMap> headers =
+      base::MakeUnique<ServiceWorkerHeaderMap>();
+  for (int i = 0; i < metadata.response().headers_size(); ++i) {
+    const proto::CacheHeaderMap header = metadata.response().headers(i);
+    DCHECK_EQ(std::string::npos, header.name().find('\0'));
+    DCHECK_EQ(std::string::npos, header.value().find('\0'));
+    headers->insert(std::make_pair(header.name(), header.value()));
+  }
+
+  return base::MakeUnique<ServiceWorkerResponse>(
+      std::move(url_list), metadata.response().status_code(),
+      metadata.response().status_text(),
+      ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
+      std::move(headers), "", 0, GURL(),
+      blink::WebServiceWorkerResponseErrorUnknown,
+      base::Time::FromInternalValue(metadata.response().response_time()),
+      true /* is_in_cache_storage */, cache_name,
+      base::MakeUnique<ServiceWorkerHeaderList>(
+          metadata.response().cors_exposed_header_names().begin(),
+          metadata.response().cors_exposed_header_names().end()));
+}
+
 }  // namespace
 
 // The state needed to pass between CacheStorageCache::Put callbacks.
@@ -691,11 +745,8 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
   query_cache_context->matches->push_back(
       QueryCacheResult(base::Time::FromInternalValue(entry_time)));
   QueryCacheResult* match = &query_cache_context->matches->back();
-  match->request = base::MakeUnique<ServiceWorkerFetchRequest>();
-  match->response = base::MakeUnique<ServiceWorkerResponse>();
-  PopulateRequestFromMetadata(*metadata, GURL(entry->GetKey()),
-                              match->request.get());
-  PopulateResponseMetadata(*metadata, match->response.get());
+  match->request = CreateRequest(*metadata, GURL(entry->GetKey()));
+  match->response = CreateResponse(*metadata, cache_name_);
 
   if (query_cache_context->request &&
       !query_cache_context->options.ignore_vary &&
@@ -1409,60 +1460,6 @@ void CacheStorageCache::InitGotCacheSize(const base::Closure& callback,
     cache_observer_->CacheSizeUpdated(this, cache_size_);
 
   callback.Run();
-}
-
-void CacheStorageCache::PopulateRequestFromMetadata(
-    const proto::CacheMetadata& metadata,
-    const GURL& request_url,
-    ServiceWorkerFetchRequest* request) {
-  *request =
-      ServiceWorkerFetchRequest(request_url, metadata.request().method(),
-                                ServiceWorkerHeaderMap(), Referrer(), false);
-
-  for (int i = 0; i < metadata.request().headers_size(); ++i) {
-    const proto::CacheHeaderMap header = metadata.request().headers(i);
-    DCHECK_EQ(std::string::npos, header.name().find('\0'));
-    DCHECK_EQ(std::string::npos, header.value().find('\0'));
-    request->headers.insert(std::make_pair(header.name(), header.value()));
-  }
-}
-
-void CacheStorageCache::PopulateResponseMetadata(
-    const proto::CacheMetadata& metadata,
-    ServiceWorkerResponse* response) {
-  std::unique_ptr<std::vector<GURL>> url_list =
-      base::MakeUnique<std::vector<GURL>>();
-  // From Chrome 57, proto::CacheMetadata's url field was deprecated.
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.Response.HasDeprecatedURL",
-                        metadata.response().has_url());
-  if (metadata.response().has_url()) {
-    url_list->push_back(GURL(metadata.response().url()));
-  } else {
-    url_list->reserve(metadata.response().url_list_size());
-    for (int i = 0; i < metadata.response().url_list_size(); ++i)
-      url_list->push_back(GURL(metadata.response().url_list(i)));
-  }
-
-  std::unique_ptr<ServiceWorkerHeaderMap> headers =
-      base::MakeUnique<ServiceWorkerHeaderMap>();
-  for (int i = 0; i < metadata.response().headers_size(); ++i) {
-    const proto::CacheHeaderMap header = metadata.response().headers(i);
-    DCHECK_EQ(std::string::npos, header.name().find('\0'));
-    DCHECK_EQ(std::string::npos, header.value().find('\0'));
-    headers->insert(std::make_pair(header.name(), header.value()));
-  }
-
-  *response = ServiceWorkerResponse(
-      std::move(url_list), metadata.response().status_code(),
-      metadata.response().status_text(),
-      ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
-      std::move(headers), "", 0, GURL(),
-      blink::WebServiceWorkerResponseErrorUnknown,
-      base::Time::FromInternalValue(metadata.response().response_time()),
-      true /* is_in_cache_storage */, cache_name_,
-      base::MakeUnique<ServiceWorkerHeaderList>(
-          metadata.response().cors_exposed_header_names().begin(),
-          metadata.response().cors_exposed_header_names().end()));
 }
 
 std::unique_ptr<storage::BlobDataHandle>

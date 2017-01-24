@@ -370,11 +370,6 @@ class CONTENT_EXPORT CacheStorageCache {
                         CacheStorageError cache_create_error,
                         int cache_size);
 
-  void PopulateRequestFromMetadata(const proto::CacheMetadata& metadata,
-                                   const GURL& request_url,
-                                   ServiceWorkerFetchRequest* request);
-  void PopulateResponseMetadata(const proto::CacheMetadata& metadata,
-                                ServiceWorkerResponse* response);
   std::unique_ptr<storage::BlobDataHandle> PopulateResponseBody(
       disk_cache::ScopedEntryPtr entry,
       ServiceWorkerResponse* response);
