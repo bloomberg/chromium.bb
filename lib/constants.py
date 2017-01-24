@@ -282,6 +282,14 @@ SOM_SEVERITY_PFQ_FAILURE = 1001
 SOM_SEVERITY_CANARY_FAILURE = 1002
 SOM_SEVERITY_RELEASE_FAILURE = 1003
 
+# List of master builds to generate Sheriff-o-Matics alerts for.
+# Waterfall, build config, SOM alert severity.
+SOM_IMPORTANT_BUILDS = [
+    (WATERFALL_INTERNAL, 'master-paladin', SOM_SEVERITY_CQ_FAILURE),
+    (WATERFALL_INTERNAL, 'master-chromium-pfq', SOM_SEVERITY_PFQ_FAILURE),
+    (WATERFALL_INTERNAL, 'master-release', SOM_SEVERITY_CANARY_FAILURE),
+]
+
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
 # can pass to the target cbuildbot (since it may not have that
