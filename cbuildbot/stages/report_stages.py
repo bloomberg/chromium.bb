@@ -777,20 +777,6 @@ class ReportStage(generic_stages.BuilderStage,
         debug=self._run.debug, acl=self.acl)
     return os.path.join(archive.download_url_file, timeline_file)
 
-  def _MakeViceroyBuildDetailsLink(self, build_id):
-    """Generates a link to the Viceroy build details page.
-
-    Args:
-      build_id: CIDB id for the master build.
-
-    Returns:
-      The URL of the timeline is returned if slave builds exists.  If no
-        slave builds exists then this returns None.
-    """
-    _LINK = ('https://viceroy.corp.google.com/'
-             'chromeos/build_details?build_id=%(build_id)s')
-    return _LINK % {'build_id': build_id}
-
   def GetReportMetadata(self, config=None, stage=None, final_status=None,
                         completion_instance=None):
     """Generate ReportStage metadata.
@@ -862,7 +848,7 @@ class ReportStage(generic_stages.BuilderStage,
           logging.PrintBuildbotLink('Slaves timeline', timeline)
 
       if build_id is not None:
-        details_link = self._MakeViceroyBuildDetailsLink(build_id)
+        details_link = tree_status.ConstructViceroyBuildDetailsURL(build_id)
         logging.PrintBuildbotLink('Build details', details_link)
 
       # Generate links to archived artifacts if there are any.  All the

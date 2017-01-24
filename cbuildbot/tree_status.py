@@ -428,3 +428,17 @@ def ConstructBuildStageURL(buildbot_url, builder_name, build_number,
     url_suffix += '/steps/%s/logs/stdio' % (stage,)
   url_suffix = urllib.quote(url_suffix)
   return os.path.join(buildbot_url, url_suffix)
+
+
+def ConstructViceroyBuildDetailsURL(build_id):
+  """Return the dashboard (viceroy) URL for this run.
+
+  Args:
+    build_id: CIDB id for the master build.
+
+  Returns:
+    The fully formed URL.
+  """
+  _LINK = ('https://viceroy.corp.google.com/'
+           'chromeos/build_details?build_id=%(build_id)s')
+  return _LINK % {'build_id': build_id}
