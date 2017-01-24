@@ -253,6 +253,8 @@ MON_CL_PRECQ_TIME = 'chromeos/cbuildbot/submitted_change/precq_times'
 MON_CL_WAIT_TIME = 'chromeos/cbuildbot/submitted_change/wait_times'
 MON_CL_CQRUN_TIME = 'chromeos/cbuildbot/submitted_change/cq_run_times'
 MON_CL_FALSE_REJ = 'chromeos/cbuildbot/submitted_change/false_rejections'
+MON_CL_FALSE_REJ_TOTAL = ('chromeos/cbuildbot/submitted_change/'
+                          'false_rejections_total')
 MON_CL_FALSE_REJ_COUNT = ('chromeos/cbuildbot/submitted_change/'
                           'false_rejection_count')
 MON_REPO_SYNC_COUNT = 'chromeos/cbuildbot/repo/sync_count'

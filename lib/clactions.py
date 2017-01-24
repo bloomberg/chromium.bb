@@ -1053,8 +1053,25 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
       constants.MON_CL_WAIT_TIME)
   cq_run_time_metric = metrics.SecondsDistribution(
       constants.MON_CL_CQRUN_TIME)
+
+  # These 3 false rejection metrics are different in subtle but important ways.
+
+  # false_rejections: distribution of the number of times a CL was rejected,
+  # broken down by what it was rejected by (cq vs. pre-cq). Every CL will emit
+  # two data points to this distribution.
   false_rejection_metric = metrics.CumulativeSmallIntegerDistribution(
       constants.MON_CL_FALSE_REJ)
+
+  # false_rejections_total: distribution of the total number of times a CL
+  # was rejected (not broken down by phase). Note that there is no way to
+  # independently calculate this from |false_rejections| distribution above,
+  # since one cannot reconstruct after the fact which pre-cq and cq data points
+  # (for the same underlying CL) belong together.
+  false_rejection_total_metric = metrics.CumulativeSmallIntegerDistribution(
+      constants.MON_CL_FALSE_REJ_TOTAL)
+
+  # false_rejection_count: counter of the total number of false rejections that
+  # have occurred (broken down by phase)
   false_rejection_count_metric = metrics.Counter(
       constants.MON_CL_FALSE_REJ_COUNT)
 
@@ -1082,8 +1099,12 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
         (constants.CQ, cq_false_rejections),
     )
 
+    total_rejections = 0
     for by, rej in rejection_types:
-      rejections = rej.get(change, [])
+      c = len(rej.get(change, []))
       f = dict(fields, rejected_by=by)
-      false_rejection_metric.add(len(rejections), fields=f)
-      false_rejection_count_metric.increment_by(len(rejections), fields=f)
+      false_rejection_metric.add(c, fields=f)
+      false_rejection_count_metric.increment_by(c, fields=f)
+      total_rejections += c
+
+    false_rejection_total_metric.add(total_rejections, fields=fields)
