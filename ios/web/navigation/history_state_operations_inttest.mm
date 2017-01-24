@@ -4,8 +4,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
+#import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/http_server.h"
@@ -80,6 +82,11 @@ class HistoryStateOperationsTest : public web::WebIntTest {
         stringWithFormat:kUpdateStateParamsScriptFormat, state_object.c_str(),
                          title.c_str(), url_spec.c_str()];
     ExecuteJavaScript(set_params_script);
+  }
+
+  // Returns the state object returned by JavaScript.
+  std::string GetJavaScriptState() {
+    return base::SysNSStringToUTF8(ExecuteJavaScript(@"window.history.state"));
   }
 
   // Executes JavaScript to check whether the onload text is visible.
@@ -233,6 +240,43 @@ TEST_F(HistoryStateOperationsTest, DISABLED_TitleReplacement) {
   // Wait for the title to be reflected in the NavigationItem.
   base::test::ios::WaitUntilCondition(^bool {
     return GetLastCommittedItem()->GetTitle() == ASCIIToUTF16(new_title);
+  });
+  // Verify that the forward navigation was not pruned.
+  EXPECT_EQ(GetIndexOfNavigationItem(GetLastCommittedItem()) + 1,
+            GetIndexOfNavigationItem(about_blank_item));
+}
+
+// Tests that calling window.history.replaceState() with a new state object
+// replaces the state object for the current NavigationItem.
+TEST_F(HistoryStateOperationsTest, StateReplacement) {
+  // Navigate to about:blank then navigate back to the test page.  The created
+  // NavigationItem can be used later to verify that the state is replaced
+  // rather than pushed.
+  GURL about_blank("about:blank");
+  LoadUrl(about_blank);
+  web::NavigationItem* about_blank_item = GetLastCommittedItem();
+  ExecuteBlockAndWaitForLoad(state_operations_url(), ^{
+    navigation_manager()->GoBack();
+  });
+  ASSERT_EQ(state_operations_url(), GetLastCommittedItem()->GetURL());
+  // Set up the state parameters and tap the replace state button.
+  std::string new_state("STATE OBJECT");
+  std::string empty_title;
+  GURL empty_url;
+  SetStateParams(new_state, empty_title, empty_url);
+  ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
+  // Verify that the state is reflected in the JavaScript context.
+  base::test::ios::WaitUntilCondition(^bool {
+    return GetJavaScriptState() == new_state;
+  });
+  // Verify that the state is reflected in the latest NavigationItem.
+  std::string serialized_state("\"STATE OBJECT\"");
+  base::test::ios::WaitUntilCondition(^bool {
+    web::NavigationItemImpl* item =
+        static_cast<web::NavigationItemImpl*>(GetLastCommittedItem());
+    std::string item_state =
+        base::SysNSStringToUTF8(item->GetSerializedStateObject());
+    return item_state == serialized_state;
   });
   // Verify that the forward navigation was not pruned.
   EXPECT_EQ(GetIndexOfNavigationItem(GetLastCommittedItem()) + 1,
