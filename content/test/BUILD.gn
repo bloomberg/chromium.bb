@@ -1317,6 +1317,7 @@ test("content_unittests") {
     "../common/mac/attributed_string_coder_unittest.mm",
     "../common/mac/font_descriptor_unittest.mm",
     "../common/manifest_util_unittest.cc",
+    "../common/media/media_devices_unittest.cc",
     "../common/navigation_params_unittest.cc",
     "../common/origin_trials/trial_token_unittest.cc",
     "../common/origin_trials/trial_token_validator_unittest.cc",
