@@ -338,6 +338,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // yet.
   void OnFirstPaintAfterLoad();
 
+  // Forwards the keyboard event with optional commands to the renderer. If
+  // |key_event| is not forwarded for any reason, then |commands| are ignored.
+  void ForwardKeyboardEventWithCommands(
+      const NativeWebKeyboardEvent& key_event,
+      const std::vector<EditCommand>* commands);
+
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
   void ForwardGestureEventWithLatencyInfo(

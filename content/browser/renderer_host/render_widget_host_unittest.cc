@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/edit_command.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
@@ -551,6 +552,14 @@ class RenderWidgetHostTest : public testing::Test {
     host_->ForwardKeyboardEvent(native_event);
   }
 
+  void SimulateKeyboardEventWithCommands(WebInputEvent::Type type) {
+    NativeWebKeyboardEvent native_event(type, 0,
+                                        GetNextSimulatedEventTimeSeconds());
+    EditCommands commands;
+    commands.emplace_back("name", "value");
+    host_->ForwardKeyboardEventWithCommands(native_event, &commands);
+  }
+
   void SimulateMouseEvent(WebInputEvent::Type type) {
     host_->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(type));
   }
@@ -939,6 +948,26 @@ TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
   EXPECT_FALSE(delegate_->unhandled_keyboard_event_called());
 }
 
+TEST_F(RenderWidgetHostTest, SendEditCommandsBeforeKeyEvent) {
+  // Clear any messages unrelated to this test.
+  process_->sink().ClearMessages();
+  EXPECT_EQ(0U, process_->sink().message_count());
+
+  // Simulate a keyboard event.
+  SimulateKeyboardEventWithCommands(WebInputEvent::RawKeyDown);
+
+  // Make sure we sent commands and key event to the renderer.
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(InputMsg_SetEditCommandsForNextKeyEvent::ID,
+            process_->sink().GetMessageAt(0)->type());
+  EXPECT_EQ(InputMsg_HandleInputEvent::ID,
+            process_->sink().GetMessageAt(1)->type());
+  process_->sink().ClearMessages();
+
+  // Send the simulated response from the renderer back.
+  SendInputEventACK(WebInputEvent::RawKeyDown, INPUT_EVENT_ACK_STATE_CONSUMED);
+}
+
 TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
   // Simulate the situation that the browser handled the key down event during
   // pre-handle phrase.
@@ -946,13 +975,13 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
   process_->sink().ClearMessages();
 
   // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+  SimulateKeyboardEventWithCommands(WebInputEvent::RawKeyDown);
 
   EXPECT_TRUE(delegate_->prehandle_keyboard_event_called());
   EXPECT_EQ(WebInputEvent::RawKeyDown,
             delegate_->prehandle_keyboard_event_type());
 
-  // Make sure the RawKeyDown event is not sent to the renderer.
+  // Make sure the commands and key event are not sent to the renderer.
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // The browser won't pre-handle a Char event.

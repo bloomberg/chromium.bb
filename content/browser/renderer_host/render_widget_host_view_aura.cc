@@ -2242,9 +2242,7 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
                                           it->argument()));
     }
 
-    target_host->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
-        target_host->GetRoutingID(), edit_commands));
-    target_host->ForwardKeyboardEvent(event);
+    target_host->ForwardKeyboardEventWithCommands(event, &edit_commands);
     return;
   }
 #endif

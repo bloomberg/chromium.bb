@@ -2162,11 +2162,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     if (hasEditCommands_ && !hasMarkedText_)
       delayEventUntilAfterImeCompostion = YES;
   } else {
-    if (!editCommands_.empty()) {
-      widgetHost->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
-          widgetHost->GetRoutingID(), editCommands_));
-    }
-    widgetHost->ForwardKeyboardEvent(event);
+    widgetHost->ForwardKeyboardEventWithCommands(event, &editCommands_);
   }
 
   // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
@@ -2235,11 +2231,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // a key event with |skip_in_browser| == true won't be handled by browser,
     // thus it won't destroy the widget.
 
-    if (!editCommands_.empty()) {
-      widgetHost->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
-          widgetHost->GetRoutingID(), editCommands_));
-    }
-    widgetHost->ForwardKeyboardEvent(event);
+    widgetHost->ForwardKeyboardEventWithCommands(event, &editCommands_);
 
     // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
     // widget was destroyed, |renderWidgetHostView_->render_widget_host_| will

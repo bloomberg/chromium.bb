@@ -1179,6 +1179,12 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
 
 void RenderWidgetHostImpl::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
+  ForwardKeyboardEventWithCommands(key_event, nullptr);
+}
+
+void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
+    const NativeWebKeyboardEvent& key_event,
+    const std::vector<EditCommand>* commands) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
   if (owner_delegate_ &&
       !owner_delegate_->MayRenderWidgetForwardKeyboardEvent(key_event)) {
@@ -1245,6 +1251,15 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
                                                                latency_info);
   key_event_with_latency.event.isBrowserShortcut = is_shortcut;
   DispatchInputEventWithLatencyInfo(key_event, &key_event_with_latency.latency);
+  // TODO(foolip): |InputRouter::SendKeyboardEvent()| may filter events, in
+  // which the commands will be treated as belonging to the next key event.
+  // InputMsg_SetEditCommandsForNextKeyEvent should only be sent if
+  // InputMsg_HandleInputEvent is, but has to be sent first.
+  // https://crbug.com/684298
+  if (commands && !commands->empty()) {
+    Send(
+        new InputMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), *commands));
+  }
   input_router_->SendKeyboardEvent(key_event_with_latency);
 }
 
