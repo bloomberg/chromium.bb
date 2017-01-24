@@ -191,7 +191,7 @@ public class DeferredStartupHandler {
 
                 PartnerBookmarksShim.kickOffReading(mAppContext);
 
-                PowerMonitor.create(mAppContext);
+                PowerMonitor.create();
 
                 ShareHelper.clearSharedImages();
 
