@@ -64,6 +64,7 @@ void PrerenderingOffliner::OnLoadPageDone(
     save_page_params.url = web_contents->GetLastCommittedURL();
     save_page_params.client_id = request.client_id();
     save_page_params.proposed_offline_id = request.request_id();
+    save_page_params.is_background = true;
     // Pass in the original URL if it is different from the last committed URL
     // when redirects occur.
     if (save_page_params.url != request.url())

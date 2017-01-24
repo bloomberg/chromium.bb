@@ -214,7 +214,7 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
   ~TestOfflinePageArchiver() override {}
 
   void CreateArchive(const base::FilePath& archives_dir,
-                     int64_t archive_id,
+                     const CreateArchiveParams& create_archive_params,
                      const CreateArchiveCallback& callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

@@ -783,6 +783,10 @@ class MHTMLPartsGenerationDelegate
 
   bool useBinaryEncoding() override { return params_.mhtml_binary_encoding; }
 
+  bool removePopupOverlay() override {
+    return params_.mhtml_popup_overlay_removal;
+  }
+
  private:
   const FrameMsg_SerializeAsMHTML_Params& params_;
   std::set<std::string>* serialized_resources_uri_digests_;

@@ -43,6 +43,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/Histogram.h"
 #include "platform/SerializedResource.h"
@@ -77,6 +78,8 @@ namespace blink {
 
 namespace {
 
+const int kPopupOverlayZIndexThreshold = 50;
+
 class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   WTF_MAKE_NONCOPYABLE(MHTMLFrameSerializerDelegate);
 
@@ -92,6 +95,8 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   Vector<Attribute> getCustomAttributes(const Element&) override;
 
  private:
+  bool shouldIgnoreHiddenElement(const Element&);
+  bool shouldIgnorePopupOverlayElement(const Element&);
   void getCustomAttributesForImageElement(const HTMLImageElement&,
                                           Vector<Attribute>*);
   void getCustomAttributesForFormControlElement(const Element&,
@@ -105,6 +110,17 @@ MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
     : m_webDelegate(webDelegate) {}
 
 bool MHTMLFrameSerializerDelegate::shouldIgnoreElement(const Element& element) {
+  if (shouldIgnoreHiddenElement(element))
+    return true;
+  if (m_webDelegate.removePopupOverlay() &&
+      shouldIgnorePopupOverlayElement(element)) {
+    return true;
+  }
+  return false;
+}
+
+bool MHTMLFrameSerializerDelegate::shouldIgnoreHiddenElement(
+    const Element& element) {
   // Do not include elements that are are set to hidden without affecting layout
   // by the page. For those elements that are hidden by default, they will not
   // be excluded:
@@ -120,6 +136,28 @@ bool MHTMLFrameSerializerDelegate::shouldIgnoreElement(const Element& element) {
   }
   Element* parent = element.parentElement();
   return parent && !isHTMLHeadElement(parent);
+}
+
+bool MHTMLFrameSerializerDelegate::shouldIgnorePopupOverlayElement(
+    const Element& element) {
+  // The element should be visible.
+  LayoutBox* box = element.layoutBox();
+  if (!box)
+    return false;
+
+  // The bounding box of the element should contain center point of the
+  // viewport.
+  LocalDOMWindow* window = element.document().domWindow();
+  DCHECK(window);
+  LayoutPoint centerPoint(window->innerWidth() / 2, window->innerHeight() / 2);
+  if (!box->frameRect().contains(centerPoint))
+    return false;
+
+  // The z-index should be greater than the threshold.
+  if (box->style()->zIndex() < kPopupOverlayZIndexThreshold)
+    return false;
+
+  return true;
 }
 
 bool MHTMLFrameSerializerDelegate::shouldIgnoreAttribute(

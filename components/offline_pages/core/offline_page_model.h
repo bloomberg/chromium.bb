@@ -70,6 +70,9 @@ class OfflinePageModel : public base::SupportsUserData {
 
     // The original URL of the page to save. Empty if no redirect occurs.
     GURL original_url;
+
+    // Whether the page is being saved in the background.
+    bool is_background;
   };
 
   // Observer of the OfflinePageModel.

@@ -139,6 +139,7 @@ void BackgroundLoaderOffliner::DidStopLoading() {
   params.url = web_contents->GetLastCommittedURL();
   params.client_id = request.client_id();
   params.proposed_offline_id = request.request_id();
+  params.is_background = true;
   offline_page_model_->SavePage(
       params, std::move(archiver),
       base::Bind(&BackgroundLoaderOffliner::OnPageSaved,

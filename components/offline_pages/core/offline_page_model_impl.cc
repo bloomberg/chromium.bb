@@ -361,8 +361,12 @@ void OfflinePageModelImpl::SavePage(
   if (offline_id == kInvalidOfflineId)
     offline_id = GenerateOfflineId();
 
+  OfflinePageArchiver::CreateArchiveParams create_archive_params;
+  // If the page is being saved in the background, we should try to remove the
+  // popup overlay that obstructs viewing the normal content.
+  create_archive_params.remove_popup_overlay = save_page_params.is_background;
   archiver->CreateArchive(
-      archives_dir_, offline_id,
+      archives_dir_, create_archive_params,
       base::Bind(&OfflinePageModelImpl::OnCreateArchiveDone,
                  weak_ptr_factory_.GetWeakPtr(), save_page_params, offline_id,
                  GetCurrentTime(), callback));

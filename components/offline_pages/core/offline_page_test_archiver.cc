@@ -34,11 +34,12 @@ OfflinePageTestArchiver::~OfflinePageTestArchiver() {
 
 void OfflinePageTestArchiver::CreateArchive(
     const base::FilePath& archives_dir,
-    int64_t archive_id,
+    const CreateArchiveParams& create_archive_params,
     const CreateArchiveCallback& callback) {
   create_archive_called_ = true;
   callback_ = callback;
   archives_dir_ = archives_dir;
+  create_archive_params_ = create_archive_params;
   if (!delayed_)
     CompleteCreateArchive();
 }

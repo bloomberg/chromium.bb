@@ -649,4 +649,27 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationSitePerProcessTest, GenerateMHTML) {
   EXPECT_THAT(mhtml, ContainsRegex("Content-Location:.*/title1.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, RemovePopupOverlay) {
+  base::FilePath path(temp_dir_.GetPath());
+  path = path.Append(FILE_PATH_LITERAL("test.mht"));
+
+  GURL url(embedded_test_server()->GetURL("/popup.html"));
+
+  MHTMLGenerationParams params(path);
+  params.remove_popup_overlay = true;
+
+  GenerateMHTML(params, url);
+  ASSERT_FALSE(HasFailure());
+
+  std::string mhtml;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_content_verification;
+    ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
+  }
+
+  // Make sure the overlay is removed.
+  EXPECT_THAT(mhtml, Not(HasSubstr("class=3D\"overlay")));
+  EXPECT_THAT(mhtml, Not(HasSubstr("class=3D\"modal")));
+}
+
 }  // namespace content

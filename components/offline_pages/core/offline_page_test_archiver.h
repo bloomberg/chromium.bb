@@ -46,7 +46,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
 
   // OfflinePageArchiver implementation:
   void CreateArchive(const base::FilePath& archives_dir,
-                     int64_t archive_id,
+                     const CreateArchiveParams& create_archive_params,
                      const CreateArchiveCallback& callback) override;
 
   // Completes the creation of archive. Should be used with |set_delayed| set to
@@ -62,6 +62,10 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   // TODO(fgorski): See if we can move this to the constructor.
   void set_filename(const base::FilePath& filename) { filename_ = filename; }
 
+  const CreateArchiveParams& create_archive_params() const {
+    return create_archive_params_;
+  }
+
   bool create_archive_called() const { return create_archive_called_; }
 
  private:
@@ -69,6 +73,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   Observer* observer_;
   GURL url_;
   base::FilePath archives_dir_;
+  CreateArchiveParams create_archive_params_;
   base::FilePath filename_;
   ArchiverResult result_;
   int64_t size_to_report_;

@@ -209,6 +209,7 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   ipc_params.mhtml_boundary_marker = mhtml_boundary_marker_;
   ipc_params.mhtml_binary_encoding = params_.use_binary_encoding;
   ipc_params.mhtml_cache_control_policy = params_.cache_control_policy;
+  ipc_params.mhtml_popup_overlay_removal = params_.remove_popup_overlay;
 
   int frame_tree_node_id = pending_frame_tree_node_ids_.front();
   pending_frame_tree_node_ids_.pop();

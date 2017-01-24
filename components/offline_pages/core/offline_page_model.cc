@@ -11,14 +11,15 @@ namespace offline_pages {
 const int64_t OfflinePageModel::kInvalidOfflineId;
 
 OfflinePageModel::SavePageParams::SavePageParams()
-    : proposed_offline_id(OfflinePageModel::kInvalidOfflineId) {
-}
+    : proposed_offline_id(OfflinePageModel::kInvalidOfflineId),
+      is_background(false) {}
 
 OfflinePageModel::SavePageParams::SavePageParams(const SavePageParams& other) {
   url = other.url;
   client_id = other.client_id;
   proposed_offline_id = other.proposed_offline_id;
   original_url = other.original_url;
+  is_background = other.is_background;
 }
 
 // static

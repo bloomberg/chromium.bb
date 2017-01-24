@@ -66,6 +66,8 @@ class WebFrameSerializer {
     virtual WebFrameSerializerCacheControlPolicy cacheControlPolicy() = 0;
 
     virtual bool useBinaryEncoding() = 0;
+
+    virtual bool removePopupOverlay() = 0;
   };
 
   // Generates and returns an MHTML header.

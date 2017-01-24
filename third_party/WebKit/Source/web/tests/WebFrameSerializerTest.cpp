@@ -63,6 +63,13 @@ class SimpleWebFrameSerializerClient final : public WebFrameSerializerClient {
 
 class SimpleMHTMLPartsGenerationDelegate
     : public WebFrameSerializer::MHTMLPartsGenerationDelegate {
+ public:
+  SimpleMHTMLPartsGenerationDelegate() : m_removePopupOverlay(false) {}
+
+  void setRemovePopupOverlay(bool removePopupOverlay) {
+    m_removePopupOverlay = removePopupOverlay;
+  }
+
  private:
   bool shouldSkipResource(const WebURL&) final { return false; }
 
@@ -73,6 +80,9 @@ class SimpleMHTMLPartsGenerationDelegate
   }
 
   bool useBinaryEncoding() final { return false; }
+  bool removePopupOverlay() final { return m_removePopupOverlay; }
+
+  bool m_removePopupOverlay;
 };
 
 // Returns the count of match for substring |pattern| in string |str|.
@@ -212,6 +222,10 @@ class WebFrameSerializerSanitizationTest : public WebFrameSerializerTest {
     return String(result.data(), result.size());
   }
 
+  void setRemovePopupOverlay(bool removePopupOverlay) {
+    m_mhtmlDelegate.setRemovePopupOverlay(removePopupOverlay);
+  }
+
  private:
   SimpleMHTMLPartsGenerationDelegate m_mhtmlDelegate;
 };
@@ -329,6 +343,22 @@ TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcForNormalDPI) {
   // New width and height attributes should not be set.
   EXPECT_NE(WTF::kNotFound, mhtml.find("id=3D\"i1\">"));
   EXPECT_NE(WTF::kNotFound, mhtml.find("id=3D\"i2\" width=3D\"8\">"));
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, RemovePopupOverlayIfRequested) {
+  webView()->resize(WebSize(500, 500));
+  setRemovePopupOverlay(true);
+  String mhtml = generateMHTMLParts("http://www.test.com", "popup.html");
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("class=3D\"overlay"));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("class=3D\"modal"));
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
+  webView()->resize(WebSize(500, 500));
+  setRemovePopupOverlay(false);
+  String mhtml = generateMHTMLParts("http://www.test.com", "popup.html");
+  EXPECT_NE(WTF::kNotFound, mhtml.find("class=3D\"overlay"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("class=3D\"modal"));
 }
 
 }  // namespace blink

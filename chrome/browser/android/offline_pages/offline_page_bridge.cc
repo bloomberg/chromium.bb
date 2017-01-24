@@ -445,6 +445,7 @@ void OfflinePageBridge::SavePage(
   save_page_params.client_id.name_space =
       ConvertJavaStringToUTF8(env, j_namespace);
   save_page_params.client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
+  save_page_params.is_background = false;
 
   offline_page_model_->SavePage(
       save_page_params, std::move(archiver),

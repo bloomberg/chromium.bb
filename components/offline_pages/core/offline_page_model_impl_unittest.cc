@@ -127,6 +127,11 @@ class OfflinePageModelImplTest
   void DeletePagesByClientIds(const std::vector<ClientId>& client_ids);
 
   // Saves the page without waiting for it to finish.
+  void SavePageWithParamsAsync(
+      const OfflinePageModel::SavePageParams& save_page_params,
+      std::unique_ptr<OfflinePageArchiver> archiver);
+
+  // Saves the page without waiting for it to finish.
   void SavePageWithArchiverAsync(
       const GURL& url,
       const ClientId& client_id,
@@ -320,6 +325,15 @@ OfflinePageTestStore* OfflinePageModelImplTest::GetStore() {
   return static_cast<OfflinePageTestStore*>(model()->GetStoreForTesting());
 }
 
+void OfflinePageModelImplTest::SavePageWithParamsAsync(
+    const OfflinePageModel::SavePageParams& save_page_params,
+    std::unique_ptr<OfflinePageArchiver> archiver) {
+  model()->SavePage(
+      save_page_params,
+      std::move(archiver),
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
+}
+
 void OfflinePageModelImplTest::SavePageWithArchiverAsync(
     const GURL& url,
     const ClientId& client_id,
@@ -329,10 +343,8 @@ void OfflinePageModelImplTest::SavePageWithArchiverAsync(
   save_page_params.url = url;
   save_page_params.client_id = client_id;
   save_page_params.original_url = original_url;
-  model()->SavePage(
-      save_page_params,
-      std::move(archiver),
-      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
+  save_page_params.is_background = false;
+  SavePageWithParamsAsync(save_page_params, std::move(archiver));
 }
 
 void OfflinePageModelImplTest::SavePageWithArchiver(
@@ -580,6 +592,8 @@ TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverTwoPages) {
   SavePageWithArchiverAsync(
       kTestUrl, kTestClientId1, GURL(), std::move(archiver));
   EXPECT_TRUE(archiver_ptr->create_archive_called());
+  // |remove_popup_overlay| should not be turned on on foreground mode.
+  EXPECT_FALSE(archiver_ptr->create_archive_params().remove_popup_overlay);
 
   // Request to save another page.
   SavePage(kTestUrl2, kTestClientId2);
@@ -635,6 +649,24 @@ TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverTwoPages) {
   EXPECT_EQ(kTestFileSize, page2->file_size);
   EXPECT_EQ(0, page2->access_count);
   EXPECT_EQ(0, page2->flags);
+}
+
+TEST_F(OfflinePageModelImplTest, SavePageOnBackground) {
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+      kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
+  // archiver_ptr will be valid until after first PumpLoop() is called.
+  OfflinePageTestArchiver* archiver_ptr = archiver.get();
+
+  OfflinePageModel::SavePageParams save_page_params;
+  save_page_params.url = kTestUrl;
+  save_page_params.client_id = kTestClientId1;
+  save_page_params.is_background = true;
+  SavePageWithParamsAsync(save_page_params, std::move(archiver));
+  EXPECT_TRUE(archiver_ptr->create_archive_called());
+  // |remove_popup_overlay| should be turned on on background mode.
+  EXPECT_TRUE(archiver_ptr->create_archive_params().remove_popup_overlay);
+
+  PumpLoop();
 }
 
 TEST_F(OfflinePageModelImplTest, MarkPageAccessed) {

@@ -48,7 +48,7 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
 
   // OfflinePageArchiver implementation:
   void CreateArchive(const base::FilePath& archives_dir,
-                     int64_t archive_id,
+                     const CreateArchiveParams& create_archive_params,
                      const CreateArchiveCallback& callback) override;
 
  protected:
@@ -58,7 +58,7 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // Try to generate MHTML.
   // Might be overridden for testing purpose.
   virtual void GenerateMHTML(const base::FilePath& archives_dir,
-                             int64_t archive_id);
+                             const CreateArchiveParams& create_archive_params);
 
   // Callback for Generating MHTML.
   void OnGenerateMHTMLDone(const GURL& url,

@@ -42,7 +42,7 @@ struct LifetimePolicy {
   LifetimePolicy(LifetimeType init_lifetime_type, size_t init_page_limit)
       : lifetime_type(init_lifetime_type),
         expiration_period(base::TimeDelta::FromDays(0)),
-        page_limit(init_page_limit){};
+        page_limit(init_page_limit) {}
 };
 
 // The struct describing feature set of the offline pages.
@@ -60,7 +60,7 @@ struct FeaturePolicy {
       : is_supported_by_download(false),
         is_supported_by_recent_tabs(false),
         only_shown_in_original_tab(false),
-        is_removed_on_cache_reset(true){};
+        is_removed_on_cache_reset(true) {}
 };
 
 // The struct describing policies for various namespaces (Bookmark, Last-N etc.)
@@ -94,7 +94,7 @@ struct OfflinePageClientPolicy {
       : OfflinePageClientPolicy(namespace_val,
                                 lifetime_policy_val,
                                 pages_allowed_per_url_val,
-                                FeaturePolicy()){};
+                                FeaturePolicy()) {}
 };
 
 class OfflinePageClientPolicyBuilder {
@@ -106,7 +106,7 @@ class OfflinePageClientPolicyBuilder {
       : policy_(
             OfflinePageClientPolicy(name_space,
                                     LifetimePolicy(lifetime_type, page_limit),
-                                    pages_allowed_per_url)){};
+                                    pages_allowed_per_url)) {}
 
   ~OfflinePageClientPolicyBuilder() {}
 

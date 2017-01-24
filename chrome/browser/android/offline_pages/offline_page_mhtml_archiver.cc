@@ -52,7 +52,7 @@ OfflinePageMHTMLArchiver::~OfflinePageMHTMLArchiver() {
 
 void OfflinePageMHTMLArchiver::CreateArchive(
     const base::FilePath& archives_dir,
-    int64_t archive_id,
+    const CreateArchiveParams& create_archive_params,
     const CreateArchiveCallback& callback) {
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
@@ -63,11 +63,12 @@ void OfflinePageMHTMLArchiver::CreateArchive(
     return;
   }
 
-  GenerateMHTML(archives_dir, archive_id);
+  GenerateMHTML(archives_dir, create_archive_params);
 }
 
 void OfflinePageMHTMLArchiver::GenerateMHTML(
-    const base::FilePath& archives_dir, int64_t archive_id) {
+    const base::FilePath& archives_dir,
+    const CreateArchiveParams& create_archive_params) {
   if (archives_dir.empty()) {
     DVLOG(1) << "Archive path was empty. Can't create archive.";
     ReportFailure(ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
@@ -95,6 +96,7 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
       archives_dir.Append(base::GenerateGUID()).AddExtension(kMHTMLExtension));
   content::MHTMLGenerationParams params(file_path);
   params.use_binary_encoding = true;
+  params.remove_popup_overlay = create_archive_params.remove_popup_overlay;
 
   web_contents_->GenerateMHTML(
       params,

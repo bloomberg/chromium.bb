@@ -58,6 +58,14 @@ class OfflinePageArchiver {
                                     // there was a security error.
   };
 
+  // Describes the parameters to control how to create an archive.
+  struct CreateArchiveParams {
+    CreateArchiveParams() : remove_popup_overlay(false) {}
+
+    // Whether to remove popup overlay that obstructs viewing normal content.
+    bool remove_popup_overlay;
+  };
+
   typedef base::Callback<void(OfflinePageArchiver* /* archiver */,
                               ArchiverResult /* result */,
                               const GURL& /* url */,
@@ -68,11 +76,11 @@ class OfflinePageArchiver {
 
   virtual ~OfflinePageArchiver() {}
 
-  // Starts creating the archive in the |archives_dir| with |archive_id| added
-  // to the archive filename. Once archive is created |callback| will be called
+  // Starts creating the archive in the |archives_dir| per
+  // |create_archive_params|. Once archive is created |callback| will be called
   // with the result and additional information.
   virtual void CreateArchive(const base::FilePath& archives_dir,
-                             int64_t archive_id,
+                             const CreateArchiveParams& create_archive_params,
                              const CreateArchiveCallback& callback) = 0;
 };
 
