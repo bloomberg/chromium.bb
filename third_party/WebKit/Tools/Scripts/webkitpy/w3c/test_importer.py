@@ -96,7 +96,7 @@ class TestImporter(object):
 
         for root, dirs, files in self.filesystem.walk(self.source_repo_path):
             cur_dir = root.replace(self.dir_above_repo + '/', '') + '/'
-            _log.info('  scanning ' + cur_dir + '...')
+            _log.debug('  scanning ' + cur_dir + '...')
             total_tests = 0
             reftests = 0
             jstests = 0
@@ -121,10 +121,10 @@ class TestImporter(object):
                     if path_base in dirs:
                         dirs.remove(path_base)
                         if self.import_in_place:
-                            _log.info("  pruning %s", path_base)
+                            _log.debug('  pruning %s', path_base)
                             self.filesystem.rmtree(path_full)
                         else:
-                            _log.info("  skipping %s", path_base)
+                            _log.debug('  skipping %s', path_base)
 
             copy_list = []
 
@@ -134,7 +134,7 @@ class TestImporter(object):
                 path_base = self.destination_directory.replace(self.layout_tests_dir + '/', '') + '/' + path_base
                 if path_base in paths_to_skip:
                     if self.import_in_place:
-                        _log.info("  pruning %s", path_base)
+                        _log.debug('  pruning %s', path_base)
                         self.filesystem.remove(path_full)
                         continue
                     else:
@@ -308,7 +308,7 @@ class TestImporter(object):
         # FIXME: Maybe doing a file diff is in order here for existing files?
         # In other words, there's no sense in overwriting identical files, but
         # there's no harm in copying the identical thing.
-        _log.info('  %s', relpath)
+        _log.debug('  copying %s', relpath)
 
         if self.should_try_to_convert(file_to_copy, source_path, dest_dir):
             converted_file = convert_for_webkit(
