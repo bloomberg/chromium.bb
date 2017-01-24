@@ -1808,8 +1808,8 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
-crbug.com/626703 [ Win10 ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-001.xht [ Failure ]
-crbug.com/626703 [ Win10 ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure ]
+crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-001.xht [ Failure ]
+crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure ]
 crbug.com/626703 [ Win10 ] external/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/selection/dir-manual.html [ Timeout ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-email-add-manual.html [ Timeout ]
