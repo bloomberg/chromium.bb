@@ -28,6 +28,8 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 #  transforms
 # Some additional bugs that are caused by painting problems are also within this section.
 
+crbug.com/646176 virtual/stable/paint/invalidation [ Skip ]
+
 # Failures due to SPV2, that don't also fail without SPV2. DO NOT REBASELINE.
 # SPv2 paint properties are still being implemented.
 #
