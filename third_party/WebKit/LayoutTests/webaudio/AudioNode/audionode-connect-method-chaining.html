@@ -2,15 +2,14 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 
 <body>
   <script>
-    description('Test method chaining feature of AudioNode.connect() method.');
-    window.jsTestIsAsync = true;
 
     // AudioNode dictionary with associated arguments.
     var nodeDictionary = [
@@ -32,13 +31,12 @@
 
 
     function verifyReturnedNode(config) {
-      if (config.destination === config.returned) {
-        testPassed('The return value of ' + config.desc + ' matches the destination ' +
-          config.returned.constructor.name + '.');
-      } else {
-        testFailed('The return value of ' + config.desc + ' does NOT match the destination ' +
-          config.destination.constructor.name + '.');
-      }
+      Should('The return value of ' + config.desc +
+          ' matches the destination ' +
+          config.returned.constructor.name,
+          config.destination === config.returned
+        )
+        .beEqualTo(true);
     }
 
     // Test utility for batch method checking: in order to test 3 method
@@ -156,7 +154,6 @@
     });
 
     audit.defineTask('finish', function (done) {
-      finishJSTest();
       done();
     });
 
