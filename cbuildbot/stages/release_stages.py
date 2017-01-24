@@ -15,6 +15,7 @@ from chromite.lib import failures_lib
 from chromite.lib import config_lib
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -151,8 +152,8 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
       signer_json: The parsed json status from a signer operation.
 
     Returns:
-      string with a simple status: 'passed', 'failed', 'downloading', etc,
-      or '' if the json doesn't contain a status.
+      string with a simple status: SIGNER_STATUS_PASSED, SIGNER_STATUS_FAILED,
+      etc, or '' if the json doesn't contain a status.
     """
     return (signer_json or {}).get('status', {}).get('status', '')
 
@@ -169,7 +170,8 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
     Returns:
       Number of results not yet collected.
     """
-    COMPLETED_STATUS = ('passed', 'failed')
+    COMPLETED_STATUS = (constants.SIGNER_STATUS_PASSED,
+                        constants.SIGNER_STATUS_FAILED)
 
     # Assume we are done, then try to prove otherwise.
     results_completed = True
@@ -209,10 +211,11 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
       # If we reach here, the channel has just been completed for the first
       # time.
 
-      # If all results 'passed' the channel was successfully signed.
+      # If all results passed the channel was successfully signed.
       channel_success = True
       for signer_result in self.signing_results[channel].values():
-        if self._SigningStatusFromJson(signer_result) != 'passed':
+        if (self._SigningStatusFromJson(signer_result) !=
+            constants.SIGNER_STATUS_PASSED):
           channel_success = False
 
       # If we successfully completed the channel, inform someone.
@@ -258,7 +261,7 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
         logging.info(json.dumps(signer_result, indent=4))
 
         status = self._SigningStatusFromJson(signer_result)
-        if status != 'passed':
+        if status != constants.SIGNER_STATUS_PASSED:
           failures.append(result_description)
           logging.error('Signing failed for: %s', result_description)
 

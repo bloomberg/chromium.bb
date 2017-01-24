@@ -175,6 +175,10 @@ CL_STATUS_WAITING = 'waiting'
 CL_STATUS_READY_TO_SUBMIT = 'ready-to-submit'
 CL_STATUS_FULLY_VERIFIED = 'fully-verified'
 
+# Signer status strings
+SIGNER_STATUS_PASSED = 'passed'
+SIGNER_STATUS_FAILED = 'failed'
+
 # Change sources
 CHANGE_SOURCE_INTERNAL = 'internal'
 CHANGE_SOURCE_EXTERNAL = 'external'
