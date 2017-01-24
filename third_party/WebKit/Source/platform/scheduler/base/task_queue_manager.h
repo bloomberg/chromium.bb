@@ -180,7 +180,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
   // reloads any empty work queues.
-  void UpdateWorkQueues(LazyNow* lazy_now);
+  void WakeupReadyDelayedQueues(LazyNow* lazy_now);
 
   // Chooses the next work queue to service. Returns true if |out_queue|
   // indicates the queue from which the next task should be run, false to
@@ -222,6 +222,17 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
 
+  // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
+  // |queue_is_blocked| is false it makes sure a DoWork is posted.
+  // Can be called from any thread.
+  void OnQueueHasIncomingImmediateWork(internal::TaskQueueImpl* queue,
+                                       bool queue_is_blocked);
+
+  // Calls |ReloadImmediateWorkQueueIfEmpty| on all queues in
+  // |queues_to_reload|.
+  void ReloadEmptyWorkQueues(const std::unordered_set<internal::TaskQueueImpl*>&
+                                 queues_to_reload) const;
+
   std::set<TimeDomain*> time_domains_;
   std::unique_ptr<RealTimeDomain> real_time_domain_;
 
@@ -249,6 +260,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
 
   struct AnyThread {
     AnyThread();
+
+    // Set of task queues with newly available work on the incoming queue.
+    std::unordered_set<internal::TaskQueueImpl*> has_incoming_immediate_work;
 
     bool other_thread_pending_wakeup;
   };

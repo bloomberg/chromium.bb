@@ -116,13 +116,13 @@ class TaskQueueManagerTest : public testing::Test {
           manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
   }
 
-  void UpdateWorkQueues(LazyNow lazy_now) {
-    manager_->UpdateWorkQueues(&lazy_now);
+  void WakeupReadyDelayedQueues(LazyNow lazy_now) {
+    manager_->WakeupReadyDelayedQueues(&lazy_now);
   }
 
   base::Optional<base::TimeDelta> ComputeDelayTillNextTask(LazyNow* lazy_now) {
     // TODO(alexclarke): Remove this once the DoWork refactor lands.
-    manager_->UpdateWorkQueues(lazy_now);
+    manager_->WakeupReadyDelayedQueues(lazy_now);
     return manager_->ComputeDelayTillNextTask(lazy_now);
   }
 
@@ -322,7 +322,7 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskDoesntExecuteInNestedLoop) {
   EXPECT_THAT(run_order, ElementsAre(1, 2, 4, 5, 3));
 }
 
-TEST_F(TaskQueueManagerTest, QueuePolling) {
+TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_ImmediateTask) {
   Initialize(1u);
 
   std::vector<EnqueueOrder> run_order;
@@ -330,6 +330,43 @@ TEST_F(TaskQueueManagerTest, QueuePolling) {
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
   EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
+  // Move the task into the |immediate_work_queue|.
+  EXPECT_TRUE(runners_[0]->immediate_work_queue()->Empty());
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      runners_[0]->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+  test_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(runners_[0]->immediate_work_queue()->Empty());
+  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+
+  // Run the task, making the queue empty.
+  voter->SetQueueEnabled(true);
+  test_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+}
+
+TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTask) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                               delay);
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  now_src_->Advance(delay);
+  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+
+  // Move the task into the |delayed_work_queue|.
+  EXPECT_TRUE(runners_[0]->delayed_work_queue()->Empty());
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      runners_[0]->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+  test_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(runners_[0]->delayed_work_queue()->Empty());
+  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+
+  // Run the task, making the queue empty.
+  voter->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
 }
@@ -531,6 +568,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning_BeforePosting) {
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  EXPECT_FALSE(test_task_runner_->HasPendingTasks());
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
@@ -547,6 +585,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterPosting) {
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
+  EXPECT_TRUE(test_task_runner_->HasPendingTasks());
   voter->SetQueueEnabled(false);
 
   test_task_runner_->RunUntilIdle();
@@ -1085,12 +1124,12 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTasks) {
 
   // Move time forwards until just before the delayed task should run.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
-  UpdateWorkQueues(LazyNow(now_src_.get()));
+  WakeupReadyDelayedQueues(LazyNow(now_src_.get()));
   EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
 
   // Force the delayed task onto the work queue.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(2));
-  UpdateWorkQueues(LazyNow(now_src_.get()));
+  WakeupReadyDelayedQueues(LazyNow(now_src_.get()));
   EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
   test_task_runner_->RunUntilIdle();
@@ -2299,6 +2338,61 @@ TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_TaskBlocked) {
 
   LazyNow lazy_now(now_src_.get());
   EXPECT_FALSE(ComputeDelayTillNextTask(&lazy_now));
+}
+
+namespace {
+void MessageLoopTaskWithDelayedQuit(
+    base::MessageLoop* message_loop,
+    base::SimpleTestTickClock* now_src,
+    scoped_refptr<internal::TaskQueueImpl> task_queue) {
+  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
+  base::RunLoop run_loop;
+  task_queue->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
+                              base::TimeDelta::FromMilliseconds(100));
+  now_src->Advance(base::TimeDelta::FromMilliseconds(200));
+  run_loop.Run();
+}
+}  // namespace
+
+TEST_F(TaskQueueManagerTest, DelayedTaskRunsInNestedMessageLoop) {
+  InitializeWithRealMessageLoop(1u);
+  base::RunLoop run_loop;
+  runners_[0]->PostTask(
+      FROM_HERE,
+      base::Bind(&MessageLoopTaskWithDelayedQuit, message_loop_.get(),
+                 now_src_.get(), base::RetainedRef(runners_[0])));
+  run_loop.RunUntilIdle();
+}
+
+namespace {
+void MessageLoopTaskWithImmediateQuit(
+    base::MessageLoop* message_loop,
+    base::Closure non_nested_quit_closure,
+    scoped_refptr<internal::TaskQueueImpl> task_queue) {
+  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
+
+  base::RunLoop run_loop;
+  // Needed because entering the nested message loop causes a DoWork to get
+  // posted.
+  task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
+  task_queue->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+  non_nested_quit_closure.Run();
+}
+}  // namespace
+
+TEST_F(TaskQueueManagerTest,
+       DelayedNestedMessageLoopDoesntPreventTasksRunning) {
+  InitializeWithRealMessageLoop(1u);
+  base::RunLoop run_loop;
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&MessageLoopTaskWithImmediateQuit, message_loop_.get(),
+                 run_loop.QuitClosure(), base::RetainedRef(runners_[0])),
+      base::TimeDelta::FromMilliseconds(100));
+
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(200));
+  run_loop.Run();
 }
 
 }  // namespace scheduler

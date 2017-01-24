@@ -327,19 +327,17 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     base::TimeTicks desired_run_time,
     EnqueueOrder sequence_number,
     bool nestable) {
-  if (any_thread().immediate_incoming_queue.empty())
-    any_thread().time_domain->OnQueueHasIncomingImmediateWork(this);
   // If the |immediate_incoming_queue| is empty we need a DoWork posted to make
   // it run.
   if (any_thread().immediate_incoming_queue.empty()) {
-    // There's no point posting a DoWork for a disabled queue, however we can
+    // However there's no point posting a DoWork for a blocked queue. NB we can
     // only tell if it's disabled from the main thread.
-    if (base::PlatformThread::CurrentId() == thread_id_) {
-      if (IsQueueEnabled() && !BlockedByFenceLocked())
-        any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
-    } else {
-      any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
-    }
+    bool queue_is_blocked =
+        RunsTasksOnCurrentThread() &&
+        (!IsQueueEnabled() || main_thread_only().current_fence);
+    any_thread().task_queue_manager->OnQueueHasIncomingImmediateWork(
+        this, queue_is_blocked);
+    any_thread().time_domain->OnQueueHasImmediateWork(this);
   }
   any_thread().immediate_incoming_queue.emplace_back(
       posted_from, task, desired_run_time, sequence_number, nestable,
@@ -667,22 +665,6 @@ bool TaskQueueImpl::BlockedByFence() const {
   }
 
   base::AutoLock lock(any_thread_lock_);
-  if (any_thread().immediate_incoming_queue.empty())
-    return true;
-
-  return any_thread().immediate_incoming_queue.front().enqueue_order() >
-         main_thread_only().current_fence;
-}
-
-bool TaskQueueImpl::BlockedByFenceLocked() const {
-  if (!main_thread_only().current_fence)
-    return false;
-
-  if (!main_thread_only().immediate_work_queue->BlockedByFence() ||
-      !main_thread_only().delayed_work_queue->BlockedByFence()) {
-    return false;
-  }
-
   if (any_thread().immediate_incoming_queue.empty())
     return true;
 

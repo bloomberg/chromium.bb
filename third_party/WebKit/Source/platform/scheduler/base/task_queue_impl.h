@@ -298,9 +298,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   // Can be called from any thread.
   WTF::Deque<TaskQueueImpl::Task> TakeImmediateIncomingQueue();
 
-  // As BlockedByFence but safe to be called while locked.
-  bool BlockedByFenceLocked() const;
-
   void TraceQueueSize(bool is_locked) const;
   static void QueueAsValueInto(const WTF::Deque<Task>& queue,
                                base::trace_event::TracedValue* state);

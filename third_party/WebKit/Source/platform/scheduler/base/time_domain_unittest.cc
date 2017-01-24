@@ -33,10 +33,10 @@ class MockTimeDomain : public TimeDomain {
   using TimeDomain::CancelDelayedWork;
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::NextScheduledTaskQueue;
-  using TimeDomain::OnQueueHasIncomingImmediateWork;
+  using TimeDomain::OnQueueHasImmediateWork;
   using TimeDomain::ScheduleDelayedWork;
   using TimeDomain::UnregisterQueue;
-  using TimeDomain::UpdateWorkQueues;
+  using TimeDomain::WakeupReadyDelayedQueues;
 
   // TimeSource implementation:
   LazyNow CreateLazyNow() const override { return LazyNow(now_); }
@@ -195,7 +195,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_FALSE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
 }
 
-TEST_F(TimeDomainTest, UpdateWorkQueues) {
+TEST_F(TimeDomainTest, WakeupReadyDelayedQueues) {
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
   EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay));
   base::TimeTicks now = time_domain_->Now();
@@ -207,13 +207,13 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
   EXPECT_EQ(delayed_runtime, next_run_time);
 
   LazyNow lazy_now = time_domain_->CreateLazyNow();
-  time_domain_->UpdateWorkQueues(&lazy_now);
+  time_domain_->WakeupReadyDelayedQueues(&lazy_now);
   ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
   EXPECT_EQ(delayed_runtime, next_run_time);
 
   time_domain_->SetNow(delayed_runtime);
   lazy_now = time_domain_->CreateLazyNow();
-  time_domain_->UpdateWorkQueues(&lazy_now);
+  time_domain_->WakeupReadyDelayedQueues(&lazy_now);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 
@@ -252,7 +252,7 @@ class TimeDomainWithObserverTest : public TimeDomainTest {
 
 TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasImmediateWork) {
   EXPECT_CALL(*observer_, OnTimeDomainHasImmediateWork(task_queue_.get()));
-  time_domain_->OnQueueHasIncomingImmediateWork(task_queue_.get());
+  time_domain_->OnQueueHasImmediateWork(task_queue_.get());
 }
 
 TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasDelayedWork) {

@@ -91,11 +91,9 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // the next task was posted to and it returns true.  Returns false otherwise.
   bool NextScheduledTaskQueue(TaskQueue** out_task_queue) const;
 
-  // Adds |queue| to |has_incoming_immediate_work_| which causes
-  // UpdateWorkQueues to reload the immediate work queue if empty. Can be
-  // called from any thread.
-  // TODO(alexclarke): Move this to the TaskQueueManager.
-  void OnQueueHasIncomingImmediateWork(internal::TaskQueueImpl* queue);
+  // Notifies the time domain observer (if any) that |queue| has incoming
+  // immediate work.
+  void OnQueueHasImmediateWork(internal::TaskQueueImpl* queue);
 
   // Schedules a call to TaskQueueImpl::WakeUpForDelayedWork when this
   // TimeDomain reaches |delayed_run_time|.  This supersedes any previously
@@ -113,9 +111,6 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   // Removes |queue| from all internal data structures.
   void UnregisterQueue(internal::TaskQueueImpl* queue);
-
-  // Updates active queues associated with this TimeDomain.
-  void UpdateWorkQueues(LazyNow* lazy_now);
 
   // Called by the TaskQueueManager when the TimeDomain is registered.
   virtual void OnRegisterWithTaskQueueManager(
@@ -167,15 +162,7 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   IntrusiveHeap<DelayedWakeup> delayed_wakeup_queue_;
 
-  // This lock guards only |has_incoming_immediate_work_|.  It's not expected to
-  // be heavily contended.
-  mutable base::Lock has_incoming_immediate_work_lock_;
-
-  // Set of task queues with newly available work on the incoming queue.
-  // TODO(alexclarke): Move this to the TaskQueueManager.
-  std::set<internal::TaskQueueImpl*> has_incoming_immediate_work_;
-
-  Observer* observer_;  // NOT OWNED.
+  Observer* const observer_;  // NOT OWNED.
 
   base::ThreadChecker main_thread_checker_;
 
