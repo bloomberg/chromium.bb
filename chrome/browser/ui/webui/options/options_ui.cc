@@ -60,6 +60,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/url_data_source.h"
@@ -523,14 +524,16 @@ void OptionsUI::ProcessAutocompleteSuggestions(
   }
 }
 
-void OptionsUI::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page) {
+void OptionsUI::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSamePage())
+    return;
+
   load_start_time_ = base::Time::Now();
-  if (render_frame_host->GetRenderViewHost() ==
+  if (navigation_handle->GetRenderFrameHost()->GetRenderViewHost() ==
           web_ui()->GetWebContents()->GetRenderViewHost() &&
-      validated_url.host_piece() == chrome::kChromeUISettingsFrameHost) {
+      navigation_handle->GetURL().host_piece() ==
+          chrome::kChromeUISettingsFrameHost) {
     for (size_t i = 0; i < handlers_.size(); ++i)
       handlers_[i]->PageLoadStarted();
   }

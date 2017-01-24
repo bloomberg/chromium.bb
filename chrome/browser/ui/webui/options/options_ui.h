@@ -129,10 +129,8 @@ class OptionsUI : public content::WebUIController,
       base::ListValue* const suggestions);
 
   // Overridden from content::WebContentsObserver:
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DocumentLoadedInFrame(
       content::RenderFrameHost *render_frame_host) override;
   void DocumentOnLoadCompletedInMainFrame() override;
