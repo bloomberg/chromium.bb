@@ -14,6 +14,7 @@
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/field_trial.h"
 #include "components/ntp_tiles/switches.h"
+#include "components/variations/variations_associated_data.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -65,7 +66,13 @@ void SetUpFirstLaunchFieldTrial(bool is_stable_channel) {
                        kTotalProbability);
   } else {
     trial->AppendGroup(kPopularSiteControlGroup, kEnabledAndControlProbability);
+    AssociateGoogleVariationID(variations::GOOGLE_WEB_PROPERTIES,
+                               kPopularSitesFieldTrialName,
+                               kPopularSiteControlGroup, 3312959);
     trial->AppendGroup(kPopularSiteEnabledGroup, kEnabledAndControlProbability);
+    AssociateGoogleVariationID(variations::GOOGLE_WEB_PROPERTIES,
+                               kPopularSitesFieldTrialName,
+                               kPopularSiteEnabledGroup, 3312958);
   }
 }
 
