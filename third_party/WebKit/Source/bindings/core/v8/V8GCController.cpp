@@ -203,8 +203,11 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
     for (auto& groupPair : m_nodesRequiringTracing) {
       v8::HeapProfiler::RetainerChildren groupChildren;
       for (auto& node : groupPair.second) {
-        auto wrappers = findV8WrappersDirectlyReachableFrom(node);
-        groupChildren.insert(wrappers.begin(), wrappers.end());
+        // Ignore the actual wrappers reachable as we only want to create
+        // groups of DOM nodes. The method is still used to collect edges
+        // though.
+        findV8WrappersDirectlyReachableFrom(node);
+        groupChildren.insert(persistentForWrappable(node));
       }
       m_groups.push_back(std::make_pair(new RetainedDOMInfo(groupPair.first),
                                         std::move(groupChildren)));
@@ -231,13 +234,17 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
   }
 
  private:
+  inline v8::PersistentBase<v8::Value>* persistentForWrappable(
+      ScriptWrappable* wrappable) {
+    return &v8::Persistent<v8::Value>::Cast(*wrappable->rawMainWorldWrapper());
+  }
+
   v8::HeapProfiler::RetainerChildren findV8WrappersDirectlyReachableFrom(
       Node* traceable) {
     CHECK(m_foundV8Wrappers.empty());
     WTF::AutoReset<bool> scope(&m_onlyTraceSingleLevel, true);
     m_firstScriptWrappableTraced = false;
-    m_currentParent =
-        &v8::Persistent<v8::Value>::Cast(*traceable->rawMainWorldWrapper());
+    m_currentParent = persistentForWrappable(traceable);
 
     TracePrologue();
     traceable->wrapperTypeInfo()->traceWrappers(this, traceable);
