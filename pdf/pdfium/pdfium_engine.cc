@@ -2312,6 +2312,7 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   }
 
   client_->NotifySelectedFindResultChanged(current_find_index_.GetIndex());
+  client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
   return true;
 }
 
