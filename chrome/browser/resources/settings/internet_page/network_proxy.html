@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
@@ -132,7 +133,7 @@
         </paper-toggle-button>
       </div>
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
-        <network-proxy-input 
+        <network-proxy-input
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_('Manual.HTTPProxy.Host', networkProperties,
                 editable, useSharedProxies_)]]"
@@ -181,6 +182,9 @@
         <div class="layout horizontal">
           <paper-input-container no-label-float class="flex">
             <input id="proxyExclusion" is="iron-input">
+            <iron-a11y-keys keys="enter"
+                on-keys-pressed="onAddProxyExclusionTap_">
+            </iron-a11y-keys>
           </paper-input-container>
           <paper-button on-tap="onAddProxyExclusionTap_">
             $i18n{networkProxyAddException}

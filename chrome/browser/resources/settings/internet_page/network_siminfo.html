@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
@@ -91,6 +92,8 @@
       <div class="body">
         <paper-input id="enterPin" class="pin" no-label-float
             label="$i18n{networkSimEnterPin}">
+          <iron-a11y-keys keys="enter" on-keys-pressed="sendEnterPin_">
+          </iron-a11y-keys>
         </paper-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -115,6 +118,8 @@
         </paper-input>
         <paper-input id="changePinNew2" class="pin" no-label-float
             label="$i18n{networkSimReEnterNewPin}">
+          <iron-a11y-keys keys="enter" on-keys-pressed="sendChangePin_">
+          </iron-a11y-keys>
         </paper-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -133,6 +138,8 @@
       <div class="body">
         <paper-input id="unlockPin" class="pin" no-label-float
             label="$i18n{networkSimEnterPin}">
+          <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPin_">
+          </iron-a11y-keys>
         </paper-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -160,6 +167,8 @@
         </paper-input>
         <paper-input id="unlockPin2" class="pin" no-label-float
             label="$i18n{networkSimReEnterNewPin}">
+          <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPuk_">
+          </iron-a11y-keys>
         </paper-input>
         <div class="dialog-error">
           $i18n{networkSimLockedWarning}
