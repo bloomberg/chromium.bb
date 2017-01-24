@@ -29,6 +29,16 @@ class VIEWS_EXPORT FrameBackground {
   // Sets the color to draw under the frame images.
   void set_frame_color(SkColor color) { frame_color_ = color; }
 
+  void set_use_custom_frame(bool use_custom_frame) {
+    use_custom_frame_ = use_custom_frame;
+  }
+
+  // Sets whether the frame to be drawn should have focus.
+  void set_is_active(bool is_active) { is_active_ = is_active; }
+
+  // Sets whether the frame to be drawn is in incognito mode.
+  void set_incognito(bool incognito) { incognito_ = incognito; }
+
   // Sets the theme image for the top of the window.  May be null (empty).
   // Memory is owned by the caller.
   void set_theme_image(const gfx::ImageSkia& image) { theme_image_ = image; }
@@ -74,7 +84,13 @@ class VIEWS_EXPORT FrameBackground {
   // Fills the frame area with the frame color.
   void PaintFrameColor(gfx::Canvas* canvas, const View* view) const;
 
+  // Paints the background of the tab strip.
+  void PaintFrameTopArea(gfx::Canvas* canvas, const View* view) const;
+
   SkColor frame_color_;
+  bool use_custom_frame_;
+  bool is_active_;
+  bool incognito_;
   gfx::ImageSkia theme_image_;
   gfx::ImageSkia theme_overlay_image_;
   int top_area_height_;

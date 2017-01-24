@@ -236,16 +236,6 @@ int indicators_count;
 // The unknown content type.
 const char* kUnknownContentType = "application/octet-stream";
 
-// TODO(erg): ThemeService has a whole interface just for reading default
-// constants. Figure out what to do with that more long term; for now, just
-// copy the constants themselves here.
-//
-// Default tints.
-const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2f, 0.35f};
-#if GTK_MAJOR_VERSION == 2
-const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3f, 0.6f};
-#endif
-
 // Picks a button tint from a set of background colors. While
 // |accent_color| will usually be the same color through a theme, this
 // function will get called with the normal GtkLabel |text_color|/GtkWindow
@@ -950,7 +940,7 @@ void GtkUi::LoadCursorTheme() {
 
 void GtkUi::BuildFrameColors() {
 #if GTK_MAJOR_VERSION == 2
-  color_utils::HSL kDefaultFrameShift = {-1, -1, 0.4};
+  const color_utils::HSL kDefaultFrameShift = {-1, -1, 0.4};
   SkColor frame_color =
       native_theme_->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
   frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
@@ -972,7 +962,6 @@ void GtkUi::BuildFrameColors() {
   GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
-  // TODO(thomasanderson): Render a GtkHeaderBar directly.
   SkColor color_frame = GetBgColor("#headerbar.header-bar.titlebar");
   SkColor color_frame_inactive =
       GetBgColor("#headerbar.header-bar.titlebar:backdrop");

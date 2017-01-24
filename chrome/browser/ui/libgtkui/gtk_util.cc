@@ -65,6 +65,12 @@ void* GetGtk3SharedLibrary() {
 
 namespace libgtkui {
 
+// TODO(erg): ThemeService has a whole interface just for reading default
+// constants. Figure out what to do with that more long term; for now, just
+// copy the constants themselves here.
+const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2f, 0.35f};
+const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3f, 0.6f};
+
 // Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 const SkColor kURLTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
@@ -421,11 +427,13 @@ class PixelSurface {
   cairo_t* cairo_;
 };
 
-void RenderBackground(cairo_t* cr, GtkStyleContext* context) {
+void RenderBackground(const gfx::Size& size,
+                      cairo_t* cr,
+                      GtkStyleContext* context) {
   if (!context)
     return;
-  RenderBackground(cr, gtk_style_context_get_parent(context));
-  gtk_render_background(context, cr, 0, 0, 1, 1);
+  RenderBackground(size, cr, gtk_style_context_get_parent(context));
+  gtk_render_background(context, cr, 0, 0, size.width(), size.height());
 }
 
 SkColor GetBgColor(const char* css_selector) {
@@ -438,7 +446,7 @@ SkColor GetBgColor(const char* css_selector) {
   auto context = GetStyleContextFromCss(css_selector);
   RemoveBorders(context);
   PixelSurface surface;
-  RenderBackground(surface.cairo(), context);
+  RenderBackground(gfx::Size(1, 1), surface.cairo(), context);
   return surface.GetPixelValue();
 }
 
@@ -460,7 +468,7 @@ SkColor GetBorderColor(const char* css_selector) {
 
   AddBorders(context);
   PixelSurface surface;
-  RenderBackground(surface.cairo(), context);
+  RenderBackground(gfx::Size(1, 1), surface.cairo(), context);
   gtk_render_frame(context, surface.cairo(), 0, 0, 1, 1);
   return surface.GetPixelValue();
 }

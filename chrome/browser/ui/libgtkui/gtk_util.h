@@ -19,11 +19,19 @@ class CommandLine;
 class Environment;
 }
 
+namespace color_utils {
+struct HSL;
+}
+
 namespace ui {
 class Accelerator;
 }
 
 namespace libgtkui {
+
+// Default frame tints
+extern const color_utils::HSL kDefaultTintFrameIncognito;
+extern const color_utils::HSL kDefaultTintFrameIncognitoInactive;
 
 extern const SkColor kInvalidColorIdColor;
 extern const SkColor kURLTextColor;
@@ -131,9 +139,18 @@ typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
 // must g_object_unref() the returned context.
 ScopedStyleContext GetStyleContextFromCss(const char* css_selector);
 
+// Removes all border-type properties on |context| and all of its parents.
+void RemoveBorders(GtkStyleContext* context);
+
 // Get the 'color' property from the style context created by
 // GetStyleContextFromCss(|css_selector|).
 SkColor GetFgColor(const char* css_selector);
+
+// Renders the backgrounds of all ancestors of |context|, then renders
+// the background for |context| itself.
+void RenderBackground(const gfx::Size& size,
+                      cairo_t* cr,
+                      GtkStyleContext* context);
 
 // Renders a background from the style context created by
 // GetStyleContextFromCss(|css_selector|) into a single pixel and

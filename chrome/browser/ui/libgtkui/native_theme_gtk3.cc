@@ -13,34 +13,36 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace libgtkui {
 
 namespace {
 
-void PaintWidget(SkCanvas* canvas,
-                 const gfx::Rect& rect,
-                 const char* css_selector,
-                 GtkStateFlags state) {
+SkBitmap GetWidgetBitmap(const gfx::Size& size,
+                         GtkStyleContext* context) {
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(rect.width(), rect.height());
+  bitmap.allocN32Pixels(size.width(), size.height());
   bitmap.eraseColor(0);
 
   cairo_surface_t* surface = cairo_image_surface_create_for_data(
       static_cast<unsigned char*>(bitmap.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
-      rect.width(), rect.height(),
-      cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, rect.width()));
+      size.width(), size.height(),
+      cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, size.width()));
   cairo_t* cr = cairo_create(surface);
 
-  auto context = GetStyleContextFromCss(css_selector);
-  gtk_style_context_set_state(context, state);
-
-  gtk_render_background(context, cr, 0, 0, rect.width(), rect.height());
-  gtk_render_frame(context, cr, 0, 0, rect.width(), rect.height());
+  RenderBackground(size, cr, context);
+  gtk_render_frame(context, cr, 0, 0, size.width(), size.height());
   cairo_destroy(cr);
   cairo_surface_destroy(surface);
-  canvas->drawBitmap(bitmap, rect.x(), rect.y());
+  return bitmap;
+}
+
+void PaintWidget(SkCanvas* canvas,
+                 const gfx::Rect& rect,
+                 GtkStyleContext* context) {
+  canvas->drawBitmap(GetWidgetBitmap(rect.size(), context), rect.x(), rect.y());
 }
 
 GtkStateFlags StateToStateFlags(NativeThemeGtk3::State state) {
@@ -339,6 +341,7 @@ NativeThemeGtk3::NativeThemeGtk3() {
   g_type_class_unref(g_type_class_ref(gtk_toolbar_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_menu_bar_get_type()));
 
   g_signal_connect_after(gtk_settings_get_default(), "notify::gtk-theme-name",
                          G_CALLBACK(OnThemeChanged), this);
@@ -365,7 +368,7 @@ void NativeThemeGtk3::PaintMenuPopupBackground(
     SkCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
-  PaintWidget(canvas, gfx::Rect(size), "GtkMenu#menu", GTK_STATE_FLAG_NORMAL);
+  PaintWidget(canvas, gfx::Rect(size), GetStyleContextFromCss("GtkMenu#menu"));
 }
 
 void NativeThemeGtk3::PaintMenuItemBackground(
@@ -373,8 +376,33 @@ void NativeThemeGtk3::PaintMenuItemBackground(
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
-  PaintWidget(canvas, rect, "GtkMenu#menu GtkMenuItem#menuitem",
-              StateToStateFlags(state));
+  auto context = GetStyleContextFromCss("GtkMenu#menu GtkMenuItem#menuitem");
+  gtk_style_context_set_state(context, StateToStateFlags(state));
+  PaintWidget(canvas, rect, context);
+}
+
+void NativeThemeGtk3::PaintFrameTopArea(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const FrameTopAreaExtraParams& frame_top_area) const {
+  auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame
+                                            ? "#headerbar.header-bar.titlebar"
+                                            : "GtkMenuBar#menubar");
+  RemoveBorders(context);
+  gtk_style_context_set_state(context,
+                              frame_top_area.is_active
+                                  ? GTK_STATE_FLAG_NORMAL
+                              : GTK_STATE_FLAG_BACKDROP);
+
+  SkBitmap bitmap = GetWidgetBitmap(rect.size(), context);
+
+  if (frame_top_area.incognito) {
+    bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
+        bitmap, kDefaultTintFrameIncognito);
+  }
+
+  canvas->drawBitmap(bitmap, rect.x(), rect.y());
 }
 
 }  // namespace libgtkui

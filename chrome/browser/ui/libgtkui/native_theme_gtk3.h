@@ -30,6 +30,11 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
       State state,
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
+  void PaintFrameTopArea(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const FrameTopAreaExtraParams& frame_top_area) const override;
 
  private:
   NativeThemeGtk3();

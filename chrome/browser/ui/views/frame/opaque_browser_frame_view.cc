@@ -412,6 +412,14 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   if (frame()->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.
 
+  frame_background_->set_frame_color(GetFrameColor());
+  frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
+  frame_background_->set_is_active(ShouldPaintAsActive());
+  frame_background_->set_incognito(browser_view()->IsIncognito());
+  frame_background_->set_theme_image(GetFrameImage());
+  frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
+  frame_background_->set_top_area_height(GetTopAreaHeight());
+
   if (layout_->IsTitleBarCondensed())
     PaintMaximizedFrameBorder(canvas);
   else
@@ -501,11 +509,8 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {
-  // The top area height in dp (only used when there's no frame image).
-  // TODO(pkasting): investigate removing this constant. See crbug.com/590301
-  const int kHeight = 64;
   const gfx::ImageSkia frame_image = GetFrameImage();
-  int top_area_height = frame_image.isNull() ? kHeight : frame_image.height();
+  int top_area_height = frame_image.height();  // Returns 0 if isNull().
   if (browser_view()->IsTabStripVisible()) {
     top_area_height =
         std::max(top_area_height,
@@ -516,11 +521,6 @@ int OpaqueBrowserFrameView::GetTopAreaHeight() const {
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(
     gfx::Canvas* canvas) const {
-  frame_background_->set_frame_color(GetFrameColor());
-  frame_background_->set_theme_image(GetFrameImage());
-  frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
-  frame_background_->set_top_area_height(GetTopAreaHeight());
-
   const ui::ThemeProvider* tp = GetThemeProvider();
   frame_background_->SetSideImages(
       tp->GetImageSkiaNamed(IDR_WINDOW_LEFT_SIDE),
@@ -542,10 +542,6 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(
 
 void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(
     gfx::Canvas* canvas) const {
-  frame_background_->set_frame_color(GetFrameColor());
-  frame_background_->set_theme_image(GetFrameImage());
-  frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
-  frame_background_->set_top_area_height(GetTopAreaHeight());
   frame_background_->set_maximized_top_inset(
       GetTopInset(true) - GetTopInset(false));
   frame_background_->PaintMaximized(canvas, this);

@@ -45,6 +45,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // The part to be painted / sized.
   enum Part {
     kCheckbox,
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    kFrameTopArea,
+#endif
     kInnerSpinButton,
     kMenuList,
     kMenuPopupBackground,
@@ -107,6 +110,19 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool has_border;
     int classic_state;  // Used on Windows when uxtheme is not available.
     SkColor background_color;
+  };
+
+  struct FrameTopAreaExtraParams {
+    // Distinguishes between active (foreground) and inactive
+    // (background) window frame styles.
+    bool is_active;
+    bool incognito;
+    // True when Chromium renders the titlebar.  False when the window
+    // manager renders the titlebar.
+    bool use_custom_frame;
+    // If the NativeTheme will paint a solid color, it should use
+    // |default_background_color|.
+    SkColor default_background_color;
   };
 
   struct InnerSpinButtonExtraParams {
@@ -207,6 +223,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     ExtraParams(const ExtraParams& other);
 
     ButtonExtraParams button;
+    FrameTopAreaExtraParams frame_top_area;
     InnerSpinButtonExtraParams inner_spin;
     MenuArrowExtraParams menu_arrow;
     MenuCheckExtraParams menu_check;

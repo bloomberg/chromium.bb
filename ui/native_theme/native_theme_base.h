@@ -128,6 +128,12 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       const gfx::Rect& rect,
       const ProgressBarExtraParams& progress_bar) const;
 
+  virtual void PaintFrameTopArea(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const FrameTopAreaExtraParams& frame_top_area) const;
+
   // Shrinks checkbox/radio button rect, if necessary, to make room for padding
   // and drop shadow.
   // TODO(mohsen): This is needed because checkboxes/radio buttons on Android

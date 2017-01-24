@@ -8,12 +8,16 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/view.h"
 
 namespace views {
 
 FrameBackground::FrameBackground()
     : frame_color_(0),
+      use_custom_frame_(true),
+      is_active_(true),
+      incognito_(false),
       top_area_height_(0),
       left_edge_(nullptr),
       top_edge_(nullptr),
@@ -125,10 +129,8 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
   // beneath the image.
   int theme_frame_bottom = -maximized_top_inset_ +
                            (theme_image_.isNull() ? 0 : theme_image_.height());
-  if (top_area_height_ > theme_frame_bottom) {
-    canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
-                     frame_color_);
-  }
+  if (top_area_height_ > theme_frame_bottom)
+    PaintFrameTopArea(canvas, view);
 
   // Draw the theme frame.
   if (!theme_image_.isNull()) {
@@ -142,9 +144,7 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
 
 void FrameBackground::PaintFrameColor(gfx::Canvas* canvas,
                                       const View* view) const {
-  // Fill the top area.
-  canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
-                   frame_color_);
+  PaintFrameTopArea(canvas, view);
 
   // If the window is very short, we're done.
   int remaining_height = view->height() - top_area_height_;
@@ -169,6 +169,24 @@ void FrameBackground::PaintFrameColor(gfx::Canvas* canvas,
                              view->height() - bottom_edge_->height(),
                              center_width, bottom_edge_->height()),
                              frame_color_);
+}
+
+void FrameBackground::PaintFrameTopArea(gfx::Canvas* canvas,
+                                        const View* view) const {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  auto* native_theme = view->GetNativeTheme();
+  ui::NativeTheme::ExtraParams params;
+  params.frame_top_area.use_custom_frame = use_custom_frame_;
+  params.frame_top_area.is_active = is_active_;
+  params.frame_top_area.incognito = incognito_;
+  params.frame_top_area.default_background_color = frame_color_;
+  native_theme->Paint(canvas->sk_canvas(), ui::NativeTheme::kFrameTopArea,
+                      ui::NativeTheme::kNormal,
+                      gfx::Rect(0, 0, view->width(), top_area_height_), params);
+#else
+  canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
+                   frame_color_);
+#endif
 }
 
 }  // namespace views

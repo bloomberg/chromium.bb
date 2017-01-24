@@ -172,6 +172,11 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
     case kCheckbox:
       PaintCheckbox(canvas, state, rect, extra.button);
       break;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    case kFrameTopArea:
+      PaintFrameTopArea(canvas, state, rect, extra.frame_top_area);
+      break;
+#endif
     case kInnerSpinButton:
       PaintInnerSpinButton(canvas, state, rect, extra.inner_spin);
       break;
@@ -896,6 +901,16 @@ void NativeThemeBase::PaintProgressBar(
   border_rect.Inset(stroke_width / 2.0f, stroke_width / 2.0f);
   stroke_paint.setColor(kProgressBorderColor);
   canvas->drawRect(gfx::RectFToSkRect(border_rect), stroke_paint);
+}
+
+void NativeThemeBase::PaintFrameTopArea(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const FrameTopAreaExtraParams& frame_top_area) const {
+  SkPaint paint;
+  paint.setColor(frame_top_area.default_background_color);
+  canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
 void NativeThemeBase::AdjustCheckboxRadioRectForPadding(SkRect* rect) const {
