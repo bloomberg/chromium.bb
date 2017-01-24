@@ -41,8 +41,13 @@ class VoiceSearchProvider {
       ios::ChromeBrowserState* browser_state) const;
 
   // Creates a new VoiceSearchBar.  The caller assumes ownership.
+  // TODO(crbug.com/679719): Remove this once downstream provider implementaiton
+  // switches to BuildVoiceSearchBar().
   virtual UIView<VoiceSearchBar>* CreateVoiceSearchBar(CGRect frame) const
       NS_RETURNS_RETAINED;
+
+  // Creates a new VoiceSearchBar.  Returns an autoreleased view.
+  virtual UIView<VoiceSearchBar>* BuildVoiceSearchBar(CGRect frame) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchProvider);

@@ -28,3 +28,8 @@ UIView<VoiceSearchBar>* VoiceSearchProvider::CreateVoiceSearchBar(
     CGRect frame) const {
   return nil;
 }
+
+UIView<VoiceSearchBar>* VoiceSearchProvider::BuildVoiceSearchBar(
+    CGRect frame) const {
+  return nil;
+}
