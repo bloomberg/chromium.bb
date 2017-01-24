@@ -324,10 +324,9 @@ blink::WebWorkerCreationError SharedWorkerServiceImpl::CreateWorker(
   return ReserveRenderProcessToCreateWorker(std::move(pending_instance));
 }
 
-void SharedWorkerServiceImpl::ConnectToWorker(
-    int route_id,
-    int sent_message_port_id,
-    SharedWorkerMessageFilter* filter) {
+void SharedWorkerServiceImpl::ConnectToWorker(SharedWorkerMessageFilter* filter,
+                                              int route_id,
+                                              int sent_message_port_id) {
   for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
        iter != worker_hosts_.end();
        ++iter) {
@@ -338,8 +337,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
 }
 
 void SharedWorkerServiceImpl::DocumentDetached(
-    unsigned long long document_id,
-    SharedWorkerMessageFilter* filter) {
+    SharedWorkerMessageFilter* filter,
+    unsigned long long document_id) {
   ScopedWorkerDependencyChecker checker(this);
   for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
        iter != worker_hosts_.end();
@@ -349,8 +348,8 @@ void SharedWorkerServiceImpl::DocumentDetached(
 }
 
 void SharedWorkerServiceImpl::WorkerContextClosed(
-    int worker_route_id,
-    SharedWorkerMessageFilter* filter) {
+    SharedWorkerMessageFilter* filter,
+    int worker_route_id) {
   ScopedWorkerDependencyChecker checker(this);
   if (SharedWorkerHost* host =
           FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
@@ -358,32 +357,32 @@ void SharedWorkerServiceImpl::WorkerContextClosed(
 }
 
 void SharedWorkerServiceImpl::WorkerContextDestroyed(
-    int worker_route_id,
-    SharedWorkerMessageFilter* filter) {
+    SharedWorkerMessageFilter* filter,
+    int worker_route_id) {
   ScopedWorkerDependencyChecker checker(this);
   ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
   worker_hosts_.erase(key);
 }
 
 void SharedWorkerServiceImpl::WorkerReadyForInspection(
-    int worker_route_id,
-    SharedWorkerMessageFilter* filter) {
+    SharedWorkerMessageFilter* filter,
+    int worker_route_id) {
   if (SharedWorkerHost* host =
           FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->WorkerReadyForInspection();
 }
 
 void SharedWorkerServiceImpl::WorkerScriptLoaded(
-    int worker_route_id,
-    SharedWorkerMessageFilter* filter) {
+    SharedWorkerMessageFilter* filter,
+    int worker_route_id) {
   if (SharedWorkerHost* host =
           FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->WorkerScriptLoaded();
 }
 
 void SharedWorkerServiceImpl::WorkerScriptLoadFailed(
-    int worker_route_id,
-    SharedWorkerMessageFilter* filter) {
+    SharedWorkerMessageFilter* filter,
+    int worker_route_id) {
   ScopedWorkerDependencyChecker checker(this);
   ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
   if (!base::ContainsKey(worker_hosts_, key))
@@ -393,20 +392,18 @@ void SharedWorkerServiceImpl::WorkerScriptLoadFailed(
   host->WorkerScriptLoadFailed();
 }
 
-void SharedWorkerServiceImpl::WorkerConnected(
-    int message_port_id,
-    int worker_route_id,
-    SharedWorkerMessageFilter* filter) {
+void SharedWorkerServiceImpl::WorkerConnected(SharedWorkerMessageFilter* filter,
+                                              int message_port_id,
+                                              int worker_route_id) {
   if (SharedWorkerHost* host =
           FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->WorkerConnected(message_port_id);
 }
 
-void SharedWorkerServiceImpl::AllowFileSystem(
-    int worker_route_id,
-    const GURL& url,
-    IPC::Message* reply_msg,
-    SharedWorkerMessageFilter* filter) {
+void SharedWorkerServiceImpl::AllowFileSystem(SharedWorkerMessageFilter* filter,
+                                              int worker_route_id,
+                                              const GURL& url,
+                                              IPC::Message* reply_msg) {
   if (SharedWorkerHost* host =
           FindSharedWorkerHost(filter->render_process_id(), worker_route_id)) {
     host->AllowFileSystem(url, base::WrapUnique(reply_msg));
@@ -416,12 +413,11 @@ void SharedWorkerServiceImpl::AllowFileSystem(
   }
 }
 
-void SharedWorkerServiceImpl::AllowIndexedDB(
-    int worker_route_id,
-    const GURL& url,
-    const base::string16& name,
-    bool* result,
-    SharedWorkerMessageFilter* filter) {
+void SharedWorkerServiceImpl::AllowIndexedDB(SharedWorkerMessageFilter* filter,
+                                             int worker_route_id,
+                                             const GURL& url,
+                                             const base::string16& name,
+                                             bool* result) {
   if (SharedWorkerHost* host =
           FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->AllowIndexedDB(url, name, result);

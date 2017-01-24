@@ -46,15 +46,6 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
   // Message handlers.
   void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                       ViewHostMsg_CreateWorker_Reply* reply);
-  void OnConnectToWorker(int route_id, int sent_message_port_id);
-  void OnDocumentDetached(unsigned long long document_id);
-  void OnWorkerContextClosed(int worker_route_id);
-  void OnWorkerContextDestroyed(int worker_route_id);
-
-  void OnWorkerReadyForInspection(int worker_route_id);
-  void OnWorkerScriptLoaded(int worker_route_id);
-  void OnWorkerScriptLoadFailed(int worker_route_id);
-  void OnWorkerConnected(int message_port_id, int worker_route_id);
   void OnRequestFileSystemAccess(int worker_route_id,
                                  const GURL& url,
                                  IPC::Message* reply_msg);

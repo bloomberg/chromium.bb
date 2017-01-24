@@ -56,33 +56,33 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
       SharedWorkerMessageFilter* filter,
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id);
-  void ConnectToWorker(int route_id,
-                       int sent_message_port_id,
-                       SharedWorkerMessageFilter* filter);
-  void DocumentDetached(unsigned long long document_id,
-                        SharedWorkerMessageFilter* filter);
-  void WorkerContextClosed(int worker_route_id,
-                           SharedWorkerMessageFilter* filter);
-  void WorkerContextDestroyed(int worker_route_id,
-                              SharedWorkerMessageFilter* filter);
-  void WorkerReadyForInspection(int worker_route_id,
-                                SharedWorkerMessageFilter* filter);
-  void WorkerScriptLoaded(int worker_route_id,
-                          SharedWorkerMessageFilter* filter);
-  void WorkerScriptLoadFailed(int worker_route_id,
-                              SharedWorkerMessageFilter* filter);
-  void WorkerConnected(int message_port_id,
+  void ConnectToWorker(SharedWorkerMessageFilter* filter,
+                       int route_id,
+                       int sent_message_port_id);
+  void DocumentDetached(SharedWorkerMessageFilter* filter,
+                        unsigned long long document_id);
+  void WorkerContextClosed(SharedWorkerMessageFilter* filter,
+                           int worker_route_id);
+  void WorkerContextDestroyed(SharedWorkerMessageFilter* filter,
+                              int worker_route_id);
+  void WorkerReadyForInspection(SharedWorkerMessageFilter* filter,
+                                int worker_route_id);
+  void WorkerScriptLoaded(SharedWorkerMessageFilter* filter,
+                          int worker_route_id);
+  void WorkerScriptLoadFailed(SharedWorkerMessageFilter* filter,
+                              int worker_route_id);
+  void WorkerConnected(SharedWorkerMessageFilter* filter,
+                       int message_port_id,
+                       int worker_route_id);
+  void AllowFileSystem(SharedWorkerMessageFilter* filter,
                        int worker_route_id,
-                       SharedWorkerMessageFilter* filter);
-  void AllowFileSystem(int worker_route_id,
                        const GURL& url,
-                       IPC::Message* reply_msg,
-                       SharedWorkerMessageFilter* filter);
-  void AllowIndexedDB(int worker_route_id,
+                       IPC::Message* reply_msg);
+  void AllowIndexedDB(SharedWorkerMessageFilter* filter,
+                      int worker_route_id,
                       const GURL& url,
                       const base::string16& name,
-                      bool* result,
-                      SharedWorkerMessageFilter* filter);
+                      bool* result);
 
   void OnSharedWorkerMessageFilterClosing(
       SharedWorkerMessageFilter* filter);
