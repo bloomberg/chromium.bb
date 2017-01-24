@@ -2794,6 +2794,63 @@ class TestGitCl(TestCase):
     self.assertRegexpMatches(sys.stdout.getvalue(), 'Started:')
     self.assertRegexpMatches(sys.stdout.getvalue(), '2 try jobs')
 
+  def _mock_gerrit_changes_for_detail_cache(self):
+    self.mock(git_cl._GerritChangelistImpl, '_GetGerritHost', lambda _: 'host')
+    self.mock(git_cl.gerrit_util, 'GetChangeDetail',
+              lambda _, issue, options, **__:
+                  self._mocked_call('RPC', issue, options))
+
+  def test_gerrit_change_detail_cache_normalize(self):
+    self._mock_gerrit_changes_for_detail_cache()
+    self.calls = [
+        (('RPC', '2', ['CASE']), 'b'),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit')
+    self.assertEqual(cl._GetChangeDetail(issue=2, options=['CaSe']), 'b')
+    self.assertEqual(cl._GetChangeDetail(issue=2, options=['CASE']), 'b')
+    self.assertEqual(cl._GetChangeDetail(issue='2'), 'b')
+    self.assertEqual(cl._GetChangeDetail(issue=2), 'b')
+
+  def test_gerrit_change_detail_cache_simple(self):
+    self._mock_gerrit_changes_for_detail_cache()
+    self.calls = [
+        (('RPC', '1', []), 'a'),
+        (('RPC', '2', []), 'b'),
+        (('RPC', '2', []), 'b2'),
+    ]
+    cl = git_cl.Changelist(issue=1, codereview='gerrit')
+    self.assertEqual(cl._GetChangeDetail(), 'a')  # Miss.
+    self.assertEqual(cl._GetChangeDetail(), 'a')
+    self.assertEqual(cl._GetChangeDetail(issue=2), 'b')  # Miss.
+    self.assertEqual(cl._GetChangeDetail(issue=2, no_cache=True), 'b2') # Miss.
+    self.assertEqual(cl._GetChangeDetail(), 'a')
+    self.assertEqual(cl._GetChangeDetail(issue=2), 'b2')
+
+  def test_gerrit_change_detail_cache_options(self):
+    self._mock_gerrit_changes_for_detail_cache()
+    self.calls = [
+        (('RPC', '1', ['C', 'A', 'B']), 'cab'),
+        (('RPC', '1', ['A', 'D']), 'ad'),
+        (('RPC', '1', ['A']), 'a'),  # no_cache=True
+        (('RPC', '1', ['B']), 'b'),  # no longer in cache.
+    ]
+    cl = git_cl.Changelist(issue=1, codereview='gerrit')
+    self.assertEqual(cl._GetChangeDetail(options=['C', 'A', 'B']), 'cab')
+    self.assertEqual(cl._GetChangeDetail(options=['A', 'B', 'C']), 'cab')
+    self.assertEqual(cl._GetChangeDetail(options=['B', 'A']), 'cab')
+    self.assertEqual(cl._GetChangeDetail(options=['C']), 'cab')
+    self.assertEqual(cl._GetChangeDetail(options=['A']), 'cab')
+    self.assertEqual(cl._GetChangeDetail(), 'cab')
+
+    self.assertEqual(cl._GetChangeDetail(options=['A', 'D']), 'ad')
+    self.assertEqual(cl._GetChangeDetail(options=['A']), 'cab')
+    self.assertEqual(cl._GetChangeDetail(options=['D']), 'ad')
+    self.assertEqual(cl._GetChangeDetail(), 'cab')
+
+    # Finally, no_cache should invalidate all caches for given change.
+    self.assertEqual(cl._GetChangeDetail(options=['A'], no_cache=True), 'a')
+    self.assertEqual(cl._GetChangeDetail(options=['B']), 'b')
+
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(

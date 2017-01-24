@@ -2270,6 +2270,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Lazily cached values.
     self._gerrit_server = None  # e.g. https://chromium-review.googlesource.com
     self._gerrit_host = None    # e.g. chromium-review.googlesource.com
+    # Map from change number (issue) to its detail cache.
+    self._detail_cache = {}
 
   def _GetGerritHost(self):
     # Lazy load of configs.
@@ -2487,10 +2489,36 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     gerrit_util.SubmitChange(self._GetGerritHost(), self.GetIssue(),
                              wait_for_merge=wait_for_merge)
 
-  def _GetChangeDetail(self, options=None, issue=None):
+  def _GetChangeDetail(self, options=None, issue=None,
+                       no_cache=False):
+    """Returns details of the issue by querying Gerrit and caching results.
+
+    If fresh data is needed, set no_cache=True which will clear cache and
+    thus new data will be fetched from Gerrit.
+    """
     options = options or []
     issue = issue or self.GetIssue()
     assert issue, 'issue is required to query Gerrit'
+
+    # Normalize issue and options for consistent keys in cache.
+    issue = str(issue)
+    options = [o.upper() for o in options]
+
+    # Check in cache first unless no_cache is True.
+    if no_cache:
+      self._detail_cache.pop(issue, None)
+    else:
+      options_set = frozenset(options)
+      for cached_options_set, data in self._detail_cache.get(issue, []):
+        # Assumption: data fetched before with extra options is suitable
+        # for return for a smaller set of options.
+        # For example, if we cached data for
+        #     options=[CURRENT_REVISION, DETAILED_FOOTERS]
+        #   and request is for options=[CURRENT_REVISION],
+        # THEN we can return prior cached data.
+        if options_set.issubset(cached_options_set):
+          return data
+
     try:
       data = gerrit_util.GetChangeDetail(self._GetGerritHost(), str(issue),
                                          options, ignore_404=False)
@@ -2498,6 +2526,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if e.http_status == 404:
         raise GerritChangeNotExists(issue, self.GetCodereviewServer())
       raise
+
+    self._detail_cache.setdefault(issue, []).append((frozenset(options), data))
     return data
 
   def _GetChangeCommit(self, issue=None):
