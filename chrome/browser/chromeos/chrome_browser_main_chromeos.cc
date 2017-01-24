@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
+#include "chrome/browser/chromeos/dbus/mus_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter.h"
@@ -235,8 +236,13 @@ class DBusServices {
     }
     service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
-    service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
-        base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
+    if (chrome::IsRunningInMash()) {
+      service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
+          base::MakeUnique<MusConsoleServiceProviderDelegate>()));
+    } else {
+      service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
+          base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
+    }
     service_providers.push_back(base::MakeUnique<KioskInfoService>());
     CrosDBusService::Initialize(std::move(service_providers));
 

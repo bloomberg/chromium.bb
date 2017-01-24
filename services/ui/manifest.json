@@ -28,6 +28,9 @@
         "discardable_memory": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager"
         ],
+        "display_controller": [
+          "display::mojom::DisplayController"
+        ],
         "display_test": [
           "display::mojom::TestDisplayController"
         ],

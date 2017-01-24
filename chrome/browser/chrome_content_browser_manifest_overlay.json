@@ -50,7 +50,7 @@
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "preferences": [ "preferences_manager" ],
-        "ui": [ "ime_registrar" ]
+        "ui": [ "display_controller", "ime_registrar" ]
       }
     },
     "navigation:frame": {

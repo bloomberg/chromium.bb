@@ -31,6 +31,16 @@ interface DisplayController {
   // Toggles between mirroring and extended mode.
   ToggleMirrorMode();
 
+  // ============================ Virtual Terminal ============================
+
+  // Take control of all display output. This is called when switching from the
+  // virtual terminal back to Chrome in response to a dbus message.
+  TakeDisplayControl() => (bool status);
+  
+  // Relinquish control of all display output. This is called when switching
+  // from Chrome to the virtual terminal in response to a dbus message.
+  RelinquishDisplayControl() => (bool status);
+
   // ========================= Configuration Changes ==========================
 
   // Sets the display work area with the provided insets. The display size is

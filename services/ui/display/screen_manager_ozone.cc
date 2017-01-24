@@ -291,6 +291,16 @@ void ScreenManagerOzone::SetDisplayWorkArea(int64_t display_id,
   display_manager_->UpdateWorkAreaOfDisplay(display_id, insets);
 }
 
+void ScreenManagerOzone::TakeDisplayControl(
+    const TakeDisplayControlCallback& callback) {
+  display_configurator_.TakeControl(callback);
+}
+
+void ScreenManagerOzone::RelinquishDisplayControl(
+    const RelinquishDisplayControlCallback& callback) {
+  display_configurator_.RelinquishControl(callback);
+}
+
 void ScreenManagerOzone::OnDisplayAdded(const Display& display) {
   ViewportMetrics metrics = GetViewportMetricsForDisplay(display);
   DVLOG(1) << "OnDisplayAdded: " << display.ToString() << "\n  "

@@ -95,6 +95,7 @@ source_set("chromeos") {
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
     "//services/service_manager/public/cpp",
+    "//services/ui/public/interfaces/display",
 
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//components/sync",
@@ -353,6 +354,8 @@ source_set("chromeos") {
     "dbus/chrome_proxy_resolver_delegate.h",
     "dbus/kiosk_info_service_provider.cc",
     "dbus/kiosk_info_service_provider.h",
+    "dbus/mus_console_service_provider_delegate.cc",
+    "dbus/mus_console_service_provider_delegate.h",
     "dbus/screen_lock_service_provider.cc",
     "dbus/screen_lock_service_provider.h",
     "device/input_service_proxy.cc",
