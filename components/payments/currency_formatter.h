@@ -29,7 +29,7 @@ class CurrencyFormatter {
   // |currency_system| should have been validated (as part of
   // payment_details_validation.h) before this is created.
   CurrencyFormatter(const std::string& currency_code,
-                    const base::Optional<std::string> currency_system,
+                    const std::string& currency_system,
                     const std::string& locale_name);
   ~CurrencyFormatter();
 

@@ -36,9 +36,9 @@ const char kEllipsis[] = "\xE2\x80\xA6";
 
 // Returns whether the |currency_code| is valid to be used in ICU.
 bool ShouldUseCurrencyCode(const std::string& currency_code,
-                           const base::Optional<std::string> currency_system) {
-  return currency_system.value_or(kIso4217CurrencySystem) ==
-             kIso4217CurrencySystem &&
+                           const std::string& currency_system) {
+  return (currency_system.empty() ||
+          currency_system == kIso4217CurrencySystem) &&
          !currency_code.empty() &&
          currency_code.size() <= kMaxCurrencyCodeLength;
 }
@@ -52,10 +52,9 @@ std::string FormatCurrencyCode(const std::string& currency_code) {
 
 }  // namespace
 
-CurrencyFormatter::CurrencyFormatter(
-    const std::string& currency_code,
-    const base::Optional<std::string> currency_system,
-    const std::string& locale_name)
+CurrencyFormatter::CurrencyFormatter(const std::string& currency_code,
+                                     const std::string& currency_system,
+                                     const std::string& locale_name)
     : locale_(locale_name.c_str()),
       formatted_currency_code_(FormatCurrencyCode(currency_code)) {
   UErrorCode error_code = U_ZERO_ERROR;

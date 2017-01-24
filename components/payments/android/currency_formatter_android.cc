@@ -25,10 +25,7 @@ CurrencyFormatterAndroid::CurrencyFormatterAndroid(
       ConvertJavaStringToUTF8(env, currency_system);
 
   currency_formatter_.reset(new CurrencyFormatter(
-      ConvertJavaStringToUTF8(env, currency_code),
-      currency_system_str.empty()
-          ? base::Optional<std::string>()
-          : base::Optional<std::string>(currency_system_str),
+      ConvertJavaStringToUTF8(env, currency_code), currency_system_str,
       ConvertJavaStringToUTF8(env, locale_name)));
 }
 

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.support.annotation.Nullable;
-
 import org.chromium.base.annotations.JNINamespace;
 
 import java.util.Locale;
@@ -29,18 +27,18 @@ public class CurrencyFormatter {
      *                      not be null.
      * @param currencySystem URI specifying the ISO4217 currency code specification. See for
      *          details: https://w3c.github.io/browser-payment-api/#paymentcurrencyamount-dictionary
-     *          Can be null, in which case "urn:iso:std:iso:4217" is assumed.
+     *          By default, the value is "urn:iso:std:iso:4217".
      * @param userLocale User's current locale. Should not be null.
      */
-    public CurrencyFormatter(
-            String currencyCode, @Nullable String currencySystem, Locale userLocale) {
+    public CurrencyFormatter(String currencyCode, String currencySystem, Locale userLocale) {
         assert currencyCode != null : "currencyCode should not be null";
+        assert currencySystem != null : "currencySystem should not be null";
         assert userLocale != null : "userLocale should not be null";
 
         // Note that this pointer could leak the native object. The called must call destroy() to
         // ensure that the native object is destroyed.
         mCurrencyFormatterAndroid = nativeInitCurrencyFormatterAndroid(
-                currencyCode, currencySystem == null ? "" : currencySystem, userLocale.toString());
+                currencyCode, currencySystem, userLocale.toString());
     }
 
     /** Will destroy the native object. This class shouldn't be used afterwards. */

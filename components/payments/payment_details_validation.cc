@@ -44,16 +44,13 @@ bool validateShippingOptionOrPaymentItem(
     return false;
   }
 
-  if (item->amount->currency_system.has_value() &&
-      item->amount->currency_system.value().empty()) {
+  if (item->amount->currency_system.empty()) {
     *error_message = "Currency system can't be empty";
     return false;
   }
 
   if (!payments::PaymentsValidators::isValidCurrencyCodeFormat(
-          item->amount->currency, item->amount->currency_system.has_value()
-                                      ? item->amount->currency_system.value()
-                                      : "",
+          item->amount->currency, item->amount->currency_system,
           error_message)) {
     return false;
   }

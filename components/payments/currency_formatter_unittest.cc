@@ -32,7 +32,7 @@ struct TestCase {
   const char* const locale_name;
   const std::string expected_amount;
   const char* const expected_currency_code;
-  const base::Optional<std::string> currency_system;
+  const char* const currency_system;
 };
 
 class PaymentsCurrencyFormatterTest : public testing::TestWithParam<TestCase> {

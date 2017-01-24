@@ -64,8 +64,7 @@ struct TypeConverter<PaymentCurrencyAmountPtr, blink::PaymentCurrencyAmount> {
     PaymentCurrencyAmountPtr output = PaymentCurrencyAmount::New();
     output->currency = input.currency();
     output->value = input.value();
-    if (input.hasCurrencySystem())
-      output->currency_system = input.currencySystem();
+    output->currency_system = input.currencySystem();
     return output;
   }
 };

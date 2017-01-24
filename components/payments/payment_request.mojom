@@ -48,7 +48,7 @@ struct PaymentCurrencyAmount {
   // currency identifier belongs to. By default, the value is
   // urn:iso:std:iso:4217 indicating that currency is defined by [ISO4217]
   // (for example, USD for US Dollars).
-  string? currency_system;
+  string currency_system = "urn:iso:std:iso:4217";
 };
 
 struct PaymentResponse {

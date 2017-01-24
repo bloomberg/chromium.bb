@@ -96,7 +96,7 @@ void PaymentRequest::OnConnectionTerminated() {
 
 CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
     const std::string& currency_code,
-    const base::Optional<std::string> currency_system,
+    const std::string& currency_system,
     const std::string& locale_name) {
   if (!currency_formatter_) {
     currency_formatter_.reset(

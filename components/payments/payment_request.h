@@ -64,7 +64,7 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   // the CurrencyFormatter is cached here.
   CurrencyFormatter* GetOrCreateCurrencyFormatter(
       const std::string& currency_code,
-      const base::Optional<std::string> currency_system,
+      const std::string& currency_system,
       const std::string& locale_name);
 
   // Returns the Autofill Profile, representing the shipping address and contact
