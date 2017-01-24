@@ -145,6 +145,27 @@ id<GREYMatcher> voiceSearchButton() {
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
+// Matcher for the Preload Webpages button on the bandwidth UI.
+id<GREYMatcher> BandwidthPreloadWebpagesButton() {
+  return buttonWithAccessibilityLabelId(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
+}
+
+// Matcher for the Privacy Handoff button on the privacy UI.
+id<GREYMatcher> PrivacyHandoffButton() {
+  return buttonWithAccessibilityLabelId(
+      IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES);
+}
+
+// Matcher for the Privacy Block Popups button on the privacy UI.
+id<GREYMatcher> BlockPopupsButton() {
+  return buttonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
+}
+
+// Matcher for the Privacy Translate Settings button on the privacy UI.
+id<GREYMatcher> TranslateSettingsButton() {
+  return buttonWithAccessibilityLabelId(IDS_IOS_TRANSLATE_SETTING);
+}
+
 // Asserts that there is no cookie in current web state.
 void AssertNoCookieExists() {
   NSError* error = nil;
@@ -252,6 +273,8 @@ bool IsCertificateCleared() {
 @implementation SettingsTestCase
 
 // Opens the a submenu from the settings page.  Must be called from the NTP.
+// TODO(crbug.com/684619): Investigate why usingSearchAction doesn't scroll
+// until the bottom.
 - (void)openSubSettingMenu:(id<GREYMatcher>)settingToTap {
   const CGFloat kScrollDisplacement = 150.0;
   id<GREYMatcher> toolsMenuTableViewMatcher =
@@ -770,7 +793,7 @@ bool IsCertificateCleared() {
   chrome_test_util::CloseAllIncognitoTabs();
 }
 
-// Verifies the UI elements are accessibile on the Settings page.
+// Verifies the UI elements are accessible on the Settings page.
 - (void)testAccessibilityOnSettingsPage {
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:settingsButton()]
@@ -782,7 +805,7 @@ bool IsCertificateCleared() {
       performAction:grey_tap()];
 }
 
-// Verifies the UI elements are accessibile on the Content Settings page.
+// Verifies the UI elements are accessible on the Content Settings page.
 - (void)testAccessibilityOnContentSettingsPage {
   [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
                                IDS_IOS_CONTENT_SETTINGS_TITLE)];
@@ -790,7 +813,29 @@ bool IsCertificateCleared() {
   [self closeSubSettingsMenu];
 }
 
-// Verifies the UI elements are accessibile on the Privacy Settings page.
+// Verifies the UI elements are accessible on the Content Settings
+// Block Popups page.
+- (void)testAccessibilityOnContentSettingsBlockPopupsPage {
+  [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
+                               IDS_IOS_CONTENT_SETTINGS_TITLE)];
+  [[EarlGrey selectElementWithMatcher:BlockPopupsButton()]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Content Translations Settings
+// page.
+- (void)testAccessibilityOnContentSettingsTranslatePage {
+  [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
+                               IDS_IOS_CONTENT_SETTINGS_TITLE)];
+  [[EarlGrey selectElementWithMatcher:TranslateSettingsButton()]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Privacy Settings page.
 - (void)testAccessibilityOnPrivacySettingsPage {
   [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
                                IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)];
@@ -798,11 +843,44 @@ bool IsCertificateCleared() {
   [self closeSubSettingsMenu];
 }
 
-// Verifies the UI elements are accessibile on the Bandwidth Management Settings
+// Verifies the UI elements are accessible on the Privacy Handoff Settings
+// page.
+- (void)testAccessibilityOnPrivacyHandoffSettingsPage {
+  [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
+                               IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)];
+  [[EarlGrey selectElementWithMatcher:PrivacyHandoffButton()]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Privacy Clear Browsing Data
+// Settings page.
+- (void)testAccessibilityOnPrivacyClearBrowsingHistoryPage {
+  [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
+                               IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)];
+  [[EarlGrey selectElementWithMatcher:clearBrowsingDataButton()]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Bandwidth Management Settings
 // page.
 - (void)testAccessibilityOnBandwidthManagementSettingsPage {
   [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
                                IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS)];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Bandwidth Preload Webpages
+// Settings page.
+- (void)testAccessibilityOnBandwidthPreloadWebpagesSettingsPage {
+  [self openSubSettingMenu:chrome_test_util::buttonWithAccessibilityLabelId(
+                               IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS)];
+  [[EarlGrey selectElementWithMatcher:BandwidthPreloadWebpagesButton()]
+      performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
 }
