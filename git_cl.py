@@ -13,6 +13,7 @@ from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
 import base64
 import collections
+import contextlib
 import fnmatch
 import httplib
 import json
@@ -753,7 +754,6 @@ class Settings(object):
     self.git_editor = None
     self.project = None
     self.force_https_commit_url = None
-    self.pending_ref_prefix = None
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -799,7 +799,7 @@ class Settings(object):
       return None
     git_cache.Mirror.SetCachePath(os.path.dirname(local_url))
     remote_url = git_cache.Mirror.CacheDirToUrl(local_url)
-    # Use the /dev/null print_func to avoid terminal spew in WaitForRealCommit.
+    # Use the /dev/null print_func to avoid terminal spew.
     mirror = git_cache.Mirror(remote_url, print_func = lambda *args: None)
     if mirror.exists():
       return mirror
@@ -896,12 +896,6 @@ class Settings(object):
       self.project = self._GetRietveldConfig('project', error_ok=True)
     return self.project
 
-  def GetPendingRefPrefix(self):
-    if not self.pending_ref_prefix:
-      self.pending_ref_prefix = self._GetRietveldConfig(
-          'pending-ref-prefix', error_ok=True)
-    return self.pending_ref_prefix
-
   def _GetRietveldConfig(self, param, **kwargs):
     return self._GetConfig('rietveld.' + param, **kwargs)
 
@@ -913,133 +907,82 @@ class Settings(object):
     return RunGit(['config', param], **kwargs).strip()
 
 
-class _GitNumbererState(object):
+@contextlib.contextmanager
+def _get_gerrit_project_config_file(remote_url):
+  """Context manager to fetch and store Gerrit's project.config from
+  refs/meta/config branch and store it in temp file.
+
+  Provides a temporary filename or None if there was error.
+  """
+  error, _ = RunGitWithCode([
+      'fetch', remote_url,
+      '+refs/meta/config:refs/git_cl/meta/config'])
+  if error:
+    # Ref doesn't exist or isn't accessible to current user.
+    print('WARNING: failed to fetch project config for %s: %s' %
+          (remote_url, error))
+    yield None
+    return
+
+  error, project_config_data = RunGitWithCode(
+      ['show', 'refs/git_cl/meta/config:project.config'])
+  if error:
+    print('WARNING: project.config file not found')
+    yield None
+    return
+
+  with gclient_utils.temporary_directory() as tempdir:
+    project_config_file = os.path.join(tempdir, 'project.config')
+    gclient_utils.FileWrite(project_config_file, project_config_data)
+    yield project_config_file
+
+
+def _is_git_numberer_enabled(remote_url, remote_ref):
+  """Returns True if Git Numberer is enabled on this ref."""
+  # TODO(tandrii): this should be deleted once repos below are 100% on Gerrit.
   KNOWN_PROJECTS_WHITELIST = [
       'chromium/src',
       'external/webrtc',
       'v8/v8',
   ]
 
-  @classmethod
-  def load(cls, remote_url, remote_ref):
-    """Figures out the state by fetching special refs from remote repo.
-    """
-    assert remote_ref and remote_ref.startswith('refs/'), remote_ref
-    url_parts = urlparse.urlparse(remote_url)
-    project_name = url_parts.path.lstrip('/').rstrip('git./')
-    for known in cls.KNOWN_PROJECTS_WHITELIST:
-      if project_name.endswith(known):
-        break
-    else:
-      # Early exit to avoid extra fetches for repos that aren't using gnumbd.
-      return cls(cls._get_pending_prefix_fallback(), None)
+  assert remote_ref and remote_ref.startswith('refs/'), remote_ref
+  url_parts = urlparse.urlparse(remote_url)
+  project_name = url_parts.path.lstrip('/').rstrip('git./')
+  for known in KNOWN_PROJECTS_WHITELIST:
+    if project_name.endswith(known):
+      break
+  else:
+    # Early exit to avoid extra fetches for repos that aren't using Git
+    # Numberer.
+    return False
 
-    # This pollutes local ref space, but the amount of objects is negligible.
-    error, _ = cls._run_git_with_code([
-        'fetch', remote_url,
-        '+refs/meta/config:refs/git_cl/meta/config',
-        '+refs/gnumbd-config/main:refs/git_cl/gnumbd-config/main'])
-    if error:
-      # Some ref doesn't exist or isn't accessible to current user.
-      # This shouldn't happen on production KNOWN_PROJECTS_WHITELIST
-      # with git-numberer.
-      cls._warn('failed to fetch gnumbd and project config for %s: %s',
-                remote_url, error)
-      return cls(cls._get_pending_prefix_fallback(), None)
-    return cls(cls._get_pending_prefix(remote_ref),
-               cls._is_validator_enabled(remote_ref))
-
-  @classmethod
-  def _get_pending_prefix(cls, ref):
-    error, gnumbd_config_data = cls._run_git_with_code(
-        ['show', 'refs/git_cl/gnumbd-config/main:config.json'])
-    if error:
-      cls._warn('gnumbd config file not found')
-      return cls._get_pending_prefix_fallback()
-
-    try:
-      config = json.loads(gnumbd_config_data)
-      if cls.match_refglobs(ref, config['enabled_refglobs']):
-        return config['pending_ref_prefix']
-      return None
-    except KeyboardInterrupt:
-      raise
-    except Exception as e:
-      cls._warn('failed to parse gnumbd config: %s', e)
-      return cls._get_pending_prefix_fallback()
-
-  @staticmethod
-  def _get_pending_prefix_fallback():
-    global settings
-    if not settings:
-      settings = Settings()
-    return settings.GetPendingRefPrefix()
-
-  @classmethod
-  def _is_validator_enabled(cls, ref):
-    error, project_config_data = cls._run_git_with_code(
-        ['show', 'refs/git_cl/meta/config:project.config'])
-    if error:
-      cls._warn('project.config file not found')
+  with _get_gerrit_project_config_file(remote_url) as project_config_file:
+    if project_config_file is None:
+      # Failed to fetch project.config, which shouldn't happen on open source
+      # repos KNOWN_PROJECTS_WHITELIST.
       return False
-    # Gerrit's project.config is really a git config file.
-    # So, parse it as such.
-    with gclient_utils.temporary_directory() as tempdir:
-      project_config_file = os.path.join(tempdir, 'project.config')
-      gclient_utils.FileWrite(project_config_file, project_config_data)
+    def get_opts(x):
+      code, out = RunGitWithCode(
+          ['config', '-f', project_config_file, '--get-all',
+           'plugin.git-numberer.validate-%s-refglob' % x])
+      if code == 0:
+        return out.strip().splitlines()
+      return []
+    enabled, disabled = map(get_opts, ['enabled', 'disabled'])
 
-      def get_opts(x):
-        code, out = cls._run_git_with_code(
-            ['config', '-f', project_config_file, '--get-all',
-             'plugin.git-numberer.validate-%s-refglob' % x])
-        if code == 0:
-          return out.strip().splitlines()
-        return []
-      enabled, disabled = map(get_opts, ['enabled', 'disabled'])
+  logging.info('validator config enabled %s disabled %s refglobs for '
+               '(this ref: %s)', enabled, disabled, remote_ref)
 
-    logging.info('validator config enabled %s disabled %s refglobs for '
-                 '(this ref: %s)', enabled, disabled, ref)
-
-    if cls.match_refglobs(ref, disabled):
-      return False
-    return cls.match_refglobs(ref, enabled)
-
-  @staticmethod
-  def match_refglobs(ref, refglobs):
+  def match_refglobs(refglobs):
     for refglob in refglobs:
-      if ref == refglob or fnmatch.fnmatch(ref, refglob):
+      if remote_ref == refglob or fnmatch.fnmatch(remote_ref, refglob):
         return True
     return False
 
-  @staticmethod
-  def _run_git_with_code(*args, **kwargs):
-    # The only reason for this wrapper is easy porting of this code to CQ
-    # codebase, which forked git_cl.py and checkouts.py long time ago.
-    return RunGitWithCode(*args, **kwargs)
-
-  @staticmethod
-  def _warn(msg, *args):
-    if args:
-      msg = msg % args
-    print('WARNING: %s' % msg)
-
-  def __init__(self, pending_prefix, validator_enabled):
-    # TODO(tandrii): remove pending_prefix after gnumbd is no more.
-    if pending_prefix:
-      if not pending_prefix.endswith('/'):
-        pending_prefix += '/'
-    self._pending_prefix = pending_prefix or None
-    self._validator_enabled = validator_enabled or False
-    logging.debug('_GitNumbererState(pending: %s, validator: %s)',
-                  self._pending_prefix, self._validator_enabled)
-
-  @property
-  def pending_prefix(self):
-    return self._pending_prefix
-
-  @property
-  def should_add_git_number(self):
-    return self._validator_enabled and self._pending_prefix is None
+  if match_refglobs(disabled):
+    return False
+  return match_refglobs(enabled)
 
 
 def ShortBranchName(branch):
@@ -2208,9 +2151,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
                                 self.GetUpstreamBranch().split('/')[-1])
     if remote_url:
       remote, remote_branch = self.GetRemoteBranch()
-      target_ref = GetTargetRef(remote, remote_branch, options.target_branch,
-                                pending_prefix_check=True,
-                                remote_url=self.GetRemoteUrl())
+      target_ref = GetTargetRef(remote, remote_branch, options.target_branch)
       if target_ref:
         upload_args.extend(['--target_ref', target_ref])
 
@@ -2686,9 +2627,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     gerrit_remote = 'origin'
 
     remote, remote_branch = self.GetRemoteBranch()
-    # Gerrit will not support pending prefix at all.
-    branch = GetTargetRef(remote, remote_branch, options.target_branch,
-                          pending_prefix_check=False)
+    branch = GetTargetRef(remote, remote_branch, options.target_branch)
 
     # This may be None; default fallback value is determined in logic below.
     title = options.title
@@ -3320,7 +3259,6 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('project', 'PROJECT', unset_error_ok=True)
-  SetProperty('pending-ref-prefix', 'PENDING_REF_PREFIX', unset_error_ok=True)
   SetProperty('run-post-upload-hook', 'RUN_POST_UPLOAD_HOOK',
               unset_error_ok=True)
 
@@ -4164,17 +4102,13 @@ def GenerateGerritChangeId(message):
   return 'I%s' % change_hash.strip()
 
 
-def GetTargetRef(remote, remote_branch, target_branch, pending_prefix_check,
-                 remote_url=None):
+def GetTargetRef(remote, remote_branch, target_branch):
   """Computes the remote branch ref to use for the CL.
 
   Args:
     remote (str): The git remote for the CL.
     remote_branch (str): The git remote branch for the CL.
     target_branch (str): The target branch specified by the user.
-    pending_prefix_check (bool): If true, determines if pending_prefix should be
-      used.
-    remote_url (str): Only used for checking if pending_prefix should be used.
   """
   if not (remote and remote_branch):
     return None
@@ -4217,11 +4151,6 @@ def GetTargetRef(remote, remote_branch, target_branch, pending_prefix_check,
   elif remote_branch.startswith('refs/remotes/branch-heads'):
     remote_branch = remote_branch.replace('refs/remotes/', 'refs/')
 
-  if pending_prefix_check:
-    # If a pending prefix exists then replace refs/ with it.
-    state = _GitNumbererState.load(remote_url, remote_branch)
-    if state.pending_prefix:
-      remote_branch = remote_branch.replace('refs/', state.pending_prefix)
   return remote_branch
 
 
@@ -4331,99 +4260,6 @@ def CMDupload(parser, args):
 
   cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
   return cl.CMDUpload(options, args, orig_args)
-
-
-def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
-  print()
-  print('Waiting for commit to be landed on %s...' % real_ref)
-  print('(If you are impatient, you may Ctrl-C once without harm)')
-  target_tree = RunGit(['rev-parse', '%s:' % pushed_commit]).strip()
-  current_rev = RunGit(['rev-parse', local_base_ref]).strip()
-  mirror = settings.GetGitMirror(remote)
-
-  loop = 0
-  while True:
-    sys.stdout.write('fetching (%d)...        \r' % loop)
-    sys.stdout.flush()
-    loop += 1
-
-    if mirror:
-      mirror.populate()
-    RunGit(['retry', 'fetch', remote, real_ref], stderr=subprocess2.VOID)
-    to_rev = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
-    commits = RunGit(['rev-list', '%s..%s' % (current_rev, to_rev)])
-    for commit in commits.splitlines():
-      if RunGit(['rev-parse', '%s:' % commit]).strip() == target_tree:
-        print('Found commit on %s' % real_ref)
-        return commit
-
-    current_rev = to_rev
-
-
-def PushToGitPending(remote, pending_ref):
-  """Fetches pending_ref, cherry-picks current HEAD on top of it, pushes.
-
-  Returns:
-    (retcode of last operation, output log of last operation).
-  """
-  assert pending_ref.startswith('refs/'), pending_ref
-  local_pending_ref = 'refs/git-cl/' + pending_ref[len('refs/'):]
-  cherry = RunGit(['rev-parse', 'HEAD']).strip()
-  code = 0
-  out = ''
-  max_attempts = 3
-  attempts_left = max_attempts
-  while attempts_left:
-    if attempts_left != max_attempts:
-      print('Retrying, %d attempts left...' % (attempts_left - 1,))
-    attempts_left -= 1
-
-    # Fetch. Retry fetch errors.
-    print('Fetching pending ref %s...' % pending_ref)
-    code, out = RunGitWithCode(
-        ['retry', 'fetch', remote, '+%s:%s' % (pending_ref, local_pending_ref)])
-    if code:
-      print('Fetch failed with exit code %d.' % code)
-      if out.strip():
-        print(out.strip())
-      continue
-
-    # Try to cherry pick. Abort on merge conflicts.
-    print('Cherry-picking commit on top of pending ref...')
-    RunGitWithCode(['checkout', local_pending_ref], suppress_stderr=True)
-    code, out = RunGitWithCode(['cherry-pick', cherry])
-    if code:
-      print('Your patch doesn\'t apply cleanly to ref \'%s\', '
-            'the following files have merge conflicts:' % pending_ref)
-      print(RunGit(['diff', '--name-status', '--diff-filter=U']).strip())
-      print('Please rebase your patch and try again.')
-      RunGitWithCode(['cherry-pick', '--abort'])
-      return code, out
-
-    # Applied cleanly, try to push now. Retry on error (flake or non-ff push).
-    print('Pushing commit to %s... It can take a while.' % pending_ref)
-    code, out = RunGitWithCode(
-        ['retry', 'push', '--porcelain', remote, 'HEAD:%s' % pending_ref])
-    if code == 0:
-      # Success.
-      print('Commit pushed to pending ref successfully!')
-      return code, out
-
-    print('Push failed with exit code %d.' % code)
-    if out.strip():
-      print(out.strip())
-    if IsFatalPushFailure(out):
-      print('Fatal push error. Make sure your .netrc credentials and git '
-            'user.email are correct and you have push access to the repo.')
-      return code, out
-
-  print('All attempts to push to pending ref failed.')
-  return code, out
-
-
-def IsFatalPushFailure(push_stdout):
-  """True if retrying push won't help."""
-  return '(prohibited by Gerrit)' in push_stdout
 
 
 @subcommand.usage('DEPRECATED')
@@ -4608,8 +4444,6 @@ def CMDland(parser, args):
   # We wrap in a try...finally block so if anything goes wrong,
   # we clean up the branches.
   retcode = -1
-  pushed_to_pending = False
-  pending_ref = None
   revision = None
   try:
     RunGit(['checkout', '-q', '-b', MERGE_BRANCH])
@@ -4627,15 +4461,15 @@ def CMDland(parser, args):
     mirror = settings.GetGitMirror(remote)
     if mirror:
       pushurl = mirror.url
-      git_numberer = _GitNumbererState.load(pushurl, branch)
+      git_numberer_enabled = _is_git_numberer_enabled(pushurl, branch)
     else:
       pushurl = remote  # Usually, this is 'origin'.
-      git_numberer = _GitNumbererState.load(
+      git_numberer_enabled = _is_git_numberer_enabled(
           RunGit(['config', 'remote.%s.url' % remote]).strip(), branch)
 
-    if git_numberer.should_add_git_number:
-      # TODO(tandrii): run git fetch in a loop + autorebase when there there
-      # is no pending ref to push to?
+    if git_numberer_enabled:
+      # TODO(tandrii): maybe do autorebase + retry on failure
+      # http://crbug.com/682934, but better just use Gerrit :)
       logging.debug('Adding git number footers')
       parent_msg = RunGit(['show', '-s', '--format=%B', merge_base]).strip()
       commit_desc.update_with_git_number_footers(merge_base, parent_msg,
@@ -4645,35 +4479,9 @@ def CMDland(parser, args):
                       _get_committer_timestamp('HEAD'))
       _git_amend_head(commit_desc.description, timestamp)
       change_desc = ChangeDescription(commit_desc.description)
-      # If gnumbd is sitll ON and we ultimately push to branch with
-      # pending_prefix, gnumbd will modify footers we've just inserted with
-      # 'Original-', which is annoying but still technically correct.
 
-    pending_prefix = git_numberer.pending_prefix
-    if not pending_prefix or branch.startswith(pending_prefix):
-      # If not using refs/pending/heads/* at all, or target ref is already set
-      # to pending, then push to the target ref directly.
-      # NB(tandrii): I think branch.startswith(pending_prefix) never happens
-      # in practise. I really tried to create a new branch tracking
-      # refs/pending/heads/master directly and git cl land failed long before
-      # reaching this. Disagree? Comment on http://crbug.com/642493.
-      if pending_prefix:
-        print('\n\nYOU GOT A CHANCE TO WIN A FREE GIFT!\n\n'
-              'Grab your .git/config, add instructions how to reproduce '
-              'this, and post it to http://crbug.com/642493.\n'
-              'The first reporter gets a free "Black Swan" book from '
-              'tandrii@\n\n')
-      retcode, output = RunGitWithCode(
-          ['push', '--porcelain', pushurl, 'HEAD:%s' % branch])
-      pushed_to_pending = pending_prefix and branch.startswith(pending_prefix)
-    else:
-      # Cherry-pick the change on top of pending ref and then push it.
-      assert branch.startswith('refs/'), branch
-      assert pending_prefix[-1] == '/', pending_prefix
-      pending_ref = pending_prefix + branch[len('refs/'):]
-      retcode, output = PushToGitPending(pushurl, pending_ref)
-      pushed_to_pending = (retcode == 0)
-
+    retcode, output = RunGitWithCode(
+        ['push', '--porcelain', pushurl, 'HEAD:%s' % branch])
     if retcode == 0:
       revision = RunGit(['rev-parse', 'HEAD']).strip()
     logging.debug(output)
@@ -4692,49 +4500,31 @@ def CMDland(parser, args):
     print('Failed to push. If this persists, please file a bug.')
     return 1
 
-  killed = False
-  if pushed_to_pending:
-    try:
-      revision = WaitForRealCommit(remote, revision, base_branch, branch)
-      # We set pushed_to_pending to False, since it made it all the way to the
-      # real ref.
-      pushed_to_pending = False
-    except KeyboardInterrupt:
-      killed = True
-
   if cl.GetIssue():
-    to_pending = ' to pending queue' if pushed_to_pending else ''
     viewvc_url = settings.GetViewVCUrl()
-    if not to_pending:
-      if viewvc_url and revision:
-        change_desc.append_footer(
-            'Committed: %s%s' % (viewvc_url, revision))
-      elif revision:
-        change_desc.append_footer('Committed: %s' % (revision,))
+    if viewvc_url and revision:
+      change_desc.append_footer(
+          'Committed: %s%s' % (viewvc_url, revision))
+    elif revision:
+      change_desc.append_footer('Committed: %s' % (revision,))
     print('Closing issue '
           '(you may be prompted for your codereview password)...')
     cl.UpdateDescription(change_desc.description)
     cl.CloseIssue()
     props = cl.GetIssueProperties()
     patch_num = len(props['patchsets'])
-    comment = "Committed patchset #%d (id:%d)%s manually as %s" % (
-        patch_num, props['patchsets'][-1], to_pending, revision)
+    comment = "Committed patchset #%d (id:%d) manually as %s" % (
+        patch_num, props['patchsets'][-1], revision)
     if options.bypass_hooks:
       comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
     else:
       comment += ' (presubmit successful).'
     cl.RpcServer().add_comment(cl.GetIssue(), comment)
 
-  if pushed_to_pending:
-    _, branch = cl.FetchUpstreamTuple(cl.GetBranch())
-    print('The commit is in the pending queue (%s).' % pending_ref)
-    print('It will show up on %s in ~1 min, once it gets a Cr-Commit-Position '
-          'footer.' % branch)
-
   if os.path.isfile(POSTUPSTREAM_HOOK):
     RunCommand([POSTUPSTREAM_HOOK, merge_base], error_ok=True)
 
-  return 1 if killed else 0
+  return 0
 
 
 @subcommand.usage('<patch url or issue id or issue url>')
