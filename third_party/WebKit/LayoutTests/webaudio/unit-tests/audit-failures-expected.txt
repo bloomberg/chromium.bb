@@ -14,8 +14,9 @@ FAIL X 1 is not greater than or equal to 2. Got 1. assert_true: expected true go
 FAIL X 2 is not less than 1. Got 2. assert_true: expected true got false
 FAIL X 2 is not less than or equal to 1. Got 2. assert_true: expected true got false
 FAIL X Decoding audio data with no argument rejected incorrectly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. Got undefined. assert_true: expected true got false
-FAIL X undefined resolved incorrectly. Got undefined. assert_true: expected true got false
-FAIL < [basic-failure] 13 out of 13 assertions were failed. assert_true: expected true got false
+FAIL X Suspending OAC with no argument rejected correctly but got TypeError instead of IndexSizeError. Got undefined. assert_true: expected true got false
+FAIL X Start OAC rendering resolved incorrectly. Got undefined. assert_true: expected true got false
+FAIL < [basic-failure] 14 out of 14 assertions were failed. assert_true: expected true got false
 PASS > [numerical-failures] Testing numerical assertion failures. 
 FAIL X 0 is not close to 0.1 within a relative error of 0 (RelErr=1). Got 0. assert_true: expected true got false
 FAIL X The measured decibel is not close to 62 within a relative error of 0.01 (RelErr=0.04838709677419355). Got 59. assert_true: expected true got false

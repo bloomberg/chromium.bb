@@ -357,6 +357,39 @@ window.Audit = (function () {
     }
 
     /**
+     * Check if |actual| promise is rejected correctly.
+     *
+     * @example
+     *   should(promise, 'My promise').beRejectedWith('_ERROR_').then();
+     *
+     * @result
+     *   "PASS   My promise rejected correctly with _ERROR_."
+     *   "FAIL X My promise rejected correctly but got _ACTUAL_ERROR instead of
+     *           _EXPECTED_ERROR_."
+     *   "FAIL X My promise resolved incorrectly."
+     */
+    beRejectedWith() {
+      this._processArguments(arguments);
+
+      return this._actual.then(
+          function() {
+            this._assert(false, null, '${actual} resolved incorrectly.');
+          }.bind(this),
+          function(error) {
+            if (this._expected !== error.name) {
+              this._assert(
+                  false, null, '${actual} rejected correctly but got ' +
+                      error.name + ' instead of ' + this._expected + '.');
+            } else {
+              this._assert(
+                  true,
+                  '${actual} rejected correctly with ' + this._expected + '.',
+                  null);
+            }
+          }.bind(this));
+    }
+
+    /**
      * Check if |actual| is a boolean true.
      *
      * @example

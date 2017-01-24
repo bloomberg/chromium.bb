@@ -33,7 +33,9 @@
       Promise.all([
           should(oac.startRendering(), 'Start OAC rendering').beResolved(),
           should(oac.decodeAudioData(), 'Decoding audio data with no argument')
-            .beRejected()
+            .beRejected(),
+          should(oac.suspend(), 'Suspending OAC with no argument')
+            .beRejectedWith('TypeError')
         ]).then(task.done.bind(task));
     });
 

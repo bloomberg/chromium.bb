@@ -25,8 +25,9 @@ PASS   2 is greater than or equal to 2.
 PASS   1 is less than 2. 
 PASS   1 is less than or equal to 1. 
 PASS   Decoding audio data with no argument rejected correctly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. 
+PASS   Suspending OAC with no argument rejected correctly with TypeError. 
 PASS   Start OAC rendering resolved correctly. 
-PASS < [basic] All assertions passed. (total 15 assertions) 
+PASS < [basic] All assertions passed. (total 16 assertions) 
 PASS # AUDIT TASK RUNNER FINISHED: 2 tasks ran successfully. 
 Harness: the test ran to completion.
 
