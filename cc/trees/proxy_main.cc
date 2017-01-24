@@ -355,11 +355,6 @@ bool ProxyMain::CommitRequested() const {
          max_requested_pipeline_stage_ >= COMMIT_PIPELINE_STAGE;
 }
 
-bool ProxyMain::BeginMainFrameRequested() const {
-  DCHECK(IsMainThread());
-  return max_requested_pipeline_stage_ != NO_PIPELINE_STAGE;
-}
-
 void ProxyMain::MainThreadHasStoppedFlinging() {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(

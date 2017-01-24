@@ -31,7 +31,6 @@ class FakeProxy : public Proxy {
   void NotifyInputThrottledUntilCommit() override {}
   void SetDeferCommits(bool defer_commits) override {}
   void MainThreadHasStoppedFlinging() override {}
-  bool BeginMainFrameRequested() const override;
   bool CommitRequested() const override;
   void Start() override {}
   void Stop() override {}

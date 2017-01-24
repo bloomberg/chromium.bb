@@ -107,7 +107,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   void SetNeedsUpdateLayers() override;
   void SetNeedsCommit() override;
   void SetNeedsRecalculateRasterScales() override;
-  bool BeginMainFrameRequested() const override;
   bool CommitRequested() const override;
   void SetDeferCommits(bool defer_commits) override;
   void LayoutAndUpdateLayers() override;

@@ -59,7 +59,6 @@ class CC_EXPORT Proxy {
   virtual void MainThreadHasStoppedFlinging() = 0;
 
   virtual bool CommitRequested() const = 0;
-  virtual bool BeginMainFrameRequested() const = 0;
 
   // Must be called before using the proxy.
   virtual void Start() = 0;

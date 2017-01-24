@@ -273,15 +273,6 @@ bool SingleThreadProxy::CommitRequested() const {
   return commit_requested_;
 }
 
-bool SingleThreadProxy::BeginMainFrameRequested() const {
-  DCHECK(task_runner_provider_->IsMainThread());
-  // If there is no scheduler, then there can be no pending begin frame,
-  // as all frames are all manually initiated by the embedder of cc.
-  if (!scheduler_on_impl_thread_)
-    return false;
-  return commit_requested_;
-}
-
 void SingleThreadProxy::Stop() {
   TRACE_EVENT0("cc", "SingleThreadProxy::stop");
   DCHECK(task_runner_provider_->IsMainThread());

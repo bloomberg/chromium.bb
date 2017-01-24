@@ -589,10 +589,6 @@ RenderWidgetCompositor::GetInputHandler() {
   return layer_tree_host_->GetInputHandler();
 }
 
-bool RenderWidgetCompositor::BeginMainFrameRequested() const {
-  return layer_tree_host_->BeginMainFrameRequested();
-}
-
 void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
   layer_tree_host_->GetLayerTree()->SetNeedsDisplayOnAllLayers();
 }
