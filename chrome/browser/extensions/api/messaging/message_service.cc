@@ -436,7 +436,6 @@ void MessageService::OpenChannelToNativeApp(
 
   // Abandon the channel.
   if (!native_host.get()) {
-    LOG(ERROR) << "Failed to create native process.";
     DispatchOnDisconnect(source, receiver_port_id, error);
     return;
   }
