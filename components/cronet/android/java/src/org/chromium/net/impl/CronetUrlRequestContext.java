@@ -244,7 +244,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
 
     @Override
     public String getVersionString() {
-        return "Cronet/" + ImplVersion.getVersion();
+        return "Cronet/" + ImplVersion.getCronetVersionWithLastChange();
     }
 
     @Override

@@ -81,10 +81,15 @@ _generated_api_version_java =
     "$_generated_api_version_java_dir/org/chromium/net/ApiVersion.java"
 
 process_version("cronet_api_version_java") {
+  _api_level = read_file("api_version.txt", "value")
   template_file = "api/src/org/chromium/net/ApiVersion.template"
   sources = [
     "//build/util/LASTCHANGE",
     "//chrome/VERSION",
+  ]
+  extra_args = [
+    "-e",
+    "API_LEVEL=$_api_level",
   ]
   output = _generated_api_version_java
 }
@@ -106,10 +111,15 @@ _generated_impl_version_java =
     "$_generated_impl_version_java_dir/org/chromium/net/impl/ImplVersion.java"
 
 process_version("cronet_impl_version_java") {
+  _api_level = read_file("api_version.txt", "value")
   template_file = "java/src/org/chromium/net/impl/ImplVersion.template"
   sources = [
     "//build/util/LASTCHANGE",
     "//chrome/VERSION",
+  ]
+  extra_args = [
+    "-e",
+    "API_LEVEL=$_api_level",
   ]
   output = _generated_impl_version_java
 }
@@ -273,11 +283,11 @@ android_library("cronet_api_java") {
     "api/src/org/chromium/net/CronetEngine.java",
     "api/src/org/chromium/net/CallbackException.java",
     "api/src/org/chromium/net/CronetException.java",
-    "api/src/org/chromium/net/ICronetEngineBuilder.java",
-    "api/src/org/chromium/net/ImplLoader.java",
+    "api/src/org/chromium/net/CronetProvider.java",
     "api/src/org/chromium/net/ExperimentalBidirectionalStream.java",
     "api/src/org/chromium/net/ExperimentalCronetEngine.java",
     "api/src/org/chromium/net/ExperimentalUrlRequest.java",
+    "api/src/org/chromium/net/ICronetEngineBuilder.java",
     "api/src/org/chromium/net/InlineExecutionProhibitedException.java",
     "api/src/org/chromium/net/NetworkException.java",
     "api/src/org/chromium/net/NetworkQualityRttListener.java",
@@ -340,6 +350,8 @@ android_library("cronet_impl_platform_java") {
   java_files = [
     "java/src/org/chromium/net/impl/InputStreamChannel.java",
     "java/src/org/chromium/net/impl/JavaCronetEngine.java",
+    "java/src/org/chromium/net/impl/JavaCronetEngineBuilderImpl.java",
+    "java/src/org/chromium/net/impl/JavaCronetProvider.java",
     "java/src/org/chromium/net/impl/JavaUrlRequest.java",
   ]
 
@@ -366,6 +378,8 @@ android_library("cronet_impl_native_java") {
     "java/src/org/chromium/net/impl/CronetUploadDataStream.java",
     "java/src/org/chromium/net/impl/CronetUrlRequest.java",
     "java/src/org/chromium/net/impl/CronetUrlRequestContext.java",
+    "java/src/org/chromium/net/impl/NativeCronetEngineBuilderImpl.java",
+    "java/src/org/chromium/net/impl/NativeCronetProvider.java",
     "java/src/org/chromium/net/urlconnection/CronetBufferedOutputStream.java",
     "java/src/org/chromium/net/urlconnection/CronetChunkedOutputStream.java",
     "java/src/org/chromium/net/urlconnection/CronetFixedModeOutputStream.java",
@@ -696,6 +710,7 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/BidirectionalStreamQuicTest.java",
     "test/javatests/src/org/chromium/net/BidirectionalStreamTest.java",
     "test/javatests/src/org/chromium/net/Criteria.java",
+    "test/javatests/src/org/chromium/net/CronetEngineBuilderTest.java",
     "test/javatests/src/org/chromium/net/CronetTestBase.java",
     "test/javatests/src/org/chromium/net/CronetUploadTest.java",
     "test/javatests/src/org/chromium/net/CronetUrlRequestContextTest.java",

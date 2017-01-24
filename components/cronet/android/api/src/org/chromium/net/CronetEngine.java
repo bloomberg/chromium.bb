@@ -6,12 +6,17 @@ package org.chromium.net;
 
 import android.content.Context;
 import android.net.http.HttpResponseCache;
+import android.support.annotation.VisibleForTesting;
 
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -63,7 +68,20 @@ public abstract class CronetEngine {
          *                the lifetime of {@code context} unnecessarily.
          */
         public Builder(Context context) {
-            mBuilderDelegate = ImplLoader.load(context);
+            this(createBuilderDelegate(context));
+        }
+
+        /**
+         * Constructs {@link Builder} with a given delegate that provides the actual implementation
+         * of the {@code Builder} methods. This constructor is used only by the internal
+         * implementation.
+         *
+         * @param builderDelegate delegate that provides the actual implementation.
+         *
+         * {@hide}
+         */
+        public Builder(ICronetEngineBuilder builderDelegate) {
+            mBuilderDelegate = builderDelegate;
         }
 
         /**
@@ -281,6 +299,105 @@ public abstract class CronetEngine {
          */
         public CronetEngine build() {
             return mBuilderDelegate.build();
+        }
+
+        /**
+         * Creates an implementation of {@link ICronetEngineBuilder} that can be used
+         * to delegate the builder calls to. The method uses {@link CronetProvider}
+         * to obtain the list of available providers.
+         *
+         * @param context Android Context to use.
+         * @return the created {@code ICronetEngineBuilder}.
+         */
+        private static ICronetEngineBuilder createBuilderDelegate(Context context) {
+            List<CronetProvider> providerList =
+                    getEnabledCronetProviders(context, CronetProvider.getAllProviders(context));
+            return providerList.get(0).createBuilder().mBuilderDelegate;
+        }
+
+        /**
+         * Returns the list of available and enabled {@link CronetProvider}. The returned list
+         * is sorted based on the provider versions and types.
+         *
+         * @param context Android Context to use.
+         * @return the sorted list of enabled providers. The list contains at least one provider.
+         * @throws RuntimeException is the list of providers is empty or all of the providers
+         *                          are disabled.
+         */
+        @VisibleForTesting
+        static List<CronetProvider> getEnabledCronetProviders(
+                Context context, List<CronetProvider> providers) {
+            // Check that there is at least one available provider.
+            if (providers.size() == 0) {
+                throw new RuntimeException("Unable to find any Cronet provider."
+                        + " Have you included all necessary jars?");
+            }
+
+            // Exclude disabled providers from the list.
+            for (Iterator<CronetProvider> i = providers.iterator(); i.hasNext();) {
+                CronetProvider provider = i.next();
+                if (!provider.isEnabled()) {
+                    i.remove();
+                }
+            }
+
+            // Check that there is at least one enabled provider.
+            if (providers.size() == 0) {
+                throw new RuntimeException("All available Cronet providers are disabled."
+                        + " A provider should be enabled before it can be used.");
+            }
+
+            // Sort providers based on version and type.
+            Collections.sort(providers, new Comparator<CronetProvider>() {
+                @Override
+                public int compare(CronetProvider p1, CronetProvider p2) {
+                    // The fallback provider should always be at the end of the list.
+                    if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p1.getName())) {
+                        return 1;
+                    }
+                    if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p2.getName())) {
+                        return -1;
+                    }
+                    // A provider with higher version should go first.
+                    return -compareVersions(p1.getVersion(), p2.getVersion());
+                }
+            });
+            return providers;
+        }
+
+        /**
+         * Compares two strings that contain versions. The string should only contain
+         * dot-separated segments that contain an arbitrary number of digits digits [0-9].
+         *
+         * @param s1 the first string.
+         * @param s2 the second string.
+         * @return -1 if s1<s2, +1 if s1>s2 and 0 if s1=s2. If two versions are equal, the
+         *         version with the higher number of segments is considered to be higher.
+         *
+         * @throws IllegalArgumentException if any of the strings contains an illegal
+         * version number.
+         */
+        @VisibleForTesting
+        static int compareVersions(String s1, String s2) {
+            if (s1 == null || s2 == null) {
+                throw new IllegalArgumentException("The input values cannot be null");
+            }
+            String[] s1segments = s1.split("\\.");
+            String[] s2segments = s2.split("\\.");
+            for (int i = 0; i < s1segments.length && i < s2segments.length; i++) {
+                try {
+                    int s1segment = Integer.parseInt(s1segments[i]);
+                    int s2segment = Integer.parseInt(s2segments[i]);
+                    if (s1segment != s2segment) {
+                        return Integer.signum(s1segment - s2segment);
+                    }
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Unable to convert version segments into"
+                                    + " integers: " + s1segments[i] + " & " + s2segments[i],
+                            e);
+                }
+            }
+            return Integer.signum(s1segments.length - s2segments.length);
         }
     }
 

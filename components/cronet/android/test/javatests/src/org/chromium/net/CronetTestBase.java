@@ -10,6 +10,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.net.impl.CronetEngineBase;
 import org.chromium.net.impl.JavaCronetEngine;
+import org.chromium.net.impl.JavaCronetProvider;
 import org.chromium.net.impl.UserAgent;
 
 import java.lang.annotation.ElementType;
@@ -132,10 +133,8 @@ public class CronetTestBase extends AndroidTestCase {
                 super.runTest();
                 if (!method.isAnnotationPresent(OnlyRunNativeCronet.class)) {
                     if (mCronetTestFramework != null) {
-                        ExperimentalCronetEngine.Builder builder =
-                                new ExperimentalCronetEngine.Builder(getContext());
+                        ExperimentalCronetEngine.Builder builder = createJavaEngineBuilder();
                         builder.setUserAgent(UserAgent.from(getContext()));
-                        builder.enableLegacyMode(true);
                         mCronetTestFramework.mCronetEngine = (CronetEngineBase) builder.build();
                         // Make sure that the instantiated engine is JavaCronetEngine.
                         assert mCronetTestFramework.mCronetEngine.getClass()
@@ -150,6 +149,16 @@ public class CronetTestBase extends AndroidTestCase {
         } else {
             super.runTest();
         }
+    }
+
+    /**
+     * Creates and returns {@link ExperimentalCronetEngine.Builder} that creates
+     * Java (platform) based {@link CronetEngine.Builder}.
+     *
+     * @return the {@code CronetEngine.Builder} that builds Java-based {@code Cronet engine}.
+     */
+    ExperimentalCronetEngine.Builder createJavaEngineBuilder() {
+        return (ExperimentalCronetEngine.Builder) new JavaCronetProvider(mContext).createBuilder();
     }
 
     public void assertResponseEquals(UrlResponseInfo expected, UrlResponseInfo actual) {

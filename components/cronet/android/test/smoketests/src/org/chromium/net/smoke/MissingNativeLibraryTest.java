@@ -7,7 +7,10 @@ package org.chromium.net.smoke;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.net.CronetEngine;
+import org.chromium.net.CronetProvider;
 import org.chromium.net.ExperimentalCronetEngine;
+
+import java.util.List;
 
 /**
  *  Tests scenarios when the native shared library file is missing in the APK or was built for a
@@ -34,15 +37,36 @@ public class MissingNativeLibraryTest extends CronetSmokeTestCase {
     }
 
     /**
-     * Tests the enableLegacyMode API that allows the embedder to force JavaCronetEngine
-     * instantiation even when the native Cronet engine implementation is available.
+     * Tests the embedder ability to select Java (platform) based implementation when
+     * the native library is missing or doesn't load for some reason,
      */
     @SmallTest
-    public void testEnableLegacyMode() throws Exception {
-        ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        builder.enableLegacyMode(true);
+    public void testForceChoiceOfJavaEngine() throws Exception {
+        List<CronetProvider> availableProviders = CronetProvider.getAllProviders(getContext());
+        boolean foundNativeProvider = false;
+        CronetProvider platformProvider = null;
+        for (CronetProvider provider : availableProviders) {
+            assertTrue(provider.isEnabled());
+            if (provider.getName().equals(CronetProvider.PROVIDER_NAME_APP_PACKAGED)) {
+                foundNativeProvider = true;
+            } else if (provider.getName().equals(CronetProvider.PROVIDER_NAME_FALLBACK)) {
+                platformProvider = provider;
+            }
+        }
+
+        assertTrue("Unable to find the native cronet provider", foundNativeProvider);
+        assertNotNull("Unable to find the platform cronet provider", platformProvider);
+
+        CronetEngine.Builder builder = platformProvider.createBuilder();
         CronetEngine engine = builder.build();
         assertJavaEngine(engine);
+
+        assertTrue("It should be always possible to cast the created builder to"
+                        + " ExperimentalCronetEngine.Builder",
+                builder instanceof ExperimentalCronetEngine.Builder);
+
+        assertTrue("It should be always possible to cast the created engine to"
+                        + " ExperimentalCronetEngine.Builder",
+                engine instanceof ExperimentalCronetEngine);
     }
 }

@@ -9,10 +9,28 @@ package org.chromium.net;
  * {@hide as it's only used internally}
  */
 public class ApiVersion {
-    public static final String CRONET_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
-    public static final String LAST_CHANGE = "@LASTCHANGE@";
+    private static final String CRONET_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
+    private static final int API_LEVEL = @API_LEVEL@;
+    private static final String LAST_CHANGE = "@LASTCHANGE@";
 
-    public static String getVersion() {
+    /**
+     * Private constructor. All members of this class should be static.
+     */
+    private ApiVersion() {}
+
+    public static String getCronetVersionWithLastChange() {
         return CRONET_VERSION + "@" + LAST_CHANGE.substring(0, 8);
+    }
+
+    public static int getApiLevel() {
+        return API_LEVEL;
+    }
+
+    public static String getCronetVersion() {
+        return CRONET_VERSION;
+    }
+
+    public static String getLastChange() {
+        return LAST_CHANGE;
     }
 }

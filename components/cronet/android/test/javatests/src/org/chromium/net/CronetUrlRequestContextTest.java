@@ -170,7 +170,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
         if (testingJavaImpl()) {
-            cronetEngineBuilder.enableLegacyMode(true);
+            cronetEngineBuilder = createJavaEngineBuilder();
         }
         cronetEngineBuilder.setUserAgent(userAgentValue);
         final CronetTestFramework testFramework =
@@ -1393,7 +1393,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // This is to prompt load of native library.
         startCronetTestFramework();
         // Verify CronetEngine.Builder config is passed down accurately to native code.
-        CronetEngineBuilderImpl builder = new CronetEngineBuilderImpl(getContext());
+        ExperimentalCronetEngine.Builder builder =
+                new ExperimentalCronetEngine.Builder(getContext());
         builder.enableHttp2(false);
         builder.enableQuic(true);
         builder.enableSdch(true);
@@ -1407,7 +1408,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
         nativeVerifyUrlRequestContextConfig(
-                CronetUrlRequestContext.createNativeUrlRequestContextConfig(builder),
+                CronetUrlRequestContext.createNativeUrlRequestContextConfig(
+                        (CronetEngineBuilderImpl) builder.mBuilderDelegate),
                 CronetTestFramework.getTestStorage(getContext()));
     }
 
@@ -1432,13 +1434,14 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSkipLibraryLoading() throws Exception {
-        CronetEngineBuilderImpl builder = new CronetEngineBuilderImpl(getContext());
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
         TestBadLibraryLoader loader = new TestBadLibraryLoader();
         builder.setLibraryLoader(loader);
         try {
             // ensureInitialized() calls native code to check the version right after library load
             // and will error with the message below if library loading was skipped
-            CronetLibraryLoader.ensureInitialized(getContext().getApplicationContext(), builder);
+            CronetLibraryLoader.ensureInitialized(getContext().getApplicationContext(),
+                    (CronetEngineBuilderImpl) builder.mBuilderDelegate);
             fail("Native library should not be loaded");
         } catch (UnsatisfiedLinkError e) {
             assertTrue(loader.wasCalled());

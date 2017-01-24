@@ -98,6 +98,6 @@ public final class UserAgent {
 
     private static void appendCronetVersion(StringBuilder builder) {
         builder.append(" Cronet/");
-        builder.append(ImplVersion.CRONET_VERSION);
+        builder.append(ImplVersion.getCronetVersion());
     }
 }

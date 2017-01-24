@@ -89,6 +89,19 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
         }
 
         /**
+         * Constructs {@link Builder} with a given delegate that provides the actual implementation
+         * of the {@code Builder} methods. This constructor is used only by the internal
+         * implementation.
+         *
+         * @param builderDelegate delegate that provides the actual implementation.
+         *
+         * {@hide}
+         */
+        public Builder(ICronetEngineBuilder builderDelegate) {
+            super(builderDelegate);
+        }
+
+        /**
          * Enables the network quality estimator, which collects and reports
          * measurements of round trip time (RTT) and downstream throughput at
          * various layers of the network stack. After enabling the estimator,
@@ -134,27 +147,6 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
                 String primaryProxy, String fallbackProxy, String secureProxyCheckUrl) {
             mBuilderDelegate.setDataReductionProxyOptions(
                     primaryProxy, fallbackProxy, secureProxyCheckUrl);
-            return this;
-        }
-
-        /**
-         * Sets whether the resulting {@link CronetEngine} uses an
-         * implementation based on the system's
-         * {@link java.net.HttpURLConnection} implementation, or if this is
-         * only done as a backup if the native implementation fails to load.
-         * Defaults to disabled.
-         * @param value {@code true} makes the resulting {@link CronetEngine}
-         *              use an implementation based on the system's
-         *              {@link java.net.HttpURLConnection} implementation
-         *              without trying to load the native implementation.
-         *              {@code false} makes the resulting {@code CronetEngine}
-         *              use the native implementation, or if that fails to load,
-         *              falls back to an implementation based on the system's
-         *              {@link java.net.HttpURLConnection} implementation.
-         * @return the builder to facilitate chaining.
-         */
-        public Builder enableLegacyMode(boolean value) {
-            mBuilderDelegate.enableLegacyMode(value);
             return this;
         }
 

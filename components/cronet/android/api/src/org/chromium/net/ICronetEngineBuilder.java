@@ -23,7 +23,6 @@ public abstract class ICronetEngineBuilder {
     public abstract ICronetEngineBuilder enableDataReductionProxy(String key);
     public abstract ICronetEngineBuilder enableHttp2(boolean value);
     public abstract ICronetEngineBuilder enableHttpCache(int cacheMode, long maxSize);
-    public abstract ICronetEngineBuilder enableLegacyMode(boolean value);
     public abstract ICronetEngineBuilder enablePublicKeyPinningBypassForLocalTrustAnchors(
             boolean value);
     public abstract ICronetEngineBuilder enableQuic(boolean value);
