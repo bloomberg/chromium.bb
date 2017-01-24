@@ -10,6 +10,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -271,6 +272,11 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
       base::MakeUnique<NativeCursorManagerMus>(window()));
   aura::client::SetCursorClient(window(), cursor_manager_.get());
   InitHost();
+
+  if (params.parent) {
+    aura::client::GetTransientWindowClient()->AddTransientChild(params.parent,
+                                                                window());
+  }
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
