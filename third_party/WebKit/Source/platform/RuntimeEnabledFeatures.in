@@ -143,7 +143,7 @@ MediaCaptureFromCanvas status=stable
 MediaCaptureFromVideo status=experimental
 MediaConstraints status=stable
 MediaDocumentDownloadButton
-MediaGetSettings status=test
+MediaGetSettings status=experimental
 // MediaSession is enabled by default on Android only.
 MediaSession status=test
 MediaSourceExperimental status=experimental
