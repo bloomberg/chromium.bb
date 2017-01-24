@@ -484,8 +484,17 @@ class ChannelAssociatedGroupController
       Endpoint* endpoint = iter->second.get();
       ++iter;
 
-      DCHECK(endpoint->closed());
-      MarkPeerClosedAndMaybeRemove(endpoint);
+      if (!endpoint->closed()) {
+        // This happens when a NotifyPeerEndpointClosed message been received,
+        // but (1) the interface ID hasn't been used to create local endpoint
+        // handle; and (2) a NotifyEndpointClosedBeforeSent hasn't been
+        // received.
+        DCHECK(!endpoint->client());
+        DCHECK(endpoint->peer_closed());
+        MarkClosedAndMaybeRemove(endpoint);
+      } else {
+        MarkPeerClosedAndMaybeRemove(endpoint);
+      }
     }
 
     DCHECK(endpoints_.empty());
