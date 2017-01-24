@@ -28,7 +28,10 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/ui/gpu/interfaces/gpu_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
+#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "url/gurl.h"
@@ -60,6 +63,7 @@ typedef base::Thread* (*GpuMainThreadFactoryFunction)(
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,
+                       public ui::mojom::GpuHost,
                        public base::NonThreadSafe {
  public:
   enum GpuProcessKind {
@@ -184,6 +188,20 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
 
+  // ui::mojom::GpuHost:
+  void DidInitialize(const gpu::GPUInfo& gpu_info) override;
+  void DidCreateOffscreenContext(const GURL& url) override;
+  void DidDestroyOffscreenContext(const GURL& url) override;
+  void DidDestroyChannel(int32_t client_id) override;
+  void DidLoseContext(bool offscreen,
+                      gpu::error::ContextLostReason reason,
+                      const GURL& active_url) override;
+  void SetChildSurface(gpu::SurfaceHandle parent,
+                       gpu::SurfaceHandle child) override;
+  void StoreShaderToDisk(int32_t client_id,
+                         const std::string& key,
+                         const std::string& shader) override;
+
   // Message handlers.
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
@@ -290,6 +308,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   std::string shader_prefix_key_info_;
 
   ui::mojom::GpuMainAssociatedPtr gpu_main_ptr_;
+  ui::mojom::GpuServicePtr gpu_service_ptr_;
+  mojo::Binding<ui::mojom::GpuHost> gpu_host_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

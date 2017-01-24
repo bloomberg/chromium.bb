@@ -106,14 +106,6 @@ IPC_STRUCT_TRAITS_END()
 // GPU Messages
 // These are messages from the browser to the GPU process.
 
-// Tells the GPU process to initialize itself. The browser explicitly
-// requests this be done so that we are guaranteed that the channel is set
-// up between the browser and GPU process before doing any work that might
-// potentially crash the GPU process. Detection of the child process
-// exiting abruptly is predicated on having the IPC channel set up.
-IPC_MESSAGE_CONTROL1(GpuMsg_Initialize,
-                     gpu::GpuPreferences /* gpu_prefernces */)
-
 // Tells the GPU process to shutdown itself.
 IPC_MESSAGE_CONTROL0(GpuMsg_Finalize)
 
@@ -180,15 +172,6 @@ IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,
                      IPC::ChannelHandle /* channel_handle */)
 
-// Message from GPU to notify to destroy the channel.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyChannel, int32_t /* client_id */)
-
-// Message to cache the given shader information.
-IPC_MESSAGE_CONTROL3(GpuHostMsg_CacheShader,
-                     int32_t /* client_id */,
-                     std::string /* key */,
-                     std::string /* shader */)
-
 // Message to the GPU that a shader was loaded from disk.
 IPC_MESSAGE_CONTROL1(GpuMsg_LoadedShader, std::string /* encoded shader */)
 
@@ -204,27 +187,11 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_VideoMemoryUsageStats,
                      gpu::VideoMemoryUsageStats /* GPU memory stats */)
 
-#if defined(OS_WIN)
-IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
-                     gpu::SurfaceHandle /* parent_window */,
-                     gpu::SurfaceHandle /* child_window */)
-#endif
-
 #if defined(OS_ANDROID)
 // Response to a GpuMsg_DestroyingVideoSurface message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyingVideoSurfaceAck,
                      int /* surface_id */)
 #endif
-
-
-IPC_MESSAGE_CONTROL1(GpuHostMsg_DidCreateOffscreenContext, GURL /* url */)
-
-IPC_MESSAGE_CONTROL3(GpuHostMsg_DidLoseContext,
-                     bool /* offscreen */,
-                     gpu::error::ContextLostReason /* reason */,
-                     GURL /* url */)
-
-IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext, GURL /* url */)
 
 // Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,

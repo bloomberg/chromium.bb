@@ -53,7 +53,9 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   ~GpuService() override;
 
   void InitializeWithHost(mojom::GpuHostPtr gpu_host,
-                          const gpu::GpuPreferences& preferences);
+                          const gpu::GpuPreferences& preferences,
+                          gpu::SyncPointManager* sync_point_manager = nullptr,
+                          base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
   media::MediaGpuChannelManager* media_gpu_channel_manager() {
@@ -63,6 +65,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   gpu::GpuChannelManager* gpu_channel_manager() {
     return gpu_channel_manager_.get();
   }
+
+  gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
 
  private:
   friend class GpuMain;
@@ -74,9 +78,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
       gfx::BufferFormat format,
       int client_id);
 
-  gpu::SyncPointManager* sync_point_manager() {
-    return owned_sync_point_manager_.get();
-  }
+  gpu::SyncPointManager* sync_point_manager() { return sync_point_manager_; }
 
   gpu::gles2::MailboxManager* mailbox_manager() {
     return gpu_channel_manager_->mailbox_manager();
@@ -138,9 +140,14 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   gpu::GPUInfo gpu_info_;
 
   mojom::GpuHostPtr gpu_host_;
-  std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
+
+  // On some platforms (e.g. android webview), the SyncPointManager comes from
+  // external sources.
+  std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
+  gpu::SyncPointManager* sync_point_manager_ = nullptr;
+
   mojo::BindingSet<mojom::GpuService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuService);

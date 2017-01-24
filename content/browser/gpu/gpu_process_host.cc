@@ -461,7 +461,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       swiftshader_rendering_(false),
       kind_(kind),
       process_launched_(false),
-      initialized_(false) {
+      initialized_(false),
+      gpu_host_binding_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -619,9 +620,10 @@ bool GpuProcessHost::Init() {
   process_->child_channel()
       ->GetAssociatedInterfaceSupport()
       ->GetRemoteAssociatedInterface(&gpu_main_ptr_);
-
-  if (!Send(new GpuMsg_Initialize(gpu_preferences)))
-    return false;
+  ui::mojom::GpuServiceRequest request(&gpu_service_ptr_);
+  gpu_main_ptr_->CreateGpuService(std::move(request),
+                                  gpu_host_binding_.CreateInterfacePtrAndBind(),
+                                  gpu_preferences);
 
 #if defined(USE_OZONE)
   // Ozone needs to send the primary DRM device to GPU process as early as
@@ -675,17 +677,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyingVideoSurfaceAck,
                         OnDestroyingVideoSurfaceAck)
-#endif
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DidCreateOffscreenContext,
-                        OnDidCreateOffscreenContext)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DidLoseContext, OnDidLoseContext)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DidDestroyOffscreenContext,
-                        OnDidDestroyOffscreenContext)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyChannel, OnDestroyChannel)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_CacheShader, OnCacheShader)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
-                        OnAcceleratedSurfaceCreatedChildWindow)
 #endif
     IPC_MESSAGE_HANDLER(GpuHostMsg_FieldTrialActivated, OnFieldTrialActivated);
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
@@ -961,6 +952,41 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
   RecordProcessCrash();
   GpuDataManagerImpl::GetInstance()->ProcessCrashed(
       process_->GetTerminationStatus(true /* known_dead */, NULL));
+}
+
+void GpuProcessHost::DidInitialize(const gpu::GPUInfo& gpu_info) {
+  // TODO(sad): This should call OnInitialized().
+}
+
+void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {
+  OnDidCreateOffscreenContext(url);
+}
+
+void GpuProcessHost::DidDestroyOffscreenContext(const GURL& url) {
+  OnDidDestroyOffscreenContext(url);
+}
+
+void GpuProcessHost::DidDestroyChannel(int32_t client_id) {
+  OnDestroyChannel(client_id);
+}
+
+void GpuProcessHost::DidLoseContext(bool offscreen,
+                                    gpu::error::ContextLostReason reason,
+                                    const GURL& active_url) {
+  OnDidLoseContext(offscreen, reason, active_url);
+}
+
+void GpuProcessHost::SetChildSurface(gpu::SurfaceHandle parent,
+                                     gpu::SurfaceHandle child) {
+#if defined(OS_WIN)
+  OnAcceleratedSurfaceCreatedChildWindow(parent, child);
+#endif
+}
+
+void GpuProcessHost::StoreShaderToDisk(int32_t client_id,
+                                       const std::string& key,
+                                       const std::string& shader) {
+  OnCacheShader(client_id, key, shader);
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {

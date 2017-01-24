@@ -39,6 +39,7 @@
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -150,11 +151,15 @@ GpuChildThread::GpuChildThread(
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
       dead_on_arrival_(dead_on_arrival),
-      watchdog_thread_(std::move(watchdog_thread)),
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
       in_browser_process_(false),
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
+      gpu_service_(
+          new ui::GpuService(gpu_info,
+                             std::move(watchdog_thread),
+                             gpu_memory_buffer_factory,
+                             ChildProcess::current()->io_task_runner())),
+      gpu_main_binding_(this) {
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
@@ -174,7 +179,12 @@ GpuChildThread::GpuChildThread(
       dead_on_arrival_(false),
       gpu_info_(gpu_info),
       in_browser_process_(true),
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
+      gpu_service_(
+          new ui::GpuService(gpu_info,
+                             nullptr /* watchdog thread */,
+                             gpu_memory_buffer_factory,
+                             ChildProcess::current()->io_task_runner())),
+      gpu_main_binding_(this) {
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
@@ -209,7 +219,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 
   if (GetContentClient()->gpu())  // NULL in tests.
     GetContentClient()->gpu()->Initialize(this);
-  channel()->AddAssociatedInterface(base::Bind(
+  AssociatedInterfaceRegistry* registry = &associated_interfaces_;
+  registry->AddInterface(base::Bind(
       &GpuChildThread::CreateGpuMainService, base::Unretained(this)));
 }
 
@@ -220,7 +231,7 @@ void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
 
 void GpuChildThread::CreateGpuMainService(
     ui::mojom::GpuMainAssociatedRequest request) {
-  // TODO(sad): Implement.
+  gpu_main_binding_.Bind(std::move(request));
 }
 
 bool GpuChildThread::Send(IPC::Message* msg) {
@@ -234,7 +245,6 @@ bool GpuChildThread::Send(IPC::Message* msg) {
 bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER(GpuMsg_Finalize, OnFinalize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
     IPC_MESSAGE_HANDLER(GpuMsg_GetVideoMemoryUsageStats,
@@ -272,45 +282,18 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void GpuChildThread::SetActiveURL(const GURL& url) {
-  GetContentClient()->SetActiveURL(url);
+void GpuChildThread::OnAssociatedInterfaceRequest(
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  associated_interfaces_.BindRequest(name, std::move(handle));
 }
 
-void GpuChildThread::DidCreateOffscreenContext(const GURL& active_url) {
-  Send(new GpuHostMsg_DidCreateOffscreenContext(active_url));
-}
+void GpuChildThread::CreateGpuService(
+    ui::mojom::GpuServiceRequest request,
+    ui::mojom::GpuHostPtr gpu_host,
+    const gpu::GpuPreferences& gpu_preferences) {
+  gpu_service_->Bind(std::move(request));
 
-void GpuChildThread::DidDestroyChannel(int client_id) {
-  media_gpu_channel_manager_->RemoveChannel(client_id);
-  Send(new GpuHostMsg_DestroyChannel(client_id));
-}
-
-void GpuChildThread::DidDestroyOffscreenContext(const GURL& active_url) {
-  Send(new GpuHostMsg_DidDestroyOffscreenContext(active_url));
-}
-
-void GpuChildThread::DidLoseContext(bool offscreen,
-                                    gpu::error::ContextLostReason reason,
-                                    const GURL& active_url) {
-  Send(new GpuHostMsg_DidLoseContext(offscreen, reason, active_url));
-}
-
-#if defined(OS_WIN)
-void GpuChildThread::SendAcceleratedSurfaceCreatedChildWindow(
-    gpu::SurfaceHandle parent_window,
-    gpu::SurfaceHandle child_window) {
-  Send(new GpuHostMsg_AcceleratedSurfaceCreatedChildWindow(parent_window,
-                                                           child_window));
-}
-#endif
-
-void GpuChildThread::StoreShaderToDisk(int32_t client_id,
-                                       const std::string& key,
-                                       const std::string& shader) {
-  Send(new GpuHostMsg_CacheShader(client_id, key, shader));
-}
-
-void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   gpu_info_.video_decode_accelerator_capabilities =
       media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences);
   gpu_info_.video_encode_accelerator_supported_profiles =
@@ -343,29 +326,14 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   // Note SyncPointManager from ContentGpuClient cannot be owned by this.
   if (GetContentClient()->gpu())
     sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
-  if (!sync_point_manager) {
-    if (!owned_sync_point_manager_) {
-      owned_sync_point_manager_.reset(new gpu::SyncPointManager(false));
-    }
-    sync_point_manager = owned_sync_point_manager_.get();
-  }
-
-  // Defer creation of the render thread. This is to prevent it from handling
-  // IPC messages before the sandbox has been enabled and all other necessary
-  // initialization has succeeded.
-  gpu_channel_manager_.reset(new gpu::GpuChannelManager(
-      gpu_preferences, this, watchdog_thread_.get(),
-      base::ThreadTaskRunnerHandle::Get().get(),
-      ChildProcess::current()->io_task_runner(),
-      ChildProcess::current()->GetShutDownEvent(), sync_point_manager,
-      gpu_memory_buffer_factory_));
-
-  media_gpu_channel_manager_.reset(
-      new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
+  gpu_service_->InitializeWithHost(std::move(gpu_host), gpu_preferences,
+                                   sync_point_manager,
+                                   ChildProcess::current()->GetShutDownEvent());
+  CHECK(gpu_service_->media_gpu_channel_manager());
 
   // Only set once per process instance.
-  service_factory_.reset(
-      new GpuServiceFactory(media_gpu_channel_manager_->AsWeakPtr()));
+  service_factory_.reset(new GpuServiceFactory(
+      gpu_service_->media_gpu_channel_manager()->AsWeakPtr()));
 
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &GpuChildThread::BindServiceFactoryRequest, base::Unretained(this)));
@@ -378,6 +346,12 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   }
 
   GetInterfaceRegistry()->ResumeBinding();
+}
+
+void GpuChildThread::CreateDisplayCompositor(
+    cc::mojom::DisplayCompositorRequest request,
+    cc::mojom::DisplayCompositorClientPtr client) {
+  NOTREACHED();
 }
 
 void GpuChildThread::OnFinalize() {
@@ -441,8 +415,8 @@ void GpuChildThread::OnCollectGraphicsInfo() {
 
 void GpuChildThread::OnGetVideoMemoryUsageStats() {
   gpu::VideoMemoryUsageStats video_memory_usage_stats;
-  if (gpu_channel_manager_) {
-    gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
+  if (gpu_channel_manager()) {
+    gpu_channel_manager()->gpu_memory_manager()->GetVideoMemoryUsageStats(
         &video_memory_usage_stats);
   }
   Send(new GpuHostMsg_VideoMemoryUsageStats(video_memory_usage_stats));
@@ -450,8 +424,8 @@ void GpuChildThread::OnGetVideoMemoryUsageStats() {
 
 void GpuChildThread::OnClean() {
   DVLOG(1) << "GPU: Removing all contexts";
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->DestroyAllChannels();
+  if (gpu_channel_manager())
+    gpu_channel_manager()->DestroyAllChannels();
 }
 
 void GpuChildThread::OnCrash() {
@@ -477,38 +451,38 @@ void GpuChildThread::OnGpuSwitched() {
 }
 
 void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
-  if (!gpu_channel_manager_)
+  if (!gpu_channel_manager())
     return;
 
-  IPC::ChannelHandle channel_handle = gpu_channel_manager_->EstablishChannel(
+  IPC::ChannelHandle channel_handle = gpu_channel_manager()->EstablishChannel(
       params.client_id, params.client_tracing_id, params.preempts,
       params.allow_view_command_buffers, params.allow_real_time_streams);
-  media_gpu_channel_manager_->AddChannel(params.client_id);
+  gpu_service_->media_gpu_channel_manager()->AddChannel(params.client_id);
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
 void GpuChildThread::OnCloseChannel(int32_t client_id) {
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->RemoveChannel(client_id);
+  if (gpu_channel_manager())
+    gpu_channel_manager()->RemoveChannel(client_id);
 }
 
 void GpuChildThread::OnLoadedShader(const std::string& shader) {
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->PopulateShaderCache(shader);
+  if (gpu_channel_manager())
+    gpu_channel_manager()->PopulateShaderCache(shader);
 }
 
 void GpuChildThread::OnDestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const gpu::SyncToken& sync_token) {
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
+  if (gpu_channel_manager())
+    gpu_channel_manager()->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
 #if defined(OS_ANDROID)
 void GpuChildThread::OnWakeUpGpu() {
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->WakeUpGpu();
+  if (gpu_channel_manager())
+    gpu_channel_manager()->WakeUpGpu();
 }
 
 void GpuChildThread::OnDestroyingVideoSurface(int surface_id) {
@@ -516,13 +490,6 @@ void GpuChildThread::OnDestroyingVideoSurface(int surface_id) {
   Send(new GpuHostMsg_DestroyingVideoSurfaceAck(surface_id));
 }
 #endif
-
-void GpuChildThread::OnLoseAllContexts() {
-  if (gpu_channel_manager_) {
-    gpu_channel_manager_->DestroyAllChannels();
-    media_gpu_channel_manager_->DestroyAllChannels();
-  }
-}
 
 void GpuChildThread::BindServiceFactoryRequest(
     service_manager::mojom::ServiceFactoryRequest request) {

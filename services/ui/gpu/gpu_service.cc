@@ -46,7 +46,8 @@ GpuService::GpuService(const gpu::GPUInfo& gpu_info,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
-      gpu_info_(gpu_info) {}
+      gpu_info_(gpu_info),
+      sync_point_manager_(nullptr) {}
 
 GpuService::~GpuService() {
   bindings_.CloseAllBindings();
@@ -62,7 +63,9 @@ GpuService::~GpuService() {
 }
 
 void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
-                                    const gpu::GpuPreferences& preferences) {
+                                    const gpu::GpuPreferences& preferences,
+                                    gpu::SyncPointManager* sync_point_manager,
+                                    base::WaitableEvent* shutdown_event) {
   DCHECK(CalledOnValidThread());
   DCHECK(!gpu_host_);
   gpu_host_ = std::move(gpu_host);
@@ -75,10 +78,13 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
       media::GpuJpegDecodeAccelerator::IsSupported();
   gpu_host_->DidInitialize(gpu_info_);
 
-  DCHECK(!owned_sync_point_manager_);
-  const bool allow_threaded_wait = false;
-  owned_sync_point_manager_.reset(
-      new gpu::SyncPointManager(allow_threaded_wait));
+  sync_point_manager_ = sync_point_manager;
+  if (!sync_point_manager_) {
+    const bool allow_threaded_wait = false;
+    owned_sync_point_manager_ =
+        base::MakeUnique<gpu::SyncPointManager>(allow_threaded_wait);
+    sync_point_manager_ = owned_sync_point_manager_.get();
+  }
 
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
@@ -86,7 +92,7 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
       gpu_preferences_, this, watchdog_thread_.get(),
       base::ThreadTaskRunnerHandle::Get().get(), io_runner_.get(),
-      &shutdown_event_, owned_sync_point_manager_.get(),
+      shutdown_event ? shutdown_event : &shutdown_event_, sync_point_manager_,
       gpu_memory_buffer_factory_));
 
   media_gpu_channel_manager_.reset(

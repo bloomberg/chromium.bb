@@ -262,8 +262,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   // is implemented using an IPC channel error. If the IPC channel is not fully
   // set up between the browser and GPU process, and the GPU process crashes or
   // exits early, the browser process will never detect it.  For this reason we
-  // defer tearing down the GPU process until receiving the GpuMsg_Initialize
-  // message from the browser.
+  // defer tearing down the GPU process until receiving the initialization
+  // message from the browser (through mojom::GpuMain::CreateGpuService()).
   const bool init_success = gpu_init.InitializeAndStartSandbox(command_line);
   const bool dead_on_arrival = !init_success;
 
