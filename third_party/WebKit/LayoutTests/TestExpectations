@@ -1196,6 +1196,7 @@ crbug.com/658305 css3/filters/effect-reference-delete-crash.html [ Failure Pass 
 crbug.com/658305 css3/filters/effect-reference-delete.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-displacement-negative-scale.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-external.html [ Failure Pass ]
+crbug.com/658305 css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-hidpi.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-hidpi-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference.html [ Failure Pass ]
