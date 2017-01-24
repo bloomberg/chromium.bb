@@ -38,10 +38,6 @@ using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
 
-// TODO(bnc): Merge these correctly.
-bool FLAGS_use_http2_frame_decoder_adapter;
-bool FLAGS_spdy_framer_use_new_methods4;
-
 namespace net {
 namespace test {
 
@@ -189,7 +185,6 @@ struct TestParams {
         FLAGS_use_http2_frame_decoder_adapter = true;
         // Http2FrameDecoderAdapter needs the new header methods, else
         // --use_http2_frame_decoder_adapter=true will be ignored.
-        FLAGS_spdy_framer_use_new_methods4 = true;
         break;
     }
     switch (hpack_decoder) {
