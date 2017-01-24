@@ -1237,9 +1237,9 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsTypographicalApostrophe) {
   ASSERT_EQ(arraysize(kExpectedReplacements), textcheck_results.size());
   for (size_t i = 0; i < arraysize(kExpectedReplacements); ++i) {
     EXPECT_EQ(base::WideToUTF16(kExpectedReplacements[i]),
-              textcheck_results[i].replacement)
+              textcheck_results[i].replacement.utf16())
         << "i=" << i << "\nactual: \""
-        << base::string16(textcheck_results[i].replacement) << "\"";
+        << textcheck_results[i].replacement.utf16() << "\"";
   }
 }
 

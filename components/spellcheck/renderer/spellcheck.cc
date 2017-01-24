@@ -399,12 +399,9 @@ bool SpellCheck::SpellCheckParagraph(
 
     if (!custom_dictionary_.SpellCheckWord(
             text, misspelling_start, misspelling_length)) {
-      base::string16 replacement;
-      textcheck_results.push_back(WebTextCheckingResult(
-          blink::WebTextDecorationTypeSpelling,
-          misspelling_start,
-          misspelling_length,
-          replacement));
+      textcheck_results.push_back(
+          WebTextCheckingResult(blink::WebTextDecorationTypeSpelling,
+                                misspelling_start, misspelling_length));
     }
     position_in_text = misspelling_start + misspelling_length;
   }
@@ -531,7 +528,7 @@ void SpellCheck::CreateTextCheckingResults(
     results.push_back(WebTextCheckingResult(
         static_cast<WebTextDecorationType>(decoration),
         line_offset + spellcheck_result.location, spellcheck_result.length,
-        replacement, spellcheck_result.hash));
+        blink::WebString::fromUTF16(replacement), spellcheck_result.hash));
   }
 
   textcheck_results->assign(results);

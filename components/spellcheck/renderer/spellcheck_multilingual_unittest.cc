@@ -81,9 +81,9 @@ class MultilingualSpellCheckTest : public testing::Test {
       int misspelling_start = 0;
       int misspelling_length = 0;
       static_cast<blink::WebSpellCheckClient*>(provider())
-          ->checkSpelling(
-              blink::WebString(base::WideToUTF16(test_cases[i].input)),
-              misspelling_start, misspelling_length, nullptr);
+          ->checkSpelling(blink::WebString::fromUTF16(
+                              base::WideToUTF16(test_cases[i].input)),
+                          misspelling_start, misspelling_length, nullptr);
 
       EXPECT_EQ(test_cases[i].expected_misspelling_start, misspelling_start)
           << "Improper misspelling location found with the languages "
@@ -98,7 +98,7 @@ class MultilingualSpellCheckTest : public testing::Test {
       const base::string16& input,
       const std::vector<SpellCheckResult>& expected) {
     blink::WebVector<blink::WebTextCheckingResult> results;
-    spellcheck_->SpellCheckParagraph(blink::WebString(input), &results);
+    spellcheck_->SpellCheckParagraph(input, &results);
 
     EXPECT_EQ(expected.size(), results.size());
     size_t size = std::min(results.size(), expected.size());
@@ -235,7 +235,7 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     int misspelling_length;
     static_cast<blink::WebSpellCheckClient*>(provider())
         ->checkSpelling(
-            blink::WebString(base::WideToUTF16(kTestCases[i].input)),
+            blink::WebString::fromUTF16(base::WideToUTF16(kTestCases[i].input)),
             misspelling_start, misspelling_length, &suggestions);
 
     EXPECT_EQ(kTestCases[i].expected_misspelling_start, misspelling_start);
@@ -252,7 +252,7 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     EXPECT_EQ(expected_suggestions.size(), suggestions.size());
     for (size_t j = 0;
          j < std::min(expected_suggestions.size(), suggestions.size()); j++) {
-      EXPECT_EQ(expected_suggestions[j], base::string16(suggestions[j]));
+      EXPECT_EQ(expected_suggestions[j], suggestions[j].utf16());
     }
   }
 }

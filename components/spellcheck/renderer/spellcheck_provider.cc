@@ -127,14 +127,18 @@ void SpellCheckProvider::checkSpelling(
     int& offset,
     int& length,
     WebVector<WebString>* optional_suggestions) {
-  base::string16 word(text);
+  base::string16 word = text.utf16();
   std::vector<base::string16> suggestions;
   const int kWordStart = 0;
   spellcheck_->SpellCheckWord(
       word.c_str(), kWordStart, word.size(), routing_id(),
       &offset, &length, optional_suggestions ? & suggestions : NULL);
   if (optional_suggestions) {
-    *optional_suggestions = suggestions;
+    WebVector<WebString> web_suggestions(suggestions.size());
+    std::transform(
+        suggestions.begin(), suggestions.end(), web_suggestions.begin(),
+        [](const base::string16& s) { return WebString::fromUTF16(s); });
+    *optional_suggestions = web_suggestions;
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.check.suggestions", word.size());
   } else {
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.check", word.size());
@@ -154,7 +158,7 @@ void SpellCheckProvider::requestCheckingOfText(
     spellcheck_markers.push_back(
         SpellCheckMarker(markers[i], marker_offsets[i]));
   }
-  RequestTextChecking(text, completion, spellcheck_markers);
+  RequestTextChecking(text.utf16(), completion, spellcheck_markers);
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 
@@ -180,8 +184,8 @@ bool SpellCheckProvider::isShowingSpellingUI() {
 void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
     const WebString& word) {
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id(),
-                                                                   word));
+  Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(
+      routing_id(), word.utf16()));
 #endif
 }
 

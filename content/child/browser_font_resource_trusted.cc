@@ -71,7 +71,8 @@ class TextRunCollection {
     if (run.override_direction) {
       // Skip autodetection.
       num_runs_ = 1;
-      override_run_ = WebTextRun(text_, PP_ToBool(run.rtl), true);
+      override_run_ = WebTextRun(blink::WebString::fromUTF16(text_),
+                                 PP_ToBool(run.rtl), true);
     } else {
       bidi_ = ubidi_open();
       UErrorCode uerror = U_ZERO_ERROR;
@@ -95,7 +96,8 @@ class TextRunCollection {
     DCHECK(index < num_runs_);
     if (bidi_) {
       bool run_rtl = !!ubidi_getVisualRun(bidi_, index, run_start, run_len);
-      return WebTextRun(base::string16(&text_[*run_start], *run_len),
+      return WebTextRun(blink::WebString::fromUTF16(
+                            base::string16(&text_[*run_start], *run_len)),
                         run_rtl, true);
     }
 
@@ -128,9 +130,8 @@ bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,
   if (!text_string)
     return false;
 
-  *run = WebTextRun(base::UTF8ToUTF16(text_string->value()),
-                    PP_ToBool(text.rtl),
-                    PP_ToBool(text.override_direction));
+  *run = WebTextRun(blink::WebString::fromUTF8(text_string->value()),
+                    PP_ToBool(text.rtl), PP_ToBool(text.override_direction));
   return true;
 }
 
@@ -198,7 +199,7 @@ WebFontDescription PPFontDescToWebFontDesc(
     // Use the exact font.
     resolved_family = base::UTF8ToUTF16(face_name->value());
   }
-  result.family = resolved_family;
+  result.family = blink::WebString::fromUTF16(resolved_family);
 
   result.genericFamily = PP_FAMILY_TO_WEB_FAMILY(font.family);
 
@@ -278,8 +279,7 @@ PP_Bool BrowserFontResource_Trusted::Describe(
   // While converting the other way in PPFontDescToWebFontDesc we validated
   // that the enums can be casted.
   WebFontDescription web_desc = font_->getFontDescription();
-  description->face = StringVar::StringToPPVar(base::UTF16ToUTF8(
-      base::StringPiece16(web_desc.family)));
+  description->face = StringVar::StringToPPVar(web_desc.family.utf8());
   description->family =
       static_cast<PP_BrowserFont_Trusted_Family>(web_desc.genericFamily);
   description->size = static_cast<uint32_t>(web_desc.size);
