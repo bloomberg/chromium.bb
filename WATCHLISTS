@@ -830,8 +830,8 @@
                   'ios/chrome/browser/ui/reading_list',
     },
     'remoting': {
-      'filepath': 'remoting/' \
-                  '|testing/chromoting'
+      'filepath': '^remoting/' \
+                  '|^testing/chromoting'
     },
     'rlz_id': {
       'filepath' :'rlz/lib/machine_id.cc|'\
