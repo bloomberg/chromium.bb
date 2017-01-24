@@ -40,8 +40,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
       "bindings/unavailable_bindings_never_registered")) << message_;
 }
 
+#if defined(OS_LINUX)
+// http://crbug.com/684358
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
+                       DISABLED_ExceptionInHandlerShouldNotCrash) {
+#else
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        ExceptionInHandlerShouldNotCrash) {
+#endif
   ASSERT_TRUE(RunExtensionSubtest(
       "bindings/exception_in_handler_should_not_crash",
       "page.html")) << message_;
