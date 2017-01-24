@@ -346,8 +346,8 @@ quotes inherited, converter=convertQuotes, api_class
 resize custom_value
 right typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 r interpolable, svg, converter=convertLength
-rx interpolable, svg, converter=convertLengthOrAuto
-ry interpolable, svg, converter=convertLengthOrAuto
+rx interpolable, svg, converter=convertLengthOrAuto, api_class=CSSPropertyAPIRadius
+ry interpolable, svg, converter=convertLengthOrAuto, api_class=CSSPropertyAPIRadius
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
 scroll-snap-type runtime_flag=CSSScrollSnapPoints, type_name=ScrollSnapType
 scroll-snap-points-x runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoints

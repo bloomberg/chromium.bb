@@ -1243,13 +1243,6 @@ static CSSValue* consumeBaselineShift(CSSParserTokenRange& range) {
   return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll);
 }
 
-static CSSValue* consumeRxOrRy(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll,
-                                UnitlessQuirk::Forbid);
-}
-
 static CSSValue* consumePerspective(CSSParserTokenRange& range,
                                     const CSSParserContext* context,
                                     CSSPropertyID unresolvedProperty) {
@@ -2368,9 +2361,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyR:
       return consumeLengthOrPercent(m_range, SVGAttributeMode, ValueRangeAll,
                                     UnitlessQuirk::Forbid);
-    case CSSPropertyRx:
-    case CSSPropertyRy:
-      return consumeRxOrRy(m_range);
     case CSSPropertyPerspective:
       return consumePerspective(m_range, m_context, unresolvedProperty);
     case CSSPropertyScrollSnapPointsX:
