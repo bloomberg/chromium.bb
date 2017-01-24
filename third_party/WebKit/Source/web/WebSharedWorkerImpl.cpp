@@ -132,7 +132,8 @@ void WebSharedWorkerImpl::initializeLoader() {
   // Browser process when the worker is created (similar to
   // RenderThread::OnCreateNewView).
   m_mainFrame = toWebLocalFrameImpl(
-      WebLocalFrame::create(WebTreeScopeType::Document, this));
+      WebLocalFrame::create(WebTreeScopeType::Document, this,
+                            Platform::current()->interfaceProvider(), nullptr));
   m_webView->setMainFrame(m_mainFrame.get());
   m_mainFrame->setDevToolsAgentClient(this);
 
@@ -198,10 +199,6 @@ int64_t WebSharedWorkerImpl::serviceWorkerID(WebDataSource& dataSource) {
   if (!m_networkProvider)
     return -1;
   return m_networkProvider->serviceWorkerID(dataSource);
-}
-
-InterfaceProvider* WebSharedWorkerImpl::interfaceProvider() {
-  return Platform::current()->interfaceProvider();
 }
 
 void WebSharedWorkerImpl::sendProtocolMessage(int sessionId,

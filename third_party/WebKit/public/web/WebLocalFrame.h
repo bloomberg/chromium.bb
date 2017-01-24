@@ -19,6 +19,8 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
+class InterfaceProvider;
+class InterfaceRegistry;
 class WebAutofillClient;
 class WebContentSettingsClient;
 class WebDevToolsAgent;
@@ -46,6 +48,8 @@ class WebLocalFrame : public WebFrame {
   // WebFrameClient may not be null.
   BLINK_EXPORT static WebLocalFrame* create(WebTreeScopeType,
                                             WebFrameClient*,
+                                            blink::InterfaceProvider*,
+                                            blink::InterfaceRegistry*,
                                             WebFrame* opener = nullptr);
 
   // Used to create a provisional local frame. Currently, it's possible for a
@@ -65,9 +69,12 @@ class WebLocalFrame : public WebFrame {
   //
   // Otherwise, if the load should not commit, call detach() to discard the
   // frame.
-  BLINK_EXPORT static WebLocalFrame* createProvisional(WebFrameClient*,
-                                                       WebRemoteFrame*,
-                                                       WebSandboxFlags);
+  BLINK_EXPORT static WebLocalFrame* createProvisional(
+      WebFrameClient*,
+      blink::InterfaceProvider*,
+      blink::InterfaceRegistry*,
+      WebRemoteFrame*,
+      WebSandboxFlags);
 
   // Returns the WebFrame associated with the current V8 context. This
   // function can return 0 if the context is associated with a Document that

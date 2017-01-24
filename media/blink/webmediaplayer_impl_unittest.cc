@@ -188,7 +188,9 @@ class WebMediaPlayerImplTest : public testing::Test {
                                          blink::WebPageVisibilityStateVisible)),
         web_local_frame_(
             blink::WebLocalFrame::create(blink::WebTreeScopeType::Document,
-                                         &web_frame_client_)),
+                                         &web_frame_client_,
+                                         nullptr,
+                                         nullptr)),
         media_log_(new MediaLog()),
         audio_parameters_(TestAudioParameters::Normal()) {
     web_view_->setMainFrame(web_local_frame_);

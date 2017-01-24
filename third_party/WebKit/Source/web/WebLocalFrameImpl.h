@@ -310,8 +310,12 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   static WebLocalFrameImpl* create(WebTreeScopeType,
                                    WebFrameClient*,
+                                   blink::InterfaceProvider*,
+                                   blink::InterfaceRegistry*,
                                    WebFrame* opener);
   static WebLocalFrameImpl* createProvisional(WebFrameClient*,
+                                              blink::InterfaceProvider*,
+                                              blink::InterfaceRegistry*,
                                               WebRemoteFrame*,
                                               WebSandboxFlags);
   ~WebLocalFrameImpl() override;
@@ -408,8 +412,14 @@ class WEB_EXPORT WebLocalFrameImpl final
  private:
   friend class FrameLoaderClientImpl;
 
-  WebLocalFrameImpl(WebTreeScopeType, WebFrameClient*);
-  WebLocalFrameImpl(WebRemoteFrame*, WebFrameClient*);
+  WebLocalFrameImpl(WebTreeScopeType,
+                    WebFrameClient*,
+                    blink::InterfaceProvider*,
+                    blink::InterfaceRegistry*);
+  WebLocalFrameImpl(WebRemoteFrame*,
+                    WebFrameClient*,
+                    blink::InterfaceProvider*,
+                    blink::InterfaceRegistry*);
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebLocalFrameImpl.
@@ -462,6 +472,10 @@ class WEB_EXPORT WebLocalFrameImpl final
   // emulation is enabled.
   IntSize m_inputEventsOffsetForEmulation;
   float m_inputEventsScaleFactorForEmulation;
+
+  // Borrowed pointers to Mojo objects.
+  blink::InterfaceProvider* m_interfaceProvider;
+  blink::InterfaceRegistry* m_interfaceRegistry;
 
   WebDevToolsFrontendImpl* m_webDevToolsFrontend;
 

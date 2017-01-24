@@ -177,7 +177,9 @@ WebLocalFrameImpl* createLocalChild(WebRemoteFrame* parent,
 
   WebLocalFrameImpl* frame = toWebLocalFrameImpl(parent->createLocalChild(
       WebTreeScopeType::Document, name, nameToUniqueName(name),
-      WebSandboxFlags::None, client, previousSibling, properties, nullptr));
+      WebSandboxFlags::None, client,
+      static_cast<TestWebFrameClient*>(client)->interfaceProvider(), nullptr,
+      previousSibling, properties, nullptr));
 
   if (!widgetClient)
     widgetClient = defaultWebWidgetClient();
@@ -232,8 +234,9 @@ WebViewImpl* WebViewHelper::initializeWithOpener(
   m_webView->setDeviceScaleFactor(
       webViewClient->screenInfo().deviceScaleFactor);
   m_webView->setDefaultPageScaleLimits(1, 4);
-  WebLocalFrame* frame = WebLocalFrameImpl::create(WebTreeScopeType::Document,
-                                                   webFrameClient, opener);
+  WebLocalFrame* frame = WebLocalFrameImpl::create(
+      WebTreeScopeType::Document, webFrameClient,
+      webFrameClient->interfaceProvider(), nullptr, opener);
   m_webView->setMainFrame(frame);
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
@@ -316,7 +319,8 @@ WebLocalFrame* TestWebFrameClient::createChildFrame(
     const WebString& uniqueName,
     WebSandboxFlags sandboxFlags,
     const WebFrameOwnerProperties& frameOwnerProperties) {
-  WebLocalFrame* frame = WebLocalFrame::create(scope, this);
+  WebLocalFrame* frame =
+      WebLocalFrame::create(scope, this, interfaceProvider(), nullptr);
   parent->appendChild(frame);
   return frame;
 }

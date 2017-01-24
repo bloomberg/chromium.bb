@@ -84,7 +84,6 @@ struct FrameMsg_SerializeAsMHTML_Params;
 struct FrameMsg_TextTrackSettings_Params;
 
 namespace blink {
-class InterfaceRegistry;
 class WebContentDecryptionModule;
 class WebPresentationClient;
 class WebPushClient;
@@ -660,8 +659,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
-  blink::InterfaceProvider* interfaceProvider() override;
-  blink::InterfaceRegistry* interfaceRegistry() override;
   blink::WebPageVisibilityState visibilityState() const override;
 
   // WebFrameSerializerClient implementation:

@@ -130,6 +130,8 @@ class WEB_EXPORT WebRemoteFrameImpl final
                                   const WebString& uniqueName,
                                   WebSandboxFlags,
                                   WebFrameClient*,
+                                  blink::InterfaceProvider*,
+                                  blink::InterfaceRegistry*,
                                   WebFrame* previousSibling,
                                   const WebFrameOwnerProperties&,
                                   WebFrame* opener) override;

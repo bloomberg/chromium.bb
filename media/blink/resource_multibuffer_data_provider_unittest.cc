@@ -72,8 +72,8 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
  public:
   ResourceMultiBufferDataProviderTest()
       : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)) {
-    WebLocalFrame* frame =
-        WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_);
+    WebLocalFrame* frame = WebLocalFrame::create(
+        blink::WebTreeScopeType::Document, &client_, nullptr, nullptr);
     view_->setMainFrame(frame);
     url_index_.reset(new UrlIndex(frame, 0));
 

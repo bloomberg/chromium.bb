@@ -254,7 +254,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
   WebLocalFrame* web_frame = WebLocalFrame::create(
-      blink::WebTreeScopeType::Document, this);
+      blink::WebTreeScopeType::Document, this, nullptr, nullptr);
   web_view_->setMainFrame(web_frame);
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.

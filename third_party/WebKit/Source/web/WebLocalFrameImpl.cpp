@@ -1431,32 +1431,47 @@ WebString WebLocalFrameImpl::layerTreeAsText(bool showDebugInfo) const {
 
 // WebLocalFrameImpl public --------------------------------------------------
 
-WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope,
-                                     WebFrameClient* client,
-                                     WebFrame* opener) {
-  return WebLocalFrameImpl::create(scope, client, opener);
+WebLocalFrame* WebLocalFrame::create(
+    WebTreeScopeType scope,
+    WebFrameClient* client,
+    blink::InterfaceProvider* interfaceProvider,
+    blink::InterfaceRegistry* interfaceRegistry,
+    WebFrame* opener) {
+  return WebLocalFrameImpl::create(scope, client, interfaceProvider,
+                                   interfaceRegistry, opener);
 }
 
-WebLocalFrame* WebLocalFrame::createProvisional(WebFrameClient* client,
-                                                WebRemoteFrame* oldWebFrame,
-                                                WebSandboxFlags flags) {
-  return WebLocalFrameImpl::createProvisional(client, oldWebFrame, flags);
+WebLocalFrame* WebLocalFrame::createProvisional(
+    WebFrameClient* client,
+    blink::InterfaceProvider* interfaceProvider,
+    blink::InterfaceRegistry* interfaceRegistry,
+    WebRemoteFrame* oldWebFrame,
+    WebSandboxFlags flags) {
+  return WebLocalFrameImpl::createProvisional(
+      client, interfaceProvider, interfaceRegistry, oldWebFrame, flags);
 }
 
-WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope,
-                                             WebFrameClient* client,
-                                             WebFrame* opener) {
-  WebLocalFrameImpl* frame = new WebLocalFrameImpl(scope, client);
+WebLocalFrameImpl* WebLocalFrameImpl::create(
+    WebTreeScopeType scope,
+    WebFrameClient* client,
+    blink::InterfaceProvider* interfaceProvider,
+    blink::InterfaceRegistry* interfaceRegistry,
+    WebFrame* opener) {
+  WebLocalFrameImpl* frame = new WebLocalFrameImpl(
+      scope, client, interfaceProvider, interfaceRegistry);
   frame->setOpener(opener);
   return frame;
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
     WebFrameClient* client,
+    blink::InterfaceProvider* interfaceProvider,
+    blink::InterfaceRegistry* interfaceRegistry,
     WebRemoteFrame* oldWebFrame,
     WebSandboxFlags flags) {
   DCHECK(client);
-  WebLocalFrameImpl* webFrame = new WebLocalFrameImpl(oldWebFrame, client);
+  WebLocalFrameImpl* webFrame = new WebLocalFrameImpl(
+      oldWebFrame, client, interfaceProvider, interfaceRegistry);
   Frame* oldFrame = oldWebFrame->toImplBase()->frame();
   webFrame->setParent(oldWebFrame->parent());
   webFrame->setOpener(oldWebFrame->opener());
@@ -1469,7 +1484,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   // reuse it here.
   LocalFrame* frame = LocalFrame::create(
       webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner,
-      client->interfaceProvider(), client->interfaceRegistry());
+      interfaceProvider, interfaceRegistry);
   // Set the name and unique name directly, bypassing any of the normal logic
   // to calculate unique name.
   frame->tree().setPrecalculatedName(
@@ -1490,8 +1505,11 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   return webFrame;
 }
 
-WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope,
-                                     WebFrameClient* client)
+WebLocalFrameImpl::WebLocalFrameImpl(
+    WebTreeScopeType scope,
+    WebFrameClient* client,
+    blink::InterfaceProvider* interfaceProvider,
+    blink::InterfaceRegistry* interfaceRegistry)
     : WebLocalFrame(scope),
       m_frameLoaderClientImpl(FrameLoaderClientImpl::create(this)),
       m_frameWidget(0),
@@ -1499,6 +1517,8 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope,
       m_autofillClient(0),
       m_contentSettingsClient(0),
       m_inputEventsScaleFactorForEmulation(1),
+      m_interfaceProvider(interfaceProvider),
+      m_interfaceRegistry(interfaceRegistry),
       m_webDevToolsFrontend(0),
       m_inputMethodController(new WebInputMethodControllerImpl(this)),
       m_selfKeepAlive(this) {
@@ -1506,12 +1526,17 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope,
   frameCount++;
 }
 
-WebLocalFrameImpl::WebLocalFrameImpl(WebRemoteFrame* oldWebFrame,
-                                     WebFrameClient* client)
+WebLocalFrameImpl::WebLocalFrameImpl(
+    WebRemoteFrame* oldWebFrame,
+    WebFrameClient* client,
+    blink::InterfaceProvider* interfaceProvider,
+    blink::InterfaceRegistry* interfaceRegistry)
     : WebLocalFrameImpl(oldWebFrame->inShadowTree()
                             ? WebTreeScopeType::Shadow
                             : WebTreeScopeType::Document,
-                        client) {}
+                        client,
+                        interfaceProvider,
+                        interfaceRegistry) {}
 
 WebLocalFrameImpl::~WebLocalFrameImpl() {
   // The widget for the frame, if any, must have already been closed.
@@ -1540,10 +1565,8 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
                                             FrameOwner* owner,
                                             const AtomicString& name,
                                             const AtomicString& uniqueName) {
-  setCoreFrame(
-      LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner,
-                         client() ? client()->interfaceProvider() : nullptr,
-                         client() ? client()->interfaceRegistry() : nullptr));
+  setCoreFrame(LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner,
+                                  m_interfaceProvider, m_interfaceRegistry));
   frame()->tree().setPrecalculatedName(name, uniqueName);
   // We must call init() after m_frame is assigned because it is referenced
   // during init(). Note that this may dispatch JS events; the frame may be

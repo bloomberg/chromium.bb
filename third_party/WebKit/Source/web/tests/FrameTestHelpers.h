@@ -253,6 +253,9 @@ class TestWebFrameClient : public WebFrameClient {
 
   bool isLoading() { return m_loadsInProgress > 0; }
 
+  // Tests can override the virtual method below to mock the interface provider.
+  virtual blink::InterfaceProvider* interfaceProvider() { return nullptr; }
+
  private:
   int m_loadsInProgress = 0;
 };

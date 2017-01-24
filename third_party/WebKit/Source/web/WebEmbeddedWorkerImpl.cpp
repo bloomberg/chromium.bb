@@ -299,8 +299,8 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader() {
   settings->setStrictMixedContentChecking(true);
   settings->setAllowRunningOfInsecureContent(false);
   settings->setDataSaverEnabled(m_workerStartData.dataSaverEnabled);
-  m_mainFrame = toWebLocalFrameImpl(
-      WebLocalFrame::create(WebTreeScopeType::Document, this));
+  m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(
+      WebTreeScopeType::Document, this, nullptr, nullptr));
   m_webView->setMainFrame(m_mainFrame.get());
   m_mainFrame->setDevToolsAgentClient(this);
 

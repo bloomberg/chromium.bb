@@ -71,8 +71,8 @@ class GetNavigationPolicyTest : public testing::Test {
   void SetUp() override {
     m_webView = toWebViewImpl(
         WebView::create(&m_webViewClient, WebPageVisibilityStateVisible));
-    m_webView->setMainFrame(
-        WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient));
+    m_webView->setMainFrame(WebLocalFrame::create(
+        WebTreeScopeType::Document, &m_webFrameClient, nullptr, nullptr));
     m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chromeClient());
     m_result = WebNavigationPolicyIgnore;
   }
@@ -252,8 +252,8 @@ class CreateWindowTest : public testing::Test {
   void SetUp() override {
     m_webView = toWebViewImpl(
         WebView::create(&m_webViewClient, WebPageVisibilityStateVisible));
-    m_mainFrame =
-        WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
+    m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document,
+                                        &m_webFrameClient, nullptr, nullptr);
     m_webView->setMainFrame(m_mainFrame);
     m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chromeClient());
   }

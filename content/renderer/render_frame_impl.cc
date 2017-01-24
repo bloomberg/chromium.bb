@@ -941,7 +941,9 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       RenderFrameImpl::Create(render_view, routing_id);
   render_frame->InitializeBlameContext(nullptr);
   WebLocalFrame* web_frame = WebLocalFrame::create(
-      blink::WebTreeScopeType::Document, render_frame, opener);
+      blink::WebTreeScopeType::Document, render_frame,
+      render_frame->blink_interface_provider_.get(),
+      render_frame->blink_interface_registry_.get(), opener);
   render_frame->BindToWebFrame(web_frame);
   render_view->webview()->setMainFrame(web_frame);
   render_frame->render_widget_ = RenderWidget::CreateForFrame(
@@ -988,6 +990,8 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.scope, WebString::fromUTF8(replicated_state.name),
         WebString::fromUTF8(replicated_state.unique_name),
         replicated_state.sandbox_flags, render_frame,
+        render_frame->blink_interface_provider_.get(),
+        render_frame->blink_interface_registry_.get(),
         previous_sibling_web_frame,
         frame_owner_properties.ToWebFrameOwnerProperties(),
         ResolveOpener(opener_routing_id));
@@ -1010,7 +1014,9 @@ void RenderFrameImpl::CreateFrame(
     render_frame->proxy_routing_id_ = proxy_routing_id;
     proxy->set_provisional_frame_routing_id(routing_id);
     web_frame = blink::WebLocalFrame::createProvisional(
-        render_frame, proxy->web_frame(), replicated_state.sandbox_flags);
+        render_frame, render_frame->blink_interface_provider_.get(),
+        render_frame->blink_interface_registry_.get(), proxy->web_frame(),
+        replicated_state.sandbox_flags);
   }
   render_frame->BindToWebFrame(web_frame);
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->parent());
@@ -3049,8 +3055,10 @@ blink::WebLocalFrame* RenderFrameImpl::createChildFrame(
   RenderFrameImpl* child_render_frame =
       RenderFrameImpl::Create(render_view_, child_routing_id);
   child_render_frame->InitializeBlameContext(this);
-  blink::WebLocalFrame* web_frame =
-      WebLocalFrame::create(scope, child_render_frame);
+  blink::WebLocalFrame* web_frame = WebLocalFrame::create(
+      scope, child_render_frame,
+      child_render_frame->blink_interface_provider_.get(),
+      child_render_frame->blink_interface_registry_.get());
   child_render_frame->BindToWebFrame(web_frame);
 
   // Add the frame to the frame tree and initialize it.
@@ -6703,14 +6711,6 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
   callback.Run(AudioDeviceFactory::GetOutputDeviceInfo(
                    routing_id_, 0, sink_id.utf8(), security_origin)
                    .device_status());
-}
-
-blink::InterfaceProvider* RenderFrameImpl::interfaceProvider() {
-  return blink_interface_provider_.get();
-}
-
-blink::InterfaceRegistry* RenderFrameImpl::interfaceRegistry() {
-  return blink_interface_registry_.get();
 }
 
 blink::WebPageVisibilityState RenderFrameImpl::visibilityState() const {

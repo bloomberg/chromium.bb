@@ -587,7 +587,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   blink::WebFrameClient frame_client;
   blink::WebLocalFrame* frame = blink::WebLocalFrame::create(
-      blink::WebTreeScopeType::Document, &frame_client);
+      blink::WebTreeScopeType::Document, &frame_client, nullptr, nullptr);
   web_view->setMainFrame(frame);
   blink::WebFrameWidget::create(nullptr, web_view, frame);
 
@@ -809,8 +809,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
       blink::WebView::create(this, blink::WebPageVisibilityStateVisible);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
-  blink::WebLocalFrame* main_frame =
-      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
+  blink::WebLocalFrame* main_frame = blink::WebLocalFrame::create(
+      blink::WebTreeScopeType::Document, this, nullptr, nullptr);
   web_view->setMainFrame(main_frame);
   blink::WebFrameWidget::create(this, web_view, main_frame);
   frame_.Reset(web_view->mainFrame()->toWebLocalFrame());
@@ -842,7 +842,8 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::createChildFrame(
     const blink::WebString& unique_name,
     blink::WebSandboxFlags sandbox_flags,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
-  blink::WebLocalFrame* frame = blink::WebLocalFrame::create(scope, this);
+  blink::WebLocalFrame* frame =
+      blink::WebLocalFrame::create(scope, this, nullptr, nullptr);
   parent->appendChild(frame);
   return frame;
 }

@@ -68,8 +68,6 @@
 namespace blink {
 
 enum class WebTreeScopeType;
-class InterfaceProvider;
-class InterfaceRegistry;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebColorChooser;
@@ -743,10 +741,6 @@ class BLINK_EXPORT WebFrameClient {
       delete callbacks;
     }
   }
-
-  // Mojo ----------------------------------------------------------------
-  virtual InterfaceProvider* interfaceProvider() { return nullptr; }
-  virtual InterfaceRegistry* interfaceRegistry() { return nullptr; }
 
   // Visibility ----------------------------------------------------------
 

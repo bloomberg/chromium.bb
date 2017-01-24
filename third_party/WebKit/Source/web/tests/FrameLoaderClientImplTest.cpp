@@ -67,8 +67,8 @@ class FrameLoaderClientImplTest : public ::testing::Test {
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.
     m_webView->settings()->setAcceleratedCompositingEnabled(false);
-    m_mainFrame =
-        WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
+    m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document,
+                                        &m_webFrameClient, nullptr, nullptr);
     m_webView->setMainFrame(m_mainFrame);
   }
 

@@ -438,8 +438,8 @@ TEST_P(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   webView->setBaseBackgroundColor(kBlue);
   EXPECT_EQ(kBlue, webView->backgroundColor());
   FrameTestHelpers::TestWebFrameClient webFrameClient;
-  WebLocalFrame* frame =
-      WebLocalFrame::create(WebTreeScopeType::Document, &webFrameClient);
+  WebLocalFrame* frame = WebLocalFrame::create(
+      WebTreeScopeType::Document, &webFrameClient, nullptr, nullptr);
   webView->setMainFrame(frame);
   webView->close();
 }
@@ -2151,8 +2151,8 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
       WebViewImpl::create(nullptr, WebPageVisibilityStateVisible);
   FrameTestHelpers::TestWebFrameClient webFrameClient;
   FrameTestHelpers::TestWebWidgetClient webWidgetClient;
-  WebLocalFrame* localFrame =
-      WebLocalFrame::create(WebTreeScopeType::Document, &webFrameClient);
+  WebLocalFrame* localFrame = WebLocalFrame::create(
+      WebTreeScopeType::Document, &webFrameClient, nullptr, nullptr);
   webView->setMainFrame(localFrame);
 
   // TODO(dcheng): The main frame widget currently has a special case.
