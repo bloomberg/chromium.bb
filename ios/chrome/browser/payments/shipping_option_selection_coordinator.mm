@@ -83,7 +83,7 @@
 
         _viewController.get().view.userInteractionEnabled = YES;
         [_delegate shippingOptionSelectionCoordinator:self
-                               selectedShippingOption:_selectedShippingOption];
+                              didSelectShippingOption:_selectedShippingOption];
       });
 }
 

@@ -13,13 +13,14 @@
 
 @class ShippingOptionSelectionCoordinator;
 
+// Delegate protocol for ShippingOptionSelectionCoordinator.
 @protocol ShippingOptionSelectionCoordinatorDelegate<NSObject>
 
 // Notifies the delegate that the user has selected a shipping option.
 - (void)shippingOptionSelectionCoordinator:
             (ShippingOptionSelectionCoordinator*)coordinator
-                    selectedShippingOption:
-                        (web::PaymentShippingOption*)shippingOption;
+                   didSelectShippingOption:
+                       (web::PaymentShippingOption*)shippingOption;
 
 // Notifies the delegate that the user has chosen to return to the previous
 // screen without making a selection.

@@ -16,12 +16,17 @@ class AutofillProfile;
 
 @class ShippingAddressSelectionViewController;
 
+// Delegate protocol for ShippingAddressSelectionViewController.
 @protocol ShippingAddressSelectionViewControllerDelegate<NSObject>
 
+// Notifies the delegate that the user has selected a shipping address.
 - (void)shippingAddressSelectionViewController:
             (ShippingAddressSelectionViewController*)controller
                        selectedShippingAddress:
                            (autofill::AutofillProfile*)shippingAddress;
+
+// Notifies the delegate that the user has chosen to return to the previous
+// screen without making a selection.
 - (void)shippingAddressSelectionViewControllerDidReturn:
     (ShippingAddressSelectionViewController*)controller;
 

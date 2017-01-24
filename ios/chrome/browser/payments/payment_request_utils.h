@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/web/public/payments/payment_request.h"
+
 namespace autofill {
 class AutofillProfile;
 }  // namespace autofill
@@ -26,6 +28,11 @@ NSString* FormattedCurrencyString(NSDecimalNumber* value,
 
 // Helper function to get the phone number label from an autofill profile.
 NSString* PhoneNumberLabelFromAutofillProfile(
+    autofill::AutofillProfile* profile);
+
+// Helper function to get an instance of web::PaymentAddress from an autofill
+// profile.
+web::PaymentAddress PaymentAddressFromAutofillProfile(
     autofill::AutofillProfile* profile);
 
 }  // namespace payment_request_utils

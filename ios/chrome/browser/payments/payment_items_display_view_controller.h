@@ -16,8 +16,7 @@ extern NSString* const kPaymentItemsDisplayItemId;
 
 @class PaymentItemsDisplayViewController;
 
-// Protocol for communicating with the delegate supplied to
-// PaymentItemsDisplayViewController.
+// Delegate protocol for PaymentItemsDisplayViewController.
 @protocol PaymentItemsDisplayViewControllerDelegate<NSObject>
 
 // Notifies the delegate that the user has chosen to return to the previous

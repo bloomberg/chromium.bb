@@ -21,10 +21,26 @@ class CreditCard;
 class PersonalDataManager;
 }
 
+@class PaymentRequestCoordinator;
+
+// Delegate protocol for PaymentRequestCoordinator.
 @protocol PaymentRequestCoordinatorDelegate<NSObject>
-- (void)paymentRequestCoordinatorDidCancel;
-- (void)paymentRequestCoordinatorDidConfirm:
-    (web::PaymentResponse)paymentResponse;
+
+// Notifies the delegate that the user has canceled the payment request.
+- (void)paymentRequestCoordinatorDidCancel:
+    (PaymentRequestCoordinator*)coordinator;
+
+// Notifies the delegate that the user has confirmed the payment request.
+- (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
+    didConfirmWithPaymentResponse:(web::PaymentResponse)paymentResponse;
+
+// Notifies the delegate that the user has selected a shipping address.
+- (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
+         didSelectShippingAddress:(web::PaymentAddress)shippingAddress;
+
+// Notifies the delegate that the user has selected a shipping option.
+- (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
+          didSelectShippingOption:(web::PaymentShippingOption)shippingOption;
 
 @end
 
@@ -77,6 +93,9 @@ class PersonalDataManager;
 
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestCoordinatorDelegate> delegate;
+
+// Updates the payment details of the PaymentRequest and updates the UI.
+- (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails;
 
 @end
 

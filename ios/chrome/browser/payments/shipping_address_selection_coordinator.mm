@@ -85,7 +85,7 @@
         _viewController.get().view.userInteractionEnabled = YES;
         [_delegate
             shippingAddressSelectionCoordinator:self
-                        selectedShippingAddress:_selectedShippingAddress];
+                       didSelectShippingAddress:_selectedShippingAddress];
       });
 }
 

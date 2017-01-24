@@ -17,13 +17,34 @@ class CreditCard;
 
 extern NSString* const kPaymentRequestCollectionViewId;
 
+@class PaymentRequestViewController;
+
+// Delegate protocol for PaymentRequestViewController.
 @protocol PaymentRequestViewControllerDelegate<NSObject>
-- (void)paymentRequestViewControllerDidCancel;
-- (void)paymentRequestViewControllerDidConfirm;
-- (void)paymentRequestViewControllerDisplayPaymentItems;
-- (void)paymentRequestViewControllerSelectShippingAddress;
-- (void)paymentRequestViewControllerSelectShippingOption;
-- (void)paymentRequestViewControllerSelectPaymentMethod;
+
+// Notifies the delegate that the user has canceled the payment request.
+- (void)paymentRequestViewControllerDidCancel:
+    (PaymentRequestViewController*)controller;
+
+// Notifies the delegate that the user has confirmed the payment request.
+- (void)paymentRequestViewControllerDidConfirm:
+    (PaymentRequestViewController*)controller;
+
+// Notifies the delegate that the user has selected the payment summary item.
+- (void)paymentRequestViewControllerDidSelectPaymentSummaryItem:
+    (PaymentRequestViewController*)controller;
+
+// Notifies the delegate that the user has selected the shipping address item.
+- (void)paymentRequestViewControllerDidSelectShippingAddressItem:
+    (PaymentRequestViewController*)controller;
+
+// Notifies the delegate that the user has selected the shipping option item.
+- (void)paymentRequestViewControllerDidSelectShippingOptionItem:
+    (PaymentRequestViewController*)controller;
+
+// Notifies the delegate that the user has selected the payment method item.
+- (void)paymentRequestViewControllerDidSelectPaymentMethodItem:
+    (PaymentRequestViewController*)controller;
 
 @end
 
@@ -55,6 +76,9 @@ extern NSString* const kPaymentRequestCollectionViewId;
 
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDelegate> delegate;
+
+// Updates the payment summary section UI.
+- (void)updatePaymentSummarySection;
 
 // Sets the selected shipping address and updates the UI.
 - (void)updateSelectedShippingAddress:

@@ -143,7 +143,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     DCHECK(indexPath.item < (NSInteger)_paymentMethods.size());
     [_delegate
         paymentMethodSelectionViewController:self
-                       selectedPaymentMethod:_paymentMethods[indexPath.item]];
+                      didSelectPaymentMethod:_paymentMethods[indexPath.item]];
   }
   // TODO(crbug.com/602666): Present a credit card addition UI when
   //     itemType == ItemAddMethod.

@@ -16,12 +16,17 @@ class CreditCard;
 
 @class PaymentMethodSelectionViewController;
 
+// Delegate protocol for PaymentMethodSelectionViewController.
 @protocol PaymentMethodSelectionViewControllerDelegate<NSObject>
 
+// Notifies the delegate that the user has selected a payment method.
 - (void)paymentMethodSelectionViewController:
             (PaymentMethodSelectionViewController*)controller
-                       selectedPaymentMethod:
-                           (autofill::CreditCard*)paymentMethod;
+                      didSelectPaymentMethod:
+                          (autofill::CreditCard*)paymentMethod;
+
+// Notifies the delegate that the user has chosen to return to the previous
+// screen without making a selection.
 - (void)paymentMethodSelectionViewControllerDidReturn:
     (PaymentMethodSelectionViewController*)controller;
 

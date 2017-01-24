@@ -13,8 +13,7 @@
 
 @class PaymentItemsDisplayCoordinator;
 
-// Protocol for communicating with the delegate supplied to
-// PaymentItemsDisplayCoordinator.
+// Delegate protocol for PaymentItemsDisplayCoordinator.
 @protocol PaymentItemsDisplayCoordinatorDelegate<NSObject>
 
 // Notifies the delegate that the user has chosen to return to the previous

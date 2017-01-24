@@ -73,6 +73,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::scoped_nsobject<UIBarButtonItem> _cancelButton;
   base::scoped_nsobject<MDCFlatButton> _payButton;
 
+  CollectionViewDetailItem* _paymentSummaryItem;
   ShippingAddressItem* _selectedShippingAddressItem;
   CollectionViewTextItem* _selectedShippingOptionItem;
 
@@ -179,14 +180,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [_cancelButton setEnabled:NO];
   [_payButton setEnabled:NO];
 
-  [_delegate paymentRequestViewControllerDidCancel];
+  [_delegate paymentRequestViewControllerDidCancel:self];
 }
 
 - (void)onConfirm {
   [_cancelButton setEnabled:NO];
   [_payButton setEnabled:NO];
 
-  [_delegate paymentRequestViewControllerDidConfirm];
+  [_delegate paymentRequestViewControllerDidConfirm:self];
 }
 
 #pragma mark - CollectionViewController methods
@@ -205,21 +206,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   pageInfo.pageHost = _pageHost;
   [model setHeader:pageInfo forSectionWithIdentifier:SectionIdentifierSummary];
 
-  CollectionViewDetailItem* total = [[[CollectionViewDetailItem alloc]
+  _paymentSummaryItem = [[[CollectionViewDetailItem alloc]
       initWithType:ItemTypeSummaryTotal] autorelease];
-  total.text = l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER);
-  NSString* currencyCode =
-      base::SysUTF16ToNSString(_paymentRequest.details.total.amount.currency);
-  NSDecimalNumber* value = [NSDecimalNumber
-      decimalNumberWithString:SysUTF16ToNSString(
-                                  _paymentRequest.details.total.amount.value)];
-  total.detailText =
-      payment_request_utils::FormattedCurrencyString(value, currencyCode);
+  [self fillPaymentSummaryItem:_paymentSummaryItem
+               withPaymentItem:_paymentRequest.details.total];
   if (!_paymentRequest.details.display_items.empty()) {
-    total.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
-    total.accessibilityTraits |= UIAccessibilityTraitButton;
+    _paymentSummaryItem.accessoryType =
+        MDCCollectionViewCellAccessoryDisclosureIndicator;
+    _paymentSummaryItem.accessibilityTraits |= UIAccessibilityTraitButton;
   }
-  [model addItem:total toSectionWithIdentifier:SectionIdentifierSummary];
+  [model addItem:_paymentSummaryItem
+      toSectionWithIdentifier:SectionIdentifierSummary];
 
   // Shipping section.
   [model addSectionWithIdentifier:SectionIdentifierShipping];
@@ -329,6 +326,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
 }
 
+- (void)updatePaymentSummarySection {
+  [self fillPaymentSummaryItem:_paymentSummaryItem
+               withPaymentItem:_paymentRequest.details.total];
+  NSIndexPath* indexPath =
+      [self.collectionViewModel indexPathForItem:_paymentSummaryItem
+                         inSectionWithIdentifier:SectionIdentifierSummary];
+  [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+}
+
 - (void)updateSelectedShippingAddress:
     (autofill::AutofillProfile*)shippingAddress {
   [self setSelectedShippingAddress:shippingAddress];
@@ -352,6 +358,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark - Helper methods
+
+- (void)fillPaymentSummaryItem:(CollectionViewDetailItem*)item
+               withPaymentItem:(web::PaymentItem)paymentItem {
+  item.text = l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER);
+  NSString* currencyCode =
+      base::SysUTF16ToNSString(_paymentRequest.details.total.amount.currency);
+  NSDecimalNumber* value = [NSDecimalNumber
+      decimalNumberWithString:SysUTF16ToNSString(
+                                  _paymentRequest.details.total.amount.value)];
+  item.detailText =
+      payment_request_utils::FormattedCurrencyString(value, currencyCode);
+}
 
 - (void)fillShippingAddressItem:(ShippingAddressItem*)item
                     withAddress:(autofill::AutofillProfile*)address {
@@ -414,18 +432,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (itemType) {
     case ItemTypeSummaryTotal:
       if (!_paymentRequest.details.display_items.empty())
-        [_delegate paymentRequestViewControllerDisplayPaymentItems];
+        [_delegate
+            paymentRequestViewControllerDidSelectPaymentSummaryItem:self];
       break;
     case ItemTypeShippingAddress:
     case ItemTypeAddShippingAddress:
-      [_delegate paymentRequestViewControllerSelectShippingAddress];
+      [_delegate paymentRequestViewControllerDidSelectShippingAddressItem:self];
       break;
     case ItemTypeShippingOption:
     case ItemTypeSelectShippingOption:
-      [_delegate paymentRequestViewControllerSelectShippingOption];
+      [_delegate paymentRequestViewControllerDidSelectShippingOptionItem:self];
       break;
     case ItemTypePaymentMethod:
-      [_delegate paymentRequestViewControllerSelectPaymentMethod];
+      [_delegate paymentRequestViewControllerDidSelectPaymentMethodItem:self];
       break;
     default:
       NOTREACHED();

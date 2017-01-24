@@ -37,32 +37,57 @@ NSString* JSONEscape(NSString* JSON) {
   [self executeScript:@"Function.prototype()" completionHandler:nil];
 }
 
-- (void)resolveRequestPromise:(const web::PaymentResponse&)paymentResponse
-            completionHandler:(void (^)(BOOL))completionHandler {
+- (void)resolveRequestPromiseWithPaymentResponse:
+            (const web::PaymentResponse&)paymentResponse
+                               completionHandler:
+                                   (void (^)(BOOL))completionHandler {
   std::unique_ptr<base::DictionaryValue> paymentResponseData =
       paymentResponse.ToDictionaryValue();
   std::string paymentResponseDataJSON;
   base::JSONWriter::Write(*paymentResponseData, &paymentResponseDataJSON);
   NSString* script = [NSString
       stringWithFormat:
-          @"__gCrWeb['paymentRequestManager'].pendingRequest.resolve(%@)",
+          @"__gCrWeb['paymentRequestManager'].resolveRequestPromise(%@)",
           base::SysUTF8ToNSString(paymentResponseDataJSON)];
   [self executeScript:script completionHandler:completionHandler];
 }
 
-- (void)rejectRequestPromise:(NSString*)errorMessage
-           completionHandler:(void (^)(BOOL))completionHandler {
+- (void)rejectRequestPromiseWithErrorMessage:(NSString*)errorMessage
+                           completionHandler:(void (^)(BOOL))completionHandler {
   NSString* script = [NSString
       stringWithFormat:
-          @"__gCrWeb['paymentRequestManager'].pendingRequest.reject(%@)",
+          @"__gCrWeb['paymentRequestManager'].rejectRequestPromise(%@)",
           JSONEscape(errorMessage)];
   [self executeScript:script completionHandler:completionHandler];
 }
 
-- (void)resolveResponsePromise:(void (^)(BOOL))completionHandler {
+- (void)resolveResponsePromiseWithCompletionHandler:
+    (void (^)(BOOL))completionHandler {
   NSString* script =
-      @"__gCrWeb['paymentRequestManager'].pendingResponse.resolve()";
+      @"__gCrWeb['paymentRequestManager'].resolveResponsePromise()";
   [self executeScript:script completionHandler:completionHandler];
+}
+
+- (void)updateShippingAddress:(const web::PaymentAddress&)shippingAddress
+            completionHandler:(void (^)(BOOL))completionHanlder {
+  std::unique_ptr<base::DictionaryValue> shippingAddressData =
+      shippingAddress.ToDictionaryValue();
+  std::string shippingAddressDataJSON;
+  base::JSONWriter::Write(*shippingAddressData, &shippingAddressDataJSON);
+  NSString* script = [NSString
+      stringWithFormat:@"__gCrWeb['paymentRequestManager']."
+                       @"updateShippingAddressAndDispatchEvent(%@)",
+                       base::SysUTF8ToNSString(shippingAddressDataJSON)];
+  [self executeScript:script completionHandler:completionHanlder];
+}
+
+- (void)updateShippingOption:(const web::PaymentShippingOption&)shippingOption
+           completionHandler:(void (^)(BOOL))completionHanlder {
+  NSString* script =
+      [NSString stringWithFormat:@"__gCrWeb['paymentRequestManager']."
+                                 @"updateShippingOptionAndDispatchEvent('%@')",
+                                 base::SysUTF16ToNSString(shippingOption.id)];
+  [self executeScript:script completionHandler:completionHanlder];
 }
 
 - (void)executeScript:(NSString*)script

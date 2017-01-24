@@ -5,10 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_JS_PAYMENT_REQUEST_MANAGER_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_JS_PAYMENT_REQUEST_MANAGER_H_
 
+#include "base/strings/string16.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
 namespace web {
+class PaymentAddress;
 class PaymentResponse;
+class PaymentShippingOption;
 }
 
 // Injects the JavaScript that implements the Payment Request API and provides
@@ -20,25 +23,36 @@ class PaymentResponse;
 - (void)executeNoop;
 
 // Resolves the JavaScript promise associated with the current PaymentRequest
-// with the a JSON serialization of |paymentResponse|. |completionHandler| will
-// be invoked after the operation has completed with YES if successful.
-- (void)resolveRequestPromise:(const web::PaymentResponse&)paymentResponse
-            completionHandler:(void (^)(BOOL))completionHandler;
+// with the a JSON serialization of |paymentResponse|. If |completionHandler| is
+// not nil, it will be invoked with YES after the operation has completed
+// successfully or with NO otherwise.
+- (void)resolveRequestPromiseWithPaymentResponse:
+            (const web::PaymentResponse&)paymentResponse
+                               completionHandler:
+                                   (void (^)(BOOL))completionHandler;
 
 // Rejects the JavaScript promise associated with the current PaymentRequest
-// with the supplied |errorMessage|. |completionHandler| will be invoked after
-// the operation has completed with YES if successful.
-- (void)rejectRequestPromise:(NSString*)errorMessage
-           completionHandler:(void (^)(BOOL))completionHandler;
+// with the supplied |errorMessage|. If |completionHandler| is not nil, it will
+// be invoked with YES after the operation has completed successfully or with NO
+// otherwise.
+- (void)rejectRequestPromiseWithErrorMessage:(NSString*)errorMessage
+                           completionHandler:(void (^)(BOOL))completionHandler;
 
 // Resolves the JavaScript promise associated with the current PaymentResponse.
-// |completionHandler| will be invoked after the operation has completed with
-// YES if successful.
-- (void)resolveResponsePromise:(void (^)(BOOL))completionHandler;
+// If |completionHandler| is not nil, it will be invoked with YES after the
+// operation has completed successfully or with NO otherwise.
+- (void)resolveResponsePromiseWithCompletionHandler:
+    (void (^)(BOOL))completionHandler;
 
-// Note that there is no rejectResponsePromise method because the spec includes
-// no provision for rejecting the response promise. User agents are directed to
-// always resolve the promise.
+// Updates the shippingAddress property on the PaymentRequest object and
+// dispatches a shippingaddresschange event.
+- (void)updateShippingAddress:(const web::PaymentAddress&)shippingAddress
+            completionHandler:(void (^)(BOOL))completionHanlder;
+
+// Updates the shippingOption property on the PaymentRequest object and
+// dispatches a shippingoptionchange event.
+- (void)updateShippingOption:(const web::PaymentShippingOption&)shippingOption
+           completionHandler:(void (^)(BOOL))completionHanlder;
 
 @end
 

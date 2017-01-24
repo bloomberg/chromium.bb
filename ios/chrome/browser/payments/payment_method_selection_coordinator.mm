@@ -51,11 +51,11 @@
 
 - (void)paymentMethodSelectionViewController:
             (PaymentMethodSelectionViewController*)controller
-                       selectedPaymentMethod:
-                           (autofill::CreditCard*)paymentMethod {
+                      didSelectPaymentMethod:
+                          (autofill::CreditCard*)paymentMethod {
   _selectedPaymentMethod = paymentMethod;
   [_delegate paymentMethodSelectionCoordinator:self
-                         selectedPaymentMethod:paymentMethod];
+                        didSelectPaymentMethod:paymentMethod];
 }
 
 - (void)paymentMethodSelectionViewControllerDidReturn:

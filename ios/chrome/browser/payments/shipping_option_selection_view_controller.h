@@ -12,12 +12,17 @@
 
 @class ShippingOptionSelectionViewController;
 
+// Delegate protocol for ShippingOptionSelectionViewController.
 @protocol ShippingOptionSelectionViewControllerDelegate<NSObject>
 
+// Notifies the delegate that the user has selected a shipping option.
 - (void)shippingOptionSelectionViewController:
             (ShippingOptionSelectionViewController*)controller
                        selectedShippingOption:
                            (web::PaymentShippingOption*)shippingOption;
+
+// Notifies the delegate that the user has chosen to return to the previous
+// screen without making a selection.
 - (void)shippingOptionSelectionViewControllerDidReturn:
     (ShippingOptionSelectionViewController*)controller;
 
