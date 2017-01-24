@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_info.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -120,17 +121,14 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
 
 void BrowserPlugin::OnSetChildFrameSurface(
     int browser_plugin_instance_id,
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float scale_factor,
+    const cc::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   if (!attached())
     return;
 
   EnableCompositing(true);
   DCHECK(compositing_helper_.get());
-  compositing_helper_->OnSetSurface(
-      cc::SurfaceInfo(surface_id, scale_factor, frame_size), sequence);
+  compositing_helper_->OnSetSurface(surface_info, sequence);
 }
 
 void BrowserPlugin::SendSatisfySequence(const cc::SurfaceSequence& sequence) {

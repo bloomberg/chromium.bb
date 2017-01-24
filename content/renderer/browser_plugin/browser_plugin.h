@@ -20,7 +20,7 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 
 namespace cc {
-class SurfaceId;
+class SurfaceInfo;
 struct SurfaceSequence;
 }
 
@@ -156,9 +156,7 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnGuestGone(int instance_id);
   void OnGuestReady(int instance_id);
   void OnSetChildFrameSurface(int instance_id,
-                              const cc::SurfaceId& surface_id,
-                              const gfx::Size& frame_size,
-                              float scale_factor,
+                              const cc::SurfaceInfo& surface_info,
                               const cc::SurfaceSequence& sequence);
   void OnSetContentsOpaque(int instance_id, bool opaque);
   void OnSetCursor(int instance_id, const WebCursor& cursor);

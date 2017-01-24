@@ -8,6 +8,11 @@
 #include "cc/surfaces/surface_id.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace IPC {
+template <class T>
+struct ParamTraits;
+}  // namespace IPC
+
 namespace cc {
 namespace mojom {
 class SurfaceInfoDataView;
@@ -38,6 +43,7 @@ class SurfaceInfo {
 
  private:
   friend struct mojo::StructTraits<mojom::SurfaceInfoDataView, SurfaceInfo>;
+  friend struct IPC::ParamTraits<SurfaceInfo>;
 
   SurfaceId id_;
   float device_scale_factor_ = 1.f;

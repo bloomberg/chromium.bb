@@ -22,7 +22,7 @@ struct WebRect;
 }
 
 namespace cc {
-class SurfaceId;
+class SurfaceInfo;
 struct SurfaceSequence;
 }
 
@@ -162,9 +162,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  void OnSetChildFrameSurface(const cc::SurfaceId& surface_id,
-                              const gfx::Size& frame_size,
-                              float scale_factor,
+  void OnSetChildFrameSurface(const cc::SurfaceInfo& surface_info,
                               const cc::SurfaceSequence& sequence);
   void OnUpdateOpener(int opener_routing_id);
   void OnDidStopLoading();

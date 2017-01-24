@@ -126,15 +126,11 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
  public:
   TestBrowserPluginGuest(WebContentsImpl* web_contents,
                          BrowserPluginGuestDelegate* delegate)
-      : BrowserPluginGuest(web_contents->HasOpener(), web_contents, delegate),
-        last_scale_factor_received_(0.f) {}
+      : BrowserPluginGuest(web_contents->HasOpener(), web_contents, delegate) {}
+
   ~TestBrowserPluginGuest() override {}
 
-  void ResetTestData() {
-    last_surface_id_received_ = cc::SurfaceId();
-    last_frame_size_received_ = gfx::Size();
-    last_scale_factor_received_ = 0.f;
-  }
+  void ResetTestData() { last_surface_info_ = cc::SurfaceInfo(); }
 
   void set_has_attached_since_surface_set(bool has_attached_since_surface_set) {
     BrowserPluginGuest::set_has_attached_since_surface_set_for_test(
@@ -145,18 +141,12 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
     BrowserPluginGuest::set_attached_for_test(attached);
   }
 
-  void SetChildFrameSurface(const cc::SurfaceId& surface_id,
-                            const gfx::Size& frame_size,
-                            float scale_factor,
+  void SetChildFrameSurface(const cc::SurfaceInfo& surface_info,
                             const cc::SurfaceSequence& sequence) override {
-    last_surface_id_received_ = surface_id;
-    last_frame_size_received_ = frame_size;
-    last_scale_factor_received_ = scale_factor;
+    last_surface_info_ = surface_info;
   }
 
-  cc::SurfaceId last_surface_id_received_;
-  gfx::Size last_frame_size_received_;
-  float last_scale_factor_received_;
+  cc::SurfaceInfo last_surface_info_;
 };
 
 // TODO(wjmaclean): we should restructure RenderWidgetHostViewChildFrameTest to
@@ -284,9 +274,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #endif
     // Surface ID should have been passed to BrowserPluginGuest to
     // be sent to the embedding renderer.
-    EXPECT_EQ(id, browser_plugin_guest_->last_surface_id_received_);
-    EXPECT_EQ(view_size, browser_plugin_guest_->last_frame_size_received_);
-    EXPECT_EQ(scale_factor, browser_plugin_guest_->last_scale_factor_received_);
+    EXPECT_EQ(cc::SurfaceInfo(id, scale_factor, view_size),
+              browser_plugin_guest_->last_surface_info_);
   }
 
   browser_plugin_guest_->ResetTestData();
@@ -308,10 +297,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #endif
     // Surface ID should have been passed to BrowserPluginGuest to
     // be sent to the embedding renderer.
-    EXPECT_EQ(id, browser_plugin_guest_->last_surface_id_received_);
-    EXPECT_EQ(view_size, browser_plugin_guest_->last_frame_size_received_);
-    EXPECT_EQ(scale_factor,
-              browser_plugin_guest_->last_scale_factor_received_);
+    EXPECT_EQ(cc::SurfaceInfo(id, scale_factor, view_size),
+              browser_plugin_guest_->last_surface_info_);
   }
 
   browser_plugin_guest_->set_attached(false);

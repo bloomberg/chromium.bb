@@ -8,6 +8,7 @@
 
 #include "base/process/process.h"
 #include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_info.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
@@ -184,11 +185,9 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
                      int /* browser_plugin_instance_id */,
                      content::WebCursor /* cursor */)
 
-IPC_MESSAGE_CONTROL5(BrowserPluginMsg_SetChildFrameSurface,
+IPC_MESSAGE_CONTROL3(BrowserPluginMsg_SetChildFrameSurface,
                      int /* browser_plugin_instance_id */,
-                     cc::SurfaceId /* surface_id */,
-                     gfx::Size /* frame_size */,
-                     float /* scale_factor */,
+                     cc::SurfaceInfo /* surface_info */,
                      cc::SurfaceSequence /* sequence */)
 
 // Forwards a PointerLock Unlock request to the BrowserPlugin.

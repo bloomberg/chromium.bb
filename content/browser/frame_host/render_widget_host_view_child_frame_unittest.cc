@@ -51,26 +51,19 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
 class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
  public:
-  MockCrossProcessFrameConnector()
-      : CrossProcessFrameConnector(nullptr), last_scale_factor_received_(0.f) {}
+  MockCrossProcessFrameConnector() : CrossProcessFrameConnector(nullptr) {}
   ~MockCrossProcessFrameConnector() override {}
 
-  void SetChildFrameSurface(const cc::SurfaceId& surface_id,
-                            const gfx::Size& frame_size,
-                            float scale_factor,
+  void SetChildFrameSurface(const cc::SurfaceInfo& surface_info,
                             const cc::SurfaceSequence& sequence) override {
-    last_surface_id_received_ = surface_id;
-    last_frame_size_received_ = frame_size;
-    last_scale_factor_received_ = scale_factor;
+    last_surface_info_ = surface_info;
   }
 
   RenderWidgetHostViewBase* GetParentRenderWidgetHostView() override {
     return nullptr;
   }
 
-  cc::SurfaceId last_surface_id_received_;
-  gfx::Size last_frame_size_received_;
-  float last_scale_factor_received_;
+  cc::SurfaceInfo last_surface_info_;
 };
 
 }  // namespace
@@ -192,9 +185,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
 
     // Surface ID should have been passed to CrossProcessFrameConnector to
     // be sent to the embedding renderer.
-    EXPECT_EQ(id, test_frame_connector_->last_surface_id_received_);
-    EXPECT_EQ(view_size, test_frame_connector_->last_frame_size_received_);
-    EXPECT_EQ(scale_factor, test_frame_connector_->last_scale_factor_received_);
+    EXPECT_EQ(cc::SurfaceInfo(id, scale_factor, view_size),
+              test_frame_connector_->last_surface_info_);
   }
 }
 

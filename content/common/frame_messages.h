@@ -15,6 +15,7 @@
 
 #include "build/build_config.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -610,10 +611,8 @@ IPC_STRUCT_TRAITS_END()
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_ROUTED4(FrameMsg_SetChildFrameSurface,
-                    cc::SurfaceId /* surface_id */,
-                    gfx::Size /* frame_size */,
-                    float /* scale_factor */,
+IPC_MESSAGE_ROUTED2(FrameMsg_SetChildFrameSurface,
+                    cc::SurfaceInfo /* surface_info */,
                     cc::SurfaceSequence /* sequence */)
 
 // Notifies the embedding frame that the process rendering the child frame's

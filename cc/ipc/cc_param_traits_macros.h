@@ -22,6 +22,7 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
@@ -186,6 +187,12 @@ IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(selection)
   IPC_STRUCT_TRAITS_MEMBER(latency_info)
   IPC_STRUCT_TRAITS_MEMBER(referenced_surfaces)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::SurfaceInfo)
+  IPC_STRUCT_TRAITS_MEMBER(id_)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale_factor_)
+  IPC_STRUCT_TRAITS_MEMBER(size_in_pixels_)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CC_IPC_CC_PARAM_TRAITS_MACROS_H_

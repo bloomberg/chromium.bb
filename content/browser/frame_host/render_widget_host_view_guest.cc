@@ -124,16 +124,8 @@ void RenderWidgetHostViewGuest::Show() {
     // Since we were last shown, our renderer may have had a different surface
     // set (e.g. showing an interstitial), so we resend our current surface to
     // the renderer.
-    if (local_frame_id_.is_valid()) {
-      cc::SurfaceSequence sequence =
-          cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
-      cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
-      GetSurfaceManager()
-          ->GetSurfaceForId(surface_id)
-          ->AddDestructionDependency(sequence);
-      guest_->SetChildFrameSurface(surface_id, current_surface_size_,
-                                   current_surface_scale_factor_, sequence);
-    }
+    if (local_frame_id_.is_valid())
+      SendSurfaceInfoToEmbedder();
   }
   host_->WasShown(ui::LatencyInfo());
 }
@@ -279,67 +271,28 @@ void RenderWidgetHostViewGuest::SetTooltipText(
     guest_->SetTooltipText(tooltip_text);
 }
 
+bool RenderWidgetHostViewGuest::ShouldCreateNewSurfaceId(
+    uint32_t compositor_frame_sink_id,
+    const cc::CompositorFrame& frame) {
+  return (guest_ && guest_->has_attached_since_surface_set()) ||
+         RenderWidgetHostViewChildFrame::ShouldCreateNewSurfaceId(
+             compositor_frame_sink_id, frame);
+}
+
+void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
+    const cc::SurfaceInfo& surface_info,
+    const cc::SurfaceSequence& sequence) {
+  if (guest_ && !guest_->is_in_destruction())
+    guest_->SetChildFrameSurface(surface_info, sequence);
+}
+
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewGuest::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-
-  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
-
-  gfx::Size frame_size = root_pass->output_rect.size();
-  float scale_factor = frame.metadata.device_scale_factor;
-
-  // Check whether we need to recreate the cc::Surface, which means the child
-  // frame renderer has changed its output surface, or size, or scale factor.
-  if (compositor_frame_sink_id != last_compositor_frame_sink_id_ ||
-      frame_size != current_surface_size_ ||
-      scale_factor != current_surface_scale_factor_ ||
-      (guest_ && guest_->has_attached_since_surface_set())) {
-    ClearCompositorSurfaceIfNecessary();
-    // If the renderer changed its frame sink, reset the surface factory to
-    // avoid returning stale resources.
-    if (compositor_frame_sink_id != last_compositor_frame_sink_id_)
-      surface_factory_->Reset();
-    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
-    current_surface_size_ = frame_size;
-    current_surface_scale_factor_ = scale_factor;
-  }
-
-  bool allocated_new_local_frame_id = false;
-  if (!local_frame_id_.is_valid()) {
-    local_frame_id_ = id_allocator_->GenerateId();
-    allocated_new_local_frame_id = true;
-  }
-
-  cc::SurfaceFactory::DrawCallback ack_callback = base::Bind(
-      &RenderWidgetHostViewChildFrame::SurfaceDrawn,
-      RenderWidgetHostViewChildFrame::AsWeakPtr(), compositor_frame_sink_id);
-  ack_pending_count_++;
-  // If this value grows very large, something is going wrong.
-  DCHECK(ack_pending_count_ < 1000);
-  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
-                                          ack_callback);
-
-  if (allocated_new_local_frame_id) {
-    cc::SurfaceSequence sequence =
-        cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
-    // The renderer process will satisfy this dependency when it creates a
-    // SurfaceLayer.
-    cc::SurfaceManager* manager = GetSurfaceManager();
-    cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
-    manager->GetSurfaceForId(surface_id)->AddDestructionDependency(sequence);
-    // TODO(wjmaclean): I'm not sure what it means to create a surface id
-    // without setting it on the child, though since we will in this case be
-    // guaranteed to call ClearCompositorSurfaceIfNecessary() below, I suspect
-    // skipping SetChildFrameSurface() here is irrelevant.
-    if (guest_ && !guest_->is_in_destruction()) {
-      guest_->SetChildFrameSurface(surface_id, frame_size, scale_factor,
-                                   sequence);
-    }
-  }
-  ProcessFrameSwappedCallbacks();
+  ProcessCompositorFrame(compositor_frame_sink_id, std::move(frame));
 
   // If after detaching we are sent a frame, we should finish processing it, and
   // then we should clear the surface so that we are not holding resources we

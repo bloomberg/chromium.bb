@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_thread_impl.h"
@@ -414,14 +415,11 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
 }
 
 void BrowserPluginGuest::SetChildFrameSurface(
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float scale_factor,
+    const cc::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   has_attached_since_surface_set_ = false;
   SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetChildFrameSurface>(
-      browser_plugin_instance_id(), surface_id, frame_size, scale_factor,
-      sequence));
+      browser_plugin_instance_id(), surface_info, sequence));
 }
 
 void BrowserPluginGuest::OnSatisfySequence(

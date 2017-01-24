@@ -89,13 +89,10 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 }
 
 void CrossProcessFrameConnector::SetChildFrameSurface(
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float scale_factor,
+    const cc::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_SetChildFrameSurface(
-      frame_proxy_in_parent_renderer_->GetRoutingID(), surface_id, frame_size,
-      scale_factor, sequence));
+      frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info, sequence));
 }
 
 void CrossProcessFrameConnector::OnSatisfySequence(

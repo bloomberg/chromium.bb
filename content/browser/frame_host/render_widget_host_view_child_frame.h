@@ -19,6 +19,8 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_info.h"
+#include "cc/surfaces/surface_sequence.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -204,6 +206,14 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   void Init();
 
+  virtual bool ShouldCreateNewSurfaceId(uint32_t compositor_frame_sink_id,
+                                        const cc::CompositorFrame& frame);
+
+  void ProcessCompositorFrame(uint32_t compositor_frame_sink_id,
+                              cc::CompositorFrame frame);
+
+  void SendSurfaceInfoToEmbedder();
+
   // Clears current compositor surface, if one is in use.
   void ClearCompositorSurfaceIfNecessary();
 
@@ -240,6 +250,10 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   }
 
  private:
+  virtual void SendSurfaceInfoToEmbedderImpl(
+      const cc::SurfaceInfo& surface_info,
+      const cc::SurfaceSequence& sequence);
+
   void SubmitSurfaceCopyRequest(const gfx::Rect& src_subrect,
                                 const gfx::Size& dst_size,
                                 const ReadbackRequestCallback& callback,

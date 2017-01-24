@@ -326,9 +326,7 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
 }
 
 void RenderFrameProxy::OnSetChildFrameSurface(
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float scale_factor,
+    const cc::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   // If this WebFrame has already been detached, its parent will be null. This
   // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
@@ -341,8 +339,7 @@ void RenderFrameProxy::OnSetChildFrameSurface(
     compositing_helper_ =
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
   }
-  compositing_helper_->OnSetSurface(
-      cc::SurfaceInfo(surface_id, scale_factor, frame_size), sequence);
+  compositing_helper_->OnSetSurface(surface_info, sequence);
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
