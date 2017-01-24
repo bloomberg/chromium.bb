@@ -89,12 +89,9 @@ Consider this simple application that implements the Service interface:
 
 **my_service.cc:**
 
-    #include "mojo/public/c/system/main.h"
-    #include "services/service_manager/public/cpp/application_runner.h"
-    #include "services/service_manager/public/cpp/connector.h"
-    #include "services/service_manager/public/cpp/connection.h"
-    #include "services/service_manager/public/cpp/identity.h"
+    #include "services/service_manager/public/c/main.h"
     #include "services/service_manager/public/cpp/service.h"
+    #include "services/service_manager/public/cpp/service_runner.h"
 
     class MyService : public service_manager::Service {
      public:
@@ -102,9 +99,9 @@ Consider this simple application that implements the Service interface:
       ~MyService() override {}
 
       // Overridden from service_manager::Service:
-      void OnStart(const service_manager::ServiceInfo& info) override {
+      void OnStart() override {
       }
-      bool OnConnect(const service_manager::SerivceInfo& remote_info,
+      bool OnConnect(const service_manager::ServiceInfo& remote_info,
                      service_manager::InterfaceRegistry* registry) override {
         return true;
       }
@@ -118,7 +115,7 @@ Consider this simple application that implements the Service interface:
 **manifest.json:**
 
     {
-      "name": "service:my_service",
+      "name": "my_service",
       "display_name": "My Service",
       "inteface_provider_spec": {
         "service_manager:connector": {}
@@ -127,7 +124,8 @@ Consider this simple application that implements the Service interface:
 
 **BUILD.gn:**
 
-    import("//mojo/public/mojo_application.gni")
+    import("//services/service_manager/public/cpp/service.gni")
+    import("//services/service_manager/public/service_manifest.gni")
 
     service("my_service") {
       sources = [ "my_service.cc" ]
