@@ -123,7 +123,6 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/media_utils.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -260,6 +259,23 @@ BrowserWindow* CreateBrowserWindow(Browser* browser) {
 bool IsFastTabUnloadEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFastUnload);
+}
+
+const extensions::Extension* GetExtensionForOrigin(
+    Profile* profile,
+    const GURL& security_origin) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!security_origin.SchemeIs(extensions::kExtensionScheme))
+    return nullptr;
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          security_origin.host());
+  DCHECK(extension);
+  return extension;
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace
@@ -1821,13 +1837,22 @@ void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  ::RequestMediaAccessPermission(web_contents, profile_, request, callback);
+  const extensions::Extension* extension =
+      GetExtensionForOrigin(profile_, request.security_origin);
+  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+      web_contents, request, callback, extension);
 }
 
 bool Browser::CheckMediaAccessPermission(content::WebContents* web_contents,
                                          const GURL& security_origin,
                                          content::MediaStreamType type) {
-  return ::CheckMediaAccessPermission(web_contents, security_origin, type);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  const extensions::Extension* extension =
+      GetExtensionForOrigin(profile, security_origin);
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(web_contents, security_origin, type,
+                                   extension);
 }
 
 std::string Browser::GetDefaultMediaDeviceID(content::WebContents* web_contents,

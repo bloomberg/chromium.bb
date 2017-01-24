@@ -113,8 +113,6 @@ split_static_library("ui") {
     "login/login_handler.h",
     "login/login_interstitial_delegate.cc",
     "login/login_interstitial_delegate.h",
-    "media_utils.cc",
-    "media_utils.h",
     "navigation_correction_tab_observer.cc",
     "navigation_correction_tab_observer.h",
     "passwords/account_avatar_fetcher.cc",
