@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/resources/ui_resource_manager.h"
+
 #include <algorithm>
 
-#include "cc/resources/ui_resource_manager.h"
+#include "cc/resources/scoped_ui_resource.h"
 
 namespace cc {
 
@@ -33,7 +35,7 @@ UIResourceId UIResourceManager::CreateUIResource(UIResourceClient* client) {
 }
 
 void UIResourceManager::DeleteUIResource(UIResourceId uid) {
-  UIResourceClientMap::iterator iter = ui_resource_client_map_.find(uid);
+  const auto iter = ui_resource_client_map_.find(uid);
   if (iter == ui_resource_client_map_.end())
     return;
 
@@ -43,10 +45,9 @@ void UIResourceManager::DeleteUIResource(UIResourceId uid) {
 }
 
 void UIResourceManager::RecreateUIResources() {
-  for (UIResourceClientMap::iterator iter = ui_resource_client_map_.begin();
-       iter != ui_resource_client_map_.end(); ++iter) {
-    UIResourceId uid = iter->first;
-    const UIResourceClientData& data = iter->second;
+  for (const auto& resource : ui_resource_client_map_) {
+    UIResourceId uid = resource.first;
+    const UIResourceClientData& data = resource.second;
     bool resource_lost = true;
     auto it = std::find_if(ui_resource_request_queue_.begin(),
                            ui_resource_request_queue_.end(),
@@ -62,7 +63,7 @@ void UIResourceManager::RecreateUIResources() {
 }
 
 gfx::Size UIResourceManager::GetUIResourceSize(UIResourceId uid) const {
-  UIResourceClientMap::const_iterator iter = ui_resource_client_map_.find(uid);
+  const auto iter = ui_resource_client_map_.find(uid);
   if (iter == ui_resource_client_map_.end())
     return gfx::Size();
 
@@ -74,6 +75,19 @@ std::vector<UIResourceRequest> UIResourceManager::TakeUIResourcesRequests() {
   UIResourceRequestQueue result;
   result.swap(ui_resource_request_queue_);
   return result;
+}
+
+UIResourceId UIResourceManager::GetOrCreateUIResource(const SkBitmap& bitmap) {
+  DCHECK(bitmap.pixelRef()->isImmutable());
+  const auto resource = owned_shared_resources_.find(bitmap.pixelRef());
+  if (resource != owned_shared_resources_.end())
+    return resource->second->id();
+
+  auto scoped_resource =
+      ScopedUIResource::Create(this, UIResourceBitmap(bitmap));
+  auto id = scoped_resource->id();
+  owned_shared_resources_[bitmap.pixelRef()] = std::move(scoped_resource);
+  return id;
 }
 
 }  // namespace cc

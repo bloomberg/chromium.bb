@@ -14,47 +14,6 @@
 
 namespace cc {
 
-
-namespace {
-
-class ScopedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
- public:
-  static std::unique_ptr<ScopedUIResourceHolder> Create(
-      UIResourceManager* ui_resource_manager,
-      const SkBitmap& skbitmap) {
-    return base::WrapUnique(
-        new ScopedUIResourceHolder(ui_resource_manager, skbitmap));
-  }
-  UIResourceId id() override { return resource_->id(); }
-
- private:
-  ScopedUIResourceHolder(UIResourceManager* ui_resource_manager,
-                         const SkBitmap& skbitmap) {
-    resource_ = ScopedUIResource::Create(ui_resource_manager,
-                                         UIResourceBitmap(skbitmap));
-  }
-
-  std::unique_ptr<ScopedUIResource> resource_;
-};
-
-class SharedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
- public:
-  static std::unique_ptr<SharedUIResourceHolder> Create(UIResourceId id) {
-    return base::WrapUnique(new SharedUIResourceHolder(id));
-  }
-
-  UIResourceId id() override { return id_; }
-
- private:
-  explicit SharedUIResourceHolder(UIResourceId id) : id_(id) {}
-
-  UIResourceId id_;
-};
-
-}  // anonymous namespace
-
-UIResourceLayer::UIResourceHolder::~UIResourceHolder() {}
-
 scoped_refptr<UIResourceLayer> UIResourceLayer::Create() {
   return make_scoped_refptr(new UIResourceLayer());
 }
@@ -110,47 +69,31 @@ void UIResourceLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
 
   // Recreate the resource held against the new LTH.
-  RecreateUIResourceHolder();
+  RecreateUIResourceIdFromBitmap();
 
   UpdateDrawsContent(HasDrawableContent());
 }
 
-void UIResourceLayer::RecreateUIResourceHolder() {
-  if (!bitmap_.empty())
-    SetBitmap(bitmap_);
-}
-
-void UIResourceLayer::SetBitmap(const SkBitmap& skbitmap) {
-  bitmap_ = skbitmap;
-  if (GetLayerTree() && !bitmap_.empty()) {
-    ui_resource_holder_ = ScopedUIResourceHolder::Create(
-        layer_tree_host()->GetUIResourceManager(), bitmap_);
-  } else {
-    ui_resource_holder_ = nullptr;
-  }
-  UpdateDrawsContent(HasDrawableContent());
-  SetNeedsCommit();
+void UIResourceLayer::SetBitmap(const SkBitmap& bitmap) {
+  bitmap_ = bitmap;
+  if (!GetLayerTree())
+    return;
+  SetUIResourceIdInternal(
+      layer_tree_host()->GetUIResourceManager()->GetOrCreateUIResource(bitmap));
 }
 
 void UIResourceLayer::SetUIResourceId(UIResourceId resource_id) {
-  if (ui_resource_holder_ && ui_resource_holder_->id() == resource_id)
+  // Even if the ID is not changing we should drop the bitmap. The ID is 0 when
+  // there's no layer tree. When setting an id (even if to 0), we should no
+  // longer keep the bitmap.
+  bitmap_.reset();
+  if (resource_id_ == resource_id)
     return;
-
-  if (!bitmap_.isNull())
-    bitmap_.reset();
-
-  if (resource_id)
-    ui_resource_holder_ = SharedUIResourceHolder::Create(resource_id);
-  else
-    ui_resource_holder_ = nullptr;
-
-  UpdateDrawsContent(HasDrawableContent());
-  SetNeedsCommit();
+  SetUIResourceIdInternal(resource_id);
 }
 
 bool UIResourceLayer::HasDrawableContent() const {
-  return ui_resource_holder_ && ui_resource_holder_->id() &&
-         Layer::HasDrawableContent();
+  return resource_id_ && Layer::HasDrawableContent();
 }
 
 void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {
@@ -158,19 +101,28 @@ void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {
   TRACE_EVENT0("cc", "UIResourceLayer::PushPropertiesTo");
   UIResourceLayerImpl* layer_impl = static_cast<UIResourceLayerImpl*>(layer);
 
-  if (!ui_resource_holder_) {
-    layer_impl->SetUIResourceId(0);
-  } else {
+  layer_impl->SetUIResourceId(resource_id_);
+  if (resource_id_) {
     DCHECK(GetLayerTree());
 
     gfx::Size image_size =
         layer_tree_host()->GetUIResourceManager()->GetUIResourceSize(
-            ui_resource_holder_->id());
-    layer_impl->SetUIResourceId(ui_resource_holder_->id());
+            resource_id_);
     layer_impl->SetImageBounds(image_size);
     layer_impl->SetUV(uv_top_left_, uv_bottom_right_);
     layer_impl->SetVertexOpacity(vertex_opacity_);
   }
+}
+
+void UIResourceLayer::RecreateUIResourceIdFromBitmap() {
+  if (!bitmap_.empty())
+    SetBitmap(bitmap_);
+}
+
+void UIResourceLayer::SetUIResourceIdInternal(UIResourceId resource_id) {
+  resource_id_ = resource_id;
+  UpdateDrawsContent(HasDrawableContent());
+  SetNeedsCommit();
 }
 
 }  // namespace cc

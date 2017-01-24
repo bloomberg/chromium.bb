@@ -25,11 +25,14 @@ class CC_EXPORT UIResourceLayer : public Layer {
 
   void SetLayerTreeHost(LayerTreeHost* host) override;
 
+  // Sets the resource. If they don't exist already, the shared UI resource and
+  // ID are generated and cached in a map in the associated UIResourceManager.
+  // Currently, this resource will never be released by the UIResourceManager.
   void SetBitmap(const SkBitmap& skbitmap);
 
-  // An alternative way of setting the resource to allow for sharing. If you use
-  // this method, you are responsible for updating the ID if the layer moves
-  // between compositors.
+  // An alternative way of setting the resource where an ID is used directly. If
+  // you use this method, you are responsible for updating the ID if the layer
+  // moves between compositors.
   void SetUIResourceId(UIResourceId resource_id);
 
   // Sets a UV transform to be used at draw time. Defaults to (0, 0) and (1, 1).
@@ -42,28 +45,27 @@ class CC_EXPORT UIResourceLayer : public Layer {
                         float top_right,
                         float bottom_right);
 
-  class UIResourceHolder {
-   public:
-    virtual UIResourceId id() = 0;
-    virtual ~UIResourceHolder();
-  };
-
  protected:
   UIResourceLayer();
   ~UIResourceLayer() override;
 
   bool HasDrawableContent() const override;
 
-  std::unique_ptr<UIResourceHolder> ui_resource_holder_;
+  UIResourceId resource_id() const { return resource_id_; }
+
+ private:
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void RecreateUIResourceIdFromBitmap();
+  void SetUIResourceIdInternal(UIResourceId resource_id);
+
+  // The resource ID will be zero when it's unset or when there's no associated
+  // LayerTreeHost.
+  UIResourceId resource_id_ = 0;
   SkBitmap bitmap_;
 
   gfx::PointF uv_top_left_;
   gfx::PointF uv_bottom_right_;
   float vertex_opacity_[4];
-
- private:
-  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
-  void RecreateUIResourceHolder();
 
   DISALLOW_COPY_AND_ASSIGN(UIResourceLayer);
 };

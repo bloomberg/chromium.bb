@@ -692,23 +692,21 @@ void Layer::SetShowSolidColorContent() {
 }
 
 void Layer::UpdateNinePatchLayerImage(const gfx::ImageSkia& image) {
-  DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
+  DCHECK_EQ(type_, LAYER_NINE_PATCH);
+  DCHECK(nine_patch_layer_.get());
+
   nine_patch_layer_image_ = image;
-  SkBitmap bitmap = nine_patch_layer_image_.GetRepresentation(
-      device_scale_factor_).sk_bitmap();
-  SkBitmap bitmap_copy;
-  if (bitmap.isImmutable()) {
-    bitmap_copy = bitmap;
-  } else {
-    // UIResourceBitmap requires an immutable copy of the input |bitmap|.
-    bitmap.copyTo(&bitmap_copy);
-    bitmap_copy.setImmutable();
-  }
-  nine_patch_layer_->SetBitmap(bitmap_copy);
+  // TODO(estade): we don't clean up old bitmaps in the UIResourceManager when
+  // the scale factor changes. Currently for the way NinePatchLayers are used,
+  // we don't need/want to, but we should address this in the future if it
+  // becomes an issue.
+  nine_patch_layer_->SetBitmap(
+      image.GetRepresentation(device_scale_factor_).sk_bitmap());
 }
 
 void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip) {
-  DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
+  DCHECK_EQ(type_, LAYER_NINE_PATCH);
+  DCHECK(nine_patch_layer_.get());
   nine_patch_layer_aperture_ = aperture_in_dip;
   gfx::Rect aperture_in_pixel = ConvertRectToPixel(this, aperture_in_dip);
   nine_patch_layer_->SetAperture(aperture_in_pixel);
@@ -721,7 +719,8 @@ void Layer::UpdateNinePatchLayerBorder(const gfx::Rect& border) {
 }
 
 void Layer::UpdateNinePatchOcclusion(const gfx::Rect& occlusion) {
-  DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
+  DCHECK_EQ(type_, LAYER_NINE_PATCH);
+  DCHECK(nine_patch_layer_.get());
   nine_patch_layer_->SetLayerOcclusion(occlusion);
 }
 
@@ -803,7 +802,8 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   RecomputeDrawsContentAndUVRect();
   RecomputePosition();
   if (nine_patch_layer_) {
-    UpdateNinePatchLayerImage(nine_patch_layer_image_);
+    if (!nine_patch_layer_image_.isNull())
+      UpdateNinePatchLayerImage(nine_patch_layer_image_);
     UpdateNinePatchLayerAperture(nine_patch_layer_aperture_);
   }
   SchedulePaint(gfx::Rect(bounds_.size()));

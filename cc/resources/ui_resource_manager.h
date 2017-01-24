@@ -10,11 +10,10 @@
 
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
-#include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_request.h"
 
 namespace cc {
-class UIResourceRequest;
+class ScopedUIResource;
 
 class CC_EXPORT UIResourceManager {
  public:
@@ -43,19 +42,29 @@ class CC_EXPORT UIResourceManager {
   // were evicted on the impl thread.
   void RecreateUIResources();
 
+  // Creates a resource given an SkBitmap. Multiple calls with bitmaps that
+  // share the same SkPixelRef will share a single resource ID.
+  UIResourceId GetOrCreateUIResource(const SkBitmap& bitmap);
+
  private:
   struct UIResourceClientData {
     UIResourceClient* client;
     gfx::Size size;
   };
 
-  using UIResourceClientMap =
-      std::unordered_map<UIResourceId, UIResourceClientData>;
-  UIResourceClientMap ui_resource_client_map_;
+  std::unordered_map<UIResourceId, UIResourceClientData>
+      ui_resource_client_map_;
   int next_ui_resource_id_;
 
   using UIResourceRequestQueue = std::vector<UIResourceRequest>;
   UIResourceRequestQueue ui_resource_request_queue_;
+
+  // A map from bitmaps to the ScopedUIResource we've created for them. The
+  // resources are never released over the duration of the lifetime of |this|.
+  // If you want to release a resource added here, add a function (or extend
+  // DeleteUIResource).
+  std::unordered_map<SkPixelRef*, std::unique_ptr<ScopedUIResource>>
+      owned_shared_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(UIResourceManager);
 };
