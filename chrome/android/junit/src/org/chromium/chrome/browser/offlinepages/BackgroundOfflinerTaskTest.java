@@ -22,6 +22,7 @@ import com.google.android.gms.gcm.Task;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -36,9 +37,9 @@ import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBackgroundServiceWaiter;
+import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.net.ConnectionType;
 
 /**
@@ -55,6 +56,9 @@ public class BackgroundOfflinerTaskTest {
     private static final int MINIMUM_BATTERY_LEVEL = 33;
     private static final String IS_LOW_END_DEVICE_SWITCH =
             "--" + BaseSwitches.ENABLE_LOW_END_DEVICE_MODE;
+
+    @Rule
+    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
     @Mock
     private OfflinePageUtils mOfflinePageUtils;
@@ -84,7 +88,6 @@ public class BackgroundOfflinerTaskTest {
 
         OfflinePageUtils.setInstanceForTesting(mOfflinePageUtils);
         mStubBackgroundSchedulerProcessor = new StubBackgroundSchedulerProcessor();
-        RecordHistogram.disableForTests();
         mContext =  RuntimeEnvironment.application;
         mGcmNetworkManager = (ShadowGcmNetworkManager) ShadowExtractor.extract(
                 GcmNetworkManager.getInstance(mContext));

@@ -108,10 +108,16 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
         mPrecacheLauncher.setController(mPrecacheController);
         mPrecacheController.setPrecacheLauncher(mPrecacheLauncher);
         PrecacheController.setTaskScheduler(mPrecacheTaskScheduler);
-        RecordHistogram.disableForTests();
+        RecordHistogram.setDisabledForTests(true);
         Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.putBoolean(PrecacheController.PREF_IS_PRECACHING_ENABLED, false);
         editor.apply();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        RecordHistogram.setDisabledForTests(false);
     }
 
     protected void verifyScheduledAndCanceledCounts(

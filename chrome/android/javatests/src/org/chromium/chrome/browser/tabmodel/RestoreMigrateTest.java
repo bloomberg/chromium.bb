@@ -266,10 +266,14 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         TabPersistentStore storeIn = buildTabPersistentStore(selectorIn, 0);
 
         int maxId = Math.max(getMaxId(selector0), getMaxId(selector1));
-        RecordHistogram.disableForTests();
-        storeIn.loadState(false /* ignoreIncognitoFiles */);
-        assertEquals("Invalid next id", maxId + 1,
-                TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID));
+        try {
+            RecordHistogram.setDisabledForTests(true);
+            storeIn.loadState(false /* ignoreIncognitoFiles */);
+            assertEquals("Invalid next id", maxId + 1,
+                    TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID));
+        } finally {
+            RecordHistogram.setDisabledForTests(false);
+        }
     }
 
     /**
@@ -295,9 +299,13 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         TabPersistentStore storeIn1 = buildTabPersistentStore(selectorIn1, 1);
 
-        RecordHistogram.disableForTests();
-        storeIn0.loadState(false /* ignoreIncognitoFiles */);
-        storeIn1.loadState(false /* ignoreIncognitoFiles */);
+        try {
+            RecordHistogram.setDisabledForTests(true);
+            storeIn0.loadState(false /* ignoreIncognitoFiles */);
+            storeIn1.loadState(false /* ignoreIncognitoFiles */);
+        } finally {
+            RecordHistogram.setDisabledForTests(false);
+        }
 
         assertEquals("Unexpected number of tabs to load", 6, storeIn0.getRestoredTabCount());
         assertEquals("Unexpected number of tabs to load", 3, storeIn1.getRestoredTabCount());

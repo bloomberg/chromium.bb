@@ -110,10 +110,16 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RecordHistogram.disableForTests();
+        RecordHistogram.setDisabledForTests(true);
         mDelegate.mQueryIntentOverride = null;
         ChromeWebApkHost.initForTesting(false);  // disabled by default
         loadNativeLibraryNoBrowserProcess();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        RecordHistogram.setDisabledForTests(false);
     }
 
     @SmallTest

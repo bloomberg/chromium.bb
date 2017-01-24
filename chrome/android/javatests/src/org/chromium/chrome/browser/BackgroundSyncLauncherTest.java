@@ -28,10 +28,16 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
         BackgroundSyncLauncher.setGCMEnabled(false);
-        RecordHistogram.disableForTests();
+        RecordHistogram.setDisabledForTests(true);
         mLauncher = BackgroundSyncLauncher.create(mContext);
         // Ensure that the initial task is given enough time to complete.
         waitForLaunchBrowserTask();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        RecordHistogram.setDisabledForTests(false);
     }
 
     private void deleteLauncherInstance() {

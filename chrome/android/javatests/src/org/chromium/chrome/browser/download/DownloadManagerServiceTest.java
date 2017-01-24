@@ -311,8 +311,14 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RecordHistogram.disableForTests();
+        RecordHistogram.setDisabledForTests(true);
         loadNativeLibraryAndInitBrowserProcess();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        RecordHistogram.setDisabledForTests(false);
     }
 
     private static Handler getTestHandler() {

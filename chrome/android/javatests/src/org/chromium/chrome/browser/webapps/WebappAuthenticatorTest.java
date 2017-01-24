@@ -15,10 +15,21 @@ import org.chromium.base.test.util.Feature;
  * Tests for {@link WebappAuthenticator}.
  */
 public class WebappAuthenticatorTest extends InstrumentationTestCase {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        RecordHistogram.setDisabledForTests(true);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        RecordHistogram.setDisabledForTests(false);
+    }
+
     @SmallTest
     @Feature({"Webapps"})
     public void testAuthentication() {
-        RecordHistogram.disableForTests();
         Context context = getInstrumentation().getTargetContext();
         String url = "http://www.example.org/hello.html";
         byte[] mac = WebappAuthenticator.getMacForUrl(context, url);

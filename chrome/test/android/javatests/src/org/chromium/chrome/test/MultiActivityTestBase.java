@@ -136,7 +136,7 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        RecordHistogram.disableForTests();
+        RecordHistogram.setDisabledForTests(true);
         mContext = getInstrumentation().getTargetContext();
         CommandLineFlags.setUp(mContext, getClass().getMethod(getName()));
         ApplicationTestUtils.setUp(mContext, true);
@@ -152,6 +152,7 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
         super.tearDown();
         mStorageDelegate.ensureDirectoryDestroyed();
         ApplicationTestUtils.tearDown(mContext);
+        RecordHistogram.setDisabledForTests(false);
     }
 
     /**

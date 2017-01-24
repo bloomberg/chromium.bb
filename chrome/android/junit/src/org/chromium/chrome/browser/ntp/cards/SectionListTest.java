@@ -14,6 +14,7 @@ import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -21,8 +22,8 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -40,6 +41,9 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SectionListTest {
+    @Rule
+    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
+
     @Mock
     private SuggestionsUiDelegate mUiDelegate;
     @Mock
@@ -52,7 +56,6 @@ public class SectionListTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mSuggestionSource = new FakeSuggestionsSource();
-        RecordHistogram.disableForTests();
 
         when(mUiDelegate.getSuggestionsSource()).thenReturn(mSuggestionSource);
         when(mUiDelegate.getMetricsReporter()).thenReturn(mMetricsReporter);

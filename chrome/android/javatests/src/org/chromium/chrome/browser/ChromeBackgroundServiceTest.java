@@ -96,10 +96,16 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
         BackgroundSyncLauncher.setGCMEnabled(false);
-        RecordHistogram.disableForTests();
+        RecordHistogram.setDisabledForTests(true);
         mSyncLauncher = BackgroundSyncLauncher.create(mContext);
         mSnippetsLauncher = SnippetsLauncher.create(mContext);
         mTaskService = new MockTaskService();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        RecordHistogram.setDisabledForTests(false);
     }
 
     private void deleteSyncLauncherInstance() {

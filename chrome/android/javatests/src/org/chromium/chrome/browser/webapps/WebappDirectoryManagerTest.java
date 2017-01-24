@@ -75,7 +75,7 @@ public class WebappDirectoryManagerTest extends InstrumentationTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        RecordHistogram.disableForTests();
+        RecordHistogram.setDisabledForTests(true);
         mMockContext = new WebappMockContext();
         mWebappDirectoryManager = new TestWebappDirectoryManager();
 
@@ -88,6 +88,7 @@ public class WebappDirectoryManagerTest extends InstrumentationTestCase {
     @Override
     public void tearDown() throws Exception {
         FileUtils.recursivelyDeleteFile(new File(mMockContext.getBaseDirectory()));
+        RecordHistogram.setDisabledForTests(false);
         super.tearDown();
     }
 
