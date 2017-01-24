@@ -26,6 +26,10 @@ bool NGLogicalSize::operator==(const NGLogicalSize& other) const {
          std::tie(inline_size, block_size);
 }
 
+bool NGPhysicalSize::operator==(const NGPhysicalSize& other) const {
+  return std::tie(other.width, other.height) == std::tie(width, height);
+}
+
 NGLogicalSize NGPhysicalSize::ConvertToLogical(NGWritingMode mode) const {
   return mode == kHorizontalTopBottom ? NGLogicalSize(width, height)
                                       : NGLogicalSize(height, width);
@@ -133,6 +137,16 @@ bool NGLogicalOffset::operator<=(const NGLogicalOffset& other) const {
          block_offset <= other.block_offset;
 }
 
+NGLogicalOffset NGLogicalOffset::operator-(const NGLogicalOffset& other) const {
+  return NGLogicalOffset{this->inline_offset - other.inline_offset,
+                         this->block_offset - other.block_offset};
+}
+
+NGLogicalOffset& NGLogicalOffset::operator-=(const NGLogicalOffset& other) {
+  *this = *this - other;
+  return *this;
+}
+
 String NGLogicalOffset::ToString() const {
   return String::format("%dx%d", inline_offset.toInt(), block_offset.toInt());
 }
@@ -192,11 +206,11 @@ NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(NGWritingMode writing_mode,
   return strut;
 }
 
-LayoutUnit NGMarginStrut::BlockEndSum() const {
+LayoutUnit NGDeprecatedMarginStrut::BlockEndSum() const {
   return margin_block_end + negative_margin_block_end;
 }
 
-void NGMarginStrut::AppendMarginBlockStart(const LayoutUnit& value) {
+void NGDeprecatedMarginStrut::AppendMarginBlockStart(const LayoutUnit& value) {
   if (value < 0) {
     negative_margin_block_start =
         -std::max(value.abs(), negative_margin_block_start.abs());
@@ -205,7 +219,7 @@ void NGMarginStrut::AppendMarginBlockStart(const LayoutUnit& value) {
   }
 }
 
-void NGMarginStrut::AppendMarginBlockEnd(const LayoutUnit& value) {
+void NGDeprecatedMarginStrut::AppendMarginBlockEnd(const LayoutUnit& value) {
   if (value < 0) {
     negative_margin_block_end =
         -std::max(value.abs(), negative_margin_block_end.abs());
@@ -214,7 +228,7 @@ void NGMarginStrut::AppendMarginBlockEnd(const LayoutUnit& value) {
   }
 }
 
-void NGMarginStrut::SetMarginBlockStart(const LayoutUnit& value) {
+void NGDeprecatedMarginStrut::SetMarginBlockStart(const LayoutUnit& value) {
   if (value < 0) {
     negative_margin_block_start = value;
   } else {
@@ -222,7 +236,7 @@ void NGMarginStrut::SetMarginBlockStart(const LayoutUnit& value) {
   }
 }
 
-void NGMarginStrut::SetMarginBlockEnd(const LayoutUnit& value) {
+void NGDeprecatedMarginStrut::SetMarginBlockEnd(const LayoutUnit& value) {
   if (value < 0) {
     negative_margin_block_end = value;
   } else {
@@ -230,23 +244,54 @@ void NGMarginStrut::SetMarginBlockEnd(const LayoutUnit& value) {
   }
 }
 
-String NGMarginStrut::ToString() const {
+String NGDeprecatedMarginStrut::ToString() const {
   return String::format("Start: (%d %d) End: (%d %d)",
                         margin_block_start.toInt(), margin_block_end.toInt(),
                         negative_margin_block_start.toInt(),
                         negative_margin_block_end.toInt());
 }
 
-bool NGMarginStrut::IsEmpty() const {
-  return *this == NGMarginStrut();
+bool NGDeprecatedMarginStrut::IsEmpty() const {
+  return *this == NGDeprecatedMarginStrut();
 }
 
-bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
+bool NGDeprecatedMarginStrut::operator==(
+    const NGDeprecatedMarginStrut& other) const {
   return std::tie(other.margin_block_start, other.margin_block_end,
                   other.negative_margin_block_start,
                   other.negative_margin_block_end) ==
          std::tie(margin_block_start, margin_block_end,
                   negative_margin_block_start, negative_margin_block_end);
+}
+
+void NGMarginStrut::Append(const LayoutUnit& value) {
+  if (value < 0) {
+    negative_margin = std::min(value, negative_margin);
+  } else {
+    margin = std::max(value, margin);
+  }
+}
+
+LayoutUnit NGMarginStrut::Collapse() const {
+  return margin + negative_margin;
+}
+
+String NGMarginStrut::ToString() const {
+  return String::format("%d %d", margin.toInt(), negative_margin.toInt());
+}
+
+bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
+  return std::tie(other.margin, other.negative_margin) ==
+         std::tie(margin, negative_margin);
+}
+
+bool NGExclusion::operator==(const NGExclusion& other) const {
+  return std::tie(other.rect, other.type) == std::tie(rect, type);
+}
+
+String NGExclusion::ToString() const {
+  return String::format("Rect: %s Type: %d", rect.ToString().ascii().data(),
+                        type);
 }
 
 NGExclusions::NGExclusions()

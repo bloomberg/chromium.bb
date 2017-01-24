@@ -134,14 +134,14 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockStart(
-    const NGMarginStrut& from) {
+    const NGDeprecatedMarginStrut& from) {
   margin_strut_.margin_block_start = from.margin_block_start;
   margin_strut_.negative_margin_block_start = from.negative_margin_block_start;
   return *this;
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockEnd(
-    const NGMarginStrut& from) {
+    const NGDeprecatedMarginStrut& from) {
   margin_strut_.margin_block_end = from.margin_block_end;
   margin_strut_.negative_margin_block_end = from.negative_margin_block_end;
   return *this;

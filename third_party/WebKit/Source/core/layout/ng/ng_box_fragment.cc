@@ -9,7 +9,7 @@
 
 namespace blink {
 
-NGMarginStrut NGBoxFragment::MarginStrut() const {
+NGDeprecatedMarginStrut NGBoxFragment::MarginStrut() const {
   WRITING_MODE_IGNORED(
       "Accessing the margin strut is fine here. Changing the writing mode"
       "establishes a new formatting context, for which a margin strut is never"

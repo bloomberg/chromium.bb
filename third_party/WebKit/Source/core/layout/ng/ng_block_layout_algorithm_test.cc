@@ -209,7 +209,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
   ASSERT_EQ(frag->Children().size(), 1UL);
   const NGPhysicalBoxFragment* div2_fragment =
       static_cast<const NGPhysicalBoxFragment*>(frag->Children()[0].get());
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2MarginTop)}),
+  EXPECT_EQ(NGDeprecatedMarginStrut({LayoutUnit(kDiv2MarginTop)}),
             div2_fragment->MarginStrut());
   EXPECT_EQ(kDiv1MarginTop, div2_fragment->TopOffset());
 }
@@ -329,14 +329,16 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   // Verify that margins are collapsed.
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv2MarginBottom)}),
-            frag->MarginStrut());
+  EXPECT_EQ(
+      NGDeprecatedMarginStrut({LayoutUnit(0), LayoutUnit(kDiv2MarginBottom)}),
+      frag->MarginStrut());
 
   // Verify that margins are NOT collapsed.
   div1_style->setHeight(Length(kHeight, Fixed));
   frag = RunBlockLayoutAlgorithm(space, div1);
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv1MarginBottom)}),
-            frag->MarginStrut());
+  EXPECT_EQ(
+      NGDeprecatedMarginStrut({LayoutUnit(0), LayoutUnit(kDiv1MarginBottom)}),
+      frag->MarginStrut());
 }
 
 // Verifies that 2 adjoining margins are not collapsed if there is padding or
@@ -379,11 +381,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
 
   // Verify that margins do NOT collapse.
   frag = RunBlockLayoutAlgorithm(space, div1);
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv1Margin), LayoutUnit(kDiv1Margin)}),
+  EXPECT_EQ(NGDeprecatedMarginStrut(
+                {LayoutUnit(kDiv1Margin), LayoutUnit(kDiv1Margin)}),
             frag->MarginStrut());
   ASSERT_EQ(frag->Children().size(), 1UL);
 
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}),
+  EXPECT_EQ(NGDeprecatedMarginStrut(
+                {LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}),
             static_cast<const NGPhysicalBoxFragment*>(frag->Children()[0].get())
                 ->MarginStrut());
 
@@ -391,7 +395,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   div1_style->setPaddingTop(Length(0, Fixed));
   div1_style->setPaddingBottom(Length(0, Fixed));
   frag = RunBlockLayoutAlgorithm(space, div1);
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}),
+  EXPECT_EQ(NGDeprecatedMarginStrut(
+                {LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}),
             frag->MarginStrut());
 }
 

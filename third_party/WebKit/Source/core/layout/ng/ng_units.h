@@ -44,6 +44,13 @@ struct NGLogicalSize {
   bool IsEmpty() const {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();
   }
+
+ private:
+  friend class NGBlockLayoutAlgorithmTest;
+  // Used in tests.
+  NGLogicalSize(int inline_size, int block_size)
+      : inline_size(LayoutUnit(inline_size)),
+        block_size(LayoutUnit(block_size)) {}
 };
 
 inline std::ostream& operator<<(std::ostream& stream,
@@ -77,8 +84,10 @@ struct NGLogicalOffset {
   bool operator==(const NGLogicalOffset& other) const;
 
   NGLogicalOffset operator+(const NGLogicalOffset& other) const;
-
   NGLogicalOffset& operator+=(const NGLogicalOffset& other);
+
+  NGLogicalOffset operator-(const NGLogicalOffset& other) const;
+  NGLogicalOffset& operator-=(const NGLogicalOffset& other);
 
   bool operator>(const NGLogicalOffset& other) const;
   bool operator>=(const NGLogicalOffset& other) const;
@@ -87,6 +96,13 @@ struct NGLogicalOffset {
   bool operator<=(const NGLogicalOffset& other) const;
 
   String ToString() const;
+
+ private:
+  friend class NGBlockLayoutAlgorithmTest;
+  // Used in tests.
+  NGLogicalOffset(int inline_offset, int block_offset)
+      : inline_offset(LayoutUnit(inline_offset)),
+        block_offset(LayoutUnit(block_offset)) {}
 };
 
 CORE_EXPORT inline std::ostream& operator<<(std::ostream& os,
@@ -105,8 +121,13 @@ struct NGPhysicalOffset {
 
   NGPhysicalOffset operator+(const NGPhysicalOffset& other) const;
   NGPhysicalOffset& operator+=(const NGPhysicalOffset& other);
+
   NGPhysicalOffset operator-(const NGPhysicalOffset& other) const;
   NGPhysicalOffset& operator-=(const NGPhysicalOffset& other);
+
+  String ToString() const {
+    return String::format("%dx%d", left.toInt(), top.toInt());
+  }
 };
 
 struct NGPhysicalSize {
@@ -119,10 +140,17 @@ struct NGPhysicalSize {
 
   NGLogicalSize ConvertToLogical(NGWritingMode mode) const;
 
+  bool operator==(const NGPhysicalSize& other) const;
+
   String ToString() const {
     return String::format("%dx%d", width.toInt(), height.toInt());
   }
 };
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const NGPhysicalSize& value) {
+  return stream << value.ToString();
+}
 
 // NGPhysicalLocation is the position of a rect (typically a fragment) relative
 // to the root document.
@@ -139,6 +167,8 @@ struct NGPhysicalRect {
 // TODO(glebl): move to a separate file in layout/ng/units.
 struct CORE_EXPORT NGLogicalRect {
   NGLogicalRect() {}
+  NGLogicalRect(const NGLogicalOffset& offset, const NGLogicalSize& size)
+      : offset(offset), size(size) {}
   NGLogicalRect(LayoutUnit inline_offset,
                 LayoutUnit block_offset,
                 LayoutUnit inline_size,
@@ -197,7 +227,15 @@ struct CORE_EXPORT NGExclusion {
 
   // Type of this exclusion.
   Type type;
+
+  bool operator==(const NGExclusion& other) const;
+  String ToString() const;
 };
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const NGExclusion& value) {
+  return stream << value.ToString();
+}
 
 struct CORE_EXPORT NGExclusions {
   // Default constructor.
@@ -268,7 +306,7 @@ struct CORE_EXPORT NGBoxStrut {
   bool operator==(const NGBoxStrut& other) const;
 
   String ToString() const {
-    return String::format("Inline (%d, %d) Block (%d, %d)",
+    return String::format("Inline: (%d %d) Block: (%d %d)",
                           inline_start.toInt(), inline_end.toInt(),
                           block_start.toInt(), block_end.toInt());
   }
@@ -279,7 +317,8 @@ inline std::ostream& operator<<(std::ostream& stream, const NGBoxStrut& value) {
 }
 
 // This struct is used for the margin collapsing calculation.
-struct CORE_EXPORT NGMarginStrut {
+// TODO(glebl): Deprecated. It's being replaced by NGMarginStrut
+struct CORE_EXPORT NGDeprecatedMarginStrut {
   LayoutUnit margin_block_start;
   LayoutUnit margin_block_end;
 
@@ -297,7 +336,21 @@ struct CORE_EXPORT NGMarginStrut {
 
   String ToString() const;
 
+  bool operator==(const NGDeprecatedMarginStrut& other) const;
+};
+
+// This struct is used for the margin collapsing calculation.
+struct CORE_EXPORT NGMarginStrut {
+  LayoutUnit margin;
+  LayoutUnit negative_margin;
+
   bool operator==(const NGMarginStrut& other) const;
+
+  void Append(const LayoutUnit& value);
+
+  LayoutUnit Collapse() const;
+
+  String ToString() const;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

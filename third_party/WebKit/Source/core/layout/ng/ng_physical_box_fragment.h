@@ -24,7 +24,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       HeapVector<Member<const NGPhysicalFragment>>& children,
       HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
       Vector<NGStaticPosition>& out_of_flow_positions,
-      NGMarginStrut margin_strut,
+      NGDeprecatedMarginStrut margin_strut,
       HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
       HeapVector<Member<NGFloatingObject>>& positioned_floats,
       NGBreakToken* break_token = nullptr);
@@ -33,13 +33,13 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return children_;
   }
 
-  NGMarginStrut MarginStrut() const { return margin_strut_; }
+  NGDeprecatedMarginStrut MarginStrut() const { return margin_strut_; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   HeapVector<Member<const NGPhysicalFragment>> children_;
-  NGMarginStrut margin_strut_;
+  NGDeprecatedMarginStrut margin_strut_;
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(NGPhysicalBoxFragment);

@@ -93,8 +93,10 @@ class CORE_EXPORT NGFragmentBuilder final
   bool HasBreakToken() const { return break_token_; }
 
   // Sets MarginStrut for the resultant fragment.
-  NGFragmentBuilder& SetMarginStrutBlockStart(const NGMarginStrut& from);
-  NGFragmentBuilder& SetMarginStrutBlockEnd(const NGMarginStrut& from);
+  NGFragmentBuilder& SetMarginStrutBlockStart(
+      const NGDeprecatedMarginStrut& from);
+  NGFragmentBuilder& SetMarginStrutBlockEnd(
+      const NGDeprecatedMarginStrut& from);
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
@@ -138,7 +140,7 @@ class CORE_EXPORT NGFragmentBuilder final
   NGLogicalSize size_;
   NGLogicalSize overflow_;
 
-  NGMarginStrut margin_strut_;
+  NGDeprecatedMarginStrut margin_strut_;
 
   HeapVector<Member<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;

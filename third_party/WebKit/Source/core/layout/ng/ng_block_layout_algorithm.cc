@@ -60,8 +60,8 @@ void AdjustToClearance(const NGConstraintSpace& space,
 }
 
 LayoutUnit ComputeCollapsedMarginBlockStart(
-    const NGMarginStrut& prev_margin_strut,
-    const NGMarginStrut& curr_margin_strut) {
+    const NGDeprecatedMarginStrut& prev_margin_strut,
+    const NGDeprecatedMarginStrut& curr_margin_strut) {
   return std::max(prev_margin_strut.margin_block_end,
                   curr_margin_strut.margin_block_start) -
          std::max(prev_margin_strut.negative_margin_block_end.abs(),
@@ -518,7 +518,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
                             fragment.MarginStrut().IsEmpty();
   // Create the current child's margin strut from its children's margin strut or
   // use margin strut from the the last non-empty child.
-  NGMarginStrut curr_margin_strut =
+  NGDeprecatedMarginStrut curr_margin_strut =
       is_zero_height_box ? prev_child_margin_strut_ : fragment.MarginStrut();
 
   // Calculate borders and padding for the current child.
@@ -629,7 +629,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
                                               margins);
 }
 
-void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
+void NGBlockLayoutAlgorithm::UpdateMarginStrut(
+    const NGDeprecatedMarginStrut& from) {
   if (!is_fragment_margin_strut_block_start_updated_) {
     builder_->SetMarginStrutBlockStart(from);
     is_fragment_margin_strut_block_start_updated_ = true;

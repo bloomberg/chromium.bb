@@ -20,7 +20,7 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
                 NGPhysicalBoxFragment* physical_fragment)
       : NGFragment(writing_mode, direction, physical_fragment) {}
 
-  NGMarginStrut MarginStrut() const;
+  NGDeprecatedMarginStrut MarginStrut() const;
 };
 
 DEFINE_TYPE_CASTS(NGBoxFragment,

@@ -129,7 +129,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // This method is supposed to be called on every child but it only updates
   // the block-start once (on the first non-zero height child fragment) and
   // keeps updating block-end (on every non-zero height child).
-  void UpdateMarginStrut(const NGMarginStrut& from);
+  void UpdateMarginStrut(const NGDeprecatedMarginStrut& from);
 
   NGLogicalOffset GetChildSpaceOffset() const {
     return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
@@ -173,7 +173,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
   // MarginStrut for the previous child.
-  NGMarginStrut prev_child_margin_strut_;
+  NGDeprecatedMarginStrut prev_child_margin_strut_;
   // Whether the block-start was set for the currently built
   // fragment's margin strut.
   bool is_fragment_margin_strut_block_start_updated_ : 1;

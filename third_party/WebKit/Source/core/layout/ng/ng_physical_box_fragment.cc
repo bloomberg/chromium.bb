@@ -12,7 +12,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     HeapVector<Member<const NGPhysicalFragment>>& children,
     HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
     Vector<NGStaticPosition>& out_of_flow_positions,
-    NGMarginStrut margin_strut,
+    NGDeprecatedMarginStrut margin_strut,
     HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
     HeapVector<Member<NGFloatingObject>>& positioned_floats,
     NGBreakToken* break_token)
