@@ -607,6 +607,10 @@ void ProfileImplIOData::
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
   extensions_cookie_store_ = content::CreateCookieStore(cookie_config);
   extensions_context->set_cookie_store(extensions_cookie_store_.get());
+  if (extensions_context->channel_id_service()) {
+    extensions_cookie_store_->SetChannelIDServiceID(
+        extensions_context->channel_id_service()->GetUniqueID());
+  }
 
   std::unique_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
       new net::URLRequestJobFactoryImpl());

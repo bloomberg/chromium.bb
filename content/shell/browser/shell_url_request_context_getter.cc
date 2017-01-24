@@ -131,6 +131,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_channel_id_service(base::WrapUnique(
         new net::ChannelIDService(new net::DefaultChannelIDStore(NULL),
                                   base::WorkerPool::GetTaskRunner(true))));
+    url_request_context_->cookie_store()->SetChannelIDServiceID(
+        url_request_context_->channel_id_service()->GetUniqueID());
     storage_->set_http_user_agent_settings(
         base::MakeUnique<net::StaticHttpUserAgentSettings>(
             "en-us,en", GetShellUserAgent()));

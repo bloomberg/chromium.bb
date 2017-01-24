@@ -240,6 +240,9 @@ void OffTheRecordProfileIOData::InitializeInternal(
       base::FilePath(), CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, NULL,
       profile_params->cookie_monster_delegate.get())));
 
+  main_context->cookie_store()->SetChannelIDServiceID(
+      main_context->channel_id_service()->GetUniqueID());
+
   main_context_storage->set_http_network_session(
       CreateHttpNetworkSession(*profile_params));
   main_context_storage->set_http_transaction_factory(
