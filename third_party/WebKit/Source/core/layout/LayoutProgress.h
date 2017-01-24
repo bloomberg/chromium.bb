@@ -62,7 +62,7 @@ class CORE_EXPORT LayoutProgress final : public LayoutBlockFlow {
   double m_animationRepeatInterval;
   double m_animationDuration;
   bool m_animating;
-  Timer<LayoutProgress> m_animationTimer;
+  TaskRunnerTimer<LayoutProgress> m_animationTimer;
 
   friend class LayoutProgressTest;
 };

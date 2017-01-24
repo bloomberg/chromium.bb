@@ -20,6 +20,7 @@
 
 #include "core/layout/LayoutProgress.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLProgressElement.h"
 #include "core/layout/LayoutTheme.h"
 #include "wtf/CurrentTime.h"
@@ -34,7 +35,10 @@ LayoutProgress::LayoutProgress(HTMLProgressElement* element)
       m_animationRepeatInterval(0),
       m_animationDuration(0),
       m_animating(false),
-      m_animationTimer(this, &LayoutProgress::animationTimerFired) {}
+      m_animationTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &element->document()),
+          this,
+          &LayoutProgress::animationTimerFired) {}
 
 LayoutProgress::~LayoutProgress() {}
 
