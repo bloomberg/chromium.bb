@@ -118,6 +118,10 @@ math \xf32d 34
 math \xf404 456-1456
 math \xf405 456-3456
 math \xf406 34
+# Complex Fractions
+math \xf407 6-1456
+math \xf408 6-3456
+math \xf409 6-34
 # Roots
 math \xf32a 345
 always \xf403\xf32a 345
