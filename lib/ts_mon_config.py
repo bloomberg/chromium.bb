@@ -156,6 +156,18 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
       logging.info("Finished waiting for ts_mon process.")
 
 
+def _WaitToFlush(last_flush, reset_after=()):
+  """Sleeps until the next time we can call metrics.Flush(), then flushes.
+
+  Args:
+    last_flush: timestamp of the last flush
+    reset_after: A list of metrics to reset after the flush.
+  """
+  time_delta = time.time() - last_flush
+  time.sleep(max(0, FLUSH_INTERVAL - time_delta))
+  metrics.Flush(reset_after=reset_after)
+
+
 def _FlushIfReady(pending, last_flush, reset_after=()):
   """Call metrics.Flush() if we are ready and have pending metrics.
 
@@ -210,7 +222,8 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
   reset_after = []
   if parallel.ExitWithParent(signal.SIGHUP):
     signal.signal(signal.SIGHUP,
-                  lambda _sig, _stack: metrics.Flush(reset_after=reset_after))
+                  lambda _sig, _stack: _WaitToFlush(last_flush,
+                                                    reset_after=reset_after))
 
   # Configure ts-mon, but don't start up a sending thread.
   setup_kwargs['auto_flush'] = False
@@ -249,4 +262,4 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
       message = message_q.get()
 
   if pending:
-    metrics.Flush(reset_after=reset_after)
+    _WaitToFlush(last_flush, reset_after=reset_after)
