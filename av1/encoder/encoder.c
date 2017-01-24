@@ -4130,9 +4130,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
         cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
       }
     }
-#endif  // CONFIG_ENTROPY
 
-#if CONFIG_ENTROPY
     cm->do_subframe_update = cm->tile_cols == 1 && cm->tile_rows == 1;
     if (loop_count == 0 || frame_is_intra_only(cm) ||
         cm->error_resilient_mode) {

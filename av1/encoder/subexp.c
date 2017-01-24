@@ -190,8 +190,7 @@ static int get_cost(unsigned int ct[][2], aom_prob p, int n) {
     total_ct[0] += ct[i][0];
     total_ct[1] += ct[i][1];
     if (i < n)
-      p = av1_merge_probs(p0, total_ct, COEF_COUNT_SAT_BITS,
-                          COEF_MAX_UPDATE_FACTOR_BITS);
+      p = av1_merge_probs(p0, total_ct, COEF_COUNT_SAT, COEF_MAX_UPDATE_FACTOR);
   }
   return cost;
 }

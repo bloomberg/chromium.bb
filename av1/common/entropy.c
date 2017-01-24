@@ -4012,18 +4012,6 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
   TX_TYPE tx_type;
 #endif
 
-#if CONFIG_ENTROPY
-  if (!frame_is_intra_only(cm) && cm->last_frame_type == KEY_FRAME) {
-    update_factor = COEF_MAX_UPDATE_FACTOR_AFTER_KEY_BITS; /* adapt quickly */
-    count_sat = COEF_COUNT_SAT_AFTER_KEY_BITS;
-  } else {
-    update_factor = COEF_MAX_UPDATE_FACTOR_BITS;
-    count_sat = COEF_COUNT_SAT_BITS;
-  }
-  if (cm->partial_prob_update == 1) {
-    update_factor = COEF_MAX_UPDATE_FACTOR_BITS;
-  }
-#else
   if (!frame_is_intra_only(cm) && cm->last_frame_type == KEY_FRAME) {
     update_factor = COEF_MAX_UPDATE_FACTOR_AFTER_KEY; /* adapt quickly */
     count_sat = COEF_COUNT_SAT_AFTER_KEY;
@@ -4031,13 +4019,16 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
     update_factor = COEF_MAX_UPDATE_FACTOR;
     count_sat = COEF_COUNT_SAT;
   }
+#if CONFIG_ENTROPY
+  if (cm->partial_prob_update == 1) update_factor = COEF_MAX_UPDATE_FACTOR;
 #endif  // CONFIG_ENTROPY
+
   for (tx_size = 0; tx_size < TX_SIZES; tx_size++)
     adapt_coef_probs(cm, tx_size, count_sat, update_factor);
 
 #if CONFIG_ENTROPY
   if (cm->partial_prob_update == 0)
-#endif
+#endif  // CONFIG_ENTROPY
   {
 #if CONFIG_ADAPT_SCAN
     for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
@@ -4045,13 +4036,13 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
       if (tx_size >= TX_SIZES) continue;
 #else
       if (tx_size > TX_32X16) continue;
-#endif
+#endif  // !(CONFIG_VAR_TX || CONFIG_RECT_TX)
       for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
         av1_update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
         av1_update_scan_order_facade(cm, tx_size, tx_type);
       }
     }
-#endif
+#endif  // CONFIG_ADAPT_SCAN
   }
 }
 

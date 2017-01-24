@@ -318,22 +318,10 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
   return combine_entropy_contexts(above_ec, left_ec);
 }
 
-#if CONFIG_ENTROPY
-#define COEF_COUNT_SAT_BITS 5
-#define COEF_MAX_UPDATE_FACTOR_BITS 7
-#define COEF_COUNT_SAT_AFTER_KEY_BITS 5
-#define COEF_MAX_UPDATE_FACTOR_AFTER_KEY_BITS 7
-#define MODE_MV_COUNT_SAT_BITS 5
-#define MODE_MV_MAX_UPDATE_FACTOR_BITS 7
-
-#else
-
 #define COEF_COUNT_SAT 24
 #define COEF_MAX_UPDATE_FACTOR 112
 #define COEF_COUNT_SAT_AFTER_KEY 24
 #define COEF_MAX_UPDATE_FACTOR_AFTER_KEY 128
-
-#endif  // CONFIG_ENTROPY
 
 #if CONFIG_ADAPT_SCAN
 #define ADAPT_SCAN_UPDATE_RATE_16 (1 << 13)
@@ -343,25 +331,12 @@ static INLINE aom_prob av1_merge_probs(aom_prob pre_prob,
                                        const unsigned int ct[2],
                                        unsigned int count_sat,
                                        unsigned int max_update_factor) {
-#if CONFIG_ENTROPY
-  const aom_prob prob = get_binary_prob(ct[0], ct[1]);
-  const unsigned int count =
-      AOMMIN(ct[0] + ct[1], (unsigned int)(1 << count_sat));
-  const unsigned int factor = count << (max_update_factor - count_sat);
-  return weighted_prob(pre_prob, prob, factor);
-#else
   return merge_probs(pre_prob, ct, count_sat, max_update_factor);
-#endif  // CONFIG_ENTROPY
 }
 
 static INLINE aom_prob av1_mode_mv_merge_probs(aom_prob pre_prob,
                                                const unsigned int ct[2]) {
-#if CONFIG_ENTROPY
-  return av1_merge_probs(pre_prob, ct, MODE_MV_COUNT_SAT_BITS,
-                         MODE_MV_MAX_UPDATE_FACTOR_BITS);
-#else
   return mode_mv_merge_probs(pre_prob, ct);
-#endif  // CONFIG_ENTROPY
 }
 
 #ifdef __cplusplus

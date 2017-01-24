@@ -3500,10 +3500,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_ENTROPY
         if (cm->do_subframe_update &&
             cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-          if ((mi_row + MI_SIZE) %
-                      (MI_SIZE *
-                       AOMMAX(cm->mi_rows / MI_SIZE / COEF_PROBS_BUFS, 1)) ==
-                  0 &&
+          const int mi_rows_per_update =
+              MI_SIZE * AOMMAX(cm->mi_rows / MI_SIZE / COEF_PROBS_BUFS, 1);
+          if ((mi_row + MI_SIZE) % mi_rows_per_update == 0 &&
               mi_row + MI_SIZE < cm->mi_rows &&
               cm->coef_probs_update_idx < COEF_PROBS_BUFS - 1) {
             av1_partial_adapt_probs(cm, mi_row, mi_col);
