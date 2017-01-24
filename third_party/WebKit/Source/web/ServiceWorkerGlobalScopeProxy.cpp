@@ -37,7 +37,6 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MessagePort.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -62,7 +61,6 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/network/ResourceError.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -70,7 +68,6 @@
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "web/WebEmbeddedWorkerImpl.h"
 #include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -200,22 +197,10 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
   waitUntilObserver->didDispatchEvent(false /* errorOccurred */);
 }
 
-void ServiceWorkerGlobalScopeProxy::onNavigationPreloadSent(int fetchEventID,
-                                                            const WebURL& url) {
-  FetchInitiatorInfo info;
-  ResourceRequest request(url);
-  InspectorInstrumentation::willSendRequest(workerGlobalScope(), fetchEventID,
-                                            nullptr, request,
-                                            ResourceResponse(), info);
-}
-
 void ServiceWorkerGlobalScopeProxy::onNavigationPreloadResponse(
     int fetchEventID,
     std::unique_ptr<WebURLResponse> response,
     std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
-  InspectorInstrumentation::didReceiveResourceResponse(
-      workerGlobalScope(), fetchEventID, nullptr,
-      response->toResourceResponse(), nullptr);
   FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
   DCHECK(fetchEvent);
   fetchEvent->onNavigationPreloadResponse(
@@ -226,10 +211,6 @@ void ServiceWorkerGlobalScopeProxy::onNavigationPreloadResponse(
 void ServiceWorkerGlobalScopeProxy::onNavigationPreloadError(
     int fetchEventID,
     std::unique_ptr<WebServiceWorkerError> error) {
-  InspectorInstrumentation::didFailLoading(
-      workerGlobalScope(), fetchEventID,
-      ResourceError(errorDomainBlinkInternal, 0, "", error->message));
-
   FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
   // This method may be called after onNavigationPreloadResponse() was called.
   if (!fetchEvent)
@@ -237,14 +218,6 @@ void ServiceWorkerGlobalScopeProxy::onNavigationPreloadError(
   fetchEvent->onNavigationPreloadError(
       workerGlobalScope()->scriptController()->getScriptState(),
       std::move(error));
-}
-
-void ServiceWorkerGlobalScopeProxy::onNavigationPreloadCompleted(
-    int fetchEventID,
-    int64_t encodedDataLength) {
-  InspectorInstrumentation::didFinishLoading(workerGlobalScope(), fetchEventID,
-                                             monotonicallyIncreasingTime(),
-                                             encodedDataLength);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(

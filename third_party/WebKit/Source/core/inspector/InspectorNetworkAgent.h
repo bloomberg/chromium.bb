@@ -81,18 +81,20 @@ class CORE_EXPORT InspectorNetworkAgent final
                        ResourceRequestBlockedReason);
   void didChangeResourcePriority(unsigned long identifier,
                                  ResourceLoadPriority);
-  void willSendRequest(unsigned long identifier,
+  void willSendRequest(LocalFrame*,
+                       unsigned long identifier,
                        DocumentLoader*,
                        ResourceRequest&,
                        const ResourceResponse& redirectResponse,
                        const FetchInitiatorInfo&);
   void markResourceAsCached(unsigned long identifier);
-  void didReceiveResourceResponse(ExecutionContext*,
+  void didReceiveResourceResponse(LocalFrame*,
                                   unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
                                   Resource*);
-  void didReceiveData(unsigned long identifier,
+  void didReceiveData(LocalFrame*,
+                      unsigned long identifier,
                       const char* data,
                       int dataLength);
   void didReceiveEncodedDataLength(LocalFrame*,
@@ -230,7 +232,8 @@ class CORE_EXPORT InspectorNetworkAgent final
   explicit InspectorNetworkAgent(InspectedFrames*);
 
   void enable(int totalBufferSize, int resourceBufferSize);
-  void willSendRequestInternal(unsigned long identifier,
+  void willSendRequestInternal(LocalFrame*,
+                               unsigned long identifier,
                                DocumentLoader*,
                                const ResourceRequest&,
                                const ResourceResponse& redirectResponse,

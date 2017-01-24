@@ -265,8 +265,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   // Called when the navigation preload request completed. Either
   // OnNavigationPreloadComplete() or OnNavigationPreloadError() must be called
   // to release the preload related resources.
-  void OnNavigationPreloadComplete(int fetch_event_id,
-                                   int64_t encoded_data_length);
+  void OnNavigationPreloadComplete(int fetch_event_id);
   // Called when an error occurred while receiving the response of the
   // navigation preload request.
   void OnNavigationPreloadError(

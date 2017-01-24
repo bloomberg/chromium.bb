@@ -286,7 +286,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                          const ResourceResponseHead& response_head) override {
     // This will delete |this|.
     ReportErrorToClient(
-        "Service Worker navigation preload doesn't support redirects.");
+        "Service Worker navigation preload doesn't suport redirect.");
   }
 
   void OnDataDownloaded(int64_t data_length,
@@ -297,7 +297,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
-    // TODO(horo): Send this transfer size update notification to DevTools.
+    NOTREACHED();
   }
 
   void OnStartLoadingResponseBody(
@@ -319,8 +319,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     if (!client)
       return;
     // This will delete |this|.
-    client->OnNavigationPreloadComplete(fetch_event_id_,
-                                        status.encoded_data_length);
+    client->OnNavigationPreloadComplete(fetch_event_id_);
   }
 
  private:
@@ -953,12 +952,11 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
     const ServiceWorkerFetchRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
     const DispatchFetchEventCallback& callback) {
-  std::unique_ptr<NavigationPreloadRequest> preload_request;
-  if (preload_handle) {
-    proxy_->onNavigationPreloadSent(fetch_event_id, request.url);
-    preload_request = base::MakeUnique<NavigationPreloadRequest>(
-        fetch_event_id, request.url, std::move(preload_handle));
-  }
+  std::unique_ptr<NavigationPreloadRequest> preload_request =
+      preload_handle
+          ? base::MakeUnique<NavigationPreloadRequest>(
+                fetch_event_id, request.url, std::move(preload_handle))
+          : nullptr;
   const bool navigation_preload_sent = !!preload_request;
   blink::WebServiceWorkerRequest webRequest;
   TRACE_EVENT0("ServiceWorker",
@@ -1247,9 +1245,7 @@ void ServiceWorkerContextClient::OnNavigationPreloadError(
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadComplete(
-    int fetch_event_id,
-    int64_t encoded_data_length) {
-  proxy_->onNavigationPreloadCompleted(fetch_event_id, encoded_data_length);
+    int fetch_event_id) {
   context_->preload_requests.Remove(fetch_event_id);
 }
 
