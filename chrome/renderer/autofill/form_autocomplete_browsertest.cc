@@ -111,23 +111,19 @@ void VerifyReceivedRendererMessages(
   const FormData& will_submit_form = *(fake_driver.form_will_submit());
   ASSERT_LE(2U, will_submit_form.fields.size());
 
-  EXPECT_EQ(WebString("fname"), will_submit_form.fields[0].name);
-  EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)),
-            will_submit_form.fields[0].value);
-  EXPECT_EQ(WebString("lname"), will_submit_form.fields[1].name);
-  EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)),
-            will_submit_form.fields[1].value);
+  EXPECT_EQ(base::ASCIIToUTF16("fname"), will_submit_form.fields[0].name);
+  EXPECT_EQ(base::UTF8ToUTF16(fname), will_submit_form.fields[0].value);
+  EXPECT_EQ(base::ASCIIToUTF16("lname"), will_submit_form.fields[1].name);
+  EXPECT_EQ(base::UTF8ToUTF16(lname), will_submit_form.fields[1].value);
 
   if (expect_submitted_message) {
     const FormData& submitted_form = *(fake_driver.form_submitted());
     ASSERT_LE(2U, submitted_form.fields.size());
 
-    EXPECT_EQ(WebString("fname"), submitted_form.fields[0].name);
-    EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)),
-              submitted_form.fields[0].value);
-    EXPECT_EQ(WebString("lname"), submitted_form.fields[1].name);
-    EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)),
-              submitted_form.fields[1].value);
+    EXPECT_EQ(base::ASCIIToUTF16("fname"), submitted_form.fields[0].name);
+    EXPECT_EQ(base::UTF8ToUTF16(fname), submitted_form.fields[0].value);
+    EXPECT_EQ(base::ASCIIToUTF16("lname"), submitted_form.fields[1].name);
+    EXPECT_EQ(base::UTF8ToUTF16(lname), submitted_form.fields[1].value);
   }
 }
 
@@ -521,10 +517,10 @@ TEST_F(FormAutocompleteTest, CollectFormlessElements) {
   // Asserting size 4 also ensures that 'excluded' field inside <form> is not
   // collected.
   ASSERT_EQ(4U, result.fields.size());
-  EXPECT_EQ(WebString("text_input"), result.fields[0].name);
-  EXPECT_EQ(WebString("check_input"), result.fields[1].name);
-  EXPECT_EQ(WebString("number_input"), result.fields[2].name);
-  EXPECT_EQ(WebString("select_input"), result.fields[3].name);
+  EXPECT_EQ(base::ASCIIToUTF16("text_input"), result.fields[0].name);
+  EXPECT_EQ(base::ASCIIToUTF16("check_input"), result.fields[1].name);
+  EXPECT_EQ(base::ASCIIToUTF16("number_input"), result.fields[2].name);
+  EXPECT_EQ(base::ASCIIToUTF16("select_input"), result.fields[3].name);
 }
 
 // Test that a FocusNoLongerOnForm message is sent if focus goes from an

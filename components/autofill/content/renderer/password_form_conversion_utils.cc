@@ -146,11 +146,10 @@ void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
 void ExcludeUsernameFromOtherUsernamesList(
     const WebInputElement& username_element,
     std::vector<base::string16>* other_possible_usernames) {
-  other_possible_usernames->erase(
-      std::remove(other_possible_usernames->begin(),
-                  other_possible_usernames->end(),
-                  username_element.value()),
-      other_possible_usernames->end());
+  other_possible_usernames->erase(std::remove(other_possible_usernames->begin(),
+                                              other_possible_usernames->end(),
+                                              username_element.value().utf16()),
+                                  other_possible_usernames->end());
 }
 
 // Helper to determine which password is the main (current) one, and which is
@@ -288,7 +287,7 @@ void FindPredictedElements(
     const FormFieldData& target_field = prediction.first;
     const PasswordFormFieldPredictionType& type = prediction.second;
     for (const auto& control_element : autofillable_elements)  {
-      if (control_element.nameForAutofill() == target_field.name) {
+      if (control_element.nameForAutofill().utf16() == target_field.name) {
         const WebInputElement* input_element =
             toWebInputElement(&control_element);
 
@@ -321,7 +320,7 @@ base::LazyInstance<re2::RE2, PasswordSiteUrlLazyInstanceTraits>
 // Returns the |input_field| name if its non-empty; otherwise a |dummy_name|.
 base::string16 FieldName(const WebInputElement& input_field,
                          const char dummy_name[]) {
-  base::string16 field_name = input_field.nameForAutofill();
+  base::string16 field_name = input_field.nameForAutofill().utf16();
   return field_name.empty() ? base::ASCIIToUTF16(dummy_name) : field_name;
 }
 
@@ -483,7 +482,7 @@ bool GetPasswordForm(
           // autofill, not for form identification, and blank autofill entries
           // are not useful, so we do not collect empty strings.
           if (!input_element->value().isEmpty())
-            other_possible_usernames.push_back(input_element->value());
+            other_possible_usernames.push_back(input_element->value().utf16());
         } else {
           // The first element marked with autocomplete='username'. Take the
           // hint and treat it as the username (overruling the tentative choice
@@ -507,7 +506,7 @@ bool GetPasswordForm(
           if (username_element.isNull())
             latest_input_element = *input_element;
           if (!input_element->value().isEmpty())
-            other_possible_usernames.push_back(input_element->value());
+            other_possible_usernames.push_back(input_element->value().utf16());
         }
       }
     }
@@ -546,7 +545,7 @@ bool GetPasswordForm(
     ExcludeUsernameFromOtherUsernamesList(predicted_username_element,
                                           &other_possible_usernames);
     if (!username_element.isNull()) {
-      other_possible_usernames.push_back(username_element.value());
+      other_possible_usernames.push_back(username_element.value().utf16());
     }
     username_element = predicted_username_element;
     password_form->was_parsed_using_autofill_predictions = true;
@@ -555,7 +554,7 @@ bool GetPasswordForm(
   if (!username_element.isNull()) {
     password_form->username_element =
         FieldName(username_element, "anonymous_username");
-    base::string16 username_value = username_element.value();
+    base::string16 username_value = username_element.value().utf16();
     if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
                                        username_element)) {
       base::string16 typed_username_value =
@@ -585,13 +584,14 @@ bool GetPasswordForm(
     blink::WebString password_value = password.value();
     if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
                                        password))
-      password_value = *field_value_and_properties_map->at(password).first;
-    password_form->password_value = password_value;
+      password_value = blink::WebString::fromUTF16(
+          *field_value_and_properties_map->at(password).first);
+    password_form->password_value = password_value.utf16();
   }
   if (!new_password.isNull()) {
     password_form->new_password_element =
         FieldName(new_password, "anonymous_new_password");
-    password_form->new_password_value = new_password.value();
+    password_form->new_password_value = new_password.value().utf16();
     password_form->new_password_value_is_default =
         new_password.getAttribute("value") == new_password.value();
     if (HasAutocompleteAttributeValue(new_password, kAutocompleteNewPassword))
@@ -721,7 +721,8 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 
 bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
                                    const char* value_in_lowercase) {
-  base::string16 autocomplete_attribute(element.getAttribute("autocomplete"));
+  base::string16 autocomplete_attribute(
+      element.getAttribute("autocomplete").utf16());
   std::vector<std::string> tokens = LowercaseAndTokenizeAttributeString(
       base::UTF16ToUTF8(autocomplete_attribute));
 

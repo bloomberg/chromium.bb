@@ -109,9 +109,9 @@ void GetDataListSuggestions(const WebInputElement& element,
                             std::vector<base::string16>* values,
                             std::vector<base::string16>* labels) {
   for (const auto& option : element.filteredDataListOptions()) {
-    values->push_back(option.value());
+    values->push_back(option.value().utf16());
     if (option.value() != option.label())
-      labels->push_back(option.label());
+      labels->push_back(option.label().utf16());
     else
       labels->push_back(base::string16());
   }
@@ -439,8 +439,8 @@ void AutofillAgent::DoAcceptDataListSuggestion(
   // the suggestion.
   if (input_element->isMultiple() && input_element->isEmailField()) {
     std::vector<base::string16> parts = base::SplitString(
-        base::StringPiece16(input_element->editingValue()),
-        base::ASCIIToUTF16(","), base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+        input_element->editingValue().utf16(), base::ASCIIToUTF16(","),
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     if (parts.size() == 0)
       parts.push_back(base::string16());
 
@@ -542,8 +542,9 @@ void AutofillAgent::FillPasswordSuggestion(const base::string16& username,
 
 void AutofillAgent::PreviewPasswordSuggestion(const base::string16& username,
                                               const base::string16& password) {
-  bool handled =
-      password_autofill_agent_->PreviewSuggestion(element_, username, password);
+  bool handled = password_autofill_agent_->PreviewSuggestion(
+      element_, blink::WebString::fromUTF16(username),
+      blink::WebString::fromUTF16(password));
   DCHECK(handled);
 }
 
@@ -729,15 +730,18 @@ void AutofillAgent::QueryAutofillSuggestions(
 void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
                                          WebInputElement* node) {
   base::AutoReset<bool> auto_reset(&ignore_text_changes_, true);
-  node->setEditingValue(value.substr(0, node->maxLength()));
+  node->setEditingValue(
+      blink::WebString::fromUTF16(value.substr(0, node->maxLength())));
 }
 
 void AutofillAgent::DoPreviewFieldWithValue(const base::string16& value,
                                             WebInputElement* node) {
   was_query_node_autofilled_ = element_.isAutofilled();
-  node->setSuggestedValue(value.substr(0, node->maxLength()));
+  node->setSuggestedValue(
+      blink::WebString::fromUTF16(value.substr(0, node->maxLength())));
   node->setAutofilled(true);
-  form_util::PreviewSuggestion(node->suggestedValue(), node->value(), node);
+  form_util::PreviewSuggestion(node->suggestedValue().utf16(),
+                               node->value().utf16(), node);
 }
 
 void AutofillAgent::ProcessForms() {

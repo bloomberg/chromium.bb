@@ -186,7 +186,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
       if (input_element->hasAttribute("set-activated-submit"))
         input_element->setActivatedSubmit(true);
       if (with_user_input) {
-        const base::string16 element_value = input_element->value();
+        const base::string16 element_value = input_element->value().utf16();
         user_input[control_elements[i]] =
             std::make_pair(base::MakeUnique<base::string16>(element_value), 0U);
       }

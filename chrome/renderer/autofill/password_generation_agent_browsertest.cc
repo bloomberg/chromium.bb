@@ -332,8 +332,8 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   password_generation_->GeneratedPasswordAccepted(password);
 
   // Password fields are filled out and set as being autofilled.
-  EXPECT_EQ(password, first_password_element.value());
-  EXPECT_EQ(password, second_password_element.value());
+  EXPECT_EQ(password, first_password_element.value().utf16());
+  EXPECT_EQ(password, second_password_element.value().utf16());
   EXPECT_TRUE(first_password_element.isAutofilled());
   EXPECT_TRUE(second_password_element.isAutofilled());
 
@@ -378,24 +378,24 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   password_generation_->GeneratedPasswordAccepted(password);
 
   // Passwords start out the same.
-  EXPECT_EQ(password, first_password_element.value());
-  EXPECT_EQ(password, second_password_element.value());
+  EXPECT_EQ(password, first_password_element.value().utf16());
+  EXPECT_EQ(password, second_password_element.value().utf16());
 
   // After editing the first field they are still the same.
   std::string edited_password_ascii = "edited_password";
   SimulateUserInputChangeForElement(&first_password_element,
                                     edited_password_ascii);
   base::string16 edited_password = base::ASCIIToUTF16(edited_password_ascii);
-  EXPECT_EQ(edited_password, first_password_element.value());
-  EXPECT_EQ(edited_password, second_password_element.value());
+  EXPECT_EQ(edited_password, first_password_element.value().utf16());
+  EXPECT_EQ(edited_password, second_password_element.value().utf16());
 
   fake_driver_.reset_called_password_no_longer_generated();
 
   // Verify that password mirroring works correctly even when the password
   // is deleted.
   SimulateUserInputChangeForElement(&first_password_element, std::string());
-  EXPECT_EQ(base::string16(), first_password_element.value());
-  EXPECT_EQ(base::string16(), second_password_element.value());
+  EXPECT_EQ(base::string16(), first_password_element.value().utf16());
+  EXPECT_EQ(base::string16(), second_password_element.value().utf16());
 
   // Should have notified the browser that the password is no longer generated
   // and trigger generation again.

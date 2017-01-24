@@ -419,7 +419,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
                                     field_case.name));
     WebString value;
     WebFormControlElement element =
-        GetFormControlElementById(ASCIIToUTF16(field_case.name));
+        GetFormControlElementById(WebString::fromASCII(field_case.name));
     if ((element.formControlType() == "select-one") ||
         (element.formControlType() == "textarea")) {
       value = get_value_function(element);
@@ -429,7 +429,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
       value = get_value_function(element);
     }
 
-    const WebString expected_value = ASCIIToUTF16(field_case.expected_value);
+    const WebString expected_value =
+        WebString::fromASCII(field_case.expected_value);
     if (expected_value.isEmpty())
       EXPECT_TRUE(value.isEmpty());
     else
@@ -1074,7 +1075,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebInputElement input_element = GetInputElementById("firstname");
 
     // Simulate typing by modifying the field value.
-    input_element.setValue(ASCIIToUTF16("Wy"));
+    input_element.setValue(WebString::fromASCII("Wy"));
 
     // Find the form that contains the input element.
     FormData form;
@@ -1397,16 +1398,16 @@ class FormAutofillTest : public ChromeRenderViewTest {
     phone.setAutofilled(true);
 
     // Set the suggested values on two of the elements.
-    lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
-    email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
-    email2.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
-    phone.setSuggestedValue(ASCIIToUTF16("650-777-9999"));
+    lastname.setSuggestedValue(WebString::fromASCII("Earp"));
+    email.setSuggestedValue(WebString::fromASCII("wyatt@earp.com"));
+    email2.setSuggestedValue(WebString::fromASCII("wyatt@earp.com"));
+    phone.setSuggestedValue(WebString::fromASCII("650-777-9999"));
 
     // Clear the previewed fields.
     EXPECT_TRUE(ClearPreviewedFormWithElement(lastname, false));
 
     // Fields with empty suggestions suggestions are not modified.
-    EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
+    EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value().utf16());
     EXPECT_TRUE(firstname.suggestedValue().isEmpty());
     EXPECT_TRUE(firstname.isAutofilled());
 
@@ -1452,17 +1453,17 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
 
     // Set the suggested values on all of the elements.
-    firstname.setSuggestedValue(ASCIIToUTF16("Wyatt"));
-    lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
-    email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
-    email2.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
-    phone.setSuggestedValue(ASCIIToUTF16("650-777-9999"));
+    firstname.setSuggestedValue(WebString::fromASCII("Wyatt"));
+    lastname.setSuggestedValue(WebString::fromASCII("Earp"));
+    email.setSuggestedValue(WebString::fromASCII("wyatt@earp.com"));
+    email2.setSuggestedValue(WebString::fromASCII("wyatt@earp.com"));
+    phone.setSuggestedValue(WebString::fromASCII("650-777-9999"));
 
     // Clear the previewed fields.
     EXPECT_TRUE(ClearPreviewedFormWithElement(firstname, false));
 
     // Fields with non-empty values are restored.
-    EXPECT_EQ(ASCIIToUTF16("W"), firstname.value());
+    EXPECT_EQ(ASCIIToUTF16("W"), firstname.value().utf16());
     EXPECT_TRUE(firstname.suggestedValue().isEmpty());
     EXPECT_FALSE(firstname.isAutofilled());
     EXPECT_EQ(1, firstname.selectionStart());
@@ -1505,17 +1506,17 @@ class FormAutofillTest : public ChromeRenderViewTest {
     phone.setAutofilled(true);
 
     // Set the suggested values on all of the elements.
-    firstname.setSuggestedValue(ASCIIToUTF16("Wyatt"));
-    lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
-    email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
-    email2.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
-    phone.setSuggestedValue(ASCIIToUTF16("650-777-9999"));
+    firstname.setSuggestedValue(WebString::fromASCII("Wyatt"));
+    lastname.setSuggestedValue(WebString::fromASCII("Earp"));
+    email.setSuggestedValue(WebString::fromASCII("wyatt@earp.com"));
+    email2.setSuggestedValue(WebString::fromASCII("wyatt@earp.com"));
+    phone.setSuggestedValue(WebString::fromASCII("650-777-9999"));
 
     // Clear the previewed fields.
     EXPECT_TRUE(ClearPreviewedFormWithElement(firstname, true));
 
     // Fields with non-empty values are restored.
-    EXPECT_EQ(ASCIIToUTF16("W"), firstname.value());
+    EXPECT_EQ(ASCIIToUTF16("W"), firstname.value().utf16());
     EXPECT_TRUE(firstname.suggestedValue().isEmpty());
     EXPECT_TRUE(firstname.isAutofilled());
     EXPECT_EQ(1, firstname.selectionStart());
@@ -1560,7 +1561,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_TRUE(form_cache.ClearFormWithElement(firstname));
 
     // Verify only autofilled fields are cleared.
-    EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
+    EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value().utf16());
     EXPECT_TRUE(firstname.suggestedValue().isEmpty());
     EXPECT_FALSE(firstname.isAutofilled());
     EXPECT_TRUE(lastname.value().isEmpty());
@@ -1987,8 +1988,8 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
 
   WebDocument document = frame->document();
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    WebFormControlElement element =
-        GetFormControlElementById(ASCIIToUTF16(test_cases[i].element_id));
+    WebFormControlElement element = GetFormControlElementById(
+        WebString::fromASCII(test_cases[i].element_id));
     FormFieldData result;
     WebFormControlElementToFormField(element, nullptr, EXTRACT_NONE, &result);
 

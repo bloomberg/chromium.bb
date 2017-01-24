@@ -257,7 +257,7 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
     else
       password_creation_field = passwords[0];
 
-    *generation_field = password_creation_field.nameForAutofill();
+    *generation_field = password_creation_field.nameForAutofill().utf16();
     return true;
   }
   return false;

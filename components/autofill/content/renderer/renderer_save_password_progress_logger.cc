@@ -25,8 +25,8 @@ void RendererSavePasswordProgressLogger::SendLog(const std::string& log) {
 void RendererSavePasswordProgressLogger::LogElementName(
     StringID label,
     const blink::WebFormControlElement& element) {
-  LogValue(label, base::StringValue(ScrubElementID(
-                      base::string16(element.nameForAutofill()))));
+  LogValue(label, base::StringValue(
+                      ScrubElementID((element.nameForAutofill().utf16()))));
 }
 
 }  // namespace autofill
