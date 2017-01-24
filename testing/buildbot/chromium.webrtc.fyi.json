@@ -6,14 +6,12 @@
   },
   "Android Builder (dbg)": {
     "additional_compile_targets": [
-      "content_browsertests",
-      "service_manager_unittests"
+      "content_browsertests"
     ]
   },
   "Android Builder ARM64 (dbg)": {
     "additional_compile_targets": [
-      "content_browsertests",
-      "service_manager_unittests"
+      "content_browsertests"
     ]
   },
   "Linux Builder": {
