@@ -1206,6 +1206,10 @@ Vector<LengthPoint> StyleBuilderConverter::convertSnapCoordinates(
 PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(
     StyleResolverState& state,
     const CSSValue& value) {
+  if (value.isIdentifierValue()) {
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueNone);
+    return nullptr;
+  }
   const CSSValueList& list = toCSSValueList(value);
   ASSERT(list.length() <= 3);
   Length tx = convertLength(state, list.item(0));

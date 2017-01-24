@@ -159,10 +159,9 @@ void CSSTranslateInterpolationType::applyStandardPropertyValue(
                 *list.get(TranslateZ), nullptr, conversionData, ValueRangeAll)
                 .pixels();
 
-  RefPtr<TranslateTransformOperation> result = nullptr;
-  if (!x.isZero() || !y.isZero() || z != 0)
-    result = TranslateTransformOperation::create(
-        x, y, z, TransformOperation::Translate3D);
+  RefPtr<TranslateTransformOperation> result =
+      TranslateTransformOperation::create(x, y, z,
+                                          TransformOperation::Translate3D);
   state.style()->setTranslate(std::move(result));
 }
 

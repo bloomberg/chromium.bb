@@ -3538,8 +3538,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
                                            style);
     case CSSPropertyTranslate: {
       if (!style.translate())
-        return CSSPrimitiveValue::create(0,
-                                         CSSPrimitiveValue::UnitType::Pixels);
+        return CSSIdentifierValue::create(CSSValueNone);
 
       CSSValueList* list = CSSValueList::createSpaceSeparated();
       if (layoutObject && layoutObject->isBox()) {

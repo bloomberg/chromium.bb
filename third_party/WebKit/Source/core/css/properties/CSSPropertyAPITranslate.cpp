@@ -15,6 +15,10 @@ const CSSValue* CSSPropertyAPITranslate::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext* context) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
+  CSSValueID id = range.peek().id();
+  if (id == CSSValueNone)
+    return CSSPropertyParserHelpers::consumeIdent(range);
+
   CSSValue* translate = CSSPropertyParserHelpers::consumeLengthOrPercent(
       range, context->mode(), ValueRangeAll);
   if (!translate)

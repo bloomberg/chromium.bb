@@ -6,9 +6,10 @@
 <script>
 expect = expect.bind(this, 'translate', 'translate');
 
-expect('initial').parsesAs('initial').isComputedTo('0px');
+expect('initial').parsesAs('initial').isComputedTo('none');
 expect('inherit').parsesAs('inherit');
 
+expect('none').parsesAs('none').isComputedTo('none');
 expect('10px').parsesAs('10px').isComputedTo('10px');
 expect('10px -2.5px').parsesAs('10px -2.5px').isComputedTo('10px -2.5px');
 expect('10px -2.5px 0').parsesAs('10px -2.5px 0px').isComputedTo('10px -2.5px');
@@ -26,7 +27,6 @@ expect('calc(100% + 10px) calc(100% - 10px) calc(100px + 200px)').parsesAs('calc
 expect('calc(100% * 0.5 + 2px) calc(100% - 10px / 2) calc(100px - 200px)').parsesAs('calc(50% + 2px) calc(100% - 5px) calc(-100px)').isComputedTo('52px 195px -100px');
 
 expect('2').isInvalid();
-expect('none').isInvalid();
 expect('10deg 10px').isInvalid();
 expect('10px 10px 10%').isInvalid();
 expect('20smigens').isInvalid();

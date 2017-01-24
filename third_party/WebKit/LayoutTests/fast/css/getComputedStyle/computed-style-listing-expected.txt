@@ -289,7 +289,7 @@ transition-delay: 0s
 transition-duration: 0s
 transition-property: all
 transition-timing-function: ease
-translate: 0px
+translate: none
 unicode-bidi: normal
 user-select: text
 vector-effect: none
