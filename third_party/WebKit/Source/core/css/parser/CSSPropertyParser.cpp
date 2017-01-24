@@ -1520,17 +1520,6 @@ static CSSValue* consumeReflect(CSSParserTokenRange& range,
   return CSSReflectValue::create(direction, offset, mask);
 }
 
-static CSSValue* consumeImageOrientation(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueFromImage)
-    return consumeIdent(range);
-  if (range.peek().type() != NumberToken) {
-    CSSPrimitiveValue* angle = consumeAngle(range);
-    if (angle && angle->getDoubleValue() == 0)
-      return angle;
-  }
-  return nullptr;
-}
-
 static CSSValue* consumeBackgroundBlendMode(CSSParserTokenRange& range) {
   CSSValueID id = range.peek().id();
   if (id == CSSValueNormal || id == CSSValueOverlay ||
@@ -2396,9 +2385,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeWebkitBorderImage(property, m_range, m_context);
     case CSSPropertyWebkitBoxReflect:
       return consumeReflect(m_range, m_context);
-    case CSSPropertyImageOrientation:
-      ASSERT(RuntimeEnabledFeatures::imageOrientationEnabled());
-      return consumeImageOrientation(m_range);
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:

@@ -284,7 +284,7 @@ grid-template-rows runtime_flag=CSSGridLayout, custom_all
 height typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialSize, converter=convertLengthSizing
 hyphens runtime_flag=CSSHyphens, inherited, type_name=Hyphens
 image-rendering inherited
-image-orientation runtime_flag=ImageOrientation, inherited, name_for_methods=RespectImageOrientation, converter=convertImageOrientation
+image-orientation runtime_flag=ImageOrientation, inherited, name_for_methods=RespectImageOrientation, converter=convertImageOrientation, api_class
 isolation
 justify-content initial=initialContentAlignment, converter=convertContentAlignmentData
 justify-items runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
