@@ -64,6 +64,7 @@ void BluetoothRemoteGATTServer::ConnectCallback(
     return;
 
   if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
+    m_device->bluetooth()->addToConnectedDevicesMap(device()->id(), device());
     setConnected(true);
     resolver->resolve(this);
   } else {
@@ -72,8 +73,6 @@ void BluetoothRemoteGATTServer::ConnectCallback(
 }
 
 ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState) {
-  m_device->bluetooth()->addDevice(device()->id(), device());
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
@@ -90,7 +89,7 @@ void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState) {
   if (!m_connected)
     return;
   device()->cleanupDisconnectedDeviceAndFireEvent();
-  m_device->bluetooth()->removeDevice(device()->id());
+  m_device->bluetooth()->removeFromConnectedDevicesMap(device()->id());
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
   service->RemoteServerDisconnect(device()->id());
 }

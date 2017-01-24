@@ -240,11 +240,12 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
   return promise;
 }
 
-void Bluetooth::addDevice(const String& deviceId, BluetoothDevice* device) {
+void Bluetooth::addToConnectedDevicesMap(const String& deviceId,
+                                         BluetoothDevice* device) {
   m_connectedDevices.add(deviceId, device);
 }
 
-void Bluetooth::removeDevice(const String& deviceId) {
+void Bluetooth::removeFromConnectedDevicesMap(const String& deviceId) {
   m_connectedDevices.remove(deviceId);
 }
 

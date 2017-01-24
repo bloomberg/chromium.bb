@@ -83,7 +83,7 @@ void BluetoothDevice::disconnectGATTIfConnected() {
   if (m_gatt->connected()) {
     m_gatt->setConnected(false);
     m_gatt->ClearActiveAlgorithms();
-    m_bluetooth->removeDevice(id());
+    m_bluetooth->removeFromConnectedDevicesMap(id());
     mojom::blink::WebBluetoothService* service = m_bluetooth->service();
     service->RemoteServerDisconnect(id());
   }

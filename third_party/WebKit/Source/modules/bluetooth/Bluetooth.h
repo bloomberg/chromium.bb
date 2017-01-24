@@ -38,9 +38,9 @@ class Bluetooth : public GarbageCollectedFinalized<Bluetooth>,
 
   mojom::blink::WebBluetoothService* service() { return m_service.get(); }
 
-  void addDevice(const String& deviceId, BluetoothDevice*);
+  void addToConnectedDevicesMap(const String& deviceId, BluetoothDevice*);
 
-  void removeDevice(const String& deviceId);
+  void removeFromConnectedDevicesMap(const String& deviceId);
 
   void registerCharacteristicObject(const String& characteristicInstanceId,
                                     BluetoothRemoteGATTCharacteristic*);
