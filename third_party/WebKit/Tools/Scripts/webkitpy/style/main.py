@@ -24,39 +24,40 @@ import codecs
 import logging
 import sys
 
-import webkitpy.style.checker as checker
-from webkitpy.style.patchreader import PatchReader
+from webkitpy.common.host import Host
+from webkitpy.style import checker
 from webkitpy.style.checker import StyleProcessor
 from webkitpy.style.filereader import TextFileReader
-from webkitpy.common.host import Host
+from webkitpy.style.patchreader import PatchReader
 
 
 _log = logging.getLogger(__name__)
 
 
 def change_directory(filesystem, checkout_root, paths):
-    """Change the working directory to the WebKit checkout root, if possible.
+    """Change the working directory to the checkout root, if possible.
 
     If every path in the paths parameter is below the checkout root (or if
     the paths parameter is empty or None), this method changes the current
     working directory to the checkout root and converts the paths parameter
     as described below.
-        This allows the paths being checked to be displayed relative to the
+
+    This allows the paths being checked to be displayed relative to the
     checkout root, and for path-specific style checks to work as expected.
     Path-specific checks include whether files should be skipped, whether
     custom style rules should apply to certain files, etc.
 
-    Returns:
-      paths: A copy of the paths parameter -- possibly converted, as follows.
-             If this method changed the current working directory to the
-             checkout root, then the list is the paths parameter converted to
-             normalized paths relative to the checkout root.
-
     Args:
-      paths: A list of paths to the files that should be checked for style.
-             This argument can be None or the empty list if a git commit
-             or all changes under the checkout root should be checked.
-      checkout_root: The path to the root of the WebKit checkout.
+        paths: A list of paths to the files that should be checked for style.
+            This argument can be None or the empty list if a git commit
+            or all changes under the checkout root should be checked.
+        checkout_root: The path to the root of the repository.
+
+    Returns:
+        A copy of the paths parameter -- possibly converted, as follows.
+        If this method changed the current working directory to the
+        checkout root, then the list is the paths parameter converted to
+        normalized paths relative to the checkout root.
     """
     if paths is not None:
         paths = list(paths)
@@ -77,7 +78,7 @@ def change_directory(filesystem, checkout_root, paths):
                 _log.warning(
                     """Path-dependent style checks may not work correctly:
 
-  One of the given paths is outside the WebKit checkout of the current
+  One of the given paths is outside the repository of the current
   working directory:
 
     Path: %s
