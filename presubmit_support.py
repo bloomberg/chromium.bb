@@ -200,7 +200,7 @@ class GerritAccessor(object):
     try:
       return gerrit_util.GetChangeDetail(
           self.host, str(issue),
-          ['ALL_REVISIONS', 'DETAILED_LABELS'],
+          ['ALL_REVISIONS', 'DETAILED_LABELS', 'ALL_COMMITS'],
           ignore_404=False)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
@@ -240,12 +240,7 @@ class GerritAccessor(object):
       rev = info['current_revision']
       rev_info = info['revisions'][rev]
 
-    # Updates revision info, which is part of cached issue info.
-    if 'real_description' not in rev_info:
-      rev_info['real_description'] = (
-          gerrit_util.GetChangeDescriptionFromGitiles(
-              rev_info['fetch']['http']['url'], rev))
-    return rev_info['real_description']
+    return rev_info['commit']['message']
 
   def GetChangeOwner(self, issue):
     return self.GetChangeInfo(issue)['owner']['email']

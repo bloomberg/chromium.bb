@@ -2462,10 +2462,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return data['revisions'][data['current_revision']]['_number']
 
   def FetchDescription(self):
-    data = self._GetChangeDetail(['CURRENT_REVISION'])
+    data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'])
     current_rev = data['current_revision']
-    url = data['revisions'][current_rev]['fetch']['http']['url']
-    return gerrit_util.GetChangeDescriptionFromGitiles(url, current_rev)
+    return data['revisions'][current_rev]['commit']['message']
 
   def UpdateDescriptionRemote(self, description, force=False):
     if gerrit_util.HasPendingChangeEdit(self._GetGerritHost(), self.GetIssue()):

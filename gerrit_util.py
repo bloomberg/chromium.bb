@@ -514,21 +514,6 @@ def GetChangeCommit(host, change, revision='current'):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def GetChangeDescriptionFromGitiles(url, revision):
-  """Query Gitiles for actual commit message for a given url and ref.
-
-  url must be obtained from call to GetChangeDetail for a specific
-  revision (patchset) under 'fetch' key.
-  """
-  parsed = urlparse.urlparse(url)
-  path = '%s/+/%s?format=json' % (parsed.path, revision)
-  # Note: Gerrit instances that Chrome infrastructure uses thus far have all
-  # enabled Gitiles, which allowes us to execute this call. This isn't true for
-  # all Gerrit instances out there. Thus, if line below fails, consider adding a
-  # fallback onto actually fetching ref from remote using pure git.
-  return ReadHttpJsonResponse(CreateHttpConn(parsed.netloc, path))['message']
-
-
 def GetChangeCurrentRevision(host, change):
   """Get information about the latest revision for a given change."""
   return QueryChanges(host, {}, change, o_params=('CURRENT_REVISION',))
