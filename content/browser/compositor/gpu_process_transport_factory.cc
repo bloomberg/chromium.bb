@@ -243,8 +243,7 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
             ->CreateOverlayCandidates(widget);
     validator.reset(
         new display_compositor::CompositorOverlayCandidateValidatorOzone(
-            std::move(overlay_candidates),
-            enable_overlay_flag == "single-fullscreen"));
+            std::move(overlay_candidates), enable_overlay_flag));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.

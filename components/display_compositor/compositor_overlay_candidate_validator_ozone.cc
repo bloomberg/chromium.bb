@@ -8,13 +8,25 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_split.h"
 #include "cc/output/overlay_strategy_fullscreen.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace display_compositor {
+namespace {
+// Templated function used to create an OverlayProcessor::Strategy
+// of type |S|.
+template <typename S>
+std::unique_ptr<cc::OverlayProcessor::Strategy> MakeOverlayStrategy(
+    CompositorOverlayCandidateValidatorOzone* capability_checker) {
+  return base::MakeUnique<S>(capability_checker);
+}
+
+}  // namespace
 
 static gfx::BufferFormat GetBufferFormat(cc::ResourceFormat overlay_format) {
   switch (overlay_format) {
@@ -28,27 +40,46 @@ static gfx::BufferFormat GetBufferFormat(cc::ResourceFormat overlay_format) {
   }
 }
 
+// |overlay_candidates| is an object used to answer questions about possible
+// overlays configuarations.
+// |strategies_string| is a comma-separated string containing all the overaly
+// strategies that should be returned by GetStrategies.
+// If |strategies_string| is empty "single-on-top,underlay" will be used as
+// default.
 CompositorOverlayCandidateValidatorOzone::
     CompositorOverlayCandidateValidatorOzone(
         std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
-        bool single_fullscreen)
+        std::string strategies_string)
     : overlay_candidates_(std::move(overlay_candidates)),
-      single_fullscreen_(single_fullscreen),
-      software_mirror_active_(false) {}
+      software_mirror_active_(false) {
+  if (!strategies_string.length())
+    strategies_string = "single-on-top,underlay";
+
+  for (const auto& strategy_name :
+       base::SplitStringPiece(strategies_string, ",", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    if (strategy_name == "single-fullscreen") {
+      strategies_instantiators.push_back(
+          base::Bind(MakeOverlayStrategy<cc::OverlayStrategyFullscreen>));
+    } else if (strategy_name == "single-on-top") {
+      strategies_instantiators.push_back(
+          base::Bind(MakeOverlayStrategy<cc::OverlayStrategySingleOnTop>));
+    } else if (strategy_name == "underlay") {
+      strategies_instantiators.push_back(
+          base::Bind(MakeOverlayStrategy<cc::OverlayStrategyUnderlay>));
+    } else {
+      LOG(WARNING) << "Unrecognized overlay strategy " << strategy_name;
+    }
+  }
+}
 
 CompositorOverlayCandidateValidatorOzone::
     ~CompositorOverlayCandidateValidatorOzone() {}
 
 void CompositorOverlayCandidateValidatorOzone::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  if (single_fullscreen_) {
-    strategies->push_back(
-        base::MakeUnique<cc::OverlayStrategyFullscreen>(this));
-  } else {
-    strategies->push_back(
-        base::MakeUnique<cc::OverlayStrategySingleOnTop>(this));
-    strategies->push_back(base::MakeUnique<cc::OverlayStrategyUnderlay>(this));
-  }
+  for (auto& instantiator : strategies_instantiators)
+    strategies->push_back(instantiator.Run(this));
 }
 
 bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {
@@ -64,10 +95,6 @@ void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
       surfaces->at(i).overlay_handled = false;
     }
     return;
-  }
-
-  if (single_fullscreen_) {
-    return;  // No need for validation for single fullscreen.
   }
 
   DCHECK_GE(2U, surfaces->size());

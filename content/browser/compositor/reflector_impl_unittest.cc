@@ -68,7 +68,7 @@ CreateTestValidatorOzone() {
       new display_compositor::CompositorOverlayCandidateValidatorOzone(
           std::unique_ptr<ui::OverlayCandidatesOzone>(
               new TestOverlayCandidatesOzone()),
-          false));
+          ""));
 #else
   return nullptr;
 #endif  // defined(USE_OZONE)
