@@ -323,7 +323,7 @@ offset-position runtime_flag=CSSOffsetPositionAnchor, interpolable, converter=co
 offset-rotate runtime_flag=CSSOffsetRotate, interpolable, converter=convertOffsetRotate
 offset-rotation runtime_flag=CSSOffsetRotation, interpolable, converter=convertOffsetRotate
 opacity interpolable, type_name=float, api_class=CSSPropertyAPIOpacity
-order type_name=int
+order type_name=int, api_class
 orphans interpolable, inherited, type_name=short
 outline-color interpolable, custom_all, api_class
 outline-offset interpolable, converter=convertComputedLength<int>, api_class

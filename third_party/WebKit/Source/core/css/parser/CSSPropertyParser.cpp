@@ -2376,8 +2376,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyScrollSnapPointsX:
     case CSSPropertyScrollSnapPointsY:
       return consumeScrollSnapPoints(m_range, m_context->mode());
-    case CSSPropertyOrder:
-      return consumeInteger(m_range);
     case CSSPropertyJustifyContent:
     case CSSPropertyAlignContent:
       ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
