@@ -5,6 +5,7 @@
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -45,6 +46,7 @@ ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
       PlatformEventController(frame.page()),
       m_client(client),
       m_dispatchEventTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, &frame),
           this,
           &ScreenOrientationControllerImpl::dispatchEventTimerFired) {}
 

@@ -9,7 +9,6 @@
 #include "core/frame/PlatformEventController.h"
 #include "core/frame/ScreenOrientationController.h"
 #include "modules/ModulesExport.h"
-#include "platform/Timer.h"
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
@@ -69,7 +68,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
   Member<ScreenOrientation> m_orientation;
   WebScreenOrientationClient* m_client;
-  Timer<ScreenOrientationControllerImpl> m_dispatchEventTimer;
+  TaskRunnerTimer<ScreenOrientationControllerImpl> m_dispatchEventTimer;
   bool m_activeLock = false;
 };
 
