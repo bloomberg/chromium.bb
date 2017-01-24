@@ -283,6 +283,10 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
   return precomputedData.toAncestorTransforms.find(localTransformNode)->value;
 }
 
+void GeometryMapper::clearCache() {
+  m_data.clear();
+}
+
 namespace {
 
 template <typename NodeType>

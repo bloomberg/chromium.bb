@@ -3036,12 +3036,18 @@ void FrameView::prePaint() {
   if (!m_paintController)
     m_paintController = PaintController::create();
 
+  if (!m_geometryMapper)
+    m_geometryMapper.reset(new GeometryMapper());
+  // TODO(chrishtr): the cache only needs to be invalidated if one or more of
+  // the property tree nodes changed.
+  m_geometryMapper->clearCache();
+
   forAllNonThrottledFrameViews([](FrameView& frameView) {
     frameView.lifecycle().advanceTo(DocumentLifecycle::InPrePaint);
   });
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-    PrePaintTreeWalk().walk(*this);
+    PrePaintTreeWalk(*m_geometryMapper).walk(*this);
 
   forAllNonThrottledFrameViews([](FrameView& frameView) {
     frameView.lifecycle().advanceTo(DocumentLifecycle::PrePaintClean);
@@ -3147,10 +3153,11 @@ void FrameView::pushPaintArtifactToCompositor() {
 
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
 
+  DCHECK(m_geometryMapper.get());
   m_paintArtifactCompositor->update(
       m_paintController->paintArtifact(),
       m_paintController->paintChunksRasterInvalidationTrackingMap(),
-      m_isStoringCompositedLayerDebugInfo);
+      m_isStoringCompositedLayerDebugInfo, *m_geometryMapper);
 }
 
 std::unique_ptr<JSONObject> FrameView::compositedLayersAsJSON(

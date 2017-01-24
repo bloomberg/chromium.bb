@@ -672,7 +672,8 @@ void PaintArtifactCompositor::collectPendingLayers(
 void PaintArtifactCompositor::update(
     const PaintArtifact& paintArtifact,
     RasterInvalidationTrackingMap<const PaintChunk>* rasterChunkInvalidations,
-    bool storeDebugInfo) {
+    bool storeDebugInfo,
+    GeometryMapper& geometryMapper) {
 #ifndef NDEBUG
   storeDebugInfo = true;
 #endif
@@ -697,7 +698,6 @@ void PaintArtifactCompositor::update(
                                           m_rootLayer.get());
 
   Vector<PendingLayer, 0> pendingLayers;
-  GeometryMapper geometryMapper;
   collectPendingLayers(paintArtifact, pendingLayers, geometryMapper);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> newContentLayerClients;

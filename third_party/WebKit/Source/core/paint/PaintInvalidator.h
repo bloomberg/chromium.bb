@@ -86,6 +86,9 @@ struct PaintInvalidatorContext {
 
 class PaintInvalidator {
  public:
+  PaintInvalidator(GeometryMapper& geometryMapper)
+      : m_geometryMapper(geometryMapper) {}
+
   void invalidatePaintIfNeeded(FrameView&, PaintInvalidatorContext&);
   void invalidatePaintIfNeeded(const LayoutObject&, PaintInvalidatorContext&);
 
@@ -105,7 +108,7 @@ class PaintInvalidator {
                                    PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> m_pendingDelayedPaintInvalidations;
-  GeometryMapper m_geometryMapper;
+  GeometryMapper& m_geometryMapper;
 };
 
 }  // namespace blink

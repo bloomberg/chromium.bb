@@ -11,6 +11,7 @@
 namespace blink {
 
 class FrameView;
+class GeometryMapper;
 class LayoutObject;
 struct PrePaintTreeWalkContext;
 
@@ -19,6 +20,8 @@ struct PrePaintTreeWalkContext;
 // perform actual actions.  It expects to be invoked in InPrePaint phase.
 class PrePaintTreeWalk {
  public:
+  PrePaintTreeWalk(GeometryMapper& geometryMapper)
+      : m_paintInvalidator(geometryMapper) {}
   void walk(FrameView& rootFrame);
 
  private:

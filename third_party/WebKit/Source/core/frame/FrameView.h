@@ -69,6 +69,7 @@ class Element;
 class ElementVisibilityObserver;
 class Frame;
 class FloatSize;
+class GeometryMapper;
 class JSONArray;
 class JSONObject;
 class LayoutItem;
@@ -1206,6 +1207,8 @@ class CORE_EXPORT FrameView final
   // TODO(kenrb): Remove these when https://crbug.com/680606 is resolved.
   std::unique_ptr<CompositorAnimationTimeline> m_animationTimeline;
   std::unique_ptr<CompositorAnimationHost> m_animationHost;
+
+  std::unique_ptr<GeometryMapper> m_geometryMapper;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count) {

@@ -132,6 +132,8 @@ class PLATFORM_EXPORT GeometryMapper {
   static PLATFORM_EXPORT const NodeType* lowestCommonAncestor(const NodeType*,
                                                               const NodeType*);
 
+  void clearCache();
+
  private:
   // The internal methods do the same things as their public counterparts, but
   // take an extra |success| parameter which indicates if the function is

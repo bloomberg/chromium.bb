@@ -48,10 +48,10 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
 // which affect performance.
 template <typename Rect, typename Point>
 static LayoutRect mapLocalRectToPaintInvalidationBacking(
-    GeometryMapper& geometryMapper,
     const LayoutObject& object,
     const Rect& localRect,
-    const PaintInvalidatorContext& context) {
+    const PaintInvalidatorContext& context,
+    GeometryMapper& geometryMapper) {
   bool isSVGChild = object.isSVGChild();
 
   // TODO(wkorman): The flip below is required because visual rects are
@@ -138,7 +138,7 @@ void PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking(
     LayoutRect& rect) const {
   GeometryMapper geometryMapper;
   rect = blink::mapLocalRectToPaintInvalidationBacking<LayoutRect, LayoutPoint>(
-      geometryMapper, object, rect, *this);
+      object, rect, *this, geometryMapper);
 }
 
 LayoutRect PaintInvalidator::computeVisualRectInBacking(
@@ -147,10 +147,10 @@ LayoutRect PaintInvalidator::computeVisualRectInBacking(
   if (object.isSVGChild()) {
     FloatRect localRect = SVGLayoutSupport::localVisualRect(object);
     return mapLocalRectToPaintInvalidationBacking<FloatRect, FloatPoint>(
-        m_geometryMapper, object, localRect, context);
+        object, localRect, context, m_geometryMapper);
   }
   return mapLocalRectToPaintInvalidationBacking<LayoutRect, LayoutPoint>(
-      m_geometryMapper, object, object.localVisualRect(), context);
+      object, object.localVisualRect(), context, m_geometryMapper);
 }
 
 LayoutPoint PaintInvalidator::computeLocationInBacking(

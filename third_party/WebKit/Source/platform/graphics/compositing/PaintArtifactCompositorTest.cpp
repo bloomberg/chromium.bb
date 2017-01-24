@@ -122,7 +122,8 @@ class PaintArtifactCompositorTestWithPropertyTrees
   }
 
   void update(const PaintArtifact& artifact) {
-    m_paintArtifactCompositor->update(artifact, nullptr, false);
+    GeometryMapper geometryMapper;
+    m_paintArtifactCompositor->update(artifact, nullptr, false, geometryMapper);
     m_webLayerTreeView->layerTreeHost()->LayoutAndUpdateLayers();
   }
 

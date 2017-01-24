@@ -56,7 +56,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   void update(
       const PaintArtifact&,
       RasterInvalidationTrackingMap<const PaintChunk>* paintChunkInvalidations,
-      bool storeDebugInfo);
+      bool storeDebugInfo,
+      GeometryMapper&);
 
   // The root layer of the tree managed by this object.
   cc::Layer* rootLayer() const { return m_rootLayer.get(); }
