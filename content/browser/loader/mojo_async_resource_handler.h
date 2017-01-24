@@ -17,6 +17,7 @@
 #include "content/browser/loader/resource_handler.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
+#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/watcher.h"
@@ -48,7 +49,8 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
       net::URLRequest* request,
       ResourceDispatcherHostImpl* rdh,
       mojom::URLLoaderAssociatedRequest mojo_request,
-      mojom::URLLoaderClientAssociatedPtr url_loader_client);
+      mojom::URLLoaderClientAssociatedPtr url_loader_client,
+      ResourceType resource_type);
   ~MojoAsyncResourceHandler() override;
 
   // ResourceHandler implementation:

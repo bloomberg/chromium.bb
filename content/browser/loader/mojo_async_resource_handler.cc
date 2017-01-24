@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -55,6 +56,11 @@ void InitializeResourceBufferConstants() {
   did_init = true;
 
   GetNumericArg("resource-buffer-size", &g_allocation_size);
+}
+
+void NotReached(mojom::URLLoaderAssociatedRequest mojo_request,
+                mojom::URLLoaderClientAssociatedPtr url_loader_client) {
+  NOTREACHED();
 }
 
 }  // namespace
@@ -108,7 +114,8 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
     net::URLRequest* request,
     ResourceDispatcherHostImpl* rdh,
     mojom::URLLoaderAssociatedRequest mojo_request,
-    mojom::URLLoaderClientAssociatedPtr url_loader_client)
+    mojom::URLLoaderClientAssociatedPtr url_loader_client,
+    ResourceType resource_type)
     : ResourceHandler(request),
       rdh_(rdh),
       binding_(this, std::move(mojo_request)),
@@ -121,8 +128,12 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
   binding_.set_connection_error_handler(
       base::Bind(&MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
 
-  GetRequestInfo()->set_on_transfer(base::Bind(
-      &MojoAsyncResourceHandler::OnTransfer, weak_factory_.GetWeakPtr()));
+  if (IsResourceTypeFrame(resource_type)) {
+    GetRequestInfo()->set_on_transfer(base::Bind(
+        &MojoAsyncResourceHandler::OnTransfer, weak_factory_.GetWeakPtr()));
+  } else {
+    GetRequestInfo()->set_on_transfer(base::Bind(&NotReached));
+  }
 }
 
 MojoAsyncResourceHandler::~MojoAsyncResourceHandler() {
@@ -171,10 +182,10 @@ bool MojoAsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   response->head.response_start = base::TimeTicks::Now();
   sent_received_response_message_ = true;
 
-  mojom::DownloadedTempFilePtr downloaded_file_ptr;
+  mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file_ptr;
   if (!response->head.download_file_path.empty()) {
-    downloaded_file_ptr = DownloadedTempFileImpl::Create(info->GetChildID(),
-                                                         info->GetRequestID());
+    downloaded_file_ptr = DownloadedTempFileImpl::Create(
+        binding_.associated_group(), info->GetChildID(), info->GetRequestID());
     rdh_->RegisterDownloadedTempFile(info->GetChildID(), info->GetRequestID(),
                                      response->head.download_file_path);
   }

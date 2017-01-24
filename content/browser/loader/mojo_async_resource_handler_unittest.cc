@@ -186,7 +186,8 @@ class MojoAsyncResourceHandlerWithStubOperations
       : MojoAsyncResourceHandler(request,
                                  rdh,
                                  std::move(mojo_request),
-                                 std::move(url_loader_client)) {}
+                                 std::move(url_loader_client),
+                                 RESOURCE_TYPE_MAIN_FRAME) {}
   ~MojoAsyncResourceHandlerWithStubOperations() override {}
 
   void ResetBeginWriteExpectation() { is_begin_write_expectation_set_ = false; }

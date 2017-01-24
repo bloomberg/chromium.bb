@@ -55,8 +55,9 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   void FlushDeferredMessages();
 
   // mojom::URLLoaderClient implementation
-  void OnReceiveResponse(const ResourceResponseHead& response_head,
-                         mojom::DownloadedTempFilePtr downloaded_file) override;
+  void OnReceiveResponse(
+      const ResourceResponseHead& response_head,
+      mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override;
@@ -71,7 +72,7 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
 
   mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
-  mojom::DownloadedTempFilePtr downloaded_file_;
+  mojom::DownloadedTempFileAssociatedPtr downloaded_file_;
   std::vector<IPC::Message> deferred_messages_;
   const int request_id_;
   bool has_received_response_ = false;

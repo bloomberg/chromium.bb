@@ -100,6 +100,7 @@ specific_include_rules = {
     "+content/public/browser/global_request_id.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
     "+content/public/common/resource_response.h",
+    "+content/public/common/resource_type.h",
     "+content/common/url_loader.mojom.h",
   ],
   "mojo_async_resource_handler_unittest\.cc": [

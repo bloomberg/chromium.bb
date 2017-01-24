@@ -6,16 +6,33 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 // static
-mojo::InterfacePtr<mojom::DownloadedTempFile> DownloadedTempFileImpl::Create(
+mojom::DownloadedTempFileAssociatedPtrInfo DownloadedTempFileImpl::Create(
+    mojo::AssociatedGroup* associated_group,
+    int child_id,
+    int request_id) {
+  mojo::AssociatedInterfacePtrInfo<mojom::DownloadedTempFile> ptr_info;
+  mojo::AssociatedInterfaceRequest<mojom::DownloadedTempFile> request;
+  associated_group->CreateAssociatedInterface(
+      mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+  mojo::MakeStrongAssociatedBinding(
+      base::MakeUnique<DownloadedTempFileImpl>(child_id, request_id),
+      std::move(request));
+  return ptr_info;
+}
+
+// static
+mojom::DownloadedTempFilePtr DownloadedTempFileImpl::CreateForTesting(
     int child_id,
     int request_id) {
   mojo::InterfacePtr<mojom::DownloadedTempFile> ptr;
-  auto binding = mojo::MakeStrongBinding(
+  mojo::MakeStrongBinding(
       base::MakeUnique<DownloadedTempFileImpl>(child_id, request_id),
       mojo::MakeRequest(&ptr));
   return ptr;

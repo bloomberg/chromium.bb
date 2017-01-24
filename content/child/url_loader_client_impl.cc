@@ -112,9 +112,9 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
 
 void URLLoaderClientImpl::OnReceiveResponse(
     const ResourceResponseHead& response_head,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file) {
   has_received_response_ = true;
-  downloaded_file_ = std::move(downloaded_file);
+  downloaded_file_.Bind(std::move(downloaded_file));
   Dispatch(ResourceMsg_ReceivedResponse(request_id_, response_head));
 }
 

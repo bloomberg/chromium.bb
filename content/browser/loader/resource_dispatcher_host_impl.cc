@@ -1602,7 +1602,8 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     if (mojo_request.is_pending()) {
       handler.reset(new MojoAsyncResourceHandler(request, this,
                                                  std::move(mojo_request),
-                                                 std::move(url_loader_client)));
+                                                 std::move(url_loader_client),
+                                                 request_data.resource_type));
     } else {
       handler.reset(new AsyncResourceHandler(request, this));
     }

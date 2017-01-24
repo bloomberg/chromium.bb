@@ -35,7 +35,8 @@ interface DownloadedTempFile {
 interface URLLoaderClient {
   // Called when the response head is received. |downloaded_file| is non-null in
   // the 'download_to_file' case.
-  OnReceiveResponse(URLResponseHead head, DownloadedTempFile? downloaded_file);
+  OnReceiveResponse(URLResponseHead head,
+                    associated DownloadedTempFile? downloaded_file);
 
   // Called when the request has been redirected. The receiver is expected to
   // call FollowRedirect or cancel the request.
