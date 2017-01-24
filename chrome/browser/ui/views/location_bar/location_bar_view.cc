@@ -639,6 +639,7 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (!is_popup_mode_) {
     set_background(
         new BackgroundWith1PxBorder(GetColor(BACKGROUND), kBorderColor));
+    SchedulePaint();
   }
 }
 
