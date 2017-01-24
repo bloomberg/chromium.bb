@@ -1510,6 +1510,25 @@ void WindowTreeClient::WmDeactivateWindow(Id window_id) {
   window_manager_delegate_->OnWmDeactivateWindow(window->GetWindow());
 }
 
+void WindowTreeClient::WmStackAtTop(uint32_t wm_change_id, uint32_t window_id) {
+  if (!window_manager_delegate_)
+    return;
+
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window) {
+    DVLOG(1) << "Attempt to stack at top invalid window " << window_id;
+    if (window_manager_internal_client_)
+      window_manager_internal_client_->WmResponse(wm_change_id, false);
+    return;
+  }
+
+  Window* parent = window->GetWindow()->parent();
+  parent->StackChildAtTop(window->GetWindow());
+
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->WmResponse(wm_change_id, true);
+}
+
 void WindowTreeClient::OnAccelerator(uint32_t ack_id,
                                      uint32_t accelerator_id,
                                      std::unique_ptr<ui::Event> event) {

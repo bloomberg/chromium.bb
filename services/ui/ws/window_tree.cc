@@ -1625,13 +1625,21 @@ void WindowTree::StackAtTop(uint32_t change_id, Id window_id) {
     return;
   }
 
-  ServerWindow* relative_window = parent->children().back();
-  Operation op(this, window_server_, OperationType::REORDER_WINDOW);
-  window->Reorder(relative_window, mojom::OrderDirection::ABOVE);
-  window_server_->ProcessWindowReorder(window, relative_window,
-                                       mojom::OrderDirection::ABOVE);
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root) {
+    DVLOG(1) << "StackAtTop (no display root)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
 
-  client()->OnChangeCompleted(change_id, true);
+  // Window reordering assumes that it is the owner of parent who is sending
+  // the message, and does not deal gracefully with other clients reordering
+  // their windows. So tell the window manager to send us a reorder message.
+  WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
+  const uint32_t wm_change_id =
+      window_server_->GenerateWindowManagerChangeId(this, change_id);
+  wm_tree->window_manager_internal_->WmStackAtTop(
+      wm_change_id, wm_tree->ClientWindowIdForWindow(window).id);
 }
 
 void WindowTree::GetWindowManagerClient(

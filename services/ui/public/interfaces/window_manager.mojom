@@ -191,6 +191,10 @@ interface WindowManager {
   // to the next. The window manager may completely ignore this message.
   WmDeactivateWindow(uint32 window_id);
 
+  // Asks the WindowManager to stack |window_id| as the first child of its
+  // window manager owned parent.
+  WmStackAtTop(uint32 change_id, uint32 window_id);
+
   // An accelerator registered via AddAccelerator() has been triggered. If
   // |ack_id| is non-zero the accelerator matches a PRE_TARGET and must be
   // acknowledged by WindowManagerClient::OnAcceleratorAck().
