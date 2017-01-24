@@ -41,7 +41,7 @@ AwSafeBrowsingResourceThrottle::AwSafeBrowsingResourceThrottle(
 AwSafeBrowsingResourceThrottle::~AwSafeBrowsingResourceThrottle() {}
 
 void AwSafeBrowsingResourceThrottle::CancelResourceLoad() {
-  CancelWithError(net::ERR_BLOCKED_BY_ADMINISTRATOR);
+  CancelWithError(net::ERR_FAILED);
 }
 
 }  // namespace android_webview
