@@ -369,19 +369,6 @@ external/wpt/webvtt [ Skip ]
 external/wpt/resources/testharnessreport.js [ Skip ]
 external/wpt/common/vendor-prefix.js [ Skip ]
 
-# crbug.com/490694: Needs to support *.headers.
-external/wpt/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-001.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-007.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-009.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-015.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-016.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-018.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-030.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-034.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-037.html [ Skip ]
-external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-038.html [ Skip ]
-
 # crbug.com/490939: The following tests are too large.  They cause time out frequently.
 # Also, html/dom/interfaces.html is flaky.
 external/wpt/html/dom/interfaces.html [ Skip ]
@@ -392,9 +379,6 @@ external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-
 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-auto.html [ Skip ]
 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-fixed.html [ Skip ]
 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html [ Skip ]
-
-# Depends on unimported directories of web-platform-tests/.
-external/wpt/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
 
 # crbug.com/498120: Using absolute URL links.
 external/wpt/html/semantics/embedded-content/media-elements/audio_loop_base.html [ Skip ]
@@ -496,22 +480,7 @@ external/wpt/svg/shapes/rect-04.svg [ Skip ]
 external/wpt/html/browsers/the-window-object/security-window/window-security.sub.html [ Skip ]
 
 # crbug.com/493465: Requires the pipe feature of wptserve
-external/wpt/dom/events/EventListener-incumbent-global.sub.html [ Skip ]
-external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
-external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
-external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.sub.html [ Skip ]
-external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.sub.html [ Skip ]
-external/wpt/html/infrastructure/urls/dynamic-changes-to-base-urls/dynamic-urls.sub.xhtml [ Skip ]
 external/wpt/html/infrastructure/urls/resolving-urls [ Skip ]
-external/wpt/html/infrastructure/urls/terminology-0/multiple-base.sub.html [ Skip ]
-external/wpt/html/semantics/document-metadata/the-base-element/base_href_specified.sub.html [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/track/track-element/cors [ Skip ]
-external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
-external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
-
-# https://github.com/w3c/web-platform-tests/issues/1862:
-# The test doesn't handle ':' after a drive letter in file: URL on Windows.
-external/wpt/html/browsers/history/the-location-interface/location_hostname.html [ Skip ]
 
 # crbug.com/535615: Pathnames are too long for Windows.
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-fragment-into-document.html [ Skip ]
@@ -531,10 +500,6 @@ external/wpt/html/editing/dnd/platform/plugin/swfsources [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-003.html [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-004.html [ Skip ]
 
-# https://github.com/w3c/web-platform-tests/issues/1881: Tests refer
-# non-existing .js file.
-external/wpt/html/syntax/parsing/template [ Skip ]
-
 # these contain an extraneous debug log div ..
 external/wpt/html-imports/link-import-null.html [ Skip ]
 external/wpt/html-imports/link-import.html [ Skip ]
@@ -546,27 +511,6 @@ external/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorus
 
 # Requires http server. Needs http: scheme, using XHR, etc.
 external/wpt/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]
-external/wpt/dom/nodes/Document-URL.sub.html [ Skip ]
-external/wpt/dom/nodes/Document-characterSet-normalization.html [ Skip ]
-external/wpt/dom/nodes/Document-contentType/contentType/contenttype_mimeheader_01.html [ Skip ]
-external/wpt/dom/nodes/Document-contentType/contentType/contenttype_mimeheader_02.html [ Skip ]
-external/wpt/dom/nodes/Document-contentType/contentType/contenttype_xml.html [ Skip ]
-external/wpt/dom/nodes/Document-contentType/contentType/xhr_responseType_document.html [ Skip ]
-external/wpt/dom/nodes/Element-matches.html [ Skip ]
-external/wpt/html/browsers/history/the-history-interface/008.html [ Skip ]
-external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/document_domain.html [ Skip ]
-external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.htmln [ Skip ]
-external/wpt/html/infrastructure/urls/terminology-0/document-base-url.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/cross_origin_parentage.html [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/external-script-utf8.js [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/external-script-windows1250.js [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/script-charset-01.html [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/script-charset-02.html [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/script-not-found-not-executed-2.py [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/script-not-found-not-executed.html [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/script-not-found-not-executed.py [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/serve-with-content-type.py [ Skip ]
-external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
 
 # Requires http server. Moved the following test to http/tests/custom-elements/.
 external/wpt/custom-elements/v0/creating-and-passing-registries/no-registry-test.html [ Skip ]
@@ -583,17 +527,6 @@ external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-re
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-addEventListener.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-no-listener.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-onerror.html [ Skip ]
-external/wpt/html/semantics/forms/form-submission-0/submit-entity-body.html [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_003.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_004.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_005.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_006.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_008.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_009.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/script-crossorigin-network.html [ Skip ]
-external/wpt/html/semantics/scripting-1/the-script-element/resources/cross-origin.py [ Skip ]
 
 # This test requires manual interventions.
 external/wpt/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
@@ -698,10 +631,6 @@ external/csswg-test/css-writing-modes-3/text-combine-upright-value-digits4-003.h
 # crbug.com/561421: Update meta refresh parsing to match the new spec
 external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/parsing.html [ Skip ]
 external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/support [ Skip ]
-
-# Untriaged: Test results contain local file paths
-external/wpt/html/semantics/document-metadata/the-base-element/base_about_blank.html [ Skip ]
-external/wpt/html/semantics/document-metadata/the-base-element/base_srcdoc.html [ Skip ]
 
 # Untriaged: Tests don't complete.
 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/008.html [ Skip ]
