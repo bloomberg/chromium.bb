@@ -718,8 +718,8 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   }
 
   WebURLResponse response;
-  PopulateURLResponse(request_.url(), info, &response,
-                      request_.reportRawHeaders());
+  GURL url(request_.url());
+  PopulateURLResponse(url, info, &response, request_.reportRawHeaders());
 
   if (stream_override_.get()) {
     CHECK(IsBrowserSideNavigationEnabled());
@@ -738,12 +738,12 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     }
   }
 
-  bool show_raw_listing = (GURL(request_.url()).query() == "raw");
-
+  bool show_raw_listing = false;
   if (info.mime_type == "text/vnd.chromium.ftp-dir") {
-    if (show_raw_listing) {
+    if (url.query_piece() == "raw") {
       // Set the MIME type to plain text to prevent any active content.
       response.setMIMEType("text/plain");
+      show_raw_listing = true;
     } else {
       // We're going to produce a parsed listing in HTML.
       response.setMIMEType("text/html");
