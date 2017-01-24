@@ -2277,19 +2277,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
       return consumePositiveInteger(m_range);
-    case CSSPropertyWebkitTextFillColor:
-    case CSSPropertyWebkitTapHighlightColor:
-    case CSSPropertyWebkitTextEmphasisColor:
-    case CSSPropertyWebkitBorderStartColor:
-    case CSSPropertyWebkitBorderEndColor:
-    case CSSPropertyWebkitBorderBeforeColor:
-    case CSSPropertyWebkitBorderAfterColor:
-    case CSSPropertyWebkitTextStrokeColor:
-    case CSSPropertyStopColor:
-    case CSSPropertyFloodColor:
-    case CSSPropertyLightingColor:
-    case CSSPropertyColumnRuleColor:
-      return consumeColor(m_range, m_context->mode());
     case CSSPropertyColor:
     case CSSPropertyBackgroundColor:
       return consumeColor(m_range, m_context->mode(), inQuirksMode());
