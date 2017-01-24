@@ -4,6 +4,10 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 
+#include <math.h>
+#include <algorithm>
+#include <string>
+
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 
 namespace {
@@ -53,7 +57,7 @@ static constexpr int kLaserDataHeight = 1;
 
 // Background constants.
 static constexpr float kGroundTileSize = 2.5f;
-static constexpr float kGroundMaxSize = 50.0f;
+static constexpr float kGroundMaxSize = 25.0f;
 static constexpr float kGroundYPosition = -2.0f;
 
 // Laser texture data, 48x1 RGBA.
@@ -81,27 +85,34 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::TEXTURE_QUAD_VERTEX_SHADER:
     case vr_shell::ShaderID::RETICLE_VERTEX_SHADER:
     case vr_shell::ShaderID::LASER_VERTEX_SHADER:
-      return SHADER(uniform mat4 u_CombinedMatrix;
-                    attribute vec4 a_Position;
-                    attribute vec2 a_TexCoordinate;
-                    varying vec2 v_TexCoordinate;
+      return SHADER(
+          /* clang-format off */
+          uniform mat4 u_ModelViewProjMatrix;
+          attribute vec4 a_Position;
+          attribute vec2 a_TexCoordinate;
+          varying vec2 v_TexCoordinate;
 
-                    void main() {
-                      v_TexCoordinate = a_TexCoordinate;
-                      gl_Position = u_CombinedMatrix * a_Position;
-                    });
+          void main() {
+            v_TexCoordinate = a_TexCoordinate;
+            gl_Position = u_ModelViewProjMatrix * a_Position;
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::BACKGROUND_VERTEX_SHADER:
-      return SHADER(uniform mat4 u_CombinedMatrix;
-                    uniform float u_GridSize;
-                    attribute vec4 a_Position;
-                    varying vec2 v_GridPosition;
+      return SHADER(
+          /* clang-format off */
+          uniform mat4 u_ModelViewProjMatrix;
+          uniform float u_SceneRadius;
+          attribute vec4 a_Position;
+          varying vec2 v_GridPosition;
 
-                    void main() {
-                      v_GridPosition = a_Position.xz / (u_GridSize / 2.0);
-                      gl_Position = u_CombinedMatrix * a_Position;
-                    });
+          void main() {
+            v_GridPosition = a_Position.xz / u_SceneRadius;
+            gl_Position = u_ModelViewProjMatrix * a_Position;
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::TEXTURE_QUAD_FRAGMENT_SHADER:
       return OEIE_SHADER(
+          /* clang-format off */
           precision highp float;
           uniform samplerExternalOES u_Texture;
           uniform vec4 u_CopyRect;  // rectangle
@@ -115,9 +126,11 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                      u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
             lowp vec4 color = texture2D(u_Texture, scaledTex);
             gl_FragColor = vec4(color.xyz, color.w * opacity);
-          });
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
       return SHADER(
+          /* clang-format off */
           attribute vec4 a_Position;
           varying vec2 v_TexCoordinate;
 
@@ -125,18 +138,22 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             // Pack the texcoord into the position to avoid state changes.
             v_TexCoordinate = a_Position.zw;
             gl_Position = vec4(a_Position.xy, 0.0, 1.0);
-          });
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::WEBVR_FRAGMENT_SHADER:
       return OEIE_SHADER(
+          /* clang-format off */
           precision highp float;
           uniform samplerExternalOES u_Texture;
           varying vec2 v_TexCoordinate;
 
           void main() {
             gl_FragColor = texture2D(u_Texture, v_TexCoordinate);
-          });
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::RETICLE_FRAGMENT_SHADER:
       return SHADER(
+          /* clang-format off */
           varying mediump vec2 v_TexCoordinate;
           uniform lowp vec4 color;
           uniform mediump float ring_diameter;
@@ -167,9 +184,11 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                 min(hole_alpha, max(color1, black_alpha_factor)), 0.0, 1.0);
             lowp vec3 color_rgb = color1 * color.xyz;
             gl_FragColor = vec4(color_rgb, color.w * alpha);
-          });
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::LASER_FRAGMENT_SHADER:
       return SHADER(
+          /* clang-format off */
           varying mediump vec2 v_TexCoordinate;
           uniform sampler2D texture_unit;
           uniform lowp vec4 color;
@@ -186,16 +205,23 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             lowp vec4 texture_color = texture2D(texture_unit, uv);
             lowp vec4 final_color = color * texture_color;
             gl_FragColor = vec4(final_color.xyz, final_color.w * total_fade);
-          });
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::BACKGROUND_FRAGMENT_SHADER:
       return SHADER(
-                precision highp float;
-                varying vec2 v_GridPosition;
+          /* clang-format off */
+          precision highp float;
+          varying vec2 v_GridPosition;
+          uniform vec4 u_CenterColor;
+          uniform vec4 u_EdgeColor;
 
-                void main() {
-                  float luminance = 1.0 - length(v_GridPosition);
-                  gl_FragColor = vec4(0.8, 0.8, 0.8, luminance);
-                });
+          void main() {
+            float edgeColorWeight = clamp(length(v_GridPosition), 0.0, 1.0);
+            float centerColorWeight = 1.0 - edgeColorWeight;
+            gl_FragColor = u_CenterColor * centerColorWeight +
+                u_EdgeColor * edgeColorWeight;
+          }
+          /* clang-format on */);
     default:
       LOG(ERROR) << "Shader source requested for unknown shader";
       return "";
@@ -231,13 +257,13 @@ BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
 
 BaseRenderer::~BaseRenderer() = default;
 
-void BaseRenderer::PrepareToDraw(GLuint combined_matrix_handle,
-                                 const gvr::Mat4f& combined_matrix) {
+void BaseRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
+                                 const gvr::Mat4f& view_proj_matrix) {
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.
-  glUniformMatrix4fv(combined_matrix_handle, 1, false,
-                     MatrixToGLArray(combined_matrix).data());
+  glUniformMatrix4fv(view_proj_matrix_handle, 1, false,
+                     MatrixToGLArray(view_proj_matrix).data());
 
   // Pass in texture coordinate.
   glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize,
@@ -254,8 +280,8 @@ void BaseRenderer::PrepareToDraw(GLuint combined_matrix_handle,
 
 TexturedQuadRenderer::TexturedQuadRenderer()
     : BaseRenderer(TEXTURE_QUAD_VERTEX_SHADER, TEXTURE_QUAD_FRAGMENT_SHADER) {
-  combined_matrix_handle_ =
-      glGetUniformLocation(program_handle_, "u_CombinedMatrix");
+  model_view_proj_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
   copy_rect_uniform_handle_ =
       glGetUniformLocation(program_handle_, "u_CopyRect");
@@ -263,10 +289,10 @@ TexturedQuadRenderer::TexturedQuadRenderer()
 }
 
 void TexturedQuadRenderer::Draw(int texture_data_handle,
-                                const gvr::Mat4f& combined_matrix,
+                                const gvr::Mat4f& view_proj_matrix,
                                 const Rectf& copy_rect,
                                 float opacity) {
-  PrepareToDraw(combined_matrix_handle_, combined_matrix);
+  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
@@ -348,8 +374,8 @@ WebVrRenderer::~WebVrRenderer() = default;
 
 ReticleRenderer::ReticleRenderer()
     : BaseRenderer(RETICLE_VERTEX_SHADER, RETICLE_FRAGMENT_SHADER) {
-  combined_matrix_handle_ =
-      glGetUniformLocation(program_handle_, "u_CombinedMatrix");
+  model_view_proj_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   color_handle_ = glGetUniformLocation(program_handle_, "color");
   ring_diameter_handle_ =
       glGetUniformLocation(program_handle_, "ring_diameter");
@@ -363,8 +389,8 @@ ReticleRenderer::ReticleRenderer()
       glGetUniformLocation(program_handle_, "mid_ring_opacity");
 }
 
-void ReticleRenderer::Draw(const gvr::Mat4f& combined_matrix) {
-  PrepareToDraw(combined_matrix_handle_, combined_matrix);
+void ReticleRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
+  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   glUniform4f(color_handle_, kReticleColor[0], kReticleColor[1],
               kReticleColor[2], kReticleColor[3]);
@@ -385,8 +411,8 @@ ReticleRenderer::~ReticleRenderer() = default;
 
 LaserRenderer::LaserRenderer()
     : BaseRenderer(LASER_VERTEX_SHADER, LASER_FRAGMENT_SHADER) {
-  combined_matrix_handle_ =
-      glGetUniformLocation(program_handle_, "u_CombinedMatrix");
+  model_view_proj_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   texture_unit_handle_ =
       glGetUniformLocation(program_handle_, "texture_unit");
   color_handle_ = glGetUniformLocation(program_handle_, "color");
@@ -406,8 +432,8 @@ LaserRenderer::LaserRenderer()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-void LaserRenderer::Draw(const gvr::Mat4f& combined_matrix) {
-  PrepareToDraw(combined_matrix_handle_, combined_matrix);
+void LaserRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
+  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
@@ -429,20 +455,21 @@ LaserRenderer::~LaserRenderer() = default;
 
 BackgroundRenderer::BackgroundRenderer()
     : BaseRenderer(BACKGROUND_VERTEX_SHADER, BACKGROUND_FRAGMENT_SHADER) {
-  combined_matrix_handle_ =
-      glGetUniformLocation(program_handle_, "u_CombinedMatrix");
-  grid_size_handle_ =
-      glGetUniformLocation(program_handle_, "u_GridSize");
+  model_view_proj_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
+  scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");
+  center_color_handle_ = glGetUniformLocation(program_handle_, "u_CenterColor");
+  edge_color_handle_ = glGetUniformLocation(program_handle_, "u_EdgeColor");
 
   // Make ground grid.
   int groundTilesNumber = kGroundMaxSize / kGroundTileSize;
-  float groundSize = groundTilesNumber * kGroundTileSize;
+  scene_radius_ = groundTilesNumber * kGroundTileSize * 0.5f;
   int groundLinesNumber = 2 * (groundTilesNumber + 1);
   ground_grid_lines_.resize(groundLinesNumber);
 
   for (int i = 0; i < groundLinesNumber - 1; i += 2) {
     float position =
-        -groundSize / 2.0f + (i / 2) * groundSize / groundTilesNumber;
+        -scene_radius_ + (i / 2) * scene_radius_ * 2.0f / groundTilesNumber;
 
     // Line parallel to the z axis.
     Line3d& zLine = ground_grid_lines_[i];
@@ -451,39 +478,85 @@ BackgroundRenderer::BackgroundRenderer()
 
     zLine.start.x = position;
     zLine.start.y = kGroundYPosition;
-    zLine.start.z = -groundSize / 2.0f;
+    zLine.start.z = -scene_radius_;
     zLine.end.x = position;
     zLine.end.y = kGroundYPosition;
-    zLine.end.z = groundSize / 2.0f;
-    xLine.start.x = -groundSize / 2.0f;
+    zLine.end.z = scene_radius_;
+    xLine.start.x = -scene_radius_;
     xLine.start.y = kGroundYPosition;
     xLine.start.z = position;
-    xLine.end.x = groundSize / 2.0f;
+    xLine.end.x = scene_radius_;
     xLine.end.y = kGroundYPosition;
     xLine.end.z = position;
   }
+
+  // Make plane for ground and ceilings.
+  // clang-format off
+  ground_ceiling_plane_positions_ = {
+      // First triangle.
+      -scene_radius_, 0.0f,  scene_radius_,
+       scene_radius_, 0.0f,  scene_radius_,
+      -scene_radius_, 0.0f, -scene_radius_,
+      // Second triangle.
+      -scene_radius_, 0.0f, -scene_radius_,
+       scene_radius_, 0.0f,  scene_radius_,
+       scene_radius_, 0.0f, -scene_radius_};
+  // clang-format on
+
+  // Make the transform to draw the plane either on the ground or the ceiling.
+  SetIdentityM(ground_plane_transform_mat_);
+  TranslateMRight(ground_plane_transform_mat_, ground_plane_transform_mat_,
+                  0.0f, kGroundYPosition - 0.1f, 0.0f);
+
+  SetIdentityM(ceiling_plane_transform_mat_);
+  gvr::Quatf rotation_quat = QuatFromAxisAngle({1.0f, 0.0f, 0.0f}, M_PI);
+  ceiling_plane_transform_mat_ =
+      MatrixMul(ceiling_plane_transform_mat_, QuatToMatrix(rotation_quat));
+  TranslateMRight(ceiling_plane_transform_mat_, ceiling_plane_transform_mat_,
+                  0.0f, kGroundYPosition - 0.1f, 0.0f);
 }
 
-void BackgroundRenderer::Draw(const gvr::Mat4f& combined_matrix) {
+void BackgroundRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.
-  glUniformMatrix4fv(combined_matrix_handle_, 1, false,
-                     MatrixToGLArray(combined_matrix).data());
+  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
+                     MatrixToGLArray(view_proj_matrix).data());
 
   // Tell shader the grid size so that it can calculate the fading.
   int groundTilesNumber = kGroundMaxSize / kGroundTileSize;
-  float groundSize = groundTilesNumber * kGroundTileSize;
-  glUniform1f(grid_size_handle_, groundSize);
+  glUniform1f(scene_radius_handle_, scene_radius_);
 
-  // Activate ground grid vertices.
+  // Set the edge color to the fog color so that it seems to fade out.
+  glUniform4f(edge_color_handle_, kFogBrightness, kFogBrightness,
+              kFogBrightness, 1.0f);
+
+  // Draw the ground grid.
+  glEnableVertexAttribArray(position_handle_);
   glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
                         (float*)ground_grid_lines_.data());
-  glEnableVertexAttribArray(position_handle_);
-
-  // Draw the ground.
+  glUniform4f(center_color_handle_, kGridBrightness, kGridBrightness,
+              kGridBrightness, 1.0f);
   int groundVerticesNumber = 4 * (groundTilesNumber + 1);
   glDrawArrays(GL_LINES, 0, groundVerticesNumber);
+
+  // Draw the ground plane.
+  gvr::Mat4f transformed_matrix =
+      MatrixMul(view_proj_matrix, ground_plane_transform_mat_);
+  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
+                     MatrixToGLArray(transformed_matrix).data());
+  glUniform4f(center_color_handle_, kGroundCeilingBrightness,
+              kGroundCeilingBrightness, kGroundCeilingBrightness, 1.0f);
+  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
+                        ground_ceiling_plane_positions_.data());
+  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+
+  // Draw the ceiling plane.
+  transformed_matrix =
+      MatrixMul(view_proj_matrix, ceiling_plane_transform_mat_);
+  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
+                     MatrixToGLArray(transformed_matrix).data());
+  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
 
   glDisableVertexAttribArray(position_handle_);
 }

@@ -720,7 +720,9 @@ void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose,
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(BackgroundRenderer::kFogBrightness,
+                 BackgroundRenderer::kFogBrightness,
+                 BackgroundRenderer::kFogBrightness, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   if (!world_elements.empty()) {
