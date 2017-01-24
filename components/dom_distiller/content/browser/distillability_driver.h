@@ -26,10 +26,8 @@ class DistillabilityDriver
   void SetDelegate(const base::Callback<void(bool, bool)>& delegate);
 
   // content::WebContentsObserver implementation.
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void RenderFrameHostChanged(
       content::RenderFrameHost* old_host,
       content::RenderFrameHost* new_host) override;
