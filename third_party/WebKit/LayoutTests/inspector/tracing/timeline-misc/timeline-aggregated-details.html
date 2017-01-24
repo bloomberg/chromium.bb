@@ -610,11 +610,11 @@ function test()
     function testEventTree(type, grouping)
     {
         InspectorTest.addResult("");
-        timeline._detailsView.selectTab(type, true);
+        timeline._detailsView._tabbedPane.selectTab(type, true);
         var callTree = timeline._detailsView._rangeDetailViews.get(type);
         if (grouping) {
             InspectorTest.addResult(type + "  Group by: " + grouping);
-            callTree._groupByCombobox.select(callTree._groupByCombobox.options().find((x) => x.value === grouping));
+            callTree._groupByCombobox.select(callTree._groupByCombobox.options().find(x => x.value === grouping));
             callTree._onGroupByChanged();
         } else {
             InspectorTest.addResult(type);
