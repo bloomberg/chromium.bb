@@ -111,6 +111,9 @@ message FetchThreatListUpdatesRequest {
 
   // The requested threat list updates.
   repeated ListUpdateRequest list_update_requests = 3;
+
+  // Chrome-specific client information.
+  optional ChromeClientInfo chrome_client_info = 4;
 }
 
 // Response type for threat list update requests.
@@ -321,6 +324,28 @@ message ClientInfo {
 
   // The version of the client implementation.
   optional string client_version = 2;
+}
+
+// The client metadata associated with Safe Browsing API requests specific to
+// users of Chrome.
+message ChromeClientInfo {
+  // Safe Browsing reporting populations in Chrome.
+  enum SafeBrowsingReportingPopulation {
+    // Unspecified reporting verbosity.
+    UNSPECIFIED = 0;
+
+    // Client is opted out of reporting.
+    OPT_OUT = 1;
+
+    // Legacy extended reporting population.
+    EXTENDED = 2;
+
+    // Scout reporting population.
+    SCOUT = 3;
+  }
+
+  // The reporting population of the user.
+  optional SafeBrowsingReportingPopulation reporting_population = 1;
 }
 
 // The expected state of a client's local database.
