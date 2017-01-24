@@ -503,6 +503,14 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Facade for Mojo API.
 @property(nonatomic, readonly) web::MojoFacade* mojoFacade;
 
+// Updates Desktop User Agent and calls webWillFinishHistoryNavigationFromEntry:
+// on CRWWebDelegate. TODO(crbug.com/684098): Remove this method and inline its
+// content.
+- (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry;
+// Recreates web view if |entry| and |fromEntry| have different value for
+// IsOverridingUserAgent() flag.
+- (void)updateDesktopUserAgentForEntry:(CRWSessionEntry*)entry
+                             fromEntry:(CRWSessionEntry*)fromEntry;
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
 // Called when the web page has changed document and/or URL, and so the page
@@ -2180,25 +2188,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                                                        andEntry:entries[index]];
     if (sameDocumentNavigation) {
       [self.sessionController goToEntryAtIndex:index];
-
-      // Implementation of |webWillFinishHistoryNavigationFromEntry:| expects
-      // that NavigationManager has either a pending item or already made the
-      // navigation. Hence this delegate must be called after changing current
-      // navigation item. TODO(crbug.com/670149): Remove this delegate method as
-      // CRWWebController does not need to delegate setting Desktop User Agent.
-      [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
+      // TODO(crbug.com/684098): move this call out this block to avoid code
+      // duplication.
+      [self webWillFinishHistoryNavigationFromEntry:fromEntry];
       [self updateHTML5HistoryState];
     } else {
       [sessionController discardNonCommittedEntries];
       [sessionController setPendingEntryIndex:index];
 
-      // Implementation of |webWillFinishHistoryNavigationFromEntry:| expects
-      // that NavigationManager has either a pending item or already made the
-      // navigation. Hence this delegate must be called after changing pending
-      // navigation index. TODO(crbug.com/670149): Remove this delegate method
-      // as CRWWebController does not need to delegate setting Desktop User
-      // Agent.
-      [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
+      // TODO(crbug.com/684098): move this call out this block to avoid code
+      // duplication.
+      [self webWillFinishHistoryNavigationFromEntry:fromEntry];
 
       web::NavigationItemImpl* pendingItem =
           sessionController.pendingEntry.navigationItemImpl;
@@ -2306,7 +2306,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)finishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
-  [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
+  [self webWillFinishHistoryNavigationFromEntry:fromEntry];
 
   // Only load the new URL if it has a different document than |fromEntry| to
   // prevent extra page loads from NavigationItems created by hash changes or
@@ -2427,6 +2427,25 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       initWithContextGetter:browserState->GetRequestContext()
           completionHandler:passKitCompletion]);
   return _passKitDownloader.get();
+}
+
+- (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
+  DCHECK(fromEntry);
+  [self updateDesktopUserAgentForEntry:self.currentSessionEntry
+                             fromEntry:fromEntry];
+  [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
+}
+
+- (void)updateDesktopUserAgentForEntry:(CRWSessionEntry*)entry
+                             fromEntry:(CRWSessionEntry*)fromEntry {
+  web::NavigationItemImpl* item = entry.navigationItemImpl;
+  web::NavigationItemImpl* fromItem = fromEntry.navigationItemImpl;
+  if (!item || !fromItem)
+    return;
+  bool useDesktopUserAgent = item->IsOverridingUserAgent();
+  if (useDesktopUserAgent != fromItem->IsOverridingUserAgent()) {
+    [self requirePageReconstruction];
+  }
 }
 
 #pragma mark -
