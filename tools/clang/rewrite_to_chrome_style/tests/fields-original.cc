@@ -65,9 +65,21 @@ union U {
 // https://crbug.com/640749#c1: Some type traits are inside blink namespace.
 struct IsGarbageCollectedMixin {
   static const bool value = true;
+  static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
 }  // namespace blink
+
+namespace not_blink {
+
+// These are traits for WTF types that may be defined outside of blink such
+// as in mojo. But their names are unique so we can globally treat them as
+// type traits for renaming.
+struct GloballyKnownTraits {
+  static const bool safeToCompareToEmptyOrDeleted = false;
+};
+
+}  // namespace not_blink
 
 namespace WTF {
 
