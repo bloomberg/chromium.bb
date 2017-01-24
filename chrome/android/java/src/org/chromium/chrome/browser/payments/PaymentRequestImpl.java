@@ -1232,7 +1232,7 @@ public class PaymentRequestImpl
 
             // If there's a card on file with a valid number and a name, then
             // PaymentRequest.canMakePayment() returns true.
-            mCanMakePayment |= creditCard.isValid();
+            mCanMakePayment |= creditCard.isValidCard();
         }
 
         // List order:

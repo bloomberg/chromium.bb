@@ -230,7 +230,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
      * @return Whether the card number is valid and name on card is non-empty. Billing address is
      * not taken into consideration.
      */
-    public boolean isValid() {
+    public boolean isValidCard() {
         return mHasValidNumberAndName;
     }
 
