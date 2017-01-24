@@ -103,15 +103,6 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& EnableUnsafeNetworkAccessWithMojoBindings(
       bool enable_http_and_https_if_mojo_used);
 
-  // Set a callback that is invoked to override WebPreferences for RenderViews
-  // created within this HeadlessBrowserContext. Called whenever the
-  // WebPreferences of a RenderView change. Executed on the browser main thread.
-  //
-  // WARNING: We cannot provide any guarantees about the stability of the
-  // exposed WebPreferences API, so use with care.
-  Builder& SetOverrideWebPreferencesCallback(
-      base::Callback<void(WebPreferences*)> callback);
-
   // By default |HeadlessBrowserContext| inherits the following options from
   // the browser instance. The methods below can be used to override these
   // settings. See HeadlessBrowser::Options for their meaning.
@@ -121,6 +112,8 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
   Builder& SetIncognitoMode(bool incognito_mode);
+  Builder& SetOverrideWebPreferencesCallback(
+      base::Callback<void(WebPreferences*)> callback);
 
   HeadlessBrowserContext* Build();
 

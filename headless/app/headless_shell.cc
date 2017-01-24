@@ -92,13 +92,6 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
       context_builder.SetProtocolHandlers(std::move(protocol_handlers));
     }
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kHideScrollbars)) {
-      context_builder.SetOverrideWebPreferencesCallback(
-          base::Bind([](WebPreferences* preferences) {
-            preferences->hide_scrollbars = true;
-          }));
-    }
     browser_context_ = context_builder.Build();
     browser_->SetDefaultBrowserContext(browser_context_);
 
@@ -516,6 +509,11 @@ int HeadlessShellMain(int argc, const char** argv) {
       return EXIT_FAILURE;
     }
     builder.SetWindowSize(parsed_window_size);
+  }
+
+  if (command_line.HasSwitch(switches::kHideScrollbars)) {
+    builder.SetOverrideWebPreferencesCallback(base::Bind([](
+        WebPreferences* preferences) { preferences->hide_scrollbars = true; }));
   }
 
   return HeadlessBrowserMain(

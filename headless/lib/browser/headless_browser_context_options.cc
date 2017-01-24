@@ -61,6 +61,13 @@ bool HeadlessBrowserContextOptions::incognito_mode() const {
                                browser_options_->incognito_mode);
 }
 
+const base::Callback<void(WebPreferences*)>&
+HeadlessBrowserContextOptions::override_web_preferences_callback() const {
+  return ReturnOverriddenValue(
+      override_web_preferences_callback_,
+      browser_options_->override_web_preferences_callback);
+}
+
 const ProtocolHandlerMap& HeadlessBrowserContextOptions::protocol_handlers()
     const {
   return protocol_handlers_;
@@ -68,11 +75,6 @@ const ProtocolHandlerMap& HeadlessBrowserContextOptions::protocol_handlers()
 
 ProtocolHandlerMap HeadlessBrowserContextOptions::TakeProtocolHandlers() {
   return std::move(protocol_handlers_);
-}
-
-const base::Callback<void(WebPreferences*)>&
-HeadlessBrowserContextOptions::override_web_preferences_callback() const {
-  return override_web_preferences_callback_;
 }
 
 }  // namespace headless

@@ -66,9 +66,10 @@ class HeadlessBrowserContextOptions {
   base::Optional<gfx::Size> window_size_;
   base::Optional<base::FilePath> user_data_dir_;
   base::Optional<bool> incognito_mode_;
+  base::Optional<base::Callback<void(WebPreferences*)>>
+      override_web_preferences_callback_;
 
   ProtocolHandlerMap protocol_handlers_;
-  base::Callback<void(WebPreferences*)> override_web_preferences_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextOptions);
 };

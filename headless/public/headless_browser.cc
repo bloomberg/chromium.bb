@@ -102,6 +102,12 @@ Builder& Builder::SetIncognitoMode(bool incognito_mode) {
   return *this;
 }
 
+Builder& Builder::SetOverrideWebPreferencesCallback(
+    base::Callback<void(WebPreferences*)> callback) {
+  options_.override_web_preferences_callback = callback;
+  return *this;
+}
+
 Options Builder::Build() {
   return std::move(options_);
 }
