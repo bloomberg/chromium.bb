@@ -33,6 +33,7 @@
 #include "sql/connection_memory_dump_provider.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "sql/vfs_wrapper.h"
 #include "third_party/sqlite/sqlite3.h"
 
 #if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
@@ -1690,7 +1691,12 @@ bool Connection::OpenInternal(const std::string& file_name,
   DLOG_IF(FATAL, poisoned_) << "sql::Connection is already open.";
   poisoned_ = false;
 
-  int err = sqlite3_open(file_name.c_str(), &db_);
+  // Custom memory-mapping VFS which reads pages using regular I/O on first hit.
+  sqlite3_vfs* vfs = VFSWrapper();
+  const char* vfs_name = (vfs ? vfs->zName : nullptr);
+  int err = sqlite3_open_v2(file_name.c_str(), &db_,
+                            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                            vfs_name);
   if (err != SQLITE_OK) {
     // Extended error codes cannot be enabled until a handle is
     // available, fetch manually.

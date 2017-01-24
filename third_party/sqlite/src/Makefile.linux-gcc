@@ -44,11 +44,7 @@ THREADLIB = -lpthread
 #### Specify any extra libraries needed to access required functions.
 #
 #TLIBS = -lrt    # fdatasync on Solaris 8
-ifeq ($(shell uname -s),Darwin)
-TLIBS = -framework CoreServices
-else
 TLIBS = -ldl
-endif
 
 #### Leave SQLITE_DEBUG undefined for maximum speed.  Use SQLITE_DEBUG=1
 #    to check for memory leaks.  Use SQLITE_DEBUG=2 to print a log of all

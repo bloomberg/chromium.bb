@@ -22,6 +22,14 @@
 #include "base/ios/ios_util.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreServices/CoreServices.h>
+
+#include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
+#endif
+
 // Test that certain features are/are-not enabled in our SQLite.
 
 namespace {
@@ -302,5 +310,55 @@ TEST_F(SQLiteFeaturesTest, CachedRegexp) {
   ASSERT_TRUE(s.Step());
   EXPECT_EQ(7, s.ColumnInt(0));
 }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+base::ScopedCFTypeRef<CFURLRef> CFURLRefForPath(const base::FilePath& path){
+  base::ScopedCFTypeRef<CFStringRef> urlString(
+      CFStringCreateWithFileSystemRepresentation(
+          kCFAllocatorDefault, path.value().c_str()));
+  base::ScopedCFTypeRef<CFURLRef> url(
+      CFURLCreateWithFileSystemPath(kCFAllocatorDefault, urlString,
+                                    kCFURLPOSIXPathStyle, FALSE));
+  return url;
+}
+
+// If a database file is marked to be excluded from Time Machine, verify that
+// journal files are also excluded.
+// TODO(shess): Disabled because CSBackupSetItemExcluded() does not work on the
+// bots, though it's fine on dev machines.  See <http://crbug.com/410350>.
+TEST_F(SQLiteFeaturesTest, DISABLED_TimeMachine) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE t (id INTEGER PRIMARY KEY)"));
+  db().Close();
+
+  base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
+  ASSERT_TRUE(GetPathExists(db_path()));
+  ASSERT_TRUE(GetPathExists(journal));
+
+  base::ScopedCFTypeRef<CFURLRef> dbURL(CFURLRefForPath(db_path()));
+  base::ScopedCFTypeRef<CFURLRef> journalURL(CFURLRefForPath(journal));
+
+  // Not excluded to start.
+  EXPECT_FALSE(CSBackupIsItemExcluded(dbURL, NULL));
+  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, NULL));
+
+  // Exclude the main database file.
+  EXPECT_TRUE(base::mac::SetFileBackupExclusion(db_path()));
+
+  Boolean excluded_by_path = FALSE;
+  EXPECT_TRUE(CSBackupIsItemExcluded(dbURL, &excluded_by_path));
+  EXPECT_FALSE(excluded_by_path);
+  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, NULL));
+
+  EXPECT_TRUE(db().Open(db_path()));
+  ASSERT_TRUE(db().Execute("INSERT INTO t VALUES (1)"));
+  EXPECT_TRUE(CSBackupIsItemExcluded(dbURL, &excluded_by_path));
+  EXPECT_FALSE(excluded_by_path);
+  EXPECT_TRUE(CSBackupIsItemExcluded(journalURL, &excluded_by_path));
+  EXPECT_FALSE(excluded_by_path);
+
+  // TODO(shess): In WAL mode this will touch -wal and -shm files.  -shm files
+  // could be always excluded.
+}
+#endif
 
 }  // namespace

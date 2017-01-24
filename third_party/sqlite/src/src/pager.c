@@ -5497,20 +5497,6 @@ void sqlite3PagerUnref(DbPage *pPg){
   if( pPg ) sqlite3PagerUnrefNotNull(pPg);
 }
 
-#if defined(__APPLE__)
-/*
-** Create and return a CFURLRef given a cstring containing the path to a file.
-*/
-static CFURLRef create_cfurl_from_cstring(const char* filePath){
-  CFStringRef urlString = CFStringCreateWithFileSystemRepresentation(
-      kCFAllocatorDefault, filePath);
-  CFURLRef urlRef = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-      urlString, kCFURLPOSIXPathStyle, FALSE);
-  CFRelease(urlString);
-  return urlRef;
-}
-#endif
-
 /*
 ** This function is called at the start of every write transaction.
 ** There must already be a RESERVED or EXCLUSIVE lock on the database 
@@ -5574,24 +5560,6 @@ static int pager_open_journal(Pager *pPager){
           );
 #else
           rc = sqlite3OsOpen(pVfs, pPager->zJournal, pPager->jfd, flags, 0);
-#endif
-#if defined(__APPLE__)
-          /* Set the TimeMachine exclusion metadata for the journal if it has
-          ** been set for the database. Only do this for unix-type vfs
-          ** implementations. */
-          if( rc==SQLITE_OK && pPager->zFilename!=NULL
-           && strlen(pPager->zFilename)>0
-           && strncmp(pVfs->zName, "unix", 4)==0
-           && ( pVfs->zName[4]=='-' || pVfs->zName[4]=='\0' ) ){
-            CFURLRef database = create_cfurl_from_cstring(pPager->zFilename);
-            if( CSBackupIsItemExcluded(database, NULL) ){
-              CFURLRef journal = create_cfurl_from_cstring(pPager->zJournal);
-              /* Ignore errors from the following exclusion call. */
-              CSBackupSetItemExcluded(journal, TRUE, FALSE);
-              CFRelease(journal);
-            }
-            CFRelease(database);
-          }
 #endif
         }
       }

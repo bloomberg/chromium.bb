@@ -23,6 +23,8 @@ component("sql") {
     "statement.h",
     "transaction.cc",
     "transaction.h",
+    "vfs_wrapper.cc",
+    "vfs_wrapper.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -35,6 +37,14 @@ component("sql") {
     "//base/third_party/dynamic_annotations",
     "//third_party/sqlite",
   ]
+
+  # For vfs_wrapper.cc time-machine exclusions.
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "CoreServices.framework",
+    ]
+  }
 }
 
 static_library("test_support") {

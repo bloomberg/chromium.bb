@@ -728,7 +728,7 @@ TESTFIXTURE_FLAGS += -DDEFAULT_ENABLE_RECOVER=1
 testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
 	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
 		$(TESTSRC) $(TESTSRC2) $(TOP)/src/tclsqlite.c                \
-		-o testfixture$(EXE) $(LIBTCL) libsqlite3.a $(THREADLIB) $(TLIBS)
+		-o testfixture$(EXE) $(LIBTCL) libsqlite3.a $(THREADLIB)
 
 amalgamation-testfixture$(EXE): sqlite3.c $(TESTSRC) $(TOP)/src/tclsqlite.c
 	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
