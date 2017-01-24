@@ -65,9 +65,8 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
                      const std::string& error) override;
 
   // content::WebContentsObserver:
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Add a failure to |failures_|. If it was a manifest error, |manifest| will
   // hold the manifest contents, and |line_number| will point to the line at

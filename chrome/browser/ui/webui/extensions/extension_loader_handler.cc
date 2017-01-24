@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -169,14 +170,16 @@ void ExtensionLoaderHandler::OnLoadFailure(
                  line));
 }
 
-void ExtensionLoaderHandler::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::ReloadType reload_type) {
+void ExtensionLoaderHandler::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
   // In the event of a page reload, we ensure that the frontend is not notified
   // until the UI finishes loading, so we set |ui_ready_| to false. This is
   // balanced in HandleDisplayFailures, which is called when the frontend is
   // ready to receive failure notifications.
-  if (reload_type != content::ReloadType::NONE)
+  if (navigation_handle->GetReloadType() != content::ReloadType::NONE)
     ui_ready_ = false;
 }
 
