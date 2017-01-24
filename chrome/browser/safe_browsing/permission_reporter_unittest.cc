@@ -47,12 +47,12 @@ const char kDummyGroupOne[] = "group one";
 const char kDummyTrialTwo[] = "trial two";
 const char kDummyGroupTwo[] = "group two";
 
-const char kFeatureOnByDefaultName[] = "OnByDefault";
+constexpr char kFeatureOnByDefaultName[] = "OnByDefault";
 struct base::Feature kFeatureOnByDefault {
   kFeatureOnByDefaultName, base::FEATURE_ENABLED_BY_DEFAULT
 };
 
-const char kFeatureOffByDefaultName[] = "OffByDefault";
+constexpr char kFeatureOffByDefaultName[] = "OffByDefault";
 struct base::Feature kFeatureOffByDefault {
   kFeatureOffByDefaultName, base::FEATURE_DISABLED_BY_DEFAULT
 };
