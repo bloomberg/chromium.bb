@@ -12,7 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
+import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -131,7 +131,7 @@ public class PersonalDataManager {
          * locale. All other fields are empty strings, because JNI does not handle null strings.
          */
         public AutofillProfile() {
-            this("" /* guid */, AutofillPreferences.SETTINGS_ORIGIN /* origin */,
+            this("" /* guid */, AutofillAndPaymentsPreferences.SETTINGS_ORIGIN /* origin */,
                     true /* isLocal */, "" /* fullName */, "" /* companyName */,
                     "" /* streetAddress */, "" /* region */, "" /* locality */,
                     "" /* dependentLocality */, "" /* postalCode */, "" /* sortingCode */,
@@ -373,10 +373,11 @@ public class PersonalDataManager {
         }
 
         public CreditCard() {
-            this("" /* guid */, AutofillPreferences.SETTINGS_ORIGIN /*origin */, true /* isLocal */,
-                    false /* isCached */, "" /* name */, "" /* number */, "" /* obfuscatedNumber */,
-                    "" /* month */, "" /* year */, "" /* basicCardPaymentType */,
-                    0 /* issuerIconDrawableId */, "" /* billingAddressId */, "" /* serverId */);
+            this("" /* guid */, AutofillAndPaymentsPreferences.SETTINGS_ORIGIN /*origin */,
+                    true /* isLocal */, false /* isCached */, "" /* name */, "" /* number */,
+                    "" /* obfuscatedNumber */, "" /* month */, "" /* year */,
+                    "" /* basicCardPaymentType */, 0 /* issuerIconDrawableId */,
+                    "" /* billingAddressId */, "" /* serverId */);
         }
 
         /** TODO(estade): remove this constructor. */
@@ -827,6 +828,24 @@ public class PersonalDataManager {
     }
 
     /**
+     * Checks whether the Autofill PersonalDataManager has profiles.
+     *
+     * @return True If there are profiles.
+     */
+    public boolean hasProfiles() {
+        return nativeHasProfiles(mPersonalDataManagerAndroid);
+    }
+
+    /**
+     * Checks whether the Autofill PersonalDataManager has credit cards.
+     *
+     * @return True If there are credit cards.
+     */
+    public boolean hasCreditCards() {
+        return nativeHasCreditCards(mPersonalDataManagerAndroid);
+    }
+
+    /**
      * @return Whether the Autofill feature is enabled.
      */
     public static boolean isAutofillEnabled() {
@@ -940,6 +959,8 @@ public class PersonalDataManager {
             String guid, String regionCode, NormalizedAddressRequestDelegate delegate);
     private native void nativeCancelPendingAddressNormalizations(
             long nativePersonalDataManagerAndroid);
+    private static native boolean nativeHasProfiles(long nativePersonalDataManagerAndroid);
+    private static native boolean nativeHasCreditCards(long nativePersonalDataManagerAndroid);
     private static native boolean nativeIsAutofillEnabled();
     private static native void nativeSetAutofillEnabled(boolean enable);
     private static native boolean nativeIsAutofillManaged();

@@ -32,10 +32,10 @@ public class AutofillServerProfilePreferences
         getActivity().setTitle(R.string.autofill_edit_profile);
 
         // We know which card to display based on the GUID stuffed in
-        // our extras by AutofillPreferences.
+        // our extras by AutofillAndPaymentsPreferences.
         Bundle extras = getArguments();
         if (extras != null) {
-            mGUID = extras.getString(AutofillPreferences.AUTOFILL_GUID);
+            mGUID = extras.getString(AutofillAndPaymentsPreferences.AUTOFILL_GUID);
         }
         assert mGUID != null;
         AutofillProfile profile = PersonalDataManager.getInstance().getProfile(mGUID);

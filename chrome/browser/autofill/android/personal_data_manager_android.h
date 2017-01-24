@@ -330,6 +330,15 @@ class PersonalDataManagerAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj);
 
+  // Checks whether the Autofill PersonalDataManager has profiles.
+  jboolean HasProfiles(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& unused_obj);
+
+  // Checks whether the Autofill PersonalDataManager has credit cards.
+  jboolean HasCreditCards(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj);
+
  private:
   ~PersonalDataManagerAndroid() override;
 

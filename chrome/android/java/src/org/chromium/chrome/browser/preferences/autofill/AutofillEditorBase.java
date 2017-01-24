@@ -51,10 +51,10 @@ public abstract class AutofillEditorBase
         mContext = container.getContext();
 
         // We know which profile to edit based on the GUID stuffed in
-        // our extras by AutofillPreferences.
+        // our extras by AutofillAndPaymentsPreferences.
         Bundle extras = getArguments();
         if (extras != null) {
-            mGUID = extras.getString(AutofillPreferences.AUTOFILL_GUID);
+            mGUID = extras.getString(AutofillAndPaymentsPreferences.AUTOFILL_GUID);
         }
         if (mGUID == null) {
             mGUID = "";

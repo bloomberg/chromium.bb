@@ -109,7 +109,6 @@ public class MainPreferences extends PreferenceFragment
 
         ChromeBasePreference autofillPref =
                 (ChromeBasePreference) findPreference(PREF_AUTOFILL_SETTINGS);
-        setOnOffSummary(autofillPref, PersonalDataManager.isAutofillEnabled());
         autofillPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         ChromeBasePreference passwordsPref =

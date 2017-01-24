@@ -240,7 +240,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
     @Override
     protected boolean saveEntry() {
         AutofillProfile profile = new PersonalDataManager.AutofillProfile(mGUID,
-                AutofillPreferences.SETTINGS_ORIGIN, true /* isLocal */,
+                AutofillAndPaymentsPreferences.SETTINGS_ORIGIN, true /* isLocal */,
                 getFieldText(AddressField.RECIPIENT), getFieldText(AddressField.ORGANIZATION),
                 getFieldText(AddressField.STREET_ADDRESS), getFieldText(AddressField.ADMIN_AREA),
                 getFieldText(AddressField.LOCALITY), getFieldText(AddressField.DEPENDENT_LOCALITY),

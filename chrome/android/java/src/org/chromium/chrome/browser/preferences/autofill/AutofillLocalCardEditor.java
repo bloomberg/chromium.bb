@@ -170,7 +170,7 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
                     R.string.payments_card_number_invalid_validation_message));
             return false;
         }
-        CreditCard card = new CreditCard(mGUID, AutofillPreferences.SETTINGS_ORIGIN,
+        CreditCard card = new CreditCard(mGUID, AutofillAndPaymentsPreferences.SETTINGS_ORIGIN,
                 true /* isLocal */, false /* isCached */, mNameText.getText().toString().trim(),
                 cardNumber, "" /* obfuscatedNumber */,
                 String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1),

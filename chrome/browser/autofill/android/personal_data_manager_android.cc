@@ -789,6 +789,18 @@ void PersonalDataManagerAndroid::CancelPendingAddressNormalizations(
   pending_normalization_.clear();
 }
 
+jboolean PersonalDataManagerAndroid::HasProfiles(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  return !personal_data_manager_->GetProfiles().empty();
+}
+
+jboolean PersonalDataManagerAndroid::HasCreditCards(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  return !personal_data_manager_->GetCreditCards().empty();
+}
+
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
     JNIEnv* env,
     const std::vector<AutofillProfile*>& profiles) {

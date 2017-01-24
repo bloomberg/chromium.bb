@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
+import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -1115,7 +1115,7 @@ public class PaymentRequestImpl
     @Override
     public void onCardAndAddressSettingsClicked() {
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                mContext, AutofillPreferences.class.getName());
+                mContext, AutofillAndPaymentsPreferences.class.getName());
         mContext.startActivity(intent);
         disconnectFromClientWithDebugMessage("Card and address settings clicked");
         recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);

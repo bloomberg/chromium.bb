@@ -47,7 +47,7 @@ import org.chromium.chrome.browser.physicalweb.PhysicalWebEnvironment;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
+import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
@@ -144,8 +144,8 @@ public class ChromeApplication extends ContentApplication {
 
     @CalledByNative
     protected void showAutofillSettings() {
-        PreferencesLauncher.launchSettingsPage(this,
-                AutofillPreferences.class.getName());
+        PreferencesLauncher.launchSettingsPage(
+                this, AutofillAndPaymentsPreferences.class.getName());
     }
 
     @CalledByNative

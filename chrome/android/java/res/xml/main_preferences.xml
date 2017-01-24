@@ -16,9 +16,9 @@
         android:key="search_engine"
         android:title="@string/prefs_search_engine"/>
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillPreferences"
+        android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences"
         android:key="autofill_settings"
-        android:title="@string/prefs_autofill" />
+        android:title="@string/prefs_autofill_and_payments" />
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:key="saved_passwords"/>
     <Preference

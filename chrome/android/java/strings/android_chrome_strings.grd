@@ -268,13 +268,16 @@ CHAR-LIMIT guidelines:
       </message>
 
       <!-- Autofill preferences -->
-      <message name="IDS_PREFS_AUTOFILL" desc="Title for 'Autofill forms' settings, which control what personal data can be automatically filled into web page forms. [CHAR-LIMIT=32]">
+      <message name="IDS_PREFS_AUTOFILL_AND_PAYMENTS" desc="Title of Autofill and payments settings prefrences. [CHAR-LIMIT=32]">
+        Autofill and payments
+      </message>      
+      <message name="IDS_AUTOFILL_SWITCH" desc="Title for 'Autofill forms' switch preference, which controls whether personal data can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Autofill forms
       </message>
-      <message name="IDS_AUTOFILL_PROFILES_TITLE" desc="Header above the list of profiles (which contain the user's name, address, etc) that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
+      <message name="IDS_AUTOFILL_PROFILES_TITLE" desc="Title of the preference to list profiles (which contain the user's name, address, etc) that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Addresses
-      </message>
-      <message name="IDS_AUTOFILL_CREDIT_CARDS_TITLE" desc="Header above the list of the user's credit cards that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
+      </message>       
+      <message name="IDS_AUTOFILL_CREDIT_CARDS_TITLE" desc="Title of the preference to list the user's credit cards that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Credit cards
       </message>
       <message name="IDS_AUTOFILL_CREATE_PROFILE" desc="Button that allows the user to create a new profile (which contains the user's name, address, etc) that will be automatically filled into web page forms. [CHAR-LIMIT=32]">
