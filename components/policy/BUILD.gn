@@ -50,6 +50,8 @@ config("component_implementation") {
 # for policies of the same type, so that less classes have to be generated
 # and compiled.
 cloud_policy_proto_path = "$target_gen_dir/proto/cloud_policy.proto"
+cloud_policy_full_runtime_proto_path =
+    "$target_gen_dir/proto/cloud_policy_full_runtime.proto"
 
 # This is the "full" protobuf, which defines one protobuf message per
 # policy. It is also the format currently used by the server.
@@ -82,6 +84,7 @@ action("cloud_policy_code_generate") {
     protobuf_decoder_path,
     chrome_settings_proto_path,
     cloud_policy_proto_path,
+    cloud_policy_full_runtime_proto_path,
     app_restrictions_path,
     risk_tag_header_path,
   ]
@@ -99,6 +102,8 @@ action("cloud_policy_code_generate") {
         rebase_path(chrome_settings_proto_path, root_build_dir),
     "--cloud-policy-protobuf=" +
         rebase_path(cloud_policy_proto_path, root_build_dir),
+    "--cloud-policy-full-runtime-protobuf=" +
+        rebase_path(cloud_policy_full_runtime_proto_path, root_build_dir),
     "--cloud-policy-decoder=" +
         rebase_path(protobuf_decoder_path, root_build_dir),
     "--app-restrictions-definition=" +
