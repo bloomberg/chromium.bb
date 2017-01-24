@@ -857,7 +857,9 @@ class UI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(UI);
 };
 
-Browser::Browser() {}
+Browser::Browser() {
+  registry_.AddInterface<mojom::Launchable>(this);
+}
 Browser::~Browser() {}
 
 void Browser::AddWindow(views::Widget* window) {
@@ -887,10 +889,11 @@ void Browser::OnStart() {
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 }
 
-bool Browser::OnConnect(const service_manager::ServiceInfo& remote_info,
-                        service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Launchable>(this);
-  return true;
+void Browser::OnBindInterface(const service_manager::ServiceInfo& source_info,
+                              const std::string& interface_name,
+                              mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void Browser::Launch(uint32_t what, mojom::LaunchMode how) {

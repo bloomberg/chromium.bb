@@ -39,11 +39,6 @@ void Session::OnStart() {
   context()->connector()->Connect(content::mojom::kBrowserServiceName);
 }
 
-bool Session::OnConnect(const service_manager::ServiceInfo& remote_info,
-                        service_manager::InterfaceRegistry* registry) {
-  return true;
-}
-
 void Session::StartWindowManager() {
   StartRestartableService(
       common::GetWindowManagerServiceName(),

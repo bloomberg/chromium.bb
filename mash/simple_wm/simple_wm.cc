@@ -373,12 +373,6 @@ void SimpleWM::OnStart() {
   window_tree_client_->ConnectAsWindowManager();
 }
 
-bool SimpleWM::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleWM, aura::WindowTreeClientDelegate implementation:
 

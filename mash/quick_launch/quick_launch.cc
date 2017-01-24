@@ -155,7 +155,9 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(QuickLaunchUI);
 };
 
-QuickLaunch::QuickLaunch() {}
+QuickLaunch::QuickLaunch() {
+  registry_.AddInterface<::mash::mojom::Launchable>(this);
+}
 QuickLaunch::~QuickLaunch() {}
 
 void QuickLaunch::RemoveWindow(views::Widget* window) {
@@ -176,10 +178,12 @@ void QuickLaunch::OnStart() {
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
 
-bool QuickLaunch::OnConnect(const service_manager::ServiceInfo& remote_info,
-                            service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<::mash::mojom::Launchable>(this);
-  return true;
+void QuickLaunch::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {

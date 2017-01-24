@@ -152,7 +152,9 @@ class UI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(UI);
 };
 
-Webtest::Webtest() {}
+Webtest::Webtest() {
+  registry_.AddInterface<mojom::Launchable>(this);
+}
 Webtest::~Webtest() {}
 
 void Webtest::AddWindow(views::Widget* window) {
@@ -174,10 +176,11 @@ void Webtest::OnStart() {
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 }
 
-bool Webtest::OnConnect(const service_manager::ServiceInfo& remote_info,
-                        service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Launchable>(this);
-  return true;
+void Webtest::OnBindInterface(const service_manager::ServiceInfo& source_info,
+                              const std::string& interface_name,
+                              mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {

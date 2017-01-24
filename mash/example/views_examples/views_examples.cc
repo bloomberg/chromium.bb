@@ -10,6 +10,7 @@
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -27,7 +28,9 @@ class ViewsExamples
       public mash::mojom::Launchable,
       public service_manager::InterfaceFactory<mash::mojom::Launchable> {
  public:
-  ViewsExamples() {}
+  ViewsExamples() {
+    registry_.AddInterface<mash::mojom::Launchable>(this);
+  }
   ~ViewsExamples() override {}
 
  private:
@@ -39,10 +42,11 @@ class ViewsExamples
         "views_mus_resources.pak", std::string(), nullptr,
         views::AuraInit::Mode::AURA_MUS);
   }
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface<mash::mojom::Launchable>(this);
-    return true;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // mash::mojom::Launchable:
@@ -57,6 +61,8 @@ class ViewsExamples
   }
 
   mojo::BindingSet<mash::mojom::Launchable> bindings_;
+
+  service_manager::BinderRegistry registry_;
 
   tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
