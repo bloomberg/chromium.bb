@@ -19,6 +19,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -91,6 +92,14 @@ bool ProcessDrmEvent(int fd, const DrmEventHandler& callback) {
         DCHECK_LE(static_cast<int>(sizeof(drm_event_vblank)), len - idx);
         drm_event_vblank vblank;
         memcpy(&vblank, &buffer[idx], sizeof(vblank));
+        std::unique_ptr<base::trace_event::TracedValue> drm_data(
+            new base::trace_event::TracedValue());
+        drm_data->SetInteger("frame_count", 1);
+        drm_data->SetInteger("vblank.tv_sec", vblank.tv_sec);
+        drm_data->SetInteger("vblank.tv_usec", vblank.tv_usec);
+        TRACE_EVENT_INSTANT1("benchmark,drm", "DrmEventFlipComplete",
+                             TRACE_EVENT_SCOPE_THREAD, "data",
+                             std::move(drm_data));
         callback.Run(vblank.sequence, vblank.tv_sec, vblank.tv_usec,
                      vblank.user_data);
       } break;
