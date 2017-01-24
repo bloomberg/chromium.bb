@@ -3821,10 +3821,13 @@ def CMDstatus(parser, args):
           alignment, ShortBranchName(branch), color, url,
           status_str, reset))
 
-  cl = Changelist(auth_config=auth_config)
+
+  branch = GetCurrentBranch()
   print()
-  print('Current branch:',)
-  print(cl.GetBranch())
+  print('Current branch: %s' % branch)
+  for cl in changes:
+    if cl.GetBranch() == branch:
+      break
   if not cl.GetIssue():
     print('No issue assigned.')
     return 0
