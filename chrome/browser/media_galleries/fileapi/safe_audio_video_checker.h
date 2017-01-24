@@ -5,58 +5,47 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_AUDIO_VIDEO_CHECKER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_AUDIO_VIDEO_CHECKER_H_
 
-#include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/media_parser.mojom.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "content/public/browser/utility_process_mojo_client.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
 
-namespace content {
-class UtilityProcessHost;
-}
-
 // Uses a utility process to validate a media file.  If the callback returns
-// File::FILE_OK, then the file appears to be a valid media file. This does
-// not attempt to decode the entire file, which may take a considerable amount
-// of time.  This class may be constructed on any thread, but should run on the
-// IO thread.
-class SafeAudioVideoChecker : public content::UtilityProcessHostClient {
+// File::FILE_OK, then file appears to be valid.  File validation does not
+// attempt to decode the entire file since that could take a considerable
+// amount of time.  This class can be constructed on any thread, but should
+// run on the IO thread.
+class SafeAudioVideoChecker
+    : public base::RefCountedThreadSafe<SafeAudioVideoChecker> {
  public:
   // Takes responsibility for closing |file|.
   SafeAudioVideoChecker(
       base::File file,
       const storage::CopyOrMoveFileValidator::ResultCallback& callback);
 
-  // Must be called on the IO thread.
+  // Check the file: must be called on the IO thread.
   void Start();
 
  private:
-  enum State {
-    INITIAL_STATE,
-    STARTED_STATE,
-    FINISHED_STATE
-  };
+  friend class base::RefCountedThreadSafe<SafeAudioVideoChecker>;
 
-  ~SafeAudioVideoChecker() override;
+  ~SafeAudioVideoChecker();
 
-  // Notification of the result from the utility process.
-  void OnCheckingFinished(bool valid);
+  // Media file check result.
+  void CheckMediaFileDone(bool valid);
 
-  // UtilityProcessHostClient implementation.
-  void OnProcessCrashed(int exit_code) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  State state_;
-
+  // Media file to check.
   base::File file_;
 
+  // Utility process used to check |file_|.
+  std::unique_ptr<
+      content::UtilityProcessMojoClient<extensions::mojom::MediaParser>>
+      utility_process_mojo_client_;
+
+  // Report the check result to |callback_|.
   const storage::CopyOrMoveFileValidator::ResultCallback callback_;
-
-  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
-
-  extensions::mojom::MediaParserPtr interface_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeAudioVideoChecker);
 };
