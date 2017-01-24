@@ -158,10 +158,11 @@ source_set("material_components_ios") {
     "src/components/Snackbar/src/MDCSnackbarManager.m",
     "src/components/Snackbar/src/MDCSnackbarMessage.h",
     "src/components/Snackbar/src/MDCSnackbarMessage.m",
+    "src/components/Snackbar/src/MDCSnackbarMessageView.h",
+    "src/components/Snackbar/src/MDCSnackbarMessageView.m",
     "src/components/Snackbar/src/MaterialSnackbar.h",
     "src/components/Snackbar/src/private/MDCSnackbarMessageInternal.h",
-    "src/components/Snackbar/src/private/MDCSnackbarMessageView.h",
-    "src/components/Snackbar/src/private/MDCSnackbarMessageView.m",
+    "src/components/Snackbar/src/private/MDCSnackbarMessageViewInternal.h",
     "src/components/Snackbar/src/private/MDCSnackbarOverlayView.h",
     "src/components/Snackbar/src/private/MDCSnackbarOverlayView.m",
     "src/components/Typography/src/MDCTypography.h",
@@ -225,6 +226,9 @@ source_set("material_components_ios") {
     "src/components/ButtonBar/src",
     "src/components/NavigationBar/src",
     "src/components/OverlayWindow/src",
+
+    # TODO(crbug.com/684379): remove this include once it is not needed anymore.
+    "src/components/Snackbar/src/private",
     "src/components/private/Application/src",
     "src/components/private/Color/src",
     "src/components/private/Icons/src",
