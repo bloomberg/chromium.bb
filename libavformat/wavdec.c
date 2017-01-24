@@ -558,6 +558,22 @@ break_loop:
     if (sample_count)
         st->duration = sample_count;
 
+    if (st->codecpar->codec_id == AV_CODEC_ID_PCM_S32LE &&
+        st->codecpar->block_align == st->codecpar->channels * 4 &&
+        st->codecpar->bits_per_coded_sample == 32 &&
+        st->codecpar->extradata_size == 2 &&
+        AV_RL16(st->codecpar->extradata) == 1) {
+        st->codecpar->codec_id = AV_CODEC_ID_PCM_F16LE;
+        st->codecpar->bits_per_coded_sample = 16;
+    } else if (st->codecpar->codec_id == AV_CODEC_ID_PCM_S24LE &&
+               st->codecpar->block_align == st->codecpar->channels * 4 &&
+               st->codecpar->bits_per_coded_sample == 24) {
+        st->codecpar->codec_id = AV_CODEC_ID_PCM_F24LE;
+    } else if (st->codecpar->codec_id == AV_CODEC_ID_XMA1 ||
+               st->codecpar->codec_id == AV_CODEC_ID_XMA2) {
+        st->codecpar->block_align = 2048;
+    }
+
     ff_metadata_conv_ctx(s, NULL, wav_metadata_conv);
     ff_metadata_conv_ctx(s, NULL, ff_riff_info_conv);
 
@@ -709,6 +725,7 @@ static int wav_read_seek(AVFormatContext *s,
     case AV_CODEC_ID_MP3:
     case AV_CODEC_ID_AC3:
     case AV_CODEC_ID_DTS:
+    case AV_CODEC_ID_XMA2:
         /* use generic seeking with dynamically generated indexes */
         return -1;
     default:

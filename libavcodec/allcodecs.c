@@ -281,6 +281,7 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (PGM,               pgm);
     REGISTER_ENCDEC (PGMYUV,            pgmyuv);
     REGISTER_DECODER(PICTOR,            pictor);
+    REGISTER_DECODER(PIXLET,            pixlet);
     REGISTER_ENCDEC (PNG,               png);
     REGISTER_ENCDEC (PPM,               ppm);
     REGISTER_ENCDEC (PRORES,            prores);
@@ -315,6 +316,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER(SMVJPEG,           smvjpeg);
     REGISTER_ENCDEC (SNOW,              snow);
     REGISTER_DECODER(SP5X,              sp5x);
+    REGISTER_DECODER(SPEEDHQ,           speedhq);
     REGISTER_ENCDEC (SUNRAST,           sunrast);
     REGISTER_ENCDEC (SVQ1,              svq1);
     REGISTER_DECODER(SVQ3,              svq3);
@@ -448,6 +450,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER(PAF_AUDIO,         paf_audio);
     REGISTER_DECODER(QCELP,             qcelp);
     REGISTER_DECODER(QDM2,              qdm2);
+    REGISTER_DECODER(QDMC,              qdmc);
     REGISTER_ENCDEC (RA_144,            ra_144);
     REGISTER_DECODER(RA_288,            ra_288);
     REGISTER_DECODER(RALF,              ralf);
@@ -477,6 +480,8 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (PCM_ALAW,          pcm_alaw);
     REGISTER_DECODER(PCM_BLURAY,        pcm_bluray);
     REGISTER_DECODER(PCM_DVD,           pcm_dvd);
+    REGISTER_DECODER(PCM_F16LE,         pcm_f16le);
+    REGISTER_DECODER(PCM_F24LE,         pcm_f24le);
     REGISTER_ENCDEC (PCM_F32BE,         pcm_f32be);
     REGISTER_ENCDEC (PCM_F32LE,         pcm_f32le);
     REGISTER_ENCDEC (PCM_F64BE,         pcm_f64be);
@@ -697,10 +702,12 @@ void avcodec_register_all(void)
     REGISTER_PARSER(PNM,                pnm);
     REGISTER_PARSER(RV30,               rv30);
     REGISTER_PARSER(RV40,               rv40);
+    REGISTER_PARSER(SIPR,               sipr);
     REGISTER_PARSER(TAK,                tak);
     REGISTER_PARSER(VC1,                vc1);
     REGISTER_PARSER(VORBIS,             vorbis);
     REGISTER_PARSER(VP3,                vp3);
     REGISTER_PARSER(VP8,                vp8);
     REGISTER_PARSER(VP9,                vp9);
+    REGISTER_PARSER(XMA,                xma);
 }

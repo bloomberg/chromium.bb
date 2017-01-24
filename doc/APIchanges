@@ -15,6 +15,19 @@ libavutil:     2015-08-28
 
 API changes, most recent first:
 
+2017-01-22 - xxxxxxx - lavu 55.44.100 - lfg.h
+  Add av_lfg_init_from_data().
+
+2017-01-xx - xxxxxxx - lavc 57.74.100 - vaapi.h
+  Deprecate struct vaapi_context and the vaapi.h installed header.
+  Callers should set AVCodecContext.hw_frames_ctx instead.
+
+2017-01-12 - xxxxxxx - lavfi 6.69.100- buffersink.h
+  Add av_buffersink_get_*() functions.
+
+2017-01-06 - xxxxxxx - lavf 57.62.100- avio.h
+  Add avio_get_dyn_buf()
+
 2016-12-10 - xxxxxxx - lavu xx.xx.100- imgutils.h
   Add av_image_check_size2()
 

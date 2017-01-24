@@ -626,13 +626,15 @@ static int shift_data(AVFormatContext *s)
     avio_seek(read_pb, flv->keyframes_info_offset, SEEK_SET);
     pos = avio_tell(read_pb);
 
-    /* shift data by chunk of at most keyframe *filepositions* and *times* size */
+#define READ_BLOCK do {                                                             \
     read_size[read_buf_id] = avio_read(read_pb, read_buf[read_buf_id], metadata_size);  \
-    read_buf_id ^= 1;
-    do {
+    read_buf_id ^= 1;                                                               \
+} while (0)
 
-        read_size[read_buf_id] = avio_read(read_pb, read_buf[read_buf_id], metadata_size);  \
-        read_buf_id ^= 1;
+    /* shift data by chunk of at most keyframe *filepositions* and *times* size */
+    READ_BLOCK;
+    do {
+        READ_BLOCK;
         n = read_size[read_buf_id];
         if (n < 0)
             break;
@@ -890,6 +892,10 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
         if (side && side_size > 0 && (side_size != par->extradata_size || memcmp(side, par->extradata, side_size))) {
             av_free(par->extradata);
             par->extradata = av_mallocz(side_size + AV_INPUT_BUFFER_PADDING_SIZE);
+            if (!par->extradata) {
+                par->extradata_size = 0;
+                return AVERROR(ENOMEM);
+            }
             memcpy(par->extradata, side, side_size);
             par->extradata_size = side_size;
             flv_write_codec_header(s, par);

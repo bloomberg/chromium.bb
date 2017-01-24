@@ -8,6 +8,11 @@ fate-aes: libavutil/tests/aes$(EXESUF)
 fate-aes: CMD = run libavutil/tests/aes
 fate-aes: REF = /dev/null
 
+FATE_LIBAVUTIL += fate-aes_ctr
+fate-aes_ctr: libavutil/tests/aes_ctr$(EXESUF)
+fate-aes_ctr: CMD = run libavutil/tests/aes_ctr
+fate-aes_ctr: REF = /dev/null
+
 FATE_LIBAVUTIL += fate-camellia
 fate-camellia: libavutil/tests/camellia$(EXESUF)
 fate-camellia: CMD = run libavutil/tests/camellia
@@ -22,6 +27,10 @@ FATE_LIBAVUTIL += fate-atomic
 fate-atomic: libavutil/tests/atomic$(EXESUF)
 fate-atomic: CMD = run libavutil/tests/atomic
 fate-atomic: REF = /dev/null
+
+FATE_LIBAVUTIL += fate-audio_fifo
+fate-audio_fifo: libavutil/tests/audio_fifo$(EXESUF)
+fate-audio_fifo: CMD = run libavutil/tests/audio_fifo
 
 FATE_LIBAVUTIL += fate-avstring
 fate-avstring: libavutil/tests/avstring$(EXESUF)
