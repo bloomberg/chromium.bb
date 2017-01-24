@@ -92,9 +92,21 @@ settings = None
 _IS_BEING_TESTED = False
 
 
-def DieWithError(message):
+def DieWithError(message, change_desc=None):
+  if change_desc:
+    SaveDescriptionBackup(change_desc)
+
   print(message, file=sys.stderr)
   sys.exit(1)
+
+
+def SaveDescriptionBackup(change_desc):
+  backup_path = os.path.expanduser(DESCRIPTION_BACKUP_FILE)
+  print('\nError after CL description prompt -- saving description to %s\n' %
+        backup_path)
+  backup_file = open(backup_path, 'w')
+  backup_file.write(change_desc.description)
+  backup_file.close()
 
 
 def GetNoGitPagerEnv():
@@ -2161,7 +2173,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
             change_desc.get_reviewers()))
       if options.send_mail:
         if not change_desc.get_reviewers():
-          DieWithError("Must specify reviewers to send email.")
+          DieWithError("Must specify reviewers to send email.", change_desc)
         upload_args.append('--send_mail')
 
       # We check this before applying rietveld.private assuming that in
@@ -2248,19 +2260,13 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       # If we got an exception after the user typed a description for their
       # change, back up the description before re-raising.
       if change_desc:
-        backup_path = os.path.expanduser(DESCRIPTION_BACKUP_FILE)
-        print('\nGot exception while uploading -- saving description to %s\n' %
-              backup_path)
-        backup_file = open(backup_path, 'w')
-        backup_file.write(change_desc.description)
-        backup_file.close()
+        SaveDescriptionBackup(change_desc)
       raise
 
     if not self.GetIssue():
       self.SetIssue(issue)
     self.SetPatchset(patchset)
     return 0
-
 
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None):
@@ -2787,7 +2793,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
               'upload, so you just need to upload it again.\n'
               '(If you uploaded it with --no-squash, then branch dependencies '
               'are not supported, and you should reupload with --squash.)'
-              % upstream_branch_name)
+              % upstream_branch_name, change_desc)
       else:
         parent = self.GetCommonAncestorWithUpstream()
 
@@ -2844,7 +2850,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     if options.send_mail:
       if not change_desc.get_reviewers():
-        DieWithError('Must specify reviewers to send email.')
+        DieWithError('Must specify reviewers to send email.', change_desc)
       refspec_opts.append('notify=ALL')
     else:
       refspec_opts.append('notify=NONE')
@@ -2877,7 +2883,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           filter_fn=lambda _: sys.stdout.flush())
     except subprocess2.CalledProcessError:
       DieWithError('Failed to create a change. Please examine output above '
-                   'for the reason of the failure. ')
+                   'for the reason of the failure. ', change_desc)
 
     if options.squash:
       regex = re.compile(r'remote:\s+https?://[\w\-\.\/]*/(\d+)\s.*')
@@ -2887,7 +2893,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if len(change_numbers) != 1:
         DieWithError(
           ('Created|Updated %d issues on Gerrit, but only 1 expected.\n'
-           'Change-Id: %s') % (len(change_numbers), change_id))
+           'Change-Id: %s') % (len(change_numbers), change_id), change_desc)
       self.SetIssue(change_numbers[0])
       self._GitSetBranchConfigValue('gerritsquashhash', ref_to_push)
 

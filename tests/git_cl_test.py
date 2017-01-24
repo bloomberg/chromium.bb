@@ -467,7 +467,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
               classmethod(lambda _: False))
     self.mock(git_cl, 'DieWithError',
-              lambda msg: self._mocked_call(['DieWithError', msg]))
+              lambda msg, change=None: self._mocked_call(['DieWithError', msg]))
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
 
@@ -1912,7 +1912,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(hosts_with_creds=auth))
     self.mock(git_cl, 'DieWithError',
-              lambda msg: self._mocked_call(['DieWithError', msg]))
+              lambda msg, change=None: self._mocked_call(['DieWithError', msg]))
     self.mock(git_cl, 'ask_for_data',
               lambda msg: self._mocked_call(['ask_for_data', msg]))
     self.calls = self._gerrit_ensure_auth_calls(skip_auth_check=skip_auth_check)
