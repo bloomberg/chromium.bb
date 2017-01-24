@@ -84,11 +84,14 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.time_now = datetime.datetime.now()
     self.master_build_id = 0
     self.master_test_config = config_lib.BuildConfig(
-        name='master-test', master=True)
+        name='master-test', master=True,
+        active_waterfall=constants.WATERFALL_INTERNAL)
     self.master_cq_config = config_lib.BuildConfig(
-        name='master-paladin', master=True)
+        name='master-paladin', master=True,
+        active_waterfall=constants.WATERFALL_INTERNAL)
     self.master_canary_config = config_lib.BuildConfig(
-        name='master-release', master=True)
+        name='master-release', master=True,
+        active_waterfall=constants.WATERFALL_INTERNAL)
     self.metadata = metadata_lib.CBuildbotMetadata()
     self.db = fake_cidb.FakeCIDBConnection()
     self.buildbucket_client = mock.Mock()

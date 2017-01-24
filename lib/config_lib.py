@@ -114,11 +114,14 @@ def IsMasterBuild(config):
 
 def UseBuildbucketScheduler(config):
   """Returns True if this build uses Buildbucket to schedule builds."""
-  return config.name in (constants.CQ_MASTER,
-                         constants.CANARY_MASTER,
-                         constants.PFQ_MASTER,
-                         constants.ANDROID_PFQ_MASTER,
-                         constants.PRE_CQ_LAUNCHER_NAME)
+  return (config.active_waterfall in (constants.WATERFALL_INTERNAL,
+                                      constants.WATERFALL_EXTERNAL,
+                                      constants.WATERFALL_TRYBOT) and
+          config.name in (constants.CQ_MASTER,
+                          constants.CANARY_MASTER,
+                          constants.PFQ_MASTER,
+                          constants.ANDROID_PFQ_MASTER,
+                          constants.PRE_CQ_LAUNCHER_NAME))
 
 def RetryAlreadyStartedSlaves(config):
   """Returns True if wants to retry slaves which already start but fail.

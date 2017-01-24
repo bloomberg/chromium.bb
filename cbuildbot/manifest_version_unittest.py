@@ -431,8 +431,10 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
   def _CreateCanaryMasterManager(self, config=None, metadata=None,
                                  buildbucket_client=None):
     if config is None:
-      config = config_lib.BuildConfig(name='master-release',
-                                      master=True)
+      config = config_lib.BuildConfig(
+          name='master-release', master=True,
+          active_waterfall=constants.WATERFALL_INTERNAL)
+
     if metadata is None:
       metadata = metadata_lib.CBuildbotMetadata()
 
