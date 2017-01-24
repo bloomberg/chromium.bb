@@ -231,9 +231,6 @@ class RemoteRendererImpl : public Renderer {
   // the data flow rates for metrics.
   base::RepeatingTimer data_flow_poll_timer_;
 
-  // Indicates whether there is enough data buffered for rendering.
-  bool is_waiting_for_buffering_ = true;
-
   base::WeakPtrFactory<RemoteRendererImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteRendererImpl);

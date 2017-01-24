@@ -590,13 +590,6 @@ void RemoteRendererImpl::OnBufferingStateChange(
           message->rendererclient_onbufferingstatechange_rpc().state());
   if (!state.has_value())
     return;
-  if (state == BufferingState::BUFFERING_HAVE_NOTHING) {
-    is_waiting_for_buffering_ = true;
-  } else if (is_waiting_for_buffering_) {
-    is_waiting_for_buffering_ = false;
-    ResetMeasurements();
-  }
-
   client_->OnBufferingStateChange(state.value());
 }
 
@@ -734,8 +727,6 @@ void RemoteRendererImpl::OnMediaTimeUpdated() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!flush_cb_.is_null())
     return;  // Don't manage and check the queue when Flush() is on-going.
-  if (is_waiting_for_buffering_)
-    return;  // Don't manage and check the queue when buffering is on-going.
 
   base::TimeTicks current_time = base::TimeTicks::Now();
   if (current_time < ignore_updates_until_time_)
