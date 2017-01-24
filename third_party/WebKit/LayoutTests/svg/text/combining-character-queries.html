@@ -22,7 +22,8 @@
     <text x="400" y="125" class="testTextRun" font-family="sans-serif" direction="rtl">&#8207;a&#8207;b&#x030c;&#8207;c&#x030c;&#x030c;</text>
 
     <!-- multiple combining diacritics on ligatures in LTR -->
-    <text x="50" y="200" class="testTextRun" font-family="cursive">fi&#x030c; ffi&#x030c;&#x030c;</text>
+    <!-- MacOS has differences with the "ffi" glyph and diacritics in cursive font family so the first run uses 'fi' as a workaround. -->
+    <text x="50" y="200" class="testTextRun" font-family="cursive">fi&#x030c; fi&#x030c;&#x030c;</text>
     <text x="200" y="200" class="testTextRun" font-family="serif">fi&#x030c; ffi&#x030c;&#x030c;</text>
     <text x="350" y="200" class="testTextRun" font-family="sans-serif">fi&#x030c; ffi&#x030c;&#x030c;</text>
 
@@ -33,8 +34,9 @@
 
     <!-- combining diacritics which are wider than characters in mixed bidi runs -->
     <text x="50" y="350" class="testTextRun" font-family="cursive"> &#x030c;&#64944;i&#819;</text>
-    <text x="200" y="350" class="testTextRun" font-family="serif"> &#x030c;&#64944;i&#819;</text>
-    <text x="350" y="350" class="testTextRun" font-family="sans-serif"> &#x030c;&#64944;i&#819;</text>
+    <!-- Linux has differences with space width in the following two runs so a period is used as a workaround. -->
+    <text x="200" y="350" class="testTextRun" font-family="serif">.&#x030c;&#64944;i&#819;</text>
+    <text x="350" y="350" class="testTextRun" font-family="sans-serif">.&#x030c;&#64944;i&#819;</text>
 </svg>
 <script src="resources/highlightGlyphs.js"></script>
 <script>
