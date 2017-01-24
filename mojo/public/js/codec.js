@@ -304,8 +304,12 @@ define("mojo/public/js/codec", [
   };
 
   Encoder.prototype.encodeHandle = function(handle) {
-    this.handles.push(handle);
-    this.writeUint32(this.handles.length - 1);
+    if (handle) {
+      this.handles.push(handle);
+      this.writeUint32(this.handles.length - 1);
+    } else {
+      this.writeUint32(kEncodedInvalidHandleValue);
+    }
   };
 
   Encoder.prototype.encodeString = function(val) {

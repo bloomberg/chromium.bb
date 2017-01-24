@@ -80,6 +80,7 @@ define([
     var service = new sample_service.ServicePtr();
     // Discard the interface request.
     bindings.makeRequest(service);
+    gc.collectGarbage();
 
     var promise = service.frobinate(
         null, sample_service.Service.BazOptions.REGULAR, null)
