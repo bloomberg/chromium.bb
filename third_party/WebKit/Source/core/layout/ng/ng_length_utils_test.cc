@@ -393,16 +393,11 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   style_->setMarginRight(Length(Auto));
   style_->setMarginLeft(Length(Auto));
 
-  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox);
-  builder.SetInlineSize(LayoutUnit(150));
-  NGPhysicalBoxFragment* physical_fragment = builder.ToBoxFragment();
-  NGBoxFragment* fragment = new NGBoxFragment(
-      kHorizontalTopBottom, TextDirection::kLtr, physical_fragment);
-
+  LayoutUnit kInlineSize = LayoutUnit(150);
   NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
 
   NGBoxStrut margins;
-  ApplyAutoMargins(*constraint_space, *style_, *fragment, &margins);
+  ApplyAutoMargins(*constraint_space, *style_, kInlineSize, &margins);
 
   EXPECT_EQ(LayoutUnit(), margins.block_start);
   EXPECT_EQ(LayoutUnit(), margins.block_end);
@@ -411,14 +406,14 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
 
   style_->setMarginLeft(Length(0, Fixed));
   margins = NGBoxStrut();
-  ApplyAutoMargins(*constraint_space, *style_, *fragment, &margins);
+  ApplyAutoMargins(*constraint_space, *style_, kInlineSize, &margins);
   EXPECT_EQ(LayoutUnit(0), margins.inline_start);
   EXPECT_EQ(LayoutUnit(50), margins.inline_end);
 
   style_->setMarginLeft(Length(Auto));
   style_->setMarginRight(Length(0, Fixed));
   margins = NGBoxStrut();
-  ApplyAutoMargins(*constraint_space, *style_, *fragment, &margins);
+  ApplyAutoMargins(*constraint_space, *style_, kInlineSize, &margins);
   EXPECT_EQ(LayoutUnit(50), margins.inline_start);
   EXPECT_EQ(LayoutUnit(0), margins.inline_end);
 
@@ -428,7 +423,7 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   style_->setMarginRight(Length(5000, Fixed));
   margins = NGBoxStrut();
   margins.inline_end = LayoutUnit(5000);
-  ApplyAutoMargins(*constraint_space, *style_, *fragment, &margins);
+  ApplyAutoMargins(*constraint_space, *style_, kInlineSize, &margins);
   EXPECT_EQ(LayoutUnit(0), margins.inline_start);
   EXPECT_EQ(LayoutUnit(5000), margins.inline_end);
 }

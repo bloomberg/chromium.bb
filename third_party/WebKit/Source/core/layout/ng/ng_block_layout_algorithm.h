@@ -39,14 +39,17 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
-  bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) override;
+  bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) const override;
   NGPhysicalFragment* Layout() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  NGBoxStrut CalculateMargins(const NGConstraintSpace& space,
+                              const ComputedStyle& style);
+
   // Creates a new constraint space for the current child.
-  NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
+  NGConstraintSpace* CreateConstraintSpaceForCurrentChild();
   void FinishCurrentChildLayout(NGFragment* fragment);
   HeapLinkedHashSet<WeakMember<NGBlockNode>> LayoutOutOfFlowChildren();
 
@@ -116,10 +119,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // positioned relative to the current fragment that is being built.
   //
   // @param fragment Fragment that needs to be placed.
-  // @param margins Margins information for the fragment.
+  // @param child_margins Margins information for the current child fragment.
   // @return Position of the fragment in the parent's constraint space.
   NGLogicalOffset PositionFloatFragment(const NGFragment& fragment,
-                                        const NGBoxStrut& margins);
+                                        const NGBoxStrut& child_margins);
 
   // Updates block-{start|end} of the currently constructed fragment.
   //
@@ -140,6 +143,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   const NGConstraintSpace& ConstraintSpace() const {
     return *constraint_space_;
+  }
+
+  const NGConstraintSpace& CurrentChildConstraintSpace() const {
+    return *space_for_current_child_.get();
   }
 
   const ComputedStyle& Style() const { return *style_; }
@@ -170,6 +177,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Whether the block-start was set for the currently built
   // fragment's margin strut.
   bool is_fragment_margin_strut_block_start_updated_ : 1;
+  NGBoxStrut curr_child_margins_;
 };
 
 }  // namespace blink

@@ -266,7 +266,17 @@ struct CORE_EXPORT NGBoxStrut {
   }
 
   bool operator==(const NGBoxStrut& other) const;
+
+  String ToString() const {
+    return String::format("Inline (%d, %d) Block (%d, %d)",
+                          inline_start.toInt(), inline_end.toInt(),
+                          block_start.toInt(), block_end.toInt());
+  }
 };
+
+inline std::ostream& operator<<(std::ostream& stream, const NGBoxStrut& value) {
+  return stream << value.ToString();
+}
 
 // This struct is used for the margin collapsing calculation.
 struct CORE_EXPORT NGMarginStrut {

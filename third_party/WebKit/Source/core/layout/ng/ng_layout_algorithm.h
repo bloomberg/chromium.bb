@@ -48,7 +48,7 @@ class CORE_EXPORT NGLayoutAlgorithm
   // expected to synthesize this value from the overflow rect returned from
   // Layout called with a available width of 0 and LayoutUnit::max(),
   // respectively.
-  virtual bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) {
+  virtual bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) const {
     return false;
   }
 

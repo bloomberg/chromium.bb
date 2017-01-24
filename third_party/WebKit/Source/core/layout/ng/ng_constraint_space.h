@@ -144,7 +144,7 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_block_direction_triggers_scrollbar,
                     NGFragmentationType block_direction_fragmentation_type,
                     bool is_new_fc,
-                    const std::shared_ptr<NGExclusions>& exclusions_);
+                    const std::shared_ptr<NGExclusions>& exclusions);
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;

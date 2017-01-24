@@ -24,7 +24,7 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_block_direction_triggers_scrollbar,
     NGFragmentationType block_direction_fragmentation_type,
     bool is_new_fc,
-    const std::shared_ptr<NGExclusions>& exclusions_)
+    const std::shared_ptr<NGExclusions>& exclusions)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
       fragmentainer_space_available_(fragmentainer_space_available),
@@ -39,7 +39,7 @@ NGConstraintSpace::NGConstraintSpace(
       is_new_fc_(is_new_fc),
       writing_mode_(writing_mode),
       direction_(static_cast<unsigned>(direction)),
-      exclusions_(exclusions_) {}
+      exclusions_(exclusions) {}
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
