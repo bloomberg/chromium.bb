@@ -65,7 +65,7 @@ test(function() {
     player.pause();
     player.currentTime = 3;
     element.style.color = 'rgba(160, 190, 180, 0.980392157)';
-    assert_equals(getComputedStyle(element).backgroundColor, 'rgba(206, 215, 200, 0.596078)');
+    assert_equals(getComputedStyle(element).backgroundColor, 'rgba(206, 215, 200, 0.596)');
 }, 'Color interpolation uses pre-multiplied colors');
 
 test(function() {

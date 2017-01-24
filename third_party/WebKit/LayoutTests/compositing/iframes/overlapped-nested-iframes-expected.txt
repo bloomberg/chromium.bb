@@ -138,7 +138,7 @@
       "position": [0, 100],
       "bounds": [785, 120],
       "drawsContent": true,
-      "backgroundColor": "#0000007F"
+      "backgroundColor": "#00000080"
     }
   ]
 }

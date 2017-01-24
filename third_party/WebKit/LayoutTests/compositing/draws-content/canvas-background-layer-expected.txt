@@ -19,7 +19,7 @@
       "position": [13, 73],
       "bounds": [50, 50],
       "drawsContent": true,
-      "backgroundColor": "#00FF007F"
+      "backgroundColor": "#00FF0080"
     },
     {
       "name": "LayoutHTMLCanvas CANVAS id='canvas-padding'",

@@ -8,7 +8,7 @@ PASS CSS Transitions: property <text-shadow> from neutral to [20px 20px 20px gre
 PASS CSS Transitions: property <text-shadow> from neutral to [20px 20px 20px green] at (1.5) is [rgb(0, 110, 0) 25px 15px 25px] 
 PASS CSS Transitions: property <text-shadow> from [initial] to [20px 20px 20px green] at (-0.3) is [rgba(0, 0, 0, 0) -6px -6px 0px] 
 PASS CSS Transitions: property <text-shadow> from [initial] to [20px 20px 20px green] at (0) is [none] 
-FAIL CSS Transitions: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.3) is [rgba(0, 125, 0, 0.301961) 6px 6px 6px] assert_equals: expected "rgba ( 0 , 128 , 0 , 0.3 ) 6px 6px 6px " but got "rgba ( 0 , 125 , 0 , 0.3 ) 6px 6px 6px "
+FAIL CSS Transitions: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.3) is [rgba(0, 125, 0, 0.3) 6px 6px 6px] assert_equals: expected "rgba ( 0 , 128 , 0 , 0.3 ) 6px 6px 6px " but got "rgba ( 0 , 125 , 0 , 0.3 ) 6px 6px 6px "
 PASS CSS Transitions: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.6) is [rgba(0, 128, 0, 0.6) 12px 12px 12px] 
 PASS CSS Transitions: property <text-shadow> from [initial] to [20px 20px 20px green] at (1) is [rgb(0, 128, 0) 20px 20px 20px] 
 PASS CSS Transitions: property <text-shadow> from [initial] to [20px 20px 20px green] at (1.5) is [rgb(0, 192, 0) 30px 30px 30px] 
@@ -44,7 +44,7 @@ PASS CSS Animations: property <text-shadow> from neutral to [20px 20px 20px gree
 PASS CSS Animations: property <text-shadow> from neutral to [20px 20px 20px green] at (1.5) is [rgb(0, 110, 0) 25px 15px 25px] 
 PASS CSS Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (-0.3) is [rgba(0, 0, 0, 0) -6px -6px 0px] 
 PASS CSS Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0) is [none] 
-PASS CSS Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.3) is [rgba(0, 128, 0, 0.301961) 6px 6px 6px] 
+PASS CSS Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.3) is [rgba(0, 128, 0, 0.3) 6px 6px 6px] 
 PASS CSS Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.6) is [rgba(0, 128, 0, 0.6) 12px 12px 12px] 
 PASS CSS Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (1) is [rgb(0, 128, 0) 20px 20px 20px] 
 PASS CSS Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (1.5) is [rgb(0, 192, 0) 30px 30px 30px] 
@@ -80,7 +80,7 @@ PASS Web Animations: property <text-shadow> from neutral to [20px 20px 20px gree
 PASS Web Animations: property <text-shadow> from neutral to [20px 20px 20px green] at (1.5) is [rgb(0, 110, 0) 25px 15px 25px] 
 PASS Web Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (-0.3) is [rgba(0, 0, 0, 0) -6px -6px 0px] 
 PASS Web Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0) is [none] 
-PASS Web Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.3) is [rgba(0, 128, 0, 0.301961) 6px 6px 6px] 
+PASS Web Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.3) is [rgba(0, 128, 0, 0.3) 6px 6px 6px] 
 PASS Web Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (0.6) is [rgba(0, 128, 0, 0.6) 12px 12px 12px] 
 PASS Web Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (1) is [rgb(0, 128, 0) 20px 20px 20px] 
 PASS Web Animations: property <text-shadow> from [initial] to [20px 20px 20px green] at (1.5) is [rgb(0, 192, 0) 30px 30px 30px] 
