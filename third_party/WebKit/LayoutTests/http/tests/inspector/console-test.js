@@ -396,7 +396,7 @@ InspectorTest.changeExecutionContext = function(namePrefix)
     var selector = Console.ConsoleView.instance()._consoleContextSelector._selectElement;
     var option = selector.firstChild;
     while (option) {
-        if (option.textContent && option.textContent.startsWith(namePrefix))
+        if (option.textContent && option.textContent.trim().startsWith(namePrefix))
             break;
         option = option.nextSibling;
     }

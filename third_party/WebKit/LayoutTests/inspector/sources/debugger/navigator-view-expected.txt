@@ -128,9 +128,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -142,10 +141,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -161,33 +159,25 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
-Sources:
--------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
-localhost:8080
-  script.js
-  script.js
-  script.js?a=1
-  script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
-mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
       bar
         script.js?a=3
       baz
         script.js
+Sources:
+-------- Setting mode: [domain]
+localhost:8080
+  script.js
+  script.js
+  script.js?a=1
+  script.js?a=2
+mock-target-100
+  localhost:8080
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 localhost:8080
   LayoutTests/inspector/debugger/foo
     bar
@@ -196,6 +186,13 @@ localhost:8080
       script.js?a=2
     baz
       script.js
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 
 
 ================================================
@@ -219,9 +216,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -245,10 +241,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -278,19 +273,14 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Sources:
 -------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -308,15 +298,12 @@ localhost:8080
   script.js
   script.js?a=1
   script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
 mock-target-100
   localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -339,6 +326,13 @@ localhost:8080
       script.js?a=2
     baz
       script.js
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Content Scripts:
 -------- Setting mode: [frame]
 Content Scripts:
@@ -372,9 +366,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -398,10 +391,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -431,19 +423,14 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Sources:
 -------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -461,15 +448,12 @@ localhost:8080
   script.js
   script.js?a=1
   script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
 mock-target-100
   localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -492,6 +476,13 @@ localhost:8080
       script.js?a=2
     baz
       script.js
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 
 
 ================================================
@@ -516,9 +507,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -543,10 +533,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -579,19 +568,14 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Sources:
 -------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -610,15 +594,12 @@ localhost:8080
   script.js
   script.js?a=1
   script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
 mock-target-100
   localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -644,6 +625,13 @@ localhost:8080
         script.js
     debugger2/foo/bar
       script.js
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 
 
 ================================================
@@ -669,9 +657,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -697,10 +684,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -734,19 +720,14 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Sources:
 -------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -766,15 +747,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
 mock-target-100
   localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -801,6 +779,13 @@ localhost:8080
     debugger2/foo/bar
       script.js
       script.js?a=2
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 
 
 ================================================
@@ -828,9 +813,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -858,10 +842,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -899,19 +882,14 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Sources:
 -------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -933,15 +911,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
 mock-target-100
   localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -970,6 +945,13 @@ localhost:8080
         script.js
         script.js?a=1
         script.js?a=2
+      baz
+        script.js
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
       baz
         script.js
 
@@ -1001,9 +983,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -1034,10 +1015,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -1081,19 +1061,14 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Sources:
 -------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -1118,15 +1093,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
 mock-target-100
   localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -1163,6 +1135,13 @@ localhost:8080
           foo.js
         foo.js
       foo.js
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 
 
 ================================================
@@ -1193,9 +1172,8 @@ top
     script.js
     script.js?a=1
 mock-target-100
-  top
-    script.js
-    script.js?a=3
+  script.js
+  script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -1226,10 +1204,9 @@ top
       script.js
       script.js?a=1
 mock-target-100
-  top
-    localhost:8080
-      script.js
-      script.js?a=3
+  localhost:8080
+    script.js
+    script.js?a=3
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -1273,19 +1250,14 @@ top
         baz
           script.js
 mock-target-100
-  top
-    localhost:8080
-      LayoutTests/inspector/debugger/foo
-        bar
-          script.js?a=3
-        baz
-          script.js
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Sources:
 -------- Setting mode: [domain]
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -1310,15 +1282,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-Sources:
--------- Setting mode: [domain/folder]
 mock-target-100
   localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+    script.js
+    script.js?a=3
+Sources:
+-------- Setting mode: [domain/folder]
 (no domain)
   ?a=b
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -1355,6 +1324,13 @@ localhost:8080
           foo.js
         foo.js
       foo.js
+mock-target-100
+  localhost:8080
+    LayoutTests/inspector/debugger/foo
+      bar
+        script.js?a=3
+      baz
+        script.js
 Content Scripts:
 -------- Setting mode: [frame]
 Content Scripts:

@@ -8,9 +8,10 @@ function test()
 {
     var networkProject1 = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget);
     networkProject1._reset();
-    var target2 = InspectorTest.createMockTarget("mock-target-100");
+    var target2 = InspectorTest.createMockTarget('mock-target-100');
     SDK.ResourceTreeModel.fromTarget(target2)._cachedResourcesProcessed = true;
-    SDK.ResourceTreeModel.fromTarget(target2)._frameAttached("42", 0);
+    SDK.ResourceTreeModel.fromTarget(target2)._frameAttached('42', '');
+    SDK.ResourceTreeModel.fromTarget(target2)._frameNavigated({id: '42', parentId: '', loaderId: '', name: 'mock-frame', url: 'mock-url.com/frame.html', securityOrigin: 'mock-security-origin', mineType: 'mimeType'});
     var networkProject2 = Bindings.NetworkProject.forTarget(target2);
     var subframe = InspectorTest.mainFrame().childFrames[0];
 
