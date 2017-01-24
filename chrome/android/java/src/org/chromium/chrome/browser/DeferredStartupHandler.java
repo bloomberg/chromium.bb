@@ -234,22 +234,20 @@ public class DeferredStartupHandler {
 
     private void initAsyncDiskTask() {
         new AsyncTask<Void, Void, Void>() {
+            private long mAsyncTaskStartTime;
+
             @Override
             protected Void doInBackground(Void... params) {
                 try {
                     TraceEvent.begin("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
-                    long asyncTaskStartTime = SystemClock.uptimeMillis();
-
-                    // Initialize the WebappRegistry if it's not already initialized. Must be in
-                    // async task due to shared preferences disk access on N.
-                    WebappRegistry.getInstance();
+                    mAsyncTaskStartTime = SystemClock.uptimeMillis();
 
                     boolean crashDumpDisabled = CommandLine.getInstance().hasSwitch(
                             ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
                     if (!crashDumpDisabled) {
                         RecordHistogram.recordLongTimesHistogram(
                                 "UMA.Debug.EnableCrashUpload.Uptime3",
-                                asyncTaskStartTime - UmaUtils.getForegroundStartTime(),
+                                mAsyncTaskStartTime - UmaUtils.getForegroundStartTime(),
                                 TimeUnit.MILLISECONDS);
                         PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
                         MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
@@ -260,6 +258,10 @@ public class DeferredStartupHandler {
 
                     MinidumpUploadService.storeBreakpadUploadStatsInUma(
                             ChromePreferenceManager.getInstance(mAppContext));
+
+                    // Initialize the WebappRegistry if it's not already initialized. Must be in
+                    // async task due to shared preferences disk access on N.
+                    WebappRegistry.getInstance();
 
                     // Force a widget refresh in order to wake up any possible zombie widgets.
                     // This is needed to ensure the right behavior when the process is suddenly
@@ -277,11 +279,6 @@ public class DeferredStartupHandler {
 
                     cacheIsChromeDefaultBrowser();
 
-                    RecordHistogram.recordLongTimesHistogram(
-                            "UMA.Debug.EnableCrashUpload.DeferredStartUpDurationAsync",
-                            SystemClock.uptimeMillis() - asyncTaskStartTime,
-                            TimeUnit.MILLISECONDS);
-
                     // Warm up all web app shared prefs. This must be run after the WebappRegistry
                     // instance is initialized.
                     WebappRegistry.warmUpSharedPrefs();
@@ -296,6 +293,11 @@ public class DeferredStartupHandler {
             protected void onPostExecute(Void params) {
                 // Must be run on the UI thread after the WebappRegistry has been completely warmed.
                 WebappRegistry.getInstance().unregisterOldWebapps(System.currentTimeMillis());
+
+                RecordHistogram.recordLongTimesHistogram(
+                        "UMA.Debug.EnableCrashUpload.DeferredStartUpAsyncTaskDuration",
+                        SystemClock.uptimeMillis() - mAsyncTaskStartTime,
+                        TimeUnit.MILLISECONDS);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
