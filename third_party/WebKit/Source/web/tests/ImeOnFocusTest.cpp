@@ -28,7 +28,9 @@ class ImeRequestTrackingWebViewClient
   ImeRequestTrackingWebViewClient() : m_virtualKeyboardRequestCount(0) {}
 
   // WebWidgetClient methods
-  void showVirtualKeyboard() override { ++m_virtualKeyboardRequestCount; }
+  void showVirtualKeyboardOnElementFocus() override {
+    ++m_virtualKeyboardRequestCount;
+  }
 
   // Local methds
   void reset() { m_virtualKeyboardRequestCount = 0; }

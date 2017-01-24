@@ -281,7 +281,7 @@ class CONTENT_EXPORT RenderViewImpl
   void setToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
   void setTouchAction(blink::WebTouchAction touchAction) override;
-  void showVirtualKeyboard() override;
+  void showVirtualKeyboardOnElementFocus() override;
   void showUnhandledTapUIIfNeeded(const blink::WebPoint& tappedPosition,
                                   const blink::WebNode& tappedNode,
                                   bool pageChanged) override;

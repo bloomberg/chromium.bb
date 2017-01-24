@@ -1900,8 +1900,8 @@ void RenderViewImpl::setTouchAction(blink::WebTouchAction touchAction) {
   RenderWidget::setTouchAction(touchAction);
 }
 
-void RenderViewImpl::showVirtualKeyboard() {
-  RenderWidget::showVirtualKeyboard();
+void RenderViewImpl::showVirtualKeyboardOnElementFocus() {
+  RenderWidget::showVirtualKeyboardOnElementFocus();
 }
 
 void RenderViewImpl::showUnhandledTapUIIfNeeded(

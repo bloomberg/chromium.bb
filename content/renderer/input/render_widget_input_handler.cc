@@ -282,7 +282,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
         static_cast<const WebKeyboardEvent&>(input_event);
     if (key_event.nativeKeyCode == AKEYCODE_DPAD_CENTER &&
         widget_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
-      widget_->showVirtualKeyboard();
+      widget_->showVirtualKeyboardOnElementFocus();
       prevent_default = true;
     }
 #endif

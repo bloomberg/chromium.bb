@@ -1750,7 +1750,7 @@ void RenderWidget::OnDragSourceSystemDragEnded() {
   static_cast<WebFrameWidget*>(GetWebWidget())->dragSourceSystemDragEnded();
 }
 
-void RenderWidget::showVirtualKeyboard() {
+void RenderWidget::showVirtualKeyboardOnElementFocus() {
   ShowVirtualKeyboard();
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with

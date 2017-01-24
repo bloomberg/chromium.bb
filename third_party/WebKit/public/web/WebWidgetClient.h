@@ -144,7 +144,7 @@ class WebWidgetClient {
   virtual void setTouchAction(WebTouchAction touchAction) {}
 
   // Request the browser to show virtual keyboard for current input type.
-  virtual void showVirtualKeyboard() {}
+  virtual void showVirtualKeyboardOnElementFocus() {}
 
   // Request that the browser show a UI for an unhandled tap, if needed.
   // Invoked during the handling of a GestureTap input event whenever the
