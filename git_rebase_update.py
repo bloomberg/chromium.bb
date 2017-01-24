@@ -311,8 +311,16 @@ def main(args=None):
           % (return_branch, root_branch)
         )
       git.run('checkout', root_branch)
+
+    # return_workdir may also not be there any more.
     if return_workdir:
-      os.chdir(return_workdir)
+      try:
+        os.chdir(return_workdir)
+      except OSError as e:
+        print (
+          "Unable to return to original workdir %r: %s"
+          % (return_workdir, e)
+        )
     git.set_config(STARTING_BRANCH_KEY, '')
     git.set_config(STARTING_WORKDIR_KEY, '')
 
