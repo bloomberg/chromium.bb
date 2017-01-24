@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_source.h"
@@ -185,6 +187,7 @@ class FakeAudioPlayer : public AudioStub {
   // AudioStub interface.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                           const base::Closure& done) override {
+    EXPECT_TRUE(thread_checker_.CalledOnValidThread());
     EXPECT_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
     EXPECT_EQ(AudioPacket::SAMPLING_RATE_48000, packet->sampling_rate());
     EXPECT_EQ(AudioPacket::BYTES_PER_SAMPLE_2, packet->bytes_per_sample());
@@ -241,6 +244,7 @@ class FakeAudioPlayer : public AudioStub {
   base::WeakPtr<AudioStub> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
+  base::ThreadChecker thread_checker_;
   std::vector<char> data_;
   base::RunLoop* run_loop_ = nullptr;
   size_t samples_expected_ = 0;
@@ -253,7 +257,14 @@ class FakeAudioPlayer : public AudioStub {
 class ConnectionTest : public testing::Test,
                        public testing::WithParamInterface<bool> {
  public:
-  ConnectionTest() {}
+  ConnectionTest()
+      : video_encode_thread_("VideoEncode"),
+        audio_encode_thread_("AudioEncode"),
+        audio_decode_thread_("AudioDecode") {
+    video_encode_thread_.Start();
+    audio_encode_thread_.Start();
+    audio_decode_thread_.Start();
+  }
 
   void DestroyHost() {
     host_connection_.reset();
@@ -296,7 +307,7 @@ class ConnectionTest : public testing::Test,
     client_connection_->set_clipboard_stub(&client_clipboard_stub_);
     client_connection_->set_video_renderer(&client_video_renderer_);
 
-    client_connection_->InitializeAudio(message_loop_.task_runner(),
+    client_connection_->InitializeAudio(audio_decode_thread_.task_runner(),
                                         client_audio_player_.GetWeakPtr());
   }
 
@@ -437,6 +448,10 @@ class ConnectionTest : public testing::Test,
   FakeSession* client_session_;  // Owned by |client_connection_|.
   std::unique_ptr<FakeSession> owned_client_session_;
   bool client_connected_ = false;
+
+  base::Thread video_encode_thread_;
+  base::Thread audio_encode_thread_;
+  base::Thread audio_decode_thread_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
