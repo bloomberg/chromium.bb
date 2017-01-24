@@ -192,7 +192,7 @@ void NewAvatarButton::Update() {
       use_generic_button
           ? gfx::ShadowValues()
           : gfx::ShadowValues(
-                10, gfx::ShadowValue(gfx::Vector2d(), 1.0f, SK_ColorDKGRAY)));
+                10, gfx::ShadowValue(gfx::Vector2d(), 2.0f, SK_ColorDKGRAY)));
 
   // We want the button to resize if the new text is shorter.
   SetMinSize(gfx::Size());

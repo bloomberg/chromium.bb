@@ -58,7 +58,7 @@ void SetDragImage(const GURL& url,
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
   if (widget->IsTranslucentWindowOpacitySupported()) {
     button.SetTextShadows(gfx::ShadowValues(
-        10, gfx::ShadowValue(gfx::Vector2d(0, 0), 1.0f, bg_color)));
+        10, gfx::ShadowValue(gfx::Vector2d(0, 0), 2.0f, bg_color)));
   } else {
     button.set_background(views::Background::CreateSolidBackground(bg_color));
     button.SetBorder(button.CreateDefaultBorder());
