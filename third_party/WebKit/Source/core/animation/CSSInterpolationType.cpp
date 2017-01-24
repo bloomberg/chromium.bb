@@ -251,7 +251,8 @@ InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
     return maybeConvertStandardPropertyUnderlyingValue(state);
   }
 
-  const AtomicString& name = getProperty().customPropertyName();
+  const PropertyHandle property = getProperty();
+  const AtomicString& name = property.customPropertyName();
   const PropertyRegistry::Registration* registration =
       getRegistration(state, name);
   if (!registration) {
@@ -302,7 +303,8 @@ void CSSInterpolationType::applyCustomPropertyValue(
   RefPtr<CSSVariableData> variableData = CSSVariableData::create(
       tokenizer.tokenRange(), isAnimationTainted, needsVariableResolution);
   ComputedStyle& style = *state.style();
-  const AtomicString& propertyName = getProperty().customPropertyName();
+  const PropertyHandle property = getProperty();
+  const AtomicString& propertyName = property.customPropertyName();
   const PropertyRegistry::Registration* registration =
       getRegistration(state, propertyName);
   DCHECK(registration);
