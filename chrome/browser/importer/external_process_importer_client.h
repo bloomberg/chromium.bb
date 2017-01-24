@@ -147,11 +147,6 @@ class ExternalProcessImporterClient
   // OnProcessCrashed() after NotifyImportEnded()).
   base::WeakPtr<ExternalProcessImporterHost> process_importer_host_;
 
-  // Handles sending messages to the external process.  Deletes itself when
-  // the external process dies (see
-  // BrowserChildProcessHost::OnChildDisconnected).
-  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
-
   // Data to be passed from the importer host to the external importer.
   importer::SourceProfile source_profile_;
   uint16_t items_;
