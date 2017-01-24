@@ -203,8 +203,9 @@ class MockQuicServerInfoFactory : public QuicServerInfoFactory {
   MockQuicServerInfoFactory() {}
   ~MockQuicServerInfoFactory() override {}
 
-  QuicServerInfo* GetForServer(const QuicServerId& server_id) override {
-    return new MockQuicServerInfo(server_id);
+  std::unique_ptr<QuicServerInfo> GetForServer(
+      const QuicServerId& server_id) override {
+    return base::MakeUnique<MockQuicServerInfo>(server_id);
   }
 };
 

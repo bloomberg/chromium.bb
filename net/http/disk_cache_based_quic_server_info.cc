@@ -65,6 +65,12 @@ DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
                      base::Owned(data_shim_));  // Ownership assigned.
 }
 
+DiskCacheBasedQuicServerInfo::~DiskCacheBasedQuicServerInfo() {
+  DCHECK(wait_for_ready_callback_.is_null());
+  if (entry_)
+    entry_->Close();
+}
+
 void DiskCacheBasedQuicServerInfo::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(GET_BACKEND, state_);
@@ -176,12 +182,6 @@ void DiskCacheBasedQuicServerInfo::OnExternalCacheHit() {
   }
 
   backend_->OnExternalCacheHit(key());
-}
-
-DiskCacheBasedQuicServerInfo::~DiskCacheBasedQuicServerInfo() {
-  DCHECK(wait_for_ready_callback_.is_null());
-  if (entry_)
-    entry_->Close();
 }
 
 std::string DiskCacheBasedQuicServerInfo::key() const {

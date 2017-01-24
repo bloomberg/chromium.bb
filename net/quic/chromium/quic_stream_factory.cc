@@ -282,7 +282,7 @@ class QuicStreamFactory::Job {
       const QuicSessionKey& key,
       bool was_alternative_service_recently_broken,
       int cert_verify_flags,
-      QuicServerInfo* server_info,
+      std::unique_ptr<QuicServerInfo> server_info,
       const NetLogWithSource& net_log);
 
   // Creates a new job to handle the resumption of for connecting an
@@ -354,7 +354,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             const QuicSessionKey& key,
                             bool was_alternative_service_recently_broken,
                             int cert_verify_flags,
-                            QuicServerInfo* server_info,
+                            std::unique_ptr<QuicServerInfo> server_info,
                             const NetLogWithSource& net_log)
     : io_state_(STATE_RESOLVE_HOST),
       factory_(factory),
@@ -363,7 +363,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       cert_verify_flags_(cert_verify_flags),
       was_alternative_service_recently_broken_(
           was_alternative_service_recently_broken),
-      server_info_(server_info),
+      server_info_(std::move(server_info)),
       started_another_job_(false),
       net_log_(net_log),
       num_sent_client_hellos_(0),
@@ -987,7 +987,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   if (!task_runner_)
     task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
 
-  QuicServerInfo* quic_server_info = nullptr;
+  std::unique_ptr<QuicServerInfo> quic_server_info;
   if (quic_server_info_factory_.get()) {
     bool load_from_disk_cache = !disable_disk_cache_;
     MaybeInitialize();
@@ -1005,7 +1005,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   QuicSessionKey key(destination, server_id);
   std::unique_ptr<Job> job = base::MakeUnique<Job>(
       this, host_resolver_, key, WasQuicRecentlyBroken(server_id),
-      cert_verify_flags, quic_server_info, net_log);
+      cert_verify_flags, std::move(quic_server_info), net_log);
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -1666,7 +1666,7 @@ int QuicStreamFactory::CreateSession(
     // Start the disk cache loading so that we can persist the newer QUIC server
     // information and/or inform the disk cache that we have reused
     // |server_info|.
-    server_info.reset(quic_server_info_factory_->GetForServer(server_id));
+    server_info = quic_server_info_factory_->GetForServer(server_id);
     server_info->Start();
   }
 
@@ -1848,7 +1848,7 @@ void QuicStreamFactory::MaybeInitialize() {
     server_list.push_back(key_value.first);
   for (auto it = server_list.rbegin(); it != server_list.rend(); ++it) {
     const QuicServerId& server_id = *it;
-    server_info.reset(quic_server_info_factory_->GetForServer(server_id));
+    server_info = quic_server_info_factory_->GetForServer(server_id);
     if (server_info->WaitForDataReady(callback) == OK) {
       DVLOG(1) << "Initialized server config for: " << server_id.ToString();
       InitializeCachedStateInCryptoConfig(server_id, server_info, nullptr);
