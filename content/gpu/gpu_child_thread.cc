@@ -389,22 +389,12 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   if (dead_on_arrival_)
     return;
 
-#if defined(OS_WIN)
-  // GPU full info collection should only happen on un-sandboxed GPU process
-  // or single process/in-process gpu mode on Windows.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch(switches::kDisableGpuSandbox) ||
-         in_browser_process_);
-#endif  // OS_WIN
-
-  // gpu::CollectContextGraphicsInfo() is already called during gpu process
-  // initialization on non-mac platforms (see GpuMain()). So it is necessary to
-  // call it here only when running in the browser process on these platforms.
-  bool should_collect_info = in_browser_process_;
 #if defined(OS_MACOSX)
-  should_collect_info = true;
-#endif
-  if (should_collect_info) {
+  // gpu::CollectContextGraphicsInfo() is already called during gpu process
+  // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
+  // platforms, and during in-browser gpu thread initialization on all platforms
+  // (See InProcessGpuThread::Init()).
+  if (!in_browser_process_) {
     DCHECK_EQ(gpu::kCollectInfoNone, gpu_info_.context_info_state);
     gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info_);
     switch (result) {
@@ -423,8 +413,15 @@ void GpuChildThread::OnCollectGraphicsInfo() {
     }
     GetContentClient()->SetGpuInfo(gpu_info_);
   }
+#endif
 
 #if defined(OS_WIN)
+  // GPU full info collection should only happen on un-sandboxed GPU process
+  // or single process/in-process gpu mode on Windows.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  DCHECK(command_line->HasSwitch(switches::kDisableGpuSandbox) ||
+         in_browser_process_);
+
   // This is slow, but it's the only thing the unsandboxed GPU process does,
   // and GpuDataManager prevents us from sending multiple collecting requests,
   // so it's OK to be blocking.
