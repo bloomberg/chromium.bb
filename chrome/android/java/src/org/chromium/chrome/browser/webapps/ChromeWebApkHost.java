@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -19,16 +18,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 /**
  * Contains functionality needed for Chrome to host WebAPKs.
  */
 public class ChromeWebApkHost {
-    /** Flag to enable installing WebAPKs using Google Play. */
-    private static final String PLAY_INSTALL = "play_install";
-
     private static final String TAG = "ChromeWebApkHost";
 
     private static Boolean sEnabledForTesting;
@@ -60,9 +55,7 @@ public class ChromeWebApkHost {
 
     /** Return whether installing WebAPKs using Google Play is enabled. */
     public static boolean canUseGooglePlayToInstallWebApk() {
-        if (!isEnabled()) return false;
-        return TextUtils.equals(VariationsAssociatedData.getVariationParamValue(
-                ChromeFeatureList.IMPROVED_A2HS, PLAY_INSTALL), "true");
+        return isEnabled() && nativeCanUseGooglePlayToInstallWebApk();
     }
 
     @CalledByNative
@@ -95,8 +88,11 @@ public class ChromeWebApkHost {
         // variations on other channels.
         if (!ChromeVersionInfo.isCanaryBuild() && !ChromeVersionInfo.isDevBuild()) return;
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_A2HS)
-                && !canUseGooglePlayToInstallWebApk()
+        // Update cached state. {@link #isEnabled()} and {@link #canUseGooglePlayToInstallWebApk()}
+        // need the state to be up to date.
+        cacheEnabledStateForNextLaunch();
+
+        if (isEnabled() && !canUseGooglePlayToInstallWebApk()
                 && !installingFromUnknownSourcesAllowed()) {
             showUnknownSourcesNeededDialog(context);
         }
@@ -157,4 +153,6 @@ public class ChromeWebApkHost {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    private static native boolean nativeCanUseGooglePlayToInstallWebApk();
 }
