@@ -448,10 +448,14 @@ GetDefaultSchedulerWorkerPoolParams() {
       "Foreground", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
        base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
        base::TimeDelta::FromSeconds(30));
+  // Tasks posted to SequencedWorkerPool or BrowserThreadImpl may be redirected
+  // to this pool. Since COM STA is initialized in these environments, it must
+  // also be initialized in this pool.
   params_vector.emplace_back(
       "ForegroundFileIO", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
-       base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
-       base::TimeDelta::FromSeconds(30));
+      base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
+      base::TimeDelta::FromSeconds(30),
+      base::SchedulerBackwardCompatibility::INIT_COM_STA);
 #endif
   DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
   return params_vector;

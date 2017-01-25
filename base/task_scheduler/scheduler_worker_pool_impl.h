@@ -16,23 +16,21 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_scheduler/priority_queue.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/scheduler_worker.h"
 #include "base/task_scheduler/scheduler_worker_pool.h"
-#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/scheduler_worker_stack.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
 namespace base {
 
 class HistogramBase;
+class SchedulerWorkerPoolParams;
 class TaskTraits;
 
 namespace internal {
@@ -111,15 +109,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   class SchedulerSingleThreadTaskRunner;
   class SchedulerWorkerDelegateImpl;
 
-  SchedulerWorkerPoolImpl(StringPiece name,
-                          TimeDelta suggested_reclaim_time,
+  SchedulerWorkerPoolImpl(const SchedulerWorkerPoolParams& params,
                           TaskTracker* task_tracker,
                           DelayedTaskManager* delayed_task_manager);
 
   bool Initialize(
-      ThreadPriority priority_hint,
-      SchedulerWorkerPoolParams::StandbyThreadPolicy standby_thread_policy,
-      size_t max_threads,
+      const SchedulerWorkerPoolParams& params,
       const ReEnqueueSequenceCallback& re_enqueue_sequence_callback);
 
   // Wakes up |worker|.

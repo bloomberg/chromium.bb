@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/task_scheduler/scheduler_worker_params.h"
 #include "base/task_scheduler/switches.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/platform_thread.h"
@@ -40,21 +41,25 @@ GetBrowserWorkerPoolParamsFromVariations() {
   if (!::variations::GetVariationParams(kFieldTrialName, &variation_params))
     return std::vector<base::SchedulerWorkerPoolParams>();
 
-  std::vector<SchedulerImmutableWorkerPoolParams> constant_worker_pool_params;
-  DCHECK_EQ(BACKGROUND, constant_worker_pool_params.size());
-  constant_worker_pool_params.emplace_back("Background",
-                                           ThreadPriority::BACKGROUND);
-  DCHECK_EQ(BACKGROUND_FILE_IO, constant_worker_pool_params.size());
-  constant_worker_pool_params.emplace_back("BackgroundFileIO",
-                                           ThreadPriority::BACKGROUND);
-  DCHECK_EQ(FOREGROUND, constant_worker_pool_params.size());
-  constant_worker_pool_params.emplace_back("Foreground",
-                                           ThreadPriority::NORMAL);
-  DCHECK_EQ(FOREGROUND_FILE_IO, constant_worker_pool_params.size());
-  constant_worker_pool_params.emplace_back("ForegroundFileIO",
-                                           ThreadPriority::NORMAL);
+  std::vector<SchedulerImmutableWorkerPoolParams> immutable_worker_pool_params;
+  DCHECK_EQ(BACKGROUND, immutable_worker_pool_params.size());
+  immutable_worker_pool_params.emplace_back("Background",
+                                            ThreadPriority::BACKGROUND);
+  DCHECK_EQ(BACKGROUND_FILE_IO, immutable_worker_pool_params.size());
+  immutable_worker_pool_params.emplace_back("BackgroundFileIO",
+                                            ThreadPriority::BACKGROUND);
+  DCHECK_EQ(FOREGROUND, immutable_worker_pool_params.size());
+  immutable_worker_pool_params.emplace_back("Foreground",
+                                            ThreadPriority::NORMAL);
+  // Tasks posted to SequencedWorkerPool or BrowserThreadImpl may be redirected
+  // to this pool. Since COM STA is initialized in these environments, it must
+  // also be initialized in this pool.
+  DCHECK_EQ(FOREGROUND_FILE_IO, immutable_worker_pool_params.size());
+  immutable_worker_pool_params.emplace_back(
+      "ForegroundFileIO", ThreadPriority::NORMAL,
+      base::SchedulerBackwardCompatibility::INIT_COM_STA);
 
-  return GetWorkerPoolParams(constant_worker_pool_params, variation_params);
+  return GetWorkerPoolParams(immutable_worker_pool_params, variation_params);
 }
 
 size_t BrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {

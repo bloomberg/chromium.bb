@@ -86,8 +86,11 @@ SchedulerCustomizableWorkerPoolParams StringToVariableWorkerPoolParams(
 
 SchedulerImmutableWorkerPoolParams::SchedulerImmutableWorkerPoolParams(
     const char* name,
-    base::ThreadPriority priority_hint)
-    : name_(name), priority_hint_(priority_hint) {}
+    base::ThreadPriority priority_hint,
+    base::SchedulerBackwardCompatibility backward_compatibility)
+    : name_(name),
+      priority_hint_(priority_hint),
+      backward_compatibility_(backward_compatibility) {}
 
 std::vector<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
     const std::vector<SchedulerImmutableWorkerPoolParams>&
@@ -115,7 +118,8 @@ std::vector<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
         worker_pool_name, constant_worker_pool_params.priority_hint(),
         variable_worker_pool_params.standby_thread_policy,
         variable_worker_pool_params.max_threads,
-        variable_worker_pool_params.detach_period);
+        variable_worker_pool_params.detach_period,
+        constant_worker_pool_params.backward_compatibility());
   }
   return worker_pool_params_vector;
 }

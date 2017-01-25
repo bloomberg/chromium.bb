@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/task_tracker.h"
-#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -44,12 +44,11 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
     WaitForWork();
 
 #if defined(OS_WIN)
-    // This is required as SequencedWorkerPool previously blindly CoInitialized
-    // all of its threads.
-    // TODO: Get rid of this broad COM scope and force tasks that care about a
-    // CoInitialized environment to request one (via an upcoming execution
-    // mode).
-    win::ScopedCOMInitializer com_initializer;
+    std::unique_ptr<win::ScopedCOMInitializer> com_initializer;
+    if (outer_->backward_compatibility_ ==
+        SchedulerBackwardCompatibility::INIT_COM_STA) {
+      com_initializer = MakeUnique<win::ScopedCOMInitializer>();
+    }
 #endif
 
     while (!outer_->task_tracker_->IsShutdownComplete() &&
@@ -192,9 +191,11 @@ std::unique_ptr<SchedulerWorker> SchedulerWorker::Create(
     ThreadPriority priority_hint,
     std::unique_ptr<Delegate> delegate,
     TaskTracker* task_tracker,
-    InitialState initial_state) {
-  std::unique_ptr<SchedulerWorker> worker(
-      new SchedulerWorker(priority_hint, std::move(delegate), task_tracker));
+    InitialState initial_state,
+    SchedulerBackwardCompatibility backward_compatibility) {
+  auto worker =
+      WrapUnique(new SchedulerWorker(priority_hint, std::move(delegate),
+                                     task_tracker, backward_compatibility));
   // Creation happens before any other thread can reference this one, so no
   // synchronization is necessary.
   if (initial_state == SchedulerWorker::InitialState::ALIVE) {
@@ -252,12 +253,19 @@ bool SchedulerWorker::ThreadAliveForTesting() const {
   return !!thread_;
 }
 
-SchedulerWorker::SchedulerWorker(ThreadPriority priority_hint,
-                                 std::unique_ptr<Delegate> delegate,
-                                 TaskTracker* task_tracker)
+SchedulerWorker::SchedulerWorker(
+    ThreadPriority priority_hint,
+    std::unique_ptr<Delegate> delegate,
+    TaskTracker* task_tracker,
+    SchedulerBackwardCompatibility backward_compatibility)
     : priority_hint_(priority_hint),
       delegate_(std::move(delegate)),
-      task_tracker_(task_tracker) {
+      task_tracker_(task_tracker)
+#if defined(OS_WIN)
+      ,
+      backward_compatibility_(backward_compatibility)
+#endif
+{
   DCHECK(delegate_);
   DCHECK(task_tracker_);
 }

@@ -11,6 +11,7 @@
 
 #include "build/build_config.h"
 #include "base/strings/string_piece.h"
+#include "base/task_scheduler/scheduler_worker_params.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/threading/platform_thread.h"
 
@@ -22,15 +23,22 @@ namespace task_scheduler_util {
 
 class SchedulerImmutableWorkerPoolParams {
  public:
-  SchedulerImmutableWorkerPoolParams(const char* name,
-                                     base::ThreadPriority priority_hint);
+  SchedulerImmutableWorkerPoolParams(
+      const char* name,
+      base::ThreadPriority priority_hint,
+      base::SchedulerBackwardCompatibility backward_compatibility =
+          base::SchedulerBackwardCompatibility::DISABLED);
 
   const char* name() const { return name_; }
   base::ThreadPriority priority_hint() const { return priority_hint_; }
+  base::SchedulerBackwardCompatibility backward_compatibility() const {
+    return backward_compatibility_;
+  }
 
  private:
   const char* name_;
   base::ThreadPriority priority_hint_;
+  base::SchedulerBackwardCompatibility backward_compatibility_;
 };
 
 // Returns a SchedulerWorkerPoolParams vector to initialize pools specified in

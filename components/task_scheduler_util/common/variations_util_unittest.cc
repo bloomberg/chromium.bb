@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/task_scheduler/scheduler_worker_params.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/threading/platform_thread.h"
 #include "components/variations/variations_associated_data.h"
@@ -40,8 +41,9 @@ std::vector<SchedulerImmutableWorkerPoolParams> GetImmutableWorkerPoolParams() {
                                            ThreadPriority::BACKGROUND);
   constant_worker_pool_params.emplace_back("Foreground",
                                            ThreadPriority::NORMAL);
-  constant_worker_pool_params.emplace_back("ForegroundFileIO",
-                                           ThreadPriority::NORMAL);
+  constant_worker_pool_params.emplace_back(
+      "ForegroundFileIO", ThreadPriority::NORMAL,
+      base::SchedulerBackwardCompatibility::INIT_COM_STA);
   return constant_worker_pool_params;
 }
 
@@ -80,6 +82,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   EXPECT_EQ(1U, params_vector[0].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(42),
             params_vector[0].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
+            params_vector[0].backward_compatibility());
 
   EXPECT_EQ("BackgroundFileIO", params_vector[1].name());
   EXPECT_EQ(ThreadPriority::BACKGROUND, params_vector[1].priority_hint());
@@ -87,6 +91,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   EXPECT_EQ(2U, params_vector[1].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(52),
             params_vector[1].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
+            params_vector[1].backward_compatibility());
 
   EXPECT_EQ("Foreground", params_vector[2].name());
   EXPECT_EQ(ThreadPriority::NORMAL, params_vector[2].priority_hint());
@@ -94,6 +100,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   EXPECT_EQ(4U, params_vector[2].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(62),
             params_vector[2].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
+            params_vector[2].backward_compatibility());
 
   EXPECT_EQ("ForegroundFileIO", params_vector[3].name());
   EXPECT_EQ(ThreadPriority::NORMAL, params_vector[3].priority_hint());
@@ -101,6 +109,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   EXPECT_EQ(8U, params_vector[3].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(72),
             params_vector[3].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::INIT_COM_STA,
+            params_vector[3].backward_compatibility());
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams6) {
@@ -121,6 +131,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams6) {
   EXPECT_EQ(1U, params_vector[0].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(42),
             params_vector[0].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
+            params_vector[0].backward_compatibility());
 
   EXPECT_EQ("BackgroundFileIO", params_vector[1].name());
   EXPECT_EQ(ThreadPriority::BACKGROUND, params_vector[1].priority_hint());
@@ -128,6 +140,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams6) {
   EXPECT_EQ(2U, params_vector[1].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(52),
             params_vector[1].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
+            params_vector[1].backward_compatibility());
 
   EXPECT_EQ("Foreground", params_vector[2].name());
   EXPECT_EQ(ThreadPriority::NORMAL, params_vector[2].priority_hint());
@@ -136,6 +150,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams6) {
   EXPECT_EQ(4U, params_vector[2].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(62),
             params_vector[2].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
+            params_vector[2].backward_compatibility());
 
   EXPECT_EQ("ForegroundFileIO", params_vector[3].name());
   EXPECT_EQ(ThreadPriority::NORMAL, params_vector[3].priority_hint());
@@ -143,6 +159,8 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams6) {
   EXPECT_EQ(8U, params_vector[3].max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(72),
             params_vector[3].suggested_reclaim_time());
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::INIT_COM_STA,
+            params_vector[3].backward_compatibility());
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, NoData) {
