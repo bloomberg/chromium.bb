@@ -15,6 +15,7 @@ struct WebPresentationError {
     ErrorTypeSessionRequestCancelled,
     ErrorTypeNoPresentationFound,
     ErrorTypeAvailabilityNotSupported,
+    ErrorTypePreviousStartInProgress,
     ErrorTypeUnknown,
     ErrorTypeLast = ErrorTypeUnknown
   };

@@ -11,15 +11,15 @@
 var button = document.querySelector('button');
 
 var testPresentationRequestStart = function(t, requestArgument, connectionUrl) {
-  presentationServiceMock.then(t.step_func(service => {
+  presentationServiceMock.then(service => {
     // This is receiving the user gesture and runs the callback.
-    waitForClick(t.step_func(_ => {
+    waitForClick(() => {
       new PresentationRequest(requestArgument).start().then(
       t.step_func_done(connection => {
         assert_equals(connection.url, connectionUrl);
       }));
-    }), button);
-  }));
+    }, button);
+  });
 };
 
 async_test(t => {

@@ -109,7 +109,9 @@ void InvokeNewSessionCallbackWithError(
     const PresentationServiceImpl::NewSessionCallback& callback) {
   callback.Run(blink::mojom::PresentationSessionInfoPtr(),
                blink::mojom::PresentationError::From(PresentationError(
-                   PRESENTATION_ERROR_UNKNOWN, "Internal error")));
+                   PRESENTATION_ERROR_PREVIOUS_START_IN_PROGRESS,
+                   "There is already an unsettled Promise from a previous call "
+                   "to start.")));
 }
 
 }  // namespace

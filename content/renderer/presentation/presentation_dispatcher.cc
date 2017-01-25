@@ -54,6 +54,8 @@ blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
       return blink::WebPresentationError::ErrorTypeSessionRequestCancelled;
     case blink::mojom::PresentationErrorType::NO_PRESENTATION_FOUND:
       return blink::WebPresentationError::ErrorTypeNoPresentationFound;
+    case blink::mojom::PresentationErrorType::PREVIOUS_START_IN_PROGRESS:
+      return blink::WebPresentationError::ErrorTypePreviousStartInProgress;
     case blink::mojom::PresentationErrorType::UNKNOWN:
     default:
       return blink::WebPresentationError::ErrorTypeUnknown;

@@ -24,6 +24,9 @@ DOMException* PresentationError::take(const WebPresentationError& error) {
     case WebPresentationError::ErrorTypeAvailabilityNotSupported:
       code = NotSupportedError;
       break;
+    case WebPresentationError::ErrorTypePreviousStartInProgress:
+      code = OperationError;
+      break;
     case WebPresentationError::ErrorTypeUnknown:
       code = UnknownError;
       break;

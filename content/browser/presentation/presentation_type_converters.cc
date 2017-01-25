@@ -17,6 +17,8 @@ blink::mojom::PresentationErrorType PresentationErrorTypeToMojo(
       return blink::mojom::PresentationErrorType::SESSION_REQUEST_CANCELLED;
     case content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND:
       return blink::mojom::PresentationErrorType::NO_PRESENTATION_FOUND;
+    case content::PRESENTATION_ERROR_PREVIOUS_START_IN_PROGRESS:
+      return blink::mojom::PresentationErrorType::PREVIOUS_START_IN_PROGRESS;
     case content::PRESENTATION_ERROR_UNKNOWN:
       return blink::mojom::PresentationErrorType::UNKNOWN;
   }
