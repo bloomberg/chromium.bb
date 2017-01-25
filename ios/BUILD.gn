@@ -31,6 +31,7 @@ group("all") {
       "//ios/clean/chrome/app:chrome_clean_skeleton",
       "//ios/showcase",
       "//ios/web/shell:ios_web_shell",
+      "//ios/web_view/shell:ios_web_view_shell",
 
       # List all the test targets that need to be build on iOS by default.
       "//ios/chrome/test:all_tests",

@@ -1,0 +1,81 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/repack.gni")
+import("//build/config/ios/rules.gni")
+
+ios_app_bundle("ios_web_view_shell") {
+  deps = [
+    "//base",
+    "//ios/web_view",
+  ]
+  bundle_deps = [
+    ":resources",
+    ":packed_resources",
+  ]
+  info_plist = "Info.plist"
+  sources = [
+    "shell_app_delegate.h",
+    "shell_app_delegate.mm",
+    "shell_delegate.h",
+    "shell_delegate.mm",
+    "shell_exe_main.mm",
+    "shell_view_controller.h",
+    "shell_view_controller.mm",
+    "translate_controller.h",
+    "translate_controller.mm",
+  ]
+  libs = [
+    "CFNetwork.framework",
+    "CoreFoundation.framework",
+    "CoreGraphics.framework",
+    "CoreText.framework",
+    "Foundation.framework",
+    "ImageIO.framework",
+    "MobileCoreServices.framework",
+    "Security.framework",
+    "SystemConfiguration.framework",
+    "UIKit.framework",
+    "WebKit.framework",
+    "resolv",
+  ]
+}
+
+bundle_data("resources") {
+  visibility = [ ":ios_web_view_shell" ]
+  sources = [
+    "Default-568h@2x.png",
+    "textfield_background@2x.png",
+    "toolbar_back@2x.png",
+    "toolbar_forward@2x.png",
+    "toolbar_stop@2x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+repack("repack_resources") {
+  visibility = [ ":packed_resources" ]
+  deps = [
+    "//components/resources:components_resources",
+  ]
+  sources = [
+    "$root_gen_dir/components/components_resources.pak",
+  ]
+  output = "$target_gen_dir/web_view_resources.pak"
+}
+
+bundle_data("packed_resources") {
+  visibility = [ ":ios_web_view_shell" ]
+  public_deps = [
+    ":repack_resources",
+  ]
+  sources = [
+    "$target_gen_dir/web_view_resources.pak",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}

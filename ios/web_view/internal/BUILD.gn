@@ -1,0 +1,48 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("internal") {
+  visibility = [
+    "//ios/web_view",
+    "//ios/web_view/internal/*",
+  ]
+
+  sources = [
+    "criwv.mm",
+    "criwv_browser_state.h",
+    "criwv_browser_state.mm",
+    "criwv_network_delegate.cc",
+    "criwv_network_delegate.h",
+    "criwv_url_request_context_getter.h",
+    "criwv_url_request_context_getter.mm",
+    "criwv_web_client.h",
+    "criwv_web_client.mm",
+    "criwv_web_main_delegate.h",
+    "criwv_web_main_delegate.mm",
+    "criwv_web_main_parts.h",
+    "criwv_web_main_parts.mm",
+    "criwv_web_view_impl.h",
+    "criwv_web_view_impl.mm",
+    "pref_names.cc",
+    "pref_names.h",
+  ]
+  deps = [
+    "//base",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
+    "//ios/net",
+    "//ios/web",
+    "//ios/web:user_agent",
+    "//ios/web/public/app",
+    "//ios/web_view/internal/translate",
+    "//ios/web_view/public",
+    "//net",
+    "//net:extras",
+    "//ui/base",
+    "//url",
+  ]
+  allow_circular_includes_from = [ "//ios/web_view/internal/translate" ]
+}

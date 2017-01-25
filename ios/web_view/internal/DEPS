@@ -1,0 +1,20 @@
+include_rules = [
+  "+base",
+  "+components/infobars/core",
+  "+components/keyed_service/core",
+  "+components/keyed_service/ios",
+  "+components/pref_registry",
+  "+components/prefs",
+  "+components/translate/core",
+  "+components/translate/ios",
+  "+ios/net",
+  "+ios/web/public",
+  "+ios/web_view",
+  "+net",
+  "+ui/base",
+
+  # TODO(crbug.com/622967): Remove these exceptions.
+  "+ios/web/navigation/crw_session_controller.h",
+  "+ios/web/web_state/ui/crw_web_controller.h",
+  "+ios/web/web_state/web_state_impl.h",
+]
