@@ -550,9 +550,12 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       // Don't send suggestions or track forms that should not be parsed.
       form_structure->ShouldBeParsed();
 
-  // Logging interactions of forms that are autofillable.
+  bool is_filling_credit_card = false;
+
+  // Log interactions of forms that are autofillable.
   if (got_autofillable_form) {
     if (autofill_field->Type().group() == CREDIT_CARD) {
+      is_filling_credit_card = true;
       driver_->DidInteractWithCreditCardForm();
       credit_card_form_event_logger_->OnDidInteractWithAutofillableForm();
     } else {
@@ -561,12 +564,17 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   }
 
   std::vector<Suggestion> suggestions;
+  const bool is_context_secure =
+      !form_structure ||
+      (client_->IsContextSecure(form_structure->source_url()) &&
+       (!form_structure->target_url().is_valid() ||
+        !form_structure->target_url().SchemeIs("http")));
+  const bool is_http_warning_enabled =
+      security_state::IsHttpWarningInFormEnabled();
 
   if (is_autofill_possible &&
       driver_->RendererIsAvailable() &&
       got_autofillable_form) {
-    AutofillType type = autofill_field->Type();
-    bool is_filling_credit_card = (type.group() == CREDIT_CARD);
     // On desktop, don't return non credit card related suggestions for forms or
     // fields that have the "autocomplete" attribute set to off.
     if (IsDesktopPlatform() && !is_filling_credit_card &&
@@ -574,16 +582,13 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       return;
     }
     if (is_filling_credit_card) {
-      suggestions = GetCreditCardSuggestions(field, type);
+      suggestions = GetCreditCardSuggestions(field, autofill_field->Type());
     } else {
       suggestions =
           GetProfileSuggestions(*form_structure, field, *autofill_field);
     }
+
     if (!suggestions.empty()) {
-      bool is_context_secure =
-          client_->IsContextSecure(form_structure->source_url()) &&
-          (!form_structure->target_url().is_valid() ||
-           !form_structure->target_url().SchemeIs("http"));
       if (is_filling_credit_card)
         AutofillMetrics::LogIsQueriedCreditCardFormSecure(is_context_secure);
 
@@ -591,8 +596,6 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       // provide them for secure pages with passive mixed content (see impl. of
       // IsContextSecure).
       if (is_filling_credit_card && !is_context_secure) {
-        bool is_http_warning_enabled =
-            security_state::IsHttpWarningInFormEnabled();
         // Replace the suggestion content with a warning message explaining why
         // Autofill is disabled for a website. The string is different if the
         // credit card autofill HTTP warning experiment is enabled.
@@ -603,22 +606,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         warning_suggestion.frontend_id =
             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
         suggestions.assign(1, warning_suggestion);
-
-        // On top of the explanation message, first show a "Payment not secure"
-        // message.
-        if (is_http_warning_enabled) {
-#if !defined(OS_ANDROID)
-          suggestions.insert(suggestions.begin(), Suggestion());
-          suggestions.front().frontend_id = POPUP_ITEM_ID_SEPARATOR;
-#endif
-          suggestions.insert(suggestions.begin(),
-                             CreateHttpWarningMessageSuggestionItem(
-                                 form_structure->source_url()));
-        }
       } else {
-        bool section_is_autofilled =
-            SectionIsAutofilled(*form_structure, form,
-                                autofill_field->section());
+        bool section_is_autofilled = SectionIsAutofilled(
+            *form_structure, form, autofill_field->section());
         if (section_is_autofilled) {
           // If the relevant section is auto-filled and the renderer is querying
           // for suggestions, then the user is editing the value of a field.
@@ -648,6 +638,21 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         }
       }
     }
+  }
+
+  // Show a "Payment not secure" message.
+  if (!is_context_secure && is_http_warning_enabled) {
+#if !defined(OS_ANDROID)
+    if (!suggestions.empty()) {
+      suggestions.insert(suggestions.begin(), Suggestion());
+      suggestions.front().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+    }
+#endif
+
+    suggestions.insert(
+        suggestions.begin(),
+        CreateHttpWarningMessageSuggestionItem(
+            form_structure ? form_structure->source_url() : GURL::EmptyGURL()));
   }
 
   // If there are no Autofill suggestions, consider showing Autocomplete

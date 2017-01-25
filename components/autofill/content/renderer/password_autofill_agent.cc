@@ -28,6 +28,8 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/security_state/core/security_state.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -843,9 +845,25 @@ bool PasswordAutofillAgent::ShowSuggestions(
   blink::WebInputElement username_element;
   blink::WebInputElement password_element;
   PasswordInfo* password_info;
+
   if (!FindPasswordInfoForElement(element, &username_element, &password_element,
-                                  &password_info))
+                                  &password_info)) {
+    // If we don't have a password stored, but the form is non-secure, warn
+    // the user about the non-secure form.
+    if ((element.isPasswordField() ||
+         HasAutocompleteAttributeValue(element, "username")) &&
+        security_state::IsHttpWarningInFormEnabled() &&
+        !content::IsOriginSecure(url::Origin(render_frame()
+                                                 ->GetRenderView()
+                                                 ->GetMainRenderFrame()
+                                                 ->GetWebFrame()
+                                                 ->getSecurityOrigin())
+                                     .GetURL())) {
+      autofill_agent_->ShowNotSecureWarning(element);
+      return true;
+    }
     return false;
+  }
 
   // If autocomplete='off' is set on the form elements, no suggestion dialog
   // should be shown. However, return |true| to indicate that this is a known

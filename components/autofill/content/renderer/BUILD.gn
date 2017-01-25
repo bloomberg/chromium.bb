@@ -30,6 +30,10 @@ static_library("renderer") {
     "//base:i18n",
     "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/core/common",
+
+    # TODO(elawrence): remove security_state/core when the Form-Not-Secure
+    # feature is fully launched. https://crbug.com/677295
+    "//components/security_state/core",
     "//components/strings",
     "//content/public/common",
     "//content/public/renderer",

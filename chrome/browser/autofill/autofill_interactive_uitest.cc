@@ -92,18 +92,6 @@ static const char kTestFormString[] =
     "<label for=\"phone\">Phone number:</label>"
     " <input type=\"text\" id=\"phone\"><br>"
     "</form>";
-static const char kTestPasswordFormString[] =
-    "<form>"
-    "<label for=\"user\">User:</label>"
-    " <input id=\"user\" type=\"text\" name=\"name\""
-             "onfocus=\"domAutomationController.send(true)\">"
-    "<br>"
-    "<label for=\"password\">Password:</label>"
-    " <input id=\"password\" type=\"password\" name=\"password\""
-             "onfocus=\"domAutomationController.send(true)\">"
-    "<br>"
-    "<input type=\"submit\" value=\"Submit\">"
-    "</form>";
 
 // TODO(crbug.com/609861): Remove the autocomplete attribute from the textarea
 // field when the bug is fixed.
@@ -1727,8 +1715,19 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        PastedPasswordIsSaved) {
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestPasswordFormString)));
+  // Serve test page from a HTTPS server so that Form Not Secure warnings do not
+  // interfere with the test.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::NO_CLIENT_CERT;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+
+  GURL url = https_server.GetURL("/autofill/autofill_password_form.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
   ASSERT_TRUE(content::ExecuteScript(
       GetRenderViewHost(),
       "document.getElementById('user').value = 'user';"));

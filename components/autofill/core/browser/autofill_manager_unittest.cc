@@ -695,7 +695,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
     EXPECT_TRUE(on_suggestions_returned_seen_);
 
     EXPECT_EQ(expected_page_id, query_id_);
-    ASSERT_EQ(expected_num_suggestions, suggestions_.size());
+    ASSERT_LE(expected_num_suggestions, suggestions_.size());
     for (size_t i = 0; i < expected_num_suggestions; ++i) {
       SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
       EXPECT_EQ(expected_suggestions[i].value, suggestions_[i].value);
@@ -704,6 +704,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
       EXPECT_EQ(expected_suggestions[i].frontend_id,
                 suggestions_[i].frontend_id);
     }
+    ASSERT_EQ(expected_num_suggestions, suggestions_.size());
   }
 
   // Wrappers around the above GetSuggestions call that take a hardcoded number
@@ -1630,11 +1631,17 @@ TEST_F(AutofillManagerTest,
           l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_PAYMENT_DISABLED), "",
           "", POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE));
 
-  // Clear the test credit cards and try again -- we shouldn't return a warning.
+  // Clear the test credit cards and try again -- we should still show the
+  // warning.
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
-  // Autocomplete suggestions are queried, but not Autofill.
-  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+  // Test that we sent the right values to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(l10n_util::GetStringUTF8(
+                     IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE),
+                 l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
+                 "httpWarning", POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE));
 }
 
 // Test that we don't show the extra "Payment not secure" warning when the page
