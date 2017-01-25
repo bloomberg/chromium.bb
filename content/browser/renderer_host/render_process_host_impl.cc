@@ -220,6 +220,7 @@
 #if defined(OS_MACOSX)
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/mach_broker_mac.h"
+#include "content/browser/shapedetection/face_detection_service_dispatcher.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -1195,6 +1196,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   channel_->AddAssociatedInterfaceForIOThread(
       base::Bind(&IndexedDBDispatcherHost::AddBinding, indexed_db_factory_));
+
+#if defined(OS_MACOSX)
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&FaceDetectionServiceDispatcher::CreateMojoService));
+#endif
 
 #if defined(OS_ANDROID)
   AddUIThreadInterface(registry.get(),

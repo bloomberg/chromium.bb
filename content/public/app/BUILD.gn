@@ -181,6 +181,7 @@ service_manifest("browser_manifest") {
     "//media/mojo/services:media_manifest",
     "//services/device:manifest",
     "//services/file:manifest",
+    "//services/shape_detection:manifest",
   ]
 }
 

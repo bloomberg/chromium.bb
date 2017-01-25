@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/merge_dictionary.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -38,6 +39,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/service_manager.h"
+#include "services/shape_detection/public/interfaces/constants.mojom.h"
 
 namespace content {
 
@@ -311,6 +313,9 @@ ServiceManagerContext::ServiceManagerContext() {
   GetContentClient()
       ->browser()
       ->RegisterUnsandboxedOutOfProcessServices(&unsandboxed_services);
+  unsandboxed_services.insert(
+      std::make_pair(shape_detection::mojom::kServiceName,
+                     base::ASCIIToUTF16("Shape Detection Service")));
   for (const auto& service : unsandboxed_services) {
     ServiceManagerConnection::GetForProcess()->AddServiceRequestHandler(
         service.first,

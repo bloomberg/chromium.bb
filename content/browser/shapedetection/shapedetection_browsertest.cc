@@ -11,8 +11,8 @@
 
 namespace content {
 
-// TODO(xianglu): Enable other platforms with support. https://crbug.com/646083
-#if defined(OS_ANDROID)
+// TODO(xianglu): Enable other platforms support. https://crbug.com/646083
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_ShapeDetectionBrowserTest ShapeDetectionBrowserTest
 #else
 #define MAYBE_ShapeDetectionBrowserTest DISABLED_ShapeDetectionBrowserTest
@@ -25,11 +25,11 @@ const char kFaceDetectionTestHtml[] = "/media/face_detection_test.html";
 }  // namespace
 
 // This class contains content_browsertests for Shape Detection API, which
-// allows for generating bounding boxes for faces on still images..
+// allows for generating bounding boxes in still images.
 class MAYBE_ShapeDetectionBrowserTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Specific flag to enable ShapeDetection and DOMRect API.
+    // Flag to enable ShapeDetection and DOMRect API.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "ShapeDetection, GeometryInterfaces");
   }
@@ -65,7 +65,7 @@ class MAYBE_ShapeDetectionBrowserTest : public ContentBrowserTest {
       const std::vector<float> expected_result = expected_results[face_id];
       const std::vector<float> result = results[face_id];
       for (size_t i = 0; i < 4; ++i)
-        EXPECT_NEAR(expected_result[i], result[i], 0.1) << "At index " << i;
+        EXPECT_NEAR(expected_result[i], result[i], 2) << "At index " << i;
     }
   }
 };
@@ -80,9 +80,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ShapeDetectionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MAYBE_ShapeDetectionBrowserTest,
                        DetectFacesOnImageWithOneFace) {
   const std::string image_path = "/single_face.jpg";
+  std::vector<std::vector<float>> expected_results;
+#if defined(OS_ANDROID)
   const std::vector<float> expected_result = {68.640625, 102.96875, 171.5625,
                                               171.5625};
-  const std::vector<std::vector<float>> expected_results = {expected_result};
+  expected_results.push_back(expected_result);
+#elif defined(OS_MACOSX)
+  const std::vector<float> expected_result = {0, 93, 290, 290};
+  expected_results.push_back(expected_result);
+#endif
+
   RunDetectFacesOnImageUrl(image_path, expected_results);
 }
 

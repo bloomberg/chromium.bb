@@ -69,6 +69,12 @@ class Connector {
                      mojo::InterfacePtr<Interface>* ptr) {
     return BindInterface(Identity(name, mojom::kInheritUserID), ptr);
   }
+  template <typename Interface>
+  void BindInterface(const std::string& name,
+                     mojo::InterfaceRequest<Interface> request) {
+    return BindInterface(Identity(name, mojom::kInheritUserID),
+                         Interface::Name_, request.PassMessagePipe());
+  }
   virtual void BindInterface(const Identity& target,
                              const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;

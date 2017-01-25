@@ -2336,3 +2336,12 @@ crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
 # CQ and Rebaseline-cl for crrev.com/2626973005 does not include this
 crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
+
+# No mock Mojo interface for services yet
+crbug.com/659139 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Skip ]
+crbug.com/659139 [ Mac ] shapedetection/detection-HTMLCanvasElement.html [ Skip ]
+crbug.com/659139 [ Mac ] shapedetection/detection-HTMLImageElement.html [ Skip ]
+crbug.com/659139 [ Mac ] shapedetection/detection-HTMLVideoElement.html [ Skip ]
+crbug.com/659139 [ Mac ] shapedetection/detection-ImageBitmap.html [ Skip ]
+crbug.com/659139 [ Mac ] shapedetection/detection-ImageData.html [ Skip ]
+crbug.com/659139 [ Mac ] shapedetection/detection-options.html [ Skip ]

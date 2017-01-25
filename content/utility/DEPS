@@ -4,5 +4,6 @@ include_rules = [
   "+content/public/utility",
   "+services/service_manager",
   "+services/service_manager",
+  "+services/shape_detection",
   "+sandbox/win/src",
 ]

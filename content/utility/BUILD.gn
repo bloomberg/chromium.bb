@@ -39,6 +39,8 @@ source_set("utility") {
     "//services/service_manager",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
+    "//services/shape_detection:lib",
+    "//services/shape_detection/public/interfaces",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/WebKit/public:mojo_bindings",
     "//url",

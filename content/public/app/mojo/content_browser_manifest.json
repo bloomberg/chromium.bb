@@ -57,7 +57,11 @@
           "service_manager:user_id"
         ],
         "file": [ "file:filesystem", "file:leveldb" ],
-        "media": [ "media:media" ]
+        "media": [ "media:media" ],
+        "shape_detection": [
+          "barcode_detection",
+          "face_detection"
+        ]
       }
     },
     "navigation:frame": {
