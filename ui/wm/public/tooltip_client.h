@@ -6,6 +6,7 @@
 #define UI_WM_PUBLIC_TOOLTIP_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/font.h"
 
 namespace gfx {
@@ -51,6 +52,10 @@ AURA_EXPORT void SetTooltipText(Window* window,
 AURA_EXPORT void SetTooltipId(Window* window, void* id);
 AURA_EXPORT const base::string16 GetTooltipText(Window* window);
 AURA_EXPORT const void* GetTooltipId(Window* window);
+
+AURA_EXPORT extern const aura::WindowProperty<void*>* const kTooltipIdKey;
+AURA_EXPORT extern const aura::WindowProperty<base::string16*>* const
+    kTooltipTextKey;
 
 }  // namespace client
 }  // namespace aura

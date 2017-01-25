@@ -14,6 +14,7 @@ namespace test {
 TooltipControllerTestHelper::TooltipControllerTestHelper(
     TooltipController* controller)
     : controller_(controller) {
+  controller_->DisableTooltipShowDelay();
 }
 
 TooltipControllerTestHelper::~TooltipControllerTestHelper() {
@@ -27,12 +28,8 @@ aura::Window* TooltipControllerTestHelper::GetTooltipWindow() {
   return controller_->tooltip_window_;
 }
 
-void TooltipControllerTestHelper::FireTooltipTimer() {
-  controller_->TooltipTimerFired();
-}
-
-bool TooltipControllerTestHelper::IsTooltipTimerRunning() {
-  return controller_->tooltip_timer_.IsRunning();
+void TooltipControllerTestHelper::UpdateIfRequired() {
+  controller_->UpdateIfRequired();
 }
 
 void TooltipControllerTestHelper::FireTooltipShownTimer() {
