@@ -1754,8 +1754,8 @@ struct _xsltTransformContext {
      * Speed optimization when coalescing text nodes
      */
     const xmlChar  *lasttext;		/* last text node content */
-    unsigned int    lasttsize;		/* last text node size */
-    unsigned int    lasttuse;		/* last text node use */
+    int             lasttsize;		/* last text node size */
+    int             lasttuse;		/* last text node use */
     /*
      * Per Context Debugging
      */

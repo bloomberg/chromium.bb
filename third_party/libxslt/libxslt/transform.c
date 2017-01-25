@@ -813,13 +813,32 @@ xsltAddTextString(xsltTransformContextPtr ctxt, xmlNodePtr target,
         return(target);
 
     if (ctxt->lasttext == target->content) {
+        int minSize;
 
-	if (ctxt->lasttuse + len >= ctxt->lasttsize) {
+        /* Check for integer overflow accounting for NUL terminator. */
+        if (len >= INT_MAX - ctxt->lasttuse) {
+            xsltTransformError(ctxt, NULL, target,
+                "xsltCopyText: text allocation failed\n");
+            return(NULL);
+        }
+        minSize = ctxt->lasttuse + len + 1;
+
+        if (ctxt->lasttsize < minSize) {
 	    xmlChar *newbuf;
 	    int size;
+            int extra;
 
-	    size = ctxt->lasttsize + len + 100;
-	    size *= 2;
+            /* Double buffer size but increase by at least 100 bytes. */
+            extra = minSize < 100 ? 100 : minSize;
+
+            /* Check for integer overflow. */
+            if (extra > INT_MAX - ctxt->lasttsize) {
+                size = INT_MAX;
+            }
+            else {
+                size = ctxt->lasttsize + extra;
+            }
+
 	    newbuf = (xmlChar *) xmlRealloc(target->content,size);
 	    if (newbuf == NULL) {
 		xsltTransformError(ctxt, NULL, target,
