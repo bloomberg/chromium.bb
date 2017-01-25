@@ -26,6 +26,10 @@ class GURL;
 class PrefRegistrySimple;
 class Profile;
 
+namespace base {
+class CommandLine;
+}
+
 namespace extensions {
 class Extension;
 class ExternalLoader;
@@ -316,6 +320,15 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Returns the auto launch delay.
   base::TimeDelta GetAutoLaunchDelay() const;
+
+  // Gets list of user switches that should be passed to Chrome in case current
+  // session has to be restored, e.g. in case of a crash. The switches will be
+  // returned as |switches| command line arguments.
+  // Returns whether the set of switches would have to be changed in respect to
+  // the current set of switches - if that is not the case |switches| might not
+  // get populated.
+  bool GetSwitchesForSessionRestore(const std::string& app_id,
+                                    base::CommandLine* switches);
 
   // True if machine ownership is already established.
   bool ownership_established_;
