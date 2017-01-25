@@ -44,7 +44,7 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
-#include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/layer_tree_settings_factory.h"
@@ -236,7 +236,7 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
 
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host;
 
-  cc::LayerTreeHostInProcess::InitParams params;
+  cc::LayerTreeHost::InitParams params;
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = deps->GetTaskGraphRunner();
@@ -251,10 +251,10 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
   }
   if (!is_threaded) {
     // Single-threaded layout tests.
-    layer_tree_host = cc::LayerTreeHostInProcess::CreateSingleThreaded(
-        single_thread_client, &params);
+    layer_tree_host =
+        cc::LayerTreeHost::CreateSingleThreaded(single_thread_client, &params);
   } else {
-    layer_tree_host = cc::LayerTreeHostInProcess::CreateThreaded(
+    layer_tree_host = cc::LayerTreeHost::CreateThreaded(
         deps->GetCompositorImplThreadTaskRunner(), &params);
   }
 

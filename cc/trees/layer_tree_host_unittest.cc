@@ -5187,11 +5187,11 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
 
   void BeginTest() override {
     // Verify default value.
-    EXPECT_FALSE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Setting gpu rasterization trigger does not enable gpu rasterization.
     layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     PostSetNeedsCommitToMainThread();
   }
@@ -5242,7 +5242,7 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
   void BeginTest() override {
     // Setting gpu rasterization trigger does not enable gpu rasterization.
     layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     PostSetNeedsCommitToMainThread();
   }
@@ -5297,11 +5297,11 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
 
   void BeginTest() override {
     // Verify default value.
-    EXPECT_FALSE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Gpu rasterization trigger is relevant.
     layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is relevant as well.
     layer_->set_force_unsuitable_for_gpu_rasterization(true);
@@ -5365,11 +5365,11 @@ class LayerTreeHostTestGpuRasterizationReenabled : public LayerTreeHostTest {
 
   void BeginTest() override {
     // Verify default value.
-    EXPECT_FALSE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Gpu rasterization trigger is relevant.
     layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is relevant as well.
     layer_->set_force_unsuitable_for_gpu_rasterization(true);
@@ -5448,11 +5448,11 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
 
   void BeginTest() override {
     // Verify default value.
-    EXPECT_FALSE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // With gpu rasterization forced, gpu rasterization trigger is irrelevant.
     layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host_in_process()->has_gpu_rasterization_trigger());
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is irrelevant as well.
     layer_->set_force_unsuitable_for_gpu_rasterization(true);
@@ -5867,7 +5867,7 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
   void BeginMainFrame(const BeginFrameArgs& args) override {
     EXPECT_EQ(nullptr, layer_tree()->root_layer());
 
-    layer_tree_host_in_process()->ApplyScrollAndScale(&info_);
+    layer_tree_host()->ApplyScrollAndScale(&info_);
     EndTest();
   }
 

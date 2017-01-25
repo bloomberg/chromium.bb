@@ -18,8 +18,8 @@
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/scheduler.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
-#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
@@ -28,14 +28,14 @@
 namespace cc {
 
 std::unique_ptr<Proxy> SingleThreadProxy::Create(
-    LayerTreeHostInProcess* layer_tree_host,
+    LayerTreeHost* layer_tree_host,
     LayerTreeHostSingleThreadClient* client,
     TaskRunnerProvider* task_runner_provider) {
   return base::WrapUnique(
       new SingleThreadProxy(layer_tree_host, client, task_runner_provider));
 }
 
-SingleThreadProxy::SingleThreadProxy(LayerTreeHostInProcess* layer_tree_host,
+SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
                                      LayerTreeHostSingleThreadClient* client,
                                      TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_(layer_tree_host),

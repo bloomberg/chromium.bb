@@ -9,7 +9,7 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/tree_synchronizer.h"
 
@@ -18,7 +18,7 @@ namespace cc {
 class MutatorHost;
 class TestTaskGraphRunner;
 
-class FakeLayerTreeHost : public LayerTreeHostInProcess {
+class FakeLayerTreeHost : public LayerTreeHost {
  public:
   static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
@@ -65,14 +65,14 @@ class FakeLayerTreeHost : public LayerTreeHostInProcess {
   LayerTreeImpl* active_tree() { return host_impl_.active_tree(); }
   LayerTreeImpl* pending_tree() { return host_impl_.pending_tree(); }
 
-  using LayerTreeHostInProcess::ScheduleMicroBenchmark;
-  using LayerTreeHostInProcess::SendMessageToMicroBenchmark;
-  using LayerTreeHostInProcess::InitializeSingleThreaded;
-  using LayerTreeHostInProcess::InitializeForTesting;
-  using LayerTreeHostInProcess::RecordGpuRasterizationHistogram;
-  using LayerTreeHostInProcess::SetUIResourceManagerForTesting;
+  using LayerTreeHost::ScheduleMicroBenchmark;
+  using LayerTreeHost::SendMessageToMicroBenchmark;
+  using LayerTreeHost::InitializeSingleThreaded;
+  using LayerTreeHost::InitializeForTesting;
+  using LayerTreeHost::RecordGpuRasterizationHistogram;
+  using LayerTreeHost::SetUIResourceManagerForTesting;
 
-  void UpdateLayers() { LayerTreeHostInProcess::UpdateLayers(); }
+  void UpdateLayers() { LayerTreeHost::UpdateLayers(); }
 
   MicroBenchmarkController* GetMicroBenchmarkController() {
     return &micro_benchmark_controller_;
@@ -82,7 +82,7 @@ class FakeLayerTreeHost : public LayerTreeHostInProcess {
   void reset_needs_commit() { needs_commit_ = false; }
 
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                    LayerTreeHostInProcess::InitParams* params,
+                    LayerTreeHost::InitParams* params,
                     CompositorMode mode);
 
  private:

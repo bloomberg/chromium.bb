@@ -27,9 +27,9 @@ class FakeLayerTree : public LayerTree {
 }  // namespace
 
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                                     LayerTreeHostInProcess::InitParams* params,
+                                     LayerTreeHost::InitParams* params,
                                      CompositorMode mode)
-    : LayerTreeHostInProcess(
+    : LayerTreeHost(
           params,
           mode,
           base::MakeUnique<FakeLayerTree>(params->mutator_host, this)),
@@ -70,7 +70,7 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     MutatorHost* mutator_host,
     const LayerTreeSettings& settings,
     CompositorMode mode) {
-  LayerTreeHostInProcess::InitParams params;
+  LayerTreeHost::InitParams params;
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;

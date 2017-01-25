@@ -38,7 +38,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
-#include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -65,13 +65,13 @@ gpu::SyncToken SyncTokenFromUInt(uint32_t value) {
                         gpu::CommandBufferId::FromUnsafeValue(0x123), value);
 }
 
-class MockLayerTreeHost : public LayerTreeHostInProcess {
+class MockLayerTreeHost : public LayerTreeHost {
  public:
   static std::unique_ptr<MockLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TaskGraphRunner* task_graph_runner,
       MutatorHost* mutator_host) {
-    LayerTreeHostInProcess::InitParams params;
+    LayerTreeHost::InitParams params;
     params.client = client;
     params.task_graph_runner = task_graph_runner;
     params.mutator_host = mutator_host;
@@ -87,8 +87,8 @@ class MockLayerTreeHost : public LayerTreeHostInProcess {
   MOCK_METHOD0(StopRateLimiter, void());
 
  private:
-  explicit MockLayerTreeHost(LayerTreeHostInProcess::InitParams* params)
-      : LayerTreeHostInProcess(params, CompositorMode::SINGLE_THREADED) {
+  explicit MockLayerTreeHost(LayerTreeHost::InitParams* params)
+      : LayerTreeHost(params, CompositorMode::SINGLE_THREADED) {
     InitializeSingleThreaded(&single_thread_client_,
                              base::ThreadTaskRunnerHandle::Get());
   }

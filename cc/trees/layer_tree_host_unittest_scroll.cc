@@ -1318,15 +1318,14 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
 
   auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
-  LayerTreeHostInProcess::InitParams params;
+  LayerTreeHost::InitParams params;
   params.client = &layer_tree_host_client;
   params.task_graph_runner = &task_graph_runner;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.mutator_host = animation_host.get();
-  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host =
-      LayerTreeHostInProcess::CreateThreaded(impl_thread.task_runner(),
-                                             &params);
+  std::unique_ptr<LayerTreeHost> layer_tree_host =
+      LayerTreeHost::CreateThreaded(impl_thread.task_runner(), &params);
 
   ThreadCheckingInputHandlerClient input_handler_client(
       impl_thread.task_runner().get(), &received_stop_flinging);

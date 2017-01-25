@@ -9,7 +9,7 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
-#include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayer.h"
@@ -24,14 +24,13 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting()
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
     const cc::LayerTreeSettings& settings) {
   m_animationHost = cc::AnimationHost::CreateMainInstance();
-  cc::LayerTreeHostInProcess::InitParams params;
+  cc::LayerTreeHost::InitParams params;
   params.client = this;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.task_graph_runner = &m_taskGraphRunner;
   params.mutator_host = m_animationHost.get();
-  m_layerTreeHost =
-      cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
+  m_layerTreeHost = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   ASSERT(m_layerTreeHost);
 }
 

@@ -114,7 +114,7 @@ class ScrollbarLayerTest : public testing::Test {
 
     animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
-    LayerTreeHostInProcess::InitParams params;
+    LayerTreeHost::InitParams params;
     params.client = &fake_client_;
     params.settings = &layer_tree_settings_;
     params.task_graph_runner = &task_graph_runner_;

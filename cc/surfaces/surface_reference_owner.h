@@ -13,6 +13,8 @@ namespace cc {
 // SurfaceReferenceFactory::CreateReference as the reference owner.
 class SurfaceReferenceOwner {
  public:
+  virtual ~SurfaceReferenceOwner() {}
+
   virtual SurfaceSequenceGenerator* GetSurfaceSequenceGenerator() = 0;
 };
 

@@ -86,7 +86,7 @@ namespace {
 
 class MockLayerTree : public LayerTree {
  public:
-  MockLayerTree(LayerTreeHostInProcess::InitParams* params,
+  MockLayerTree(LayerTreeHost::InitParams* params,
                 LayerTreeHost* layer_tree_host)
       : LayerTree(params->mutator_host, layer_tree_host) {}
   ~MockLayerTree() override {}
@@ -94,11 +94,11 @@ class MockLayerTree : public LayerTree {
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
 };
 
-class MockLayerTreeHost : public LayerTreeHostInProcess {
+class MockLayerTreeHost : public LayerTreeHost {
  public:
   MockLayerTreeHost(LayerTreeHostSingleThreadClient* single_thread_client,
-                    LayerTreeHostInProcess::InitParams* params)
-      : LayerTreeHostInProcess(
+                    LayerTreeHost::InitParams* params)
+      : LayerTreeHost(
             params,
             CompositorMode::SINGLE_THREADED,
             base::MakeUnique<StrictMock<MockLayerTree>>(params, this)) {
@@ -129,7 +129,7 @@ class LayerTest : public testing::Test {
   void SetUp() override {
     animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
-    LayerTreeHostInProcess::InitParams params;
+    LayerTreeHost::InitParams params;
     params.client = &fake_client_;
     params.settings = &settings_;
     params.task_graph_runner = &task_graph_runner_;
@@ -1039,15 +1039,14 @@ class LayerTreeHostFactory {
 
   std::unique_ptr<LayerTreeHost> Create(LayerTreeSettings settings,
                                         MutatorHost* mutator_host) {
-    LayerTreeHostInProcess::InitParams params;
+    LayerTreeHost::InitParams params;
     params.client = &client_;
     params.task_graph_runner = &task_graph_runner_;
     params.settings = &settings;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
     params.mutator_host = mutator_host;
 
-    return LayerTreeHostInProcess::CreateSingleThreaded(&single_thread_client_,
-                                                        &params);
+    return LayerTreeHost::CreateSingleThreaded(&single_thread_client_, &params);
   }
 
  private:

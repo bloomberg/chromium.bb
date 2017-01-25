@@ -19,7 +19,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy_main.h"
@@ -38,7 +38,7 @@ unsigned int nextBeginFrameId = 0;
 }  // namespace
 
 ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
-                     LayerTreeHostInProcess* layer_tree_host,
+                     LayerTreeHost* layer_tree_host,
                      TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_id_(layer_tree_host->GetId()),
       commit_completion_waits_for_activation_(false),
@@ -225,7 +225,7 @@ void ProxyImpl::MainFrameWillHappenOnImplForTesting(
 
 void ProxyImpl::NotifyReadyToCommitOnImpl(
     CompletionEvent* completion,
-    LayerTreeHostInProcess* layer_tree_host,
+    LayerTreeHost* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     bool hold_commit_for_activation) {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToCommitOnImpl");

@@ -302,22 +302,21 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
 
   auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
-  LayerTreeHostInProcess::InitParams params;
+  LayerTreeHost::InitParams params;
   params.client = &host_client1;
   params.settings = &settings;
   params.task_graph_runner = &task_graph_runner;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.mutator_host = animation_host.get();
   std::unique_ptr<LayerTreeHost> host1 =
-      LayerTreeHostInProcess::CreateSingleThreaded(&single_thread_client,
-                                                   &params);
+      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
   host1->SetVisible(true);
   host_client1.SetLayerTreeHost(host1.get());
 
   auto animation_host2 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
   // TODO(sad): InitParams will be movable.
-  LayerTreeHostInProcess::InitParams params2;
+  LayerTreeHost::InitParams params2;
   params2.client = &host_client1;
   params2.settings = &settings;
   params2.task_graph_runner = &task_graph_runner;
@@ -325,8 +324,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params2.client = &host_client2;
   params2.mutator_host = animation_host2.get();
   std::unique_ptr<LayerTreeHost> host2 =
-      LayerTreeHostInProcess::CreateSingleThreaded(&single_thread_client,
-                                                   &params2);
+      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params2);
   host2->SetVisible(true);
   host_client2.SetLayerTreeHost(host2.get());
 

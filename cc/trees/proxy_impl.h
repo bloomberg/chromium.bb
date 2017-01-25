@@ -16,7 +16,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 
 namespace cc {
-class LayerTreeHostInProcess;
+class LayerTreeHost;
 class ProxyMain;
 
 // This class aggregates all the interactions that the main side of the
@@ -26,7 +26,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
                             public NON_EXPORTED_BASE(SchedulerClient) {
  public:
   ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
-            LayerTreeHostInProcess* layer_tree_host,
+            LayerTreeHost* layer_tree_host,
             TaskRunnerProvider* task_runner_provider);
   ~ProxyImpl() override;
 
@@ -49,7 +49,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void ReleaseCompositorFrameSinkOnImpl(CompletionEvent* completion);
   void FinishGLOnImpl(CompletionEvent* completion);
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
-                                 LayerTreeHostInProcess* layer_tree_host,
+                                 LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation);
 
@@ -62,7 +62,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   struct BlockedMainCommitOnly {
     BlockedMainCommitOnly();
     ~BlockedMainCommitOnly();
-    LayerTreeHostInProcess* layer_tree_host;
+    LayerTreeHost* layer_tree_host;
   };
 
   // LayerTreeHostImplClient implementation

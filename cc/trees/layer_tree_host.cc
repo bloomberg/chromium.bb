@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/layer_tree_host.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -61,43 +61,43 @@ static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
 
 namespace cc {
 
-LayerTreeHostInProcess::InitParams::InitParams() {}
+LayerTreeHost::InitParams::InitParams() {}
 
-LayerTreeHostInProcess::InitParams::~InitParams() {}
+LayerTreeHost::InitParams::~InitParams() {}
 
-std::unique_ptr<LayerTreeHostInProcess> LayerTreeHostInProcess::CreateThreaded(
+std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams* params) {
   DCHECK(params->main_task_runner.get());
   DCHECK(impl_task_runner.get());
   DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
-      new LayerTreeHostInProcess(params, CompositorMode::THREADED));
+  std::unique_ptr<LayerTreeHost> layer_tree_host(
+      new LayerTreeHost(params, CompositorMode::THREADED));
   layer_tree_host->InitializeThreaded(params->main_task_runner,
                                       impl_task_runner);
   return layer_tree_host;
 }
 
-std::unique_ptr<LayerTreeHostInProcess>
-LayerTreeHostInProcess::CreateSingleThreaded(
+std::unique_ptr<LayerTreeHost>
+LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     InitParams* params) {
   DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
-      new LayerTreeHostInProcess(params, CompositorMode::SINGLE_THREADED));
+  std::unique_ptr<LayerTreeHost> layer_tree_host(
+      new LayerTreeHost(params, CompositorMode::SINGLE_THREADED));
   layer_tree_host->InitializeSingleThreaded(single_thread_client,
                                             params->main_task_runner);
   return layer_tree_host;
 }
 
-LayerTreeHostInProcess::LayerTreeHostInProcess(InitParams* params,
+LayerTreeHost::LayerTreeHost(InitParams* params,
                                                CompositorMode mode)
-    : LayerTreeHostInProcess(
+    : LayerTreeHost(
           params,
           mode,
           base::MakeUnique<LayerTree>(params->mutator_host, this)) {}
 
-LayerTreeHostInProcess::LayerTreeHostInProcess(
+LayerTreeHost::LayerTreeHost(
     InitParams* params,
     CompositorMode mode,
     std::unique_ptr<LayerTree> layer_tree)
@@ -125,7 +125,7 @@ LayerTreeHostInProcess::LayerTreeHostInProcess(
       debug_state_.RecordRenderingStats());
 }
 
-void LayerTreeHostInProcess::InitializeThreaded(
+void LayerTreeHost::InitializeThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
   task_runner_provider_ =
@@ -135,7 +135,7 @@ void LayerTreeHostInProcess::InitializeThreaded(
   InitializeProxy(std::move(proxy_main));
 }
 
-void LayerTreeHostInProcess::InitializeSingleThreaded(
+void LayerTreeHost::InitializeSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
@@ -143,25 +143,25 @@ void LayerTreeHostInProcess::InitializeSingleThreaded(
                                             task_runner_provider_.get()));
 }
 
-void LayerTreeHostInProcess::InitializeForTesting(
+void LayerTreeHost::InitializeForTesting(
     std::unique_ptr<TaskRunnerProvider> task_runner_provider,
     std::unique_ptr<Proxy> proxy_for_testing) {
   task_runner_provider_ = std::move(task_runner_provider);
   InitializeProxy(std::move(proxy_for_testing));
 }
 
-void LayerTreeHostInProcess::SetTaskRunnerProviderForTesting(
+void LayerTreeHost::SetTaskRunnerProviderForTesting(
     std::unique_ptr<TaskRunnerProvider> task_runner_provider) {
   DCHECK(!task_runner_provider_);
   task_runner_provider_ = std::move(task_runner_provider);
 }
 
-void LayerTreeHostInProcess::SetUIResourceManagerForTesting(
+void LayerTreeHost::SetUIResourceManagerForTesting(
     std::unique_ptr<UIResourceManager> ui_resource_manager) {
   ui_resource_manager_ = std::move(ui_resource_manager);
 }
 
-void LayerTreeHostInProcess::InitializeProxy(std::unique_ptr<Proxy> proxy) {
+void LayerTreeHost::InitializeProxy(std::unique_ptr<Proxy> proxy) {
   TRACE_EVENT0("cc", "LayerTreeHostInProcess::InitializeForReal");
   DCHECK(task_runner_provider_);
 
@@ -172,7 +172,7 @@ void LayerTreeHostInProcess::InitializeProxy(std::unique_ptr<Proxy> proxy) {
       proxy_->SupportsImplScrolling());
 }
 
-LayerTreeHostInProcess::~LayerTreeHostInProcess() {
+LayerTreeHost::~LayerTreeHost() {
   // Track when we're inside a main frame to see if compositor is being
   // destroyed midway which causes a crash. crbug.com/654672
   CHECK(!inside_main_frame_);
@@ -190,81 +190,81 @@ LayerTreeHostInProcess::~LayerTreeHostInProcess() {
   }
 }
 
-int LayerTreeHostInProcess::GetId() const {
+int LayerTreeHost::GetId() const {
   return id_;
 }
 
-int LayerTreeHostInProcess::SourceFrameNumber() const {
+int LayerTreeHost::SourceFrameNumber() const {
   return source_frame_number_;
 }
 
-LayerTree* LayerTreeHostInProcess::GetLayerTree() {
+LayerTree* LayerTreeHost::GetLayerTree() {
   return layer_tree_.get();
 }
 
-const LayerTree* LayerTreeHostInProcess::GetLayerTree() const {
+const LayerTree* LayerTreeHost::GetLayerTree() const {
   return layer_tree_.get();
 }
 
-UIResourceManager* LayerTreeHostInProcess::GetUIResourceManager() const {
+UIResourceManager* LayerTreeHost::GetUIResourceManager() const {
   return ui_resource_manager_.get();
 }
 
-TaskRunnerProvider* LayerTreeHostInProcess::GetTaskRunnerProvider() const {
+TaskRunnerProvider* LayerTreeHost::GetTaskRunnerProvider() const {
   return task_runner_provider_.get();
 }
 
-SwapPromiseManager* LayerTreeHostInProcess::GetSwapPromiseManager() {
+SwapPromiseManager* LayerTreeHost::GetSwapPromiseManager() {
   return &swap_promise_manager_;
 }
 
-const LayerTreeSettings& LayerTreeHostInProcess::GetSettings() const {
+const LayerTreeSettings& LayerTreeHost::GetSettings() const {
   return settings_;
 }
 
-void LayerTreeHostInProcess::SetFrameSinkId(const FrameSinkId& frame_sink_id) {
+void LayerTreeHost::SetFrameSinkId(const FrameSinkId& frame_sink_id) {
   surface_sequence_generator_.set_frame_sink_id(frame_sink_id);
 }
 
-void LayerTreeHostInProcess::QueueSwapPromise(
+void LayerTreeHost::QueueSwapPromise(
     std::unique_ptr<SwapPromise> swap_promise) {
   swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
 }
 
 SurfaceSequenceGenerator*
-LayerTreeHostInProcess::GetSurfaceSequenceGenerator() {
+LayerTreeHost::GetSurfaceSequenceGenerator() {
   return &surface_sequence_generator_;
 }
 
-void LayerTreeHostInProcess::WillBeginMainFrame() {
+void LayerTreeHost::WillBeginMainFrame() {
   inside_main_frame_ = true;
   devtools_instrumentation::WillBeginMainThreadFrame(GetId(),
                                                      SourceFrameNumber());
   client_->WillBeginMainFrame();
 }
 
-void LayerTreeHostInProcess::DidBeginMainFrame() {
+void LayerTreeHost::DidBeginMainFrame() {
   inside_main_frame_ = false;
   client_->DidBeginMainFrame();
 }
 
-void LayerTreeHostInProcess::BeginMainFrameNotExpectedSoon() {
+void LayerTreeHost::BeginMainFrameNotExpectedSoon() {
   client_->BeginMainFrameNotExpectedSoon();
 }
 
-void LayerTreeHostInProcess::BeginMainFrame(const BeginFrameArgs& args) {
+void LayerTreeHost::BeginMainFrame(const BeginFrameArgs& args) {
   client_->BeginMainFrame(args);
 }
 
-void LayerTreeHostInProcess::DidStopFlinging() {
+void LayerTreeHost::DidStopFlinging() {
   proxy_->MainThreadHasStoppedFlinging();
 }
 
-const LayerTreeDebugState& LayerTreeHostInProcess::GetDebugState() const {
+const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
   return debug_state_;
 }
 
-void LayerTreeHostInProcess::RequestMainFrameUpdate() {
+void LayerTreeHost::RequestMainFrameUpdate() {
   client_->UpdateLayerTreeHost();
 }
 
@@ -273,7 +273,7 @@ void LayerTreeHostInProcess::RequestMainFrameUpdate() {
 // code that is logically a main thread operation, e.g. deletion of a Layer,
 // should be delayed until the LayerTreeHostInProcess::CommitComplete, which
 // will run after the commit, but on the main thread.
-void LayerTreeHostInProcess::FinishCommitOnImplThread(
+void LayerTreeHost::FinishCommitOnImplThread(
     LayerTreeHostImpl* host_impl) {
   DCHECK(task_runner_provider_->IsImplThread());
 
@@ -344,14 +344,14 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
   layer_tree_->property_trees()->ResetAllChangeTracking();
 }
 
-void LayerTreeHostInProcess::WillCommit() {
+void LayerTreeHost::WillCommit() {
   swap_promise_manager_.WillCommit();
   client_->WillCommit();
 }
 
-void LayerTreeHostInProcess::UpdateHudLayer() {}
+void LayerTreeHost::UpdateHudLayer() {}
 
-void LayerTreeHostInProcess::CommitComplete() {
+void LayerTreeHost::CommitComplete() {
   source_frame_number_++;
   client_->DidCommit();
   if (did_complete_scale_animation_) {
@@ -360,7 +360,7 @@ void LayerTreeHostInProcess::CommitComplete() {
   }
 }
 
-void LayerTreeHostInProcess::SetCompositorFrameSink(
+void LayerTreeHost::SetCompositorFrameSink(
     std::unique_ptr<CompositorFrameSink> surface) {
   TRACE_EVENT0("cc", "LayerTreeHostInProcess::SetCompositorFrameSink");
   DCHECK(surface);
@@ -371,7 +371,7 @@ void LayerTreeHostInProcess::SetCompositorFrameSink(
 }
 
 std::unique_ptr<CompositorFrameSink>
-LayerTreeHostInProcess::ReleaseCompositorFrameSink() {
+LayerTreeHost::ReleaseCompositorFrameSink() {
   DCHECK(!visible_);
 
   DidLoseCompositorFrameSink();
@@ -379,17 +379,17 @@ LayerTreeHostInProcess::ReleaseCompositorFrameSink() {
   return std::move(current_compositor_frame_sink_);
 }
 
-void LayerTreeHostInProcess::RequestNewCompositorFrameSink() {
+void LayerTreeHost::RequestNewCompositorFrameSink() {
   client_->RequestNewCompositorFrameSink();
 }
 
-void LayerTreeHostInProcess::DidInitializeCompositorFrameSink() {
+void LayerTreeHost::DidInitializeCompositorFrameSink() {
   DCHECK(new_compositor_frame_sink_);
   current_compositor_frame_sink_ = std::move(new_compositor_frame_sink_);
   client_->DidInitializeCompositorFrameSink();
 }
 
-void LayerTreeHostInProcess::DidFailToInitializeCompositorFrameSink() {
+void LayerTreeHost::DidFailToInitializeCompositorFrameSink() {
   DCHECK(new_compositor_frame_sink_);
   // Note: It is safe to drop all output surface references here as
   // LayerTreeHostImpl will not keep a pointer to either the old or
@@ -400,7 +400,7 @@ void LayerTreeHostInProcess::DidFailToInitializeCompositorFrameSink() {
 }
 
 std::unique_ptr<LayerTreeHostImpl>
-LayerTreeHostInProcess::CreateLayerTreeHostImpl(
+LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(task_runner_provider_->IsImplThread());
 
@@ -420,62 +420,62 @@ LayerTreeHostInProcess::CreateLayerTreeHostImpl(
   return host_impl;
 }
 
-void LayerTreeHostInProcess::DidLoseCompositorFrameSink() {
+void LayerTreeHost::DidLoseCompositorFrameSink() {
   TRACE_EVENT0("cc", "LayerTreeHostInProcess::DidLoseCompositorFrameSink");
   DCHECK(task_runner_provider_->IsMainThread());
   SetNeedsCommit();
 }
 
-void LayerTreeHostInProcess::SetDeferCommits(bool defer_commits) {
+void LayerTreeHost::SetDeferCommits(bool defer_commits) {
   proxy_->SetDeferCommits(defer_commits);
 }
 
 DISABLE_CFI_PERF
-void LayerTreeHostInProcess::SetNeedsAnimate() {
+void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
 DISABLE_CFI_PERF
-void LayerTreeHostInProcess::SetNeedsUpdateLayers() {
+void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
-void LayerTreeHostInProcess::SetNeedsCommit() {
+void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
-void LayerTreeHostInProcess::SetNeedsRecalculateRasterScales() {
+void LayerTreeHost::SetNeedsRecalculateRasterScales() {
   next_commit_forces_recalculate_raster_scales_ = true;
   proxy_->SetNeedsCommit();
 }
 
-void LayerTreeHostInProcess::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
+void LayerTreeHost::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   proxy_->SetNeedsRedraw(damage_rect);
 }
 
-bool LayerTreeHostInProcess::CommitRequested() const {
+bool LayerTreeHost::CommitRequested() const {
   return proxy_->CommitRequested();
 }
 
-void LayerTreeHostInProcess::SetNextCommitWaitsForActivation() {
+void LayerTreeHost::SetNextCommitWaitsForActivation() {
   proxy_->SetNextCommitWaitsForActivation();
 }
 
-void LayerTreeHostInProcess::SetNextCommitForcesRedraw() {
+void LayerTreeHost::SetNextCommitForcesRedraw() {
   next_commit_forces_redraw_ = true;
   proxy_->SetNeedsUpdateLayers();
 }
 
-void LayerTreeHostInProcess::SetAnimationEvents(
+void LayerTreeHost::SetAnimationEvents(
     std::unique_ptr<MutatorEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   layer_tree_->mutator_host()->SetAnimationEvents(std::move(events));
 }
 
-void LayerTreeHostInProcess::SetDebugState(
+void LayerTreeHost::SetDebugState(
     const LayerTreeDebugState& debug_state) {
   LayerTreeDebugState new_debug_state =
       LayerTreeDebugState::Unite(settings_.initial_debug_state, debug_state);
@@ -491,12 +491,12 @@ void LayerTreeHostInProcess::SetDebugState(
   SetNeedsCommit();
 }
 
-void LayerTreeHostInProcess::ResetGpuRasterizationTracking() {
+void LayerTreeHost::ResetGpuRasterizationTracking() {
   content_is_suitable_for_gpu_rasterization_ = true;
   gpu_rasterization_histogram_recorded_ = false;
 }
 
-void LayerTreeHostInProcess::SetHasGpuRasterizationTrigger(bool has_trigger) {
+void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {
   if (has_trigger == has_gpu_rasterization_trigger_)
     return;
 
@@ -506,7 +506,7 @@ void LayerTreeHostInProcess::SetHasGpuRasterizationTrigger(bool has_trigger) {
       TRACE_EVENT_SCOPE_THREAD, "has_trigger", has_gpu_rasterization_trigger_);
 }
 
-void LayerTreeHostInProcess::ApplyPageScaleDeltaFromImplSide(
+void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(
     float page_scale_delta) {
   DCHECK(CommitRequested());
   if (page_scale_delta == 1.f)
@@ -515,22 +515,22 @@ void LayerTreeHostInProcess::ApplyPageScaleDeltaFromImplSide(
   layer_tree_->SetPageScaleFromImplSide(page_scale);
 }
 
-void LayerTreeHostInProcess::SetVisible(bool visible) {
+void LayerTreeHost::SetVisible(bool visible) {
   if (visible_ == visible)
     return;
   visible_ = visible;
   proxy_->SetVisible(visible);
 }
 
-bool LayerTreeHostInProcess::IsVisible() const {
+bool LayerTreeHost::IsVisible() const {
   return visible_;
 }
 
-void LayerTreeHostInProcess::NotifyInputThrottledUntilCommit() {
+void LayerTreeHost::NotifyInputThrottledUntilCommit() {
   proxy_->NotifyInputThrottledUntilCommit();
 }
 
-void LayerTreeHostInProcess::LayoutAndUpdateLayers() {
+void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
@@ -538,7 +538,7 @@ void LayerTreeHostInProcess::LayoutAndUpdateLayers() {
   UpdateLayers();
 }
 
-void LayerTreeHostInProcess::Composite(base::TimeTicks frame_begin_time) {
+void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
@@ -561,7 +561,7 @@ static int GetLayersUpdateTimeHistogramBucket(size_t numLayers) {
   return 4;
 }
 
-bool LayerTreeHostInProcess::UpdateLayers() {
+bool LayerTreeHost::UpdateLayers() {
   if (!layer_tree_->root_layer()) {
     layer_tree_->property_trees()->clear();
     return false;
@@ -584,11 +584,11 @@ bool LayerTreeHostInProcess::UpdateLayers() {
   return result || next_commit_forces_redraw_;
 }
 
-void LayerTreeHostInProcess::DidCompletePageScaleAnimation() {
+void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }
 
-void LayerTreeHostInProcess::RecordGpuRasterizationHistogram() {
+void LayerTreeHost::RecordGpuRasterizationHistogram() {
   // Gpu rasterization is only supported for Renderer compositors.
   // Checking for IsSingleThreaded() to exclude Browser compositors.
   if (gpu_rasterization_histogram_recorded_ || IsSingleThreaded())
@@ -614,7 +614,7 @@ void LayerTreeHostInProcess::RecordGpuRasterizationHistogram() {
   gpu_rasterization_histogram_recorded_ = true;
 }
 
-bool LayerTreeHostInProcess::DoUpdateLayers(Layer* root_layer) {
+bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   TRACE_EVENT1("cc", "LayerTreeHostInProcess::DoUpdateLayers",
                "source_frame_number", SourceFrameNumber());
 
@@ -693,7 +693,7 @@ bool LayerTreeHostInProcess::DoUpdateLayers(Layer* root_layer) {
   return did_paint_content;
 }
 
-void LayerTreeHostInProcess::ApplyViewportDeltas(ScrollAndScaleSet* info) {
+void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   gfx::Vector2dF inner_viewport_scroll_delta;
   if (info->inner_viewport_scroll.layer_id != Layer::INVALID_ID)
     inner_viewport_scroll_delta = info->inner_viewport_scroll.scroll_delta;
@@ -724,7 +724,7 @@ void LayerTreeHostInProcess::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   SetNeedsUpdateLayers();
 }
 
-void LayerTreeHostInProcess::ApplyScrollAndScale(ScrollAndScaleSet* info) {
+void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   for (auto& swap_promise : info->swap_promises) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
@@ -756,12 +756,12 @@ void LayerTreeHostInProcess::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   ApplyViewportDeltas(info);
 }
 
-const base::WeakPtr<InputHandler>& LayerTreeHostInProcess::GetInputHandler()
+const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler()
     const {
   return input_handler_weak_ptr_;
 }
 
-void LayerTreeHostInProcess::UpdateBrowserControlsState(
+void LayerTreeHost::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
     bool animate) {
@@ -770,7 +770,7 @@ void LayerTreeHostInProcess::UpdateBrowserControlsState(
   proxy_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
-void LayerTreeHostInProcess::AnimateLayers(base::TimeTicks monotonic_time) {
+void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
   MutatorHost* mutator_host = layer_tree_->mutator_host();
   std::unique_ptr<MutatorEvents> events = mutator_host->CreateEvents();
 
@@ -781,7 +781,7 @@ void LayerTreeHostInProcess::AnimateLayers(base::TimeTicks monotonic_time) {
     layer_tree_->property_trees()->needs_rebuild = true;
 }
 
-int LayerTreeHostInProcess::ScheduleMicroBenchmark(
+int LayerTreeHost::ScheduleMicroBenchmark(
     const std::string& benchmark_name,
     std::unique_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
@@ -789,24 +789,24 @@ int LayerTreeHostInProcess::ScheduleMicroBenchmark(
                                                  std::move(value), callback);
 }
 
-bool LayerTreeHostInProcess::SendMessageToMicroBenchmark(
+bool LayerTreeHost::SendMessageToMicroBenchmark(
     int id,
     std::unique_ptr<base::Value> value) {
   return micro_benchmark_controller_.SendMessage(id, std::move(value));
 }
 
-void LayerTreeHostInProcess::SetLayerTreeMutator(
+void LayerTreeHost::SetLayerTreeMutator(
     std::unique_ptr<LayerTreeMutator> mutator) {
   proxy_->SetMutator(std::move(mutator));
 }
 
-bool LayerTreeHostInProcess::IsSingleThreaded() const {
+bool LayerTreeHost::IsSingleThreaded() const {
   DCHECK(compositor_mode_ != CompositorMode::SINGLE_THREADED ||
          !task_runner_provider_->HasImplThread());
   return compositor_mode_ == CompositorMode::SINGLE_THREADED;
 }
 
-bool LayerTreeHostInProcess::IsThreaded() const {
+bool LayerTreeHost::IsThreaded() const {
   DCHECK(compositor_mode_ != CompositorMode::THREADED ||
          task_runner_provider_->HasImplThread());
   return compositor_mode_ == CompositorMode::THREADED;

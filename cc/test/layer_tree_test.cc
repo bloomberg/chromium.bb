@@ -332,7 +332,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 };
 
 // Adapts LayerTreeHost for test. Injects LayerTreeHostImplForTesting.
-class LayerTreeHostForTesting : public LayerTreeHostInProcess {
+class LayerTreeHostForTesting : public LayerTreeHost {
  public:
   static std::unique_ptr<LayerTreeHostForTesting> Create(
       TestHooks* test_hooks,
@@ -344,7 +344,7 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
       MutatorHost* mutator_host) {
-    LayerTreeHostInProcess::InitParams params;
+    LayerTreeHost::InitParams params;
     params.client = client;
     params.task_graph_runner = task_graph_runner;
     params.settings = &settings;
@@ -386,22 +386,22 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
   void SetNeedsCommit() override {
     if (!test_started_)
       return;
-    LayerTreeHostInProcess::SetNeedsCommit();
+    LayerTreeHost::SetNeedsCommit();
   }
 
   void SetNeedsUpdateLayers() override {
     if (!test_started_)
       return;
-    LayerTreeHostInProcess::SetNeedsUpdateLayers();
+    LayerTreeHost::SetNeedsUpdateLayers();
   }
 
   void set_test_started(bool started) { test_started_ = started; }
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,
-                          LayerTreeHostInProcess::InitParams* params,
+                          LayerTreeHost::InitParams* params,
                           CompositorMode mode)
-      : LayerTreeHostInProcess(params, mode),
+      : LayerTreeHost(params, mode),
         test_hooks_(test_hooks),
         test_started_(false) {}
 
@@ -594,13 +594,9 @@ void LayerTreeTest::DoBeginTest() {
 
   animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
-  std::unique_ptr<LayerTreeHostForTesting> layer_tree_host_for_testing =
-      LayerTreeHostForTesting::Create(
-          this, mode_, client_.get(), client_.get(), task_graph_runner_.get(),
-          settings_, main_task_runner, impl_task_runner, animation_host_.get());
-  layer_tree_host_in_process_ = layer_tree_host_for_testing.get();
-  layer_tree_host_ = std::move(layer_tree_host_for_testing);
-
+  layer_tree_host_ = LayerTreeHostForTesting::Create(
+      this, mode_, client_.get(), client_.get(), task_graph_runner_.get(),
+      settings_, main_task_runner, impl_task_runner, animation_host_.get());
   ASSERT_TRUE(layer_tree_host_);
 
   main_task_runner_ =
@@ -631,8 +627,8 @@ void LayerTreeTest::DoBeginTest() {
 
   // Allow commits to happen once BeginTest() has had a chance to post tasks
   // so that those tasks will happen before the first commit.
-  if (layer_tree_host_in_process_) {
-    static_cast<LayerTreeHostForTesting*>(layer_tree_host_in_process_)
+  if (layer_tree_host_) {
+    static_cast<LayerTreeHostForTesting*>(layer_tree_host_.get())
         ->set_test_started(true);
   }
 }
@@ -658,10 +654,10 @@ void LayerTreeTest::Timeout() {
 
 void LayerTreeTest::RealEndTest() {
   // TODO(mithro): Make this method only end when not inside an impl frame.
-  bool main_frame_will_happen = layer_tree_host_in_process_
-                                    ? layer_tree_host_in_process_->proxy()
-                                          ->MainFrameWillHappenForTesting()
-                                    : false;
+  bool main_frame_will_happen =
+      layer_tree_host_
+          ? layer_tree_host_->proxy()->MainFrameWillHappenForTesting()
+          : false;
 
   if (main_frame_will_happen && !timed_out_) {
     main_task_runner_->PostTask(
@@ -820,7 +816,6 @@ void LayerTreeTest::DestroyLayerTreeHost() {
   if (layer_tree_host_ && layer_tree_host_->GetLayerTree()->root_layer())
     layer_tree_host_->GetLayerTree()->root_layer()->SetLayerTreeHost(NULL);
   layer_tree_host_ = nullptr;
-  layer_tree_host_in_process_ = nullptr;
 }
 
 TaskRunnerProvider* LayerTreeTest::task_runner_provider() const {
@@ -839,15 +834,8 @@ LayerTreeHost* LayerTreeTest::layer_tree_host() {
   return layer_tree_host_.get();
 }
 
-LayerTreeHostInProcess* LayerTreeTest::layer_tree_host_in_process() {
-  DCHECK(task_runner_provider()->IsMainThread() ||
-         task_runner_provider()->IsMainThreadBlocked());
-  return layer_tree_host_in_process_;
-}
-
 Proxy* LayerTreeTest::proxy() {
-  return layer_tree_host_in_process() ? layer_tree_host_in_process()->proxy()
-                                      : NULL;
+  return layer_tree_host() ? layer_tree_host()->proxy() : NULL;
 }
 
 }  // namespace cc
