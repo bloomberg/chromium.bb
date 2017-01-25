@@ -933,11 +933,9 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinux());
 #else
-  ChromeBrowserMainExtraPartsViews* extra_parts_views =
-      new ChromeBrowserMainExtraPartsViews;
-  main_parts->AddParts(extra_parts_views);
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 #if defined(USE_ASH)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh(extra_parts_views));
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
 #endif
 #endif
 #endif

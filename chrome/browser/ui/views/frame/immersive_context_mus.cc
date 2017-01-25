@@ -4,14 +4,12 @@
 
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 
-#include "ui/aura/client/capture_client.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/pointer_watcher.h"
+#include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 
-ImmersiveContextMus::ImmersiveContextMus(
-    aura::client::CaptureClient* capture_client)
-    : capture_client_(capture_client) {}
+ImmersiveContextMus::ImmersiveContextMus() {}
 
 ImmersiveContextMus::~ImmersiveContextMus() {}
 
@@ -49,7 +47,7 @@ void ImmersiveContextMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
 }
 
 bool ImmersiveContextMus::DoesAnyWindowHaveCapture() {
-  return capture_client_->GetGlobalCaptureWindow() != nullptr;
+  return views::DesktopCaptureClient::GetCaptureWindowGlobal() != nullptr;
 }
 
 bool ImmersiveContextMus::IsMouseEventsEnabled() {

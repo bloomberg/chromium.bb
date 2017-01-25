@@ -37,6 +37,9 @@ class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
   explicit DesktopCaptureClient(aura::Window* root);
   ~DesktopCaptureClient() override;
 
+  // Exactly the same as GetGlobalCaptureWindow() but static.
+  static aura::Window* GetCaptureWindowGlobal();
+
   // Overridden from aura::client::CaptureClient:
   void SetCapture(aura::Window* window) override;
   void ReleaseCapture(aura::Window* window) override;

@@ -20,19 +20,14 @@
 #include "chrome/browser/ui/ash/volume_controller.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
-#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/wm/core/capture_controller.h"
-#include "ui/wm/core/wm_state.h"
 
-ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh(
-    ChromeBrowserMainExtraPartsViews* extra_parts_views)
-    : extra_parts_views_(extra_parts_views) {}
+ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {}
 
 ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 
@@ -41,8 +36,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     chrome::OpenAsh(gfx::kNullAcceleratedWidget);
 
   if (chrome::IsRunningInMash()) {
-    immersive_context_ = base::MakeUnique<ImmersiveContextMus>(
-        extra_parts_views_->wm_state()->capture_controller());
+    immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
   }
 

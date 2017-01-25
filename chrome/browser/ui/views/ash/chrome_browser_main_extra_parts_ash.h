@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
 class CastConfigClientMediaRouter;
-class ChromeBrowserMainExtraPartsViews;
 class ChromeLauncherControllerMus;
 class ChromeNewWindowClient;
 class ChromeShellContentState;
@@ -27,8 +26,7 @@ class VpnListForwarder;
 // TODO(jamescook): Fold this into ChromeBrowserMainPartsChromeOS.
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
-  explicit ChromeBrowserMainExtraPartsAsh(
-      ChromeBrowserMainExtraPartsViews* extra_parts_views);
+  ChromeBrowserMainExtraPartsAsh();
   ~ChromeBrowserMainExtraPartsAsh() override;
 
   // Overridden from ChromeBrowserMainExtraParts:
@@ -37,8 +35,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   void PostMainMessageLoopRun() override;
 
  private:
-  ChromeBrowserMainExtraPartsViews* extra_parts_views_;
-
   std::unique_ptr<ChromeLauncherControllerMus> chrome_launcher_controller_mus_;
   std::unique_ptr<ChromeShellContentState> chrome_shell_content_state_;
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;

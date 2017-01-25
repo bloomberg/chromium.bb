@@ -15,6 +15,15 @@ namespace views {
 DesktopCaptureClient::CaptureClients*
 DesktopCaptureClient::capture_clients_ = NULL;
 
+// static
+aura::Window* DesktopCaptureClient::GetCaptureWindowGlobal() {
+  for (auto i = capture_clients_->begin(); i != capture_clients_->end(); ++i) {
+    if ((*i)->capture_window_)
+      return (*i)->capture_window_;
+  }
+  return NULL;
+}
+
 DesktopCaptureClient::DesktopCaptureClient(aura::Window* root)
     : root_(root),
       capture_window_(NULL) {
@@ -90,12 +99,7 @@ aura::Window* DesktopCaptureClient::GetCaptureWindow() {
 }
 
 aura::Window* DesktopCaptureClient::GetGlobalCaptureWindow() {
-  for (CaptureClients::iterator i = capture_clients_->begin();
-       i != capture_clients_->end(); ++i) {
-    if ((*i)->capture_window_)
-      return (*i)->capture_window_;
-  }
-  return NULL;
+  return GetCaptureWindowGlobal();
 }
 
 void DesktopCaptureClient::AddObserver(
