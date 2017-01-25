@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
@@ -82,18 +83,20 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::forConstructor(
   return static_cast<ScriptCustomElementDefinition*>(definition);
 }
 
+using SymbolGetter = V8PrivateProperty::Symbol (*)(v8::Isolate*);
+
 template <typename T>
-static void keepAlive(v8::Local<v8::Array>& array,
-                      uint32_t index,
+static void keepAlive(v8::Local<v8::Object>& object,
+                      SymbolGetter symbolGetter,
                       const v8::Local<T>& value,
                       ScopedPersistent<T>& persistent,
                       ScriptState* scriptState) {
   if (value.IsEmpty())
     return;
 
-  array->Set(scriptState->context(), index, value).ToChecked();
-
-  persistent.set(scriptState->isolate(), value);
+  v8::Isolate* isolate = scriptState->isolate();
+  symbolGetter(isolate).set(scriptState->context(), object, value);
+  persistent.set(isolate, value);
   persistent.setPhantom();
 }
 
@@ -122,16 +125,18 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
 
   // We add the callbacks here to keep them alive. We use the name as
   // the key because it is unique per-registry.
-  v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), 5);
-  keepAlive(array, 0, connectedCallback, definition->m_connectedCallback,
+  v8::Local<v8::Object> object = v8::Object::New(scriptState->isolate());
+  keepAlive(object, V8PrivateProperty::getCustomElementConnectedCallback,
+            connectedCallback, definition->m_connectedCallback, scriptState);
+  keepAlive(object, V8PrivateProperty::getCustomElementDisconnectedCallback,
+            disconnectedCallback, definition->m_disconnectedCallback,
             scriptState);
-  keepAlive(array, 1, disconnectedCallback, definition->m_disconnectedCallback,
+  keepAlive(object, V8PrivateProperty::getCustomElementAdoptedCallback,
+            adoptedCallback, definition->m_adoptedCallback, scriptState);
+  keepAlive(object, V8PrivateProperty::getCustomElementAttributeChangedCallback,
+            attributeChangedCallback, definition->m_attributeChangedCallback,
             scriptState);
-  keepAlive(array, 2, adoptedCallback, definition->m_adoptedCallback,
-            scriptState);
-  keepAlive(array, 3, attributeChangedCallback,
-            definition->m_attributeChangedCallback, scriptState);
-  map->Set(scriptState->context(), nameValue, array).ToLocalChecked();
+  map->Set(scriptState->context(), nameValue, object).ToLocalChecked();
 
   return definition;
 }
