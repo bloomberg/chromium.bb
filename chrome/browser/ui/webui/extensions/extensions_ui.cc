@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
@@ -47,11 +48,10 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
       : content::WebContentsObserver(web_contents), is_md_(is_md) {}
   ~ExtensionWebUiTimer() override {}
 
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) override {
-    timer_.reset(new base::ElapsedTimer());
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage())
+      timer_.reset(new base::ElapsedTimer());
   }
 
   void DocumentLoadedInFrame(
@@ -70,12 +70,13 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
   }
 
   void DocumentOnLoadCompletedInMainFrame() override {
-    // Sometimes*, DidStartProvisionalLoadForFrame() isn't called before this
-    // or DocumentLoadedInFrame(). Don't log anything in those cases.
-    // *This appears to be for in-page navigations like hash changes.
     // TODO(devlin): The usefulness of these metrics remains to be seen.
-    if (!timer_)
+    if (!timer_) {
+      // This object could have been created for a child RenderFrameHost so it
+      // would never get a DidStartNavigation with the main frame. However it
+      // will receive this current callback.
       return;
+    }
     if (is_md_) {
       UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.MD",
                           timer_->Elapsed());
