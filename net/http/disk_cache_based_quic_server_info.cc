@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -158,7 +159,7 @@ void DiskCacheBasedQuicServerInfo::PersistInternal() {
     new_data_ = Serialize();
   } else {
     new_data_ = pending_write_data_;
-    pending_write_data_.clear();
+    base::STLClearObject(&pending_write_data_);
   }
 
   RecordQuicServerInfoStatus(QUIC_SERVER_INFO_PERSIST);
@@ -392,7 +393,7 @@ int DiskCacheBasedQuicServerInfo::DoSetDone() {
   if (entry_)
     entry_->Close();
   entry_ = NULL;
-  new_data_.clear();
+  base::STLClearObject(&new_data_);
   state_ = NONE;
   return OK;
 }
