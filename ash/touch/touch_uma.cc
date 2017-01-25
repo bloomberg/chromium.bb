@@ -5,7 +5,7 @@
 #include "ash/touch/touch_uma.h"
 
 #include "ash/common/wm_shell.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/app_list/search_box_model_observer.h"
 
 namespace app_list {

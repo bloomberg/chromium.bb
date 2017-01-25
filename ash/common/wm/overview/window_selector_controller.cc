@@ -13,7 +13,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace ash {
 

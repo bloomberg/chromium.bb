@@ -55,7 +55,7 @@
 #include "ash/root_window_controller.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
 #include "ui/base/accelerators/accelerator.h"

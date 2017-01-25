@@ -20,7 +20,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
 

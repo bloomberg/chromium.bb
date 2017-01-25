@@ -4,7 +4,7 @@
 
 #include "ash/common/multi_profile_uma.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace ash {
 

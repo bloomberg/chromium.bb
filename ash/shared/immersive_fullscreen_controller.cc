@@ -11,7 +11,7 @@
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/shared/immersive_gesture_handler.h"
 #include "ash/shared/immersive_handler_factory.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
