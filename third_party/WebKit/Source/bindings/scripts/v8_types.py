@@ -838,10 +838,10 @@ V8_SET_RETURN_VALUE = {
     'DictionaryStatic': '#error not implemented yet',
     # Nullable dictionaries
     'NullableDictionary': 'v8SetReturnValue(info, result.get())',
-    'NullableDictionaryStatic': '#error not implemented yet',
+    'NullableDictionaryStatic': 'v8SetReturnValue(info, result.get(), info.GetIsolate()->GetCurrentContext()->Global())',
     # Union types or dictionaries
     'DictionaryOrUnion': 'v8SetReturnValue(info, result)',
-    'DictionaryOrUnionStatic': '#error not implemented yet',
+    'DictionaryOrUnionStatic': 'v8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global())',
 }
 
 

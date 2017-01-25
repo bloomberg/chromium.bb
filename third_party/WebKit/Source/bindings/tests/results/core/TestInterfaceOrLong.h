@@ -69,6 +69,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLo
   v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLong& impl, v8::Local<v8::Object> creationContext) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
+}
+
 template <>
 struct NativeValueTraits<TestInterfaceOrLong> {
   CORE_EXPORT static TestInterfaceOrLong nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);

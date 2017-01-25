@@ -324,6 +324,7 @@ interface TestObject {
     (TestInterfaceGarbageCollected or DOMString) testInterfaceGarbageCollectedOrDOMStringMethod();
     (boolean or DOMString or unrestricted double) booleanOrDOMStringOrUnrestrictedDoubleMethod();
     (TestInterface or long) testInterfaceOrLongMethod();
+    static (TestInterfaceGarbageCollected or DOMString) staticTestInterfaceGarbageCollectedOrDOMStringMethod();
     void voidMethodDoubleOrDOMStringArg((double or DOMString) arg);
     void voidMethodDoubleOrDOMStringOrNullArg((double or DOMString)? arg);
     void voidMethodDoubleOrNullOrDOMStringArg((double? or DOMString) arg);
@@ -345,6 +346,8 @@ interface TestObject {
     Dictionary dictionaryMethod();
     TestDictionary testDictionaryMethod();
     TestDictionary? nullableTestDictionaryMethod();
+    static TestDictionary staticTestDictionaryMethod();
+    static TestDictionary? staticNullableTestDictionaryMethod();
     void passPermissiveDictionaryMethod([PermissiveDictionaryConversion] optional TestDictionary arg);
     NodeFilter nodeFilterMethod();
     Promise<void> promiseMethod(long arg1, Dictionary arg2, DOMString arg3, DOMString... variadic);

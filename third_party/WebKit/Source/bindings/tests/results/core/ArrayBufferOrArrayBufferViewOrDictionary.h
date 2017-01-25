@@ -77,6 +77,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArra
   v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Local<v8::Object> creationContext) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
+}
+
 template <>
 struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
   CORE_EXPORT static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);

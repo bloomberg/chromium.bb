@@ -6574,6 +6574,16 @@ CORE_EXPORT  void testInterfaceOrLongMethodMethodCallback(const v8::FunctionCall
   TestObjectV8Internal::testInterfaceOrLongMethodMethod(info);
 }
 
+static void staticTestInterfaceGarbageCollectedOrDOMStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedOrString result;
+  TestObject::staticTestInterfaceGarbageCollectedOrDOMStringMethod(result);
+  v8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global());
+}
+
+CORE_EXPORT  void staticTestInterfaceGarbageCollectedOrDOMStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::staticTestInterfaceGarbageCollectedOrDOMStringMethodMethod(info);
+}
+
 static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDoubleOrDOMStringArg");
 
@@ -6913,6 +6923,29 @@ static void nullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8
 
 CORE_EXPORT  void nullableTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObjectV8Internal::nullableTestDictionaryMethodMethod(info);
+}
+
+static void staticTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestDictionary result;
+  TestObject::staticTestDictionaryMethod(result);
+  v8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global());
+}
+
+CORE_EXPORT  void staticTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::staticTestDictionaryMethodMethod(info);
+}
+
+static void staticNullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  Nullable<TestDictionary> result;
+  TestObject::staticNullableTestDictionaryMethod(result);
+  if (result.isNull())
+    v8SetReturnValueNull(info);
+  else
+    v8SetReturnValue(info, result.get(), info.GetIsolate()->GetCurrentContext()->Global());
+}
+
+CORE_EXPORT  void staticNullableTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::staticNullableTestDictionaryMethodMethod(info);
 }
 
 static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -11436,6 +11469,7 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"testInterfaceGarbageCollectedOrDOMStringMethod", TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"booleanOrDOMStringOrUnrestrictedDoubleMethod", TestObjectV8Internal::booleanOrDOMStringOrUnrestrictedDoubleMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"testInterfaceOrLongMethod", TestObjectV8Internal::testInterfaceOrLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"staticTestInterfaceGarbageCollectedOrDOMStringMethod", TestObjectV8Internal::staticTestInterfaceGarbageCollectedOrDOMStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
     {"voidMethodDoubleOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"voidMethodDoubleOrDOMStringOrNullArg", TestObjectV8Internal::voidMethodDoubleOrDOMStringOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"voidMethodDoubleOrNullOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrNullOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -11452,6 +11486,8 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"dictionaryMethod", TestObjectV8Internal::dictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"testDictionaryMethod", TestObjectV8Internal::testDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"nullableTestDictionaryMethod", TestObjectV8Internal::nullableTestDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"staticTestDictionaryMethod", TestObjectV8Internal::staticTestDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"staticNullableTestDictionaryMethod", TestObjectV8Internal::staticNullableTestDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
     {"passPermissiveDictionaryMethod", TestObjectV8Internal::passPermissiveDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"nodeFilterMethod", TestObjectV8Internal::nodeFilterMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 3, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
