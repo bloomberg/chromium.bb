@@ -58,8 +58,6 @@ component("system") {
     "platform_handle_dispatcher.h",
     "ports_message.cc",
     "ports_message.h",
-    "remote_message_pipe_bootstrap.cc",
-    "remote_message_pipe_bootstrap.h",
     "request_context.cc",
     "request_context.h",
     "shared_buffer_dispatcher.cc",
@@ -109,7 +107,6 @@ component("system") {
       "broker_host.cc",
       "broker_posix.cc",
       "channel_posix.cc",
-      "remote_message_pipe_bootstrap.cc",
     ]
   }
 

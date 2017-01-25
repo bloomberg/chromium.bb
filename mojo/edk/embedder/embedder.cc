@@ -155,11 +155,6 @@ void SetMachPortProvider(base::PortProvider* port_provider) {
 }
 #endif
 
-ScopedMessagePipeHandle CreateMessagePipe(
-    ScopedPlatformHandle platform_handle) {
-  return internal::g_core->CreateMessagePipe(std::move(platform_handle));
-}
-
 ScopedMessagePipeHandle CreateParentMessagePipe(
     const std::string& token, const std::string& child_token) {
   return internal::g_core->CreateParentMessagePipe(token, child_token);

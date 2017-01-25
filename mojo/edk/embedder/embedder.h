@@ -170,15 +170,6 @@ MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
     base::PortProvider* port_provider);
 #endif
 
-// Creates a message pipe over an arbitrary platform channel. The other end of
-// the channel must also be passed to this function. Either endpoint can be in
-// any process.
-//
-// Note that the channel is only used to negotiate pipe connection, not as the
-// transport for messages on the pipe.
-MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-CreateMessagePipe(ScopedPlatformHandle platform_handle);
-
 // Creates a message pipe from a token. A child embedder must also have this
 // token and call CreateChildMessagePipe() with it in order for the pipe to get
 // connected. |child_token| identifies the child process and should be the same

@@ -31,7 +31,6 @@
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
-#include "mojo/edk/system/remote_message_pipe_bootstrap.h"
 #include "mojo/edk/system/request_context.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 #include "mojo/edk/system/wait_set_dispatcher.h"
@@ -333,23 +332,6 @@ MojoResult Core::PassSharedMemoryHandle(
 
 void Core::RequestShutdown(const base::Closure& callback) {
   GetNodeController()->RequestShutdown(callback);
-}
-
-ScopedMessagePipeHandle Core::CreateMessagePipe(
-    ScopedPlatformHandle platform_handle) {
-#if defined(OS_NACL)
-  NOTREACHED();
-  return ScopedMessagePipeHandle();
-#else
-  ports::PortRef port0, port1;
-  GetNodeController()->node()->CreatePortPair(&port0, &port1);
-  MojoHandle handle = AddDispatcher(
-    new MessagePipeDispatcher(GetNodeController(), port0,
-                              kUnknownPipeIdForDebug, 0));
-  RemoteMessagePipeBootstrap::Create(
-      GetNodeController(), std::move(platform_handle), port1);
-  return ScopedMessagePipeHandle(MessagePipeHandle(handle));
-#endif
 }
 
 ScopedMessagePipeHandle Core::CreateParentMessagePipe(
