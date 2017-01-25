@@ -81,12 +81,12 @@ class DepsUpdaterTest(unittest.TestCase):
 
     def test_cl_description_with_empty_environ(self):
         host = MockHost()
-        host.executive = MockExecutive(output='Last commit message\n')
+        host.executive = MockExecutive(output='Last commit message\n\n')
         updater = DepsUpdater(host)
         description = updater._cl_description()
         self.assertEqual(
             description,
-            ('Last commit message\n'
+            ('Last commit message\n\n'
              'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
@@ -109,7 +109,7 @@ class DepsUpdaterTest(unittest.TestCase):
 
     def test_cl_description_moves_noexport_tag(self):
         host = MockHost()
-        host.executive = MockExecutive(output='Summary\n\nNOEXPORT=true')
+        host.executive = MockExecutive(output='Summary\n\nNOEXPORT=true\n\n')
         updater = DepsUpdater(host)
         description = updater._cl_description()
         self.assertEqual(

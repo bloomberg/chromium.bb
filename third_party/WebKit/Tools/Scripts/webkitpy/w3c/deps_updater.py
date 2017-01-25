@@ -342,6 +342,7 @@ class DepsUpdater(object):
         description += 'TBR=qyearsley@chromium.org\n'
         # Move any NOEXPORT tag to the end of the description.
         description = description.replace('NOEXPORT=true', '')
+        description = description.replace('\n\n\n\n', '\n\n')
         description += 'NOEXPORT=true'
         return description
 
