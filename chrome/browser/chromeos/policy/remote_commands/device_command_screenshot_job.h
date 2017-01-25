@@ -110,7 +110,7 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
   void TerminateImpl() override;
 
   void StoreScreenshot(size_t screen,
-                       scoped_refptr<base::RefCountedBytes> png_data);
+                       scoped_refptr<base::RefCountedMemory> png_data);
 
   void StartScreenshotUpload();
 
@@ -128,7 +128,7 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
   int num_pending_screenshots_;
 
   // Caches the already completed screenshots for the different displays.
-  std::map<int, scoped_refptr<base::RefCountedBytes>> screenshots_;
+  std::map<int, scoped_refptr<base::RefCountedMemory>> screenshots_;
 
   // The Delegate is used to acquire screenshots and create UploadJobs.
   std::unique_ptr<Delegate> screenshot_delegate_;

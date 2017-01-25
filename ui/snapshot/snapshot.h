@@ -31,16 +31,13 @@ namespace ui {
 // used in a result of user action. Support for async vs synchronous
 // GrabWindowSnapshot differs by platform.  To be most general, use the
 // synchronous function first and if it returns false call the async one.
-SNAPSHOT_EXPORT bool GrabWindowSnapshot(
-    gfx::NativeWindow window,
-    std::vector<unsigned char>* png_representation,
-    const gfx::Rect& snapshot_bounds);
+SNAPSHOT_EXPORT bool GrabWindowSnapshot(gfx::NativeWindow window,
+                                        const gfx::Rect& snapshot_bounds,
+                                        gfx::Image* image);
 
-SNAPSHOT_EXPORT bool GrabViewSnapshot(
-    gfx::NativeView view,
-    std::vector<unsigned char>* png_representation,
-    const gfx::Rect& snapshot_bounds);
-
+SNAPSHOT_EXPORT bool GrabViewSnapshot(gfx::NativeView view,
+                                      const gfx::Rect& snapshot_bounds,
+                                      gfx::Image* image);
 
 // These functions take a snapshot of |source_rect|, specified in layer space
 // coordinates (DIP for desktop, physical pixels for Android), and scale the
@@ -54,15 +51,20 @@ SNAPSHOT_EXPORT void GrabWindowSnapshotAndScaleAsync(
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncCallback& callback);
 
-typedef base::Callback<void(scoped_refptr<base::RefCountedBytes> png_data)>
-    GrabWindowSnapshotAsyncPNGCallback;
 SNAPSHOT_EXPORT void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
-    scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncPNGCallback& callback);
+    const GrabWindowSnapshotAsyncCallback& callback);
+
 SNAPSHOT_EXPORT void GrabViewSnapshotAsync(
     gfx::NativeView view,
+    const gfx::Rect& source_rect,
+    const GrabWindowSnapshotAsyncCallback& callback);
+
+typedef base::Callback<void(scoped_refptr<base::RefCountedMemory> png_data)>
+    GrabWindowSnapshotAsyncPNGCallback;
+SNAPSHOT_EXPORT void GrabWindowSnapshotAsyncPNG(
+    gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback);

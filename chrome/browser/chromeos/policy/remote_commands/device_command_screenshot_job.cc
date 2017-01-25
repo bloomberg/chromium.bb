@@ -60,7 +60,7 @@ const char* const kUploadUrlFieldName = "fileUploadUrl";
 void RunStoreScreenshotOnTaskRunner(
     const ui::GrabWindowSnapshotAsyncPNGCallback& store_screenshot_callback,
     scoped_refptr<base::TaskRunner> task_runner,
-    scoped_refptr<base::RefCountedBytes> png_data) {
+    scoped_refptr<base::RefCountedMemory> png_data) {
   task_runner->PostTask(FROM_HERE,
                         base::Bind(store_screenshot_callback, png_data));
 }
@@ -157,7 +157,7 @@ bool DeviceCommandScreenshotJob::ParseCommandPayload(
 
 void DeviceCommandScreenshotJob::StoreScreenshot(
     size_t screen,
-    scoped_refptr<base::RefCountedBytes> png_data) {
+    scoped_refptr<base::RefCountedMemory> png_data) {
   screenshots_.insert(std::make_pair(screen, png_data));
   DCHECK_LT(0, num_pending_screenshots_);
   --num_pending_screenshots_;

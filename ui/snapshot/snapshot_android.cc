@@ -24,15 +24,14 @@ namespace ui {
 // Sync versions are not supported in Android.  Callers should fall back
 // to the async version.
 bool GrabViewSnapshot(gfx::NativeView view,
-                      std::vector<unsigned char>* png_representation,
-                      const gfx::Rect& snapshot_bounds) {
-  return GrabWindowSnapshot(
-      view->GetWindowAndroid(), png_representation, snapshot_bounds);
+                      const gfx::Rect& snapshot_bounds,
+                      gfx::Image* image) {
+  return GrabWindowSnapshot(view->GetWindowAndroid(), snapshot_bounds, image);
 }
 
 bool GrabWindowSnapshot(gfx::NativeWindow window,
-                        std::vector<unsigned char>* png_representation,
-                        const gfx::Rect& snapshot_bounds) {
+                        const gfx::Rect& snapshot_bounds,
+                        gfx::Image* image) {
   return false;
 }
 
@@ -64,28 +63,20 @@ void GrabWindowSnapshotAndScaleAsync(
                                   background_task_runner));
 }
 
-void GrabWindowSnapshotAsync(
-    gfx::NativeWindow window,
-    const gfx::Rect& source_rect,
-    scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  MakeAsyncCopyRequest(window,
-                       source_rect,
-                       base::Bind(&SnapshotAsync::EncodeCopyOutputResult,
-                                  callback,
-                                  background_task_runner));
+void GrabWindowSnapshotAsync(gfx::NativeWindow window,
+                             const gfx::Rect& source_rect,
+                             const GrabWindowSnapshotAsyncCallback& callback) {
+  MakeAsyncCopyRequest(
+      window, source_rect,
+      base::Bind(&SnapshotAsync::RunCallbackWithCopyOutputResult, callback));
 }
 
-void GrabViewSnapshotAsync(
-    gfx::NativeView view,
-    const gfx::Rect& source_rect,
-    scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  MakeAsyncCopyRequest(view->GetWindowAndroid(),
-                       source_rect,
-                       base::Bind(&SnapshotAsync::EncodeCopyOutputResult,
-                                  callback,
-                                  background_task_runner));
+void GrabViewSnapshotAsync(gfx::NativeView view,
+                           const gfx::Rect& source_rect,
+                           const GrabWindowSnapshotAsyncCallback& callback) {
+  MakeAsyncCopyRequest(
+      view->GetWindowAndroid(), source_rect,
+      base::Bind(&SnapshotAsync::RunCallbackWithCopyOutputResult, callback));
 }
 
 }  // namespace ui

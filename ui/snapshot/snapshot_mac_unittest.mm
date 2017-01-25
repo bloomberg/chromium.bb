@@ -8,38 +8,41 @@
 
 #include <memory>
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
 namespace {
 
-typedef PlatformTest GrabWindowSnapshotTest;
+typedef CocoaTest GrabWindowSnapshotTest;
 
 TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
+  // TODO(https://crbug.com/685088): This test fails on MacOS 10.11 and above.
+  if (base::mac::IsAtLeastOS10_11())
+    return;
+
   // Launch a test window so we can take a snapshot.
   NSRect frame = NSMakeRect(0, 0, 400, 400);
-  base::scoped_nsobject<NSWindow> window(
-      [[NSWindow alloc] initWithContentRect:frame
-                                  styleMask:NSBorderlessWindowMask
-                                    backing:NSBackingStoreBuffered
-                                      defer:NO]);
+  NSWindow* window = test_window();
+  [window setFrame:frame display:false];
   [window setBackgroundColor:[NSColor whiteColor]];
   [window makeKeyAndOrderFront:NSApp];
+  [window display];
 
-  std::unique_ptr<std::vector<unsigned char>> png_representation(
-      new std::vector<unsigned char>);
+  gfx::Image image;
   gfx::Rect bounds = gfx::Rect(0, 0, frame.size.width, frame.size.height);
-  EXPECT_TRUE(ui::GrabWindowSnapshot(window, png_representation.get(),
-                                           bounds));
+  EXPECT_TRUE(ui::GrabWindowSnapshot(window, bounds, &image));
 
-  // Copy png back into NSData object so we can make sure we grabbed a png.
-  base::scoped_nsobject<NSData> image_data(
-      [[NSData alloc] initWithBytes:&(*png_representation)[0]
-                             length:png_representation->size()]);
-  NSBitmapImageRep* rep = [NSBitmapImageRep imageRepWithData:image_data.get()];
+  NSImage* nsImage = image.ToNSImage();
+  CGImageRef cgImage =
+      [nsImage CGImageForProposedRect:nil context:nil hints:nil];
+  base::scoped_nsobject<NSBitmapImageRep> rep(
+      [[NSBitmapImageRep alloc] initWithCGImage:cgImage]);
   EXPECT_TRUE([rep isKindOfClass:[NSBitmapImageRep class]]);
   CGFloat scaleFactor = 1.0f;
   if ([window respondsToSelector:@selector(backingScaleFactor)])

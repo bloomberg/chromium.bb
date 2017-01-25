@@ -20,6 +20,10 @@
 
 class SkBitmap;
 
+namespace gfx {
+class Image;
+}  // namespace gfx
+
 namespace content {
 
 class DevToolsSession;
@@ -65,6 +69,8 @@ class PageHandler : public DevToolsDomainHandler,
   Response NavigateToHistoryEntry(int entry_id) override;
 
   void CaptureScreenshot(
+      Maybe<std::string> format,
+      Maybe<int> quality,
       std::unique_ptr<CaptureScreenshotCallback> callback) override;
   Response StartScreencast(Maybe<std::string> format,
                            Maybe<int> quality,
@@ -91,6 +97,8 @@ class PageHandler : public DevToolsDomainHandler,
   void NavigationRequested(const PageNavigationThrottle* throttle);
 
  private:
+  enum EncodingFormat { PNG, JPEG };
+
   WebContentsImpl* GetWebContents();
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
@@ -101,10 +109,10 @@ class PageHandler : public DevToolsDomainHandler,
                               const base::Time& timestamp,
                               const std::string& data);
 
-  void ScreenshotCaptured(
-      std::unique_ptr<CaptureScreenshotCallback> callback,
-      const unsigned char* png_data,
-      size_t png_size);
+  void ScreenshotCaptured(std::unique_ptr<CaptureScreenshotCallback> callback,
+                          const std::string& format,
+                          int quality,
+                          const gfx::Image& image);
 
   void OnColorPicked(int r, int g, int b, int a);
 

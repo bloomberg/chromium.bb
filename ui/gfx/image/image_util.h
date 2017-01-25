@@ -33,6 +33,10 @@ GFX_EXPORT bool JPEG1xEncodedDataFromImage(const Image& image,
                                            int quality,
                                            std::vector<unsigned char>* dst);
 
+bool JPEG1xEncodedDataFromSkiaRepresentation(const Image& image,
+                                             int quality,
+                                             std::vector<unsigned char>* dst);
+
 // Computes the width of any nearly-transparent regions at the sides of the
 // image and returns them in |left| and |right|.  This checks each column of
 // pixels from the outsides in, looking for anything with alpha above a

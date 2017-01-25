@@ -10,6 +10,7 @@ component("snapshot") {
     "screenshot_grabber.cc",
     "screenshot_grabber.h",
     "screenshot_grabber_observer.h",
+    "snapshot.cc",
     "snapshot.h",
     "snapshot_android.cc",
     "snapshot_async.cc",
@@ -84,6 +85,7 @@ test("snapshot_unittests") {
     "//ui/base",
     "//ui/compositor:test_support",
     "//ui/gfx",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
