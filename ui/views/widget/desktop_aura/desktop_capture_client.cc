@@ -12,21 +12,20 @@
 namespace views {
 
 // static
-DesktopCaptureClient::CaptureClients*
-DesktopCaptureClient::capture_clients_ = NULL;
+DesktopCaptureClient::CaptureClients* DesktopCaptureClient::capture_clients_ =
+    nullptr;
 
 // static
 aura::Window* DesktopCaptureClient::GetCaptureWindowGlobal() {
-  for (auto i = capture_clients_->begin(); i != capture_clients_->end(); ++i) {
-    if ((*i)->capture_window_)
-      return (*i)->capture_window_;
+  for (auto* client : *capture_clients_) {
+    if (client->capture_window_)
+      return client->capture_window_;
   }
-  return NULL;
+  return nullptr;
 }
 
 DesktopCaptureClient::DesktopCaptureClient(aura::Window* root)
-    : root_(root),
-      capture_window_(NULL) {
+    : root_(root), capture_window_(nullptr) {
   if (!capture_clients_)
     capture_clients_ = new CaptureClients;
   capture_clients_->insert(this);
@@ -34,7 +33,7 @@ DesktopCaptureClient::DesktopCaptureClient(aura::Window* root)
 }
 
 DesktopCaptureClient::~DesktopCaptureClient() {
-  aura::client::SetCaptureClient(root_, NULL);
+  aura::client::SetCaptureClient(root_, nullptr);
   capture_clients_->erase(this);
 }
 
@@ -91,7 +90,7 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
 void DesktopCaptureClient::ReleaseCapture(aura::Window* window) {
   if (capture_window_ != window)
     return;
-  SetCapture(NULL);
+  SetCapture(nullptr);
 }
 
 aura::Window* DesktopCaptureClient::GetCaptureWindow() {
