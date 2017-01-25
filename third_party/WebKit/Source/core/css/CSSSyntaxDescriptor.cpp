@@ -4,6 +4,8 @@
 
 #include "core/css/CSSSyntaxDescriptor.h"
 
+#include "core/animation/CSSColorInterpolationType.h"
+#include "core/animation/CSSValueInterpolationType.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValueList.h"
@@ -209,6 +211,49 @@ const CSSValue* CSSSyntaxDescriptor::parse(CSSParserTokenRange range,
   }
   return CSSVariableParser::parseRegisteredPropertyValue(range, true,
                                                          isAnimationTainted);
+}
+
+InterpolationTypes CSSSyntaxDescriptor::createInterpolationTypes(
+    const AtomicString& propertyName) const {
+  PropertyHandle property(propertyName);
+  InterpolationTypes interpolationTypes;
+  for (const CSSSyntaxComponent& component : m_syntaxComponents) {
+    if (component.m_repeatable) {
+      // TODO(alancutter): Support animation of repeatable types.
+      continue;
+    }
+
+    switch (component.m_type) {
+      case CSSSyntaxType::Color:
+        interpolationTypes.append(
+            WTF::makeUnique<CSSColorInterpolationType>(property));
+        break;
+      case CSSSyntaxType::Length:
+      case CSSSyntaxType::Number:
+      case CSSSyntaxType::Percentage:
+      case CSSSyntaxType::LengthPercentage:
+      case CSSSyntaxType::Image:
+      case CSSSyntaxType::Url:
+      case CSSSyntaxType::Integer:
+      case CSSSyntaxType::Angle:
+      case CSSSyntaxType::Time:
+      case CSSSyntaxType::Resolution:
+      case CSSSyntaxType::TransformFunction:
+        // TODO(alancutter): Support smooth interpolation of these types.
+        break;
+      case CSSSyntaxType::TokenStream:
+      case CSSSyntaxType::Ident:
+      case CSSSyntaxType::CustomIdent:
+        // Uses the CSSValueInterpolationType added below.
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  interpolationTypes.append(
+      WTF::makeUnique<CSSValueInterpolationType>(property));
+  return interpolationTypes;
 }
 
 }  // namespace blink
