@@ -1,0 +1,37 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Next MinVersion: 1
+
+module arc.mojom;
+
+import "screen_rect.mojom";
+
+// AccessibilityEventType is a enum which corresponds to event types of
+// AccessibilityEvent in Android.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
+[Extensible]
+enum AccessibilityEventType {
+  VIEW_FOCUSED,
+};
+
+// AccessibilityNodeInfoData is a struct to contain info of
+// AccessibilityNodeInfo in Android.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
+struct AccessibilityNodeInfoData {
+  ScreenRect boundsInScreen;
+};
+
+// Next method ID: 1
+interface AccessibilityHelperHost {
+  // OnAccessibilityEvent is called when a converted Android accessibility event
+  // is sent from Android.
+  OnAccessibilityEvent@0(AccessibilityEventType eventType,
+                         AccessibilityNodeInfoData? eventSource);
+};
+
+// Next method ID: 1
+interface AccessibilityHelperInstance {
+  Init@0(AccessibilityHelperHost host);
+};

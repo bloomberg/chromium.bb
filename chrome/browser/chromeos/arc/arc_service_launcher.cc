@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
@@ -87,6 +88,8 @@ void ArcServiceLauncher::Initialize() {
                      arc_service_manager_->blocking_task_runner())));
 
   // List in lexicographical order.
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcAccessibilityHelperBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcAudioBridge>(arc_bridge_service));
   arc_service_manager_->AddService(

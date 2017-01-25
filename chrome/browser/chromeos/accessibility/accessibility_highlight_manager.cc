@@ -76,6 +76,12 @@ void AccessibilityHighlightManager::RegisterObservers() {
   registered_observers_ = true;
 }
 
+void AccessibilityHighlightManager::OnViewFocusedInArc(
+    const gfx::Rect& bounds_in_screen) {
+  focus_rect_ = bounds_in_screen;
+  UpdateFocusAndCaretHighlights();
+}
+
 void AccessibilityHighlightManager::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_MOVED) {
     cursor_point_ = event->location();

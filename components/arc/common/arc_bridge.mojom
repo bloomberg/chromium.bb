@@ -4,6 +4,7 @@
 
 module arc.mojom;
 
+import "accessibility_helper.mojom";
 import "app.mojom";
 import "audio.mojom";
 import "auth.mojom";
@@ -29,13 +30,17 @@ import "tts.mojom";
 import "video.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 21
+// Next MinVersion: 22
 // Deprecated method IDs: 101, 105
-// Next method ID: 127
+// Next method ID: 128
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
   // unique ordinal.
+
+  // Notifies Chrome that the AccessibilityHelperInstance interface is ready.
+  [MinVersion=21] OnAccessibilityHelperInstanceReady@127(
+      AccessibilityHelperInstance instance_ptr);
 
   // Notifies Chrome that the AppInstance interface is ready.
   OnAppInstanceReady@100(AppInstance instance_ptr);

@@ -83,6 +83,12 @@ ArcBridgeHostImpl::~ArcBridgeHostImpl() {
   OnClosed();
 }
 
+void ArcBridgeHostImpl::OnAccessibilityHelperInstanceReady(
+    mojom::AccessibilityHelperInstancePtr accessibility_helper_ptr) {
+  OnInstanceReady(arc_bridge_service_->accessibility_helper(),
+                  std::move(accessibility_helper_ptr));
+}
+
 void ArcBridgeHostImpl::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
   OnInstanceReady(arc_bridge_service_->app(), std::move(app_ptr));
 }

@@ -544,6 +544,11 @@ void AccessibilityManager::OnLocaleChanged() {
   EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
 }
 
+void AccessibilityManager::OnViewFocusedInArc(
+    const gfx::Rect& bounds_in_screen) {
+  accessibility_highlight_manager_->OnViewFocusedInArc(bounds_in_screen);
+}
+
 bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
   DCHECK(sound_key < chromeos::SOUND_COUNT);
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();

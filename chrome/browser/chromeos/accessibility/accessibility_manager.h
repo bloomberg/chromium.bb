@@ -28,6 +28,10 @@
 
 class Profile;
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace chromeos {
 
 class AccessibilityExtensionLoader;
@@ -249,6 +253,9 @@ class AccessibilityManager
 
   // Play tick sound indicating spoken feedback will be toggled after countdown.
   bool PlaySpokenFeedbackToggleCountdown(int tick_count);
+
+  // Notify that a view is focused in arc.
+  void OnViewFocusedInArc(const gfx::Rect& bounds_in_screen);
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // when their mapped event has occurred. The sound key enums can be found in

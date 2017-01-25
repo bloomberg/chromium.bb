@@ -209,6 +209,8 @@ source_set("chromeos") {
     "app_mode/kiosk_session_plugin_handler_delegate.h",
     "app_mode/startup_app_launcher.cc",
     "app_mode/startup_app_launcher.h",
+    "arc/accessibility/arc_accessibility_helper_bridge.cc",
+    "arc/accessibility/arc_accessibility_helper_bridge.h",
     "arc/arc_auth_context.cc",
     "arc/arc_auth_context.h",
     "arc/arc_auth_notification.cc",

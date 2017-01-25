@@ -38,6 +38,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   ~ArcBridgeHostImpl() override;
 
   // ArcBridgeHost overrides.
+  void OnAccessibilityHelperInstanceReady(
+      mojom::AccessibilityHelperInstancePtr accessibility_helper_ptr) override;
   void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
   void OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) override;
   void OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) override;
