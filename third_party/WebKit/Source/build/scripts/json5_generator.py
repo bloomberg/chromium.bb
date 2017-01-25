@@ -65,7 +65,7 @@ def _json5_load(lines):
     # regexs to convert well-formed JSON5 to PYL format.
     # Strip away comments and quote unquoted keys.
     re_comment = re.compile(r"^\s*//.*$|//+ .*$", re.MULTILINE)
-    re_map_keys = re.compile(r"^\s+([$A-Za-z_][\w]*)\s*:", re.MULTILINE)
+    re_map_keys = re.compile(r"^\s*([$A-Za-z_][\w]*)\s*:", re.MULTILINE)
     pyl = re.sub(re_map_keys, r"'\1':", re.sub(re_comment, "", lines))
     # Convert map values of true/false to Python version True/False.
     re_true = re.compile(r":\s*true\b")
@@ -90,14 +90,16 @@ def _merge_doc(doc, doc2):
 
 
 class Json5File(object):
-    def __init__(self, doc, default_metadata=None):
+    def __init__(self, file_paths, doc, default_metadata=None, default_parameters=None):
+        self.file_paths = file_paths
         self.name_dictionaries = []
         self.metadata = copy.deepcopy(default_metadata if default_metadata else {})
+        self.parameters = copy.deepcopy(default_parameters if default_parameters else {})
         self._defaults = {}
         self._process(doc)
 
     @classmethod
-    def load_from_files(cls, file_paths, default_metadata):
+    def load_from_files(cls, file_paths, default_metadata, default_parameters=None):
         merged_doc = dict()
         for path in file_paths:
             assert path.endswith(".json5")
@@ -107,26 +109,26 @@ class Json5File(object):
                     merged_doc = doc
                 else:
                     _merge_doc(merged_doc, doc)
-        return Json5File(merged_doc, default_metadata)
+        return Json5File(file_paths, merged_doc, default_metadata, default_parameters)
 
     def _process(self, doc):
         # Process optional metadata map entries.
         for key, value in doc.get("metadata", {}).items():
             self._process_metadata(key, value)
         # Get optional parameters map, and get the default value map from it.
-        parameters = doc.get("parameters", {})
-        if parameters:
-            self._get_defaults(parameters)
+        self.parameters.update(doc.get("parameters", {}))
+        if self.parameters:
+            self._get_defaults()
         # Process normal entries.
         items = doc["data"]
         if type(items) is list:
             for item in items:
-                entry = self._get_entry(item, parameters)
+                entry = self._get_entry(item)
                 self.name_dictionaries.append(entry)
         else:
             for key, value in items.items():
                 value["name"] = key
-                entry = self._get_entry(value, parameters)
+                entry = self._get_entry(value)
                 self.name_dictionaries.append(entry)
             self.name_dictionaries.sort(key=lambda entry: entry["name"])
 
@@ -136,14 +138,14 @@ class Json5File(object):
                             (key, self.metadata.keys()))
         self.metadata[key] = value
 
-    def _get_defaults(self, parameters):
-        for key, value in parameters.items():
+    def _get_defaults(self):
+        for key, value in self.parameters.items():
             if value and "default" in value:
                 self._defaults[key] = value["default"]
             else:
                 self._defaults[key] = None
 
-    def _get_entry(self, item, parameters):
+    def _get_entry(self, item):
         entry = copy.deepcopy(self._defaults)
         if type(item) is not dict:
             entry["name"] = item
@@ -152,12 +154,12 @@ class Json5File(object):
             raise Exception("Missing name in item: %s" % item)
         entry["name"] = item.pop("name")
         for key, value in item.items():
-            if key not in parameters:
+            if key not in self.parameters:
                 raise Exception(
                     "Unknown parameter: '%s'\nKnown params: %s" %
-                    (key, parameters.keys()))
-            if parameters[key]:
-                self._validate_parameter(parameters[key], value)
+                    (key, self.parameters.keys()))
+            if self.parameters[key]:
+                self._validate_parameter(self.parameters[key], value)
             entry[key] = value
         return entry
 
@@ -176,6 +178,7 @@ class Writer(object):
     # Subclasses should override.
     class_name = None
     default_metadata = None
+    default_parameters = None
 
     def __init__(self, json5_files):
         self._outputs = {}  # file_name -> generator
@@ -184,7 +187,8 @@ class Writer(object):
             json5_files = [json5_files]
         if json5_files:
             self.json5_file = Json5File.load_from_files(json5_files,
-                                                        self.default_metadata)
+                                                        self.default_metadata,
+                                                        self.default_parameters)
 
     def _write_file_if_changed(self, output_dir, contents, file_name):
         path = os.path.join(output_dir, file_name)

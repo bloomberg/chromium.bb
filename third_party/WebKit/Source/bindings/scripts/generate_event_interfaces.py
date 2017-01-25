@@ -28,16 +28,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Generate event interfaces .in file (EventInterfaces.in).
+"""Generate event interfaces .json5 file (EventInterfaces.json5).
 
-The event interfaces .in file contains a list of all Event interfaces, i.e.,
+The event interfaces .json5 file contains a list of all Event interfaces, i.e.,
 all interfaces that inherit from Event, including Event itself,
 together with certain extended attributes.
 
 Paths are in POSIX format, and relative to Source/.
 
 This list is used in core/ to generate EventFactory and EventNames.
-The .in format is documented in build/scripts/in_file.py.
+The .json5 format is documented in build/scripts/json5_generator.py.
 """
 
 from optparse import OptionParser
@@ -72,11 +72,6 @@ def parse_options():
 
 
 def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
-    def extended_attribute_string(name, value):
-        if name == 'RuntimeEnabled':
-            value += 'Enabled'
-        return name + '=' + value
-
     def interface_line(full_path):
         relative_path_local, _ = os.path.splitext(os.path.relpath(full_path, source_dir))
         relative_path_posix = relative_path_local.replace(os.sep, posixpath.sep)
@@ -84,25 +79,44 @@ def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
         idl_file_contents = get_file_contents(full_path)
         extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
         extended_attributes_list = [
-            extended_attribute_string(name, extended_attributes[name])
+            (name, extended_attributes[name])
             for name in EXPORTED_EXTENDED_ATTRIBUTES
             if name in extended_attributes]
 
-        return '%s %s\n' % (relative_path_posix,
-                            ', '.join(extended_attributes_list))
+        return (relative_path_posix, extended_attributes_list)
 
-    lines = ['namespace="Event"\n']
+    lines = [
+        '{',
+        'metadata: {',
+        '  namespace: "Event",'
+    ]
     if suffix:
-        lines.append('suffix="' + suffix + '"\n')
-        lines.append('export=%s_EXPORT\n' % suffix.upper())
+        lines.append('  suffix: "' + suffix + '",')
+        lines.append('  export: "%s_EXPORT",' % suffix.upper())
     else:
-        lines.append('export=CORE_EXPORT\n')
-    lines.append('\n')
+        lines.append('  export: "CORE_EXPORT",')
+    lines.extend([
+        '},',
+        'data: ['
+    ])
     interface_lines = [interface_line(event_idl_file)
                        for event_idl_file in event_idl_files]
     interface_lines.sort()
-    lines.extend(interface_lines)
-    write_file(''.join(lines), destination_filename)
+    for name, attributes in interface_lines:
+        lines.extend([
+            '  {',
+            '    name: "%s",' % name
+        ])
+        for param, value in attributes:
+            if param == 'RuntimeEnabled':
+                value += 'Enabled'
+            lines.append('    %s: "%s",' % (param, value))
+        lines.append('  },')
+    lines.extend([
+        ']',
+        '}'
+    ])
+    write_file('\n'.join(lines), destination_filename)
 
 
 ################################################################################

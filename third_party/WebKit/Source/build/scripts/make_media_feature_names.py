@@ -5,7 +5,7 @@
 # found in the LICENSE file.
 
 import sys
-import in_generator
+import json5_generator
 import make_names
 import media_feature_symbol
 
@@ -16,4 +16,4 @@ class MakeMediaFeatureNamesWriter(make_names.MakeNamesWriter):
 MakeMediaFeatureNamesWriter.filters['symbol'] = media_feature_symbol.getMediaFeatureSymbolWithSuffix('MediaFeature')
 
 if __name__ == "__main__":
-    in_generator.Maker(MakeMediaFeatureNamesWriter).main(sys.argv)
+    json5_generator.Maker(MakeMediaFeatureNamesWriter).main()

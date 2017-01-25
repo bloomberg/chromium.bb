@@ -1,0 +1,41 @@
+{
+  data: [
+    // Aliases
+    {
+      name: "WebKitAnimationEvent",
+      ImplementedAs: "AnimationEvent",
+    },
+    {
+      name: "Events",
+      ImplementedAs: "Event",
+    },
+    {
+      name: "HTMLEvents",
+      ImplementedAs: "Event",
+    },
+    {
+      name: "KeyboardEvents",
+      ImplementedAs: "KeyboardEvent",
+    },
+    {
+      name: "MouseEvents",
+      ImplementedAs: "MouseEvent",
+    },
+    {
+      name: "MutationEvents",
+      ImplementedAs: "MutationEvent",
+    },
+    {
+      name: "SVGEvents",
+      ImplementedAs: "Event",
+    },
+    {
+      name: "UIEvents",
+      ImplementedAs: "UIEvent",
+    },
+    {
+      name: "WebKitTransitionEvent",
+      ImplementedAs: "TransitionEvent",
+    },
+  ],
+}

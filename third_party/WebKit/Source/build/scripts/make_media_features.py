@@ -5,37 +5,30 @@
 # found in the LICENSE file.
 
 import media_feature_symbol
-import in_generator
+import json5_generator
 import template_expander
 import name_utilities
 import sys
 
 
-class MakeMediaFeaturesWriter(in_generator.Writer):
-    defaults = {
-        'Conditional': None,  # FIXME: Add support for Conditional.
-        'RuntimeEnabled': None,
-        'ImplementedAs': None,
+class MakeMediaFeaturesWriter(json5_generator.Writer):
+    default_metadata = {
+        'namespace': '',
+        'export': '',
     }
     filters = {
         'symbol': media_feature_symbol.getMediaFeatureSymbolWithSuffix(''),
         'to_macro_style': name_utilities.to_macro_style,
     }
-    default_parameters = {
-        'namespace': '',
-        'export': '',
-    }
 
-    def __init__(self, in_file_path):
-        super(MakeMediaFeaturesWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(MakeMediaFeaturesWriter, self).__init__(json5_file_path)
 
         self._outputs = {
             ('MediaFeatures.h'): self.generate_header,
         }
         self._template_context = {
-            'namespace': '',
-            'export': '',
-            'entries': self.in_file.name_dictionaries,
+            'entries': self.json5_file.name_dictionaries,
         }
 
     @template_expander.use_jinja('MediaFeatures.h.tmpl', filters=filters)
@@ -43,4 +36,4 @@ class MakeMediaFeaturesWriter(in_generator.Writer):
         return self._template_context
 
 if __name__ == '__main__':
-    in_generator.Maker(MakeMediaFeaturesWriter).main(sys.argv)
+    json5_generator.Maker(MakeMediaFeaturesWriter).main()

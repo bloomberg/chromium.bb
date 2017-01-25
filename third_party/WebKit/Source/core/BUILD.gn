@@ -321,7 +321,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/WheelEvent.idl",
     "html/track/TrackEvent.idl",
   ]
-  output_file = "core/EventInterfaces.in"
+  output_file = "core/EventInterfaces.json5"
 }
 
 # generated_testing_idls -------------------------------------------------------
@@ -432,7 +432,7 @@ css_properties("make_core_generated_css_property_names") {
 
 process_in_files("make_core_generated_media_features") {
   script = "../build/scripts/make_media_features.py"
-  in_files = [ "css/MediaFeatureNames.in" ]
+  in_files = [ "css/MediaFeatureNames.json5" ]
   other_inputs = [
     "../build/scripts/make_media_features.py",
     "../build/scripts/templates/MediaFeatures.h.tmpl",
@@ -562,8 +562,8 @@ process_in_files("make_core_generated_svg_element_type_helpers") {
 
 make_event_factory("make_core_generated_event_factory") {
   in_files = [
-    "$blink_core_output_dir/EventInterfaces.in",
-    "events/EventAliases.in",
+    "$blink_core_output_dir/EventInterfaces.json5",
+    "events/EventAliases.json5",
   ]
   outputs = [
     "$blink_core_output_dir/Event.cpp",
@@ -575,7 +575,7 @@ make_event_factory("make_core_generated_event_factory") {
 
 process_in_files("make_core_generated_media_feature_names") {
   script = "../build/scripts/make_media_feature_names.py"
-  in_files = [ "css/MediaFeatureNames.in" ]
+  in_files = [ "css/MediaFeatureNames.json5" ]
   other_inputs = make_names_files
   outputs = [
     "$blink_core_output_dir/MediaFeatureNames.cpp",
@@ -584,7 +584,7 @@ process_in_files("make_core_generated_media_feature_names") {
 }
 
 make_names("make_core_generated_media_type_names") {
-  in_files = [ "css/MediaTypeNames.in" ]
+  in_files = [ "css/MediaTypeNames.json5" ]
   outputs = [
     "$blink_core_output_dir/MediaTypeNames.cpp",
     "$blink_core_output_dir/MediaTypeNames.h",
@@ -592,7 +592,7 @@ make_names("make_core_generated_media_type_names") {
 }
 
 make_names("make_core_generated_event_names") {
-  in_files = [ "$blink_core_output_dir/EventInterfaces.in" ]
+  in_files = [ "$blink_core_output_dir/EventInterfaces.json5" ]
   outputs = [
     "$blink_core_output_dir/EventNames.cpp",
     "$blink_core_output_dir/EventNames.h",
@@ -600,7 +600,7 @@ make_names("make_core_generated_event_names") {
 }
 
 make_names("make_core_generated_event_target_names") {
-  in_files = [ "events/EventTargetFactory.in" ]
+  in_files = [ "events/EventTargetFactory.json5" ]
   outputs = [
     "$blink_core_output_dir/EventTargetNames.cpp",
     "$blink_core_output_dir/EventTargetNames.h",
@@ -608,7 +608,7 @@ make_names("make_core_generated_event_target_names") {
 }
 
 make_names("make_core_generated_event_type_names") {
-  in_files = [ "events/EventTypeNames.in" ]
+  in_files = [ "events/EventTypeNames.json5" ]
   outputs = [
     "$blink_core_output_dir/EventTypeNames.cpp",
     "$blink_core_output_dir/EventTypeNames.h",
@@ -616,7 +616,7 @@ make_names("make_core_generated_event_type_names") {
 }
 
 make_names("make_core_generated_html_tokenizer_names") {
-  in_files = [ "html/parser/HTMLTokenizerNames.in" ]
+  in_files = [ "html/parser/HTMLTokenizerNames.json5" ]
   outputs = [
     "$blink_core_output_dir/HTMLTokenizerNames.cpp",
     "$blink_core_output_dir/HTMLTokenizerNames.h",
@@ -624,7 +624,7 @@ make_names("make_core_generated_html_tokenizer_names") {
 }
 
 make_names("make_core_generated_input_type_names") {
-  in_files = [ "html/forms/InputTypeNames.in" ]
+  in_files = [ "html/forms/InputTypeNames.json5" ]
   outputs = [
     "$blink_core_output_dir/InputTypeNames.cpp",
     "$blink_core_output_dir/InputTypeNames.h",
@@ -632,7 +632,7 @@ make_names("make_core_generated_input_type_names") {
 }
 
 make_names("make_core_generated_input_mode_names") {
-  in_files = [ "editing/InputModeNames.in" ]
+  in_files = [ "editing/InputModeNames.json5" ]
   outputs = [
     "$blink_core_output_dir/InputModeNames.cpp",
     "$blink_core_output_dir/InputModeNames.h",

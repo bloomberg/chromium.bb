@@ -62,7 +62,7 @@ component("blink_common") {
 action("font_family_names") {
   script = "../build/scripts/make_names.py"
 
-  font_family_names_in = "fonts/FontFamilyNames.in"
+  font_family_names_in = "fonts/FontFamilyNames.json5"
   inputs = make_names_files + [ font_family_names_in ]
 
   outputs = [
@@ -80,7 +80,7 @@ action("font_family_names") {
 action("http_names") {
   script = "../build/scripts/make_names.py"
 
-  http_names_in = "network/HTTPNames.in"
+  http_names_in = "network/HTTPNames.json5"
   inputs = make_names_files + [ http_names_in ]
 
   outputs = [
