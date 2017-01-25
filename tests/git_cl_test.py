@@ -7,6 +7,7 @@
 
 import contextlib
 import json
+import logging
 import os
 import StringIO
 import sys
@@ -474,11 +475,26 @@ class TestGitCl(TestCase):
 
   def tearDown(self):
     try:
-      # Note: has_failed returns True if at least 1 test ran so far, current
-      # included, has failed. That means current test may have actually ran
-      # fine, and the check for no leftover calls would be skipped.
+      self.assertEquals([], self.calls)
+    except AssertionError:
       if not self.has_failed():
-        self.assertEquals([], self.calls)
+        raise
+      # Sadly, has_failed() returns True if this OR any other tests before this
+      # one have failed.
+      git_cl.logging.exception(
+          '\nIF YOU SEE THIS, READ BELOW, IT WILL SAVE YOUR TIME!\n'
+          'There are un-consumed self.calls after this test has finished.\n'
+          'If you don\'t know which test this is, run:\n'
+          '   tests/git_cl_tests.py -v\n'
+          '\n'
+          'If you are already running just this single test, then **first** '
+          'fix the problem whose exception is emitted below by unittest '
+          'runner.\n'
+          '\n'
+          'Else, to be sure what\'s going on, run this test **alone** with \n'
+          '    tests/git_cl_tests.py TestGitCl.<name>\n'
+          'and follow instructions above.\n' +
+          '=' * 80)
     finally:
       super(TestGitCl, self).tearDown()
 
@@ -2756,6 +2772,6 @@ class TestGitCl(TestCase):
 
 
 if __name__ == '__main__':
-  git_cl.logging.basicConfig(
-      level=git_cl.logging.DEBUG if '-v' in sys.argv else git_cl.logging.ERROR)
+  logging.basicConfig(
+      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   unittest.main()
