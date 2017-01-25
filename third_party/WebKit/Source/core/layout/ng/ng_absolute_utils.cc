@@ -379,17 +379,6 @@ bool AbsoluteNeedsChildInlineSize(const ComputedStyle& style) {
     return AbsoluteVerticalNeedsEstimate(style);
 }
 
-bool IsContainingBlockForAbsoluteChild(const ComputedStyle& container_style,
-                                       const ComputedStyle& child_style) {
-  EPosition position = child_style.position();
-  bool contains_fixed = container_style.canContainFixedPositionObjects();
-  bool contains_absolute =
-      container_style.canContainAbsolutePositionObjects() || contains_fixed;
-
-  return (contains_absolute && position == AbsolutePosition) ||
-         (contains_fixed && position == FixedPosition);
-}
-
 NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,

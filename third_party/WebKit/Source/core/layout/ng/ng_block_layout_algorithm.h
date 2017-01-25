@@ -53,7 +53,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Creates a new constraint space for the current child.
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild();
   void FinishCurrentChildLayout(NGFragment* fragment);
-  void LayoutOutOfFlowChildren();
 
   // Proceed to the next sibling that still needs layout.
   //

@@ -308,7 +308,8 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
       ComputeBlockSizeForFragment(ConstraintSpace(), Style(), content_size_);
   builder_->SetBlockSize(block_size);
 
-  LayoutOutOfFlowChildren();
+  // Layout our absolute and fixed positioned children.
+  NGOutOfFlowLayoutPart(Style(), builder_).Run();
 
   builder_->SetInlineOverflow(max_inline_size_).SetBlockOverflow(content_size_);
 
@@ -337,32 +338,6 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(NGFragment* fragment) {
   else
     fragment_offset.block_offset -= PreviousBreakOffset();
   builder_->AddChild(fragment, fragment_offset);
-}
-
-void NGBlockLayoutAlgorithm::LayoutOutOfFlowChildren() {
-  HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_candidates;
-  Vector<NGStaticPosition> out_of_flow_candidate_positions;
-  builder_->GetAndClearOutOfFlowDescendantCandidates(
-      &out_of_flow_candidates, &out_of_flow_candidate_positions);
-
-  Member<NGOutOfFlowLayoutPart> out_of_flow_layout =
-      new NGOutOfFlowLayoutPart(&Style(), builder_->Size());
-  size_t candidate_positions_index = 0;
-
-  for (auto& child : out_of_flow_candidates) {
-    NGStaticPosition static_position =
-        out_of_flow_candidate_positions[candidate_positions_index++];
-
-    if (IsContainingBlockForAbsoluteChild(Style(), *child->Style())) {
-      NGFragment* fragment;
-      NGLogicalOffset offset;
-      out_of_flow_layout->Layout(*child, static_position, &fragment, &offset);
-      // TODO(atotic) Need to adjust size of overflow rect per spec.
-      builder_->AddChild(fragment, offset);
-    } else {
-      builder_->AddOutOfFlowDescendant(child, static_position);
-    }
-  }
 }
 
 bool NGBlockLayoutAlgorithm::ProceedToNextUnfinishedSibling(

@@ -43,11 +43,6 @@ CORE_EXPORT bool AbsoluteNeedsChildInlineSize(const ComputedStyle&);
 // estimated block size.
 CORE_EXPORT bool AbsoluteNeedsChildBlockSize(const ComputedStyle&);
 
-// True if the container will contain an absolute child.
-CORE_EXPORT bool IsContainingBlockForAbsoluteChild(
-    const ComputedStyle& container_style,
-    const ComputedStyle& child_style);
-
 // Compute part of position that depends on child's inline_size
 // returns partially filled position.
 CORE_EXPORT NGAbsolutePhysicalPosition
