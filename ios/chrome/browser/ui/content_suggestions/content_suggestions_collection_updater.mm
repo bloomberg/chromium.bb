@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_collection_updater.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_article_item.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_expandable_item.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_favicon_item.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_item.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation SuggestionsCollectionUpdater
+@implementation ContentSuggestionsCollectionUpdater
 
 @synthesize collectionViewController = _collectionViewController;
 
 #pragma mark - Properties
 
 - (void)setCollectionViewController:
-    (SuggestionsViewController*)collectionViewController {
+    (ContentSuggestionsViewController*)collectionViewController {
   _collectionViewController = collectionViewController;
   [collectionViewController loadModel];
   CollectionViewModel* model = collectionViewController.collectionViewModel;
@@ -34,15 +34,16 @@
 
   // Stack Item.
   [model addSectionWithIdentifier:sectionIdentifier];
-  [model addItem:[[SuggestionsStackItem alloc] initWithType:ItemTypeStack
-                                                      title:@"The title"
-                                                   subtitle:@"The subtitle"]
+  [model addItem:[[ContentSuggestionsStackItem alloc]
+                     initWithType:ItemTypeStack
+                            title:@"The title"
+                         subtitle:@"The subtitle"]
       toSectionWithIdentifier:sectionIdentifier++];
 
   // Favicon Item.
   [model addSectionWithIdentifier:sectionIdentifier];
-  SuggestionsFaviconItem* faviconItem =
-      [[SuggestionsFaviconItem alloc] initWithType:ItemTypeFavicon];
+  ContentSuggestionsFaviconItem* faviconItem =
+      [[ContentSuggestionsFaviconItem alloc] initWithType:ItemTypeFavicon];
   for (NSInteger i = 0; i < 6; i++) {
     [faviconItem addFavicon:[UIImage imageNamed:@"bookmark_gray_star"]
                   withTitle:@"Super website! Incredible!"];
@@ -54,13 +55,13 @@
     [model addSectionWithIdentifier:sectionIdentifier];
 
     // Standard Item.
-    [model addItem:[[SuggestionsItem alloc] initWithType:ItemTypeText
-                                                   title:@"The title"
-                                                subtitle:@"The subtitle"]
+    [model addItem:[[ContentSuggestionsItem alloc] initWithType:ItemTypeText
+                                                          title:@"The title"
+                                                       subtitle:@"The subtitle"]
         toSectionWithIdentifier:sectionIdentifier];
 
     // Article Item.
-    [model addItem:[[SuggestionsArticleItem alloc]
+    [model addItem:[[ContentSuggestionsArticleItem alloc]
                        initWithType:ItemTypeArticle
                               title:@"Title of an Article"
                            subtitle:@"This is the subtitle of an article, can "
@@ -93,9 +94,10 @@
            subtitle:(NSString*)subtitle
           toSection:(NSInteger)inputSection {
   DCHECK(_collectionViewController);
-  SuggestionsItem* item = [[SuggestionsItem alloc] initWithType:ItemTypeText
-                                                          title:title
-                                                       subtitle:subtitle];
+  ContentSuggestionsItem* item =
+      [[ContentSuggestionsItem alloc] initWithType:ItemTypeText
+                                             title:title
+                                          subtitle:subtitle];
   NSInteger sectionIdentifier = kSectionIdentifierEnumZero + inputSection;
   NSInteger sectionIndex = inputSection;
   CollectionViewModel* model = _collectionViewController.collectionViewModel;

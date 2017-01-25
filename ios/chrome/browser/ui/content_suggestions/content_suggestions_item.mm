@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_item_actions.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item_actions.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -12,14 +12,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SuggestionsItem ()
+@interface ContentSuggestionsItem ()
 
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, copy) NSString* subtitle;
 
 @end
 
-@implementation SuggestionsItem
+@implementation ContentSuggestionsItem
 
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
@@ -29,7 +29,7 @@
                     subtitle:(NSString*)subtitle {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SuggestionsCell class];
+    self.cellClass = [ContentSuggestionsCell class];
     _title = [title copy];
     _subtitle = [subtitle copy];
   }
@@ -38,7 +38,7 @@
 
 #pragma mark - CollectionViewItem
 
-- (void)configureCell:(SuggestionsCell*)cell {
+- (void)configureCell:(ContentSuggestionsCell*)cell {
   [super configureCell:cell];
   [cell.titleButton setTitle:self.title forState:UIControlStateNormal];
   cell.detailTextLabel.text = self.subtitle;
@@ -46,9 +46,9 @@
 
 @end
 
-#pragma mark - SuggestionsCell
+#pragma mark - ContentSuggestionsCell
 
-@implementation SuggestionsCell
+@implementation ContentSuggestionsCell
 
 @synthesize titleButton = _titleButton;
 @synthesize detailTextLabel = _detailTextLabel;

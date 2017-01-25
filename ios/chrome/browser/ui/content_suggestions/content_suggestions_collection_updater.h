@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SUGGESTIONS_SUGGESTIONS_COLLECTION_UPDATER_H_
-#define IOS_CHROME_BROWSER_UI_SUGGESTIONS_SUGGESTIONS_COLLECTION_UPDATER_H_
+#ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UPDATER_H_
+#define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UPDATER_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 
-@class SuggestionsViewController;
+@class ContentSuggestionsViewController;
 
-// Enum defining the ItemType of this SuggestionsCollectionUpdater.
+// Enum defining the ItemType of this ContentSuggestionsCollectionUpdater.
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeText = kItemTypeEnumZero,
   ItemTypeArticle,
@@ -22,12 +22,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Updater for a CollectionViewController populating it with some items and
 // handling the items addition.
-@interface SuggestionsCollectionUpdater : NSObject
+@interface ContentSuggestionsCollectionUpdater : NSObject
 
 // |collectionViewController| this Updater will update. Needs to be set before
 // adding items.
 @property(nonatomic, assign)
-    SuggestionsViewController* collectionViewController;
+    ContentSuggestionsViewController* collectionViewController;
 
 // Adds a text item with a |title| and a |subtitle| in the section numbered
 // |section|. If |section| is greater than the current number of section, it
@@ -41,4 +41,4 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SUGGESTIONS_SUGGESTIONS_COLLECTION_UPDATER_H_
+#endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UPDATER_H_

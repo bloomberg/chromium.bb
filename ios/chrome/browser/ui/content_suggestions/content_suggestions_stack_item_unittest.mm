@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,15 +13,15 @@
 namespace {
 
 // Tests that configureCell: set all the fields of the cell.
-TEST(SuggestionsStackItemTest, CellIsConfigured) {
+TEST(ContentSuggestionsStackItemTest, CellIsConfigured) {
   NSString* title = @"testTitle";
   NSString* subtitle = @"testSubtitle";
-  SuggestionsStackItem* item =
-      [[SuggestionsStackItem alloc] initWithType:0
-                                           title:title
-                                        subtitle:subtitle];
-  SuggestionsStackCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_TRUE([cell isMemberOfClass:[SuggestionsStackCell class]]);
+  ContentSuggestionsStackItem* item =
+      [[ContentSuggestionsStackItem alloc] initWithType:0
+                                                  title:title
+                                               subtitle:subtitle];
+  ContentSuggestionsStackCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_EQ([ContentSuggestionsStackCell class], [cell class]);
 
   [item configureCell:cell];
   EXPECT_EQ(title, [cell.titleButton titleForState:UIControlStateNormal]);

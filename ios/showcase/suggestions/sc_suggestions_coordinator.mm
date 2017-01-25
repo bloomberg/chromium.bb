@@ -4,8 +4,8 @@
 
 #import "ios/showcase/suggestions/sc_suggestions_coordinator.h"
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_commands.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,7 +15,7 @@
 @interface SCSuggestionsCoordinator ()
 
 @property(nonatomic, strong)
-    SuggestionsViewController* suggestionViewController;
+    ContentSuggestionsViewController* suggestionViewController;
 @property(nonatomic, strong) ProtocolAlerter* alerter;
 
 @end
@@ -30,14 +30,14 @@
 
 - (void)start {
   self.alerter = [[ProtocolAlerter alloc]
-      initWithProtocols:@[ @protocol(SuggestionsCommands) ]];
+      initWithProtocols:@[ @protocol(ContentSuggestionsCommands) ]];
   self.alerter.baseViewController = self.baseViewController;
 
-  _suggestionViewController = [[SuggestionsViewController alloc]
+  _suggestionViewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
 
   _suggestionViewController.suggestionCommandHandler =
-      reinterpret_cast<id<SuggestionsCommands>>(self.alerter);
+      reinterpret_cast<id<ContentSuggestionsCommands>>(self.alerter);
 
   [self.baseViewController pushViewController:_suggestionViewController
                                      animated:YES];

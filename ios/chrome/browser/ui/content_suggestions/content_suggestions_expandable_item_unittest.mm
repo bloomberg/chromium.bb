@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_expandable_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -12,15 +12,16 @@
 #error "This file requires ARC support."
 #endif
 
-// Test subclass of the SuggestionsExpandableCell.
-@interface TestSuggestionsExpandableCell : SuggestionsExpandableCell
+// Test subclass of the ContentSuggestionsExpandableCell.
+@interface TestContentSuggestionsExpandableCell
+    : ContentSuggestionsExpandableCell
 
 @property(nonatomic) BOOL expandCalled;
 @property(nonatomic) BOOL collapseCalled;
 
 @end
 
-@implementation TestSuggestionsExpandableCell
+@implementation TestContentSuggestionsExpandableCell
 
 @synthesize expandCalled;
 @synthesize collapseCalled;
@@ -46,7 +47,7 @@ TEST(SuggestionsExpandableItemTest, CellIsConfigured) {
   UIImage* image = [[UIImage alloc] init];
   NSString* details = @"testDetails";
   id mockDelegate = [OCMockObject
-      mockForProtocol:@protocol(SuggestionsExpandableCellDelegate)];
+      mockForProtocol:@protocol(ContentSuggestionsExpandableCellDelegate)];
 
   SuggestionsExpandableItem* item =
       [[SuggestionsExpandableItem alloc] initWithType:0
@@ -55,8 +56,8 @@ TEST(SuggestionsExpandableItemTest, CellIsConfigured) {
                                                 image:image
                                            detailText:details];
   item.delegate = mockDelegate;
-  SuggestionsExpandableCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_TRUE([cell isMemberOfClass:[SuggestionsExpandableCell class]]);
+  ContentSuggestionsExpandableCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_EQ([ContentSuggestionsExpandableCell class], [cell class]);
 
   [item configureCell:cell];
   EXPECT_EQ(title, cell.titleLabel.text);
@@ -75,9 +76,9 @@ TEST(SuggestionsExpandableItemTest, CellIsExpanded) {
                                              subtitle:@"subtitle"
                                                 image:nil
                                            detailText:@"detail"];
-  TestSuggestionsExpandableCell* cell =
-      [[TestSuggestionsExpandableCell alloc] init];
-  item.cellClass = [TestSuggestionsExpandableCell class];
+  TestContentSuggestionsExpandableCell* cell =
+      [[TestContentSuggestionsExpandableCell alloc] init];
+  item.cellClass = [TestContentSuggestionsExpandableCell class];
 
   item.expanded = YES;
   [item configureCell:cell];
@@ -94,9 +95,9 @@ TEST(SuggestionsExpandableItemTest, CellIsCollapsed) {
                                              subtitle:@"subtitle"
                                                 image:nil
                                            detailText:@"detail"];
-  TestSuggestionsExpandableCell* cell =
-      [[TestSuggestionsExpandableCell alloc] init];
-  item.cellClass = [TestSuggestionsExpandableCell class];
+  TestContentSuggestionsExpandableCell* cell =
+      [[TestContentSuggestionsExpandableCell alloc] init];
+  item.cellClass = [TestContentSuggestionsExpandableCell class];
 
   item.expanded = NO;
   [item configureCell:cell];

@@ -16,9 +16,10 @@
 
 @implementation SCSuggestionsTestCase
 
-// Tests launching TabGridViewController and tapping a cell.
+// Tests launching ContentSuggestionsViewController.
 - (void)testLaunchAndTappingCell {
-  [[EarlGrey selectElementWithMatcher:grey_text(@"SuggestionsViewController")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_text(@"ContentSuggestionsViewController")]
       performAction:grey_tap()];
 }
 

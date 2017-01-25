@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_favicon_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_favicon_internal_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_internal_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -15,30 +15,31 @@
 
 namespace {
 
-SuggestionsFaviconInternalCell* GetInnerCell(
+ContentSuggestionsFaviconInternalCell* GetInnerCell(
     NSInteger cellIndex,
-    SuggestionsFaviconCell* outerCell) {
+    ContentSuggestionsFaviconCell* outerCell) {
   UICollectionViewCell* innerCell = [outerCell.collectionView.dataSource
               collectionView:outerCell.collectionView
       cellForItemAtIndexPath:[NSIndexPath indexPathForItem:cellIndex
                                                  inSection:0]];
 
-  EXPECT_EQ([SuggestionsFaviconInternalCell class], [innerCell class]);
-  return base::mac::ObjCCastStrict<SuggestionsFaviconInternalCell>(innerCell);
+  EXPECT_EQ([ContentSuggestionsFaviconInternalCell class], [innerCell class]);
+  return base::mac::ObjCCastStrict<ContentSuggestionsFaviconInternalCell>(
+      innerCell);
 }
 
 #pragma mark - Tests
 
 // Tests that configureCell: set all the fields of the cell.
-TEST(SuggestionsFaviconItemTest, CellIsConfigured) {
-  id delegateMock =
-      [OCMockObject mockForProtocol:@protocol(SuggestionsFaviconCellDelegate)];
-  SuggestionsFaviconItem* item =
-      [[SuggestionsFaviconItem alloc] initWithType:0];
+TEST(ContentSuggestionsFaviconItemTest, CellIsConfigured) {
+  id delegateMock = [OCMockObject
+      mockForProtocol:@protocol(ContentSuggestionsFaviconCellDelegate)];
+  ContentSuggestionsFaviconItem* item =
+      [[ContentSuggestionsFaviconItem alloc] initWithType:0];
   item.delegate = delegateMock;
 
-  SuggestionsFaviconCell* cell = [[[item cellClass] alloc] init];
-  ASSERT_EQ([SuggestionsFaviconCell class], [cell class]);
+  ContentSuggestionsFaviconCell* cell = [[[item cellClass] alloc] init];
+  ASSERT_EQ([ContentSuggestionsFaviconCell class], [cell class]);
 
   [item configureCell:cell];
   EXPECT_EQ(delegateMock, cell.delegate);
@@ -46,9 +47,9 @@ TEST(SuggestionsFaviconItemTest, CellIsConfigured) {
 
 // Tests that the favicon added to the item are correctly passed to the inner
 // collection view.
-TEST(SuggestionsFaviconItemTest, AddAFavicon) {
-  SuggestionsFaviconItem* item =
-      [[SuggestionsFaviconItem alloc] initWithType:0];
+TEST(ContentSuggestionsFaviconItemTest, AddAFavicon) {
+  ContentSuggestionsFaviconItem* item =
+      [[ContentSuggestionsFaviconItem alloc] initWithType:0];
   UIImage* image1 = [[UIImage alloc] init];
   NSString* title1 = @"testTitle1";
   UIImage* image2 = [[UIImage alloc] init];
@@ -56,15 +57,17 @@ TEST(SuggestionsFaviconItemTest, AddAFavicon) {
   [item addFavicon:image1 withTitle:title1];
   [item addFavicon:image2 withTitle:title2];
 
-  SuggestionsFaviconCell* cell = [[[item cellClass] alloc] init];
+  ContentSuggestionsFaviconCell* cell = [[[item cellClass] alloc] init];
 
   [item configureCell:cell];
 
-  SuggestionsFaviconInternalCell* faviconInternalCell1 = GetInnerCell(0, cell);
+  ContentSuggestionsFaviconInternalCell* faviconInternalCell1 =
+      GetInnerCell(0, cell);
   EXPECT_EQ(image1, faviconInternalCell1.faviconView.image);
   EXPECT_TRUE([title1 isEqualToString:faviconInternalCell1.titleLabel.text]);
 
-  SuggestionsFaviconInternalCell* faviconInternalCell2 = GetInnerCell(1, cell);
+  ContentSuggestionsFaviconInternalCell* faviconInternalCell2 =
+      GetInnerCell(1, cell);
   EXPECT_EQ(image2, faviconInternalCell2.faviconView.image);
   EXPECT_TRUE([title2 isEqualToString:faviconInternalCell2.titleLabel.text]);
 }

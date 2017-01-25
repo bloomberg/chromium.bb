@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item_actions.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item_actions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,7 +15,7 @@ namespace {
 const CGFloat kStackSpacing = 8;
 }
 
-@implementation SuggestionsStackItem {
+@implementation ContentSuggestionsStackItem {
   NSString* _title;
   NSString* _subtitle;
 }
@@ -25,7 +25,7 @@ const CGFloat kStackSpacing = 8;
                     subtitle:(NSString*)subtitle {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SuggestionsStackCell class];
+    self.cellClass = [ContentSuggestionsStackCell class];
     _title = [title copy];
     _subtitle = [subtitle copy];
   }
@@ -34,7 +34,7 @@ const CGFloat kStackSpacing = 8;
 
 #pragma mark - CollectionViewItem
 
-- (void)configureCell:(SuggestionsStackCell*)cell {
+- (void)configureCell:(ContentSuggestionsStackCell*)cell {
   [super configureCell:cell];
   [cell.titleButton setTitle:_title forState:UIControlStateNormal];
   cell.detailTextLabel.text = _subtitle;
@@ -42,7 +42,7 @@ const CGFloat kStackSpacing = 8;
 
 @end
 
-@implementation SuggestionsStackCell
+@implementation ContentSuggestionsStackCell
 
 @synthesize titleButton = _titleButton;
 @synthesize detailTextLabel = _detailTextLabel;

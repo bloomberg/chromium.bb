@@ -1,0 +1,58 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("content_suggestions") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "content_suggestions_article_item.h",
+    "content_suggestions_article_item.mm",
+    "content_suggestions_collection_updater.h",
+    "content_suggestions_collection_updater.mm",
+    "content_suggestions_commands.h",
+    "content_suggestions_expandable_item.h",
+    "content_suggestions_expandable_item.mm",
+    "content_suggestions_favicon_internal_cell.h",
+    "content_suggestions_favicon_internal_cell.mm",
+    "content_suggestions_favicon_item.h",
+    "content_suggestions_favicon_item.mm",
+    "content_suggestions_item.h",
+    "content_suggestions_item.mm",
+    "content_suggestions_item_actions.h",
+    "content_suggestions_stack_item.h",
+    "content_suggestions_stack_item.mm",
+    "content_suggestions_stack_item_actions.h",
+    "content_suggestions_view_controller.h",
+    "content_suggestions_view_controller.mm",
+    "expandable_item.h",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/collection_view",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ui/base",
+  ]
+  public_deps = [
+    "//ios/third_party/material_components_ios",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "content_suggestions_article_item_unittest.mm",
+    "content_suggestions_expandable_item_unittest.mm",
+    "content_suggestions_favicon_item_unittest.mm",
+    "content_suggestions_item_unittest.mm",
+    "content_suggestions_stack_item_unittest.mm",
+  ]
+  deps = [
+    ":content_suggestions",
+    "//base",
+    "//ios/chrome/browser/ui/collection_view",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}

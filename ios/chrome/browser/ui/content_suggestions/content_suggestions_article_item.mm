@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_article_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
@@ -14,7 +14,7 @@ namespace {
 const CGFloat kImageSize = 100;
 }
 
-@interface SuggestionsArticleItem ()
+@interface ContentSuggestionsArticleItem ()
 
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, copy) NSString* subtitle;
@@ -22,7 +22,7 @@ const CGFloat kImageSize = 100;
 
 @end
 
-@implementation SuggestionsArticleItem
+@implementation ContentSuggestionsArticleItem
 
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
@@ -34,7 +34,7 @@ const CGFloat kImageSize = 100;
                        image:(UIImage*)image {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SuggestionsArticleCell class];
+    self.cellClass = [ContentSuggestionsArticleCell class];
     _title = [title copy];
     _subtitle = [subtitle copy];
     _image = image;
@@ -42,7 +42,7 @@ const CGFloat kImageSize = 100;
   return self;
 }
 
-- (void)configureCell:(SuggestionsArticleCell*)cell {
+- (void)configureCell:(ContentSuggestionsArticleCell*)cell {
   [super configureCell:cell];
   cell.titleLabel.text = _title;
   cell.subtitleLabel.text = _subtitle;
@@ -51,7 +51,7 @@ const CGFloat kImageSize = 100;
 
 @end
 
-@implementation SuggestionsArticleCell
+@implementation ContentSuggestionsArticleCell
 
 @synthesize titleLabel = _titleLabel;
 @synthesize subtitleLabel = _subtitleLabel;

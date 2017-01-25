@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/suggestions/expandable_item.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_collection_updater.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_commands.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_item_actions.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item_actions.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item_actions.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item_actions.h"
+#import "ios/chrome/browser/ui/content_suggestions/expandable_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,18 +23,19 @@ namespace {
 const NSTimeInterval kAnimationDuration = 0.35;
 }  // namespace
 
-@interface SuggestionsViewController ()<SuggestionsItemActions,
-                                        SuggestionsStackItemActions>
+@interface ContentSuggestionsViewController ()<SuggestionsItemActions,
+                                               SuggestionsStackItemActions>
 
-@property(nonatomic, strong) SuggestionsCollectionUpdater* collectionUpdater;
+@property(nonatomic, strong)
+    ContentSuggestionsCollectionUpdater* collectionUpdater;
 
-// Expand or collapse the |cell|, if it is a SuggestionsExpandableCell,
+// Expand or collapse the |cell|, if it is a ContentSuggestionsExpandableCell,
 // according to |expand|.
 - (void)expand:(BOOL)expand cell:(UICollectionViewCell*)cell;
 
 @end
 
-@implementation SuggestionsViewController
+@implementation ContentSuggestionsViewController
 
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
 @synthesize collectionUpdater = _collectionUpdater;
@@ -44,7 +45,7 @@ const NSTimeInterval kAnimationDuration = 0.35;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  _collectionUpdater = [[SuggestionsCollectionUpdater alloc] init];
+  _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc] init];
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;
@@ -64,7 +65,7 @@ const NSTimeInterval kAnimationDuration = 0.35;
   }
 }
 
-#pragma mark - SuggestionsExpandableCellDelegate
+#pragma mark - ContentSuggestionsExpandableCellDelegate
 
 - (void)collapseCell:(UICollectionViewCell*)cell {
   [self expand:NO cell:cell];
@@ -74,7 +75,7 @@ const NSTimeInterval kAnimationDuration = 0.35;
   [self expand:YES cell:cell];
 }
 
-#pragma mark - SuggestionsFaviconCellDelegate
+#pragma mark - ContentSuggestionsFaviconCellDelegate
 
 - (void)openFaviconAtIndexPath:(NSIndexPath*)innerIndexPath {
   [self.suggestionCommandHandler openFaviconAtIndex:innerIndexPath.item];
@@ -86,7 +87,7 @@ const NSTimeInterval kAnimationDuration = 0.35;
   [self.suggestionCommandHandler addEmptyItem];
 }
 
-#pragma mark - SuggestionsCollectionUpdater forwarding
+#pragma mark - ContentSuggestionsCollectionUpdater forwarding
 
 - (void)addTextItem:(NSString*)title
            subtitle:(NSString*)subtitle
@@ -142,9 +143,8 @@ const NSTimeInterval kAnimationDuration = 0.35;
   NSIndexPath* indexPath = [self.collectionView indexPathForCell:cell];
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if ([item conformsToProtocol:@protocol(SuggestionsExpandableArticle)]) {
-    id<SuggestionsExpandableArticle> expandableItem =
-        (id<SuggestionsExpandableArticle>)item;
+  if ([item conformsToProtocol:@protocol(ExpandableItem)]) {
+    id<ExpandableItem> expandableItem = (id<ExpandableItem>)item;
 
     NSInteger sectionIdentifier = [self.collectionViewModel
         sectionIdentifierForSection:indexPath.section];

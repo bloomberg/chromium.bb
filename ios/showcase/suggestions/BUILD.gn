@@ -9,7 +9,7 @@ source_set("suggestions") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/suggestions",
+    "//ios/chrome/browser/ui/content_suggestions",
     "//ios/showcase/common",
   ]
   libs = [ "UIKit.framework" ]

@@ -22,7 +22,7 @@
       showcase::kUseCaseKey : @"Main settings screen",
     },
     @{
-      showcase::kClassForDisplayKey : @"SuggestionsViewController",
+      showcase::kClassForDisplayKey : @"ContentSuggestionsViewController",
       showcase::kClassForInstantiationKey : @"SCSuggestionsCoordinator",
       showcase::kUseCaseKey : @"New Suggestions UI",
     },

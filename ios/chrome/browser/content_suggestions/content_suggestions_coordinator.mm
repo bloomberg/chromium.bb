@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_coordinator.h"
 
 #include "base/mac/scoped_nsobject.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_commands.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -14,7 +14,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ContentSuggestionsCoordinator ()<SuggestionsCommands> {
+@interface ContentSuggestionsCoordinator ()<ContentSuggestionsCommands> {
   UINavigationController* _navigationController;
 }
 
@@ -32,8 +32,8 @@
 
   _visible = YES;
 
-  SuggestionsViewController* suggestionsViewController =
-      [[SuggestionsViewController alloc]
+  ContentSuggestionsViewController* suggestionsViewController =
+      [[ContentSuggestionsViewController alloc]
           initWithStyle:CollectionViewControllerStyleDefault];
 
   suggestionsViewController.suggestionCommandHandler = self;
@@ -60,7 +60,7 @@
   _visible = NO;
 }
 
-#pragma mark - SuggestionsCommands
+#pragma mark - ContentSuggestionsCommands
 
 - (void)openReadingList {
 }

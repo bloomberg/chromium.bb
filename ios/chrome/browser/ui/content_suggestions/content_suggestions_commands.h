@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SUGGESTIONS_SUGGESTIONS_COMMANDS_H_
-#define IOS_CHROME_BROWSER_UI_SUGGESTIONS_SUGGESTIONS_COMMANDS_H_
+#ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
+#define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
 
-// Commands protocol for the SuggestionsViewController.
-@protocol SuggestionsCommands
+// Commands protocol for the ContentSuggestionsViewController.
+@protocol ContentSuggestionsCommands
 
 // Adds a new empty SuggestionItem.
 - (void)addEmptyItem;
@@ -19,4 +19,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SUGGESTIONS_SUGGESTIONS_COMMANDS_H_
+#endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_

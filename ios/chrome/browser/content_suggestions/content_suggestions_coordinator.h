@@ -7,7 +7,8 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 
-// Coordinator to manage the Suggestions UI via a SuggestionsViewController.
+// Coordinator to manage the Suggestions UI via a
+// ContentSuggestionsViewController.
 @interface ContentSuggestionsCoordinator : ChromeCoordinator
 
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.

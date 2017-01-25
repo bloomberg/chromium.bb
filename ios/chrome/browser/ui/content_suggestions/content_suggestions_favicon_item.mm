@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_favicon_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
 
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/suggestions/suggestions_favicon_internal_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_internal_cell.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,21 +28,21 @@ const CGFloat kInternalLeadingSpacing = 16;
 #pragma mark - SugggestionsFaviconItem
 
 // The item is the data source of the inner collection view.
-@interface SuggestionsFaviconItem ()<UICollectionViewDataSource> {
+@interface ContentSuggestionsFaviconItem ()<UICollectionViewDataSource> {
   NSMutableArray<NSString*>* _faviconTitles;
   NSMutableArray<UIImage*>* _faviconImages;
 }
 
 @end
 
-@implementation SuggestionsFaviconItem
+@implementation ContentSuggestionsFaviconItem
 
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SuggestionsFaviconCell class];
+    self.cellClass = [ContentSuggestionsFaviconCell class];
     _faviconTitles = [NSMutableArray array];
     _faviconImages = [NSMutableArray array];
   }
@@ -58,9 +58,9 @@ const CGFloat kInternalLeadingSpacing = 16;
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  SuggestionsFaviconInternalCell* cell = [collectionView
-      dequeueReusableCellWithReuseIdentifier:[SuggestionsFaviconInternalCell
-                                                 reuseIdentifier]
+  ContentSuggestionsFaviconInternalCell* cell = [collectionView
+      dequeueReusableCellWithReuseIdentifier:
+          [ContentSuggestionsFaviconInternalCell reuseIdentifier]
                                 forIndexPath:indexPath];
   cell.faviconView.image = [_faviconImages objectAtIndex:indexPath.item];
   cell.titleLabel.text = [_faviconTitles objectAtIndex:indexPath.item];
@@ -75,7 +75,7 @@ const CGFloat kInternalLeadingSpacing = 16;
 
 #pragma mark - CollectionViewItem
 
-- (void)configureCell:(SuggestionsFaviconCell*)cell {
+- (void)configureCell:(ContentSuggestionsFaviconCell*)cell {
   [super configureCell:cell];
   cell.collectionView.dataSource = self;
   cell.delegate = self.delegate;
@@ -83,14 +83,14 @@ const CGFloat kInternalLeadingSpacing = 16;
 
 @end
 
-#pragma mark - SuggestionsFaviconCell
+#pragma mark - ContentSuggestionsFaviconCell
 
 // The cell is the delegate of the inner collection view.
-@interface SuggestionsFaviconCell ()<UICollectionViewDelegate>
+@interface ContentSuggestionsFaviconCell ()<UICollectionViewDelegate>
 
 @end
 
-@implementation SuggestionsFaviconCell
+@implementation ContentSuggestionsFaviconCell
 
 @synthesize collectionView = _collectionView;
 @synthesize delegate = _delegate;
@@ -107,8 +107,8 @@ const CGFloat kInternalLeadingSpacing = 16;
 
     _collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero
                                          collectionViewLayout:layout];
-    [_collectionView registerClass:[SuggestionsFaviconInternalCell class]
-        forCellWithReuseIdentifier:[SuggestionsFaviconInternalCell
+    [_collectionView registerClass:[ContentSuggestionsFaviconInternalCell class]
+        forCellWithReuseIdentifier:[ContentSuggestionsFaviconInternalCell
                                        reuseIdentifier]];
     _collectionView.backgroundColor = [UIColor clearColor];
     _collectionView.translatesAutoresizingMaskIntoConstraints = NO;

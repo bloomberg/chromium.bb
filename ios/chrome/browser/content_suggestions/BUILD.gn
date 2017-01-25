@@ -12,7 +12,7 @@ source_set("content_suggestions") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/ui/suggestions",
+    "//ios/chrome/browser/ui/content_suggestions",
     "//ui/base",
   ]
 }

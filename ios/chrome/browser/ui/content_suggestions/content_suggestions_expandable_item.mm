@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/suggestions/suggestions_expandable_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -35,7 +35,7 @@ const CGFloat kStandardSpacing = 8;
                   detailText:(NSString*)detail {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SuggestionsExpandableCell class];
+    self.cellClass = [ContentSuggestionsExpandableCell class];
     _title = [title copy];
     _subtitle = [subtitle copy];
     _image = image;
@@ -46,7 +46,7 @@ const CGFloat kStandardSpacing = 8;
 
 #pragma mark - CollectionViewItem
 
-- (void)configureCell:(SuggestionsExpandableCell*)cell {
+- (void)configureCell:(ContentSuggestionsExpandableCell*)cell {
   [super configureCell:cell];
   cell.delegate = self.delegate;
   cell.titleLabel.text = _title;
@@ -61,9 +61,9 @@ const CGFloat kStandardSpacing = 8;
 
 @end
 
-#pragma mark - SuggestionsExpandableCell
+#pragma mark - ContentSuggestionsExpandableCell
 
-@interface SuggestionsExpandableCell () {
+@interface ContentSuggestionsExpandableCell () {
   UIView* _articleContainer;
   UIButton* _interactionButton;
   UIButton* _expandButton;
@@ -79,7 +79,7 @@ const CGFloat kStandardSpacing = 8;
 
 @end
 
-@implementation SuggestionsExpandableCell
+@implementation ContentSuggestionsExpandableCell
 
 @synthesize titleLabel = _titleLabel;
 @synthesize subtitleLabel = _subtitleLabel;
