@@ -101,7 +101,7 @@ void ExecuteScript(blink::WebFrame* frame,
   std::string json;
   base::JSONWriter::Write(parameters, &json);
   std::string script = base::StringPrintf(script_format, json.c_str());
-  frame->executeScript(blink::WebString(base::UTF8ToUTF16(script)));
+  frame->executeScript(blink::WebString::fromUTF8(script));
 }
 #else
 bool g_is_preview_enabled = false;
@@ -607,7 +607,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
                      base::StringPrintf("%d/%d", page_number, total_pages));
 
   options->SetString("url", params.url);
-  base::string16 title = source_frame.document().title();
+  base::string16 title = source_frame.document().title().utf16();
   options->SetString("title", title.empty() ? params.title : title);
 
   ExecuteScript(frame, kPageSetupScriptFormat, *options);

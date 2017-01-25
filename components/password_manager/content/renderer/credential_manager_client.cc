@@ -28,13 +28,14 @@ namespace {
 
 void WebCredentialToCredentialInfo(const blink::WebCredential& credential,
                                    CredentialInfo* out) {
-  out->id = credential.id();
-  out->name = credential.name();
+  out->id = credential.id().utf16();
+  out->name = credential.name().utf16();
   out->icon = credential.iconURL();
   if (credential.isPasswordCredential()) {
     out->type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
-    out->password =
-        static_cast<const blink::WebPasswordCredential&>(credential).password();
+    out->password = static_cast<const blink::WebPasswordCredential&>(credential)
+                        .password()
+                        .utf16();
   } else {
     DCHECK(credential.isFederatedCredential());
     out->type = CredentialType::CREDENTIAL_TYPE_FEDERATED;
@@ -49,10 +50,13 @@ std::unique_ptr<blink::WebCredential> CredentialInfoToWebCredential(
   switch (info.type) {
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
       return base::MakeUnique<blink::WebFederatedCredential>(
-          info.id, info.federation, info.name, info.icon);
+          blink::WebString::fromUTF16(info.id), info.federation,
+          blink::WebString::fromUTF16(info.name), info.icon);
     case CredentialType::CREDENTIAL_TYPE_PASSWORD:
       return base::MakeUnique<blink::WebPasswordCredential>(
-          info.id, info.password, info.name, info.icon);
+          blink::WebString::fromUTF16(info.id),
+          blink::WebString::fromUTF16(info.password),
+          blink::WebString::fromUTF16(info.name), info.icon);
     case CredentialType::CREDENTIAL_TYPE_EMPTY:
       return nullptr;
   }
