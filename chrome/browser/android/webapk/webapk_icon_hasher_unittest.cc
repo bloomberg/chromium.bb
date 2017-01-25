@@ -97,6 +97,22 @@ TEST_F(WebApkIconHasherTest, Success) {
   EXPECT_EQ(kIconMurmur2Hash, runner.murmur2_hash());
 }
 
+TEST_F(WebApkIconHasherTest, DataUri) {
+  GURL icon_url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"
+      "AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO"
+      "9TXL0Y4OHwAAAABJRU5ErkJggg==");
+  WebApkIconHasherRunner runner;
+  runner.Run(icon_url);
+  EXPECT_EQ("536500236142107998", runner.murmur2_hash());
+}
+
+TEST_F(WebApkIconHasherTest, DataUriInvalid) {
+  GURL icon_url("data:image/png;base64");
+  WebApkIconHasherRunner runner;
+  runner.Run(icon_url);
+  EXPECT_EQ("", runner.murmur2_hash());
+}
+
 // Test that the hash callback is called with an empty string if an HTTP error
 // prevents the icon URL from being fetched.
 TEST_F(WebApkIconHasherTest, HTTPError) {

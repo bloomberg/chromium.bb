@@ -523,6 +523,26 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckDataUrlIcon) {
+  // Verify that InstallableManager can handle data URL icons.
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(tester.get(), GetWebAppParams(),
+                                   GetURLOfPageWithServiceWorkerAndManifest(
+                                       "/banners/manifest_data_url_icon.json"));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  EXPECT_TRUE(tester->is_installable());
+  EXPECT_FALSE(tester->icon_url().is_empty());
+  ASSERT_NE(nullptr, tester->icon());
+  EXPECT_EQ(144, tester->icon()->width());
+  EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
+}
+
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        CheckManifestCorruptedIcon) {
   // Verify that the returned InstallableData::icon is null if the web manifest
