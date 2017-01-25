@@ -6,22 +6,11 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
-import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.UiConfig;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 import java.lang.ref.WeakReference;
 
@@ -31,9 +20,7 @@ import java.lang.ref.WeakReference;
 public class ContentSuggestionsActivity extends SynchronousInitializationActivity {
     private static WeakReference<ChromeActivity> sCallerActivity;
 
-    private ContextMenuManager mContextMenuManager;
-    private SuggestionsUiDelegateImpl mSuggestionsManager;
-    private SnippetsBridge mSnippetsBridge;
+    private SuggestionsBottomSheetContent mBottomSheetContent;
 
     public static void launch(ChromeActivity activity) {
         sCallerActivity = new WeakReference<>(activity);
@@ -55,41 +42,22 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
         ChromeActivity activity = sCallerActivity.get();
         if (activity == null) throw new IllegalStateException();
 
-        NewTabPageRecyclerView recyclerView =
-                (NewTabPageRecyclerView) LayoutInflater.from(this).inflate(
-                        R.layout.new_tab_page_recycler_view, null, false);
-
-        Profile profile = Profile.getLastUsedProfile();
-        UiConfig uiConfig = new UiConfig(recyclerView);
-
-        Tab currentTab = activity.getActivityTab();
-        TabModelSelector tabModelSelector = activity.getTabModelSelector();
-
-        mSnippetsBridge = new SnippetsBridge(profile);
-        SuggestionsNavigationDelegate navigationDelegate =
-                new SuggestionsNavigationDelegateImpl(this, profile, currentTab, tabModelSelector);
-
-        mSuggestionsManager = new SuggestionsUiDelegateImpl(
-                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, currentTab);
-        mContextMenuManager = new ContextMenuManager(this, navigationDelegate, recyclerView);
-
-        NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager, null, uiConfig,
-                OfflinePageBridge.getForProfile(profile), mContextMenuManager);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setUpSwipeToDismiss();
-
-        setContentView(recyclerView);
+        // TODO(dgn): Because the passed activity here is the Chrome one and not the one showing
+        // the surface, some things, like closing the context menu will not work as they would
+        // affect the wrong one.
+        mBottomSheetContent = new SuggestionsBottomSheetContent(
+                activity, activity.getActivityTab(), activity.getTabModelSelector());
+        setContentView(mBottomSheetContent.getScrollingContentView());
     }
 
     @Override
     public void onContextMenuClosed(Menu menu) {
-        mContextMenuManager.onContextMenuClosed();
+        mBottomSheetContent.getContextMenuManager().onContextMenuClosed();
     }
 
     @Override
     protected void onDestroy() {
-        mSnippetsBridge.destroy();
-        mSuggestionsManager.onDestroy();
+        mBottomSheetContent.destroy();
         super.onDestroy();
     }
 }
