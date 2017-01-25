@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
@@ -121,6 +122,8 @@ static_library("test_support") {
     ":mus",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
+    "//services/catalog:lib",
     "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp:sources",
     "//services/ui/common:mus_common",
@@ -135,6 +138,7 @@ static_library("test_support") {
   ]
 
   data_deps = [
+    ":views_mus_tests_catalog",
     "//ui/resources:ui_test_pak_data",
   ]
 }
@@ -159,7 +163,6 @@ test("views_mus_unittests") {
     "//base/test:test_support",
     "//cc",
     "//net",
-    "//services/service_manager/background:main",  # Provides main().
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",
@@ -188,7 +191,7 @@ test("views_mus_unittests") {
   ]
 
   data_deps = [
-    ":unittests_manifest",
+    ":views_mus_tests_catalog_copy",
     "//services/ui/ime/test_ime_driver",
     "//services/ui/test_wm",
   ]
@@ -234,7 +237,6 @@ test("views_mus_interactive_ui_tests") {
     ":mus",
     ":test_support",
     "//base",
-    "//services/service_manager/background:main",  # Provides main().
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",
@@ -250,7 +252,7 @@ test("views_mus_interactive_ui_tests") {
   ]
 
   data_deps = [
-    ":interactive_ui_tests_manifest",
+    ":views_mus_tests_catalog_copy",
     "//services/ui/test_wm",
   ]
 
@@ -276,4 +278,28 @@ service_manifest("unittests_manifest") {
 service_manifest("interactive_ui_tests_manifest") {
   name = "views_mus_interactive_ui_tests"
   source = "interactive_ui_tests_manifest.json"
+}
+
+catalog("views_mus_tests_catalog") {
+  testonly = true
+
+  embedded_services = [
+    ":unittests_manifest",
+    ":interactive_ui_tests_manifest",
+  ]
+
+  standalone_services = [ "//services/ui/test_wm:manifest" ]
+
+  catalog_deps = [ "//mash:catalog" ]
+}
+
+copy("views_mus_tests_catalog_copy") {
+  testonly = true
+  sources = get_target_outputs(":views_mus_tests_catalog")
+  outputs = [
+    "${root_out_dir}/views_mus_tests_catalog.json",
+  ]
+  deps = [
+    ":views_mus_tests_catalog",
+  ]
 }

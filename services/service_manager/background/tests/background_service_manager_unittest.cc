@@ -53,12 +53,14 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
 #define MAYBE_Basic Basic
 #endif
 TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
-  BackgroundServiceManager background_service_manager;
+  BackgroundServiceManager background_service_manager(nullptr, nullptr);
   base::MessageLoop message_loop;
-  background_service_manager.Init(nullptr);
-  ServiceContext service_context(
-      base::MakeUnique<ServiceImpl>(),
-      background_service_manager.CreateServiceRequest(kTestName));
+  mojom::ServicePtr service;
+  ServiceContext service_context(base::MakeUnique<ServiceImpl>(),
+                                 mojom::ServiceRequest(&service));
+  background_service_manager.RegisterService(
+      Identity(kTestName, mojom::kRootUserID), std::move(service), nullptr);
+
   mojom::TestServicePtr test_service;
   service_context.connector()->BindInterface(kAppName, &test_service);
   base::RunLoop run_loop;

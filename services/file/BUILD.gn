@@ -29,10 +29,6 @@ source_set("lib") {
     "//services/tracing/public/cpp",
     "//url",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

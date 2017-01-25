@@ -32,10 +32,6 @@ service("test_ime_driver") {
     "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

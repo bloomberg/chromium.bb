@@ -8,13 +8,18 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/mojo_test_connector.h"
@@ -33,6 +38,9 @@
 
 namespace {
 
+const base::FilePath::CharType kCatalogFilename[] =
+    FILE_PATH_LITERAL("mash_browser_tests_catalog.json");
+
 void ConnectToDefaultApps(service_manager::Connector* connector) {
   connector->Connect("mash_session");
 }
@@ -44,6 +52,7 @@ class MashTestSuite : public ChromeTestSuite {
   void SetMojoTestConnector(std::unique_ptr<MojoTestConnector> connector) {
     mojo_test_connector_ = std::move(connector);
   }
+
   MojoTestConnector* mojo_test_connector() {
     return mojo_test_connector_.get();
   }
@@ -72,7 +81,8 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         content::kSingleProcessTestsFlag));
     DCHECK(test_suite_);
-    test_suite_->SetMojoTestConnector(base::WrapUnique(new MojoTestConnector));
+    test_suite_->SetMojoTestConnector(
+        base::MakeUnique<MojoTestConnector>(ReadCatalogManifest()));
     return test_suite_->mojo_test_connector();
   }
 
@@ -90,13 +100,15 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options) override {
     if (!mojo_test_connector_) {
-      mojo_test_connector_ = base::MakeUnique<MojoTestConnector>();
+      mojo_test_connector_ =
+          base::MakeUnique<MojoTestConnector>(ReadCatalogManifest());
       context_.reset(new service_manager::ServiceContext(
           base::MakeUnique<mash::MashPackagedService>(),
           mojo_test_connector_->Init()));
     }
     std::unique_ptr<content::TestState> test_state =
         mojo_test_connector_->PrepareForTest(command_line, test_launch_options);
+
     // Start default apps after chrome, as they may try to connect to chrome on
     // startup. Attempt to connect once per test in case a previous test crashed
     // mash_session.
@@ -109,6 +121,19 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     // valid.
     context_.reset();
     mojo_test_connector_.reset();
+  }
+
+  std::unique_ptr<base::Value> ReadCatalogManifest() {
+    std::string catalog_contents;
+    base::FilePath exe_path;
+    base::PathService::Get(base::DIR_EXE, &exe_path);
+    base::FilePath catalog_path = exe_path.Append(kCatalogFilename);
+    bool result = base::ReadFileToString(catalog_path, &catalog_contents);
+    DCHECK(result);
+    std::unique_ptr<base::Value> manifest_value =
+        base::JSONReader::Read(catalog_contents);
+    DCHECK(manifest_value);
+    return manifest_value;
   }
 
   std::unique_ptr<MashTestSuite> test_suite_;
@@ -130,7 +155,9 @@ std::unique_ptr<content::ServiceManagerConnection>
 }
 
 void StartChildApp(service_manager::mojom::ServiceRequest service_request) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
+  // The UI service requires this to be TYPE_UI. We don't know which service
+  // we're going to run yet, so we just always use TYPE_UI for now.
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   service_manager::ServiceContext context(
       base::MakeUnique<mash::MashPackagedService>(),

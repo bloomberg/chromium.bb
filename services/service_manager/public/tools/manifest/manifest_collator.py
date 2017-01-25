@@ -18,7 +18,7 @@ _MANIFEST_OVERLAY_OVERRIDE_KEYS = [
   "display_name",
 ]
 
-eater_relative = '../../../../../../tools/json_comment_eater'
+eater_relative = "../../../../../../tools/json_comment_eater"
 eater_relative = os.path.join(os.path.abspath(__file__), eater_relative)
 sys.path.insert(0, os.path.normpath(eater_relative))
 try:
@@ -66,6 +66,22 @@ def MergeManifestOverlay(manifest, overlay):
       manifest[key] = overlay[key]
 
 
+def SanityCheckManifestServices(manifest):
+  """Ensures any given service name appears only once within a manifest."""
+  known_services = set()
+  def has_no_dupes(root):
+    if "name" in root:
+      name = root["name"]
+      if name in known_services:
+        raise ValueError(
+            "Duplicate manifest entry found for service: %s" % name)
+      known_services.add(name)
+    if "services" not in root:
+      return True
+    return all(has_no_dupes(service) for service in root["services"])
+  return has_no_dupes(manifest)
+
+
 def main():
   parser = argparse.ArgumentParser(
       description="Collate Service Manifests.")
@@ -80,27 +96,31 @@ def main():
 
   parent = ParseJSONFile(args.parent)
 
-  service_path = parent['name']
-  if args.name and args.name != service_path:
+  service_name = parent["name"] if "name" in parent else ""
+  if args.name and args.name != service_name:
     raise ValueError("Service name '%s' specified in build file does not " \
                      "match name '%s' specified in manifest." %
-                     (args.name, service_path))
+                     (args.name, service_name))
 
   packaged_services = []
   for child_manifest in args.packaged_services:
     packaged_services.append(ParseJSONFile(child_manifest))
 
   if len(packaged_services) > 0:
-    if 'services' not in parent:
-      parent['services'] = packaged_services
+    if "services" not in parent:
+      parent["services"] = packaged_services
     else:
-      parent['services'].extend(packaged_services)
+      parent["services"].extend(packaged_services)
 
   for overlay_path in args.overlays:
     MergeManifestOverlay(parent, ParseJSONFile(overlay_path))
 
-  with open(args.output, 'w') as output_file:
+  with open(args.output, "w") as output_file:
     json.dump(parent, output_file, indent=2 if args.pretty else -1)
+
+  # NOTE: We do the sanity check and possible failure *after* outputting the
+  # aggregate manifest so it's easier to inspect erroneous output.
+  SanityCheckManifestServices(parent)
 
   return 0
 

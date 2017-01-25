@@ -15,10 +15,6 @@ service("tracing") {
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

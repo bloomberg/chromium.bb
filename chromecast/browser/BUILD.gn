@@ -182,19 +182,12 @@ source_set("browser") {
 #    for incoming connections. Remember to add the provided interfaces to the
 #    "requires" field in the manifest of the service that needs them.
 #
-service_manifest_overlay("cast_content_browser_manifest_overlay") {
+service_manifest("cast_content_browser_manifest_overlay") {
   source = "cast_content_browser_manifest_overlay.json"
-
-  packaged_services = [ "media" ]
-
-  deps = [
-    "//media/mojo/services:media_manifest",
-  ]
+  packaged_services = [ "//media/mojo/services:media_manifest" ]
 
   if (chromecast_branding != "public") {
-    overlays = [ "${root_gen_dir}/cast_content_browser_internal_manifest_overlay.json" ]
-
-    deps += [ "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay" ]
+    overlays = [ "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay" ]
   }
 }
 

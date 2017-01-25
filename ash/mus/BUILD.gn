@@ -139,13 +139,9 @@ service("mus") {
   # TODO(beng): This target relies on //mash/session, but there is a cycle so we
   #             can't state that dependency here.
   data_deps = [
-    ":manifest",
+    ":resources",
+    ":resources_200",
     "//services/ui",
-  ]
-
-  resources = [
-    "$root_out_dir/ash_mus_resources.pak",
-    "$root_out_dir/ash_mus_resources_200.pak",
   ]
 }
 

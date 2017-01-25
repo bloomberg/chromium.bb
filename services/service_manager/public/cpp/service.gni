@@ -3,28 +3,19 @@
 # found in the LICENSE file.
 
 import("//build/toolchain/toolchain.gni")
-import("//services/service_manager/public/constants.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
   import("//build/config/zip.gni")
 }
 
-# Generates a Service "package", which includes:
-#
-#   - A self-named subdirectory
-#   - A binary .service executable
-#   - A resources subdirectory alongside the executable, which contains the
-#     contents of "resources"
-#
-# The parameters of this template are those of an executable
+# Generates a Service binary. The parameters of this template are those of an
+# executable.
 template("service") {
   base_target_name = target_name
   if (defined(invoker.output_name)) {
     base_target_name = invoker.output_name
   }
-
-  final_target_name = target_name
 
   service_deps = []
   if (defined(invoker.deps)) {
@@ -34,23 +25,19 @@ template("service") {
   service_data_deps =
       [ "//services/service_manager/public/cpp/standalone_service:main" ]
 
-  if (defined(invoker.resources)) {
-    copy_step_name = "${base_target_name}__copy_resources"
-    copy(copy_step_name) {
-      sources = invoker.resources
-      outputs = [
-        "${root_out_dir}/${packages_directory}/${base_target_name}/resources/{{source_file_part}}",
-      ]
-      if (defined(invoker.testonly)) {
-        testonly = invoker.testonly
-      }
-      deps = service_deps
-    }
-    service_data_deps += [ ":$copy_step_name" ]
-  }
-
   if (defined(invoker.data_deps)) {
     service_data_deps += invoker.data_deps
+  }
+
+  if (defined(invoker.resources)) {
+    # TODO(rockot): Remove this once all existing service targets have stopped
+    # setting |resources|. This target serves no purpose other than to ensure
+    # that |resources| is actually used, avoiding GN complaints.
+    source_set("${target_name}__unused_resources_target") {
+      testonly = true
+      sources = invoker.resources
+      deps = invoker.deps
+    }
   }
 
   if (is_win) {
@@ -59,10 +46,7 @@ template("service") {
     executable_extension = "service"
   }
 
-  executable_target_name = base_target_name + "_executable"
-  executable_name = base_target_name + "." + executable_extension
-
-  executable(executable_target_name) {
+  executable(target_name) {
     output_name = base_target_name
     output_extension = executable_extension
 
@@ -135,29 +119,5 @@ template("service") {
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly
     }
-  }
-
-  copy(final_target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "testonly",
-                             "visibility",
-                           ])
-    deps = [
-      ":${executable_target_name}",
-    ]
-
-    # NOTE: We have to explicitly inherit the same data_deps as the executable
-    # target itself, rather than specifying a data depenedency on the executable
-    # target. This avoids needless duplication of service binary artifacts in
-    # test isolates, as the executable is unused in its original location.
-    data_deps = service_data_deps
-
-    sources = [
-      "${root_out_dir}/${executable_name}",
-    ]
-    outputs = [
-      "${root_out_dir}/${packages_directory}/${base_target_name}/${executable_name}",
-    ]
   }
 }

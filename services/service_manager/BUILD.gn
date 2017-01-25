@@ -46,10 +46,6 @@ source_set("service_manager") {
     # ApplicationManager exposes and uses PackageManager types in its header.
     "//services/catalog:lib",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

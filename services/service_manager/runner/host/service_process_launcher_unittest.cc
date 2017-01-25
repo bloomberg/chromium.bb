@@ -15,17 +15,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/threading/thread.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
 namespace {
 
 const char kTestServiceName[] = "host_test_service";
-
-const base::FilePath::CharType kPackagesPath[] = FILE_PATH_LITERAL("Packages");
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kServiceExtension[] =
@@ -71,7 +66,7 @@ class ServiceProcessLauncherDelegateImpl
 #else
 #define MAYBE_StartJoin StartJoin
 #endif  // defined(OS_ANDROID)
-TEST(ServieProcessLauncherTest, MAYBE_StartJoin) {
+TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
   base::FilePath service_manager_dir;
   PathService::Get(base::DIR_MODULE, &service_manager_dir);
   base::MessageLoop message_loop;
@@ -79,18 +74,10 @@ TEST(ServieProcessLauncherTest, MAYBE_StartJoin) {
       new base::SequencedWorkerPool(3, "blocking_pool",
                                     base::TaskPriority::USER_VISIBLE));
 
-  base::Thread io_thread("io_thread");
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  io_thread.StartWithOptions(options);
-
-  auto ipc_support = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
-      io_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
-
-  base::FilePath test_service_path =
-      base::FilePath(kPackagesPath).AppendASCII(kTestServiceName)
-          .AppendASCII(kTestServiceName) .AddExtension(kServiceExtension);
+  base::FilePath test_service_path;
+  base::PathService::Get(base::DIR_EXE, &test_service_path);
+  test_service_path = test_service_path.AppendASCII(kTestServiceName)
+      .AddExtension(kServiceExtension);
 
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
   ServiceProcessLauncher launcher(blocking_pool.get(),
@@ -105,7 +92,6 @@ TEST(ServieProcessLauncherTest, MAYBE_StartJoin) {
 
   launcher.Join();
   blocking_pool->Shutdown();
-  ipc_support.reset();
 
   EXPECT_EQ(1u, service_process_launcher_delegate.get_and_clear_adjust_count());
 }

@@ -24,10 +24,6 @@ source_set("lib") {
     # this isn't here as a public_dep.
     "//device/time_zone_monitor/public/interfaces",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

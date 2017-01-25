@@ -37,10 +37,6 @@ service("font_service") {
     "//mojo/public/c/system",
     "//services/service_manager/public/cpp",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

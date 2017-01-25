@@ -6,3 +6,9 @@ include_rules = [
   "+ui/wm",
 ]
 
+specific_include_rules = {
+  "run_all_unittests.cc": [
+    "+mojo/edk/embedder",
+    "+services/catalog",
+  ]
+}

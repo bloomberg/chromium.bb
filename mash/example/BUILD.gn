@@ -22,12 +22,6 @@ group("example") {
 
 catalog("catalog") {
   standalone_services = [
-    "simple_wm",
-    "views_examples",
-    "window_type_launcher",
-  ]
-
-  deps = [
     "//mash/example/views_examples:manifest",
     "//mash/example/window_type_launcher:manifest",
     "//mash/simple_wm:manifest",

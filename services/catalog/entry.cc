@@ -4,13 +4,20 @@
 
 #include "services/catalog/entry.h"
 
+#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/values.h"
 #include "services/catalog/store.h"
 
-
 namespace catalog {
 namespace {
+
+#if defined(OS_WIN)
+const char kServiceExecutableExtension[] = ".service.exe";
+#else
+const char kServiceExecutableExtension[] = ".service";
+#endif
 
 bool ReadStringSet(const base::ListValue& list_value,
                    std::set<std::string>* string_set) {
@@ -135,7 +142,12 @@ std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
 }
 
 // static
-std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
+std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
+  const base::DictionaryValue* dictionary_value = nullptr;
+  if (!manifest_root.GetAsDictionary(&dictionary_value))
+    return nullptr;
+  const base::DictionaryValue& value = *dictionary_value;
+
   auto entry = base::MakeUnique<Entry>();
 
   // Name.
@@ -150,6 +162,13 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     return nullptr;
   }
   entry->set_name(name);
+
+  // By default we assume a standalone service executable. The catalog may
+  // override this layer based on configuration external to the service's own
+  // manifest.
+  base::FilePath module_path;
+  base::PathService::Get(base::DIR_MODULE, &module_path);
+  entry->set_path(module_path.AppendASCII(name + kServiceExecutableExtension));
 
   // Human-readable name.
   std::string display_name;

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -86,13 +87,9 @@ service("lifecycle_unittest_package") {
 service_manifest("lifecycle_unittest_package_manifest") {
   name = "lifecycle_unittest_package"
   source = "package_manifest.json"
-  deps = [
+  packaged_services = [
     ":lifecycle_unittest_package_app_a_manifest",
     ":lifecycle_unittest_package_app_b_manifest",
-  ]
-  packaged_services = [
-    "lifecycle_unittest_package_app_a",
-    "lifecycle_unittest_package_app_b",
   ]
 }
 
@@ -160,4 +157,15 @@ executable("lifecycle_unittest_exe") {
 service_manifest("lifecycle_unittest_exe_manifest") {
   name = "lifecycle_unittest_exe"
   source = "exe_manifest.json"
+}
+
+catalog("catalog") {
+  embedded_services = [ ":manifest" ]
+
+  standalone_services = [
+    ":lifecycle_unittest_app_manifest",
+    ":lifecycle_unittest_exe_manifest",
+    ":lifecycle_unittest_package_manifest",
+    ":lifecycle_unittest_parent_manifest",
+  ]
 }

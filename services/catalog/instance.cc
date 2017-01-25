@@ -4,11 +4,13 @@
 
 #include "services/catalog/instance.h"
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/values.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/entry_cache.h"
 #include "services/catalog/manifest_provider.h"
-#include "services/catalog/reader.h"
 
 namespace catalog {
 namespace {
@@ -22,30 +24,19 @@ void AddEntry(const Entry& entry, std::vector<mojom::EntryPtr>* ary) {
 
 }  // namespace
 
-Instance::Instance(Reader* system_reader) : system_reader_(system_reader) {}
+Instance::Instance(EntryCache* system_cache,
+                   ManifestProvider* service_manifest_provider)
+    : system_cache_(system_cache),
+      service_manifest_provider_(service_manifest_provider) {}
 
 Instance::~Instance() {}
 
 void Instance::BindResolver(service_manager::mojom::ResolverRequest request) {
-  if (system_cache_)
-    resolver_bindings_.AddBinding(this, std::move(request));
-  else
-    pending_resolver_requests_.push_back(std::move(request));
+  resolver_bindings_.AddBinding(this, std::move(request));
 }
 
 void Instance::BindCatalog(mojom::CatalogRequest request) {
-  if (system_cache_)
-    catalog_bindings_.AddBinding(this, std::move(request));
-  else
-    pending_catalog_requests_.push_back(std::move(request));
-}
-
-void Instance::CacheReady(EntryCache* cache) {
-  system_cache_ = cache;
-  for (auto& request : pending_resolver_requests_)
-    BindResolver(std::move(request));
-  for (auto& request : pending_catalog_requests_)
-    BindCatalog(std::move(request));
+  catalog_bindings_.AddBinding(this, std::move(request));
 }
 
 void Instance::ResolveServiceName(const std::string& service_name,
@@ -58,9 +49,27 @@ void Instance::ResolveServiceName(const std::string& service_name,
     callback.Run(service_manager::mojom::ResolveResult::From(entry),
                  service_manager::mojom::ResolveResult::From(entry->parent()));
     return;
+  } else if (service_manifest_provider_) {
+    auto manifest = service_manifest_provider_->GetManifest(service_name);
+    if (manifest) {
+      auto entry = Entry::Deserialize(*manifest);
+      if (entry) {
+        callback.Run(
+            service_manager::mojom::ResolveResult::From(
+                const_cast<const Entry*>(entry.get())),
+            service_manager::mojom::ResolveResult::From(entry->parent()));
+
+        bool added = system_cache_->AddRootEntry(std::move(entry));
+        DCHECK(added);
+        return;
+      } else {
+        LOG(ERROR) << "Received malformed manifest for " << service_name;
+      }
+    }
   }
 
-  system_reader_->CreateEntryForName(service_name, system_cache_, callback);
+  LOG(ERROR) << "Unable to locate service manifest for " << service_name;
+  callback.Run(nullptr, nullptr);
 }
 
 void Instance::GetEntries(const base::Optional<std::vector<std::string>>& names,

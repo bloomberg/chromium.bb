@@ -26,10 +26,6 @@ source_set("lib") {
     "//services/image_decoder/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 source_set("tests") {

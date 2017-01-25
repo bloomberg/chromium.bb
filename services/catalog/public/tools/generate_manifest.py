@@ -43,11 +43,30 @@ def AddServiceEntryToCatalog(services, name, entry):
   services[name] = entry
 
 
+def SanityCheckCatalog(catalog):
+  """Ensures any given service name appears only once within the catalog."""
+  known_services = set()
+
+  def has_no_dupes(root):
+    if "name" in root:
+      name = root["name"]
+      if name in known_services:
+        raise ValueError("Duplicate catalog entry found for service: %s" % name)
+      known_services.add(name)
+
+    if "services" not in root:
+      return True
+
+    return all(has_no_dupes(service) for service in root["services"])
+
+  return all(has_no_dupes(service["manifest"])
+             for service in catalog["services"].itervalues())
+
+
 def main():
   parser = argparse.ArgumentParser(
       description="Generates a Service Manager catalog manifest.")
   parser.add_argument("--output")
-  parser.add_argument("--packages-dir")
   parser.add_argument("--pretty", action="store_true")
   parser.add_argument("--embedded-services", nargs="+",
                       dest="embedded_services", default=[])
@@ -59,8 +78,8 @@ def main():
                       dest="executable_override_specs", default=[])
   args, _ = parser.parse_known_args()
 
-  if args.output is None or args.packages_dir is None:
-    raise Exception("--output and --packages-dir required")
+  if args.output is None:
+    raise Exception("--output required")
 
   services = {}
   for subcatalog_path in args.included_catalogs:
@@ -73,16 +92,15 @@ def main():
     service_name, exe_path = override_spec.split(":", 1)
     executable_overrides[service_name] = exe_path
 
-  for name in args.embedded_services:
-    manifest_path = os.path.join(args.packages_dir, name, "manifest.json")
+  for manifest_path in args.embedded_services:
     service_name, manifest = ParseManifest(manifest_path)
     entry = { "embedded": True, "manifest": manifest }
     AddServiceEntryToCatalog(services, service_name, entry)
 
-  for name in args.standalone_services:
-    manifest_path = os.path.join(args.packages_dir, name, "manifest.json")
+  for manifest_path in args.standalone_services:
     service_name, manifest = ParseManifest(manifest_path)
-    entry = { "embedded": False, "manifest": ParseJSONFile(manifest_path) }
+    entry = { "embedded": False, "manifest": manifest }
+    name = manifest["name"]
     if name in executable_overrides:
       entry["executable"] = executable_overrides[name]
     AddServiceEntryToCatalog(services, service_name, entry)
@@ -90,6 +108,10 @@ def main():
   catalog = { "services": services }
   with open(args.output, 'w') as output_file:
     json.dump(catalog, output_file, indent=2 if args.pretty else -1)
+
+  # NOTE: We do the sanity check and possible failure *after* outputting the
+  # catalog manifest so it's easier to inspect erroneous output.
+  SanityCheckCatalog(catalog);
 
   return 0
 
