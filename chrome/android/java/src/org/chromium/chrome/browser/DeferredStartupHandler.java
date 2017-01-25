@@ -106,7 +106,7 @@ public class DeferredStartupHandler {
             public boolean queueIdle() {
                 Runnable currentTask = mDeferredTasks.poll();
                 if (currentTask == null) {
-                    if (mDeferredStartupInitializedForApp) {
+                    if (mDeferredStartupInitializedForApp && !mDeferredStartupCompletedForApp) {
                         mDeferredStartupCompletedForApp = true;
                         recordDeferredStartupStats();
                     }
@@ -137,7 +137,6 @@ public class DeferredStartupHandler {
                 "UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime",
                 SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
                 TimeUnit.MILLISECONDS);
-        LocaleManager.getInstance().recordStartupMetrics();
     }
 
     /**
@@ -216,6 +215,13 @@ public class DeferredStartupHandler {
             public void run() {
                 // Start or stop Physical Web
                 PhysicalWeb.onChromeStart();
+            }
+        });
+
+        mDeferredTasks.add(new Runnable() {
+            @Override
+            public void run() {
+                LocaleManager.getInstance().recordStartupMetrics();
             }
         });
 
