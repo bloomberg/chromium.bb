@@ -929,11 +929,6 @@ Element* enclosingBlockFlowElement(const Node& node) {
   return nullptr;
 }
 
-bool nodeIsUserSelectAll(const Node* node) {
-  return node && node->layoutObject() &&
-         node->layoutObject()->style()->userSelect() == SELECT_ALL;
-}
-
 EUserSelect usedValueOfUserSelect(const Node& node) {
   if (node.isHTMLElement() && toHTMLElement(node).isTextControl())
     return SELECT_TEXT;

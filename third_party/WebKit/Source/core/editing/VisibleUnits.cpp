@@ -1743,6 +1743,11 @@ VisiblePosition nextSentencePosition(const VisiblePosition& c) {
   return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
 
+static bool nodeIsUserSelectAll(const Node* node) {
+  return node && node->layoutObject() &&
+         node->layoutObject()->style()->userSelect() == SELECT_ALL;
+}
+
 template <typename Strategy>
 PositionTemplate<Strategy> startOfParagraphAlgorithm(
     const PositionTemplate<Strategy>& position,
