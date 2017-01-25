@@ -312,6 +312,7 @@ class RepoRepository(object):
       failed_to_selfupdate = True
 
     if failed_to_selfupdate:
+      metrics.Counter(constants.MON_REPO_SELFUPDATE_FAILURE_COUNT).increment()
       logging.warning('Failed to selfupdate repo, cleaning .repo/repo in %s',
                       self.directory)
       osutils.RmDir(os.path.join(self.directory, '.repo', 'repo'),
@@ -364,6 +365,7 @@ class RepoRepository(object):
       try:
         cros_build_lib.RunCommand(cmd, cwd=self.directory, capture_output=True)
       except cros_build_lib.RunCommandError:
+        metrics.Counter(constants.MON_REPO_MANIFEST_FAILURE_COUNT).increment()
         logging.warning("Wiping %r due to `repo manifest` failure",
                         self.directory)
         self._CleanUpRepoManifest(self.directory)
@@ -407,12 +409,15 @@ class RepoRepository(object):
     if self.groups:
       init_cmd.extend(['--groups', self.groups])
 
+    fields = {'manifest_url': self.manifest_repo_url}
     retry_util.RetryCommand(self._RepoInit,
                             REPO_INIT_RETRY_LIMIT,
                             init_cmd,
                             sleep=DEFAULT_SLEEP_TIME,
                             backoff_factor=2,
-                            log_retries=True)
+                            log_retries=True,
+                            mon_retry_name=constants.MON_REPO_INIT_RETRY_COUNT,
+                            mon_fields=fields)
 
     if local_manifest and local_manifest != self._manifest:
       self._SwitchToLocalManifest(local_manifest)
