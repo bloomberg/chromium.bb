@@ -1405,11 +1405,15 @@ void WebMediaPlayerImpl::OnFrameHidden() {
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
 
-  if (ShouldPauseVideoWhenHidden()) {
-    PauseVideoIfNeeded();
-    return;
-  } else {
-    DisableVideoTrackIfNeeded();
+  // OnFrameHidden() can be called when frame is closed, then IsHidden() will
+  // return false, so check explicitly.
+  if (IsHidden()) {
+    if (ShouldPauseVideoWhenHidden()) {
+      PauseVideoIfNeeded();
+      return;
+    } else {
+      DisableVideoTrackIfNeeded();
+    }
   }
 
   UpdatePlayState();
