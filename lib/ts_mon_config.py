@@ -153,6 +153,7 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
         p.terminate()
       if p.exitcode:
         logging.warning("ts_mon_config flushing process did not exit cleanly.")
+      logging.info("Finished waiting for ts_mon process.")
 
 
 def _FlushIfReady(pending, last_flush, reset_after=()):
