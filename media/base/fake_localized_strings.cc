@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "media/base/media_resources.h"
+#include "media/base/localized_strings.h"
 
 namespace media {
 
@@ -14,7 +14,7 @@ base::string16 FakeLocalizedStringProvider(MessageId message_id) {
   return base::ASCIIToUTF16("FakeString");
 }
 
-void SetUpFakeMediaResources() {
+void SetUpFakeLocalizedStrings() {
   SetLocalizedStringProvider(FakeLocalizedStringProvider);
 }
 

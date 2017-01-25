@@ -23,7 +23,7 @@
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
-#include "media/base/media_resources.h"
+#include "media/base/localized_strings.h"
 
 // cras_util.h headers pull in min/max macros...
 // TODO(dgreid): Fix headers such that these aren't imported.

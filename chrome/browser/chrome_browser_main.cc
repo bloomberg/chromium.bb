@@ -156,7 +156,7 @@
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "extensions/features/features.h"
-#include "media/base/media_resources.h"
+#include "media/base/localized_strings.h"
 #include "media/media_features.h"
 #include "net/base/net_module.h"
 #include "net/cookies/cookie_monster.h"

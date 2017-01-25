@@ -6,7 +6,7 @@
 
 #include <algorithm>  // for std::max()
 
-#include "media/base/media_resources.h"
+#include "media/base/localized_strings.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/base/video_util.h"

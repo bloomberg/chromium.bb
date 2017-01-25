@@ -6,7 +6,7 @@
 #define CHROME_COMMON_MEDIA_MEDIA_RESOURCE_PROVIDER_H_
 
 #include "base/strings/string16.h"
-#include "media/base/media_resources.h"
+#include "media/base/localized_strings.h"
 
 namespace chrome_common_media {
 

@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "media/audio/audio_device_description.h"
-#include "media/base/media_resources.h"
+#include "media/base/localized_strings.h"
 
 namespace media {
 const char AudioDeviceDescription::kDefaultDeviceId[] = "default";

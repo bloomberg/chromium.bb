@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_FAKE_MEDIA_RESOURCES_H_
-#define MEDIA_BASE_FAKE_MEDIA_RESOURCES_H_
+#ifndef MEDIA_BASE_FAKE_LOCALIZED_STRINGS_H_
+#define MEDIA_BASE_FAKE_LOCALIZED_STRINGS_H_
 
 namespace media {
 
 // Call if tests require non-empty resource strings.
-void SetUpFakeMediaResources();
+void SetUpFakeLocalizedStrings();
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_FAKE_MEDIA_RESOURCES_H_
+#endif  // MEDIA_BASE_FAKE_LOCALIZED_STRINGS_H_
