@@ -15,10 +15,26 @@ GEN_INCLUDE(
  * @constructor
  * @extends {PolymerTest}
  */
+function DownloadsTest() {}
+
+DownloadsTest.prototype = {
+  __proto__: PolymerTest.prototype,
+
+  /** @override */
+  setUp: function() {
+    PolymerTest.prototype.setUp.call(this);
+    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
+  },
+};
+
+/**
+ * @constructor
+ * @extends {DownloadsTest}
+ */
 function DownloadsItemTest() {}
 
 DownloadsItemTest.prototype = {
-  __proto__: PolymerTest.prototype,
+  __proto__: DownloadsTest.prototype,
 
   /** @override */
   browsePreload: 'chrome://downloads/item.html',
@@ -33,18 +49,17 @@ TEST_F('DownloadsItemTest', 'All', function() {
   mocha.run();
 });
 
-
 /**
  * @constructor
- * @extends {PolymerTest}
+ * @extends {DownloadsTest}
  */
 function DownloadsLayoutTest() {}
 
 DownloadsLayoutTest.prototype = {
-  __proto__: PolymerTest.prototype,
+  __proto__: DownloadsTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://downloads/manager.html',
+  browsePreload: 'chrome://downloads/',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
@@ -58,12 +73,12 @@ TEST_F('DownloadsLayoutTest', 'All', function() {
 
 /**
  * @constructor
- * @extends {PolymerTest}
+ * @extends {DownloadsTest}
  */
 function DownloadsToolbarTest() {}
 
 DownloadsToolbarTest.prototype = {
-  __proto__: PolymerTest.prototype,
+  __proto__: DownloadsTest.prototype,
 
   /** @override */
   browsePreload: 'chrome://downloads/toolbar.html',
