@@ -14,7 +14,6 @@ mojom("interfaces") {
   ]
 
   public_deps = [
-    "//skia/public/interfaces",
     "//ui/gfx/geometry/mojo",
   ]
 }

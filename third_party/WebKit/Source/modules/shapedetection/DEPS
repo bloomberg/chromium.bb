@@ -10,7 +10,6 @@ include_rules = [
     "+platform",
     "+public/platform",
     "+services/shape_detection",
-    "+skia/public/interfaces/bitmap.mojom-blink.h",
     "+third_party/skia/include/core/SkImage.h",
     "+third_party/skia/include/core/SkImageInfo.h",
     "+ui/gfx/geometry",
