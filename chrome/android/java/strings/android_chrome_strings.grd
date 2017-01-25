@@ -267,7 +267,7 @@ CHAR-LIMIT guidelines:
         Recently visited
       </message>
 
-      <!-- Autofill preferences -->
+      <!-- Autofill and Payments preferences -->
       <message name="IDS_PREFS_AUTOFILL_AND_PAYMENTS" desc="Title of Autofill and payments settings prefrences. [CHAR-LIMIT=32]">
         Autofill and payments
       </message>      
@@ -276,7 +276,16 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_AUTOFILL_PROFILES_TITLE" desc="Title of the preference to list profiles (which contain the user's name, address, etc) that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Addresses
-      </message>       
+      </message>
+      <message name="IDS_PAYMENT_APPS_TITLE" desc="Title of the preference to list the payment apps on device.">
+        Payment apps
+      </message>
+      <message name="IDS_PAYMENT_NO_APPS_SUMMARY" desc="Summary of the preference to list the payment apps on device when no payments apps installed.">
+        No supported apps installed
+      </message>
+      <message name="IDS_PAYMENT_APPS_CONTROL_MESSAGE" desc="Message to explain what the user controls by toggling the switch of the payment app preference.">
+        On some websites, you can pay with supported payment apps. Choose which apps to use in Chrome.
+      </message>
       <message name="IDS_AUTOFILL_CREDIT_CARDS_TITLE" desc="Title of the preference to list the user's credit cards that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Credit cards
       </message>

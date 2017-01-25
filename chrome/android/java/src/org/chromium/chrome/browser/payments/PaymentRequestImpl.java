@@ -12,7 +12,6 @@ import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -168,7 +167,6 @@ public class PaymentRequestImpl
 
     private static final String TAG = "cr_PaymentRequest";
     private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
-    private static final String PAYMENT_COMPLETE_ONCE = "payment_complete_once";
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             new Comparator<Completable>() {
                 @Override
@@ -412,8 +410,8 @@ public class PaymentRequestImpl
 
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
                 requestPayerName || requestPayerPhone || requestPayerEmail,
-                mMerchantSupportsAutofillPaymentInstruments, !isPaymentCompleteOnce(),
-                mMerchantName, mOrigin,
+                mMerchantSupportsAutofillPaymentInstruments,
+                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mOrigin,
                 new ShippingStrings(
                         options == null ? PaymentShippingType.SHIPPING : options.shippingType));
 
@@ -1136,19 +1134,10 @@ public class PaymentRequestImpl
     public void complete(int result) {
         if (mClient == null) return;
         recordSuccessFunnelHistograms("Completed");
-        if (!isPaymentCompleteOnce()) setPaymentCompleteOnce();
+        if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
+            PaymentPreferencesUtil.setPaymentCompleteOnce();
+        }
         closeUI(PaymentComplete.FAIL != result);
-    }
-
-    private static boolean isPaymentCompleteOnce() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(PAYMENT_COMPLETE_ONCE, false);
-    }
-
-    private static void setPaymentCompleteOnce() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(PAYMENT_COMPLETE_ONCE, true)
-                .apply();
     }
 
     @Override
