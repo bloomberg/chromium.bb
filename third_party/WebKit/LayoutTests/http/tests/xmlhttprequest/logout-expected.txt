@@ -1,4 +1,5 @@
 CONSOLE WARNING: line 17: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
+CONSOLE WARNING: line 18: Subresource requests whose URLs contain embedded credentials (e.g. `https://user:pass@host/`) are deprecated, and will be blocked in M59, around June 2017. See https://www.chromestatus.com/feature/5669008342777856 for more details.
 rdar://problem/6447115 Test that a method for logging out of a site that is used by SAP works.
 
 If an authentication dialog appears, please cancel it.

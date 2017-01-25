@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -764,11 +765,11 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
     if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) &&
         !SchemeRegistry::shouldTreatURLSchemeAsLegacy(
             frame()->document()->getSecurityOrigin()->protocol())) {
-      UseCounter::count(frame()->document(),
-                        UseCounter::LegacyProtocolEmbeddedAsSubresource);
+      Deprecation::countDeprecation(
+          frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
     }
     if (!url.user().isEmpty() || !url.pass().isEmpty()) {
-      UseCounter::count(
+      Deprecation::countDeprecation(
           frame()->document(),
           UseCounter::RequestedSubresourceWithEmbeddedCredentials);
     }

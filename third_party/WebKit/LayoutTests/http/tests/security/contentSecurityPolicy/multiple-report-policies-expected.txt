@@ -4,4 +4,5 @@ PingLoader dispatched to 'http://127.0.0.1:8000/security/contentSecurityPolicy/r
 CONSOLE ERROR: line 8: [Report Only] Refused to load the image 'ftp://blah.test/' because it violates the following Content Security Policy directive: "img-src http://*".
 
 PingLoader dispatched to 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/save-report.php?test=multiple-report-policies-2'.
+CONSOLE WARNING: Subresource requests using legacy protocols (like `ftp:`) are deprecated, and will be blocked in M59, around June 2017. Please deliver web-accessible resources over modern protocols like HTTPS. See https://www.chromestatus.com/feature/5709390967472128 for more details.
     
