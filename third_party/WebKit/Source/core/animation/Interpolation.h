@@ -28,7 +28,7 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
   virtual bool isInvalidatableInterpolation() const { return false; }
   virtual bool isLegacyStyleInterpolation() const { return false; }
 
-  virtual PropertyHandle getProperty() const = 0;
+  virtual const PropertyHandle& getProperty() const = 0;
   virtual bool dependsOnUnderlyingValue() const { return false; }
 
  protected:

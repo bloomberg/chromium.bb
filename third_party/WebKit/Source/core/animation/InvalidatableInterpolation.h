@@ -20,14 +20,14 @@ namespace blink {
 class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
  public:
   static PassRefPtr<InvalidatableInterpolation> create(
-      PropertyHandle property,
+      const PropertyHandle& property,
       PassRefPtr<PropertySpecificKeyframe> startKeyframe,
       PassRefPtr<PropertySpecificKeyframe> endKeyframe) {
     return adoptRef(new InvalidatableInterpolation(
         property, std::move(startKeyframe), std::move(endKeyframe)));
   }
 
-  PropertyHandle getProperty() const final { return m_property; }
+  const PropertyHandle& getProperty() const final { return m_property; }
   virtual void interpolate(int iteration, double fraction);
   bool dependsOnUnderlyingValue() const final;
   static void applyStack(const ActiveInterpolations&,
@@ -36,7 +36,7 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   virtual bool isInvalidatableInterpolation() const { return true; }
 
  private:
-  InvalidatableInterpolation(PropertyHandle property,
+  InvalidatableInterpolation(const PropertyHandle& property,
                              PassRefPtr<PropertySpecificKeyframe> startKeyframe,
                              PassRefPtr<PropertySpecificKeyframe> endKeyframe)
       : Interpolation(),

@@ -58,7 +58,7 @@ class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
                       double iterationDuration,
                       Vector<RefPtr<Interpolation>>&) const = 0;
 
-  virtual bool affects(PropertyHandle) const { return false; }
+  virtual bool affects(const PropertyHandle&) const { return false; }
   virtual bool isTransformRelatedEffect() const { return false; }
   virtual bool isKeyframeEffectModel() const { return false; }
 

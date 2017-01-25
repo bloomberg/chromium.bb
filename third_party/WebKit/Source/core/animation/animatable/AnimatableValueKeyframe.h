@@ -51,7 +51,7 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
         double offset,
         PassRefPtr<TimingFunction> easing) const final;
     PassRefPtr<Interpolation> createInterpolation(
-        PropertyHandle,
+        const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const final;
 
    private:
@@ -80,7 +80,7 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
 
   PassRefPtr<Keyframe> clone() const override;
   PassRefPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(
-      PropertyHandle) const override;
+      const PropertyHandle&) const override;
 
   bool isAnimatableValueKeyframe() const override { return true; }
 

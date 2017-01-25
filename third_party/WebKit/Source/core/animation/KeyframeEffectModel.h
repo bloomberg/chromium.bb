@@ -83,7 +83,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   void setFrames(KeyframeVector& keyframes);
 
   const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(
-      PropertyHandle property) const {
+      const PropertyHandle& property) const {
     ensureKeyframeGroups();
     return m_keyframeGroups->get(property)->keyframes();
   }
@@ -128,7 +128,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
     return normalizedKeyframes(keyframes);
   }
 
-  bool affects(PropertyHandle property) const override {
+  bool affects(const PropertyHandle& property) const override {
     ensureKeyframeGroups();
     return m_keyframeGroups->contains(property);
   }

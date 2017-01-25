@@ -46,7 +46,7 @@ class CORE_EXPORT InterpolationEffect {
   }
 
   void addInterpolationsFromKeyframes(
-      PropertyHandle,
+      const PropertyHandle&,
       const Keyframe::PropertySpecificKeyframe& keyframeA,
       const Keyframe::PropertySpecificKeyframe& keyframeB,
       double applyFrom,

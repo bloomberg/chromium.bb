@@ -98,7 +98,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
         double offset,
         PassRefPtr<TimingFunction> easing) const = 0;
     virtual PassRefPtr<Interpolation> createInterpolation(
-        PropertyHandle,
+        const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const;
 
    protected:
@@ -112,7 +112,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   };
 
   virtual PassRefPtr<PropertySpecificKeyframe> createPropertySpecificKeyframe(
-      PropertyHandle) const = 0;
+      const PropertyHandle&) const = 0;
 
  protected:
   Keyframe()

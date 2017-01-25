@@ -41,7 +41,7 @@ LegacyStyleInterpolation::LegacyStyleInterpolation(
     : Interpolation(),
       m_start(std::move(start)),
       m_end(std::move(end)),
-      m_id(id),
+      m_property(id),
       m_cachedFraction(0),
       m_cachedIteration(0),
       m_cachedValue(m_start ? m_start->clone() : nullptr) {

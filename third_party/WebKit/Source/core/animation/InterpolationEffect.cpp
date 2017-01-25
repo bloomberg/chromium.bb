@@ -36,7 +36,7 @@ void InterpolationEffect::getActiveInterpolations(
 }
 
 void InterpolationEffect::addInterpolationsFromKeyframes(
-    PropertyHandle property,
+    const PropertyHandle& property,
     const Keyframe::PropertySpecificKeyframe& keyframeA,
     const Keyframe::PropertySpecificKeyframe& keyframeB,
     double applyFrom,

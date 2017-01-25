@@ -100,7 +100,8 @@ PassRefPtr<Keyframe> StringKeyframe::clone() const {
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe>
-StringKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const {
+StringKeyframe::createPropertySpecificKeyframe(
+    const PropertyHandle& property) const {
   if (property.isCSSProperty())
     return CSSPropertySpecificKeyframe::create(
         offset(), &easing(), &cssPropertyValue(property), composite());

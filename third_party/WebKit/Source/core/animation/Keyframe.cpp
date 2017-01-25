@@ -10,7 +10,7 @@ namespace blink {
 
 PassRefPtr<Interpolation>
 Keyframe::PropertySpecificKeyframe::createInterpolation(
-    PropertyHandle propertyHandle,
+    const PropertyHandle& propertyHandle,
     const Keyframe::PropertySpecificKeyframe& end) const {
   // const_cast to take refs.
   return InvalidatableInterpolation::create(

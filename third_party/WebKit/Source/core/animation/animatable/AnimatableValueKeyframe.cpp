@@ -33,7 +33,7 @@ PassRefPtr<Keyframe> AnimatableValueKeyframe::clone() const {
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe>
 AnimatableValueKeyframe::createPropertySpecificKeyframe(
-    PropertyHandle property) const {
+    const PropertyHandle& property) const {
   return PropertySpecificKeyframe::create(
       offset(), &easing(), propertyValue(property.cssProperty()), composite());
 }
@@ -46,7 +46,7 @@ AnimatableValueKeyframe::PropertySpecificKeyframe::cloneWithOffset(
 
 PassRefPtr<Interpolation>
 AnimatableValueKeyframe::PropertySpecificKeyframe::createInterpolation(
-    PropertyHandle property,
+    const PropertyHandle& property,
     const Keyframe::PropertySpecificKeyframe& end) const {
   return LegacyStyleInterpolation::create(
       value(), toAnimatableValuePropertySpecificKeyframe(end).value(),

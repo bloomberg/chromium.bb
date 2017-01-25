@@ -35,7 +35,7 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
   //     AnimatedStyleBuilder::applyProperty)
   // (3) a custom value that is inserted directly into the StyleResolverState.
   void apply(StyleResolverState& state) const {
-    AnimatedStyleBuilder::applyProperty(m_id, state, currentValue().get());
+    AnimatedStyleBuilder::applyProperty(id(), state, currentValue().get());
   }
 
   bool isLegacyStyleInterpolation() const final { return true; }
@@ -44,9 +44,9 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
     return toInterpolableAnimatableValue(m_cachedValue.get())->value();
   }
 
-  CSSPropertyID id() const { return m_id; }
+  CSSPropertyID id() const { return m_property.cssProperty(); }
 
-  PropertyHandle getProperty() const final { return PropertyHandle(id()); }
+  const PropertyHandle& getProperty() const final { return m_property; }
 
   void interpolate(int iteration, double fraction) final;
 
@@ -58,7 +58,7 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
  private:
   const std::unique_ptr<InterpolableValue> m_start;
   const std::unique_ptr<InterpolableValue> m_end;
-  CSSPropertyID m_id;
+  PropertyHandle m_property;
 
   mutable double m_cachedFraction;
   mutable int m_cachedIteration;
