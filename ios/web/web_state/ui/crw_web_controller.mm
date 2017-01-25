@@ -4717,6 +4717,21 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           isMIMETypePassKitType:[_pendingNavigationInfo MIMEType]]) {
     GURL URL = net::GURLWithNSURL(navigationResponse.response.URL);
     [self.passKitDownloader downloadPassKitFileWithURL:URL];
+    allowNavigation = NO;
+
+    // Discard the pending PassKit entry to ensure that the current URL is not
+    // different from what is displayed on the view. If there is no previous
+    // committed URL, which can happen when a link is opened in a new tab via a
+    // context menu or window.open, the pending entry should not be
+    // discarded so that the NavigationManager is never empty. Also, URLs loaded
+    // in a native view should be excluded to avoid an ugly animation where the
+    // web view is inserted and quickly removed.
+    GURL lastCommittedURL = self.webState->GetLastCommittedURL();
+    BOOL isFirstLoad = lastCommittedURL.is_empty();
+    BOOL previousItemWasLoadedInNativeView =
+        [self shouldLoadURLInNativeView:lastCommittedURL];
+    if (!isFirstLoad && !previousItemWasLoadedInNativeView)
+      [self.sessionController discardNonCommittedEntries];
   }
 
   handler(allowNavigation ? WKNavigationResponsePolicyAllow
