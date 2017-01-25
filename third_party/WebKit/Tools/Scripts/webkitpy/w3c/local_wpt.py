@@ -70,7 +70,7 @@ class LocalWPT(object):
 
     def all_branches(self):
         """Returns a list of local and remote branches."""
-        return self.run(['git', 'branch', '-a']).splitlines()
+        return [s.strip() for s in self.run(['git', 'branch', '-a']).splitlines()]
 
     def create_branch_with_patch(self, message, patch, author):
         """Commits the given patch and pushes to the upstream repo.
@@ -95,6 +95,7 @@ class LocalWPT(object):
         # TODO(jeffcarp): Use git am -p<n> where n is len(CHROMIUM_WPT_DIR.split(/'))
         # or something not off-by-one.
         self.run(['git', 'apply', '-'], input=patch)
+        self.run(['git', 'add', '.'])
         self.run(['git', 'commit', '--author', author, '-am', message])
         self.run(['git', 'push', REMOTE_NAME, self.branch_name])
 

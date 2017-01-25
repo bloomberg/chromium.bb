@@ -96,5 +96,6 @@ class LocalWPTTest(unittest.TestCase):
             ['git', 'branch', '-a'],
             ['git', 'checkout', '-b', 'chromium-export-try'],
             ['git', 'apply', '-'],
+            ['git', 'add', '.'],
             ['git', 'commit', '--author', 'author', '-am', 'message'],
             ['git', 'push', 'github', 'chromium-export-try']])

@@ -96,11 +96,12 @@ class WPTGitHub(object):
             raise Exception('PR could not be merged: %d' % pull_request_number)
 
     def delete_remote_branch(self, remote_branch_name):
+        # TODO(jeffcarp): Unit test this method
         path = '/repos/w3c/web-platform-tests/git/refs/heads/%s' % remote_branch_name
         data, status_code = self.request(path, method='DELETE')
 
-        if status_code != 200:
+        if status_code != 204:
             # TODO(jeffcarp): Raise more specific exception (create MergeError class?)
-            raise Exception('PR could not be merged')
+            raise Exception('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
 
         return data
