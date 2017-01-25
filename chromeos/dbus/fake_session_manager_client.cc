@@ -146,6 +146,10 @@ void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
                                                 base::Bind(callback, true));
 }
 
+bool FakeSessionManagerClient::SupportsRestartToApplyUserFlags() const {
+  return false;
+}
+
 void FakeSessionManagerClient::SetFlagsForUser(
     const cryptohome::Identification& cryptohome_id,
     const std::vector<std::string>& flags) {}

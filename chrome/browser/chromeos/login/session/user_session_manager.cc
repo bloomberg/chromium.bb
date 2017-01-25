@@ -296,10 +296,6 @@ bool NeedRestartToApplyPerSessionFlags(
 }
 
 bool CanPerformEarlyRestart() {
-  // Desktop build is used for development only. Early restart is not supported.
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    return false;
-
   if (!ChromeUserManager::Get()
            ->GetCurrentUserFlow()
            ->SupportsEarlyRestartToApplyFlags()) {
@@ -720,6 +716,11 @@ bool UserSessionManager::RespectLocalePreference(
 bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
     Profile* profile,
     bool early_restart) {
+  SessionManagerClient* session_manager_client =
+      DBusThreadManager::Get()->GetSessionManagerClient();
+  if (!session_manager_client->SupportsRestartToApplyUserFlags())
+    return false;
+
   if (ProfileHelper::IsSigninProfile(profile))
     return false;
 
@@ -756,7 +757,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
   LOG(WARNING) << "Restarting to apply per-session flags...";
-  DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
+  session_manager_client->SetFlagsForUser(
       cryptohome::Identification(
           user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()),
       flags);

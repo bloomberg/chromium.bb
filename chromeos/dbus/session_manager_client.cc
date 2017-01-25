@@ -275,6 +275,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
         callback);
   }
 
+  bool SupportsRestartToApplyUserFlags() const override { return true; }
+
   void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
@@ -928,6 +930,9 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     StorePolicyForUser(cryptohome::Identification::FromString(account_id),
                        policy_blob, callback);
   }
+
+  bool SupportsRestartToApplyUserFlags() const override { return false; }
+
   void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override {}
 

@@ -198,6 +198,10 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
       const std::string& policy_blob,
       const StorePolicyCallback& callback) = 0;
 
+  // Returns whether session manager can be used to restart Chrome in order to
+  // apply per-user session flags.
+  virtual bool SupportsRestartToApplyUserFlags() const = 0;
+
   // Sets the flags to be applied next time by the session manager when Chrome
   // is restarted inside an already started session for a particular user.
   virtual void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,

@@ -61,6 +61,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
       const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) override;
+  bool SupportsRestartToApplyUserFlags() const override;
   void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override;

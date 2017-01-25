@@ -175,6 +175,10 @@ void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
   device_local_account_policy_[account_id].store_callbacks_.push_back(callback);
 }
 
+bool DeviceSettingsTestHelper::SupportsRestartToApplyUserFlags() const {
+  return false;
+}
+
 void DeviceSettingsTestHelper::SetFlagsForUser(
     const cryptohome::Identification& cryptohome_id,
     const std::vector<std::string>& flags) {}

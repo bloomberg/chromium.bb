@@ -59,6 +59,7 @@ class MockSessionManagerClient : public SessionManagerClient {
                void(const std::string&,
                     const std::string&,
                     const StorePolicyCallback&));
+  MOCK_CONST_METHOD0(SupportsRestartToApplyUserFlags, bool());
   MOCK_METHOD2(SetFlagsForUser,
                void(const cryptohome::Identification&,
                     const std::vector<std::string>&));
