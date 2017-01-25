@@ -44,10 +44,6 @@ using web::test::HttpServer;
 - (void)checkErrorPageIsVisible {
   // The DNS error page is static HTML content, so it isn't part of the webview
   // owned by the webstate.
-  id<GREYMatcher> webViewMatcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
-      assertWithMatcher:grey_nil()];
   NSString* const kError =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
   [[EarlGrey selectElementWithMatcher:StaticHtmlViewContainingText(kError)]
@@ -70,8 +66,7 @@ using web::test::HttpServer;
 #pragma mark - tests
 
 // Tests whether the error page is displayed for a bad URL.
-// TODO(crbug.com/684987): Re-enable this test.
-- (void)DISABLED_testErrorPage {
+- (void)testErrorPage {
   std::unique_ptr<web::DataResponseProvider> provider(
       new ErrorPageResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -82,8 +77,7 @@ using web::test::HttpServer;
 }
 
 // Tests whether the error page is displayed if it is behind a redirect.
-// TODO(crbug.com/684987): Re-enable this test.
-- (void)DISABLED_testErrorPageRedirect {
+- (void)testErrorPageRedirect {
   std::unique_ptr<web::DataResponseProvider> provider(
       new ErrorPageResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));

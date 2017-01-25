@@ -204,12 +204,7 @@ void SwitchToNormalMode() {
 
 // Check that the error page is visible.
 void CheckErrorPageIsVisible() {
-  // The DNS error page is static HTML content, so it isn't part of the webview
-  // owned by the webstate.
-  id<GREYMatcher> webViewMatcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
-      assertWithMatcher:grey_nil()];
+  // The DNS error page is static HTML content.
   NSString* const kError =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
   [[EarlGrey
@@ -515,8 +510,7 @@ void SelectTabUsingUI(NSString* title) {
 
 // Verify correct recording of metrics when the reloading of an evicted tab
 // fails.
-// TODO(crbug.com/684987): Re-enable this test.
-- (void)DISABLED_testEvictedTabReloadFailure {
+- (void)testEvictedTabReloadFailure {
   web::test::SetUpFileBasedHttpServer();
   chrome_test_util::HistogramTester histogramTester;
   FailureBlock failureBlock = ^(NSString* error) {
