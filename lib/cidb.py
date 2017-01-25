@@ -1251,14 +1251,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       start_time, finish_time, platform_version, full_version, status,
       important, buildbucket_id].
     """
-    # TODO(akeshet): Unify this with BUILD_STATUS_KEYS (see comments:)
-    columns = ['id', 'build_config', 'start_time', 'finish_time', 'status',
-               'waterfall', 'build_number', # missing builder_name
-               'platform_version', 'full_version', # missing milestone_version
-               'important', 'buildbucket_id', # mising summary
-               'buildbot_generation'
-               ]
-
     where_clauses = ['build_config = "%s"' % build_config]
     if start_date is not None:
       where_clauses.append('date(start_time) >= date("%s")' %
@@ -1279,12 +1271,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         ' FROM buildTable'
         ' WHERE %s'
         ' ORDER BY id DESC' %
-        (', '.join(columns), ' AND '.join(where_clauses)))
+        (', '.join(CIDBConnection.BUILD_STATUS_KEYS),
+         ' AND '.join(where_clauses)))
     if num_results != self.NUM_RESULTS_NO_LIMIT:
       query += ' LIMIT %d' % num_results
 
     results = self._Execute(query).fetchall()
-    return [dict(zip(columns, values)) for values in results]
+    return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
+            for values in results]
 
   @minimum_schema(47)
   def GetMostRecentBuild(self, waterfall, build_config, milestone_version=None):
