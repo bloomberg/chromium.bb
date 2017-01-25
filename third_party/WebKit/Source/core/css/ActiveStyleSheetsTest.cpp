@@ -328,6 +328,23 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_ReorderedImportSheets) {
   EXPECT_EQ(0u, changedRuleSets.size());
 }
 
+TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_DisableAndAppend) {
+  ActiveStyleSheetVector oldSheets;
+  ActiveStyleSheetVector newSheets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
+
+  CSSStyleSheet* sheet1 = createSheet();
+  CSSStyleSheet* sheet2 = createSheet();
+
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, nullptr));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+
+  EXPECT_EQ(ActiveSheetsChanged,
+            compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
+  EXPECT_EQ(2u, changedRuleSets.size());
+}
+
 TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
   document().view()->updateAllLifecyclePhases();
 

@@ -38,18 +38,19 @@ ActiveSheetsChange compareActiveStyleSheets(
   }
 
   if (index == oldStyleSheetCount) {
-    if (index == newStyleSheetCount) {
-      return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
-                                       : ActiveSheetsChanged;
-    }
-
-    // Sheets added at the end.
+    // The old stylesheet vector is a prefix of the new vector in terms of
+    // StyleSheets. If none of the RuleSets changed, we only need to add the new
+    // sheets to the ScopedStyleResolver (ActiveSheetsAppended).
+    bool ruleSetsChangedInCommonPrefix = !changedRuleSets.isEmpty();
     for (; index < newStyleSheetCount; index++) {
       if (newStyleSheets[index].second)
         changedRuleSets.add(newStyleSheets[index].second);
     }
-    return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
-                                     : ActiveSheetsAppended;
+    if (ruleSetsChangedInCommonPrefix)
+      return ActiveSheetsChanged;
+    if (changedRuleSets.isEmpty())
+      return NoActiveSheetsChanged;
+    return ActiveSheetsAppended;
   }
 
   if (index == newStyleSheetCount) {
