@@ -91,9 +91,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);
 
-  // Map the received input buffer into this process' address space and
-  // queue it for decode.
-  void MapAndQueueNewInputBuffer(const BitstreamBuffer& bitstream_buffer);
+  // Queue a input buffer for decode.
+  void QueueInputBuffer(const BitstreamBuffer& bitstream_buffer);
 
   // Get a new input buffer from the queue and set it up in decoder. This will
   // sleep if no input buffers are available. Return true if a new buffer has
@@ -196,8 +195,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     kDecoding,
     // Resetting, waiting for decoder to finish current task and cleanup.
     kResetting,
-    // Flushing, waiting for decoder to finish current task and cleanup.
-    kFlushing,
     // Idle, decoder in state ready to start/resume decoding.
     kIdle,
     // Destroying, waiting for the decoder to finish current task.
@@ -214,7 +211,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     InputBuffer();
     ~InputBuffer();
 
-    int32_t id;
+    // Indicates this is a dummy buffer for flush request.
+    bool is_flush() const { return shm == nullptr; }
+
+    int32_t id = -1;
     std::unique_ptr<SharedMemoryRegion> shm;
   };
 
