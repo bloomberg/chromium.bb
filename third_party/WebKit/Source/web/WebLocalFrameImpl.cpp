@@ -2036,6 +2036,7 @@ bool WebLocalFrameImpl::maybeRenderFallbackContent(
     return false;
 
   FrameLoader& frameloader = frame()->loader();
+  frameloader.clearNavigationHandledByClient();
   frameloader.loadFailed(frameloader.documentLoader(), error);
   return true;
 }

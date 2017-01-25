@@ -220,6 +220,10 @@ class CORE_EXPORT FrameLoader final {
     return provisionalDocumentLoader() || m_isNavigationHandledByClient;
   }
 
+  void clearNavigationHandledByClient() {
+    m_isNavigationHandledByClient = false;
+  }
+
   DECLARE_TRACE();
 
   static void setReferrerForFrameRequest(FrameLoadRequest&);
