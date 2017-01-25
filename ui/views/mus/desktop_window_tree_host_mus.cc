@@ -272,9 +272,12 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
   aura::client::SetCursorClient(window(), cursor_manager_.get());
   InitHost();
 
-  if (params.parent) {
-    aura::client::GetTransientWindowClient()->AddTransientChild(params.parent,
-                                                                window());
+  // Transient parents are connected using the Window created by WindowTreeHost,
+  // which is owned by the window manager. This way the window manager can
+  // properly identify and honor transients.
+  if (params.parent && params.parent->GetHost()) {
+    aura::client::GetTransientWindowClient()->AddTransientChild(
+        params.parent->GetHost()->window(), window());
   }
 }
 

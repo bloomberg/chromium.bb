@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
@@ -29,12 +30,14 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
   ~DesktopWindowTreeHostMusTest() override {}
 
   // Creates a test widget. Takes ownership of |delegate|.
-  std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
+  std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate = nullptr,
+                                       aura::Window* parent = nullptr) {
     std::unique_ptr<Widget> widget = base::MakeUnique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.delegate = delegate;
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 1, 111, 123);
+    params.parent = parent;
     widget->Init(params);
     widget->AddObserver(this);
     return widget;
@@ -105,7 +108,7 @@ class ExpectsNullCursorClientDuringTearDown : public aura::WindowObserver {
 };
 
 TEST_F(DesktopWindowTreeHostMusTest, Visibility) {
-  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget(CreateWidget());
   EXPECT_FALSE(widget->IsVisible());
   EXPECT_FALSE(widget->GetNativeView()->IsVisible());
   // It's important the parent is also hidden as this value is sent to the
@@ -122,10 +125,10 @@ TEST_F(DesktopWindowTreeHostMusTest, Visibility) {
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, Deactivate) {
-  std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget1(CreateWidget());
   widget1->Show();
 
-  std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget2(CreateWidget());
   widget2->Show();
 
   widget1->Activate();
@@ -138,7 +141,7 @@ TEST_F(DesktopWindowTreeHostMusTest, Deactivate) {
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, CursorClientDuringTearDown) {
-  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget(CreateWidget());
   widget->Show();
 
   std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
@@ -150,10 +153,10 @@ TEST_F(DesktopWindowTreeHostMusTest, CursorClientDuringTearDown) {
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, StackAtTop) {
-  std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget1(CreateWidget());
   widget1->Show();
 
-  std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget2(CreateWidget());
   widget2->Show();
 
   aura::test::ChangeCompletionWaiter waiter(
@@ -168,10 +171,10 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTop) {
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, StackAtTopAlreadyOnTop) {
-  std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget1(CreateWidget());
   widget1->Show();
 
-  std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget2(CreateWidget());
   widget2->Show();
 
   aura::test::ChangeCompletionWaiter waiter(
@@ -179,6 +182,23 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTopAlreadyOnTop) {
       aura::ChangeType::REORDER, true);
   widget2->StackAtTop();
   waiter.Wait();
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, TransientParentWiredToHostWindow) {
+  std::unique_ptr<Widget> widget1(CreateWidget());
+  widget1->Show();
+
+  std::unique_ptr<Widget> widget2(
+      CreateWidget(nullptr, widget1->GetNativeView()));
+  widget2->Show();
+
+  aura::client::TransientWindowClient* transient_window_client =
+      aura::client::GetTransientWindowClient();
+  // Even though the widget1->GetNativeView() was specified as the parent we
+  // expect the transient parents to be marked at the host level.
+  EXPECT_EQ(widget1->GetNativeView()->GetHost()->window(),
+            transient_window_client->GetTransientParent(
+                widget2->GetNativeView()->GetHost()->window()));
 }
 
 }  // namespace views
