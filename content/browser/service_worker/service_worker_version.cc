@@ -76,6 +76,9 @@ const char kClaimClientsShutdownErrorMesage[] =
     "Failed to claim clients due to Service Worker system shutdown.";
 
 const char kNotRespondingErrorMesage[] = "Service Worker is not responding.";
+const char kForceUpdateInfoMessage[] =
+    "Service Worker was updated because \"Update on load\" was "
+    "checked in DevTools Service Workers toolbar.";
 
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
@@ -747,6 +750,11 @@ void ServiceWorkerVersion::ReportError(ServiceWorkerStatusCode status,
   } else {
     OnReportException(base::UTF8ToUTF16(status_message), -1, -1, GURL());
   }
+}
+
+void ServiceWorkerVersion::ReportForceUpdateToDevTools() {
+  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::LevelWarning,
+                                        kForceUpdateInfoMessage);
 }
 
 void ServiceWorkerVersion::SetStartWorkerStatusCode(

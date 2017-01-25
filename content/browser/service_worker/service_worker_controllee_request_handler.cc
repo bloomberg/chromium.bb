@@ -380,10 +380,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
   DCHECK_EQ(original_registration->id(), registration_id);
   scoped_refptr<ServiceWorkerVersion> new_version =
       original_registration->installing_version();
-  new_version->ReportError(
-      SERVICE_WORKER_OK,
-      "ServiceWorker was updated because \"Force update on page load\" was "
-      "checked in DevTools Source tab.");
+  new_version->ReportForceUpdateToDevTools();
   new_version->set_skip_waiting(true);
   new_version->RegisterStatusChangeCallback(base::Bind(
       &self::OnUpdatedVersionStatusChanged, weak_factory_.GetWeakPtr(),

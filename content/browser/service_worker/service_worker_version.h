@@ -354,6 +354,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void ReportError(ServiceWorkerStatusCode status,
                    const std::string& status_message);
 
+  void ReportForceUpdateToDevTools();
+
   // Sets the status code to pass to StartWorker callbacks if start fails.
   void SetStartWorkerStatusCode(ServiceWorkerStatusCode status);
 
