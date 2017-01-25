@@ -109,10 +109,6 @@ def _css_build(directory, files):
 
 
 def main():
-  _vulcanize(directory='md_downloads', host='downloads',
-             html_in_file='downloads.html')
-  _css_build(directory='md_downloads', files=['vulcanized.html'])
-
   # Already loaded by history.html:
   history_extra_args = ['--exclude', 'chrome://resources/html/util.html',
                         '--exclude', 'chrome://history/constants.html']
