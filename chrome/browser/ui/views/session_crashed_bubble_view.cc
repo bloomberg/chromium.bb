@@ -14,8 +14,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -24,7 +22,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -32,11 +29,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -164,7 +157,7 @@ void SessionCrashedBubbleView::ShowForReal(
 
   Browser* browser = browser_observer->browser();
 
-  if (!browser) {
+  if (!browser || !browser->tab_strip_model()->GetActiveWebContents()) {
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ERROR);
     return;
   }
@@ -172,17 +165,8 @@ void SessionCrashedBubbleView::ShowForReal(
   views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
                                  ->toolbar()
                                  ->app_menu_button();
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  if (!web_contents) {
-    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ERROR);
-    return;
-  }
-
   SessionCrashedBubbleView* crash_bubble =
-      new SessionCrashedBubbleView(anchor_view, browser, web_contents,
-                                   offer_uma_optin);
+      new SessionCrashedBubbleView(anchor_view, browser, offer_uma_optin);
   views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
 
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
@@ -193,27 +177,16 @@ void SessionCrashedBubbleView::ShowForReal(
 SessionCrashedBubbleView::SessionCrashedBubbleView(
     views::View* anchor_view,
     Browser* browser,
-    content::WebContents* web_contents,
     bool offer_uma_optin)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      content::WebContentsObserver(web_contents),
       browser_(browser),
-      web_contents_(web_contents),
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
-      first_navigation_ignored_(false),
       restored_(false) {
   set_close_on_deactivate(false);
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_TAB_CLOSING,
-      content::Source<content::NavigationController>(&(
-          web_contents->GetController())));
-  browser->tab_strip_model()->AddObserver(this);
 }
 
 SessionCrashedBubbleView::~SessionCrashedBubbleView() {
-  browser_->tab_strip_model()->RemoveObserver(this);
 }
 
 base::string16 SessionCrashedBubbleView::GetWindowTitle() const {
@@ -335,45 +308,6 @@ void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_HELP);
 }
 
-void SessionCrashedBubbleView::DidFinishLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
-  // We want to close the bubble if the user navigates the first tab away after
-  // a crash. Ignore subframe navigations since they're noise and don't affect
-  // the desired behavior.
-  if (render_frame_host->GetParent())
-    return;
-
-  if (!first_navigation_ignored_) {
-    first_navigation_ignored_ = true;
-    return;
-  }
-
-  CloseBubble();
-}
-
-void SessionCrashedBubbleView::WasShown() {
-  GetWidget()->Show();
-}
-
-void SessionCrashedBubbleView::WasHidden() {
-  GetWidget()->Hide();
-}
-
-void SessionCrashedBubbleView::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_TAB_CLOSING, type);
-  CloseBubble();
-}
-
-void SessionCrashedBubbleView::TabDetachedAt(content::WebContents* contents,
-                                             int index) {
-  if (web_contents_ == contents)
-    CloseBubble();
-}
-
 void SessionCrashedBubbleView::RestorePreviousSession() {
   SessionRestore::RestoreSessionAfterCrash(browser_);
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_RESTORED);
@@ -385,9 +319,5 @@ void SessionCrashedBubbleView::RestorePreviousSession() {
     ChangeMetricsReportingState(true);
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_UMA_OPTIN);
   }
-  CloseBubble();
-}
-
-void SessionCrashedBubbleView::CloseBubble() {
   GetWidget()->Close();
 }

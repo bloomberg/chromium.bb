@@ -9,11 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/session_crashed_bubble.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/reload_type.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/styled_label_listener.h"
 
@@ -22,21 +17,14 @@ class Checkbox;
 class Widget;
 }
 
-namespace content {
-class WebContents;
-}
-
 class Browser;
 
-// It creates a session restore request bubble when the previous session has
-// crashed. It also presents an option to enable metrics reporting, if it not
-// enabled already.
+// SessionCrashedBubbleView shows a bubble allowing the user to restore the
+// previous session. If metrics reporting is not enabled a checkbox is presented
+// allowing the user to turn it on.
 class SessionCrashedBubbleView : public SessionCrashedBubble,
                                  public views::BubbleDialogDelegateView,
-                                 public views::StyledLabelListener,
-                                 public content::WebContentsObserver,
-                                 public content::NotificationObserver,
-                                 public TabStripModelObserver {
+                                 public views::StyledLabelListener {
  public:
   // A helper class that listens to browser removal event.
   class BrowserRemovalObserver;
@@ -51,7 +39,6 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
  private:
   SessionCrashedBubbleView(views::View* anchor_view,
                            Browser* browser,
-                           content::WebContents* web_contents,
                            bool offer_uma_optin);
   ~SessionCrashedBubbleView() override;
 
@@ -74,46 +61,17 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // content::WebContentsObserver methods.
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-  void WasShown() override;
-  void WasHidden() override;
-
-  // content::NotificationObserver methods.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  // TabStripModelObserver methods.
-  // When the tab with current bubble is being dragged and dropped to a new
-  // window or to another window, the bubble will be dismissed as if the user
-  // chose not to restore the previous session.
-  void TabDetachedAt(content::WebContents* contents, int index) override;
-
   // Restore previous session after user selects so.
   void RestorePreviousSession();
 
-  // Close and destroy the bubble.
-  void CloseBubble();
-
-  content::NotificationRegistrar registrar_;
-
   // Used for opening the question mark link as well as access the tab strip.
   Browser* browser_;
-
-  // The web content associated with current bubble.
-  content::WebContents* web_contents_;
 
   // Checkbox for the user to opt-in to UMA reporting.
   views::Checkbox* uma_option_;
 
   // Whether or not the UMA opt-in option should be shown.
   bool offer_uma_optin_;
-
-  // Whether or not the first navigation was ignored. This is needed because the
-  // bubble shouldn't go away when the new tab page loads after a crash.
-  bool first_navigation_ignored_;
 
   // Whether or not the user chose to restore previous session. It is used to
   // collect bubble usage stats.
