@@ -5859,8 +5859,7 @@
         "useflags": [
             "-transparent_hugepage",
             "chrome_internal",
-            "clang",
-            "llvm-next"
+            "clang"
         ],
         "vm_tests": []
     },

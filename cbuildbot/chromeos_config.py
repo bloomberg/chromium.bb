@@ -3237,8 +3237,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'afdo_generate': True,
           'latest_toolchain': True,
           # Disable hugepages before collecting AFDO profile.
-          'useflags': append_useflags(['-transparent_hugepage', 'clang',
-                                       'llvm-next']),
+          'useflags': append_useflags(['-transparent_hugepage', 'clang']),
           'hw_tests': [hw_test_list.AFDORecordTest()]
       },
 
