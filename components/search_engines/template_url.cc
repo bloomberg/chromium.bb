@@ -68,8 +68,6 @@ const char kDefaultCount[] = "10";
 const char kOutputEncodingType[] = "UTF-8";
 
 constexpr char kGoogleInstantExtendedEnabledKey[] =
-    "google:instantExtendedEnabledKey";
-constexpr char kGoogleInstantExtendedEnabledKeyFull[] =
     "{google:instantExtendedEnabledKey}";
 
 // Attempts to encode |terms| and |original_query| in |encoding| and escape
@@ -173,10 +171,10 @@ bool SearchTermsReplacementKeysMatch(
   if (search_terms_replacement_key1 == search_terms_replacement_key2)
     return true;
   if (search_terms_replacement_key1 == google_util::kInstantExtendedAPIParam &&
-      search_terms_replacement_key2 == kGoogleInstantExtendedEnabledKeyFull)
+      search_terms_replacement_key2 == kGoogleInstantExtendedEnabledKey)
     return true;
   if (search_terms_replacement_key2 == google_util::kInstantExtendedAPIParam &&
-      search_terms_replacement_key1 == kGoogleInstantExtendedEnabledKeyFull)
+      search_terms_replacement_key1 == kGoogleInstantExtendedEnabledKey)
     return true;
   return false;
 }
@@ -1179,8 +1177,7 @@ TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
   ResizeURLRefVector();
   SetPrepopulateId(data_.prepopulate_id);
 
-  if (data_.search_terms_replacement_key ==
-      kGoogleInstantExtendedEnabledKeyFull)
+  if (data_.search_terms_replacement_key == kGoogleInstantExtendedEnabledKey)
     data_.search_terms_replacement_key = google_util::kInstantExtendedAPIParam;
 }
 
