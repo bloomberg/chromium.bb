@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.ContentResolver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.provider.Settings;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
@@ -241,21 +239,6 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         // but a result from the previous request.
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
         storage.updateDidLastWebApkUpdateRequestSucceed(success);
-    }
-
-    /**
-     * Returns whether the user has enabled installing apps from sources other than the Google
-     * Play Store.
-     */
-    private static boolean installingFromUnknownSourcesAllowed() {
-        ContentResolver contentResolver = ContextUtils.getApplicationContext().getContentResolver();
-        try {
-            int setting = Settings.Secure.getInt(
-                    contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS);
-            return setting == 1;
-        } catch (Settings.SettingNotFoundException e) {
-            return false;
-        }
     }
 
     /**
