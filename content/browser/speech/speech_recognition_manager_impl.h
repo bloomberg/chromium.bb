@@ -73,7 +73,6 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
                  int render_view_id,
                  int request_id) const override;
   bool HasAudioInputDevices() override;
-  base::string16 GetAudioInputDeviceModel() override;
   void ShowAudioInputSettings() override;
 
   // SpeechRecognitionEventListener methods.

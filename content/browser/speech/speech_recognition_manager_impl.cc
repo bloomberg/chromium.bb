@@ -653,10 +653,6 @@ bool SpeechRecognitionManagerImpl::HasAudioInputDevices() {
   return audio_manager_->HasAudioInputDevices();
 }
 
-base::string16 SpeechRecognitionManagerImpl::GetAudioInputDeviceModel() {
-  return audio_manager_->GetAudioInputDeviceModel();
-}
-
 void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
   // Since AudioManager::ShowAudioInputSettings can potentially launch external
   // processes, do that in the FILE thread to not block the calling threads.

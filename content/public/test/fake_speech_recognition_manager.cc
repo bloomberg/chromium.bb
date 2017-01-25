@@ -128,10 +128,6 @@ void FakeSpeechRecognitionManager::AbortAllSessionsForRenderView(
 
 bool FakeSpeechRecognitionManager::HasAudioInputDevices() { return true; }
 
-base::string16 FakeSpeechRecognitionManager::GetAudioInputDeviceModel() {
-  return base::string16();
-}
-
 int FakeSpeechRecognitionManager::GetSession(int render_process_id,
                                              int render_view_id,
                                              int request_id) const {

@@ -55,7 +55,6 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager,
   void AbortAllSessionsForRenderView(int render_process_id,
                                      int render_view_id) override;
   bool HasAudioInputDevices() override;
-  base::string16 GetAudioInputDeviceModel() override;
   void ShowAudioInputSettings() override {}
   int GetSession(int render_process_id,
                  int render_view_id,
