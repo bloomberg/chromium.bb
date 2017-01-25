@@ -654,6 +654,69 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         force_disable_reclaim_resources);
   }
 
+  void AdvanceTestCase() {
+    ++test_case_;
+    switch (test_case_) {
+      case 1:
+        // Case #1: change mailbox before the commit. The old mailbox should be
+        // released immediately.
+        SetMailbox('2');
+        EXPECT_EQ(1, callback_count_);
+        PostSetNeedsCommitToMainThread();
+
+        // Case 2 does not rely on callbacks to advance.
+        pending_callback_ = false;
+        break;
+      case 2:
+        // Case #2: change mailbox after the commit (and draw), where the
+        // layer draws. The old mailbox should be released during the next
+        // commit.
+        SetMailbox('3');
+        EXPECT_EQ(1, callback_count_);
+
+        // Cases 3-5 rely on a callback to advance.
+        pending_callback_ = true;
+        break;
+      case 3:
+        EXPECT_EQ(2, callback_count_);
+        // Case #3: change mailbox when the layer doesn't draw. The old
+        // mailbox should be released during the next commit.
+        layer_->SetBounds(gfx::Size());
+        SetMailbox('4');
+        break;
+      case 4:
+        EXPECT_EQ(3, callback_count_);
+        // Case #4: release mailbox that was committed but never drawn. The
+        // old mailbox should be released during the next commit.
+        layer_->SetTextureMailbox(TextureMailbox(), nullptr);
+        break;
+      case 5:
+        EXPECT_EQ(4, callback_count_);
+        // Restore a mailbox for the next step.
+        SetMailbox('5');
+
+        // Cases 6 and 7 do not rely on callbacks to advance.
+        pending_callback_ = false;
+        break;
+      case 6:
+        // Case #5: remove layer from tree. Callback should *not* be called, the
+        // mailbox is returned to the main thread.
+        EXPECT_EQ(4, callback_count_);
+        layer_->RemoveFromParent();
+        break;
+      case 7:
+        EXPECT_EQ(4, callback_count_);
+        // Resetting the mailbox will call the callback now.
+        layer_->SetTextureMailbox(TextureMailbox(), nullptr);
+        EXPECT_EQ(5, callback_count_);
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
   // Make sure callback is received on main and doesn't block the impl thread.
   void ReleaseCallback(char mailbox_char,
                        const gpu::SyncToken& sync_token,
@@ -661,6 +724,10 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
     EXPECT_FALSE(lost_resource);
     ++callback_count_;
+
+    // If we are waiting on a callback, advance now.
+    if (pending_callback_)
+      AdvanceTestCase();
   }
 
   void SetMailbox(char mailbox_char) {
@@ -696,58 +763,14 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     SetMailbox('1');
     EXPECT_EQ(0, callback_count_);
 
-    // Case #1: change mailbox before the commit. The old mailbox should be
-    // released immediately.
-    SetMailbox('2');
-    EXPECT_EQ(1, callback_count_);
-    PostSetNeedsCommitToMainThread();
+    // Setup is complete - advance to test case 1.
+    AdvanceTestCase();
   }
 
   void DidCommit() override {
-    ++commit_count_;
-    switch (commit_count_) {
-      case 1:
-        // Case #2: change mailbox after the commit (and draw), where the
-        // layer draws. The old mailbox should be released during the next
-        // commit.
-        SetMailbox('3');
-        EXPECT_EQ(1, callback_count_);
-        break;
-      case 2:
-        EXPECT_EQ(2, callback_count_);
-        // Case #3: change mailbox when the layer doesn't draw. The old
-        // mailbox should be released during the next commit.
-        layer_->SetBounds(gfx::Size());
-        SetMailbox('4');
-        break;
-      case 3:
-        EXPECT_EQ(3, callback_count_);
-        // Case #4: release mailbox that was committed but never drawn. The
-        // old mailbox should be released during the next commit.
-        layer_->SetTextureMailbox(TextureMailbox(), nullptr);
-        break;
-      case 4:
-        EXPECT_EQ(4, callback_count_);
-        // Restore a mailbox for the next step.
-        SetMailbox('5');
-        break;
-      case 5:
-        // Case #5: remove layer from tree. Callback should *not* be called, the
-        // mailbox is returned to the main thread.
-        EXPECT_EQ(4, callback_count_);
-        layer_->RemoveFromParent();
-        break;
-      case 6:
-        EXPECT_EQ(4, callback_count_);
-        // Resetting the mailbox will call the callback now.
-        layer_->SetTextureMailbox(TextureMailbox(), nullptr);
-        EXPECT_EQ(5, callback_count_);
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    // If we are not waiting on a callback, advance now.
+    if (!pending_callback_)
+      AdvanceTestCase();
   }
 
   void AfterTest() override {}
@@ -755,7 +778,9 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
  private:
   base::ThreadChecker main_thread_;
   int callback_count_ = 0;
-  int commit_count_ = 0;
+  int test_case_ = 0;
+  // Whether we are waiting on a callback to advance the test case.
+  bool pending_callback_ = false;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;
 };
