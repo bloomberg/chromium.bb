@@ -339,3 +339,34 @@ TEST_F(HistoryStateOperationsTest, StateReplacementBackForward) {
     return GetJavaScriptState() == new_state;
   });
 }
+
+// Tests that calling window.history.pushState() creates a new NavigationItem
+// and prunes trailing items.
+TEST_F(HistoryStateOperationsTest, PushState) {
+  // Navigate to about:blank then navigate back to the test page.  The created
+  // NavigationItem can be used later to verify that the state is replaced
+  // rather than pushed.
+  GURL about_blank("about:blank");
+  LoadUrl(about_blank);
+  web::NavigationItem* about_blank_item = GetLastCommittedItem();
+  ExecuteBlockAndWaitForLoad(state_operations_url(), ^{
+    navigation_manager()->GoBack();
+  });
+  ASSERT_EQ(state_operations_url(), GetLastCommittedItem()->GetURL());
+  web::NavigationItem* non_pushed_item = GetLastCommittedItem();
+  // Set up the state parameters and tap the replace state button.
+  std::string empty_state;
+  std::string empty_title;
+  GURL new_url = state_operations_url().Resolve("path");
+  SetStateParams(empty_state, empty_title, new_url);
+  ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kPushStateId));
+  // Verify that the url with the path is pushed.
+  base::test::ios::WaitUntilCondition(^bool {
+    return GetLastCommittedItem()->GetURL() == new_url;
+  });
+  // Verify that a new NavigationItem was created and that the forward item was
+  // pruned.
+  EXPECT_EQ(GetIndexOfNavigationItem(non_pushed_item) + 1,
+            GetIndexOfNavigationItem(GetLastCommittedItem()));
+  EXPECT_EQ(NSNotFound, GetIndexOfNavigationItem(about_blank_item));
+}
