@@ -469,7 +469,7 @@ class DepGraphGenerator(object):
     if "--quiet" not in emerge.opts:
       print("Calculating deps...")
 
-    with cros_event.newEvent(step="generate dependency tree"):
+    with cros_event.newEvent(kind="GenerateDepTree"):
       self.CreateDepgraph(emerge, packages)
       depgraph = emerge.depgraph
 
@@ -927,7 +927,7 @@ def EmergeProcess(output, target, *args, **kwargs):
   Returns:
     The exit code returned by the subprocess.
   """
-  event = cros_event.newEvent(step="emerge", package=target)
+  event = cros_event.newEvent(kind="EmergePackage", package=target)
   pid = os.fork()
   if pid == 0:
     try:
