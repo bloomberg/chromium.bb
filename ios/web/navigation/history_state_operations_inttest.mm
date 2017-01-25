@@ -370,3 +370,25 @@ TEST_F(HistoryStateOperationsTest, PushState) {
             GetIndexOfNavigationItem(GetLastCommittedItem()));
   EXPECT_EQ(NSNotFound, GetIndexOfNavigationItem(about_blank_item));
 }
+
+// Tests that performing a replaceState() on a page created with a POST request
+// resets the page to a GET request.
+TEST_F(HistoryStateOperationsTest, ReplaceStatePostRequest) {
+  // Add POST data to the current NavigationItem.
+  base::scoped_nsobject<NSData> post_data([NSData data]);
+  static_cast<web::NavigationItemImpl*>(GetLastCommittedItem())
+      ->SetPostData(post_data);
+  ASSERT_TRUE(GetLastCommittedItem()->HasPostData());
+  // Set up the state parameters and tap the replace state button.
+  std::string new_state("STATE OBJECT");
+  std::string empty_title;
+  GURL new_url = state_operations_url().Resolve("path");
+  SetStateParams(new_state, empty_title, new_url);
+  ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
+  // Verify that url has been replaced.
+  base::test::ios::WaitUntilCondition(^bool {
+    return GetLastCommittedItem()->GetURL() == new_url;
+  });
+  // Verify that the NavigationItem no longer has POST data.
+  EXPECT_FALSE(GetLastCommittedItem()->HasPostData());
+}

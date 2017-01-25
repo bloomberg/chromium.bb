@@ -544,6 +544,7 @@ NSString* const kWindowNameKey = @"windowName";
   currentItem->SetURL(url);
   currentItem->SetSerializedStateObject(stateObject);
   currentItem->SetHasStateBeenReplaced(true);
+  currentItem->SetPostData(nil);
   currentEntry.navigationItem->SetURL(url);
   // If the change is to a committed entry, notify interested parties.
   if (currentEntry != self.pendingEntry && _navigationManager)
