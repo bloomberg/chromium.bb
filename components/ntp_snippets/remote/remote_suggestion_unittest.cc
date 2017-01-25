@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/remote_suggestion.h"
 
 #include <utility>
 
@@ -22,18 +22,18 @@ using ::testing::Eq;
 using ::testing::IsNull;
 using ::testing::NotNull;
 
-std::unique_ptr<NTPSnippet> SnippetFromContentSuggestionJSON(
+std::unique_ptr<RemoteSuggestion> SnippetFromContentSuggestionJSON(
     const std::string& json) {
   auto json_value = base::JSONReader::Read(json);
   base::DictionaryValue* json_dict;
   if (!json_value->GetAsDictionary(&json_dict)) {
     return nullptr;
   }
-  return NTPSnippet::CreateFromContentSuggestionsDictionary(*json_dict,
-                                                            kArticlesRemoteId);
+  return RemoteSuggestion::CreateFromContentSuggestionsDictionary(
+      *json_dict, kArticlesRemoteId);
 }
 
-TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
+TEST(RemoteSuggestionTest, FromChromeContentSuggestionsDictionary) {
   const std::string kJsonStr =
       "{"
       "  \"ids\" : [\"http://localhost/foobar\"],"
@@ -75,12 +75,12 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
   EXPECT_EQ(7200.0f, notification_duration.InSecondsF());
 }
 
-std::unique_ptr<NTPSnippet> SnippetFromChromeReaderDict(
+std::unique_ptr<RemoteSuggestion> SnippetFromChromeReaderDict(
     std::unique_ptr<base::DictionaryValue> dict) {
   if (!dict) {
     return nullptr;
   }
-  return NTPSnippet::CreateFromChromeReaderDictionary(*dict);
+  return RemoteSuggestion::CreateFromChromeReaderDictionary(*dict);
 }
 
 const char kChromeReaderCreationTimestamp[] = "1234567890";
@@ -123,7 +123,7 @@ std::unique_ptr<base::DictionaryValue> ChromeReaderSnippetWithTwoSources() {
   return json_dict->CreateDeepCopy();
 }
 
-TEST(NTPSnippetTest, TestMultipleSources) {
+TEST(RemoteSuggestionTest, TestMultipleSources) {
   auto snippet =
       SnippetFromChromeReaderDict(ChromeReaderSnippetWithTwoSources());
   ASSERT_THAT(snippet, NotNull());
@@ -135,7 +135,7 @@ TEST(NTPSnippetTest, TestMultipleSources) {
   EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
 }
 
-TEST(NTPSnippetTest, TestMultipleIncompleteSources1) {
+TEST(RemoteSuggestionTest, TestMultipleIncompleteSources1) {
   // Set Source 2 to have no AMP url, and Source 1 to have no publisher name
   // Source 2 should win since we favor publisher name over amp url
   auto dict = ChromeReaderSnippetWithTwoSources();
@@ -156,7 +156,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources1) {
   EXPECT_EQ(snippet->amp_url(), GURL());
 }
 
-TEST(NTPSnippetTest, TestMultipleIncompleteSources2) {
+TEST(RemoteSuggestionTest, TestMultipleIncompleteSources2) {
   // Set Source 1 to have no AMP url, and Source 2 to have no publisher name
   // Source 1 should win in this case since we prefer publisher name to AMP url
   auto dict = ChromeReaderSnippetWithTwoSources();
@@ -177,7 +177,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources2) {
   EXPECT_EQ(snippet->amp_url(), GURL());
 }
 
-TEST(NTPSnippetTest, TestMultipleIncompleteSources3) {
+TEST(RemoteSuggestionTest, TestMultipleIncompleteSources3) {
   // Set source 1 to have no AMP url and no source, and source 2 to only have
   // amp url. There should be no snippets since we only add sources we consider
   // complete
@@ -196,7 +196,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources3) {
   ASSERT_FALSE(snippet->is_complete());
 }
 
-TEST(NTPSnippetTest, ShouldFillInCreation) {
+TEST(RemoteSuggestionTest, ShouldFillInCreation) {
   auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
@@ -206,16 +206,16 @@ TEST(NTPSnippetTest, ShouldFillInCreation) {
   // empty and not the test default value.
   base::Time publish_date = snippet->publish_date();
   EXPECT_FALSE(publish_date.is_null());
-  EXPECT_NE(publish_date,
-            NTPSnippet::TimeFromJsonString(kChromeReaderCreationTimestamp));
+  EXPECT_NE(publish_date, RemoteSuggestion::TimeFromJsonString(
+                              kChromeReaderCreationTimestamp));
   // Expiry date should have kept the test default value.
   base::Time expiry_date = snippet->expiry_date();
   EXPECT_FALSE(expiry_date.is_null());
   EXPECT_EQ(expiry_date,
-            NTPSnippet::TimeFromJsonString(kChromeReaderExpiryTimestamp));
+            RemoteSuggestion::TimeFromJsonString(kChromeReaderExpiryTimestamp));
 }
 
-TEST(NTPSnippetTest, ShouldFillInExpiry) {
+TEST(RemoteSuggestionTest, ShouldFillInExpiry) {
   auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
@@ -231,7 +231,7 @@ TEST(NTPSnippetTest, ShouldFillInExpiry) {
             expiry_date);
 }
 
-TEST(NTPSnippetTest, ShouldFillInCreationAndExpiry) {
+TEST(RemoteSuggestionTest, ShouldFillInCreationAndExpiry) {
   auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
   ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
@@ -242,8 +242,8 @@ TEST(NTPSnippetTest, ShouldFillInCreationAndExpiry) {
   // empty and not the test default value.
   base::Time publish_date = snippet->publish_date();
   EXPECT_FALSE(publish_date.is_null());
-  EXPECT_NE(publish_date,
-            NTPSnippet::TimeFromJsonString(kChromeReaderCreationTimestamp));
+  EXPECT_NE(publish_date, RemoteSuggestion::TimeFromJsonString(
+                              kChromeReaderCreationTimestamp));
   // Expiry date should have been filled with creation date + offset.
   base::Time expiry_date = snippet->expiry_date();
   EXPECT_FALSE(expiry_date.is_null());
@@ -252,7 +252,7 @@ TEST(NTPSnippetTest, ShouldFillInCreationAndExpiry) {
             expiry_date);
 }
 
-TEST(NTPSnippetTest, ShouldNotOverwriteExpiry) {
+TEST(RemoteSuggestionTest, ShouldNotOverwriteExpiry) {
   auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
@@ -262,7 +262,7 @@ TEST(NTPSnippetTest, ShouldNotOverwriteExpiry) {
   base::Time expiry_date = snippet->expiry_date();
   EXPECT_FALSE(expiry_date.is_null());
   EXPECT_EQ(expiry_date,
-            NTPSnippet::TimeFromJsonString(kChromeReaderExpiryTimestamp));
+            RemoteSuggestion::TimeFromJsonString(kChromeReaderExpiryTimestamp));
 }
 
 // Old form, from chromereader-pa.googleapis.com. Three sources.
@@ -308,7 +308,7 @@ std::unique_ptr<base::DictionaryValue> ChromeReaderSnippetWithThreeSources() {
   return json_dict->CreateDeepCopy();
 }
 
-TEST(NTPSnippetTest, TestMultipleCompleteSources1) {
+TEST(RemoteSuggestionTest, TestMultipleCompleteSources1) {
   // Test 2 complete sources, we should choose the first complete source
   auto dict = ChromeReaderSnippetWithThreeSources();
   base::ListValue* sources;
@@ -329,7 +329,7 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources1) {
   EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
 }
 
-TEST(NTPSnippetTest, TestMultipleCompleteSources2) {
+TEST(RemoteSuggestionTest, TestMultipleCompleteSources2) {
   // Test 2 complete sources, we should choose the first complete source
   auto dict = ChromeReaderSnippetWithThreeSources();
   base::ListValue* sources;
@@ -347,7 +347,7 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources2) {
   EXPECT_EQ(snippet->amp_url(), GURL("http://source2.amp.com"));
 }
 
-TEST(NTPSnippetTest, TestMultipleCompleteSources3) {
+TEST(RemoteSuggestionTest, TestMultipleCompleteSources3) {
   // Test 3 complete sources, we should choose the first complete source
   auto dict = ChromeReaderSnippetWithThreeSources();
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
@@ -359,7 +359,8 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources3) {
   EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
 }
 
-TEST(NTPSnippetTest, ShouldSupportMultipleIdsFromContentSuggestionsServer) {
+TEST(RemoteSuggestionTest,
+     ShouldSupportMultipleIdsFromContentSuggestionsServer) {
   const std::string kJsonStr =
       "{"
       "  \"ids\" : [\"http://localhost/foobar\", \"012345\"],"
@@ -381,7 +382,7 @@ TEST(NTPSnippetTest, ShouldSupportMultipleIdsFromContentSuggestionsServer) {
               ElementsAre("http://localhost/foobar", "012345"));
 }
 
-TEST(NTPSnippetTest, CreateFromProtoToProtoRoundtrip) {
+TEST(RemoteSuggestionTest, CreateFromProtoToProtoRoundtrip) {
   SnippetProto proto;
   proto.add_ids("foo");
   proto.add_ids("bar");
@@ -398,7 +399,8 @@ TEST(NTPSnippetTest, CreateFromProtoToProtoRoundtrip) {
   source->set_publisher_name("Great Suggestions Inc.");
   source->set_amp_url("http://cdn.ampproject.org/c/foo/");
 
-  std::unique_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromProto(proto);
+  std::unique_ptr<RemoteSuggestion> snippet =
+      RemoteSuggestion::CreateFromProto(proto);
   ASSERT_THAT(snippet, NotNull());
   // The snippet database relies on the fact that the first id in the protocol
   // buffer is considered the unique id.
@@ -435,50 +437,56 @@ std::unique_ptr<base::DictionaryValue> ContentSuggestionSnippet() {
   return json_dict->CreateDeepCopy();
 }
 
-TEST(NTPSnippetTest, NotifcationInfoAllSpecified) {
+TEST(RemoteSuggestionTest, NotifcationInfoAllSpecified) {
   auto json = ContentSuggestionSnippet();
   json->SetBoolean("notificationInfo.shouldNotify", true);
   json->SetString("notificationInfo.deadline", "2016-06-30T13:01:37.000Z");
-  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  auto snippet =
+      RemoteSuggestion::CreateFromContentSuggestionsDictionary(*json, 0);
   EXPECT_TRUE(snippet->should_notify());
   EXPECT_EQ(7200.0f,
             (snippet->notification_deadline() - snippet->publish_date())
                 .InSecondsF());
 }
 
-TEST(NTPSnippetTest, NotificationInfoDeadlineInvalid) {
+TEST(RemoteSuggestionTest, NotificationInfoDeadlineInvalid) {
   auto json = ContentSuggestionSnippet();
   json->SetBoolean("notificationInfo.shouldNotify", true);
   json->SetInteger("notificationInfo.notificationDeadline", 0);
-  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  auto snippet =
+      RemoteSuggestion::CreateFromContentSuggestionsDictionary(*json, 0);
   EXPECT_TRUE(snippet->should_notify());
   EXPECT_EQ(base::Time::Max(), snippet->notification_deadline());
 }
 
-TEST(NTPSnippetTest, NotificationInfoDeadlineAbsent) {
+TEST(RemoteSuggestionTest, NotificationInfoDeadlineAbsent) {
   auto json = ContentSuggestionSnippet();
   json->SetBoolean("notificationInfo.shouldNotify", true);
-  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  auto snippet =
+      RemoteSuggestion::CreateFromContentSuggestionsDictionary(*json, 0);
   EXPECT_TRUE(snippet->should_notify());
   EXPECT_EQ(base::Time::Max(), snippet->notification_deadline());
 }
 
-TEST(NTPSnippetTest, NotificationInfoShouldNotifyInvalid) {
+TEST(RemoteSuggestionTest, NotificationInfoShouldNotifyInvalid) {
   auto json = ContentSuggestionSnippet();
   json->SetString("notificationInfo.shouldNotify", "non-bool");
-  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  auto snippet =
+      RemoteSuggestion::CreateFromContentSuggestionsDictionary(*json, 0);
   EXPECT_FALSE(snippet->should_notify());
 }
 
-TEST(NTPSnippetTest, NotificationInfoAbsent) {
+TEST(RemoteSuggestionTest, NotificationInfoAbsent) {
   auto json = ContentSuggestionSnippet();
-  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  auto snippet =
+      RemoteSuggestion::CreateFromContentSuggestionsDictionary(*json, 0);
   EXPECT_FALSE(snippet->should_notify());
 }
 
-TEST(NTPSnippetTest, ToContentSuggestion) {
+TEST(RemoteSuggestionTest, ToContentSuggestion) {
   auto json = ContentSuggestionSnippet();
-  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  auto snippet =
+      RemoteSuggestion::CreateFromContentSuggestionsDictionary(*json, 0);
   ASSERT_THAT(snippet, NotNull());
   ContentSuggestion sugg = snippet->ToContentSuggestion(
       Category::FromKnownCategory(KnownCategories::ARTICLES));
@@ -497,11 +505,12 @@ TEST(NTPSnippetTest, ToContentSuggestion) {
   EXPECT_THAT(sugg.notification_extra(), IsNull());
 }
 
-TEST(NTPSnippetTest, ToContentSuggestionWithNotificationInfo) {
+TEST(RemoteSuggestionTest, ToContentSuggestionWithNotificationInfo) {
   auto json = ContentSuggestionSnippet();
   json->SetBoolean("notificationInfo.shouldNotify", true);
   json->SetString("notificationInfo.deadline", "2016-06-30T13:01:37.000Z");
-  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  auto snippet =
+      RemoteSuggestion::CreateFromContentSuggestionsDictionary(*json, 0);
   ASSERT_THAT(snippet, NotNull());
   ContentSuggestion sugg = snippet->ToContentSuggestion(
       Category::FromKnownCategory(KnownCategories::ARTICLES));

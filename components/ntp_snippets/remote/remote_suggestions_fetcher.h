@@ -18,7 +18,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/remote/json_request.h"
-#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/ntp_snippets/status.h"
@@ -62,7 +62,7 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   struct FetchedCategory {
     Category category;
     CategoryInfo info;
-    NTPSnippet::PtrVector snippets;
+    RemoteSuggestion::PtrVector suggestions;
 
     FetchedCategory(Category c, CategoryInfo&& info);
     FetchedCategory(FetchedCategory&&);             // = default, in .cc
@@ -72,9 +72,6 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   using FetchedCategoriesVector = std::vector<FetchedCategory>;
   using OptionalFetchedCategories = base::Optional<FetchedCategoriesVector>;
 
-  // |snippets| contains parsed snippets if a fetch succeeded. If problems
-  // occur, |snippets| contains no value (no actual vector in base::Optional).
-  // Error details can be retrieved using last_status().
   using SnippetsAvailableCallback =
       base::OnceCallback<void(Status status,
                               OptionalFetchedCategories fetched_categories)>;
@@ -196,7 +193,7 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
 
   const ParseJSONCallback parse_json_callback_;
 
-  // API endpoint for fetching snippets.
+  // API endpoint for fetching suggestions.
   const GURL fetch_url_;
   // Which API to use
   const internal::FetchAPI fetch_api_;

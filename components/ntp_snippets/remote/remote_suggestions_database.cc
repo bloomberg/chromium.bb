@@ -82,7 +82,7 @@ void RemoteSuggestionsDatabase::LoadSnippets(const SnippetsCallback& callback) {
   }
 }
 
-void RemoteSuggestionsDatabase::SaveSnippet(const NTPSnippet& snippet) {
+void RemoteSuggestionsDatabase::SaveSnippet(const RemoteSuggestion& snippet) {
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
   // OnDatabaseLoaded relies on the detail that the primary snippet id goes
   // first in the protocol representation.
@@ -92,9 +92,9 @@ void RemoteSuggestionsDatabase::SaveSnippet(const NTPSnippet& snippet) {
 }
 
 void RemoteSuggestionsDatabase::SaveSnippets(
-    const NTPSnippet::PtrVector& snippets) {
+    const RemoteSuggestion::PtrVector& snippets) {
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
-  for (const std::unique_ptr<NTPSnippet>& snippet : snippets) {
+  for (const std::unique_ptr<RemoteSuggestion>& snippet : snippets) {
     // OnDatabaseLoaded relies on the detail that the primary snippet id goes
     // first in the protocol representation.
     DCHECK_EQ(snippet->ToProto().ids(0), snippet->id());
@@ -193,9 +193,10 @@ void RemoteSuggestionsDatabase::OnDatabaseLoaded(
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
 
-  NTPSnippet::PtrVector snippets;
+  RemoteSuggestion::PtrVector snippets;
   for (const SnippetProto& proto : *entries) {
-    std::unique_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromProto(proto);
+    std::unique_ptr<RemoteSuggestion> snippet =
+        RemoteSuggestion::CreateFromProto(proto);
     if (snippet) {
       snippets.emplace_back(std::move(snippet));
     } else {

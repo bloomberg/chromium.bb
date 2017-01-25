@@ -21,7 +21,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
@@ -86,7 +86,7 @@ MATCHER(IsEmptyArticleList, "is an empty list of articles") {
   RemoteSuggestionsFetcher::OptionalFetchedCategories& fetched_categories =
       *arg;
   return fetched_categories && fetched_categories->size() == 1 &&
-         fetched_categories->begin()->snippets.empty();
+         fetched_categories->begin()->suggestions.empty();
 }
 
 MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
@@ -101,14 +101,14 @@ MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
     return false;
   }
   auto category = fetched_categories->begin();
-  if (category->snippets.size() != 1) {
+  if (category->suggestions.size() != 1) {
     *result_listener << "expected single snippet, got: "
-                     << category->snippets.size();
+                     << category->suggestions.size();
     return false;
   }
-  if (category->snippets[0]->url().spec() != url) {
+  if (category->suggestions[0]->url().spec() != url) {
     *result_listener << "unexpected url, got: "
-                     << category->snippets[0]->url().spec();
+                     << category->suggestions[0]->url().spec();
     return false;
   }
   return true;
@@ -550,7 +550,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
   ASSERT_TRUE(fetched_categories);
   ASSERT_THAT(fetched_categories->size(), Eq(2u));
   for (const auto& category : *fetched_categories) {
-    const auto& articles = category.snippets;
+    const auto& articles = category.suggestions;
     if (category.category.IsKnownCategory(KnownCategories::ARTICLES)) {
       ASSERT_THAT(articles.size(), Eq(1u));
       EXPECT_THAT(articles[0]->url().spec(), Eq("http://localhost/foobar"));
@@ -682,8 +682,9 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   ASSERT_THAT(fetched_categories->size(), Eq(1u));
   const auto& category = (*fetched_categories)[0];
   EXPECT_THAT(category.category.id(), Eq(Category::FromRemoteCategory(2).id()));
-  ASSERT_THAT(category.snippets.size(), Eq(1u));
-  EXPECT_THAT(category.snippets[0]->url().spec(), Eq("http://localhost/foo2"));
+  ASSERT_THAT(category.suggestions.size(), Eq(1u));
+  EXPECT_THAT(category.suggestions[0]->url().spec(),
+              Eq("http://localhost/foo2"));
 }
 
 // TODO(fhorschig): Check for behavioral changes instead of state.

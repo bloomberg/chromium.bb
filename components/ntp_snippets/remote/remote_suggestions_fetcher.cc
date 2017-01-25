@@ -52,7 +52,7 @@ const char kContentSuggestionsApiScope[] =
 const char kSnippetsServerNonAuthorizedFormat[] = "%s?key=%s";
 const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
-// Variation parameter for personalizing fetching of snippets.
+// Variation parameter for personalizing fetching of suggestions.
 const char kPersonalizationName[] = "fetching_personalization";
 
 // Variation parameter for chrome-content-suggestions backend.
@@ -138,31 +138,31 @@ bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
   return true;
 }
 
-// Creates snippets from dictionary values in |list| and adds them to
-// |snippets|. Returns true on success, false if anything went wrong.
+// Creates suggestions from dictionary values in |list| and adds them to
+// |suggestions|. Returns true on success, false if anything went wrong.
 // |remote_category_id| is only used if |content_suggestions_api| is true.
-bool AddSnippetsFromListValue(bool content_suggestions_api,
-                              int remote_category_id,
-                              const base::ListValue& list,
-                              NTPSnippet::PtrVector* snippets) {
+bool AddSuggestionsFromListValue(bool content_suggestions_api,
+                                 int remote_category_id,
+                                 const base::ListValue& list,
+                                 RemoteSuggestion::PtrVector* suggestions) {
   for (const auto& value : list) {
     const base::DictionaryValue* dict = nullptr;
     if (!value->GetAsDictionary(&dict)) {
       return false;
     }
 
-    std::unique_ptr<NTPSnippet> snippet;
+    std::unique_ptr<RemoteSuggestion> suggestion;
     if (content_suggestions_api) {
-      snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(
+      suggestion = RemoteSuggestion::CreateFromContentSuggestionsDictionary(
           *dict, remote_category_id);
     } else {
-      snippet = NTPSnippet::CreateFromChromeReaderDictionary(*dict);
+      suggestion = RemoteSuggestion::CreateFromChromeReaderDictionary(*dict);
     }
-    if (!snippet) {
+    if (!suggestion) {
       return false;
     }
 
-    snippets->push_back(std::move(snippet));
+    suggestions->push_back(std::move(suggestion));
   }
   return true;
 }
@@ -339,13 +339,13 @@ void RemoteSuggestionsFetcher::FetchSnippets(
       .SetUserClassifier(*user_classifier_);
 
   if (NeedsAuthentication() && signin_manager_->IsAuthenticated()) {
-    // Signed-in: get OAuth token --> fetch snippets.
+    // Signed-in: get OAuth token --> fetch suggestions.
     oauth_token_retried_ = false;
     pending_requests_.emplace(std::move(builder), std::move(callback));
     StartTokenRequest();
   } else if (NeedsAuthentication() && signin_manager_->AuthInProgress()) {
     // Currently signing in: wait for auth to finish (the refresh token) -->
-    //     get OAuth token --> fetch snippets.
+    //     get OAuth token --> fetch suggestions.
     pending_requests_.emplace(std::move(builder), std::move(callback));
     if (!waiting_for_refresh_token_) {
       // Wait until we get a refresh token.
@@ -353,7 +353,7 @@ void RemoteSuggestionsFetcher::FetchSnippets(
       token_service_->AddObserver(this);
     }
   } else {
-    // Not signed in: fetch snippets (without authentication).
+    // Not signed in: fetch suggestions (without authentication).
     FetchSnippetsNonAuthenticated(std::move(builder), std::move(callback));
   }
 }
@@ -534,9 +534,9 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
 
       const base::ListValue* recos = nullptr;
       return top_dict->GetList("recos", &recos) &&
-             AddSnippetsFromListValue(/*content_suggestions_api=*/false,
-                                      kUnusedRemoteCategoryId, *recos,
-                                      &categories->back().snippets);
+             AddSuggestionsFromListValue(/*content_suggestions_api=*/false,
+                                         kUnusedRemoteCategoryId, *recos,
+                                         &categories->back().suggestions);
     }
 
     case FetchAPI::CHROME_CONTENT_SUGGESTIONS_API: {
@@ -556,14 +556,14 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
           return false;
         }
 
-        NTPSnippet::PtrVector snippets;
-        const base::ListValue* suggestions = nullptr;
+        RemoteSuggestion::PtrVector suggestions;
+        const base::ListValue* suggestions_list = nullptr;
         // Absence of a list of suggestions is treated as an empty list, which
         // is permissible.
-        if (category_value->GetList("suggestions", &suggestions)) {
-          if (!AddSnippetsFromListValue(
+        if (category_value->GetList("suggestions", &suggestions_list)) {
+          if (!AddSuggestionsFromListValue(
                   /*content_suggestions_api=*/true, remote_category_id,
-                  *suggestions, &snippets)) {
+                  *suggestions_list, &suggestions)) {
             return false;
           }
         }
@@ -582,7 +582,7 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
               category, BuildRemoteCategoryInfo(base::UTF8ToUTF16(utf8_title),
                                                 allow_fetching_more_results)));
         }
-        categories->back().snippets = std::move(snippets);
+        categories->back().suggestions = std::move(suggestions);
       }
       return true;
     }

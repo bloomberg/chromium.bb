@@ -24,7 +24,7 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
@@ -173,12 +173,13 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // Available snippets, only for unit tests.
   // TODO(treib): Get rid of this. Tests should use a fake observer instead.
-  const NTPSnippet::PtrVector& GetSnippetsForTesting(Category category) const {
-    return category_contents_.find(category)->second.snippets;
+  const RemoteSuggestion::PtrVector& GetSnippetsForTesting(
+      Category category) const {
+    return category_contents_.find(category)->second.suggestions;
   }
 
   // Dismissed snippets, only for unit tests.
-  const NTPSnippet::PtrVector& GetDismissedSnippetsForTesting(
+  const RemoteSuggestion::PtrVector& GetDismissedSnippetsForTesting(
       Category category) const {
     return category_contents_.find(category)->second.dismissed;
   }
@@ -260,25 +261,26 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
     // True iff the server returned results in this category in the last fetch.
     // We never remove categories that the server still provides, but if the
     // server stops providing a category, we won't yet report it as NOT_PROVIDED
-    // while we still have non-expired snippets in it.
+    // while we still have non-expired suggestions in it.
     bool included_in_last_server_response = true;
 
     // All currently active suggestions (excl. the dismissed ones).
-    NTPSnippet::PtrVector snippets;
+    RemoteSuggestion::PtrVector suggestions;
 
     // All previous suggestions that we keep around in memory because they can
     // be on some open NTP. We do not persist this list so that on a new start
     // of Chrome, this is empty.
     // |archived| is a FIFO buffer with a maximum length.
-    std::deque<std::unique_ptr<NTPSnippet>> archived;
+    std::deque<std::unique_ptr<RemoteSuggestion>> archived;
 
     // Suggestions that the user dismissed. We keep these around until they
-    // expire so we won't re-add them to |snippets| on the next fetch.
-    NTPSnippet::PtrVector dismissed;
+    // expire so we won't re-add them to |suggestions| on the next fetch.
+    RemoteSuggestion::PtrVector dismissed;
 
     // Returns a non-dismissed snippet with the given |id_within_category|, or
     // null if none exist.
-    const NTPSnippet* FindSnippet(const std::string& id_within_category) const;
+    const RemoteSuggestion* FindSnippet(
+        const std::string& id_within_category) const;
 
     explicit CategoryContent(const CategoryInfo& info);
     CategoryContent(CategoryContent&&);
@@ -300,7 +302,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   GURL FindSnippetImageUrl(const ContentSuggestion::ID& suggestion_id) const;
 
   // Callbacks for the RemoteSuggestionsDatabase.
-  void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
+  void OnDatabaseLoaded(RemoteSuggestion::PtrVector snippets);
   void OnDatabaseError();
 
   // Callback for fetch-more requests with the RemoteSuggestionsFetcher.
@@ -321,16 +323,16 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // function will also delete images from the database in case the associated
   // snippet gets evicted from the archive.
   void ArchiveSnippets(CategoryContent* content,
-                       NTPSnippet::PtrVector* to_archive);
+                       RemoteSuggestion::PtrVector* to_archive);
 
   // Sanitizes newly fetched snippets -- e.g. adding missing dates and filtering
   // out incomplete results or dismissed snippets (indicated by |dismissed|).
-  void SanitizeReceivedSnippets(const NTPSnippet::PtrVector& dismissed,
-                                NTPSnippet::PtrVector* snippets);
+  void SanitizeReceivedSnippets(const RemoteSuggestion::PtrVector& dismissed,
+                                RemoteSuggestion::PtrVector* snippets);
 
   // Adds newly available suggestions to |content|.
   void IntegrateSnippets(CategoryContent* content,
-                         NTPSnippet::PtrVector new_snippets);
+                         RemoteSuggestion::PtrVector new_snippets);
 
   // Dismisses a snippet within a given category content.
   // Note that this modifies the snippet datastructures of |content|

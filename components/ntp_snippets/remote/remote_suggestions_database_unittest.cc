@@ -27,7 +27,7 @@ using testing::_;
 
 namespace ntp_snippets {
 
-bool operator==(const NTPSnippet& lhs, const NTPSnippet& rhs) {
+bool operator==(const RemoteSuggestion& lhs, const RemoteSuggestion& rhs) {
   return lhs.id() == rhs.id() && lhs.title() == rhs.title() &&
          lhs.url() == rhs.url() &&
          lhs.publisher_name() == rhs.publisher_name() &&
@@ -40,10 +40,10 @@ bool operator==(const NTPSnippet& lhs, const NTPSnippet& rhs) {
 
 namespace {
 
-std::unique_ptr<NTPSnippet> CreateTestSnippet() {
-  return NTPSnippet::CreateForTesting("http://localhost", kArticlesRemoteId,
-                                      GURL("http://localhost"), "Publisher",
-                                      GURL("http://amp"));
+std::unique_ptr<RemoteSuggestion> CreateTestSuggestion() {
+  return RemoteSuggestion::CreateForTesting(
+      "http://localhost", kArticlesRemoteId, GURL("http://localhost"),
+      "Publisher", GURL("http://amp"));
 }
 
 MATCHER_P(SnippetEq, snippet, "") {
@@ -79,11 +79,11 @@ class RemoteSuggestionsDatabaseTest : public testing::Test {
 
   // TODO(tschumann): MOCK_METHODS on non mock objects are an anti-pattern.
   // Clean up.
-  void OnSnippetsLoaded(NTPSnippet::PtrVector snippets) {
+  void OnSnippetsLoaded(RemoteSuggestion::PtrVector snippets) {
     OnSnippetsLoadedImpl(snippets);
   }
   MOCK_METHOD1(OnSnippetsLoadedImpl,
-               void(const NTPSnippet::PtrVector& snippets));
+               void(const RemoteSuggestion::PtrVector& snippets));
 
   MOCK_METHOD1(OnImageLoaded, void(std::string));
 
@@ -150,7 +150,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Save) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
 
-  std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
+  std::unique_ptr<RemoteSuggestion> snippet = CreateTestSuggestion();
   std::string image_data("pretty image");
 
   // Store a snippet and an image.
@@ -179,7 +179,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, SavePersist) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
 
-  std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
+  std::unique_ptr<RemoteSuggestion> snippet = CreateTestSuggestion();
   std::string image_data("pretty image");
 
   // Store a snippet and an image.
@@ -207,7 +207,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Update) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
 
-  std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
+  std::unique_ptr<RemoteSuggestion> snippet = CreateTestSuggestion();
 
   // Store a snippet.
   db()->SaveSnippet(*snippet);
@@ -230,7 +230,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Delete) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
 
-  std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
+  std::unique_ptr<RemoteSuggestion> snippet = CreateTestSuggestion();
 
   // Store a snippet.
   db()->SaveSnippet(*snippet);
@@ -261,7 +261,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, DeleteSnippetDoesNotDeleteImage) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
 
-  std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
+  std::unique_ptr<RemoteSuggestion> snippet = CreateTestSuggestion();
   std::string image_data("pretty image");
 
   // Store a snippet and image.
@@ -299,7 +299,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, DeleteImage) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
 
-  std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
+  std::unique_ptr<RemoteSuggestion> snippet = CreateTestSuggestion();
   std::string image_data("pretty image");
 
   // Store the image.

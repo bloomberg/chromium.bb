@@ -34,8 +34,8 @@
 #include "components/ntp_snippets/fake_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
-#include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
+#include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/test_utils.h"
@@ -1356,7 +1356,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, TestSingleSource) {
 
   LoadFromJSONString(service.get(), json_str);
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  const NTPSnippet& snippet =
+  const RemoteSuggestion& snippet =
       *service->GetSnippetsForTesting(articles_category()).front();
   EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.url(), GURL("http://source1.com"));

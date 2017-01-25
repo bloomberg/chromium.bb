@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/leveldb_proto/proto_database.h"
-#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/remote_suggestion.h"
 
 namespace base {
 class FilePath;
@@ -30,7 +30,7 @@ class SnippetProto;
 
 class RemoteSuggestionsDatabase {
  public:
-  using SnippetsCallback = base::Callback<void(NTPSnippet::PtrVector)>;
+  using SnippetsCallback = base::Callback<void(RemoteSuggestion::PtrVector)>;
   using SnippetImageCallback = base::Callback<void(std::string)>;
 
   RemoteSuggestionsDatabase(
@@ -54,9 +54,9 @@ class RemoteSuggestionsDatabase {
   void LoadSnippets(const SnippetsCallback& callback);
 
   // Adds or updates the given snippet.
-  void SaveSnippet(const NTPSnippet& snippet);
+  void SaveSnippet(const RemoteSuggestion& snippet);
   // Adds or updates all the given snippets.
-  void SaveSnippets(const NTPSnippet::PtrVector& snippets);
+  void SaveSnippets(const RemoteSuggestion::PtrVector& snippets);
 
   // Deletes the snippet with the given ID.
   void DeleteSnippet(const std::string& snippet_id);

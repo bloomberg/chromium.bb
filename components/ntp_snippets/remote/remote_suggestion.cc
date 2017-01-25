@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/remote_suggestion.h"
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -83,18 +83,19 @@ static_assert(
 
 const int kChromeReaderDefaultExpiryTimeMins = 3 * 24 * 60;
 
-NTPSnippet::NTPSnippet(const std::vector<std::string>& ids,
-                       int remote_category_id)
+RemoteSuggestion::RemoteSuggestion(const std::vector<std::string>& ids,
+                                   int remote_category_id)
     : ids_(ids),
       score_(0),
       is_dismissed_(false),
       remote_category_id_(remote_category_id),
       should_notify_(false) {}
 
-NTPSnippet::~NTPSnippet() = default;
+RemoteSuggestion::~RemoteSuggestion() = default;
 
 // static
-std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
+std::unique_ptr<RemoteSuggestion>
+RemoteSuggestion::CreateFromChromeReaderDictionary(
     const base::DictionaryValue& dict) {
   const base::DictionaryValue* content = nullptr;
   if (!dict.GetDictionary("contentInfo", &content)) {
@@ -164,7 +165,8 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
     return nullptr;
   }
 
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(ids, kArticlesRemoteId));
+  std::unique_ptr<RemoteSuggestion> snippet(
+      new RemoteSuggestion(ids, kArticlesRemoteId));
 
   std::string title;
   if (content->GetString("title", &title)) {
@@ -212,7 +214,8 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
 }
 
 // static
-std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
+std::unique_ptr<RemoteSuggestion>
+RemoteSuggestion::CreateFromContentSuggestionsDictionary(
     const base::DictionaryValue& dict,
     int remote_category_id) {
   const base::ListValue* ids;
@@ -266,7 +269,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
 }
 
 // static
-std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
+std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
     const SnippetProto& proto) {
   // Need at least the id.
   if (proto.ids_size() == 0 || proto.ids(0).empty()) {
@@ -320,14 +323,14 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
 }
 
 // static
-std::unique_ptr<NTPSnippet> NTPSnippet::CreateForTesting(
+std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateForTesting(
     const std::string& id,
     int remote_category_id,
     const GURL& url,
     const std::string& publisher_name,
     const GURL& amp_url) {
-  auto snippet = MakeUnique(std::vector<std::string>(1, id),
-                            remote_category_id);
+  auto snippet =
+      MakeUnique(std::vector<std::string>(1, id), remote_category_id);
   snippet->url_ = url;
   snippet->publisher_name_ = publisher_name;
   snippet->amp_url_ = amp_url;
@@ -335,7 +338,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateForTesting(
   return snippet;
 }
 
-SnippetProto NTPSnippet::ToProto() const {
+SnippetProto RemoteSuggestion::ToProto() const {
   SnippetProto result;
   for (const std::string& id : ids_) {
     result.add_ids(id);
@@ -371,7 +374,8 @@ SnippetProto NTPSnippet::ToProto() const {
   return result;
 }
 
-ContentSuggestion NTPSnippet::ToContentSuggestion(Category category) const {
+ContentSuggestion RemoteSuggestion::ToContentSuggestion(
+    Category category) const {
   GURL url = url_;
   if (base::FeatureList::IsEnabled(kPreferAmpUrlsFeature) &&
       !amp_url_.is_empty()) {
@@ -393,7 +397,8 @@ ContentSuggestion NTPSnippet::ToContentSuggestion(Category category) const {
 }
 
 // static
-base::Time NTPSnippet::TimeFromJsonString(const std::string& timestamp_str) {
+base::Time RemoteSuggestion::TimeFromJsonString(
+    const std::string& timestamp_str) {
   int64_t timestamp;
   if (!base::StringToInt64(timestamp_str, &timestamp)) {
     // Even if there's an error in the conversion, some garbage data may still
@@ -405,14 +410,15 @@ base::Time NTPSnippet::TimeFromJsonString(const std::string& timestamp_str) {
 }
 
 // static
-std::string NTPSnippet::TimeToJsonString(const base::Time& time) {
+std::string RemoteSuggestion::TimeToJsonString(const base::Time& time) {
   return base::Int64ToString((time - base::Time::UnixEpoch()).InSeconds());
 }
 
 // static
-std::unique_ptr<NTPSnippet> NTPSnippet::MakeUnique(
-    const std::vector<std::string>& ids, int remote_category_id) {
-  return base::WrapUnique(new NTPSnippet(ids, remote_category_id));
+std::unique_ptr<RemoteSuggestion> RemoteSuggestion::MakeUnique(
+    const std::vector<std::string>& ids,
+    int remote_category_id) {
+  return base::WrapUnique(new RemoteSuggestion(ids, remote_category_id));
 }
 
 }  // namespace ntp_snippets

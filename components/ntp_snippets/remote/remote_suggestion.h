@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPET_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPET_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTION_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTION_H_
 
 #include <map>
 #include <memory>
@@ -27,51 +27,52 @@ extern const int kChromeReaderDefaultExpiryTimeMins;
 
 class SnippetProto;
 
-class NTPSnippet {
+class RemoteSuggestion {
  public:
-  using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
+  using PtrVector = std::vector<std::unique_ptr<RemoteSuggestion>>;
 
-  ~NTPSnippet();
+  ~RemoteSuggestion();
 
-  // Creates an NTPSnippet from a dictionary, as returned by Chrome Reader.
+  // Creates a RemoteSuggestion from a dictionary, as returned by Chrome Reader.
   // Returns a null pointer if the dictionary doesn't correspond to a valid
-  // snippet. The keys in the dictionary are expected to be the same as the
+  // suggestion. The keys in the dictionary are expected to be the same as the
   // property name, with exceptions documented in the property comment.
-  static std::unique_ptr<NTPSnippet> CreateFromChromeReaderDictionary(
+  static std::unique_ptr<RemoteSuggestion> CreateFromChromeReaderDictionary(
       const base::DictionaryValue& dict);
 
-  // Creates an NTPSnippet from a dictionary, as returned by Chrome Content
+  // Creates a RemoteSuggestion from a dictionary, as returned by Chrome Content
   // Suggestions. Returns a null pointer if the dictionary doesn't correspond to
-  // a valid snippet. Maps field names to Chrome Reader field names.
-  static std::unique_ptr<NTPSnippet> CreateFromContentSuggestionsDictionary(
-      const base::DictionaryValue& dict,
-      int remote_category_id);
+  // a valid suggestion. Maps field names to Chrome Reader field names.
+  static std::unique_ptr<RemoteSuggestion>
+  CreateFromContentSuggestionsDictionary(const base::DictionaryValue& dict,
+                                         int remote_category_id);
 
-  // Creates an NTPSnippet from a protocol buffer. Returns a null pointer if the
-  // protocol buffer doesn't correspond to a valid snippet.
-  static std::unique_ptr<NTPSnippet> CreateFromProto(const SnippetProto& proto);
+  // Creates an RemoteSuggestion from a protocol buffer. Returns a null pointer
+  // if the protocol buffer doesn't correspond to a valid suggestion.
+  static std::unique_ptr<RemoteSuggestion> CreateFromProto(
+      const SnippetProto& proto);
 
   // TODO(treib): Make tests use the public interface and remove this.
-  static std::unique_ptr<NTPSnippet> CreateForTesting(
+  static std::unique_ptr<RemoteSuggestion> CreateForTesting(
       const std::string& id,
       int remote_category_id,
       const GURL& url,
       const std::string& publisher_name,
       const GURL& amp_url);
 
-  // Creates a protocol buffer corresponding to this snippet, for persisting.
+  // Creates a protocol buffer corresponding to this suggestion, for persisting.
   SnippetProto ToProto() const;
 
   // Coverts to general content suggestion form
   ContentSuggestion ToContentSuggestion(Category category) const;
 
-  // Returns all ids of the snippet.
+  // Returns all ids of the suggestion.
   const std::vector<std::string>& GetAllIDs() const { return ids_; }
 
-  // The unique, primary ID for identifying the snippet.
+  // The unique, primary ID for identifying the suggestion.
   const std::string& id() const { return ids_.front(); }
 
-  // Title of the snippet.
+  // Title of the suggestion.
   const std::string& title() const { return title_; }
 
   // The main URL pointing to the content web page.
@@ -91,16 +92,16 @@ class NTPSnippet {
   // key is 'thumbnailUrl'
   const GURL& salient_image_url() const { return salient_image_url_; }
 
-  // When the page pointed by this snippet was published.  If initialized by
+  // When the page pointed by this suggestion was published.  If initialized by
   // CreateFromChromeReaderDictionary() the relevant key is
   // 'creationTimestampSec'
   const base::Time& publish_date() const { return publish_date_; }
 
-  // After this expiration date this snippet should no longer be presented to
+  // After this expiration date this suggestion should no longer be presented to
   // the user.
   const base::Time& expiry_date() const { return expiry_date_; }
 
-  // If this snippet has all the data we need to show a full card to the user
+  // If this suggestion has all the data we need to show a full card to the user
   bool is_complete() const {
     return !id().empty() && !title().empty() && !snippet().empty() &&
            salient_image_url().is_valid() && !publish_date().is_null() &&
@@ -115,7 +116,7 @@ class NTPSnippet {
   bool is_dismissed() const { return is_dismissed_; }
   void set_dismissed(bool dismissed) { is_dismissed_ = dismissed; }
 
-  // The ID of the remote category this snippet belongs to, for use with
+  // The ID of the remote category this suggestion belongs to, for use with
   // CategoryFactory::FromRemoteCategory.
   int remote_category_id() const { return remote_category_id_; }
 
@@ -124,11 +125,12 @@ class NTPSnippet {
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
-  NTPSnippet(const std::vector<std::string>& ids, int remote_category_id);
+  RemoteSuggestion(const std::vector<std::string>& ids, int remote_category_id);
 
   // base::MakeUnique doesn't work if the ctor is private.
-  static std::unique_ptr<NTPSnippet> MakeUnique(
-      const std::vector<std::string>& ids, int remote_category_id);
+  static std::unique_ptr<RemoteSuggestion> MakeUnique(
+      const std::vector<std::string>& ids,
+      int remote_category_id);
 
   // The first ID in the vector is the primary id.
   std::vector<std::string> ids_;
@@ -150,9 +152,9 @@ class NTPSnippet {
   bool should_notify_;
   base::Time notification_deadline_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippet);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestion);
 };
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPET_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTION_H_
