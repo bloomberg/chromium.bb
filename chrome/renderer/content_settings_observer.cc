@@ -216,8 +216,8 @@ bool ContentSettingsObserver::allowDatabase(const WebString& name,
   bool result = false;
   Send(new ChromeViewHostMsg_AllowDatabase(
       routing_id(), url::Origin(frame->getSecurityOrigin()).GetURL(),
-      url::Origin(frame->top()->getSecurityOrigin()).GetURL(), name,
-      display_name, &result));
+      url::Origin(frame->top()->getSecurityOrigin()).GetURL(), name.utf16(),
+      display_name.utf16(), &result));
   return result;
 }
 
@@ -275,7 +275,8 @@ bool ContentSettingsObserver::allowIndexedDB(const WebString& name,
   bool result = false;
   Send(new ChromeViewHostMsg_AllowIndexedDB(
       routing_id(), url::Origin(frame->getSecurityOrigin()).GetURL(),
-      url::Origin(frame->top()->getSecurityOrigin()).GetURL(), name, &result));
+      url::Origin(frame->top()->getSecurityOrigin()).GetURL(), name.utf16(),
+      &result));
   return result;
 }
 
@@ -481,8 +482,7 @@ bool ContentSettingsObserver::IsPlatformApp() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 const extensions::Extension* ContentSettingsObserver::GetExtension(
     const WebSecurityOrigin& origin) const {
-  if (!base::EqualsASCII(base::StringPiece16(origin.protocol()),
-                         extensions::kExtensionScheme))
+  if (origin.protocol().ascii() != extensions::kExtensionScheme)
     return NULL;
 
   const std::string extension_id = origin.host().utf8().data();

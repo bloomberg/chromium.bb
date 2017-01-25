@@ -506,9 +506,8 @@ void SearchBoxExtension::DispatchChromeIdentityCheckResult(
     const base::string16& identity,
     bool identity_match) {
   std::string escaped_identity = base::GetQuotedJSONString(identity);
-  blink::WebString script(base::UTF8ToUTF16(base::StringPrintf(
-      kDispatchChromeIdentityCheckResult,
-      escaped_identity.c_str(),
+  blink::WebString script(blink::WebString::fromUTF8(base::StringPrintf(
+      kDispatchChromeIdentityCheckResult, escaped_identity.c_str(),
       identity_match ? "true" : "false")));
   Dispatch(frame, script);
 }
@@ -522,9 +521,8 @@ void SearchBoxExtension::DispatchFocusChange(blink::WebFrame* frame) {
 void SearchBoxExtension::DispatchHistorySyncCheckResult(
     blink::WebFrame* frame,
     bool sync_history) {
-  blink::WebString script(base::UTF8ToUTF16(base::StringPrintf(
-      kDispatchHistorySyncCheckResult,
-      sync_history ? "true" : "false")));
+  blink::WebString script(blink::WebString::fromUTF8(base::StringPrintf(
+      kDispatchHistorySyncCheckResult, sync_history ? "true" : "false")));
   Dispatch(frame, script);
 }
 

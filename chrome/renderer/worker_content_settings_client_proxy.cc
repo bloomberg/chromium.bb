@@ -48,6 +48,7 @@ bool WorkerContentSettingsClientProxy::allowIndexedDB(
 
   bool result = false;
   sync_message_filter_->Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id_, document_origin_url_, top_frame_origin_url_, name, &result));
+      routing_id_, document_origin_url_, top_frame_origin_url_, name.utf16(),
+      &result));
   return result;
 }

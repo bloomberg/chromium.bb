@@ -167,9 +167,9 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
       std::string name = elem.getAttribute("name").utf8();
       WebString content = elem.getAttribute("content");
       if (name == "application-name") {
-        app_info->title = content;
+        app_info->title = content.utf16();
       } else if (name == "description") {
-        app_info->description = content;
+        app_info->description = content.utf16();
       } else if (name == "application-url") {
         std::string url = content.utf8();
         app_info->app_url = document_url.is_valid() ?
@@ -177,12 +177,10 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
         if (!app_info->app_url.is_valid())
           app_info->app_url = GURL();
       } else if (name == "mobile-web-app-capable" &&
-                 base::LowerCaseEqualsASCII(base::StringPiece16(content),
-                                            "yes")) {
+                 base::LowerCaseEqualsASCII(content.utf16(), "yes")) {
         app_info->mobile_capable = WebApplicationInfo::MOBILE_CAPABLE;
       } else if (name == "apple-mobile-web-app-capable" &&
-                 base::LowerCaseEqualsASCII(
-                     base::StringPiece16(content), "yes") &&
+                 base::LowerCaseEqualsASCII(content.utf16(), "yes") &&
                  app_info->mobile_capable ==
                      WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED) {
         app_info->mobile_capable = WebApplicationInfo::MOBILE_CAPABLE_APPLE;

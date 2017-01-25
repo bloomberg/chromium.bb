@@ -304,7 +304,8 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
   // testing purposes. See http://crbug.com/585164.
   base::string16 contents =
       WebFrameContentDumper::deprecatedDumpFrameTreeAsText(frame,
-                                                           kMaxIndexChars);
+                                                           kMaxIndexChars)
+          .utf16();
 
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);

@@ -263,7 +263,7 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   // that can commit synchronously.  No code should be runnable in these pages,
   // so it should not need to access anything nor should it allow javascript
   // URLs since it should never be visible to the user.
-  WebString native_scheme(base::ASCIIToUTF16(chrome::kChromeNativeScheme));
+  WebString native_scheme(WebString::fromASCII(chrome::kChromeNativeScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsEmptyDocument(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(

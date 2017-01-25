@@ -238,8 +238,8 @@ void AppendParams(const std::vector<base::string16>& additional_names,
   }
 
   for (size_t i = 0; i < additional_names.size(); ++i) {
-    names[existing_size + i] = additional_names[i];
-    values[existing_size + i] = additional_values[i];
+    names[existing_size + i] = WebString::fromUTF16(additional_names[i]);
+    values[existing_size + i] = WebString::fromUTF16(additional_values[i]);
   }
 
   existing_names->swap(names);
@@ -428,7 +428,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // chrome-search: and chrome-distiller: pages  should not be accessible by
   // normal content, and should also be unable to script anything but themselves
   // (to help limit the damage that a corrupt page could cause).
-  WebString chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));
+  WebString chrome_search_scheme(
+      WebString::fromASCII(chrome::kChromeSearchScheme));
 
   // The Instant process can only display the content but not read it.  Other
   // processes can't display it or read it.
@@ -436,7 +437,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_search_scheme);
 
   WebString dom_distiller_scheme(
-      ASCIIToUTF16(dom_distiller::kDomDistillerScheme));
+      WebString::fromASCII(dom_distiller::kDomDistillerScheme));
   // TODO(nyquist): Add test to ensure this happens when the flag is set.
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dom_distiller_scheme);
 
@@ -462,7 +463,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   for (auto& scheme : GetSchemesBypassingSecureContextCheckWhitelist()) {
     WebSecurityPolicy::addSchemeToBypassSecureContextWhitelist(
-        WebString::fromUTF8(scheme));
+        WebString::fromASCII(scheme));
   }
 
 #if defined(OS_CHROMEOS)
@@ -1045,8 +1046,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     base::string16* error_description) {
   const GURL failed_url = error.unreachableURL;
 
-  bool is_post = base::EqualsASCII(
-      base::StringPiece16(failed_request.httpMethod()), "POST");
+  bool is_post = failed_request.httpMethod().ascii() == "POST";
   bool is_ignoring_cache =
       failed_request.getCachePolicy() == WebCachePolicy::BypassingCache;
   if (error_html) {
@@ -1375,7 +1375,7 @@ void ChromeContentRendererClient::AddImageContextMenuProperties(
     const WebURLResponse& response,
     std::map<std::string, std::string>* properties) {
   DCHECK(properties);
-  WebString header_key(ASCIIToUTF16(
+  WebString header_key(WebString::fromASCII(
       data_reduction_proxy::chrome_proxy_content_transform_header()));
   if (!response.httpHeaderField(header_key).isNull() &&
       data_reduction_proxy::IsEmptyImagePreview(
