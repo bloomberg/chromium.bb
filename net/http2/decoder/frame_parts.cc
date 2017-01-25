@@ -205,7 +205,7 @@ void FrameParts::OnPadLength(size_t trailing_length) {
   ASSERT_FALSE(opt_pad_length);
   ASSERT_TRUE(opt_payload_length);
   size_t total_padding_length = trailing_length + 1;
-  ASSERT_GE(opt_payload_length.value(), static_cast<int>(total_padding_length));
+  ASSERT_GE(opt_payload_length.value(), total_padding_length);
   opt_payload_length = opt_payload_length.value() - total_padding_length;
   opt_pad_length = trailing_length;
 }
@@ -265,8 +265,7 @@ void FrameParts::OnPushPromiseStart(const Http2FrameHeader& header,
   ASSERT_FALSE(opt_push_promise);
   opt_push_promise = promise;
   if (total_padding_length > 0) {
-    ASSERT_GE(opt_payload_length.value(),
-              static_cast<int>(total_padding_length));
+    ASSERT_GE(opt_payload_length.value(), total_padding_length);
     OnPadLength(total_padding_length - 1);
   } else {
     ASSERT_FALSE(header.IsPadded());
@@ -507,7 +506,7 @@ AssertionResult FrameParts::InPaddedFrame() {
 
 AssertionResult FrameParts::AppendString(StringPiece source,
                                          string* target,
-                                         base::Optional<int>* opt_length) {
+                                         base::Optional<size_t>* opt_length) {
   source.AppendToString(target);
   if (opt_length != nullptr) {
     VERIFY_TRUE(*opt_length) << "Length is not set yet\n" << *this;
