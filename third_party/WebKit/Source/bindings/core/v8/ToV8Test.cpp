@@ -223,6 +223,35 @@ TEST(ToV8Test, dictionaryVector) {
   EXPECT_EQ(2, two->NumberValue(context).FromJust());
 }
 
+TEST(ToV8Test, stringVectorVector) {
+  V8TestingScope scope;
+
+  Vector<String> stringVector1;
+  stringVector1.push_back("foo");
+  stringVector1.push_back("bar");
+  Vector<String> stringVector2;
+  stringVector2.push_back("quux");
+
+  Vector<Vector<String>> compoundVector;
+  compoundVector.push_back(stringVector1);
+  compoundVector.push_back(stringVector2);
+
+  EXPECT_EQ(2U, compoundVector.size());
+  TEST_TOV8("foo,bar,quux", compoundVector);
+
+  v8::Local<v8::Context> context = scope.getScriptState()->context();
+  v8::Local<v8::Object> result =
+      ToV8(compoundVector, context->Global(), scope.isolate())
+          ->ToObject(context)
+          .ToLocalChecked();
+  v8::Local<v8::Value> vector1 = result->Get(context, 0).ToLocalChecked();
+  EXPECT_TRUE(vector1->IsArray());
+  EXPECT_EQ(2U, vector1.As<v8::Array>()->Length());
+  v8::Local<v8::Value> vector2 = result->Get(context, 1).ToLocalChecked();
+  EXPECT_TRUE(vector2->IsArray());
+  EXPECT_EQ(1U, vector2.As<v8::Array>()->Length());
+}
+
 TEST(ToV8Test, heapVector) {
   V8TestingScope scope;
   HeapVector<Member<GarbageCollectedScriptWrappable>> v;

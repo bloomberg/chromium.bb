@@ -216,29 +216,13 @@ inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase& value,
 
 // Array
 
+// Declare the function here but define it later so it can call the ToV8()
+// overloads below.
 template <typename Sequence>
 inline v8::Local<v8::Value> toV8SequenceInternal(
     const Sequence& sequence,
     v8::Local<v8::Object> creationContext,
-    v8::Isolate* isolate) {
-  v8::Local<v8::Array> array;
-  {
-    v8::Context::Scope contextScope(creationContext->CreationContext());
-    array = v8::Array::New(isolate, sequence.size());
-  }
-  uint32_t index = 0;
-  typename Sequence::const_iterator end = sequence.end();
-  for (typename Sequence::const_iterator iter = sequence.begin(); iter != end;
-       ++iter) {
-    v8::Local<v8::Value> value = ToV8(*iter, array, isolate);
-    if (value.IsEmpty())
-      value = v8::Undefined(isolate);
-    if (!v8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(),
-                                                 index++, value)))
-      return v8::Local<v8::Value>();
-  }
-  return array;
-}
+    v8::Isolate*);
 
 template <typename T, size_t inlineCapacity>
 inline v8::Local<v8::Value> ToV8(const Vector<T, inlineCapacity>& value,
@@ -273,6 +257,30 @@ inline v8::Local<v8::Value> ToV8(const Vector<std::pair<String, T>>& value,
       return v8::Local<v8::Value>();
   }
   return object;
+}
+
+template <typename Sequence>
+inline v8::Local<v8::Value> toV8SequenceInternal(
+    const Sequence& sequence,
+    v8::Local<v8::Object> creationContext,
+    v8::Isolate* isolate) {
+  v8::Local<v8::Array> array;
+  {
+    v8::Context::Scope contextScope(creationContext->CreationContext());
+    array = v8::Array::New(isolate, sequence.size());
+  }
+  uint32_t index = 0;
+  typename Sequence::const_iterator end = sequence.end();
+  for (typename Sequence::const_iterator iter = sequence.begin(); iter != end;
+       ++iter) {
+    v8::Local<v8::Value> value = ToV8(*iter, array, isolate);
+    if (value.IsEmpty())
+      value = v8::Undefined(isolate);
+    if (!v8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(),
+                                                 index++, value)))
+      return v8::Local<v8::Value>();
+  }
+  return array;
 }
 
 // In all cases allow script state instead of creation context + isolate.
