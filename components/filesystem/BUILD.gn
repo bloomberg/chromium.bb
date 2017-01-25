@@ -53,10 +53,6 @@ service("filesystem") {
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

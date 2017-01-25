@@ -33,10 +33,6 @@ source_set("lib") {
     "//services/service_manager/public/cpp",
     "//services/shape_detection/public/interfaces",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

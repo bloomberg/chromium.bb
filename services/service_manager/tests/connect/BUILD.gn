@@ -29,7 +29,6 @@ source_set("connect") {
     ":connect_test_singleton_app",
     ":connect_test_exe",
     ":connect_test_package",
-    ":manifest",
   ]
 }
 
@@ -69,9 +68,6 @@ service("connect_test_package") {
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
   ]
-  data_deps = [
-    ":connect_test_package_manifest",
-  ]
 }
 
 service_manifest("connect_test_package_manifest") {
@@ -95,9 +91,6 @@ service("connect_test_app") {
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
   ]
-  data_deps = [
-    ":connect_test_app_manifest",
-  ]
 }
 
 service_manifest("connect_test_app_manifest") {
@@ -117,9 +110,6 @@ service("connect_test_class_app") {
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
   ]
-  data_deps = [
-    ":connect_test_class_app_manifest",
-  ]
 }
 
 service_manifest("connect_test_class_app_manifest") {
@@ -136,9 +126,6 @@ service("connect_test_singleton_app") {
     "//base",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp:sources",
-  ]
-  data_deps = [
-    ":connect_test_singleton_app_manifest",
   ]
 }
 
@@ -160,10 +147,6 @@ executable("connect_test_exe") {
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/standalone_service:main",
-  ]
-
-  data_deps = [
-    ":connect_test_exe_manifest",
   ]
 }
 

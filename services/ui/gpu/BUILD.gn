@@ -57,10 +57,6 @@ test("mus_gpu_unittests") {
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
-
-  data_deps = [
-    ":mus_gpu_unittests_app_manifest",
-  ]
 }
 
 service_manifest("mus_gpu_unittests_app_manifest") {

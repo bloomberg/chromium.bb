@@ -29,7 +29,6 @@ source_set("lifecycle") {
     ":lifecycle_unittest_parent",
     ":lifecycle_unittest_exe",
     ":lifecycle_unittest_package",
-    ":manifest",
   ]
 }
 
@@ -79,9 +78,6 @@ service("lifecycle_unittest_package") {
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
   ]
-  data_deps = [
-    ":lifecycle_unittest_package_manifest",
-  ]
 }
 
 service_manifest("lifecycle_unittest_package_manifest") {
@@ -104,10 +100,6 @@ service("lifecycle_unittest_app") {
     "//base",
     "//services/service_manager/public/cpp:sources",
   ]
-
-  data_deps = [
-    ":lifecycle_unittest_app_manifest",
-  ]
 }
 
 service_manifest("lifecycle_unittest_app_manifest") {
@@ -124,10 +116,6 @@ service("lifecycle_unittest_parent") {
     ":interfaces",
     "//base",
     "//services/service_manager/public/cpp:sources",
-  ]
-
-  data_deps = [
-    ":lifecycle_unittest_parent_manifest",
   ]
 }
 
@@ -147,10 +135,6 @@ executable("lifecycle_unittest_exe") {
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/cpp/standalone_service:main",
-  ]
-
-  data_deps = [
-    ":lifecycle_unittest_exe_manifest",
   ]
 }
 

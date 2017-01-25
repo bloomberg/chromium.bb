@@ -38,10 +38,6 @@ source_set("broker") {
   } else {
     deps += [ ":content_dummy" ]
   }
-
-  data_deps = [
-    ":nacl_broker_manifest",
-  ]
 }
 
 # This exists just to make 'gn check' happy with :broker.  It can't depend

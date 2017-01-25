@@ -130,7 +130,6 @@ Consider this simple application that implements the Service interface:
     service("my_service") {
       sources = [ "my_service.cc" ]
       deps = [ "//base", "//services/service_manager/public/cpp" ]
-      data_deps = [ ":manifest" ]
     }
 
     service_manifest("manifest") {

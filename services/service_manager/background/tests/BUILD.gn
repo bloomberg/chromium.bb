@@ -25,7 +25,6 @@ source_set("unittests") {
 
   data_deps = [
     ":background_service_manager_test_service",
-    ":test_manifest",
   ]
 }
 
@@ -45,10 +44,6 @@ service("background_service_manager_test_service") {
     "//base",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
-  ]
-
-  data_deps = [
-    ":test_service_manifest",
   ]
 }
 

@@ -25,7 +25,6 @@ service("test_wm") {
   ]
 
   data_deps = [
-    ":manifest",
     "//services/ui",
   ]
 }

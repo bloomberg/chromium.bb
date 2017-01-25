@@ -153,10 +153,6 @@ service("media") {
     "//mojo/public/c/system",
     "//services/service_manager/public/cpp",
   ]
-
-  data_deps = [
-    ":media_manifest",
-  ]
 }
 
 # crbug.com/676055: media_service_unittests currently fails to link in Windows
@@ -210,7 +206,6 @@ test("media_pipeline_integration_unittests") {
 
   data_deps = [
     ":media",
-    ":pipeline_test_manifest",
   ]
 }
 

@@ -64,10 +64,6 @@ service("host_test_service") {
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp/standalone_service:main",
   ]
-
-  data_deps = [
-    ":host_test_service_manifest",
-  ]
 }
 
 service_manifest("host_test_service_manifest") {

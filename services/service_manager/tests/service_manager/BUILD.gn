@@ -27,7 +27,6 @@ source_set("service_manager") {
   ]
 
   data_deps = [
-    ":manifest",
     ":service_manager_unittest_embedder",
     ":service_manager_unittest_target",
   ]
@@ -61,10 +60,6 @@ executable("service_manager_unittest_target") {
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/standalone_service:main",
-  ]
-
-  data_deps = [
-    ":target_manifest",
   ]
 }
 

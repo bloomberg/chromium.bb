@@ -55,7 +55,6 @@ source_set("lib") {
   ]
 
   data_deps = [
-    ":manifest",
     "//services/ui",
   ]
 }

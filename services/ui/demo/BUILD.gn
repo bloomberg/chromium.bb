@@ -43,7 +43,6 @@ service("mus_demo") {
   ]
 
   data_deps = [
-    ":manifest",
     "//services/ui",
   ]
 }

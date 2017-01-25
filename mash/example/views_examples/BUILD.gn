@@ -33,10 +33,6 @@ service("views_examples") {
   ]
 
   resources = [ "$root_out_dir/views_mus_resources.pak" ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

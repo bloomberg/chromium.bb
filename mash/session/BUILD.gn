@@ -49,10 +49,6 @@ service("session") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:sources",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {

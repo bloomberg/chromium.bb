@@ -17,10 +17,6 @@ service("video_capture") {
     ":lib",
     "//mojo/public/cpp/system",
   ]
-
-  data_deps = [
-    ":manifest",
-  ]
 }
 
 service_manifest("manifest") {
@@ -81,10 +77,6 @@ test("video_capture_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
-  ]
-
-  data_deps = [
-    ":unittest_manifest",
   ]
 }
 
