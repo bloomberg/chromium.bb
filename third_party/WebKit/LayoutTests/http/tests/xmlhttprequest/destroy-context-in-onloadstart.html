@@ -13,7 +13,8 @@ async_test(t => {
     xhr.onloadstart = () => {
       iframe.parentNode.remove(iframe);
     };
-    assert_throws('NetworkError', () => xhr.send());
+    // This should not crash the renderer.
+    xhr.send();
     t.done();
   });
 }, 'Detach iframe in onloadstart callback.');

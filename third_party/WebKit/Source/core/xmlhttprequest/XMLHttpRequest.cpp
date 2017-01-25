@@ -952,12 +952,6 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
       if (!m_sendFlag || m_loader)
         return;
     }
-    if (!getExecutionContext()) {
-      handleNetworkError();
-      throwForLoadFailureIfNeeded(exceptionState,
-                                  "Document is already detached.");
-      return;
-    }
   }
 
   m_sameOriginRequest = getSecurityOrigin()->canRequestNoSuborigin(m_url);
@@ -1818,6 +1812,10 @@ void XMLHttpRequest::contextDestroyed(ExecutionContext*) {
                                               m_method, m_url);
   m_progressEventThrottle->stop();
   internalAbort();
+
+  // In case we are in the middle of send() function, unset the send flag to
+  // stop the operation.
+  m_sendFlag = false;
 }
 
 bool XMLHttpRequest::hasPendingActivity() const {
