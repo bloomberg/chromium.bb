@@ -31,8 +31,6 @@ BaseScreenHandler::BaseScreenHandler(const std::string& js_screen_path)
 }
 
 BaseScreenHandler::~BaseScreenHandler() {
-  if (base_screen_)
-    base_screen_->set_model_view_channel(nullptr);
 }
 
 void BaseScreenHandler::InitializeBase() {

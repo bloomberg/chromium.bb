@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -27,8 +26,6 @@ class UserBoardView {
 
   virtual void Bind(UserBoardModel& model) = 0;
   virtual void Unbind() = 0;
-
-  virtual base::WeakPtr<UserBoardView> GetWeakPtr();
 
   virtual void SetPublicSessionDisplayName(const AccountId& account_id,
                                            const std::string& display_name) = 0;
