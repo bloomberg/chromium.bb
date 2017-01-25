@@ -1794,7 +1794,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       settings.GetDefaultServerUrl()
 
     self._rietveld_server = rietveld_server
-    self._auth_config = auth_config
+    self._auth_config = auth_config or auth.make_auth_config()
     self._props = None
     self._rpc_server = None
 
@@ -1976,7 +1976,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     if not self._rpc_server:
       self._rpc_server = rietveld.CachingRietveld(
           self.GetCodereviewServer(),
-          self._auth_config or auth.make_auth_config())
+          self._auth_config)
     return self._rpc_server
 
   @classmethod
