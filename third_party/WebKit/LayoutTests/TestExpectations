@@ -2250,12 +2250,6 @@ crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
 crbug.com/664855 virtual/scroll_customization/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure ]
 crbug.com/664856 virtual/sharedarraybuffer/fast/workers/worker-gc.html [ Pass Failure ]
 
-crbug.com/583193 inspector-protocol/debugger/stepping-with-blackboxed-ranges.html [ NeedsManualRebaseline ]
-crbug.com/583193 inspector/sources/debugger-frameworks/frameworks-jquery.html [ NeedsManualRebaseline ]
-crbug.com/583193 inspector/sources/debugger-frameworks/frameworks-steppings.html [ NeedsManualRebaseline ]
-crbug.com/583193 inspector/sources/debugger-frameworks/frameworks-skip-step-in.html [ NeedsManualRebaseline ]
-crbug.com/583193 inspector/sources/debugger-frameworks/frameworks-step-into-skips-setTimeout.html [ NeedsManualRebaseline ]
-
 # Possible duplicate of crbug.com/665577
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Failure ]
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Pass Failure ]
