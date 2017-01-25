@@ -34,7 +34,10 @@ EventHandlerRegistry::EventHandlerRegistry(FrameHost& frameHost)
     : m_frameHost(&frameHost) {}
 
 EventHandlerRegistry::~EventHandlerRegistry() {
-  checkConsistency();
+  for (size_t i = 0; i < EventHandlerClassCount; ++i) {
+    EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
+    checkConsistency(handlerClass);
+  }
 }
 
 bool EventHandlerRegistry::eventTypeToClass(
@@ -73,13 +76,13 @@ bool EventHandlerRegistry::eventTypeToClass(
 
 const EventTargetSet* EventHandlerRegistry::eventHandlerTargets(
     EventHandlerClass handlerClass) const {
-  checkConsistency();
+  checkConsistency(handlerClass);
   return &m_targets[handlerClass];
 }
 
 bool EventHandlerRegistry::hasEventHandlers(
     EventHandlerClass handlerClass) const {
-  checkConsistency();
+  checkConsistency(handlerClass);
   return m_targets[handlerClass].size();
 }
 
@@ -308,24 +311,22 @@ void EventHandlerRegistry::documentDetached(Document& document) {
   }
 }
 
-void EventHandlerRegistry::checkConsistency() const {
+void EventHandlerRegistry::checkConsistency(
+    EventHandlerClass handlerClass) const {
 #if DCHECK_IS_ON()
-  for (size_t i = 0; i < EventHandlerClassCount; ++i) {
-    EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
-    const EventTargetSet* targets = &m_targets[handlerClass];
-    for (const auto& eventTarget : *targets) {
-      if (Node* node = eventTarget.key->toNode()) {
-        // See the comment for |documentDetached| if either of these assertions
-        // fails.
-        ASSERT(node->document().frameHost());
-        ASSERT(node->document().frameHost() == m_frameHost);
-      } else if (LocalDOMWindow* window = eventTarget.key->toLocalDOMWindow()) {
-        // If any of these assertions fail, LocalDOMWindow failed to unregister
-        // its handlers properly.
-        ASSERT(window->frame());
-        ASSERT(window->frame()->host());
-        ASSERT(window->frame()->host() == m_frameHost);
-      }
+  const EventTargetSet* targets = &m_targets[handlerClass];
+  for (const auto& eventTarget : *targets) {
+    if (Node* node = eventTarget.key->toNode()) {
+      // See the comment for |documentDetached| if either of these assertions
+      // fails.
+      DCHECK(node->document().frameHost());
+      DCHECK(node->document().frameHost() == m_frameHost);
+    } else if (LocalDOMWindow* window = eventTarget.key->toLocalDOMWindow()) {
+      // If any of these assertions fail, LocalDOMWindow failed to unregister
+      // its handlers properly.
+      DCHECK(window->frame());
+      DCHECK(window->frame()->host());
+      DCHECK(window->frame()->host() == m_frameHost);
     }
   }
 #endif  // DCHECK_IS_ON()

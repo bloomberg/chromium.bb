@@ -118,7 +118,7 @@ class CORE_EXPORT EventHandlerRegistry final
 
   void updateAllEventHandlers(ChangeOperation, EventTarget&);
 
-  void checkConsistency() const;
+  void checkConsistency(EventHandlerClass) const;
 
   Member<FrameHost> m_frameHost;
   EventTargetSet m_targets[EventHandlerClassCount];
