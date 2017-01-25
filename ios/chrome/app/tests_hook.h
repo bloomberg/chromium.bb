@@ -15,6 +15,10 @@ bool DisableContextualSearch();
 // run unimpeded.
 bool DisableFirstRun();
 
+// Returns true if the geolocation should be disabled to avoid the user location
+// prompt displaying for the omnibox.
+bool DisableGeolocation();
+
 // Returns true if the signin recall promo should be disabled to allow other
 // tests to run unimpeded.
 bool DisableSigninRecallPromo();

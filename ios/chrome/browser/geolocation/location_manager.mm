@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/geolocation/location_manager.h"
 
+#include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/geolocation/CLLocation+OmniboxGeolocation.h"
 #import "ios/chrome/browser/geolocation/location_manager+Testing.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -91,7 +92,8 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
 }
 
 - (BOOL)locationServicesEnabled {
-  return [CLLocationManager locationServicesEnabled];
+  return !tests_hook::DisableGeolocation() &&
+         [CLLocationManager locationServicesEnabled];
 }
 
 - (void)startUpdatingLocation {

@@ -14,6 +14,10 @@ bool DisableFirstRun() {
   return true;
 }
 
+bool DisableGeolocation() {
+  return true;
+}
+
 bool DisableSigninRecallPromo() {
   return true;
 }

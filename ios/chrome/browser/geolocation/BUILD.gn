@@ -23,6 +23,7 @@ source_set("geolocation") {
     "//base",
     "//components/prefs",
     "//components/strings",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/public/provider/chrome/browser",

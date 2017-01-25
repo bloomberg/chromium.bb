@@ -12,6 +12,9 @@ bool DisableContextualSearch() {
 bool DisableFirstRun() {
   return false;
 }
+bool DisableGeolocation() {
+  return false;
+}
 bool DisableSigninRecallPromo() {
   return false;
 }
