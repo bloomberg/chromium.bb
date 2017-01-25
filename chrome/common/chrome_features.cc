@@ -167,6 +167,9 @@ const base::Feature kOfflinePageDownloadSuggestionsFeature{
 const base::Feature kOverrideYouTubeFlashEmbed{
     "OverrideYouTubeFlashEmbed", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kParallelDownloading{
+    "ParallelDownloading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Permissions Blacklisting via Safe Browsing.
 const base::Feature kPermissionsBlacklist{
     "PermissionsBlacklist", base::FEATURE_DISABLED_BY_DEFAULT};

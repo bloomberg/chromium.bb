@@ -99,6 +99,8 @@ extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
 extern const base::Feature kOverrideYouTubeFlashEmbed;
 
+extern const base::Feature kParallelDownloading;
+
 extern const base::Feature kPermissionsBlacklist;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
