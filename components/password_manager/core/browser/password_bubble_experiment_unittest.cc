@@ -6,7 +6,6 @@
 
 #include <ostream>
 
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -14,7 +13,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,13 +74,8 @@ class TestSyncService : public syncer::FakeSyncService {
 
 class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
  public:
-  PasswordManagerPasswordBubbleExperimentTest() : field_trial_list_(nullptr) {
+  PasswordManagerPasswordBubbleExperimentTest() {
     RegisterPrefs(pref_service_.registry());
-  }
-
-  ~PasswordManagerPasswordBubbleExperimentTest() override {
-    variations::testing::ClearAllVariationIDs();
-    variations::testing::ClearAllVariationParams();
   }
 
   PrefService* prefs() { return &pref_service_; }
@@ -102,7 +95,6 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
 
  private:
   TestSyncService fake_sync_service_;
-  base::FieldTrialList field_trial_list_;
   TestingPrefServiceSimple pref_service_;
 };
 
@@ -115,16 +107,12 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
     bool is_sync_allowed;
     bool is_first_setup_complete;
     int current_shown_count;
-    int experiment_threshold;
     bool result;
   } kTestData[] = {
-      {false, true, false, 0, 5, true},   {false, true, false, 5, 5, false},
-      {true, true, false, 0, 5, false},   {true, true, false, 10, 5, false},
-      {false, false, false, 0, 5, false}, {false, true, true, 0, 5, false},
+      {false, true, false, 0, true},   {false, true, false, 5, false},
+      {true, true, false, 0, false},   {true, true, false, 10, false},
+      {false, false, false, 0, false}, {false, true, true, 0, false},
   };
-  const char kFakeGroup[] = "FakeGroup";
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
   for (const auto& test_case : kTestData) {
     SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
     prefs()->SetBoolean(password_manager::prefs::kWasSignInPasswordPromoClicked,
@@ -134,10 +122,6 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
         test_case.current_shown_count);
     sync_service()->set_sync_allowed(test_case.is_sync_allowed);
     sync_service()->set_first_setup_complete(test_case.is_first_setup_complete);
-    variations::AssociateVariationParams(
-        kChromeSignInPasswordPromoExperimentName, kFakeGroup,
-        {{kChromeSignInPasswordPromoThresholdParam,
-          base::IntToString(test_case.experiment_threshold)}});
 
     EXPECT_EQ(test_case.result,
               ShouldShowChromeSignInPasswordPromo(prefs(), sync_service()));

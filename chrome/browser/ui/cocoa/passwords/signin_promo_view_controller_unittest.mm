@@ -4,21 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/passwords/signin_promo_view_controller.h"
 
-#include "base/metrics/field_trial.h"
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace {
 
-using password_bubble_experiment::kChromeSignInPasswordPromoExperimentName;
-using password_bubble_experiment::kChromeSignInPasswordPromoThresholdParam;
-
 class SignInPromoViewControllerTest : public ManagePasswordsControllerTest {
  public:
-  SignInPromoViewControllerTest() : field_trial_list_(nullptr) {}
-
   void SetUp() override;
   void TearDown() override;
 
@@ -27,7 +19,6 @@ class SignInPromoViewControllerTest : public ManagePasswordsControllerTest {
   SignInPromoViewController* controller() { return controller_.get(); }
 
  private:
-  base::FieldTrialList field_trial_list_;
   base::scoped_nsobject<SignInPromoViewController> controller_;
 };
 
@@ -38,17 +29,10 @@ void SignInPromoViewControllerTest::SetUp() {
 
 void SignInPromoViewControllerTest::TearDown() {
   ManagePasswordsControllerTest::TearDown();
-  variations::testing::ClearAllVariationParams();
 }
 
 void SignInPromoViewControllerTest::SetUpSignInPromoState() {
-  const char kFakeGroup[] = "FakeGroup";
   SetUpSavePendingState(false);
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
-  variations::AssociateVariationParams(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
-      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
   GetModelAndCreateIfNull()->OnSaveClicked();
 
   ASSERT_TRUE(GetModelAndCreateIfNull()->ReplaceToShowPromotionIfNeeded());

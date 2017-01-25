@@ -18,8 +18,6 @@
 
 namespace password_bubble_experiment {
 
-const char kChromeSignInPasswordPromoExperimentName[] = "SignInPasswordPromo";
-const char kChromeSignInPasswordPromoThresholdParam[] = "dismissal_threshold";
 const char kSmartBubbleExperimentName[] = "PasswordSmartBubble";
 const char kSmartBubbleThresholdParam[] = "dismissal_count";
 
@@ -66,20 +64,16 @@ void TurnOffAutoSignin(PrefService* prefs) {
 bool ShouldShowChromeSignInPasswordPromo(
     PrefService* prefs,
     const syncer::SyncService* sync_service) {
-  // Query the group first for correct UMA reporting.
-  std::string param = variations::GetVariationParamValue(
-      kChromeSignInPasswordPromoExperimentName,
-      kChromeSignInPasswordPromoThresholdParam);
   if (!sync_service || !sync_service->IsSyncAllowed() ||
       sync_service->IsFirstSetupComplete())
     return false;
-  int threshold = 0;
-  return base::StringToInt(param, &threshold) &&
-         !prefs->GetBoolean(
+  // Don't show the promo more than 3 times.
+  constexpr int kThreshold = 3;
+  return !prefs->GetBoolean(
              password_manager::prefs::kWasSignInPasswordPromoClicked) &&
          prefs->GetInteger(
              password_manager::prefs::kNumberSignInPasswordPromoShown) <
-             threshold;
+             kThreshold;
 }
 
 }  // namespace password_bubble_experiment

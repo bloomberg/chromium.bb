@@ -14,8 +14,6 @@ class SyncService;
 
 namespace password_bubble_experiment {
 
-extern const char kChromeSignInPasswordPromoExperimentName[];
-extern const char kChromeSignInPasswordPromoThresholdParam[];
 extern const char kSmartBubbleExperimentName[];
 extern const char kSmartBubbleThresholdParam[];
 

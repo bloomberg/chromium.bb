@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -38,6 +39,8 @@ class SavePendingPasswordViewControllerTest
 
 TEST_F(SavePendingPasswordViewControllerTest,
        ShouldSavePasswordAndDismissWhenSaveClicked) {
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kWasSignInPasswordPromoClicked, true);
   SetUpSavePendingState(false);
   EXPECT_CALL(*ui_controller(), SavePassword());
   EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);

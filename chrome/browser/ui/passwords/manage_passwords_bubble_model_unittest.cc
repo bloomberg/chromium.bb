@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -20,7 +19,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -28,15 +26,12 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using password_bubble_experiment::kChromeSignInPasswordPromoExperimentName;
-using password_bubble_experiment::kChromeSignInPasswordPromoThresholdParam;
 using ::testing::AnyNumber;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -44,7 +39,6 @@ using ::testing::_;
 
 namespace {
 
-constexpr char kFakeGroup[] = "FakeGroup";
 constexpr char kSignInPromoCountTilNoThanksMetric[] =
     "PasswordManager.SignInPromoCountTilNoThanks";
 constexpr char kSignInPromoCountTilSignInMetric[] =
@@ -104,7 +98,7 @@ std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
 
 class ManagePasswordsBubbleModelTest : public ::testing::Test {
  public:
-  ManagePasswordsBubbleModelTest() : field_trials_(nullptr) {}
+  ManagePasswordsBubbleModelTest() = default;
   ~ManagePasswordsBubbleModelTest() override = default;
 
   void SetUp() override {
@@ -132,8 +126,6 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
     // Reset the delegate first. It can happen if the user closes the tab.
     mock_delegate_.reset();
     model_.reset();
-    variations::testing::ClearAllVariationIDs();
-    variations::testing::ClearAllVariationParams();
   }
 
   PrefService* prefs() { return profile_.GetPrefs(); }
@@ -171,7 +163,6 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> test_web_contents_;
-  base::FieldTrialList field_trials_;
   std::unique_ptr<ManagePasswordsBubbleModel> model_;
   std::unique_ptr<PasswordsModelDelegateMock> mock_delegate_;
 };
@@ -345,6 +336,8 @@ TEST_F(ManagePasswordsBubbleModelTest, OnBrandLinkClicked) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
+  prefs()->SetBoolean(password_manager::prefs::kWasSignInPasswordPromoClicked,
+                      true);
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
@@ -360,11 +353,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
-  variations::AssociateVariationParams(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
-      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
@@ -389,11 +377,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
-  variations::AssociateVariationParams(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
-      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
@@ -417,11 +400,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
-  variations::AssociateVariationParams(
-      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
-      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
