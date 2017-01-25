@@ -56,12 +56,10 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     webapk::InstallSource webapk_install_source) {
   bool is_webapk = ChromeWebApkHost::AreWebApkEnabled();
   std::string webapk_package_name = "";
-  if (is_webapk) {
-    webapk_package_name = ShortcutHelper::QueryWebApkPackage(
-        web_contents->GetLastCommittedURL());
-  }
-  bool is_webapk_already_installed = !webapk_package_name.empty();
   const GURL& url = shortcut_info->url;
+  if (is_webapk)
+    webapk_package_name = ShortcutHelper::QueryWebApkPackage(url);
+  bool is_webapk_already_installed = !webapk_package_name.empty();
   auto infobar_delegate =
       base::WrapUnique(new banners::AppBannerInfoBarDelegateAndroid(
           weak_manager, app_title, std::move(shortcut_info), std::move(icon),
