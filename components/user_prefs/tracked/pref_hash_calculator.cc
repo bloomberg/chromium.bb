@@ -79,27 +79,12 @@ std::string GetMessage(const std::string& device_id,
   return message;
 }
 
-// Generates a device ID based on the input device ID. The derived device ID has
-// no useful properties beyond those of the input device ID except that it is
-// consistent with previous implementations.
-// TODO(gab): Remove this once UMA reports for
-// Settings.TrackedPreferenceMigratedLegacyDeviceId become insignificant.
-std::string GenerateDeviceIdLikePrefMetricsServiceDid(
-    const std::string& original_device_id) {
-  if (original_device_id.empty())
-    return std::string();
-  return base::ToLowerASCII(
-      GetDigestString(original_device_id, "PrefMetricsService"));
-}
-
 }  // namespace
 
 PrefHashCalculator::PrefHashCalculator(const std::string& seed,
-                                       const std::string& device_id)
-    : seed_(seed),
-      device_id_(device_id),
-      legacy_device_id_(GenerateDeviceIdLikePrefMetricsServiceDid(device_id)) {
-}
+                                       const std::string& device_id,
+                                       const std::string& legacy_device_id)
+    : seed_(seed), device_id_(device_id), legacy_device_id_(legacy_device_id) {}
 
 PrefHashCalculator::~PrefHashCalculator() {
 }

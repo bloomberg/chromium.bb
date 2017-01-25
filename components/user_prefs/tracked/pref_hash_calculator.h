@@ -23,10 +23,13 @@ class PrefHashCalculator {
     VALID_SECURE_LEGACY,
   };
 
-  // Constructs a PrefHashCalculator using |seed| and |device_id|. The same
-  // parameters must be used in order to successfully validate generated hashes.
-  // |device_id| may be empty.
-  PrefHashCalculator(const std::string& seed, const std::string& device_id);
+  // Constructs a PrefHashCalculator using |seed|, |device_id| and
+  // |legacy_device_id|. The same parameters must be used in order to
+  // successfully validate generated hashes. |_device_id| or |legacy_device_id|
+  // may be empty.
+  PrefHashCalculator(const std::string& seed,
+                     const std::string& device_id,
+                     const std::string& legacy_device_id);
 
   ~PrefHashCalculator();
 

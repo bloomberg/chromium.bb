@@ -380,7 +380,7 @@ void HandleReadError(const base::FilePath& pref_filename,
 
 std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
     const base::FilePath& profile_path) {
-  std::string device_id;
+  std::string legacy_device_id;
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_RLZ)
   // This is used by
   // chrome/browser/extensions/api/music_manager_private/device_id_win.cc
@@ -388,7 +388,7 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   // not available synchronously.
   // As part of improving pref metrics on other platforms we may want to find
   // ways to defer preference loading until the device ID can be used.
-  rlz_lib::GetMachineId(&device_id);
+  rlz_lib::GetMachineId(&legacy_device_id);
 #endif
   std::string seed;
 #if defined(GOOGLE_CHROME_BUILD)
@@ -397,7 +397,7 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
 #endif
   return base::MakeUnique<ProfilePrefStoreManager>(
       profile_path, GetTrackingConfiguration(), kTrackedPrefsReportingIDsCount,
-      seed, device_id, g_browser_process->local_state());
+      seed, legacy_device_id, g_browser_process->local_state());
 }
 
 void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,

@@ -63,13 +63,13 @@ ProfilePrefStoreManager::ProfilePrefStoreManager(
         tracking_configuration,
     size_t reporting_ids_count,
     const std::string& seed,
-    const std::string& device_id,
+    const std::string& legacy_device_id,
     PrefService* local_state)
     : profile_path_(profile_path),
       tracking_configuration_(tracking_configuration),
       reporting_ids_count_(reporting_ids_count),
       seed_(seed),
-      device_id_(device_id),
+      legacy_device_id_(legacy_device_id),
       local_state_(local_state) {}
 
 ProfilePrefStoreManager::~ProfilePrefStoreManager() {}
@@ -210,7 +210,7 @@ std::unique_ptr<PrefHashStore> ProfilePrefStoreManager::GetPrefHashStore(
   DCHECK(kPlatformSupportsPreferenceTracking);
 
   return std::unique_ptr<PrefHashStore>(
-      new PrefHashStoreImpl(seed_, device_id_, use_super_mac));
+      new PrefHashStoreImpl(seed_, legacy_device_id_, use_super_mac));
 }
 
 std::pair<std::unique_ptr<PrefHashStore>, std::unique_ptr<HashStoreContents>>
@@ -219,7 +219,7 @@ ProfilePrefStoreManager::GetExternalVerificationPrefHashStorePair() {
 #if defined(OS_WIN)
   return std::make_pair(
       base::MakeUnique<PrefHashStoreImpl>(
-          "ChromeRegistryHashStoreValidationSeed", device_id_,
+          "ChromeRegistryHashStoreValidationSeed", legacy_device_id_,
           false /* use_super_mac */),
       g_preference_validation_registry_path_for_testing
           ? base::MakeUnique<RegistryHashStoreContentsWin>(

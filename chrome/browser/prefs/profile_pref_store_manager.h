@@ -40,15 +40,16 @@ class ProfilePrefStoreManager {
   // |tracking_configuration| is used for preference tracking.
   // |reporting_ids_count| is the count of all possible tracked preference IDs
   // (possibly greater than |tracking_configuration.size()|).
-  // |seed| and |device_id| are used to track preference value changes and must
-  // be the same on each launch in order to verify loaded preference values.
+  // |seed| and |legacy_device_id| are used to track preference value changes
+  // and must be the same on each launch in order to verify loaded preference
+  // values.
   ProfilePrefStoreManager(
       const base::FilePath& profile_path,
       const std::vector<PrefHashFilter::TrackedPreferenceMetadata>&
           tracking_configuration,
       size_t reporting_ids_count,
       const std::string& seed,
-      const std::string& device_id,
+      const std::string& legacy_device_id,
       PrefService* local_state);
 
   ~ProfilePrefStoreManager();
@@ -117,7 +118,7 @@ class ProfilePrefStoreManager {
       tracking_configuration_;
   const size_t reporting_ids_count_;
   const std::string seed_;
-  const std::string device_id_;
+  const std::string legacy_device_id_;
   PrefService* local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePrefStoreManager);

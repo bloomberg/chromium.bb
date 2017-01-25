@@ -24,10 +24,10 @@ TEST(PrefHashCalculatorTest, TestCurrentAlgorithm) {
   base::DictionaryValue dictionary_value_2;
   dictionary_value_2.SetInteger("int value", 2);
 
-  PrefHashCalculator calc1("seed1", "deviceid");
-  PrefHashCalculator calc1_dup("seed1", "deviceid");
-  PrefHashCalculator calc2("seed2", "deviceid");
-  PrefHashCalculator calc3("seed1", "deviceid2");
+  PrefHashCalculator calc1("seed1", "deviceid", "legacydeviceid");
+  PrefHashCalculator calc1_dup("seed1", "deviceid", "legacydeviceid");
+  PrefHashCalculator calc2("seed2", "deviceid", "legacydeviceid");
+  PrefHashCalculator calc3("seed1", "deviceid2", "legacydeviceid");
 
   // Two calculators with same seed produce same hash.
   ASSERT_EQ(calc1.Calculate("pref_path", &string_value_1),
@@ -124,46 +124,46 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   static const char kExpectedNullValue[] =
       "82A9F3BBC7F9FF84C76B033C854E79EEB162783FA7B3E99FF9372FA8E12C44F7";
   EXPECT_EQ(PrefHashCalculator::VALID,
-            PrefHashCalculator(kSeed, kDeviceId)
+            PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
                 .Validate("pref.path", null_value.get(), kExpectedNullValue));
 
   static const char kExpectedBooleanValue[] =
       "A520D8F43EA307B0063736DC9358C330539D0A29417580514C8B9862632C4CCC";
   EXPECT_EQ(
       PrefHashCalculator::VALID,
-      PrefHashCalculator(kSeed, kDeviceId)
+      PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
           .Validate("pref.path", bool_value.get(), kExpectedBooleanValue));
 
   static const char kExpectedIntegerValue[] =
       "8D60DA1F10BF5AA29819D2D66D7CCEF9AABC5DA93C11A0D2BD21078D63D83682";
   EXPECT_EQ(PrefHashCalculator::VALID,
-            PrefHashCalculator(kSeed, kDeviceId)
+            PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
                 .Validate("pref.path", int_value.get(), kExpectedIntegerValue));
 
   static const char kExpectedDoubleValue[] =
       "C9D94772516125BEEDAE68C109D44BC529E719EE020614E894CC7FB4098C545D";
   EXPECT_EQ(
       PrefHashCalculator::VALID,
-      PrefHashCalculator(kSeed, kDeviceId)
+      PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
           .Validate("pref.path", double_value.get(), kExpectedDoubleValue));
 
   static const char kExpectedStringValue[] =
       "05ACCBD3B05C45C36CD06190F63EC577112311929D8380E26E5F13182EB68318";
   EXPECT_EQ(
       PrefHashCalculator::VALID,
-      PrefHashCalculator(kSeed, kDeviceId)
+      PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
           .Validate("pref.path", string_value.get(), kExpectedStringValue));
 
   static const char kExpectedDictValue[] =
       "7A84DCC710D796C771F789A4DA82C952095AA956B6F1667EE42D0A19ECAA3C4A";
   EXPECT_EQ(PrefHashCalculator::VALID,
-            PrefHashCalculator(kSeed, kDeviceId)
+            PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
                 .Validate("pref.path", dict_value.get(), kExpectedDictValue));
 
   static const char kExpectedListValue[] =
       "8D5A25972DF5AE20D041C780E7CA54E40F614AD53513A0724EE8D62D4F992740";
   EXPECT_EQ(PrefHashCalculator::VALID,
-            PrefHashCalculator(kSeed, kDeviceId)
+            PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
                 .Validate("pref.path", list_value.get(), kExpectedListValue));
 
   // Also test every value type together in the same dictionary.
@@ -178,28 +178,22 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   static const char kExpectedEverythingValue[] =
       "B97D09BE7005693574DCBDD03D8D9E44FB51F4008B73FB56A49A9FA671A1999B";
   EXPECT_EQ(PrefHashCalculator::VALID,
-            PrefHashCalculator(kSeed, kDeviceId)
+            PrefHashCalculator(kSeed, kDeviceId, "legacydeviceid")
                 .Validate("pref.path", &everything, kExpectedEverythingValue));
 }
 
-TEST(PrefHashCalculatorTest, TestCompatibilityWithLegacyPrefMetricsServiceId) {
-  static const char kSeed[] = {
-      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
-      0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
-      0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00,
-      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-      0x0C, 0x0D, 0x0E, 0x0F, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
-      0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
-  static const char kDeviceId[] =
-      "D730D9CBD98C734A4FB097A1922275FE9F7E026A4EA1BE0E84";
+TEST(PrefHashCalculatorTest, TestCompatibilityWithLegacyDeviceId) {
+  static const char kSeed[] = "0123456789ABCDEF0123456789ABCDEF";
+  static const char kNewDeviceId[] = "new_test_device_id1";
+  static const char kLegacyDeviceId[] = "test_device_id1";
+
+  // As in PrefHashCalculatorTest.CatchHashChanges.
+  const base::StringValue string_value(
+      "testing with special chars:\n<>{}:^^@#$\\/");
   static const char kExpectedValue[] =
-      "845EF34663FF8D32BE6707F40258FBA531C2BFC532E3B014AFB3476115C2A9DE";
+      "05ACCBD3B05C45C36CD06190F63EC577112311929D8380E26E5F13182EB68318";
 
-  base::ListValue startup_urls;
-  startup_urls.Set(0, new base::StringValue("http://www.chromium.org/"));
-
-  EXPECT_EQ(
-      PrefHashCalculator::VALID_SECURE_LEGACY,
-      PrefHashCalculator(std::string(kSeed, arraysize(kSeed)), kDeviceId)
-          .Validate("session.startup_urls", &startup_urls, kExpectedValue));
+  EXPECT_EQ(PrefHashCalculator::VALID_SECURE_LEGACY,
+            PrefHashCalculator(kSeed, kNewDeviceId, kLegacyDeviceId)
+                .Validate("pref.path", &string_value, kExpectedValue));
 }

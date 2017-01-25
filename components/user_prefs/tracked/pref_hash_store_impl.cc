@@ -9,8 +9,36 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
+#include "components/user_prefs/tracked/device_id.h"
 #include "components/user_prefs/tracked/hash_store_contents.h"
+
+namespace {
+
+// Returns a deterministic ID for this machine.
+std::string GenerateDeviceId() {
+  static std::string cached_device_id;
+  if (!cached_device_id.empty())
+    return cached_device_id;
+
+  std::string device_id;
+  MachineIdStatus status = GetDeterministicMachineSpecificId(&device_id);
+  if (status != MachineIdStatus::NOT_IMPLEMENTED) {
+    // TODO(proberge): Remove this histogram once we validate that machine id
+    // generation is not flaky and consider adding a CHECK or DCHECK.
+    UMA_HISTOGRAM_BOOLEAN("Settings.MachineIdGenerationSuccess",
+                          status == MachineIdStatus::SUCCESS);
+  }
+
+  if (status == MachineIdStatus::SUCCESS) {
+    cached_device_id = device_id;
+    return device_id;
+  }
+
+  return std::string();
+}
+
+}  // namespace
 
 class PrefHashStoreImpl::PrefHashStoreTransactionImpl
     : public PrefHashStoreTransaction {
@@ -49,10 +77,10 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
 };
 
 PrefHashStoreImpl::PrefHashStoreImpl(const std::string& seed,
-                                     const std::string& device_id,
+                                     const std::string& legacy_device_id,
                                      bool use_super_mac)
-    : pref_hash_calculator_(seed, device_id), use_super_mac_(use_super_mac) {
-}
+    : pref_hash_calculator_(seed, GenerateDeviceId(), legacy_device_id),
+      use_super_mac_(use_super_mac) {}
 
 PrefHashStoreImpl::~PrefHashStoreImpl() {
 }
