@@ -227,7 +227,7 @@ class DepsUpdater(object):
 
     def _commit_message(self, chromium_commit, import_commit):
         return ('Import %s\n\n'
-                'Using update-w3c-deps in Chromium %s.\n\n'
+                'Using wpt-import in Chromium %s.\n\n'
                 'NOEXPORT=true' %
                 (import_commit, chromium_commit))
 

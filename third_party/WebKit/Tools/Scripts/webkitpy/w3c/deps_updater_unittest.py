@@ -76,7 +76,7 @@ class DepsUpdaterTest(unittest.TestCase):
         self.assertEqual(
             updater._commit_message('aaaa', '1111'),
             'Import 1111\n\n'
-            'Using update-w3c-deps in Chromium aaaa.\n\n'
+            'Using wpt-import in Chromium aaaa.\n\n'
             'NOEXPORT=true')
 
     def test_cl_description_with_empty_environ(self):

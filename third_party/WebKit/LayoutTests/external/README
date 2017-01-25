@@ -4,8 +4,8 @@ In particular the tests in web-platform-tests and csswg-test are
 imported from the W3C's test suite repositories on GitHub, and changes
 to web-platform-tests should be exported to the upstream repo.
 
-Use Tools/Scripts/update-w3c-deps to update the tests from the tip of
-tree in those repositories.
+Use Tools/Scripts/wpt-import to update the tests from the tip of tree
+in those repositories.
 
 It is safe and okay to check in generic baselines for any tests that fail.
 The baselines will not be overwritten.
