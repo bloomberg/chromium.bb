@@ -83,6 +83,7 @@ def add_footer_change_id(message, change_id):
   return add_footer(message, 'Change-Id', change_id,
                     after_keys=['Bug', 'Issue', 'Test', 'Feature'])
 
+
 def add_footer(message, key, value, after_keys=None):
   """Returns a message with given footer appended.
 
@@ -162,7 +163,6 @@ def main(args):
   g.add_argument('--position-ref', action='store_true')
   g.add_argument('--position-num', action='store_true')
   g.add_argument('--json', help="filename to dump JSON serialized headers to.")
-
 
   opts = parser.parse_args(args)
 

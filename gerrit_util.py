@@ -17,7 +17,6 @@ import logging
 import netrc
 import os
 import re
-import shutil
 import socket
 import stat
 import sys
@@ -36,7 +35,6 @@ TRY_LIMIT = 5
 # Controls the transport protocol used to communicate with gerrit.
 # This is parameterized primarily to enable GerritTestCase.
 GERRIT_PROTOCOL = 'https'
-
 
 
 class GerritError(Exception):
@@ -200,6 +198,7 @@ class CookiesAuthenticator(Authenticator):
       return 'Basic %s' % (base64.b64encode('%s:%s' % (auth[0], auth[2])))
     return None
 
+
 # Backwards compatibility just in case somebody imports this outside of
 # depot_tools.
 NetrcAuthenticator = CookiesAuthenticator
@@ -255,7 +254,6 @@ class GceAuthenticator(Authenticator):
       if resp.status < httplib.INTERNAL_SERVER_ERROR:
         return resp
 
-
   @classmethod
   def _get_token_dict(cls):
     if cls._token_cache:
@@ -275,7 +273,6 @@ class GceAuthenticator(Authenticator):
     if not token_dict:
       return None
     return '%(token_type)s %(access_token)s' % token_dict
-
 
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):

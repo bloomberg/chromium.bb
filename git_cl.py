@@ -25,7 +25,6 @@ import re
 import stat
 import sys
 import textwrap
-import traceback
 import urllib
 import urllib2
 import urlparse
@@ -44,7 +43,6 @@ from third_party import upload
 import auth
 import checkout
 import clang_format
-import commit_queue
 import dart_format
 import setup_color
 import fix_encoding
@@ -800,7 +798,7 @@ class Settings(object):
     git_cache.Mirror.SetCachePath(os.path.dirname(local_url))
     remote_url = git_cache.Mirror.CacheDirToUrl(local_url)
     # Use the /dev/null print_func to avoid terminal spew.
-    mirror = git_cache.Mirror(remote_url, print_func = lambda *args: None)
+    mirror = git_cache.Mirror(remote_url, print_func=lambda *args: None)
     if mirror.exists():
       return mirror
     return None
@@ -2007,7 +2005,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       assert new_state == _CQState.DRY_RUN
       self.SetFlags({'commit': '1', 'cq_dry_run': '1'})
 
-
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
                               directory):
     # PatchIssue should never be called with a dirty tree.  It is up to the
@@ -2208,6 +2205,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       self.SetIssue(issue)
     self.SetPatchset(patchset)
     return 0
+
 
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None):
@@ -2867,7 +2865,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     vote_map = {
         _CQState.NONE:    0,
         _CQState.DRY_RUN: 1,
-        _CQState.COMMIT : 2,
+        _CQState.COMMIT:  2,
     }
     kwargs = {'labels': {'Commit-Queue': vote_map[new_state]}}
     if new_state == _CQState.DRY_RUN:
@@ -3274,9 +3272,9 @@ def LoadCodereviewSettingsFromFile(fileobj):
             keyvals['GERRIT_SKIP_ENSURE_AUTHENTICATED']])
 
   if 'PUSH_URL_CONFIG' in keyvals and 'ORIGIN_URL_CONFIG' in keyvals:
-    #should be of the form
-    #PUSH_URL_CONFIG: url.ssh://gitrw.chromium.org.pushinsteadof
-    #ORIGIN_URL_CONFIG: http://src.chromium.org/git
+    # should be of the form
+    # PUSH_URL_CONFIG: url.ssh://gitrw.chromium.org.pushinsteadof
+    # ORIGIN_URL_CONFIG: http://src.chromium.org/git
     RunGit(['config', keyvals['PUSH_URL_CONFIG'],
             keyvals['ORIGIN_URL_CONFIG']])
 
@@ -3330,7 +3328,6 @@ def DownloadGerritHook(force):
                    'chmod +x .git/hooks/commit-msg' % src)
 
 
-
 def GetRietveldCodereviewSettingsInteractively():
   """Prompt the user for settings."""
   server = settings.GetDefaultServerUrl(error_ok=True)
@@ -3366,6 +3363,7 @@ def GetRietveldCodereviewSettingsInteractively():
   SetProperty(settings.GetBugPrefix(), 'Bug Prefix', 'bug-prefix', False)
   SetProperty(settings.GetRunPostUploadHook(), 'Run Post Upload Hook',
               'run-post-upload-hook', False)
+
 
 @subcommand.usage('[repo root containing codereview.settings]')
 def CMDconfig(parser, args):
@@ -4566,7 +4564,7 @@ def CMDpatch(parser, args):
   auth_config = auth.extract_auth_config_from_options(options)
 
 
-  if options.reapply :
+  if options.reapply:
     if options.newbranch:
       parser.error('--reapply works on the current branch only')
     if len(args) > 0:
@@ -4578,7 +4576,7 @@ def CMDpatch(parser, args):
       parser.error('current branch must have an associated issue')
 
     upstream = cl.GetUpstreamBranch()
-    if upstream == None:
+    if upstream is None:
       parser.error('No upstream branch specified. Cannot reset branch')
 
     RunGit(['reset', '--hard', upstream])
@@ -4989,7 +4987,7 @@ def BuildGitDiffCmd(diff_type, upstream_commit, args):
   """Generates a diff command."""
   # Generate diff for the current branch's changes.
   diff_cmd = ['diff', '--no-ext-diff', '--no-prefix', diff_type,
-              upstream_commit, '--' ]
+              upstream_commit, '--']
 
   if args:
     for arg in args:
@@ -5000,9 +4998,11 @@ def BuildGitDiffCmd(diff_type, upstream_commit, args):
 
   return diff_cmd
 
+
 def MatchingFileType(file_name, extensions):
   """Returns true if the file name ends with one of the given extensions."""
   return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
+
 
 @subcommand.usage('[files or directories to diff]')
 def CMDformat(parser, args):
@@ -5142,7 +5142,7 @@ def CMDformat(parser, args):
 
   # Format GN build files. Always run on full build files for canonical form.
   if gn_diff_files:
-    cmd = ['gn', 'format' ]
+    cmd = ['gn', 'format']
     if opts.dry_run or opts.diff:
       cmd.append('--dry-run')
     for gn_diff_file in gn_diff_files:
