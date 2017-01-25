@@ -454,10 +454,6 @@ void RenderWidgetHostImpl::SendScreenRects() {
   waiting_for_screen_rects_ack_ = true;
 }
 
-void RenderWidgetHostImpl::SuppressEventsUntilKeyDown() {
-  suppress_events_until_keydown_ = true;
-}
-
 void RenderWidgetHostImpl::FlushInput() {
   input_router_->RequestNotificationWhenFlushed();
   if (synthetic_gesture_controller_)

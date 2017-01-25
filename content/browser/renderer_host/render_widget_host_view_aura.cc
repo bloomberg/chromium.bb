@@ -1754,10 +1754,6 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       // Ask the system-wide IME to send all TextInputClient messages to |this|
       // object.
       input_method->SetFocusedTextInputClient(this);
-
-      // Often the application can set focus to the view in response to a key
-      // down. However, the following events shouldn't be sent to the web page.
-      host_->SuppressEventsUntilKeyDown();
     }
 
     BrowserAccessibilityManager* manager =

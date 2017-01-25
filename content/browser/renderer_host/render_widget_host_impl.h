@@ -478,10 +478,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Update the renderer's cache of the screen rect of the view and window.
   void SendScreenRects();
 
-  // Suppresses Char and KeyUp events until the next (Raw)KeyDown. See
-  // suppress_events_until_keydown_.
-  void SuppressEventsUntilKeyDown();
-
   // Called by the view in response to a flush request.
   void FlushInput();
 
