@@ -13,7 +13,7 @@
 namespace mojo {
 namespace {
 
-base::LazyInstance<base::ThreadLocalPointer<SyncHandleRegistry>>
+base::LazyInstance<base::ThreadLocalPointer<SyncHandleRegistry>>::Leaky
     g_current_sync_handle_watcher = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
