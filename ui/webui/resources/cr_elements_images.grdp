@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <include name="IDR_WEBUI_IMAGES_ARROW_DOWN"
+           file="images/arrow_down.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ARROW_RIGHT"
+           file="images/arrow_right.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_OPEN_IN_NEW"
+           file="images/open_in_new.svg" type="BINDATA" />
   <if expr="chromeos">
     <include name="IDR_CR_ELEMENTS_CELLULAR_0_SVG"
              file="cr_elements/network/cellular_0.svg" type="BINDATA" />
