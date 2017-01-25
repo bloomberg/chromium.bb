@@ -392,3 +392,21 @@ TEST_F(HistoryStateOperationsTest, ReplaceStatePostRequest) {
   // Verify that the NavigationItem no longer has POST data.
   EXPECT_FALSE(GetLastCommittedItem()->HasPostData());
 }
+
+// Tests that performing a replaceState() on a page where only the URL fragment
+// is updated does not trigger a hashchange event.
+TEST_F(HistoryStateOperationsTest, ReplaceStateNoHashChangeEvent) {
+  // Set up the state parameters and tap the replace state button.
+  std::string empty_state;
+  std::string empty_title;
+  GURL new_url = state_operations_url().Resolve("#hash");
+  SetStateParams(empty_state, empty_title, new_url);
+  ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
+  // Verify that url has been replaced.
+  base::test::ios::WaitUntilCondition(^bool {
+    return GetLastCommittedItem()->GetURL() == new_url;
+  });
+  // Verify that the hashchange event was not fired.
+  EXPECT_FALSE(static_cast<web::NavigationItemImpl*>(GetLastCommittedItem())
+                   ->IsCreatedFromHashChange());
+}
