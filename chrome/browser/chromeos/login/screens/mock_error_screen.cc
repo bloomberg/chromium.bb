@@ -33,23 +33,23 @@ void MockErrorScreen::SetErrorState(NetworkError::ErrorState error_state,
   MockSetErrorState(error_state, network);
 }
 
-MockNetworkErrorView::MockNetworkErrorView() : model_(nullptr) {
+MockNetworkErrorView::MockNetworkErrorView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
   EXPECT_CALL(*this, MockUnbind()).Times(AtLeast(1));
 }
 
 MockNetworkErrorView::~MockNetworkErrorView() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
-void MockNetworkErrorView::Bind(NetworkErrorModel& model) {
-  model_ = &model;
-  MockBind(model);
+void MockNetworkErrorView::Bind(ErrorScreen* screen) {
+  screen_ = screen;
+  MockBind(screen);
 }
 
 void MockNetworkErrorView::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   MockUnbind();
 }
 

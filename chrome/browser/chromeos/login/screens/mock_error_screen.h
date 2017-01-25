@@ -7,7 +7,6 @@
 
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/chromeos/login/screens/network_error_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -36,17 +35,17 @@ class MockNetworkErrorView : public NetworkErrorView {
   MockNetworkErrorView();
   virtual ~MockNetworkErrorView();
 
-  void Bind(NetworkErrorModel& model) override;
+  void Bind(ErrorScreen* screen) override;
   void Unbind() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(MockBind, void(NetworkErrorModel& model));
+  MOCK_METHOD1(MockBind, void(ErrorScreen* screen));
   MOCK_METHOD0(MockUnbind, void());
   MOCK_METHOD1(ShowOobeScreen, void(OobeScreen screen));
 
  private:
-  NetworkErrorModel* model_;
+  ErrorScreen* screen_ = nullptr;
 };
 
 }  // namespace chromeos

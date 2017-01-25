@@ -122,20 +122,16 @@ enum ActiveDirectoryErrorState {
 
 EnrollmentScreenHandler::EnrollmentScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
-    NetworkErrorModel* network_error_model)
+    ErrorScreen* error_screen)
     : BaseScreenHandler(kJsScreenPath),
-      controller_(NULL),
-      show_on_init_(false),
-      first_show_(true),
-      observe_network_failure_(false),
       network_state_informer_(network_state_informer),
-      network_error_model_(network_error_model),
+      error_screen_(error_screen),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
   set_async_assets_load_id(
       GetOobeScreenName(OobeScreen::SCREEN_OOBE_ENROLLMENT));
   DCHECK(network_state_informer_.get());
-  DCHECK(network_error_model_);
+  DCHECK(error_screen_);
   network_state_informer_->AddObserver(this);
 }
 
@@ -422,7 +418,7 @@ bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
 
 bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
   return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE &&
-          network_error_model_->GetParentScreen() ==
+          error_screen_->GetParentScreen() ==
               OobeScreen::SCREEN_OOBE_ENROLLMENT);
 }
 
@@ -455,7 +451,7 @@ void EnrollmentScreenHandler::UpdateStateInternal(
                << "reason=" << NetworkError::ErrorReasonString(reason);
 
   if (is_online || !is_behind_captive_portal)
-    network_error_model_->HideCaptivePortal();
+    error_screen_->HideCaptivePortal();
 
   if (is_frame_error) {
     LOG(WARNING) << "Retry page load";
@@ -478,36 +474,36 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
   const bool is_frame_error = reason == NetworkError::ERROR_REASON_FRAME_ERROR;
 
   if (is_proxy_error) {
-    network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
-                                        std::string());
+    error_screen_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
+                                 std::string());
   } else if (is_behind_captive_portal) {
     // Do not bother a user with obsessive captive portal showing. This
     // check makes captive portal being shown only once: either when error
     // screen is shown for the first time or when switching from another
     // error screen (offline, proxy).
-    if (IsOnEnrollmentScreen() || (network_error_model_->GetErrorState() !=
-                                   NetworkError::ERROR_STATE_PORTAL)) {
-      network_error_model_->FixCaptivePortal();
+    if (IsOnEnrollmentScreen() ||
+        (error_screen_->GetErrorState() != NetworkError::ERROR_STATE_PORTAL)) {
+      error_screen_->FixCaptivePortal();
     }
     const std::string network_name = GetNetworkName(network_path);
-    network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
-                                        network_name);
+    error_screen_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
+                                 network_name);
   } else if (is_frame_error) {
-    network_error_model_->SetErrorState(
-        NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT, std::string());
+    error_screen_->SetErrorState(NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT,
+                                 std::string());
   } else {
-    network_error_model_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
-                                        std::string());
+    error_screen_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                 std::string());
   }
 
   if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
     const std::string network_type = network_state_informer_->network_type();
-    network_error_model_->SetUIState(NetworkError::UI_STATE_SIGNIN);
-    network_error_model_->SetParentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
-    network_error_model_->SetHideCallback(base::Bind(
-        &EnrollmentScreenHandler::DoShow, weak_ptr_factory_.GetWeakPtr()));
-    network_error_model_->Show();
-    histogram_helper_->OnErrorShow(network_error_model_->GetErrorState());
+    error_screen_->SetUIState(NetworkError::UI_STATE_SIGNIN);
+    error_screen_->SetParentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+    error_screen_->SetHideCallback(base::Bind(&EnrollmentScreenHandler::DoShow,
+                                              weak_ptr_factory_.GetWeakPtr()));
+    error_screen_->Show();
+    histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
   }
 }
 
@@ -515,7 +511,7 @@ void EnrollmentScreenHandler::HideOfflineMessage(
     NetworkStateInformer::State state,
     NetworkError::ErrorReason reason) {
   if (IsEnrollmentScreenHiddenByError())
-    network_error_model_->Hide();
+    error_screen_->Hide();
   histogram_helper_->OnErrorHide();
 }
 

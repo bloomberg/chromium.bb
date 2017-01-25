@@ -279,10 +279,10 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   network_dropdown_handler_->AddObserver(error_screen_handler_);
 
   error_screen_.reset(new ErrorScreen(nullptr, error_screen_handler_));
-  NetworkErrorModel* network_error_model = error_screen_.get();
+  ErrorScreen* error_screen = error_screen_.get();
 
   auto enrollment_screen_handler = base::MakeUnique<EnrollmentScreenHandler>(
-      network_state_informer_, network_error_model);
+      network_state_informer_, error_screen);
   enrollment_screen_actor_ = enrollment_screen_handler.get();
   AddScreenHandler(std::move(enrollment_screen_handler));
 
@@ -311,14 +311,14 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(std::move(gaia_screen_handler));
 
   auto signin_screen_handler = base::MakeUnique<SigninScreenHandler>(
-      network_state_informer_, network_error_model, core_handler_,
+      network_state_informer_, error_screen, core_handler_,
       gaia_screen_handler_);
   signin_screen_handler_ = signin_screen_handler.get();
   AddScreenHandler(std::move(signin_screen_handler));
 
   auto app_launch_splash_screen_handler =
       base::MakeUnique<AppLaunchSplashScreenHandler>(network_state_informer_,
-                                                     network_error_model);
+                                                     error_screen);
   app_launch_splash_screen_actor_ = app_launch_splash_screen_handler.get();
   AddScreenHandler(std::move(app_launch_splash_screen_handler));
 

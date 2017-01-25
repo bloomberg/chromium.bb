@@ -800,8 +800,6 @@ source_set("chromeos") {
     "login/screens/model_view_channel.h",
     "login/screens/network_error.cc",
     "login/screens/network_error.h",
-    "login/screens/network_error_model.cc",
-    "login/screens/network_error_model.h",
     "login/screens/network_error_view.h",
     "login/screens/network_model.cc",
     "login/screens/network_model.h",

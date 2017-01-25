@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-class NetworkErrorModel;
+class ErrorScreen;
 
 // Interface for dependency injection between ErrorScreen and its actual
 // representation. Owned by ErrorScreen.
@@ -24,10 +24,10 @@ class NetworkErrorView {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Binds |model| to the view.
-  virtual void Bind(NetworkErrorModel& model) = 0;
+  // Binds |screen| to the view.
+  virtual void Bind(ErrorScreen* screen) = 0;
 
-  // Unbinds model from the view.
+  // Unbinds the screen from the view.
   virtual void Unbind() = 0;
 
   // Switches to |screen|.

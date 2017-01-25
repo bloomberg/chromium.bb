@@ -7,6 +7,8 @@
 
 namespace chromeos {
 
+// TODO(jdufault): Remove Network prefix from NetworkError associated classes.
+// See crbug.com/672142
 class NetworkError {
  public:
   enum UIState {

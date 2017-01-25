@@ -38,16 +38,10 @@ namespace chromeos {
 
 AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
-    NetworkErrorModel* network_error_model)
+    ErrorScreen* error_screen)
     : BaseScreenHandler(kJsScreenPath),
-      delegate_(NULL),
-      show_on_init_(false),
-      state_(APP_LAUNCH_STATE_LOADING_AUTH_FILE),
       network_state_informer_(network_state_informer),
-      network_error_model_(network_error_model),
-      online_state_(false),
-      network_config_done_(false),
-      network_config_requested_(false) {
+      error_screen_(error_screen) {
   network_state_informer_->AddObserver(this);
 }
 
@@ -147,43 +141,43 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
   const std::string network_path = network_state_informer_->network_path();
   const std::string network_name = GetNetworkName(network_path);
 
-  network_error_model_->SetUIState(NetworkError::UI_STATE_KIOSK_MODE);
-  network_error_model_->AllowGuestSignin(false);
-  network_error_model_->AllowOfflineLogin(false);
+  error_screen_->SetUIState(NetworkError::UI_STATE_KIOSK_MODE);
+  error_screen_->AllowGuestSignin(false);
+  error_screen_->AllowOfflineLogin(false);
 
   switch (state) {
     case NetworkStateInformer::CAPTIVE_PORTAL: {
-      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
-                                          network_name);
-      network_error_model_->FixCaptivePortal();
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
+                                   network_name);
+      error_screen_->FixCaptivePortal();
 
       break;
     }
     case NetworkStateInformer::PROXY_AUTH_REQUIRED: {
-      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
-                                          network_name);
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
+                                   network_name);
       break;
     }
     case NetworkStateInformer::OFFLINE: {
-      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
-                                          network_name);
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                   network_name);
       break;
     }
     case NetworkStateInformer::ONLINE: {
-      network_error_model_->SetErrorState(
-          NetworkError::ERROR_STATE_KIOSK_ONLINE, network_name);
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_KIOSK_ONLINE,
+                                   network_name);
       break;
     }
     default:
-      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
-                                          network_name);
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                   network_name);
       NOTREACHED();
       break;
   }
 
   if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE)
-    network_error_model_->SetParentScreen(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
-  network_error_model_->Show();
+    error_screen_->SetParentScreen(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+  error_screen_->Show();
 }
 
 bool AppLaunchSplashScreenHandler::IsNetworkReady() {

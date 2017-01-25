@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/screens/network_error_model.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -223,7 +223,7 @@ class SigninScreenHandler
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      NetworkErrorModel* network_error_model,
+      ErrorScreen* error_screen,
       CoreOobeActor* core_oobe_actor,
       GaiaScreenHandler* gaia_screen_handler);
   ~SigninScreenHandler() override;
@@ -456,8 +456,8 @@ class SigninScreenHandler
   bool webui_visible_ = false;
   bool preferences_changed_delayed_ = false;
 
-  NetworkErrorModel* network_error_model_;
-  CoreOobeActor* core_oobe_actor_;
+  ErrorScreen* error_screen_ = nullptr;
+  CoreOobeActor* core_oobe_actor_ = nullptr;
 
   NetworkStateInformer::State last_network_state_ =
       NetworkStateInformer::UNKNOWN;
