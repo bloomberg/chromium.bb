@@ -105,7 +105,7 @@ void ContentsWebView::CloneWebContentsLayer() {
     return;
   }
 
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   set_layer_owner_delegate(this);
 
   // The cloned layer is in a different coordinate system them our layer (which
@@ -120,7 +120,7 @@ void ContentsWebView::CloneWebContentsLayer() {
 
 void ContentsWebView::DestroyClonedLayer() {
   cloned_layer_tree_.reset();
-  SetPaintToLayer(false);
+  DestroyLayer();
   set_layer_owner_delegate(nullptr);
 }
 

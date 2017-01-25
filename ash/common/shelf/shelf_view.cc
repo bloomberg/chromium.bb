@@ -405,7 +405,7 @@ void ShelfView::Init() {
   const ShelfItems& items(model_->items());
   for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
-    child->SetPaintToLayer(true);
+    child->SetPaintToLayer();
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
@@ -1392,7 +1392,7 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
 }
 
 void ShelfView::ConfigureChildView(views::View* view) {
-  view->SetPaintToLayer(true);
+  view->SetPaintToLayer();
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 

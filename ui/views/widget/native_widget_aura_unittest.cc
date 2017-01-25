@@ -485,7 +485,7 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   views::View* view_with_layer = new views::View;
   parent_root->AddChildView(view_with_layer);
   view_with_layer->SetBounds(0, 0, 50, 50);
-  view_with_layer->SetPaintToLayer(true);
+  view_with_layer->SetPaintToLayer();
 
   // Make sure that |child| still gets the event.
   EXPECT_EQ(child->GetNativeWindow(),

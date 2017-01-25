@@ -195,7 +195,7 @@ const int kFadeIconMs = 500;
 class ScanningThrobber : public ThrobberView {
  public:
   ScanningThrobber() {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetOpacity(1.0);
     accessible_name_ =
@@ -241,7 +241,7 @@ class InfoIcon : public views::ImageButton {
     SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
     SetAccessibleName(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetOpacity(1.0);
   }

@@ -86,7 +86,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     // NULL on Windows, and not needed for tests. It is only used to determine
     // the scale factor for preloading icons.
     main_view_ = new AppListMainView(delegate_.get());
-    main_view_->SetPaintToLayer(true);
+    main_view_->SetPaintToLayer();
     main_view_->model()->SetFoldersEnabled(true);
     search_box_view_ = new SearchBoxView(main_view_, delegate_.get());
     main_view_->Init(nullptr, 0, search_box_view_);

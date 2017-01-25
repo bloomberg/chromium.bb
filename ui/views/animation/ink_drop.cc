@@ -9,7 +9,7 @@ namespace views {
 InkDropContainerView::InkDropContainerView() {}
 
 void InkDropContainerView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   SetVisible(true);
   layer()->SetFillsBoundsOpaquely(false);
   layer()->Add(ink_drop_layer);
@@ -18,7 +18,7 @@ void InkDropContainerView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 void InkDropContainerView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->Remove(ink_drop_layer);
   SetVisible(false);
-  SetPaintToLayer(false);
+  DestroyLayer();
 }
 
 bool InkDropContainerView::CanProcessEventsWithinSubtree() const {

@@ -213,7 +213,7 @@ class WindowCycleView : public views::WidgetDelegateView {
         highlight_view_(new views::View()),
         target_window_(nullptr) {
     DCHECK(!windows.empty());
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetMasksToBounds(true);
     layer()->SetOpacity(0.0);
@@ -232,7 +232,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     mirror_container_->SetLayoutManager(layout);
-    mirror_container_->SetPaintToLayer(true);
+    mirror_container_->SetPaintToLayer();
     mirror_container_->layer()->SetFillsBoundsOpaquely(false);
 
     for (WmWindow* window : windows) {
@@ -249,7 +249,8 @@ class WindowCycleView : public views::WidgetDelegateView {
         views::Painter::CreateRoundRectWith1PxBorderPainter(
             SkColorSetA(SK_ColorWHITE, 0x4D), SkColorSetA(SK_ColorWHITE, 0x33),
             kBackgroundCornerRadius)));
-    highlight_view_->SetPaintToLayer(true);
+    highlight_view_->SetPaintToLayer();
+
     highlight_view_->layer()->SetFillsBoundsOpaquely(false);
 
     AddChildView(highlight_view_);

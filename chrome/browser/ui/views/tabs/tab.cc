@@ -1458,10 +1458,12 @@ void Tab::AdvanceLoadingAnimation() {
   // when possible to reduce repaint overhead.
   const bool paint_to_layer = controller_->CanPaintThrobberToLayer();
   if (paint_to_layer != !!throbber_->layer()) {
-    throbber_->SetPaintToLayer(paint_to_layer);
     if (paint_to_layer) {
+      throbber_->SetPaintToLayer();
       throbber_->layer()->SetFillsBoundsOpaquely(false);
       ScheduleIconPaint();  // Ensure the non-layered throbber goes away.
+    } else {
+      throbber_->DestroyLayer();
     }
   }
   if (!throbber_->visible()) {

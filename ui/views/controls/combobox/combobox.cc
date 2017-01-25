@@ -442,7 +442,7 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
   // A layer is applied to make sure that canvas bounds are snapped to pixel
   // boundaries (for the sake of drawing the arrow).
   if (UseMd()) {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
   } else {
     arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style);

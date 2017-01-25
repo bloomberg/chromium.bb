@@ -86,7 +86,7 @@ void WindowMirrorView::InitLayerOwner() {
   layer_owner_ =
       ::wm::MirrorLayers(target_->aura_window(), false /* sync_bounds */);
 
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->Add(GetMirrorLayer());
   // This causes us to clip the non-client areas of the window.
   layer()->SetMasksToBounds(true);

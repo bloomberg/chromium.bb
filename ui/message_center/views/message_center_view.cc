@@ -99,7 +99,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_->set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
 
-  scroller_->SetPaintToLayer(true);
+  scroller_->SetPaintToLayer();
   scroller_->layer()->SetFillsBoundsOpaquely(false);
   scroller_->layer()->SetMasksToBounds(true);
 

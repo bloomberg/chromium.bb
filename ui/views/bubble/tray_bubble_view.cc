@@ -209,7 +209,7 @@ TrayBubbleView::TrayBubbleView(View* anchor,
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
-  SetPaintToLayer(true);
+  SetPaintToLayer();
 
   bubble_content_mask_.reset(
       new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius()));
@@ -378,7 +378,7 @@ void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
 void TrayBubbleView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
-    details.parent->SetPaintToLayer(true);
+    details.parent->SetPaintToLayer();
     details.parent->layer()->SetMasksToBounds(true);
   }
 }

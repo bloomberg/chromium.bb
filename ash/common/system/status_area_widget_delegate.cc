@@ -57,7 +57,7 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
   set_allow_deactivate_on_esc(true);
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
 

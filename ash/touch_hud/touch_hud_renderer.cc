@@ -35,7 +35,7 @@ class TouchPointView : public views::View,
   explicit TouchPointView(views::Widget* parent_widget)
       : circle_center_(kPointRadius + 1, kPointRadius + 1),
         gradient_center_(SkPoint::Make(kPointRadius + 1, kPointRadius + 1)) {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
     SetSize(gfx::Size(2 * kPointRadius + 2, 2 * kPointRadius + 2));

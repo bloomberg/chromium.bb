@@ -36,7 +36,7 @@ Widget* CreateControlWidget(aura::Window* parent, const gfx::Rect& bounds) {
 View* CreateViewWithLayer(const gfx::Rect& bounds, const char* layer_name) {
   View* view = new View();
   view->SetBoundsRect(bounds);
-  view->SetPaintToLayer(true);
+  view->SetPaintToLayer();
   view->layer()->set_name(layer_name);
   return view;
 }

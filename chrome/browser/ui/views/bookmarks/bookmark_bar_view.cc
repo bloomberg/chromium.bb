@@ -587,7 +587,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
   Init();
 
   // Don't let the bookmarks show on top of the location bar while animating.
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetMasksToBounds(true);
   layer()->SetFillsBoundsOpaquely(false);
 

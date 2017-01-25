@@ -124,7 +124,7 @@ class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
   WebNotificationItem(gfx::AnimationContainer* container,
                       WebNotificationTray* tray)
       : tray_(tray) {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     views::View::SetVisible(false);
     set_owned_by_client();

@@ -90,7 +90,7 @@ std::unique_ptr<views::View> CreatePaymentView(
 
   // Paint the sheets to layers, otherwise the MD buttons (which do paint to a
   // layer) won't do proper clipping.
-  view->SetPaintToLayer(true);
+  view->SetPaintToLayer();
 
   views::GridLayout* layout = new views::GridLayout(view.get());
   view->SetLayoutManager(layout);

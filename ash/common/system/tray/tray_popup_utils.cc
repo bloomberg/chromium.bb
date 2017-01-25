@@ -286,7 +286,7 @@ void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
       views::Background::CreateSolidBackground(kBackgroundColor));
   view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
-  view->SetPaintToLayer(true);
+  view->SetPaintToLayer();
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 

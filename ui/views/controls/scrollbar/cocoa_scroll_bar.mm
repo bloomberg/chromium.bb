@@ -95,7 +95,7 @@ CocoaScrollBarThumb::CocoaScrollBarThumb(CocoaScrollBar* scroll_bar)
 
   // This is necessary, otherwise the thumb will be rendered below the views if
   // those views paint to their own layers.
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
 
@@ -177,7 +177,7 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
 
   thickness_animation_.SetSlideDuration(kExpandDurationMs);
 
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   has_scrolltrack_ = scroller_style_ == NSScrollerStyleLegacy;
   layer()->SetOpacity(scroller_style_ == NSScrollerStyleOverlay ? 0.0f : 1.0f);
 }

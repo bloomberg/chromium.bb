@@ -19,7 +19,7 @@ TrayPopupItemContainer::TrayPopupItemContainer(views::View* view,
   layout->SetDefaultFlex(1);
   SetLayoutManager(layout);
   if (view->layer()) {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(view->layer()->fills_bounds_opaquely());
   }
   AddChildView(view);

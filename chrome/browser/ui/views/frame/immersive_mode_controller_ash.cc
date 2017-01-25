@@ -260,7 +260,7 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
   DestroyMashRevealWidget();
 
   visible_fraction_ = 0;
-  browser_view_->top_container()->SetPaintToLayer(true);
+  browser_view_->top_container()->SetPaintToLayer();
   browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
   UpdateTabIndicators();
   LayoutBrowserRootView();
@@ -272,14 +272,14 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
 void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
   DestroyMashRevealWidget();
   visible_fraction_ = 0;
-  browser_view_->top_container()->SetPaintToLayer(false);
+  browser_view_->top_container()->DestroyLayer();
   UpdateTabIndicators();
   LayoutBrowserRootView();
 }
 
 void ImmersiveModeControllerAsh::OnImmersiveFullscreenExited() {
   DestroyMashRevealWidget();
-  browser_view_->top_container()->SetPaintToLayer(false);
+  browser_view_->top_container()->DestroyLayer();
   UpdateTabIndicators();
   LayoutBrowserRootView();
 }

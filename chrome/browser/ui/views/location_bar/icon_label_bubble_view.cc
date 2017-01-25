@@ -143,14 +143,14 @@ void IconLabelBubbleView::OnNativeThemeChanged(
 }
 
 void IconLabelBubbleView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer(true);
+  image()->SetPaintToLayer();
   image()->layer()->SetFillsBoundsOpaquely(false);
   InkDropHostView::AddInkDropLayer(ink_drop_layer);
 }
 
 void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
-  image()->SetPaintToLayer(false);
+  image()->DestroyLayer();
 }
 
 std::unique_ptr<views::InkDropHighlight>

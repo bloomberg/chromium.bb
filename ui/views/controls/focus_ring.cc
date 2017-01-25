@@ -87,7 +87,7 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
 FocusRing::FocusRing()
     : override_color_id_(ui::NativeTheme::kColorId_NumColors) {
   // A layer is necessary to paint beyond the parent's bounds.
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
 

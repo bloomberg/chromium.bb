@@ -13,7 +13,7 @@ namespace views {
 SlideOutView::SlideOutView() {
   // If accelerated compositing is not available, this widget tracks the
   // OnSlideOut event but does not render any visible changes.
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
 

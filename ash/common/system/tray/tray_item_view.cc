@@ -30,7 +30,7 @@ namespace ash {
 
 TrayItemView::TrayItemView(SystemTrayItem* owner)
     : owner_(owner), label_(NULL), image_view_(NULL) {
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   SetLayoutManager(new views::FillLayout());
 }

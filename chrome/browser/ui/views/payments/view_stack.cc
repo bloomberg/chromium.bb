@@ -16,7 +16,7 @@ ViewStack::ViewStack()
   // Paint to a layer and Mask to Bounds, otherwise descendant views that paint
   // to a layer themselves will still paint while they're being animated out and
   // are out of bounds of their parent.
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetMasksToBounds(true);
 }
 

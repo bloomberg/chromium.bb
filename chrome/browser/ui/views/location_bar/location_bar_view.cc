@@ -176,7 +176,7 @@ void LocationBarView::Init() {
   DCHECK(GetWidget());
 
   // Make sure children with layers are clipped. See http://crbug.com/589497
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 

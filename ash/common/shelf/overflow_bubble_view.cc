@@ -60,7 +60,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   set_can_activate(false);
 
   // Makes bubble view has a layer and clip its children layers.
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 

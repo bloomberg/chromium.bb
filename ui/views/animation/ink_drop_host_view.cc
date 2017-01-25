@@ -130,7 +130,7 @@ InkDropHostView::~InkDropHostView() {
 
 void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   old_paint_to_layer_ = layer() != nullptr;
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   ink_drop_mask_ = CreateInkDropMask();
   if (ink_drop_mask_)
@@ -148,7 +148,8 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->Remove(ink_drop_layer);
   // Layers safely handle destroying a mask layer before the masked layer.
   ink_drop_mask_.reset();
-  SetPaintToLayer(old_paint_to_layer_);
+  if (!old_paint_to_layer_)
+    DestroyLayer();
 }
 
 std::unique_ptr<InkDrop> InkDropHostView::CreateInkDrop() {

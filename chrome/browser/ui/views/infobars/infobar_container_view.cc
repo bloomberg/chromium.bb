@@ -26,7 +26,7 @@ const SkAlpha kLargeShadowAlpha = 0x1A;
 class ContentShadow : public views::View {
  public:
   ContentShadow() {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
   }
   ~ContentShadow() override {}

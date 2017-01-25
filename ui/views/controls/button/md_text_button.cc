@@ -205,7 +205,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
 
   // Paint to a layer so that the canvas is snapped to pixel boundaries (useful
   // for fractional DSF).
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
 

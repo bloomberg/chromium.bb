@@ -334,10 +334,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Sets whether this view paints to a layer. A view paints to a layer if
   // either of the following are true:
   // . the view has a non-identity transform.
-  // . SetPaintToLayer(true) has been invoked.
+  // . SetPaintToLayer(ui::LayerType) has been invoked.
   // View creates the Layer only when it exists in a Widget with a non-NULL
   // Compositor.
-  void SetPaintToLayer(bool paint_to_layer);
+  void SetPaintToLayer(ui::LayerType layer_type = ui::LAYER_TEXTURED);
+
+  // Destroys the layer associated with this view, and reparents any descendants
+  // to the destroyed layer's parent. If the view does not currently have a
+  // layer, this has no effect.
+  void DestroyLayer();
 
   // Overridden from ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;
@@ -1370,7 +1375,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Accelerated painting ------------------------------------------------------
 
   // Creates the layer and related fields for this view.
-  void CreateLayer();
+  void CreateLayer(ui::LayerType layer_type);
 
   // Recursively calls UpdateParentLayers() on all descendants, stopping at any
   // Views that have layers. Calls UpdateParentLayer() for any Views that have
@@ -1392,10 +1397,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Orphans the layers in this subtree that are parented to layers outside of
   // this subtree.
   void OrphanLayers();
-
-  // Destroys the layer associated with this view, and reparents any descendants
-  // to the destroyed layer's parent.
-  void DestroyLayer();
 
   // Input ---------------------------------------------------------------------
 

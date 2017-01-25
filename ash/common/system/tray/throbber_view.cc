@@ -40,7 +40,7 @@ ThrobberView::ThrobberView() {
   throbber_->set_stop_delay_ms(kThrobberAnimationDurationMs);
   AddChildView(throbber_);
 
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetOpacity(0.0);
 }

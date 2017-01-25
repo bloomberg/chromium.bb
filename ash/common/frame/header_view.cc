@@ -164,20 +164,20 @@ views::View* HeaderView::avatar_icon() const {
 
 void HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   parent()->Layout();
 }
 
 void HeaderView::OnImmersiveRevealEnded() {
   fullscreen_visible_fraction_ = 0;
-  SetPaintToLayer(false);
+  DestroyLayer();
   parent()->Layout();
 }
 
 void HeaderView::OnImmersiveFullscreenExited() {
   fullscreen_visible_fraction_ = 0;
-  SetPaintToLayer(false);
+  DestroyLayer();
   parent()->Layout();
 }
 

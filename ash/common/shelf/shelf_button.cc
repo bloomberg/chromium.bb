@@ -273,7 +273,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
   icon_shadows_.assign(kShadows, kShadows + arraysize(kShadows));
 
   // TODO: refactor the layers so each button doesn't require 2.
-  icon_view_->SetPaintToLayer(true);
+  icon_view_->SetPaintToLayer();
   icon_view_->layer()->SetFillsBoundsOpaquely(false);
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   icon_view_->SetVerticalAlignment(views::ImageView::LEADING);

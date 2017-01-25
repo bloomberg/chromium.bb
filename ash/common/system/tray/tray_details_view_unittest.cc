@@ -326,14 +326,14 @@ TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
   RunAllPendingInMessageLoop();
   test_item->detailed_view()->CreateScrollerViews();
 
-  test_item->detailed_view()->scroll_content()->SetPaintToLayer(true);
+  test_item->detailed_view()->scroll_content()->SetPaintToLayer();
   views::View* view1 = new views::View();
   test_item->detailed_view()->scroll_content()->AddChildView(view1);
   views::View* view2 = new views::View();
-  view2->SetPaintToLayer(true);
+  view2->SetPaintToLayer();
   test_item->detailed_view()->scroll_content()->AddChildView(view2);
   views::View* view3 = new views::View();
-  view3->SetPaintToLayer(true);
+  view3->SetPaintToLayer();
   test_item->detailed_view()->scroll_content()->AddChildView(view3);
 
   // Child layers should have same order as the child views.
@@ -346,7 +346,7 @@ TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
   // Mark |view2| as sticky and add one more child (which will reorder layers).
   view2->set_id(VIEW_ID_STICKY_HEADER);
   views::View* view4 = new views::View();
-  view4->SetPaintToLayer(true);
+  view4->SetPaintToLayer();
   test_item->detailed_view()->scroll_content()->AddChildView(view4);
 
   // Sticky header layer should be above the last child's layer.

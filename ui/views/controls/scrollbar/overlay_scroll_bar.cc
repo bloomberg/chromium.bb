@@ -34,7 +34,7 @@ OverlayScrollBar::Thumb::Thumb(OverlayScrollBar* scroll_bar)
 OverlayScrollBar::Thumb::~Thumb() {}
 
 void OverlayScrollBar::Thumb::Init() {
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   // Animate all changes to the layer except the first one.
   OnStateChanged();
@@ -113,7 +113,7 @@ OverlayScrollBar::OverlayScrollBar(bool horizontal)
   SetThumb(thumb);
   thumb->Init();
   set_notify_enter_exit_on_child(true);
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetMasksToBounds(true);
   layer()->SetFillsBoundsOpaquely(false);
 }

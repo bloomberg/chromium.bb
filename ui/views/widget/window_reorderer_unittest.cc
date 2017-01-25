@@ -66,7 +66,7 @@ TEST_F(WindowReordererTest, Basic) {
   // view are stacked below the layers for any windows not associated to a host
   // view.
   View* v = new View();
-  v->SetPaintToLayer(true);
+  v->SetPaintToLayer();
   v->layer()->set_name("v");
   contents_view->AddChildView(v);
 
@@ -215,7 +215,7 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
   contents_view->AddChildView(v1);
 
   View* v11 = new View();
-  v11->SetPaintToLayer(true);
+  v11->SetPaintToLayer();
   v11->layer()->set_name("v11");
   v1->AddChildView(v11);
 
@@ -229,12 +229,12 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
   w->GetNativeView()->SetProperty(kHostViewKey, v12);
 
   View* v13 = new View();
-  v13->SetPaintToLayer(true);
+  v13->SetPaintToLayer();
   v13->layer()->set_name("v13");
   v1->AddChildView(v13);
 
   View* v2 = new View();
-  v2->SetPaintToLayer(true);
+  v2->SetPaintToLayer();
   v2->layer()->set_name("v2");
   contents_view->AddChildView(v2);
 
@@ -244,7 +244,7 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
             ui::test::ChildLayerNamesAsString(*parent_window->layer()));
 
   // |w|'s layer should be stacked above |v1|'s layer.
-  v1->SetPaintToLayer(true);
+  v1->SetPaintToLayer();
   v1->layer()->set_name("v1");
   EXPECT_EQ("w", ChildWindowNamesAsString(*parent_window));
   EXPECT_EQ("v1 w v2",

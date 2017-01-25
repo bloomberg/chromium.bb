@@ -302,7 +302,7 @@ TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
   SetContents(tray_container_);
   tray_event_filter_.reset(new TrayEventFilter);
 
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   // Start the tray items not visible, because visibility changes are animated.
   views::View::SetVisible(false);

@@ -86,7 +86,7 @@ class AppListOverlayView : public views::View {
  public:
   explicit AppListOverlayView(int corner_radius)
       : corner_radius_(corner_radius) {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     SetVisible(false);
     layer()->SetOpacity(0.0f);
   }
@@ -368,14 +368,14 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
 
   app_list_main_view_ = new AppListMainView(delegate_);
   AddChildView(app_list_main_view_);
-  app_list_main_view_->SetPaintToLayer(true);
+  app_list_main_view_->SetPaintToLayer();
   app_list_main_view_->layer()->SetFillsBoundsOpaquely(false);
   app_list_main_view_->layer()->SetMasksToBounds(true);
 
   // This will be added to the |search_box_widget_| after the app list widget is
   // initialized.
   search_box_view_ = new SearchBoxView(app_list_main_view_, delegate_);
-  search_box_view_->SetPaintToLayer(true);
+  search_box_view_->SetPaintToLayer();
   search_box_view_->layer()->SetFillsBoundsOpaquely(false);
   search_box_view_->layer()->SetMasksToBounds(true);
 
@@ -397,7 +397,7 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
   if (delegate_ && delegate_->IsSpeechRecognitionEnabled()) {
     speech_view_ = new SpeechView(delegate_);
     speech_view_->SetVisible(false);
-    speech_view_->SetPaintToLayer(true);
+    speech_view_->SetPaintToLayer();
     speech_view_->layer()->SetFillsBoundsOpaquely(false);
     speech_view_->layer()->SetOpacity(0.0f);
     AddChildView(speech_view_);

@@ -76,7 +76,7 @@ void SchedulePulsingAnimation(ui::Layer* layer) {
 namespace app_list {
 
 PulsingBlockView::PulsingBlockView(const gfx::Size& size, bool start_delay) {
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
   const int max_delay = kAnimationDurationInMs * arraysize(kAnimationOpacity);

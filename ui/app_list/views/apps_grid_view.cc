@@ -222,7 +222,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
       bounds_animator_(this),
       activated_folder_item_view_(NULL),
       dragging_for_reparent_item_(false) {
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   // Clip any icons that are outside the grid view's bounds. These icons would
   // otherwise be visible to the user when the grid view is off screen.
   layer()->SetMasksToBounds(true);
@@ -558,7 +558,7 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
   AppListItemView* view = new AppListItemView(this, original_drag_view->item());
   AddChildView(view);
   drag_view_ = view;
-  drag_view_->SetPaintToLayer(true);
+  drag_view_->SetPaintToLayer();
   drag_view_->layer()->SetFillsBoundsOpaquely(false);
   drag_view_->SetBoundsRect(drag_view_rect);
   drag_view_->SetDragUIState();  // Hide the title of the drag_view_.
@@ -825,7 +825,7 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   DCHECK_LE(index, item_list_->item_count());
   AppListItemView* view = new AppListItemView(this,
                                               item_list_->item_at(index));
-  view->SetPaintToLayer(true);
+  view->SetPaintToLayer();
   view->layer()->SetFillsBoundsOpaquely(false);
   return view;
 }

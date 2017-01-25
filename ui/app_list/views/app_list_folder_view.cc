@@ -63,7 +63,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   AddChildView(items_grid_view_);
   view_model_->Add(items_grid_view_, kIndexChildItems);
 
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
   model_->AddObserver(this);

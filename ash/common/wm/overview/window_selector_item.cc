@@ -192,7 +192,7 @@ class WindowSelectorItem::RoundedContainerView
         current_value_(0),
         layer_(nullptr),
         animation_(new gfx::SlideAnimation(this)) {
-    SetPaintToLayer(true);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
   }
 

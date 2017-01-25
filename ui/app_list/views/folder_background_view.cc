@@ -25,7 +25,7 @@ const int kBubbleTransitionDurationMs = 200;
 FolderBackgroundView::FolderBackgroundView()
     : folder_view_(NULL),
       show_state_(NO_BUBBLE) {
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
 

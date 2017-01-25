@@ -80,10 +80,10 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
 
   AddChildView(child_container_);
 
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  child_container_->SetPaintToLayer(true);
+  child_container_->SetPaintToLayer();
   child_container_->layer()->SetMasksToBounds(true);
   child_container_->set_background(views::Background::CreateSolidBackground(
       infobars::InfoBar::GetBackgroundColor(

@@ -34,7 +34,7 @@ class LayerControlView : public views::View {
  public:
   explicit LayerControlView(views::View* view) {
     AddChildView(view);
-    view->SetPaintToLayer(true);
+    view->SetPaintToLayer();
   }
 
   // Overrides views::View.

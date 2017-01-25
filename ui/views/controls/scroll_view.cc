@@ -207,7 +207,7 @@ void ScrollView::SetContents(View* a_view) {
       a_view->set_background(
           Background::CreateSolidBackground(background_color_));
     }
-    a_view->SetPaintToLayer(true);
+    a_view->SetPaintToLayer();
     a_view->layer()->SetScrollable(
         contents_viewport_->layer(),
         base::Bind(&ScrollView::OnLayerScrolled, base::Unretained(this)));
@@ -716,7 +716,7 @@ void ScrollView::EnableViewPortLayer() {
   background_color_ = SK_ColorWHITE;
   contents_viewport_->set_background(
       Background::CreateSolidBackground(background_color_));
-  contents_viewport_->SetPaintToLayer(true);
+  contents_viewport_->SetPaintToLayer();
   contents_viewport_->layer()->SetMasksToBounds(true);
 }
 

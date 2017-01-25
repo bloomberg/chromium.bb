@@ -104,7 +104,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       close_all_button_(NULL),
       settings_button_(NULL),
       quiet_mode_button_(NULL) {
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
 

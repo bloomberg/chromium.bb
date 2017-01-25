@@ -131,14 +131,14 @@ void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image_->SetPaintToLayer(true);
+  image_->SetPaintToLayer();
   image_->layer()->SetFillsBoundsOpaquely(false);
   views::InkDropHostView::AddInkDropLayer(ink_drop_layer);
 }
 
 void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   views::InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
-  image_->SetPaintToLayer(false);
+  image_->DestroyLayer();
 }
 
 std::unique_ptr<views::InkDrop> BubbleIconView::CreateInkDrop() {

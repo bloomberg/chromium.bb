@@ -426,7 +426,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   SetFocusBehavior(FocusBehavior::ALWAYS);
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
-  SetPaintToLayer(true);
+  SetPaintToLayer();
 
   title_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL),

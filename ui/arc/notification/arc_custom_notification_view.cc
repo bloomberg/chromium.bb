@@ -238,7 +238,7 @@ ArcCustomNotificationView::ArcCustomNotificationView(
     OnNotificationSurfaceAdded(surface);
 
   // Create a layer as an anchor to insert surface copy during a slide.
-  SetPaintToLayer(true);
+  SetPaintToLayer();
   UpdatePreferredSize();
 }
 
