@@ -30,6 +30,7 @@ class FileIconSource : public content::URLDataSource {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string&) const override;
+  bool AllowCaching() const override;
 
  protected:
   ~FileIconSource() override;

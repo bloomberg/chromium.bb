@@ -55,6 +55,10 @@ std::string FallbackIconSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
+bool FallbackIconSource::AllowCaching() const {
+  return false;
+}
+
 bool FallbackIconSource::ShouldReplaceExistingSource() const {
   // Leave the existing DataSource in place, otherwise we'll drop any pending
   // requests on the floor.

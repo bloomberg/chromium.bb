@@ -88,6 +88,10 @@ ThumbnailSource::TaskRunnerForRequestPath(const std::string& path) const {
              : content::URLDataSource::TaskRunnerForRequestPath(path);
 }
 
+bool ThumbnailSource::AllowCaching() const {
+  return false;
+}
+
 bool ThumbnailSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
   if (request->url().SchemeIs(chrome::kChromeSearchScheme))

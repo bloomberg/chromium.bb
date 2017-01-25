@@ -132,6 +132,10 @@ std::string FaviconSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
+bool FaviconSource::AllowCaching() const {
+  return false;
+}
+
 bool FaviconSource::ShouldReplaceExistingSource() const {
   // Leave the existing DataSource in place, otherwise we'll drop any pending
   // requests on the floor.

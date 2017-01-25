@@ -51,6 +51,7 @@ class LargeIconSource : public content::URLDataSource {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string&) const override;
+  bool AllowCaching() const override;
   bool ShouldReplaceExistingSource() const override;
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
 

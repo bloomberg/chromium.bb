@@ -79,6 +79,10 @@ std::string LargeIconSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
+bool LargeIconSource::AllowCaching() const {
+  return false;
+}
+
 bool LargeIconSource::ShouldReplaceExistingSource() const {
   // Leave the existing DataSource in place, otherwise we'll drop any pending
   // requests on the floor.

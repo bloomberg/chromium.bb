@@ -48,6 +48,7 @@ class ThumbnailSource : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) const override;
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) const override;
+  bool AllowCaching() const override;
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
 
   // Extracts the |page_url| (e.g. cnn.com) and the |fallback_thumbnail_url|

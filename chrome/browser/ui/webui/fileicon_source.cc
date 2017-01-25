@@ -146,6 +146,10 @@ std::string FileIconSource::GetMimeType(const std::string&) const {
   return std::string();
 }
 
+bool FileIconSource::AllowCaching() const {
+  return false;
+}
+
 void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
                                              gfx::Image* icon) {
   if (icon) {

@@ -18,6 +18,7 @@ class IframeSource : public content::URLDataSource {
  protected:
   // Overridden from content::URLDataSource:
   std::string GetMimeType(const std::string& path_and_query) const override;
+  bool AllowCaching() const override;
   bool ShouldDenyXFrameOptions() const override;
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
 

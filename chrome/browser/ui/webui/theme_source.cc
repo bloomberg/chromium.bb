@@ -179,6 +179,10 @@ ThemeSource::TaskRunnerForRequestPath(const std::string& path) const {
              : nullptr;
 }
 
+bool ThemeSource::AllowCaching() const {
+  return false;
+}
+
 bool ThemeSource::ShouldServiceRequest(const net::URLRequest* request) const {
   return request->url().SchemeIs(chrome::kChromeSearchScheme) ?
       InstantIOContext::ShouldServiceRequest(request) :

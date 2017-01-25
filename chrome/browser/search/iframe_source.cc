@@ -36,6 +36,10 @@ std::string IframeSource::GetMimeType(
   return std::string();
 }
 
+bool IframeSource::AllowCaching() const {
+  return false;
+}
+
 bool IframeSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
   const std::string& path = request->url().path();
