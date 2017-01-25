@@ -4,6 +4,7 @@
 
 #include "core/css/PropertyRegistration.h"
 
+#include "core/animation/CSSValueInterpolationType.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/CSSValueList.h"
@@ -60,6 +61,17 @@ static bool computationallyIndependent(const CSSValue& value) {
   return true;
 }
 
+InterpolationTypes interpolationTypesForSyntax(const AtomicString& propertyName,
+                                               const CSSSyntaxDescriptor&) {
+  PropertyHandle property(propertyName);
+  InterpolationTypes interpolationTypes;
+  // TODO(alancutter): Read the syntax descriptor and add the appropriate
+  // CSSInterpolationType subclasses.
+  interpolationTypes.push_back(
+      WTF::makeUnique<CSSValueInterpolationType>(property));
+  return interpolationTypes;
+}
+
 void PropertyRegistration::registerProperty(
     ExecutionContext* executionContext,
     const PropertyDescriptor& descriptor,
@@ -94,7 +106,7 @@ void PropertyRegistration::registerProperty(
   }
 
   InterpolationTypes interpolationTypes =
-      syntaxDescriptor.createInterpolationTypes(atomicName);
+      interpolationTypesForSyntax(atomicName, syntaxDescriptor);
 
   if (descriptor.hasInitialValue()) {
     CSSTokenizer tokenizer(descriptor.initialValue());

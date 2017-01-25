@@ -5,7 +5,6 @@
 #ifndef CSSSyntaxDescriptor_h
 #define CSSSyntaxDescriptor_h
 
-#include "core/animation/InterpolationTypesMap.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 
 namespace blink {
@@ -52,9 +51,6 @@ class CORE_EXPORT CSSSyntaxDescriptor {
     return m_syntaxComponents.size() == 1 &&
            m_syntaxComponents[0].m_type == CSSSyntaxType::TokenStream;
   }
-
-  InterpolationTypes createInterpolationTypes(
-      const AtomicString& propertyName) const;
 
  private:
   Vector<CSSSyntaxComponent> m_syntaxComponents;
