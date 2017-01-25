@@ -29,6 +29,9 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
+// The remaining time for a download item if it cannot be calculated.
+long kUnknownRemainingTime = -1;
+
 bool ShouldShowDownloadItem(content::DownloadItem* item) {
   return !item->IsTemporary();
 }
@@ -95,27 +98,22 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
   bool has_user_gesture = item->HasUserGesture() || user_initiated;
 
   base::TimeDelta time_delta;
-  item->TimeRemaining(&time_delta);
+  bool time_remaining_known = item->TimeRemaining(&time_delta);
   std::string original_url = item->GetOriginalUrl().SchemeIs(url::kDataScheme)
       ? std::string() : item->GetOriginalUrl().spec();
   return Java_DownloadInfo_createDownloadInfo(
-      env,
-      ConvertUTF8ToJavaString(env, item->GetGuid()),
-      ConvertUTF8ToJavaString(env,
-                              item->GetFileNameToReportUser().value()),
+      env, ConvertUTF8ToJavaString(env, item->GetGuid()),
+      ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
       ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
       ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
       ConvertUTF8ToJavaString(env, item->GetMimeType()),
-      item->GetReceivedBytes(),
-      item->GetBrowserContext()->IsOffTheRecord(),
-      item->GetState(),
-      item->PercentComplete(),
-      item->IsPaused(),
-      has_user_gesture,
-      item->CanResume(),
+      item->GetReceivedBytes(), item->GetBrowserContext()->IsOffTheRecord(),
+      item->GetState(), item->PercentComplete(), item->IsPaused(),
+      has_user_gesture, item->CanResume(),
       ConvertUTF8ToJavaString(env, original_url),
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
-      time_delta.InMilliseconds());
+      time_remaining_known ? time_delta.InMilliseconds()
+                           : kUnknownRemainingTime);
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {

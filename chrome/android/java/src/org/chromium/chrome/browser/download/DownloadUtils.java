@@ -589,7 +589,7 @@ public class DownloadUtils {
         }
 
         if (info.getBytesReceived() == 0
-                || (!item.isIndeterminate() && info.getTimeRemainingInMillis() == 0)) {
+                || (!item.isIndeterminate() && info.getTimeRemainingInMillis() < 0)) {
             // We lack enough information about the download to display a useful string.
             return context.getString(R.string.download_started);
         } else if (item.isIndeterminate()) {

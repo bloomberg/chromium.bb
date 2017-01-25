@@ -270,7 +270,7 @@ public class DownloadNotificationService extends Service {
      * @param percentage Percentage completed. Value should be between 0 to 100 if
      *        the percentage can be determined, or -1 if it is unknown.
      * @param bytesReceived Total number of bytes received.
-     * @param timeRemainingInMillis Remaining download time in milliseconds.
+     * @param timeRemainingInMillis Remaining download time in milliseconds or -1 if it is unknown.
      * @param startTime Time when download started.
      * @param isOffTheRecord Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
@@ -292,7 +292,9 @@ public class DownloadNotificationService extends Service {
             contentText = DownloadUtils.getStringForBytes(
                     mContext, DownloadUtils.BYTES_DOWNLOADED_STRINGS, bytesReceived);
         } else {
-            contentText = formatRemainingTime(mContext, timeRemainingInMillis);
+            contentText = timeRemainingInMillis < 0
+                    ? mContext.getResources().getString(R.string.download_started)
+                    : formatRemainingTime(mContext, timeRemainingInMillis);
         }
         int resId = isDownloadPending ? R.drawable.ic_download_pending
                 : android.R.drawable.stat_sys_download;

@@ -120,6 +120,9 @@ public final class DownloadInfo {
         return mPercentCompleted;
     }
 
+    /**
+     * @return Remaining download time in milliseconds or -1 if it is unknown.
+     */
     public long getTimeRemainingInMillis() {
         return mTimeRemainingInMillis;
     }
