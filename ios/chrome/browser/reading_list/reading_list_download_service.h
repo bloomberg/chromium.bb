@@ -40,6 +40,7 @@ class ReadingListDownloadService
       dom_distiller::DomDistillerService* distiller_service,
       PrefService* prefs,
       base::FilePath chrome_profile_path,
+      net::URLRequestContextGetter* url_request_context_getter,
       std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
           distiller_page_factory);
   ~ReadingListDownloadService() override;

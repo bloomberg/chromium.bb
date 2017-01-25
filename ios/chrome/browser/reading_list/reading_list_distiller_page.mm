@@ -30,19 +30,21 @@ const char* kGetIframeURLJavaScript =
 
 namespace reading_list {
 
+ReadingListDistillerPageDelegate::ReadingListDistillerPageDelegate() {}
+ReadingListDistillerPageDelegate::~ReadingListDistillerPageDelegate() {}
+
 ReadingListDistillerPage::ReadingListDistillerPage(
     web::BrowserState* browser_state,
-    FaviconWebStateDispatcher* web_state_dispatcher)
+    FaviconWebStateDispatcher* web_state_dispatcher,
+    ReadingListDistillerPageDelegate* delegate)
     : dom_distiller::DistillerPageIOS(browser_state),
       web_state_dispatcher_(web_state_dispatcher),
-      weak_ptr_factory_(this) {}
+      delegate_(delegate),
+      weak_ptr_factory_(this) {
+  DCHECK(delegate);
+}
 
 ReadingListDistillerPage::~ReadingListDistillerPage() {}
-
-void ReadingListDistillerPage::SetRedirectionCallback(
-    RedirectionCallback redirection_callback) {
-  redirection_callback_ = redirection_callback;
-}
 
 void ReadingListDistillerPage::DistillPageImpl(const GURL& url,
                                                const std::string& script) {
@@ -106,6 +108,15 @@ void ReadingListDistillerPage::OnLoadURLDone(
     DistillerPageIOS::OnLoadURLDone(load_completion_status);
     return;
   }
+  delegate_->DistilledPageHasMimeType(original_url_,
+                                      CurrentWebState()->GetContentsMimeType());
+  if (!CurrentWebState()->ContentIsHTML()) {
+    // If content is not HTML, distillation will fail immediatly.
+    // Call the handler to make sure cleaning methods are called correctly.
+    // There is no need to wait for rendering either.
+    DistillerPageIOS::OnLoadURLDone(load_completion_status);
+    return;
+  }
   // Page is loaded but rendering may not be done yet. Give a delay to the page.
   base::WeakPtr<ReadingListDistillerPage> weak_this =
       weak_ptr_factory_.GetWeakPtr();
@@ -129,8 +140,8 @@ void ReadingListDistillerPage::ContinuePageDistillation() {
   // If the visible URL is not the original URL, notify the caller that URL
   // changed.
   GURL redirected_url = CurrentWebState()->GetVisibleURL();
-  if (redirected_url != original_url_ && !redirection_callback_.is_null()) {
-    redirection_callback_.Run(original_url_, redirected_url);
+  if (redirected_url != original_url_ && delegate_) {
+    delegate_->DistilledPageRedirectedToURL(original_url_, redirected_url);
   }
   DistillerPageIOS::OnLoadURLDone(web::PageLoadCompletionStatus::SUCCESS);
 }

@@ -7,35 +7,30 @@
 
 #include <memory>
 
-#include "components/dom_distiller/core/distiller_page.h"
+#include "base/macros.h"
 
 namespace web {
 class BrowserState;
 }
 
 namespace reading_list {
+
 class FaviconWebStateDispatcher;
 class ReadingListDistillerPage;
+class ReadingListDistillerPageDelegate;
 
 // ReadingListDistillerPageFactory is an iOS-specific implementation of the
 // DistillerPageFactory interface allowing the creation of DistillerPage
 // instances.
 // These instances are configured to distille the articles of the Reading List.
-class ReadingListDistillerPageFactory
-    : public dom_distiller::DistillerPageFactory {
+class ReadingListDistillerPageFactory {
  public:
   explicit ReadingListDistillerPageFactory(web::BrowserState* browser_state);
-  ~ReadingListDistillerPageFactory() override;
+  virtual ~ReadingListDistillerPageFactory();
 
   // Creates a ReadingListDistillerPage.
-  std::unique_ptr<reading_list::ReadingListDistillerPage>
-  CreateReadingListDistillerPage() const;
-
-  // Implementation of DistillerPageFactory:
-  std::unique_ptr<dom_distiller::DistillerPage> CreateDistillerPage(
-      const gfx::Size& view_size) const override;
-  std::unique_ptr<dom_distiller::DistillerPage> CreateDistillerPageWithHandle(
-      std::unique_ptr<dom_distiller::SourcePageHandle> handle) const override;
+  std::unique_ptr<ReadingListDistillerPage> CreateReadingListDistillerPage(
+      ReadingListDistillerPageDelegate* delegate) const;
 
  private:
   web::BrowserState* browser_state_;

@@ -21,24 +21,11 @@ ReadingListDistillerPageFactory::ReadingListDistillerPageFactory(
 
 ReadingListDistillerPageFactory::~ReadingListDistillerPageFactory() {}
 
-std::unique_ptr<reading_list::ReadingListDistillerPage>
-ReadingListDistillerPageFactory::CreateReadingListDistillerPage() const {
+std::unique_ptr<ReadingListDistillerPage>
+ReadingListDistillerPageFactory::CreateReadingListDistillerPage(
+    ReadingListDistillerPageDelegate* delegate) const {
   return base::MakeUnique<ReadingListDistillerPage>(
-      browser_state_, web_state_dispatcher_.get());
-}
-
-std::unique_ptr<dom_distiller::DistillerPage>
-ReadingListDistillerPageFactory::CreateDistillerPage(
-    const gfx::Size& view_size) const {
-  return base::MakeUnique<ReadingListDistillerPage>(
-      browser_state_, web_state_dispatcher_.get());
-}
-
-std::unique_ptr<dom_distiller::DistillerPage>
-ReadingListDistillerPageFactory::CreateDistillerPageWithHandle(
-    std::unique_ptr<dom_distiller::SourcePageHandle> handle) const {
-  return base::MakeUnique<ReadingListDistillerPage>(
-      browser_state_, web_state_dispatcher_.get());
+      browser_state_, web_state_dispatcher_.get(), delegate);
 }
 
 }  // namespace reading_list

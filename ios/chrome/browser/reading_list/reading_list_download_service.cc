@@ -43,6 +43,7 @@ ReadingListDownloadService::ReadingListDownloadService(
     dom_distiller::DomDistillerService* distiller_service,
     PrefService* prefs,
     base::FilePath chrome_profile_path,
+    net::URLRequestContextGetter* url_request_context_getter,
     std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
         distiller_page_factory)
     : reading_list_model_(reading_list_model),
@@ -54,7 +55,7 @@ ReadingListDownloadService::ReadingListDownloadService(
 
   url_downloader_ = base::MakeUnique<URLDownloader>(
       distiller_service, distiller_page_factory_.get(), prefs,
-      chrome_profile_path,
+      chrome_profile_path, url_request_context_getter,
       base::Bind(&ReadingListDownloadService::OnDownloadEnd,
                  base::Unretained(this)),
       base::Bind(&ReadingListDownloadService::OnDeleteEnd,

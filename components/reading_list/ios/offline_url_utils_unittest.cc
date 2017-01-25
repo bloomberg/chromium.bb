@@ -38,20 +38,24 @@ TEST(OfflineURLUtilsTest, OfflineURLDirectoryAbsolutePathTest) {
             offline_directory.value());
 }
 
-// Checks the offline page absolute path is
-// |profile_path|/Offline/OfflineURLDirectoryID/page.html;
-TEST(OfflineURLUtilsTest, OfflinePageAbsolutePathTest) {
+// Checks the offline page directory is
+// |profile_path|/Offline/OfflineURLDirectoryID;
+TEST(OfflineURLUtilsTest, AbsolutePathForRelativePathTest) {
   base::FilePath profile_path("/profile_path");
-  GURL url("http://www.google.com/test");
-  base::FilePath offline_page =
-      reading_list::OfflinePageAbsolutePath(profile_path, url);
-  EXPECT_EQ("/profile_path/Offline/0090071ef710946a1263c276284bb3b8/page.html",
-            offline_page.value());
+  base::FilePath relative_path("relative/path");
+  base::FilePath absolute_path =
+      reading_list::OfflineURLAbsolutePathFromRelativePath(profile_path,
+                                                           relative_path);
+  EXPECT_EQ("/profile_path/Offline/relative/path", absolute_path.value());
 }
 
 // Checks the offline page path is OfflineURLDirectoryID/page.html;
 TEST(OfflineURLUtilsTest, OfflinePagePathTest) {
   GURL url("http://www.google.com/test");
-  base::FilePath offline_page = reading_list::OfflinePagePath(url);
+  base::FilePath offline_page =
+      reading_list::OfflinePagePath(url, reading_list::OFFLINE_TYPE_HTML);
   EXPECT_EQ("0090071ef710946a1263c276284bb3b8/page.html", offline_page.value());
+  offline_page =
+      reading_list::OfflinePagePath(url, reading_list::OFFLINE_TYPE_PDF);
+  EXPECT_EQ("0090071ef710946a1263c276284bb3b8/file.pdf", offline_page.value());
 }

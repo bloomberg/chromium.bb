@@ -10,6 +10,7 @@
 namespace {
 const char kOfflineDirectory[] = "Offline";
 const char kMainPageFileName[] = "page.html";
+const char kPDFFileName[] = "file.pdf";
 }  // namespace
 
 namespace reading_list {
@@ -22,20 +23,26 @@ std::string OfflineURLDirectoryID(const GURL& url) {
   return base::MD5String(url.spec());
 }
 
-base::FilePath OfflinePagePath(const GURL& url) {
-  base::FilePath directory(OfflineURLDirectoryID(url));
-  return directory.Append(FILE_PATH_LITERAL(kMainPageFileName));
-}
-
 base::FilePath OfflineURLDirectoryAbsolutePath(
     const base::FilePath& profile_path,
     const GURL& url) {
-  return OfflineRootDirectoryPath(profile_path)
-      .Append(OfflineURLDirectoryID(url));
+  return OfflineURLAbsolutePathFromRelativePath(
+      profile_path, base::FilePath(OfflineURLDirectoryID(url)));
 }
 
-base::FilePath OfflinePageAbsolutePath(const base::FilePath& profile_path,
-                                       const GURL& url) {
-  return OfflineRootDirectoryPath(profile_path).Append(OfflinePagePath(url));
+base::FilePath OfflinePagePath(const GURL& url, OfflineFileType type) {
+  base::FilePath directory(OfflineURLDirectoryID(url));
+  switch (type) {
+    case OFFLINE_TYPE_HTML:
+      return directory.Append(FILE_PATH_LITERAL(kMainPageFileName));
+    case OFFLINE_TYPE_PDF:
+      return directory.Append(FILE_PATH_LITERAL(kPDFFileName));
+  }
+}
+
+base::FilePath OfflineURLAbsolutePathFromRelativePath(
+    const base::FilePath& profile_path,
+    const base::FilePath& relative_path) {
+  return OfflineRootDirectoryPath(profile_path).Append(relative_path);
 }
 }

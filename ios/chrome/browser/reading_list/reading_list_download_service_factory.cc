@@ -62,6 +62,7 @@ ReadingListDownloadServiceFactory::BuildServiceInstanceFor(
               chrome_browser_state),
           chrome_browser_state->GetPrefs(),
           chrome_browser_state->GetStatePath(),
+          chrome_browser_state->GetRequestContext(),
           std::move(distiller_page_factory)));
   return std::move(reading_list_download_service);
 }

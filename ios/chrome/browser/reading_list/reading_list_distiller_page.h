@@ -20,20 +20,39 @@ namespace reading_list {
 
 class FaviconWebStateDispatcher;
 
+// A delegate to get information on the page that is actually loaded during
+// distillation.
+class ReadingListDistillerPageDelegate {
+ public:
+  virtual ~ReadingListDistillerPageDelegate();
+
+  // A callback called if the URL passed to the distilled led to a redirection.
+  virtual void DistilledPageRedirectedToURL(const GURL& original_url,
+                                            const GURL& final_url) = 0;
+  // Gives to the delegate the mime type of the loaded page.
+  // If the type is not "text/html", the distillation will fail.
+  virtual void DistilledPageHasMimeType(const GURL& original_url,
+                                        const std::string& mime_type) = 0;
+
+ protected:
+  ReadingListDistillerPageDelegate();
+  DISALLOW_COPY_AND_ASSIGN(ReadingListDistillerPageDelegate);
+};
+
 // An DistillerPageIOS that will retain WebState to allow favicon download and
 // and add a 2 seconds delay between loading and distillation.
 class ReadingListDistillerPage : public dom_distiller::DistillerPageIOS {
  public:
   typedef base::Callback<void(const GURL&, const GURL&)> RedirectionCallback;
 
+  // Creates a ReadingListDistillerPage. WebStates to download the pages will
+  // be provided by web_state_dispatcher.
+  // |browser_state|, |web_state_dispatcher| and |delegate| must not be null.
   explicit ReadingListDistillerPage(
       web::BrowserState* browser_state,
-      FaviconWebStateDispatcher* web_state_dispatcher);
+      FaviconWebStateDispatcher* web_state_dispatcher,
+      ReadingListDistillerPageDelegate* delegate);
   ~ReadingListDistillerPage() override;
-
-  // Sets a callback that will be called just before distillation happen with
-  // the URL of the page that will effectively be distilled.
-  void SetRedirectionCallback(RedirectionCallback redirection_callback);
 
  protected:
   void DistillPageImpl(const GURL& url, const std::string& script) override;
@@ -66,12 +85,13 @@ class ReadingListDistillerPage : public dom_distiller::DistillerPageIOS {
 
   // Continues distillation by calling superclass |OnLoadURLDone|.
   void DelayedOnLoadURLDone();
-
-  RedirectionCallback redirection_callback_;
   GURL original_url_;
 
   FaviconWebStateDispatcher* web_state_dispatcher_;
+  ReadingListDistillerPageDelegate* delegate_;
   base::WeakPtrFactory<ReadingListDistillerPage> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadingListDistillerPage);
 };
 
 }  // namespace reading_list

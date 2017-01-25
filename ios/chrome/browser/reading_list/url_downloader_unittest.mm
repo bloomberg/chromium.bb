@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
+#include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,10 +24,20 @@ namespace {
 class DistillerViewerTest : public dom_distiller::DistillerViewerInterface {
  public:
   DistillerViewerTest(const GURL& url,
-                      const DistillationFinishedCallback& callback)
+                      const DistillationFinishedCallback& callback,
+                      reading_list::ReadingListDistillerPageDelegate* delegate,
+                      const std::string& html,
+                      const GURL& redirect_url,
+                      const std::string& mime_type)
       : dom_distiller::DistillerViewerInterface(nil, nil) {
     std::vector<ImageInfo> images;
-    callback.Run(url, "html", images, "title");
+    if (redirect_url.is_valid()) {
+      delegate->DistilledPageRedirectedToURL(url, redirect_url);
+    }
+    if (!mime_type.empty()) {
+      delegate->DistilledPageHasMimeType(url, mime_type);
+    }
+    callback.Run(url, html, images, "title");
   }
 
   void OnArticleReady(
@@ -34,6 +45,11 @@ class DistillerViewerTest : public dom_distiller::DistillerViewerInterface {
 
   void SendJavaScript(const std::string& buffer) override {}
 };
+
+void RemoveOfflineFilesDirectory(base::FilePath base_directory) {
+  base::DeleteFile(reading_list::OfflineRootDirectoryPath(base_directory),
+                   true);
+}
 
 }  // namespace
 
@@ -44,15 +60,12 @@ class MockURLDownloader : public URLDownloader {
                       nullptr,
                       nullptr,
                       path,
+                      nullptr,
                       base::Bind(&MockURLDownloader::OnEndDownload,
                                  base::Unretained(this)),
                       base::Bind(&MockURLDownloader::OnEndRemove,
-                                 base::Unretained(this))) {}
-
-  void RemoveOfflineFilesDirectory() {
-    base::DeleteFile(reading_list::OfflineRootDirectoryPath(base_directory_),
-                     true);
-  }
+                                 base::Unretained(this))),
+        html_("html") {}
 
   void ClearCompletionTrackers() {
     downloaded_files_.clear();
@@ -61,7 +74,9 @@ class MockURLDownloader : public URLDownloader {
 
   bool CheckExistenceOfOfflineURLPagePath(const GURL& url) {
     return base::PathExists(
-        reading_list::OfflinePageAbsolutePath(base_directory_, url));
+        reading_list::OfflineURLAbsolutePathFromRelativePath(
+            base_directory_, reading_list::OfflinePagePath(
+                                 url, reading_list::OFFLINE_TYPE_HTML)));
   }
 
   void FakeWorking() { working_ = true; }
@@ -73,17 +88,26 @@ class MockURLDownloader : public URLDownloader {
 
   std::vector<GURL> downloaded_files_;
   std::vector<GURL> removed_files_;
+  GURL redirect_url_;
+  std::string mime_type_;
+  std::string html_;
+  bool fetching_pdf_;
 
  private:
-  void DownloadURL(GURL url, bool offlineURLExists) override {
-    if (offlineURLExists) {
-      DownloadCompletionHandler(url, std::string(), DOWNLOAD_EXISTS);
+  void DownloadURL(const GURL& url, bool offline_url_exists) override {
+    if (offline_url_exists) {
+      DownloadCompletionHandler(url, std::string(), base::FilePath(),
+                                DOWNLOAD_EXISTS);
       return;
     }
+    original_url_ = url;
     distiller_.reset(new DistillerViewerTest(
         url,
-        base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this))));
+        base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this)),
+        this, html_, redirect_url_, mime_type_));
   }
+
+  void FetchPDFFile() override { fetching_pdf_ = true; }
 
   void OnEndDownload(const GURL& url,
                      const GURL& distilled_url,
@@ -91,6 +115,7 @@ class MockURLDownloader : public URLDownloader {
                      const base::FilePath& distilled_path,
                      const std::string& title) {
     downloaded_files_.push_back(url);
+    DCHECK_EQ(distilled_url, redirect_url_);
   }
 
   void OnEndRemove(const GURL& url, bool success) {
@@ -107,12 +132,15 @@ class URLDownloaderTest : public testing::Test {
   URLDownloaderTest() {
     base::FilePath data_dir;
     base::PathService::Get(ios::DIR_USER_DATA, &data_dir);
+    RemoveOfflineFilesDirectory(data_dir);
     downloader_.reset(new MockURLDownloader(data_dir));
   }
   ~URLDownloaderTest() override {}
 
   void TearDown() override {
-    downloader_->RemoveOfflineFilesDirectory();
+    base::FilePath data_dir;
+    base::PathService::Get(ios::DIR_USER_DATA, &data_dir);
+    RemoveOfflineFilesDirectory(data_dir);
     downloader_->ClearCompletionTrackers();
   }
 
@@ -137,6 +165,45 @@ TEST_F(URLDownloaderTest, SingleDownload) {
   });
 
   ASSERT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
+}
+
+TEST_F(URLDownloaderTest, SingleDownloadRedirect) {
+  GURL url = GURL("http://test.com");
+  ASSERT_FALSE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
+  ASSERT_EQ(0ul, downloader_->downloaded_files_.size());
+  ASSERT_EQ(0ul, downloader_->removed_files_.size());
+
+  // The DCHECK in OnEndDownload will verify that the redirection was handled
+  // correctly.
+  downloader_->redirect_url_ = GURL("http://test.com/redirected");
+
+  downloader_->DownloadOfflineURL(url);
+
+  WaitUntilCondition(^bool {
+    return std::find(downloader_->downloaded_files_.begin(),
+                     downloader_->downloaded_files_.end(),
+                     url) != downloader_->downloaded_files_.end();
+  });
+
+  EXPECT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
+}
+
+TEST_F(URLDownloaderTest, SingleDownloadPDF) {
+  GURL url = GURL("http://test.com");
+  ASSERT_FALSE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
+  ASSERT_EQ(0ul, downloader_->downloaded_files_.size());
+  ASSERT_EQ(0ul, downloader_->removed_files_.size());
+
+  downloader_->mime_type_ = "application/pdf";
+  downloader_->html_ = "";
+
+  downloader_->DownloadOfflineURL(url);
+
+  WaitUntilCondition(^bool {
+    return downloader_->fetching_pdf_;
+  });
+
+  EXPECT_FALSE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
 }
 
 TEST_F(URLDownloaderTest, DownloadAndRemove) {

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
+#include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
 
 class PrefService;
 class GURL;
@@ -21,25 +22,41 @@ namespace dom_distiller {
 class DomDistillerService;
 }
 
+namespace net {
+class URLFetcher;
+class URLRequestContextGetter;
+}
+
 namespace reading_list {
 class ReadingListDistillerPageFactory;
 }
 
-// This class downloads and deletes offline versions of URLs using DOM distiller
-// to fetch the page and simplify it. Only one item is downloaded or deleted at
-// a time using a queue of tasks that are handled sequentially. Items (page +
-// images) are saved to individual folders within an offline folder, using md5
-// hashing to create unique file names. When a deletion is requested, all
-// previous downloads for that URL are cancelled as they would be deleted.
-class URLDownloader {
+// This class downloads and deletes offline versions of URLs.
+// If the URL points to an HTML file, |URLDownloader| uses DOM distiller to
+// fetch the page and simplify it.
+// If the URL points to a PDF file, the PDF is simply downloaded and saved to
+// the disk.
+// Only one item is downloaded or deleted at a time using a queue of tasks that
+// are handled sequentially. Items (page + images) are saved to individual
+// folders within an offline folder, using md5 hashing to create unique file
+// names. When a deletion is requested, all previous downloads for that URL are
+// cancelled as they would be deleted.
+class URLDownloader : public net::URLFetcherDelegate,
+                      reading_list::ReadingListDistillerPageDelegate {
   friend class MockURLDownloader;
 
  public:
   // And enum indicating different download outcomes.
   enum SuccessState {
+    // The URL was correctly downloaded and an offline version is not available.
     DOWNLOAD_SUCCESS,
+    // The URL was already available offline. No action was done.
     DOWNLOAD_EXISTS,
+    // The URL could not be downloaded because of a temporary error. Client may
+    // want to try again later.
     ERROR_RETRY,
+    // The URL could not be dowmloaded and URLDownloader thinks a retry would
+    // end with the same result. There is no need to retry.
     ERROR_PERMANENT
   };
 
@@ -69,9 +86,10 @@ class URLDownloader {
       reading_list::ReadingListDistillerPageFactory* distiller_page_factory,
       PrefService* prefs,
       base::FilePath chrome_profile_path,
+      net::URLRequestContextGetter* url_request_context_getter,
       const DownloadCompletion& download_completion,
       const SuccessCompletion& delete_completion);
-  virtual ~URLDownloader();
+  ~URLDownloader() override;
 
   // Asynchronously download an offline version of the URL.
   void DownloadOfflineURL(const GURL& url);
@@ -82,18 +100,24 @@ class URLDownloader {
   // Asynchronously remove the offline version of the URL if it exists.
   void RemoveOfflineURL(const GURL& url);
 
+  // URLFetcherDelegate delegate method.
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
  private:
   enum TaskType { DELETE, DOWNLOAD };
   using Task = std::pair<TaskType, GURL>;
 
-  // Calls callback with true if an offline file exists for this URL.
-  void OfflineURLExists(const GURL& url, base::Callback<void(bool)> callback);
+  // Calls callback with true if an offline path exists. |path| must be
+  // absolute.
+  void OfflinePathExists(const base::FilePath& url,
+                         base::Callback<void(bool)> callback);
   // Handles the next task in the queue, if no task is currently being handled.
   void HandleNextTask();
   // Callback for completed (or failed) download, handles calling
   // downloadCompletion and starting the next task.
   void DownloadCompletionHandler(const GURL& url,
                                  const std::string& title,
+                                 const base::FilePath& path,
                                  SuccessState success);
   // Callback for completed (or failed) deletion, handles calling
   // deleteCompletion and starting the next task.
@@ -102,6 +126,18 @@ class URLDownloader {
   // Creates the offline directory for |url|. Returns true if successful or if
   // the directory already exists.
   bool CreateOfflineURLDirectory(const GURL& url);
+
+  // Downloads |url|, depending on |offlineURLExists| state.
+  virtual void DownloadURL(const GURL& url, bool offlineURLExists);
+
+  // ReadingListDistillerPageDelegate methods
+  void DistilledPageRedirectedToURL(const GURL& original_url,
+                                    const GURL& final_url) override;
+  void DistilledPageHasMimeType(const GURL& original_url,
+                                const std::string& mime_type) override;
+
+  // HTML processing methods.
+
   // Saves the |data| for image at |imageURL| to disk, for main URL |url|;
   // puts path of saved file in |path| and returns whether save was successful.
   bool SaveImage(const GURL& url,
@@ -119,8 +155,6 @@ class URLDownloader {
           images);
   // Saves |html| to disk in the correct location for |url|; returns success.
   bool SaveHTMLForURL(std::string html, const GURL& url);
-  // Downloads |url|, depending on |offlineURLExists| state.
-  virtual void DownloadURL(GURL url, bool offlineURLExists);
   // Saves distilled html to disk, including saving images and main file.
   SuccessState SaveDistilledHTML(
       const GURL& url,
@@ -135,8 +169,13 @@ class URLDownloader {
           images,
       const std::string& title);
 
-  // A callback called if the URL passed to the distilled led to a redirection.
-  void RedirectionCallback(const GURL& page_url, const GURL& redirected_url);
+  // PDF processing methods
+
+  // Starts fetching the PDF file. If |original_url_| triggered a redirection,
+  // directly save |distilled_url_|.
+  virtual void FetchPDFFile();
+  // Saves the file downloaded by |fetcher_|. Creates the directory if needed.
+  SuccessState SavePDFFile(const base::FilePath& temporary_path);
 
   dom_distiller::DomDistillerService* distiller_service_;
   reading_list::ReadingListDistillerPageFactory* distiller_page_factory_;
@@ -148,6 +187,11 @@ class URLDownloader {
   base::FilePath base_directory_;
   GURL original_url_;
   GURL distilled_url_;
+  std::string mime_type_;
+  // Fetcher used to redownload the document and save it in the sandbox.
+  std::unique_ptr<net::URLFetcher> fetcher_;
+  // URLRequestContextGetter needed for the URLFetcher.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::unique_ptr<dom_distiller::DistillerViewerInterface> distiller_;
   base::CancelableTaskTracker task_tracker_;
 
