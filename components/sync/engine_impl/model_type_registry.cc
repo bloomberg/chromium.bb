@@ -71,72 +71,7 @@ ModelTypeRegistry::ModelTypeRegistry(
 
 ModelTypeRegistry::~ModelTypeRegistry() {}
 
-void ModelTypeRegistry::SetEnabledDirectoryTypes(
-    const ModelSafeRoutingInfo& routing_info) {
-  // Remove all existing directory processors and delete them.  The
-  // DebugInfoEmitters are not deleted here, since we want to preserve their
-  // counters.
-  for (ModelTypeSet::Iterator it = enabled_directory_types_.First(); it.Good();
-       it.Inc()) {
-    size_t result1 = update_handler_map_.erase(it.Get());
-    size_t result2 = commit_contributor_map_.erase(it.Get());
-    DCHECK_EQ(1U, result1);
-    DCHECK_EQ(1U, result2);
-  }
-
-  // Clear the old instances of directory update handlers and commit
-  // contributors, deleting their contents in the processs.
-  directory_update_handlers_.clear();
-  directory_commit_contributors_.clear();
-
-  enabled_directory_types_.Clear();
-
-  // Create new ones and add them to the appropriate containers.
-  for (const auto& routing_kv : routing_info) {
-    ModelType type = routing_kv.first;
-    ModelSafeGroup group = routing_kv.second;
-    if (group == GROUP_NON_BLOCKING)
-      continue;
-
-    std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>>::iterator
-        worker_it = workers_map_.find(group);
-    DCHECK(worker_it != workers_map_.end());
-    scoped_refptr<ModelSafeWorker> worker = worker_it->second;
-
-    DataTypeDebugInfoEmitter* emitter = GetEmitter(type);
-    if (emitter == nullptr) {
-      auto new_emitter = base::MakeUnique<DirectoryTypeDebugInfoEmitter>(
-          directory(), type, &type_debug_info_observers_);
-      emitter = new_emitter.get();
-      data_type_debug_info_emitter_map_.insert(
-          std::make_pair(type, std::move(new_emitter)));
-    }
-
-    auto updater = base::MakeUnique<DirectoryUpdateHandler>(directory(), type,
-                                                            worker, emitter);
-    bool updater_inserted =
-        update_handler_map_.insert(std::make_pair(type, updater.get())).second;
-    DCHECK(updater_inserted)
-        << "Attempt to override existing type handler in map";
-    directory_update_handlers_.push_back(std::move(updater));
-
-    auto committer = base::MakeUnique<DirectoryCommitContributor>(
-        directory(), type, emitter);
-    bool committer_inserted =
-        commit_contributor_map_.insert(std::make_pair(type, committer.get()))
-            .second;
-    DCHECK(committer_inserted)
-        << "Attempt to override existing type handler in map";
-    directory_commit_contributors_.push_back(std::move(committer));
-
-    enabled_directory_types_.Put(type);
-  }
-
-  DCHECK(Intersection(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes())
-             .Empty());
-}
-
-void ModelTypeRegistry::ConnectType(
+void ModelTypeRegistry::ConnectNonBlockingType(
     ModelType type,
     std::unique_ptr<ActivationContext> activation_context) {
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
@@ -204,7 +139,7 @@ void ModelTypeRegistry::ConnectType(
              .Empty());
 }
 
-void ModelTypeRegistry::DisconnectType(ModelType type) {
+void ModelTypeRegistry::DisconnectNonBlockingType(ModelType type) {
   DVLOG(1) << "Disabling an off-thread sync type: " << ModelTypeToString(type);
   DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
@@ -223,6 +158,58 @@ void ModelTypeRegistry::DisconnectType(ModelType type) {
       ++iter;
     }
   }
+}
+
+void ModelTypeRegistry::RegisterDirectoryType(ModelType type,
+                                              ModelSafeGroup group) {
+  DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
+  DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
+  DCHECK(directory_update_handlers_.find(type) ==
+         directory_update_handlers_.end());
+  DCHECK(directory_commit_contributors_.find(type) ==
+         directory_commit_contributors_.end());
+  DCHECK(data_type_debug_info_emitter_map_.find(type) ==
+         data_type_debug_info_emitter_map_.end());
+  DCHECK_NE(GROUP_NON_BLOCKING, group);
+  DCHECK(workers_map_.find(group) != workers_map_.end());
+
+  auto worker = workers_map_.find(group)->second;
+  DCHECK(GetEmitter(type) == nullptr);
+  auto owned_emitter = base::MakeUnique<DirectoryTypeDebugInfoEmitter>(
+      directory(), type, &type_debug_info_observers_);
+  DataTypeDebugInfoEmitter* emitter_ptr = owned_emitter.get();
+  data_type_debug_info_emitter_map_[type] = std::move(owned_emitter);
+
+  auto updater = base::MakeUnique<DirectoryUpdateHandler>(directory(), type,
+                                                          worker, emitter_ptr);
+  auto committer = base::MakeUnique<DirectoryCommitContributor>(
+      directory(), type, emitter_ptr);
+
+  update_handler_map_[type] = updater.get();
+  commit_contributor_map_[type] = committer.get();
+
+  directory_update_handlers_[type] = std::move(updater);
+  directory_commit_contributors_[type] = std::move(committer);
+
+  DCHECK(Intersection(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes())
+             .Empty());
+}
+
+void ModelTypeRegistry::UnregisterDirectoryType(ModelType type) {
+  DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
+  DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
+  DCHECK(directory_update_handlers_.find(type) !=
+         directory_update_handlers_.end());
+  DCHECK(directory_commit_contributors_.find(type) !=
+         directory_commit_contributors_.end());
+  DCHECK(data_type_debug_info_emitter_map_.find(type) !=
+         data_type_debug_info_emitter_map_.end());
+
+  update_handler_map_.erase(type);
+  commit_contributor_map_.erase(type);
+  directory_update_handlers_.erase(type);
+  directory_commit_contributors_.erase(type);
+  data_type_debug_info_emitter_map_.erase(type);
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
@@ -351,7 +338,10 @@ DataTypeDebugInfoEmitter* ModelTypeRegistry::GetEmitter(ModelType type) {
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
-  return enabled_directory_types_;
+  ModelTypeSet enabled_directory_types;
+  for (const auto& kv : directory_update_handlers_)
+    enabled_directory_types.Put(kv.first);
+  return enabled_directory_types;
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledNonBlockingTypes() const {

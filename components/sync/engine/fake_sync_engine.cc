@@ -24,6 +24,8 @@ void FakeSyncEngine::TriggerRefresh(const ModelTypeSet& types) {}
 
 void FakeSyncEngine::UpdateCredentials(const SyncCredentials& credentials) {}
 
+void FakeSyncEngine::StartConfiguration() {}
+
 void FakeSyncEngine::StartSyncingWithServer() {}
 
 void FakeSyncEngine::SetEncryptionPassphrase(const std::string& passphrase,
@@ -38,6 +40,11 @@ void FakeSyncEngine::StopSyncingForShutdown() {}
 void FakeSyncEngine::Shutdown(ShutdownReason reason) {}
 
 void FakeSyncEngine::ConfigureDataTypes(ConfigureParams params) {}
+
+void FakeSyncEngine::RegisterDirectoryDataType(ModelType type,
+                                               ModelSafeGroup group) {}
+
+void FakeSyncEngine::UnregisterDirectoryDataType(ModelType type) {}
 
 void FakeSyncEngine::EnableEncryptEverything() {}
 

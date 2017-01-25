@@ -35,6 +35,31 @@ bool DirectoryDataTypeController::ShouldLoadModelBeforeConfigure() const {
   return false;
 }
 
+void DirectoryDataTypeController::BeforeLoadModels(
+    ModelTypeConfigurer* configurer) {
+  configurer->RegisterDirectoryDataType(type(), model_safe_group_);
+}
+
+void DirectoryDataTypeController::RegisterWithBackend(
+    base::Callback<void(bool)> set_downloaded,
+    ModelTypeConfigurer* configurer) {}
+
+void DirectoryDataTypeController::ActivateDataType(
+    ModelTypeConfigurer* configurer) {
+  DCHECK(CalledOnValidThread());
+  // Tell the backend about the change processor for this type so it can
+  // begin routing changes to it.
+  configurer->ActivateDirectoryDataType(type(), model_safe_group_,
+                                        GetChangeProcessor());
+}
+
+void DirectoryDataTypeController::DeactivateDataType(
+    ModelTypeConfigurer* configurer) {
+  DCHECK(CalledOnValidThread());
+  configurer->DeactivateDirectoryDataType(type());
+  configurer->UnregisterDirectoryDataType(type());
+}
+
 void DirectoryDataTypeController::GetAllNodes(
     const AllNodesCallback& callback) {
   std::unique_ptr<base::ListValue> node_list = GetAllNodesForTypeFromDirectory(
@@ -56,25 +81,6 @@ void DirectoryDataTypeController::GetStatusCounters(
       num_entries_by_type[type()] - num_to_delete_entries_by_type[type()];
 
   callback.Run(type(), counters);
-}
-
-void DirectoryDataTypeController::RegisterWithBackend(
-    base::Callback<void(bool)> set_downloaded,
-    ModelTypeConfigurer* configurer) {}
-
-void DirectoryDataTypeController::ActivateDataType(
-    ModelTypeConfigurer* configurer) {
-  DCHECK(CalledOnValidThread());
-  // Tell the backend about the change processor for this type so it can
-  // begin routing changes to it.
-  configurer->ActivateDirectoryDataType(type(), model_safe_group_,
-                                        GetChangeProcessor());
-}
-
-void DirectoryDataTypeController::DeactivateDataType(
-    ModelTypeConfigurer* configurer) {
-  DCHECK(CalledOnValidThread());
-  configurer->DeactivateDirectoryDataType(type());
 }
 
 // static

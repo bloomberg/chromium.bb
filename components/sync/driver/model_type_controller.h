@@ -33,9 +33,8 @@ class ModelTypeController : public DataTypeController {
 
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
+  void BeforeLoadModels(ModelTypeConfigurer* configurer) override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
-  void GetAllNodes(const AllNodesCallback& callback) override;
-  void GetStatusCounters(const StatusCountersCallback& callback) override;
   void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
                            ModelTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
@@ -44,6 +43,8 @@ class ModelTypeController : public DataTypeController {
   void Stop() override;
   std::string name() const override;
   State state() const override;
+  void GetAllNodes(const AllNodesCallback& callback) override;
+  void GetStatusCounters(const StatusCountersCallback& callback) override;
 
  private:
   void RecordStartFailure(ConfigureResult result) const;

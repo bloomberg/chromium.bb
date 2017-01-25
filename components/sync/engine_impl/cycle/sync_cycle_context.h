@@ -56,8 +56,6 @@ class SyncCycleContext {
 
   ModelTypeSet GetEnabledTypes() const;
 
-  void SetRoutingInfo(const ModelSafeRoutingInfo& routing_info);
-
   ExtensionsActivity* extensions_activity() {
     return extensions_activity_.get();
   }

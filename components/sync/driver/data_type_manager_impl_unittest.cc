@@ -5,6 +5,7 @@
 #include "components/sync/driver/data_type_manager_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -80,6 +81,15 @@ class FakeModelTypeConfigurer : public ModelTypeConfigurer {
     last_params_ = std::move(params);
   }
 
+  void RegisterDirectoryDataType(ModelType type,
+                                 ModelSafeGroup group) override {
+    registered_directory_types_.Put(type);
+  }
+
+  void UnregisterDirectoryDataType(ModelType type) override {
+    registered_directory_types_.Remove(type);
+  }
+
   void ActivateDirectoryDataType(ModelType type,
                                  ModelSafeGroup group,
                                  ChangeProcessor* change_processor) override {
@@ -100,6 +110,10 @@ class FakeModelTypeConfigurer : public ModelTypeConfigurer {
     // TODO(stanisc): crbug.com/515962: Add test coverage.
   }
 
+  const ModelTypeSet registered_directory_types() {
+    return registered_directory_types_;
+  }
+
   const ModelTypeSet activated_types() { return activated_types_; }
 
   int configure_call_count() const { return configure_call_count_; }
@@ -107,6 +121,7 @@ class FakeModelTypeConfigurer : public ModelTypeConfigurer {
   const ConfigureParams& last_params() const { return last_params_; }
 
  private:
+  ModelTypeSet registered_directory_types_;
   ModelTypeSet activated_types_;
   int configure_call_count_ = 0;
   ConfigureParams last_params_;
@@ -342,6 +357,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
 
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   FinishDownload(ModelTypeSet(), ModelTypeSet());
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
@@ -354,6 +370,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with a single controller, configure it, but stop it
@@ -369,9 +386,12 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
 
     Configure(ModelTypeSet(BOOKMARKS));
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+    EXPECT_EQ(ModelTypeSet(BOOKMARKS),
+              configurer_.registered_directory_types());
 
     dtm_->Stop();
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+    EXPECT_TRUE(configurer_.registered_directory_types().Empty());
   }
 
   last_configure_params().ready_task.Run(ModelTypeSet(BOOKMARKS),
@@ -393,13 +413,15 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
 
     Configure(ModelTypeSet(BOOKMARKS));
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-
+    EXPECT_EQ(ModelTypeSet(BOOKMARKS),
+              configurer_.registered_directory_types());
     FinishDownload(ModelTypeSet(), ModelTypeSet());
     FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
     dtm_->Stop();
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+    EXPECT_TRUE(configurer_.registered_directory_types().Empty());
     dtm_.reset();
   }
 
@@ -422,6 +444,8 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
 
     Configure(ModelTypeSet(BOOKMARKS));
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+    EXPECT_EQ(ModelTypeSet(BOOKMARKS),
+              configurer_.registered_directory_types());
 
     FinishDownload(ModelTypeSet(), ModelTypeSet());
     FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
@@ -430,6 +454,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
 
     dtm_->Stop();
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+    EXPECT_TRUE(configurer_.registered_directory_types().Empty());
     dtm_.reset();
   }
 
@@ -497,6 +522,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   // Step 1.
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   // Step 2.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -514,6 +540,8 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   // Step 4.
   Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
+            configurer_.registered_directory_types());
 
   // Step 5.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -529,6 +557,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -550,6 +579,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   // Step 1.
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   // Step 2.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -567,6 +597,8 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   // Step 4.
   Configure(ModelTypeSet(PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(PREFERENCES),
+            configurer_.registered_directory_types());
 
   // Step 5.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -582,6 +614,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -603,6 +636,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   // Step 1.
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   // Step 2.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -626,11 +660,14 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(2U, configurer_.activated_types().Size());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
+            configurer_.registered_directory_types());
 
   // Step 7.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with one controller.  Then configure, finish
@@ -647,6 +684,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneFailingController) {
 
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   FinishDownload(ModelTypeSet(), ModelTypeSet());
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
@@ -657,6 +695,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneFailingController) {
       DataTypeController::UNRECOVERABLE_ERROR);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -680,6 +719,8 @@ TEST_F(SyncDataTypeManagerImplTest, SecondControllerFails) {
   // Step 1.
   Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
+            configurer_.registered_directory_types());
 
   // Step 2.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -694,6 +735,7 @@ TEST_F(SyncDataTypeManagerImplTest, SecondControllerFails) {
   GetController(PREFERENCES)
       ->FinishStart(DataTypeController::UNRECOVERABLE_ERROR);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -722,6 +764,8 @@ TEST_F(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   // Step 1.
   Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
+            configurer_.registered_directory_types());
 
   // Step 2.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -742,11 +786,13 @@ TEST_F(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(1U, configurer_.activated_types().Size());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   // Step 6.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -767,6 +813,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   // Step 1.
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   // Step 2.
   Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
@@ -786,10 +833,13 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
+            configurer_.registered_directory_types());
 
   // Step 6.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -814,6 +864,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
   Configure(ModelTypeSet(BOOKMARKS));
   FinishDownload(ModelTypeSet(), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   // Step 2.
   Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
@@ -833,10 +884,13 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
+            configurer_.registered_directory_types());
 
   // Step 6.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
 
 // Tests a Purge then Configure.  This is similar to the sequence of

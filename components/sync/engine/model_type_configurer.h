@@ -56,6 +56,16 @@ class ModelTypeConfigurer {
   // Changes the set of data types that are currently being synced.
   virtual void ConfigureDataTypes(ConfigureParams params) = 0;
 
+  // Registers directory type with sync engine. This function creates update
+  // handler for the type and thus needs to be called before ConfigureDataType
+  // that includes the type in |to_download| type set.
+  virtual void RegisterDirectoryDataType(ModelType type,
+                                         ModelSafeGroup group) = 0;
+
+  // Unregisters directory type from sync engine. After this call updates and
+  // local change will not be synced with server.
+  virtual void UnregisterDirectoryDataType(ModelType type) = 0;
+
   // Activates change processing for the given directory data type.  This must
   // be called synchronously with the data type's model association so
   // no changes are dropped between model association and change
