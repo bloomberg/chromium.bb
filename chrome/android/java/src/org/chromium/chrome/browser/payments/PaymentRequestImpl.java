@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.pageinfo.CertificateChainHelper;
 import org.chromium.chrome.browser.payments.ui.Completable;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
@@ -213,6 +214,7 @@ public class PaymentRequestImpl
     private final WebContents mWebContents;
     private final String mMerchantName;
     private final String mOrigin;
+    private final byte[][] mCertificateChain;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
     private final PaymentRequestJourneyLogger mJourneyLogger = new PaymentRequestJourneyLogger();
@@ -306,6 +308,7 @@ public class PaymentRequestImpl
         // The feature is available only in secure context, so it's OK to not show HTTPS.
         mOrigin = UrlFormatter.formatUrlForSecurityDisplay(
                 webContents.getLastCommittedUrl(), false);
+        mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
 
         final FaviconHelper faviconHelper = new FaviconHelper();
         faviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(),
@@ -571,7 +574,7 @@ public class PaymentRequestImpl
         // so a fast response from a non-autofill payment app at the front of the app list does not
         // cause NOT_SUPPORTED payment rejection.
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().getInstruments(q.getValue(), mOrigin, this);
+            q.getKey().getInstruments(q.getValue(), mOrigin, mCertificateChain, this);
         }
     }
 
@@ -1084,8 +1087,9 @@ public class PaymentRequestImpl
             }
         }
 
-        instrument.invokePaymentApp(mMerchantName, mOrigin, Collections.unmodifiableMap(methodData),
-                mRawTotal, mRawLineItems, Collections.unmodifiableMap(modifiers), this);
+        instrument.invokePaymentApp(mMerchantName, mOrigin, mCertificateChain,
+                Collections.unmodifiableMap(methodData), mRawTotal, mRawLineItems,
+                Collections.unmodifiableMap(modifiers), this);
 
         recordSuccessFunnelHistograms("PayClicked");
         return !(instrument instanceof AutofillPaymentInstrument);

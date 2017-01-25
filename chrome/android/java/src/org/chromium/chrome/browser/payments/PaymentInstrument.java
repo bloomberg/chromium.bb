@@ -73,20 +73,21 @@ public abstract class PaymentInstrument extends PaymentOption {
      *
      * The callback will be invoked with the resulting payment details or error.
      *
-     * @param merchantName  The name of the merchant.
-     * @param origin        The origin of this merchant.
-     * @param methodDataMap The payment-method specific data for all applicable payment methods,
-     *                      e.g., whether the app should be invoked in test or production, a
-     *                      merchant identifier, or a public key.
-     * @param total         The total amount.
-     * @param displayItems  The shopping cart items.
-     * @param modifiers     The relevant payment details modifiers.
-     * @param callback      The object that will receive the instrument details.
+     * @param merchantName     The name of the merchant.
+     * @param origin           The origin of this merchant.
+     * @param certificateChain The site certificate chain of the merchant.
+     * @param methodDataMap    The payment-method specific data for all applicable payment methods,
+     *                         e.g., whether the app should be invoked in test or production, a
+     *                         merchant identifier, or a public key.
+     * @param total            The total amount.
+     * @param displayItems     The shopping cart items.
+     * @param modifiers        The relevant payment details modifiers.
+     * @param callback         The object that will receive the instrument details.
      */
     public abstract void invokePaymentApp(String merchantName, String origin,
-            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
-            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
-            InstrumentDetailsCallback callback);
+            byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
+            PaymentItem total, List<PaymentItem> displayItems,
+            Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback);
 
     /**
      * Cleans up any resources held by the payment instrument. For example, closes server

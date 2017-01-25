@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.os.RemoteException;
 import android.util.JsonWriter;
 
@@ -46,6 +47,8 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     private static final String EXTRA_ORIGIN = "origin";
     private static final String EXTRA_DETAILS = "details";
     private static final String EXTRA_INSTRUMENT_DETAILS = "instrumentDetails";
+    private static final String EXTRA_CERTIFICATE_CHAIN = "certificateChain";
+    private static final String EXTRA_CERTIFICATE = "certificate";
     private static final String EMPTY_JSON_DATA = "{}";
     private final Handler mHandler;
     private final WebContents mWebContents;
@@ -104,9 +107,21 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         mIsReadyToPayIntent.setClassName(mIsReadyToPayIntent.getPackage(), className);
     }
 
+    private void addCertificateChain(Bundle extras, byte[][] certificateChain) {
+        if (certificateChain != null && certificateChain.length > 0) {
+            Parcelable[] certificateArray = new Parcelable[certificateChain.length];
+            for (int i = 0; i < certificateChain.length; i++) {
+                Bundle bundle = new Bundle();
+                bundle.putByteArray(EXTRA_CERTIFICATE, certificateChain[i]);
+                certificateArray[i] = bundle;
+            }
+            extras.putParcelableArray(EXTRA_CERTIFICATE_CHAIN, certificateArray);
+        }
+    }
+
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-            InstrumentsCallback callback) {
+            byte[][] certificateChain, InstrumentsCallback callback) {
         mInstrumentsCallback = callback;
         if (mIsReadyToPayIntent.getPackage() == null) {
             mHandler.post(new Runnable() {
@@ -122,6 +137,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         extras.putString(EXTRA_ORIGIN, origin);
         PaymentMethodData data = methodData.get(mMethodNames.iterator().next());
         extras.putString(EXTRA_DATA, data == null ? EMPTY_JSON_DATA : data.stringifiedData);
+        addCertificateChain(extras, certificateChain);
         mIsReadyToPayIntent.putExtras(extras);
 
         if (mIsReadyToPayService != null) {
@@ -202,13 +218,14 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     }
 
     @Override
-    public void invokePaymentApp(String merchantName, String origin,
+    public void invokePaymentApp(String merchantName, String origin, byte[][] certificateChain,
             Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
             List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback) {
         assert !mMethodNames.isEmpty();
         Bundle extras = new Bundle();
         extras.putString(EXTRA_ORIGIN, origin);
+        addCertificateChain(extras, certificateChain);
 
         String methodName = mMethodNames.iterator().next();
         extras.putString(EXTRA_METHOD_NAME, methodName);

@@ -30,6 +30,8 @@ static ScopedJavaLocalRef<jobjectArray> GetCertificateChain(
 
   scoped_refptr<net::X509Certificate> cert =
       web_contents->GetController().GetVisibleEntry()->GetSSL().certificate;
+  if (!cert)
+    return ScopedJavaLocalRef<jobjectArray>();
 
   std::vector<std::string> cert_chain;
   net::X509Certificate::OSCertHandles cert_handles =

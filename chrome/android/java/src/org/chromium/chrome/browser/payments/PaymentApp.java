@@ -33,14 +33,16 @@ public interface PaymentApp {
      * cards for the current profile. Can return null or empty list, e.g., if user has no locally
      * stored credit cards.
      *
-     * @param methodDataMap The map from methods to method specific data. The data contains such
-     *                      information as whether the app should be invoked in test or production
-     *                      mode, merchant identifier, or a public key.
-     * @param origin        The origin of this merchant.
-     * @param callback      The object that will receive the list of instruments.
+     * @param methodDataMap    The map from methods to method specific data. The data contains such
+     *                         information as whether the app should be invoked in test or
+     * production
+     *                         mode, merchant identifier, or a public key.
+     * @param origin           The origin of this merchant.
+     * @param certificateChain The site certificate chain of the merchant.
+     * @param callback         The object that will receive the list of instruments.
      */
     void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
-            InstrumentsCallback callback);
+            byte[][] certificateChain, InstrumentsCallback callback);
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",
