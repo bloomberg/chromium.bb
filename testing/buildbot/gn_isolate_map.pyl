@@ -323,6 +323,10 @@
     "label": "//components:components_unittests",
     "type": "windowed_test_launcher",
   },
+  "components_variations_junit_tests": {
+    "label": "//components/variations/android:components_variations_junit_tests",
+    "type": "junit_test",
+  },
   "components_web_restrictions_junit_tests": {
     "label": "//components/web_restrictions:components_web_restrictions_junit_tests",
     "type": "junit_test",
