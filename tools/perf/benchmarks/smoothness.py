@@ -480,7 +480,8 @@ class SmoothnessToughAdCases(_Smoothness):
 
 
 # http://crbug.com/522619 (mac/win)
-@benchmark.Disabled('win', 'mac')
+# http://crbug.com/683247 (android/linux)
+@benchmark.Disabled('win', 'mac', 'android', 'linux')
 class SmoothnessScrollingToughAdCases(_Smoothness):
   """Measures rendering statistics while scrolling advertisements."""
   page_set = page_sets.ScrollingToughAdCasesPageSet
