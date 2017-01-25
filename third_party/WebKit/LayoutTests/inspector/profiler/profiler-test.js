@@ -1,12 +1,12 @@
 var initialize_ProfilerTest = function() {
 
-InspectorTest.preloadPanel("js_profiler");
+InspectorTest.preloadPanel("heap_profiler");
 Bindings.TempFile = InspectorTest.TempFileMock;
 
 InspectorTest.startProfilerTest = function(callback)
 {
     InspectorTest.addResult("Profiler was enabled.");
-    InspectorTest.addSniffer(UI.panels.js_profiler, "_addProfileHeader", InspectorTest._profileHeaderAdded, true);
+    InspectorTest.addSniffer(UI.panels.heap_profiler, "_addProfileHeader", InspectorTest._profileHeaderAdded, true);
     InspectorTest.addSniffer(Profiler.ProfileView.prototype, "refresh", InspectorTest._profileViewRefresh, true);
     InspectorTest.safeWrap(callback)();
 };
@@ -46,14 +46,14 @@ InspectorTest.showProfileWhenAdded = function(title)
 InspectorTest._profileHeaderAdded = function(profile)
 {
     if (InspectorTest._showProfileWhenAdded === profile.title)
-        UI.panels.js_profiler.showProfile(profile);
+        UI.panels.heap_profiler.showProfile(profile);
 };
 
 InspectorTest.waitUntilProfileViewIsShown = function(title, callback)
 {
     callback = InspectorTest.safeWrap(callback);
 
-    var profilesPanel = UI.panels.js_profiler;
+    var profilesPanel = UI.panels.heap_profiler;
     if (profilesPanel.visibleView && profilesPanel.visibleView.profile && profilesPanel.visibleView._profileHeader.title === title)
         callback(profilesPanel.visibleView);
     else

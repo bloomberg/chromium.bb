@@ -44,7 +44,7 @@ recordPanelShown:
     sources : 4
     timeline : 5
 }
-Panel shown: js_profiler
+Panel shown: heap_profiler
 Panel shown: timeline
 Panel shown: audits
 

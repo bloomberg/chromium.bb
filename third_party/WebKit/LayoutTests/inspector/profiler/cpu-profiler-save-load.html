@@ -102,7 +102,7 @@ function test()
                 }
                 next();
             }
-            var profilesPanel = UI.panels.js_profiler;
+            var profilesPanel = UI.panels.heap_profiler;
             var profileName = file.name.substr(0, file.name.length - ".cpuprofile".length);
             InspectorTest.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
             profilesPanel._loadFromFile(file);
@@ -111,7 +111,7 @@ function test()
             {
                 loadedProfileData = this._jsonifiedProfile;
                 onTransferFinished.call(this);
-                UI.panels.js_profiler.showProfile(this);
+                UI.panels.heap_profiler.showProfile(this);
             }
         }
 

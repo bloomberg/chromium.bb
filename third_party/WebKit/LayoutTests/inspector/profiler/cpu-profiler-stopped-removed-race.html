@@ -12,7 +12,7 @@ function test()
             var cpuProfiler = SDK.targetManager.mainTarget().cpuProfilerModel;
             var targetManager = SDK.targetManager;
             targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, onSuspendStateChanged);
-            var profilesPanel = UI.panels.js_profiler;
+            var profilesPanel = UI.panels.heap_profiler;
             InspectorTest.addSniffer(cpuProfiler, "stopRecording", stopRecording);
             InspectorTest.addSniffer(profilesPanel, "_addProfileHeader", onAddProfileHeader);
             profilesPanel.toggleRecord();  // Start profiling.

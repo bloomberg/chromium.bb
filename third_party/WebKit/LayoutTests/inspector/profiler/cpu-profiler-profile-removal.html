@@ -17,7 +17,7 @@ function test()
 {
     InspectorTest.startProfilerTest(function() {
         function viewLoaded() {
-            var profiles = UI.panels.js_profiler;
+            var profiles = UI.panels.heap_profiler;
             var type = Profiler.ProfileTypeRegistry.instance.cpuProfileType;
             while (type.getProfiles().length !== 0)
                 type.removeProfile(type.getProfiles()[0]);
