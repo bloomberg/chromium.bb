@@ -1881,6 +1881,8 @@ wl_client_for_each_resource(struct wl_client *client,
 	wl_map_for_each(&client->objects, resource_iterator_helper, &context);
 }
 
+/** \cond INTERNAL */
+
 /** Initialize a wl_priv_signal object
  *
  * wl_priv_signal is a safer implementation of a signal type, with the same API
@@ -1971,6 +1973,8 @@ wl_priv_signal_emit(struct wl_priv_signal *signal, void *data)
 		l->notify(l, data);
 	}
 }
+
+/** \endcond INTERNAL */
 
 /** \cond */ /* Deprecated functions below. */
 
