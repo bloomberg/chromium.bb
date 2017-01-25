@@ -37,13 +37,21 @@ void GetAllRequestsDone(
         RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
     // TODO(romax) Maybe get current real condition.
     DeviceConditions device_conditions(
-        true, 0, net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+        true, 0, net::NetworkChangeNotifier::GetConnectionType());
     coordinator->StartImmediateProcessing(device_conditions,
                                           base::Bind(&ProcessingDoneCallback));
   }
 }
 
 void StartProcessing() {
+  // If there's no network connection then try in 2 seconds.
+  if (net::NetworkChangeNotifier::GetConnectionType() ==
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&StartProcessing),
+        base::TimeDelta::FromSeconds(2));
+    return;
+  }
   Profile* profile = ProfileManager::GetLastUsedProfile();
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
@@ -70,9 +78,19 @@ void EvaluationTestScheduler::Schedule(
 
 void EvaluationTestScheduler::BackupSchedule(
     const TriggerConditions& trigger_conditions,
-    long delay_in_seconds) {}
+    long delay_in_seconds) {
+  // This method is not expected to be called in test harness. Adding a log in
+  // case we somehow get called here and need to implement the method.
+  coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
+                                            " BackupSchedule called!");
+}
 
-void EvaluationTestScheduler::Unschedule() {}
+void EvaluationTestScheduler::Unschedule() {
+  // This method is not expected to be called in test harness. Adding a log in
+  // case we somehow get called here and need to implement the method.
+  coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
+                                            " Unschedule called!");
+}
 
 void EvaluationTestScheduler::ImmediateScheduleCallback(bool result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
