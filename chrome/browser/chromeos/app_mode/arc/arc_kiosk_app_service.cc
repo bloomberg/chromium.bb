@@ -11,8 +11,35 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_blocker.h"
 
 namespace chromeos {
+
+// Blocks all notifications for ARC++ Kiosk
+class ArcKioskNotificationBlocker : public message_center::NotificationBlocker {
+ public:
+  ArcKioskNotificationBlocker()
+      : message_center::NotificationBlocker(
+            message_center::MessageCenter::Get()) {
+    NotifyBlockingStateChanged();
+  }
+
+  ~ArcKioskNotificationBlocker() override {}
+
+ private:
+  bool ShouldShowNotification(
+      const message_center::Notification& notification) const override {
+    return false;
+  }
+
+  bool ShouldShowNotificationAsPopup(
+      const message_center::Notification& notification) const override {
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ArcKioskNotificationBlocker);
+};
 
 // static
 ArcKioskAppService* ArcKioskAppService::Create(Profile* profile) {
@@ -91,6 +118,7 @@ ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
       prefs::kArcPolicyCompliant,
       base::Bind(&ArcKioskAppService::PreconditionsChanged,
                  base::Unretained(this)));
+  notification_blocker_.reset(new ArcKioskNotificationBlocker());
   PreconditionsChanged();
 }
 
