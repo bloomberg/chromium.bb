@@ -2263,6 +2263,9 @@ crbug.com/583193 inspector/sources/debugger-frameworks/frameworks-step-into-skip
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Pass Failure ]
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure ]
+
+crbug.com/684874 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure ]
+
 # ====== Random order flaky tests end here ======
 
 # ====== Begin of display:contents tests ======
