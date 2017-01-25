@@ -2338,3 +2338,6 @@ crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Fail
 crbug.com/681471 virtual/stable/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
+
+# CQ and Rebaseline-cl for crrev.com/2626973005 does not include this
+crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
