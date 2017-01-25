@@ -218,11 +218,6 @@ inline void EventDispatcher::dispatchEventAtBubbling() {
     } else if (m_event->bubbles() && !m_event->cancelBubble()) {
       m_event->setEventPhase(Event::kBubblingPhase);
     } else {
-      if (m_event->bubbles() && m_event->cancelBubble() &&
-          eventContext.node() &&
-          eventContext.node()->hasEventListeners(m_event->type()))
-        UseCounter::count(eventContext.node()->document(),
-                          UseCounter::EventCancelBubbleAffected);
       continue;
     }
     eventContext.handleLocalEvents(*m_event);
@@ -232,17 +227,6 @@ inline void EventDispatcher::dispatchEventAtBubbling() {
   if (m_event->bubbles() && !m_event->cancelBubble()) {
     m_event->setEventPhase(Event::kBubblingPhase);
     m_event->eventPath().windowEventContext().handleLocalEvents(*m_event);
-  } else if (m_event->bubbles() &&
-             m_event->eventPath().windowEventContext().window() &&
-             m_event->eventPath()
-                 .windowEventContext()
-                 .window()
-                 ->hasEventListeners(m_event->type())) {
-    UseCounter::count(m_event->eventPath()
-                          .windowEventContext()
-                          .window()
-                          ->getExecutionContext(),
-                      UseCounter::EventCancelBubbleAffected);
   }
 }
 

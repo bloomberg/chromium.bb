@@ -199,7 +199,7 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   void setDefaultHandled() { m_defaultHandled = true; }
 
   bool cancelBubble(ExecutionContext* = nullptr) const {
-    return m_cancelBubble;
+    return propagationStopped();
   }
   void setCancelBubble(ExecutionContext*, bool);
 
@@ -285,7 +285,6 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   unsigned m_immediatePropagationStopped : 1;
   unsigned m_defaultPrevented : 1;
   unsigned m_defaultHandled : 1;
-  unsigned m_cancelBubble : 1;
   unsigned m_wasInitialized : 1;
   unsigned m_isTrusted : 1;
 

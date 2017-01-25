@@ -87,7 +87,6 @@ Event::Event(const AtomicString& eventType,
       m_immediatePropagationStopped(false),
       m_defaultPrevented(false),
       m_defaultHandled(false),
-      m_cancelBubble(false),
       m_wasInitialized(true),
       m_isTrusted(false),
       m_preventDefaultCalledOnUncancelableEvent(false),
@@ -337,11 +336,8 @@ double Event::timeStamp(ScriptState* scriptState) const {
 }
 
 void Event::setCancelBubble(ExecutionContext* context, bool cancel) {
-  if (!m_cancelBubble && cancel)
-    UseCounter::count(context, UseCounter::EventCancelBubbleWasChangedToTrue);
-  else if (m_cancelBubble && !cancel)
-    UseCounter::count(context, UseCounter::EventCancelBubbleWasChangedToFalse);
-  m_cancelBubble = cancel;
+  if (cancel)
+    m_propagationStopped = true;
 }
 
 DEFINE_TRACE(Event) {
