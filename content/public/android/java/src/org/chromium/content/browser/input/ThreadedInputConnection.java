@@ -119,10 +119,6 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
             final boolean replyToRequest) {
         ImeUtils.checkOnUiThread();
 
-        // crbug.com/663880: Non-breaking spaces can cause the IME to get confused. Replace with
-        // normal spaces.
-        text = text.replace('\u00A0', ' ');
-
         mCachedTextInputState = new TextInputState(text, new Range(selectionStart, selectionEnd),
                 new Range(compositionStart, compositionEnd), singleLine, replyToRequest);
         if (DEBUG_LOGS) Log.w(TAG, "updateState: %s", mCachedTextInputState);

@@ -1111,6 +1111,20 @@ TEST_F(InputMethodControllerTest, FinishCompositionRemovedRange) {
   EXPECT_EQ(WebTextInputTypeTelephone, controller().textInputType());
 }
 
+TEST_F(InputMethodControllerTest, ReflectsSpaceWithoutNbspMangling) {
+  insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  controller().commitText(String("  "), underlines, 0);
+
+  // In a contenteditable, multiple spaces or a space at the edge needs to be
+  // nbsp to affect layout properly, but it confuses some IMEs (particularly
+  // Vietnamese, see crbug.com/663880) to have their spaces reflected back to
+  // them as nbsp.
+  EXPECT_EQ(' ', controller().textInputInfo().value.ascii()[0]);
+  EXPECT_EQ(' ', controller().textInputInfo().value.ascii()[1]);
+}
+
 TEST_F(InputMethodControllerTest, SetCompositionPlainTextWithUnderline) {
   insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 

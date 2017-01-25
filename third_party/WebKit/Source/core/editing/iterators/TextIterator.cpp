@@ -168,9 +168,7 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       m_handleShadowRoot(false),
       m_firstLetterStartOffset(kInvalidOffset),
       m_remainingTextStartOffset(kInvalidOffset),
-      // The call to emitsOriginalText() must occur after m_behavior is
-      // initialized.
-      m_textState(emitsOriginalText()) {
+      m_textState(m_behavior) {
   DCHECK(start.isNotNull());
   DCHECK(end.isNotNull());
 

@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/editing/iterators/ForwardsTextBuffer.h"
+#include "core/editing/iterators/TextIteratorFlags.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -39,7 +40,7 @@ class CORE_EXPORT TextIteratorTextState {
   STACK_ALLOCATED();
 
  public:
-  explicit TextIteratorTextState(bool emitsOriginalText);
+  explicit TextIteratorTextState(TextIteratorBehaviorFlags);
   ~TextIteratorTextState() {}
 
   const String& string() const { return m_text; }
@@ -98,7 +99,8 @@ class CORE_EXPORT TextIteratorTextState {
   // any other content
   bool m_hasEmitted;
   UChar m_lastCharacter;
-  bool m_emitsOriginalText;
+  const bool m_emitsOriginalText;
+  const bool m_emitsSpaceForNbsp;
 
   // Stores the length of :first-letter when we are at the remaining text.
   // Equals to 0 in all other cases.

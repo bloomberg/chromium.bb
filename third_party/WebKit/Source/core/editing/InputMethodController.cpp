@@ -885,7 +885,8 @@ WebTextInputInfo InputMethodController::textInputInfo() const {
   // Emits an object replacement character for each replaced element so that
   // it is exposed to IME and thus could be deleted by IME on android.
   info.value = plainText(EphemeralRange::rangeOfContents(*element),
-                         TextIteratorEmitsObjectReplacementCharacter);
+                         TextIteratorEmitsObjectReplacementCharacter |
+                             TextIteratorEmitsSpaceForNbsp);
 
   if (info.value.isEmpty())
     return info;

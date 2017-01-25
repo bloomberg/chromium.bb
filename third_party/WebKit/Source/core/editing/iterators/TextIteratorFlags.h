@@ -44,6 +44,7 @@ enum TextIteratorBehavior {
   TextIteratorForWindowFind = 1 << 11,
   TextIteratorExcludeAutofilledValue = 1 << 12,
   TextIteratorCollapseTrailingSpace = 1 << 13,
+  TextIteratorEmitsSpaceForNbsp = 1 << 14,
 };
 typedef unsigned TextIteratorBehaviorFlags;
 

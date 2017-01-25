@@ -31,7 +31,7 @@
 
 namespace blink {
 
-TextIteratorTextState::TextIteratorTextState(bool emitsOriginalText)
+TextIteratorTextState::TextIteratorTextState(TextIteratorBehaviorFlags behavior)
     : m_textLength(0),
       m_singleCharacterBuffer(0),
       m_positionNode(nullptr),
@@ -39,7 +39,8 @@ TextIteratorTextState::TextIteratorTextState(bool emitsOriginalText)
       m_positionEndOffset(0),
       m_hasEmitted(false),
       m_lastCharacter(0),
-      m_emitsOriginalText(emitsOriginalText),
+      m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText),
+      m_emitsSpaceForNbsp(behavior & TextIteratorEmitsSpaceForNbsp),
       m_textStartOffset(0) {}
 
 UChar TextIteratorTextState::characterAt(unsigned index) const {
@@ -149,6 +150,8 @@ void TextIteratorTextState::emitText(Node* textNode,
   DCHECK(textNode);
   m_text =
       m_emitsOriginalText ? layoutObject->originalText() : layoutObject->text();
+  if (m_emitsSpaceForNbsp)
+    m_text.replace(noBreakSpaceCharacter, spaceCharacter);
   DCHECK(!m_text.isEmpty());
   DCHECK_LE(0, textStartOffset);
   DCHECK_LT(textStartOffset, static_cast<int>(m_text.length()));
