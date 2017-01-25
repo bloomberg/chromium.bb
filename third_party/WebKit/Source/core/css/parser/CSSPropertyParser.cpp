@@ -2106,12 +2106,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(
           m_range, m_context, UnitlessQuirk::Allow);
-    case CSSPropertyMaxInlineSize:
-    case CSSPropertyMaxBlockSize:
-    case CSSPropertyWebkitMaxLogicalWidth:
-    case CSSPropertyWebkitMaxLogicalHeight:
-      return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(m_range,
-                                                             m_context);
     case CSSPropertyMinWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyWidth:

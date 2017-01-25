@@ -485,8 +485,8 @@ inline-size direction_aware
 block-size direction_aware
 min-inline-size direction_aware
 min-block-size direction_aware
-max-inline-size direction_aware
-max-block-size direction_aware
+max-inline-size direction_aware, api_class=CSSPropertyAPIWebkitMaxLogicalWidthOrHeight
+max-block-size direction_aware, api_class=CSSPropertyAPIWebkitMaxLogicalWidthOrHeight
 
 // Non-standard direction aware properties
 
@@ -514,8 +514,8 @@ max-block-size direction_aware
 -webkit-logical-height direction_aware
 -webkit-min-logical-width direction_aware
 -webkit-min-logical-height direction_aware
--webkit-max-logical-width direction_aware
--webkit-max-logical-height direction_aware
+-webkit-max-logical-width direction_aware, api_class=CSSPropertyAPIWebkitMaxLogicalWidthOrHeight
+-webkit-max-logical-height direction_aware, api_class=CSSPropertyAPIWebkitMaxLogicalWidthOrHeight
 
 // Properties that we ignore in the StyleBuilder.
 // TODO(timloh): This seems wrong, most of these shouldn't reach the StyleBuilder
