@@ -57,6 +57,16 @@ if (is_linux && target_sysroot_dir != "") {
   } else {
     if (current_cpu == "x64") {
       sysroot = "//build/linux/debian_wheezy_amd64-sysroot"
+
+      # TODO(tonikitoo): Remove the whole if clause below when debian/wheezy
+      # sysroots are switched to debian/jessie, crbug.com/564904.
+      import("//build_overrides/build.gni")
+      if (build_with_chromium) {
+        import("//ui/ozone/ozone.gni")
+        if (use_ozone && !is_chromecast) {
+          sysroot = "//build/linux/debian_jessie_amd64-sysroot"
+        }
+      }
     } else if (current_cpu == "x86") {
       sysroot = "//build/linux/debian_wheezy_i386-sysroot"
     } else if (current_cpu == "mipsel") {
