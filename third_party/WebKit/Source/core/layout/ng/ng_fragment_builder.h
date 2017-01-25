@@ -20,7 +20,7 @@ class NGPhysicalTextFragment;
 class CORE_EXPORT NGFragmentBuilder final
     : public GarbageCollectedFinalized<NGFragmentBuilder> {
  public:
-  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType);
+  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, LayoutObject*);
 
   using WeakBoxList = HeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
@@ -136,6 +136,8 @@ class CORE_EXPORT NGFragmentBuilder final
   NGPhysicalFragment::NGFragmentType type_;
   NGWritingMode writing_mode_;
   TextDirection direction_;
+
+  LayoutObject* layout_object_;
 
   NGLogicalSize size_;
   NGLogicalSize overflow_;

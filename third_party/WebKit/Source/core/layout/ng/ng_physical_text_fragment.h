@@ -17,6 +17,7 @@ namespace blink {
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  public:
   NGPhysicalTextFragment(
+      LayoutObject* layout_object,
       const NGInlineNode* node,
       unsigned start_index,
       unsigned end_index,
@@ -26,7 +27,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
       Vector<NGStaticPosition> out_of_flow_positions,
       HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
       HeapVector<Member<NGFloatingObject>>& positioned_floats)
-      : NGPhysicalFragment(size,
+      : NGPhysicalFragment(layout_object,
+                           size,
                            overflow,
                            kFragmentText,
                            out_of_flow_descendants,

@@ -25,7 +25,7 @@
 namespace blink {
 
 NGInlineNode::NGInlineNode(LayoutObject* start_inline,
-                           ComputedStyle* block_style)
+                           const ComputedStyle* block_style)
     : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyInline),
       start_inline_(start_inline),
       last_inline_(nullptr),
@@ -244,6 +244,10 @@ NGInlineNode* NGInlineNode::NextSibling() {
                         : nullptr;
   }
   return next_sibling_;
+}
+
+LayoutObject* NGInlineNode::GetLayoutObject() {
+  return GetLayoutBlockFlow();
 }
 
 // Find the first LayoutBlockFlow in the ancestor chain of |start_inilne_|.

@@ -12,6 +12,7 @@
 namespace blink {
 
 class ComputedStyle;
+class LayoutObject;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGFragmentBuilder;
@@ -26,12 +27,14 @@ class NGInlineNode;
 class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
  public:
   // Default constructor.
+  // @param layout_object The LayoutObject associated with this anonymous block.
   // @param style Style reference of the block that is being laid out.
   // @param first_child Our first child; the algorithm will use its NextSibling
   //                    method to access all the children.
   // @param space The constraint space which the algorithm should generate a
   //              fragment within.
-  NGInlineLayoutAlgorithm(PassRefPtr<const ComputedStyle>,
+  NGInlineLayoutAlgorithm(LayoutObject* layout_object,
+                          PassRefPtr<const ComputedStyle> style,
                           NGInlineNode* first_child,
                           NGConstraintSpace* space,
                           NGBreakToken* break_token = nullptr);

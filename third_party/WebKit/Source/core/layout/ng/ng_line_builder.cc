@@ -42,7 +42,8 @@ void NGLineBuilder::CreateLine() {
   if (inline_box_->IsBidiEnabled())
     BidiReorder();
 
-  NGFragmentBuilder text_builder(NGPhysicalFragment::kFragmentText);
+  NGFragmentBuilder text_builder(NGPhysicalFragment::kFragmentText,
+                                 inline_box_->GetLayoutObject());
   text_builder.SetWritingMode(constraint_space_->WritingMode());
   LayoutUnit inline_offset;
   const Vector<NGLayoutInlineItem>& items = inline_box_->Items();

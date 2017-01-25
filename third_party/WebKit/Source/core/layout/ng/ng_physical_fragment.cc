@@ -11,6 +11,7 @@
 namespace blink {
 
 NGPhysicalFragment::NGPhysicalFragment(
+    LayoutObject* layout_object,
     NGPhysicalSize size,
     NGPhysicalSize overflow,
     NGFragmentType type,
@@ -19,7 +20,8 @@ NGPhysicalFragment::NGPhysicalFragment(
     HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
     HeapVector<Member<NGFloatingObject>>& positioned_floats,
     NGBreakToken* break_token)
-    : size_(size),
+    : layout_object_(layout_object),
+      size_(size),
       overflow_(overflow),
       break_token_(break_token),
       type_(type),

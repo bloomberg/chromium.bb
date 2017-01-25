@@ -12,10 +12,13 @@
 
 namespace blink {
 
-NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type)
+// TODO(ikilpatrick): Make writing mode and direction be in the constructor.
+NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
+                                     LayoutObject* layout_object)
     : type_(type),
       writing_mode_(kHorizontalTopBottom),
-      direction_(TextDirection::kLtr) {}
+      direction_(TextDirection::kLtr),
+      layout_object_(layout_object) {}
 
 NGFragmentBuilder& NGFragmentBuilder::SetWritingMode(
     NGWritingMode writing_mode) {
@@ -156,7 +159,7 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
   break_token_ = nullptr;
 
   NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);
-  HeapVector<Member<const NGPhysicalFragment>> children;
+  HeapVector<Member<NGPhysicalFragment>> children;
   children.reserveCapacity(children_.size());
 
   for (size_t i = 0; i < children_.size(); ++i) {
@@ -178,8 +181,8 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
   }
 
   return new NGPhysicalBoxFragment(
-      physical_size, overflow_.ConvertToPhysical(writing_mode_), children,
-      out_of_flow_descendants_, out_of_flow_positions_, margin_strut_,
+      layout_object_, physical_size, overflow_.ConvertToPhysical(writing_mode_),
+      children, out_of_flow_descendants_, out_of_flow_positions_, margin_strut_,
       unpositioned_floats_, positioned_floats_, break_token);
 }
 
@@ -194,7 +197,8 @@ NGPhysicalTextFragment* NGFragmentBuilder::ToTextFragment(NGInlineNode* node,
   HeapVector<Member<NGFloatingObject>> empty_positioned_floats;
 
   return new NGPhysicalTextFragment(
-      node, start_index, end_index, size_.ConvertToPhysical(writing_mode_),
+      layout_object_, node, start_index, end_index,
+      size_.ConvertToPhysical(writing_mode_),
       overflow_.ConvertToPhysical(writing_mode_), out_of_flow_descendants_,
       out_of_flow_positions_, empty_unpositioned_floats,
       empty_positioned_floats);

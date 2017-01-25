@@ -24,6 +24,8 @@ class NGInlineNodeForTest : public NGInlineNode {
   }
   using NGInlineNode::NGInlineNode;
 
+  LayoutObject* GetLayoutObject() override { return nullptr; }
+
   String& Text() { return text_content_; }
   Vector<NGLayoutInlineItem>& Items() { return items_; }
 
@@ -71,7 +73,8 @@ class NGInlineNodeTest : public ::testing::Test {
         new NGTextLayoutAlgorithm(node, constraint_space);
     algorithm->LayoutInline(&line_builder);
 
-    NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox);
+    NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox,
+                                       /* layout_object */ nullptr);
     line_builder.CreateFragments(&fragment_builder);
     NGPhysicalBoxFragment* fragment = fragment_builder.ToBoxFragment();
     for (const NGPhysicalFragment* child : fragment->Children()) {

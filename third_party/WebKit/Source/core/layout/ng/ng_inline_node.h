@@ -31,12 +31,13 @@ class NGPhysicalFragment;
 // Represents an inline node to be laid out.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineNode(LayoutObject* start_inline, ComputedStyle* block_style);
+  NGInlineNode(LayoutObject* start_inline, const ComputedStyle* block_style);
   ~NGInlineNode() override;
 
   NGPhysicalFragment* Layout(NGConstraintSpace*) override;
   void LayoutInline(NGConstraintSpace*, NGLineBuilder*);
   NGInlineNode* NextSibling() override;
+  LayoutObject* GetLayoutObject() override;
 
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
@@ -67,7 +68,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   LayoutObject* start_inline_;
   LayoutObject* last_inline_;
-  RefPtr<ComputedStyle> block_style_;
+  RefPtr<const ComputedStyle> block_style_;
 
   Member<NGInlineNode> next_sibling_;
 

@@ -18,6 +18,7 @@
 namespace blink {
 
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
+    LayoutObject* layout_object,
     PassRefPtr<const ComputedStyle> style,
     NGInlineNode* first_child,
     NGConstraintSpace* constraint_space,
@@ -26,14 +27,15 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
       style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
-      break_token_(break_token) {
+      break_token_(break_token),
+      builder_(new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox,
+                                     layout_object)) {
   DCHECK(style_);
 }
 
 NGPhysicalFragment* NGInlineLayoutAlgorithm::Layout() {
   // TODO(kojii): Implement sizing and child constraint spaces. Share common
   // logic with NGBlockLayoutAlgorithm using composition.
-  builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
   builder_->SetWritingMode(constraint_space_->WritingMode());
   builder_->SetDirection(constraint_space_->Direction());
   NGInlineNode* current_child = first_child_;

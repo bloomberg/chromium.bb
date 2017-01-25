@@ -21,6 +21,45 @@
 
 namespace blink {
 
+namespace {
+
+// Copies data back to the legacy layout tree for a given child fragment.
+void FragmentPositionUpdated(const NGPhysicalBoxFragment& box_fragment) {
+  LayoutBox* layout_box = toLayoutBox(box_fragment.GetLayoutObject());
+  if (!layout_box)
+    return;
+
+  DCHECK(layout_box->parent()) << "Should be called on children only.";
+
+  layout_box->setX(box_fragment.LeftOffset());
+  layout_box->setY(box_fragment.TopOffset());
+}
+
+// Similar to FragmentPositionUpdated but for floats.
+// - Updates layout object's geometric information.
+// - Creates legacy FloatingObject and attached it to the provided parent.
+void FloatingObjectPositionedUpdated(NGFloatingObject& floating_object,
+                                     LayoutBox* parent) {
+  NGPhysicalBoxFragment* box_fragment =
+      toNGPhysicalBoxFragment(floating_object.fragment);
+  FragmentPositionUpdated(*box_fragment);
+
+  LayoutBox* layout_box = toLayoutBox(box_fragment->GetLayoutObject());
+  DCHECK(layout_box->isFloating());
+
+  if (parent && parent->isLayoutBlockFlow()) {
+    FloatingObject* floating_object =
+        toLayoutBlockFlow(parent)->insertFloatingObject(*layout_box);
+    // TODO(glebl): Fix floating_object's inline offset if it's attached to
+    // parent != layout_box_->parent
+    floating_object->setX(box_fragment->LeftOffset());
+    floating_object->setY(box_fragment->TopOffset());
+    floating_object->setIsPlaced(true);
+  }
+}
+
+}  // namespace
+
 NGBlockNode::NGBlockNode(LayoutObject* layout_object)
     : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyBlock),
       layout_box_(toLayoutBox(layout_object)) {
@@ -88,8 +127,8 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
           .ToConstraintSpace();
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
-  NGBlockLayoutAlgorithm minmax_algorithm(Style(), toNGBlockNode(FirstChild()),
-                                          constraint_space);
+  NGBlockLayoutAlgorithm minmax_algorithm(
+      layout_box_, Style(), toNGBlockNode(FirstChild()), constraint_space);
   if (minmax_algorithm.ComputeMinAndMaxContentSizes(sizes))
     return true;
 
@@ -142,6 +181,10 @@ NGBlockNode* NGBlockNode::NextSibling() {
   return next_sibling_;
 }
 
+LayoutObject* NGBlockNode::GetLayoutObject() {
+  return layout_box_;
+}
+
 NGLayoutInputNode* NGBlockNode::FirstChild() {
   if (!first_child_) {
     LayoutObject* child = layout_box_ ? layout_box_->slowFirstChild() : nullptr;
@@ -173,29 +216,6 @@ DEFINE_TRACE(NGBlockNode) {
   visitor->trace(next_sibling_);
   visitor->trace(first_child_);
   NGLayoutInputNode::trace(visitor);
-}
-
-void NGBlockNode::PositionUpdated() {
-  if (!layout_box_)
-    return;
-  DCHECK(layout_box_->parent()) << "Should be called on children only.";
-
-  layout_box_->setX(fragment_->LeftOffset());
-  layout_box_->setY(fragment_->TopOffset());
-}
-
-void NGBlockNode::FloatPositionUpdated(LayoutObject* parent) {
-  PositionUpdated();
-
-  if (layout_box_->isFloating() && parent && parent->isLayoutBlockFlow()) {
-    FloatingObject* floating_object =
-        toLayoutBlockFlow(parent)->insertFloatingObject(*layout_box_);
-    // TODO(glebl): Fix floating_object's inline offset if it's attached to
-    // parent != layout_box_->parent
-    floating_object->setX(fragment_->LeftOffset());
-    floating_object->setY(fragment_->TopOffset());
-    floating_object->setIsPlaced(true);
-  }
 }
 
 bool NGBlockNode::CanUseNewLayout() {
@@ -255,13 +275,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     // Ensure the position of the children are copied across to the
     // LayoutObject tree.
   } else {
-    for (NGBlockNode* box = toNGBlockNode(FirstChild()); box;
-         box = box->NextSibling()) {
-      if (box->fragment_ && box->fragment_->IsPlaced())
-        box->PositionUpdated();
+    for (const auto& child_fragment : fragment_->Children()) {
+      if (child_fragment->IsPlaced())
+        FragmentPositionUpdated(toNGPhysicalBoxFragment(*child_fragment));
 
-      for (const auto& floating_object : box->fragment_->PositionedFloats()) {
-        floating_object->node->FloatPositionUpdated(box->layout_box_);
+      for (const auto& floating_object : child_fragment->PositionedFloats()) {
+        FloatingObjectPositionedUpdated(*floating_object, layout_box_);
       }
     }
   }
@@ -301,7 +320,7 @@ NGPhysicalBoxFragment* NGBlockNode::RunOldLayout(
   LayoutRect overflow = layout_box_->layoutOverflowRect();
   // TODO(layout-ng): This does not handle writing modes correctly (for
   // overflow)
-  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox);
+  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox, layout_box_);
   builder.SetInlineSize(layout_box_->logicalWidth())
       .SetBlockSize(layout_box_->logicalHeight())
       .SetDirection(layout_box_->styleRef().direction())

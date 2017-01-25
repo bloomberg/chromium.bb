@@ -49,7 +49,8 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
   NGPhysicalFragment* fragment =
-      NGInlineLayoutAlgorithm(blockFlow->style(), inlineBox, constraintSpace)
+      NGInlineLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
+                              constraintSpace)
           .Layout();
   EXPECT_TRUE(fragment);
 
@@ -75,7 +76,8 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
   NGPhysicalFragment* fragment =
-      NGInlineLayoutAlgorithm(blockFlow->style(), inlineBox, constraintSpace)
+      NGInlineLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
+                              constraintSpace)
           .Layout();
   EXPECT_TRUE(fragment);
 

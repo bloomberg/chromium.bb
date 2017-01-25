@@ -179,6 +179,7 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
+    LayoutObject* layout_object,
     PassRefPtr<const ComputedStyle> style,
     NGBlockNode* first_child,
     NGConstraintSpace* constraint_space,
@@ -188,6 +189,8 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       first_child_(first_child),
       constraint_space_(constraint_space),
       break_token_(break_token),
+      builder_(new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox,
+                                     layout_object)),
       is_fragment_margin_strut_block_start_updated_(false) {
   DCHECK(style_);
 }
@@ -261,7 +264,6 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
   space_builder_->SetPercentageResolutionSize(
       NGLogicalSize(adjusted_inline_size, adjusted_block_size));
 
-  builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
   builder_->SetDirection(constraint_space_->Direction());
   builder_->SetWritingMode(constraint_space_->WritingMode());
   builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
@@ -306,8 +308,7 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
       ComputeBlockSizeForFragment(ConstraintSpace(), Style(), content_size_);
   builder_->SetBlockSize(block_size);
 
-  HeapLinkedHashSet<WeakMember<NGBlockNode>> positioned_out_of_flow_children =
-      LayoutOutOfFlowChildren();
+  LayoutOutOfFlowChildren();
 
   builder_->SetInlineOverflow(max_inline_size_).SetBlockOverflow(content_size_);
 
@@ -315,9 +316,6 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
     FinalizeForFragmentation();
 
   NGPhysicalFragment* fragment = builder_->ToBoxFragment();
-
-  for (auto& node : positioned_out_of_flow_children)
-    node->PositionUpdated();
 
   return fragment;
 }
@@ -341,8 +339,7 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(NGFragment* fragment) {
   builder_->AddChild(fragment, fragment_offset);
 }
 
-HeapLinkedHashSet<WeakMember<NGBlockNode>>
-NGBlockLayoutAlgorithm::LayoutOutOfFlowChildren() {
+void NGBlockLayoutAlgorithm::LayoutOutOfFlowChildren() {
   HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_candidates;
   Vector<NGStaticPosition> out_of_flow_candidate_positions;
   builder_->GetAndClearOutOfFlowDescendantCandidates(
@@ -350,7 +347,6 @@ NGBlockLayoutAlgorithm::LayoutOutOfFlowChildren() {
 
   Member<NGOutOfFlowLayoutPart> out_of_flow_layout =
       new NGOutOfFlowLayoutPart(&Style(), builder_->Size());
-  HeapLinkedHashSet<WeakMember<NGBlockNode>> positioned_children;
   size_t candidate_positions_index = 0;
 
   for (auto& child : out_of_flow_candidates) {
@@ -362,13 +358,11 @@ NGBlockLayoutAlgorithm::LayoutOutOfFlowChildren() {
       NGLogicalOffset offset;
       out_of_flow_layout->Layout(*child, static_position, &fragment, &offset);
       // TODO(atotic) Need to adjust size of overflow rect per spec.
-      positioned_children.add(child);
       builder_->AddChild(fragment, offset);
     } else {
       builder_->AddOutOfFlowDescendant(child, static_position);
     }
   }
-  return positioned_children;
 }
 
 bool NGBlockLayoutAlgorithm::ProceedToNextUnfinishedSibling(

@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class LayoutObject;
 class NGBlockNode;
 class NGBreakToken;
 struct NGFloatingObject;
@@ -20,6 +21,10 @@ struct NGFloatingObject;
 // The NGPhysicalFragment contains the output information from layout. The
 // fragment stores all of its information in the physical coordinate system for
 // use by paint, hit-testing etc.
+//
+// The fragment keeps a pointer back to the LayoutObject which generated it.
+// Once we have transitioned fully to LayoutNG it should be a const pointer
+// such that paint/hit-testing/etc don't modify it.
 //
 // Layout code should only access output layout information through the
 // NGFragmentBase classes which transforms information into the logical
@@ -64,6 +69,8 @@ class CORE_EXPORT NGPhysicalFragment
 
   NGBreakToken* BreakToken() const { return break_token_; }
 
+  LayoutObject* GetLayoutObject() const { return layout_object_; }
+
   const HeapLinkedHashSet<WeakMember<NGBlockNode>>& OutOfFlowDescendants()
       const {
     return out_of_flow_descendants_;
@@ -101,6 +108,7 @@ class CORE_EXPORT NGPhysicalFragment
 
  protected:
   NGPhysicalFragment(
+      LayoutObject* layout_object,
       NGPhysicalSize size,
       NGPhysicalSize overflow,
       NGFragmentType type,
@@ -110,6 +118,7 @@ class CORE_EXPORT NGPhysicalFragment
       HeapVector<Member<NGFloatingObject>>& positioned_floats,
       NGBreakToken* break_token = nullptr);
 
+  LayoutObject* layout_object_;
   NGPhysicalSize size_;
   NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;

@@ -58,7 +58,8 @@ class NGBlockLayoutAlgorithmTest
     NGBlockNode parent(style_.get());
     parent.SetFirstChild(first_child);
 
-    NGBlockLayoutAlgorithm algorithm(style_.get(), first_child, space);
+    NGBlockLayoutAlgorithm algorithm(/* layout_object */ nullptr, style_.get(),
+                                     first_child, space);
 
     NGPhysicalFragment* fragment = algorithm.Layout();
     return toNGPhysicalBoxFragment(fragment);
@@ -81,7 +82,8 @@ class NGBlockLayoutAlgorithmTest
     NGConstraintSpace* space =
         ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr,
                                  NGLogicalSize(LayoutUnit(), LayoutUnit()));
-    NGBlockLayoutAlgorithm algorithm(style_.get(), first_child, space);
+    NGBlockLayoutAlgorithm algorithm(/* layout_object */ nullptr, style_.get(),
+                                     first_child, space);
     MinAndMaxContentSizes sizes;
     EXPECT_TRUE(algorithm.ComputeMinAndMaxContentSizes(&sizes));
     return sizes;

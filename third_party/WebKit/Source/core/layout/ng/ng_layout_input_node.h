@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class LayoutObject;
 class NGConstraintSpace;
 class NGPhysicalFragment;
 class NGLayoutAlgorithm;
@@ -29,6 +30,9 @@ class CORE_EXPORT NGLayoutInputNode
 
   // Returns the next sibling.
   virtual NGLayoutInputNode* NextSibling() = 0;
+
+  // Returns the LayoutObject which is associated with this node.
+  virtual LayoutObject* GetLayoutObject() = 0;
 
   NGLayoutInputNodeType Type() const {
     return static_cast<NGLayoutInputNodeType>(type_);
