@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/mediasession/MediaImage.h"
 #include "modules/mediasession/MediaMetadataInit.h"
 #include "modules/mediasession/MediaSession.h"
@@ -23,7 +24,10 @@ MediaMetadata* MediaMetadata::create(ScriptState* scriptState,
 MediaMetadata::MediaMetadata(ScriptState* scriptState,
                              const MediaMetadataInit& metadata,
                              ExceptionState& exceptionState)
-    : m_notifySessionTimer(this, &MediaMetadata::notifySessionTimerFired) {
+    : m_notifySessionTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState),
+          this,
+          &MediaMetadata::notifySessionTimerFired) {
   m_title = metadata.title();
   m_artist = metadata.artist();
   m_album = metadata.album();

@@ -78,7 +78,7 @@ class MODULES_EXPORT MediaMetadata final
   HeapVector<MediaImage> m_artwork;
 
   Member<MediaSession> m_session;
-  Timer<MediaMetadata> m_notifySessionTimer;
+  TaskRunnerTimer<MediaMetadata> m_notifySessionTimer;
 };
 
 }  // namespace blink
