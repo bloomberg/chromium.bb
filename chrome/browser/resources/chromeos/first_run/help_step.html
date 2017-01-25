@@ -1,14 +1,12 @@
 <div id="help" class="step bubble transparent hidden">
   <div id="completion-image"></div>
-  <h1>$i18n{helpHeader}</h1>
-  <p>$i18n{helpText1}</p>
-  <p>$i18n{helpText2}</p>
+  <h1 i18n-content="helpHeader"></h1>
+  <p i18n-content="helpText1"></p>
+  <p i18n-content="helpText2"></p>
   <div class="controls">
-    <button class="help-button custom-appearance blue-button">
-      $i18n{helpKeepExploringButton}
-    </button>
-    <button class="next-button custom-appearance white-button">
-      $i18n{helpFinishButton}
-    </button>
+    <button i18n-content="helpKeepExploringButton"
+        class="help-button custom-appearance blue-button"></button>
+    <button i18n-content="helpFinishButton"
+        class="next-button custom-appearance white-button"></button>
   </div>
 </div>

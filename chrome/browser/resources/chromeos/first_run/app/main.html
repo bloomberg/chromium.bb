@@ -26,14 +26,14 @@
           </div>
         </div>
       </div>
-      <h1>$i18n{greetingHeader}</h1>
+      <h1 i18n-content="greetingHeader"></h1>
       <p>
-        <span>$i18n{greetingText1}</span><br>
-        <span>$i18n{greetingText2}</span>
+        <span i18n-content="greetingText1"></span><br>
+        <span i18n-content="greetingText2"></span>
       </p>
       <div class="controls">
-        <button class="next-button custom-appearance blue-button" tabindex="0">
-          $i18n{greetingButton}
+        <button i18n-content="greetingButton"
+            class="next-button custom-appearance blue-button" tabindex="0">
         </button>
       </div>
       <include src="greeting_image_[GREETING_IMAGE].html">
