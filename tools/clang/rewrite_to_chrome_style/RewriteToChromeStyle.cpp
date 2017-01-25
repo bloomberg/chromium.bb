@@ -1533,6 +1533,7 @@ int main(int argc, const char* argv[]) {
           // there's nothing interesting to rewrite in those either.
           unless(hasAncestor(functionDecl(isDefaulted())))));
   auto decl_ref_matcher = id("expr", declRefExpr(to(var_decl_matcher)));
+  auto type_trait_ref_matcher = id("expr", declRefExpr(to(type_trait_matcher)));
   auto enum_member_ref_matcher =
       id("expr", declRefExpr(to(enum_member_decl_matcher)));
 
@@ -1541,6 +1542,10 @@ int main(int argc, const char* argv[]) {
 
   DeclRefRewriter decl_ref_rewriter(&replacements);
   match_finder.addMatcher(decl_ref_matcher, &decl_ref_rewriter);
+
+  DeclRefRewriter type_trait_ref_rewriter(&replacements);
+  type_trait_ref_rewriter.set_for_type_traits(true);
+  match_finder.addMatcher(type_trait_ref_matcher, &type_trait_ref_rewriter);
 
   EnumConstantDeclRefRewriter enum_member_ref_rewriter(&replacements);
   match_finder.addMatcher(enum_member_ref_matcher, &enum_member_ref_rewriter);

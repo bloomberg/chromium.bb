@@ -86,6 +86,11 @@ struct GloballyKnownTraits {
 
 namespace WTF {
 
+void TestForTraits() {
+  bool a = blink::IsGarbageCollectedMixin::safe_to_compare_to_empty_or_deleted;
+  bool b = not_blink::GloballyKnownTraits::safe_to_compare_to_empty_or_deleted;
+}
+
 // We don't want to capitalize fields in type traits
 // (i.e. the |value| -> |kValue| rename is undesirable below).
 struct TypeTrait1 {
