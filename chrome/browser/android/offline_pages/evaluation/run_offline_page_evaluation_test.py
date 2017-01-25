@@ -29,14 +29,19 @@ import urlparse
 
 DEFAULT_USER_REQUEST = True
 DEFAULT_USE_TEST_SCHEDULER = True
+DEFAULT_USE_BACKGROUND_LOADER = False
 # 0 means the batch would be the whole list of urls.
 DEFAULT_BATCH_SIZE = 0
 DEFAULT_VERBOSE = False
+PRERENDER_TEST_CMD = 'OfflinePageSavePageLaterEvaluationTest.testFailureRate'
+BACKGROUND_LOADER_CMD = 'OfflinePageSavePageLaterEvaluationTest.' \
+                        'testBackgroundLoaderFailureRate'
 CONFIG_FILENAME = 'test_config'
 CONFIG_TEMPLATE = """\
 IsUserRequested = {is_user_requested}
 UseTestScheduler = {use_test_scheduler}
 ScheduleBatchSize = {schedule_batch_size}
+UseBackgroundLoader = {use_background_loader}
 """
 
 
@@ -87,12 +92,23 @@ def main(args):
   parser.add_argument('build_output_dir', help='Path to build directory.')
   parser.add_argument(
       'test_urls_file', help='Path to input file with urls to be tested.')
+  parser.add_argument(
+      '--use-background-loader',
+      dest='use_background_loader',
+      action='store_true',
+      help='Use background loader instead of prerenderer.')
+  parser.add_argument(
+      '--use-prerenderer',
+      dest='use_background_loader',
+      action='store_false',
+      help='Use prerenderer instead of background loader.')
   parser.set_defaults(
       output_dir=os.path.expanduser('~/offline_eval_output'),
       user_request=DEFAULT_USER_REQUEST,
       use_test_scheduler=DEFAULT_USE_TEST_SCHEDULER,
       schedule_batch_size=DEFAULT_BATCH_SIZE,
-      verbose=DEFAULT_VERBOSE)
+      verbose=DEFAULT_VERBOSE,
+      use_background_loader=DEFAULT_USE_BACKGROUND_LOADER)
 
   # Get the arguments and several paths.
   options, extra_args = parser.parse_known_args(args)
@@ -131,7 +147,8 @@ def main(args):
         CONFIG_TEMPLATE.format(
             is_user_requested=options.user_request,
             use_test_scheduler=options.use_test_scheduler,
-            schedule_batch_size=options.schedule_batch_size))
+            schedule_batch_size=options.schedule_batch_size,
+            use_background_loader=options.use_background_loader))
 
   print 'Uploading config file and input file onto the device.'
   subprocess.call(
@@ -146,7 +163,8 @@ def main(args):
   print CONFIG_TEMPLATE.format(
       is_user_requested=options.user_request,
       use_test_scheduler=options.use_test_scheduler,
-      schedule_batch_size=options.schedule_batch_size)
+      schedule_batch_size=options.schedule_batch_size,
+      use_background_loader=options.use_background_loader)
   # Run test with timeout-scale as 20.0 and strict mode off.
   # This scale is only applied to timeouts which are defined as scalable ones
   # in the test framework (like the timeout used to decide if Chrome doesn't
@@ -158,8 +176,6 @@ def main(args):
   # violations when writing to files.
   test_runner_cmd = [
       test_runner_path,
-      '-f',
-      'OfflinePageSavePageLaterEvaluationTest.testFailureRate',
       '--timeout-scale',
       '20.0',
       '--strict-mode',
@@ -169,6 +185,11 @@ def main(args):
     test_runner_cmd += ['-v']
   if options.device_id != None:
     test_runner_cmd += ['-d', options.device_id]
+
+  if options.use_background_loader:
+    test_runner_cmd += ['-f', BACKGROUND_LOADER_CMD]
+  else:
+    test_runner_cmd += ['-f', PRERENDER_TEST_CMD]
   subprocess.call(test_runner_cmd)
 
   print 'Fetching results from device...'
