@@ -106,6 +106,21 @@ class CleanUpStage(generic_stages.BuilderStage):
     logging.info('Wiping old output.')
     commands.WipeOldOutput(self._build_root)
 
+  def _GetBuildbucketBucketsForSlaves(self):
+    """Get Buildbucket buckets for slaves of current build.
+
+    Returns:
+      A list of Buildbucket buckets (strings) serving the slaves.
+    """
+    slave_config_map = self._GetSlaveConfigMap(important_only=False)
+
+    bucket_set = set(
+        buildbucket_lib.WATERFALL_BUCKET_MAP[slave_config.active_waterfall]
+        for slave_config in slave_config_map.values()
+        if slave_config.active_waterfall)
+
+    return list(bucket_set)
+
   def CancelObsoleteSlaveBuilds(self):
     """Cancel the obsolete slave builds scheduled by the previous master."""
     logging.info('Cancelling obsolete slave builds.')
@@ -113,6 +128,12 @@ class CleanUpStage(generic_stages.BuilderStage):
     buildbucket_client = self.GetBuildbucketClient()
 
     if buildbucket_client is not None:
+
+      slave_buildbucket_buckets = self._GetBuildbucketBucketsForSlaves()
+      if not slave_buildbucket_buckets:
+        logging.info('No Buildbucket buckets to search for slave builds.')
+        return
+
       buildbucket_ids = []
       # Search for scheduled/started slave builds in chromiumos waterfall
       # and chromeos waterfall.
@@ -120,9 +141,9 @@ class CleanUpStage(generic_stages.BuilderStage):
                      constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
         builds = buildbucket_client.SearchAllBuilds(
             self._run.options.debug,
-            buckets=[constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
-                     constants.CHROMEOS_BUILDBUCKET_BUCKET],
+            buckets=slave_buildbucket_buckets,
             tags=['build_type:%s' % self._run.config.build_type,
+                  'cbb_branch:%s' % self._run.manifest_branch,
                   'master:False',],
             status=status)
 

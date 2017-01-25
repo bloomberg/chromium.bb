@@ -14,6 +14,7 @@ from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import build_stages
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import auth
 from chromite.lib import cidb
@@ -326,8 +327,11 @@ class BuildImageStageTest(BuildPackagesStageTest):
     steps = [lambda tag=x: task(tag) for x in (release_tag,)]
     parallel.RunParallelSteps(steps)
 
+
 class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   """Test CleanUpStage."""
+
+  # pylint: disable=protected-access
 
   BOT_ID = 'master-paladin'
 
@@ -361,6 +365,46 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def ConstructStage(self):
     return build_stages.CleanUpStage(self._run)
+
+  def test_GetBuildbucketBucketsForSlavesOnMixedWaterfalls(self):
+    """Test _GetBuildbucketBucketsForSlaves with mixed waterfalls."""
+    stage = self.ConstructStage()
+    slave_config_map = {
+        'slave_1': config_lib.BuildConfig(
+            name='slave1',
+            active_waterfall=constants.WATERFALL_EXTERNAL),
+        'slave_2': config_lib.BuildConfig(
+            name='slave2',
+            active_waterfall=constants.WATERFALL_INTERNAL),
+        'slave_3': config_lib.BuildConfig(
+            name='slave3',
+            active_waterfall=None)
+    }
+    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
+                     return_value=slave_config_map)
+    buckets = stage._GetBuildbucketBucketsForSlaves()
+
+    expected_list = ['master.chromiumos', 'master.chromeos']
+    self.assertItemsEqual(expected_list, buckets)
+
+  def test_GetBuildbucketBucketsForSlavesOnSingleWaterfall(self):
+    """Test _GetBuildbucketBucketsForSlaves with a signle waterfall."""
+    stage = self.ConstructStage()
+
+    slave_config_map = {
+        'slave_1': config_lib.BuildConfig(
+            name='slave1',
+            active_waterfall=constants.WATERFALL_INTERNAL),
+        'slave_2': config_lib.BuildConfig(
+            name='slave2',
+            active_waterfall=constants.WATERFALL_INTERNAL)
+    }
+    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
+                     return_value=slave_config_map)
+    buckets = stage._GetBuildbucketBucketsForSlaves()
+
+    expected_list = ['master.chromeos']
+    self.assertItemsEqual(expected_list, buckets)
 
   def testCancelObsoleteSlaveBuilds(self):
     """Test CancelObsoleteSlaveBuilds."""
@@ -434,3 +478,15 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     stage.CancelObsoleteSlaveBuilds()
 
     self.assertEqual(cancel_mock.call_count, 0)
+
+  def testCancelObsoleteSlaveBuildsWithNoSlaveBuilds(self):
+    """Test CancelObsoleteSlaveBuilds with no slave builds."""
+    self.PatchObject(build_stages.CleanUpStage,
+                     '_GetBuildbucketBucketsForSlaves',
+                     return_value=set())
+    stage = self.ConstructStage()
+    stage.CancelObsoleteSlaveBuilds()
+
+    search_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                   'SearchAllBuilds')
+    search_mock.assertNotCalled()

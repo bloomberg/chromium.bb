@@ -69,6 +69,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                 'build_type:%s' % build_config.build_type,
                 'master:False',
                 'cbb_config:%s' % build_name,
+                'cbb_branch:%s' % self._run.manifest_branch,
                 'cbb_master_build_id:%s' % master_build_id]
     })
 
