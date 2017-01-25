@@ -241,7 +241,6 @@ class ExtensionFunction
   // Retrieves any error string from the function.
   virtual const std::string& GetError() const;
 
-  bool bad_message() const { return bad_message_; }
   void set_bad_message(bool bad_message) { bad_message_ = bad_message; }
 
   // Specifies the name of the function. A long-lived string (such as a string

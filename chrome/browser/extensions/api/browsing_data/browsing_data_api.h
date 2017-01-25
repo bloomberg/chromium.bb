@@ -100,7 +100,9 @@ class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
 
   // Children should override this method to provide the proper removal mask
   // based on the API call they represent.
-  virtual int GetRemovalMask() = 0;
+  // Returns whether or not removal mask retrieval was successful.
+  // |removal_mask| is populated with the result, if successful.
+  virtual bool GetRemovalMask(int* removal_mask) = 0;
 
  private:
   // Updates the removal bitmask according to whether removing plugin data is
@@ -130,7 +132,7 @@ class BrowsingDataRemoveAppcacheFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveAppcacheFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveFunction : public BrowsingDataRemoverFunction {
@@ -141,7 +143,7 @@ class BrowsingDataRemoveFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveCacheFunction : public BrowsingDataRemoverFunction {
@@ -153,7 +155,7 @@ class BrowsingDataRemoveCacheFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveCacheFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveCookiesFunction : public BrowsingDataRemoverFunction {
@@ -165,7 +167,7 @@ class BrowsingDataRemoveCookiesFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveCookiesFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveDownloadsFunction : public BrowsingDataRemoverFunction {
@@ -177,7 +179,7 @@ class BrowsingDataRemoveDownloadsFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveDownloadsFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveFileSystemsFunction
@@ -190,7 +192,7 @@ class BrowsingDataRemoveFileSystemsFunction
   ~BrowsingDataRemoveFileSystemsFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveFormDataFunction : public BrowsingDataRemoverFunction {
@@ -202,7 +204,7 @@ class BrowsingDataRemoveFormDataFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveFormDataFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveHistoryFunction : public BrowsingDataRemoverFunction {
@@ -214,7 +216,7 @@ class BrowsingDataRemoveHistoryFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveHistoryFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveIndexedDBFunction : public BrowsingDataRemoverFunction {
@@ -226,7 +228,7 @@ class BrowsingDataRemoveIndexedDBFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveIndexedDBFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveLocalStorageFunction
@@ -239,7 +241,7 @@ class BrowsingDataRemoveLocalStorageFunction
   ~BrowsingDataRemoveLocalStorageFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemovePluginDataFunction
@@ -252,7 +254,7 @@ class BrowsingDataRemovePluginDataFunction
   ~BrowsingDataRemovePluginDataFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemovePasswordsFunction : public BrowsingDataRemoverFunction {
@@ -264,7 +266,7 @@ class BrowsingDataRemovePasswordsFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemovePasswordsFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveServiceWorkersFunction
@@ -277,7 +279,7 @@ class BrowsingDataRemoveServiceWorkersFunction
   ~BrowsingDataRemoveServiceWorkersFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveCacheStorageFunction
@@ -290,7 +292,7 @@ class BrowsingDataRemoveCacheStorageFunction
   ~BrowsingDataRemoveCacheStorageFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 class BrowsingDataRemoveWebSQLFunction : public BrowsingDataRemoverFunction {
@@ -302,7 +304,7 @@ class BrowsingDataRemoveWebSQLFunction : public BrowsingDataRemoverFunction {
   ~BrowsingDataRemoveWebSQLFunction() override {}
 
   // BrowsingDataRemoverFunction:
-  int GetRemovalMask() override;
+  bool GetRemovalMask(int* removal_mask) override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_
