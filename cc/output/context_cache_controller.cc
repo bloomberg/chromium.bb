@@ -139,6 +139,12 @@ void ContextCacheController::InvalidatePendingIdleCallbacks() {
 }
 
 void ContextCacheController::OnIdle(uint32_t idle_generation) {
+// TODO(ericrk): Temporarily disabling this to investigate whether this
+// code regressed scroll latency on Android. crbug.com/664181
+#if defined(OS_ANDROID)
+  return;
+#endif
+
   // First check if we should run our idle callback at all. If we have become
   // busy since scheduling, just schedule another idle callback and return.
   {

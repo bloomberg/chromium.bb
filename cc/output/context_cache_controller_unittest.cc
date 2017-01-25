@@ -54,6 +54,11 @@ TEST(ContextCacheControllerTest, ScopedVisibilityMulti) {
 }
 
 TEST(ContextCacheControllerTest, ScopedBusyWhileVisible) {
+// TODO(ericrk): Temporarily disabling this to investigate whether this
+// code regressed scroll latency on Android. crbug.com/664181
+#if defined(OS_ANDROID)
+  return;
+#endif
   StrictMock<MockContextSupport> context_support;
   auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
   ContextCacheController cache_controller(&context_support, task_runner);
@@ -76,6 +81,11 @@ TEST(ContextCacheControllerTest, ScopedBusyWhileVisible) {
 }
 
 TEST(ContextCacheControllerTest, ScopedBusyWhileNotVisible) {
+// TODO(ericrk): Temporarily disabling this to investigate whether this
+// code regressed scroll latency on Android. crbug.com/664181
+#if defined(OS_ANDROID)
+  return;
+#endif
   StrictMock<MockContextSupport> context_support;
   auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
   ContextCacheController cache_controller(&context_support, task_runner);
@@ -88,6 +98,11 @@ TEST(ContextCacheControllerTest, ScopedBusyWhileNotVisible) {
 }
 
 TEST(ContextCacheControllerTest, ScopedBusyMulitpleWhileVisible) {
+// TODO(ericrk): Temporarily disabling this to investigate whether this
+// code regressed scroll latency on Android. crbug.com/664181
+#if defined(OS_ANDROID)
+  return;
+#endif
   StrictMock<MockContextSupport> context_support;
   auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
   ContextCacheController cache_controller(&context_support, task_runner);
