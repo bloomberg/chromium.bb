@@ -13,10 +13,6 @@
 
 class GURL;
 
-namespace base {
-class ListValue;
-}
-
 namespace physical_web {
 
 std::unique_ptr<Metadata> CreatePhysicalWebPage(
@@ -42,7 +38,6 @@ class FakePhysicalWebDataSource : public PhysicalWebDataSource {
   void StartDiscovery(bool network_request_enabled) override;
   void StopDiscovery() override;
 
-  std::unique_ptr<base::ListValue> GetMetadata() override;
   std::unique_ptr<MetadataList> GetMetadataList() override;
 
   bool HasUnresolvedDiscoveries() override;
@@ -51,14 +46,12 @@ class FakePhysicalWebDataSource : public PhysicalWebDataSource {
   void UnregisterListener(PhysicalWebListener* physical_web_listener) override;
 
   // for testing
-  void SetMetadata(std::unique_ptr<base::ListValue> metadata);
   void SetMetadataList(std::unique_ptr<MetadataList> metadata_list);
   void NotifyOnFound(const GURL& url);
   void NotifyOnLost(const GURL& url);
   void NotifyOnDistanceChanged(const GURL& url, double distance_estimate);
 
  private:
-  std::unique_ptr<base::ListValue> metadata_;
   std::unique_ptr<MetadataList> metadata_list_;
   base::ObserverList<PhysicalWebListener> observer_list_;
 

@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::android::JavaParamRef;
@@ -86,53 +85,4 @@ TEST_F(PhysicalWebCollectionTest, AppendMetadataItem_ListWork) {
   EXPECT_EQ(kTitle, metadata.title);
   EXPECT_EQ(kDescription, metadata.description);
   EXPECT_EQ(kGroupId, metadata.group_id);
-}
-
-TEST_F(PhysicalWebCollectionTest, AppendMetadataItem_DictionaryValueWorks) {
-  Collection()->AppendMetadataItem(
-      Env(),
-      JavaParamRef<jobject>(NULL),
-      JavaParamRef<jstring>(Env(), JavaString(kRequestUrl)),
-      static_cast<jdouble>(kDistanceEstimate),
-      static_cast<jlong>(kScanTimestamp),
-      JavaParamRef<jstring>(Env(), JavaString(kSiteUrl)),
-      JavaParamRef<jstring>(Env(), JavaString(kIconUrl)),
-      JavaParamRef<jstring>(Env(), JavaString(kTitle)),
-      JavaParamRef<jstring>(Env(), JavaString(kDescription)),
-      JavaParamRef<jstring>(Env(), JavaString(kGroupId)));
-
-  std::unique_ptr<base::ListValue> list_value = Collection()->GetMetadata();
-  EXPECT_EQ(1U, list_value->GetSize());
-  const base::Value* value;
-  EXPECT_TRUE(list_value->Get(0, &value));
-  const base::DictionaryValue* dictionary_value;
-  EXPECT_TRUE(value->GetAsDictionary(&dictionary_value));
-  std::string stored_scanned_url;
-  EXPECT_TRUE(dictionary_value->GetString(physical_web::kScannedUrlKey,
-                                          &stored_scanned_url));
-  EXPECT_EQ(kRequestUrl, stored_scanned_url);
-  double stored_distance_estimate;
-  EXPECT_TRUE(dictionary_value->GetDouble(physical_web::kDistanceEstimateKey,
-                                          &stored_distance_estimate));
-  EXPECT_EQ(kDistanceEstimate, stored_distance_estimate);
-  std::string stored_resolved_url;
-  EXPECT_TRUE(dictionary_value->GetString(physical_web::kResolvedUrlKey,
-                                          &stored_resolved_url));
-  EXPECT_EQ(kSiteUrl, stored_resolved_url);
-  std::string stored_icon_url;
-  EXPECT_TRUE(dictionary_value->GetString(physical_web::kIconUrlKey,
-                                          &stored_icon_url));
-  EXPECT_EQ(kIconUrl, stored_icon_url);
-  std::string stored_title;
-  EXPECT_TRUE(dictionary_value->GetString(physical_web::kTitleKey,
-                                          &stored_title));
-  EXPECT_EQ(kTitle, stored_title);
-  std::string stored_description;
-  EXPECT_TRUE(dictionary_value->GetString(physical_web::kDescriptionKey,
-                                          &stored_description));
-  EXPECT_EQ(kDescription, stored_description);
-  std::string stored_group_id;
-  EXPECT_TRUE(dictionary_value->GetString(physical_web::kGroupIdKey,
-                                          &stored_group_id));
-  EXPECT_EQ(kGroupId, stored_group_id);
 }

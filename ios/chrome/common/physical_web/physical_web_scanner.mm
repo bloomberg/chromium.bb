@@ -14,7 +14,6 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/values.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 #include "device/bluetooth/uribeacon/uri_encoder.h"
 #import "ios/chrome/common/physical_web/physical_web_device.h"
@@ -185,30 +184,6 @@ enum BeaconType {
   }];
 }
 
-- (std::unique_ptr<base::ListValue>)metadata {
-  auto metadataRet = base::MakeUnique<base::ListValue>();
-
-  for (PhysicalWebDevice* device in [self devices]) {
-    std::string scannedUrl =
-        base::SysNSStringToUTF8([[device requestURL] absoluteString]);
-    std::string resolvedUrl =
-        base::SysNSStringToUTF8([[device url] absoluteString]);
-    std::string icon = base::SysNSStringToUTF8([[device icon] absoluteString]);
-    std::string title = base::SysNSStringToUTF8([device title]);
-    std::string description = base::SysNSStringToUTF8([device description]);
-
-    auto metadataItem = base::MakeUnique<base::DictionaryValue>();
-    metadataItem->SetString(physical_web::kScannedUrlKey, scannedUrl);
-    metadataItem->SetString(physical_web::kResolvedUrlKey, resolvedUrl);
-    metadataItem->SetString(physical_web::kIconUrlKey, icon);
-    metadataItem->SetString(physical_web::kTitleKey, title);
-    metadataItem->SetString(physical_web::kDescriptionKey, description);
-    metadataRet->Append(std::move(metadataItem));
-  }
-
-  return metadataRet;
-}
-
 - (std::unique_ptr<physical_web::MetadataList>)metadataList {
   auto metadataRet = base::MakeUnique<physical_web::MetadataList>();
 
@@ -221,13 +196,13 @@ enum BeaconType {
     std::string title = base::SysNSStringToUTF8([device title]);
     std::string description = base::SysNSStringToUTF8([device description]);
 
-    physical_web::Metadata metadataItem;
+    metadataRet->emplace_back();
+    physical_web::Metadata& metadataItem = metadataRet->back();
     metadataItem.scanned_url = GURL(scannedUrl);
     metadataItem.resolved_url = GURL(resolvedUrl);
     metadataItem.icon_url = GURL(icon);
     metadataItem.title = title;
     metadataItem.description = description;
-    metadataRet->push_back(std::move(metadataItem));
   }
 
   return metadataRet;

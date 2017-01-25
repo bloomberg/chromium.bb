@@ -11,12 +11,8 @@
 #include "base/macros.h"
 #include "components/physical_web/data_source/physical_web_data_source_impl.h"
 
-namespace base {
-class ListValue;
-}
-
 // A container for Physical Web metadata. This is primarily a wrapper for a
-// ListValue so we can append to it over JNI.
+// physical_web::MetadataList so we can append to it over JNI.
 class PhysicalWebCollection {
  public:
   PhysicalWebCollection();
@@ -38,14 +34,7 @@ class PhysicalWebCollection {
   // caller. Call only once.
   std::unique_ptr<physical_web::MetadataList> GetMetadataList();
 
-  // Returns the metadata list and transfers ownership of the list to the
-  // caller. Call only once.
-  // DEPRECATED
-  // TODO(cco3): Remove when we no longer rely on this.
-  std::unique_ptr<base::ListValue> GetMetadata();
-
  private:
-  std::unique_ptr<base::ListValue> dictionary_value_list_;
   std::unique_ptr<physical_web::MetadataList> metadata_list_;
   bool accessed_once_;
 
@@ -65,7 +54,6 @@ class PhysicalWebDataSourceAndroid
   void StartDiscovery(bool network_request_enabled) override;
   void StopDiscovery() override;
 
-  std::unique_ptr<base::ListValue> GetMetadata() override;
   std::unique_ptr<physical_web::MetadataList> GetMetadataList() override;
   bool HasUnresolvedDiscoveries() override;
 

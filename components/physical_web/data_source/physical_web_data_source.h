@@ -12,24 +12,9 @@
 #include "base/time/time.h"
 #include "url/gurl.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace physical_web {
 
 class PhysicalWebListener;
-
-// Dictionary keys for reading Physical Web URL metadata.
-// TODO(cco3): Remove these when we are no longer dependent.
-extern const char kDescriptionKey[];
-extern const char kDistanceEstimateKey[];
-extern const char kGroupIdKey[];
-extern const char kIconUrlKey[];
-extern const char kResolvedUrlKey[];
-extern const char kScanTimestampKey[];
-extern const char kScannedUrlKey[];
-extern const char kTitleKey[];
 
 // Metadata struct for associating data with Physical Web URLs.
 struct Metadata {
@@ -95,14 +80,6 @@ class PhysicalWebDataSource {
   // empty. The method can be called at any time to receive the current metadata
   // list.
   virtual std::unique_ptr<MetadataList> GetMetadataList() = 0;
-
-  // Returns a list of resolved URLs and associated page metadata. If network
-  // requests are disabled or if discovery is not active, the list will be
-  // empty. The method can be called at any time to receive the current metadata
-  // list.
-  // DEPRECATED
-  // TODO(cco3): Remove this when we are no longer dependent on it.
-  virtual std::unique_ptr<base::ListValue> GetMetadata() = 0;
 
   // Returns boolean |true| if network requests are disabled and there are one
   // or more discovered URLs that have not been sent to the resolution service.

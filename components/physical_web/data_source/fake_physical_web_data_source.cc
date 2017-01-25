@@ -5,12 +5,8 @@
 #include "components/physical_web/data_source/fake_physical_web_data_source.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/values.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
 #include "url/gurl.h"
-
-using base::ListValue;
-using base::DictionaryValue;
 
 namespace physical_web {
 
@@ -58,8 +54,7 @@ std::unique_ptr<MetadataList> CreateDummyPhysicalWebPages(
   return list;
 }
 
-FakePhysicalWebDataSource::FakePhysicalWebDataSource()
-    : metadata_(base::MakeUnique<base::ListValue>()) {}
+FakePhysicalWebDataSource::FakePhysicalWebDataSource() {}
 
 FakePhysicalWebDataSource::~FakePhysicalWebDataSource() = default;
 
@@ -69,10 +64,6 @@ void FakePhysicalWebDataSource::StartDiscovery(bool network_request_enabled) {
 
 void FakePhysicalWebDataSource::StopDiscovery() {
   // Ignored.
-}
-
-std::unique_ptr<base::ListValue> FakePhysicalWebDataSource::GetMetadata() {
-  return metadata_->CreateDeepCopy();
 }
 
 std::unique_ptr<MetadataList> FakePhysicalWebDataSource::GetMetadataList() {
@@ -91,11 +82,6 @@ void FakePhysicalWebDataSource::RegisterListener(
 void FakePhysicalWebDataSource::UnregisterListener(
     PhysicalWebListener* physical_web_listener) {
   observer_list_.RemoveObserver(physical_web_listener);
-}
-
-void FakePhysicalWebDataSource::SetMetadata(
-    std::unique_ptr<ListValue> metadata) {
-  metadata_ = std::move(metadata);
 }
 
 void FakePhysicalWebDataSource::SetMetadataList(

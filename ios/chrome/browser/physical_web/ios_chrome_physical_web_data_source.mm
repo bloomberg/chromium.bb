@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/physical_web/ios_chrome_physical_web_data_source.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/values.h"
 #import "ios/chrome/browser/physical_web/physical_web_initial_state_recorder.h"
 #import "ios/chrome/common/physical_web/physical_web_scanner.h"
 
@@ -43,13 +42,6 @@ void IOSChromePhysicalWebDataSource::StartDiscovery(
 void IOSChromePhysicalWebDataSource::StopDiscovery() {
   [scanner_ stop];
   scanner_.reset();
-}
-
-std::unique_ptr<base::ListValue> IOSChromePhysicalWebDataSource::GetMetadata() {
-  if (!scanner_) {
-    return base::MakeUnique<base::ListValue>();
-  }
-  return [scanner_ metadata];
 }
 
 std::unique_ptr<physical_web::MetadataList>
