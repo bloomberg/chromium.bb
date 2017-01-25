@@ -17,6 +17,7 @@
 #include "content/public/browser/download_item.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_features.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -325,7 +326,20 @@ void DownloadDangerPromptViews::RunDone(Action action) {
 
 }  // namespace
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+// static
 DownloadDangerPrompt* DownloadDangerPrompt::Create(
+    content::DownloadItem* item,
+    content::WebContents* web_contents,
+    bool show_context,
+    const OnDone& done) {
+  return DownloadDangerPrompt::CreateDownloadDangerPromptViews(
+      item, web_contents, show_context, done);
+}
+#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
+
+// static
+DownloadDangerPrompt* DownloadDangerPrompt::CreateDownloadDangerPromptViews(
     content::DownloadItem* item,
     content::WebContents* web_contents,
     bool show_context,

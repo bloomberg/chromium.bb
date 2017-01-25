@@ -18,6 +18,7 @@
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "url/gurl.h"
 
 using extensions::ExperienceSamplingEvent;
@@ -256,6 +257,11 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::WebContents* web_contents,
     bool show_context,
     const OnDone& done) {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    return DownloadDangerPrompt::CreateDownloadDangerPromptViews(
+        item, web_contents, show_context, done);
+  }
+
   DownloadDangerPromptImpl* prompt =
       new DownloadDangerPromptImpl(item, web_contents, show_context, done);
   // |prompt| will be deleted when the dialog is done.
