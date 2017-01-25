@@ -3,10 +3,9 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/util.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 
@@ -30,59 +29,34 @@
         flex: 1;
       }
 
-      paper-icon-button {
+      #moreActions {
         --iron-icon-height: 20px;
         --iron-icon-width: 20px;
-        --paper-icon-button: {
-          height: 32px;
-          padding: 6px;
-          width: 32px;
-        };
-      }
-
-      #more {
-        --paper-menu-button: {
-          padding: 6px;
-        };
-      }
-
-      paper-menu {
-        --paper-menu-selected-item: {
-          font-weight: normal;
-        };
-      }
-
-      paper-item {
-        -webkit-user-select: none;
-        cursor: pointer;
-        font: inherit;
-        min-height: 40px;
-        /* TODO(michaelpg): fix this for everybody ever.
-         * https://github.com/PolymerElements/paper-menu-button/issues/56 */
-        white-space: nowrap;
+        height: 32px;
+        padding: 6px;
+        width: 32px;
       }
     </style>
     <cr-toolbar id="toolbar" page-name="$i18n{title}"
         search-prompt="$i18n{search}" clear-label="$i18n{clearSearch}"
         spinner-active="{{spinnerActive}}" on-search-changed="onSearchChanged_">
-      <div class="more-actions">
-        <paper-menu-button id="more" horizontal-align="right"
-            allow-outside-scroll>
-          <paper-icon-button icon="cr:more-vert" title="$i18n{moreActions}"
-               class="dropdown-trigger"></paper-icon-button>
-          <paper-menu class="dropdown-content">
-            <paper-item class="clear-all" on-tap="onClearAllTap_"
-                role="menuitem" on-blur="onItemBlur_">
-              $i18n{clearAll}
-            </paper-item>
-            <paper-item on-tap="onOpenDownloadsFolderTap_"
-                role="menuitem" on-blur="onItemBlur_">
-              $i18n{openDownloadsFolder}
-            </paper-item>
-          </paper-menu>
-        </paper-menu-button>
-      </div>
+      <button is="paper-icon-button-light" class="more-actions" id="moreActions"
+          title="$i18n{moreActions}" class="dropdown-trigger"
+          on-tap="onMoreActionsTap_">
+        <iron-icon icon="cr:more-vert"></iron-icon>
+      </button>
     </cr-toolbar>
+    <!-- TODO(dbeam): should cr-action-menu be role="menu" by default? -->
+    <dialog is="cr-action-menu" id="moreActionsMenu" role="menu">
+      <button class="dropdown-item clear-all" on-tap="onClearAllTap_"
+          role="menuitem">
+        $i18n{clearAll}
+      </div>
+      <button class="dropdown-item" on-tap="onOpenDownloadsFolderTap_"
+          role="menuitem">
+        $i18n{openDownloadsFolder}
+      </button>
+    </dialog>
   </template>
   <script src="chrome://downloads/toolbar.js"></script>
 </dom-module>

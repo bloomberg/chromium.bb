@@ -26,11 +26,11 @@ suite('toolbar tests', function() {
   });
 
   test('resize closes more options menu', function() {
-    MockInteractions.tap(toolbar.$$('paper-icon-button'));
-    assertTrue(toolbar.$.more.opened);
+    MockInteractions.tap(toolbar.$.moreActions);
+    assertTrue(toolbar.$.moreActionsMenu.open);
 
     window.dispatchEvent(new CustomEvent('resize'));
-    assertFalse(toolbar.$.more.opened);
+    assertFalse(toolbar.$.moreActionsMenu.open);
   });
 
   test('search starts spinner', function() {
