@@ -356,6 +356,8 @@ bool MediaFoundationVideoEncodeAccelerator::CreateHardwareEncoderMFT() {
   DVLOG(3) << "HW encoder(s) found: " << count;
   hr = encoder_.CreateInstance(CLSIDs[0]);
   RETURN_ON_HR_FAILURE(hr, "Couldn't activate hardware encoder", false);
+  RETURN_ON_FAILURE((encoder_.get() != nullptr),
+                    "No HW encoder instance created", false);
   return true;
 }
 
@@ -438,8 +440,10 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples() {
 
 bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  RETURN_ON_FAILURE((encoder_.get() != nullptr),
+                    "No HW encoder instance created", false);
 
-  HRESULT hr = encoder_.QueryInterface(IID_ICodecAPI, codec_api_.ReceiveVoid());
+  HRESULT hr = encoder_.QueryInterface(codec_api_.Receive());
   RETURN_ON_HR_FAILURE(hr, "Couldn't get ICodecAPI", false);
   VARIANT var;
   var.vt = VT_UI4;
