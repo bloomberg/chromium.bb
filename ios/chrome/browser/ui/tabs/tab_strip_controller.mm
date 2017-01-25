@@ -286,6 +286,11 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 // Takes into account whether or not the mode toggle button is showing.
 - (CGFloat)tabStripVisibleSpace;
 
+// Shift all of the tab strip subviews by an amount equal to the content offset
+// change, which effectively places the subviews back where they were before the
+// change, in terms of screen coordinates.
+- (void)shiftTabStripSubviews:(CGPoint)oldContentOffset;
+
 // Updates the scroll view's content size based on the current set of tabs and
 // closing tabs.  After updating the content size, repositions views so they
 // they will appear stationary on screen.
@@ -312,6 +317,11 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Returns the minimum tab view width depending on the current layout mode.
 - (CGFloat)minTabWidth;
+
+// Automatically scroll the tab strip view to keep the newly inserted tab view
+// visible.
+// This method must be called with a valid |tabIndex|.
+- (void)autoScrollForNewTab:(NSUInteger)tabIndex;
 
 // Updates the content offset of the tab strip view in order to keep the
 // selected tab view visible.
@@ -1169,6 +1179,16 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [self updateScrollViewFrameForToggleButton];
 }
 
+- (void)shiftTabStripSubviews:(CGPoint)oldContentOffset {
+  CGFloat dx = [_tabStripView contentOffset].x - oldContentOffset.x;
+  for (UIView* view in [_tabStripView subviews]) {
+    CGRect frame = [view frame];
+    frame.origin.x += dx;
+    [view setFrame:frame];
+    _targetFrames.AddFrame(view, frame);
+  }
+}
+
 - (void)updateContentSizeAndRepositionViews {
   // TODO(rohitrao): The following lines are duplicated in
   // layoutTabStripSubviews.  Find a way to consolidate this logic.
@@ -1197,19 +1217,10 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   // will never change if the content size is growing.)
   //
   // To handle this without making views appear to jump, shift all of the
-  // subviews by an amount equal to the size change.  This effectively places
-  // the subviews back where they were before the change, in terms of screen
-  // coordinates.
+  // subviews by an amount equal to the size change.
   CGPoint oldOffset = [_tabStripView contentOffset];
   [_tabStripView setContentSize:contentSize];
-
-  CGFloat dx = [_tabStripView contentOffset].x - oldOffset.x;
-  for (UIView* view in [_tabStripView subviews]) {
-    CGRect frame = [view frame];
-    frame.origin.x += dx;
-    [view setFrame:frame];
-    _targetFrames.AddFrame(view, frame);
-  }
+  [self shiftTabStripSubviews:oldOffset];
 }
 
 - (CGRect)scrollViewFrameForTab:(TabView*)view {
@@ -1252,36 +1263,58 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   return IsCompactTablet() ? kMinTabWidthForCompactLayout : kMinTabWidth;
 }
 
+- (void)autoScrollForNewTab:(NSUInteger)tabIndex {
+  DCHECK_NE(NSNotFound, static_cast<NSInteger>(tabIndex));
+
+  // The following code calculates the amount of scroll needed to make
+  // |tabIndex| visible in the "virtual" coordinate system, where root is x=0
+  // and it contains all the tabs laid out as if the tabstrip was infinitely
+  // long. The amount of scroll is calculated as a desired length that it is
+  // just large enough to contain all the tabs to the left of |tabIndex|, with
+  // the standard overlap.
+  if (tabIndex == [_tabArray count] - 1) {
+    const CGFloat tabStripAvailableSpace =
+        _tabStripView.frame.size.width - _tabStripView.contentInset.right;
+    CGPoint oldOffset = [_tabStripView contentOffset];
+    if (_tabStripView.contentSize.width > tabStripAvailableSpace) {
+      CGFloat scrollToPoint =
+          _tabStripView.contentSize.width - tabStripAvailableSpace;
+      [_tabStripView setContentOffset:CGPointMake(scrollToPoint, 0)];
+    }
+
+    // To handle content offset change without making views appear to jump,
+    // shift all of the subviews by an amount equal to the size change.
+    [self shiftTabStripSubviews:oldOffset];
+    return;
+  }
+
+  NSUInteger numNonClosingTabsToLeft = 0;
+  NSUInteger i = 0;
+  for (TabView* tab in _tabArray.get()) {
+    if ([_closingTabs containsObject:tab])
+      ++i;
+
+    if (i == tabIndex)
+      break;
+
+    ++numNonClosingTabsToLeft;
+    ++i;
+  }
+
+  const CGFloat tabHeight = CGRectGetHeight([_tabStripView bounds]);
+  CGRect scrollRect =
+      CGRectMake(_currentTabWidth * numNonClosingTabsToLeft -
+                     ([self tabOverlap] * (numNonClosingTabsToLeft - 1)),
+                 0, _currentTabWidth, tabHeight);
+  [_tabStripView scrollRectToVisible:scrollRect animated:YES];
+}
+
 - (void)updateContentOffsetForTabIndex:(NSUInteger)tabIndex
                               isNewTab:(BOOL)isNewTab {
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(tabIndex));
 
   if (experimental_flags::IsTabStripAutoScrollNewTabsEnabled() && isNewTab) {
-    // The following code calculates the amount of scroll needed to make
-    // |tabIndex| visible in the "virtual" coordinate system, where root is x=0
-    // and it contains all the tabs laid out as if the tabstrip was infinitely
-    // long. The amount of scroll is calculated as a desired length that it is
-    // just large enough to contain all the tabs to the left of |tabIndex|, with
-    // the standard overlap.
-    NSUInteger numNonClosingTabsToLeft = 0;
-    NSUInteger i = 0;
-    for (TabView* tab in _tabArray.get()) {
-      if ([_closingTabs containsObject:tab])
-        ++i;
-
-      if (i == tabIndex)
-        break;
-
-      ++numNonClosingTabsToLeft;
-      ++i;
-    }
-
-    const CGFloat tabHeight = CGRectGetHeight([_tabStripView bounds]);
-    CGRect scrollRect =
-        CGRectMake(_currentTabWidth * numNonClosingTabsToLeft -
-                       ([self tabOverlap] * (numNonClosingTabsToLeft - 1)),
-                   0, _currentTabWidth, tabHeight);
-    [_tabStripView scrollRectToVisible:scrollRect animated:YES];
+    [self autoScrollForNewTab:tabIndex];
     return;
   }
 
