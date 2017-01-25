@@ -2477,6 +2477,21 @@
             ]
         }
     ],
+    "UseConsolidatedStartupFlow": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseConsolidatedStartupFlow"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8CacheStrategiesForCacheStorage": [
         {
             "platforms": [
