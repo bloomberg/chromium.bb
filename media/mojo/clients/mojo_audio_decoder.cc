@@ -48,6 +48,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   // This could happen during reinitialization.
   if (remote_decoder_.encountered_error()) {
+    DVLOG(1) << __func__ << ": Connection error happened.";
     task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
     return;
   }
@@ -58,6 +59,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
                    : CdmContext::kInvalidCdmId;
 
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
+    DVLOG(1) << __func__ << ": Invalid CdmContext.";
     task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
     return;
   }
