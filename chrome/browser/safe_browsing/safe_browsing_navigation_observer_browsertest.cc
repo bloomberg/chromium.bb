@@ -184,8 +184,8 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
         tab_strip->GetActiveWebContents();
     ASSERT_TRUE(content::WaitForLoadStop(current_web_contents));
     content::TestNavigationObserver navigation_observer(
-      current_web_contents,
-      number_of_navigations);
+        current_web_contents, number_of_navigations,
+        content::MessageLoopRunner::QuitMode::DEFERRED);
     navigation_observer.StartWatchingNewWebContents();
     // Execute test.
     std::string script = base::StringPrintf("clickLink('%s');", element_id);

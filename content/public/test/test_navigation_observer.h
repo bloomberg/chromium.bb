@@ -27,9 +27,13 @@ class TestNavigationObserver {
   // Create and register a new TestNavigationObserver against the
   // |web_contents|.
   TestNavigationObserver(WebContents* web_contents,
-                         int number_of_navigations);
+                         int number_of_navigations,
+                         MessageLoopRunner::QuitMode quit_mode =
+                             MessageLoopRunner::QuitMode::IMMEDIATE);
   // Like above but waits for one navigation.
-  explicit TestNavigationObserver(WebContents* web_contents);
+  explicit TestNavigationObserver(WebContents* web_contents,
+                                  MessageLoopRunner::QuitMode quit_mode =
+                                      MessageLoopRunner::QuitMode::IMMEDIATE);
 
   virtual ~TestNavigationObserver();
 

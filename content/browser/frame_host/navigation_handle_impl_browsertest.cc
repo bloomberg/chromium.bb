@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
@@ -206,8 +207,9 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
         will_start_called_(0),
         will_redirect_called_(0),
         will_process_called_(0),
-        navigation_throttle_(nullptr) {}
-  ~TestNavigationThrottleInstaller() override{};
+        navigation_throttle_(nullptr),
+        weak_factory_(this) {}
+  ~TestNavigationThrottleInstaller() override {}
 
   TestNavigationThrottle* navigation_throttle() { return navigation_throttle_; }
 
@@ -244,11 +246,11 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
     std::unique_ptr<NavigationThrottle> throttle(new TestNavigationThrottle(
         handle, will_start_result_, will_redirect_result_, will_process_result_,
         base::Bind(&TestNavigationThrottleInstaller::DidCallWillStartRequest,
-                   base::Unretained(this)),
+                   weak_factory_.GetWeakPtr()),
         base::Bind(&TestNavigationThrottleInstaller::DidCallWillRedirectRequest,
-                   base::Unretained(this)),
+                   weak_factory_.GetWeakPtr()),
         base::Bind(&TestNavigationThrottleInstaller::DidCallWillProcessResponse,
-                   base::Unretained(this))));
+                   weak_factory_.GetWeakPtr())));
     navigation_throttle_ = static_cast<TestNavigationThrottle*>(throttle.get());
     handle->RegisterThrottleForTesting(std::move(throttle));
   }
@@ -289,6 +291,10 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
   scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_redirect_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_process_loop_runner_;
+
+  // The throttle installer can be deleted before all tasks posted by its
+  // throttles are run, so it must be referenced via weak pointers.
+  base::WeakPtrFactory<TestNavigationThrottleInstaller> weak_factory_;
 };
 
 // Records all navigation start URLs from the WebContents.

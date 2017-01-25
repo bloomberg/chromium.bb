@@ -79,32 +79,23 @@ class TestNavigationObserver::TestWebContentsObserver
 
 TestNavigationObserver::TestNavigationObserver(
     WebContents* web_contents,
-    int number_of_navigations)
+    int number_of_navigations,
+    MessageLoopRunner::QuitMode quit_mode)
     : navigation_started_(false),
       navigations_completed_(0),
       number_of_navigations_(number_of_navigations),
-      message_loop_runner_(new MessageLoopRunner),
+      message_loop_runner_(new MessageLoopRunner(quit_mode)),
       web_contents_created_callback_(
-          base::Bind(
-              &TestNavigationObserver::OnWebContentsCreated,
-              base::Unretained(this))) {
+          base::Bind(&TestNavigationObserver::OnWebContentsCreated,
+                     base::Unretained(this))) {
   if (web_contents)
     RegisterAsObserver(web_contents);
 }
 
 TestNavigationObserver::TestNavigationObserver(
-    WebContents* web_contents)
-    : navigation_started_(false),
-      navigations_completed_(0),
-      number_of_navigations_(1),
-      message_loop_runner_(new MessageLoopRunner),
-      web_contents_created_callback_(
-          base::Bind(
-              &TestNavigationObserver::OnWebContentsCreated,
-              base::Unretained(this))) {
-  if (web_contents)
-    RegisterAsObserver(web_contents);
-}
+    WebContents* web_contents,
+    MessageLoopRunner::QuitMode quit_mode)
+    : TestNavigationObserver(web_contents, 1, quit_mode) {}
 
 TestNavigationObserver::~TestNavigationObserver() {
   StopWatchingNewWebContents();
