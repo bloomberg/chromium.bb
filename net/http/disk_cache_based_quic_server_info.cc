@@ -289,6 +289,7 @@ int DiskCacheBasedQuicServerInfo::DoReadComplete(int rv) {
   else if (rv < 0)
     RecordQuicServerInfoFailure(READ_FAILURE);
 
+  read_buffer_ = nullptr;
   state_ = WAIT_FOR_DATA_READY_DONE;
   return OK;
 }
@@ -296,6 +297,7 @@ int DiskCacheBasedQuicServerInfo::DoReadComplete(int rv) {
 int DiskCacheBasedQuicServerInfo::DoWriteComplete(int rv) {
   if (rv < 0)
     RecordQuicServerInfoFailure(WRITE_FAILURE);
+  write_buffer_ = nullptr;
   state_ = SET_DONE;
   return OK;
 }
