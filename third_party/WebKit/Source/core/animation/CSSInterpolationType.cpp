@@ -87,12 +87,6 @@ class InheritedCustomPropertyChecker
     if (!inheritedValue) {
       inheritedValue = m_initialValue.get();
     }
-    if (inheritedValue == m_inheritedValue.get()) {
-      return true;
-    }
-    if (!inheritedValue || !m_inheritedValue) {
-      return false;
-    }
     return m_inheritedValue->equals(*inheritedValue);
   }
 
@@ -213,23 +207,20 @@ CSSInterpolationType::maybeConvertCustomPropertyDeclarationInternal(
       return nullptr;
     }
 
-    const CSSValue* value = nullptr;
     if (declaration.isInitial(isInheritedProperty)) {
-      value = registration->initial();
-    } else {
-      const CSSValue* value =
-          state.parentStyle()->getRegisteredVariable(name, isInheritedProperty);
-      if (!value) {
-        value = registration->initial();
-      }
-      conversionCheckers.push_back(InheritedCustomPropertyChecker::create(
-          name, isInheritedProperty, value, registration->initial()));
-    }
-    if (!value) {
-      return nullptr;
+      return maybeConvertValue(*registration->initial(), state,
+                               conversionCheckers);
     }
 
-    return maybeConvertValue(*value, state, conversionCheckers);
+    DCHECK(declaration.isInherit(isInheritedProperty));
+    const CSSValue* inheritedValue =
+        state.parentStyle()->getRegisteredVariable(name, isInheritedProperty);
+    if (!inheritedValue) {
+      inheritedValue = registration->initial();
+    }
+    conversionCheckers.push_back(InheritedCustomPropertyChecker::create(
+        name, isInheritedProperty, inheritedValue, registration->initial()));
+    return maybeConvertValue(*inheritedValue, state, conversionCheckers);
   }
 
   if (declaration.value()->needsVariableResolution()) {
@@ -271,9 +262,6 @@ InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
       state.style()->getRegisteredVariable(name, registration->inherits());
   if (!underlyingValue) {
     underlyingValue = registration->initial();
-  }
-  if (!underlyingValue) {
-    return nullptr;
   }
   // TODO(alancutter): Remove the need for passing in conversion checkers.
   ConversionCheckers dummyConversionCheckers;
