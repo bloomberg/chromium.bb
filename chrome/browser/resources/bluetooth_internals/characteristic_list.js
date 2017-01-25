@@ -45,14 +45,22 @@ cr.define('characteristic_list', function() {
    * CharacteristicInfo object.
    * @constructor
    * @param {!interfaces.BluetoothDevice.CharacteristicInfo} characteristicInfo
+   * @param {string} deviceAddress
+   * @param {string} serviceId
    */
-  function CharacteristicListItem(characteristicInfo) {
+  function CharacteristicListItem(
+      characteristicInfo, deviceAddress, serviceId) {
     var listItem = new ExpandableListItem();
     listItem.__proto__ = CharacteristicListItem.prototype;
 
+    /** @type {!interfaces.BluetoothDevice.CharacteristicInfo} */
     listItem.info = characteristicInfo;
-    listItem.decorate();
+    /** @private {string} */
+    listItem.deviceAddress_ = deviceAddress;
+    /** @private {string} */
+    listItem.serviceId_ = serviceId;
 
+    listItem.decorate();
     return listItem;
   }
 
@@ -103,6 +111,9 @@ cr.define('characteristic_list', function() {
             Property.WRITE_ENCRYPTED_AUTHENTICATED) > 0,
       });
 
+      /** @private {!descriptor_list.DescriptorList} */
+      this.descriptorList_ = new descriptor_list.DescriptorList();
+
       // Create content for display in brief content container.
       var characteristicHeaderText = document.createElement('div');
       characteristicHeaderText.textContent = 'Characteristic:';
@@ -130,14 +141,25 @@ cr.define('characteristic_list', function() {
       propertiesDiv.classList.add('flex');
       propertiesDiv.appendChild(this.propertiesFieldSet_);
 
+      var descriptorsHeader = document.createElement('h4');
+      descriptorsHeader.textContent = 'Descriptors';
+
       var infoDiv = document.createElement('div');
       infoDiv.classList.add('info-container');
       infoDiv.appendChild(characteristicInfoHeader);
       infoDiv.appendChild(characteristicDiv);
       infoDiv.appendChild(propertiesHeader);
       infoDiv.appendChild(propertiesDiv);
+      infoDiv.appendChild(descriptorsHeader);
+      infoDiv.appendChild(this.descriptorList_);
 
       this.expandedContent_.appendChild(infoDiv);
+    },
+
+    /** @override */
+    onExpandInternal: function(expanded) {
+      this.descriptorList_.load(
+          this.deviceAddress_, this.serviceId_, this.info.id);
     },
   };
 
@@ -163,7 +185,8 @@ cr.define('characteristic_list', function() {
 
     /** @override */
     createItem: function(data) {
-      return new CharacteristicListItem(data);
+      return new CharacteristicListItem(
+          data, this.deviceAddress_, this.serviceId_);
     },
 
     /**
@@ -174,16 +197,18 @@ cr.define('characteristic_list', function() {
      * @param {string} serviceId
      */
     load: function(deviceAddress, serviceId) {
-      if (this.characteristicsRequested_ || !this.isLoading())
+      if (this.characteristicsRequested_ || !this.isSpinnerShowing())
         return;
 
+      this.deviceAddress_ = deviceAddress;
+      this.serviceId_ = serviceId;
       this.characteristicsRequested_ = true;
 
       device_broker.connectToDevice(deviceAddress).then(function(device) {
         return device.getCharacteristics(serviceId);
       }.bind(this)).then(function(response) {
         this.setData(new ArrayDataModel(response.characteristics || []));
-        this.setLoading(false);
+        this.setSpinnerShowing(false);
         this.characteristicsRequested_ = false;
       }.bind(this)).catch(function(error) {
         this.characteristicsRequested_ = false;

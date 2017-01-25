@@ -38,10 +38,12 @@ cr.define('service_list', function() {
     var listItem = new ExpandableListItem();
     listItem.__proto__ = ServiceListItem.prototype;
 
+    /** @type {!interfaces.BluetoothDevice.ServiceInfo} */
     listItem.info = serviceInfo;
+    /** @private {string} */
     listItem.deviceAddress_ = deviceAddress;
-    listItem.decorate();
 
+    listItem.decorate();
     return listItem;
   }
 
@@ -139,7 +141,7 @@ cr.define('service_list', function() {
      * @param {string} deviceAddress
      */
     load: function(deviceAddress) {
-      if (this.servicesRequested_ || !this.isLoading())
+      if (this.servicesRequested_ || !this.isSpinnerShowing())
         return;
 
       this.deviceAddress_ = deviceAddress;
@@ -150,7 +152,7 @@ cr.define('service_list', function() {
             return device.getServices();
           }.bind(this)).then(function(response) {
             this.setData(new ArrayDataModel(response.services));
-            this.setLoading(false);
+            this.setSpinnerShowing(false);
             this.servicesRequested_ = false;
           }.bind(this)).catch(function(error) {
             this.servicesRequested_ = false;

@@ -84,7 +84,7 @@ cr.define('expandable_list', function() {
 
       this.autoExpands = true;
       this.boundUpdateMessage_ = this.updateMessageDisplay_.bind(this);
-      this.setLoading(true);
+      this.setSpinnerShowing(true);
     },
 
     /**
@@ -109,19 +109,19 @@ cr.define('expandable_list', function() {
     },
 
     /**
-     * Sets the loading state of the list. If |loading| is true, the loading
+     * Sets the spinner display state. If |showing| is true, the loading
      * spinner is dispayed.
-     * @param {boolean} loading
+     * @param {boolean} showing
      */
-    setLoading: function(loading) {
-      this.spinner_.hidden = !loading;
+    setSpinnerShowing: function(showing) {
+      this.spinner_.hidden = !showing;
     },
 
     /**
-     * Gets the loading state of the list. Returns true if the list is loading.
+     * Gets the spinner display state. Returns true if the spinner is showing.
      * @return {boolean}
      */
-    isLoading: function() {
+    isSpinnerShowing: function() {
       return !this.spinner_.hidden;
     },
 

@@ -26,6 +26,8 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_JS);
   html_source->AddResourcePath("characteristic_list.js",
                                IDR_BLUETOOTH_INTERNALS_CHARACTERISTIC_LIST_JS);
+  html_source->AddResourcePath("descriptor_list.js",
+                               IDR_BLUETOOTH_INTERNALS_DESCRIPTOR_LIST_JS);
   html_source->AddResourcePath("device_broker.js",
                                IDR_BLUETOOTH_INTERNALS_DEVICE_BROKER_JS);
   html_source->AddResourcePath("device_collection.js",

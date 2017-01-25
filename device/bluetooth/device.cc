@@ -123,6 +123,42 @@ void Device::GetCharacteristics(const std::string& service_id,
   callback.Run(std::move(characteristics));
 }
 
+void Device::GetDescriptors(const std::string& service_id,
+                            const std::string& characteristic_id,
+                            const GetDescriptorsCallback& callback) {
+  device::BluetoothDevice* device = adapter_->GetDevice(GetAddress());
+  if (!device) {
+    callback.Run(base::nullopt);
+    return;
+  }
+
+  device::BluetoothRemoteGattService* service =
+      device->GetGattService(service_id);
+  if (!service) {
+    callback.Run(base::nullopt);
+    return;
+  }
+
+  device::BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(characteristic_id);
+  if (!characteristic) {
+    callback.Run(base::nullopt);
+    return;
+  }
+
+  std::vector<mojom::DescriptorInfoPtr> descriptors;
+
+  for (const auto* descriptor : characteristic->GetDescriptors()) {
+    mojom::DescriptorInfoPtr descriptor_info = mojom::DescriptorInfo::New();
+
+    descriptor_info->id = descriptor->GetIdentifier();
+    descriptor_info->uuid = descriptor->GetUUID();
+    descriptors.push_back(std::move(descriptor_info));
+  }
+
+  callback.Run(std::move(descriptors));
+}
+
 Device::Device(scoped_refptr<device::BluetoothAdapter> adapter,
                std::unique_ptr<device::BluetoothGattConnection> connection)
     : adapter_(std::move(adapter)), connection_(std::move(connection)) {

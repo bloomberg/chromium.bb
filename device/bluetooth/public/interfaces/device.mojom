@@ -58,6 +58,11 @@ struct CharacteristicInfo {
   uint32 properties;
 };
 
+struct DescriptorInfo {
+  string id;
+  UUID uuid;
+};
+
 interface Device {
   // Disconnects and deletes the Device.
   Disconnect();
@@ -75,4 +80,12 @@ interface Device {
   // means that no characteristics were found.
   GetCharacteristics(string service_id) =>
       (array<CharacteristicInfo>? characteristics);
+
+  // Gets the GATT Descriptors of the GATT Characteristic with matching
+  // |characteristic_id| in the GATT Service with matching |service_id|.
+  // If |descriptors| is null, an error occured while attempting to retrieve
+  // the array of descriptors. If |descriptors| is empty, this simply
+  // means that no descriptors were found.
+  GetDescriptors(string service_id, string characteristic_id) =>
+      (array<DescriptorInfo>? descriptors);
 };
