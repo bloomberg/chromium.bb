@@ -253,7 +253,8 @@ class SlaveStatus(object):
                            if stage['status'] in self.ACCEPTED_STATUSES}
 
         # A failed build is not retriable if it passed the critical stage.
-        if config_lib.GetCriticalStageForRetry(self.config) in accepted_stages:
+        if config_lib.GetCriticalStageForRetry(self.config).intersection(
+            accepted_stages):
           continue
 
       builds_to_retry.add(build)

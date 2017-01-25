@@ -141,8 +141,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.PatchObject(build_status.SlaveStatus, '_RetryBuilds',
                      return_value=builds)
 
-  def _GetFullBuildInfoDict(self):
-    return {
+  def _GetFullBuildInfoDict(self, exclude_builds=None):
+    buildbucket_info_dict = {
         'scheduled': BuildbucketInfos.GetScheduledBuild(),
         'started': BuildbucketInfos.GetStartedBuild(),
         'completed_success': BuildbucketInfos.GetSuccessBuild(),
@@ -150,10 +150,34 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         'completed_canceled': BuildbucketInfos.GetCanceledBuild()
     }
 
+    if exclude_builds:
+      for exclude_build in exclude_builds:
+        buildbucket_info_dict.pop(exclude_build, None)
+
+    return buildbucket_info_dict
+
   def _GetCompletedAllSet(self):
     return set(['completed_success',
                 'completed_failure',
                 'completed_canceled'])
+
+  def _GetFullCIDBStatusInfo(self, exclude_builds=None):
+    cidb_status = {
+        'started': build_status.CIDBStatusInfo(
+            1, constants.BUILDER_STATUS_INFLIGHT),
+        'completed_success': build_status.CIDBStatusInfo(
+            2, constants.BUILDER_STATUS_PASSED),
+        'completed_failure': build_status.CIDBStatusInfo(
+            3, constants.BUILDER_STATUS_FAILED),
+        'completed_canceled': build_status.CIDBStatusInfo(
+            4, constants.BUILDER_STATUS_INFLIGHT)
+    }
+
+    if exclude_builds:
+      for exclude_build in exclude_builds:
+        cidb_status.pop(exclude_build, None)
+
+    return cidb_status
 
   def testGetMissingBuilds(self):
     """Tests GetMissingBuilds returns the missing builders."""
@@ -256,17 +280,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
 
   def testGetRetriableBuildsReturnsNone(self):
     """GetRetriableBuilds returns no build to retry."""
-    cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'completed_success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED),
-        'completed_failure': build_status.CIDBStatusInfo(
-            3, constants.BUILDER_STATUS_FAILED),
-        'completed_canceled': build_status.CIDBStatusInfo(
-            4, constants.BUILDER_STATUS_INFLIGHT)
-    }
-    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+    self._Mock_GetSlaveStatusesFromCIDB(
+        self._GetFullCIDBStatusInfo())
 
     self._Mock_GetSlaveStatusesFromBuildbucket(
         self._GetFullBuildInfoDict())
@@ -281,7 +296,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
 
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_PASSED)
-    self.db.InsertBuildStage(4, 'CommitQueueSync',
+    self.db.InsertBuildStage(4, 'MasterSlaveLKGMSync',
                              status=constants.BUILDER_STATUS_PASSED)
     slave_status = self._GetSlaveStatus(
         builders_array=['scheduled', 'started', 'completed_success',
@@ -291,24 +306,18 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         slave_status._GetRetriableBuilds(self._GetCompletedAllSet()),
         set())
 
-  def _MockForGetRetriableBuildsTests(self):
+  def _MockForGetRetriableBuildsTests(self, exclude_cidb_builds=None):
     """Helper method for GetRetriableBuilds tests."""
-    cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'completed_success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED),
-        'completed_failure': build_status.CIDBStatusInfo(
-            3, constants.BUILDER_STATUS_FAILED)
-    }
-    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+    self._Mock_GetSlaveStatusesFromCIDB(
+        self._GetFullCIDBStatusInfo(exclude_builds=exclude_cidb_builds))
 
     self._Mock_GetSlaveStatusesFromBuildbucket(
         self._GetFullBuildInfoDict())
 
   def testGetRetriableBuildsNotRetryOnStartedBuilds(self):
     """test _GetRetriableBuilds for master not retrying started builds."""
-    self._MockForGetRetriableBuildsTests()
+    self._MockForGetRetriableBuildsTests(
+        exclude_cidb_builds=['completed_canceled'])
 
     slave_status = self._GetSlaveStatus(
         builders_array=['scheduled', 'started', 'completed_success',
@@ -323,6 +332,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self._MockForGetRetriableBuildsTests()
 
     self.db.InsertBuildStage(3, 'CommitQueueSync',
+                             status=constants.BUILDER_STATUS_FAILED)
+    self.db.InsertBuildStage(4, 'MasterSlaveLKGMSync',
                              status=constants.BUILDER_STATUS_FAILED)
     slave_status = self._GetSlaveStatus(
         builders_array=['scheduled', 'started', 'completed_success',
@@ -349,6 +360,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self._MockForGetRetriableBuildsTests()
 
     self.db.InsertBuildStage(3, 'CommitQueueSync',
+                             status=constants.BUILDER_STATUS_PLANNED)
+    self.db.InsertBuildStage(4, 'MasterSlaveLKGMSync',
                              status=constants.BUILDER_STATUS_PLANNED)
     slave_status = self._GetSlaveStatus(
         builders_array=['scheduled', 'started', 'completed_success',
@@ -388,17 +401,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
 
   def testGetCompletedBuildsWithBuildbucket(self):
     """Tests GetCompletedBuilds with Buildbucket"""
-    cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'completed_success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED),
-        'completed_failure': build_status.CIDBStatusInfo(
-            3, constants.BUILDER_STATUS_FAILED),
-        'completed_canceled': build_status.CIDBStatusInfo(
-            4, constants.BUILDER_STATUS_INFLIGHT)
-    }
-    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+    self._Mock_GetSlaveStatusesFromCIDB(
+        self._GetFullCIDBStatusInfo())
 
     self._Mock_GetSlaveStatusesFromBuildbucket(
         self._GetFullBuildInfoDict())
@@ -440,15 +444,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
 
   def testGetBuildsToRetryWithBuildbucket(self):
     """Test GetBuildsToRetry with Buildbucket."""
-    cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'completed_success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED),
-        'completed_canceled': build_status.CIDBStatusInfo(
-            3, constants.BUILDER_STATUS_INFLIGHT)
-    }
-    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+    self._Mock_GetSlaveStatusesFromCIDB(
+        self._GetFullCIDBStatusInfo(exclude_builds=['completed_failure']))
 
     self._Mock_GetSlaveStatusesFromBuildbucket(
         self._GetFullBuildInfoDict())

@@ -134,13 +134,19 @@ def RetryAlreadyStartedSlaves(config):
   return config.name == constants.CQ_MASTER
 
 def GetCriticalStageForRetry(config):
-  """Returns the name of the critical stage for retry decisions.
+  """Get critical stage names for retry decisions.
 
   For a slave scheduled by Buildbucket, its master may want to retry it
   if it didn't pass the critical stage.
+
+  Returns:
+    A set of critical stage names (strings) for the config;
+      default to an empty set.
   """
   if config.name == constants.CQ_MASTER:
-    return 'CommitQueueSync'
+    return {'CommitQueueSync', 'MasterSlaveLKGMSync'}
+  else:
+    return set()
 
 def ScheduledByBuildbucket(config):
   """Returns True if this build is scheduled by Buildbucket."""
