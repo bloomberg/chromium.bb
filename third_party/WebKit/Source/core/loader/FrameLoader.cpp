@@ -1514,7 +1514,7 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission,
   // We don't do this if we are submitting a form with method other than "GET",
   // explicitly reloading, currently displaying a frameset, or if the URL does
   // not have a fragment.
-  return (!isFormSubmission || equalIgnoringCase(httpMethod, HTTPNames::GET)) &&
+  return equalIgnoringCase(httpMethod, HTTPNames::GET) &&
          !isReloadLoadType(loadType) && loadType != FrameLoadTypeBackForward &&
          url.hasFragmentIdentifier() &&
          equalIgnoringFragmentIdentifier(m_frame->document()->url(), url)

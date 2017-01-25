@@ -5,14 +5,6 @@
 crbug.com/608372 http/tests/history/back-to-post.html [ Timeout ]
 crbug.com/608372 virtual/mojo-loading/http/tests/history/back-to-post.html [ Timeout ]
 
-# Ensure POST navigations are treated as different document
-# Fixed by https://codereview.chromium.org/2630413002/
-crbug.com/608372 fast/forms/submit-to-url-fragment.html [ Failure ]
-crbug.com/608372 fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
-crbug.com/575210 http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
-crbug.com/575210 virtual/stable/http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
-crbug.com/575210 virtual/mojo-loading/http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
-
 # Ensure same-page back-forward are handled as same-page navigations
 # Fixed by https://codereview.chromium.org/2584513003/
 crbug.com/575210 fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
