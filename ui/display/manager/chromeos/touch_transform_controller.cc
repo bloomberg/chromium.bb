@@ -152,6 +152,13 @@ gfx::Transform GetUncalibratedTransform(const gfx::Transform& tm,
   return ctm;
 }
 
+DisplayIdList GetCurrentDisplayIdList(const DisplayManager* display_manager) {
+  DCHECK(display_manager->num_connected_displays());
+  if (display_manager->num_connected_displays() == 1)
+    return DisplayIdList{display_manager->first_display_id()};
+  return display_manager->GetCurrentDisplayIdList();
+}
+
 }  // namespace
 
 // This is to compute the scale ratio for the TouchEvent's radius. The
@@ -308,65 +315,47 @@ void TouchTransformController::UpdateTouchTransform(
 
 void TouchTransformController::UpdateTouchTransforms() const {
   ui::DeviceDataManager::GetInstance()->ClearTouchDeviceAssociations();
-
-  // Display IDs and ManagedDisplayInfo for mirror or extended mode.
-  int64_t display1_id = kInvalidDisplayId;
-  int64_t display2_id = kInvalidDisplayId;
-  ManagedDisplayInfo display1;
-  ManagedDisplayInfo display2;
-  // Display ID and ManagedDisplayInfo for single display mode.
-  int64_t single_display_id = kInvalidDisplayId;
-  ManagedDisplayInfo single_display;
-
-  if (display_manager_->num_connected_displays() == 0) {
+  if (display_manager_->num_connected_displays() == 0)
     return;
-  } else if (display_manager_->num_connected_displays() == 1 ||
-             display_manager_->IsInUnifiedMode()) {
-    single_display_id = display_manager_->first_display_id();
-    DCHECK(single_display_id != kInvalidDisplayId);
-    single_display = display_manager_->GetDisplayInfo(single_display_id);
-    UpdateTouchRadius(single_display);
-  } else {
-    DisplayIdList list = display_manager_->GetCurrentDisplayIdList();
-    display1_id = list[0];
-    display2_id = list[1];
-    DCHECK(display1_id != kInvalidDisplayId &&
-           display2_id != kInvalidDisplayId);
-    display1 = display_manager_->GetDisplayInfo(display1_id);
-    display2 = display_manager_->GetDisplayInfo(display2_id);
-    UpdateTouchRadius(display1);
-    UpdateTouchRadius(display2);
+
+  DisplayIdList display_id_list = GetCurrentDisplayIdList(display_manager_);
+  DCHECK(display_id_list.size());
+
+  DisplayInfoList display_info_list;
+
+  for (int64_t display_id : display_id_list) {
+    DCHECK(display_id != kInvalidDisplayId);
+    display_info_list.push_back(display_manager_->GetDisplayInfo(display_id));
+    UpdateTouchRadius(display_info_list.back());
   }
 
   if (display_manager_->IsInMirrorMode()) {
-    int64_t primary_display_id = Screen::GetScreen()->GetPrimaryDisplay().id();
-    if (display_manager_->SoftwareMirroringEnabled()) {
-      // In extended but software mirroring mode, there is a WindowTreeHost for
-      // each display, but all touches are forwarded to the primary root
+    std::size_t primary_display_id_index =
+        std::distance(display_id_list.begin(),
+                      std::find(display_id_list.begin(), display_id_list.end(),
+                                Screen::GetScreen()->GetPrimaryDisplay().id()));
+
+    for (std::size_t index = 0; index < display_id_list.size(); index++) {
+      // In extended but software mirroring mode, there is a WindowTreeHost
+      // for each display, but all touches are forwarded to the primary root
       // window's WindowTreeHost.
-      ManagedDisplayInfo target_display =
-          primary_display_id == display1_id ? display1 : display2;
-      UpdateTouchTransform(target_display.id(), display1, target_display);
-      UpdateTouchTransform(target_display.id(), display2, target_display);
-    } else {
-      // In mirror mode, there is just one WindowTreeHost and two displays. Make
-      // the WindowTreeHost accept touch events from both displays.
-      UpdateTouchTransform(primary_display_id, display1, display1);
-      UpdateTouchTransform(primary_display_id, display2, display2);
+      // In mirror mode, there is just one WindowTreeHost and two displays.
+      // Make the WindowTreeHost accept touch events from both displays.
+      std::size_t touch_display_index =
+          display_manager_->SoftwareMirroringEnabled()
+              ? primary_display_id_index
+              : index;
+      UpdateTouchTransform(display_id_list[primary_display_id_index],
+                           display_info_list[index],
+                           display_info_list[touch_display_index]);
     }
     return;
   }
 
-  if (display_manager_->num_connected_displays() > 1) {
-    // In actual extended mode, each display is associated with one
-    // WindowTreeHost.
-    UpdateTouchTransform(display1_id, display1, display1);
-    UpdateTouchTransform(display2_id, display2, display2);
-    return;
+  for (std::size_t index = 0; index < display_id_list.size(); index++) {
+    UpdateTouchTransform(display_id_list[index], display_info_list[index],
+                         display_info_list[index]);
   }
-
-  // Single display mode. The WindowTreeHost has one associated display id.
-  UpdateTouchTransform(single_display_id, single_display, single_display);
 }
 
 void TouchTransformController::SetForCalibration(bool is_calibrating) {
