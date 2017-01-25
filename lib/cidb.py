@@ -204,8 +204,12 @@ class SchemaVersionedMySQLConnection(object):
     # but we do not know for sure that sqlalchemy has been successfully imported
     # until we enter this method (i.e. this class cannot be module-level).
     class StrictModeListener(sqlalchemy.interfaces.PoolListener):
-      """This listener ensures that STRICT_ALL_TABLES for all connections."""
+      """Listener to set up a connection with STRICT_ALL_TABLES."""
+      def __init__(self):
+        pass
+
       def connect(self, dbapi_con, *_args, **_kwargs):
+        """This listener ensures that STRICT_ALL_TABLES for all connections."""
         cur = dbapi_con.cursor()
         cur.execute("SET SESSION sql_mode='STRICT_ALL_TABLES'")
         cur.close()
