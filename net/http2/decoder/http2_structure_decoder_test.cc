@@ -44,14 +44,6 @@ namespace {
 const bool kMayReturnZeroOnFirst = false;
 
 template <class S>
-string SerializeStructure(const S& s) {
-  Http2FrameBuilder fb;
-  fb.Append(s);
-  EXPECT_EQ(S::EncodedSize(), fb.size());
-  return fb.buffer();
-}
-
-template <class S>
 class Http2StructureDecoderTest : public RandomDecoderTest {
  protected:
   typedef S Structure;
