@@ -127,6 +127,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // Called when the animator is destroyed.
   void OnAnimatorDestroyed();
 
+  // Sets |animation_metrics_reporter_| and passes it to all |elements_|.
+  void SetAnimationMetricsReporter(AnimationMetricsReporter* reporter);
+
   // The last_progressed_fraction of the element most recently progressed by
   // by this sequence. Returns 0.0 if no elements have been progressed.
   double last_progressed_fraction() const { return last_progressed_fraction_; }
@@ -190,6 +193,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // Tracks the last_progressed_fraction() of the most recently progressed
   // element.
   double last_progressed_fraction_;
+
+  // Used to tag animation elements to obtain metrics of animation performance.
+  AnimationMetricsReporter* animation_metrics_reporter_;
 
   base::WeakPtrFactory<LayerAnimationSequence> weak_ptr_factory_;
 

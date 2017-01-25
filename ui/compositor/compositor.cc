@@ -80,6 +80,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       context_factory_private_(context_factory_private),
       root_layer_(NULL),
       widget_(gfx::kNullAcceleratedWidget),
+      committed_frame_number_(0),
       widget_valid_(false),
       compositor_frame_sink_requested_(false),
       frame_sink_id_(frame_sink_id),
@@ -106,7 +107,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   settings.layers_always_allowed_lcd_text = true;
   // Use occlusion to allow more overlapping windows to take less memory.
   settings.use_occlusion_for_tile_prioritization = true;
-  settings.renderer_settings.refresh_rate =
+  refresh_rate_ = settings.renderer_settings.refresh_rate =
       context_factory_->DoesCreateTestContexts() ? kTestRefreshRate
                                                  : kDefaultRefreshRate;
   settings.main_frame_before_activation_enabled = false;
@@ -389,6 +390,9 @@ bool Compositor::GetScrollOffsetForLayer(int layer_id,
 
 void Compositor::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
+  DCHECK_GT(interval.InMillisecondsF(), 0);
+  refresh_rate_ =
+      base::Time::kMillisecondsPerSecond / interval.InMillisecondsF();
   if (context_factory_private_)
     context_factory_private_->SetAuthoritativeVSyncInterval(this, interval);
   vsync_manager_->SetAuthoritativeVSyncInterval(interval);
@@ -400,6 +404,9 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = cc::BeginFrameArgs::DefaultInterval();
   }
+  DCHECK_GT(interval.InMillisecondsF(), 0);
+  refresh_rate_ =
+      base::Time::kMillisecondsPerSecond / interval.InMillisecondsF();
 
   if (context_factory_private_) {
     context_factory_private_->SetDisplayVSyncParameters(this, timebase,
@@ -506,6 +513,7 @@ void Compositor::DidCommit() {
 }
 
 void Compositor::DidReceiveCompositorFrameAck() {
+  ++committed_frame_number_;
   for (auto& observer : observer_list_)
     observer.OnCompositingEnded(this);
 }

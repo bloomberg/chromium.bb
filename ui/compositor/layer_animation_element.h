@@ -25,6 +25,12 @@ namespace ui {
 class InterpolatedTransform;
 class LayerAnimationDelegate;
 
+class AnimationMetricsReporter {
+ public:
+  virtual ~AnimationMetricsReporter() {}
+  virtual void Report(int value) = 0;
+};
+
 // LayerAnimationElements represent one segment of an animation between two
 // keyframes. They know how to update a LayerAnimationDelegate given a value
 // between 0 and 1 (0 for initial, and 1 for final).
@@ -182,6 +188,10 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   gfx::Tween::Type tween_type() const { return tween_type_; }
   void set_tween_type(gfx::Tween::Type tween_type) { tween_type_ = tween_type; }
 
+  void set_animation_metrics_reporter(AnimationMetricsReporter* reporter) {
+    animation_metrics_reporter_ = reporter;
+  }
+
   // Each LayerAnimationElement has a unique animation_id. Elements belonging
   // to sequences that are supposed to start together have the same
   // animation_group_id.
@@ -227,6 +237,11 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   int animation_group_id_;
 
   double last_progressed_fraction_;
+
+  // To obtain metrics of animation performance tag animation elements and
+  // keep track of sequential compositor frame number.
+  AnimationMetricsReporter* animation_metrics_reporter_;
+  int start_frame_number_;
 
   base::WeakPtrFactory<LayerAnimationElement> weak_ptr_factory_;
 

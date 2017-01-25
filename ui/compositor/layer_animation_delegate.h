@@ -41,6 +41,8 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual cc::Layer* GetCcLayer() const = 0;
   virtual LayerAnimatorCollection* GetLayerAnimatorCollection() = 0;
   virtual LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() = 0;
+  virtual int GetFrameNumber() const = 0;
+  virtual float GetRefreshRate() const = 0;
 
  protected:
   virtual ~LayerAnimationDelegate() {}

@@ -52,6 +52,8 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
   cc::Layer* GetCcLayer() const override;
   LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() override;
+  int GetFrameNumber() const override;
+  float GetRefreshRate() const override;
 
  private:
   void CreateCcLayer();

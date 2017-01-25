@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/scoped_overview_animation_settings_aura.h"
 
+#include "base/lazy_instance.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -51,6 +53,53 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   return base::TimeDelta();
 }
 
+class OverviewEnterMetricsReporter : public ui::AnimationMetricsReporter {
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Enter",
+                             value);
+  }
+};
+
+class OverviewExitMetricsReporter : public ui::AnimationMetricsReporter {
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Exit",
+                             value);
+  }
+};
+
+class OverviewCloseMetricsReporter : public ui::AnimationMetricsReporter {
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Close",
+                             value);
+  }
+};
+
+base::LazyInstance<OverviewEnterMetricsReporter>::Leaky g_reporter_enter =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<OverviewExitMetricsReporter>::Leaky g_reporter_exit =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<OverviewCloseMetricsReporter>::Leaky g_reporter_close =
+    LAZY_INSTANCE_INITIALIZER;
+
+ui::AnimationMetricsReporter* GetMetricsReporter(
+    OverviewAnimationType animation_type) {
+  switch (animation_type) {
+    case OVERVIEW_ANIMATION_NONE:
+      return nullptr;
+    case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
+      return g_reporter_enter.Pointer();
+    case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
+    case OVERVIEW_ANIMATION_RESTORE_WINDOW:
+      return g_reporter_exit.Pointer();
+    case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
+    case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
+      return g_reporter_close.Pointer();
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace
 
 ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
@@ -91,6 +140,8 @@ ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
   }
   animation_settings_->SetTransitionDuration(
       GetAnimationDuration(animation_type));
+  animation_settings_->SetAnimationMetricsReporter(
+      GetMetricsReporter(animation_type));
 }
 
 ScopedOverviewAnimationSettingsAura::~ScopedOverviewAnimationSettingsAura() {}

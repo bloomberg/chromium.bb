@@ -53,7 +53,8 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       tween_type_(gfx::Tween::LINEAR),
       is_started_(false),
       disable_timer_for_test_(false),
-      adding_animations_(false) {
+      adding_animations_(false),
+      animation_metrics_reporter_(nullptr) {
   animation_player_ =
       cc::AnimationPlayer::Create(cc::AnimationIdProvider::NextPlayerId());
 }
@@ -195,6 +196,8 @@ cc::AnimationPlayer* LayerAnimator::GetAnimationPlayerForTesting() const {
 
 void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
   scoped_refptr<LayerAnimator> retain(this);
+  if (animation_metrics_reporter_)
+    animation->SetAnimationMetricsReporter(animation_metrics_reporter_);
   OnScheduled(animation);
   if (!StartSequenceImmediately(animation)) {
     // Attempt to preempt a running animation.

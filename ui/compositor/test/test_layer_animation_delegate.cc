@@ -115,6 +115,15 @@ TestLayerAnimationDelegate::GetThreadedAnimationDelegate() {
   return &threaded_delegate_;
 }
 
+int TestLayerAnimationDelegate::GetFrameNumber() const {
+  return 0;
+}
+
+float TestLayerAnimationDelegate::GetRefreshRate() const {
+  return 60.0;
+}
+
+
 void TestLayerAnimationDelegate::CreateCcLayer() {
   cc_layer_ = cc::Layer::Create();
 }

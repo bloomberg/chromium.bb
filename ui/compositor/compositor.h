@@ -380,6 +380,8 @@ class COMPOSITOR_EXPORT Compositor
   }
 
   const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  int committed_frame_number() const { return committed_frame_number_; }
+  float refresh_rate() const { return refresh_rate_; }
 
  private:
   friend class base::RefCounted<Compositor>;
@@ -403,6 +405,12 @@ class COMPOSITOR_EXPORT Compositor
   base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
 
   gfx::AcceleratedWidget widget_;
+  // A sequence number of a current compositor frame for use with metrics.
+  int committed_frame_number_;
+
+  // current VSYNC refresh rate per second.
+  float refresh_rate_;
+
   // A map from child id to parent id.
   std::unordered_set<cc::FrameSinkId, cc::FrameSinkIdHash> child_frame_sinks_;
   bool widget_valid_;

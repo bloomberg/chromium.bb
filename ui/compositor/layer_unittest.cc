@@ -2228,6 +2228,52 @@ TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   EXPECT_TRUE(animation_observer.shutdown());
 }
 
+// A simple AnimationMetricsReporter class that remembers smoothness metric
+// when animation completes.
+class TestMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  TestMetricsReporter() {}
+  ~TestMetricsReporter() override {}
+
+  bool report_called() { return report_called_; }
+  int value() const { return value_; }
+
+ protected:
+  void Report(int value) override {
+    value_ = value;
+    report_called_ = true;
+  }
+
+ private:
+  bool report_called_ = false;
+  int value_ = -1;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMetricsReporter);
+};
+
+// Starts an animation and tests that incrementing compositor frame count can
+// be used to report animation smoothness metrics.
+TEST_F(LayerWithRealCompositorTest, ReportMetrics) {
+  std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
+  GetCompositor()->SetRootLayer(root.get());
+  LayerAnimator* animator = root->GetAnimator();
+  std::unique_ptr<ui::LayerAnimationElement> animation_element =
+      ui::LayerAnimationElement::CreateColorElement(
+          SK_ColorRED, base::TimeDelta::FromMilliseconds(100));
+  ui::LayerAnimationSequence* animation_sequence =
+      new ui::LayerAnimationSequence(std::move(animation_element));
+  TestMetricsReporter reporter;
+  animation_sequence->SetAnimationMetricsReporter(&reporter);
+  animator->StartAnimation(animation_sequence);
+  while (!reporter.report_called())
+    WaitForSwap();
+  ResetCompositor();
+  // Even though most of the time 100% smooth animations are expected, on the
+  // test bots this cannot be guaranteed. Therefore simply check that some
+  // value was reported.
+  EXPECT_GT(reporter.value(), 0);
+}
+
 TEST(LayerDebugInfoTest, LayerNameDoesNotClobber) {
   Layer layer(LAYER_NOT_DRAWN);
   layer.set_name("foo");

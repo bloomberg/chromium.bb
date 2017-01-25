@@ -447,8 +447,8 @@ LayerAnimationElement::TargetValue::TargetValue(
 
 // LayerAnimationElement -------------------------------------------------------
 
-LayerAnimationElement::LayerAnimationElement(
-    AnimatableProperties properties, base::TimeDelta duration)
+LayerAnimationElement::LayerAnimationElement(AnimatableProperties properties,
+                                             base::TimeDelta duration)
     : first_frame_(true),
       properties_(properties),
       duration_(GetEffectiveDuration(duration)),
@@ -456,11 +456,12 @@ LayerAnimationElement::LayerAnimationElement(
       animation_id_(cc::AnimationIdProvider::NextAnimationId()),
       animation_group_id_(0),
       last_progressed_fraction_(0.0),
-      weak_ptr_factory_(this) {
-}
+      animation_metrics_reporter_(nullptr),
+      start_frame_number_(0),
+      weak_ptr_factory_(this) {}
 
 LayerAnimationElement::LayerAnimationElement(
-    const LayerAnimationElement &element)
+    const LayerAnimationElement& element)
     : first_frame_(element.first_frame_),
       properties_(element.properties_),
       duration_(element.duration_),
@@ -468,8 +469,9 @@ LayerAnimationElement::LayerAnimationElement(
       animation_id_(cc::AnimationIdProvider::NextAnimationId()),
       animation_group_id_(element.animation_group_id_),
       last_progressed_fraction_(element.last_progressed_fraction_),
-      weak_ptr_factory_(this) {
-}
+      animation_metrics_reporter_(nullptr),
+      start_frame_number_(0),
+      weak_ptr_factory_(this) {}
 
 LayerAnimationElement::~LayerAnimationElement() {
 }
@@ -481,6 +483,8 @@ void LayerAnimationElement::Start(LayerAnimationDelegate* delegate,
   animation_group_id_ = animation_group_id;
   last_progressed_fraction_ = 0.0;
   OnStart(delegate);
+  if (delegate)
+    start_frame_number_ = delegate->GetFrameNumber();
   RequestEffectiveStart(delegate);
   first_frame_ = false;
 }
@@ -534,10 +538,29 @@ bool LayerAnimationElement::IsFinished(base::TimeTicks time,
 }
 
 bool LayerAnimationElement::ProgressToEnd(LayerAnimationDelegate* delegate) {
-  if (first_frame_)
+  const int frame_number = delegate ? delegate->GetFrameNumber() : 0;
+  if (first_frame_) {
     OnStart(delegate);
+    start_frame_number_ = frame_number;
+  }
   base::WeakPtr<LayerAnimationElement> alive(weak_ptr_factory_.GetWeakPtr());
   bool need_draw = OnProgress(1.0, delegate);
+
+  int end_frame_number = frame_number;
+  if (animation_metrics_reporter_ && end_frame_number > start_frame_number_ &&
+      !duration_.is_zero()) {
+    base::TimeDelta elapsed = base::TimeTicks::Now() - effective_start_time_;
+    if (elapsed >= duration_) {
+      int smoothness = 100;
+      const float kFrameInterval =
+          base::Time::kMillisecondsPerSecond / delegate->GetRefreshRate();
+      const float actual_duration =
+          (end_frame_number - start_frame_number_) * kFrameInterval;
+      if (duration_.InMillisecondsF() - actual_duration >= kFrameInterval)
+        smoothness = 100 * (actual_duration / duration_.InMillisecondsF());
+      animation_metrics_reporter_->Report(smoothness);
+    }
+  }
   if (!alive)
     return need_draw;
   last_progressed_fraction_ = 1.0;

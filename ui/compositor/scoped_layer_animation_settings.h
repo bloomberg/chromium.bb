@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/animation/tween.h"
 
@@ -28,6 +29,7 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
 
   void AddObserver(ImplicitAnimationObserver* observer);
 
+  void SetAnimationMetricsReporter(AnimationMetricsReporter* reporter);
   void SetTransitionDuration(base::TimeDelta duration);
   base::TimeDelta GetTransitionDuration() const;
 

@@ -1082,6 +1082,16 @@ LayerAnimatorCollection* Layer::GetLayerAnimatorCollection() {
   return compositor ? compositor->layer_animator_collection() : NULL;
 }
 
+int Layer::GetFrameNumber() const {
+  const Compositor* compositor = GetCompositor();
+  return compositor ? compositor->committed_frame_number() : 0;
+}
+
+float Layer::GetRefreshRate() const {
+  const Compositor* compositor = GetCompositor();
+  return compositor ? compositor->refresh_rate() : 60.0;
+}
+
 cc::Layer* Layer::GetCcLayer() const {
   return cc_layer_;
 }
