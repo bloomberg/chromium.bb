@@ -44,13 +44,6 @@ struct NGLogicalSize {
   bool IsEmpty() const {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();
   }
-
- private:
-  friend class NGBlockLayoutAlgorithmTest;
-  // Used in tests.
-  NGLogicalSize(int inline_size, int block_size)
-      : inline_size(LayoutUnit(inline_size)),
-        block_size(LayoutUnit(block_size)) {}
 };
 
 inline std::ostream& operator<<(std::ostream& stream,
@@ -96,13 +89,6 @@ struct NGLogicalOffset {
   bool operator<=(const NGLogicalOffset& other) const;
 
   String ToString() const;
-
- private:
-  friend class NGBlockLayoutAlgorithmTest;
-  // Used in tests.
-  NGLogicalOffset(int inline_offset, int block_offset)
-      : inline_offset(LayoutUnit(inline_offset)),
-        block_offset(LayoutUnit(block_offset)) {}
 };
 
 CORE_EXPORT inline std::ostream& operator<<(std::ostream& os,
@@ -130,7 +116,7 @@ struct NGPhysicalOffset {
   }
 };
 
-struct NGPhysicalSize {
+struct CORE_EXPORT NGPhysicalSize {
   NGPhysicalSize() {}
   NGPhysicalSize(LayoutUnit width, LayoutUnit height)
       : width(width), height(height) {}
