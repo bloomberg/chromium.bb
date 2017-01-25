@@ -73,8 +73,11 @@ class DelegatingURLLoader final : public mojom::URLLoader {
 // wrapped client.
 class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
  public:
-  explicit DelegatingURLLoaderClient(mojom::URLLoaderClientPtr client)
-      : binding_(this), client_(std::move(client)) {}
+  explicit DelegatingURLLoaderClient(mojom::URLLoaderClientPtr client,
+                                     base::OnceClosure on_response)
+      : binding_(this),
+        client_(std::move(client)),
+        on_response_(std::move(on_response)) {}
   ~DelegatingURLLoaderClient() override {
     if (!completed_) {
       // Let the service worker know that the request has been canceled.
@@ -102,6 +105,8 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
       const ResourceResponseHead& head,
       mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file) override {
     client_->OnReceiveResponse(head, std::move(downloaded_file));
+    DCHECK(on_response_);
+    std::move(on_response_).Run();
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override {
@@ -125,6 +130,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
  private:
   mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
   mojom::URLLoaderClientPtr client_;
+  base::OnceClosure on_response_;
   bool completed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoaderClient);
@@ -407,7 +413,8 @@ void ServiceWorkerFetchDispatcher::Complete(
 }
 
 bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
-    net::URLRequest* original_request) {
+    net::URLRequest* original_request,
+    base::OnceClosure on_response) {
   if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
       resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
     return false;
@@ -484,7 +491,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&url_loader_client_ptr);
   auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
-      std::move(url_loader_client_ptr));
+      std::move(url_loader_client_ptr), std::move(on_response));
   mojom::URLLoaderClientAssociatedPtrInfo url_loader_client_associated_ptr_info;
   url_loader_client->Bind(&url_loader_client_associated_ptr_info,
                           url_loader_factory.associated_group());

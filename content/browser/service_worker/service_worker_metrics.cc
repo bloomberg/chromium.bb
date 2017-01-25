@@ -837,6 +837,84 @@ void ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
                               size);
 }
 
+void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
+    base::TimeDelta worker_start,
+    base::TimeDelta response_start,
+    EmbeddedWorkerStatus initial_worker_status,
+    StartSituation start_situation) {
+  DCHECK_GE(worker_start.ToInternalValue(), 0);
+  DCHECK_GE(response_start.ToInternalValue(), 0);
+
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.NavigationPreload.ResponseTime",
+                             response_start);
+
+  const bool nav_preload_finished_first = response_start < worker_start;
+  UMA_HISTOGRAM_BOOLEAN(
+      "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker",
+      nav_preload_finished_first);
+
+  const bool existing_process_startup =
+      (initial_worker_status == EmbeddedWorkerStatus::STOPPED &&
+       start_situation ==
+           ServiceWorkerMetrics::StartSituation::EXISTING_PROCESS);
+  if (existing_process_startup) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker"
+        "_StartWorkerExistingProcess",
+        nav_preload_finished_first);
+  }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.NavigationPreload.ConcurrentTime",
+      nav_preload_finished_first ? response_start : worker_start);
+
+  if (nav_preload_finished_first) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_NavPreloadFirst",
+        response_start);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "ServiceWorker.NavigationPreload.SWStartAfterNavPreload",
+        worker_start - response_start);
+
+    if (existing_process_startup) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.NavigationPreload.ConcurrentTime_"
+          "StartWorkerExistingProcess",
+          response_start);
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.NavigationPreload.ConcurrentTime_"
+          "NavPreloadFirst_StartWorkerExistingProcess",
+          response_start);
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.NavigationPreload.SWStartAfterNavPreload_"
+          "StartWorkerExistingProcess",
+          worker_start - response_start);
+    }
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_SWStartFirst",
+        worker_start);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart",
+        response_start - worker_start);
+
+    if (existing_process_startup) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.NavigationPreload.ConcurrentTime_"
+          "StartWorkerExistingProcess",
+          worker_start);
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.NavigationPreload.ConcurrentTime_"
+          "SWStartFirst_StartWorkerExistingProcess",
+          worker_start);
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart_"
+          "StartWorkerExistingProcess",
+          response_start - worker_start);
+    }
+  }
+}
+
 void ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
     ServiceWorkerContextRequestHandler::CreateJobStatus status,
     bool is_installed,

@@ -52,7 +52,9 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
   // If appropriate, starts the navigation preload request and creates
   // |preload_handle_|. Returns true if it started navigation preload.
-  bool MaybeStartNavigationPreload(net::URLRequest* original_request);
+  // |on_response| is invoked in OnReceiveResponse().
+  bool MaybeStartNavigationPreload(net::URLRequest* original_request,
+                                   base::OnceClosure on_response);
 
   // Dispatches a fetch event to the |version| given in ctor, and fires
   // |fetch_callback| (also given in ctor) when finishes. It runs

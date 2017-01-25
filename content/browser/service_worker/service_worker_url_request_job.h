@@ -238,16 +238,55 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   bool HasRequestBody();
   void RequestBodyFileSizesResolved(bool success);
 
+  // Called back from
+  // ServiceWorkerFetchEventDispatcher::MaybeStartNavigationPreload when the
+  // navigation preload response starts.
+  void OnNavigationPreloadResponse();
+
+  void MaybeReportNavigationPreloadMetrics();
+
   // Not owned.
   Delegate* delegate_;
 
   // Timing info to show on the popup in Devtools' Network tab.
   net::LoadTimingInfo load_timing_info_;
+
+  // When the worker was asked to prepare for the fetch event. Preparation may
+  // include activation and startup.
   base::TimeTicks worker_start_time_;
+
+  // When the worker confirmed it's ready for the fetch event. If it was already
+  // activated and running when asked to prepare, this should be nearly the same
+  // as |worker_start_time_|).
   base::TimeTicks worker_ready_time_;
+
+  // When the response started.
   base::Time response_time_;
 
+  // When the navigation preload response started.
+  base::TimeTicks navigation_preload_response_time_;
+
+  // True if the worker was already in ACTIVATED status when asked to prepare
+  // for the fetch event.
+  bool worker_already_activated_ = false;
+
+  // The status the worker was in when asked to prepare for the fetch event.
+  EmbeddedWorkerStatus initial_worker_status_ = EmbeddedWorkerStatus::STOPPED;
+
+  // If worker startup occurred during preparation, the situation that startup
+  // occurred in.
+  ServiceWorkerMetrics::StartSituation worker_start_situation_ =
+      ServiceWorkerMetrics::StartSituation::UNKNOWN;
+
+  // True if navigation preload was enabled.
+  bool did_navigation_preload_ = false;
+
+  // True if navigation preload metrics were reported.
+  bool reported_navigation_preload_metrics_ = false;
+
   ResponseType response_type_;
+
+  // True if URLRequestJob::Start() has been called.
   bool is_started_;
 
   net::HttpByteRange byte_range_;
@@ -290,10 +329,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   ServiceWorkerHeaderList cors_exposed_header_names_;
 
   std::unique_ptr<FileSizeResolver> file_size_resolver_;
-
-  bool worker_already_activated_ = false;
-  EmbeddedWorkerStatus initial_worker_status_ = EmbeddedWorkerStatus::STOPPED;
-  bool did_navigation_preload_ = false;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

@@ -555,9 +555,11 @@ void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
   }
   if (version->should_exclude_from_uma())
     return;
+  worker_start_situation_ = version->embedded_worker()->start_situation();
   ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
       worker_ready_time_ - request()->creation_time(), initial_worker_status_,
-      version->embedded_worker()->start_situation(), did_navigation_preload_);
+      worker_start_situation_, did_navigation_preload_);
+  MaybeReportNavigationPreloadMetrics();
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
@@ -885,9 +887,31 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();
-  did_navigation_preload_ =
-      fetch_dispatcher_->MaybeStartNavigationPreload(request());
+  did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
+      request(),
+      base::BindOnce(&ServiceWorkerURLRequestJob::OnNavigationPreloadResponse,
+                     weak_factory_.GetWeakPtr()));
   fetch_dispatcher_->Run();
+}
+
+void ServiceWorkerURLRequestJob::OnNavigationPreloadResponse() {
+  DCHECK(navigation_preload_response_time_.is_null());
+  navigation_preload_response_time_ = base::TimeTicks::Now();
+  MaybeReportNavigationPreloadMetrics();
+}
+
+void ServiceWorkerURLRequestJob::MaybeReportNavigationPreloadMetrics() {
+  if (worker_start_time_.is_null() || worker_ready_time_.is_null() ||
+      navigation_preload_response_time_.is_null()) {
+    return;
+  }
+  DCHECK(!reported_navigation_preload_metrics_);
+  reported_navigation_preload_metrics_ = true;
+
+  ServiceWorkerMetrics::RecordNavigationPreloadResponse(
+      worker_ready_time_ - worker_start_time_,
+      navigation_preload_response_time_ - worker_start_time_,
+      initial_worker_status_, worker_start_situation_);
 }
 
 }  // namespace content

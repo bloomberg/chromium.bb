@@ -103,4 +103,150 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
   }
 }
 
+TEST(ServiceWorkerMetricsTest, NavigationPreloadResponse) {
+  // The worker was already running.
+  {
+    base::TimeDelta worker_start = base::TimeDelta::FromMilliseconds(123);
+    base::TimeDelta response_start = base::TimeDelta::FromMilliseconds(789);
+    EmbeddedWorkerStatus initial_worker_status = EmbeddedWorkerStatus::RUNNING;
+    ServiceWorkerMetrics::StartSituation start_situation =
+        ServiceWorkerMetrics::StartSituation::UNKNOWN;
+    base::HistogramTester histogram_tester;
+    ServiceWorkerMetrics::RecordNavigationPreloadResponse(
+        worker_start, response_start, initial_worker_status, start_situation);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ResponseTime", response_start, 1);
+    histogram_tester.ExpectUniqueSample(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker", false, 1);
+    histogram_tester.ExpectTotalCount(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker_"
+        "StartWorkerExistingProcess",
+        0);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime", worker_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_SWStartFirst",
+        worker_start, 1);
+    histogram_tester.ExpectTotalCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_SWStartFirst_"
+        "StartWorkerExistingProcess",
+        0);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart",
+        response_start - worker_start, 1);
+    histogram_tester.ExpectTotalCount(
+        "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart_"
+        "StartWorkerExistingProcess",
+        0);
+  }
+
+  // The worker had to start up.
+  {
+    base::TimeDelta worker_start = base::TimeDelta::FromMilliseconds(234);
+    base::TimeDelta response_start = base::TimeDelta::FromMilliseconds(789);
+    EmbeddedWorkerStatus initial_worker_status = EmbeddedWorkerStatus::STOPPED;
+    ServiceWorkerMetrics::StartSituation start_situation =
+        ServiceWorkerMetrics::StartSituation::EXISTING_PROCESS;
+    base::HistogramTester histogram_tester;
+    ServiceWorkerMetrics::RecordNavigationPreloadResponse(
+        worker_start, response_start, initial_worker_status, start_situation);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ResponseTime", response_start, 1);
+    histogram_tester.ExpectUniqueSample(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker", false, 1);
+    histogram_tester.ExpectUniqueSample(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker_"
+        "StartWorkerExistingProcess",
+        false, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime", worker_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_SWStartFirst",
+        worker_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_SWStartFirst_"
+        "StartWorkerExistingProcess",
+        worker_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart",
+        response_start - worker_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart_"
+        "StartWorkerExistingProcess",
+        response_start - worker_start, 1);
+  }
+
+  // The worker had to start up. But it happened during browser startup.
+  {
+    base::TimeDelta worker_start = base::TimeDelta::FromMilliseconds(456);
+    base::TimeDelta response_start = base::TimeDelta::FromMilliseconds(789);
+    EmbeddedWorkerStatus initial_worker_status = EmbeddedWorkerStatus::STOPPED;
+    ServiceWorkerMetrics::StartSituation start_situation =
+        ServiceWorkerMetrics::StartSituation::DURING_STARTUP;
+    base::HistogramTester histogram_tester;
+    ServiceWorkerMetrics::RecordNavigationPreloadResponse(
+        worker_start, response_start, initial_worker_status, start_situation);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ResponseTime", response_start, 1);
+    histogram_tester.ExpectUniqueSample(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker", false, 1);
+    histogram_tester.ExpectTotalCount(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker_"
+        "StartWorkerExistingProcess",
+        0);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime", worker_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_SWStartFirst",
+        worker_start, 1);
+    histogram_tester.ExpectTotalCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_SWStartFirst_"
+        "StartWorkerExistingProcess",
+        0);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart",
+        response_start - worker_start, 1);
+    histogram_tester.ExpectTotalCount(
+        "ServiceWorker.NavigationPreload.NavPreloadAfterSWStart_"
+        "StartWorkerExistingProcess",
+        0);
+  }
+
+  // The worker had to start up, and navigation preload finished first.
+  {
+    base::TimeDelta worker_start = base::TimeDelta::FromMilliseconds(2345);
+    base::TimeDelta response_start = base::TimeDelta::FromMilliseconds(456);
+    EmbeddedWorkerStatus initial_worker_status = EmbeddedWorkerStatus::STOPPED;
+    ServiceWorkerMetrics::StartSituation start_situation =
+        ServiceWorkerMetrics::StartSituation::EXISTING_PROCESS;
+    base::HistogramTester histogram_tester;
+    ServiceWorkerMetrics::RecordNavigationPreloadResponse(
+        worker_start, response_start, initial_worker_status, start_situation);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ResponseTime", response_start, 1);
+    histogram_tester.ExpectUniqueSample(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "ServiceWorker.NavigationPreload.FinishedBeforeStartWorker_"
+        "StartWorkerExistingProcess",
+        true, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime", response_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_NavPreloadFirst",
+        response_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.ConcurrentTime_NavPreloadFirst_"
+        "StartWorkerExistingProcess",
+        response_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.SWStartAfterNavPreload",
+        worker_start - response_start, 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "ServiceWorker.NavigationPreload.SWStartAfterNavPreload_"
+        "StartWorkerExistingProcess",
+        worker_start - response_start, 1);
+  }
+}
+
 }  // namespace content
