@@ -9,6 +9,7 @@
 #include <poll.h>
 #include <unistd.h>
 
+#include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -221,10 +222,10 @@ class ArcSessionImpl : public ArcSession,
 
   // Synchronously accepts a connection on |socket_fd| and then processes the
   // connected socket's file descriptor.
-  static mojo::edk::ScopedPlatformHandle ConnectMojo(
+  static mojo::ScopedMessagePipeHandle ConnectMojo(
       mojo::edk::ScopedPlatformHandle socket_fd,
       base::ScopedFD cancel_fd);
-  void OnMojoConnected(mojo::edk::ScopedPlatformHandle fd);
+  void OnMojoConnected(mojo::ScopedMessagePipeHandle server_pipe);
 
   // Request to stop ARC instance via DBus.
   void StopArcInstance();
@@ -422,44 +423,52 @@ void ArcSessionImpl::OnInstanceStarted(
 }
 
 // static
-mojo::edk::ScopedPlatformHandle ArcSessionImpl::ConnectMojo(
+mojo::ScopedMessagePipeHandle ArcSessionImpl::ConnectMojo(
     mojo::edk::ScopedPlatformHandle socket_fd,
     base::ScopedFD cancel_fd) {
   if (!WaitForSocketReadable(socket_fd.get().handle, cancel_fd.get())) {
     VLOG(1) << "Mojo connection was cancelled.";
-    return mojo::edk::ScopedPlatformHandle();
+    return mojo::ScopedMessagePipeHandle();
   }
 
   mojo::edk::ScopedPlatformHandle scoped_fd;
   if (!mojo::edk::ServerAcceptConnection(socket_fd.get(), &scoped_fd,
                                          /* check_peer_user = */ false) ||
       !scoped_fd.is_valid()) {
-    return mojo::edk::ScopedPlatformHandle();
+    return mojo::ScopedMessagePipeHandle();
   }
 
   // Hardcode pid 0 since it is unused in mojo.
   const base::ProcessHandle kUnusedChildProcessHandle = 0;
   mojo::edk::PlatformChannelPair channel_pair;
+  std::string child_token = mojo::edk::GenerateRandomToken();
   mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle,
-                                  channel_pair.PassServerHandle(),
-                                  mojo::edk::GenerateRandomToken());
+                                  channel_pair.PassServerHandle(), child_token);
 
   mojo::edk::ScopedPlatformHandleVectorPtr handles(
       new mojo::edk::PlatformHandleVector{
           channel_pair.PassClientHandle().release()});
 
-  struct iovec iov = {const_cast<char*>(""), 1};
+  std::string token = mojo::edk::GenerateRandomToken();
+  // We need to send the length of the message as a single byte, so make sure it
+  // fits.
+  DCHECK_LT(token.size(), 256u);
+  uint8_t message_length = static_cast<uint8_t>(token.size());
+  struct iovec iov[] = {{&message_length, sizeof(message_length)},
+                        {const_cast<char*>(token.c_str()), token.size()}};
   ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
-      scoped_fd.get(), &iov, 1, handles->data(), handles->size());
+      scoped_fd.get(), iov, sizeof(iov) / sizeof(iov[0]), handles->data(),
+      handles->size());
   if (result == -1) {
     PLOG(ERROR) << "sendmsg";
-    return mojo::edk::ScopedPlatformHandle();
+    return mojo::ScopedMessagePipeHandle();
   }
 
-  return scoped_fd;
+  return mojo::edk::CreateParentMessagePipe(token, child_token);
 }
 
-void ArcSessionImpl::OnMojoConnected(mojo::edk::ScopedPlatformHandle fd) {
+void ArcSessionImpl::OnMojoConnected(
+    mojo::ScopedMessagePipeHandle server_pipe) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == State::STOPPED) {
@@ -477,14 +486,6 @@ void ArcSessionImpl::OnMojoConnected(mojo::edk::ScopedPlatformHandle fd) {
     return;
   }
 
-  if (!fd.is_valid()) {
-    LOG(ERROR) << "Invalid handle";
-    StopArcInstance();
-    return;
-  }
-
-  mojo::ScopedMessagePipeHandle server_pipe =
-      mojo::edk::CreateMessagePipe(std::move(fd));
   if (!server_pipe.is_valid()) {
     LOG(ERROR) << "Invalid pipe";
     StopArcInstance();
