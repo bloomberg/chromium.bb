@@ -25,6 +25,7 @@ var Dir = AutomationUtil.Dir;
 var EventType = chrome.automation.EventType;
 var Range = cursors.Range;
 var RoleType = chrome.automation.RoleType;
+var StateType = chrome.automation.StateType;
 var Movement = cursors.Movement;
 var Unit = cursors.Unit;
 
@@ -51,7 +52,7 @@ editing.TextEditHandler.prototype = {
    * |valueChanged|.
    * An implementation of this method should emit the appropritate braille and
    * spoken feedback for the event.
-   * @param {!AutomationEvent} evt
+   * @param {!(AutomationEvent|CustomAutomationEvent)} evt
    */
   onEvent: goog.abstractMethod,
 };
@@ -73,10 +74,10 @@ TextFieldTextEditHandler.prototype = {
 
   /** @override */
   onEvent: function(evt) {
-    if (evt.type !== EventType.textChanged &&
-        evt.type !== EventType.textSelectionChanged &&
-        evt.type !== EventType.valueChanged &&
-        evt.type !== EventType.focus)
+    if (evt.type !== EventType.TEXT_CHANGED &&
+        evt.type !== EventType.TEXT_SELECTION_CHANGED &&
+        evt.type !== EventType.VALUE_CHANGED &&
+        evt.type !== EventType.FOCUS)
       return;
     if (!evt.target.state.focused ||
         !evt.target.state.editable ||
@@ -101,13 +102,13 @@ function AutomationEditableText(node) {
   var end = node.textSelEnd;
   cvox.ChromeVoxEditableTextBase.call(
       this,
-      node.value,
+      node.value || '',
       Math.min(start, end),
       Math.max(start, end),
-      node.state.protected /**password*/,
+      node.state[StateType.PROTECTED] /**password*/,
       cvox.ChromeVox.tts);
   /** @override */
-  this.multiline = node.state.multiline || false;
+  this.multiline = node.state[StateType.MULTILINE] || false;
   /** @type {!AutomationNode} @private */
   this.node_ = node;
   /** @type {Array<number>} @private */
@@ -121,15 +122,15 @@ AutomationEditableText.prototype = {
    * Called when the text field has been updated.
    */
   onUpdate: function() {
-    var newValue = this.node_.value;
+    var newValue = this.node_.value || '';
 
     if (this.value != newValue)
       this.lineBreaks_ = [];
 
     var textChangeEvent = new cvox.TextChangeEvent(
         newValue,
-        this.node_.textSelStart,
-        this.node_.textSelEnd,
+        this.node_.textSelStart || 0,
+        this.node_.textSelEnd || 0,
         true /* triggered by user */);
     this.changed(textChangeEvent);
     this.outputBraille_();
@@ -207,7 +208,7 @@ editing.TextEditHandler.createForNode = function(node) {
   var testNode = node;
 
   do {
-    if (testNode.state.focused && testNode.state.editable)
+    if (testNode.state[StateType.FOCUSED] && testNode.state[StateType.EDITABLE])
       rootFocusedEditable = testNode;
     testNode = testNode.parent;
   } while (testNode);

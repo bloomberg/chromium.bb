@@ -9,7 +9,7 @@ var allTests = [
           return node.role == 'textField';
         });
     assertTrue(!!firstTextField);
-    listenOnce(firstTextField, EventType.focus, function(e) {
+    listenOnce(firstTextField, EventType.FOCUS, function(e) {
       chrome.test.succeed();
     }, true);
     firstTextField.doDefault();
@@ -26,7 +26,7 @@ var allTests = [
 
   function testContextMenu() {
     var addressBar = rootNode.find({role: 'textField'});
-    listenOnce(rootNode, EventType.menuStart, function(e) {
+    listenOnce(rootNode, EventType.MENU_START, function(e) {
       addressBar.showContextMenu();
       chrome.test.succeed();
     }, true);

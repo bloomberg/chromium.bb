@@ -33,7 +33,7 @@ EditingTest.prototype = {
 
   assertLineData: function(doc, data) {
     this.runWithLoadedTree(doc, function(root) {
-      var input = root.find({role: RoleType.textField});
+      var input = root.find({role: RoleType.TEXT_FIELD});
       input.addEventListener('focus', this.newCallback(function() {
         var textHandler = ChromeVoxState.desktopAutomationHandler
             .textEditHandler_.editableText_;
@@ -75,9 +75,9 @@ line 3
 TEST_F('EditingTest', 'Focus', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(doc, function(root) {
-    var singleLine = root.find({role: RoleType.textField,
+    var singleLine = root.find({role: RoleType.TEXT_FIELD,
                                 attributes: {name: 'singleLine'}});
-    var textarea = root.find({role: RoleType.textField,
+    var textarea = root.find({role: RoleType.TEXT_FIELD,
                               attributes: {name: 'textArea'}});
     singleLine.focus();
     mockFeedback
@@ -98,7 +98,7 @@ TEST_F('EditingTest', 'Focus', function() {
 TEST_F('EditingTest', 'Multiline', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(doc, function(root) {
-    var textarea = root.find({role: RoleType.textField,
+    var textarea = root.find({role: RoleType.TEXT_FIELD,
                               attributes: {name: 'textArea'}});
     textarea.focus();
     mockFeedback
@@ -147,7 +147,7 @@ TEST_F('EditingTest', 'TextButNoSelectionChange', function() {
       </script>
     */},
     function(root) {
-      var input = root.find({role: RoleType.textField});
+      var input = root.find({role: RoleType.TEXT_FIELD});
       input.focus();
       mockFeedback
           .expectSpeech('text1', 'Edit text')

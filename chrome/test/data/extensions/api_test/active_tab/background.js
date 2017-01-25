@@ -50,7 +50,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
   chrome.automation.getTree(callbackPass(function(rootNode) {
     assertFalse(rootNode == undefined);
-    assertEq(RoleType.rootWebArea, rootNode.role);
+    assertEq(RoleType.ROOT_WEB_AREA, rootNode.role);
   }));
 });
 

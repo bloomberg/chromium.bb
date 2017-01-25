@@ -5,7 +5,7 @@
 var allTests = [
   function testGetDesktop() {
     chrome.automation.getDesktop(function(rootNode) {
-      assertEq(RoleType.desktop, rootNode.role);
+      assertEq(RoleType.DESKTOP, rootNode.role);
       assertEq(undefined, rootNode.firstChild);
       chrome.test.succeed();
     });
@@ -35,7 +35,7 @@ var allTests = [
 
   function testAutomationNodeToString() {
     chrome.automation.getDesktop(function(rootNode) {
-      assertEq(RoleType.desktop, rootNode.role);
+      assertEq(RoleType.DESKTOP, rootNode.role);
       var prefix = 'tree id=0';
       assertEq(prefix, rootNode.toString().substring(0, prefix.length));
       chrome.test.succeed();

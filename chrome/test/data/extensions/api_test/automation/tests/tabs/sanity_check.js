@@ -6,9 +6,9 @@
 // accessibility), since they can be inconsistent depending on the environment.
 var RemoveUntestedStates = function(state) {
   var result = JSON.parse(JSON.stringify(state));
-  delete result[StateType.horizontal];
-  delete result[StateType.hovered];
-  delete result[StateType.vertical];
+  delete result[StateType.HORIZONTAL];
+  delete result[StateType.HOVERED];
+  delete result[StateType.VERTICAL];
   return result;
 };
 
@@ -23,10 +23,9 @@ var allTests = [
         state);
 
     var children = rootNode.children;
-    assertEq(RoleType.rootWebArea, rootNode.role);
+    assertEq(RoleType.ROOT_WEB_AREA, rootNode.role);
     assertEq(1, children.length);
     var body = children[0];
-    assertEq('body', body.htmlTag);
     state = RemoveUntestedStates(body.state);
     assertEq({readOnly: true}, state);
 

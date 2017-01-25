@@ -5,7 +5,7 @@
 var allTests = [
   function testLocation() {
     function assertOkButtonLocation(event) {
-      var okButton = rootNode.find({ role: RoleType.button,
+      var okButton = rootNode.find({ role: RoleType.BUTTON,
                                      attributes: { name: 'Ok' }});
       assertTrue('location' in okButton);
 
@@ -25,7 +25,7 @@ var allTests = [
     assertTrue('width' in okButton.location, 'no width in location');
 
     rootNode.addEventListener(
-        EventType.childrenChanged, assertOkButtonLocation);
+        EventType.CHILDREN_CHANGED, assertOkButtonLocation);
     chrome.tabs.executeScript({ 'code':
           'document.querySelector("button")' +
           '.setAttribute("style", "position: absolute; left: 100; top: 200; ' +

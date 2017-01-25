@@ -14,6 +14,7 @@ goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
 var RoleType = chrome.automation.RoleType;
 var TreeChange = chrome.automation.TreeChange;
+var TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
 
 /**
  * ChromeVox2 live region handler.
@@ -43,7 +44,8 @@ LiveRegions = function(chromeVoxState) {
    */
   this.liveRegionNodeSet_ = new WeakSet();
   chrome.automation.addTreeChangeObserver(
-      'liveRegionTreeChanges', this.onTreeChange.bind(this));
+      TreeChangeObserverFilter.LIVE_REGION_TREE_CHANGES,
+      this.onTreeChange.bind(this));
 };
 
 /**
@@ -91,7 +93,7 @@ LiveRegions.prototype = {
     var webView = AutomationUtil.getTopLevelRoot(node);
     webView = webView ? webView.parent : null;
     if (!LiveRegions.announceLiveRegionsFromBackgroundTabs_ &&
-        currentRange.start.node.role != RoleType.desktop &&
+        currentRange.start.node.role != RoleType.DESKTOP &&
         (!webView || !webView.state.focused)) {
       return;
     }

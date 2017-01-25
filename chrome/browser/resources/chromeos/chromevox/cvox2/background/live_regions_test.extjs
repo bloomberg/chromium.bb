@@ -61,7 +61,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionAddElement', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
+      var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
           .expectCategoryFlushSpeech('Hello, world');
       mockFeedback.replay();
@@ -82,7 +82,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionRemoveElement', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
+      var go = rootNode.find({ role: RoleType.BUTTON });
       go.doDefault();
       mockFeedback.expectCategoryFlushSpeech('removed:')
           .expectQueuedSpeech('Hello, world');
@@ -107,7 +107,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
+      var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
           .expectCategoryFlushSpeech('Alpha Bravo Charlie')
       mockFeedback.replay();
@@ -135,7 +135,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
+      var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
           .expectCategoryFlushSpeech('After')
           .expectQueuedSpeech('Image');
@@ -160,7 +160,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionThenFocus', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
+      var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
           .expectCategoryFlushSpeech('Live')
           .expectQueuedSpeech('Focus');
@@ -185,7 +185,7 @@ TEST_F('LiveRegionsTest', 'FocusThenLiveRegion', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
+      var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
           .expectQueuedSpeech('Focus')
           .expectCategoryFlushSpeech('Live');
@@ -214,7 +214,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionCategoryFlush', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
+      var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
           .expectCategoryFlushSpeech('Live1')
           .expectCategoryFlushSpeech('Live2');

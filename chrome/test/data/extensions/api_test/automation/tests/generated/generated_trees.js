@@ -8,16 +8,16 @@ var assertTrue = chrome.test.assertTrue;
 var deepEq = chrome.test.checkDeepEq;
 
 var EventType = chrome.automation.EventType;
-var assertEqualEvent = EventType.loadComplete;
-var assertNotEqualEvent = EventType.activedescendantchanged;
-var testCompleteEvent = EventType.blur;
+var assertEqualEvent = EventType.LOAD_COMPLETE;
+var assertNotEqualEvent = EventType.ACTIVEDESCENDANTCHANGED;
+var testCompleteEvent = EventType.BLUR;
 
 var allTests = [
   function testDeserializeGeneratedTrees() {
     var tree0, tree1;
     function onTree1Retrieved(rootNode) {
       tree1 = rootNode;
-      tree1.addEventListener(EventType.destroyed, function() {
+      tree1.addEventListener('destroyed', function() {
         chrome.automation.getTree(1, onTree1Retrieved);
       });
     }
@@ -34,7 +34,7 @@ var allTests = [
         assertFalse(tree0.toString() == tree1.toString(),
                     'tree0 should not be equal to tree1');
       });
-      tree0.addEventListener(EventType.destroyed, function() {
+      tree0.addEventListener('destroyed', function() {
         chrome.automation.getTree(0, onTree0Retrieved);
       });
       tree0.addEventListener(testCompleteEvent, function() {

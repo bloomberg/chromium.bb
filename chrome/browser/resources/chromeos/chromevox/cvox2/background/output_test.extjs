@@ -727,7 +727,7 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
                            aria-valuenow="2" aria-label="volume"></div>
   */}, function(root) {
 
-    var obj = root.find({role: RoleType.slider});
+    var obj = root.find({role: RoleType.SLIDER});
     var o = new Output().withSpeech(cursors.Range.fromNode(obj));
       checkSpeechOutput('2|Min 1|Max 10|volume|Slider',
           [
@@ -738,7 +738,7 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
           ],
           o);
 
-    obj = root.find({role: RoleType.progressIndicator});
+    obj = root.find({role: RoleType.PROGRESS_INDICATOR});
     o = new Output().withSpeech(cursors.Range.fromNode(obj));
       checkSpeechOutput('2|Min 1|Max 10|volume|Progress indicator',
           [
@@ -748,7 +748,7 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
           ],
           o);
 
-    obj = root.find({role: RoleType.meter});
+    obj = root.find({role: RoleType.METER});
     o = new Output().withSpeech(cursors.Range.fromNode(obj));
       checkSpeechOutput('2|Min 1|Max 10|volume|Meter',
           [
@@ -758,7 +758,7 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
           ],
           o);
 
-    obj = root.find({role: RoleType.spinButton});
+    obj = root.find({role: RoleType.SPIN_BUTTON});
     o = new Output().withSpeech(cursors.Range.fromNode(obj));
       checkSpeechOutput('2|Min 1|Max 10|volume|Spin button',
           [

@@ -7,13 +7,13 @@ var RoleType = chrome.automation.RoleType;
 var allTests = [
   function boundsForRange() {
     function getNthListItemInlineTextBox(index) {
-      var list = rootNode.find({role: RoleType.list});
+      var list = rootNode.find({role: RoleType.LIST});
       var listItem = list.children[index];
-      assertEq(RoleType.listItem, listItem.role);
+      assertEq(RoleType.LIST_ITEM, listItem.role);
       var staticText = listItem.children[1];
-      assertEq(RoleType.staticText, staticText.role);
+      assertEq(RoleType.STATIC_TEXT, staticText.role);
       var inlineTextBox = staticText.firstChild;
-      assertEq(RoleType.inlineTextBox, inlineTextBox.role);
+      assertEq(RoleType.INLINE_TEXT_BOX, inlineTextBox.role);
       return inlineTextBox;
     }
 

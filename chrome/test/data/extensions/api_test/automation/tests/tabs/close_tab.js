@@ -10,7 +10,7 @@ var allTests = [
           var button = rootNode.find({role: 'button'});
           assertEq(rootNode, button.root);
 
-          rootNode.addEventListener(EventType.destroyed, function() {
+          rootNode.addEventListener('destroyed', function() {
             // Poll until the root node doesn't have a role anymore
             // indicating that it really did get cleaned up.
             function checkSuccess() {
