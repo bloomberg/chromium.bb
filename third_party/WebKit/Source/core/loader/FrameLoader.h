@@ -242,6 +242,10 @@ class CORE_EXPORT FrameLoader final {
                                        const KURL&);
   void processFragment(const KURL&, LoadStartType);
 
+  bool checkLoadCanStart(FrameLoadRequest&,
+                         FrameLoadType,
+                         NavigationPolicy,
+                         NavigationType);
   void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 
   enum class HistoryNavigationType { DifferentDocument, Fragment, HistoryApi };

@@ -30,10 +30,6 @@ crbug.com/551000 http/tests/inspector/network/network-document-initiator.html [ 
 crbug.com/551000 http/tests/inspector/network/network-initiator.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-document-initiator.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initiator.html [ Failure ]
-#  Duplicate started loading output.
-#  Fixed by https://codereview.chromium.org/2622083004/
-crbug.com/551000 inspector-protocol/page/frameAttachedDetached.html [ Failure ]
-crbug.com/551000 inspector-protocol/page/frameStartedLoading.html [ Failure ]
 
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
