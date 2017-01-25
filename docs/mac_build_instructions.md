@@ -12,7 +12,7 @@ Are you a Google employee? See
 
 ## System requirements
 
-*   A 64-bit Mac running 10.9+.
+*   A 64-bit Mac running 10.11+.
 *   [Xcode](https://developer.apple.com/xcode) 7.3+.
 *   The OS X 10.10 SDK. Run
 
