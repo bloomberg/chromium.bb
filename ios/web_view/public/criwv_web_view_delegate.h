@@ -31,12 +31,6 @@ typedef NS_OPTIONS(NSUInteger, CRIWVWebViewUpdateType) {
 
 - (id<CRIWVTranslateDelegate>)translateDelegate;
 
-// Returns YES if the web view should load |url| or NO for a custom handling.
-- (BOOL)webView:(id<CRIWVWebView>)webView
-      shouldOpenURL:(NSURL*)url
-    mainDocumentURL:(NSURL*)mainDocumentURL
-        linkClicked:(BOOL)linkClicked;
-
 @end
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_DELEGATE_H_
