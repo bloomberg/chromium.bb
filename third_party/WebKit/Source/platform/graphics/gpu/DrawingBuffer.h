@@ -40,6 +40,7 @@
 #include "platform/graphics/gpu/WebGLImageConversion.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_space.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
@@ -48,6 +49,10 @@
 
 namespace cc {
 class SharedBitmap;
+}
+
+namespace gfx {
+class GpuMemoryBuffer;
 }
 
 namespace gpu {
@@ -301,7 +306,8 @@ class PLATFORM_EXPORT DrawingBuffer
                 const ColorBufferParameters&,
                 const IntSize&,
                 GLuint textureId,
-                GLuint imageId);
+                GLuint imageId,
+                std::unique_ptr<gfx::GpuMemoryBuffer>);
     ~ColorBuffer();
 
     // The owning DrawingBuffer. Note that DrawingBuffer is explicitly destroyed
@@ -314,6 +320,7 @@ class PLATFORM_EXPORT DrawingBuffer
 
     const GLuint textureId = 0;
     const GLuint imageId = 0;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpuMemoryBuffer;
 
     // The mailbox used to send this buffer to the compositor.
     gpu::Mailbox mailbox;
@@ -482,6 +489,10 @@ class PLATFORM_EXPORT DrawingBuffer
   // Whether the client wants a depth or stencil buffer.
   const bool m_wantDepth;
   const bool m_wantStencil;
+
+  // The color space of this buffer. All buffers are assumed to be sRGB until
+  // a mechanism for creating otherwise is exposed to the web.
+  const gfx::ColorSpace m_colorSpace;
 
   enum AntialiasingMode {
     None,

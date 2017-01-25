@@ -32,6 +32,7 @@
 
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -40,6 +41,7 @@
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/platform/testing/TestingPlatformSupport.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include <memory>
@@ -48,6 +50,19 @@ using testing::Test;
 using testing::_;
 
 namespace blink {
+
+namespace {
+
+class FakePlatformSupport : public TestingPlatformSupport {
+  gpu::GpuMemoryBufferManager* getGpuMemoryBufferManager() override {
+    return &m_testGpuMemoryBufferManager;
+  }
+
+ private:
+  cc::TestGpuMemoryBufferManager m_testGpuMemoryBufferManager;
+};
+
+}  // anonymous namespace
 
 class DrawingBufferTest : public Test {
  protected:
@@ -346,6 +361,8 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
 class DrawingBufferImageChromiumTest : public DrawingBufferTest {
  protected:
   void SetUp() override {
+    m_platform.reset(new ScopedTestingPlatformSupport<FakePlatformSupport>);
+
     IntSize initialSize(InitialWidth, InitialHeight);
     std::unique_ptr<GLES2InterfaceForTests> gl =
         WTF::wrapUnique(new GLES2InterfaceForTests);
@@ -365,9 +382,11 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
 
   void TearDown() override {
     RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(false);
+    m_platform.reset();
   }
 
   GLuint m_imageId0;
+  std::unique_ptr<ScopedTestingPlatformSupport<FakePlatformSupport>> m_platform;
 };
 
 TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {

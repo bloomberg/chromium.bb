@@ -33,7 +33,9 @@
 #include "cc/resources/shared_bitmap.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -152,6 +154,7 @@ DrawingBuffer::DrawingBuffer(
       m_softwareRendering(this->contextProvider()->isSoftwareRendering()),
       m_wantDepth(wantDepth),
       m_wantStencil(wantStencil),
+      m_colorSpace(gfx::ColorSpace::CreateSRGB()),
       m_chromiumImageUsage(chromiumImageUsage) {
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",
@@ -311,6 +314,7 @@ bool DrawingBuffer::finishPrepareTextureMailboxSoftware(
   }
 
   *outMailbox = cc::TextureMailbox(bitmap.get(), m_size);
+  outMailbox->set_color_space(m_colorSpace);
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
   // mailbox is released (and while the release callback is running). It also
@@ -385,6 +389,7 @@ bool DrawingBuffer::finishPrepareTextureMailboxGpu(
         colorBufferForMailbox->mailbox, colorBufferForMailbox->produceSyncToken,
         colorBufferForMailbox->parameters.target, gfx::Size(m_size),
         isOverlayCandidate, secureOutputOnly);
+    outMailbox->set_color_space(m_colorSpace);
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
@@ -574,16 +579,19 @@ DrawingBuffer::createOrRecycleColorBuffer() {
   return createColorBuffer(m_size);
 }
 
-DrawingBuffer::ColorBuffer::ColorBuffer(DrawingBuffer* drawingBuffer,
-                                        const ColorBufferParameters& parameters,
-                                        const IntSize& size,
-                                        GLuint textureId,
-                                        GLuint imageId)
+DrawingBuffer::ColorBuffer::ColorBuffer(
+    DrawingBuffer* drawingBuffer,
+    const ColorBufferParameters& parameters,
+    const IntSize& size,
+    GLuint textureId,
+    GLuint imageId,
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpuMemoryBuffer)
     : drawingBuffer(drawingBuffer),
       parameters(parameters),
       size(size),
       textureId(textureId),
-      imageId(imageId) {
+      imageId(imageId),
+      gpuMemoryBuffer(std::move(gpuMemoryBuffer)) {
   drawingBuffer->contextGL()->GenMailboxCHROMIUM(mailbox.name);
 }
 
@@ -610,6 +618,7 @@ DrawingBuffer::ColorBuffer::~ColorBuffer() {
         NOTREACHED();
         break;
     }
+    gpuMemoryBuffer.reset();
   }
   gl->DeleteTextures(1, &textureId);
 }
@@ -1131,11 +1140,25 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::createColorBuffer(
   // GpuMemoryBuffer and GLImage, if one is going to be used.
   ColorBufferParameters parameters;
   GLuint imageId = 0;
-  if (shouldUseChromiumImage()) {
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpuMemoryBuffer;
+  gpu::GpuMemoryBufferManager* gpuMemoryBufferManager =
+      Platform::current()->getGpuMemoryBufferManager();
+  if (shouldUseChromiumImage() && gpuMemoryBufferManager) {
     parameters = gpuMemoryBufferColorBufferParameters();
-    imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(
-        size.width(), size.height(), parameters.creationInternalColorFormat,
-        GC3D_SCANOUT_CHROMIUM);
+    gfx::BufferFormat bufferFormat = gpu::DefaultBufferFormatForImageFormat(
+        parameters.creationInternalColorFormat);
+    gpuMemoryBuffer = gpuMemoryBufferManager->CreateGpuMemoryBuffer(
+        gfx::Size(size), bufferFormat, gfx::BufferUsage::SCANOUT,
+        gpu::kNullSurfaceHandle);
+    if (gpuMemoryBuffer) {
+      if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+        gpuMemoryBuffer->SetColorSpaceForScanout(m_colorSpace);
+      imageId = m_gl->CreateImageCHROMIUM(
+          gpuMemoryBuffer->AsClientBuffer(), size.width(), size.height(),
+          parameters.creationInternalColorFormat);
+      if (!imageId)
+        gpuMemoryBuffer.reset();
+    }
   } else {
     parameters = textureColorBufferParameters();
   }
@@ -1193,7 +1216,8 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::createColorBuffer(
     m_gl->DeleteFramebuffers(1, &fbo);
   }
 
-  return adoptRef(new ColorBuffer(this, parameters, size, textureId, imageId));
+  return adoptRef(new ColorBuffer(this, parameters, size, textureId, imageId,
+                                  std::move(gpuMemoryBuffer)));
 }
 
 void DrawingBuffer::attachColorBufferToReadFramebuffer() {

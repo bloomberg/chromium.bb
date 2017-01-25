@@ -239,10 +239,10 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     }
   }
 
-  GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
-                                            GLsizei height,
-                                            GLenum internalformat,
-                                            GLenum usage) override {
+  GLuint CreateImageCHROMIUM(ClientBuffer buffer,
+                             GLsizei width,
+                             GLsizei height,
+                             GLenum internalformat) override {
     if (m_createImageChromiumFail)
       return 0;
     m_imageSizes.set(m_currentImageId, IntSize(width, height));

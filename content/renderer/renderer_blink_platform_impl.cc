@@ -1085,7 +1085,8 @@ RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
 
 gpu::GpuMemoryBufferManager*
 RendererBlinkPlatformImpl::getGpuMemoryBufferManager() {
-  return RenderThreadImpl::current()->GetGpuMemoryBufferManager();
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread ? thread->GetGpuMemoryBufferManager() : nullptr;
 }
 
 //------------------------------------------------------------------------------
