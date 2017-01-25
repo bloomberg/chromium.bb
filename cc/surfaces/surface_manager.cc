@@ -92,8 +92,7 @@ void SurfaceManager::DeregisterSurface(const SurfaceId& surface_id) {
   SurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
   surface_map_.erase(it);
-  child_to_parent_refs_.erase(surface_id);
-  parent_to_child_refs_.erase(surface_id);
+  RemoveAllSurfaceReferences(surface_id);
 }
 
 void SurfaceManager::Destroy(std::unique_ptr<Surface> surface) {
@@ -137,17 +136,18 @@ const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
 void SurfaceManager::AddSurfaceReference(const SurfaceId& parent_id,
                                          const SurfaceId& child_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
 
   // Check some conditions that should never happen. We don't want to crash on
   // bad input from a compromised client so just return early.
-  if (parent_id == child_id) {
-    DLOG(ERROR) << "Cannot add self reference for " << parent_id.ToString();
+  if (parent_id.frame_sink_id() == child_id.frame_sink_id()) {
+    DLOG(ERROR) << "Cannot add self reference from " << parent_id << " to "
+                << child_id;
     return;
   }
-  if (parent_id != root_surface_id_ && surface_map_.count(parent_id) == 0) {
-    DLOG(ERROR) << "No surface in map for " << parent_id.ToString();
-    return;
-  }
+
+  // We trust that |parent_id| either exists or is about to exist, since is not
+  // sent over IPC. We don't trust |child_id|, since it is sent over IPC.
   if (surface_map_.count(child_id) == 0) {
     DLOG(ERROR) << "No surface in map for " << child_id.ToString();
     return;
@@ -201,15 +201,10 @@ void SurfaceManager::AddSurfaceReference(const SurfaceId& parent_id,
     refs.erase(refs.begin(), temp_ref_iter);
 }
 
-void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
-                                             const SurfaceId& child_id) {
-  parent_to_child_refs_[parent_id].insert(child_id);
-  child_to_parent_refs_[child_id].insert(parent_id);
-}
-
 void SurfaceManager::RemoveSurfaceReference(const SurfaceId& parent_id,
                                             const SurfaceId& child_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
 
   // Check if we have the reference that is requested to be removed. We don't
   // want to crash on bad input from a compromised client so just return early.
@@ -240,29 +235,13 @@ size_t SurfaceManager::GetReferencedSurfaceCount(
   return iter->second.size();
 }
 
-void SurfaceManager::GarbageCollectSurfacesFromRoot() {
-  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
-
+void SurfaceManager::GarbageCollectSurfaces() {
   if (surfaces_to_destroy_.empty())
     return;
 
-  SurfaceIdSet reachable_surfaces;
-
-  // Walk down from the root and mark each SurfaceId we encounter as reachable.
-  std::queue<SurfaceId> surface_queue;
-  surface_queue.push(root_surface_id_);
-  while (!surface_queue.empty()) {
-    const SurfaceId& surface_id = surface_queue.front();
-    auto iter = parent_to_child_refs_.find(surface_id);
-    if (iter != parent_to_child_refs_.end()) {
-      for (const SurfaceId& child_id : iter->second) {
-        // Check for cycles when inserting into |reachable_surfaces|.
-        if (reachable_surfaces.insert(child_id).second)
-          surface_queue.push(child_id);
-      }
-    }
-    surface_queue.pop();
-  }
+  SurfaceIdSet reachable_surfaces = lifetime_type_ == LifetimeType::REFERENCES
+                                        ? GetLiveSurfacesForReferences()
+                                        : GetLiveSurfacesForSequences();
 
   std::vector<std::unique_ptr<Surface>> surfaces_to_delete;
 
@@ -283,11 +262,32 @@ void SurfaceManager::GarbageCollectSurfacesFromRoot() {
   surfaces_to_delete.clear();
 }
 
-void SurfaceManager::GarbageCollectSurfaces() {
-  if (lifetime_type_ == LifetimeType::REFERENCES) {
-    GarbageCollectSurfacesFromRoot();
-    return;
+SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
+  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
+
+  SurfaceIdSet reachable_surfaces;
+
+  // Walk down from the root and mark each SurfaceId we encounter as reachable.
+  std::queue<SurfaceId> surface_queue;
+  surface_queue.push(root_surface_id_);
+  while (!surface_queue.empty()) {
+    const SurfaceId& surface_id = surface_queue.front();
+    auto iter = parent_to_child_refs_.find(surface_id);
+    if (iter != parent_to_child_refs_.end()) {
+      for (const SurfaceId& child_id : iter->second) {
+        // Check for cycles when inserting into |reachable_surfaces|.
+        if (reachable_surfaces.insert(child_id).second)
+          surface_queue.push(child_id);
+      }
+    }
+    surface_queue.pop();
   }
+
+  return reachable_surfaces;
+}
+
+SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
+  DCHECK_EQ(lifetime_type_, LifetimeType::SEQUENCES);
 
   // Simple mark and sweep GC.
   // TODO(jbauman): Reduce the amount of work when nothing needs to be
@@ -303,12 +303,7 @@ void SurfaceManager::GarbageCollectSurfaces() {
     surface->SatisfyDestructionDependencies(&satisfied_sequences_,
                                             &valid_frame_sink_ids_);
 
-    // Never use both sequences and references for the same Surface.
-    DCHECK(surface->GetDestructionDependencyCount() == 0 ||
-           GetSurfaceReferenceCount(surface_id) == 0);
-
-    if (!surface->destroyed() || surface->GetDestructionDependencyCount() > 0 ||
-        GetSurfaceReferenceCount(surface_id) > 0) {
+    if (!surface->destroyed() || surface->GetDestructionDependencyCount() > 0) {
       live_surfaces_set.insert(surface_id);
       live_surfaces.push_back(surface_id);
     }
@@ -332,46 +327,37 @@ void SurfaceManager::GarbageCollectSurfaces() {
     }
   }
 
-  std::vector<std::unique_ptr<Surface>> to_destroy;
+  return live_surfaces_set;
+}
 
-  // Destroy all remaining unreachable surfaces.
-  for (auto iter = surfaces_to_destroy_.begin();
-       iter != surfaces_to_destroy_.end();) {
-    SurfaceId surface_id = (*iter)->surface_id();
-    if (!live_surfaces_set.count(surface_id)) {
-      DeregisterSurface(surface_id);
-      to_destroy.push_back(std::move(*iter));
-      iter = surfaces_to_destroy_.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
-
-  to_destroy.clear();
+void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
+                                             const SurfaceId& child_id) {
+  parent_to_child_refs_[parent_id].insert(child_id);
+  child_to_parent_refs_[child_id].insert(parent_id);
 }
 
 void SurfaceManager::RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
                                                 const SurfaceId& child_id) {
-  // Remove the reference from parent to child. This doesn't change anything
-  // about the validity of the parent.
   parent_to_child_refs_[parent_id].erase(child_id);
+  child_to_parent_refs_[child_id].erase(parent_id);
+}
 
-  // Remove the reference from child to parent. This might drop the number of
-  // references to the child to zero.
-  DCHECK_EQ(child_to_parent_refs_.count(child_id), 1u);
-  SurfaceIdSet& child_refs = child_to_parent_refs_[child_id];
-  DCHECK_EQ(child_refs.count(parent_id), 1u);
-  child_refs.erase(parent_id);
+void SurfaceManager::RemoveAllSurfaceReferences(const SurfaceId& surface_id) {
+  // Remove all references from |surface_id| to a child surface.
+  auto iter = parent_to_child_refs_.find(surface_id);
+  if (iter != parent_to_child_refs_.end()) {
+    for (const SurfaceId& child_id : iter->second)
+      child_to_parent_refs_[child_id].erase(surface_id);
+    parent_to_child_refs_.erase(iter);
+  }
 
-  if (!child_refs.empty())
-    return;
-
-  // Remove any references the child holds before it gets garbage collected.
-  // Copy SurfaceIdSet to avoid iterator invalidation problems.
-  SurfaceIdSet child_child_refs = parent_to_child_refs_[child_id];
-  for (auto& child_child_id : child_child_refs)
-    RemoveSurfaceReferenceImpl(child_id, child_child_id);
-  DCHECK_EQ(GetReferencedSurfaceCount(child_id), 0u);
+  // Remove all reference from parent surface to |surface_id|.
+  iter = child_to_parent_refs_.find(surface_id);
+  if (iter != child_to_parent_refs_.end()) {
+    for (const SurfaceId& parent_id : iter->second)
+      parent_to_child_refs_[parent_id].erase(surface_id);
+    child_to_parent_refs_.erase(iter);
+  }
 }
 
 void SurfaceManager::RegisterSurfaceFactoryClient(

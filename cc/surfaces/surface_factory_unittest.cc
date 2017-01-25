@@ -502,11 +502,16 @@ TEST_F(SurfaceFactoryTest, Reset) {
                                   SurfaceFactory::DrawCallback());
   EXPECT_EQ(last_created_surface_id().local_frame_id(), id);
 
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+
   SurfaceId surface_id(kArbitraryFrameSinkId, id);
-  manager_.AddSurfaceReference(manager_.GetRootSurfaceId(), surface_id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+  surface->AddDestructionDependency(
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
   factory_->Reset();
   EXPECT_TRUE(client_.returned_resources().empty());
-  manager_.RemoveSurfaceReference(manager_.GetRootSurfaceId(), surface_id);
+
+  manager_.SatisfySequence(SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
   EXPECT_TRUE(client_.returned_resources().empty());
   local_frame_id_ = LocalFrameId();
 }

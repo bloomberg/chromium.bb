@@ -145,25 +145,33 @@ class CC_SURFACES_EXPORT SurfaceManager
                                          BeginFrameSource* source);
   void RecursivelyDetachBeginFrameSource(const FrameSinkId& frame_sink_id,
                                          BeginFrameSource* source);
+
   // Returns true if |child namespace| is or has |search_frame_sink_id| as a
   // child.
   bool ChildContains(const FrameSinkId& child_frame_sink_id,
                      const FrameSinkId& search_frame_sink_id) const;
 
-  // Garbage collects all destroyed surfaces not reachable from the root. Used
-  // when |use_references_| is true.
-  void GarbageCollectSurfacesFromRoot();
+  // Garbage collects all destroyed surfaces that aren't live.
   void GarbageCollectSurfaces();
 
-  // Removes reference from a parent surface to a child surface. Used to remove
-  // references without triggered GC.
+  // Returns set of live surfaces for |lifetime_manager_| is REFERENCES.
+  SurfaceIdSet GetLiveSurfacesForReferences();
+
+  // Returns set of live surfaces for |lifetime_manager_| is SEQUENCES.
+  SurfaceIdSet GetLiveSurfacesForSequences();
+
+  // Adds a reference from |parent_id| to |child_id| without dealing with
+  // temporary references.
+  void AddSurfaceReferenceImpl(const SurfaceId& parent_id,
+                               const SurfaceId& child_id);
+
+  // Removes a reference from a |parent_id| to |child_id|.
   void RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
                                   const SurfaceId& child_id);
 
-  // Adds a reference from parent id to child id without dealing with temporary
-  // references.
-  void AddSurfaceReferenceImpl(const SurfaceId& parent_id,
-                               const SurfaceId& child_id);
+  // Removes all surface references to or from |surface_id|. Used when the
+  // surface is about to be deleted.
+  void RemoveAllSurfaceReferences(const SurfaceId& surface_id);
 
 #if DCHECK_IS_ON()
   // Recursively prints surface references starting at |surface_id| to |str|.
