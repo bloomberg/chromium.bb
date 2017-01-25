@@ -4143,6 +4143,10 @@ grit("resources") {
     "//url/mojo:url_mojom_origin__generator",
   ]
 
+  if (use_vulcanize) {
+    deps += [ "//chrome/browser/resources/md_downloads:vulcanize" ]
+  }
+
   if (safe_browsing_mode > 0) {
     deps +=
         [ "//chrome/browser/resources/safe_browsing:make_file_types_protobuf" ]

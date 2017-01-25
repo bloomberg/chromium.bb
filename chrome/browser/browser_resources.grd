@@ -13,9 +13,6 @@
         <structure name="IDR_APP_LIST_START_PAGE_HTML" file="resources\app_list\start_page.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_START_PAGE_JS" file="resources\app_list\start_page.js" flattenhtml="true" type="chrome_html" />
       </if>
-      <if expr="not is_android and not use_vulcanize">
-        <structure name="IDR_MD_DOWNLOADS_DOWNLOADS_HTML" file="resources\md_downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-      </if>
       <if expr="enable_extensions">
         <structure name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_MD_EXTENSIONS_EXTENSIONS_HTML" file="resources\md_extensions\extensions.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
@@ -144,10 +141,11 @@
         <include name="IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG" file="resources\md_downloads\2x\no_downloads.png" type="BINDATA" />
         <if expr="use_vulcanize">
           <then>
-            <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="resources\md_downloads\crisper.js" flattenhtml="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_MD_DOWNLOADS_VULCANIZED_HTML" file="resources\md_downloads\vulcanized.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_DOWNLOADS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_downloads\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_downloads\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
+            <include name="IDR_MD_DOWNLOADS_DOWNLOADS_HTML" file="resources\md_downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_CONSTANTS_HTML" file="resources\md_downloads\constants.html" type="BINDATA" />

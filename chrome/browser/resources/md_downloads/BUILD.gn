@@ -1,0 +1,12 @@
+import("../vulcanize.gni")
+
+vulcanize("vulcanize") {
+  host = "downloads"
+  html_in_file = "downloads.html"
+  html_out_file = "vulcanized.html"
+
+  input_type = "FOLDER"
+  input = rebase_path(".", root_build_dir)
+  js_out_file = "crisper.js"
+  deps = []
+}
