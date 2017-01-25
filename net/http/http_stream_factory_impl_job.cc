@@ -1191,8 +1191,16 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   if (connection_->socket() && !connection_->is_reused())
     SetSocketMotivation();
 
-  if (!using_spdy_) {
+  if (!using_spdy_)
     DCHECK(!IsSpdyAlternative());
+
+  // While websockets over HTTP/2 are not supported, it is still valid to have
+  // websockets tunneled through HTTP/2 proxy (via CONNECT). If websockets are
+  // secure (wss://), ProxyClientSocket with established tunnel is wrapped with
+  // yet another socket (SSLClientSocket), and |using_spdy_| will be false, but
+  // for ws: scheme, ProxyClientSocket is not wrapped into anything.
+  if (!using_spdy_ ||
+      (using_spdy_ && proxy_info_.is_https() && delegate_->for_websockets())) {
     // We may get ftp scheme when fetching ftp resources through proxy.
     bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https()) &&
                        (request_info_.url.SchemeIs(url::kHttpScheme) ||
