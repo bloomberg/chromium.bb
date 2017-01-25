@@ -6,19 +6,19 @@
 
 # This git extension converts a chromium commit number to its git commit hash.
 # It accepts the following input formats:
-# 
+#
 #   $ git crrev-parse Cr-Commit-Position: refs/heads/master@{#311769}
 #   $ git crrev-parse '    Cr-Commit-Position: refs/heads/master@{#311769}'
 #   $ git crrev-parse 'Cr-Commit-Position: refs/heads/master@{#311769}'
 #   $ git crrev-parse refs/heads/master@{#311769}
-#   
+#
 # It also works for branches (assuming you have branches in your local
 # checkout):
-#   
+#
 #   $ git crrev-parse refs/branch-heads/2278@{#2}
-#   
+#
 # If you don't specify a branch, refs/heads/master is assumed:
-#   
+#
 #   $ git crrev-parse @{#311769}
 #   $ git crrev-parse 311769
 
@@ -41,11 +41,10 @@ while [ -n "$1" ]; do
   remote_ref="${remote_ref/refs\/branch-heads/refs\/remotes\/branch-heads}"
   num="${commit_pos#*@\{\#}"
   num="${num%\}}"
-  
   if [ -z "$ref" -o -z "$num" ]; then
     git rev-parse "$1"
   else
-    grep_str="Cr-Commit-Position: $ref@{#$num}"
+    grep_str="^Cr-Commit-Position: $ref@{#$num}"
     git rev-list -n 1 --grep="$grep_str" "$remote_ref"
   fi
 
