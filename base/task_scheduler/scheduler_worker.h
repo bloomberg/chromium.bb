@@ -76,8 +76,6 @@ class BASE_EXPORT SchedulerWorker {
     // - The next WakeUp() could be more costly due to new thread creation.
     // - The worker will take this as a signal that it can detach, but it is not
     //   obligated to do so.
-    // This MUST return false if SchedulerWorker::JoinForTesting() is in
-    // progress.
     virtual bool CanDetach(SchedulerWorker* worker) = 0;
 
     // Called by a thread before it detaches. This method is not allowed to
@@ -117,6 +115,10 @@ class BASE_EXPORT SchedulerWorker {
 
   // Joins this SchedulerWorker. If a Task is already running, it will be
   // allowed to complete its execution. This can only be called once.
+  //
+  // Note: A thread that detaches before JoinForTesting() is called may still be
+  // running after JoinForTesting() returns. However, it can't run tasks after
+  // JoinForTesting() returns.
   void JoinForTesting();
 
   // Returns true if the worker is alive.

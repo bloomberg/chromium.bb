@@ -97,12 +97,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // allowed to complete their execution. This can only be called once.
   void JoinForTesting();
 
-  // Disallows worker thread detachment. If the suggested reclaim time is not
-  // TimeDelta::Max(), then the test should call this before the detach code can
-  // run. The safest place to do this is before the a set of work is dispatched
-  // (the worker pool is idle and steady state) or before the last
-  // synchronization point for all workers (all threads are busy and can't be
-  // reclaimed).
+  // Disallows worker detachment. If the suggested reclaim time is not
+  // TimeDelta::Max(), the test must call this before JoinForTesting() to reduce
+  // the chance of thread detachment during the process of joining all of the
+  // threads, and as a result, threads running after JoinForTesting().
   void DisallowWorkerDetachmentForTesting();
 
   // Returns the number of workers alive in this worker pool. The value may
