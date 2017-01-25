@@ -120,9 +120,10 @@ public class UpdateMenuItemHelper {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                if (OmahaClient.isNewerVersionAvailable(activity)) {
-                    mUpdateUrl = OmahaClient.getMarketURL(activity);
-                    mLatestVersion = OmahaClient.getLatestVersionNumberString(activity);
+                if (VersionNumberGetter.isNewerVersionAvailable(activity)) {
+                    mUpdateUrl = MarketURLGetter.getMarketUrl(activity);
+                    mLatestVersion =
+                            VersionNumberGetter.getInstance().getLatestKnownVersion(activity);
                     mUpdateAvailable = true;
                     recordInternalStorageSize();
                 } else {

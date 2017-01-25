@@ -319,9 +319,9 @@ public class OmahaClientTest extends InstrumentationTestCase {
 
         // Make sure we properly parsed out the server's response.
         assertEquals("Latest version numbers didn't match", expectedVersion,
-                OmahaClient.getVersionNumberGetter().getLatestKnownVersion(
-                        mContext, OmahaClient.PREF_PACKAGE, OmahaClient.PREF_LATEST_VERSION));
-        assertEquals("Market URL didn't match", expectedURL, OmahaClient.getMarketURL(mContext));
+                VersionNumberGetter.getInstance().getLatestKnownVersion(mContext));
+        assertEquals(
+                "Market URL didn't match", expectedURL, MarketURLGetter.getMarketUrl(mContext));
 
         // Check that the install event was sent properly.
         if (sentInstallEvent) {
@@ -587,8 +587,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         }
 
         @Override
-        protected void setAlarm(AlarmManager am, PendingIntent operation, int alarmType,
-                long triggerAtTime) {
+        protected void setAlarm(AlarmManager am, PendingIntent operation, long triggerAtTime) {
             mRequestAlarmWasSet = true;
         }
 

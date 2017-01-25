@@ -53,8 +53,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
         }
 
         @Override
-        public String getLatestKnownVersion(
-                Context applicationContext, String prefPackage, String prefLatestVersion) {
+        public String getLatestKnownVersion(Context applicationContext) {
             assertNotNull("Never set the latest version", mLatestVersion);
             mAskedForLatestVersion = true;
             return mLatestVersion;
@@ -78,7 +77,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
         }
 
         @Override
-        public String getMarketURL(
+        public String getMarketUrl(
                 Context applicationContext, String prefPackage, String prefMarketUrl) {
             return mURL;
         }
@@ -92,7 +91,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
         super.setUp();
 
         // This test explicitly tests for the menu item, so turn it on.
-        OmahaClient.setEnableUpdateDetection(true);
+        VersionNumberGetter.setEnableUpdateDetection(true);
     }
 
     @Override
@@ -110,12 +109,12 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
             throws Exception {
         // Report fake versions back to Main when it asks.
         mMockVersionNumberGetter = new MockVersionNumberGetter(currentVersion, latestVersion);
-        OmahaClient.setVersionNumberGetterForTests(mMockVersionNumberGetter);
+        VersionNumberGetter.setInstanceForTests(mMockVersionNumberGetter);
 
         // Report a dummy URL to Omaha.
         mMockMarketURLGetter = new MockMarketURLGetter(
                 "https://play.google.com/store/apps/details?id=com.android.chrome");
-        OmahaClient.setMarketURLGetterForTests(mMockMarketURLGetter);
+        MarketURLGetter.setInstanceForTests(mMockMarketURLGetter);
 
         // Start up main.
         startMainActivityWithURL(UrlConstants.NTP_URL);
