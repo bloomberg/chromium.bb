@@ -5634,13 +5634,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
-      <!-- Autofill credit card signin promo -->
-      <message name="IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_NAME" desc="Title for the flag to enable autofill credit card signin promo">
-        Enable Autofill Credit Card Signin Promo
-      </message>
-      <message name="IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_DESCRIPTION" desc="Description for the flag to enable autofill credit card signin promo">
-        Enable showing the credit card signin promo inside the Autofill dropdown.
-      </message>
       <message name="IDS_FLAGS_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
         TCP Fast Open
       </message>

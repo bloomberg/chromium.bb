@@ -67,6 +67,9 @@ class FormStructureBrowserTest;
 struct FormData;
 struct FormFieldData;
 
+// We show the credit card signin promo only a certain number of times.
+extern const int kCreditCardSigninPromoImpressionLimit;
+
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillDownloadManager::Observer,

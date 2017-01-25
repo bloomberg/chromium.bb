@@ -25,7 +25,6 @@ namespace autofill {
 struct Suggestion;
 
 extern const base::Feature kAutofillCreditCardAssist;
-extern const base::Feature kAutofillCreditCardSigninPromo;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardPopupLayout;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
@@ -41,15 +40,8 @@ bool IsAutofillEnabled(const PrefService* pref_service);
 // disables providing suggestions.
 bool IsInAutofillSuggestionsDisabledExperiment();
 
-// Returns whether the Autofill credit card signin promo should be shown.
-bool IsAutofillCreditCardSigninPromoEnabled();
-
 // Returns whether the Autofill credit card assist infobar should be shown.
 bool IsAutofillCreditCardAssistEnabled();
-
-// Returns the maximum number of impressions of the credit card signin promo, or
-// 0 if there are no limits.
-int GetCreditCardSigninPromoImpressionLimit();
 
 // Returns true if the user should be offered to locally store unmasked cards.
 // This controls whether the option is presented at all rather than the default

@@ -26,13 +26,10 @@ namespace autofill {
 
 const base::Feature kAutofillCreditCardAssist{
     "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillCreditCardSigninPromo{
-    "AutofillCreditCardSigninPromo", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillScanCardholderName{
     "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardPopupLayout{
     "AutofillCreditCardPopupLayout", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
 const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";
 const char kAutofillCreditCardPopupValueBoldKey[] = "is_value_bold";
@@ -69,27 +66,12 @@ bool IsInAutofillSuggestionsDisabledExperiment() {
   return group_name == "Disabled";
 }
 
-bool IsAutofillCreditCardSigninPromoEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillCreditCardSigninPromo);
-}
-
 bool IsAutofillCreditCardAssistEnabled() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   return false;
 #else
   return base::FeatureList::IsEnabled(kAutofillCreditCardAssist);
 #endif
-}
-
-int GetCreditCardSigninPromoImpressionLimit() {
-  int impression_limit;
-  std::string param_value = variations::GetVariationParamValueByFeature(
-      kAutofillCreditCardSigninPromo,
-      kCreditCardSigninPromoImpressionLimitParamKey);
-  if (!param_value.empty() && base::StringToInt(param_value, &impression_limit))
-    return impression_limit;
-
-  return 0;
 }
 
 bool IsAutofillCreditCardPopupLayoutExperimentEnabled() {

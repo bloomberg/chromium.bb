@@ -817,32 +817,6 @@ class AutofillManagerTest : public testing::Test {
     request_context_ = nullptr;
   }
 
-  void EnableCreditCardSigninPromoFeatureWithLimit(int impression_limit) {
-    const std::string kTrialName = "MyTrial";
-    const std::string kGroupName = "Group1";
-
-    scoped_refptr<base::FieldTrial> trial(
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName));
-    std::map<std::string, std::string> params;
-    params[kCreditCardSigninPromoImpressionLimitParamKey] =
-        base::IntToString(impression_limit);
-    ASSERT_TRUE(
-        variations::AssociateVariationParams(kTrialName, kGroupName, params));
-
-    // Enable the feature.
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        kAutofillCreditCardSigninPromo.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
-
-    // Double-checking our params made it.
-    std::map<std::string, std::string> actualParams;
-    EXPECT_TRUE(variations::GetVariationParamsByFeature(
-        kAutofillCreditCardSigninPromo, &actualParams));
-    EXPECT_EQ(params, actualParams);
-  }
-
   void GetAutofillSuggestions(int query_id,
                               const FormData& form,
                               const FormFieldData& field) {
@@ -1672,9 +1646,6 @@ TEST_F(AutofillManagerTest,
 // are no credit card suggestions and the promo is active. See the tests in
 // AutofillExternalDelegateTest that test whether the promo is added.
 TEST_F(AutofillManagerTest, GetCreditCardSuggestions_OnlySigninPromo) {
-  // Enable the signin promo feature with no impression limit.
-  EnableCreditCardSigninPromoFeatureWithLimit(0);
-
   // Make sure there are no credit cards.
   personal_data_.ClearCreditCards();
 
@@ -5253,56 +5224,9 @@ TEST_F(AutofillManagerTest, NoCreditCardSuggestionsForNonPrefixTokenMatch) {
 }
 
 // Test that ShouldShowCreditCardSigninPromo behaves as expected for a credit
-// card form, with no impression limit and the feature enabled.
-TEST_F(AutofillManagerTest,
-       ShouldShowCreditCardSigninPromo_CreditCardField_NoLimit) {
-  // Enable the feature with no impression limit.
-  EnableCreditCardSigninPromoFeatureWithLimit(0);
-
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  FormFieldData field;
-  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-
-  // The result will depend on what ShouldShowSigninPromo(). We control its
-  // output and verify that both cases behave as expected.
-  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
-      .WillOnce(testing::Return(true));
-  EXPECT_TRUE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
-
-  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
-      .WillOnce(testing::Return(false));
-  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
-}
-
-// Test that ShouldShowCreditCardSigninPromo doesn't show for a credit card form
-// when the feature is off.
-TEST_F(AutofillManagerTest,
-       ShouldShowCreditCardSigninPromo_CreditCardField_FeatureOff) {
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  FormFieldData field;
-  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-
-  // Returns false without calling ShouldShowSigninPromo().
-  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo()).Times(0);
-  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
-}
-
-// Test that ShouldShowCreditCardSigninPromo behaves as expected for a credit
-// card form with an impression limit and no impressions yet.
+// card form with an impression limit of three and no impressions yet.
 TEST_F(AutofillManagerTest,
        ShouldShowCreditCardSigninPromo_CreditCardField_UnmetLimit) {
-  // Enable the feature with an impression limit.
-  EnableCreditCardSigninPromoFeatureWithLimit(10);
   // No impressions yet.
   ASSERT_EQ(0, autofill_client_.GetPrefs()->GetInteger(
                    prefs::kAutofillCreditCardSigninPromoImpressionCount));
@@ -5339,9 +5263,6 @@ TEST_F(AutofillManagerTest,
 // card form with an impression limit that has been attained already.
 TEST_F(AutofillManagerTest,
        ShouldShowCreditCardSigninPromo_CreditCardField_WithAttainedLimit) {
-  // Enable the feature with an impression limit.
-  EnableCreditCardSigninPromoFeatureWithLimit(10);
-
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, false);
@@ -5353,7 +5274,8 @@ TEST_F(AutofillManagerTest,
 
   // Set the impression count to the same value as the limit.
   autofill_client_.GetPrefs()->SetInteger(
-      prefs::kAutofillCreditCardSigninPromoImpressionCount, 10);
+      prefs::kAutofillCreditCardSigninPromoImpressionCount,
+      kCreditCardSigninPromoImpressionLimit);
 
   // Both calls will now return false, regardless of the mock implementation of
   // ShouldShowSigninPromo().
@@ -5366,8 +5288,9 @@ TEST_F(AutofillManagerTest,
   EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
 
   // Number of impressions stay the same.
-  EXPECT_EQ(10, autofill_client_.GetPrefs()->GetInteger(
-                    prefs::kAutofillCreditCardSigninPromoImpressionCount));
+  EXPECT_EQ(kCreditCardSigninPromoImpressionLimit,
+            autofill_client_.GetPrefs()->GetInteger(
+                prefs::kAutofillCreditCardSigninPromoImpressionCount));
 }
 
 // Test that ShouldShowCreditCardSigninPromo behaves as expected for an address

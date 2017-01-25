@@ -79,6 +79,8 @@ namespace autofill {
 using base::StartsWith;
 using base::TimeTicks;
 
+const int kCreditCardSigninPromoImpressionLimit = 3;
+
 namespace {
 
 const size_t kMaxRecentFormSignaturesToRemember = 3;
@@ -319,9 +321,6 @@ bool AutofillManager::IsCreditCardPopup(const FormData& form,
 bool AutofillManager::ShouldShowCreditCardSigninPromo(
     const FormData& form,
     const FormFieldData& field) {
-  if (!IsAutofillCreditCardSigninPromoEnabled())
-    return false;
-
   // Check whether we are dealing with a credit card field and whether it's
   // appropriate to show the promo (e.g. the platform is supported).
   AutofillField* autofill_field = GetAutofillField(form, field);
@@ -329,12 +328,10 @@ bool AutofillManager::ShouldShowCreditCardSigninPromo(
       !client_->ShouldShowSigninPromo())
     return false;
 
-  // The last step is checking if we are under the limit of impressions (a limit
-  // of 0 means there is no limit);
-  int impression_limit = GetCreditCardSigninPromoImpressionLimit();
+  // The last step is checking if we are under the limit of impressions.
   int impression_count = client_->GetPrefs()->GetInteger(
       prefs::kAutofillCreditCardSigninPromoImpressionCount);
-  if (impression_limit == 0 || impression_count < impression_limit) {
+  if (impression_count < kCreditCardSigninPromoImpressionLimit) {
     // The promo will be shown. Increment the impression count.
     client_->GetPrefs()->SetInteger(
         prefs::kAutofillCreditCardSigninPromoImpressionCount,

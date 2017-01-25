@@ -825,10 +825,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)},
-    {"enable-credit-card-signin-promo",
-     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_NAME,
-     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardSigninPromo)},
     {"smooth-scrolling", IDS_FLAGS_SMOOTH_SCROLLING_NAME,
      IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION,
      // Mac has a separate implementation with its own setting to disable.
