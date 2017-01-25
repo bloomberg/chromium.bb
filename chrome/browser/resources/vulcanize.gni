@@ -1,0 +1,54 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+template("vulcanize") {
+  action(target_name) {
+    script = "//chrome/browser/resources/vulcanize_gn.py"
+
+    # Declare dependencies to all involved tools.
+    inputs = [
+      "//chrome/browser/resources/unpack_pak.py",
+      "//third_party/node/node_modules.tar.gz.sha1",
+    ]
+
+    if (is_linux) {
+      inputs += [ "//third_party/node/linux/node-linux-x64.tar.gz.sha1" ]
+    }
+    if (is_win) {
+      inputs += [ "//third_party/node/win/node.exe.sha1" ]
+    }
+    if (is_mac) {
+      inputs += [ "//third_party/node/mac/node-darwin-x64.tar.gz.sha1" ]
+    }
+
+    depfile = "${target_gen_dir}/${target_name}.d"
+
+    outputs = [
+      "$target_gen_dir/${invoker.html_out_file}",
+      "$target_gen_dir/${invoker.js_out_file}",
+    ]
+    deps = invoker.deps
+
+    # Note that we have to manually pass the sources to our script if the
+    # script needs them as inputs.
+    args = [
+      "--host",
+      invoker.host,
+      "--html_in_file",
+      invoker.html_in_file,
+      "--html_out_file",
+      invoker.html_out_file,
+      "--js_out_file",
+      invoker.js_out_file,
+      "--input_type",
+      invoker.input_type,
+      "--input",
+      invoker.input,
+      "--out_folder",
+      rebase_path(target_gen_dir, root_build_dir),
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+    ]
+  }
+}
