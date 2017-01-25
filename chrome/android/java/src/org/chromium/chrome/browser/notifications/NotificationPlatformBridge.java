@@ -215,9 +215,14 @@ public class NotificationPlatformBridge {
     }
 
     @Nullable
-    private static String getNotificationReply(Intent intent) {
+    static String getNotificationReply(Intent intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
             // RemoteInput was added in KITKAT_WATCH.
+            if (intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_REPLY) != null) {
+                // If the notification click went through the job scheduler, we will have set
+                // the reply as a standard string extra.
+                return intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_REPLY);
+            }
             Bundle remoteInputResults = RemoteInput.getResultsFromIntent(intent);
             if (remoteInputResults != null) {
                 CharSequence reply =
@@ -312,6 +317,9 @@ public class NotificationPlatformBridge {
      * Returns the PendingIntent for completing |action| on the notification identified by the data
      * in the other parameters.
      *
+     * All parameters set here should also be set in
+     * {@link NotificationJobService#getJobExtrasFromIntent(Intent)}.
+     *
      * @param context An appropriate context for the intent class and broadcast.
      * @param action The action this pending intent will represent.
      * @param notificationId The id of the notification.
@@ -329,7 +337,6 @@ public class NotificationPlatformBridge {
         Uri intentData = makeIntentData(notificationId, origin, actionIndex);
         Intent intent = new Intent(action, intentData);
         intent.setClass(context, NotificationService.Receiver.class);
-
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, origin);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID, profileId);

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.content.Intent;
+
 /**
  * Constants used in more than a single Notification class, e.g. intents and extra names.
  */
@@ -23,6 +25,9 @@ public class NotificationConstants {
     /**
      * Names of the Intent extras used for Intents related to notifications. These intents are set
      * and owned by Chromium.
+     *
+     * When adding a new extra, as well as setting it on the intent in NotificationPlatformBridge,
+     * it *must* also be set in {@link NotificationJobService#getJobExtrasFromIntent(Intent)}
      */
     static final String EXTRA_NOTIFICATION_ID = "notification_id";
     static final String EXTRA_NOTIFICATION_INFO_ORIGIN = "notification_info_origin";
@@ -32,6 +37,8 @@ public class NotificationConstants {
     static final String EXTRA_NOTIFICATION_INFO_TAG = "notification_info_tag";
     static final String EXTRA_NOTIFICATION_INFO_ACTION_INDEX = "notification_info_action_index";
     static final String EXTRA_NOTIFICATION_INFO_WEBAPK_PACKAGE = "notification_info_webapk_package";
+    static final String EXTRA_NOTIFICATION_REPLY = "notification_reply";
+    static final String EXTRA_NOTIFICATION_ACTION = "notification_action";
 
     /**
      * Unique identifier for a single sync notification. Since the notification ID is reused,

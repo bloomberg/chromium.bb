@@ -773,6 +773,11 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
+        <!-- Android Notification job service -->
+        <service android:name="org.chromium.chrome.browser.notifications.NotificationJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+
         <!-- GcmTaskService implementation to wake Chrome on scheduled events -->
         <service android:name="org.chromium.chrome.browser.ChromeBackgroundService"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"

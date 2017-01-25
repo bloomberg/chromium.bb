@@ -5,9 +5,14 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.app.IntentService;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.util.Log;
 
@@ -33,11 +38,30 @@ public class NotificationService extends IntentService {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.i(TAG, "Received a notification intent in the NotificationService's receiver.");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // Android encourages us not to start services directly on N+, so instead we
+                // schedule a job to handle the notification intent. We use the Android JobScheduler
+                // rather than GcmNetworkManager or FirebaseJobDispatcher since the JobScheduler
+                // allows us to execute immediately by setting an override deadline of zero
+                // milliseconds.
+                // TODO(crbug.com/685210): UMA to check this does not introduce noticeable latency.
+                PersistableBundle extras = NotificationJobService.getJobExtrasFromIntent(intent);
+                JobInfo job =
+                        new JobInfo
+                                .Builder(NotificationJobService.JOB_ID,
+                                        new ComponentName(context, NotificationJobService.class))
+                                .setExtras(extras)
+                                .setOverrideDeadline(0)
+                                .build();
+                JobScheduler scheduler =
+                        (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+                scheduler.schedule(job);
+            } else {
+                // TODO(peter): Do we need to acquire a wake lock here?
 
-            // TODO(peter): Do we need to acquire a wake lock here?
-
-            intent.setClass(context, NotificationService.class);
-            context.startService(intent);
+                intent.setClass(context, NotificationService.class);
+                context.startService(intent);
+            }
         }
     }
 
@@ -62,7 +86,7 @@ public class NotificationService extends IntentService {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                dispatchIntentOnUIThread(intent);
+                dispatchIntentOnUIThread(NotificationService.this, intent);
             }
         });
     }
@@ -74,9 +98,9 @@ public class NotificationService extends IntentService {
      * @param intent The intent containing the notification's information.
      */
     @SuppressFBWarnings("DM_EXIT")
-    private void dispatchIntentOnUIThread(Intent intent) {
+    static void dispatchIntentOnUIThread(Context context, Intent intent) {
         try {
-            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
+            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
 
             // Warm up the WebappRegistry, as we need to check if this notification should launch a
             // standalone web app. This no-ops if the registry is already initialized and warmed,
