@@ -33,7 +33,7 @@ function test()
     function finish()
     {
         var events = InspectorTest.timelineModel().mainThreadEvents();
-        for (let i = 0; i < events.length; ++i) {
+        for (var i = 0; i < events.length; ++i) {
             if (events[i].name !== TimelineModel.TimelineModel.RecordType.TimerFire)
                 continue;
             var functionCallChild = InspectorTest.findChildEvent(events, i, TimelineModel.TimelineModel.RecordType.FunctionCall);

@@ -42,9 +42,9 @@ function test()
         InspectorTest.printTimestampRecords("MarkLoad");
         InspectorTest.printTimestampRecords("MarkFirstPaint");
 
-        var eventDividers = InspectorTest.timelineModel().eventDividerRecords();
+        var eventDividers = InspectorTest.timelineModel().eventDividers();
         for (var i = 1; i < eventDividers.length; ++i)
-            InspectorTest.assertGreaterOrEqual(eventDividers[i], eventDividers[i - 1], "Event divider timestamps should be monotonically non-decreasing");
+            InspectorTest.assertGreaterOrEqual(eventDividers[i].startTime, eventDividers[i - 1].startTime, "Event divider timestamps should be monotonically non-decreasing");
 
         InspectorTest.completeTest();
     }

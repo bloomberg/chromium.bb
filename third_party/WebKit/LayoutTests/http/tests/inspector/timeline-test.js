@@ -233,10 +233,10 @@ InspectorTest.walkTimelineEventTreeUnderNode = function(callback, root, level)
 
 InspectorTest.printTimestampRecords = function(typeName)
 {
-    const records = InspectorTest.timelineModel().eventDividerRecords();
-    for (let record of records) {
-        if (record.type() === typeName)
-            InspectorTest.printTraceEventProperties(record.traceEvent());
+    var dividers = InspectorTest.timelineModel().eventDividers();
+    for (var event of dividers) {
+        if (event.name === typeName)
+            InspectorTest.printTraceEventProperties(event);
     }
 };
 
