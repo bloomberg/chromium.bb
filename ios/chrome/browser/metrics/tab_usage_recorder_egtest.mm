@@ -515,7 +515,8 @@ void SelectTabUsingUI(NSString* title) {
 
 // Verify correct recording of metrics when the reloading of an evicted tab
 // fails.
-- (void)testEvictedTabReloadFailure {
+// TODO(crbug.com/684987): Re-enable this test.
+- (void)DISABLED_testEvictedTabReloadFailure {
   web::test::SetUpFileBasedHttpServer();
   chrome_test_util::HistogramTester histogramTester;
   FailureBlock failureBlock = ^(NSString* error) {

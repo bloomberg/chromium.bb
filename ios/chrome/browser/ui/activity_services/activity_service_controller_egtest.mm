@@ -55,7 +55,9 @@ id<GREYMatcher> PrintButton() {
 
 // Test that when trying to print a page redirected to an unprintable page, a
 // snackbar explaining that the page cannot be printed is displayed.
-- (void)testActivityServiceControllerPrintAfterRedirectionToUnprintablePage {
+// TODO(crbug.com/684987): Re-enable this test.
+- (void)
+    DISABLED_testActivityServiceControllerPrintAfterRedirectionToUnprintablePage {
   std::map<GURL, std::string> responses;
   const GURL regularPageURL = web::test::HttpServer::MakeUrl("http://choux");
   responses[regularPageURL] = "fleur";

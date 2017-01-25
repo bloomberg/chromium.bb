@@ -70,7 +70,8 @@ using web::test::HttpServer;
 #pragma mark - tests
 
 // Tests whether the error page is displayed for a bad URL.
-- (void)testErrorPage {
+// TODO(crbug.com/684987): Re-enable this test.
+- (void)DISABLED_testErrorPage {
   std::unique_ptr<web::DataResponseProvider> provider(
       new ErrorPageResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -81,7 +82,8 @@ using web::test::HttpServer;
 }
 
 // Tests whether the error page is displayed if it is behind a redirect.
-- (void)testErrorPageRedirect {
+// TODO(crbug.com/684987): Re-enable this test.
+- (void)DISABLED_testErrorPageRedirect {
   std::unique_ptr<web::DataResponseProvider> provider(
       new ErrorPageResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
