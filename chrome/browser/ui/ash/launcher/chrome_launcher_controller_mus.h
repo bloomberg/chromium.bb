@@ -20,7 +20,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   ~ChromeLauncherControllerMus() override;
 
   // ChromeLauncherController:
-  void Init() override;
   ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
                                      const std::string& app_id,
                                      ash::ShelfItemStatus status) override;
@@ -81,6 +80,10 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   // AppIconLoaderDelegate:
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override;
+
+ protected:
+  // ChromeLauncherController:
+  void OnInit() override;
 
  private:
   // Pin the items set in the current profile's preferences.

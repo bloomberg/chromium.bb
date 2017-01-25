@@ -76,8 +76,8 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
 
   ~ChromeLauncherController() override;
 
-  // Initializes this ChromeLauncherController.
-  virtual void Init() = 0;
+  // Initializes this ChromeLauncherController and calls OnInit.
+  void Init();
 
   // Creates a new app item on the shelf for |controller|.
   virtual ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
@@ -269,9 +269,12 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
  protected:
   ChromeLauncherController();
 
+  // Called after Init; allows subclasses to perform additional initialization.
+  virtual void OnInit() = 0;
+
   // Connects or reconnects to the mojom::ShelfController interface in ash.
-  // Returns true if connected and returns false in unit tests.
-  bool ConnectToShelfController();
+  // Returns true if connected; virtual for unit tests.
+  virtual bool ConnectToShelfController();
 
   // Accessor for subclasses to interact with the shelf controller.
   ash::mojom::ShelfControllerPtr& shelf_controller() {
@@ -289,6 +292,8 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
                                  int64_t display_id) override;
 
  private:
+  friend class TestChromeLauncherControllerImpl;
+
   // AppIconLoaderDelegate:
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override;
@@ -305,6 +310,9 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
 
   // The binding this instance uses to implment mojom::ShelfObserver
   mojo::AssociatedBinding<ash::mojom::ShelfObserver> observer_binding_;
+
+  // True when setting a shelf pref in response to an observer notification.
+  bool updating_shelf_pref_from_observer_ = false;
 
   // Used to get app info for tabs.
   std::unique_ptr<LauncherControllerHelper> launcher_controller_helper_;

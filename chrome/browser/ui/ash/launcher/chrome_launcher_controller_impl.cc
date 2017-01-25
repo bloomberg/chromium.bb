@@ -273,18 +273,6 @@ ChromeLauncherControllerImpl::~ChromeLauncherControllerImpl() {
   chrome::MultiUserWindowManager::DeleteInstance();
 }
 
-void ChromeLauncherControllerImpl::Init() {
-  CreateBrowserShortcutLauncherItem();
-  UpdateAppLaunchersFromPref();
-
-  // TODO(sky): update unit test so that this test isn't necessary.
-  if (ash::Shell::HasInstance())
-    SetVirtualKeyboardBehaviorFromPrefs();
-
-  prefs_observer_ =
-      ash::launcher::ChromeLauncherPrefsObserver::CreateIfNecessary(profile());
-}
-
 ash::ShelfID ChromeLauncherControllerImpl::CreateAppLauncherItem(
     LauncherItemController* controller,
     const std::string& app_id,
@@ -950,6 +938,18 @@ void ChromeLauncherControllerImpl::OnAppUninstalledPrepared(
 
 ///////////////////////////////////////////////////////////////////////////////
 // ChromeLauncherControllerImpl protected:
+
+void ChromeLauncherControllerImpl::OnInit() {
+  CreateBrowserShortcutLauncherItem();
+  UpdateAppLaunchersFromPref();
+
+  // TODO(sky): update unit test so that this test isn't necessary.
+  if (ash::Shell::HasInstance())
+    SetVirtualKeyboardBehaviorFromPrefs();
+
+  prefs_observer_ =
+      ash::launcher::ChromeLauncherPrefsObserver::CreateIfNecessary(profile());
+}
 
 ash::ShelfID ChromeLauncherControllerImpl::CreateAppShortcutLauncherItem(
     const ash::launcher::AppLauncherId& app_launcher_id,

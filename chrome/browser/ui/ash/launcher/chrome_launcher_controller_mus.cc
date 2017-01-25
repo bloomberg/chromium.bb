@@ -58,10 +58,6 @@ ChromeLauncherControllerMus::ChromeLauncherControllerMus() {
 
 ChromeLauncherControllerMus::~ChromeLauncherControllerMus() {}
 
-void ChromeLauncherControllerMus::Init() {
-  NOTIMPLEMENTED();
-}
-
 ash::ShelfID ChromeLauncherControllerMus::CreateAppLauncherItem(
     LauncherItemController* controller,
     const std::string& app_id,
@@ -270,6 +266,8 @@ void ChromeLauncherControllerMus::OnAppImageUpdated(
   if (ConnectToShelfController())
     shelf_controller()->SetItemImage(app_id, *image.bitmap());
 }
+
+void ChromeLauncherControllerMus::OnInit() {}
 
 void ChromeLauncherControllerMus::PinAppsFromPrefs() {
   if (!ConnectToShelfController())

@@ -4143,3 +4143,153 @@ TEST_F(ChromeLauncherControllerImplTest, SyncOffLocalUpdate) {
   StartAppSyncService(copy_sync_list);
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 }
+
+// A test ShelfController implementation that tracks alignment and auto-hide.
+class TestShelfController : public ash::mojom::ShelfController {
+ public:
+  TestShelfController() : binding_(this) {}
+  ~TestShelfController() override {}
+
+  ash::ShelfAlignment alignment() const { return alignment_; }
+  ash::ShelfAutoHideBehavior auto_hide() const { return auto_hide_; }
+
+  size_t alignment_change_count() const { return alignment_change_count_; }
+  size_t auto_hide_change_count() const { return auto_hide_change_count_; }
+
+  ash::mojom::ShelfControllerPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+  // ash::mojom::ShelfController:
+  void AddObserver(
+      ash::mojom::ShelfObserverAssociatedPtrInfo observer) override {
+    observer_.Bind(std::move(observer));
+  }
+  void SetAlignment(ash::ShelfAlignment alignment,
+                    int64_t display_id) override {
+    alignment_change_count_++;
+    alignment_ = alignment;
+    observer_->OnAlignmentChanged(alignment_, display_id);
+  }
+  void SetAutoHideBehavior(ash::ShelfAutoHideBehavior auto_hide,
+                           int64_t display_id) override {
+    auto_hide_change_count_++;
+    auto_hide_ = auto_hide;
+    observer_->OnAutoHideBehaviorChanged(auto_hide_, display_id);
+  }
+  void PinItem(
+      ash::mojom::ShelfItemPtr item,
+      ash::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override {}
+  void UnpinItem(const std::string& app_id) override {}
+  void SetItemImage(const std::string& app_id, const SkBitmap& image) override {
+  }
+
+ private:
+  ash::ShelfAlignment alignment_ = ash::SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  ash::ShelfAutoHideBehavior auto_hide_ = ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+
+  size_t alignment_change_count_ = 0;
+  size_t auto_hide_change_count_ = 0;
+
+  ash::mojom::ShelfObserverAssociatedPtr observer_;
+  mojo::Binding<ash::mojom::ShelfController> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestShelfController);
+};
+
+// A test ChromeLauncherControllerImpl sublcass that uses TestShelfController.
+class TestChromeLauncherControllerImpl : public ChromeLauncherControllerImpl {
+ public:
+  TestChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model)
+      : ChromeLauncherControllerImpl(profile, model) {}
+
+  // ChromeLauncherControllerImpl:
+  using ChromeLauncherControllerImpl::ReleaseProfile;
+  bool ConnectToShelfController() override {
+    // Set the shelf controller pointer to a test instance; this is run in init.
+    if (!shelf_controller_.is_bound())
+      shelf_controller_ = test_shelf_controller_.CreateInterfacePtrAndBind();
+    return true;
+  }
+
+  TestShelfController* test_shelf_controller() {
+    return &test_shelf_controller_;
+  }
+
+ private:
+  TestShelfController test_shelf_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherControllerImpl);
+};
+
+using ChromeLauncherControllerImplPrefTest = BrowserWithTestWindowTest;
+
+// Tests that shelf profile preferences are loaded on login.
+TEST_F(ChromeLauncherControllerImplPrefTest, PrefsLoadedOnLogin) {
+  PrefService* prefs = profile()->GetTestingPrefService();
+  prefs->SetString(prefs::kShelfAlignmentLocal, "Left");
+  prefs->SetString(prefs::kShelfAlignment, "Left");
+  prefs->SetString(prefs::kShelfAutoHideBehaviorLocal, "Always");
+  prefs->SetString(prefs::kShelfAutoHideBehavior, "Always");
+
+  ash::ShelfModel* model = ash::WmShell::Get()->shelf_controller()->model();
+  TestChromeLauncherControllerImpl test_launcher_controller(profile(), model);
+  test_launcher_controller.Init();
+
+  // Simulate login for the test controller.
+  test_launcher_controller.ReleaseProfile();
+  test_launcher_controller.AttachProfile(profile());
+  base::RunLoop().RunUntilIdle();
+
+  TestShelfController* shelf_controller =
+      test_launcher_controller.test_shelf_controller();
+  ASSERT_TRUE(shelf_controller);
+  EXPECT_EQ(ash::SHELF_ALIGNMENT_LEFT, shelf_controller->alignment());
+  EXPECT_EQ(1u, shelf_controller->alignment_change_count());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            shelf_controller->auto_hide());
+  EXPECT_EQ(1u, shelf_controller->auto_hide_change_count());
+}
+
+// Tests that the shelf controller's changes are not wastefully echoed back.
+TEST_F(ChromeLauncherControllerImplPrefTest, DoNotEchoShelfControllerChanges) {
+  ash::ShelfModel* model = ash::WmShell::Get()->shelf_controller()->model();
+  TestChromeLauncherControllerImpl test_launcher_controller(profile(), model);
+  test_launcher_controller.Init();
+
+  // Simulate login for the test controller.
+  test_launcher_controller.ReleaseProfile();
+  test_launcher_controller.AttachProfile(profile());
+  base::RunLoop().RunUntilIdle();
+
+  TestShelfController* shelf_controller =
+      test_launcher_controller.test_shelf_controller();
+  ASSERT_TRUE(shelf_controller);
+  EXPECT_EQ(ash::SHELF_ALIGNMENT_BOTTOM, shelf_controller->alignment());
+  EXPECT_EQ(1u, shelf_controller->alignment_change_count());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf_controller->auto_hide());
+  EXPECT_EQ(1u, shelf_controller->auto_hide_change_count());
+
+  // Changing settings via the shelf controller causes the launcher controller
+  // to update profile prefs. The launcher controller's prefs observation should
+  // not cause those same changes to be echoed back to the shelf controller.
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  shelf_controller->SetAlignment(ash::SHELF_ALIGNMENT_LEFT, display_id);
+  EXPECT_EQ(2u, shelf_controller->alignment_change_count());
+  shelf_controller->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+                                        display_id);
+  EXPECT_EQ(2u, shelf_controller->auto_hide_change_count());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(ash::SHELF_ALIGNMENT_LEFT, shelf_controller->alignment());
+  EXPECT_EQ(2u, shelf_controller->alignment_change_count());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            shelf_controller->auto_hide());
+  EXPECT_EQ(2u, shelf_controller->auto_hide_change_count());
+
+  PrefService* prefs = profile()->GetTestingPrefService();
+  EXPECT_EQ("Left", prefs->GetString(prefs::kShelfAlignmentLocal));
+  EXPECT_EQ("Left", prefs->GetString(prefs::kShelfAlignment));
+  EXPECT_EQ("Always", prefs->GetString(prefs::kShelfAutoHideBehaviorLocal));
+  EXPECT_EQ("Always", prefs->GetString(prefs::kShelfAutoHideBehavior));
+}

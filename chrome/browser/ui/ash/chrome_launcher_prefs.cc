@@ -114,15 +114,27 @@ void SetPerDisplayPref(PrefService* prefs,
   if (display_id < 0)
     return;
 
+  // Avoid DictionaryPrefUpdate's notifications for read but unmodified prefs.
+  const base::DictionaryValue* current_shelf_prefs =
+      prefs->GetDictionary(prefs::kShelfPreferences);
+  DCHECK(current_shelf_prefs);
+  std::string display_key = base::Int64ToString(display_id);
+  const base::DictionaryValue* current_display_prefs = nullptr;
+  std::string current_value;
+  if (current_shelf_prefs->GetDictionary(display_key, &current_display_prefs) &&
+      current_display_prefs->GetString(pref_key, &current_value) &&
+      current_value == value) {
+    return;
+  }
+
   DictionaryPrefUpdate update(prefs, prefs::kShelfPreferences);
   base::DictionaryValue* shelf_prefs = update.Get();
-  base::DictionaryValue* pref_dictionary = nullptr;
-  std::string key = base::Int64ToString(display_id);
-  if (!shelf_prefs->GetDictionary(key, &pref_dictionary)) {
-    pref_dictionary = new base::DictionaryValue();
-    shelf_prefs->Set(key, pref_dictionary);
+  base::DictionaryValue* display_prefs = nullptr;
+  if (!shelf_prefs->GetDictionary(display_key, &display_prefs)) {
+    display_prefs = new base::DictionaryValue();
+    shelf_prefs->Set(display_key, display_prefs);
   }
-  pref_dictionary->SetStringWithoutPathExpansion(pref_key, value);
+  display_prefs->SetStringWithoutPathExpansion(pref_key, value);
 }
 
 ShelfAlignment AlignmentFromPref(const std::string& value) {

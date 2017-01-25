@@ -61,7 +61,6 @@ class ChromeLauncherControllerImpl
   ~ChromeLauncherControllerImpl() override;
 
   // ChromeLauncherController:
-  void Init() override;
   ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
                                      const std::string& app_id,
                                      ash::ShelfItemStatus status) override;
@@ -151,6 +150,9 @@ class ChromeLauncherControllerImpl
                                 const std::string& app_id) override;
 
  protected:
+  // ChromeLauncherController:
+  void OnInit() override;
+
   // Creates a new app shortcut item and controller on the shelf at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
   ash::ShelfID CreateAppShortcutLauncherItem(
@@ -161,6 +163,7 @@ class ChromeLauncherControllerImpl
   friend class ChromeLauncherControllerImplTest;
   friend class ShelfAppBrowserTest;
   friend class LauncherPlatformAppBrowserTest;
+  friend class TestChromeLauncherControllerImpl;
   FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerImplTest, AppPanels);
 
   typedef std::map<ash::ShelfID, LauncherItemController*> IDToItemControllerMap;

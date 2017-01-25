@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
+#include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,16 @@ ChromeLauncherController::~ChromeLauncherController() {
     instance_ = nullptr;
 }
 
+void ChromeLauncherController::Init() {
+  // Start observing the shelf controller.
+  if (ConnectToShelfController()) {
+    ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
+    observer_binding_.Bind(&ptr_info, shelf_controller_.associated_group());
+    shelf_controller_->AddObserver(std::move(ptr_info));
+  }
+  OnInit();
+}
+
 void ChromeLauncherController::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {
@@ -42,12 +53,6 @@ void ChromeLauncherController::LaunchAppWithLaunchId(
 ChromeLauncherController::ChromeLauncherController() : observer_binding_(this) {
   DCHECK(!instance_);
   instance_ = this;
-  // Start observing the shelf controller immediately.
-  if (ConnectToShelfController()) {
-    ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(&ptr_info, shelf_controller_.associated_group());
-    shelf_controller_->AddObserver(std::move(ptr_info));
-  }
 }
 
 bool ChromeLauncherController::ConnectToShelfController() {
@@ -75,7 +80,7 @@ AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
 }
 
 void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
-  if (!ConnectToShelfController())
+  if (!ConnectToShelfController() || updating_shelf_pref_from_observer_)
     return;
 
   // The pref helper functions return default values for invalid display ids.
@@ -88,7 +93,7 @@ void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
 }
 
 void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
-  if (!ConnectToShelfController())
+  if (!ConnectToShelfController() || updating_shelf_pref_from_observer_)
     return;
 
   // The pref helper functions return default values for invalid display ids.
@@ -170,8 +175,9 @@ void ChromeLauncherController::OnAlignmentChanged(ash::ShelfAlignment alignment,
   // The locked alignment is set temporarily and not saved to preferences.
   if (alignment == ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
     return;
+  DCHECK(!updating_shelf_pref_from_observer_);
+  base::AutoReset<bool> updating(&updating_shelf_pref_from_observer_, true);
   // This will uselessly store a preference value for invalid display ids.
-  // TODO(msw): Avoid handling this pref change and forwarding the value to ash.
   ash::launcher::SetShelfAlignmentPref(profile_->GetPrefs(), display_id,
                                        alignment);
 }
@@ -179,8 +185,9 @@ void ChromeLauncherController::OnAlignmentChanged(ash::ShelfAlignment alignment,
 void ChromeLauncherController::OnAutoHideBehaviorChanged(
     ash::ShelfAutoHideBehavior auto_hide,
     int64_t display_id) {
+  DCHECK(!updating_shelf_pref_from_observer_);
+  base::AutoReset<bool> updating(&updating_shelf_pref_from_observer_, true);
   // This will uselessly store a preference value for invalid display ids.
-  // TODO(msw): Avoid handling this pref change and forwarding the value to ash.
   ash::launcher::SetShelfAutoHideBehaviorPref(profile_->GetPrefs(), display_id,
                                               auto_hide);
 }
