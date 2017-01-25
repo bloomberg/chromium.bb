@@ -2,7 +2,9 @@
 #
 # This file acts as a blacklist; directories and files not listed here will automatically
 # be found and imported.
-
+#
+# This file is read by webkitpy/w3c/directory_owners_extractor.py to decide who
+# to contact for new failures; to allow it to read
 # When removing blacklist entries:
 # * Comment out the line rather than deleting it, to show it is intentional
 # * Change [ Skip ] to [ Pass ]
@@ -162,7 +164,7 @@ external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/css21 [ Skip
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/filters [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/background [ Skip ]
 ## Owners: cbiesinger@chromium.org
-# external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox [ Skip ]
+# external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox [ Pass ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/reftest.list [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/fonts3 [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/images3 [ Skip ]
@@ -326,14 +328,14 @@ external/wpt/streams [ Pass ]
 ## Owners: jww@chromium.org
 external/wpt/subresource-integrity [ Skip ]
 ## Owners: foolip@chromium.org
-external/wpt/svg [ Pass ]
+# external/wpt/svg [ Pass ]
 external/wpt/svg/import [ Skip ]
 external/wpt/tools [ Skip ]
 ## Owners: chongz@chromium.org
 # external/wpt/touch-events [ Pass ]
 external/wpt/typedarrays [ Skip ]
 ## Owners: dtapuska@chromium.org
-external/wpt/uievents [ Pass ]
+# external/wpt/uievents [ Pass ]
 external/wpt/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/user-timing [ Pass ]

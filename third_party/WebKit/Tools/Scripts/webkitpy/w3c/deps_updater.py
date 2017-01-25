@@ -23,9 +23,11 @@ import re
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
-from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
-from webkitpy.w3c.test_importer import TestImporter
 from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME
+from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from webkitpy.w3c.test_importer import TestImporter
+from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
+
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60
@@ -324,7 +326,7 @@ class DepsUpdater(object):
 
     def _upload_cl(self):
         _log.info('Uploading change list.')
-        cc_list = self.get_directory_owners_to_cc()
+        cc_list = self.get_directory_owners()
         description = self._cl_description()
         self.git_cl.run([
             'upload',
@@ -333,6 +335,14 @@ class DepsUpdater(object):
             '-m',
             description,
         ] + ['--cc=' + email for email in cc_list])
+
+    def get_directory_owners(self):
+        """Returns a list of email addresses of owners of changed tests."""
+        _log.info('Gathering directory owners emails to CC.')
+        changed_files = self.host.cwd().changed_files()
+        extractor = DirectoryOwnersExtractor(self.fs)
+        extractor.read_owner_map()
+        return extractor.list_owners(changed_files)
 
     def _cl_description(self):
         description = self.check_run(['git', 'log', '-1', '--format=%B'])
@@ -354,17 +364,6 @@ class DepsUpdater(object):
         if not (master_name and builder_name and build_number):
             return None
         return 'https://build.chromium.org/p/%s/builders/%s/builds/%s' % (master_name, builder_name, build_number)
-
-    def get_directory_owners_to_cc(self):
-        """Returns a list of email addresses to CC for the current import."""
-        _log.info('Gathering directory owners emails to CC.')
-        directory_owners_file_path = self.finder.path_from_webkit_base(
-            'Tools', 'Scripts', 'webkitpy', 'w3c', 'directory_owners.json')
-        with open(directory_owners_file_path) as data_file:
-            directory_to_owner = self.parse_directory_owners(json.load(data_file))
-        out = self.check_run(['git', 'diff', 'origin/master', '--name-only'])
-        changed_files = out.splitlines()
-        return self.generate_email_list(changed_files, directory_to_owner)
 
     @staticmethod
     def parse_directory_owners(decoded_data_file):
