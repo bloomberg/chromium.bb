@@ -93,14 +93,14 @@ class TestPhishingDOMFeatureExtractor : public PhishingDOMFeatureExtractor {
   // this issue.
   blink::WebURL CompleteURL(const blink::WebElement& element,
                             const blink::WebString& partial_url) override {
-    GURL parsed_url(GURL(partial_url.utf8()));
+    GURL parsed_url = blink::WebStringToGURL(partial_url);
     GURL full_url;
     if (parsed_url.has_scheme()) {
       // This is already a complete URL.
-      full_url = GURL(blink::WebStringToGURL(partial_url));
+      full_url = parsed_url;
     } else if (!base_domain_.empty()) {
       // This is a partial URL and only one frame in testing html.
-      full_url = GURL("http://" + base_domain_).Resolve(partial_url);
+      full_url = GURL("http://" + base_domain_).Resolve(partial_url.utf8());
     } else {
       auto it = url_to_frame_domain_map_.find(partial_url.utf8());
       if (it != url_to_frame_domain_map_.end()) {

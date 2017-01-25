@@ -135,9 +135,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
   }
 
   blink::WebDataSource* ds = frame->dataSource();
-  if (!ds ||
-      !base::EqualsASCII(base::StringPiece16(ds->getRequest().httpMethod()),
-                         "GET")) {
+  if (!ds || ds->getRequest().httpMethod().ascii() != "GET") {
     if (ds)
       RecordReasonForSkippingClassificationToUMA(SKIP_NONE_GET);
     RunFailureCallback();
