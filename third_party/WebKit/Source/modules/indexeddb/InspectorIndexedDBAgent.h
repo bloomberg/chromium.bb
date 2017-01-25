@@ -73,6 +73,9 @@ class MODULES_EXPORT InspectorIndexedDBAgent final
                         const String& databaseName,
                         const String& objectStoreName,
                         std::unique_ptr<ClearObjectStoreCallback>) override;
+  void deleteDatabase(const String& securityOrigin,
+                      const String& databaseName,
+                      std::unique_ptr<DeleteDatabaseCallback>) override;
 
  private:
   Member<InspectedFrames> m_inspectedFrames;

@@ -1704,6 +1704,16 @@
                 "returns": [
                 ],
                 "description": "Clears all entries from an object store."
+            },
+            {
+                "name": "deleteDatabase",
+                "parameters": [
+                    { "name": "securityOrigin", "type": "string", "description": "Security origin." },
+                    { "name": "databaseName", "type": "string", "description": "Database name." }
+                ],
+                "returns": [
+                ],
+                "description": "Deletes a database."
             }
         ]
     },

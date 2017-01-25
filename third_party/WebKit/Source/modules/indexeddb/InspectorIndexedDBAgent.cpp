@@ -77,6 +77,8 @@ typedef blink::protocol::IndexedDB::Backend::RequestDataCallback
     RequestDataCallback;
 typedef blink::protocol::IndexedDB::Backend::ClearObjectStoreCallback
     ClearObjectStoreCallback;
+typedef blink::protocol::IndexedDB::Backend::DeleteDatabaseCallback
+    DeleteDatabaseCallback;
 
 namespace blink {
 
@@ -138,6 +140,43 @@ class GetDatabaseNamesCallback final : public EventListener {
         m_requestCallback(std::move(requestCallback)),
         m_securityOrigin(securityOrigin) {}
   std::unique_ptr<RequestDatabaseNamesCallback> m_requestCallback;
+  String m_securityOrigin;
+};
+
+class DeleteCallback final : public EventListener {
+  WTF_MAKE_NONCOPYABLE(DeleteCallback);
+
+ public:
+  static DeleteCallback* create(
+      std::unique_ptr<DeleteDatabaseCallback> requestCallback,
+      const String& securityOrigin) {
+    return new DeleteCallback(std::move(requestCallback), securityOrigin);
+  }
+
+  ~DeleteCallback() override {}
+
+  bool operator==(const EventListener& other) const override {
+    return this == &other;
+  }
+
+  void handleEvent(ExecutionContext*, Event* event) override {
+    if (event->type() != EventTypeNames::success) {
+      m_requestCallback->sendFailure(
+          Response::Error("Failed to delete database."));
+      return;
+    }
+    m_requestCallback->sendSuccess();
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::trace(visitor); }
+
+ private:
+  DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> requestCallback,
+                 const String& securityOrigin)
+      : EventListener(EventListener::CPPEventListenerType),
+        m_requestCallback(std::move(requestCallback)),
+        m_securityOrigin(securityOrigin) {}
+  std::unique_ptr<DeleteDatabaseCallback> m_requestCallback;
   String m_securityOrigin;
 };
 
@@ -949,6 +988,44 @@ void InspectorIndexedDBAgent::clearObjectStore(
       scriptState, objectStoreName, std::move(requestCallback));
   clearObjectStore->start(idbFactory, document->getSecurityOrigin(),
                           databaseName);
+}
+
+void InspectorIndexedDBAgent::deleteDatabase(
+    const String& securityOrigin,
+    const String& databaseName,
+    std::unique_ptr<DeleteDatabaseCallback> requestCallback) {
+  LocalFrame* frame =
+      m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
+  Document* document = frame ? frame->document() : nullptr;
+  if (!document) {
+    requestCallback->sendFailure(Response::Error(kNoDocumentError));
+    return;
+  }
+  IDBFactory* idbFactory = nullptr;
+  Response response = assertIDBFactory(document, idbFactory);
+  if (!response.isSuccess()) {
+    requestCallback->sendFailure(response);
+    return;
+  }
+
+  ScriptState* scriptState = ScriptState::forMainWorld(frame);
+  if (!scriptState) {
+    requestCallback->sendFailure(Response::InternalError());
+    return;
+  }
+  ScriptState::Scope scope(scriptState);
+  DummyExceptionStateForTesting exceptionState;
+  IDBRequest* idbRequest = idbFactory->closeConnectionsAndDeleteDatabase(
+      scriptState, databaseName, exceptionState);
+  if (exceptionState.hadException()) {
+    requestCallback->sendFailure(Response::Error("Could not delete database."));
+    return;
+  }
+  idbRequest->addEventListener(
+      EventTypeNames::success,
+      DeleteCallback::create(std::move(requestCallback),
+                             document->getSecurityOrigin()->toRawString()),
+      false);
 }
 
 DEFINE_TRACE(InspectorIndexedDBAgent) {
