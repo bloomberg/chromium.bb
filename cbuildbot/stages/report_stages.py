@@ -12,6 +12,7 @@ import os
 import sys
 import StringIO
 
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import tree_status
@@ -877,6 +878,41 @@ class ReportStage(generic_stages.BuilderStage,
                                         builder_run.debug,
                                         upload_urls=upload_urls)
 
+  def IsSheriffOMaticImportantBuild(self):
+    """Determines if the current build is important for Sheriff-o-matic.
+
+    Returns:
+      True if the build is important
+    """
+    if self._run.debug:
+      return False
+    # active_waterfall can be wrong for things like try jobs.
+    for build in constants.SOM_IMPORTANT_BUILDS:
+      if (os.environ.get('BUILDBOT_MASTERNAME', '') == build[0] and
+          self._run.config.name == build[1]):
+        return True
+    return False
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def RunAlertsDispatcher(self, db_credentials_dir):
+    """Submit alerts summary to Sheriff-o-Matic.
+
+    Args:
+      db_credentials_dir: Path to CIDB database credentials.
+    """
+    dispatcher_cmd = [os.path.join(self._build_root, 'chromite', 'scripts',
+                                   'som_alerts_dispatcher')]
+    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
+      # User the service account file if it exists.
+      dispatcher_cmd.extend(['--service_acct_json',
+                             constants.CHROMEOS_SERVICE_ACCOUNT])
+    dispatcher_cmd.append(db_credentials_dir)
+
+    try:
+      cros_build_lib.RunCommand(dispatcher_cmd)
+    except cros_build_lib.RunCommandError as e:
+      logging.warn('Unable to run alerts dispatcher: %s', e)
+
   def CollectComparativeBuildTimings(self, output, build_id, db):
     """Create a report comparing this build to recent history.
 
@@ -1017,12 +1053,14 @@ class ReportStage(generic_stages.BuilderStage,
       # Dump report about things we retry.
       retry_stats.ReportStats(sys.stdout)
 
+      if self.IsSheriffOMaticImportantBuild():
+        self.RunAlertsDispatcher(db.db_credentials_dir)
+
       # Dump performance stats for this build versus recent builds.
-      if db:
-        output = StringIO.StringIO()
-        self.CollectComparativeBuildTimings(output, build_id, db)
-        # Bunch up our output, so it doesn't interleave with CIDB logs.
-        sys.stdout.write(output.getvalue())
+      output = StringIO.StringIO()
+      self.CollectComparativeBuildTimings(output, build_id, db)
+      # Bunch up our output, so it doesn't interleave with CIDB logs.
+      sys.stdout.write(output.getvalue())
 
   def _GetBuildDuration(self):
     """Fetches the duration of this build in seconds, from cidb.

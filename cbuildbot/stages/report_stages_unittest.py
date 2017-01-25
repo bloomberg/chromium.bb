@@ -405,6 +405,17 @@ class ReportStageTest(AbstractReportStageTestCase):
         child_configs, config_status_map)
     self.assertEqual(expected, child_config_list)
 
+  def testIsSheriffOMaticImportantBuildTrue(self):
+    """Test IsSheriffOMaticImportantBuild with important build."""
+    os.environ['BUILDBOT_MASTERNAME'] = constants.WATERFALL_INTERNAL
+    self._Prepare('master-paladin')
+    stage = self.ConstructStage()
+    self.assertTrue(stage.IsSheriffOMaticImportantBuild())
+
+  def testIsSheriffOMaticImportantBuild(self):
+    """Test IsSheriffOMaticImportantBuild with unimportant build."""
+    stage = self.ConstructStage()
+    self.assertFalse(stage.IsSheriffOMaticImportantBuild())
 
 class ReportStageNoSyncTest(AbstractReportStageTestCase):
   """Test the Report stage if SyncStage didn't complete.
