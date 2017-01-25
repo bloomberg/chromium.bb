@@ -93,6 +93,12 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+// Enables using GDI to print text as simply text.
+const base::Feature kGdiTextPrinting {"GdiTextPrinting",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined (OS_CHROMEOS)
 // Enables or disables the Happiness Tracking System for the device.
 const base::Feature kHappinessTrackingSystem {

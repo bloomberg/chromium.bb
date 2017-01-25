@@ -15535,6 +15535,15 @@ read aloud to screenreader users to announce that a completion is available.">
             Enabled (Flash lowers volume when interrupted by other sound, experimental)
         </message>
     </if>
+    
+    <if expr="is_win">
+      <message name="IDS_FLAGS_GDI_TEXT_PRINTING" desc="Name for the flag that enables using GDI to print text">
+        GDI Text Printing
+      </message>
+      <message name="IDS_FLAGS_GDI_TEXT_PRINTING_DESCRIPTION" desc="Description of the flag that enables using GDI to print text.">
+        Use GDI to print text as simply text
+      </message>
+    </if>
 
     <if expr="is_android">
       <message name="IDS_FLAGS_MODAL_PERMISSION_PROMPTS_NAME" desc="Name for the flag to enable modal permission prompts on Android" translateable="false">

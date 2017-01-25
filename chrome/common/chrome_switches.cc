@@ -1081,19 +1081,12 @@ const char kMakeChromeDefault[] = "make-chrome-default";
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-// Disables using GDI to print text as simply text. Fallback to printing text
-// as paths. Overrides --enable-gdi-text-printing.
-const char kDisableGDITextPrinting[] = "disable-gdi-text-printing";
-
 // Disables per monitor DPI for supported Windows versions.
 // This flag overrides kEnablePerMonitorDpi.
 const char kDisablePerMonitorDpi[]          = "disable-per-monitor-dpi";
 
 // Fallback to XPS. By default connector uses CDD.
 const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
-
-// Enables using GDI to print text as simply text.
-const char kEnableGDITextPrinting[] = "enable-gdi-text-printing";
 
 // Enables per monitor DPI for supported Windows versions.
 const char kEnablePerMonitorDpi[]           = "enable-per-monitor-dpi";
@@ -1206,15 +1199,6 @@ bool SettingsWindowEnabled() {
 bool PowerOverlayEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnablePowerOverlay);
-}
-#endif
-
-#if defined(OS_WIN)
-bool GDITextPrintingEnabled() {
-  const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(kDisableGDITextPrinting))
-    return false;
-  return command_line.HasSwitch(kEnableGDITextPrinting);
 }
 #endif
 

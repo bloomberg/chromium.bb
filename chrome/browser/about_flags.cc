@@ -2214,6 +2214,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchCalibrationSetting)},
 #endif // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+     {"gdi-text-printing", IDS_FLAGS_GDI_TEXT_PRINTING,
+       IDS_FLAGS_GDI_TEXT_PRINTING_DESCRIPTION, kOsWin,
+       FEATURE_VALUE_TYPE(features::kGdiTextPrinting)}
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

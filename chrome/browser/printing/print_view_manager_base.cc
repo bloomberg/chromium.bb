@@ -46,7 +46,7 @@
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #endif
 
 using base::TimeDelta;
@@ -187,7 +187,7 @@ void PrintViewManagerBase::OnDidPrintPage(
     bool print_text_with_gdi =
         document->settings().print_text_with_gdi() &&
         !document->settings().printer_is_xps() &&
-        switches::GDITextPrintingEnabled();
+        base::FeatureList::IsEnabled(features::kGdiTextPrinting);
     scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
         reinterpret_cast<const unsigned char*>(shared_buf->memory()),
         params.data_size);
