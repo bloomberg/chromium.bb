@@ -5,6 +5,7 @@
 #include "ui/wm/core/window_util.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -82,6 +83,39 @@ bool CanActivateWindow(aura::Window* window) {
   aura::client::ActivationClient* client =
       aura::client::GetActivationClient(window->GetRootWindow());
   return client && client->CanActivateWindow(window);
+}
+
+void SetWindowFullscreen(aura::Window* window, bool fullscreen) {
+  DCHECK(window);
+  ui::WindowShowState current_show_state =
+      window->GetProperty(aura::client::kShowStateKey);
+  bool is_fullscreen = current_show_state == ui::SHOW_STATE_FULLSCREEN;
+  if (fullscreen == is_fullscreen)
+    return;
+  if (fullscreen) {
+    // Save the previous show state so that we can correctly restore it after
+    // exiting the fullscreen mode.
+    ui::WindowShowState pre_show_state = current_show_state;
+    // If the previous show state is ui::SHOW_STATE_MINIMIZED, we will use
+    // the show state before the window was minimized. But if the window was
+    // fullscreen before it was minimized, we will keep the
+    // PreMinimizedShowState unchanged.
+    if (pre_show_state == ui::SHOW_STATE_MINIMIZED) {
+      pre_show_state =
+          window->GetProperty(aura::client::kPreMinimizedShowStateKey);
+    }
+    if (pre_show_state != ui::SHOW_STATE_FULLSCREEN) {
+      window->SetProperty(aura::client::kPreFullscreenShowStateKey,
+                          pre_show_state);
+    }
+    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  } else {
+    ui::WindowShowState pre_fullscreen_show_state =
+        window->GetProperty(aura::client::kPreFullscreenShowStateKey);
+    DCHECK_NE(pre_fullscreen_show_state, ui::SHOW_STATE_MINIMIZED);
+    window->SetProperty(aura::client::kShowStateKey, pre_fullscreen_show_state);
+    window->ClearProperty(aura::client::kPreFullscreenShowStateKey);
+  }
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {

@@ -218,9 +218,6 @@ class VIEWS_EXPORT NativeWidgetAura
 
   gfx::NativeCursor cursor_;
 
-  // The saved window state for exiting full screen state.
-  ui::WindowShowState saved_window_state_;
-
   std::unique_ptr<TooltipManagerAura> tooltip_manager_;
 
   // Reorders child windows of |window_| associated with a view based on the

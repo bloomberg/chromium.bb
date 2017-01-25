@@ -766,15 +766,7 @@ void WmWindow::Deactivate() {
 }
 
 void WmWindow::SetFullscreen(bool fullscreen) {
-  if (fullscreen) {
-    window_->SetProperty(aura::client::kShowStateKey,
-                         ui::SHOW_STATE_FULLSCREEN);
-  } else {
-    auto state = window_->GetProperty(aura::client::kPreFullscreenShowStateKey);
-    DCHECK_NE(state, ui::SHOW_STATE_MINIMIZED);
-    window_->SetProperty(aura::client::kShowStateKey, state);
-    window_->ClearProperty(aura::client::kPreFullscreenShowStateKey);
-  }
+  ::wm::SetWindowFullscreen(window_, fullscreen);
 }
 
 void WmWindow::Maximize() {

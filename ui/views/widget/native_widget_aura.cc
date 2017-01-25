@@ -108,7 +108,6 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate,
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       destroying_(false),
       cursor_(gfx::kNullCursor),
-      saved_window_state_(ui::SHOW_STATE_DEFAULT),
       close_widget_factory_(this) {
   aura::client::SetFocusChangeObserver(window_, this);
   aura::client::SetActivationChangeObserver(window_, this);
@@ -633,14 +632,7 @@ void NativeWidgetAura::SetFullscreen(bool fullscreen) {
   if (!window_ || IsFullscreen() == fullscreen)
     return;  // Nothing to do.
 
-  // Save window state before entering full screen so that it could restored
-  // when exiting full screen.
-  if (fullscreen)
-    saved_window_state_ = window_->GetProperty(aura::client::kShowStateKey);
-
-  window_->SetProperty(
-      aura::client::kShowStateKey,
-      fullscreen ? ui::SHOW_STATE_FULLSCREEN : saved_window_state_);
+  wm::SetWindowFullscreen(window_, fullscreen);
 }
 
 bool NativeWidgetAura::IsFullscreen() const {

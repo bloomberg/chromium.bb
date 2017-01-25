@@ -767,23 +767,6 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     }
   }
 
-  if (window_state->IsFullscreen()) {
-    // Save the previous show state so that we can correctly restore it after
-    // exiting the fullscreen mode.
-    auto previous_ui_state_type = ToWindowShowState(previous_state_type);
-    if (previous_ui_state_type == ui::SHOW_STATE_MINIMIZED) {
-      // If the previous show state is ui::SHOW_STATE_MINIMIZED, we will use
-      // the show state before the window was minimized. But if the window
-      // was fullscreen before it was minimized, we will keep the
-      // PreFullscreenShowStat unchanged.
-      previous_ui_state_type = window->GetPreMinimizedShowState();
-      if (previous_ui_state_type != ui::SHOW_STATE_FULLSCREEN)
-        window->SetPreFullscreenShowState(previous_ui_state_type);
-    } else {
-      window->SetPreFullscreenShowState(previous_ui_state_type);
-    }
-  }
-
   if (window_state->IsMinimized()) {
     // Save the previous show state so that we can correctly restore it after
     // exiting the minimized mode.

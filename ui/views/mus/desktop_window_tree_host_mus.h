@@ -143,10 +143,6 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
   DesktopNativeWidgetAura* desktop_native_widget_aura_;
 
-  // State to restore window to when exiting fullscreen. Only valid if
-  // fullscreen.
-  ui::WindowShowState fullscreen_restore_state_;
-
   // We can optionally have a parent which can order us to close, or own
   // children who we're responsible for closing when we CloseNow().
   DesktopWindowTreeHostMus* parent_ = nullptr;
