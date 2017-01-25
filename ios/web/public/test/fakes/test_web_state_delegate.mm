@@ -8,6 +8,13 @@
 
 namespace web {
 
+TestRepostFormRequest::TestRepostFormRequest() {}
+
+TestRepostFormRequest::~TestRepostFormRequest() = default;
+
+TestRepostFormRequest::TestRepostFormRequest(const TestRepostFormRequest&) =
+    default;
+
 TestAuthenticationRequest::TestAuthenticationRequest() {}
 
 TestAuthenticationRequest::~TestAuthenticationRequest() = default;
@@ -33,6 +40,14 @@ bool TestWebStateDelegate::HandleContextMenu(WebState*,
                                              const ContextMenuParams&) {
   handle_context_menu_called_ = true;
   return NO;
+}
+
+void TestWebStateDelegate::ShowRepostFormWarningDialog(
+    WebState* source,
+    const base::Callback<void(bool)>& callback) {
+  last_repost_form_request_ = base::MakeUnique<TestRepostFormRequest>();
+  last_repost_form_request_->web_state = source;
+  last_repost_form_request_->callback = callback;
 }
 
 TestJavaScriptDialogPresenter*

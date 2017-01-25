@@ -5347,10 +5347,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If the request is form submission or resubmission, then prompt the
   // user before proceeding.
   DCHECK(isFormPOSTResubmission);
-  [self.delegate webController:self
-      onFormResubmissionForRequest:nil
-                     continueBlock:webViewNavigationBlock
-                       cancelBlock:defaultNavigationBlock];
+  _webStateImpl->ShowRepostFormWarningDialog(
+      base::BindBlock(^(bool shouldContinue) {
+        if (shouldContinue)
+          webViewNavigationBlock();
+        else
+          defaultNavigationBlock();
+      }));
 }
 
 #pragma mark -

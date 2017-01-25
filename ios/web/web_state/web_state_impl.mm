@@ -454,6 +454,15 @@ bool WebStateImpl::HandleContextMenu(const web::ContextMenuParams& params) {
   return false;
 }
 
+void WebStateImpl::ShowRepostFormWarningDialog(
+    const base::Callback<void(bool)>& callback) {
+  if (delegate_) {
+    delegate_->ShowRepostFormWarningDialog(this, callback);
+  } else {
+    callback.Run(true);
+  }
+}
+
 void WebStateImpl::RunJavaScriptDialog(
     const GURL& origin_url,
     JavaScriptDialogType javascript_dialog_type,

@@ -81,16 +81,6 @@ struct Referrer;
 // Called when a placeholder image should be displayed instead of the WebView.
 - (void)webController:(CRWWebController*)webController
     retrievePlaceholderOverlayImage:(void (^)(UIImage*))block;
-// Consults the delegate whether a form should be resubmitted for a request.
-// Occurs when a POST request is reached when navigating through history.
-// Call |continueBlock| if a form should be resubmitted.
-// Call |cancelBlock| if a form should not be resubmitted.
-// Delegates must call either of these (just once) before the load will
-// continue.
-- (void)webController:(CRWWebController*)webController
-    onFormResubmissionForRequest:(NSURLRequest*)request
-                   continueBlock:(ProceduralBlock)continueBlock
-                     cancelBlock:(ProceduralBlock)cancelBlock;
 
 // ---------------------------------------------------------------------
 // TODO(rohitrao): Eliminate as many of the following delegate methods as

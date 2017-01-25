@@ -417,6 +417,13 @@ TEST_F(WebStateTest, DelegateTest) {
   web_state_->HandleContextMenu(context_menu_params);
   EXPECT_TRUE(delegate.handle_context_menu_called());
 
+  // Test that ShowRepostFormWarningDialog() is called.
+  EXPECT_FALSE(delegate.last_repost_form_request());
+  base::Callback<void(bool)> repost_callback;
+  web_state_->ShowRepostFormWarningDialog(repost_callback);
+  ASSERT_TRUE(delegate.last_repost_form_request());
+  EXPECT_EQ(delegate.last_repost_form_request()->web_state, web_state_.get());
+
   // Test that GetJavaScriptDialogPresenter() is called.
   TestJavaScriptDialogPresenter* presenter =
       delegate.GetTestJavaScriptDialogPresenter();

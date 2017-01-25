@@ -30,6 +30,12 @@ bool WebStateDelegate::HandleContextMenu(WebState*, const ContextMenuParams&) {
   return false;
 }
 
+void WebStateDelegate::ShowRepostFormWarningDialog(
+    WebState*,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(true);
+}
+
 JavaScriptDialogPresenter* WebStateDelegate::GetJavaScriptDialogPresenter(
     WebState*) {
   return nullptr;

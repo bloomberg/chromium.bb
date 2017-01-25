@@ -30,6 +30,12 @@
 - (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params;
 
+// Requests the repost form confirmation dialog. Clients must call |handler|
+// with YES to allow repost and with NO to cancel the repost. If this method is
+// not implemented then WebState will repost the form.
+- (void)webState:(web::WebState*)webState
+    runRepostFormDialogWithCompletionHandler:(void (^)(BOOL))handler;
+
 // Returns a pointer to a service to manage dialogs. May return null in which
 // case dialogs aren't shown.
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
@@ -60,6 +66,9 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
   void LoadProgressChanged(WebState* source, double progress) override;
   bool HandleContextMenu(WebState* source,
                          const ContextMenuParams& params) override;
+  void ShowRepostFormWarningDialog(
+      WebState* source,
+      const base::Callback<void(bool)>& callback) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
       WebState* source) override;
   void OnAuthRequired(WebState* source,

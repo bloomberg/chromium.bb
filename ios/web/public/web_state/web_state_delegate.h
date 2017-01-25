@@ -39,6 +39,13 @@ class WebStateDelegate {
   virtual bool HandleContextMenu(WebState* source,
                                  const ContextMenuParams& params);
 
+  // Requests the repost form confirmation dialog. Clients must call |callback|
+  // with true to allow repost and with false to cancel the repost. If this
+  // method is not implemented then WebState will repost the form.
+  virtual void ShowRepostFormWarningDialog(
+      WebState* source,
+      const base::Callback<void(bool)>& callback);
+
   // Returns a pointer to a service to manage dialogs. May return nullptr in
   // which case dialogs aren't shown.
   // TODO(crbug.com/622084): Find better place for this method.

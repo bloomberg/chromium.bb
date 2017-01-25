@@ -18,6 +18,7 @@
 
 @synthesize webState = _webState;
 @synthesize changedProgress = _changedProgress;
+@synthesize repostFormWarningRequested = _repostFormWarningRequested;
 @synthesize authenticationRequested = _authenticationRequested;
 
 - (web::WebState*)webState:(web::WebState*)webState
@@ -37,6 +38,12 @@
   _webState = webState;
   _contextMenuParams.reset(new web::ContextMenuParams(params));
   return YES;
+}
+
+- (void)webState:(web::WebState*)webState
+    runRepostFormDialogWithCompletionHandler:(void (^)(BOOL))handler {
+  _webState = webState;
+  _repostFormWarningRequested = YES;
 }
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:

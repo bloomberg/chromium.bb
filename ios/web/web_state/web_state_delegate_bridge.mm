@@ -37,6 +37,21 @@ bool WebStateDelegateBridge::HandleContextMenu(
   return NO;
 }
 
+void WebStateDelegateBridge::ShowRepostFormWarningDialog(
+    WebState* source,
+    const base::Callback<void(bool)>& callback) {
+  base::Callback<void(bool)> local_callback(callback);
+  SEL selector = @selector(webState:runRepostFormDialogWithCompletionHandler:);
+  if ([delegate_ respondsToSelector:selector]) {
+    [delegate_ webState:source
+        runRepostFormDialogWithCompletionHandler:^(BOOL should_continue) {
+          local_callback.Run(should_continue);
+        }];
+  } else {
+    local_callback.Run(true);
+  }
+}
+
 JavaScriptDialogPresenter* WebStateDelegateBridge::GetJavaScriptDialogPresenter(
     WebState* source) {
   SEL selector = @selector(javaScriptDialogPresenterForWebState:);

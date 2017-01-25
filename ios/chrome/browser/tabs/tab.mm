@@ -1636,26 +1636,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return tab.webController;
 }
 
-- (void)webController:(CRWWebController*)webController
-    onFormResubmissionForRequest:(NSURLRequest*)request
-                   continueBlock:(ProceduralBlock)continueBlock
-                     cancelBlock:(ProceduralBlock)cancelBlock {
-  // Display the action sheet with the arrow pointing at the top center of the
-  // web contents.
-  CGPoint dialogLocation =
-      CGPointMake(CGRectGetMidX(webController.view.frame),
-                  CGRectGetMinY(webController.view.frame) +
-                      [self.tabHeadersDelegate headerHeightForTab:self]);
-  auto helper = FormResubmissionTabHelper::FromWebState(webController.webState);
-  helper->PresentFormResubmissionDialog(dialogLocation,
-                                        base::BindBlock(^(bool shouldContinue) {
-                                          if (shouldContinue)
-                                            continueBlock();
-                                          else
-                                            cancelBlock();
-                                        }));
-}
-
 // The web page wants to close its own window.
 - (void)webPageOrderedClose {
   // Only allow a web page to close itself if it was opened by DOM, or if there

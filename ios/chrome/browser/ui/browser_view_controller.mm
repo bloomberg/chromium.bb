@@ -147,6 +147,7 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/web/error_page_content.h"
+#import "ios/chrome/browser/web/form_resubmission_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #import "ios/chrome/common/material_timing.h"
@@ -2568,6 +2569,22 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   [_contextMenuCoordinator start];
   return YES;
+}
+
+- (void)webState:(web::WebState*)webState
+    runRepostFormDialogWithCompletionHandler:(void (^)(BOOL))handler {
+  // Display the action sheet with the arrow pointing at the top center of the
+  // web contents.
+  UIView* view = webState->GetView();
+  CGPoint dialogLocation =
+      CGPointMake(CGRectGetMidX(view.frame),
+                  CGRectGetMinY(view.frame) +
+                      [self headerHeightForTab:[self tabForWebState:webState]]);
+  auto helper = FormResubmissionTabHelper::FromWebState(webState);
+  helper->PresentFormResubmissionDialog(dialogLocation,
+                                        base::BindBlock(^(bool shouldContinue) {
+                                          handler(shouldContinue);
+                                        }));
 }
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:

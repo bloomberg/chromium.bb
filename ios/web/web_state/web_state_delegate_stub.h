@@ -21,9 +21,13 @@
 // ContextMenuParams reveived in |webState:handleContextMenu:| call.
 // nullptr if that delegate method was not called.
 @property(nonatomic, readonly) web::ContextMenuParams* contextMenuParams;
+// Whether |webState:runRepostFormDialogWithCompletionHandler:| has been called
+// or not.
+@property(nonatomic, readonly) BOOL repostFormWarningRequested;
 // Whether |javaScriptDialogPresenterForWebState:| has been called or not.
 @property(nonatomic, readonly) BOOL javaScriptDialogPresenterRequested;
-// Whether |authenticationRequested| has been called or not.
+// Whether |webState:didRequestHTTPAuthForProtectionSpace:...| has been called
+// or not.
 @property(nonatomic, readonly) BOOL authenticationRequested;
 
 @end
