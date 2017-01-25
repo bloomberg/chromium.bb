@@ -126,9 +126,6 @@ void UkmService::Initialize() {
 void UkmService::EnableReporting() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::EnableReporting";
-#if defined(OFFICIAL_BUILD)
-  CHECK(false);  // Remove this once UKM checks sync state.
-#endif
   if (!initialize_started_)
     Initialize();
   scheduler_->Start();
