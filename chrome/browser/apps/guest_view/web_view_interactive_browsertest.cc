@@ -1356,47 +1356,40 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, TextSelection) {
 }
 #endif
 
-// Flaky on MacOS builders. https://crbug.com/670008
-#if defined(OS_MACOSX)
-#define MAYBE_FocusAndVisibility DISABLED_FocusAndVisibility
-#else
-#define MAYBE_FocusAndVisibility FocusAndVisibility
-#endif
-
-IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, MAYBE_FocusAndVisibility) {
+IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, FocusAndVisibility) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   LoadAndLaunchPlatformApp("web_view/focus_visibility",
                            "WebViewInteractiveTest.LOADED");
   ExtensionTestMessageListener test_init_listener(
       "WebViewInteractiveTest.WebViewInitialized", false);
-  SendMessageToEmbedder("init");
+  SendMessageToEmbedder(GetParam() ? "init-oopif" : "init");
   test_init_listener.WaitUntilSatisfied();
-
-  // In oopif-webview, wait until the tab key triggers a focus change.
-  std::unique_ptr<content::FrameFocusedObserver> frame_focus_observer =
-      GetParam() ? base::MakeUnique<content::FrameFocusedObserver>(
-                       GetGuestViewManager()
-                           ->WaitForSingleGuestCreated()
-                           ->GetMainFrame())
-                 : nullptr;
 
   // Send several tab-keys. The button inside webview should receive focus at
   // least once.
-  for (size_t i = 0; i < 2; ++i)
+  ExtensionTestMessageListener key_processed_listener(
+      "WebViewInteractiveTest.KeyUp", false);
+#if defined(OS_MACOSX)
+  // On mac, the event listener seems one key event behind and deadlocks. Send
+  // an extra tab to get things unblocked. See http://crbug.com/685281 when
+  // fixed, this can be removed.
+  SendKeyPressToPlatformApp(ui::VKEY_TAB);
+#endif
+  for (size_t i = 0; i < 4; ++i) {
+    key_processed_listener.Reset();
     SendKeyPressToPlatformApp(ui::VKEY_TAB);
-  if (frame_focus_observer) {
-    frame_focus_observer->Wait();
-    frame_focus_observer.reset();
+    EXPECT_TRUE(key_processed_listener.WaitUntilSatisfied());
   }
-  for (size_t i = 0; i < 2; ++i)
-    SendKeyPressToPlatformApp(ui::VKEY_TAB);
+
+  // Verify that the button in the guest receives focus.
   ExtensionTestMessageListener webview_button_focused_listener(
       "WebViewInteractiveTest.WebViewButtonWasFocused", false);
   webview_button_focused_listener.set_failure_message(
       "WebViewInteractiveTest.WebViewButtonWasNotFocused");
   SendMessageToEmbedder("verify");
   EXPECT_TRUE(webview_button_focused_listener.WaitUntilSatisfied());
-  // Now make the <webview> invisible.
+
+  // Reset the test and now make the <webview> invisible.
   ExtensionTestMessageListener reset_listener("WebViewInteractiveTest.DidReset",
                                               false);
   SendMessageToEmbedder("reset");
@@ -1405,10 +1398,15 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, MAYBE_FocusAndVisibility) {
       "WebViewInteractiveTest.DidHideWebView", false);
   SendMessageToEmbedder("hide-webview");
   did_hide_webview_listener.WaitUntilSatisfied();
+
+
   // Send the same number of keys and verify that the webview button was not
   // this time.
-  for (size_t i = 0; i < 4; ++i)
+  for (size_t i = 0; i < 4; ++i) {
+    key_processed_listener.Reset();
     SendKeyPressToPlatformApp(ui::VKEY_TAB);
+    EXPECT_TRUE(key_processed_listener.WaitUntilSatisfied());
+  }
   ExtensionTestMessageListener webview_button_not_focused_listener(
       "WebViewInteractiveTest.WebViewButtonWasNotFocused", false);
   webview_button_not_focused_listener.set_failure_message(

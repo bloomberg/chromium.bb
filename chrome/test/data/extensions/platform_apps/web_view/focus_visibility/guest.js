@@ -1,27 +1,22 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+'use strict';
 
-var buttonWasFocused = false;
-
-
-function reset() {
-  buttonWasFocused = false;
-}
+var embedder = null;
 
 function onButtonReceivedFocus(e) {
-  buttonWasFocused = true;
+  embedder.postMessage('focus-event', '*');
 }
 
 function onWindowMessage(e) {
   switch (e.data) {
-    case 'verify':
-      e.source.postMessage(
-          buttonWasFocused ? 'was-focused' : 'was-not-focused', '*');
+    case 'connect':
+      embedder = e.source;
+      embedder.postMessage('connected', '*');
       break;
     case 'reset':
-      reset();
-      e.source.postMessage('', '*');
+      embedder.postMessage('reset-complete', '*');
       break;
   }
 }
@@ -32,3 +27,6 @@ function onLoad() {
 
 window.addEventListener('message', onWindowMessage);
 window.addEventListener('load', onLoad);
+window.addEventListener('keyup', function() {
+  embedder.postMessage('guest-keyup', '*');
+});
