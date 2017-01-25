@@ -249,7 +249,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       last_send_for_timeout_(clock_->ApproximateNow()),
-      packet_number_of_last_sent_packet_(0),
       sent_packet_manager_(perspective, clock_, &stats_, kCubicBytes, kNack),
       version_negotiation_state_(START_NEGOTIATION),
       perspective_(perspective),
@@ -1527,11 +1526,6 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   }
 
   QuicPacketNumber packet_number = packet->packet_number;
-  // TODO(ianswett): Remove packet_number_of_last_sent_packet_ because it's
-  // redundant to SentPacketManager_->GetLargestPacket in most cases, and wrong
-  // for multipath.
-  DCHECK_LE(packet_number_of_last_sent_packet_, packet_number);
-  packet_number_of_last_sent_packet_ = packet_number;
 
   QuicPacketLength encrypted_length = packet->encrypted_length;
   // Termination packets are eventually owned by TimeWaitListManager.
@@ -1627,7 +1621,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     last_send_for_timeout_ = packet_send_time;
   }
   SetPingAlarm();
-  MaybeSetMtuAlarm();
+  MaybeSetMtuAlarm(packet_number);
   QUIC_DVLOG(1) << ENDPOINT << "time we began writing last sent packet: "
                 << packet_send_time.ToDebuggingValue();
 
@@ -2147,7 +2141,7 @@ void QuicConnection::SetRetransmissionAlarm() {
                                 QuicTime::Delta::FromMilliseconds(1));
 }
 
-void QuicConnection::MaybeSetMtuAlarm() {
+void QuicConnection::MaybeSetMtuAlarm(QuicPacketNumber sent_packet_number) {
   // Do not set the alarm if the target size is less than the current size.
   // This covers the case when |mtu_discovery_target_| is at its default value,
   // zero.
@@ -2163,7 +2157,7 @@ void QuicConnection::MaybeSetMtuAlarm() {
     return;
   }
 
-  if (packet_number_of_last_sent_packet_ >= next_mtu_probe_at_) {
+  if (sent_packet_number >= next_mtu_probe_at_) {
     // Use an alarm to send the MTU probe to ensure that no ScopedPacketBundlers
     // are active.
     mtu_discovery_alarm_->Set(clock_->ApproximateNow());
@@ -2336,8 +2330,8 @@ void QuicConnection::DiscoverMtu() {
   // MaybeSetMtuAlarm() will not realize that the probe has been just sent, and
   // will reschedule this probe again.
   packets_between_mtu_probes_ *= 2;
-  next_mtu_probe_at_ =
-      packet_number_of_last_sent_packet_ + packets_between_mtu_probes_ + 1;
+  next_mtu_probe_at_ = sent_packet_manager_.GetLargestSentPacket() +
+                       packets_between_mtu_probes_ + 1;
   ++mtu_probe_count_;
 
   QUIC_DVLOG(2) << "Sending a path MTU discovery packet #" << mtu_probe_count_;
@@ -2375,7 +2369,7 @@ void QuicConnection::StartPeerMigration(
                   << ", migrating connection.";
 
   highest_packet_sent_before_peer_migration_ =
-      packet_number_of_last_sent_packet_;
+      sent_packet_manager_.GetLargestSentPacket();
   peer_address_ = last_packet_source_address_;
   active_peer_migration_type_ = peer_migration_type;
 

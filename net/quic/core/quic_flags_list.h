@@ -69,7 +69,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_36_v3, true)
 
 // If true, use async codepaths to invoke ProofSource::GetProof.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_enable_async_get_proof, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_enable_async_get_proof, false)
 
 // If true, only open limited number of quic sessions per epoll event. Leave the
 // rest to next event.
@@ -211,9 +211,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_34, false)
 // Allow quic to properly support proxying 100 Continue responses.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_supports_100_continue, false)
 
-// If true, enable QUIC v38.
+// If true, enable quic version 38
 QUIC_FLAG(bool, FLAGS_quic_enable_version_38, false)
 
-// Log information about whether the connection is application-limited
-// into QUIC BBR traces.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_log_app_limited, false)
+// When true, ensures the session's flow control window is always at least 1.5x
+// larger than the largest stream flow control window.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_flow_control_invariant, false)

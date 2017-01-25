@@ -645,10 +645,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     const bool already_delayed_;
   };
 
-  QuicPacketNumber packet_number_of_last_sent_packet() const {
-    return packet_number_of_last_sent_packet_;
-  }
-
   QuicPacketWriter* writer() { return writer_; }
   const QuicPacketWriter* writer() const { return writer_; }
 
@@ -822,7 +818,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void SetRetransmissionAlarm();
 
   // Sets the MTU discovery alarm if necessary.
-  void MaybeSetMtuAlarm();
+  // |sent_packet_number| is the recently sent packet number.
+  void MaybeSetMtuAlarm(QuicPacketNumber sent_packet_number);
 
   HasRetransmittableData IsRetransmittable(const SerializedPacket& packet);
   bool IsTerminationPacket(const SerializedPacket& packet);
@@ -1022,10 +1019,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // The the send time of the first retransmittable packet sent after
   // |time_of_last_received_packet_|.
   QuicTime last_send_for_timeout_;
-
-  // packet number of the last sent packet.  Packets are guaranteed to be sent
-  // in packet number order.
-  QuicPacketNumber packet_number_of_last_sent_packet_;
 
   // Sent packet manager which tracks the status of packets sent by this
   // connection and contains the send and receive algorithms to determine when
