@@ -214,7 +214,12 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    */
   __gCrWeb.fillPasswordFormWithData =
       function(formData, username, password, win, opt_normalizedOrigin) {
-    var doc = win.document;
+    var doc = null;
+
+    try {
+      doc = win.document;
+    } catch(e) {
+    }
 
     // If unable to read the 'document' property from a frame in a different
     // origin, do nothing.
