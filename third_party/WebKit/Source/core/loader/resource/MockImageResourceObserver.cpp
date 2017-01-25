@@ -44,6 +44,7 @@ void MockImageResourceObserver::imageNotifyFinished(
   m_imageNotifyFinishedCount++;
   m_imageWidthOnImageNotifyFinished =
       m_content->hasImage() ? m_content->getImage()->width() : 0;
+  m_statusOnImageNotifyFinished = m_content->getStatus();
 }
 
 bool MockImageResourceObserver::imageNotifyFinishedCalled() const {

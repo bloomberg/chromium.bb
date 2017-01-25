@@ -8,6 +8,7 @@
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceObserver.h"
+#include "platform/loader/fetch/ResourceStatus.h"
 #include <memory>
 
 namespace blink {
@@ -31,6 +32,9 @@ class MockImageResourceObserver final : public ImageResourceObserver {
   int imageWidthOnImageNotifyFinished() const {
     return m_imageWidthOnImageNotifyFinished;
   }
+  ResourceStatus statusOnImageNotifyFinished() const {
+    return m_statusOnImageNotifyFinished;
+  }
 
  private:
   explicit MockImageResourceObserver(ImageResourceContent*);
@@ -45,6 +49,7 @@ class MockImageResourceObserver final : public ImageResourceObserver {
   int m_imageWidthOnLastImageChanged;
   int m_imageNotifyFinishedCount;
   int m_imageWidthOnImageNotifyFinished;
+  ResourceStatus m_statusOnImageNotifyFinished = ResourceStatus::NotStarted;
 };
 
 }  // namespace blink

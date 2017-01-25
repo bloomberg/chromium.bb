@@ -853,6 +853,8 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
   FetchRequest request(testURL, FetchInitiatorInfo());
   ImageResource* imageResource = ImageResource::fetch(request, fetcher);
+  std::unique_ptr<MockImageResourceObserver> observer =
+      MockImageResourceObserver::create(imageResource->getContent());
 
   imageResource->loader()->didReceiveResponse(
       WrappedResourceResponse(
@@ -860,6 +862,37 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
       nullptr);
   imageResource->loader()->didReceiveData("notactuallyanimage", 18);
   EXPECT_EQ(ResourceStatus::DecodeError, imageResource->getStatus());
+  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
+  EXPECT_EQ(ResourceStatus::DecodeError,
+            observer->statusOnImageNotifyFinished());
+  EXPECT_FALSE(imageResource->isLoading());
+}
+
+TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
+  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
+  ScopedRegisteredURL scopedRegisteredURL(testURL);
+
+  ResourceFetcher* fetcher =
+      ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
+  FetchRequest request(testURL, FetchInitiatorInfo());
+  ImageResource* imageResource = ImageResource::fetch(request, fetcher);
+  std::unique_ptr<MockImageResourceObserver> observer =
+      MockImageResourceObserver::create(imageResource->getContent());
+
+  imageResource->loader()->didReceiveResponse(
+      WrappedResourceResponse(
+          ResourceResponse(testURL, "image/jpeg", 0, nullAtom, String())),
+      nullptr);
+
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
+  EXPECT_FALSE(observer->imageNotifyFinishedCalled());
+
+  imageResource->loader()->didFinishLoading(0.0, 0, 0);
+
+  EXPECT_EQ(ResourceStatus::DecodeError, imageResource->getStatus());
+  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
+  EXPECT_EQ(ResourceStatus::DecodeError,
+            observer->statusOnImageNotifyFinished());
   EXPECT_FALSE(imageResource->isLoading());
 }
 
