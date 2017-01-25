@@ -309,4 +309,17 @@ bool UseOnlyLocalHeuristicsForPasswordGeneration() {
       autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration);
 }
 
+bool IsSuggestionsUIEnabled() {
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSuggestionsUI))
+    return true;
+
+  if (command_line->HasSwitch(switches::kDisableSuggestionsUI))
+    return false;
+
+  // By default, disable it.
+  return false;
+}
+
 }  // namespace experimental_flags

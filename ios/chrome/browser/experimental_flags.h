@@ -119,6 +119,9 @@ bool IsViewCopyPasswordsEnabled();
 // only.
 bool UseOnlyLocalHeuristicsForPasswordGeneration();
 
+// Whether the Suggestions UI is enabled.
+bool IsSuggestionsUIEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

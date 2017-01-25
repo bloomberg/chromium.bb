@@ -52,6 +52,7 @@ NSString* const kToolsMenuReaderMode = @"kToolsMenuReaderMode";
 NSString* const kToolsMenuRequestDesktopId = @"kToolsMenuRequestDesktopId";
 NSString* const kToolsMenuSettingsId = @"kToolsMenuSettingsId";
 NSString* const kToolsMenuHelpId = @"kToolsMenuHelpId";
+NSString* const kToolsMenuSuggestionsId = @"kToolsMenuSuggestionsId";
 
 namespace {
 
@@ -119,6 +120,9 @@ static MenuItemInfo itemInfoList[] = {
   { IDS_IOS_TOOLS_MENU_READING_LIST,      kToolsMenuReadingListId,
     IDC_SHOW_READING_LIST,                kToolbarTypeWebAll,
     0,                                    [ReadingListMenuViewItem class] },
+  { IDS_IOS_TOOLS_MENU_SUGGESTIONS,       kToolsMenuSuggestionsId,
+    IDC_SHOW_SUGGESTIONS,                 kToolbarTypeWebAll,
+    0,                                    nil },
   { IDS_IOS_TOOLS_MENU_RECENT_TABS,       kToolsMenuOtherDevicesId,
     IDC_SHOW_OTHER_DEVICES,               kToolbarTypeWebAll,
     kVisibleNotIncognitoOnly,             nil },
@@ -172,6 +176,12 @@ NS_INLINE BOOL ItemShouldBeVisible(const MenuItemInfo& item,
 
   if (item.title_id == IDS_IOS_TOOLS_MENU_READING_LIST) {
     if (!reading_list::switches::IsReadingListEnabled()) {
+      return NO;
+    }
+  }
+
+  if (item.title_id == IDS_IOS_TOOLS_MENU_SUGGESTIONS) {
+    if (!experimental_flags::IsSuggestionsUIEnabled()) {
       return NO;
     }
   }

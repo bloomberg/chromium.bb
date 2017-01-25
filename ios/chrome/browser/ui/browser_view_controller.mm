@@ -50,6 +50,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_coordinator.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -384,6 +385,10 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 
   // Used to display the QR Scanner UI. Nil if not visible.
   base::scoped_nsobject<QRScannerViewController> _qrScannerViewController;
+
+  // Used to display the Suggestions.
+  base::scoped_nsobject<ContentSuggestionsCoordinator>
+      _contentSuggestionsCoordinator;
 
   // Used to display the Find In Page UI. Nil if not visible.
   base::scoped_nsobject<FindBarControllerIOS> _findBarController;
@@ -4127,6 +4132,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         [self showQRScanner];
       }
       break;
+    case IDC_SHOW_SUGGESTIONS:
+      if (experimental_flags::IsSuggestionsUIEnabled()) {
+        [self showSuggestionsUI];
+      }
+      break;
     default:
       // Unknown commands get sent up the responder chain.
       [super chromeExecuteCommand:sender];
@@ -4231,6 +4241,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [_toolbarController dismissToolsMenuPopup];
   [_contextMenuCoordinator stop];
   [self dismissRateThisAppDialog];
+
+  [_contentSuggestionsCoordinator stop];
 
   if (self.presentedViewController) {
     // Dismisses any other modal controllers that may be present, e.g. Recent
@@ -4390,6 +4402,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                                   getViewControllerToPresent]
                      animated:YES
                    completion:nil];
+}
+
+- (void)showSuggestionsUI {
+  if (!_contentSuggestionsCoordinator) {
+    _contentSuggestionsCoordinator.reset([[ContentSuggestionsCoordinator alloc]
+        initWithBaseViewController:self]);
+  }
+  [_contentSuggestionsCoordinator start];
 }
 
 - (void)showNTPPanel:(NewTabPage::PanelIdentifier)panel {

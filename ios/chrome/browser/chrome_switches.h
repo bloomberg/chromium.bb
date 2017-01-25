@@ -25,6 +25,7 @@ extern const char kDisableTabStripAutoScrollNewTabs[];
 extern const char kDisableTabSwitcher[];
 extern const char kDisableIOSPhysicalWeb[];
 extern const char kDisableDownloadImageRenaming[];
+extern const char kDisableSuggestionsUI[];
 
 extern const char kEnableAllBookmarksView[];
 extern const char kEnableContextualSearch[];
@@ -43,6 +44,7 @@ extern const char kEnableSpotlightActions[];
 extern const char kEnableTabSwitcher[];
 extern const char kEnableIOSPhysicalWeb[];
 extern const char kEnableDownloadImageRenaming[];
+extern const char kEnableSuggestionsUI[];
 
 extern const char kIOSForceVariationIds[];
 extern const char kIOSMetricsRecordingOnly[];

@@ -1305,6 +1305,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SPOTLIGHT_KEYWORD_TWO" desc="Keyword used in Spotlight that will be linked to the Chrome App. [iOS only]">
         Internet
       </message>
+      <message name="IDS_IOS_SUGGESTIONS_DONE" desc="Label of the navigation bar button to close the view.">
+        Done
+      </message>
       <message name="IDS_IOS_SWITCH_BROWSER_MODE_ENTER_INCOGNITO" desc="The accessibility label of the switch browser mode button to enter the Incognito mode [iOS only]">
         Enter Incognito Mode
       </message>
@@ -1521,6 +1524,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TOOLS_MENU_SHARE" desc="The iOS menu item for sharing the current URL [Length: 15em] [iOS only]">
         Share...
+      </message>
+      <message name="IDS_IOS_TOOLS_MENU_SUGGESTIONS" desc="The iOS menu item for displaying the Suggestions UI [Length: 15em] [iOS only]">
+        Suggestions
       </message>
       <message name="IDS_IOS_TRANSLATE_SETTING" desc="Title for the view and option in Settings for Translate. [Length: 25em] [iOS only]">
         Google Translate

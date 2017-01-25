@@ -252,6 +252,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/content_suggestions",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/first_run",

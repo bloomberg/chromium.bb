@@ -258,6 +258,14 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableDownloadImageRenaming);
   }
 
+  // Populate command line flag for Suggestions UI display.
+  NSString* enableSuggestions = [defaults stringForKey:@"EnableSuggestions"];
+  if ([enableSuggestions isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableSuggestionsUI);
+  } else if ([enableSuggestions isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableSuggestionsUI);
+  }
+
   // Freeform commandline flags.  These are added last, so that any flags added
   // earlier in this function take precedence.
   if ([defaults boolForKey:@"EnableFreeformCommandLineFlags"]) {

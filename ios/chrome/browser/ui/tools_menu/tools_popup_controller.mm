@@ -224,6 +224,9 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case IDC_SHOW_READING_LIST:
       base::RecordAction(UserMetricsAction("MobileMenuReadingList"));
       break;
+    case IDC_SHOW_SUGGESTIONS:
+      // TODO(crbug.com/682174): Move it out of the tool menu or add metrics.
+      break;
     default:
       NOTREACHED();
       break;
