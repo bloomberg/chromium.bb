@@ -292,6 +292,24 @@ CREATE TABLE `keyvalTable` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+DROP TABLE IF EXISTS `modelPerBoardTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `modelPerBoardTable` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `build_id` int(11) DEFAULT NULL,
+  `board` varchar(80) NOT NULL,
+  `model_name` varchar(80) NOT NULL,
+  `main_firmware_version` varchar(80) DEFAULT NULL,
+  `ec_firmware_version` varchar(80) DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `build_id` (`build_id`,`board`),
+  CONSTRAINT `modelPerBoardTable_ibfk_1` FOREIGN KEY (`build_id`, `board`) REFERENCES `boardPerBuildTable` (`build_id`, `board`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 DROP TABLE IF EXISTS `schemaVersionTable`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
