@@ -288,6 +288,16 @@ InspectorTest.findTimelineEvent = function(name, index)
     return InspectorTest.timelineModel().mainThreadEvents().filter(e => e.name === name)[index || 0];
 }
 
+InspectorTest.findChildEvent = function(events, parentIndex, name)
+{
+    var endTime = events[parentIndex].endTime;
+    for (var i = parentIndex + 1; i < events.length && (!events[i].endTime || events[i].endTime <= endTime); ++i) {
+        if (events[i].name === name)
+            return events[i];
+    }
+    return null;
+}
+
 InspectorTest.FakeFileReader = function(input, delegate, callback)
 {
     this._delegate = delegate;
