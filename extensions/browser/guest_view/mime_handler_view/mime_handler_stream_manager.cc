@@ -84,12 +84,10 @@ class MimeHandlerStreamManager::EmbedderObserver
   // WebContentsObserver overrides.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) override;
   void WebContentsDestroyed() override;
   void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
@@ -103,10 +101,9 @@ class MimeHandlerStreamManager::EmbedderObserver
   int frame_tree_node_id_;
   int render_process_id_;
   int render_frame_id_;
-  // With PlzNavigate we get an initial provisional load notification for the
-  // URL the mime handler is serving. We don't want to clean up the stream
-  // here. This field helps us track the first load notification. Defaults
-  // to true.
+  // We get an initial  load notification for the URL the mime handler is
+  // serving. We don't want to clean up the stream here. This field helps us
+  // track the first load notification. Defaults to true.
   bool initial_load_for_frame_;
   // If a RFH is swapped with another RFH, this is set to the new RFH. This
   // ensures that we don't inadvarently clean up the stream when the old RFH
@@ -205,15 +202,16 @@ void MimeHandlerStreamManager::EmbedderObserver::RenderProcessGone(
   AbortStream();
 }
 
-void MimeHandlerStreamManager::EmbedderObserver::
-    DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host,
-                                    const GURL& validated_url,
-                                    bool is_error_page) {
-  if (!IsTrackedRenderFrameHost(render_frame_host))
+void MimeHandlerStreamManager::EmbedderObserver::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSamePage() ||
+      !IsTrackedRenderFrameHost(navigation_handle->GetRenderFrameHost())) {
     return;
-  // With PlzNavigate we get a provisional load notification for the URL we are
-  // serving. We don't want to clean up the stream here.
-  if (initial_load_for_frame_ && content::IsBrowserSideNavigationEnabled()) {
+  }
+
+  // We get an initial load notification for the URL we are serving. We don't
+  // want to clean up the stream here.
+  if (initial_load_for_frame_) {
     initial_load_for_frame_ = false;
     return;
   }
