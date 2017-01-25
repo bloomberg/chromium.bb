@@ -4,14 +4,20 @@
 if (window.testRunner)
   testRunner.waitUntilDone();
 
+function waitForCompositor() {
+  return document.body.animate({opacity: [1, 1]}, 1).finished;
+}
+
 target.animate({translate: '100px'}, 1e8);
 
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
     target.style.translate = '100px';
     requestAnimationFrame(() => {
-      if (window.testRunner)
-        testRunner.notifyDone();
+      waitForCompositor().then(() => {
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     });
   });
 });

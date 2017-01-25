@@ -46,6 +46,7 @@
         testRunner.waitUntilDone();
 
       document.getElementById('tester').addEventListener('animationend', testEnded, false);
+      document.getElementById('container').offsetTop; // Force style recalc
       document.getElementById('container').className = 'moved';
     }
     

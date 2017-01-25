@@ -15,7 +15,7 @@ if (window.testRunner) {
   testRunner.waitUntilDone();
 }
 function waitForCompositor() {
-  return document.body.animate({opacity: [1, 1]}, 1).ready;
+  return document.body.animate({opacity: [1, 1]}, 1).finished;
 }
 
 var position = 'translate(calc(50vw - 50px), calc(50vh - 50px))';
