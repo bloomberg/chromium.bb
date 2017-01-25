@@ -876,8 +876,10 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
                     forState:UIControlStateDisabled];
   if (palette)
     button.get().hasOpaqueBackground = YES;
-  if (customTitleColor)
+  if (customTitleColor) {
+    button.get().tintAdjustmentMode = UIViewTintAdjustmentModeNormal;
     button.get().customTitleColor = customTitleColor;
+  }
   button.get().titleLabel.adjustsFontSizeToFitWidth = YES;
   button.get().titleLabel.minimumScaleFactor = 0.6f;
   [button setTitle:message forState:UIControlStateNormal];
