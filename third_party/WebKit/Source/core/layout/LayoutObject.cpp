@@ -2238,14 +2238,28 @@ FloatQuad LayoutObject::localToAncestorQuad(
     const FloatQuad& localQuad,
     const LayoutBoxModelObject* ancestor,
     MapCoordinatesFlags mode) const {
+  return localToAncestorQuadInternal(localQuad, ancestor, mode | UseTransforms);
+}
+
+FloatQuad LayoutObject::localToAncestorQuadWithoutTransforms(
+    const FloatQuad& localQuad,
+    const LayoutBoxModelObject* ancestor,
+    MapCoordinatesFlags mode) const {
+  DCHECK(!(mode & UseTransforms));
+  return localToAncestorQuadInternal(localQuad, ancestor, mode);
+}
+
+FloatQuad LayoutObject::localToAncestorQuadInternal(
+    const FloatQuad& localQuad,
+    const LayoutBoxModelObject* ancestor,
+    MapCoordinatesFlags mode) const {
   // Track the point at the center of the quad's bounding box. As
   // mapLocalToAncestor() calls offsetFromContainer(), it will use that point
   // as the reference point to decide which column's transform to apply in
   // multiple-column blocks.
   TransformState transformState(TransformState::ApplyTransformDirection,
                                 localQuad.boundingBox().center(), localQuad);
-  mapLocalToAncestor(ancestor, transformState,
-                     mode | ApplyContainerFlip | UseTransforms);
+  mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip);
   transformState.flatten();
 
   return transformState.lastPlanarQuad();

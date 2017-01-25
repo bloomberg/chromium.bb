@@ -1299,4 +1299,33 @@ TEST_P(CompositedLayerMappingTest, StickyPositionContentOffset) {
             IntPoint(constraint2.parentRelativeStickyBoxOffset));
 }
 
+TEST_P(CompositedLayerMappingTest, StickyPositionTableCellContentOffset) {
+  setBodyInnerHTML(
+      "<style>body {height: 2000px; width: 2000px;} "
+      "td, th { height: 50px; width: 50px; } "
+      "table {border: none; }"
+      "#scroller { overflow: auto; will-change: transform; height: 50px; }"
+      "#sticky { position: sticky; left: 0; will-change: transform; }"
+      "</style>"
+      "<div id='scroller'><table cellspacing='0' cellpadding='0'>"
+      "    <thead><tr><td></td></tr></thead>"
+      "    <tr><td id='sticky'></td></tr>"
+      "</table></div>");
+  document().view()->updateLifecycleToCompositingCleanPlusScrolling();
+
+  CompositedLayerMapping* sticky =
+      toLayoutBlock(getLayoutObjectByElementId("sticky"))
+          ->layer()
+          ->compositedLayerMapping();
+
+  ASSERT_TRUE(sticky);
+  WebLayerStickyPositionConstraint constraint =
+      sticky->mainGraphicsLayer()
+          ->contentLayer()
+          ->layer()
+          ->stickyPositionConstraint();
+  EXPECT_EQ(IntPoint(0, 50),
+            IntPoint(constraint.parentRelativeStickyBoxOffset));
+}
+
 }  // namespace blink

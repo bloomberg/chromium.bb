@@ -249,4 +249,33 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionAnonymousContainer) {
       IntRect(15, 165, 100, 100),
       enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
 }
+
+TEST_F(LayoutBoxModelObjectTest, StickyPositionTableContainers) {
+  setBodyInnerHTML(
+      "<style> td, th { height: 50px; width: 50px; } "
+      "#sticky { position: sticky; left: 0; will-change: transform; }"
+      "table {border: none; }"
+      "#scroller { overflow: auto; }"
+      "</style>"
+      "<div id='scroller'>"
+      "<table cellspacing='0' cellpadding='0'>"
+      "    <thead><tr><td></td></tr></thead>"
+      "    <tr><td id='sticky'></td></tr>"
+      "</table></div>");
+  LayoutBoxModelObject* scroller =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
+  LayoutBoxModelObject* sticky =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
+  sticky->updateStickyPositionConstraints();
+  const StickyPositionScrollingConstraints& constraints =
+      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+  EXPECT_EQ(IntRect(0, 0, 50, 100),
+            enclosingIntRect(
+                getScrollContainerRelativeContainingBlockRect(constraints)));
+  EXPECT_EQ(
+      IntRect(0, 50, 50, 50),
+      enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
+}
+
 }  // namespace blink

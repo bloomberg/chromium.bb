@@ -1226,6 +1226,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                             const LayoutPoint& preOffset,
                             const LayoutPoint& postOffset) const;
 
+  // Convert a local quad into the coordinate system of container, not
+  // include transforms. See localToAncestorQuad for details.
+  FloatQuad localToAncestorQuadWithoutTransforms(
+      const FloatQuad&,
+      const LayoutBoxModelObject* ancestor,
+      MapCoordinatesFlags = 0) const;
+
   // Return the transformation matrix to map points from local to the coordinate
   // system of a container, taking transforms into account.
   // Passing null for |ancestor| behaves the same as localToAncestorQuad.
@@ -2037,6 +2044,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void adjustVisualRectForCompositedScrolling(
       LayoutRect&,
       const LayoutBoxModelObject& paintInvalidationContainer) const;
+
+  FloatQuad localToAncestorQuadInternal(const FloatQuad&,
+                                        const LayoutBoxModelObject* ancestor,
+                                        MapCoordinatesFlags = 0) const;
 
   void clearLayoutRootIfNeeded() const;
 

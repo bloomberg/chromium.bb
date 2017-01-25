@@ -779,12 +779,21 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   StickyPositionScrollingConstraints constraints;
   FloatSize skippedContainersOffset;
   LayoutBlock* containingBlock = this->containingBlock();
+  // The location container for boxes is not always the containing block.
+  LayoutBox* locationContainer = isLayoutInline()
+                                     ? containingBlock
+                                     : toLayoutBox(this)->locationContainer();
   // Skip anonymous containing blocks.
   while (containingBlock->isAnonymous()) {
-    skippedContainersOffset +=
-        toFloatSize(FloatPoint(containingBlock->frameRect().location()));
     containingBlock = containingBlock->containingBlock();
   }
+  MapCoordinatesFlags flags = 0;
+  skippedContainersOffset =
+      toFloatSize(locationContainer
+                      ->localToAncestorQuadWithoutTransforms(
+                          FloatQuad(), containingBlock, flags)
+                      .boundingBox()
+                      .location());
   LayoutBox* scrollAncestor =
       layer()->ancestorOverflowLayer()->isRootLayer()
           ? nullptr
@@ -812,13 +821,11 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   }
   if (containingBlock != scrollAncestor) {
     FloatQuad localQuad(FloatRect(containingBlock->paddingBoxRect()));
-    TransformState transformState(TransformState::ApplyTransformDirection,
-                                  localQuad.boundingBox().center(), localQuad);
-    containingBlock->mapLocalToAncestor(scrollAncestor, transformState,
-                                        ApplyContainerFlip);
-    transformState.flatten();
     scrollContainerRelativePaddingBoxRect =
-        transformState.lastPlanarQuad().boundingBox();
+        containingBlock
+            ->localToAncestorQuadWithoutTransforms(localQuad, scrollAncestor,
+                                                   flags)
+            .boundingBox();
 
     // The sticky position constraint rects should be independent of the current
     // scroll position, so after mapping we add in the scroll position to get
