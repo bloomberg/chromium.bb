@@ -31,31 +31,11 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   CancelDelayedWork(queue);
 }
 
-void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
-                              TimeDomain* destination_time_domain) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(queue->GetTimeDomain(), this);
-  DCHECK(destination_time_domain);
-
-  // If no wakeup has been requested then bail out.
-  if (!queue->heap_handle().IsValid())
-    return;
-
-  base::TimeTicks wake_up_time = queue->scheduled_time_domain_wakeup();
-  DCHECK_NE(wake_up_time, base::TimeTicks());
-
-  // O(log n)
-  delayed_wakeup_queue_.erase(queue->heap_handle());
-
-  base::TimeTicks destination_now = destination_time_domain->Now();
-  destination_time_domain->ScheduleDelayedWork(queue, wake_up_time,
-                                               destination_now);
-}
-
 void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      base::TimeTicks delayed_run_time,
                                      base::TimeTicks now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(queue->GetTimeDomain(), this);
   // We only want to store a single wakeup per queue, so we need to remove any
   // previously registered wake up for |queue|.
   if (queue->heap_handle().IsValid()) {

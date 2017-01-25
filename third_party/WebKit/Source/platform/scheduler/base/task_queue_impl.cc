@@ -576,10 +576,16 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
 
     any_thread().time_domain = time_domain;
   }
-  // We rely here on TimeDomain::MigrateQueue being thread-safe to use with
-  // TimeDomain::Register.
-  main_thread_only().time_domain->MigrateQueue(this, time_domain);
+
+  main_thread_only().time_domain->UnregisterQueue(this);
   main_thread_only().time_domain = time_domain;
+  time_domain->RegisterQueue(this);
+
+  if (!main_thread_only().delayed_incoming_queue.empty()) {
+    time_domain->ScheduleDelayedWork(
+        this, main_thread_only().delayed_incoming_queue.top().delayed_run_time,
+        time_domain->Now());
+  }
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {

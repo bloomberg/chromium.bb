@@ -82,11 +82,6 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  // Migrates |queue| from this time domain to |destination_time_domain|.
-  // Main-thread only.
-  void MigrateQueue(internal::TaskQueueImpl* queue,
-                    TimeDomain* destination_time_domain);
-
   // If there is a scheduled delayed task, |out_task_queue| is set to the queue
   // the next task was posted to and it returns true.  Returns false otherwise.
   bool NextScheduledTaskQueue(TaskQueue** out_task_queue) const;
