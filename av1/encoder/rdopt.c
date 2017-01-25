@@ -8570,6 +8570,9 @@ static int64_t handle_inter_mode(
 #if CONFIG_WARPED_MOTION
   aom_clear_system_state();
   mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
+#if CONFIG_EXT_INTER
+  best_bmc_mbmi.num_proj_ref[0] = mbmi->num_proj_ref[0];
+#endif  // CONFIG_EXT_INTER
 #endif  // CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   rate2_nocoeff = rd_stats->rate;
