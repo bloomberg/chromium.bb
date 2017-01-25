@@ -102,7 +102,7 @@
     supportsProperty: function() {return true;},
     supportsValue: function() {return true;},
     setup: function(property, from, target) {
-      target.style[property] = isNeutralKeyframe(from) ? '' : from;
+      target.style.setProperty(property, isNeutralKeyframe(from) ? '' : from);
     },
     nonInterpolationExpectations: function(from, to) {
       return expectFlip(from, to, -Infinity);
@@ -112,7 +112,7 @@
       target.style.transitionDelay = '-1e10s';
       target.style.transitionTimingFunction = createEasing(at);
       target.style.transitionProperty = property;
-      target.style[property] = isNeutralKeyframe(to) ? '' : to;
+      target.style.setProperty(property, isNeutralKeyframe(to) ? '' : to);
     },
     rebaseline: false,
   };
@@ -129,10 +129,12 @@
       this.interpolateComposite(property, from, 'replace', to, 'replace', at, target);
     },
     interpolateComposite: function(property, from, fromComposite, to, toComposite, at, target) {
-      // Convert to camelCase
-      for (var i = property.length - 2; i > 0; --i) {
-        if (property[i] === '-') {
-          property = property.substring(0, i) + property[i + 1].toUpperCase() + property.substring(i + 2);
+      // Convert standard properties to camelCase.
+      if (!property.startsWith('--')) {
+        for (var i = property.length - 2; i > 0; --i) {
+          if (property[i] === '-') {
+            property = property.substring(0, i) + property[i + 1].toUpperCase() + property.substring(i + 2);
+          }
         }
       }
       var keyframes = [];
@@ -312,18 +314,18 @@ assertInterpolation({
     return expectations.map(function(expectation) {
       var actualTargetContainer = createTargetContainer(testContainer, 'actual');
       var expectedTargetContainer = createTargetContainer(testContainer, 'expected');
-      expectedTargetContainer.target.style[property] = expectation.is;
+      expectedTargetContainer.target.style.setProperty(property, expectation.is);
       var target = actualTargetContainer.target;
       interpolationMethod.setup(property, from, target);
       target.interpolate = function() {
         interpolationMethod.interpolate(property, from, to, expectation.at, target);
       };
       target.measure = function() {
-        var actualValue = getComputedStyle(target)[property];
+        var actualValue = getComputedStyle(target).getPropertyValue(property);
         test(function() {
           assert_equals(
             normalizeValue(actualValue),
-            normalizeValue(getComputedStyle(expectedTargetContainer.target)[property]));
+            normalizeValue(getComputedStyle(expectedTargetContainer.target).getPropertyValue(property)));
         }, `${testText} at (${expectation.at}) is [${sanitizeUrls(actualValue)}]`);
         if (rebaselineExpectation) {
           rebaselineExpectation.textContent += `  {at: ${expectation.at}, is: '${actualValue}'},\n`;
@@ -369,18 +371,18 @@ assertComposition({
     return compositionTest.expectations.map(function(expectation) {
       var actualTargetContainer = createTargetContainer(testContainer, 'actual');
       var expectedTargetContainer = createTargetContainer(testContainer, 'expected');
-      expectedTargetContainer.target.style[property] = expectation.is;
+      expectedTargetContainer.target.style.setProperty(property, expectation.is);
       var target = actualTargetContainer.target;
-      target.style[property] = underlying;
+      target.style.setProperty(property, underlying);
       target.interpolate = function() {
         webAnimationsInterpolation.interpolateComposite(property, from, fromComposite, to, toComposite, expectation.at, target);
       };
       target.measure = function() {
-        var actualValue = getComputedStyle(target)[property];
+        var actualValue = getComputedStyle(target).getPropertyValue(property);
         test(function() {
           assert_equals(
             normalizeValue(actualValue),
-            normalizeValue(getComputedStyle(expectedTargetContainer.target)[property]));
+            normalizeValue(getComputedStyle(expectedTargetContainer.target).getPropertyValue(property)));
         }, `${testText} at (${expectation.at}) is [${sanitizeUrls(actualValue)}]`);
         if (rebaselineExpectation) {
           rebaselineExpectation.textContent += `  {at: ${expectation.at}, is: '${actualValue}'},\n`;
