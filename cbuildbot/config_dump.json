@@ -19406,6 +19406,7 @@
     },
     "reef-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "reef"
         ],

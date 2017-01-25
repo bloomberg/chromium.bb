@@ -726,6 +726,7 @@ _waterfall_config_map = {
         'link-depthcharge-full-firmware',
 
         # Experimental PFQs
+        'reef-chrome-pfq',
 
         # We collect profiles on chell-chrome-pfq for
         # feedback-directed-optimization. The prebuilt chrome won't be used by
