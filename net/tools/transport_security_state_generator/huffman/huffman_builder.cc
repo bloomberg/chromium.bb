@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/domain_security_preload_generator/huffman/huffman_frequency_tracker.h"
+#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
 
 #include <algorithm>
 
@@ -49,15 +49,15 @@ bool CompareNodes(const std::unique_ptr<HuffmanNode>& lhs,
 
 }  // namespace
 
-HuffmanFrequencyTracker::HuffmanFrequencyTracker() {}
+HuffmanBuilder::HuffmanBuilder() {}
 
-HuffmanFrequencyTracker::~HuffmanFrequencyTracker() {}
+HuffmanBuilder::~HuffmanBuilder() {}
 
-void HuffmanFrequencyTracker::RecordUsage(uint8_t character) {
+void HuffmanBuilder::RecordUsage(uint8_t character) {
   counts_[character] += 1;
 }
 
-HuffmanRepresentationTable HuffmanFrequencyTracker::ToTable() {
+HuffmanRepresentationTable HuffmanBuilder::ToTable() {
   HuffmanRepresentationTable table;
   std::unique_ptr<HuffmanNode> node(BuildTree());
 
@@ -65,10 +65,10 @@ HuffmanRepresentationTable HuffmanFrequencyTracker::ToTable() {
   return table;
 }
 
-void HuffmanFrequencyTracker::TreeToTable(HuffmanNode* node,
-                                          uint32_t bits,
-                                          uint32_t number_of_bits,
-                                          HuffmanRepresentationTable* table) {
+void HuffmanBuilder::TreeToTable(HuffmanNode* node,
+                                 uint32_t bits,
+                                 uint32_t number_of_bits,
+                                 HuffmanRepresentationTable* table) {
   if (node->IsLeaf()) {
     HuffmanRepresentation item;
     item.bits = bits;
@@ -82,15 +82,15 @@ void HuffmanFrequencyTracker::TreeToTable(HuffmanNode* node,
   }
 }
 
-std::vector<uint8_t> HuffmanFrequencyTracker::ToVector() {
+std::vector<uint8_t> HuffmanBuilder::ToVector() {
   std::vector<uint8_t> bytes;
   std::unique_ptr<HuffmanNode> node(BuildTree());
   WriteToVector(node.get(), &bytes);
   return bytes;
 }
 
-uint32_t HuffmanFrequencyTracker::WriteToVector(HuffmanNode* node,
-                                                std::vector<uint8_t>* vector) {
+uint32_t HuffmanBuilder::WriteToVector(HuffmanNode* node,
+                                       std::vector<uint8_t>* vector) {
   uint8_t left_value;
   uint8_t right_value;
   uint32_t child_position;
@@ -117,7 +117,7 @@ uint32_t HuffmanFrequencyTracker::WriteToVector(HuffmanNode* node,
   return position;
 }
 
-std::unique_ptr<HuffmanNode> HuffmanFrequencyTracker::BuildTree() {
+std::unique_ptr<HuffmanNode> HuffmanBuilder::BuildTree() {
   std::vector<std::unique_ptr<HuffmanNode>> nodes;
   nodes.reserve(counts_.size());
 

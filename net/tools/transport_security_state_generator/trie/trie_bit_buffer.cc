@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/domain_security_preload_generator/trie/trie_bit_buffer.h"
+#include "net/tools/transport_security_state_generator/trie/trie_bit_buffer.h"
 
 #include "base/logging.h"
-#include "net/tools/domain_security_preload_generator/bit_writer.h"
+#include "net/tools/transport_security_state_generator/bit_writer.h"
 
 namespace net {
 
@@ -73,12 +73,12 @@ uint8_t TrieBitBuffer::BitLength(uint32_t input) const {
 
 void TrieBitBuffer::WriteChar(uint8_t byte,
                               const HuffmanRepresentationTable& table,
-                              HuffmanFrequencyTracker* tracker) {
+                              HuffmanBuilder* huffman_builder) {
   HuffmanRepresentationTable::const_iterator item;
   item = table.find(byte);
   DCHECK(item != table.end());
-  if (tracker) {
-    tracker->RecordUsage(byte);
+  if (huffman_builder) {
+    huffman_builder->RecordUsage(byte);
   }
   WriteBits(item->second.bits, item->second.number_of_bits);
 }

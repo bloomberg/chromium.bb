@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_TRIE_TRIE_WRITER_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_TRIE_TRIE_WRITER_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRIE_TRIE_WRITER_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRIE_TRIE_WRITER_H_
 
 #include <string>
 #include <vector>
 
-#include "net/tools/domain_security_preload_generator/bit_writer.h"
-#include "net/tools/domain_security_preload_generator/domain_security_entry.h"
-#include "net/tools/domain_security_preload_generator/huffman/huffman_frequency_tracker.h"
+#include "net/tools/transport_security_state_generator/bit_writer.h"
+#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
+#include "net/tools/transport_security_state_generator/transport_security_state_entry.h"
 
 namespace net {
 
 namespace transport_security_state {
 
-struct DomainSecurityEntry;
+struct TransportSecurityStateEntry;
 class TrieBitBuffer;
 
 // Maps a name to an index. This is used to track the index of several values
@@ -35,12 +35,12 @@ class TrieWriter {
              const NameIDMap& expect_ct_report_uri_map,
              const NameIDMap& expect_staple_report_uri_map,
              const NameIDMap& pinsets_map,
-             HuffmanFrequencyTracker* frequency_tracker);
+             HuffmanBuilder* huffman_builder);
   ~TrieWriter();
 
   // Constructs a trie containing all |entries|. The output is written to
   // |buffer_|. Returns the position of the trie root.
-  uint32_t WriteEntries(const DomainSecurityEntries& entries);
+  uint32_t WriteEntries(const TransportSecurityStateEntries& entries);
 
   // Returns the position |buffer_| is currently at. The returned value
   // represents the number of bits.
@@ -58,8 +58,8 @@ class TrieWriter {
                                ReversedEntries::iterator end);
 
   // Serializes |*entry| and writes it to |*writer|.
-  void WriteSecurityEntry(const DomainSecurityEntry* entry,
-                          TrieBitBuffer* writer);
+  void WriteEntry(const TransportSecurityStateEntry* entry,
+                  TrieBitBuffer* writer);
 
   // Removes the first |length| characters from all entries between |start| and
   // |end|.
@@ -82,11 +82,11 @@ class TrieWriter {
   const NameIDMap& expect_ct_report_uri_map_;
   const NameIDMap& expect_staple_report_uri_map_;
   const NameIDMap& pinsets_map_;
-  HuffmanFrequencyTracker* frequency_tracker_;
+  HuffmanBuilder* huffman_builder_;
 };
 
 }  // namespace transport_security_state
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_TRIE_TRIE_WRITER_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRIE_TRIE_WRITER_H_

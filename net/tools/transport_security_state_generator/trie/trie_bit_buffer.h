@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_TRIE_TRIE_BIT_BUFFER_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_TRIE_TRIE_BIT_BUFFER_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRIE_TRIE_BIT_BUFFER_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRIE_TRIE_BIT_BUFFER_H_
 
 #include <stdint.h>
 
 #include <vector>
 
-#include "net/tools/domain_security_preload_generator/huffman/huffman_frequency_tracker.h"
+#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
 
 namespace net {
 
@@ -34,16 +34,16 @@ class TrieBitBuffer {
   void WriteBits(uint32_t bits, uint8_t number_of_bits);
 
   // Write a position to the buffer. Actually writes the difference between
-  // |position| and |last_position|. |*last_position| will be updated to equal
+  // |position| and |*last_position|. |*last_position| will be updated to equal
   // the input |position|.
   void WritePosition(uint32_t position, int32_t* last_position);
 
   // Writes the character in |byte| to the buffer using its Huffman
   // representation in |table|. Optionally tracks usage of the character in
-  // |*tracker|.
+  // |*huffman_builder|.
   void WriteChar(uint8_t byte,
                  const HuffmanRepresentationTable& table,
-                 HuffmanFrequencyTracker* tracker);
+                 HuffmanBuilder* huffman_builder);
 
   // Writes the entire buffer to |*writer|. Returns the position |*writer| was
   // at before the buffer was written to it.
@@ -82,4 +82,4 @@ class TrieBitBuffer {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_TRIE_TRIE_BIT_BUFFER_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRIE_TRIE_BIT_BUFFER_H_

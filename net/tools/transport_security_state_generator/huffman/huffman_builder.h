@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_HUFFMAN_FREQUENCY_TRACKER_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_HUFFMAN_FREQUENCY_TRACKER_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_HUFFMAN_BUILDER_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_HUFFMAN_BUILDER_H_
 
 #include <stdint.h>
 
@@ -33,10 +33,10 @@ using HuffmanRepresentationPair = std::pair<uint8_t, HuffmanRepresentation>;
 // This class tracks the number of times each character is used and calculates
 // a space efficient way to represent all tracked characters by constructing a
 // Huffman tree based on the number of times each character is seen.
-class HuffmanFrequencyTracker {
+class HuffmanBuilder {
  public:
-  HuffmanFrequencyTracker();
-  ~HuffmanFrequencyTracker();
+  HuffmanBuilder();
+  ~HuffmanBuilder();
 
   // Will increase the count for |character| by one, indicating it has been
   // used.
@@ -81,4 +81,4 @@ class HuffmanFrequencyTracker {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_HUFFMAN_FREQUENCY_TRACKER_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_HUFFMAN_BUILDER_H_

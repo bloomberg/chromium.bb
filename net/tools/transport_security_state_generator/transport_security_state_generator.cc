@@ -19,16 +19,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"
-#include "net/tools/domain_security_preload_generator/cert_util.h"
-#include "net/tools/domain_security_preload_generator/domain_security_entry.h"
-#include "net/tools/domain_security_preload_generator/pinset.h"
-#include "net/tools/domain_security_preload_generator/pinsets.h"
-#include "net/tools/domain_security_preload_generator/preloaded_state_generator.h"
-#include "net/tools/domain_security_preload_generator/spki_hash.h"
+#include "net/tools/transport_security_state_generator/cert_util.h"
+#include "net/tools/transport_security_state_generator/pinset.h"
+#include "net/tools/transport_security_state_generator/pinsets.h"
+#include "net/tools/transport_security_state_generator/preloaded_state_generator.h"
+#include "net/tools/transport_security_state_generator/spki_hash.h"
+#include "net/tools/transport_security_state_generator/transport_security_state_entry.h"
 #include "third_party/boringssl/src/include/openssl/x509v3.h"
 
-using net::transport_security_state::DomainSecurityEntry;
-using net::transport_security_state::DomainSecurityEntries;
+using net::transport_security_state::TransportSecurityStateEntry;
+using net::transport_security_state::TransportSecurityStateEntries;
 using net::transport_security_state::Pinset;
 using net::transport_security_state::Pinsets;
 using net::transport_security_state::PreloadedStateGenerator;
@@ -39,7 +39,7 @@ namespace {
 
 // Print the command line help.
 void PrintHelp() {
-  std::cout << "domain_security_preload_generator <json-file> <pins-file>"
+  std::cout << "transport_security_state_generator <json-file> <pins-file>"
             << " <template-file> <output-file> [-v]" << std::endl;
 }
 
@@ -50,7 +50,7 @@ void PrintHelp() {
 // More info on the format can be found in
 // net/http/transport_security_state_static.json
 bool ParseJSON(const std::string& json,
-               DomainSecurityEntries* entries,
+               TransportSecurityStateEntries* entries,
                Pinsets* pinsets,
                DomainIDList* domain_ids) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
@@ -73,7 +73,8 @@ bool ParseJSON(const std::string& json,
       return false;
     }
 
-    std::unique_ptr<DomainSecurityEntry> entry(new DomainSecurityEntry());
+    std::unique_ptr<TransportSecurityStateEntry> entry(
+        new TransportSecurityStateEntry());
 
     if (!parsed->GetString("name", &entry->hostname)) {
       std::cerr << "Could not extract the name for entry " << i << std::endl;
@@ -484,7 +485,7 @@ bool CheckCertificatesInPinsets(const Pinsets& pinsets) {
 }
 
 // Checks if there are two or more entries for the same hostname.
-bool CheckDuplicateEntries(const DomainSecurityEntries& entries) {
+bool CheckDuplicateEntries(const TransportSecurityStateEntries& entries) {
   std::set<std::string> seen_entries;
   for (const auto& entry : entries) {
     if (seen_entries.find(entry->hostname) != seen_entries.cend()) {
@@ -497,7 +498,7 @@ bool CheckDuplicateEntries(const DomainSecurityEntries& entries) {
 }
 
 // Checks for entries which have no effect.
-bool CheckNoopEntries(const DomainSecurityEntries& entries) {
+bool CheckNoopEntries(const TransportSecurityStateEntries& entries) {
   for (const auto& entry : entries) {
     if (!entry->force_https && entry->pinset.empty() && !entry->expect_ct &&
         !entry->expect_staple) {
@@ -517,7 +518,7 @@ bool CheckNoopEntries(const DomainSecurityEntries& entries) {
 }
 
 // Checks all entries for incorrect usage of the includeSubdomains flags.
-bool CheckSubdomainsFlags(const DomainSecurityEntries& entries) {
+bool CheckSubdomainsFlags(const TransportSecurityStateEntries& entries) {
   for (const auto& entry : entries) {
     if (entry->include_subdomains && entry->hpkp_include_subdomains) {
       std::cerr << "Entry for \"" << entry->hostname
@@ -581,7 +582,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  DomainSecurityEntries entries;
+  TransportSecurityStateEntries entries;
   Pinsets pinsets;
   DomainIDList domain_ids;
 

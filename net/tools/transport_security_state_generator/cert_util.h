@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_CERT_UTIL_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_CERT_UTIL_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_CERT_UTIL_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_CERT_UTIL_H_
 
 #include <stdint.h>
 
@@ -43,4 +43,4 @@ bool CalculateSPKIHashFromKey(
     base::StringPiece pem_key,
     net::transport_security_state::SPKIHash* out_hash);
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_CERT_UTIL_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_CERT_UTIL_H_

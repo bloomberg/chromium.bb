@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PINSET_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PINSET_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PINSET_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PINSET_H_
 
 #include <string>
 #include <vector>
@@ -55,4 +55,4 @@ class Pinset {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PINSET_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PINSET_H_

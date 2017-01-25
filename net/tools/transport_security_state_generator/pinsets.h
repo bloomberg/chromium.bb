@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PINSETS_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PINSETS_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PINSETS_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PINSETS_H_
 
 #include <map>
 #include <memory>
@@ -11,10 +11,10 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "net/tools/domain_security_preload_generator/cert_util.h"
-#include "net/tools/domain_security_preload_generator/pinset.h"
-#include "net/tools/domain_security_preload_generator/pinsets.h"
-#include "net/tools/domain_security_preload_generator/spki_hash.h"
+#include "net/tools/transport_security_state_generator/cert_util.h"
+#include "net/tools/transport_security_state_generator/pinset.h"
+#include "net/tools/transport_security_state_generator/pinsets.h"
+#include "net/tools/transport_security_state_generator/spki_hash.h"
 
 namespace net {
 
@@ -53,4 +53,4 @@ class Pinsets {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PINSETS_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PINSETS_H_

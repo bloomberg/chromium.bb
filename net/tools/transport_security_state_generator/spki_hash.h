@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_SPKI_HASH_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_SPKI_HASH_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_SPKI_HASH_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_SPKI_HASH_H_
 
 #include <stdint.h>
 #include <string>
@@ -46,4 +46,4 @@ class SPKIHash {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_SPKI_HASH_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_SPKI_HASH_H_

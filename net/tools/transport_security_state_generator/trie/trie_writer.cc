@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/domain_security_preload_generator/trie/trie_writer.h"
+#include "net/tools/transport_security_state_generator/trie/trie_writer.h"
 
 #include <algorithm>
 
@@ -10,7 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "net/tools/domain_security_preload_generator/trie/trie_bit_buffer.h"
+#include "net/tools/transport_security_state_generator/trie/trie_bit_buffer.h"
 
 namespace net {
 
@@ -44,7 +44,7 @@ std::string DomainConstant(base::StringPiece input) {
 }  // namespace
 
 ReversedEntry::ReversedEntry(std::vector<uint8_t> reversed_name,
-                             const DomainSecurityEntry* entry)
+                             const TransportSecurityStateEntry* entry)
     : reversed_name(reversed_name), entry(entry) {}
 
 ReversedEntry::~ReversedEntry() {}
@@ -54,17 +54,18 @@ TrieWriter::TrieWriter(const HuffmanRepresentationTable& huffman_table,
                        const NameIDMap& expect_ct_report_uri_map,
                        const NameIDMap& expect_staple_report_uri_map,
                        const NameIDMap& pinsets_map,
-                       HuffmanFrequencyTracker* frequency_tracker)
+                       HuffmanBuilder* huffman_builder)
     : huffman_table_(huffman_table),
       domain_ids_map_(domain_ids_map),
       expect_ct_report_uri_map_(expect_ct_report_uri_map),
       expect_staple_report_uri_map_(expect_staple_report_uri_map),
       pinsets_map_(pinsets_map),
-      frequency_tracker_(frequency_tracker) {}
+      huffman_builder_(huffman_builder) {}
 
 TrieWriter::~TrieWriter() {}
 
-uint32_t TrieWriter::WriteEntries(const DomainSecurityEntries& entries) {
+uint32_t TrieWriter::WriteEntries(
+    const TransportSecurityStateEntries& entries) {
   ReversedEntries reversed_entries;
 
   for (auto const& entry : entries) {
@@ -93,7 +94,7 @@ uint32_t TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
 
   if (prefix.size()) {
     for (size_t i = 0; i < prefix.size(); ++i) {
-      writer.WriteChar(prefix.at(i), huffman_table_, frequency_tracker_);
+      writer.WriteChar(prefix.at(i), huffman_table_, huffman_builder_);
     }
   }
 
@@ -110,12 +111,12 @@ uint32_t TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
       }
     }
 
-    writer.WriteChar(candidate, huffman_table_, frequency_tracker_);
+    writer.WriteChar(candidate, huffman_table_, huffman_builder_);
 
     if (candidate == kTerminalValue) {
       DCHECK((sub_entries_end - start) == 1)
           << "Multiple values with the same name";
-      WriteSecurityEntry((*start)->entry, &writer);
+      WriteEntry((*start)->entry, &writer);
     } else {
       RemovePrefix(1, start, sub_entries_end);
       uint32_t position = WriteDispatchTables(start, sub_entries_end);
@@ -125,7 +126,7 @@ uint32_t TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
     start = sub_entries_end;
   }
 
-  writer.WriteChar(kEndOfTableValue, huffman_table_, frequency_tracker_);
+  writer.WriteChar(kEndOfTableValue, huffman_table_, huffman_builder_);
 
   uint32_t position = buffer_.position();
   writer.Flush();
@@ -133,8 +134,8 @@ uint32_t TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
   return position;
 }
 
-void TrieWriter::WriteSecurityEntry(const DomainSecurityEntry* entry,
-                                    TrieBitBuffer* writer) {
+void TrieWriter::WriteEntry(const TransportSecurityStateEntry* entry,
+                            TrieBitBuffer* writer) {
   uint8_t include_subdomains = 0;
   if (entry->include_subdomains) {
     include_subdomains = 1;

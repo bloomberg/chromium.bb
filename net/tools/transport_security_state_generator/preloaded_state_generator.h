@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PRELOADED_STATE_GENERATOR_H_
-#define NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PRELOADED_STATE_GENERATOR_H_
+#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PRELOADED_STATE_GENERATOR_H_
+#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PRELOADED_STATE_GENERATOR_H_
 
 #include <stdint.h>
 
 #include <memory>
 #include <string>
 
-#include "net/tools/domain_security_preload_generator/domain_security_entry.h"
-#include "net/tools/domain_security_preload_generator/pinset.h"
-#include "net/tools/domain_security_preload_generator/pinsets.h"
-#include "net/tools/domain_security_preload_generator/trie/trie_writer.h"
+#include "net/tools/transport_security_state_generator/pinset.h"
+#include "net/tools/transport_security_state_generator/pinsets.h"
+#include "net/tools/transport_security_state_generator/transport_security_state_entry.h"
+#include "net/tools/transport_security_state_generator/trie/trie_writer.h"
 
 namespace net {
 
@@ -29,7 +29,7 @@ class PreloadedStateGenerator {
   ~PreloadedStateGenerator();
 
   std::string Generate(const std::string& preload_template,
-                       const DomainSecurityEntries& entries,
+                       const TransportSecurityStateEntries& entries,
                        const DomainIDList& domain_ids,
                        const Pinsets& pinsets,
                        bool verbose);
@@ -41,10 +41,10 @@ class PreloadedStateGenerator {
                         NameIDMap* map,
                         std::string* tpl);
   void ProcessSPKIHashes(const Pinsets& pinset, std::string* tpl);
-  void ProcessExpectCTURIs(const DomainSecurityEntries& entries,
+  void ProcessExpectCTURIs(const TransportSecurityStateEntries& entries,
                            NameIDMap* expect_ct_report_uri_map,
                            std::string* tpl);
-  void ProcessExpectStapleURIs(const DomainSecurityEntries& entries,
+  void ProcessExpectStapleURIs(const TransportSecurityStateEntries& entries,
                                NameIDMap* expect_staple_report_uri_map,
                                std::string* tpl);
   void ProcessPinsets(const Pinsets& pinset,
@@ -56,4 +56,4 @@ class PreloadedStateGenerator {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DOMAIN_SECURITY_PRELOAD_GENERATOR_PRELOADED_STATE_GENERATOR_H_
+#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_PRELOADED_STATE_GENERATOR_H_

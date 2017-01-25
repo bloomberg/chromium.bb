@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/domain_security_preload_generator/preloaded_state_generator.h"
+#include "net/tools/transport_security_state_generator/preloaded_state_generator.h"
 
 #include <iostream>
 
@@ -10,9 +10,9 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "net/tools/domain_security_preload_generator/cert_util.h"
-#include "net/tools/domain_security_preload_generator/huffman/huffman_frequency_tracker.h"
-#include "net/tools/domain_security_preload_generator/spki_hash.h"
+#include "net/tools/transport_security_state_generator/cert_util.h"
+#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
+#include "net/tools/transport_security_state_generator/spki_hash.h"
 
 namespace net {
 
@@ -109,18 +109,18 @@ std::string WritePinsetList(const std::string& name,
 }
 
 HuffmanRepresentationTable ApproximateHuffman(
-    const DomainSecurityEntries& entries) {
-  HuffmanFrequencyTracker tracker;
+    const TransportSecurityStateEntries& entries) {
+  HuffmanBuilder huffman_builder;
   for (const auto& entry : entries) {
     for (const auto& c : entry->hostname) {
-      tracker.RecordUsage(c);
+      huffman_builder.RecordUsage(c);
     }
 
-    tracker.RecordUsage(TrieWriter::kTerminalValue);
-    tracker.RecordUsage(TrieWriter::kEndOfTableValue);
+    huffman_builder.RecordUsage(TrieWriter::kTerminalValue);
+    huffman_builder.RecordUsage(TrieWriter::kEndOfTableValue);
   }
 
-  return tracker.ToTable();
+  return huffman_builder.ToTable();
 }
 
 }  // namespace
@@ -131,7 +131,7 @@ PreloadedStateGenerator::~PreloadedStateGenerator() {}
 
 std::string PreloadedStateGenerator::Generate(
     const std::string& preload_template,
-    const DomainSecurityEntries& entries,
+    const TransportSecurityStateEntries& entries,
     const DomainIDList& domain_ids,
     const Pinsets& pinsets,
     bool verbose) {
@@ -157,20 +157,21 @@ std::string PreloadedStateGenerator::Generate(
   // efficient Huffman table for the given inputs. This table is used for the
   // second run.
   HuffmanRepresentationTable table = ApproximateHuffman(entries);
-  HuffmanFrequencyTracker tracker;
+  HuffmanBuilder huffman_builder;
   TrieWriter writer(table, domain_ids_map, expect_ct_report_uri_map,
-                    expect_staple_report_uri_map, pinsets_map, &tracker);
+                    expect_staple_report_uri_map, pinsets_map,
+                    &huffman_builder);
   writer.WriteEntries(entries);
   uint32_t initial_length = writer.position();
 
-  HuffmanRepresentationTable optimal_table = tracker.ToTable();
+  HuffmanRepresentationTable optimal_table = huffman_builder.ToTable();
   TrieWriter new_writer(optimal_table, domain_ids_map, expect_ct_report_uri_map,
                         expect_staple_report_uri_map, pinsets_map, nullptr);
 
   uint32_t root_position = new_writer.WriteEntries(entries);
   uint32_t new_length = new_writer.position();
 
-  std::vector<uint8_t> huffman_tree = tracker.ToVector();
+  std::vector<uint8_t> huffman_tree = huffman_builder.ToVector();
 
   new_writer.Flush();
 
@@ -252,7 +253,7 @@ void PreloadedStateGenerator::ProcessSPKIHashes(const Pinsets& pinset,
 }
 
 void PreloadedStateGenerator::ProcessExpectCTURIs(
-    const DomainSecurityEntries& entries,
+    const TransportSecurityStateEntries& entries,
     NameIDMap* expect_ct_report_uri_map,
     std::string* tpl) {
   std::string output = "{";
@@ -279,7 +280,7 @@ void PreloadedStateGenerator::ProcessExpectCTURIs(
 }
 
 void PreloadedStateGenerator::ProcessExpectStapleURIs(
-    const DomainSecurityEntries& entries,
+    const TransportSecurityStateEntries& entries,
     NameIDMap* expect_staple_report_uri_map,
     std::string* tpl) {
   std::string output = "{";
