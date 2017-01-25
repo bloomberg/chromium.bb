@@ -1,6 +1,6 @@
 m4_define([weston_major_version],  [1])
-m4_define([weston_minor_version],  [12])
-m4_define([weston_micro_version],  [90])
+m4_define([weston_minor_version],  [99])
+m4_define([weston_micro_version],  [91])
 m4_define([weston_version],
           [weston_major_version.weston_minor_version.weston_micro_version])
 m4_define([libweston_major_version], [2])
