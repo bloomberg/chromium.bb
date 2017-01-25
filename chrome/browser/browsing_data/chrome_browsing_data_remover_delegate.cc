@@ -645,7 +645,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
             CONTENT_SETTINGS_TYPE_APP_BANNER,
             base::Bind(&WebsiteSettingsFilterAdapter, filter));
 
-    PermissionDecisionAutoBlocker::RemoveCountsByUrl(profile_, filter);
+    PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveCountsByUrl(
+        filter);
   }
 
   //////////////////////////////////////////////////////////////////////////////

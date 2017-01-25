@@ -8,6 +8,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
@@ -22,12 +26,6 @@ namespace safe_browsing {
 class SafeBrowsingDatabaseManager;
 }
 
-namespace base {
-class Time;
-}
-
-class HostContentSettingsMap;
-
 // The PermissionDecisionAutoBlocker decides whether or not a given origin
 // should be automatically blocked from requesting a permission. When an origin
 // is blocked, it is placed under an "embargo". Until the embargo expires, any
@@ -36,86 +34,91 @@ class HostContentSettingsMap;
 // result in it being placed under embargo again. Currently, an origin can be
 // placed under embargo if it appears on Safe Browsing's API blacklist, or if it
 // has a number of prior dismissals greater than a threshold.
-class PermissionDecisionAutoBlocker {
+class PermissionDecisionAutoBlocker : public KeyedService {
  public:
-  // Removes any recorded counts for urls which match |filter| under |profile|.
-  static void RemoveCountsByUrl(Profile* profile,
-                                base::Callback<bool(const GURL& url)> filter);
+  class Factory : public BrowserContextKeyedServiceFactory {
+   public:
+    static PermissionDecisionAutoBlocker* GetForProfile(Profile* profile);
+    static PermissionDecisionAutoBlocker::Factory* GetInstance();
+
+   private:
+    friend struct base::DefaultSingletonTraits<Factory>;
+
+    Factory();
+    ~Factory() override;
+
+    // BrowserContextKeyedServiceFactory
+    KeyedService* BuildServiceInstanceFor(
+        content::BrowserContext* context) const override;
+
+    content::BrowserContext* GetBrowserContextToUse(
+        content::BrowserContext* context) const override;
+  };
+
+  static PermissionDecisionAutoBlocker* GetForProfile(Profile* profile);
+
+  // Removes any recorded counts for urls which match |filter|.
+  void RemoveCountsByUrl(base::Callback<bool(const GURL& url)> filter);
 
   // Returns the current number of dismisses recorded for |permission| type at
   // |url|.
-  static int GetDismissCount(const GURL& url,
-                             content::PermissionType permission,
-                             Profile* profile);
+  int GetDismissCount(const GURL& url, content::PermissionType permission);
 
   // Returns the current number of ignores recorded for |permission|
   // type at |url|.
-  static int GetIgnoreCount(const GURL& url,
-                            content::PermissionType permission,
-                            Profile* profile);
+  int GetIgnoreCount(const GURL& url, content::PermissionType permission);
 
   // Records that a dismissal of a prompt for |permission| was made. If the
   // total number of dismissals exceeds a threshhold and
   // features::kBlockPromptsIfDismissedOften is enabled it will place |url|
   // under embargo for |permission|.
-  static bool RecordDismissAndEmbargo(const GURL& url,
-                                      content::PermissionType permission,
-                                      Profile* profile,
-                                      base::Time current_time);
+  bool RecordDismissAndEmbargo(const GURL& url,
+                               content::PermissionType permission);
 
   // Records that an ignore of a prompt for |permission| was made.
-  static int RecordIgnore(const GURL& url,
-                          content::PermissionType permission,
-                          Profile* profile);
-
-  // Records that a dismissal of a prompt for |permission| was made, and returns
-  // true if this dismissal should be considered a block. False otherwise.
-  // TODO(meredithl): Remove in favour of embargoing on repeated dismissals.
-  static bool ShouldChangeDismissalToBlock(const GURL& url,
-                                           content::PermissionType permission,
-                                           Profile* profile);
+  int RecordIgnore(const GURL& url, content::PermissionType permission);
 
   // Updates the threshold to start blocking prompts from the field trial.
   static void UpdateFromVariations();
 
   // Checks if |request_origin| is under embargo for |permission|. Internally,
   // this will make a call to IsUnderEmbargo to check the content setting first,
-  // but may also make a call to Safe Browsing to check if |request_origin| is
-  // blacklisted for |permission|, which is performed asynchronously.
-  static void UpdateEmbargoedStatus(
-      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-      content::PermissionType permission,
-      const GURL& request_origin,
-      content::WebContents* web_contents,
-      int timeout,
-      Profile* profile,
-      base::Time current_time,
-      base::Callback<void(bool)> callback);
+  // but may also make a call to Safe Browsing to check the API blacklist, which
+  // is performed asynchronously.
+  void UpdateEmbargoedStatus(content::PermissionType permission,
+                             const GURL& request_origin,
+                             content::WebContents* web_contents,
+                             base::Callback<void(bool)> callback);
 
   // Checks the status of the content setting to determine if |request_origin|
   // is under embargo for |permission|. This checks both embargo for Permissions
   // Blacklisting and repeated dismissals.
-  static bool IsUnderEmbargo(content::PermissionType permission,
-                             Profile* profile,
-                             const GURL& request_origin,
-                             base::Time current_time);
+  bool IsUnderEmbargo(content::PermissionType permission,
+                      const GURL& request_origin);
 
  private:
   friend class PermissionContextBaseTests;
   friend class PermissionDecisionAutoBlockerUnitTest;
 
-  static void CheckSafeBrowsingResult(content::PermissionType permission,
-                                      Profile* profile,
-                                      const GURL& request_origin,
-                                      base::Time current_time,
-                                      base::Callback<void(bool)> callback,
-                                      bool should_be_embargoed);
+  explicit PermissionDecisionAutoBlocker(Profile* profile);
+  ~PermissionDecisionAutoBlocker() override;
 
-  static void PlaceUnderEmbargo(content::PermissionType permission,
-                                const GURL& request_origin,
-                                HostContentSettingsMap* map,
-                                base::Time current_time,
-                                const char* key);
+  // Get the result of the Safe Browsing check, if |should_be_embargoed| is true
+  // then |request_origin| will be placed under embargo for that |permission|.
+  void CheckSafeBrowsingResult(content::PermissionType permission,
+                               const GURL& request_origin,
+                               base::Callback<void(bool)> callback,
+                               bool should_be_embargoed);
+
+  void PlaceUnderEmbargo(content::PermissionType permission,
+                         const GURL& request_origin,
+                         const char* key);
+
+  void SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+      int timeout);
+
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
   // Keys used for storing count data in a website setting.
   static const char kPromptDismissCountKey[];
@@ -123,7 +126,14 @@ class PermissionDecisionAutoBlocker {
   static const char kPermissionDismissalEmbargoKey[];
   static const char kPermissionBlacklistEmbargoKey[];
 
+  Profile* profile_;
+  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager_;
+
+  // Timeout in ms.
+  int safe_browsing_timeout_;
+
+  std::unique_ptr<base::Clock> clock_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionDecisionAutoBlocker);
 };
-
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_DECISION_AUTO_BLOCKER_H_

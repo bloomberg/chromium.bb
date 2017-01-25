@@ -28,10 +28,6 @@ namespace content {
 class WebContents;
 }
 
-namespace safe_browsing {
-class SafeBrowsingDatabaseManager;
-}
-
 using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
 
 // This base class contains common operations for granting permissions.
@@ -181,15 +177,9 @@ class PermissionContextBase : public KeyedService {
                                  const BrowserPermissionCallback& callback,
                                  bool permission_blocked);
 
-  void SetSafeBrowsingDatabaseManagerAndTimeoutForTest(
-      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-      int timeout);
-
   Profile* profile_;
   const content::PermissionType permission_type_;
   const ContentSettingsType content_settings_type_;
-  int safe_browsing_timeout_;
-  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager_;
 #if defined(OS_ANDROID)
   std::unique_ptr<PermissionQueueController> permission_queue_controller_;
 #endif

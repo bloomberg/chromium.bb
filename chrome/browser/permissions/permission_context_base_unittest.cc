@@ -167,8 +167,9 @@ class TestPermissionContext : public PermissionContextBase {
     }
   }
 
-  // Permission request will need to be responded to, so pass a callback to be
-  // run once the request has completed and the decision has been made.
+  // Set the callback to run if the permission is being responded to in the
+  // test. This is left empty where no response is needed, such as in parallel
+  // requests, permissions blacklisting, invalid origin, and killswitch.
   void SetRespondPermissionCallback(base::Closure callback) {
     respond_permission_ = callback;
   }
@@ -359,6 +360,19 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     TestPermissionContext permission_context(profile(), permission_type,
                                              content_settings_type);
+    const PermissionRequestID id(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetMainFrame()->GetRoutingID(), -1);
+
+    permission_context.SetRespondPermissionCallback(
+        base::Bind(&PermissionContextBaseTests::RespondToPermission,
+                   base::Unretained(this), &permission_context, id, url, false,
+                   CONTENT_SETTING_ASK));
+
+    permission_context.RequestPermission(
+        web_contents(), id, url, true /* user_gesture */,
+        base::Bind(&TestPermissionContext::TrackPermissionDecision,
+                   base::Unretained(&permission_context)));
 
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
               permission_context.GetPermissionStatus(url, url));
@@ -488,7 +502,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     TestPermissionContext permission_context(
         profile(), content::PermissionType::MIDI_SYSEX,
         CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
               permission_context.GetPermissionStatus(url, url));
     variations::testing::ClearAllVariationParams();
@@ -629,29 +642,40 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
       const GURL& url,
       int timeout,
-      ContentSetting response) {
+      ContentSetting expected_permission_status) {
     NavigateAndCommit(url);
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(features::kPermissionsBlacklist);
     TestPermissionContext permission_context(profile(), permission_type,
                                              content_settings_type);
-    permission_context.SetSafeBrowsingDatabaseManagerAndTimeoutForTest(
-        db_manager, timeout);
+    PermissionDecisionAutoBlocker::GetForProfile(profile())
+        ->SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
+                                                             timeout);
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(), -1);
-    // The response callback needs to be set here to test a response being made
-    // in the case of a site not being blacklisted or a safe browsing timeout.
-    permission_context.SetRespondPermissionCallback(base::Bind(
-        &PermissionContextBaseTests::RespondToPermission,
-        base::Unretained(this), &permission_context, id, url, false, response));
+
+    // A response only needs to be made to the permission request if we do not
+    // expect he permission to be blacklisted, therefore set the response
+    // callback.
+    if (expected_permission_status == CONTENT_SETTING_ALLOW) {
+      permission_context.SetRespondPermissionCallback(
+          base::Bind(&PermissionContextBaseTests::RespondToPermission,
+                     base::Unretained(this), &permission_context, id, url,
+                     true /* persist */, expected_permission_status));
+    }
+
     permission_context.RequestPermission(
         web_contents(), id, url, true /* user_gesture */,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
+    EXPECT_EQ(expected_permission_status,
+              permission_context.GetPermissionStatus(url, url));
 
-    ASSERT_EQ(1u, permission_context.decisions().size());
-    EXPECT_EQ(response, permission_context.decisions()[0]);
+    if (expected_permission_status == CONTENT_SETTING_ALLOW) {
+      ASSERT_EQ(1u, permission_context.decisions().size());
+      EXPECT_EQ(expected_permission_status, permission_context.decisions()[0]);
+    }
   }
 
  private:
@@ -815,45 +839,22 @@ TEST_F(PermissionContextBaseTests, TestPermissionsBlacklistingBlocked) {
   scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
       new MockSafeBrowsingDatabaseManager(true /* perform_callback */);
   const GURL url("https://www.example.com");
-  std::set<std::string> blacklisted_permissions{
-      PermissionUtil::GetPermissionString(
-          content::PermissionType::GEOLOCATION)};
+  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
   TestPermissionsBlacklisting(content::PermissionType::GEOLOCATION,
                               CONTENT_SETTINGS_TYPE_GEOLOCATION, db_manager,
                               url, 2000 /* timeout */, CONTENT_SETTING_BLOCK);
 }
 
-// Tests that a URL with a blacklisted permission is permitted to request a
-// non-blacklisted permission.
+// Tests that a URL that is blacklisted for one permission can still request
+// another and grant another.
 TEST_F(PermissionContextBaseTests, TestPermissionsBlacklistingAllowed) {
   scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
       new MockSafeBrowsingDatabaseManager(true /* perform_callback */);
   const GURL url("https://www.example.com");
-  std::set<std::string> blacklisted_permissions{
-      PermissionUtil::GetPermissionString(
-          content::PermissionType::GEOLOCATION)};
+  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  TestPermissionsBlacklisting(
-      content::PermissionType::GEOLOCATION, CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      db_manager, url, 2000 /* timeout in ms */, CONTENT_SETTING_BLOCK);
   TestPermissionsBlacklisting(content::PermissionType::NOTIFICATIONS,
                               CONTENT_SETTINGS_TYPE_NOTIFICATIONS, db_manager,
-                              url, 2000 /* timeout in ms */,
-                              CONTENT_SETTING_ALLOW);
-}
-
-// Tests that a URL with a blacklisted permisison is permitted to request that
-// permission if Safe Browsing has timed out.
-TEST_F(PermissionContextBaseTests, TestSafeBrowsingTimeout) {
-  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(false /* perform_callback */);
-  const GURL url("https://www.example.com");
-  std::set<std::string> blacklisted_permissions{
-      PermissionUtil::GetPermissionString(
-          content::PermissionType::GEOLOCATION)};
-  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  TestPermissionsBlacklisting(content::PermissionType::GEOLOCATION,
-                              CONTENT_SETTINGS_TYPE_GEOLOCATION, db_manager,
-                              url, 0 /* timeout in ms */, CONTENT_SETTING_ASK);
+                              url, 2000 /* timeout */, CONTENT_SETTING_ALLOW);
 }

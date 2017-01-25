@@ -31,6 +31,9 @@ class PermissionBlacklistClient
       public base::RefCountedThreadSafe<PermissionBlacklistClient>,
       public content::WebContentsObserver {
  public:
+  // |callback| will not be called if |web_contents| is destroyed. Thus if the
+  // callback is run, the profile associated with |web_contents| is guaranteed
+  // to be alive.
   static void CheckSafeBrowsingBlacklist(
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
       content::PermissionType permission_type,

@@ -55,6 +55,38 @@ std::string PermissionUtil::GetPermissionString(
   return std::string();
 }
 
+std::string PermissionUtil::ConvertPermissionTypeToSafeBrowsingName(
+    const content::PermissionType& permission_type) {
+  switch (permission_type) {
+    case content::PermissionType::GEOLOCATION:
+      return "GEOLOCATION";
+    case content::PermissionType::NOTIFICATIONS:
+      return "NOTIFICATIONS";
+    case content::PermissionType::MIDI_SYSEX:
+      return "MIDI_SYSEX";
+    case content::PermissionType::PUSH_MESSAGING:
+      return "PUSH_MESSAGING";
+    case content::PermissionType::DURABLE_STORAGE:
+      return "DURABLE_STORAGE";
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      return "PROTECTED_MEDIA_IDENTIFIER";
+    case content::PermissionType::AUDIO_CAPTURE:
+      return "AUDIO_CAPTURE";
+    case content::PermissionType::VIDEO_CAPTURE:
+      return "VIDEO_CAPTURE";
+    case content::PermissionType::MIDI:
+      return "MIDI";
+    case content::PermissionType::BACKGROUND_SYNC:
+      return "BACKGROUND_SYNC";
+    case content::PermissionType::FLASH:
+      return "FLASH";
+    case content::PermissionType::NUM:
+      break;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 PermissionRequestType PermissionUtil::GetRequestType(
     content::PermissionType type) {
   switch (type) {

@@ -4,10 +4,14 @@
 
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 
+#include <map>
+
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/time/time.h"
+#include "base/test/simple_test_clock.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,183 +28,271 @@ bool FilterAll(const GURL& url) {
   return true;
 }
 
-void AutoBlockerCallback(bool expected, bool result) {
-  EXPECT_EQ(expected, result);
-}
-
 }  // namespace
 
-// TODO(meredithl): Write unit tests to simulate entering Permissions
-// Blacklisting embargo status via the public API.
+class MockSafeBrowsingDatabaseManager
+    : public safe_browsing::TestSafeBrowsingDatabaseManager {
+ public:
+  explicit MockSafeBrowsingDatabaseManager(bool perform_callback)
+      : perform_callback_(perform_callback) {}
+
+  bool CheckApiBlacklistUrl(
+      const GURL& url,
+      safe_browsing::SafeBrowsingDatabaseManager::Client* client) override {
+    if (perform_callback_) {
+      safe_browsing::ThreatMetadata metadata;
+      const auto& blacklisted_permissions = permissions_blacklist_.find(url);
+      if (blacklisted_permissions != permissions_blacklist_.end())
+        metadata.api_permissions = blacklisted_permissions->second;
+      client->OnCheckApiBlacklistUrlResult(url, metadata);
+    }
+    return false;
+  }
+
+  bool CancelApiCheck(Client* client) override {
+    DCHECK(!perform_callback_);
+    // Returns true when client check could be stopped.
+    return true;
+  }
+
+  void BlacklistUrlPermissions(const GURL& url,
+                               const std::set<std::string> permissions) {
+    permissions_blacklist_[url] = permissions;
+  }
+
+  void SetPerformCallback(bool perform_callback) {
+    perform_callback_ = perform_callback;
+  }
+
+ protected:
+  ~MockSafeBrowsingDatabaseManager() override {}
+
+ private:
+  bool perform_callback_;
+  std::map<GURL, std::set<std::string>> permissions_blacklist_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
+};
+
 class PermissionDecisionAutoBlockerUnitTest
     : public ChromeRenderViewHostTestHarness {
  protected:
-  int GetDismissalCount(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker::GetDismissCount(url, permission,
-                                                          profile());
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    autoblocker_ = PermissionDecisionAutoBlocker::GetForProfile(profile());
+    feature_list_.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
+                                    features::kPermissionsBlacklist},
+                                   {});
+    last_embargoed_status_ = false;
+    std::unique_ptr<base::SimpleTestClock> clock =
+        base::MakeUnique<base::SimpleTestClock>();
+    clock_ = clock.get();
+    autoblocker_->SetClockForTesting(std::move(clock));
   }
 
-  int GetIgnoreCount(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker::GetIgnoreCount(url, permission,
-                                                         profile());
-  }
-
-  int RecordDismissAndEmbargo(const GURL& url,
-                              content::PermissionType permission,
-                              base::Time current_time) {
-    return PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
-        url, permission, profile(), current_time);
-  }
-
-  int RecordIgnore(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker::RecordIgnore(url, permission,
-                                                       profile());
+  void SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(
+      scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager,
+      int timeout) {
+    autoblocker_->SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
+                                                                     timeout);
   }
 
   void UpdateEmbargoedStatus(content::PermissionType permission,
-                             const GURL& url,
-                             base::Time current_time,
-                             bool expected_result) {
-    PermissionDecisionAutoBlocker::UpdateEmbargoedStatus(
-        nullptr /* db manager */, permission, url, nullptr /* web contents */,
-        2000 /* timeout in ms */, profile(), current_time,
-        base::Bind(&AutoBlockerCallback, expected_result));
+                             const GURL& url) {
+    base::RunLoop run_loop;
+    autoblocker_->UpdateEmbargoedStatus(
+        permission, url, nullptr,
+        base::Bind(&PermissionDecisionAutoBlockerUnitTest::SetLastEmbargoStatus,
+                   base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
-  // Manually placing an origin, permission pair under embargo for blacklisting.
-  // To embargo on dismissals, RecordDismissAndEmbargo can be used.
+  // Manually placing an (origin, permission) pair under embargo for
+  // blacklisting. To embargo on dismissals, RecordDismissAndEmbargo can be
+  // used.
   void PlaceUnderBlacklistEmbargo(content::PermissionType permission,
-                                  const GURL& url,
-                                  HostContentSettingsMap* map,
-                                  base::Time current_time) {
-    PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
-        permission, url, map, current_time,
+                                  const GURL& url) {
+    autoblocker_->PlaceUnderEmbargo(
+        permission, url,
         PermissionDecisionAutoBlocker::kPermissionBlacklistEmbargoKey);
   }
+
+  PermissionDecisionAutoBlocker* autoblocker() { return autoblocker_; }
+
+  void SetLastEmbargoStatus(base::Closure quit_closure, bool status) {
+    last_embargoed_status_ = status;
+    if (quit_closure) {
+      quit_closure.Run();
+      quit_closure.Reset();
+    }
+  }
+
+  bool last_embargoed_status() { return last_embargoed_status_; }
+
+  base::SimpleTestClock* clock() { return clock_; }
+
+ private:
+  PermissionDecisionAutoBlocker* autoblocker_;
+  base::test::ScopedFeatureList feature_list_;
+  base::SimpleTestClock* clock_;
+  bool last_embargoed_status_;
 };
 
 TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveCountsByUrl) {
   GURL url1("https://www.google.com");
   GURL url2("https://www.example.com");
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBlockPromptsIfDismissedOften);
 
   // Record some dismissals.
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION, base::Time::Now()));
-  EXPECT_EQ(1, GetDismissalCount(url1, content::PermissionType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(1, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::GEOLOCATION));
 
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION, base::Time::Now()));
-  EXPECT_EQ(2, GetDismissalCount(url1, content::PermissionType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(2, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::GEOLOCATION));
 
-  EXPECT_TRUE(RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION, base::Time::Now()));
-  EXPECT_EQ(3, GetDismissalCount(url1, content::PermissionType::GEOLOCATION));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(3, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::GEOLOCATION));
 
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url2, content::PermissionType::GEOLOCATION, base::Time::Now()));
-  EXPECT_EQ(1, GetDismissalCount(url2, content::PermissionType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(1, autoblocker()->GetDismissCount(
+                   url2, content::PermissionType::GEOLOCATION));
 
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url1, content::PermissionType::NOTIFICATIONS, base::Time::Now()));
-  EXPECT_EQ(1, GetDismissalCount(url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_EQ(1, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::NOTIFICATIONS));
 
   // Record some ignores.
-  EXPECT_EQ(1, RecordIgnore(url1, content::PermissionType::MIDI_SYSEX));
-  EXPECT_EQ(1, RecordIgnore(url1, content::PermissionType::DURABLE_STORAGE));
-  EXPECT_EQ(1, RecordIgnore(url2, content::PermissionType::GEOLOCATION));
-  EXPECT_EQ(2, RecordIgnore(url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(1, autoblocker()->RecordIgnore(
+                   url1, content::PermissionType::MIDI_SYSEX));
+  EXPECT_EQ(1, autoblocker()->RecordIgnore(
+                   url1, content::PermissionType::DURABLE_STORAGE));
+  EXPECT_EQ(1, autoblocker()->RecordIgnore(
+                   url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(2, autoblocker()->RecordIgnore(
+                   url2, content::PermissionType::GEOLOCATION));
 
-  PermissionDecisionAutoBlocker::RemoveCountsByUrl(profile(),
-                                                   base::Bind(&FilterGoogle));
+  autoblocker()->RemoveCountsByUrl(base::Bind(&FilterGoogle));
 
   // Expect that url1's actions are gone, but url2's remain.
-  EXPECT_EQ(0, GetDismissalCount(url1, content::PermissionType::GEOLOCATION));
-  EXPECT_EQ(0, GetDismissalCount(url1, content::PermissionType::NOTIFICATIONS));
-  EXPECT_EQ(0, GetIgnoreCount(url1, content::PermissionType::MIDI_SYSEX));
-  EXPECT_EQ(0, GetIgnoreCount(url1, content::PermissionType::DURABLE_STORAGE));
+  EXPECT_EQ(0, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(0, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url1, content::PermissionType::MIDI_SYSEX));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url1, content::PermissionType::DURABLE_STORAGE));
 
-  EXPECT_EQ(1, GetDismissalCount(url2, content::PermissionType::GEOLOCATION));
-  EXPECT_EQ(2, GetIgnoreCount(url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(1, autoblocker()->GetDismissCount(
+                   url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(2, autoblocker()->GetIgnoreCount(
+                   url2, content::PermissionType::GEOLOCATION));
 
   // Add some more actions.
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION, base::Time::Now()));
-  EXPECT_EQ(1, GetDismissalCount(url1, content::PermissionType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(1, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::GEOLOCATION));
 
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url1, content::PermissionType::NOTIFICATIONS, base::Time::Now()));
-  EXPECT_EQ(1, GetDismissalCount(url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_EQ(1, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::NOTIFICATIONS));
 
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url2, content::PermissionType::GEOLOCATION, base::Time::Now()));
-  EXPECT_EQ(2, GetDismissalCount(url2, content::PermissionType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(2, autoblocker()->GetDismissCount(
+                   url2, content::PermissionType::GEOLOCATION));
 
-  EXPECT_EQ(1, RecordIgnore(url1, content::PermissionType::GEOLOCATION));
-  EXPECT_EQ(1, RecordIgnore(url1, content::PermissionType::NOTIFICATIONS));
-  EXPECT_EQ(1, RecordIgnore(url1, content::PermissionType::DURABLE_STORAGE));
-  EXPECT_EQ(1, RecordIgnore(url2, content::PermissionType::MIDI_SYSEX));
+  EXPECT_EQ(1, autoblocker()->RecordIgnore(
+                   url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(1, autoblocker()->RecordIgnore(
+                   url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_EQ(1, autoblocker()->RecordIgnore(
+                   url1, content::PermissionType::DURABLE_STORAGE));
+  EXPECT_EQ(1, autoblocker()->RecordIgnore(
+                   url2, content::PermissionType::MIDI_SYSEX));
 
   // Remove everything and expect that it's all gone.
-  PermissionDecisionAutoBlocker::RemoveCountsByUrl(profile(),
-                                                   base::Bind(&FilterAll));
+  autoblocker()->RemoveCountsByUrl(base::Bind(&FilterAll));
 
-  EXPECT_EQ(0, GetDismissalCount(url1, content::PermissionType::GEOLOCATION));
-  EXPECT_EQ(0, GetDismissalCount(url1, content::PermissionType::NOTIFICATIONS));
-  EXPECT_EQ(0, GetDismissalCount(url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(0, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(0, autoblocker()->GetDismissCount(
+                   url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_EQ(0, autoblocker()->GetDismissCount(
+                   url2, content::PermissionType::GEOLOCATION));
 
-  EXPECT_EQ(0, GetIgnoreCount(url1, content::PermissionType::GEOLOCATION));
-  EXPECT_EQ(0, GetIgnoreCount(url1, content::PermissionType::NOTIFICATIONS));
-  EXPECT_EQ(0, GetIgnoreCount(url2, content::PermissionType::GEOLOCATION));
-  EXPECT_EQ(0, GetIgnoreCount(url2, content::PermissionType::DURABLE_STORAGE));
-  EXPECT_EQ(0, GetIgnoreCount(url2, content::PermissionType::MIDI_SYSEX));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url1, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url1, content::PermissionType::NOTIFICATIONS));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url2, content::PermissionType::GEOLOCATION));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url2, content::PermissionType::DURABLE_STORAGE));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url2, content::PermissionType::MIDI_SYSEX));
+}
+
+// Test that an origin that has been blacklisted for a permission is embargoed.
+TEST_F(PermissionDecisionAutoBlockerUnitTest, TestUpdateEmbargoBlacklist) {
+  GURL url("https://www.google.com");
+
+  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
+      new MockSafeBrowsingDatabaseManager(true /* perform_callback */);
+  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
+  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
+  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
+                                                     2000 /* timeout in ms */);
+
+  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  EXPECT_TRUE(last_embargoed_status());
 }
 
 // Check that IsUnderEmbargo returns the correct value when the embargo is set
 // and expires.
 TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
   GURL url("https://www.google.com");
-  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
-  base::Time time_now = base::Time::Now();
-  base::test::ScopedFeatureList feature_list;
+  clock()->SetNow(base::Time::Now());
 
-  feature_list.InitAndEnableFeature(features::kPermissionsBlacklist);
-  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kPermissionsBlacklist));
+  PlaceUnderBlacklistEmbargo(content::PermissionType::GEOLOCATION, url);
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
-  // Manually place url under embargo and confirm embargo status.
-  PlaceUnderBlacklistEmbargo(content::PermissionType::GEOLOCATION, url, map,
-                             time_now);
-  EXPECT_TRUE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
-
-  // Check that the origin is not under embargo for another permission.
-  EXPECT_FALSE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::NOTIFICATIONS, profile(), url, time_now));
+  // Check that the origin is not under embargo for a different permission.
+  EXPECT_FALSE(autoblocker()->IsUnderEmbargo(
+      content::PermissionType::NOTIFICATIONS, url));
 
   // Confirm embargo status during the embargo period.
-  EXPECT_TRUE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url,
-      time_now + base::TimeDelta::FromDays(5)));
+  clock()->Advance(base::TimeDelta::FromDays(5));
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // Check embargo is lifted on expiry day. A small offset after the exact
   // embargo expiration date has been added to account for any precision errors
   // when removing the date stored as a double from the permission dictionary.
-  EXPECT_FALSE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url,
-      time_now + base::TimeDelta::FromHours(7 * 24 + 1)));
+  clock()->Advance(base::TimeDelta::FromHours(3 * 24 + 1));
+  EXPECT_FALSE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // Check embargo is lifted well after the expiry day.
-  EXPECT_FALSE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url,
-      time_now + base::TimeDelta::FromDays(8)));
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_FALSE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // Place under embargo again and verify the embargo status.
-  time_now = base::Time::Now();
-  PlaceUnderBlacklistEmbargo(content::PermissionType::NOTIFICATIONS, url, map,
-                             time_now);
-  EXPECT_TRUE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::NOTIFICATIONS, profile(), url, time_now));
+  PlaceUnderBlacklistEmbargo(content::PermissionType::NOTIFICATIONS, url);
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_TRUE(autoblocker()->IsUnderEmbargo(
+      content::PermissionType::NOTIFICATIONS, url));
 }
 
 // Tests the alternating pattern of the block on multiple dismiss behaviour. On
@@ -208,90 +300,95 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
 // automatically blocked. Each time the embargo is lifted, the site gets another
 // chance to request the permission, but if it is again dismissed it is placed
 // under embargo again and its permission requests blocked.
-TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargo) {
+TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
   GURL url("https://www.google.com");
-  base::Time time_now = base::Time::Now();
-  // Enable the autoblocking feature, which is disabled by default.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBlockPromptsIfDismissedOften);
-
-  EXPECT_TRUE(
-      base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften));
+  clock()->SetNow(base::Time::Now());
 
   // Record some dismisses.
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION, time_now));
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION, time_now));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, content::PermissionType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, content::PermissionType::GEOLOCATION));
 
   // A request with < 3 prior dismisses should not be automatically blocked.
-  EXPECT_FALSE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
+  EXPECT_FALSE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // After the 3rd dismiss subsequent permission requests should be autoblocked.
-  EXPECT_TRUE(RecordDismissAndEmbargo(url, content::PermissionType::GEOLOCATION,
-                                      time_now));
-  EXPECT_TRUE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, content::PermissionType::GEOLOCATION));
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // Accelerate time forward, check that the embargo status is lifted and the
   // request won't be automatically blocked.
-  time_now += base::TimeDelta::FromDays(8);
-  EXPECT_FALSE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
+  clock()->Advance(base::TimeDelta::FromDays(8));
+  EXPECT_FALSE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // Record another dismiss, subsequent requests should be autoblocked again.
-  EXPECT_TRUE(RecordDismissAndEmbargo(url, content::PermissionType::GEOLOCATION,
-                                      time_now));
-  EXPECT_TRUE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, content::PermissionType::GEOLOCATION));
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // Accelerate time again, check embargo is lifted and another permission
   // request is let through.
-  time_now += base::TimeDelta::FromDays(8);
-  EXPECT_FALSE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
+  clock()->Advance(base::TimeDelta::FromDays(8));
+  EXPECT_FALSE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 }
 
 // Test the logic for a combination of blacklisting and dismissal embargo.
 TEST_F(PermissionDecisionAutoBlockerUnitTest, TestExpiredBlacklistEmbargo) {
   GURL url("https://www.google.com");
-  base::Time time_now = base::Time::Now();
-  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
-
-  // Enable both dismissals and permissions blacklisting features.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
-                                 features::kPermissionsBlacklist},
-                                {});
-  EXPECT_TRUE(
-      base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften));
-  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kPermissionsBlacklist));
+  clock()->SetNow(base::Time::Now());
 
   // Place under blacklist embargo and check the status.
-  PlaceUnderBlacklistEmbargo(content::PermissionType::GEOLOCATION, url, map,
-                             base::Time::Now());
-
-  time_now += base::TimeDelta::FromDays(5);
-  EXPECT_TRUE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
+  PlaceUnderBlacklistEmbargo(content::PermissionType::GEOLOCATION, url);
+  clock()->Advance(base::TimeDelta::FromDays(5));
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 
   // Record dismisses to place it under dismissal embargo.
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION, time_now));
-  EXPECT_FALSE(RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION, time_now));
-  EXPECT_TRUE(RecordDismissAndEmbargo(url, content::PermissionType::GEOLOCATION,
-                                      time_now));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, content::PermissionType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, content::PermissionType::GEOLOCATION));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, content::PermissionType::GEOLOCATION));
 
-  // Accelerate time to a point where the blacklist embargo should be expired.
-  time_now += base::TimeDelta::FromDays(3);
-  EXPECT_FALSE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url,
-      time_now + base::TimeDelta::FromDays(5)));
+  // Accelerate time to a point where the blacklist embargo should be expired
+  // and check that dismissal embargo is still set.
+  clock()->Advance(base::TimeDelta::FromDays(3));
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+}
 
-  // Check that dismissal embargo is still set, even though the blacklisting
-  // embargo has expired.
-  EXPECT_TRUE(PermissionDecisionAutoBlocker::IsUnderEmbargo(
-      content::PermissionType::GEOLOCATION, profile(), url, time_now));
+TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
+  GURL url("https://www.google.com");
+  clock()->SetNow(base::Time::Now());
+
+  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
+      new MockSafeBrowsingDatabaseManager(false /* perform_callback */);
+  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
+  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
+  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
+                                                     0 /* timeout in ms */);
+
+  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  EXPECT_FALSE(last_embargoed_status());
+  EXPECT_FALSE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+  db_manager->SetPerformCallback(true);
+  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
+                                                     2000 /* timeout in ms */);
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  EXPECT_TRUE(last_embargoed_status());
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
 }

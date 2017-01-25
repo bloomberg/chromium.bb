@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -48,11 +49,6 @@ const char PermissionContextBase::kPermissionsKillSwitchFieldStudy[] =
 // static
 const char PermissionContextBase::kPermissionsKillSwitchBlockedValue[] =
     "blocked";
-// Maximum time in milliseconds to wait for safe browsing service to check a
-// url for blacklisting. After this amount of time, the check will be aborted
-// and the url will be treated as not blacklisted.
-// TODO(meredithl): Revisit this once UMA metrics have data about request time.
-const int kCheckUrlTimeoutMs = 2000;
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -61,7 +57,6 @@ PermissionContextBase::PermissionContextBase(
     : profile_(profile),
       permission_type_(permission_type),
       content_settings_type_(content_settings_type),
-      safe_browsing_timeout_(kCheckUrlTimeoutMs),
       weak_factory_(this) {
 #if defined(OS_ANDROID)
   permission_queue_controller_.reset(new PermissionQueueController(
@@ -130,20 +125,12 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  if (!db_manager_) {
-    safe_browsing::SafeBrowsingService* sb_service =
-        g_browser_process->safe_browsing_service();
-    if (sb_service)
-      db_manager_ = sb_service->database_manager();
-  }
-
   // Asynchronously check whether the origin should be blocked from making this
   // permission request. It may be on the Safe Browsing API blacklist, or it may
   // have been dismissed too many times in a row. If the origin is allowed to
   // request, that request will be made to ContinueRequestPermission().
-  PermissionDecisionAutoBlocker::UpdateEmbargoedStatus(
-      db_manager_, permission_type_, requesting_origin, web_contents,
-      safe_browsing_timeout_, profile_, base::Time::Now(),
+  PermissionDecisionAutoBlocker::GetForProfile(profile_)->UpdateEmbargoedStatus(
+      permission_type_, requesting_origin, web_contents,
       base::Bind(&PermissionContextBase::ContinueRequestPermission,
                  weak_factory_.GetWeakPtr(), web_contents, id,
                  requesting_origin, embedding_origin, user_gesture, callback));
@@ -165,14 +152,11 @@ void PermissionContextBase::ContinueRequestPermission(
         base::StringPrintf(
             "%s permission has been auto-blocked.",
             PermissionUtil::GetPermissionString(permission_type_).c_str()));
-    // Permission has been blacklisted, block the request.
-    // TODO(meredithl): Consider setting the content setting and persisting
-    // the decision to block.
+    // Permission has been automatically blocked.
     callback.Run(CONTENT_SETTING_BLOCK);
     return;
   }
 
-  // Site is not blacklisted by Safe Browsing for the requested permission.
   PermissionUmaUtil::PermissionRequested(permission_type_, requesting_origin,
                                          embedding_origin, profile_);
 
@@ -195,8 +179,8 @@ ContentSetting PermissionContextBase::GetPermissionStatus(
   ContentSetting content_setting =
       GetPermissionStatusInternal(requesting_origin, embedding_origin);
   if (content_setting == CONTENT_SETTING_ASK &&
-      PermissionDecisionAutoBlocker::IsUnderEmbargo(
-          permission_type_, profile_, requesting_origin, base::Time::Now())) {
+      PermissionDecisionAutoBlocker::GetForProfile(profile_)->IsUnderEmbargo(
+          permission_type_, requesting_origin)) {
     return CONTENT_SETTING_BLOCK;
   }
   return content_setting;
@@ -327,8 +311,8 @@ void PermissionContextBase::PermissionDecided(
   }
 
   if (content_setting == CONTENT_SETTING_DEFAULT &&
-      PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
-          requesting_origin, permission_type_, profile_, base::Time::Now())) {
+      PermissionDecisionAutoBlocker::GetForProfile(profile_)
+          ->RecordDismissAndEmbargo(requesting_origin, permission_type_)) {
     // The permission has been embargoed, so it is blocked for this permission
     // request, but not persisted.
     content_setting = CONTENT_SETTING_BLOCK;
@@ -389,11 +373,4 @@ void PermissionContextBase::UpdateContentSetting(
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
                                       content_settings_type_, std::string(),
                                       content_setting);
-}
-
-void PermissionContextBase::SetSafeBrowsingDatabaseManagerAndTimeoutForTest(
-    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-    int timeout) {
-  db_manager_ = db_manager;
-  safe_browsing_timeout_ = timeout;
 }

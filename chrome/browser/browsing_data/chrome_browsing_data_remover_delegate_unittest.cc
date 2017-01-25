@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
@@ -551,31 +552,27 @@ class RemovePasswordsTester {
 class RemovePermissionPromptCountsTest {
  public:
   explicit RemovePermissionPromptCountsTest(TestingProfile* profile)
-      : profile_(profile) {}
+      : autoblocker_(PermissionDecisionAutoBlocker::GetForProfile(profile)) {}
 
   int GetDismissCount(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker::GetDismissCount(
-        url, permission, profile_);
+    return autoblocker_->GetDismissCount(url, permission);
   }
 
   int GetIgnoreCount(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker::GetIgnoreCount(
-        url, permission, profile_);
+    return autoblocker_->GetIgnoreCount(url, permission);
   }
 
   int RecordIgnore(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker::RecordIgnore(url, permission,
-                                                       profile_);
+    return autoblocker_->RecordIgnore(url, permission);
   }
 
   bool ShouldChangeDismissalToBlock(const GURL& url,
                                     content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker::ShouldChangeDismissalToBlock(
-        url, permission, profile_);
+    return autoblocker_->RecordDismissAndEmbargo(url, permission);
   }
 
  private:
-  TestingProfile* profile_;
+  PermissionDecisionAutoBlocker* autoblocker_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovePermissionPromptCountsTest);
 };

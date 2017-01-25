@@ -75,11 +75,10 @@ void PermissionBlacklistClient::OnCheckApiBlacklistUrlResult(
     db_manager_->CancelApiCheck(this);
   timer_.reset(nullptr);
 
-  // TODO(meredithl): Convert the strings returned from Safe Browsing to the
-  // ones used by PermissionUtil for comparison.
   bool permission_blocked =
-      metadata.api_permissions.find(PermissionUtil::GetPermissionString(
-          permission_type_)) != metadata.api_permissions.end();
+      metadata.api_permissions.find(
+          PermissionUtil::ConvertPermissionTypeToSafeBrowsingName(
+              permission_type_)) != metadata.api_permissions.end();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

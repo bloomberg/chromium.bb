@@ -45,6 +45,11 @@ class PermissionUtil {
   // Returns the permission string for the given PermissionType.
   static std::string GetPermissionString(content::PermissionType permission);
 
+  // Return the stringified version of the PermissionType enum that Safe
+  // Browsing uses for the API Blacklist.
+  static std::string ConvertPermissionTypeToSafeBrowsingName(
+      const content::PermissionType& permission_type);
+
   // Returns the request type corresponding to a permission type.
   static PermissionRequestType GetRequestType(content::PermissionType type);
 
