@@ -130,7 +130,6 @@ Response* Response::create(ScriptState* scriptState,
                            const Dictionary& init,
                            ExceptionState& exceptionState) {
   v8::Local<v8::Value> body = bodyValue.v8Value();
-  ScriptValue reader;
   v8::Isolate* isolate = scriptState->isolate();
   ExecutionContext* executionContext = scriptState->getExecutionContext();
 
@@ -181,25 +180,8 @@ Response* Response::create(ScriptState* scriptState,
         new BodyStreamBuffer(scriptState, new FormDataBytesConsumer(string));
     contentType = "text/plain;charset=UTF-8";
   }
-  Response* response =
-      create(scriptState, bodyBuffer, contentType,
-             ResponseInit(init, exceptionState), exceptionState);
-  if (!exceptionState.hadException() && !reader.isEmpty()) {
-    // Add a hidden reference so that the weak persistent in the
-    // ReadableStreamBytesConsumer will be valid as long as the
-    // Response is valid.
-    v8::Local<v8::Value> wrapper = ToV8(response, scriptState);
-    if (wrapper.IsEmpty()) {
-      exceptionState.throwTypeError("Cannot create a Response wrapper");
-      return nullptr;
-    }
-    ASSERT(wrapper->IsObject());
-    V8HiddenValue::setHiddenValue(
-        scriptState, wrapper.As<v8::Object>(),
-        V8HiddenValue::readableStreamReaderInResponse(scriptState->isolate()),
-        reader.v8Value());
-  }
-  return response;
+  return create(scriptState, bodyBuffer, contentType,
+                ResponseInit(init, exceptionState), exceptionState);
 }
 
 Response* Response::create(ScriptState* scriptState,
