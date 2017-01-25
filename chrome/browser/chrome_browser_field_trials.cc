@@ -73,9 +73,7 @@ void InstantiatePersistentHistograms() {
   const uint32_t kAllocId = 0x935DDD43;  // SHA1(BrowserMetrics)
   std::string storage = variations::GetVariationParamValueByFeature(
       base::kPersistentHistogramsFeature, "storage");
-
-  // As of M58, "MappedFile" is the default.
-  if (storage.empty() || storage == "MappedFile") {
+  if (storage == "MappedFile") {
     // If for some reason the existing "active" file could not be moved above
     // then it is essential it be scheduled for deletion when possible and the
     // contents ignored. Because this shouldn't happen but can on an OS like
