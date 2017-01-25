@@ -2703,9 +2703,10 @@ LayoutObject* associatedLayoutObjectOf(const Node& node, int offsetInNode) {
       layoutTextFragment->firstLetterPseudoElement()->layoutObject();
   // TODO(yosin): We're not sure when |firstLetterLayoutObject| has
   // multiple child layout object.
-  DCHECK_EQ(firstLetterLayoutObject->slowFirstChild(),
-            firstLetterLayoutObject->slowLastChild());
-  return firstLetterLayoutObject->slowFirstChild();
+  LayoutObject* child = firstLetterLayoutObject->slowFirstChild();
+  CHECK(child && child->isText());
+  DCHECK_EQ(child, firstLetterLayoutObject->slowLastChild());
+  return child;
 }
 
 int caretMinOffset(const Node* node) {

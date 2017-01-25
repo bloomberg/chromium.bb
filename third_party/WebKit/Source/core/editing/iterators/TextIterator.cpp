@@ -835,12 +835,12 @@ void TextIteratorAlgorithm<Strategy>::handleTextNodeFirstLetter(
     return;
 
   LayoutObject* firstLetter = pseudoLayoutObject->slowFirstChild();
-  DCHECK(firstLetter);
 
-  m_remainingTextBox = m_textBox;
-  m_textBox = toLayoutText(firstLetter)->firstTextBox();
   m_sortedTextBoxes.clear();
+  m_remainingTextBox = m_textBox;
+  CHECK(firstLetter && firstLetter->isText());
   m_firstLetterText = toLayoutText(firstLetter);
+  m_textBox = m_firstLetterText->firstTextBox();
 }
 
 template <typename Strategy>
