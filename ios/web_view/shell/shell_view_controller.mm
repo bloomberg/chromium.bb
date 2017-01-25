@@ -15,7 +15,9 @@ const CGFloat kButtonSize = 44;
 }
 
 @interface ShellViewController () {
+  base::scoped_nsobject<UIView> _containerView;
   base::scoped_nsobject<UITextField> _field;
+  base::scoped_nsobject<UIToolbar> _toolbar;
   base::scoped_nsprotocol<id<CRIWVWebView>> _webView;
   base::scoped_nsobject<TranslateController> _translateController;
 }
@@ -26,16 +28,46 @@ const CGFloat kButtonSize = 44;
 
 @implementation ShellViewController
 
-@synthesize containerView = _containerView;
-@synthesize toolbarView = _toolbarView;
-
-- (instancetype)init {
-  self = [super initWithNibName:@"MainView" bundle:nil];
-  return self;
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  CGRect bounds = self.view.bounds;
+
+  // Set up the toolbar.
+  _toolbar.reset([[UIToolbar alloc] init]);
+  [_toolbar setBarTintColor:[UIColor colorWithRed:0.337
+                                            green:0.467
+                                             blue:0.988
+                                            alpha:1.0]];
+  [_toolbar setFrame:CGRectMake(0, 20, CGRectGetWidth(bounds), 44)];
+  [_toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                UIViewAutoresizingFlexibleBottomMargin];
+  [self.view addSubview:_toolbar];
+
+  // Set up the container view.
+  _containerView.reset([[UIView alloc] init]);
+  [_containerView setFrame:CGRectMake(0, 64, CGRectGetWidth(bounds),
+                                      CGRectGetHeight(bounds) - 64)];
+  [_containerView setBackgroundColor:[UIColor lightGrayColor]];
+  [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                      UIViewAutoresizingFlexibleHeight];
+  [self.view addSubview:_containerView];
+
+  // Text field.
+  const int kButtonCount = 3;
+  _field.reset([[UITextField alloc]
+      initWithFrame:CGRectMake(kButtonCount * kButtonSize, 6,
+                               CGRectGetWidth([_toolbar frame]) -
+                                   kButtonCount * kButtonSize - 10,
+                               31)]);
+  [_field setDelegate:self];
+  [_field setBackground:[[UIImage imageNamed:@"textfield_background"]
+                            resizableImageWithCapInsets:UIEdgeInsetsMake(
+                                                            12, 12, 12, 12)]];
+  [_field setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+  [_field setKeyboardType:UIKeyboardTypeWebSearch];
+  [_field setAutocorrectionType:UITextAutocorrectionTypeNo];
+  [_field setClearButtonMode:UITextFieldViewModeWhileEditing];
 
   // Set up the toolbar buttons.
   // Back.
@@ -72,35 +104,24 @@ const CGFloat kButtonSize = 44;
                 action:@selector(stopLoading)
       forControlEvents:UIControlEventTouchUpInside];
 
-  // Text field.
-  const int kButtonCount = 3;
-  _field.reset([[UITextField alloc]
-      initWithFrame:CGRectMake(kButtonCount * kButtonSize, 6,
-                               CGRectGetWidth([_toolbarView frame]) -
-                                   kButtonCount * kButtonSize - 10,
-                               31)]);
-  [_field setDelegate:self];
-  [_field setBackground:[[UIImage imageNamed:@"textfield_background"]
-                            resizableImageWithCapInsets:UIEdgeInsetsMake(
-                                                            12, 12, 12, 12)]];
-  [_field setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-  [_field setKeyboardType:UIKeyboardTypeWebSearch];
-  [_field setAutocorrectionType:UITextAutocorrectionTypeNo];
-  [_field setClearButtonMode:UITextFieldViewModeWhileEditing];
-
-  [_toolbarView addSubview:back];
-  [_toolbarView addSubview:forward];
-  [_toolbarView addSubview:stop];
-  [_toolbarView addSubview:_field];
+  [_toolbar addSubview:back];
+  [_toolbar addSubview:forward];
+  [_toolbar addSubview:stop];
+  [_toolbar addSubview:_field];
 
   _webView.reset([[CRIWV webView] retain]);
   [_webView setDelegate:self];
-  [_containerView addSubview:[_webView view]];
+  UIView* view = [_webView view];
+  [_containerView addSubview:view];
+  [view setFrame:[_containerView bounds]];
+  [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                            UIViewAutoresizingFlexibleHeight];
+
   [_webView loadURL:[NSURL URLWithString:@"https://www.google.com/"]];
 }
 
 - (UIBarPosition)positionForBar:(id<UIBarPositioning>)bar {
-  if (bar == _toolbarView) {
+  if (bar == _toolbar.get()) {
     return UIBarPositionTopAttached;
   }
   return UIBarPositionAny;

@@ -14,13 +14,6 @@
 @interface ShellViewController
     : UIViewController<CRIWVWebViewDelegate, UITextFieldDelegate>
 
-// Exposed for interface builder.
-@property(nonatomic, retain) IBOutlet UIView* containerView;
-@property(nonatomic, retain) IBOutlet UIToolbar* toolbarView;
-
-// Designated initializer.
-- (instancetype)init;
-
 @end
 
 #endif  // IOS_WEB_VIEW_SHELL_SHELL_VIEW_CONTROLLER_H_

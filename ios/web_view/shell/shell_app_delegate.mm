@@ -26,10 +26,12 @@
   _delegate.reset([[ShellDelegate alloc] init]);
   [CRIWV configureWithDelegate:_delegate];
 
+  [self.window makeKeyAndVisible];
+
   base::scoped_nsobject<ShellViewController> controller(
       [[ShellViewController alloc] init]);
   self.window.rootViewController = controller;
-  [self.window makeKeyAndVisible];
+
   return YES;
 }
 
