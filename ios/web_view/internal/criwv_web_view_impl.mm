@@ -8,6 +8,7 @@
 #include <utility>
 
 #import "base/ios/weak_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/public/referrer.h"
@@ -34,9 +35,6 @@
   CGFloat _loadProgress;
 }
 
-// Returns the web state associated with this web view.
-- (web::WebState*)webState;
-
 @end
 
 @implementation CRIWVWebViewImpl
@@ -49,25 +47,19 @@
   self = [super init];
   if (self) {
     _browserState = browserState;
-    _webStateImpl.reset(new web::WebStateImpl(_browserState));
+    _webStateImpl = base::MakeUnique<web::WebStateImpl>(_browserState);
     _webStateImpl->GetNavigationManagerImpl().InitializeSession(nil, nil, NO,
                                                                 0);
-    _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
+    _webStateDelegate = base::MakeUnique<web::WebStateDelegateBridge>(self);
     _webStateImpl->SetDelegate(_webStateDelegate.get());
     _webController.reset(_webStateImpl->GetWebController());
     [_webController setDelegate:self];
     [_webController setWebUsageEnabled:YES];
 
     // Initialize Translate.
-    web::WebState* webState = [_webController webStateImpl];
-    ios_web_view::CRIWVTranslateClient::CreateForWebState(webState);
+    ios_web_view::CRIWVTranslateClient::CreateForWebState(_webStateImpl.get());
   }
   return self;
-}
-
-- (web::WebState*)webState {
-  // TODO(crbug.com/679895): Stop using the private CRWWebController API.
-  return [_webController webStateImpl];
 }
 
 - (UIView*)view {
@@ -83,24 +75,24 @@
 }
 
 - (BOOL)isLoading {
-  return [_webController webStateImpl]->IsLoading();
+  return _webStateImpl->IsLoading();
 }
 
 - (NSURL*)visibleURL {
-  return net::NSURLWithGURL([self webState]->GetVisibleURL());
+  return net::NSURLWithGURL(_webStateImpl->GetVisibleURL());
 }
 
 - (NSString*)pageTitle {
-  return base::SysUTF16ToNSString([_webController webStateImpl]->GetTitle());
+  return base::SysUTF16ToNSString(_webStateImpl->GetTitle());
 }
 
 - (void)goBack {
-  if (_webStateImpl)
+  if (_webStateImpl->GetNavigationManager())
     _webStateImpl->GetNavigationManager()->GoBack();
 }
 
 - (void)goForward {
-  if (_webStateImpl)
+  if (_webStateImpl->GetNavigationManager())
     _webStateImpl->GetNavigationManager()->GoForward();
 }
 
@@ -120,9 +112,8 @@
 
 - (void)evaluateJavaScript:(NSString*)javaScriptString
          completionHandler:(void (^)(id, NSError*))completionHandler {
-  [[self webState]->GetJSInjectionReceiver()
-      executeJavaScript:javaScriptString
-      completionHandler:completionHandler];
+  [_webStateImpl->GetJSInjectionReceiver() executeJavaScript:javaScriptString
+                                           completionHandler:completionHandler];
 }
 
 - (void)setDelegate:(id<CRIWVWebViewDelegate>)delegate {
@@ -130,7 +121,7 @@
 
   // Set up the translate delegate.
   ios_web_view::CRIWVTranslateClient* translateClient =
-      ios_web_view::CRIWVTranslateClient::FromWebState([self webState]);
+      ios_web_view::CRIWVTranslateClient::FromWebState(_webStateImpl.get());
   id<CRIWVTranslateDelegate> translateDelegate = nil;
   if ([_delegate respondsToSelector:@selector(translateDelegate)])
     translateDelegate = [_delegate translateDelegate];

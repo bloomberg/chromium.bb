@@ -8,7 +8,7 @@
 
 @protocol CRIWVWebViewDelegate;
 
-// Primary objective-c interface for web/.  Just like a UIWebView, but better.
+// Primary objective-c interface for web/.  Just like a WKWebView, but better.
 // Concrete instances can be created through CRIWV.
 @protocol CRIWVWebView<NSObject>
 

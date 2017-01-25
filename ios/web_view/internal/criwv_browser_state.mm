@@ -23,7 +23,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
-const char kPreferencesFilename[] = "Preferences";
+const char kPreferencesFilename[] = FILE_PATH_LITERAL("Preferences");
 }
 
 namespace ios_web_view {

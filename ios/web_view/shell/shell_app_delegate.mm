@@ -49,4 +49,9 @@
   [CRIWV shutDown];
 }
 
+- (void)dealloc {
+  [_window release];
+  [super dealloc];
+}
+
 @end

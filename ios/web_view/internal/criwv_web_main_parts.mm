@@ -5,6 +5,7 @@
 #import "ios/web_view/internal/criwv_web_main_parts.h"
 
 #include "base/base_paths.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web_view/internal/criwv_browser_state.h"
@@ -24,14 +25,14 @@ void CRIWVWebMainParts::PreMainMessageLoopRun() {
   // Initialize resources.
   l10n_util::OverrideLocaleWithCocoaLocale();
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "", NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+      std::string(), nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   base::FilePath pak_file;
   PathService::Get(base::DIR_MODULE, &pak_file);
-  pak_file = pak_file.Append("web_view_resources.pak");
+  pak_file = pak_file.Append(FILE_PATH_LITERAL("web_view_resources.pak"));
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
 
-  browser_state_.reset(new CRIWVBrowserState);
+  browser_state_ = base::MakeUnique<CRIWVBrowserState>();
 
   // Initialize translate.
   translate::TranslateDownloadManager* download_manager =

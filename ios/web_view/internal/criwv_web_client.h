@@ -36,7 +36,7 @@ class CRIWVWebClient : public web::WebClient {
   id<CRIWVDelegate> delegate_;
 
   // The WebMainParts created by |CreateWebMainParts()|.
-  CRIWVWebMainParts* web_main_parts_; // weak
+  CRIWVWebMainParts* web_main_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(CRIWVWebClient);
 };

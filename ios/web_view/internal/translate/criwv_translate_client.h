@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#import "base/mac/scoped_nsobject.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"

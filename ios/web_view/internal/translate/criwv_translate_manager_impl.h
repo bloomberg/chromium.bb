@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #import "ios/web_view/public/criwv_translate_manager.h"
 
 namespace translate {
@@ -18,10 +17,13 @@ class TranslateManager;
 // translate::TranslateUIDelegate.
 @interface CRIWVTranslateManagerImpl : NSObject<CRIWVTranslateManager>
 
+- (instancetype)init NS_UNAVAILABLE;
+
 // |manager| is expexted to outlive this CRIWVTranslateManagerImpl.
 - (instancetype)initWithTranslateManager:(translate::TranslateManager*)manager
                           sourceLanguage:(const std::string&)source
-                          targetLanguage:(const std::string&)target;
+                          targetLanguage:(const std::string&)target
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

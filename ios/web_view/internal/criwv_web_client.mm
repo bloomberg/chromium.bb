@@ -13,8 +13,7 @@
 namespace ios_web_view {
 
 CRIWVWebClient::CRIWVWebClient(id<CRIWVDelegate> delegate)
-    : delegate_(delegate),
-      web_main_parts_(nullptr) {}
+    : delegate_(delegate), web_main_parts_(nullptr) {}
 
 CRIWVWebClient::~CRIWVWebClient() {}
 

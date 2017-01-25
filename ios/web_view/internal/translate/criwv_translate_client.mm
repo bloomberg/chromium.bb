@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#import "base/mac/scoped_nsobject.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -30,8 +32,9 @@ namespace ios_web_view {
 
 CRIWVTranslateClient::CRIWVTranslateClient(web::WebState* web_state)
     : web::WebStateObserver(web_state),
-      translate_manager_(
-          new translate::TranslateManager(this, prefs::kAcceptLanguages)),
+      translate_manager_(base::MakeUnique<translate::TranslateManager>(
+          this,
+          prefs::kAcceptLanguages)),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get()) {}
@@ -106,9 +109,8 @@ PrefService* CRIWVTranslateClient::GetPrefs() {
 std::unique_ptr<translate::TranslatePrefs>
 CRIWVTranslateClient::GetTranslatePrefs() {
   DCHECK(web_state());
-  return std::unique_ptr<translate::TranslatePrefs>(
-      new translate::TranslatePrefs(GetPrefs(), prefs::kAcceptLanguages,
-                                    nullptr));
+  return base::MakeUnique<translate::TranslatePrefs>(
+      GetPrefs(), prefs::kAcceptLanguages, nullptr);
 }
 
 translate::TranslateAcceptLanguages*
