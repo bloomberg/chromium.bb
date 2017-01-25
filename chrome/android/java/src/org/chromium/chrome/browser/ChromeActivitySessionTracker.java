@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.provider.Settings;
+import android.text.TextUtils;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -197,15 +198,14 @@ public class ChromeActivitySessionTracker {
     }
 
     private boolean hasLocaleChanged(String newLocale) {
-        String previousLocale = ContextUtils.getAppSharedPreferences().getString(
-                PREF_LOCALE, "");
-
-        if (!previousLocale.equals(newLocale)) {
+        String previousLocale = ContextUtils.getAppSharedPreferences().getString(PREF_LOCALE, null);
+        if (!TextUtils.equals(previousLocale, newLocale)) {
             SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString(PREF_LOCALE, newLocale);
             editor.apply();
-            return true;
+            // Consider writing the initial value to prefs as _not_ changing the locale.
+            return previousLocale != null;
         }
         return false;
     }
