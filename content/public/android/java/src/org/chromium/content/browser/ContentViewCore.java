@@ -964,6 +964,14 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public boolean onTouchEvent(MotionEvent event) {
         // TODO(mustaq): Should we include MotionEvent.TOOL_TYPE_STYLUS here?
         // crbug.com/592082
+        if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+            // Mouse button info is incomplete on L and below
+            int apiVersion = Build.VERSION.SDK_INT;
+            if (apiVersion >= android.os.Build.VERSION_CODES.M) {
+                return sendMouseEvent(event);
+            }
+        }
+
         final boolean isTouchHandleEvent = false;
         return sendTouchEvent(event, isTouchHandleEvent);
     }
@@ -1582,6 +1590,13 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                             event.getAxisValue(MotionEvent.AXIS_VSCROLL),
                             mRenderCoordinates.getWheelScrollFactor());
                     return true;
+                case MotionEvent.ACTION_BUTTON_PRESS:
+                case MotionEvent.ACTION_BUTTON_RELEASE:
+                    // TODO(mustaq): Should we include MotionEvent.TOOL_TYPE_STYLUS here?
+                    // crbug.com/592082
+                    if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+                        return sendMouseEvent(event);
+                    }
             }
         } else if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
             if (mJoystickScrollProvider.onMotion(event)) return true;
