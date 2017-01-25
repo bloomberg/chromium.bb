@@ -10562,13 +10562,17 @@
         }
       },
       {
+        "args": [
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "override_compile_targets": [
           "telemetry_unittests_run"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         }
       }
     ],
@@ -11127,13 +11131,17 @@
         }
       },
       {
+        "args": [
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "override_compile_targets": [
           "telemetry_unittests_run"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         }
       }
     ],
