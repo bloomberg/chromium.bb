@@ -67,7 +67,7 @@ void SurfaceFactory::SubmitCompositorFrame(const LocalFrameId& local_frame_id,
     gfx::Size frame_size;
     // CompositorFrames may not be populated with a RenderPass in unit tests.
     if (!frame.render_pass_list.empty())
-      frame_size = frame.render_pass_list[0]->output_rect.size();
+      frame_size = frame.render_pass_list.back()->output_rect.size();
     manager_->SurfaceCreated(SurfaceInfo(
         surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
   }

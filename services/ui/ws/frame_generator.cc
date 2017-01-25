@@ -31,6 +31,14 @@ FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
   DCHECK(delegate_);
 }
 
+void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
+  if (device_scale_factor_ == device_scale_factor)
+    return;
+  device_scale_factor_ = device_scale_factor;
+  if (compositor_frame_sink_)
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
+}
+
 FrameGenerator::~FrameGenerator() {
   // Invalidate WeakPtrs now to avoid callbacks back into the
   // FrameGenerator during destruction of |compositor_frame_sink_|.
@@ -50,23 +58,17 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
   root_window_->CreateDisplayCompositorFrameSink(
       widget, std::move(sink_request), binding_.CreateInterfacePtrAndBind(),
       std::move(display_request));
-  // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
-  // even when we don't need it. Once surface ID propagation work is done,
-  // this will not be necessary because FrameGenerator will only need a
-  // BeginFrame if the window manager changes.
-  compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
-void FrameGenerator::OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                                      ServerWindow* window) {
-  DCHECK(surface_id.is_valid());
+void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
+  DCHECK(surface_info.id().is_valid());
 
   // Only handle embedded surfaces changing here. The display root surface
   // changing is handled immediately after the CompositorFrame is submitted.
-  // TODO(samans): Only tell FrameGenerator about WM surface instead of all
-  // all surfaces.
-  if (window == delegate_->GetActiveRootWindow())
-    window_manager_surface_id_ = surface_id;
+  if (surface_info != window_manager_surface_info_) {
+    window_manager_surface_info_ = surface_info;
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
+  }
 }
 
 void FrameGenerator::DidReceiveCompositorFrameAck() {}
@@ -91,6 +93,7 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
 
     compositor_frame_sink_->SubmitCompositorFrame(local_frame_id_,
                                                   std::move(frame));
+    compositor_frame_sink_->SetNeedsBeginFrame(false);
     last_submitted_frame_size_ = frame_size;
   }
 }
@@ -112,7 +115,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   render_pass->SetNew(render_pass_id, output_rect, output_rect,
                       gfx::Transform());
 
-  DrawWindow(render_pass.get(), delegate_->GetActiveRootWindow());
+  DrawWindow(render_pass.get());
 
   cc::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));
@@ -121,7 +124,10 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     invert_pass->SetNew(2, output_rect, output_rect, gfx::Transform());
     cc::SharedQuadState* shared_state =
         invert_pass->CreateAndAppendSharedQuadState();
-    shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,
+    gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
+        output_rect.size(), window_manager_surface_info_.device_scale_factor(),
+        window_manager_surface_info_.device_scale_factor());
+    shared_state->SetAll(gfx::Transform(), scaled_bounds, output_rect,
                          output_rect, false, 1.f, SkBlendMode::kSrcOver, 0);
     auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
     render_pass->filters.Append(cc::FilterOperation::CreateInvertFilter(1.f));
@@ -134,48 +140,42 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   }
   frame.metadata.device_scale_factor = device_scale_factor_;
 
-  if (window_manager_surface_id_.is_valid())
-    frame.metadata.referenced_surfaces.push_back(window_manager_surface_id_);
+  if (window_manager_surface_info_.id().is_valid()) {
+    frame.metadata.referenced_surfaces.push_back(
+        window_manager_surface_info_.id());
+  }
 
   return frame;
 }
 
-void FrameGenerator::DrawWindow(cc::RenderPass* pass, ServerWindow* window) {
-  if (!window || !window->visible())
-    return;
+void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
+  DCHECK(window_manager_surface_info_.id().is_valid());
 
-  if (!window->compositor_frame_sink_manager())
-    return;
-
-  cc::SurfaceId default_surface_id =
-      window->compositor_frame_sink_manager()->GetLatestSurfaceId();
-
-  if (!default_surface_id.is_valid())
-    return;
+  const gfx::Rect bounds_at_origin(
+      window_manager_surface_info_.size_in_pixels());
 
   gfx::Transform quad_to_target_transform;
-  quad_to_target_transform.Translate(window->bounds().x(),
-                                     window->bounds().y());
+  quad_to_target_transform.Translate(bounds_at_origin.x(),
+                                     bounds_at_origin.y());
 
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
 
-  const gfx::Rect bounds_at_origin(window->bounds().size());
+  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
+      bounds_at_origin.size(),
+      window_manager_surface_info_.device_scale_factor(),
+      window_manager_surface_info_.device_scale_factor());
+
   // TODO(fsamuel): These clipping and visible rects are incorrect. They need
   // to be populated from CompositorFrame structs.
-  sqs->SetAll(
-      quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
-      bounds_at_origin /* visible_layer_bounds */,
-      bounds_at_origin /* clip_rect */, false /* is_clipped */,
-      1.0f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
+  sqs->SetAll(quad_to_target_transform, scaled_bounds /* layer_bounds */,
+              bounds_at_origin /* visible_layer_bounds */,
+              bounds_at_origin /* clip_rect */, false /* is_clipped */,
+              1.0f /* opacity */, SkBlendMode::kSrcOver,
+              0 /* sorting-context_id */);
   auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  quad->SetAll(sqs, bounds_at_origin /* rect */,
-               gfx::Rect() /* opaque_rect */,
+  quad->SetAll(sqs, bounds_at_origin /* rect */, gfx::Rect() /* opaque_rect */,
                bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-               default_surface_id);
-}
-
-void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
-  Remove(window);
+               window_manager_surface_info_.id());
 }
 
 }  // namespace ws

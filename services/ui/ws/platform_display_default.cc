@@ -38,7 +38,7 @@ PlatformDisplayDefault::PlatformDisplayDefault(
       frame_generator_(new FrameGenerator(this, init_params.root_window)),
       metrics_(init_params.metrics),
       widget_(gfx::kNullAcceleratedWidget) {
-  frame_generator_->set_device_scale_factor(
+  frame_generator_->SetDeviceScaleFactor(
       init_params.metrics.device_scale_factor);
 }
 
@@ -149,7 +149,7 @@ bool PlatformDisplayDefault::UpdateViewportMetrics(
   }
 
   metrics_ = metrics;
-  frame_generator_->set_device_scale_factor(metrics_.device_scale_factor);
+  frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
   return true;
 }
 
@@ -254,10 +254,6 @@ void PlatformDisplayDefault::OnAcceleratedWidgetDestroyed() {
 }
 
 void PlatformDisplayDefault::OnActivationChanged(bool active) {}
-
-ServerWindow* PlatformDisplayDefault::GetActiveRootWindow() {
-  return delegate_->GetActiveRootWindow();
-}
 
 bool PlatformDisplayDefault::IsInHighContrastMode() {
   return delegate_ ? delegate_->IsInHighContrastMode() : false;

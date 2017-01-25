@@ -143,6 +143,9 @@ class Display : public PlatformDisplayDelegate,
   // Updates the size of display root ServerWindow and WM root ServerWindow(s).
   void OnViewportMetricsChanged(const display::ViewportMetrics& metrics);
 
+  // Returns the root window of the active user.
+  ServerWindow* GetActiveRootWindow();
+
  private:
   friend class test::DisplayTestApi;
 
@@ -166,7 +169,6 @@ class Display : public PlatformDisplayDelegate,
   // PlatformDisplayDelegate:
   display::Display GetDisplay() override;
   ServerWindow* GetRootWindow() override;
-  ServerWindow* GetActiveRootWindow() override;
   void OnAcceleratedWidgetAvailable() override;
   bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;

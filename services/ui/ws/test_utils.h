@@ -285,15 +285,11 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
 // A stub implementation of FrameGeneratorDelegate.
 class TestFrameGeneratorDelegate : public FrameGeneratorDelegate {
  public:
-  TestFrameGeneratorDelegate(ServerWindow* root_window);
+  TestFrameGeneratorDelegate();
   ~TestFrameGeneratorDelegate() override;
 
   // FrameGeneratorDelegate:
-  ServerWindow* GetActiveRootWindow() override;
   bool IsInHighContrastMode() override;
-
- private:
-  ServerWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameGeneratorDelegate);
 };

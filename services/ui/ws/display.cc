@@ -270,13 +270,6 @@ ServerWindow* Display::GetRootWindow() {
   return root_.get();
 }
 
-ServerWindow* Display::GetActiveRootWindow() {
-  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
-  if (display_root)
-    return display_root->root();
-  return nullptr;
-}
-
 void Display::OnAcceleratedWidgetAvailable() {
   display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
   InitWindowManagerDisplayRoots();
@@ -311,6 +304,13 @@ void Display::OnViewportMetricsChanged(
   root_->SetBounds(new_bounds);
   for (auto& pair : window_manager_display_root_map_)
     pair.second->root()->SetBounds(new_bounds);
+}
+
+ServerWindow* Display::GetActiveRootWindow() {
+  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
+  if (display_root)
+    return display_root->root();
+  return nullptr;
 }
 
 bool Display::CanHaveActiveChildren(ServerWindow* window) const {

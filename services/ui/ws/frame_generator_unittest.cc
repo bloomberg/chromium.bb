@@ -71,17 +71,20 @@ class FrameGeneratorTest : public testing::Test {
 };
 
 void FrameGeneratorTest::DrawWindow(cc::RenderPass* pass) {
-  frame_generator_->DrawWindow(pass, root_window_.get());
+  cc::SurfaceId surface_id(cc::FrameSinkId(5, 5),
+                           cc::LocalFrameId(1u, kArbitraryToken));
+  frame_generator_->window_manager_surface_info_ =
+      cc::SurfaceInfo(surface_id, 2, gfx::Size(2, 2));
+  frame_generator_->DrawWindow(pass);
 }
 
 void FrameGeneratorTest::SetUp() {
   testing::Test::SetUp();
-  frame_generator_delegate_ =
-      base::MakeUnique<TestFrameGeneratorDelegate>(root_window_.get());
+  frame_generator_delegate_ = base::MakeUnique<TestFrameGeneratorDelegate>();
   PlatformDisplayInitParams init_params;
   frame_generator_ = base::MakeUnique<FrameGenerator>(
       frame_generator_delegate_.get(), root_window_.get());
-  frame_generator_->set_device_scale_factor(
+  frame_generator_->SetDeviceScaleFactor(
       init_params.metrics.device_scale_factor);
   InitWindow(root_window());
 }

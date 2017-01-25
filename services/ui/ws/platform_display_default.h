@@ -69,7 +69,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
   void OnActivationChanged(bool active) override;
 
   // FrameGeneratorDelegate:
-  ServerWindow* GetActiveRootWindow() override;
   bool IsInHighContrastMode() override;
 
   const int64_t display_id_;
