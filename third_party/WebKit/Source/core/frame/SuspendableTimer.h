@@ -36,7 +36,7 @@ namespace blink {
 class CORE_EXPORT SuspendableTimer : public TimerBase,
                                      public SuspendableObject {
  public:
-  explicit SuspendableTimer(ExecutionContext*);
+  explicit SuspendableTimer(ExecutionContext*, TaskType);
   ~SuspendableTimer() override;
 
   // SuspendableObject

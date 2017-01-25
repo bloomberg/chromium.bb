@@ -27,6 +27,7 @@
 #include "core/frame/DOMTimer.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -85,7 +86,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                    int interval,
                    bool singleShot,
                    int timeoutID)
-    : SuspendableTimer(context),
+    : SuspendableTimer(context, TaskType::Timer),
       m_timeoutID(timeoutID),
       m_nestingLevel(context->timers()->timerNestingLevel() + 1),
       m_action(action) {

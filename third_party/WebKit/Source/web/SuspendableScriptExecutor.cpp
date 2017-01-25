@@ -10,6 +10,7 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/WebVector.h"
@@ -178,7 +179,7 @@ SuspendableScriptExecutor::SuspendableScriptExecutor(
     ScriptState* scriptState,
     WebScriptExecutionCallback* callback,
     Executor* executor)
-    : SuspendableTimer(frame->document()),
+    : SuspendableTimer(frame->document(), TaskType::Timer),
       m_scriptState(scriptState),
       m_callback(callback),
       m_keepAlive(this),

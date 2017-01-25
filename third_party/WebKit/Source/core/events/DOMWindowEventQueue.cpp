@@ -26,6 +26,7 @@
 
 #include "core/events/DOMWindowEventQueue.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/SuspendableTimer.h"
@@ -42,7 +43,11 @@ class DOMWindowEventQueueTimer final
  public:
   DOMWindowEventQueueTimer(DOMWindowEventQueue* eventQueue,
                            ExecutionContext* context)
-      : SuspendableTimer(context), m_eventQueue(eventQueue) {}
+      // This queue is unthrottled because throttling IndexedDB events may break
+      // scenarios where several tabs, some of which are backgrounded, access
+      // the same database concurrently.
+      : SuspendableTimer(context, TaskType::Unthrottled),
+        m_eventQueue(eventQueue) {}
 
   // Eager finalization is needed to promptly stop this timer object.
   // (see DOMTimer comment for more.)
