@@ -90,12 +90,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // should be a combination of values from BindingsPolicy.
   virtual void AllowBindings(int binding_flags) = 0;
 
-  // Tells the renderer to clear the focused element (if any).
-  virtual void ClearFocusedElement() = 0;
-
-  // Returns true if the current focused element is editable.
-  virtual bool IsFocusedElementEditable() = 0;
-
   // Notifies the listener that a directory enumeration is complete.
   virtual void DirectoryEnumerationFinished(
       int request_id,

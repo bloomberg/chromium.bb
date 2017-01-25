@@ -15,7 +15,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -361,10 +360,6 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
  protected:
   content::WebContents* active_contents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
-  content::RenderViewHost* render_view_host() {
-    return active_contents()->GetRenderViewHost();
   }
 
   // static
@@ -911,9 +906,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 }
 
 // This test tracks page level focused editable element tracking using
-// RenderViewHost. In a page with multiple frames, a frame is selected and
+// WebContents. In a page with multiple frames, a frame is selected and
 // focused. Then the <input> inside frame is both focused and blurred and  and
-// in both cases the test verifies that RendeViewHost is aware whether or not a
+// in both cases the test verifies that WebContents is aware whether or not a
 // focused editable element exists on the page.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        TrackPageFocusEditableElement) {
@@ -938,17 +933,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     focus_frame(frame);
     // Focus the <input>.
     set_input_focus(frame, true);
-    EXPECT_TRUE(render_view_host()->IsFocusedElementEditable());
+    EXPECT_TRUE(active_contents()->IsFocusedElementEditable());
     // No blur <input>.
     set_input_focus(frame, false);
-    EXPECT_FALSE(render_view_host()->IsFocusedElementEditable());
+    EXPECT_FALSE(active_contents()->IsFocusedElementEditable());
   }
 }
 
 // TODO(ekaramad): Could this become a unit test instead?
 // This test focuses <input> elements on the page and verifies that
-// RenderViewHost knows about the focused editable element. Then it asks the
-// RenderViewHost to clear focused element and verifies that there is no longer
+// WebContents knows about the focused editable element. Then it asks the
+// WebContents to clear focused element and verifies that there is no longer
 // a focused editable element on the page.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        ClearFocusedElementOnPage) {
@@ -967,9 +962,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   for (auto* frame : frames) {
     focus_frame_and_input(frame);
-    EXPECT_TRUE(render_view_host()->IsFocusedElementEditable());
-    render_view_host()->ClearFocusedElement();
-    EXPECT_FALSE(render_view_host()->IsFocusedElementEditable());
+    EXPECT_TRUE(active_contents()->IsFocusedElementEditable());
+    active_contents()->ClearFocusedElement();
+    EXPECT_FALSE(active_contents()->IsFocusedElementEditable());
   }
 }
 

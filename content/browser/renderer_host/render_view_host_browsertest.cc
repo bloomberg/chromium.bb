@@ -120,10 +120,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, IsFocusedElementEditable) {
   GURL test_url = embedded_test_server()->GetURL("/touch_selection.html");
   NavigateToURL(shell(), test_url);
 
-  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
-  EXPECT_FALSE(rvh->IsFocusedElementEditable());
+  WebContents* contents = shell()->web_contents();
+  EXPECT_FALSE(contents->IsFocusedElementEditable());
   EXPECT_TRUE(ExecuteScript(shell(), "focus_textfield();"));
-  EXPECT_TRUE(rvh->IsFocusedElementEditable());
+  EXPECT_TRUE(contents->IsFocusedElementEditable());
 }
 
 // Flaky on Linux (https://crbug.com/559192).

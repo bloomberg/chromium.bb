@@ -61,8 +61,4 @@ bool RenderViewHostDelegate::HideDownloadUI() const {
   return false;
 }
 
-bool RenderViewHostDelegate::IsFocusedElementEditable() {
-  return false;
-}
-
 }  // namespace content

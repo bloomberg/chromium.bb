@@ -950,19 +950,6 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
   updating_web_preferences_ = false;
 }
 
-void RenderViewHostImpl::ClearFocusedElement() {
-  // TODO(ekaramad): We should move this to WebContents instead
-  // (https://crbug.com/675975).
-  if (delegate_)
-    delegate_->ClearFocusedElement();
-}
-
-bool RenderViewHostImpl::IsFocusedElementEditable() {
-  // TODO(ekaramad): We should move this to WebContents instead
-  // (https://crbug.com/675975).
-  return delegate_ && delegate_->IsFocusedElementEditable();
-}
-
 void RenderViewHostImpl::DisableScrollbarsForThreshold(const gfx::Size& size) {
   Send(new ViewMsg_DisableScrollbarsForSmallWindows(GetRoutingID(), size));
 }

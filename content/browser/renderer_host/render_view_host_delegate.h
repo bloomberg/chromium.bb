@@ -190,14 +190,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Whether download UI should be hidden.
   virtual bool HideDownloadUI() const;
 
-  // Whether the focused element on the page is editable. This returns true iff
-  // the focused frame has a focused editable element.
-  virtual bool IsFocusedElementEditable();
-
-  // Asks the delegate to clear the focused element. This will lead to an IPC to
-  // the focused RenderWidget.
-  virtual void ClearFocusedElement() {}
-
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

@@ -87,8 +87,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   int GetRoutingID() const override;
   RenderFrameHost* GetMainFrame() override;
   void AllowBindings(int binding_flags) override;
-  void ClearFocusedElement() override;
-  bool IsFocusedElementEditable() override;
   void DirectoryEnumerationFinished(
       int request_id,
       const std::vector<base::FilePath>& files) override;

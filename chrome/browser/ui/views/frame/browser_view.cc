@@ -1211,10 +1211,9 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
   if (contents_web_view_->HasFocus() &&
-      !GetLocationBarView()->IsMouseHovered()) {
-    content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-    if (rvh->IsFocusedElementEditable())
-      return ShowTranslateBubbleResult::EDITABLE_FIELD_IS_ACTIVE;
+      !GetLocationBarView()->IsMouseHovered() &&
+      web_contents->IsFocusedElementEditable()) {
+    return ShowTranslateBubbleResult::EDITABLE_FIELD_IS_ACTIVE;
   }
 
   translate::LanguageState& language_state =

@@ -410,6 +410,8 @@ class CONTENT_EXPORT WebContentsImpl
   void OnAllPasswordInputsHiddenOnHttp() override;
   void OnCreditCardInputShownOnHttp() override;
   void SetIsOverlayContent(bool is_overlay_content) override;
+  bool IsFocusedElementEditable() override;
+  void ClearFocusedElement() override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -557,8 +559,6 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsOverridingUserAgent() override;
   bool IsJavaScriptDialogShowing() const override;
   bool HideDownloadUI() const override;
-  bool IsFocusedElementEditable() override;
-  void ClearFocusedElement() override;
 
   // NavigatorDelegate ---------------------------------------------------------
 

@@ -30,7 +30,7 @@ LocationBarBubbleDelegateView::WebContentMouseHandler::
 void LocationBarBubbleDelegateView::WebContentMouseHandler::OnKeyEvent(
     ui::KeyEvent* event) {
   if ((event->key_code() == ui::VKEY_ESCAPE ||
-       web_contents_->GetRenderViewHost()->IsFocusedElementEditable()) &&
+       web_contents_->IsFocusedElementEditable()) &&
       event->type() == ui::ET_KEY_PRESSED)
     bubble_->CloseBubble();
 }
