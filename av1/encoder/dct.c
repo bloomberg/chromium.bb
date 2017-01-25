@@ -725,6 +725,8 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
   range_check(output, 32, 18);
 }
 
+#ifndef AV1_DCT_GTEST
+
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
@@ -2223,3 +2225,4 @@ void av1_highbd_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
 }
 #endif  // CONFIG_TX64X64
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // !AV1_DCT_GTEST
