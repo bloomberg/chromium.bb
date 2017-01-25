@@ -580,16 +580,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(call));
 }
 
-#if defined(OS_ANDROID)
-// Disabled until http://crbug.com/679302 is fixed.
-#define MAYBE_GetUserMediaFailToAccessAudioDevice \
-    DISABLED_GetUserMediaFailToAccessAudioDevice
-#else
-#define MAYBE_GetUserMediaFailToAccessAudioDevice \
-    GetUserMediaFailToAccessAudioDevice
-#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_GetUserMediaFailToAccessAudioDevice) {
+                       GetUserMediaFailToAccessAudioDevice) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));

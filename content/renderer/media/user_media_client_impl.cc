@@ -1089,14 +1089,6 @@ void UserMediaClientImpl::UserMediaRequestInfo::StartAudioTrack(
     OnTrackStarted(
         native_source,
         connected ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE, "");
-#if defined(OS_ANDROID)
-  } else if (connected) {
-    CHECK(native_source->is_local_source());
-    // On Android, we won't get the callback indicating the device readyness.
-    // TODO(tommi): Update the android implementation to support the
-    // OnAudioSourceStarted notification.  http://crbug.com/679302
-    OnTrackStarted(native_source, MEDIA_DEVICE_OK, "");
-#endif
   }
 }
 
