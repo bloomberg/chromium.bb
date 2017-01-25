@@ -2247,8 +2247,6 @@ crbug.com/672204 media/avtrack/video-track-selected.html [ Pass Failure ]
 crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [ Pass Failure ]
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
 crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
-crbug.com/664853 virtual/mojo-loading/webexposed/css-properties-as-js-properties.html [ Pass Failure ]
-crbug.com/664853 virtual/mojo-loading/webexposed/web-animations-api.html [ Pass Failure ]
 crbug.com/664855 virtual/scroll_customization/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure ]
 crbug.com/664856 virtual/sharedarraybuffer/fast/workers/worker-gc.html [ Pass Failure ]
 
