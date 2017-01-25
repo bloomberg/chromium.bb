@@ -294,18 +294,15 @@ bool QuicSpdyStream::ParseHeaderStatusCode(const SpdyHeaderBlock& header,
     return false;
   }
 
-  unsigned int result;
-  if (!ParseUint32(status, &result, nullptr)) {
+  // First character must be an integer in range [1,5].
+  if (status[0] < '1' || status[0] > '5') {
     return false;
   }
-
-  // Valid status codes are only in the range [100, 599].
-  if (result < 100 || result >= 600) {
+  // The remaining two characters must be integers.
+  if (!isdigit(status[1]) || !isdigit(status[2])) {
     return false;
   }
-
-  *status_code = static_cast<int>(result);
-  return true;
+  return QuicTextUtils::StringToInt(status, status_code);
 }
 
 bool QuicSpdyStream::FinishedReadingTrailers() const {
