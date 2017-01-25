@@ -321,14 +321,12 @@ static bool codeGenerationCheckCallbackInMainThread(
 static void initializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::gcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::gcEpilogue);
-  if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    std::unique_ptr<ScriptWrappableVisitor> visitor(
-        new ScriptWrappableVisitor(isolate));
-    V8PerIsolateData::from(isolate)->setScriptWrappableVisitor(
-        std::move(visitor));
-    isolate->SetEmbedderHeapTracer(
-        V8PerIsolateData::from(isolate)->scriptWrappableVisitor());
-  }
+  std::unique_ptr<ScriptWrappableVisitor> visitor(
+      new ScriptWrappableVisitor(isolate));
+  V8PerIsolateData::from(isolate)->setScriptWrappableVisitor(
+      std::move(visitor));
+  isolate->SetEmbedderHeapTracer(
+      V8PerIsolateData::from(isolate)->scriptWrappableVisitor());
 
   v8::Debug::SetLiveEditEnabled(isolate, false);
 

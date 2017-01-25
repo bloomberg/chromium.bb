@@ -223,9 +223,6 @@ void ScriptWrappableVisitor::markWrappersInAllWorlds(
 void ScriptWrappableVisitor::writeBarrier(
     const void* srcObject,
     const TraceWrapperV8Reference<v8::Value>* dstObject) {
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
   if (!srcObject || !dstObject || dstObject->isEmpty()) {
     return;
   }

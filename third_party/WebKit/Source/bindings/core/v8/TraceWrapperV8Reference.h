@@ -56,7 +56,6 @@ class TraceWrapperV8Reference {
 
   void setReference(const v8::Persistent<v8::Object>& parent,
                     v8::Isolate* isolate) {
-    DCHECK(!RuntimeEnabledFeatures::traceWrappablesEnabled());
     isolate->SetReference(parent, m_handle);
   }
 

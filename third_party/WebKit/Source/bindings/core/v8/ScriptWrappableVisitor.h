@@ -108,9 +108,6 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
   static void writeBarrier(const void* srcObject, const T* dstObject) {
     static_assert(!NeedsAdjustAndMark<T>::value,
                   "wrapper tracing is not supported within mixins");
-    if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-      return;
-    }
     if (!srcObject || !dstObject) {
       return;
     }

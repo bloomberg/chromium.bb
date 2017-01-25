@@ -986,8 +986,7 @@ void ThreadState::makeConsistentForMutator() {
 }
 
 void ThreadState::preGC() {
-  if (RuntimeEnabledFeatures::traceWrappablesEnabled() && m_isolate &&
-      m_performCleanup)
+  if (m_isolate && m_performCleanup)
     m_performCleanup(m_isolate);
 
   ASSERT(!isInGC());
@@ -1014,10 +1013,8 @@ void ThreadState::preGC() {
 }
 
 void ThreadState::postGC(BlinkGC::GCType gcType) {
-  if (RuntimeEnabledFeatures::traceWrappablesEnabled() &&
-      m_invalidateDeadObjectsInWrappersMarkingDeque) {
+  if (m_invalidateDeadObjectsInWrappersMarkingDeque)
     m_invalidateDeadObjectsInWrappersMarkingDeque(m_isolate);
-  }
 
   ASSERT(isInGC());
   for (int i = 0; i < BlinkGC::NumberOfArenas; i++)

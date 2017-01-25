@@ -37,9 +37,6 @@ static bool DequeContains(const WTF::Deque<WrapperMarkingData>& deque,
 
 TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
   visitor->TracePrologue();
@@ -74,9 +71,6 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
 
 TEST(ScriptWrappableVisitorTest, OilpanCollectObjectsNotReachableFromV8) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
   v8::Isolate* isolate = scope.isolate();
 
   {
@@ -97,9 +91,6 @@ TEST(ScriptWrappableVisitorTest, OilpanCollectObjectsNotReachableFromV8) {
 
 TEST(ScriptWrappableVisitorTest, OilpanDoesntCollectObjectsReachableFromV8) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
   v8::Isolate* isolate = scope.isolate();
   v8::HandleScope handleScope(isolate);
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
@@ -117,9 +108,6 @@ TEST(ScriptWrappableVisitorTest, OilpanDoesntCollectObjectsReachableFromV8) {
 
 TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
   v8::Isolate* isolate = scope.isolate();
   v8::HandleScope handleScope(isolate);
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
@@ -143,9 +131,6 @@ TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
 
 TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringFullGc) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
   v8::Isolate* isolate = scope.isolate();
   v8::HandleScope handleScope(isolate);
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
@@ -162,9 +147,6 @@ TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringFullGc) {
 
 TEST(ScriptWrappableVisitorTest, OilpanClearsHeadersWhenObjectDied) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
 
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
   ScriptWrappableVisitor* visitor =
@@ -181,9 +163,6 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsHeadersWhenObjectDied) {
 
 TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
 
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
   ScriptWrappableVisitor* visitor =
@@ -203,9 +182,6 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
 
 TEST(ScriptWrappableVisitorTest, NonMarkedObjectDoesNothingOnWriteBarrierHit) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
 
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
@@ -225,9 +201,6 @@ TEST(ScriptWrappableVisitorTest, NonMarkedObjectDoesNothingOnWriteBarrierHit) {
 TEST(ScriptWrappableVisitorTest,
      MarkedObjectDoesNothingOnWriteBarrierHitWhenDependencyIsMarkedToo) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
 
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
@@ -258,9 +231,6 @@ TEST(ScriptWrappableVisitorTest,
 TEST(ScriptWrappableVisitorTest,
      MarkedObjectMarksDependencyOnWriteBarrierHitWhenNotMarked) {
   V8TestingScope scope;
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    return;
-  }
 
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
@@ -342,8 +312,6 @@ void swapInNewVisitor(v8::Isolate* isolate,
 }  // namespace
 
 TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled())
-    return;
   V8TestingScope scope;
   auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
   swapInNewVisitor(scope.isolate(), rawVisitor);
@@ -364,8 +332,6 @@ TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
 }
 
 TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled())
-    return;
   V8TestingScope scope;
   auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
   swapInNewVisitor(scope.isolate(), rawVisitor);

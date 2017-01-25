@@ -249,7 +249,6 @@ TopNavWithUserActivationInSandbox status=experimental
 // touchscreen) in ApplyWebPreferences. "Touch events" themselves are always
 // enabled since they're a feature always supported by Chrome.
 TouchEventFeatureDetection status=stable
-TraceWrappables status=stable
 TrueColorRendering status=experimental
 TrustedEventsDefaultAction status=stable
 WebAnimationsAPI status=experimental
