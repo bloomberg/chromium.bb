@@ -379,6 +379,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=635081)
     self.Fail('conformance/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)
+    self.Flaky('conformance/uniforms/' +
+        'no-over-optimization-on-uniform-array-12.html',
+        ['mac', ('nvidia', 0xfe9)], bug=684903)
 
     # Mac ASAN only
     self.Fail(
