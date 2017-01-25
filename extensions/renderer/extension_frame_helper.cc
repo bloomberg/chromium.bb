@@ -50,10 +50,8 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
   blink::WebSecurityOrigin origin =
       frame_helper->render_frame()->GetWebFrame()->getSecurityOrigin();
   if (origin.isUnique() ||
-      !base::EqualsASCII(base::StringPiece16(origin.protocol()),
-                         kExtensionScheme) ||
-      !base::EqualsASCII(base::StringPiece16(origin.host()),
-                         match_extension_id.c_str()))
+      !base::EqualsASCII(origin.protocol().utf16(), kExtensionScheme) ||
+      !base::EqualsASCII(origin.host().utf16(), match_extension_id.c_str()))
     return false;
 
   if (match_window_id != extension_misc::kUnknownWindowId &&

@@ -74,7 +74,7 @@ void AutomationApiHelper::OnQuerySelector(int request_id,
       start_node = start_acc_obj.node();
     }
   }
-  blink::WebString web_selector(selector);
+  blink::WebString web_selector = blink::WebString::fromUTF16(selector);
   blink::WebElement result_element = start_node.querySelector(web_selector);
   int result_acc_obj_id = 0;
   if (!result_element.isNull()) {

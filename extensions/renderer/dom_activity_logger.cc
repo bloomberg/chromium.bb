@@ -63,7 +63,8 @@ void DOMActivityLogger::AttachToWorld(int world_id,
 void DOMActivityLogger::logGetter(const WebString& api_name,
                                   const WebURL& url,
                                   const WebString& title) {
-  SendDomActionMessage(api_name.utf8(), url, title, DomActionType::GETTER,
+  SendDomActionMessage(api_name.utf8(), url, title.utf16(),
+                       DomActionType::GETTER,
                        std::unique_ptr<base::ListValue>(new base::ListValue()));
 }
 
@@ -84,7 +85,7 @@ void DOMActivityLogger::logSetter(const WebString& api_name,
   AppendV8Value(api_name_utf8, new_value, args.get());
   if (!old_value.IsEmpty())
     AppendV8Value(api_name_utf8, old_value, args.get());
-  SendDomActionMessage(api_name_utf8, url, title, DomActionType::SETTER,
+  SendDomActionMessage(api_name_utf8, url, title.utf16(), DomActionType::SETTER,
                        std::move(args));
 }
 
@@ -97,7 +98,7 @@ void DOMActivityLogger::logMethod(const WebString& api_name,
   std::string api_name_utf8 = api_name.utf8();
   for (int i = 0; i < argc; ++i)
     AppendV8Value(api_name_utf8, argv[i], args.get());
-  SendDomActionMessage(api_name_utf8, url, title, DomActionType::METHOD,
+  SendDomActionMessage(api_name_utf8, url, title.utf16(), DomActionType::METHOD,
                        std::move(args));
 }
 
@@ -109,9 +110,9 @@ void DOMActivityLogger::logEvent(const WebString& event_name,
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   std::string event_name_utf8 = event_name.utf8();
   for (int i = 0; i < argc; ++i)
-    args->AppendString(argv[i]);
-  SendDomActionMessage(event_name_utf8, url, title, DomActionType::METHOD,
-                       std::move(args));
+    args->AppendString(argv[i].utf16());
+  SendDomActionMessage(event_name_utf8, url, title.utf16(),
+                       DomActionType::METHOD, std::move(args));
 }
 
 void DOMActivityLogger::SendDomActionMessage(

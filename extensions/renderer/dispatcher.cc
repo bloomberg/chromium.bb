@@ -267,7 +267,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
   // Register WebSecurityPolicy whitelists for the chrome-extension:// scheme.
-  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
+  WebString extension_scheme(WebString::fromASCII(kExtensionScheme));
 
   // Resources should bypass Content Security Policy checks when included in
   // protected resources. TODO(kalman): What are "protected resources"?
