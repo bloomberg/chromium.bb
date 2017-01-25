@@ -64,7 +64,7 @@ bool IsFrameUnpackedOrInverted(webrtc::DesktopFrame* frame) {
 
 #if defined(OS_WIN)
 const base::Feature kDirectXCapturer{"DirectXCapturer",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
