@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_SCREEN_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -80,6 +81,8 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
 
   std::unique_ptr<GaiaScreen> gaia_screen_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;
+
+  base::WeakPtr<UserBoardView> user_board_view_;
 
   // Used for notifications during the login process.
   content::NotificationRegistrar registrar_;
