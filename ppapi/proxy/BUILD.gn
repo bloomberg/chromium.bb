@@ -102,7 +102,6 @@ component("proxy") {
     "plugin_var_tracker.h",
     "ppapi_command_buffer_proxy.cc",
     "ppapi_command_buffer_proxy.h",
-    "ppapi_message_utils.h",
     "ppapi_messages.h",
     "ppb_audio_proxy.cc",
     "ppb_audio_proxy.h",
@@ -279,6 +278,7 @@ component("proxy") {
   ]
 
   deps = [
+    ":common",
     "//base",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc/common:command_buffer_traits",
@@ -306,6 +306,17 @@ component("proxy") {
   }
 }
 
+source_set("common") {
+  sources = [
+    "tcp_socket_resource_constants.cc",
+    "tcp_socket_resource_constants.h",
+    "udp_socket_resource_constants.cc",
+    "udp_socket_resource_constants.h",
+  ]
+
+  configs += [ ":proxy_implementation" ]
+}
+
 group("ipc") {
   if (is_component_build) {
     public_deps = [
@@ -322,6 +333,7 @@ source_set("ipc_sources") {
   sources = [
     "nacl_message_scanner.cc",
     "nacl_message_scanner.h",
+    "ppapi_message_utils.h",
     "ppapi_messages.cc",
     "ppapi_messages.h",
     "ppapi_param_traits.cc",

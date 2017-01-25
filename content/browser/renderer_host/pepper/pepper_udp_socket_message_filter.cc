@@ -31,8 +31,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/udp_socket_filter.h"
-#include "ppapi/proxy/udp_socket_resource_base.h"
+#include "ppapi/proxy/udp_socket_resource_constants.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 
@@ -42,8 +41,7 @@
 
 using ppapi::NetAddressPrivateImpl;
 using ppapi::host::NetErrorToPepperError;
-using ppapi::proxy::UDPSocketFilter;
-using ppapi::proxy::UDPSocketResourceBase;
+using ppapi::proxy::UDPSocketResourceConstants;
 
 namespace {
 
@@ -76,7 +74,8 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
       multicast_ttl_(0),
       can_use_multicast_(PP_ERROR_FAILED),
       closed_(false),
-      remaining_recv_slots_(UDPSocketFilter::kPluginReceiveBufferSlots),
+      remaining_recv_slots_(
+          UDPSocketResourceConstants::kPluginReceiveBufferSlots),
       external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
@@ -189,7 +188,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
     case PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE: {
       int32_t integer_value = 0;
       if (!value.GetInt32(&integer_value) || integer_value <= 0 ||
-          integer_value > UDPSocketResourceBase::kMaxSendBufferSize)
+          integer_value > UDPSocketResourceConstants::kMaxSendBufferSize)
         return PP_ERROR_BADARGUMENT;
 
       // If the socket is already bound, proxy the value to UDPSocket.
@@ -206,7 +205,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
     case PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE: {
       int32_t integer_value = 0;
       if (!value.GetInt32(&integer_value) || integer_value <= 0 ||
-          integer_value > UDPSocketFilter::kMaxReceiveBufferSize)
+          integer_value > UDPSocketResourceConstants::kMaxReceiveBufferSize)
         return PP_ERROR_BADARGUMENT;
 
       // If the socket is already bound, proxy the value to UDPSocket.
@@ -340,7 +339,8 @@ int32_t PepperUDPSocketMessageFilter::OnMsgRecvSlotAvailable(
     const ppapi::host::HostMessageContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (remaining_recv_slots_ < UDPSocketFilter::kPluginReceiveBufferSlots) {
+  if (remaining_recv_slots_ <
+      UDPSocketResourceConstants::kPluginReceiveBufferSlots) {
     remaining_recv_slots_++;
   }
 
@@ -553,7 +553,8 @@ void PepperUDPSocketMessageFilter::DoRecvFrom() {
   DCHECK(!recvfrom_buffer_.get());
   DCHECK_GT(remaining_recv_slots_, 0u);
 
-  recvfrom_buffer_ = new net::IOBuffer(UDPSocketFilter::kMaxReadSize);
+  recvfrom_buffer_ =
+      new net::IOBuffer(UDPSocketResourceConstants::kMaxReadSize);
 
   // Use base::Unretained(this), so that the lifespan of this object doesn't
   // have to last until the callback is called.
@@ -561,7 +562,8 @@ void PepperUDPSocketMessageFilter::DoRecvFrom() {
   // object gets destroyed (and so does |socket_|), the callback won't be
   // called.
   int net_result = socket_->RecvFrom(
-      recvfrom_buffer_.get(), UDPSocketFilter::kMaxReadSize, &recvfrom_address_,
+      recvfrom_buffer_.get(), UDPSocketResourceConstants::kMaxReadSize,
+      &recvfrom_address_,
       base::Bind(&PepperUDPSocketMessageFilter::OnRecvFromCompleted,
                  base::Unretained(this)));
   if (net_result != net::ERR_IO_PENDING)
@@ -582,7 +584,8 @@ void PepperUDPSocketMessageFilter::DoSendTo(
 
   size_t num_bytes = data.size();
   if (num_bytes == 0 ||
-      num_bytes > static_cast<size_t>(UDPSocketResourceBase::kMaxWriteSize)) {
+      num_bytes >
+          static_cast<size_t>(UDPSocketResourceConstants::kMaxWriteSize)) {
     // Size of |data| is checked on the plugin side.
     NOTREACHED();
     SendSendToError(context, PP_ERROR_BADARGUMENT);
@@ -602,7 +605,7 @@ void PepperUDPSocketMessageFilter::DoSendTo(
 
   // Make sure a malicious plugin can't queue up an unlimited number of buffers.
   size_t num_pending_sends = pending_sends_.size();
-  if (num_pending_sends == UDPSocketResourceBase::kPluginSendBufferSlots) {
+  if (num_pending_sends == UDPSocketResourceConstants::kPluginSendBufferSlots) {
     SendSendToError(context, PP_ERROR_FAILED);
     return;
   }

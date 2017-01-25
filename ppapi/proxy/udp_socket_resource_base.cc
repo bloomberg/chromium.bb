@@ -12,16 +12,12 @@
 #include "ppapi/proxy/error_conversion.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/udp_socket_resource_constants.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 namespace proxy {
-
-const int32_t UDPSocketResourceBase::kMaxWriteSize = 128 * 1024;
-const int32_t UDPSocketResourceBase::kMaxSendBufferSize =
-    1024 * UDPSocketResourceBase::kMaxWriteSize;
-const size_t UDPSocketResourceBase::kPluginSendBufferSlots = 8u;
 
 namespace {
 
@@ -193,11 +189,12 @@ int32_t UDPSocketResourceBase::SendToImpl(
     return PP_ERROR_BADARGUMENT;
   if (!bound_)
     return PP_ERROR_FAILED;
-  if (sendto_callbacks_.size() == kPluginSendBufferSlots)
+  if (sendto_callbacks_.size() ==
+      UDPSocketResourceConstants::kPluginSendBufferSlots)
     return PP_ERROR_INPROGRESS;
 
-  if (num_bytes > kMaxWriteSize)
-    num_bytes = kMaxWriteSize;
+  if (num_bytes > UDPSocketResourceConstants::kMaxWriteSize)
+    num_bytes = UDPSocketResourceConstants::kMaxWriteSize;
 
   sendto_callbacks_.push(callback);
 

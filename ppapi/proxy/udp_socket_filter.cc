@@ -14,16 +14,12 @@
 #include "ppapi/proxy/error_conversion.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/udp_socket_resource_constants.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 namespace ppapi {
 namespace proxy {
-
-const int32_t UDPSocketFilter::kMaxReadSize = 128 * 1024;
-const int32_t UDPSocketFilter::kMaxReceiveBufferSize =
-    1024 * UDPSocketFilter::kMaxReadSize;
-const size_t UDPSocketFilter::kPluginReceiveBufferSlots = 32u;
 
 namespace {
 
@@ -156,7 +152,8 @@ void UDPSocketFilter::RecvQueue::DataReceivedOnIOThread(
     const std::string& data,
     const PP_NetAddress_Private& addr) {
   DCHECK(PluginGlobals::Get()->ipc_task_runner()->RunsTasksOnCurrentThread());
-  DCHECK_LT(recv_buffers_.size(), UDPSocketFilter::kPluginReceiveBufferSlots);
+  DCHECK_LT(recv_buffers_.size(),
+            UDPSocketResourceConstants::kPluginReceiveBufferSlots);
 
   if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_) {
     recv_buffers_.push(RecvBuffer());
@@ -216,7 +213,8 @@ int32_t UDPSocketFilter::RecvQueue::RequestData(
 
   if (recv_buffers_.empty()) {
     read_buffer_ = buffer_out;
-    bytes_to_read_ = std::min(num_bytes, UDPSocketFilter::kMaxReadSize);
+    bytes_to_read_ =
+        std::min(num_bytes, UDPSocketResourceConstants::kMaxReadSize);
     recvfrom_addr_resource_ = addr_out;
     recvfrom_callback_ = callback;
     return PP_OK_COMPLETIONPENDING;

@@ -34,7 +34,6 @@ component("host") {
     "//ipc",
     "//media:shared_memory_support",
     "//ppapi/c",
-    "//ppapi/proxy",
     "//ppapi/proxy:ipc",
     "//ppapi/shared_impl",
     "//ui/events:events_base",
