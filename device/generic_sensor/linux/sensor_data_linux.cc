@@ -111,14 +111,14 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
 #if defined(OS_CHROMEOS)
   data->sensor_scale_name = "in_anglvel_base_scale";
   data->sensor_frequency_file_name = "in_anglvel_base_frequency";
-  data->apply_scaling_func = base::Bind([](double scaling_value, double offset,
-                                           SensorReading& reading) {
-    double scaling = kMeanGravity * kRadiansInDegreesPerSecond / scaling_value;
-    // Adapt CrOS reading values to generic sensor api specs.
-    reading.values[0] = -scaling * (reading.values[0] + offset);
-    reading.values[1] = -scaling * (reading.values[1] + offset);
-    reading.values[2] = -scaling * (reading.values[2] + offset);
-  });
+  data->apply_scaling_func = base::Bind(
+      [](double scaling_value, double offset, SensorReading& reading) {
+        double scaling = kMeanGravity * kRadiansInDegrees / scaling_value;
+        // Adapt CrOS reading values to generic sensor api specs.
+        reading.values[0] = -scaling * (reading.values[0] + offset);
+        reading.values[1] = -scaling * (reading.values[1] + offset);
+        reading.values[2] = -scaling * (reading.values[2] + offset);
+      });
 #else
   data->sensor_scale_name = "in_anglvel_scale";
   data->sensor_offset_file_name = "in_anglvel_offset";

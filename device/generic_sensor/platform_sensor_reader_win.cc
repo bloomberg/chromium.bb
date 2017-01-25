@@ -109,23 +109,23 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
     double y = 0.0;
     double z = 0.0;
     if (!GetReadingValueForProperty(
-            SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_X_DEGREES_PER_SECOND_SQUARED,
-            report, &x) ||
+            SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, report,
+            &x) ||
         !GetReadingValueForProperty(
-            SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Y_DEGREES_PER_SECOND_SQUARED,
-            report, &y) ||
+            SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, report,
+            &y) ||
         !GetReadingValueForProperty(
-            SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Z_DEGREES_PER_SECOND_SQUARED,
-            report, &z)) {
+            SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, report,
+            &z)) {
       return E_FAIL;
     }
 
     // Windows uses coordinate system where Z axis points down from device
     // screen, therefore, using right hand notation, we have to reverse
-    // sign for each axis. Values are converted from deg/s^2 to rad/s^2.
-    reading.values[0] = -x * kRadiansInDegreesPerSecond;
-    reading.values[1] = -y * kRadiansInDegreesPerSecond;
-    reading.values[2] = -z * kRadiansInDegreesPerSecond;
+    // sign for each axis. Values are converted from deg to rad.
+    reading.values[0] = -x * kRadiansInDegrees;
+    reading.values[1] = -y * kRadiansInDegrees;
+    reading.values[2] = -z * kRadiansInDegrees;
     return S_OK;
   });
   return params;

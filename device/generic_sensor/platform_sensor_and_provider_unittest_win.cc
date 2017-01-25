@@ -602,22 +602,16 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
   double z_ang_accel = -98.7;
 
   GenerateDataUpdatedEvent(
-      {{SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_X_DEGREES_PER_SECOND_SQUARED,
-        x_ang_accel},
-       {SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Y_DEGREES_PER_SECOND_SQUARED,
-        y_ang_accel},
-       {SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Z_DEGREES_PER_SECOND_SQUARED,
-        z_ang_accel}});
+      {{SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, x_ang_accel},
+       {SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, y_ang_accel},
+       {SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, z_ang_accel}});
 
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-  EXPECT_THAT(buffer->reading.values[0],
-              -x_ang_accel * kRadiansInDegreesPerSecond);
-  EXPECT_THAT(buffer->reading.values[1],
-              -y_ang_accel * kRadiansInDegreesPerSecond);
-  EXPECT_THAT(buffer->reading.values[2],
-              -z_ang_accel * kRadiansInDegreesPerSecond);
+  EXPECT_THAT(buffer->reading.values[0], -x_ang_accel * kRadiansInDegrees);
+  EXPECT_THAT(buffer->reading.values[1], -y_ang_accel * kRadiansInDegrees);
+  EXPECT_THAT(buffer->reading.values[2], -z_ang_accel * kRadiansInDegrees);
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
