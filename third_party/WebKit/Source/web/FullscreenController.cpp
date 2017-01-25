@@ -219,7 +219,7 @@ void FullscreenController::fullscreenElementChanged(Element* fromElement,
 void FullscreenController::updateSize() {
   DCHECK(m_webViewImpl->page());
 
-  if (m_state != State::Fullscreen)
+  if (m_state != State::Fullscreen && m_state != State::ExitingFullscreen)
     return;
 
   updatePageScaleConstraints(false);
