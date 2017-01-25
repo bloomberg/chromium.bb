@@ -14,6 +14,8 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
+#include "ash/wm/lock_state_controller.h"
 #include "base/i18n/rtl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -129,7 +131,7 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
     shell->system_tray_controller()->ShowHelp();
   } else if (sender == shutdown_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
-    shell->RequestShutdown();
+    Shell::GetInstance()->lock_state_controller()->RequestShutdown();
   } else if (sender == lock_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     chromeos::DBusThreadManager::Get()

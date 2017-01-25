@@ -16,6 +16,8 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
+#include "ash/wm/lock_state_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "grit/ash_strings.h"
@@ -121,7 +123,7 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
         ->RequestLockScreen();
   } else if (sender == power_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
-    shell->RequestShutdown();
+    Shell::GetInstance()->lock_state_controller()->RequestShutdown();
   }
 
   owner_->system_tray()->CloseSystemBubble();

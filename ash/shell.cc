@@ -679,9 +679,10 @@ void Shell::Init(const ShellInitParams& init_params) {
         new ResolutionNotificationController);
   }
 
-  if (cursor_manager_)
+  if (cursor_manager_) {
     cursor_manager_->SetDisplay(
         display::Screen::GetScreen()->GetPrimaryDisplay());
+  }
 
   if (!is_mash) {
     // TODO(sky): move this to WmShell. http://crbug.com/671246.

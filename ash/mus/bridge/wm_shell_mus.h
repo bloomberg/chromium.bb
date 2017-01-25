@@ -106,7 +106,6 @@ class WmShellMus : public WmShell {
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
-  void RequestShutdown() override;
   bool IsTouchDown() override;
   void ToggleIgnoreExternalKeyboard() override;
   void SetLaserPointerEnabled(bool enabled) override;

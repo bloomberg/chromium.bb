@@ -162,8 +162,12 @@ void LockStateController::RequestShutdown() {
   shutting_down_ = true;
 
   Shell* shell = Shell::GetInstance();
-  shell->cursor_manager()->HideCursor();
-  shell->cursor_manager()->LockCursor();
+  // TODO(derat): Remove these null checks once mash instantiates a
+  // CursorManager.
+  if (shell->cursor_manager()) {
+    shell->cursor_manager()->HideCursor();
+    shell->cursor_manager()->LockCursor();
+  }
 
   animator_->StartAnimation(
       SessionStateAnimator::ROOT_CONTAINER,
@@ -200,8 +204,10 @@ void LockStateController::OnAppTerminating() {
   if (!shutting_down_) {
     shutting_down_ = true;
     Shell* shell = Shell::GetInstance();
-    shell->cursor_manager()->HideCursor();
-    shell->cursor_manager()->LockCursor();
+    if (shell->cursor_manager()) {
+      shell->cursor_manager()->HideCursor();
+      shell->cursor_manager()->LockCursor();
+    }
     animator_->StartAnimation(SessionStateAnimator::kAllNonRootContainersMask,
                               SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
                               SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
@@ -271,7 +277,8 @@ void LockStateController::OnPreShutdownAnimationTimeout() {
   shutting_down_ = true;
 
   Shell* shell = Shell::GetInstance();
-  shell->cursor_manager()->HideCursor();
+  if (shell->cursor_manager())
+    shell->cursor_manager()->HideCursor();
 
   StartRealShutdownTimer(false);
 }
@@ -307,7 +314,8 @@ void LockStateController::OnRealPowerTimeout() {
 void LockStateController::StartCancellableShutdownAnimation() {
   Shell* shell = Shell::GetInstance();
   // Hide cursor, but let it reappear if the mouse moves.
-  shell->cursor_manager()->HideCursor();
+  if (shell->cursor_manager())
+    shell->cursor_manager()->HideCursor();
 
   animator_->StartAnimation(
       SessionStateAnimator::ROOT_CONTAINER,

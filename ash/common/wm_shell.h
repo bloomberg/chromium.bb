@@ -430,12 +430,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   void AddLockStateObserver(LockStateObserver* observer);
   void RemoveLockStateObserver(LockStateObserver* observer);
 
-  // Displays the shutdown animation and requests a system shutdown or system
-  // restart depending on the the state of the |RebootOnShutdown| device policy.
-  // TODO(mash): Remove this method and call LockStateController directly when
-  // it is available to code in ash/common.
-  virtual void RequestShutdown() = 0;
-
   void SetShelfDelegateForTesting(std::unique_ptr<ShelfDelegate> test_delegate);
   void SetPaletteDelegateForTesting(
       std::unique_ptr<PaletteDelegate> palette_delegate);
