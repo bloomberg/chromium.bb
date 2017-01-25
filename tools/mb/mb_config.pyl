@@ -55,6 +55,7 @@
     },
 
     'chromium.android.fyi': {
+      'Memory Infra Tester': 'android_release_thumb_bot',
       'NDK Next MIPS Builder':
         'android_ndk_next_release_bot_minimal_symbols_mipsel',
       'NDK Next arm Builder':
@@ -809,6 +810,10 @@
       'android', 'release_bot', 'minimal_symbols', 'arm64',
     ],
 
+    'android_release_thumb_bot': [
+      'android', 'release_bot', 'arm_thumb',
+    ],
+
     'android_release_trybot': [
       'android', 'release_trybot',
     ],
@@ -1525,6 +1530,10 @@
     'arm_no_neon': {
       'mixins': ['arm'],
       'gn_args': 'arm_use_neon=false',
+    },
+
+    'arm_thumb': {
+      'gn_args': 'arm_use_thumb=true',
     },
 
     'asan': {

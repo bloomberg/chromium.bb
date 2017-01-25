@@ -336,6 +336,37 @@
       }
     ]
   },
+  "Memory Infra Tester": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "system_health.memory_mobile",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium",
+          "--story-filter load:search:google",
+          "--extra-browser-args \"--enable-heap-profiler\""
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "system_health.memory_mobile",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 600
+        }
+      }
+    ]
+  },
   "Nougat Phone Tester": {
     "gtest_tests": [
       {
