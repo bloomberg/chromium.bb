@@ -46,7 +46,6 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
       const EnableListener& on_state_changed) override;
   void CreateNote() override;
   bool HasNoteApp() override;
-  void SetPartialMagnifierState(bool enabled) override;
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override;
   bool ShouldAutoOpenPalette() override;

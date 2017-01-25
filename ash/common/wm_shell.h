@@ -443,6 +443,9 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   // Enable or disable the laser pointer.
   virtual void SetLaserPointerEnabled(bool enabled) = 0;
 
+  // Enable or disable the partial magnifier.
+  virtual void SetPartialMagnifierEnabled(bool enabled) = 0;
+
   virtual void CreatePointerWatcherAdapter() = 0;
 
  protected:

@@ -20,6 +20,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/laser/laser_pointer_controller.h"
+#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
@@ -274,6 +275,10 @@ void WmShellAura::ToggleIgnoreExternalKeyboard() {
 
 void WmShellAura::SetLaserPointerEnabled(bool enabled) {
   Shell::GetInstance()->laser_pointer_controller()->SetEnabled(enabled);
+}
+
+void WmShellAura::SetPartialMagnifierEnabled(bool enabled) {
+  Shell::GetInstance()->partial_magnification_controller()->SetEnabled(enabled);
 }
 
 void WmShellAura::CreatePointerWatcherAdapter() {

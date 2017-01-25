@@ -407,6 +407,10 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
+void WmShellMus::SetPartialMagnifierEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
 void WmShellMus::CreatePointerWatcherAdapter() {
   // Only needed in WmShellAura, which has specific creation order.
 }

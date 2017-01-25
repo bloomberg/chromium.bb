@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
-#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
@@ -130,12 +129,6 @@ void PaletteDelegateChromeOS::OnPartialScreenshotDone(
     const base::Closure& then) {
   if (then)
     then.Run();
-}
-
-void PaletteDelegateChromeOS::SetPartialMagnifierState(bool enabled) {
-  ash::PartialMagnificationController* controller =
-      ash::Shell::GetInstance()->partial_magnification_controller();
-  controller->SetEnabled(enabled);
 }
 
 void PaletteDelegateChromeOS::SetStylusStateChangedCallback(
