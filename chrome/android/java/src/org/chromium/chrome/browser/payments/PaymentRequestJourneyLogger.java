@@ -10,10 +10,28 @@ import org.chromium.base.metrics.RecordHistogram;
  * A class used to record journey metrics for the Payment Request feature.
  */
 public class PaymentRequestJourneyLogger {
+    // The index of the different sections of a Payment Request. Used to record journey stats.
     public static final int SECTION_CONTACT_INFO = 0;
     public static final int SECTION_CREDIT_CARDS = 1;
     public static final int SECTION_SHIPPING_ADDRESS = 2;
     public static final int SECTION_MAX = 3;
+
+    // For the CanMakePayment histograms.
+    public static final int CAN_MAKE_PAYMENT_USED = 0;
+    public static final int CAN_MAKE_PAYMENT_NOT_USED = 1;
+    public static final int CAN_MAKE_PAYMENT_USE_MAX = 2;
+
+    // Used to log CanMakePayment's effect on whether the transaction was completed.
+    public static final int CMP_EFFECT_ON_COMPLETION_COMPLETED = 0;
+    public static final int CMP_EFFECT_ON_COMPLETION_ABORTED = 1;
+    public static final int CMP_EFFECT_ON_COMPLETION_MAX = 2;
+
+    // Used to mesure the impact of the CanMakePayment return value on whether the Payment Request
+    // is shown to the user.
+    public static final int CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0;
+    public static final int CMP_SHOW_DID_SHOW = 1 << 0;
+    public static final int CMP_SHOW_COULD_MAKE_PAYMENT = 1 << 1;
+    public static final int CMP_SHOW_MAX = 4;
 
     // The minimum expected value of CustomCountHistograms is always set to 1. It is still possible
     // to log the value 0 to that type of histogram.
@@ -31,6 +49,10 @@ public class PaymentRequestJourneyLogger {
 
     private SectionStats[] mSections;
 
+    private boolean mWasCanMakePaymentUsed;
+    private boolean mCouldMakePayment;
+    private boolean mWasShowCalled;
+
     public PaymentRequestJourneyLogger() {
         mSections = new SectionStats[SECTION_MAX];
         for (int i = 0; i < mSections.length; ++i) {
@@ -38,7 +60,7 @@ public class PaymentRequestJourneyLogger {
         }
     }
 
-    /*
+    /**
      * Sets the number of suggestions shown for the specified section.
      *
      * @param section The section for which to log.
@@ -50,7 +72,7 @@ public class PaymentRequestJourneyLogger {
         mSections[section].mIsRequested = true;
     }
 
-    /*
+    /**
      * Increments the number of selection changes for the specified section.
      *
      * @param section The section for which to log.
@@ -60,7 +82,7 @@ public class PaymentRequestJourneyLogger {
         mSections[section].mNumberSelectionChanges++;
     }
 
-    /*
+    /**
      * Increments the number of selection edits for the specified section.
      *
      * @param section The section for which to log.
@@ -70,7 +92,7 @@ public class PaymentRequestJourneyLogger {
         mSections[section].mNumberSelectionEdits++;
     }
 
-    /*
+    /**
      * Increments the number of selection adds for the specified section.
      *
      * @param section The section for which to log.
@@ -80,13 +102,46 @@ public class PaymentRequestJourneyLogger {
         mSections[section].mNumberSelectionAdds++;
     }
 
+    /**
+     * Records the fact that the merchant called CanMakePayment and records it's return value.
+     *
+     * @param value The return value of the CanMakePayment call.
+     */
+    public void setCanMakePaymentValue(boolean value) {
+        mWasCanMakePaymentUsed = true;
+        mCouldMakePayment |= value;
+    }
+
+    /**
+     * Records the fact that the Payment Request was shown to the user.
+     */
+    public void setShowCalled() {
+        mWasShowCalled = true;
+    }
+
     /*
-     * Records the histograms for all the sections that were requested by the merchant. This method
-     * should be called when the payment request has either been completed or aborted.
+     * Records the histograms for all the sections that were requested by the merchant and for the
+     * usage of the CanMakePayment method and its effect on the transaction. This method should be
+     * called when the payment request has either been completed or aborted.
      *
      * @param submissionType A string indicating the way the payment request was concluded.
      */
     public void recordJourneyStatsHistograms(String submissionType) {
+        recordSectionSpecificStats(submissionType);
+
+        // Record the CanMakePayment metrics based on whether the transaction was completed or
+        // aborted by the user (UserAborted) or otherwise (OtherAborted).
+        recordCanMakePaymentStats(submissionType.contains("Abort")
+                        ? CMP_EFFECT_ON_COMPLETION_ABORTED
+                        : CMP_EFFECT_ON_COMPLETION_COMPLETED);
+    }
+
+    /**
+     * Records the histograms for all the sections that were requested by the merchant.
+     *
+     * @param submissionType A string indicating the way the payment request was concluded.
+     */
+    private void recordSectionSpecificStats(String submissionType) {
         for (int i = 0; i < mSections.length; ++i) {
             String nameSuffix = "";
             switch (i) {
@@ -125,5 +180,57 @@ public class PaymentRequestJourneyLogger {
                         MIN_EXPECTED_SAMPLE, MAX_EXPECTED_SAMPLE, NUMBER_BUCKETS);
             }
         }
+    }
+
+    /**
+     * Records the metrics related the the CanMakePayment method.
+     *
+     * @param completionStatus Whether the transaction was completed or aborted.
+     */
+    private void recordCanMakePaymentStats(int completionStatus) {
+        // Record CanMakePayment usage.
+        RecordHistogram.recordEnumeratedHistogram("PaymentRequest.CanMakePayment.Usage",
+                mWasCanMakePaymentUsed ? CAN_MAKE_PAYMENT_USED : CAN_MAKE_PAYMENT_NOT_USED,
+                CAN_MAKE_PAYMENT_USE_MAX);
+
+        recordCanMakePaymentEffectOnShow();
+        recordCanMakePaymentEffectOnCompletion(completionStatus);
+    }
+
+    /**
+     * Records CanMakePayment's return value effect on whether the Payment Request was shown or not.
+     */
+    private void recordCanMakePaymentEffectOnShow() {
+        if (!mWasCanMakePaymentUsed) return;
+
+        int effectOnShow = 0;
+        if (mWasShowCalled) effectOnShow |= CMP_SHOW_DID_SHOW;
+        if (mCouldMakePayment) effectOnShow |= CMP_SHOW_COULD_MAKE_PAYMENT;
+
+        RecordHistogram.recordEnumeratedHistogram(
+                "PaymentRequest.CanMakePayment.Used.EffetOnShow", effectOnShow, CMP_SHOW_MAX);
+    }
+
+    /**
+     * Records the completion status depending on the the usage and return value of the
+     * CanMakePaymentMethod.
+     *
+     * @param completionStatus Whether the transaction was completed or aborted.
+     */
+    private void recordCanMakePaymentEffectOnCompletion(int completionStatus) {
+        if (!mWasShowCalled) return;
+
+        String histogramName = "PaymentRequest.CanMakePayment.";
+
+        if (!mWasCanMakePaymentUsed) {
+            histogramName += "NotUsed.WithShowEffectOnCompletion";
+        } else if (mCouldMakePayment) {
+            histogramName += "Used.TrueWithShowEffectOnCompletion";
+        } else {
+            histogramName += "Used.FalseWithShowEffectOnCompletion";
+        }
+
+        RecordHistogram.recordEnumeratedHistogram(
+                histogramName, completionStatus, CMP_EFFECT_ON_COMPLETION_MAX);
     }
 }

@@ -504,6 +504,7 @@ public class PaymentRequestImpl
 
         if (!mShouldSkipShowingPaymentRequestUi) mUI.show();
         recordSuccessFunnelHistograms("Shown");
+        mJourneyLogger.setShowCalled();
         triggerPaymentAppUiSkipIfApplicable();
     }
 
@@ -1192,12 +1193,16 @@ public class PaymentRequestImpl
         }
 
         query.addObserver(this);
-        if (isFinishedQueryingPaymentApps()) query.setResponse(mCanMakePayment);
+        if (isFinishedQueryingPaymentApps()) {
+            query.setResponse(mCanMakePayment);
+            mJourneyLogger.setCanMakePaymentValue(mCanMakePayment);
+        }
     }
 
     private void respondCanMakePaymentQuery(boolean response) {
         mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
                 : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+        mJourneyLogger.setCanMakePaymentValue(mCanMakePayment);
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
