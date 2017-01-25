@@ -12,17 +12,6 @@ crbug.com/575210 external/wpt/html/browsers/browsing-the-web/history-traversal/p
 crbug.com/575210 external/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
 crbug.com/575210 external/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
 
-# Issue with m_progressTracker->progressCompleted when navigation fails
-# Fixed by https://codereview.chromium.org/2624723002/
-crbug.com/679675 fast/css/acid2-pixel.html [ Timeout ]
-crbug.com/679675 fast/css/acid2.html [ Timeout ]
-crbug.com/679675 fast/dom/HTMLObjectElement/children-changed.html [ Timeout ]
-crbug.com/679675 fast/overflow/overflow-height-float-not-removed-crash.html [ Timeout ]
-crbug.com/679675 fast/overflow/overflow-height-float-not-removed-crash2.html [ Timeout ]
-crbug.com/679675 fast/overflow/overflow-height-float-not-removed-crash3.html [ Timeout ]
-crbug.com/679675 fast/table/giantCellspacing.html [ Timeout ]
-crbug.com/679675 virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Timeout ]
-
 # https://crbug.com/683891: Execute BeforeUnload on subframes during browser-initiated navigations
 crbug.com/683891 external/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html [ Failure ]
 
