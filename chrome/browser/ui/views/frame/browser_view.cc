@@ -415,6 +415,10 @@ BrowserView::~BrowserView() {
   // OS with some tabs than the NativeBrowserFrame should have destroyed them.
   DCHECK_EQ(0, browser_->tab_strip_model()->count());
 
+  // Stop the animation timer explicitly here to avoid running it in a nested
+  // message loop, which may run by Browser destructor.
+  loading_animation_timer_.Stop();
+
   // Immersive mode may need to reparent views before they are removed/deleted.
   immersive_mode_controller_.reset();
 
