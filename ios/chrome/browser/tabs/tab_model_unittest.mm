@@ -838,7 +838,6 @@ TEST_F(TabModelTest, SetParentModel) {
 TEST_F(TabModelTest, PersistSelectionChange) {
   TestChromeBrowserState::Builder test_cbs_builder;
   auto chrome_browser_state = test_cbs_builder.Build();
-  base::mac::ScopedNSAutoreleasePool pool;
 
   NSString* stashPath =
       base::SysUTF8ToNSString(chrome_browser_state->GetStatePath().value());
@@ -876,7 +875,6 @@ TEST_F(TabModelTest, PersistSelectionChange) {
                browserState:chrome_browser_state.get()]);
   EXPECT_EQ(model.get().currentTab, [model tabAtIndex:1]);
   [model browserStateDestroyed];
-  model.reset();
 
   // Clean up.
   EXPECT_TRUE([[NSFileManager defaultManager] removeItemAtPath:stashPath
