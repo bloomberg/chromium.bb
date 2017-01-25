@@ -103,7 +103,7 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       assertTrue(!!menu);
       assertTrue(menu.advancedOpened);
 
-      MockInteractions.tap(menu.$$('#advancedPage .menu-trigger'));
+      MockInteractions.tap(menu.$$('#advancedSubmenu .menu-trigger'));
       Polymer.dom.flush();
 
       // Check that all values are updated in unison.

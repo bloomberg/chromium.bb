@@ -22,32 +22,32 @@ cr.define('settings_menu', function() {
         assertFalse(settingsMenu.advancedOpened);
         settingsMenu.advancedOpened = true;
         Polymer.dom.flush();
-        assertTrue(settingsMenu.$.advancedPage.opened);
+        assertTrue(settingsMenu.$.advancedSubmenu.opened);
 
         settingsMenu.advancedOpened = false;
         Polymer.dom.flush();
-        assertFalse(settingsMenu.$.advancedPage.opened);
+        assertFalse(settingsMenu.$.advancedSubmenu.opened);
       });
 
       test('tapAdvanced', function() {
         assertFalse(settingsMenu.advancedOpened);
 
-        var advancedTrigger = settingsMenu.$$('#advancedPage .menu-trigger');
+        var advancedTrigger = settingsMenu.$$('#advancedSubmenu .menu-trigger');
         assertTrue(!!advancedTrigger);
 
         MockInteractions.tap(advancedTrigger);
         Polymer.dom.flush();
-        assertTrue(settingsMenu.$.advancedPage.opened);
+        assertTrue(settingsMenu.$.advancedSubmenu.opened);
 
         MockInteractions.tap(advancedTrigger);
         Polymer.dom.flush();
-        assertFalse(settingsMenu.$.advancedPage.opened);
+        assertFalse(settingsMenu.$.advancedSubmenu.opened);
       });
 
       test('upAndDownIcons', function() {
         // There should be different icons for a top level menu being open
         // vs. being closed. E.g. arrow-drop-up and arrow-drop-down.
-        var ironIconElement = settingsMenu.$.advancedPage.querySelector(
+        var ironIconElement = settingsMenu.$.advancedSubmenu.querySelector(
             '.menu-trigger iron-icon');
         assertTrue(!!ironIconElement);
 
@@ -63,9 +63,9 @@ cr.define('settings_menu', function() {
 
       test('openResetSection', function() {
         settingsMenu.currentRoute = settings.Route.RESET;
-        var advancedPage = settingsMenu.$.advancedPage;
+        var advancedSubmenu = settingsMenu.$.advancedSubmenu;
         assertEquals('/reset',
-            advancedPage.querySelector('paper-menu').selected);
+            advancedSubmenu.querySelector('paper-menu').selected);
       });
 
       // Test that navigating via the paper menu always clears the current

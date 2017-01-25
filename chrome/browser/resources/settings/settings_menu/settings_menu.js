@@ -43,7 +43,7 @@ Polymer({
     // https://codereview.chromium.org/2412343004) or a Polymer PR (ex:
     // https://github.com/PolymerElements/paper-menu/pull/107).
     if (this.advancedOpened)
-      this.$.advancedPage.open();
+      this.$.advancedSubmenu.open();
   },
 
   /**
