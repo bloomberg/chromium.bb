@@ -1297,7 +1297,6 @@ void Element::attributeChanged(const AttributeModificationParams& params) {
   parseAttribute(params);
 
   document().incDOMTreeVersion();
-  document().notifyChangeAttribute(*this);
 
   if (name == HTMLNames::idAttr) {
     AtomicString oldId = elementData()->idForStyleResolution();

@@ -11,12 +11,6 @@ namespace blink {
 
 SynchronousMutationNotifier::SynchronousMutationNotifier() = default;
 
-void SynchronousMutationNotifier::notifyChangeAttribute(
-    const Element& element) {
-  for (SynchronousMutationObserver* observer : m_observers)
-    observer->didChangeAttribute(element);
-}
-
 void SynchronousMutationNotifier::notifyChangeChildren(
     const ContainerNode& container) {
   for (SynchronousMutationObserver* observer : m_observers)

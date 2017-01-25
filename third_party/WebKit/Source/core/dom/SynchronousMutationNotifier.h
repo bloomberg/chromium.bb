@@ -14,7 +14,6 @@ namespace blink {
 class CharacterData;
 class ContainerNode;
 class Document;
-class Element;
 class Node;
 class NodeWithIndex;
 class SynchronousMutationObserver;
@@ -23,7 +22,8 @@ class Text;
 class CORE_EXPORT SynchronousMutationNotifier
     : public LifecycleNotifier<Document, SynchronousMutationObserver> {
  public:
-  void notifyChangeAttribute(const Element&);
+  // TODO(yosin): We will have |notifyXXX()| functions defined in
+  // |SynchronousMutationObserver|.
   void notifyChangeChildren(const ContainerNode&);
   void notifyMergeTextNodes(const Text& mergedNode,
                             const NodeWithIndex& nodeToBeRemovedWithIndex,
