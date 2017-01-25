@@ -27,9 +27,9 @@ class ReadingListDistillerPageFactory;
 }
 
 // Observes the reading list and downloads offline versions of its articles.
-// Any calls made to DownloadAllEntries/DownloadEntry before the model is
-// loaded will be ignored. When the model is loaded, DownloadAllEntries will be
-// called automatically.
+// Any calls made to DownloadEntry before the model is loaded will be ignored.
+// When the model is loaded, offline directory is automatically synced with the
+// entries in the model.
 class ReadingListDownloadService
     : public KeyedService,
       public ReadingListModelObserver,
@@ -65,12 +65,21 @@ class ReadingListDownloadService
                                const GURL& url) override;
 
  private:
-  // Tries to save offline versions of all entries in the reading list that are
-  // not yet saved. Must only be called after reading list model is loaded.
-  void DownloadAllEntries();
-  // Processes a new entry and schedule a download if needed.
+  // Checks the model and determines which entries are processed and which
+  // entries need to be processed.
+  // Initiates a cleanup of |OfflineRoot()| directory removing sub_directories
+  // not corresponding to a processed ReadingListEntry.
+  // Schedules unprocessed entries for distillation.
+  void SyncWithModel();
+  // Scans |OfflineRoot()| directory and deletes all subdirectories not listed
+  // in |directories_to_keep|.
+  // Must be called on File thread.
+  void CleanUpFiles(const std::set<std::string>& directories_to_keep);
+  // Schedules all entries in |unprocessed_entries| for distillation.
+  void DownloadUnprocessedEntries(const std::set<GURL>& unprocessed_entries);
+  // Processes a new entry and schedules a download if needed.
   void ProcessNewEntry(const GURL& url);
-  // Schedule a download of an offline version of the reading list entry,
+  // Schedules a download of an offline version of the reading list entry,
   // according to the delay of the entry. Must only be called after reading list
   // model is loaded.
   void ScheduleDownloadEntry(const GURL& url);

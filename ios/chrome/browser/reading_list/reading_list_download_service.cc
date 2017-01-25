@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/reading_list/ios/offline_url_utils.h"
@@ -82,7 +84,7 @@ void ReadingListDownloadService::Shutdown() {
 void ReadingListDownloadService::ReadingListModelLoaded(
     const ReadingListModel* model) {
   DCHECK_EQ(reading_list_model_, model);
-  DownloadAllEntries();
+  SyncWithModel();
 }
 
 void ReadingListDownloadService::ReadingListWillRemoveEntry(
@@ -117,9 +119,49 @@ void ReadingListDownloadService::ProcessNewEntry(const GURL& url) {
   }
 }
 
-void ReadingListDownloadService::DownloadAllEntries() {
+void ReadingListDownloadService::SyncWithModel() {
   DCHECK(reading_list_model_->loaded());
+  std::set<std::string> processed_directories;
+  std::set<GURL> unprocessed_entries;
   for (const auto& url : reading_list_model_->Keys()) {
+    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+    switch (entry->DistilledState()) {
+      case ReadingListEntry::PROCESSED:
+        processed_directories.insert(reading_list::OfflineURLDirectoryID(url));
+        break;
+      case ReadingListEntry::WAITING:
+      case ReadingListEntry::PROCESSING:
+      case ReadingListEntry::WILL_RETRY:
+        unprocessed_entries.insert(url);
+        break;
+      case ReadingListEntry::ERROR:
+        break;
+    }
+  }
+  web::WebThread::PostTaskAndReply(
+      web::WebThread::FILE, FROM_HERE,
+      base::Bind(&ReadingListDownloadService::CleanUpFiles,
+                 base::Unretained(this), processed_directories),
+      base::Bind(&ReadingListDownloadService::DownloadUnprocessedEntries,
+                 base::Unretained(this), unprocessed_entries));
+}
+
+void ReadingListDownloadService::CleanUpFiles(
+    const std::set<std::string>& processed_directories) {
+  base::FileEnumerator file_enumerator(OfflineRoot(), false,
+                                       base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath sub_directory = file_enumerator.Next();
+       !sub_directory.empty(); sub_directory = file_enumerator.Next()) {
+    std::string directory_name = sub_directory.BaseName().value();
+    if (!processed_directories.count(directory_name)) {
+      base::DeleteFile(sub_directory, true);
+    }
+  }
+}
+
+void ReadingListDownloadService::DownloadUnprocessedEntries(
+    const std::set<GURL>& unprocessed_entries) {
+  for (const GURL& url : unprocessed_entries) {
     this->ScheduleDownloadEntry(url);
   }
 }
