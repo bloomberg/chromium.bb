@@ -860,11 +860,16 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
       WrappedResourceResponse(
           ResourceResponse(testURL, "image/jpeg", 18, nullAtom, String())),
       nullptr);
+
+  EXPECT_EQ(0, observer->imageChangedCount());
+
   imageResource->loader()->didReceiveData("notactuallyanimage", 18);
+
   EXPECT_EQ(ResourceStatus::DecodeError, imageResource->getStatus());
   EXPECT_TRUE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(ResourceStatus::DecodeError,
             observer->statusOnImageNotifyFinished());
+  EXPECT_EQ(2, observer->imageChangedCount());
   EXPECT_FALSE(imageResource->isLoading());
 }
 
@@ -886,6 +891,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
 
   EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
+  EXPECT_EQ(0, observer->imageChangedCount());
 
   imageResource->loader()->didFinishLoading(0.0, 0, 0);
 
@@ -893,6 +899,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
   EXPECT_TRUE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(ResourceStatus::DecodeError,
             observer->statusOnImageNotifyFinished());
+  EXPECT_EQ(1, observer->imageChangedCount());
   EXPECT_FALSE(imageResource->isLoading());
 }
 
@@ -1060,6 +1067,9 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   imageResource->loader()->didReceiveResponse(
       WrappedResourceResponse(ResourceResponse(
           testURL, "image/jpeg", sizeof(kBadData), nullAtom, String())));
+
+  EXPECT_EQ(0, observer->imageChangedCount());
+
   imageResource->loader()->didReceiveData(kBadData, sizeof(kBadData));
 
   // The dimensions could not be extracted, so the full original image should be
@@ -1072,6 +1082,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
       static_cast<int>(WebCachePolicy::BypassingCache),
       static_cast<int>(imageResource->resourceRequest().getCachePolicy()));
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
+  EXPECT_EQ(3, observer->imageChangedCount());
 
   imageResource->loader()->didReceiveResponse(
       WrappedResourceResponse(ResourceResponse(
@@ -1084,7 +1095,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
   EXPECT_EQ(sizeof(kJpegImage), imageResource->encodedSize());
   EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_LT(0, observer->imageChangedCount());
+  EXPECT_LT(3, observer->imageChangedCount());
   EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnLastImageChanged());
   EXPECT_TRUE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnImageNotifyFinished());
