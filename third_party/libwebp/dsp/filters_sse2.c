@@ -315,6 +315,7 @@ extern void VP8FiltersInitSSE2(void);
 
 WEBP_TSAN_IGNORE_FUNCTION void VP8FiltersInitSSE2(void) {
   WebPUnfilters[WEBP_FILTER_HORIZONTAL] = HorizontalUnfilter;
+  WebPUnfilters[WEBP_FILTER_VERTICAL] = VerticalUnfilter;
   // crbug.com/654974
   // WebPUnfilters[WEBP_FILTER_VERTICAL] = VerticalUnfilter;
   (void)VerticalUnfilter;
