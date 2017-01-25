@@ -819,36 +819,8 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) {
-  views::WidgetDelegate* widget_delegate = GetWidget()->widget_delegate();
-  if (widget_delegate &&
-      !widget_delegate->ShouldDescendIntoChildForEventHandling(child, location))
-    return false;
-
-  // Don't descend into |child| if there is a view with a Layer that contains
-  // the point and is stacked above |child|s layer.
-  typedef std::vector<ui::Layer*> Layers;
-  const Layers& root_layers(delegate_->GetRootLayers());
-  if (root_layers.empty())
-    return true;
-
-  Layers::const_iterator child_layer_iter(
-      std::find(window_->layer()->children().begin(),
-                window_->layer()->children().end(), child->layer()));
-  if (child_layer_iter == window_->layer()->children().end())
-    return true;
-
-  for (std::vector<ui::Layer*>::const_reverse_iterator i = root_layers.rbegin();
-       i != root_layers.rend(); ++i) {
-    ui::Layer* layer = *i;
-    if (layer->visible() && layer->bounds().Contains(location)) {
-      Layers::const_iterator root_layer_iter(
-          std::find(window_->layer()->children().begin(),
-                    window_->layer()->children().end(), layer));
-      if (root_layer_iter > child_layer_iter)
-        return false;
-    }
-  }
-  return true;
+  return delegate_->ShouldDescendIntoChildForEventHandling(
+      window_->layer(), child, child->layer(), location);
 }
 
 bool NativeWidgetAura::CanFocus() {

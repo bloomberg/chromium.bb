@@ -219,7 +219,7 @@ void View::AddChildViewAt(View* view, int index) {
   const bool did_reparent_any_layers = view->UpdateParentLayers();
   Widget* widget = GetWidget();
   if (did_reparent_any_layers && widget)
-    widget->UpdateRootLayers();
+    widget->LayerTreeChanged();
 
   ReorderLayers();
 
@@ -565,14 +565,14 @@ void View::DestroyLayer() {
 
   Widget* widget = GetWidget();
   if (widget)
-    widget->UpdateRootLayers();
+    widget->LayerTreeChanged();
 }
 
 std::unique_ptr<ui::Layer> View::RecreateLayer() {
   std::unique_ptr<ui::Layer> old_layer = LayerOwner::RecreateLayer();
   Widget* widget = GetWidget();
   if (widget)
-    widget->UpdateRootLayers();
+    widget->LayerTreeChanged();
   return old_layer;
 }
 
@@ -1941,7 +1941,7 @@ void View::DoRemoveChildView(View* view,
   // removed.
   view->OrphanLayers();
   if (widget)
-    widget->UpdateRootLayers();
+    widget->LayerTreeChanged();
 
   view->PropagateRemoveNotifications(this, new_parent);
   view->parent_ = nullptr;
@@ -2235,7 +2235,7 @@ void View::CreateLayer(ui::LayerType layer_type) {
 
   Widget* widget = GetWidget();
   if (widget)
-    widget->UpdateRootLayers();
+    widget->LayerTreeChanged();
 
   // Before having its own Layer, this View may have painted in to a Layer owned
   // by an ancestor View. Scheduling a paint on the parent View will erase this

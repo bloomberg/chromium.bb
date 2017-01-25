@@ -5,9 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_DELEGATE_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_DELEGATE_H_
 
-#include <vector>
-
 #include "ui/events/event_constants.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -128,9 +127,6 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // Runs the specified native command. Returns true if the command is handled.
   virtual bool ExecuteCommand(int command_id) = 0;
 
-  // Returns the child Layers of the Widgets layer that were created by Views.
-  virtual const std::vector<ui::Layer*>& GetRootLayers() = 0;
-
   // Returns true if window has a hit-test mask.
   virtual bool HasHitTestMask() const = 0;
 
@@ -147,6 +143,15 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // not set the initial focus, or false if the caller should set the initial
   // focus (if any).
   virtual bool SetInitialFocus(ui::WindowShowState show_state) = 0;
+
+  // Returns true if event handling should descend into |child|. |root_layer| is
+  // the layer associated with the root Window and |child_layer| the layer
+  // associated with |child|. |location| is in terms of the Window.
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      ui::Layer* root_layer,
+      gfx::NativeView child,
+      ui::Layer* child_layer,
+      const gfx::Point& location) = 0;
 };
 
 }  // namespace internal

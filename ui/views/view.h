@@ -116,7 +116,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::EventTarget,
                           public ui::EventHandler {
  public:
-  typedef std::vector<View*> Views;
+  using Views = std::vector<View*>;
 
   enum class FocusBehavior {
     // Use when the View is never focusable. Default.

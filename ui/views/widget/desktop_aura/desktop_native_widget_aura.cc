@@ -985,9 +985,8 @@ int DesktopNativeWidgetAura::GetNonClientComponent(
 bool DesktopNativeWidgetAura::ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) {
-  views::WidgetDelegate* widget_delegate = GetWidget()->widget_delegate();
-  return !widget_delegate ||
-      widget_delegate->ShouldDescendIntoChildForEventHandling(child, location);
+  return native_widget_delegate_->ShouldDescendIntoChildForEventHandling(
+      content_window_->layer(), child, child->layer(), location);
 }
 
 bool DesktopNativeWidgetAura::CanFocus() {

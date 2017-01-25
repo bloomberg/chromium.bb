@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
 #include "ui/base/default_theme_provider.h"
@@ -46,12 +47,12 @@ namespace {
 // If |view| has a layer the layer is added to |layers|. Else this recurses
 // through the children. This is used to build a list of the layers created by
 // views that are direct children of the Widgets layer.
-void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
+void BuildViewsWithLayers(View* view, View::Views* views) {
   if (view->layer()) {
-    layers->push_back(view->layer());
+    views->push_back(view);
   } else {
     for (int i = 0; i < view->child_count(); ++i)
-      BuildRootLayers(view->child_at(i), layers);
+      BuildViewsWithLayers(view->child_at(i), views);
   }
 }
 
@@ -163,10 +164,9 @@ Widget::Widget()
       ignore_capture_loss_(false),
       last_mouse_event_was_move_(false),
       auto_release_capture_(true),
-      root_layers_dirty_(false),
+      views_with_layers_dirty_(false),
       movement_disabled_(false),
-      observer_manager_(this) {
-}
+      observer_manager_(this) {}
 
 Widget::~Widget() {
   DestroyRootView();
@@ -914,11 +914,11 @@ void Widget::ReorderNativeViews() {
   native_widget_->ReorderNativeViews();
 }
 
-void Widget::UpdateRootLayers() {
+void Widget::LayerTreeChanged() {
   // Calculate the layers requires traversing the tree, and since nearly any
   // mutation of the tree can trigger this call we delay until absolutely
   // necessary.
-  root_layers_dirty_ = true;
+  views_with_layers_dirty_ = true;
 }
 
 const NativeWidget* Widget::native_widget() const {
@@ -1276,15 +1276,6 @@ bool Widget::ExecuteCommand(int command_id) {
   return widget_delegate_->ExecuteWindowsCommand(command_id);
 }
 
-const std::vector<ui::Layer*>& Widget::GetRootLayers() {
-  if (root_layers_dirty_) {
-    root_layers_dirty_ = false;
-    root_layers_.clear();
-    BuildRootLayers(GetRootView(), &root_layers_);
-  }
-  return root_layers_;
-}
-
 bool Widget::HasHitTestMask() const {
   return widget_delegate_->WidgetHasHitTestMask();
 }
@@ -1321,6 +1312,55 @@ bool Widget::SetInitialFocus(ui::WindowShowState show_state) {
       focus_manager->AdvanceFocus(false);
   }
   return !!focus_manager->GetFocusedView();
+}
+
+bool Widget::ShouldDescendIntoChildForEventHandling(
+    ui::Layer* root_layer,
+    gfx::NativeView child,
+    ui::Layer* child_layer,
+    const gfx::Point& location) {
+  if (widget_delegate_ &&
+      !widget_delegate_->ShouldDescendIntoChildForEventHandling(child,
+                                                                location)) {
+    return false;
+  }
+
+  const View::Views& views_with_layers = GetViewsWithLayers();
+  if (views_with_layers.empty())
+    return true;
+
+  // Don't descend into |child| if there is a view with a Layer that contains
+  // the point and is stacked above |child_layer|.
+  auto child_layer_iter = std::find(root_layer->children().begin(),
+                                    root_layer->children().end(), child_layer);
+  if (child_layer_iter == root_layer->children().end())
+    return true;
+
+  for (auto iter = views_with_layers.rbegin(); iter != views_with_layers.rend();
+       ++iter) {
+    ui::Layer* layer = (*iter)->layer();
+    DCHECK(layer);
+    if (layer->visible() && layer->bounds().Contains(location)) {
+      auto root_layer_iter = std::find(root_layer->children().begin(),
+                                       root_layer->children().end(), layer);
+      if (child_layer_iter > root_layer_iter) {
+        // |child| is on top of the remaining layers, no need to continue.
+        return true;
+      }
+
+      // Event targeting uses the visible bounds of the View, which may differ
+      // from the bounds of the layer. Verify the view hosting the layer
+      // actually contains |location|. Use GetVisibleBounds(), which is
+      // effectively what event targetting uses.
+      View* view = *iter;
+      gfx::Rect vis_bounds = view->GetVisibleBounds();
+      gfx::Point point_in_view = location;
+      View::ConvertPointToTarget(GetRootView(), view, &point_in_view);
+      if (vis_bounds.Contains(point_in_view))
+        return false;
+    }
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1490,6 +1530,15 @@ bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
     return true;
   }
   return false;
+}
+
+const View::Views& Widget::GetViewsWithLayers() {
+  if (views_with_layers_dirty_) {
+    views_with_layers_dirty_ = false;
+    views_with_layers_.clear();
+    BuildViewsWithLayers(GetRootView(), &views_with_layers_);
+  }
+  return views_with_layers_;
 }
 
 namespace internal {

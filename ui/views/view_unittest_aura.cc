@@ -43,7 +43,18 @@ View* CreateViewWithLayer(const gfx::Rect& bounds, const char* layer_name) {
 
 }  // namespace
 
-typedef ViewsTestBase ViewAuraTest;
+class ViewAuraTest : public ViewsTestBase {
+ public:
+  ViewAuraTest() {}
+  ~ViewAuraTest() override {}
+
+  const View::Views& GetViewsWithLayers(Widget* widget) {
+    return widget->GetViewsWithLayers();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewAuraTest);
+};
 
 // Test that wm::RecreateLayers() recreates the layers for all child windows and
 // all child views and that the z-order of the recreated layers matches that of
@@ -119,11 +130,11 @@ TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
 
   // Verify the value of Widget::GetRootLayers(). It should only include layers
   // from layer-backed Views descended from the Widget's root View.
-  std::vector<ui::Layer*> old_w1_root_sublayers = w1->GetRootLayers();
-  ASSERT_EQ(3u, old_w1_root_sublayers.size());
-  EXPECT_EQ(v1_layer, old_w1_root_sublayers[0]);
-  EXPECT_EQ(v4_layer, old_w1_root_sublayers[1]);
-  EXPECT_EQ(v7_layer, old_w1_root_sublayers[2]);
+  View::Views old_w1_views_with_layers = GetViewsWithLayers(w1);
+  ASSERT_EQ(3u, old_w1_views_with_layers.size());
+  EXPECT_EQ(v1, old_w1_views_with_layers[0]);
+  EXPECT_EQ(v4, old_w1_views_with_layers[1]);
+  EXPECT_EQ(v7, old_w1_views_with_layers[2]);
 
   {
     std::unique_ptr<ui::LayerTreeOwner> cloned_owner(
@@ -174,12 +185,12 @@ TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
     ASSERT_EQ("v8 v9", ui::test::ChildLayerNamesAsString(*v7_new_layer));
     EXPECT_NE(v7_layer, v7_new_layer);
 
-    // Ensure Widget::GetRootLayers() is correctly updated.
-    std::vector<ui::Layer*> new_w1_root_sublayers = w1->GetRootLayers();
-    ASSERT_EQ(3u, new_w1_root_sublayers.size());
-    EXPECT_EQ(v1_new_layer, new_w1_root_sublayers[0]);
-    EXPECT_EQ(v4_new_layer, new_w1_root_sublayers[1]);
-    EXPECT_EQ(v7_new_layer, new_w1_root_sublayers[2]);
+    // Ensure Widget::GetViewsWithLayers() is correctly updated.
+    View::Views new_w1_views_with_layers = GetViewsWithLayers(w1);
+    ASSERT_EQ(3u, new_w1_views_with_layers.size());
+    EXPECT_EQ(v1, new_w1_views_with_layers[0]);
+    EXPECT_EQ(v4, new_w1_views_with_layers[1]);
+    EXPECT_EQ(v7, new_w1_views_with_layers[2]);
   }
   w1->CloseNow();
 }
