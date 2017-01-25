@@ -126,6 +126,8 @@ table_files = \
 	ethio-g1.ctb \
 	et.tbl \
 	eurodefs.cti \
+	fa-ir-comp8.ctb \
+	fa-ir-g1.utb \
 	fi1.ctb \
 	fi2.ctb \
 	fi-fi-8dot.ctb \
@@ -133,6 +135,7 @@ table_files = \
 	fi.tbl \
 	fi.utb \
 	fr-2007.ctb \
+	fr-bfu-comp68.cti \
 	fr-bfu-comp6.utb \
 	fr-bfu-comp8.utb \
 	fr-bfu-g2.ctb \
@@ -153,6 +156,7 @@ table_files = \
 	gon.tbl \
 	gr-bb.ctb \
 	gr-gr-g1.utb \
+	gr-pl-comp8.uti \
 	gu-in-g1.utb \
 	gujarati.cti \
 	gurumuki.cti \
@@ -189,6 +193,7 @@ table_files = \
 	hyph_ru.dic \
 	hyph_sv_SE.dic \
 	hy.tbl \
+	IPA.utb \
 	is-chardefs6.cti \
 	is-chardefs8.cti \
 	is.ctb \
@@ -329,6 +334,7 @@ table_files = \
 	te.tbl \
 	text_nabcc.dis \
 	tr.ctb \
+	tr-g1.ctb \
 	tr.tbl \
 	tsn-za-g1.ctb \
 	UEBC-g1.utb \
@@ -338,9 +344,12 @@ table_files = \
 	ukmaths_edit.ctb \
 	ukmaths_single_cell_defs.cti \
 	ukmaths_unicode_defs.cti \
+	unicode-braille.utb \
 	unicodedefs.cti \
 	unicode.dis \
 	uni-text.dis \
+	ur-pk-g1.utb \
+	ur-pk-g2.ctb \
 	us-table.dis \
 	vi.ctb \
 	vi-g1.ctb \

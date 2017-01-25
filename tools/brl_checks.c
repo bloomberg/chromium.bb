@@ -1,24 +1,17 @@
 /* liblouis Braille Translation and Back-Translation Library
 
-   Copyright (C) 2014 ViewPlus Technologies, Inc. www.viewplus.com
-   and the liblouis team. http://liblouis.org
-   All rights reserved
+Copyright (C) 2008 Eitan Isaacson <eitan@ascender.com>
+Copyright (C) 2012 James Teh <jamie@nvaccess.org>
+Copyright (C) 2012 Bert Frees <bertfrees@gmail.com>
+Copyright (C) 2014 Mesar Hameed <mesar.hameed@gmail.com>
+Copyright (C) 2015 Mike Gray <mgray@aph.org>
+Copyright (C) 2010-2016 Swiss Library for the Blind, Visually Impaired and Print Disabled
+Copyright (C) 2016 Davy Kager <mail@davykager.nl>
 
-   This file is free software; you can redistribute it and/or modify
-   it under the terms of the Lesser or Library GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3, or (at your option) any later version.
-
-   This file is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-   Library GNU General Public License for more details.
-
-   You should have received a copy of the Library GNU General Public
-   License along with this program; see the file COPYING. If not,
-   write to the Free Software Foundation, 51 Franklin Street, Fifth
-   Floor, Boston, MA 02110-1301, USA.
-   */
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved. This file is offered as-is,
+without any warranty. */
 
 #include <assert.h>
 #include <stdio.h>

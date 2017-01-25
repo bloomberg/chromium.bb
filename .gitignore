@@ -55,6 +55,7 @@ TAGS
 
 # /contrib/
 /contrib/liblouis.elc
+/contrib/braille-input.elc
 
 # /doc/
 /doc/Makefile

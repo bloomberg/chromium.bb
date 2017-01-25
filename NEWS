@@ -1,6 +1,6 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 3.1.0 (2016-11-??)
+* Noteworthy changes in release 3.1.0 (2017-??-??)
 ** New features
 - Meta data
 
@@ -35,6 +35,7 @@ complete.
 - Fixes implicit declaration of 'pattern_check' thanks to  Reiner Dolp
 - Fix a stackoverflow crash on applications with smaller stack size.
   Thanks to Victor Montalvão.
+- Fix the \v escape sequence. Thanks to Davy Kager.
 ** Other changes
 - Improvements to the emacs mode for editing liblouis tables thanks to
   Christian Egli
@@ -49,6 +50,20 @@ complete.
   - Added rules for unicode apostrophe handling
 - Complete overhaul of Lithuanian 8-dots table, thanks to Rimas
   Kudelis
+- New Urdu 6 Dot Grade 1 and 2 Braille tables thanks to Jake Kyle
+- Improvements to Italian 8 dots computer braille, thanks to Simone
+  Dal Maso.
+- New table ~unicode-braille.utb~ that helps to back translate braille
+  input to unicode braille output, thanks to Leonard de Ruijter.
+- Improvements to the Chinese braille table thanks to Coscell Kao.
+- New Turkish braille table for grade 1 that should replace the
+  old ~tr.ctb~ table, thanks to Arend Arends.
+- New Persian grade 1 table and 8-dots computer table thanks to
+  Mohammadreza Rashad.
+- New table for the International Phonetic Alphabet thanks to Ludovic
+  Oger
+- Fixes for the French 6 and 8 dots tables thanks to Michel Such. Some
+  errors have been fixed and many unicode characters have been added.
 
 ** Backwards incompatible changes
 None
