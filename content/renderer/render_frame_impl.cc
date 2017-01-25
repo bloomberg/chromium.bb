@@ -5175,10 +5175,13 @@ void RenderFrameImpl::OnCommitNavigation(
       request_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
                                       : nullptr);
 
+  browser_side_navigation_pending_ = false;
+
   NavigateInternal(common_params, StartNavigationParams(), request_params,
                    std::move(stream_override));
 
-  browser_side_navigation_pending_ = false;
+  // Don't add code after this since NavigateInternal may have destroyed this
+  // RenderFrameImpl.
 }
 
 // PlzNavigate
