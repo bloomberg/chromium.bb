@@ -32,9 +32,9 @@
       newSettingsMainControllerWithMainBrowserState:self.browserState
                                 currentBrowserState:self.browserState
                                            delegate:self];
-  [self.baseViewController presentViewController:self.viewController
-                                        animated:self.context.animated
-                                      completion:nil];
+  [self.context.baseViewController presentViewController:self.viewController
+                                                animated:self.context.animated
+                                              completion:nil];
 }
 
 - (void)stop {

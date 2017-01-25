@@ -10,6 +10,7 @@
 
 @implementation CoordinatorContext
 
+@synthesize baseViewController = _baseViewController;
 @synthesize animated = _animated;
 
 - (instancetype)init {

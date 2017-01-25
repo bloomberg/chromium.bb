@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/browser_coordinator.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
+#import "ios/clean/chrome/browser/browser_coordinator.h"
 
+#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -69,13 +70,13 @@ TEST(BrowserCoordinatorTest, TestChildren) {
   [parent addChildCoordinator:child];
   EXPECT_TRUE([parent.children containsObject:child]);
   EXPECT_EQ(parent, child.parentCoordinator);
-  EXPECT_EQ(parent.viewController, child.baseViewController);
+  EXPECT_EQ(parent.viewController, child.context.baseViewController);
 
   [parent removeChildCoordinator:child];
   EXPECT_FALSE([parent.children containsObject:child]);
   EXPECT_EQ(nil, child.parentCoordinator);
   // Unparenting shouldn't change a child's baseViewController.
-  EXPECT_EQ(parent.viewController, child.baseViewController);
+  EXPECT_EQ(parent.viewController, child.context.baseViewController);
 
   TestCoordinator* otherParent = [[TestCoordinator alloc] init];
   TestCoordinator* otherChild = [[TestCoordinator alloc] init];

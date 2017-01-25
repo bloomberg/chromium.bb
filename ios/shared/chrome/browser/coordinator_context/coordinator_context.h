@@ -7,7 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
+// Holds data for the coordinator that uses it.
 @interface CoordinatorContext : NSObject
+
+// The view controller that the coordinator will use to present its content, if
+// it is presenting content. This is not the view controller created and managed
+// by the coordinator; it should be supplied by whatever object is creating
+// the coordinator.
+@property(nonatomic, weak) UIViewController* baseViewController;
 
 // Default is YES.
 @property(nonatomic, assign, getter=isAnimated) BOOL animated;

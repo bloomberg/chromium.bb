@@ -35,6 +35,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//ios/chrome/test/base",
+    "//ios/shared/chrome/browser/coordinator_context",
     "//testing/gtest",
   ]
 }

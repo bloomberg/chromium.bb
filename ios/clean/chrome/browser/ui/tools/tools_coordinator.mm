@@ -32,9 +32,9 @@
   self.menuViewController.modalPresentationStyle = UIModalPresentationCustom;
   self.menuViewController.transitioningDelegate = self;
 
-  [self.baseViewController presentViewController:self.menuViewController
-                                        animated:self.context.animated
-                                      completion:nil];
+  [self.context.baseViewController presentViewController:self.menuViewController
+                                                animated:self.context.animated
+                                              completion:nil];
 }
 
 - (void)stop {

@@ -34,9 +34,9 @@
   // Reminder: this is a no-op if |baseViewController| is nil, for example
   // when this coordinator's view controller will be contained instead of
   // presented.
-  [self.baseViewController presentViewController:self.viewController
-                                        animated:self.context.animated
-                                      completion:nil];
+  [self.context.baseViewController presentViewController:self.viewController
+                                                animated:self.context.animated
+                                              completion:nil];
 }
 
 @end

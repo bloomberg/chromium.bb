@@ -33,9 +33,9 @@
   self.viewController = [[ToolbarViewController alloc] init];
   self.viewController.toolbarCommandHandler = self;
 
-  [self.baseViewController presentViewController:self.viewController
-                                        animated:self.context.animated
-                                      completion:nil];
+  [self.context.baseViewController presentViewController:self.viewController
+                                                animated:self.context.animated
+                                              completion:nil];
 }
 
 #pragma mark - CRWWebStateObserver

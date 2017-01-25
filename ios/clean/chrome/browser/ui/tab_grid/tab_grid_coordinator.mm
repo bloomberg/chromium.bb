@@ -66,9 +66,9 @@
   // |baseViewController| is nullable, so this is by design a no-op if it hasn't
   // been set. This may be true in a unit test, or if this coordinator is being
   // used as a root coordinator.
-  [self.baseViewController presentViewController:self.viewController
-                                        animated:self.context.animated
-                                      completion:nil];
+  [self.context.baseViewController presentViewController:self.viewController
+                                                animated:self.context.animated
+                                              completion:nil];
 }
 
 #pragma mark - TabGridDataSource

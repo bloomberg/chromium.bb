@@ -53,7 +53,7 @@ const BOOL kUseBottomToolbar = NO;
   [self addChildCoordinator:webCoordinator];
   // Unset the base view controller, so |webCoordinator| doesn't present its
   // view controller.
-  webCoordinator.baseViewController = nil;
+  webCoordinator.context.baseViewController = nil;
   [webCoordinator start];
 
   ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
@@ -64,15 +64,15 @@ const BOOL kUseBottomToolbar = NO;
       self.webMediator.webState, toolbarCoordinator);
   // Unset the base view controller, so |toolbarCoordinator| doesn't present
   // its view controller.
-  toolbarCoordinator.baseViewController = nil;
+  toolbarCoordinator.context.baseViewController = nil;
   [toolbarCoordinator start];
 
   self.viewController.toolbarViewController = toolbarCoordinator.viewController;
   self.viewController.contentViewController = webCoordinator.viewController;
 
-  [self.baseViewController presentViewController:self.viewController
-                                        animated:self.context.animated
-                                      completion:nil];
+  [self.context.baseViewController presentViewController:self.viewController
+                                                animated:self.context.animated
+                                              completion:nil];
 }
 
 - (void)stop {
