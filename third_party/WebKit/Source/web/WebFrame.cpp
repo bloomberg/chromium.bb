@@ -342,7 +342,6 @@ ALWAYS_INLINE void WebFrame::clearWeakFramesImpl(VisitorDispatcher visitor) {
   }
 
 DEFINE_VISITOR_METHOD(Visitor*)
-DEFINE_VISITOR_METHOD(InlinedGlobalMarkingVisitor)
 
 #undef DEFINE_VISITOR_METHOD
 

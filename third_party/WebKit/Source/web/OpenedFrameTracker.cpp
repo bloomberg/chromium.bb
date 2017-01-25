@@ -45,8 +45,5 @@ ALWAYS_INLINE void OpenedFrameTracker::traceFramesImpl(
 void OpenedFrameTracker::traceFrames(Visitor* visitor) {
   traceFramesImpl(visitor);
 }
-void OpenedFrameTracker::traceFrames(InlinedGlobalMarkingVisitor visitor) {
-  traceFramesImpl(visitor);
-}
 
 }  // namespace blink

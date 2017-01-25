@@ -354,6 +354,13 @@ inline bool isPageHeaderAddress(Address address) {
   return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) -
            blinkGuardPageSize);
 }
+
+// Callback used for unit testing the marking of conservative pointers
+// (checkAndMarkPointer().) For each pointer that has been discovered
+// to point to a heap object, the callback is invoked with a pointer
+// to its header. If the callback returns |true|, the object will not
+// be marked.
+using MarkedPointerCallbackForTesting = bool (*)(HeapObjectHeader*);
 #endif
 
 // BasePage is a base class for NormalPage and LargeObjectPage.
@@ -408,6 +415,11 @@ class BasePage {
   // conservatively mark all objects that could be referenced from
   // the stack.
   virtual void checkAndMarkPointer(Visitor*, Address) = 0;
+#if DCHECK_IS_ON()
+  virtual void checkAndMarkPointer(Visitor*,
+                                   Address,
+                                   MarkedPointerCallbackForTesting) = 0;
+#endif
   virtual void markOrphaned();
 
   class HeapSnapshotInfo {
@@ -489,6 +501,11 @@ class NormalPage final : public BasePage {
   void poisonUnmarkedObjects() override;
 #endif
   void checkAndMarkPointer(Visitor*, Address) override;
+#if DCHECK_IS_ON()
+  void checkAndMarkPointer(Visitor*,
+                           Address,
+                           MarkedPointerCallbackForTesting) override;
+#endif
   void markOrphaned() override;
 
   void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
@@ -567,6 +584,11 @@ class LargeObjectPage final : public BasePage {
   void poisonUnmarkedObjects() override;
 #endif
   void checkAndMarkPointer(Visitor*, Address) override;
+#if DCHECK_IS_ON()
+  void checkAndMarkPointer(Visitor*,
+                           Address,
+                           MarkedPointerCallbackForTesting) override;
+#endif
   void markOrphaned() override;
 
   void takeSnapshot(base::trace_event::MemoryAllocatorDump*,

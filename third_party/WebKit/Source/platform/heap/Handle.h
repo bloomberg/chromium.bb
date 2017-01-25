@@ -33,12 +33,12 @@
 
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapAllocator.h"
-#include "platform/heap/InlinedGlobalMarkingVisitor.h"
 #include "platform/heap/Member.h"
 #include "platform/heap/Persistent.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/TraceTraits.h"
 #include "platform/heap/Visitor.h"
+#include "platform/heap/VisitorImpl.h"
 #include "wtf/Allocator.h"
 
 #if defined(LEAK_SANITIZER)

@@ -305,60 +305,6 @@ class TestGCScope {
   bool m_parkedAllThreads;  // False if we fail to park all threads
 };
 
-#define DEFINE_VISITOR_METHODS(Type)                               \
-  void mark(const Type* object, TraceCallback callback) override { \
-    if (object)                                                    \
-      m_count++;                                                   \
-  }                                                                \
-  bool isMarked(const Type*) override { return false; }            \
-  bool ensureMarked(const Type* objectPointer) override {          \
-    return ensureMarked(objectPointer);                            \
-  }
-
-class CountingVisitor : public Visitor {
- public:
-  explicit CountingVisitor(ThreadState* state)
-      : Visitor(state, VisitorMarkingMode::ThreadLocalMarking),
-        m_scope(&state->heap().stackFrameDepth()),
-        m_count(0) {}
-
-  void mark(const void* object, TraceCallback) override {
-    if (object)
-      m_count++;
-  }
-
-  void markHeader(HeapObjectHeader* header, TraceCallback callback) override {
-    ASSERT(header->payload());
-    m_count++;
-  }
-
-  void registerDelayedMarkNoTracing(const void*) override {}
-  void registerWeakMembers(const void*, const void*, WeakCallback) override {}
-  void registerWeakTable(const void*,
-                         EphemeronCallback,
-                         EphemeronCallback) override {}
-#if DCHECK_IS_ON()
-  bool weakTableRegistered(const void*) override { return false; }
-#endif
-  void registerWeakCellWithCallback(void**, WeakCallback) override {}
-  bool ensureMarked(const void* objectPointer) override {
-    if (!objectPointer ||
-        HeapObjectHeader::fromPayload(objectPointer)->isMarked())
-      return false;
-    markNoTracing(objectPointer);
-    return true;
-  }
-
-  size_t count() { return m_count; }
-  void reset() { m_count = 0; }
-
- private:
-  StackFrameDepthScope m_scope;
-  size_t m_count;
-};
-
-#undef DEFINE_VISITOR_METHODS
-
 class SimpleObject : public GarbageCollected<SimpleObject> {
  public:
   static SimpleObject* create() { return new SimpleObject(); }
@@ -1019,58 +965,6 @@ class RefCountedAndGarbageCollected2
 };
 
 int RefCountedAndGarbageCollected2::s_destructorCalls = 0;
-
-#define DEFINE_VISITOR_METHODS(Type)                               \
-  void mark(const Type* object, TraceCallback callback) override { \
-    mark(object);                                                  \
-  }
-
-class RefCountedGarbageCollectedVisitor : public CountingVisitor {
- public:
-  RefCountedGarbageCollectedVisitor(ThreadState* state,
-                                    int expected,
-                                    void** objects)
-      : CountingVisitor(state),
-        m_count(0),
-        m_expectedCount(expected),
-        m_expectedObjects(objects) {}
-
-  void mark(const void* ptr) { markNoTrace(ptr); }
-
-  virtual void markNoTrace(const void* ptr) {
-    if (!ptr)
-      return;
-    if (m_count < m_expectedCount)
-      EXPECT_TRUE(expectedObject(ptr));
-    else
-      EXPECT_FALSE(expectedObject(ptr));
-    m_count++;
-  }
-
-  void mark(const void* ptr, TraceCallback) override { mark(ptr); }
-
-  void markHeader(HeapObjectHeader* header, TraceCallback callback) override {
-    mark(header->payload());
-  }
-
-  bool validate() { return m_count >= m_expectedCount; }
-  void reset() { m_count = 0; }
-
- private:
-  bool expectedObject(const void* ptr) {
-    for (int i = 0; i < m_expectedCount; i++) {
-      if (m_expectedObjects[i] == ptr)
-        return true;
-    }
-    return false;
-  }
-
-  int m_count;
-  int m_expectedCount;
-  void** m_expectedObjects;
-};
-
-#undef DEFINE_VISITOR_METHODS
 
 class Weak : public Bar {
  public:
@@ -3745,69 +3639,6 @@ TEST(HeapTest, RefCountedGarbageCollected) {
   EXPECT_EQ(2, RefCountedAndGarbageCollected::s_destructorCalls);
 }
 
-TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers) {
-  RefCountedAndGarbageCollected::s_destructorCalls = 0;
-  RefCountedAndGarbageCollected2::s_destructorCalls = 0;
-  {
-    RefCountedAndGarbageCollected* pointer1 = 0;
-    RefCountedAndGarbageCollected2* pointer2 = 0;
-    {
-      Persistent<RefCountedAndGarbageCollected> object1 =
-          RefCountedAndGarbageCollected::create();
-      Persistent<RefCountedAndGarbageCollected2> object2 =
-          RefCountedAndGarbageCollected2::create();
-      pointer1 = object1.get();
-      pointer2 = object2.get();
-      void* objects[2] = {object1.get(), object2.get()};
-      ThreadState::GCForbiddenScope gcScope(ThreadState::current());
-      RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 2,
-                                                objects);
-      ThreadState::current()->visitPersistents(&visitor);
-      EXPECT_TRUE(visitor.validate());
-    }
-    conservativelyCollectGarbage();
-    EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
-    EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
-
-    conservativelyCollectGarbage();
-    EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
-    EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
-
-    {
-      // At this point, the reference counts of object1 and object2 are 0.
-      // Only pointer1 and pointer2 keep references to object1 and object2.
-      void* objects[] = {0};
-      ThreadState::GCForbiddenScope gcScope(ThreadState::current());
-      RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 0,
-                                                objects);
-      ThreadState::current()->visitPersistents(&visitor);
-      EXPECT_TRUE(visitor.validate());
-    }
-
-    {
-      Persistent<RefCountedAndGarbageCollected> object1(pointer1);
-      Persistent<RefCountedAndGarbageCollected2> object2(pointer2);
-      void* objects[2] = {object1.get(), object2.get()};
-      ThreadState::GCForbiddenScope gcScope(ThreadState::current());
-      RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 2,
-                                                objects);
-      ThreadState::current()->visitPersistents(&visitor);
-      EXPECT_TRUE(visitor.validate());
-    }
-    conservativelyCollectGarbage();
-    EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
-    EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
-
-    conservativelyCollectGarbage();
-    EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
-    EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
-  }
-
-  preciselyCollectGarbage();
-  EXPECT_EQ(1, RefCountedAndGarbageCollected::s_destructorCalls);
-  EXPECT_EQ(1, RefCountedAndGarbageCollected2::s_destructorCalls);
-}
-
 TEST(HeapTest, WeakMembers) {
   Bar::s_live = 0;
   {
@@ -3911,7 +3742,21 @@ TEST(HeapTest, Comparisons) {
   EXPECT_TRUE(barPersistent == fooPersistent);
 }
 
+#if DCHECK_IS_ON()
+namespace {
+
+static size_t s_checkMarkCount = 0;
+
+bool reportMarkedPointer(HeapObjectHeader*) {
+  s_checkMarkCount++;
+  // Do not try to mark the located heap object.
+  return true;
+}
+}
+#endif
+
 TEST(HeapTest, CheckAndMarkPointer) {
+#if DCHECK_IS_ON()
   ThreadHeap& heap = ThreadState::current()->heap();
   clearOutOldGarbage();
 
@@ -3939,20 +3784,25 @@ TEST(HeapTest, CheckAndMarkPointer) {
   {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
     ThreadState::GCForbiddenScope gcScope(ThreadState::current());
-    CountingVisitor visitor(ThreadState::current());
+    Visitor visitor(ThreadState::current(),
+                    VisitorMarkingMode::ThreadLocalMarking);
     EXPECT_TRUE(scope.allThreadsParked());  // Fail the test if we could not
                                             // park all threads.
     heap.flushHeapDoesNotContainCache();
     for (size_t i = 0; i < objectAddresses.size(); i++) {
-      EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, objectAddresses[i]));
-      EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, endAddresses[i]));
+      EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, objectAddresses[i],
+                                           reportMarkedPointer));
+      EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, endAddresses[i],
+                                           reportMarkedPointer));
     }
-    EXPECT_EQ(objectAddresses.size() * 2, visitor.count());
-    visitor.reset();
-    EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, largeObjectAddress));
-    EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, largeObjectEndAddress));
-    EXPECT_EQ(2ul, visitor.count());
-    visitor.reset();
+    EXPECT_EQ(objectAddresses.size() * 2, s_checkMarkCount);
+    s_checkMarkCount = 0;
+    EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, largeObjectAddress,
+                                         reportMarkedPointer));
+    EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, largeObjectEndAddress,
+                                         reportMarkedPointer));
+    EXPECT_EQ(2ul, s_checkMarkCount);
+    s_checkMarkCount = 0ul;
   }
   // This forces a GC without stack scanning which results in the objects
   // being collected. This will also rebuild the above mentioned freelists,
@@ -3961,7 +3811,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
   {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
     ThreadState::GCForbiddenScope gcScope(ThreadState::current());
-    CountingVisitor visitor(ThreadState::current());
+    Visitor visitor(ThreadState::current(),
+                    VisitorMarkingMode::ThreadLocalMarking);
     EXPECT_TRUE(scope.allThreadsParked());
     heap.flushHeapDoesNotContainCache();
     for (size_t i = 0; i < objectAddresses.size(); i++) {
@@ -3972,17 +3823,20 @@ TEST(HeapTest, CheckAndMarkPointer) {
       // whether it points at a valid object (this ensures the
       // correctness of the page-based on-heap address caches), so we
       // can't make that assert.
-      heap.checkAndMarkPointer(&visitor, objectAddresses[i]);
-      heap.checkAndMarkPointer(&visitor, endAddresses[i]);
+      heap.checkAndMarkPointer(&visitor, objectAddresses[i],
+                               reportMarkedPointer);
+      heap.checkAndMarkPointer(&visitor, endAddresses[i], reportMarkedPointer);
     }
-    EXPECT_EQ(0ul, visitor.count());
-    heap.checkAndMarkPointer(&visitor, largeObjectAddress);
-    heap.checkAndMarkPointer(&visitor, largeObjectEndAddress);
-    EXPECT_EQ(0ul, visitor.count());
+    EXPECT_EQ(0ul, s_checkMarkCount);
+    heap.checkAndMarkPointer(&visitor, largeObjectAddress, reportMarkedPointer);
+    heap.checkAndMarkPointer(&visitor, largeObjectEndAddress,
+                             reportMarkedPointer);
+    EXPECT_EQ(0ul, s_checkMarkCount);
   }
   // This round of GC is important to make sure that the object start
   // bitmap are cleared out and that the free lists are rebuild.
   clearOutOldGarbage();
+#endif
 }
 
 TEST(HeapTest, PersistentHeapCollectionTypes) {
@@ -5625,45 +5479,6 @@ class PartObject {
  private:
   Member<SimpleObject> m_obj;
 };
-
-TEST(HeapTest, TraceIfNeeded) {
-  ThreadState::GCForbiddenScope scope(ThreadState::current());
-  CountingVisitor visitor(ThreadState::current());
-
-  {
-    TraceIfNeededTester<RefPtr<OffHeapInt>>* m_offHeap =
-        TraceIfNeededTester<RefPtr<OffHeapInt>>::create(OffHeapInt::create(42));
-    visitor.reset();
-    m_offHeap->trace(&visitor);
-    EXPECT_EQ(0u, visitor.count());
-  }
-
-  {
-    TraceIfNeededTester<PartObject>* m_part =
-        TraceIfNeededTester<PartObject>::create();
-    visitor.reset();
-    m_part->trace(&visitor);
-    EXPECT_EQ(1u, visitor.count());
-  }
-
-  {
-    TraceIfNeededTester<Member<SimpleObject>>* m_obj =
-        TraceIfNeededTester<Member<SimpleObject>>::create(
-            Member<SimpleObject>(SimpleObject::create()));
-    visitor.reset();
-    m_obj->trace(&visitor);
-    EXPECT_EQ(1u, visitor.count());
-  }
-
-  {
-    TraceIfNeededTester<HeapVector<Member<SimpleObject>>>* m_vec =
-        TraceIfNeededTester<HeapVector<Member<SimpleObject>>>::create();
-    m_vec->obj().push_back(SimpleObject::create());
-    visitor.reset();
-    m_vec->trace(&visitor);
-    EXPECT_EQ(2u, visitor.count());
-  }
-}
 
 class AllocatesOnAssignment {
  public:

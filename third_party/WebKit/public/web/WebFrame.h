@@ -439,9 +439,7 @@ class WebFrame {
   bool inShadowTree() const { return m_scope == WebTreeScopeType::Shadow; }
 
   static void traceFrames(Visitor*, WebFrame*);
-  static void traceFrames(InlinedGlobalMarkingVisitor, WebFrame*);
   void clearWeakFrames(Visitor*);
-  void clearWeakFrames(InlinedGlobalMarkingVisitor);
 #endif
 
  protected:
@@ -460,7 +458,6 @@ class WebFrame {
   friend class WebFrameTest;
 
   static void traceFrame(Visitor*, WebFrame*);
-  static void traceFrame(InlinedGlobalMarkingVisitor, WebFrame*);
   static bool isFrameAlive(const WebFrame*);
 
   template <typename VisitorDispatcher>

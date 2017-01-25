@@ -181,18 +181,6 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reset() {
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(
     Visitor* visitor) {
-  traceImpl(visitor);
-}
-template <typename HolderType, typename ResolvedType, typename RejectedType>
-void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(
-    InlinedGlobalMarkingVisitor visitor) {
-  traceImpl(visitor);
-}
-
-template <typename HolderType, typename ResolvedType, typename RejectedType>
-template <typename VisitorDispatcher>
-void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::traceImpl(
-    VisitorDispatcher visitor) {
   TraceIfNeeded<HolderType>::trace(visitor, m_holder);
   TraceIfNeeded<ResolvedType>::trace(visitor, m_resolved);
   TraceIfNeeded<RejectedType>::trace(visitor, m_rejected);

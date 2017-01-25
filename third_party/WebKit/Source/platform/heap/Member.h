@@ -434,8 +434,7 @@ class WeakMember : public MemberBase<T, TracenessMemberConfiguration::Traced> {
  private:
   T** cell() const { return const_cast<T**>(&this->m_raw); }
 
-  template <typename Derived>
-  friend class VisitorHelper;
+  friend class Visitor;
 };
 
 // UntracedMember is a pointer to an on-heap object that is not traced for some

@@ -36,7 +36,6 @@
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/HeapCompact.h"
-#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
 #include "platform/heap/PagePool.h"
 #include "platform/heap/SafePoint.h"
@@ -1700,12 +1699,27 @@ static void markPointer(Visitor* visitor, HeapObjectHeader* header) {
 }
 
 void NormalPage::checkAndMarkPointer(Visitor* visitor, Address address) {
-  ASSERT(contains(address));
+#if DCHECK_IS_ON()
+  DCHECK(contains(address));
+#endif
   HeapObjectHeader* header = findHeaderFromAddress(address);
   if (!header || header->isDead())
     return;
   markPointer(visitor, header);
 }
+
+#if DCHECK_IS_ON()
+void NormalPage::checkAndMarkPointer(Visitor* visitor,
+                                     Address address,
+                                     MarkedPointerCallbackForTesting callback) {
+  DCHECK(contains(address));
+  HeapObjectHeader* header = findHeaderFromAddress(address);
+  if (!header || header->isDead())
+    return;
+  if (!callback(header))
+    markPointer(visitor, header);
+}
+#endif
 
 void NormalPage::markOrphaned() {
 // Zap the payload with a recognizable value to detect any incorrect
@@ -1827,11 +1841,26 @@ void LargeObjectPage::poisonUnmarkedObjects() {
 #endif
 
 void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address) {
-  ASSERT(contains(address));
+#if DCHECK_IS_ON()
+  DCHECK(contains(address));
+#endif
   if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
     return;
   markPointer(visitor, heapObjectHeader());
 }
+
+#if DCHECK_IS_ON()
+void LargeObjectPage::checkAndMarkPointer(
+    Visitor* visitor,
+    Address address,
+    MarkedPointerCallbackForTesting callback) {
+  DCHECK(contains(address));
+  if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
+    return;
+  if (!callback(heapObjectHeader()))
+    markPointer(visitor, heapObjectHeader());
+}
+#endif
 
 void LargeObjectPage::markOrphaned() {
   // Zap the payload with a recognizable value to detect any incorrect

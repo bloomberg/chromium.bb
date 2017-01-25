@@ -36,7 +36,6 @@
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/HeapCompact.h"
-#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
 #include "platform/heap/PagePool.h"
 #include "platform/heap/SafePoint.h"
@@ -315,6 +314,30 @@ Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address) {
 #endif
   return nullptr;
 }
+
+#if DCHECK_IS_ON()
+// To support unit testing of the marking of off-heap root references
+// into the heap, provide a checkAndMarkPointer() version with an
+// extra notification argument.
+Address ThreadHeap::checkAndMarkPointer(
+    Visitor* visitor,
+    Address address,
+    MarkedPointerCallbackForTesting callback) {
+  DCHECK(ThreadState::current()->isInGC());
+
+  if (BasePage* page = lookupPageForAddress(address)) {
+    DCHECK(page->contains(address));
+    DCHECK(!page->orphaned());
+    DCHECK(!m_heapDoesNotContainCache->lookup(address));
+    DCHECK(&visitor->heap() == &page->arena()->getThreadState()->heap());
+    page->checkAndMarkPointer(visitor, address, callback);
+    return address;
+  }
+  if (!m_heapDoesNotContainCache->lookup(address))
+    m_heapDoesNotContainCache->addEntry(address);
+  return nullptr;
+}
+#endif
 
 void ThreadHeap::pushTraceCallback(void* object, TraceCallback callback) {
   ASSERT(ThreadState::current()->isInGC());

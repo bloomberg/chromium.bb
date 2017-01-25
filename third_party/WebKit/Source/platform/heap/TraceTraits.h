@@ -7,7 +7,6 @@
 
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/Heap.h"
-#include "platform/heap/InlinedGlobalMarkingVisitor.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/Visitor.h"
 #include "platform/heap/WrapperVisitor.h"
@@ -202,7 +201,6 @@ class TraceTrait {
 
  public:
   static void trace(Visitor*, void* self);
-  static void trace(InlinedGlobalMarkingVisitor, void* self);
 
   static void markWrapperNoTracing(const WrapperVisitor*, const void*);
   static void traceMarkedWrapper(const WrapperVisitor*, const void*);
@@ -232,18 +230,6 @@ class TraceTrait<const T> : public TraceTrait<T> {};
 
 template <typename T>
 void TraceTrait<T>::trace(Visitor* visitor, void* self) {
-  static_assert(WTF::IsTraceable<T>::value, "T should not be traced");
-  if (visitor->isGlobalMarking()) {
-    // Switch to inlined global marking dispatch.
-    static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(
-        visitor->state(), visitor->getMarkingMode()));
-  } else {
-    static_cast<T*>(self)->trace(visitor);
-  }
-}
-
-template <typename T>
-void TraceTrait<T>::trace(InlinedGlobalMarkingVisitor visitor, void* self) {
   static_assert(WTF::IsTraceable<T>::value, "T should not be traced");
   static_cast<T*>(self)->trace(visitor);
 }

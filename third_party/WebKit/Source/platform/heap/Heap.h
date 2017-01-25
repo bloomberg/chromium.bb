@@ -435,6 +435,11 @@ class PLATFORM_EXPORT ThreadHeap {
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.
   Address checkAndMarkPointer(Visitor*, Address);
+#if DCHECK_IS_ON()
+  Address checkAndMarkPointer(Visitor*,
+                              Address,
+                              MarkedPointerCallbackForTesting);
+#endif
 
   size_t objectPayloadSizeForTesting();
 
@@ -692,14 +697,15 @@ Address ThreadHeap::reallocate(void* previous, size_t size) {
   return address;
 }
 
-template <typename Derived>
 template <typename T>
-void VisitorHelper<Derived>::handleWeakCell(Visitor* self, void* object) {
+void Visitor::handleWeakCell(Visitor* self, void* object) {
   T** cell = reinterpret_cast<T**>(object);
   if (*cell && !ObjectAliveTrait<T>::isHeapObjectAlive(*cell))
     *cell = nullptr;
 }
 
 }  // namespace blink
+
+#include "platform/heap/VisitorImpl.h"
 
 #endif  // Heap_h

@@ -14,7 +14,6 @@ namespace blink {
 
 template <typename T>
 class GarbageCollected;
-class InlinedGlobalMarkingVisitor;
 class TraceWrapperBase;
 
 // GC_PLUGIN_IGNORE is used to make the plugin ignore a particular class or
@@ -73,8 +72,6 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
   typedef int IsGarbageCollectedMixinMarker;
   virtual void adjustAndMark(Visitor*) const = 0;
   virtual void trace(Visitor*) {}
-  virtual void adjustAndMark(InlinedGlobalMarkingVisitor) const = 0;
-  virtual void trace(InlinedGlobalMarkingVisitor);
   virtual bool isHeapObjectAlive() const = 0;
 };
 
@@ -155,8 +152,6 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 #define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                                  \
   IS_GARBAGE_COLLECTED_TYPE();                                               \
   DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE)              \
-  DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, \
-                                         TYPE)                               \
   DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)                    \
  public:                                                                     \
   bool isHeapObjectAlive() const override {                                  \
