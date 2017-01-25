@@ -22,12 +22,10 @@
         display: block;
         height: 100%;
         overflow: hidden;
-        z-index: 0;
       }
 
       history-toolbar {
         background: var(--md-toolbar-color);
-        z-index: 2;
       }
 
       /* Sizing this with flex causes slow load performance, see
@@ -35,7 +33,6 @@
       #main-container {
         height: calc(100% - var(--toolbar-height));
         position: relative;
-        z-index: 1;
       }
 
       :host([grouped_]) #main-container {

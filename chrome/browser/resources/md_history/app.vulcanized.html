@@ -2293,17 +2293,22 @@ cr-toolbar {
         width: 20px;
 }
 
-iron-dropdown {
-  margin-top: 28px;
-}
-
-.dropdown-content {
+#sync-notice {
   box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
         background-color: white;
         border-radius: 2px;
         color: var(--primary-text-color);
         overflow: hidden;
         padding: 12px 20px;
+        position: absolute;
+        right: 24px;
+        top: 46px;
+        z-index: 1;
+}
+
+:host-context([dir=rtl]) #sync-notice {
+  right: auto;
+        left: 24px;
 }
 
 :host(:not([has-drawer])) #overlay-wrapper {
@@ -2397,13 +2402,9 @@ paper-tab {
           </template>
         </div>
       </cr-toolbar>
-      <template is="cr-lazy-render" id="syncNotice">
-        <iron-dropdown vertical-align="top" horizontal-align="right" allow-outside-scroll="">
-          <div class="dropdown-content">
-            $i18nRaw{hasSyncedResults}
-          </div>
-        </iron-dropdown>
-      </template>
+      <div id="sync-notice" hidden="[[!syncNoticeVisible_]]">
+        $i18nRaw{hasSyncedResults}
+      </div>
       <template is="dom-if" if="[[itemsSelected_]]">
         <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
           <div id="overlay-buttons">
@@ -3677,18 +3678,15 @@ button.more-vert-button div {
         display: block;
         height: 100%;
         overflow: hidden;
-        z-index: 0;
 }
 
 history-toolbar {
   background: var(--md-toolbar-color);
-        z-index: 2;
 }
 
 #main-container {
   height: calc(100% - var(--toolbar-height));
         position: relative;
-        z-index: 1;
 }
 
 :host([grouped_]) #main-container {
