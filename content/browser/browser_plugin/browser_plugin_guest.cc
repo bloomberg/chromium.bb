@@ -339,10 +339,6 @@ void BrowserPluginGuest::InitInternal(
   *renderer_prefs = *owner_web_contents_->GetMutableRendererPrefs();
   renderer_prefs->user_agent_override = guest_user_agent_override;
 
-  // We would like the guest to report changes to frame names so that we can
-  // update the BrowserPlugin's corresponding 'name' attribute.
-  // TODO(fsamuel): Remove this once http://crbug.com/169110 is addressed.
-  renderer_prefs->report_frame_name_changes = true;
   // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
   // navigations still continue to function inside the app.
   renderer_prefs->browser_handles_all_top_level_requests = false;

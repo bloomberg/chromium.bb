@@ -3163,7 +3163,6 @@ void RenderFrameImpl::willCommitProvisionalLoad(blink::WebLocalFrame* frame) {
 
 void RenderFrameImpl::didChangeName(const blink::WebString& name,
                                     const blink::WebString& unique_name) {
-  // TODO(creis): Remove report_frame_name_changes from RendererPreferences.
   Send(new FrameHostMsg_DidChangeName(
       routing_id_, base::UTF16ToUTF8(base::StringPiece16(name)),
       base::UTF16ToUTF8(base::StringPiece16(unique_name))));

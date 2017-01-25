@@ -114,14 +114,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // The accept-languages of the browser, comma-separated.
   std::string accept_languages;
 
-  // Specifies whether the renderer reports frame name changes to the browser
-  // process.
-  // TODO(fsamuel): This is a short-term workaround to avoid regressing
-  // Sunspider. We need to find an efficient way to report changes to frame
-  // names to the browser process. See http://crbug.com/169110 for more
-  // information.
-  bool report_frame_name_changes;
-
   // How to handle a tap gesture touching multiple targets
   TapMultipleTargetsStrategy tap_multiple_targets_strategy;
 
