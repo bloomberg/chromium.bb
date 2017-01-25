@@ -4,6 +4,11 @@
 
 #include "components/crash/content/app/fallback_crash_handler_win.h"
 
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -116,7 +121,7 @@ class FallbackCrashHandlerWinTest : public testing::Test {
 
   std::string SelfHandleAsString() const {
     return base::UintToString(base::win::HandleToUint32(self_handle_));
-  };
+  }
 
   void CreateDatabase() {
     std::unique_ptr<crashpad::CrashReportDatabase> database =
@@ -128,6 +133,7 @@ class FallbackCrashHandlerWinTest : public testing::Test {
   base::ProcessHandle self_handle_;
   base::ScopedTempDir database_dir_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FallbackCrashHandlerWinTest);
 };
 
@@ -235,6 +241,11 @@ TEST_F(FallbackCrashHandlerWinTest, GenerateCrashDump) {
   EXPECT_NE(0U, int_value);
 
   it = parameters.find("ProcessPeakWorkingSetSize");
+  EXPECT_NE(parameters.end(), it);
+  EXPECT_TRUE(base::StringToUint64(it->second, &int_value));
+  EXPECT_NE(0U, int_value);
+
+  it = parameters.find("ProcessPeakPagefileUsage");
   EXPECT_NE(parameters.end(), it);
   EXPECT_TRUE(base::StringToUint64(it->second, &int_value));
   EXPECT_NE(0U, int_value);

@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -52,6 +54,10 @@ void AcquireMemoryMetrics(const base::Process& process,
     crash_keys->insert(std::make_pair(
         "ProcessPeakWorkingSetSize",
         base::Uint64ToString(process_memory.PeakWorkingSetSize / kPageSize)));
+
+    crash_keys->insert(std::make_pair(
+        "ProcessPeakPagefileUsage",
+        base::Uint64ToString(process_memory.PeakPagefileUsage / kPageSize)));
   }
 
   // Grab system commit memory. Also best effort.
