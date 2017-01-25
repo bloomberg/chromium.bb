@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "components/update_client/updater_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

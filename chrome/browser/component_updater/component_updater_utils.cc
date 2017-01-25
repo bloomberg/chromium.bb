@@ -4,6 +4,9 @@
 
 #include "chrome/browser/component_updater/component_updater_utils.h"
 
+#include "base/files/file_path.h"
+#include "base/path_service.h"
+#include "build/build_config.h"
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
 #endif  // OS_WIN
