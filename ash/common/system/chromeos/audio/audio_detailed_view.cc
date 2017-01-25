@@ -27,6 +27,8 @@ namespace {
 
 base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
   switch (device.type) {
+    case chromeos::AUDIO_TYPE_FRONT_MIC:
+      return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_FRONT_MIC);
     case chromeos::AUDIO_TYPE_HEADPHONE:
       return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_HEADPHONE);
     case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:
@@ -34,6 +36,8 @@ base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
           IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_SPEAKER);
     case chromeos::AUDIO_TYPE_INTERNAL_MIC:
       return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_MIC);
+    case chromeos::AUDIO_TYPE_REAR_MIC:
+      return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_REAR_MIC);
     case chromeos::AUDIO_TYPE_USB:
       return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_AUDIO_USB_DEVICE,
                                         base::UTF8ToUTF16(device.display_name));

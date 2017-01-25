@@ -226,6 +226,10 @@
   </message>
 
   <!-- Status tray audio strings. -->
+  <message name="IDS_ASH_STATUS_TRAY_AUDIO_FRONT_MIC" desc="label used for front microphone">
+    Front Microphone
+  </message>
+
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_HEADPHONE" desc="label used for audio headphone device">
     Headphone
   </message>
@@ -236,6 +240,10 @@
 
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_MIC" desc="label used for internal microphone">
     Microphone (Internal)
+  </message>
+
+  <message name="IDS_ASH_STATUS_TRAY_AUDIO_REAR_MIC" desc="label used for rear microphone">
+    Rear Microphone
   </message>
 
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_USB_DEVICE" desc="label used for usb audio device">
