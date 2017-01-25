@@ -538,10 +538,6 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(startup_filter);
   }
 
-  channel_->AddAssociatedInterface(
-      base::Bind(&ChildThreadImpl::OnRouteProviderRequest,
-                 base::Unretained(this)));
-
   ConnectChannel();
 
   // This must always be done after ConnectChannel, because ConnectChannel() may
@@ -754,6 +750,20 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   return router_.OnMessageReceived(msg);
 }
 
+void ChildThreadImpl::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  if (interface_name == mojom::RouteProvider::Name_) {
+    DCHECK(!route_provider_binding_.is_bound());
+    mojom::RouteProviderAssociatedRequest request;
+    request.Bind(std::move(handle));
+    route_provider_binding_.Bind(std::move(request));
+  } else {
+    LOG(ERROR) << "Request for unknown Channel-associated interface: "
+               << interface_name;
+  }
+}
+
 void ChildThreadImpl::StartServiceManagerConnection() {
   DCHECK(service_manager_connection_);
   service_manager_connection_->Start();
@@ -840,12 +850,6 @@ void ChildThreadImpl::OnProcessFinalRelease() {
 void ChildThreadImpl::EnsureConnected() {
   VLOG(0) << "ChildThreadImpl::EnsureConnected()";
   base::Process::Current().Terminate(0, false);
-}
-
-void ChildThreadImpl::OnRouteProviderRequest(
-    mojom::RouteProviderAssociatedRequest request) {
-  DCHECK(!route_provider_binding_.is_bound());
-  route_provider_binding_.Bind(std::move(request));
 }
 
 void ChildThreadImpl::GetRoute(

@@ -285,7 +285,10 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
 void GpuChildThread::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  associated_interfaces_.BindRequest(name, std::move(handle));
+  if (associated_interfaces_.CanBindRequest(name))
+    associated_interfaces_.BindRequest(name, std::move(handle));
+  else
+    ChildThreadImpl::OnAssociatedInterfaceRequest(name, std::move(handle));
 }
 
 void GpuChildThread::CreateGpuService(

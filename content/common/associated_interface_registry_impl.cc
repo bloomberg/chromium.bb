@@ -14,6 +14,11 @@ AssociatedInterfaceRegistryImpl::AssociatedInterfaceRegistryImpl() {}
 
 AssociatedInterfaceRegistryImpl::~AssociatedInterfaceRegistryImpl() {}
 
+bool AssociatedInterfaceRegistryImpl::CanBindRequest(
+    const std::string& interface_name) const {
+  return interfaces_.find(interface_name) != interfaces_.end();
+}
+
 void AssociatedInterfaceRegistryImpl::BindRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {

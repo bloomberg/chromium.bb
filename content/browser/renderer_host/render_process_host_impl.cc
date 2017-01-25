@@ -1193,10 +1193,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
       service_manager::mojom::kServiceManager_ConnectorSpec);
 
-  channel_->AddAssociatedInterface(
-      base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,
-                 base::Unretained(this)));
-
   channel_->AddAssociatedInterfaceForIOThread(
       base::Bind(&IndexedDBDispatcherHost::AddBinding, indexed_db_factory_));
 
@@ -2065,6 +2061,21 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   return listener->OnMessageReceived(msg);
 }
 
+void RenderProcessHostImpl::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  if (interface_name == mojom::RouteProvider::Name_) {
+    if (route_provider_binding_.is_bound())
+      return;
+    mojom::RouteProviderAssociatedRequest request;
+    request.Bind(std::move(handle));
+    route_provider_binding_.Bind(std::move(request));
+  } else {
+    LOG(ERROR) << "Request for unknown Channel-associated interface: "
+               << interface_name;
+  }
+}
+
 void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   channel_connected_ = true;
   if (IsReady()) {
@@ -2651,13 +2662,6 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   metrics_allocator_->shared_memory()->ShareToProcess(destination, &shm_handle);
   Send(new ChildProcessMsg_SetHistogramMemory(
       shm_handle, metrics_allocator_->shared_memory()->mapped_size()));
-}
-
-void RenderProcessHostImpl::OnRouteProviderRequest(
-    mojom::RouteProviderAssociatedRequest request) {
-  if (route_provider_binding_.is_bound())
-    return;
-  route_provider_binding_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::ProcessDied(bool already_dead,

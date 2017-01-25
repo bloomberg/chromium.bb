@@ -169,14 +169,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
       const std::string& name,
       const GenericAssociatedInterfaceFactory& factory);
 
-  // Adds a generic associated interface factory to bind incoming interface
-  // requests on the ChannelProxy's thread. MUST be called before Init() or
-  // before the remote end of the Channel is able to send messages (e.g. before
-  // its process is launched.)
-  void AddGenericAssociatedInterface(
-      const std::string& name,
-      const GenericAssociatedInterfaceFactory& factory);
-
   template <typename Interface>
   using AssociatedInterfaceFactory =
       base::Callback<void(mojo::AssociatedInterfaceRequest<Interface>)>;
@@ -188,18 +180,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   void AddAssociatedInterfaceForIOThread(
       const AssociatedInterfaceFactory<Interface>& factory) {
     AddGenericAssociatedInterfaceForIOThread(
-        Interface::Name_,
-        base::Bind(&ChannelProxy::BindAssociatedInterfaceRequest<Interface>,
-                   factory));
-  }
-
-  // Helper to bind a ChannelProxy-thread associated interface factory,
-  // inferring the interface name from the callback argument's type. MUST be
-  // called before Init().
-  template <typename Interface>
-  void AddAssociatedInterface(
-      const AssociatedInterfaceFactory<Interface>& factory) {
-    AddGenericAssociatedInterface(
         Interface::Name_,
         base::Bind(&ChannelProxy::BindAssociatedInterfaceRequest<Interface>,
                    factory));
@@ -341,9 +321,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
     mojo::AssociatedGroup* associated_group() { return &associated_group_; }
 
-    void AddGenericAssociatedInterface(
-        const std::string& name,
-        const GenericAssociatedInterfaceFactory& factory);
     void AddGenericAssociatedInterfaceForIOThread(
         const std::string& name,
         const GenericAssociatedInterfaceFactory& factory);
@@ -383,12 +360,12 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
     mojo::AssociatedGroup associated_group_;
 
-    // Holds associated interface binders added by AddGenericAssociatedInterface
-    // or AddGenericAssociatedInterfaceForIOThread until the underlying channel
-    // has been initialized.
-    base::Lock pending_interfaces_lock_;
+    // Holds associated interface binders added by
+    // AddGenericAssociatedInterfaceForIOThread until the underlying channel has
+    // been initialized.
+    base::Lock pending_io_thread_interfaces_lock_;
     std::vector<std::pair<std::string, GenericAssociatedInterfaceFactory>>
-        pending_interfaces_;
+        pending_io_thread_interfaces_;
   };
 
   Context* context() { return context_.get(); }

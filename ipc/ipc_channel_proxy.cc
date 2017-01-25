@@ -27,17 +27,6 @@
 
 namespace IPC {
 
-namespace {
-
-void BindAssociatedInterfaceOnTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const ChannelProxy::GenericAssociatedInterfaceFactory& factory,
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  task_runner->PostTask(FROM_HERE, base::Bind(factory, base::Passed(&handle)));
-}
-
-}  // namespace
-
 //------------------------------------------------------------------------------
 
 ChannelProxy::Context::Context(
@@ -81,9 +70,9 @@ void ChannelProxy::Context::CreateChannel(
     associated_group_ = *support->GetAssociatedGroup();
 
     base::AutoLock l(pending_filters_lock_);
-    for (auto& entry : pending_interfaces_)
+    for (auto& entry : pending_io_thread_interfaces_)
       support->AddGenericAssociatedInterface(entry.first, entry.second);
-    pending_interfaces_.clear();
+    pending_io_thread_interfaces_.clear();
   }
 }
 
@@ -388,21 +377,13 @@ void ChannelProxy::Context::ClearChannel() {
   associated_group_ = mojo::AssociatedGroup();
 }
 
-void ChannelProxy::Context::AddGenericAssociatedInterface(
-    const std::string& name,
-    const GenericAssociatedInterfaceFactory& factory) {
-  AddGenericAssociatedInterfaceForIOThread(
-      name, base::Bind(&BindAssociatedInterfaceOnTaskRunner,
-                       listener_task_runner_, factory));
-}
-
 void ChannelProxy::Context::AddGenericAssociatedInterfaceForIOThread(
     const std::string& name,
     const GenericAssociatedInterfaceFactory& factory) {
   base::AutoLock l(channel_lifetime_lock_);
   if (!channel_) {
     base::AutoLock l(pending_filters_lock_);
-    pending_interfaces_.emplace_back(name, factory);
+    pending_io_thread_interfaces_.emplace_back(name, factory);
     return;
   }
   Channel::AssociatedInterfaceSupport* support =
@@ -583,12 +564,6 @@ void ChannelProxy::RemoveFilter(MessageFilter* filter) {
   context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_,
                             base::RetainedRef(filter)));
-}
-
-void ChannelProxy::AddGenericAssociatedInterface(
-    const std::string& name,
-    const GenericAssociatedInterfaceFactory& factory) {
-  context()->AddGenericAssociatedInterface(name, factory);
 }
 
 void ChannelProxy::AddGenericAssociatedInterfaceForIOThread(

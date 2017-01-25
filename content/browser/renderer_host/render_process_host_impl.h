@@ -186,6 +186,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // IPC::Listener via RenderProcessHost.
   bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
   void OnBadMessageReceived(const IPC::Message& message) override;
@@ -370,8 +373,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Handle termination of our process.
   void ProcessDied(bool already_dead, RendererClosedDetails* known_details);
-
-  void OnRouteProviderRequest(mojom::RouteProviderAssociatedRequest request);
 
   // GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
