@@ -2040,6 +2040,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_NAME,
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPayIntegrationV2)},
+    {"enable-web-payments-single-app-ui-skip",
+     IDS_FLAGS_ENABLE_WEB_PAYMENTS_SINGLE_APP_UI_SKIP_NAME,
+     IDS_FLAGS_ENABLE_WEB_PAYMENTS_SINGLE_APP_UI_SKIP_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kWebPaymentsSingleAppUiSkip)},
     {"android-payment-apps", IDS_FLAGS_ANDROID_PAYMENT_APPS_NAME,
      IDS_FLAGS_ANDROID_PAYMENT_APPS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPaymentApps)},
@@ -2209,7 +2213,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_CHROMEOS)
-     {"enable-touchscreen-calibration", IDS_FLAGS_TOUCHSCREEN_CALIBRATION_NAME,
+    {"enable-touchscreen-calibration", IDS_FLAGS_TOUCHSCREEN_CALIBRATION_NAME,
      IDS_FLAGS_TOUCHSCREEN_CALIBRATION_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchCalibrationSetting)},
 #endif // defined(OS_CHROMEOS)

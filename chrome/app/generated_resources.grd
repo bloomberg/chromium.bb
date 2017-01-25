@@ -15354,6 +15354,12 @@ read aloud to screenreader users to announce that a completion is available.">
       <message name="IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_DESCRIPTION" desc="Description for the flag to enable the second version of Android Pay integration" translateable="false">
         Enable integration with Android Pay using the second version of the API
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEB_PAYMENTS_SINGLE_APP_UI_SKIP_NAME" desc="Name of the flag to enable the Web Payments to skip UI" translateable="false">
+        Enable Web Payments single app UI skip
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEB_PAYMENTS_SINGLE_APP_UI_SKIP_DESCRIPTION" desc="Description for the flag to enable the Web Payments to skip UI" translateable="false">
+        Enable Web Payments to skip showing its UI if the developer specifies a single app.
+      </message>
       <message name="IDS_FLAGS_ANDROID_PAYMENT_APPS_NAME" desc="Name of the flag to enable third party Android payment apps" translateable="false">
         Android payment apps
       </message>

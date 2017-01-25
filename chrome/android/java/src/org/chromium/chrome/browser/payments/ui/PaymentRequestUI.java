@@ -511,9 +511,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 updatePayButtonEnabled();
 
                 // Hide the loading indicators and show the real sections.
-                mPaymentContainer.setVisibility(View.VISIBLE);
-                mButtonBar.setVisibility(View.VISIBLE);
-                mRequestView.removeView(mSpinnyLayout);
+                changeSpinnerVisibility(false);
                 mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
             }
         });
@@ -533,6 +531,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private void prepareRequestView(
             Activity activity, String title, String origin, boolean canAddCards) {
         mSpinnyLayout = mRequestView.findViewById(R.id.payment_request_spinny);
+        assert mSpinnyLayout.getVisibility() == View.VISIBLE;
+        mIsShowingSpinner = true;
 
         // Indicate that we're preparing the dialog for display.
         TextView messageView = (TextView) mRequestView.findViewById(R.id.message);
@@ -890,6 +890,16 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
+     *  Called to show the processing message after instrument details have been loaded
+     *  in the case the payment request UI has been skipped.
+     */
+    public void showProcessingMessageAfterUiSkip() {
+        // Button was clicked before but not marked as clicked because we skipped the UI.
+        mIsProcessingPayClicked = true;
+        showProcessingMessage();
+    }
+
+    /**
      * Called when the user has clicked on pay. The message is shown while the payment information
      * is processed right until a confimation from the merchant is received.
      */
@@ -910,9 +920,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mIsShowingSpinner = showSpinner;
 
         if (showSpinner) {
-            mRequestView.removeView(mPaymentContainer);
-            mRequestView.removeView(mButtonBar);
-            mRequestView.addView(mSpinnyLayout);
+            mPaymentContainer.setVisibility(View.GONE);
+            mButtonBar.setVisibility(View.GONE);
+            mSpinnyLayout.setVisibility(View.VISIBLE);
 
             // Turn the bottom sheet back into a collapsed bottom sheet showing only the spinner.
             // TODO(dfalcantara): Animate this: https://crbug.com/621955
@@ -920,9 +930,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     LayoutParams.WRAP_CONTENT;
             mRequestView.requestLayout();
         } else {
-            mRequestView.removeView(mSpinnyLayout);
-            mRequestView.addView(mPaymentContainer);
-            mRequestView.addView(mButtonBar);
+            mPaymentContainer.setVisibility(View.VISIBLE);
+            mButtonBar.setVisibility(View.VISIBLE);
+            mSpinnyLayout.setVisibility(View.GONE);
 
             if (mIsShowingEditDialog) {
                 ((FrameLayout.LayoutParams) mRequestView.getLayoutParams()).height =

@@ -36,6 +36,7 @@ extern const base::Feature kTabsInCBD;
 extern const base::Feature kTabReparenting;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kWebPaymentsModifiers;
+extern const base::Feature kWebPaymentsSingleAppUiSkip;
 
 bool RegisterChromeFeatureListJni(JNIEnv* env);
 

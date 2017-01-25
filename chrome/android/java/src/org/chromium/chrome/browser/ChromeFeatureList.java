@@ -77,6 +77,7 @@ public abstract class ChromeFeatureList {
     public static final String VR_SHELL = "VrShell";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
+    public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
 
     private static native boolean nativeIsEnabled(String featureName);
 }

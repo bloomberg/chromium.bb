@@ -23,7 +23,9 @@ import java.util.Set;
 public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
     private static final String ACTION_IS_READY_TO_PAY =
             "org.chromium.intent.action.IS_READY_TO_PAY";
-    private static final String METHOD_PREFIX = "https://";
+
+    /** Prefix of all method names that can be constructed using this factory. */
+    static final String METHOD_PREFIX = "https://";
 
     /** The action name for the Pay Basic-card Intent. */
     private static final String ACTION_PAY_BASIC_CARD = "org.chromium.intent.action.PAY_BASIC_CARD";
