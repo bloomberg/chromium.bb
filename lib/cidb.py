@@ -1250,10 +1250,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       start_time, finish_time, platform_version, full_version, status,
       important, buildbucket_id].
     """
-    # TODO(akeshet): Unify this with BUILD_STATUS_KEYS
-    columns = ['id', 'build_config', 'buildbot_generation', 'waterfall',
-               'build_number', 'start_time', 'finish_time', 'platform_version',
-               'full_version', 'status', 'important', 'buildbucket_id']
+    # TODO(akeshet): Unify this with BUILD_STATUS_KEYS (see comments:)
+    columns = ['id', 'build_config', 'start_time', 'finish_time', 'status',
+               'waterfall', 'build_number', # missing builder_name
+               'platform_version', 'full_version', # missing milestone_version
+               'important', 'buildbucket_id', # mising summary
+               'buildbot_generation' # extra
+               ]
 
     where_clauses = ['build_config = "%s"' % build_config]
     if start_date is not None:
