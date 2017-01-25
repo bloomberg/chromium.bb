@@ -609,7 +609,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   BUILD_STATUS_KEYS = (
       'id', 'build_config', 'start_time', 'finish_time', 'status', 'waterfall',
       'build_number', 'builder_name', 'platform_version', 'full_version',
-      'milestone_version', 'important', 'buildbucket_id', 'summary')
+      'milestone_version', 'important', 'buildbucket_id', 'summary',
+      'buildbot_generation')
 
   def __init__(self, db_credentials_dir, *args, **kwargs):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
@@ -1255,7 +1256,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                'waterfall', 'build_number', # missing builder_name
                'platform_version', 'full_version', # missing milestone_version
                'important', 'buildbucket_id', # mising summary
-               'buildbot_generation' # extra
+               'buildbot_generation'
                ]
 
     where_clauses = ['build_config = "%s"' % build_config]
