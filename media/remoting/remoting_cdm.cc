@@ -7,6 +7,7 @@
 #include "media/base/cdm_promise.h"
 
 namespace media {
+namespace remoting {
 
 // TODO(xjz): Merge this with erickung's implementation.
 RemotingCdm::RemotingCdm(
@@ -74,8 +75,5 @@ CdmContext* RemotingCdm::GetCdmContext() {
   return &remoting_cdm_context_;
 }
 
-RemotingSourceImpl* RemotingCdm::GetRemotingSource() {
-  return remoting_cdm_controller_->remoting_source();
-}
-
+}  // namespace remoting
 }  // namespace media

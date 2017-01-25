@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/rpc/rpc_broker.h"
+#include "media/remoting/rpc_broker.h"
 
 #include <utility>
 
@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream& out, const pb::RpcMessage& message) {
 }  // namespace
 
 RpcBroker::RpcBroker(const SendMessageCallback& send_message_cb)
-    : next_handle_(kReceiverHandle + 1),
+    : next_handle_(kFirstHandle),
       send_message_cb_(send_message_cb),
       weak_factory_(this) {}
 
@@ -78,7 +78,7 @@ void RpcBroker::ProcessMessageFromRemote(
   VLOG(3) << __func__ << ": " << *message;
   const auto entry = receive_callbacks_.find(message->handle());
   if (entry == receive_callbacks_.end()) {
-    LOG(ERROR) << "unregistered handle: " << message->handle();
+    VLOG(1) << "unregistered handle: " << message->handle();
     return;
   }
   entry->second.Run(std::move(message));

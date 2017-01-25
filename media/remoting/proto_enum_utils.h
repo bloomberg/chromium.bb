@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_RPC_PROTO_ENUM_UTILS_H_
-#define MEDIA_REMOTING_RPC_PROTO_ENUM_UTILS_H_
+#ifndef MEDIA_REMOTING_PROTO_ENUM_UTILS_H_
+#define MEDIA_REMOTING_PROTO_ENUM_UTILS_H_
 
 #include "base/optional.h"
 #include "media/base/audio_codecs.h"
@@ -17,7 +17,7 @@
 #include "media/base/sample_format.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
-#include "media/remoting/remoting_rpc_message.pb.h"
+#include "media/remoting/rpc.pb.h"
 
 namespace media {
 namespace remoting {
@@ -31,82 +31,80 @@ namespace remoting {
 // Each returns a base::Optional value. If it is not set, that indicates the
 // conversion failed.
 
-base::Optional<::media::EncryptionScheme::CipherMode>
-ToMediaEncryptionSchemeCipherMode(pb::EncryptionScheme::CipherMode value);
+base::Optional<EncryptionScheme::CipherMode> ToMediaEncryptionSchemeCipherMode(
+    pb::EncryptionScheme::CipherMode value);
 base::Optional<pb::EncryptionScheme::CipherMode>
-ToProtoEncryptionSchemeCipherMode(::media::EncryptionScheme::CipherMode value);
+ToProtoEncryptionSchemeCipherMode(EncryptionScheme::CipherMode value);
 
-base::Optional<::media::AudioCodec> ToMediaAudioCodec(
+base::Optional<AudioCodec> ToMediaAudioCodec(
     pb::AudioDecoderConfig::Codec value);
 base::Optional<pb::AudioDecoderConfig::Codec> ToProtoAudioDecoderConfigCodec(
-    ::media::AudioCodec value);
+    AudioCodec value);
 
-base::Optional<::media::SampleFormat> ToMediaSampleFormat(
+base::Optional<SampleFormat> ToMediaSampleFormat(
     pb::AudioDecoderConfig::SampleFormat value);
 base::Optional<pb::AudioDecoderConfig::SampleFormat>
-ToProtoAudioDecoderConfigSampleFormat(::media::SampleFormat value);
+ToProtoAudioDecoderConfigSampleFormat(SampleFormat value);
 
-base::Optional<::media::ChannelLayout> ToMediaChannelLayout(
+base::Optional<ChannelLayout> ToMediaChannelLayout(
     pb::AudioDecoderConfig::ChannelLayout value);
 base::Optional<pb::AudioDecoderConfig::ChannelLayout>
-ToProtoAudioDecoderConfigChannelLayout(::media::ChannelLayout value);
+ToProtoAudioDecoderConfigChannelLayout(ChannelLayout value);
 
-base::Optional<::media::VideoCodec> ToMediaVideoCodec(
+base::Optional<VideoCodec> ToMediaVideoCodec(
     pb::VideoDecoderConfig::Codec value);
 base::Optional<pb::VideoDecoderConfig::Codec> ToProtoVideoDecoderConfigCodec(
-    ::media::VideoCodec value);
+    VideoCodec value);
 
-base::Optional<::media::VideoCodecProfile> ToMediaVideoCodecProfile(
+base::Optional<VideoCodecProfile> ToMediaVideoCodecProfile(
     pb::VideoDecoderConfig::Profile value);
 base::Optional<pb::VideoDecoderConfig::Profile>
-ToProtoVideoDecoderConfigProfile(::media::VideoCodecProfile value);
+ToProtoVideoDecoderConfigProfile(VideoCodecProfile value);
 
-base::Optional<::media::VideoPixelFormat> ToMediaVideoPixelFormat(
+base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
     pb::VideoDecoderConfig::Format value);
 base::Optional<pb::VideoDecoderConfig::Format> ToProtoVideoDecoderConfigFormat(
-    ::media::VideoPixelFormat value);
+    VideoPixelFormat value);
 
-base::Optional<::media::ColorSpace> ToMediaColorSpace(
+base::Optional<ColorSpace> ToMediaColorSpace(
     pb::VideoDecoderConfig::ColorSpace value);
 base::Optional<pb::VideoDecoderConfig::ColorSpace>
-ToProtoVideoDecoderConfigColorSpace(::media::ColorSpace value);
+ToProtoVideoDecoderConfigColorSpace(ColorSpace value);
 
-base::Optional<::media::BufferingState> ToMediaBufferingState(
+base::Optional<BufferingState> ToMediaBufferingState(
     pb::RendererClientOnBufferingStateChange::State value);
 base::Optional<pb::RendererClientOnBufferingStateChange::State>
-ToProtoMediaBufferingState(::media::BufferingState value);
+ToProtoMediaBufferingState(BufferingState value);
 
-base::Optional<::media::CdmKeyInformation::KeyStatus>
-ToMediaCdmKeyInformationKeyStatus(pb::CdmKeyInformation::KeyStatus value);
+base::Optional<CdmKeyInformation::KeyStatus> ToMediaCdmKeyInformationKeyStatus(
+    pb::CdmKeyInformation::KeyStatus value);
 base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
-    ::media::CdmKeyInformation::KeyStatus value);
+    CdmKeyInformation::KeyStatus value);
 
-base::Optional<::media::CdmPromise::Exception> ToCdmPromiseException(
+base::Optional<CdmPromise::Exception> ToCdmPromiseException(
     pb::CdmException value);
 base::Optional<pb::CdmException> ToProtoCdmException(
-    ::media::CdmPromise::Exception value);
+    CdmPromise::Exception value);
 
-base::Optional<::media::ContentDecryptionModule::MessageType>
-ToMediaCdmMessageType(pb::CdmMessageType value);
+base::Optional<ContentDecryptionModule::MessageType> ToMediaCdmMessageType(
+    pb::CdmMessageType value);
 base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(
-    ::media::ContentDecryptionModule::MessageType value);
+    ContentDecryptionModule::MessageType value);
 
-base::Optional<::media::CdmSessionType> ToCdmSessionType(
-    pb::CdmSessionType value);
-base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(
-    ::media::CdmSessionType value);
+base::Optional<CdmSessionType> ToCdmSessionType(pb::CdmSessionType value);
+base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(CdmSessionType value);
 
-base::Optional<::media::EmeInitDataType> ToMediaEmeInitDataType(
+base::Optional<EmeInitDataType> ToMediaEmeInitDataType(
     pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType value);
 base::Optional<pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType>
-ToProtoMediaEmeInitDataType(::media::EmeInitDataType value);
+ToProtoMediaEmeInitDataType(EmeInitDataType value);
 
-base::Optional<::media::DemuxerStream::Status> ToDemuxerStreamStatus(
+base::Optional<DemuxerStream::Status> ToDemuxerStreamStatus(
     pb::DemuxerStreamReadUntilCallback::Status value);
 base::Optional<pb::DemuxerStreamReadUntilCallback::Status>
-ToProtoDemuxerStreamStatus(::media::DemuxerStream::Status value);
+ToProtoDemuxerStreamStatus(DemuxerStream::Status value);
 
 }  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_RPC_PROTO_ENUM_UTILS_H_
+#endif  // MEDIA_REMOTING_PROTO_ENUM_UTILS_H_

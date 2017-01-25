@@ -9,20 +9,21 @@
 #include "media/base/cdm_factory.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "media/remoting/remoting_cdm_controller.h"
-#include "media/remoting/remoting_sink_observer.h"
+#include "media/remoting/sink_availability_observer.h"
 
 namespace media {
+namespace remoting {
 
 // TODO(xjz): Merge this with Eric's implementation.
 class RemotingCdmFactory : public CdmFactory {
  public:
   // |remoter_factory| is expected to outlive this class.
   // |sink_observer| monitors the remoting sink availablity, which is used to
-  // initialize RemotingSourceImpl when created to avoid possible delay of
+  // initialize SharedSession when created to avoid possible delay of
   // OnSinkAvailable() call from browser.
   RemotingCdmFactory(std::unique_ptr<CdmFactory> default_cdm_factory,
                      mojom::RemoterFactory* remoter_factory,
-                     std::unique_ptr<RemotingSinkObserver> sink_observer);
+                     std::unique_ptr<SinkAvailabilityObserver> sink_observer);
   ~RemotingCdmFactory() override;
 
   void Create(const std::string& key_system,
@@ -49,12 +50,13 @@ class RemotingCdmFactory : public CdmFactory {
 
   const std::unique_ptr<CdmFactory> default_cdm_factory_;
   mojom::RemoterFactory* const remoter_factory_;  // Outlives this class.
-  std::unique_ptr<RemotingSinkObserver> sink_observer_;
+  std::unique_ptr<SinkAvailabilityObserver> sink_observer_;
   base::WeakPtrFactory<RemotingCdmFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingCdmFactory);
 };
 
+}  // namespace remoting
 }  // namespace media
 
 #endif  // MEDIA_REMOTING_REMOTING_CDM_FACTORY_H_

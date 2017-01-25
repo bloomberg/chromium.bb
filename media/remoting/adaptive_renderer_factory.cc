@@ -2,34 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/remoting_renderer_factory.h"
+#include "media/remoting/adaptive_renderer_factory.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "media/remoting/remote_renderer_impl.h"
+#include "media/remoting/courier_renderer.h"
 
 namespace media {
+namespace remoting {
 
-RemotingRendererFactory::RemotingRendererFactory(
+AdaptiveRendererFactory::AdaptiveRendererFactory(
     std::unique_ptr<RendererFactory> default_renderer_factory,
-    std::unique_ptr<RemotingRendererController> remoting_renderer_controller)
+    std::unique_ptr<RendererController> controller)
     : default_renderer_factory_(std::move(default_renderer_factory)),
-      remoting_renderer_controller_(std::move(remoting_renderer_controller)) {}
+      controller_(std::move(controller)) {}
 
-RemotingRendererFactory::~RemotingRendererFactory() {}
+AdaptiveRendererFactory::~AdaptiveRendererFactory() {}
 
-std::unique_ptr<Renderer> RemotingRendererFactory::CreateRenderer(
+std::unique_ptr<Renderer> AdaptiveRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
     VideoRendererSink* video_renderer_sink,
     const RequestSurfaceCB& request_surface_cb) {
-  if (remoting_renderer_controller_ &&
-      remoting_renderer_controller_->remote_rendering_started()) {
+  if (controller_ && controller_->remote_rendering_started()) {
     VLOG(1) << "Create Remoting renderer.";
-    return base::WrapUnique(new RemoteRendererImpl(
-        media_task_runner, remoting_renderer_controller_->GetWeakPtr(),
-        video_renderer_sink));
+    return base::MakeUnique<CourierRenderer>(
+        media_task_runner, controller_->GetWeakPtr(), video_renderer_sink);
   } else {
     VLOG(1) << "Create Local playback renderer.";
     return default_renderer_factory_->CreateRenderer(
@@ -38,4 +37,5 @@ std::unique_ptr<Renderer> RemotingRendererFactory::CreateRenderer(
   }
 }
 
+}  // namespace remoting
 }  // namespace media

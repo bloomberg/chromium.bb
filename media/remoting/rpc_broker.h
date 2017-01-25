@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_RPC_RPC_BROKER_H_
-#define MEDIA_REMOTING_RPC_RPC_BROKER_H_
+#ifndef MEDIA_REMOTING_RPC_BROKER_H_
+#define MEDIA_REMOTING_RPC_BROKER_H_
 
 #include <map>
 #include <memory>
@@ -14,16 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/remoting/remoting_rpc_message.pb.h"
+#include "media/remoting/rpc.pb.h"
 
 namespace media {
 namespace remoting {
-
-// Predefined invalid handle value for RPC message.
-constexpr int kInvalidHandle = -1;
-
-// Predefined handle value for RPC messages related to initialization.
-constexpr int kReceiverHandle = 0;
 
 // Utility class to process incoming and outgoing RPC message to desired
 // components on both end points. On sender side, for outgoing message, sender
@@ -31,7 +25,7 @@ constexpr int kReceiverHandle = 0;
 // component which is interested in this RPC message has to register itself to
 // RpcBroker. Before the RPC transmission starts, both sender and receiver need
 // to negotiate the handle value in the existing RPC communication channel using
-// handle kReceiverHandle.
+// handle kAcquireHandle.
 //
 // The class doesn't actually send RPC message to remote end point. Actual
 // sender needs to set SendMessageCallback to RpcBroker. The class doesn't
@@ -78,6 +72,16 @@ class RpcBroker {
   // Overwrites |send_message_cb_|. This is used only for test purposes.
   void SetMessageCallbackForTesting(const SendMessageCallback& send_message_cb);
 
+  // Predefined invalid handle value for RPC message.
+  static constexpr int kInvalidHandle = -1;
+
+  // Predefined handle value for RPC messages related to initialization (before
+  // the receiver handle(s) are known).
+  static constexpr int kAcquireHandle = 0;
+
+  // The first handle to return from GetUniqueHandle().
+  static constexpr int kFirstHandle = 1;
+
  private:
   // Checks that all method calls occur on the same thread.
   base::ThreadChecker thread_checker_;
@@ -99,4 +103,4 @@ class RpcBroker {
 }  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_RPC_RPC_BROKER_H_
+#endif  // MEDIA_REMOTING_RPC_BROKER_H_

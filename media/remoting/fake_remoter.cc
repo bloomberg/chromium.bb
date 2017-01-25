@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/fake_remoting_controller.h"
+#include "media/remoting/fake_remoter.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/remoting/remoting_source_impl.h"
-#include "media/remoting/rpc/proto_utils.h"
+#include "media/remoting/proto_utils.h"
+#include "media/remoting/shared_session.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
+namespace remoting {
 
 FakeRemotingDataStreamSender::FakeRemotingDataStreamSender(
     mojom::RemotingDataStreamSenderRequest request,
@@ -45,8 +46,8 @@ bool FakeRemotingDataStreamSender::ValidateFrameBuffer(size_t index,
   }
 
   const std::vector<uint8_t>& data = received_frame_list[index];
-  scoped_refptr<::media::DecoderBuffer> media_buffer =
-      remoting::ByteArrayToDecoderBuffer(data.data(), data.size());
+  scoped_refptr<DecoderBuffer> media_buffer =
+      ByteArrayToDecoderBuffer(data.data(), data.size());
 
   // Checks if pts is correct or not
   if (media_buffer->timestamp().InMilliseconds() != pts_ms) {
@@ -175,17 +176,18 @@ void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
       std::move(request));
 }
 
-scoped_refptr<RemotingSourceImpl> CreateRemotingSourceImpl(
+// static
+scoped_refptr<SharedSession> FakeRemoterFactory::CreateSharedSession(
     bool start_will_fail) {
   mojom::RemotingSourcePtr remoting_source;
   mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
   mojom::RemoterPtr remoter;
-  std::unique_ptr<mojom::RemoterFactory> remoter_factory =
-      base::MakeUnique<FakeRemoterFactory>(start_will_fail);
-  remoter_factory->Create(std::move(remoting_source),
-                          mojo::MakeRequest(&remoter));
-  return new RemotingSourceImpl(std::move(remoting_source_request),
-                                std::move(remoter));
+  FakeRemoterFactory remoter_factory(start_will_fail);
+  remoter_factory.Create(std::move(remoting_source),
+                         mojo::MakeRequest(&remoter));
+  return new SharedSession(std::move(remoting_source_request),
+                           std::move(remoter));
 }
 
+}  // namespace remoting
 }  // namespace media

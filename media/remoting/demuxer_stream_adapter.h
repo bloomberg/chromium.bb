@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_REMOTE_DEMUXER_STREAM_ADAPTER_H_
-#define MEDIA_REMOTING_REMOTE_DEMUXER_STREAM_ADAPTER_H_
+#ifndef MEDIA_REMOTING_DEMUXER_STREAM_ADAPTER_H_
+#define MEDIA_REMOTING_DEMUXER_STREAM_ADAPTER_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
-#include "media/remoting/rpc/rpc_broker.h"
+#include "media/remoting/rpc_broker.h"
 #include "media/remoting/triggers.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -36,7 +36,7 @@ namespace remoting {
 // via mojo::Remoting interface. Note the class is created and run on media
 // thread using |media_task_runner|, Mojo data pipe should run on media thread,
 // while RPC message should be sent on main thread using |main_task_runner|.
-class RemoteDemuxerStreamAdapter {
+class DemuxerStreamAdapter {
  public:
   using ErrorCallback = base::Callback<void(StopTrigger)>;
 
@@ -46,23 +46,23 @@ class RemoteDemuxerStreamAdapter {
   // |demuxer_stream|: Demuxer component.
   // |rpc_broker|: Broker class to handle incoming and outgoing RPC message. It
   //               is used only on the main thread.
-  // |rpc_handle|: Unique value that references this RemoteDemuxerStreamAdapter.
+  // |rpc_handle|: Unique value that references this DemuxerStreamAdapter.
   // |stream_sender_info|: Transfer of pipe binding on the media thread. It is
   //                       to access mojo interface for sending data stream.
   // |producer_handle|: handle to send data using mojo data pipe.
   // |error_callback|: Run if a fatal runtime error occurs and remoting should
   //                   be shut down.
-  RemoteDemuxerStreamAdapter(
+  DemuxerStreamAdapter(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       const std::string& name,
-      ::media::DemuxerStream* demuxer_stream,
+      DemuxerStream* demuxer_stream,
       const base::WeakPtr<RpcBroker>& rpc_broker,
       int rpc_handle,
       mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
       mojo::ScopedDataPipeProducerHandle producer_handle,
       const ErrorCallback& error_callback);
-  ~RemoteDemuxerStreamAdapter();
+  ~DemuxerStreamAdapter();
 
   // Rpc handle for this class. This is used for sending/receiving RPC message
   // with specific hanle using Rpcbroker.
@@ -70,7 +70,7 @@ class RemoteDemuxerStreamAdapter {
 
   // Returns the number of bytes that have been written to the data pipe since
   // the last call to this method. This is polled periodically by
-  // RemoteRendererImpl for metrics purposes.
+  // CourierRenderer for metrics purposes.
   int64_t GetBytesWrittenAndReset();
 
   // Signals if system is in flushing state. The caller uses |flushing| to
@@ -80,22 +80,26 @@ class RemoteDemuxerStreamAdapter {
   // or base::nullopt if the flushing state was unchanged.
   base::Optional<uint32_t> SignalFlush(bool flushing);
 
+  // Creates a Mojo data pipe configured appropriately for use with a
+  // DemuxerStreamAdapter.
+  static mojo::DataPipe* CreateDataPipe();
+
  private:
-  friend class MockRemoteDemuxerStreamAdapter;
+  friend class MockDemuxerStreamAdapter;
 
   // Receives RPC message from RpcBroker.
-  void OnReceivedRpc(std::unique_ptr<remoting::pb::RpcMessage> message);
+  void OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message);
 
   // RPC message tasks.
   void Initialize(int remote_callback_handle);
-  void ReadUntil(std::unique_ptr<remoting::pb::RpcMessage> message);
+  void ReadUntil(std::unique_ptr<pb::RpcMessage> message);
   void EnableBitstreamConverter();
   void RequestBuffer();
   void SendReadAck();
 
   // Callback function when retrieving data from demuxer.
-  void OnNewBuffer(::media::DemuxerStream::Status status,
-                   const scoped_refptr<::media::DecoderBuffer>& input);
+  void OnNewBuffer(DemuxerStream::Status status,
+                   const scoped_refptr<DecoderBuffer>& input);
   void TryWriteData(MojoResult result);
   void ResetPendingFrame();
   bool IsProcessingReadRequest() const {
@@ -103,7 +107,7 @@ class RemoteDemuxerStreamAdapter {
     // received, and will be reset to invalid value after
     // RPC_DS_READUNTIL_CALLBACK is sent back to receiver. Therefore it can be
     // used to determine if the class is in the reading state or not.
-    return read_until_callback_handle_ != kInvalidHandle;
+    return read_until_callback_handle_ != RpcBroker::kInvalidHandle;
   }
 
   // Callback function when a fatal runtime error occurs.
@@ -123,11 +127,11 @@ class RemoteDemuxerStreamAdapter {
   const int rpc_handle_;
 
   // Demuxer stream and stream type.
-  ::media::DemuxerStream* const demuxer_stream_;
-  const ::media::DemuxerStream::Type type_;
+  DemuxerStream* const demuxer_stream_;
+  const DemuxerStream::Type type_;
 
   // Run by OnFatalError to propagate StopTriggers back to the
-  // RemoteRendererImpl that owns this instance. This is not-null at
+  // CourierRenderer that owns this instance. This is not-null at
   // construction time, and set to null the first time OnFatalError() is called.
   ErrorCallback error_callback_;
 
@@ -166,11 +170,11 @@ class RemoteDemuxerStreamAdapter {
   mojo::Watcher write_watcher_;
 
   // Keeps latest demuxer stream status and audio/video decoder config.
-  ::media::DemuxerStream::Status media_status_;
-  ::media::AudioDecoderConfig audio_config_;
-  ::media::VideoDecoderConfig video_config_;
+  DemuxerStream::Status media_status_;
+  AudioDecoderConfig audio_config_;
+  VideoDecoderConfig video_config_;
 
-  ::media::mojom::RemotingDataStreamSenderPtr stream_sender_;
+  mojom::RemotingDataStreamSenderPtr stream_sender_;
   mojo::ScopedDataPipeProducerHandle producer_handle_;
 
   // Tracks the number of bytes written to the pipe.
@@ -179,16 +183,14 @@ class RemoteDemuxerStreamAdapter {
   // WeakPtrFactory only for reading buffer from demuxer stream. This is used
   // for canceling all read callbacks provided to the |demuxer_stream_| before a
   // flush.
-  base::WeakPtrFactory<RemoteDemuxerStreamAdapter> request_buffer_weak_factory_;
+  base::WeakPtrFactory<DemuxerStreamAdapter> request_buffer_weak_factory_;
   // WeakPtrFactory for normal usage.
-  base::WeakPtrFactory<RemoteDemuxerStreamAdapter> weak_factory_;
+  base::WeakPtrFactory<DemuxerStreamAdapter> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoteDemuxerStreamAdapter);
+  DISALLOW_COPY_AND_ASSIGN(DemuxerStreamAdapter);
 };
-
-mojo::DataPipe* CreateDataPipe();
 
 }  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_REMOTE_DEMUXER_STREAM_ADAPTER_H_
+#endif  // MEDIA_REMOTING_DEMUXER_STREAM_ADAPTER_H_

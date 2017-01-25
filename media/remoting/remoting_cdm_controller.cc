@@ -10,17 +10,18 @@
 #include "base/threading/thread_checker.h"
 
 namespace media {
+namespace remoting {
 
 RemotingCdmController::RemotingCdmController(
-    scoped_refptr<RemotingSourceImpl> remoting_source)
-    : remoting_source_(std::move(remoting_source)) {
-  remoting_source_->AddClient(this);
+    scoped_refptr<SharedSession> session)
+    : session_(std::move(session)) {
+  session_->AddClient(this);
 }
 
 RemotingCdmController::~RemotingCdmController() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  remoting_source_->RemoveClient(this);
+  session_->RemoveClient(this);
 }
 
 void RemotingCdmController::OnStarted(bool success) {
@@ -34,9 +35,8 @@ void RemotingCdmController::OnStarted(bool success) {
 void RemotingCdmController::OnSessionStateChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (is_remoting_ &&
-      remoting_source_->state() == RemotingSessionState::SESSION_STOPPING) {
-    remoting_source_->Shutdown();
+  if (is_remoting_ && session_->state() == SharedSession::SESSION_STOPPING) {
+    session_->Shutdown();
     is_remoting_ = false;
   }
 }
@@ -51,14 +51,15 @@ void RemotingCdmController::ShouldCreateRemotingCdm(
     return;
   }
 
-  if (!remoting_source_->is_remote_decryption_available()) {
+  if (!session_->is_remote_decryption_available()) {
     cb.Run(false);
     return;
   }
 
   DCHECK(cdm_check_cb_.is_null());
   cdm_check_cb_ = cb;
-  remoting_source_->StartRemoting(this);
+  session_->StartRemoting(this);
 }
 
+}  // namespace remoting
 }  // namespace media

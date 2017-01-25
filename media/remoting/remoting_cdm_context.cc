@@ -5,9 +5,10 @@
 #include "media/remoting/remoting_cdm_context.h"
 
 #include "media/remoting/remoting_cdm.h"
-#include "media/remoting/remoting_source_impl.h"
+#include "media/remoting/shared_session.h"
 
 namespace media {
+namespace remoting {
 
 namespace {
 // Used as an identifier for RemotingCdmContext::From().
@@ -40,8 +41,9 @@ void* RemotingCdmContext::GetClassIdentifier() const {
   return kClassIdentifier;
 }
 
-RemotingSourceImpl* RemotingCdmContext::GetRemotingSource() {
-  return remoting_cdm_->GetRemotingSource();
+SharedSession* RemotingCdmContext::GetSharedSession() const {
+  return remoting_cdm_->session();
 }
 
+}  // namespace remoting
 }  // namespace media

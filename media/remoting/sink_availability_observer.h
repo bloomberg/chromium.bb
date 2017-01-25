@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_REMOTING_SINK_OBSERVER_H_
-#define MEDIA_REMOTING_REMOTING_SINK_OBSERVER_H_
+#ifndef MEDIA_REMOTING_SINK_AVAILABILITY_OBSERVER_H_
+#define MEDIA_REMOTING_SINK_AVAILABILITY_OBSERVER_H_
 
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
+namespace remoting {
 
-// This calss is a pure observer of remoting sink availability to indicate
-// whether a remoting session can be started.
-class RemotingSinkObserver final : public mojom::RemotingSource {
+// Implements the RemotingSource interface for the sole purpose of monitoring
+// sink availability status.
+class SinkAvailabilityObserver final : public mojom::RemotingSource {
  public:
-  RemotingSinkObserver(mojom::RemotingSourceRequest source_request,
-                       mojom::RemoterPtr remoter);
-  ~RemotingSinkObserver() override;
+  SinkAvailabilityObserver(mojom::RemotingSourceRequest source_request,
+                           mojom::RemoterPtr remoter);
+  ~SinkAvailabilityObserver() override;
 
   mojom::RemotingSinkCapabilities sink_capabilities() const {
     return sink_capabilities_;
@@ -44,9 +45,10 @@ class RemotingSinkObserver final : public mojom::RemotingSource {
   mojom::RemotingSinkCapabilities sink_capabilities_ =
       mojom::RemotingSinkCapabilities::NONE;
 
-  DISALLOW_COPY_AND_ASSIGN(RemotingSinkObserver);
+  DISALLOW_COPY_AND_ASSIGN(SinkAvailabilityObserver);
 };
 
+}  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_REMOTING_SINK_OBSERVER_H_
+#endif  // MEDIA_REMOTING_SINK_AVAILABILITY_OBSERVER_H_

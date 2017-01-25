@@ -11,11 +11,12 @@
 #include "media/remoting/remoting_cdm.h"
 
 namespace media {
+namespace remoting {
 
 RemotingCdmFactory::RemotingCdmFactory(
     std::unique_ptr<CdmFactory> default_cdm_factory,
     mojom::RemoterFactory* remoter_factory,
-    std::unique_ptr<RemotingSinkObserver> sink_observer)
+    std::unique_ptr<SinkAvailabilityObserver> sink_observer)
     : default_cdm_factory_(std::move(default_cdm_factory)),
       remoter_factory_(remoter_factory),
       sink_observer_(std::move(sink_observer)),
@@ -34,15 +35,14 @@ RemotingCdmFactory::CreateRemotingCdmController() {
   mojom::RemoterPtr remoter;
   remoter_factory_->Create(std::move(remoting_source),
                            mojo::MakeRequest(&remoter));
-  scoped_refptr<RemotingSourceImpl> remoting_source_impl =
-      new RemotingSourceImpl(std::move(remoting_source_request),
-                             std::move(remoter));
+  scoped_refptr<SharedSession> session =
+      new SharedSession(std::move(remoting_source_request), std::move(remoter));
   // HACK: Copy-over the sink availability status from |sink_observer_| before
   // the RemotingCdmController would naturally get the notification. This is to
   // avoid the possible delay on OnSinkAvailable() call from browser.
   if (sink_observer_->is_remote_decryption_available())
-    remoting_source_impl->OnSinkAvailable(sink_observer_->sink_capabilities());
-  return base::MakeUnique<RemotingCdmController>(remoting_source_impl);
+    session->OnSinkAvailable(sink_observer_->sink_capabilities());
+  return base::MakeUnique<RemotingCdmController>(std::move(session));
 }
 
 // TODO(xjz): Replace the callbacks with an interface. http://crbug.com/657940.
@@ -100,4 +100,5 @@ void RemotingCdmFactory::CreateCdm(
   }
 }
 
+}  // namespace remoting
 }  // namespace media

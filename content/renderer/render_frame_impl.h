@@ -104,12 +104,15 @@ namespace media {
 class CdmFactory;
 class DecoderFactory;
 class MediaPermission;
-class RemotingRendererController;
-class RemotingSinkObserver;
 class RendererWebMediaPlayerDelegate;
 class SurfaceManager;
 class UrlIndex;
 class WebEncryptedMediaClientImpl;
+
+namespace remoting {
+class SinkAvailabilityObserver;
+}  // namespace remoting
+
 }  // namespace media
 
 namespace service_manager {
@@ -1101,13 +1104,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  // Creates the RemotingRendererController to control whether to switch to/from
-  // media remoting from/to local playback.
-  std::unique_ptr<media::RemotingRendererController>
-  CreateRemotingRendererController();
-#endif
-
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the
@@ -1253,12 +1249,14 @@ class CONTENT_EXPORT RenderFrameImpl
   // Lazy-bound pointer to the RemoterFactory service in the browser
   // process. Always use the GetRemoterFactory() accessor instead of this.
   media::mojom::RemoterFactoryPtr remoter_factory_;
+
   // An observer for the remoting sink availability that is used by
   // media::RemotingCdmFactory to initialize media::RemotingSourceImpl. Created
   // in the constructor of RenderFrameImpl to make sure
   // media::RemotingSourceImpl be intialized with correct availability info.
   // Own by media::RemotingCdmFactory after it is created.
-  std::unique_ptr<media::RemotingSinkObserver> remoting_sink_observer_;
+  std::unique_ptr<media::remoting::SinkAvailabilityObserver>
+      remoting_sink_observer_;
 #endif
 
   // The CDM and decoder factory attached to this frame, lazily initialized.

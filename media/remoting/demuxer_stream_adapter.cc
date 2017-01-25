@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/remote_demuxer_stream_adapter.h"
+#include "media/remoting/demuxer_stream_adapter.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -10,8 +10,8 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/timestamp_constants.h"
-#include "media/remoting/rpc/proto_enum_utils.h"
-#include "media/remoting/rpc/proto_utils.h"
+#include "media/remoting/proto_enum_utils.h"
+#include "media/remoting/proto_utils.h"
 
 // Convenience logging macro used throughout this file.
 #define DEMUXER_VLOG(level) VLOG(level) << __func__ << "[" << name_ << "]: "
@@ -20,7 +20,7 @@ namespace media {
 namespace remoting {
 
 // static
-mojo::DataPipe* CreateDataPipe() {
+mojo::DataPipe* DemuxerStreamAdapter::CreateDataPipe() {
   // Capacity in bytes for Mojo data pipe.
   constexpr int kMojoDataPipeCapacityInBytes = 512 * 1024;
 
@@ -32,11 +32,11 @@ mojo::DataPipe* CreateDataPipe() {
   return new mojo::DataPipe(options);
 }
 
-RemoteDemuxerStreamAdapter::RemoteDemuxerStreamAdapter(
+DemuxerStreamAdapter::DemuxerStreamAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     const std::string& name,
-    ::media::DemuxerStream* demuxer_stream,
+    DemuxerStream* demuxer_stream,
     const base::WeakPtr<RpcBroker>& rpc_broker,
     int rpc_handle,
     mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
@@ -50,14 +50,14 @@ RemoteDemuxerStreamAdapter::RemoteDemuxerStreamAdapter(
       demuxer_stream_(demuxer_stream),
       type_(demuxer_stream ? demuxer_stream->type() : DemuxerStream::UNKNOWN),
       error_callback_(error_callback),
-      remote_callback_handle_(kInvalidHandle),
-      read_until_callback_handle_(kInvalidHandle),
+      remote_callback_handle_(RpcBroker::kInvalidHandle),
+      read_until_callback_handle_(RpcBroker::kInvalidHandle),
       read_until_count_(0),
       last_count_(0),
       pending_flush_(false),
       current_pending_frame_offset_(0),
       pending_frame_is_eos_(false),
-      media_status_(::media::DemuxerStream::kOk),
+      media_status_(DemuxerStream::kOk),
       producer_handle_(std::move(producer_handle)),
       bytes_written_to_pipe_(0),
       request_buffer_weak_factory_(this),
@@ -68,37 +68,33 @@ RemoteDemuxerStreamAdapter::RemoteDemuxerStreamAdapter(
   DCHECK(demuxer_stream);
   DCHECK(!error_callback.is_null());
   const RpcBroker::ReceiveMessageCallback receive_callback =
-      media::BindToCurrentLoop(
-          base::Bind(&RemoteDemuxerStreamAdapter::OnReceivedRpc,
-                     weak_factory_.GetWeakPtr()));
+      BindToCurrentLoop(base::Bind(&DemuxerStreamAdapter::OnReceivedRpc,
+                                   weak_factory_.GetWeakPtr()));
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&remoting::RpcBroker::RegisterMessageReceiverCallback,
-                 rpc_broker_, rpc_handle_, receive_callback));
+      FROM_HERE, base::Bind(&RpcBroker::RegisterMessageReceiverCallback,
+                            rpc_broker_, rpc_handle_, receive_callback));
 
   stream_sender_.Bind(std::move(stream_sender_info));
   stream_sender_.set_connection_error_handler(
-      base::Bind(&RemoteDemuxerStreamAdapter::OnFatalError,
+      base::Bind(&DemuxerStreamAdapter::OnFatalError,
                  weak_factory_.GetWeakPtr(), MOJO_PIPE_ERROR));
 }
 
-RemoteDemuxerStreamAdapter::~RemoteDemuxerStreamAdapter() {
+DemuxerStreamAdapter::~DemuxerStreamAdapter() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&remoting::RpcBroker::UnregisterMessageReceiverCallback,
-                 rpc_broker_, rpc_handle_));
+      FROM_HERE, base::Bind(&RpcBroker::UnregisterMessageReceiverCallback,
+                            rpc_broker_, rpc_handle_));
 }
 
-int64_t RemoteDemuxerStreamAdapter::GetBytesWrittenAndReset() {
+int64_t DemuxerStreamAdapter::GetBytesWrittenAndReset() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   const int64_t current_count = bytes_written_to_pipe_;
   bytes_written_to_pipe_ = 0;
   return current_count;
 }
 
-base::Optional<uint32_t> RemoteDemuxerStreamAdapter::SignalFlush(
-    bool flushing) {
+base::Optional<uint32_t> DemuxerStreamAdapter::SignalFlush(bool flushing) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DEMUXER_VLOG(2) << "flushing=" << flushing;
 
@@ -119,25 +115,25 @@ base::Optional<uint32_t> RemoteDemuxerStreamAdapter::SignalFlush(
     stream_sender_->CancelInFlightData();
   } else {
     // Sets callback handle invalid to abort ongoing read request.
-    read_until_callback_handle_ = kInvalidHandle;
+    read_until_callback_handle_ = RpcBroker::kInvalidHandle;
   }
   return last_count_;
 }
 
-void RemoteDemuxerStreamAdapter::OnReceivedRpc(
-    std::unique_ptr<remoting::pb::RpcMessage> message) {
+void DemuxerStreamAdapter::OnReceivedRpc(
+    std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(message);
   DCHECK(rpc_handle_ == message->handle());
 
   switch (message->proc()) {
-    case remoting::pb::RpcMessage::RPC_DS_INITIALIZE:
+    case pb::RpcMessage::RPC_DS_INITIALIZE:
       Initialize(message->integer_value());
       break;
-    case remoting::pb::RpcMessage::RPC_DS_READUNTIL:
+    case pb::RpcMessage::RPC_DS_READUNTIL:
       ReadUntil(std::move(message));
       break;
-    case remoting::pb::RpcMessage::RPC_DS_ENABLEBITSTREAMCONVERTER:
+    case pb::RpcMessage::RPC_DS_ENABLEBITSTREAMCONVERTER:
       EnableBitstreamConverter();
       break;
 
@@ -146,14 +142,14 @@ void RemoteDemuxerStreamAdapter::OnReceivedRpc(
   }
 }
 
-void RemoteDemuxerStreamAdapter::Initialize(int remote_callback_handle) {
+void DemuxerStreamAdapter::Initialize(int remote_callback_handle) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_flush_);
   DEMUXER_VLOG(2) << "Received RPC_DS_INITIALIZE with remote_callback_handle="
                   << remote_callback_handle;
 
   // Checks if initialization had been called or not.
-  if (remote_callback_handle_ != kInvalidHandle) {
+  if (remote_callback_handle_ != RpcBroker::kInvalidHandle) {
     DEMUXER_VLOG(1) << "Duplicated initialization. Have: "
                     << remote_callback_handle_
                     << ", Given: " << remote_callback_handle;
@@ -168,20 +164,20 @@ void RemoteDemuxerStreamAdapter::Initialize(int remote_callback_handle) {
   remote_callback_handle_ = remote_callback_handle;
 
   // Issues RPC_DS_INITIALIZE_CALLBACK RPC message.
-  std::unique_ptr<remoting::pb::RpcMessage> rpc(new remoting::pb::RpcMessage());
+  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
   rpc->set_handle(remote_callback_handle_);
-  rpc->set_proc(remoting::pb::RpcMessage::RPC_DS_INITIALIZE_CALLBACK);
+  rpc->set_proc(pb::RpcMessage::RPC_DS_INITIALIZE_CALLBACK);
   auto* init_cb_message = rpc->mutable_demuxerstream_initializecb_rpc();
   init_cb_message->set_type(type_);
   switch (type_) {
-    case ::media::DemuxerStream::Type::AUDIO: {
+    case DemuxerStream::Type::AUDIO: {
       audio_config_ = demuxer_stream_->audio_decoder_config();
       pb::AudioDecoderConfig* audio_message =
           init_cb_message->mutable_audio_decoder_config();
       ConvertAudioDecoderConfigToProto(audio_config_, audio_message);
       break;
     }
-    case ::media::DemuxerStream::Type::VIDEO: {
+    case DemuxerStream::Type::VIDEO: {
       video_config_ = demuxer_stream_->video_decoder_config();
       pb::VideoDecoderConfig* video_message =
           init_cb_message->mutable_video_decoder_config();
@@ -194,25 +190,24 @@ void RemoteDemuxerStreamAdapter::Initialize(int remote_callback_handle) {
 
   DEMUXER_VLOG(2) << "Sending RPC_DS_INITIALIZE_CALLBACK to " << rpc->handle()
                   << " with decoder_config={"
-                  << (type_ == ::media::DemuxerStream::Type::AUDIO
+                  << (type_ == DemuxerStream::Type::AUDIO
                           ? audio_config_.AsHumanReadableString()
                           : video_config_.AsHumanReadableString())
                   << '}';
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&remoting::RpcBroker::SendMessageToRemote,
-                            rpc_broker_, base::Passed(&rpc)));
+      FROM_HERE, base::Bind(&RpcBroker::SendMessageToRemote, rpc_broker_,
+                            base::Passed(&rpc)));
 
   // Starts Mojo watcher.
   if (!write_watcher_.IsWatching()) {
     DEMUXER_VLOG(2) << "Start Mojo data pipe watcher";
     write_watcher_.Start(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-                         base::Bind(&RemoteDemuxerStreamAdapter::TryWriteData,
+                         base::Bind(&DemuxerStreamAdapter::TryWriteData,
                                     weak_factory_.GetWeakPtr()));
   }
 }
 
-void RemoteDemuxerStreamAdapter::ReadUntil(
-    std::unique_ptr<remoting::pb::RpcMessage> message) {
+void DemuxerStreamAdapter::ReadUntil(std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(message);
   if (!message->has_demuxerstream_readuntil_rpc()) {
@@ -248,25 +243,25 @@ void RemoteDemuxerStreamAdapter::ReadUntil(
   RequestBuffer();
 }
 
-void RemoteDemuxerStreamAdapter::EnableBitstreamConverter() {
+void DemuxerStreamAdapter::EnableBitstreamConverter() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DEMUXER_VLOG(2) << "Received RPC_DS_ENABLEBITSTREAMCONVERTER";
   demuxer_stream_->EnableBitstreamConverter();
 }
 
-void RemoteDemuxerStreamAdapter::RequestBuffer() {
+void DemuxerStreamAdapter::RequestBuffer() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!IsProcessingReadRequest() || pending_flush_) {
     DEMUXER_VLOG(2) << "Skip actions since it's not in the reading state";
     return;
   }
-  demuxer_stream_->Read(base::Bind(&RemoteDemuxerStreamAdapter::OnNewBuffer,
+  demuxer_stream_->Read(base::Bind(&DemuxerStreamAdapter::OnNewBuffer,
                                    request_buffer_weak_factory_.GetWeakPtr()));
 }
 
-void RemoteDemuxerStreamAdapter::OnNewBuffer(
-    ::media::DemuxerStream::Status status,
-    const scoped_refptr<::media::DecoderBuffer>& input) {
+void DemuxerStreamAdapter::OnNewBuffer(
+    DemuxerStream::Status status,
+    const scoped_refptr<DecoderBuffer>& input) {
   DEMUXER_VLOG(3) << "status=" << status;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!IsProcessingReadRequest() || pending_flush_) {
@@ -275,36 +270,37 @@ void RemoteDemuxerStreamAdapter::OnNewBuffer(
   }
 
   switch (status) {
-    case ::media::DemuxerStream::kAborted:
+    case DemuxerStream::kAborted:
       DCHECK(!input);
       SendReadAck();
       return;
-    case ::media::DemuxerStream::kConfigChanged:
-      // TODO(erickung): consider sending updated Audio/Video decoder config to
-      // RemotingRendererController.
+    case DemuxerStream::kConfigChanged:
+      // TODO(erickung): Notify controller of new decoder config, just in case
+      // that will require remoting to be shutdown (due to known
+      // lack-of-support).
       // Stores available audio/video decoder config and issues
       // RPC_DS_READUNTIL_CALLBACK RPC to notify receiver.
       DCHECK(!input);
       media_status_ = status;
-      if (demuxer_stream_->type() == ::media::DemuxerStream::VIDEO)
+      if (demuxer_stream_->type() == DemuxerStream::VIDEO)
         video_config_ = demuxer_stream_->video_decoder_config();
-      if (demuxer_stream_->type() == ::media::DemuxerStream::AUDIO)
+      if (demuxer_stream_->type() == DemuxerStream::AUDIO)
         audio_config_ = demuxer_stream_->audio_decoder_config();
       SendReadAck();
       return;
-    case ::media::DemuxerStream::kOk: {
+    case DemuxerStream::kOk: {
       media_status_ = status;
       DCHECK(pending_frame_.empty());
       if (!producer_handle_.is_valid())
         return;  // Do not start sending (due to previous fatal error).
-      pending_frame_ = DecoderBufferToByteArray(input);
+      pending_frame_ = DecoderBufferToByteArray(*input);
       pending_frame_is_eos_ = input->end_of_stream();
       TryWriteData(MOJO_RESULT_OK);
     } break;
   }
 }
 
-void RemoteDemuxerStreamAdapter::TryWriteData(MojoResult result) {
+void DemuxerStreamAdapter::TryWriteData(MojoResult result) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   // The Mojo watcher will also call TryWriteData() sometimes as a notification
   // that data pipe is ready. But that does not necessarily mean the data for a
@@ -365,26 +361,25 @@ void RemoteDemuxerStreamAdapter::TryWriteData(MojoResult result) {
 
   // Contiune to read decoder buffer until reaching |read_until_count_| or
   // end of stream.
-  media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RemoteDemuxerStreamAdapter::RequestBuffer,
-                            weak_factory_.GetWeakPtr()));
+  media_task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&DemuxerStreamAdapter::RequestBuffer,
+                                          weak_factory_.GetWeakPtr()));
 }
 
-void RemoteDemuxerStreamAdapter::SendReadAck() {
+void DemuxerStreamAdapter::SendReadAck() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DEMUXER_VLOG(3) << "last_count_=" << last_count_
                   << ", remote_read_callback_handle="
                   << read_until_callback_handle_
                   << ", media_status=" << media_status_;
   // Issues RPC_DS_READUNTIL_CALLBACK RPC message.
-  std::unique_ptr<remoting::pb::RpcMessage> rpc(new remoting::pb::RpcMessage());
+  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
   rpc->set_handle(read_until_callback_handle_);
-  rpc->set_proc(remoting::pb::RpcMessage::RPC_DS_READUNTIL_CALLBACK);
+  rpc->set_proc(pb::RpcMessage::RPC_DS_READUNTIL_CALLBACK);
   auto* message = rpc->mutable_demuxerstream_readuntilcb_rpc();
   message->set_count(last_count_);
-  message->set_status(
-      remoting::ToProtoDemuxerStreamStatus(media_status_).value());
-  if (media_status_ == ::media::DemuxerStream::kConfigChanged) {
+  message->set_status(ToProtoDemuxerStreamStatus(media_status_).value());
+  if (media_status_ == DemuxerStream::kConfigChanged) {
     if (audio_config_.IsValidConfig()) {
       pb::AudioDecoderConfig* audio_message =
           message->mutable_audio_decoder_config();
@@ -408,26 +403,26 @@ void RemoteDemuxerStreamAdapter::SendReadAck() {
                                 : "DID NOT CHANGE")
                   << '}';
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&remoting::RpcBroker::SendMessageToRemote,
-                            rpc_broker_, base::Passed(&rpc)));
+      FROM_HERE, base::Bind(&RpcBroker::SendMessageToRemote, rpc_broker_,
+                            base::Passed(&rpc)));
   // Resets callback handle after completing the reading request.
-  read_until_callback_handle_ = kInvalidHandle;
+  read_until_callback_handle_ = RpcBroker::kInvalidHandle;
 
   // Resets audio/video decoder config since it only sends once.
   if (audio_config_.IsValidConfig())
-    audio_config_ = ::media::AudioDecoderConfig();
+    audio_config_ = AudioDecoderConfig();
   if (video_config_.IsValidConfig())
-    video_config_ = ::media::VideoDecoderConfig();
+    video_config_ = VideoDecoderConfig();
 }
 
-void RemoteDemuxerStreamAdapter::ResetPendingFrame() {
+void DemuxerStreamAdapter::ResetPendingFrame() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   current_pending_frame_offset_ = 0;
   pending_frame_.clear();
   pending_frame_is_eos_ = false;
 }
 
-void RemoteDemuxerStreamAdapter::OnFatalError(StopTrigger stop_trigger) {
+void DemuxerStreamAdapter::OnFatalError(StopTrigger stop_trigger) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DEMUXER_VLOG(1) << __func__ << " with StopTrigger " << stop_trigger;

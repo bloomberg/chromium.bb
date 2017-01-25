@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_FAKE_REMOTING_CONTROLLER_H_
-#define MEDIA_REMOTING_FAKE_REMOTING_CONTROLLER_H_
+#ifndef MEDIA_REMOTING_FAKE_REMOTER_H_
+#define MEDIA_REMOTING_FAKE_REMOTER_H_
 
 #include "media/base/decoder_buffer.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
+namespace remoting {
 
-class RemotingSourceImpl;
+class SharedSession;
 
 class FakeRemotingDataStreamSender : public mojom::RemotingDataStreamSender {
  public:
@@ -93,15 +94,15 @@ class FakeRemoterFactory final : public mojom::RemoterFactory {
   void Create(mojom::RemotingSourcePtr source,
               mojom::RemoterRequest request) override;
 
+  static scoped_refptr<SharedSession> CreateSharedSession(bool start_will_fail);
+
  private:
   bool start_will_fail_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRemoterFactory);
 };
 
-scoped_refptr<RemotingSourceImpl> CreateRemotingSourceImpl(
-    bool start_will_fail);
-
+}  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_FAKE_REMOTING_CONTROLLER_H_
+#endif  // MEDIA_REMOTING_FAKE_REMOTER_H_

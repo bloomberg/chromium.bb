@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_RPC_PROTO_UTILS_H_
-#define MEDIA_REMOTING_RPC_PROTO_UTILS_H_
+#ifndef MEDIA_REMOTING_PROTO_UTILS_H_
+#define MEDIA_REMOTING_PROTO_UTILS_H_
 
 #include <cstdint>
 #include <string>
@@ -20,15 +20,15 @@
 #include "media/base/eme_constants.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
-#include "media/remoting/remoting_rpc_message.pb.h"
+#include "media/remoting/rpc.pb.h"
 
 namespace media {
 namespace remoting {
 
 class CdmPromiseResult;
 
-// Utility class to convert data between ::media::DecoderBuffer and byte array.
-// It is to serialize ::media::DecoderBuffer structure except for actual data
+// Utility class to convert data between media::DecoderBuffer and byte array.
+// It is to serialize media::DecoderBuffer structure except for actual data
 // into pb::DecoderBuffer followed by byte array of decoder buffer. The reason
 // data is not part of proto buffer because it would cost unnecessary time to
 // wait for whole proto received before conversion given the fact that decoder
@@ -40,7 +40,7 @@ class CdmPromiseResult;
 //  // Payload version. Default value is 0.
 //  u8 payload_version;
 //
-//  // Length of pb::DecoderBuffer (protobuf-encoded of ::media::DecoderBuffer
+//  // Length of pb::DecoderBuffer (protobuf-encoded of media::DecoderBuffer
 //                   except for data).
 //  u16 buffer_segment_size;
 //  // pb::DecoderBuffer.
@@ -54,32 +54,34 @@ class CdmPromiseResult;
 
 // Converts DecoderBufferSegment into byte array.
 std::vector<uint8_t> DecoderBufferToByteArray(
-    const scoped_refptr<::media::DecoderBuffer>& decoder_buffer);
+    const DecoderBuffer& decoder_buffer);
 
 // Converts byte array into DecoderBufferSegment.
-scoped_refptr<::media::DecoderBuffer> ByteArrayToDecoderBuffer(
-    const uint8_t* data,
-    uint32_t size);
+scoped_refptr<DecoderBuffer> ByteArrayToDecoderBuffer(const uint8_t* data,
+                                                      uint32_t size);
 
-// Data type conversion between ::media::AudioDecoderConfig and proto buffer.
-void ConvertAudioDecoderConfigToProto(
-    const ::media::AudioDecoderConfig& audio_config,
-    pb::AudioDecoderConfig* audio_message);
+// Data type conversion between media::AudioDecoderConfig and proto buffer.
+void ConvertAudioDecoderConfigToProto(const AudioDecoderConfig& audio_config,
+                                      pb::AudioDecoderConfig* audio_message);
 bool ConvertProtoToAudioDecoderConfig(
     const pb::AudioDecoderConfig& audio_message,
-    ::media::AudioDecoderConfig* audio_config);
+    AudioDecoderConfig* audio_config);
 
-// Data type conversion between ::media::VideoDecoderConfig and proto buffer.
-void ConvertVideoDecoderConfigToProto(
-    const ::media::VideoDecoderConfig& video_config,
-    pb::VideoDecoderConfig* video_message);
+// Data type conversion between media::VideoDecoderConfig and proto buffer.
+void ConvertVideoDecoderConfigToProto(const VideoDecoderConfig& video_config,
+                                      pb::VideoDecoderConfig* video_message);
 bool ConvertProtoToVideoDecoderConfig(
     const pb::VideoDecoderConfig& video_message,
-    ::media::VideoDecoderConfig* video_config);
+    VideoDecoderConfig* video_config);
 
-// Data type conversion between ::media::CdmKeysInfo and proto buffer.
+// Data type conversion between media::VideoDecoderConfig and proto buffer.
+void ConvertProtoToPipelineStatistics(
+    const pb::PipelineStatistics& stats_message,
+    PipelineStatistics* stats);
+
+// Data type conversion between media::CdmKeysInfo and proto buffer.
 void ConvertCdmKeyInfoToProto(
-    const ::media::CdmKeysInfo& keys_information,
+    const CdmKeysInfo& keys_information,
     pb::CdmClientOnSessionKeysChange* key_change_message);
 void ConvertProtoToCdmKeyInfo(
     const pb::CdmClientOnSessionKeysChange keychange_message,
@@ -105,7 +107,7 @@ bool ConvertProtoToCdmPromiseWithCdmIdSessionId(const pb::RpcMessage& message,
 class CdmPromiseResult {
  public:
   CdmPromiseResult();
-  CdmPromiseResult(::media::CdmPromise::Exception exception,
+  CdmPromiseResult(CdmPromise::Exception exception,
                    uint32_t system_code,
                    std::string error_message);
   CdmPromiseResult(const CdmPromiseResult& other);
@@ -114,13 +116,13 @@ class CdmPromiseResult {
   static CdmPromiseResult SuccessResult();
 
   bool success() const { return success_; }
-  ::media::CdmPromise::Exception exception() const { return exception_; }
+  CdmPromise::Exception exception() const { return exception_; }
   uint32_t system_code() const { return system_code_; }
   const std::string& error_message() const { return error_message_; }
 
  private:
   bool success_;
-  ::media::CdmPromise::Exception exception_;
+  CdmPromise::Exception exception_;
   uint32_t system_code_;
   std::string error_message_;
 };
@@ -128,4 +130,4 @@ class CdmPromiseResult {
 }  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_RPC_PROTO_UTILS_H_
+#endif  // MEDIA_REMOTING_PROTO_UTILS_H_

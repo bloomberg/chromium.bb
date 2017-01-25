@@ -268,11 +268,12 @@
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "content/renderer/image_downloader/single_image_downloader.h"  // nogncheck
+#include "media/remoting/adaptive_renderer_factory.h"     // nogncheck
 #include "media/remoting/remoting_cdm_controller.h"       // nogncheck
 #include "media/remoting/remoting_cdm_factory.h"          // nogncheck
-#include "media/remoting/remoting_renderer_controller.h"  // nogncheck
-#include "media/remoting/remoting_renderer_factory.h"     // nogncheck
-#include "media/remoting/remoting_sink_observer.h"        // nogncheck
+#include "media/remoting/renderer_controller.h"           // nogncheck
+#include "media/remoting/shared_session.h"                // nogncheck
+#include "media/remoting/sink_availability_observer.h"    // nogncheck
 #endif
 
 using base::Time;
@@ -1165,14 +1166,16 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   manifest_manager_ = new ManifestManager(this);
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  // Create the RemotingSinkObserver to monitor the remoting sink availablity.
+  // Create the SinkAvailabilityObserver to monitor the remoting sink
+  // availablity.
   media::mojom::RemotingSourcePtr remoting_source;
   media::mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
   media::mojom::RemoterPtr remoter;
   GetRemoterFactory()->Create(std::move(remoting_source),
                               mojo::MakeRequest(&remoter));
-  remoting_sink_observer_ = base::MakeUnique<media::RemotingSinkObserver>(
-      std::move(remoting_source_request), std::move(remoter));
+  remoting_sink_observer_ =
+      base::MakeUnique<media::remoting::SinkAvailabilityObserver>(
+          std::move(remoting_source_request), std::move(remoter));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 }
 
@@ -2762,20 +2765,6 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-std::unique_ptr<media::RemotingRendererController>
-RenderFrameImpl::CreateRemotingRendererController() {
-  media::mojom::RemotingSourcePtr remoting_source;
-  media::mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
-  media::mojom::RemoterPtr remoter;
-  GetRemoterFactory()->Create(std::move(remoting_source),
-                              mojo::MakeRequest(&remoter));
-  return base::MakeUnique<media::RemotingRendererController>(
-      make_scoped_refptr(new media::RemotingSourceImpl(
-          std::move(remoting_source_request), std::move(remoter))));
-}
-#endif
-
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     const blink::WebMediaPlayerSource& source,
     WebMediaPlayerClient* client,
@@ -2820,8 +2809,15 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  std::unique_ptr<media::RemotingRendererController> remoting_controller =
-      CreateRemotingRendererController();
+  media::mojom::RemotingSourcePtr remoting_source;
+  media::mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
+  media::mojom::RemoterPtr remoter;
+  GetRemoterFactory()->Create(std::move(remoting_source),
+                              mojo::MakeRequest(&remoter));
+  using RemotingController = media::remoting::RendererController;
+  std::unique_ptr<RemotingController> remoting_controller(
+      new RemotingController(new media::remoting::SharedSession(
+          std::move(remoting_source_request), std::move(remoter))));
   base::WeakPtr<media::MediaObserver> media_observer =
       remoting_controller->GetWeakPtr();
 #else
@@ -2883,10 +2879,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  media::RemotingRendererController* remoting_controller_ptr =
-      remoting_controller.get();
-  media_renderer_factory = base::MakeUnique<media::RemotingRendererFactory>(
-      std::move(media_renderer_factory), std::move(remoting_controller));
+  auto* const remoting_controller_ptr = remoting_controller.get();
+  media_renderer_factory =
+      base::MakeUnique<media::remoting::AdaptiveRendererFactory>(
+          std::move(media_renderer_factory), std::move(remoting_controller));
 #endif
 
   if (!url_index_.get() || url_index_->frame() != frame_)
@@ -6604,7 +6600,7 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  cdm_factory_.reset(new media::RemotingCdmFactory(
+  cdm_factory_.reset(new media::remoting::RemotingCdmFactory(
       std::move(cdm_factory_), GetRemoterFactory(),
       std::move(remoting_sink_observer_)));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)

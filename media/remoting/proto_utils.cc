@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/rpc/proto_utils.h"
+#include "media/remoting/proto_utils.h"
 
 #include <algorithm>
 
@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "media/base/encryption_scheme.h"
-#include "media/remoting/rpc/proto_enum_utils.h"
+#include "media/remoting/proto_enum_utils.h"
 
 namespace media {
 namespace remoting {
@@ -22,33 +22,31 @@ constexpr size_t kPayloadVersionFieldSize = sizeof(uint8_t);
 constexpr size_t kProtoBufferHeaderSize = sizeof(uint16_t);
 constexpr size_t kDataBufferHeaderSize = sizeof(uint32_t);
 
-std::unique_ptr<::media::DecryptConfig> ConvertProtoToDecryptConfig(
+std::unique_ptr<DecryptConfig> ConvertProtoToDecryptConfig(
     const pb::DecryptConfig& config_message) {
   if (!config_message.has_key_id())
     return nullptr;
   if (!config_message.has_iv())
     return nullptr;
 
-  std::vector<::media::SubsampleEntry> entries(
-      config_message.sub_samples_size());
+  std::vector<SubsampleEntry> entries(config_message.sub_samples_size());
   for (int i = 0; i < config_message.sub_samples_size(); ++i) {
     entries.push_back(
-        ::media::SubsampleEntry(config_message.sub_samples(i).clear_bytes(),
-                                config_message.sub_samples(i).cypher_bytes()));
+        SubsampleEntry(config_message.sub_samples(i).clear_bytes(),
+                       config_message.sub_samples(i).cypher_bytes()));
   }
 
-  std::unique_ptr<::media::DecryptConfig> decrypt_config(
-      new ::media::DecryptConfig(config_message.key_id(), config_message.iv(),
-                                 entries));
+  std::unique_ptr<DecryptConfig> decrypt_config(
+      new DecryptConfig(config_message.key_id(), config_message.iv(), entries));
   return decrypt_config;
 }
 
-scoped_refptr<::media::DecoderBuffer> ConvertProtoToDecoderBuffer(
+scoped_refptr<DecoderBuffer> ConvertProtoToDecoderBuffer(
     const pb::DecoderBuffer& buffer_message,
-    scoped_refptr<::media::DecoderBuffer> buffer) {
+    scoped_refptr<DecoderBuffer> buffer) {
   if (buffer_message.is_eos()) {
     VLOG(1) << "EOS data";
-    return ::media::DecoderBuffer::CreateEOSBuffer();
+    return DecoderBuffer::CreateEOSBuffer();
   }
 
   if (buffer_message.has_timestamp_usec()) {
@@ -87,7 +85,7 @@ scoped_refptr<::media::DecoderBuffer> ConvertProtoToDecoderBuffer(
 
   if (has_discard) {
     buffer->set_discard_padding(
-        ::media::DecoderBuffer::DiscardPadding(front_discard, back_discard));
+        DecoderBuffer::DiscardPadding(front_discard, back_discard));
   }
 
   if (buffer_message.has_splice_timestamp_usec()) {
@@ -104,7 +102,7 @@ scoped_refptr<::media::DecoderBuffer> ConvertProtoToDecoderBuffer(
   return buffer;
 }
 
-void ConvertDecryptConfigToProto(const ::media::DecryptConfig& decrypt_config,
+void ConvertDecryptConfigToProto(const DecryptConfig& decrypt_config,
                                  pb::DecryptConfig* config_message) {
   DCHECK(config_message);
 
@@ -119,45 +117,42 @@ void ConvertDecryptConfigToProto(const ::media::DecryptConfig& decrypt_config,
   }
 }
 
-void ConvertDecoderBufferToProto(
-    const scoped_refptr<::media::DecoderBuffer>& decoder_buffer,
-    pb::DecoderBuffer* buffer_message) {
-  if (decoder_buffer->end_of_stream()) {
+void ConvertDecoderBufferToProto(const DecoderBuffer& decoder_buffer,
+                                 pb::DecoderBuffer* buffer_message) {
+  if (decoder_buffer.end_of_stream()) {
     buffer_message->set_is_eos(true);
     return;
   }
 
-  VLOG(3) << "timestamp:" << decoder_buffer->timestamp().InMicroseconds()
-          << " duration:" << decoder_buffer->duration().InMicroseconds();
+  VLOG(3) << "timestamp:" << decoder_buffer.timestamp().InMicroseconds()
+          << " duration:" << decoder_buffer.duration().InMicroseconds();
   buffer_message->set_timestamp_usec(
-      decoder_buffer->timestamp().InMicroseconds());
-  buffer_message->set_duration_usec(
-      decoder_buffer->duration().InMicroseconds());
-  buffer_message->set_is_key_frame(decoder_buffer->is_key_frame());
+      decoder_buffer.timestamp().InMicroseconds());
+  buffer_message->set_duration_usec(decoder_buffer.duration().InMicroseconds());
+  buffer_message->set_is_key_frame(decoder_buffer.is_key_frame());
 
-  if (decoder_buffer->decrypt_config()) {
-    ConvertDecryptConfigToProto(*decoder_buffer->decrypt_config(),
+  if (decoder_buffer.decrypt_config()) {
+    ConvertDecryptConfigToProto(*decoder_buffer.decrypt_config(),
                                 buffer_message->mutable_decrypt_config());
   }
 
   buffer_message->set_front_discard_usec(
-      decoder_buffer->discard_padding().first.InMicroseconds());
+      decoder_buffer.discard_padding().first.InMicroseconds());
   buffer_message->set_back_discard_usec(
-      decoder_buffer->discard_padding().second.InMicroseconds());
+      decoder_buffer.discard_padding().second.InMicroseconds());
   buffer_message->set_splice_timestamp_usec(
-      decoder_buffer->splice_timestamp().InMicroseconds());
+      decoder_buffer.splice_timestamp().InMicroseconds());
 
-  if (decoder_buffer->side_data_size()) {
-    buffer_message->set_side_data(decoder_buffer->side_data(),
-                                  decoder_buffer->side_data_size());
+  if (decoder_buffer.side_data_size()) {
+    buffer_message->set_side_data(decoder_buffer.side_data(),
+                                  decoder_buffer.side_data_size());
   }
 }
 
 }  // namespace
 
-scoped_refptr<::media::DecoderBuffer> ByteArrayToDecoderBuffer(
-    const uint8_t* data,
-    uint32_t size) {
+scoped_refptr<DecoderBuffer> ByteArrayToDecoderBuffer(const uint8_t* data,
+                                                      uint32_t size) {
   base::BigEndianReader reader(reinterpret_cast<const char*>(data), size);
   uint8_t payload_version = 0;
   uint16_t proto_size = 0;
@@ -172,25 +167,23 @@ scoped_refptr<::media::DecoderBuffer> ByteArrayToDecoderBuffer(
     // Deserialize proto buffer. It passes the pre allocated DecoderBuffer into
     // the function because the proto buffer may overwrite DecoderBuffer since
     // it may be EOS buffer.
-    scoped_refptr<media::DecoderBuffer> decoder_buffer =
-        ConvertProtoToDecoderBuffer(
-            segment,
-            DecoderBuffer::CopyFrom(
-                reinterpret_cast<const uint8_t*>(reader.ptr()), buffer_size));
+    scoped_refptr<DecoderBuffer> decoder_buffer = ConvertProtoToDecoderBuffer(
+        segment,
+        DecoderBuffer::CopyFrom(reinterpret_cast<const uint8_t*>(reader.ptr()),
+                                buffer_size));
     return decoder_buffer;
   }
 
-  LOG(ERROR) << "Not able to convert byte array to ::media::DecoderBuffer";
   return nullptr;
 }
 
 std::vector<uint8_t> DecoderBufferToByteArray(
-    const scoped_refptr<::media::DecoderBuffer>& decoder_buffer) {
+    const DecoderBuffer& decoder_buffer) {
   pb::DecoderBuffer decoder_buffer_message;
   ConvertDecoderBufferToProto(decoder_buffer, &decoder_buffer_message);
 
   size_t decoder_buffer_size =
-      decoder_buffer->end_of_stream() ? 0 : decoder_buffer->data_size();
+      decoder_buffer.end_of_stream() ? 0 : decoder_buffer.data_size();
   size_t size = kPayloadVersionFieldSize + kProtoBufferHeaderSize +
                 decoder_buffer_message.ByteSize() + kDataBufferHeaderSize +
                 decoder_buffer_size;
@@ -206,21 +199,20 @@ std::vector<uint8_t> DecoderBufferToByteArray(
       writer.WriteU32(decoder_buffer_size)) {
     if (decoder_buffer_size) {
       // DecoderBuffer frame data.
-      writer.WriteBytes(reinterpret_cast<const void*>(decoder_buffer->data()),
-                        decoder_buffer->data_size());
+      writer.WriteBytes(reinterpret_cast<const void*>(decoder_buffer.data()),
+                        decoder_buffer.data_size());
     }
     return buffer;
   }
 
+  NOTREACHED();
   // Reset buffer since serialization of the data failed.
-  LOG(ERROR) << "Not able to convert ::media::DecoderBuffer to byte array";
   buffer.clear();
   return buffer;
 }
 
-void ConvertEncryptionSchemeToProto(
-    const ::media::EncryptionScheme& encryption_scheme,
-    pb::EncryptionScheme* message) {
+void ConvertEncryptionSchemeToProto(const EncryptionScheme& encryption_scheme,
+                                    pb::EncryptionScheme* message) {
   DCHECK(message);
   message->set_mode(
       ToProtoEncryptionSchemeCipherMode(encryption_scheme.mode()).value());
@@ -228,17 +220,16 @@ void ConvertEncryptionSchemeToProto(
   message->set_skip_blocks(encryption_scheme.pattern().skip_blocks());
 }
 
-::media::EncryptionScheme ConvertProtoToEncryptionScheme(
+EncryptionScheme ConvertProtoToEncryptionScheme(
     const pb::EncryptionScheme& message) {
-  return ::media::EncryptionScheme(
+  return EncryptionScheme(
       ToMediaEncryptionSchemeCipherMode(message.mode()).value(),
-      ::media::EncryptionScheme::Pattern(message.encrypt_blocks(),
-                                         message.skip_blocks()));
+      EncryptionScheme::Pattern(message.encrypt_blocks(),
+                                message.skip_blocks()));
 }
 
-void ConvertAudioDecoderConfigToProto(
-    const ::media::AudioDecoderConfig& audio_config,
-    pb::AudioDecoderConfig* audio_message) {
+void ConvertAudioDecoderConfigToProto(const AudioDecoderConfig& audio_config,
+                                      pb::AudioDecoderConfig* audio_message) {
   DCHECK(audio_config.IsValidConfig());
   DCHECK(audio_message);
 
@@ -270,7 +261,7 @@ void ConvertAudioDecoderConfigToProto(
 
 bool ConvertProtoToAudioDecoderConfig(
     const pb::AudioDecoderConfig& audio_message,
-    ::media::AudioDecoderConfig* audio_config) {
+    AudioDecoderConfig* audio_config) {
   DCHECK(audio_config);
   audio_config->Initialize(
       ToMediaAudioCodec(audio_message.codec()).value(),
@@ -285,9 +276,8 @@ bool ConvertProtoToAudioDecoderConfig(
   return audio_config->IsValidConfig();
 }
 
-void ConvertVideoDecoderConfigToProto(
-    const ::media::VideoDecoderConfig& video_config,
-    pb::VideoDecoderConfig* video_message) {
+void ConvertVideoDecoderConfigToProto(const VideoDecoderConfig& video_config,
+                                      pb::VideoDecoderConfig* video_message) {
   DCHECK(video_config.IsValidConfig());
   DCHECK(video_message);
 
@@ -329,9 +319,9 @@ void ConvertVideoDecoderConfigToProto(
 
 bool ConvertProtoToVideoDecoderConfig(
     const pb::VideoDecoderConfig& video_message,
-    ::media::VideoDecoderConfig* video_config) {
+    VideoDecoderConfig* video_config) {
   DCHECK(video_config);
-  ::media::EncryptionScheme encryption_scheme;
+  EncryptionScheme encryption_scheme;
   video_config->Initialize(
       ToMediaVideoCodec(video_message.codec()).value(),
       ToMediaVideoCodecProfile(video_message.profile()).value(),
@@ -351,8 +341,22 @@ bool ConvertProtoToVideoDecoderConfig(
   return video_config->IsValidConfig();
 }
 
+void ConvertProtoToPipelineStatistics(
+    const pb::PipelineStatistics& stats_message,
+    PipelineStatistics* stats) {
+  stats->audio_bytes_decoded = stats_message.audio_bytes_decoded();
+  stats->video_bytes_decoded = stats_message.video_bytes_decoded();
+  stats->video_frames_decoded = stats_message.video_frames_decoded();
+  stats->video_frames_dropped = stats_message.video_frames_dropped();
+  stats->audio_memory_usage = stats_message.audio_memory_usage();
+  stats->video_memory_usage = stats_message.video_memory_usage();
+  // HACK: Set the following to prevent "disable video when hidden" logic in
+  // media::blink::WebMediaPlayerImpl.
+  stats->video_keyframe_distance_average = base::TimeDelta::Max();
+}
+
 void ConvertCdmKeyInfoToProto(
-    const ::media::CdmKeysInfo& keys_information,
+    const CdmKeysInfo& keys_information,
     pb::CdmClientOnSessionKeysChange* key_change_message) {
   for (const auto& info : keys_information) {
     pb::CdmKeyInformation* key = key_change_message->add_key_information();
@@ -371,11 +375,10 @@ void ConvertProtoToCdmKeyInfo(
     const pb::CdmKeyInformation key_info_msg =
         keychange_message.key_information(i);
 
-    std::unique_ptr<::media::CdmKeyInformation> key(
-        new ::media::CdmKeyInformation(
-            key_info_msg.key_id(),
-            ToMediaCdmKeyInformationKeyStatus(key_info_msg.status()).value(),
-            key_info_msg.system_code()));
+    std::unique_ptr<CdmKeyInformation> key(new CdmKeyInformation(
+        key_info_msg.key_id(),
+        ToMediaCdmKeyInformationKeyStatus(key_info_msg.status()).value(),
+        key_info_msg.system_code()));
     key_information->push_back(std::move(key));
   }
 }
@@ -416,7 +419,7 @@ bool ConvertProtoToCdmPromise(const pb::CdmPromise& promise_message,
     return true;
   }
 
-  ::media::CdmPromise::Exception exception = ::media::CdmPromise::UNKNOWN_ERROR;
+  CdmPromise::Exception exception = CdmPromise::UNKNOWN_ERROR;
   uint32_t system_code = 0;
   std::string error_message;
 
@@ -448,9 +451,9 @@ bool ConvertProtoToCdmPromiseWithCdmIdSessionId(const pb::RpcMessage& message,
 
 //==============================================================================
 CdmPromiseResult::CdmPromiseResult()
-    : CdmPromiseResult(::media::CdmPromise::UNKNOWN_ERROR, 0, "") {}
+    : CdmPromiseResult(CdmPromise::UNKNOWN_ERROR, 0, "") {}
 
-CdmPromiseResult::CdmPromiseResult(::media::CdmPromise::Exception exception,
+CdmPromiseResult::CdmPromiseResult(CdmPromise::Exception exception,
                                    uint32_t system_code,
                                    std::string error_message)
     : success_(false),
@@ -463,8 +466,7 @@ CdmPromiseResult::CdmPromiseResult(const CdmPromiseResult& other) = default;
 CdmPromiseResult::~CdmPromiseResult() = default;
 
 CdmPromiseResult CdmPromiseResult::SuccessResult() {
-  CdmPromiseResult result(static_cast<::media::CdmPromise::Exception>(0), 0,
-                          "");
+  CdmPromiseResult result(static_cast<CdmPromise::Exception>(0), 0, "");
   result.success_ = true;
   return result;
 }

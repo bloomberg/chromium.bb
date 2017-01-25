@@ -8,20 +8,20 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/remoting/remoting_source_impl.h"
+#include "media/remoting/shared_session.h"
 
 namespace media {
+namespace remoting {
 
-// This class controlls whether to start a remoting session to create CDM.
-// The |remoting_source_| will be passed to the RemotingRendererController when
-// the CDM is attached to a media element.
-class RemotingCdmController final : public RemotingSourceImpl::Client {
+// This class controlls whether to start a remoting session to create CDM. The
+// |session_| will be passed to the RendererController when the CDM is attached
+// to a media element.
+class RemotingCdmController final : public SharedSession::Client {
  public:
-  explicit RemotingCdmController(
-      scoped_refptr<RemotingSourceImpl> remoting_source);
+  explicit RemotingCdmController(scoped_refptr<SharedSession> session);
   ~RemotingCdmController();
 
-  // RemotingSourceImpl::Client implementations.
+  // SharedSession::Client implementations.
   void OnStarted(bool success) override;
   void OnSessionStateChanged() override;
 
@@ -31,13 +31,10 @@ class RemotingCdmController final : public RemotingSourceImpl::Client {
   using CdmCheckCallback = base::Callback<void(bool is_remoting)>;
   void ShouldCreateRemotingCdm(const CdmCheckCallback& cb);
 
-  RemotingSourceImpl* remoting_source() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return remoting_source_.get();
-  }
+  SharedSession* session() const { return session_.get(); }
 
  private:
-  const scoped_refptr<RemotingSourceImpl> remoting_source_;
+  const scoped_refptr<SharedSession> session_;
 
   // This callback is run once to report whether to create remoting CDM.
   CdmCheckCallback cdm_check_cb_;
@@ -50,6 +47,7 @@ class RemotingCdmController final : public RemotingSourceImpl::Client {
   DISALLOW_COPY_AND_ASSIGN(RemotingCdmController);
 };
 
+}  // namespace remoting
 }  // namespace media
 
 #endif  // MEDIA_REMOTING_REMOTING_CDM_CONTROLLER_H_

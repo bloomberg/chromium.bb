@@ -11,8 +11,11 @@
 #include "media/remoting/remoting_cdm_controller.h"
 
 namespace media {
+namespace remoting {
 
 // TODO(xjz): Merge this with erickung's implementation.
+// TODO(miu): Execute renaming on all RemotingCdm* classes after erickung's
+// implementation is merged-in.
 class RemotingCdm : public ContentDecryptionModule {
  public:
   RemotingCdm(const std::string& key_system,
@@ -45,7 +48,7 @@ class RemotingCdm : public ContentDecryptionModule {
                      std::unique_ptr<SimpleCdmPromise> promise) override;
   CdmContext* GetCdmContext() override;
 
-  RemotingSourceImpl* GetRemotingSource();
+  SharedSession* session() const { return remoting_cdm_controller_->session(); }
 
  private:
   ~RemotingCdm() override;
@@ -56,6 +59,7 @@ class RemotingCdm : public ContentDecryptionModule {
   DISALLOW_COPY_AND_ASSIGN(RemotingCdm);
 };
 
+}  // namespace remoting
 }  // namespace media
 
 #endif  // MEDIA_REMOTING_REMOTING_CDM_H_

@@ -8,11 +8,17 @@
 #include "media/base/cdm_context.h"
 
 namespace media {
+namespace remoting {
 
 class RemotingCdm;
-class RemotingSourceImpl;
+class SharedSession;
 
 // TODO(xjz): Merge this with erickung's implementation.
+// TODO(miu): This class should just be merged into RemotingCdm and implement
+// both the CDM and CdmContext interfaces. Also, replace the GetSharedSession()
+// accessor and move it to a new SharedSession::FromCdmContext() function. Then,
+// neither the controller nor renderer can gain direct access to the CDM impl.
+// See discussion in https://codereview.chromium.org/2643253003 for more info.
 class RemotingCdmContext : public CdmContext {
  public:
   explicit RemotingCdmContext(RemotingCdm* remoting_cdm);
@@ -22,7 +28,7 @@ class RemotingCdmContext : public CdmContext {
   // pointer to it. Otherwise, return nullptr.
   static RemotingCdmContext* From(CdmContext* cdm_context);
 
-  RemotingSourceImpl* GetRemotingSource();
+  SharedSession* GetSharedSession() const;
 
   // CdmContext implementations.
   Decryptor* GetDecryptor() override;
@@ -35,6 +41,7 @@ class RemotingCdmContext : public CdmContext {
   DISALLOW_COPY_AND_ASSIGN(RemotingCdmContext);
 };
 
+}  // namespace remoting
 }  // namespace media
 
 #endif  // MEDIA_REMOTING_REMOTING_CDM_CONTEXT_H_

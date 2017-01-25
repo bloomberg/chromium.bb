@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/remoting_sink_observer.h"
+#include "media/remoting/sink_availability_observer.h"
 
 namespace media {
+namespace remoting {
 
-RemotingSinkObserver::RemotingSinkObserver(
+SinkAvailabilityObserver::SinkAvailabilityObserver(
     mojom::RemotingSourceRequest source_request,
     mojom::RemoterPtr remoter)
     : binding_(this, std::move(source_request)), remoter_(std::move(remoter)) {}
 
-RemotingSinkObserver::~RemotingSinkObserver() {}
+SinkAvailabilityObserver::~SinkAvailabilityObserver() {}
 
-void RemotingSinkObserver::OnSinkAvailable(
+void SinkAvailabilityObserver::OnSinkAvailable(
     mojom::RemotingSinkCapabilities capabilities) {
   sink_capabilities_ = capabilities;
 }
 
-void RemotingSinkObserver::OnSinkGone() {
+void SinkAvailabilityObserver::OnSinkGone() {
   sink_capabilities_ = mojom::RemotingSinkCapabilities::NONE;
 }
 
+}  // namespace remoting
 }  // namespace media

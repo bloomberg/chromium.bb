@@ -2,57 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_REMOTING_SOURCE_IMPL_H_
-#define MEDIA_REMOTING_REMOTING_SOURCE_IMPL_H_
+#ifndef MEDIA_REMOTING_SHARED_SESSION_H_
+#define MEDIA_REMOTING_SHARED_SESSION_H_
 
 #include <vector>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
-#include "media/remoting/rpc/rpc_broker.h"
+#include "media/remoting/rpc_broker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
+namespace remoting {
 
-// State transition diagram:
-//
-// .--> SESSION_UNAVAILABLE
-// |          |      ^
-// |          V      |
-// |     SESSION_CAN_START
-// |          |
-// |          V
-// | .---SESSION_STARTING --.
-// | |        |             |
-// | |        V             |
-// | |   SESSION_STARTED----|
-// | |        |             |
-// | |        V             |
-// | '-> SESSION_STOPPING   |
-// '-----'    |             |
-//            V             V
-//    SESSION_PERMANENTLY_STOPPED
-
-enum RemotingSessionState {
-  // Remoting sink is not available. Can't start remoting.
-  SESSION_UNAVAILABLE,
-  // Remoting sink is available, Can start remoting.
-  SESSION_CAN_START,
-  // Starting a remoting session.
-  SESSION_STARTING,
-  // Remoting session is successively started.
-  SESSION_STARTED,
-  // Stopping the session.
-  SESSION_STOPPING,
-  // Remoting session is permanently stopped. This state indicates that the
-  // video stack cannot continue operation. For example, if a remoting session
-  // involving CDM content was stopped, there is no way to continue playback
-  // because the CDM is required but is no longer available.
-  SESSION_PERMANENTLY_STOPPED,
-};
-
-// Maintains a single remoting session for multiple clients. The session will
+// A single shared remoting session for multiple clients. The session will
 // start remoting when receiving the first request. Once remoting is started,
 // it will be stopped when any of the following happens:
 // 1) Receives the request from any client to stop remoting.
@@ -61,12 +26,46 @@ enum RemotingSessionState {
 // 4) All clients are destroyed.
 //
 // This class is ref-counted because, in some cases, an instance will have
-// shared ownership between RemotingRendererController and
-// RemotingCdmController.
-class RemotingSourceImpl final
-    : public mojom::RemotingSource,
-      public base::RefCountedThreadSafe<RemotingSourceImpl> {
+// shared ownership between RendererController and RemotingCdmController.
+class SharedSession final : public mojom::RemotingSource,
+                            public base::RefCountedThreadSafe<SharedSession> {
  public:
+  // State transition diagram:
+  //
+  // .--> SESSION_UNAVAILABLE
+  // |          |      ^
+  // |          V      |
+  // |     SESSION_CAN_START
+  // |          |
+  // |          V
+  // | .---SESSION_STARTING --.
+  // | |        |             |
+  // | |        V             |
+  // | |   SESSION_STARTED----|
+  // | |        |             |
+  // | |        V             |
+  // | '-> SESSION_STOPPING   |
+  // '-----'    |             |
+  //            V             V
+  //    SESSION_PERMANENTLY_STOPPED
+  enum SessionState {
+    // Remoting sink is not available. Can't start remoting.
+    SESSION_UNAVAILABLE,
+    // Remoting sink is available, Can start remoting.
+    SESSION_CAN_START,
+    // Starting a remoting session.
+    SESSION_STARTING,
+    // Remoting session is successively started.
+    SESSION_STARTED,
+    // Stopping the session.
+    SESSION_STOPPING,
+    // Remoting session is permanently stopped. This state indicates that the
+    // video stack cannot continue operation. For example, if a remoting session
+    // involving CDM content was stopped, there is no way to continue playback
+    // because the CDM is required but is no longer available.
+    SESSION_PERMANENTLY_STOPPED,
+  };
+
   class Client {
    public:
     // Get notified whether the remoting session is successively started.
@@ -75,11 +74,11 @@ class RemotingSourceImpl final
     virtual void OnSessionStateChanged() = 0;
   };
 
-  RemotingSourceImpl(mojom::RemotingSourceRequest source_request,
-                     mojom::RemoterPtr remoter);
+  SharedSession(mojom::RemotingSourceRequest source_request,
+                mojom::RemoterPtr remoter);
 
   // Get the current session state.
-  RemotingSessionState state() const {
+  SessionState state() const {
     DCHECK(thread_checker_.CalledOnValidThread());
     return state_;
   }
@@ -128,22 +127,21 @@ class RemotingSourceImpl final
   void AddClient(Client* client);
   void RemoveClient(Client* client);
 
-  remoting::RpcBroker* GetRpcBroker() const;
+  RpcBroker* rpc_broker() { return &rpc_broker_; }
 
  private:
-  friend class base::RefCountedThreadSafe<RemotingSourceImpl>;
-  ~RemotingSourceImpl() override;
+  friend class base::RefCountedThreadSafe<SharedSession>;
+  ~SharedSession() override;
 
   // Updates the current session state and notifies all the clients if state
   // changes.
-  void UpdateAndNotifyState(RemotingSessionState state);
+  void UpdateAndNotifyState(SessionState state);
 
   // Callback from RpcBroker when sending message to remote sink.
   void SendMessageToSink(std::unique_ptr<std::vector<uint8_t>> message);
 
-  // TODO(xjz): Might merge RpcBroker into RemotingSourceImpl.
-  // Handle incomging and outgoing RPC message.
-  remoting::RpcBroker rpc_broker_;
+  // Handles dispatching of incoming and outgoing RPC messages.
+  RpcBroker rpc_broker_;
 
   const mojo::Binding<mojom::RemotingSource> binding_;
   const mojom::RemoterPtr remoter_;
@@ -154,7 +152,7 @@ class RemotingSourceImpl final
       mojom::RemotingSinkCapabilities::NONE;
 
   // The current state.
-  RemotingSessionState state_ = RemotingSessionState::SESSION_UNAVAILABLE;
+  SessionState state_ = SESSION_UNAVAILABLE;
 
   // Clients are added/removed to/from this list by calling Add/RemoveClient().
   // All the clients are not belong to this class. They are supposed to call
@@ -166,6 +164,7 @@ class RemotingSourceImpl final
   base::ThreadChecker thread_checker_;
 };
 
+}  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_REMOTING_SOURCE_IMPL_H_
+#endif  // MEDIA_REMOTING_SHARED_SESSION_H_

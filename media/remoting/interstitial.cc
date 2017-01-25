@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/remoting_interstitial_ui.h"
+#include "media/remoting/interstitial.h"
 
 #include <algorithm>  // for std::max()
 
@@ -11,6 +11,7 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/base/video_util.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -21,6 +22,7 @@
 #include "ui/gfx/vector_icons_public.h"
 
 namespace media {
+namespace remoting {
 
 namespace {
 
@@ -43,16 +45,16 @@ SkBitmap ResizeImage(const SkBitmap& image, const gfx::Size& scaled_size) {
 }
 
 void RenderCastMessage(const gfx::Size& canvas_size,
-                       RemotingInterstitialType type,
+                       InterstitialType type,
                        SkCanvas* canvas) {
   DCHECK(canvas);
-  if (type == RemotingInterstitialType::BETWEEN_SESSIONS)
+  if (type == InterstitialType::BETWEEN_SESSIONS)
     return;
 
   // Blur the background image.
-  SkScalar sigma = SkDoubleToScalar(10);
+  constexpr SkScalar kSigma = SkIntToScalar(10);
   SkPaint paint_blur;
-  paint_blur.setImageFilter(SkBlurImageFilter::Make(sigma, sigma, nullptr));
+  paint_blur.setImageFilter(SkBlurImageFilter::Make(kSigma, kSigma, nullptr));
   canvas->saveLayer(0, &paint_blur);
   canvas->restore();
 
@@ -69,30 +71,31 @@ void RenderCastMessage(const gfx::Size& canvas_size,
   // Both text and icon are centered horizontally. Together, they are
   // centered vertically.
   SkPaint paint;
-  int text_size = SkIntToScalar(canvas_size.height() / 18);
   paint.setAntiAlias(true);
   paint.setFilterQuality(kHigh_SkFilterQuality);
   paint.setColor(SK_ColorLTGRAY);
   paint.setTypeface(SkTypeface::MakeFromName(
       "sans", SkFontStyle::FromOldStyle(SkTypeface::kNormal)));
-  paint.setTextSize(text_size);
+  const SkScalar text_height = SkIntToScalar(canvas_size.height() / 18);
+  paint.setTextSize(text_height);
 
   // Draw the appropriate text.
-  const std::string remote_playback_message =
-      (type == RemotingInterstitialType::IN_SESSION
+  const std::string message =
+      (type == InterstitialType::IN_SESSION
            ? GetLocalizedStringUTF8(MEDIA_REMOTING_CASTING_VIDEO_TEXT)
            : GetLocalizedStringUTF8(MEDIA_REMOTING_CAST_ERROR_TEXT));
-  size_t display_text_width = paint.measureText(remote_playback_message.data(),
-                                                remote_playback_message.size());
-  SkScalar sk_text_offset_x = (canvas_size.width() - display_text_width) / 2.0;
-  SkScalar sk_text_offset_y = (canvas_size.height() / 2.0) + text_size;
-  canvas->drawText(remote_playback_message.data(),
-                   remote_playback_message.size(), sk_text_offset_x,
+  SkScalar display_text_width =
+      paint.measureText(message.data(), message.size());
+  SkScalar sk_text_offset_x =
+      SkScalarFloorToScalar((canvas_size.width() - display_text_width) / 2.0);
+  SkScalar sk_text_offset_y =
+      SkScalarFloorToScalar((canvas_size.height() / 2.0) + text_height);
+  canvas->drawText(message.data(), message.size(), sk_text_offset_x,
                    sk_text_offset_y, paint);
 
   // Draw the appropriate Cast icon.
   gfx::VectorIconId current_icon =
-      (type == RemotingInterstitialType::IN_SESSION
+      (type == InterstitialType::IN_SESSION
            ? gfx::VectorIconId::MEDIA_ROUTER_ACTIVE
            : gfx::VectorIconId::MEDIA_ROUTER_WARNING);
   gfx::ImageSkia icon_image = gfx::CreateVectorIcon(
@@ -117,10 +120,9 @@ gfx::Size GetCanvasSize(const gfx::Size& image_size,
                           : result;
 }
 
-scoped_refptr<VideoFrame> RenderInterstitialFrame(
-    const SkBitmap& image,
-    const gfx::Size& natural_size,
-    RemotingInterstitialType type) {
+scoped_refptr<VideoFrame> RenderInterstitialFrame(const SkBitmap& image,
+                                                  const gfx::Size& natural_size,
+                                                  InterstitialType type) {
   gfx::Size canvas_size =
       GetCanvasSize(gfx::Size(image.width(), image.height()), natural_size);
   SkBitmap canvas_bitmap;
@@ -133,7 +135,7 @@ scoped_refptr<VideoFrame> RenderInterstitialFrame(
     gfx::Rect centered_rect = ComputeLetterboxRegion(
         gfx::Rect(canvas_size), gfx::Size(image.width(), image.height()));
     SkBitmap processed_image = ResizeImage(image, centered_rect.size());
-    if (type != RemotingInterstitialType::BETWEEN_SESSIONS) {
+    if (type != InterstitialType::BETWEEN_SESSIONS) {
       color_utils::HSL shift = {-1, 0, 0.2};  // Make monochromatic.
       processed_image =
           SkBitmapOperations::CreateHSLShiftedBitmap(processed_image, shift);
@@ -144,24 +146,24 @@ scoped_refptr<VideoFrame> RenderInterstitialFrame(
   RenderCastMessage(canvas_size, type, &canvas);
 
   // Create a new VideoFrame, copy the bitmap, then return it.
-  scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_I420, canvas_size, gfx::Rect(canvas_size),
-      canvas_size, base::TimeDelta());
+  scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
+      PIXEL_FORMAT_I420, canvas_size, gfx::Rect(canvas_size), canvas_size,
+      base::TimeDelta());
   canvas_bitmap.lockPixels();
-  media::CopyRGBToVideoFrame(
-      reinterpret_cast<uint8_t*>(canvas_bitmap.getPixels()),
-      canvas_bitmap.rowBytes(),
-      gfx::Rect(canvas_size.width(), canvas_size.height()), video_frame.get());
+  CopyRGBToVideoFrame(reinterpret_cast<uint8_t*>(canvas_bitmap.getPixels()),
+                      canvas_bitmap.rowBytes(),
+                      gfx::Rect(canvas_size.width(), canvas_size.height()),
+                      video_frame.get());
   canvas_bitmap.unlockPixels();
   return video_frame;
 }
 
 }  // namespace
 
-void PaintRemotingInterstitial(const SkBitmap& image,
-                               const gfx::Size& natural_size,
-                               RemotingInterstitialType interstitial_type,
-                               VideoRendererSink* video_renderer_sink) {
+void PaintInterstitial(const SkBitmap& image,
+                       const gfx::Size& natural_size,
+                       InterstitialType interstitial_type,
+                       VideoRendererSink* video_renderer_sink) {
   if (!video_renderer_sink)
     return;
 
@@ -171,4 +173,5 @@ void PaintRemotingInterstitial(const SkBitmap& image,
   video_renderer_sink->PaintSingleFrame(interstitial);
 }
 
+}  // namespace remoting
 }  // namespace media

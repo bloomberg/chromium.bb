@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_REMOTING_INTERSTITIAL_UI_H_
-#define MEDIA_REMOTING_REMOTING_INTERSTITIAL_UI_H_
+#ifndef MEDIA_REMOTING_INTERSTITIAL_H_
+#define MEDIA_REMOTING_INTERSTITIAL_H_
 
-#include "third_party/skia/include/core/SkBitmap.h"
+class SkBitmap;
 
 namespace gfx {
 class Size;
@@ -15,7 +15,9 @@ namespace media {
 
 class VideoRendererSink;
 
-enum RemotingInterstitialType {
+namespace remoting {
+
+enum InterstitialType {
   BETWEEN_SESSIONS,             // Show background image only.
   IN_SESSION,                   // Show MEDIA_REMOTING_CASTING_VIDEO_TEXT.
   ENCRYPTED_MEDIA_FATAL_ERROR,  // Show MEDIA_REMOTING_CAST_ERROR_TEXT.
@@ -27,11 +29,12 @@ enum RemotingInterstitialType {
 // |background_image| will be centered in the canvas. When |background_image|
 // is empty, interstitial will be drawn on a blank and black background. When
 // |interstial_type| is BETWEEN_SESSIONS, show background image only.
-void PaintRemotingInterstitial(const SkBitmap& background_image,
-                               const gfx::Size& natural_size,
-                               RemotingInterstitialType interstitial_type,
-                               VideoRendererSink* video_renderer_sink);
+void PaintInterstitial(const SkBitmap& background_image,
+                       const gfx::Size& natural_size,
+                       InterstitialType interstitial_type,
+                       VideoRendererSink* video_renderer_sink);
 
+}  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_REMOTING_INTERSTITIAL_UI_H_
+#endif  // MEDIA_REMOTING_INTERSTITIAL_H_

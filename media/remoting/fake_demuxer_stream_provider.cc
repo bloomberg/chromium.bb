@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/fake_remoting_demuxer_stream_provider.h"
+#include "media/remoting/fake_demuxer_stream_provider.h"
 
 #include <vector>
 
@@ -16,8 +16,9 @@ using testing::Invoke;
 using testing::Return;
 
 namespace media {
+namespace remoting {
 
-DummyDemuxerStream::DummyDemuxerStream(bool is_audio) {
+FakeDemuxerStream::FakeDemuxerStream(bool is_audio) {
   type_ = is_audio ? DemuxerStream::AUDIO : DemuxerStream::VIDEO;
   if (is_audio) {
     audio_config_.Initialize(kCodecAAC, kSampleFormatS16, CHANNEL_LAYOUT_STEREO,
@@ -31,53 +32,53 @@ DummyDemuxerStream::DummyDemuxerStream(bool is_audio) {
                              rect, size, std::vector<uint8_t>(), Unencrypted());
   }
   ON_CALL(*this, Read(_))
-      .WillByDefault(Invoke(this, &DummyDemuxerStream::FakeRead));
+      .WillByDefault(Invoke(this, &FakeDemuxerStream::FakeRead));
 }
 
-DummyDemuxerStream::~DummyDemuxerStream() = default;
+FakeDemuxerStream::~FakeDemuxerStream() = default;
 
-void DummyDemuxerStream::FakeRead(const ReadCB& read_cb) {
+void FakeDemuxerStream::FakeRead(const ReadCB& read_cb) {
   if (buffer_queue_.empty()) {
     // Silent return to simulate waiting for buffer available.
     pending_read_cb_ = read_cb;
     return;
   }
-  scoped_refptr<::media::DecoderBuffer> buffer = buffer_queue_.front();
+  scoped_refptr<DecoderBuffer> buffer = buffer_queue_.front();
   buffer_queue_.pop_front();
   read_cb.Run(kOk, buffer);
 }
 
-AudioDecoderConfig DummyDemuxerStream::audio_decoder_config() {
+AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {
   return audio_config_;
 }
 
-VideoDecoderConfig DummyDemuxerStream::video_decoder_config() {
+VideoDecoderConfig FakeDemuxerStream::video_decoder_config() {
   return video_config_;
 }
 
-DemuxerStream::Type DummyDemuxerStream::type() const {
+DemuxerStream::Type FakeDemuxerStream::type() const {
   return type_;
 }
 
-DemuxerStream::Liveness DummyDemuxerStream::liveness() const {
+DemuxerStream::Liveness FakeDemuxerStream::liveness() const {
   return LIVENESS_UNKNOWN;
 }
 
-bool DummyDemuxerStream::SupportsConfigChanges() {
+bool FakeDemuxerStream::SupportsConfigChanges() {
   return false;
 }
 
-VideoRotation DummyDemuxerStream::video_rotation() {
+VideoRotation FakeDemuxerStream::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
-bool DummyDemuxerStream::enabled() const {
+bool FakeDemuxerStream::enabled() const {
   return false;
 }
 
-void DummyDemuxerStream::CreateFakeFrame(size_t size,
-                                         bool key_frame,
-                                         int pts_ms) {
+void FakeDemuxerStream::CreateFakeFrame(size_t size,
+                                        bool key_frame,
+                                        int pts_ms) {
   std::vector<uint8_t> buffer(size);
   // Assign each byte in the buffer its index mod 256.
   for (size_t i = 0; i < size; ++i) {
@@ -86,8 +87,8 @@ void DummyDemuxerStream::CreateFakeFrame(size_t size,
   base::TimeDelta pts = base::TimeDelta::FromMilliseconds(pts_ms);
 
   // To DecoderBuffer
-  scoped_refptr<::media::DecoderBuffer> input_buffer =
-      ::media::DecoderBuffer::CopyFrom(buffer.data(), size);
+  scoped_refptr<DecoderBuffer> input_buffer =
+      DecoderBuffer::CopyFrom(buffer.data(), size);
   input_buffer->set_timestamp(pts);
   input_buffer->set_is_key_frame(key_frame);
 
@@ -100,16 +101,16 @@ void DummyDemuxerStream::CreateFakeFrame(size_t size,
   }
 }
 
-FakeRemotingDemuxerStreamProvider::FakeRemotingDemuxerStreamProvider()
-    : demuxer_stream_(new DummyDemuxerStream(true)) {}
+FakeDemuxerStreamProvider::FakeDemuxerStreamProvider()
+    : demuxer_stream_(new FakeDemuxerStream(true)) {}
 
-FakeRemotingDemuxerStreamProvider::~FakeRemotingDemuxerStreamProvider() {}
+FakeDemuxerStreamProvider::~FakeDemuxerStreamProvider() {}
 
-DemuxerStream* FakeRemotingDemuxerStreamProvider::GetStream(
-    DemuxerStream::Type type) {
+DemuxerStream* FakeDemuxerStreamProvider::GetStream(DemuxerStream::Type type) {
   if (type == DemuxerStream::AUDIO)
     return reinterpret_cast<DemuxerStream*>(demuxer_stream_.get());
   return nullptr;
 }
 
+}  // namespace remoting
 }  // namespace media

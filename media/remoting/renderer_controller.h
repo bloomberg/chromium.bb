@@ -2,41 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_REMOTING_RENDERER_CONTROLLER_H_
-#define MEDIA_REMOTING_REMOTING_RENDERER_CONTROLLER_H_
+#ifndef MEDIA_REMOTING_RENDERER_CONTROLLER_H_
+#define MEDIA_REMOTING_RENDERER_CONTROLLER_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "media/base/media_observer.h"
+#include "media/remoting/interstitial.h"
 #include "media/remoting/metrics.h"
-#include "media/remoting/remoting_interstitial_ui.h"
-#include "media/remoting/remoting_source_impl.h"
+#include "media/remoting/shared_session.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace media {
-
 namespace remoting {
+
 class RpcBroker;
-}
 
 // This class:
-// 1) Implements the RemotingSourceImpl::Client;
+// 1) Implements the SharedSession::Client;
 // 2) Monitors player events as a MediaObserver;
 // 3) May trigger the switch of the media renderer between local playback
 // and remoting.
-class RemotingRendererController final : public RemotingSourceImpl::Client,
-                                         public MediaObserver {
+class RendererController final : public SharedSession::Client,
+                                 public MediaObserver {
  public:
-  explicit RemotingRendererController(
-      scoped_refptr<RemotingSourceImpl> remoting_source);
-  ~RemotingRendererController() override;
+  explicit RendererController(scoped_refptr<SharedSession> session);
+  ~RendererController() override;
 
-  // RemotingSourceImpl::Client implemenations.
+  // SharedSession::Client implementation.
   void OnStarted(bool success) override;
   void OnSessionStateChanged() override;
 
-  // MediaObserver implementations.
+  // MediaObserver implementation.
   void OnEnteredFullscreen() override;
   void OnExitedFullscreen() override;
   void OnBecameDominantVisibleContent(bool is_dominant) override;
@@ -54,8 +52,8 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   using ShowInterstitialCallback =
       base::Callback<void(const base::Optional<SkBitmap>&,
                           const gfx::Size&,
-                          RemotingInterstitialType type)>;
-  // Called by RemoteRendererImpl constructor to set the callback to draw and
+                          InterstitialType type)>;
+  // Called by the CourierRenderer constructor to set the callback to draw and
   // show remoting interstial.
   void SetShowInterstitialCallback(const ShowInterstitialCallback& cb);
   using DownloadPosterCallback =
@@ -64,34 +62,30 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Set the callback to download poster image.
   void SetDownloadPosterCallback(const DownloadPosterCallback& cb);
 
-  base::WeakPtr<RemotingRendererController> GetWeakPtr() {
+  base::WeakPtr<RendererController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
-  // Used by RemotingRendererFactory to query whether to create Media Remoting
-  // Renderer.
+  // Used by AdaptiveRendererFactory to query whether to create a Media
+  // Remoting Renderer.
   bool remote_rendering_started() const {
     DCHECK(thread_checker_.CalledOnValidThread());
     return remote_rendering_started_;
   }
 
-  void StartDataPipe(
-      std::unique_ptr<mojo::DataPipe> audio_data_pipe,
-      std::unique_ptr<mojo::DataPipe> video_data_pipe,
-      const RemotingSourceImpl::DataPipeStartCallback& done_callback);
+  void StartDataPipe(std::unique_ptr<mojo::DataPipe> audio_data_pipe,
+                     std::unique_ptr<mojo::DataPipe> video_data_pipe,
+                     const SharedSession::DataPipeStartCallback& done_callback);
 
-  // Used by RemotingRendererImpl to query the session state.
-  RemotingSourceImpl* remoting_source() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return remoting_source_.get();
-  }
+  // Used by CourierRenderer to query the session state.
+  SharedSession* session() const { return session_.get(); }
 
-  base::WeakPtr<remoting::RpcBroker> GetRpcBroker() const;
+  base::WeakPtr<RpcBroker> GetRpcBroker() const;
 
-  // Called by RemoteRendererImpl when it encountered a fatal error. This will
+  // Called by CourierRenderer when it encountered a fatal error. This will
   // cause remoting to shut down and never start back up for the lifetime of
   // this controller.
-  void OnRendererFatalError(remoting::StopTrigger stop_trigger);
+  void OnRendererFatalError(StopTrigger stop_trigger);
 
  private:
   bool has_audio() const {
@@ -107,8 +101,8 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Called when the session availability state may have changed. Each call to
   // this method could cause a remoting session to be started or stopped; and if
   // that happens, the |start_trigger| or |stop_trigger| must be the reason.
-  void UpdateFromSessionState(remoting::StartTrigger start_trigger,
-                              remoting::StopTrigger stop_trigger);
+  void UpdateFromSessionState(StartTrigger start_trigger,
+                              StopTrigger stop_trigger);
 
   bool IsVideoCodecSupported();
   bool IsAudioCodecSupported();
@@ -121,8 +115,8 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // necessary. Each call to this method could cause a remoting session to be
   // started or stopped; and if that happens, the |start_trigger| or
   // |stop_trigger| must be the reason.
-  void UpdateAndMaybeSwitch(remoting::StartTrigger start_trigger,
-                            remoting::StopTrigger stop_trigger);
+  void UpdateAndMaybeSwitch(StartTrigger start_trigger,
+                            StopTrigger stop_trigger);
 
   // Called to download the poster image. Called when:
   // 1. Poster URL changes.
@@ -137,9 +131,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   // Update remoting interstitial with |image|. When |image| is not set,
   // interstitial will be drawn on previously downloaded poster image (in
-  // RemoteRendererImpl) or black background if none was downloaded before.
+  // CourierRenderer) or black background if none was downloaded before.
   // Call this when:
-  // 1. SetShowInterstitialCallback() is called (RemoteRendererImpl is created).
+  // 1. SetShowInterstitialCallback() is called (CourierRenderer is created).
   // 2. The remoting session is shut down (to update the status message in the
   //    interstitial).
   // 3. The size of the canvas is changed (to update the background image and
@@ -186,9 +180,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Called when remoting sink availability is changed.
   base::Callback<void(bool)> sink_available_changed_cb_;
 
-  // This is initially the RemotingSourceImpl passed to the ctor, and might be
+  // This is initially the SharedSession passed to the ctor, and might be
   // replaced with a different instance later if OnSetCdm() is called.
-  scoped_refptr<RemotingSourceImpl> remoting_source_;
+  scoped_refptr<SharedSession> session_;
 
   // This is used to check all the methods are called on the current thread in
   // debug builds.
@@ -197,9 +191,10 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Current pipeline metadata.
   PipelineMetadata pipeline_metadata_;
 
-  // The callback to show remoting interstitial. It is set when entering the
-  // remoting mode (RemotingRendererImpl is constructed) by calling
-  // SetShowInterstitialCallback(), and is reset when leaving the remoting mode.
+  // The callback to show the remoting interstitial. It is set shortly after
+  // remoting is started (when CourierRenderer is constructed, it calls
+  // SetShowInterstitialCallback()), and is reset shortly after remoting has
+  // ended.
   ShowInterstitialCallback show_interstitial_cb_;
 
   // Current poster URL, whose image will feed into the local UI.
@@ -211,13 +206,14 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   DownloadPosterCallback download_poster_cb_;
 
   // Records session events of interest.
-  remoting::SessionMetricsRecorder metrics_recorder_;
+  SessionMetricsRecorder metrics_recorder_;
 
-  base::WeakPtrFactory<RemotingRendererController> weak_factory_;
+  base::WeakPtrFactory<RendererController> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemotingRendererController);
+  DISALLOW_COPY_AND_ASSIGN(RendererController);
 };
 
+}  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_REMOTING_RENDERER_CONTROLLER_H_
+#endif  // MEDIA_REMOTING_RENDERER_CONTROLLER_H_

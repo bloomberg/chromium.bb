@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/rpc/proto_utils.h"
+#include "media/remoting/proto_utils.h"
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
 #include "media/base/video_decoder_config.h"
-#include "media/remoting/remoting_rpc_message.pb.h"
+#include "media/remoting/rpc.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,14 +37,13 @@ class ProtoUtilsTest : public testing::Test {
 
 TEST_F(ProtoUtilsTest, PassEOSDecoderBuffer) {
   // 1. To DecoderBuffer
-  scoped_refptr<::media::DecoderBuffer> input_buffer =
-      ::media::DecoderBuffer::CreateEOSBuffer();
+  scoped_refptr<DecoderBuffer> input_buffer = DecoderBuffer::CreateEOSBuffer();
 
   // 2. To Byte Array
-  std::vector<uint8_t> data = DecoderBufferToByteArray(input_buffer);
+  std::vector<uint8_t> data = DecoderBufferToByteArray(*input_buffer);
 
   // 3. To DecoderBuffer
-  scoped_refptr<::media::DecoderBuffer> output_buffer =
+  scoped_refptr<DecoderBuffer> output_buffer =
       ByteArrayToDecoderBuffer(data.data(), data.size());
   DCHECK(output_buffer);
 
@@ -71,17 +70,16 @@ TEST_F(ProtoUtilsTest, PassValidDecoderBuffer) {
   base::TimeDelta pts = base::TimeDelta::FromMilliseconds(5);
 
   // 1. To DecoderBuffer
-  scoped_refptr<::media::DecoderBuffer> input_buffer =
-      ::media::DecoderBuffer::CopyFrom(buffer, buffer_size, side_buffer,
-                                       side_buffer_size);
+  scoped_refptr<DecoderBuffer> input_buffer = DecoderBuffer::CopyFrom(
+      buffer, buffer_size, side_buffer, side_buffer_size);
   input_buffer->set_timestamp(pts);
   input_buffer->set_is_key_frame(true);
 
   // 2. To Byte Array
-  std::vector<uint8_t> data = DecoderBufferToByteArray(input_buffer);
+  std::vector<uint8_t> data = DecoderBufferToByteArray(*input_buffer);
 
   // 3. To DecoderBuffer
-  scoped_refptr<::media::DecoderBuffer> output_buffer =
+  scoped_refptr<DecoderBuffer> output_buffer =
       ByteArrayToDecoderBuffer(data.data(), data.size());
   DCHECK(output_buffer);
 
@@ -119,6 +117,39 @@ TEST_F(ProtoUtilsTest, AudioDecoderConfigConversionTest) {
 
   ASSERT_TRUE(audio_config.Matches(audio_output_config));
 }
+
+TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
+  PipelineStatistics original;
+  // Note: Fill the structure with non-zero bytes to ensure this test is
+  // initializing *all* fields.
+  memset(&original, 0xcd, sizeof(original));
+  original.audio_bytes_decoded = 123;
+  original.video_bytes_decoded = 456;
+  original.video_frames_decoded = 789;
+  original.video_frames_dropped = 21;
+  original.audio_memory_usage = 32;
+  original.video_memory_usage = 43;
+  original.video_keyframe_distance_average = base::TimeDelta::Max();
+
+  // There is no convert-to-proto function, so just do that here.
+  pb::PipelineStatistics pb_stats;
+  pb_stats.set_audio_bytes_decoded(original.audio_bytes_decoded);
+  pb_stats.set_video_bytes_decoded(original.video_bytes_decoded);
+  pb_stats.set_video_frames_decoded(original.video_frames_decoded);
+  pb_stats.set_video_frames_dropped(original.video_frames_dropped);
+  pb_stats.set_audio_memory_usage(original.audio_memory_usage);
+  pb_stats.set_video_memory_usage(original.video_memory_usage);
+
+  PipelineStatistics converted;
+  memset(&converted, ~0xcd, sizeof(converted));  // See note above.
+  ConvertProtoToPipelineStatistics(pb_stats, &converted);
+
+  // If this fails, did media::PipelineStatistics add/change fields that are not
+  // being set by media::remoting::ConvertProtoToPipelineStatistics()?
+  EXPECT_EQ(0, memcmp(&original, &converted, sizeof(converted)));
+}
+
+// TODO(miu): Tests for all other conversion functions.
 
 TEST_F(ProtoUtilsTest, CdmPromiseResultConversion) {
   CdmPromiseResult success_result = CdmPromiseResult::SuccessResult();

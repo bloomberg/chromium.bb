@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_REMOTING_RENDERER_FACTORY_H_
-#define MEDIA_REMOTING_REMOTING_RENDERER_FACTORY_H_
+#ifndef MEDIA_REMOTING_ADAPTIVE_RENDERER_FACTORY_H_
+#define MEDIA_REMOTING_ADAPTIVE_RENDERER_FACTORY_H_
 
 #include "media/base/renderer_factory.h"
-#include "media/remoting/remoting_renderer_controller.h"
+#include "media/remoting/renderer_controller.h"
 
 namespace media {
+namespace remoting {
 
-// Create renderer for local playback or remoting according to info from
-// |remoting_renderer_controller|.
-class RemotingRendererFactory : public RendererFactory {
+// Creates Renderers for either local playback or remote playback, as directed
+// by the RendererController.
+class AdaptiveRendererFactory : public RendererFactory {
  public:
-  RemotingRendererFactory(
+  AdaptiveRendererFactory(
       std::unique_ptr<RendererFactory> default_renderer_factory,
-      std::unique_ptr<RemotingRendererController> remoting_renderer_controller);
-  ~RemotingRendererFactory() override;
+      std::unique_ptr<RendererController> controller);
+  ~AdaptiveRendererFactory() override;
 
   std::unique_ptr<Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -28,12 +29,12 @@ class RemotingRendererFactory : public RendererFactory {
 
  private:
   const std::unique_ptr<RendererFactory> default_renderer_factory_;
-  const std::unique_ptr<RemotingRendererController>
-      remoting_renderer_controller_;
+  const std::unique_ptr<RendererController> controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemotingRendererFactory);
+  DISALLOW_COPY_AND_ASSIGN(AdaptiveRendererFactory);
 };
 
+}  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_REMOTING_RENDERER_FACTORY_H_
+#endif  // MEDIA_REMOTING_ADAPTIVE_RENDERER_FACTORY_H_
