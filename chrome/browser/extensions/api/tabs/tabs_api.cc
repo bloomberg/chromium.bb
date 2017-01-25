@@ -1795,7 +1795,10 @@ ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
 ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
 
 bool ExecuteCodeInTabFunction::HasPermission() {
-  if (Init() &&
+  if (Init() == SUCCESS &&
+      // TODO(devlin/lazyboy): Consider removing the following check as it isn't
+      // doing anything. The fallback to ExtensionFunction::HasPermission()
+      // below dictates what this function returns.
       extension_->permissions_data()->HasAPIPermissionForTab(
           execute_tab_id_, APIPermission::kTab)) {
     return true;
@@ -1803,38 +1806,40 @@ bool ExecuteCodeInTabFunction::HasPermission() {
   return ExtensionFunction::HasPermission();
 }
 
-bool ExecuteCodeInTabFunction::Init() {
-  if (details_.get())
-    return true;
+ExecuteCodeFunction::InitResult ExecuteCodeInTabFunction::Init() {
+  if (init_result_)
+    return init_result_.value();
 
   // |tab_id| is optional so it's ok if it's not there.
   int tab_id = -1;
-  if (args_->GetInteger(0, &tab_id))
-    EXTENSION_FUNCTION_VALIDATE(tab_id >= 0);
+  if (args_->GetInteger(0, &tab_id) && tab_id < 0)
+    return set_init_result(VALIDATION_FAILURE);
 
   // |details| are not optional.
   base::DictionaryValue* details_value = NULL;
   if (!args_->GetDictionary(1, &details_value))
-    return false;
+    return set_init_result(VALIDATION_FAILURE);
   std::unique_ptr<InjectDetails> details(new InjectDetails());
   if (!InjectDetails::Populate(*details_value, details.get()))
-    return false;
+    return set_init_result(VALIDATION_FAILURE);
 
   // If the tab ID wasn't given then it needs to be converted to the
   // currently active tab's ID.
   if (tab_id == -1) {
     Browser* browser = chrome_details_.GetCurrentBrowser();
+    // Can happen during shutdown.
     if (!browser)
-      return false;
+      return set_init_result_error(keys::kNoCurrentWindowError);
     content::WebContents* web_contents = NULL;
+    // Can happen during shutdown.
     if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
-      return false;
+      return set_init_result_error(keys::kNoTabInBrowserWindowError);
   }
 
   execute_tab_id_ = tab_id;
   details_ = std::move(details);
   set_host_id(HostID(HostID::EXTENSIONS, extension()->id()));
-  return true;
+  return set_init_result(SUCCESS);
 }
 
 bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {

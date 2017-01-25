@@ -5,6 +5,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -268,6 +269,32 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
   while (!browser()->tab_strip_model()->empty())
     browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
   base::RunLoop().RunUntilIdle();
+}
+
+// Tests that non-validation failure in tabs.executeScript results in error, and
+// not bad_message.
+// Regression test for https://crbug.com/642794.
+TEST_F(TabsApiUnitTest, ExecuteScriptNoTabIsNonFatalError) {
+  // An extension with "tabs" permission.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("name", "Extension with tabs permission")
+                  .Set("version", "1.0")
+                  .Set("manifest_version", 2)
+                  .Set("permissions", ListBuilder().Append("tabs").Build())
+                  .Build())
+          .Build();
+  scoped_refptr<TabsExecuteScriptFunction> function(
+      new TabsExecuteScriptFunction());
+  function->set_extension(extension);
+  const char* kArgs = R"(["", {"code": ""}])";
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      function.get(), kArgs,
+      browser(),  // browser() doesn't have any tabs.
+      extension_function_test_utils::NONE);
+  EXPECT_EQ(tabs_constants::kNoTabInBrowserWindowError, error);
 }
 
 }  // namespace extensions

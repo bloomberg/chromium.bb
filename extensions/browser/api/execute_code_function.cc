@@ -163,7 +163,13 @@ bool ExecuteCodeFunction::HasPermission() {
 }
 
 bool ExecuteCodeFunction::RunAsync() {
-  EXTENSION_FUNCTION_VALIDATE(Init());
+  InitResult init_result = Init();
+  EXTENSION_FUNCTION_VALIDATE(init_result != VALIDATION_FAILURE);
+  if (init_result == FAILURE) {
+    if (init_error_)
+      SetError(init_error_.value());
+    return false;
+  }
 
   if (!details_->code.get() && !details_->file.get()) {
     error_ = kNoCodeOrFileToExecuteError;

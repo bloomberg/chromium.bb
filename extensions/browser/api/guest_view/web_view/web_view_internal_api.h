@@ -97,7 +97,7 @@ class WebViewInternalExecuteCodeFunction
   ~WebViewInternalExecuteCodeFunction() override;
 
   // Initialize |details_| if it hasn't already been.
-  bool Init() override;
+  InitResult Init() override;
   bool ShouldInsertCSS() const override;
   bool CanExecuteScriptOnPage() override;
   // Guarded by a process ID check.

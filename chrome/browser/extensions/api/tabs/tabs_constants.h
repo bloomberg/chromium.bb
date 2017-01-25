@@ -82,6 +82,7 @@ extern const char kFrameNotFoundError[];
 extern const char kNoCrashBrowserError[];
 extern const char kNoCurrentWindowError[];
 extern const char kNoLastFocusedWindowError[];
+extern const char kNoTabInBrowserWindowError[];
 extern const char kPerOriginOnlyInAutomaticError[];
 extern const char kWindowNotFoundError[];
 extern const char kTabIndexNotFoundError[];

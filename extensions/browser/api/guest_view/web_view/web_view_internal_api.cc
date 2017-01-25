@@ -365,19 +365,16 @@ WebViewInternalExecuteCodeFunction::WebViewInternalExecuteCodeFunction()
 WebViewInternalExecuteCodeFunction::~WebViewInternalExecuteCodeFunction() {
 }
 
-bool WebViewInternalExecuteCodeFunction::Init() {
-  if (details_.get())
-    return true;
+ExecuteCodeFunction::InitResult WebViewInternalExecuteCodeFunction::Init() {
+  if (init_result_)
+    return init_result_.value();
 
-  if (!args_->GetInteger(0, &guest_instance_id_))
-    return false;
-
-  if (!guest_instance_id_)
-    return false;
+  if (!args_->GetInteger(0, &guest_instance_id_) || !guest_instance_id_)
+    return set_init_result(VALIDATION_FAILURE);
 
   std::string src;
   if (!args_->GetString(1, &src))
-    return false;
+    return set_init_result(VALIDATION_FAILURE);
 
   // Set |guest_src_| here, but do not return false if it is invalid.
   // Instead, let it continue with the normal page load sequence,
@@ -387,25 +384,25 @@ bool WebViewInternalExecuteCodeFunction::Init() {
 
   base::DictionaryValue* details_value = NULL;
   if (!args_->GetDictionary(2, &details_value))
-    return false;
+    return set_init_result(VALIDATION_FAILURE);
   std::unique_ptr<InjectDetails> details(new InjectDetails());
   if (!InjectDetails::Populate(*details_value, details.get()))
-    return false;
+    return set_init_result(VALIDATION_FAILURE);
 
   details_ = std::move(details);
 
   if (extension()) {
     set_host_id(HostID(HostID::EXTENSIONS, extension()->id()));
-    return true;
+    return set_init_result(SUCCESS);
   }
 
   WebContents* web_contents = GetSenderWebContents();
   if (web_contents && web_contents->GetWebUI()) {
     const GURL& url = render_frame_host()->GetSiteInstance()->GetSiteURL();
     set_host_id(HostID(HostID::WEBUI, url.spec()));
-    return true;
+    return set_init_result(SUCCESS);
   }
-  return false;
+  return set_init_result_error("");  // TODO(lazyboy): error?
 }
 
 bool WebViewInternalExecuteCodeFunction::ShouldInsertCSS() const {

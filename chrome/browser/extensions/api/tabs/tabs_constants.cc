@@ -81,6 +81,7 @@ const char kNoCrashBrowserError[] =
     "I'm sorry. I'm afraid I can't do that.";
 const char kNoCurrentWindowError[] = "No current window";
 const char kNoLastFocusedWindowError[] = "No last-focused window";
+const char kNoTabInBrowserWindowError[] = "There is no tab in browser window.";
 const char kPerOriginOnlyInAutomaticError[] = "Can only set scope to "
     "\"per-origin\" in \"automatic\" mode.";
 const char kWindowNotFoundError[] = "No window with id: *.";
