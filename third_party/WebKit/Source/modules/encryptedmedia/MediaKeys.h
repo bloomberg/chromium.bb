@@ -128,7 +128,7 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
   bool m_reservedForMediaElement;
 
   HeapDeque<Member<PendingAction>> m_pendingActions;
-  Timer<MediaKeys> m_timer;
+  TaskRunnerTimer<MediaKeys> m_timer;
 };
 
 }  // namespace blink

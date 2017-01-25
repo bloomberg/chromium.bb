@@ -32,6 +32,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
@@ -142,7 +143,9 @@ MediaKeys::MediaKeys(
       m_cdm(std::move(cdm)),
       m_mediaElement(nullptr),
       m_reservedForMediaElement(false),
-      m_timer(this, &MediaKeys::timerFired) {
+      m_timer(TaskRunnerHelper::get(TaskType::MiscPlatformAPI, context),
+              this,
+              &MediaKeys::timerFired) {
   DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
   InstanceCounters::incrementCounter(InstanceCounters::MediaKeysCounter);
 }
