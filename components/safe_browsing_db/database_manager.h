@@ -196,12 +196,16 @@ class SafeBrowsingDatabaseManager
 
   // Called to initialize objects that are used on the io_thread, such as the
   // v4 protocol manager.  This may be called multiple times during the life of
-  // the DatabaseManager. Must be called on IO thread.
+  // the DatabaseManager. Must be called on IO thread. All subclasses should
+  // override this method, set enabled_ to true and call the base class method
+  // at the top of it.
   virtual void StartOnIOThread(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config);
 
-  // Called to stop or shutdown operations on the io_thread.
+  // Called to stop or shutdown operations on the io_thread. All subclasses
+  // should override this method, set enabled_ to false and call the base class
+  // method at the bottom of it.
   virtual void StopOnIOThread(bool shutdown);
 
  protected:
@@ -261,6 +265,10 @@ class SafeBrowsingDatabaseManager
   // In-progress checks. This set owns the SafeBrowsingApiCheck pointers and is
   // responsible for deleting them when removing from the set.
   ApiCheckSet api_checks_;
+
+  // Whether the service is running. 'enabled_' is used by the
+  // SafeBrowsingDatabaseManager on the IO thread during normal operations.
+  bool enabled_;
 
   // Created and destroyed via StartOnIOThread/StopOnIOThread.
   std::unique_ptr<V4GetHashProtocolManager> v4_get_hash_protocol_manager_;

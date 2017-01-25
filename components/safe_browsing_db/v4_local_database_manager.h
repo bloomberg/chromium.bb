@@ -265,9 +265,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // ready to process next update.
   DatabaseUpdatedCallback db_updated_callback_;
 
-  // Whether the service is running.
-  bool enabled_;
-
   // The list of stores to manage (for hash prefixes and full hashes). Each
   // element contains the identifier for the store, the corresponding
   // SBThreatType, whether to fetch hash prefixes for that store, and the

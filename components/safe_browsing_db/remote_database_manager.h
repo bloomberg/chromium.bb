@@ -72,7 +72,6 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Requests currently outstanding.  This owns the ptrs.
   std::vector<ClientRequest*> current_requests_;
-  bool enabled_;
 
   std::set<content::ResourceType> resource_types_to_check_;
 

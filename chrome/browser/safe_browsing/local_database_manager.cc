@@ -271,7 +271,6 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
     const scoped_refptr<SafeBrowsingService>& service)
     : sb_service_(service),
       database_(NULL),
-      enabled_(false),
       enable_download_protection_(false),
       enable_csd_whitelist_(false),
       enable_download_whitelist_(false),
@@ -692,12 +691,13 @@ void LocalSafeBrowsingDatabaseManager::StartOnIOThread(
 
 void LocalSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 
   DoStopOnIOThread();
   if (shutdown) {
     sb_service_ = NULL;
   }
+
+  SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 }
 
 void LocalSafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(

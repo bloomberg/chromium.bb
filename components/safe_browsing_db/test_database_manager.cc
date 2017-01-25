@@ -114,4 +114,16 @@ bool TestSafeBrowsingDatabaseManager::IsSupported() const {
   return false;
 }
 
+void TestSafeBrowsingDatabaseManager::StartOnIOThread(
+    net::URLRequestContextGetter* request_context_getter,
+    const V4ProtocolConfig& config) {
+  SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
+  enabled_ = true;
+}
+
+void TestSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
+  enabled_ = false;
+  SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
+}
+
 }  // namespace safe_browsing

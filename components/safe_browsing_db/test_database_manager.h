@@ -41,6 +41,9 @@ class TestSafeBrowsingDatabaseManager
   bool IsDownloadProtectionEnabled() const override;
   bool IsMalwareKillSwitchOn() override;
   bool IsSupported() const override;
+  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
+                       const V4ProtocolConfig& config) override;
+  void StopOnIOThread(bool shutdown) override;
 
  protected:
   ~TestSafeBrowsingDatabaseManager() override {};

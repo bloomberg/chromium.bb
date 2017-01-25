@@ -138,7 +138,6 @@ scoped_refptr<V4LocalDatabaseManager> V4LocalDatabaseManager::Create(
 
 V4LocalDatabaseManager::V4LocalDatabaseManager(const base::FilePath& base_path)
     : base_path_(base_path),
-      enabled_(false),
       list_infos_(GetListInfos()),
       weak_factory_(this) {
   DCHECK(!base_path_.empty());

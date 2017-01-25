@@ -98,8 +98,7 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
 //
 
 // TODO(nparker): Add more tests for this class
-RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
-    : enabled_(false) {
+RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
   // Decide which resource types to check. These two are the minimum.
   resource_types_to_check_.insert(content::RESOURCE_TYPE_MAIN_FRAME);
   resource_types_to_check_.insert(content::RESOURCE_TYPE_SUB_FRAME);
