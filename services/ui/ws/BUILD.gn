@@ -7,6 +7,7 @@ import("//testing/test.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 
 static_library("lib") {
   sources = [
@@ -201,7 +202,7 @@ group("tests") {
   }
 }
 
-test("mus_ws_unittests") {
+service_test("mus_ws_unittests") {
   sources = [
     "cursor_unittest.cc",
     "display_unittest.cc",
@@ -210,7 +211,6 @@ test("mus_ws_unittests") {
     "event_matcher_unittest.cc",
     "focus_controller_unittest.cc",
     "frame_generator_unittest.cc",
-    "run_all_unittests.cc",
     "server_window_compositor_frame_sink_manager_test_api.cc",
     "server_window_compositor_frame_sink_manager_test_api.h",
     "server_window_drawn_tracker_unittest.cc",
@@ -229,6 +229,8 @@ test("mus_ws_unittests") {
     "window_tree_unittest.cc",
   ]
 
+  catalog = ":mus_ws_unittests_catalog"
+
   deps = [
     ":lib",
     ":test_support",
@@ -237,9 +239,7 @@ test("mus_ws_unittests") {
     "//base/test:test_support",
     "//cc:cc",
     "//gpu/ipc/client",
-    "//mojo/edk/system",
     "//mojo/public/cpp/bindings:bindings",
-    "//services/catalog:lib",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
@@ -258,10 +258,6 @@ test("mus_ws_unittests") {
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
   ]
-
-  data_deps = [
-    ":mus_ws_unittests_catalog_copy",
-  ]
 }
 
 service_manifest("mus_ws_unittests_app_manifest") {
@@ -273,14 +269,4 @@ catalog("mus_ws_unittests_catalog") {
   embedded_services = [ ":mus_ws_unittests_app_manifest" ]
 
   standalone_services = [ "//services/ui:manifest" ]
-}
-
-copy("mus_ws_unittests_catalog_copy") {
-  sources = get_target_outputs(":mus_ws_unittests_catalog")
-  outputs = [
-    "${root_out_dir}/mus_ws_unittests_catalog.json",
-  ]
-  deps = [
-    ":mus_ws_unittests_catalog",
-  ]
 }

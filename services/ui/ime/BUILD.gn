@@ -5,6 +5,7 @@
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -32,18 +33,16 @@ group("tests") {
   ]
 }
 
-test("mus_ime_unittests") {
+service_test("mus_ime_unittests") {
   sources = [
     "ime_unittest.cc",
-    "run_all_unittests.cc",
   ]
+
+  catalog = ":mus_ime_unittests_catalog"
 
   deps = [
     "//base",
-    "//base/test:test_support",
     "//mojo/common",
-    "//mojo/edk/system",
-    "//services/catalog:lib",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp:sources",
     "//services/ui/public/interfaces",
@@ -51,7 +50,6 @@ test("mus_ime_unittests") {
 
   data_deps = [
     ":lib",
-    ":mus_ime_unittests_catalog_copy",
     "//services/ui",
     "//services/ui/ime/test_ime_driver",
   ]
@@ -67,15 +65,5 @@ catalog("mus_ime_unittests_catalog") {
   standalone_services = [
     "//services/ui:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
-  ]
-}
-
-copy("mus_ime_unittests_catalog_copy") {
-  sources = get_target_outputs(":mus_ime_unittests_catalog")
-  outputs = [
-    "${root_out_dir}/mus_ime_unittests_catalog.json",
-  ]
-  deps = [
-    ":mus_ime_unittests_catalog",
   ]
 }

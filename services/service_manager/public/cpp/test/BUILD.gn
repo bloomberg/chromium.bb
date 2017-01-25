@@ -26,3 +26,22 @@ source_set("run_all_service_tests") {
     "//services/service_manager/background:main",
   ]
 }
+
+# TODO(rockot): Remove this when all consumers of :run_all_service_tests are
+# ported to service_test targets.
+source_set("run_all_service_tests_with_catalog") {
+  testonly = true
+
+  sources = [
+    "run_all_service_tests_with_catalog.cc",
+    "service_test_catalog.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/system",
+    "//services/catalog:lib",
+    "//services/service_manager/background:lib",
+  ]
+}

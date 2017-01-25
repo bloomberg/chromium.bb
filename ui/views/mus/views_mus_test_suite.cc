@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -35,11 +36,11 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
+// Generated within the ":views_mus_tests_catalog_source" target.
+extern const char kViewsMusTestCatalog[];
+
 namespace views {
 namespace {
-
-const base::FilePath::CharType kCatalogFilename[] =
-    FILE_PATH_LITERAL("views_mus_tests_catalog.json");
 
 void EnsureCommandLineSwitch(const std::string& name) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -107,8 +108,8 @@ class ServiceManagerConnection {
   ServiceManagerConnection()
       : thread_("Persistent service_manager connections"),
         ipc_thread_("IPC thread") {
-    catalog::Catalog::LoadDefaultCatalogManifest(
-        base::FilePath(kCatalogFilename));
+    catalog::Catalog::SetDefaultCatalogManifest(
+        base::JSONReader::Read(kViewsMusTestCatalog));
     mojo::edk::Init();
     ipc_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));

@@ -11,8 +11,4 @@ specific_include_rules = {
   "gpu_host.h": [
     "+services/ui/gpu/gpu_main.h",
   ],
-  "run_all_unittests.cc": [
-    "+mojo/edk/embedder",
-    "+services/catalog",
-  ]
 }

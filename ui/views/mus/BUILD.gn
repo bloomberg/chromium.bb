@@ -120,6 +120,7 @@ static_library("test_support") {
 
   deps = [
     ":mus",
+    ":views_mus_tests_catalog_source",
     "//base",
     "//base/test:test_support",
     "//mojo/edk/system",
@@ -138,7 +139,6 @@ static_library("test_support") {
   ]
 
   data_deps = [
-    ":views_mus_tests_catalog",
     "//ui/resources:ui_test_pak_data",
   ]
 }
@@ -191,7 +191,6 @@ test("views_mus_unittests") {
   ]
 
   data_deps = [
-    ":views_mus_tests_catalog_copy",
     "//services/ui/ime/test_ime_driver",
     "//services/ui/test_wm",
   ]
@@ -252,7 +251,6 @@ test("views_mus_interactive_ui_tests") {
   ]
 
   data_deps = [
-    ":views_mus_tests_catalog_copy",
     "//services/ui/test_wm",
   ]
 
@@ -293,13 +291,8 @@ catalog("views_mus_tests_catalog") {
   catalog_deps = [ "//mash:catalog" ]
 }
 
-copy("views_mus_tests_catalog_copy") {
+catalog_cpp_source("views_mus_tests_catalog_source") {
   testonly = true
-  sources = get_target_outputs(":views_mus_tests_catalog")
-  outputs = [
-    "${root_out_dir}/views_mus_tests_catalog.json",
-  ]
-  deps = [
-    ":views_mus_tests_catalog",
-  ]
+  catalog = ":views_mus_tests_catalog"
+  output_symbol_name = "kViewsMusTestCatalog"
 }

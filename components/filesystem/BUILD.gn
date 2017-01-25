@@ -5,6 +5,7 @@
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 static_library("lib") {
@@ -63,31 +64,28 @@ service_manifest("manifest") {
   source = "manifest.json"
 }
 
-test("filesystem_service_unittests") {
+service_test("filesystem_service_unittests") {
   sources = [
     "directory_impl_unittest.cc",
     "file_impl_unittest.cc",
     "files_test_base.cc",
     "files_test_base.h",
-    "run_all_unittests.cc",
   ]
+
+  catalog = ":filesystem_service_unittests_catalog"
 
   deps = [
     "//base",
-    "//base/test:test_support",
     "//components/filesystem/public/interfaces",
     "//mojo/common",
-    "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/catalog:lib",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp:sources",
   ]
 
   data_deps = [
     ":filesystem",
-    ":filesystem_service_unittests_catalog_copy",
   ]
 }
 
@@ -99,14 +97,4 @@ service_manifest("test_manifest") {
 catalog("filesystem_service_unittests_catalog") {
   embedded_services = [ ":test_manifest" ]
   standalone_services = [ ":manifest" ]
-}
-
-copy("filesystem_service_unittests_catalog_copy") {
-  sources = get_target_outputs(":filesystem_service_unittests_catalog")
-  outputs = [
-    "${root_out_dir}/filesystem_service_unittests_catalog.json",
-  ]
-  deps = [
-    ":filesystem_service_unittests_catalog",
-  ]
 }

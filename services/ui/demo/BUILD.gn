@@ -5,6 +5,7 @@
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -57,20 +58,18 @@ service_manifest("test_manifest") {
   source = "test_manifest.json"
 }
 
-test("mus_demo_unittests") {
+service_test("mus_demo_unittests") {
   testonly = true
 
   sources = [
     "mus_demo_unittests.cc",
-    "run_all_unittests.cc",
   ]
+
+  catalog = ":mus_demo_unittests_catalog"
 
   deps = [
     ":demo",
     "//base",
-    "//base/test:test_support",
-    "//mojo/edk/system",
-    "//services/catalog:lib",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/public/interfaces",
@@ -79,7 +78,6 @@ test("mus_demo_unittests") {
 
   data_deps = [
     ":mus_demo",
-    ":mus_demo_unittests_catalog_copy",
   ]
 }
 
@@ -95,15 +93,5 @@ catalog("mus_demo_unittests_catalog") {
   standalone_services = [
     ":manifest",
     "//services/ui:manifest",
-  ]
-}
-
-copy("mus_demo_unittests_catalog_copy") {
-  sources = get_target_outputs(":mus_demo_unittests_catalog")
-  outputs = [
-    "${root_out_dir}/mus_demo_unittests_catalog.json",
-  ]
-  deps = [
-    ":mus_demo_unittests_catalog",
   ]
 }
