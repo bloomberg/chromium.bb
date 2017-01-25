@@ -47,9 +47,18 @@ public class SuggestionsSection extends InnerNode {
 
     private boolean mIsNtpDestroyed;
 
-    // Keep track of how many suggestions have been seen by the user so that we replace only
-    // suggestions that have not been seen, yet.
+    /**
+     * Keeps track of how many suggestions have been seen by the user so that we replace only
+     * suggestions that have not been seen, yet.
+     */
     private int mNumberOfSuggestionsSeen;
+
+    /**
+     * Stores whether any suggestions have been appended to the list. In this case the list can
+     * generally be longer than what is served by the Source. Thus, the list should never be
+     * replaced again.
+     */
+    private boolean mHasAppended;
 
     /**
      * Delegate interface that allows dismissing this section without introducing
@@ -324,6 +333,8 @@ public class SuggestionsSection extends InnerNode {
                 mSuggestionsList.getItemCount(), replaceExisting);
         if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestionsList.clear();
 
+        if (!replaceExisting) mHasAppended = true;
+
         // Remove suggestions to be replaced.
         if (replaceExisting && hasSuggestions()) {
             if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()) {
@@ -332,7 +343,7 @@ public class SuggestionsSection extends InnerNode {
                 return;
             }
 
-            if (mNumberOfSuggestionsSeen >= getSuggestionsCount()) {
+            if (mNumberOfSuggestionsSeen >= getSuggestionsCount() || mHasAppended) {
                 Log.d(TAG, "setSuggestions: replacing existing suggestion not possible, all seen");
                 NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_ALL_SEEN);
                 return;

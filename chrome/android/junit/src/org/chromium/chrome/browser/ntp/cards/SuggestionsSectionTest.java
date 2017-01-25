@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
-import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -63,6 +62,7 @@ public class SuggestionsSectionTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
+    private static final int TEST_CATEGORY_ID = 42;
     @Mock
     private SuggestionsSection.Delegate mDelegate;
     @Mock
@@ -189,7 +189,7 @@ public class SuggestionsSectionTest {
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
         SuggestionsCategoryInfo info =
-                new CategoryInfoBuilder(42)
+                new CategoryInfoBuilder(TEST_CATEGORY_ID)
                 .withMoreAction()
                 .withReloadAction()
                 .showIfEmpty()
@@ -270,7 +270,7 @@ public class SuggestionsSectionTest {
 
         // Spy so that VerifyAction can check methods being called.
         SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(42)
+                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
                         .withMoreAction()
                         .withReloadAction()
                         .withViewAllAction()
@@ -296,7 +296,7 @@ public class SuggestionsSectionTest {
 
         // Spy so that VerifyAction can check methods being called.
         SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(42)
+                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
                         .withMoreAction()
                         .withReloadAction()
                         .showIfEmpty()
@@ -319,8 +319,8 @@ public class SuggestionsSectionTest {
         // When only Reload is enabled, it only shows when we have no suggestions.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(42).withReloadAction().showIfEmpty().build());
+        SuggestionsCategoryInfo info = spy(
+                new CategoryInfoBuilder(TEST_CATEGORY_ID).withReloadAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
 
         assertTrue(section.getActionItem().isVisible());
@@ -339,8 +339,8 @@ public class SuggestionsSectionTest {
         // When only FetchMore is enabled, it only shows when we have suggestions.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(42).withMoreAction().showIfEmpty().build());
+        SuggestionsCategoryInfo info = spy(
+                new CategoryInfoBuilder(TEST_CATEGORY_ID).withMoreAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
 
         assertFalse(section.getActionItem().isVisible());
@@ -359,7 +359,8 @@ public class SuggestionsSectionTest {
         // Test where no action is enabled.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info = spy(new CategoryInfoBuilder(42).showIfEmpty().build());
+        SuggestionsCategoryInfo info =
+                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID).showIfEmpty().build());
         SuggestionsSection section = createSection(info);
 
         assertFalse(section.getActionItem().isVisible());
@@ -376,8 +377,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testFetchMoreProgressDisplay() {
         final int suggestionCount = 3;
-        SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(42).withMoreAction().showIfEmpty().build());
+        SuggestionsCategoryInfo info = spy(
+                new CategoryInfoBuilder(TEST_CATEGORY_ID).withMoreAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
         section.setSuggestions(createDummySuggestions(suggestionCount), CategoryStatus.AVAILABLE,
                 /* replaceExisting = */ true);
@@ -399,11 +400,12 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testSectionUpdatesOnNewSuggestions() {
-        SuggestionsSection section = createSectionWithSuggestions(createDummySuggestions(4));
+        SuggestionsSection section =
+                createSectionWithSuggestions(createDummySuggestions(4, TEST_CATEGORY_ID));
         assertEquals(4, section.getSuggestionsCount());
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         assertEquals(3, section.getSuggestionsCount());
     }
 
@@ -418,11 +420,12 @@ public class SuggestionsSectionTest {
         params.put("ignore_updates_for_existing_suggestions", "true");
         CardsVariationParameters.setTestVariationParams(params);
 
-        SuggestionsSection section = createSectionWithSuggestions(createDummySuggestions(4));
+        SuggestionsSection section =
+                createSectionWithSuggestions(createDummySuggestions(4, TEST_CATEGORY_ID));
         assertEquals(4, section.getSuggestionsCount());
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         assertEquals(4, section.getSuggestionsCount());
     }
 
@@ -432,18 +435,18 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testSectionDoesNotUpdateFirstSuggestionOnNewSuggestionsWhenSeen() {
-        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
+        List<SnippetArticle> snippets = createDummySuggestions(4, TEST_CATEGORY_ID, "old");
         // Copy the list when passing to the section - it may alter it but we later need it.
         SuggestionsSection section =
                 createSectionWithSuggestions(new ArrayList<>(snippets));
         assertEquals(4, section.getSuggestionsCount());
 
         // Bind the first suggestion - indicate that it is being viewed.
-        // Indices in {@code section} are off-by-one (index 0 is the header).
+        // Indices in section are off-by-one (index 0 is the header).
         bindViewHolders(section, 1, 2);
 
         List<SnippetArticle> newSnippets =
-                createDummySuggestions(3, KnownCategories.ARTICLES, "new");
+                createDummySuggestions(3, TEST_CATEGORY_ID, "new");
         // Copy the list when passing to the section - it may alter it but we later need it.
         section.setSuggestions(new ArrayList<>(newSnippets), CategoryStatus.AVAILABLE,
                 /* replaceExisting = */ true);
@@ -460,18 +463,18 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testSectionDoesNotUpdateFirstTwoSuggestionOnNewSuggestionsWhenSeen() {
-        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
+        List<SnippetArticle> snippets = createDummySuggestions(4, TEST_CATEGORY_ID, "old");
         // Copy the list when passing to the section - it may alter it but we later need it.
         SuggestionsSection section =
                 createSectionWithSuggestions(new ArrayList<>(snippets));
         assertEquals(4, section.getSuggestionsCount());
 
         // Bind the first two suggestions - indicate that they are being viewed.
-        // Indices in {@code section} are off-by-one (index 0 is the header).
+        // Indices in section are off-by-one (index 0 is the header).
         bindViewHolders(section, 1, 3);
 
         List<SnippetArticle> newSnippets =
-                createDummySuggestions(3, KnownCategories.ARTICLES, "new");
+                createDummySuggestions(3, TEST_CATEGORY_ID, "new");
         // Copy the list when passing to the section - it may alter it but we later need it.
         section.setSuggestions(new ArrayList<>(newSnippets), CategoryStatus.AVAILABLE,
                 /* replaceExisting = */ true);
@@ -489,18 +492,18 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testSectionDoesNotUpdateOnNewSuggestionsWhenNewListIsShorter() {
-        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
+        List<SnippetArticle> snippets = createDummySuggestions(4, TEST_CATEGORY_ID, "old");
         // Copy the list when passing to the section - it may alter it but we later need it.
         SuggestionsSection section =
                 createSectionWithSuggestions(new ArrayList<>(snippets));
         assertEquals(4, section.getSuggestionsCount());
 
         // Bind the first two suggestions - indicate that they are being viewed.
-        // Indices in {@code section} are off-by-one (index 0 is the header).
+        // Indices in section are off-by-one (index 0 is the header).
         bindViewHolders(section, 1, 3);
 
-        section.setSuggestions(
-                createDummySuggestions(1), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(1, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         // Even though the new list has just one suggestion, we need to keep the two seen ones
         // around.
         assertEquals(2, section.getSuggestionsCount());
@@ -515,14 +518,14 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testSectionDoesNotUpdateOnNewSuggestionsWhenCurrentListIsShorter() {
-        List<SnippetArticle> snippets = createDummySuggestions(3, KnownCategories.ARTICLES, "old");
+        List<SnippetArticle> snippets = createDummySuggestions(3, TEST_CATEGORY_ID, "old");
         // Copy the list when passing to the section - it may alter it but we later need it.
         SuggestionsSection section =
                 createSectionWithSuggestions(new ArrayList<>(snippets));
         assertEquals(3, section.getSuggestionsCount());
 
         // Bind the first two suggestions - indicate that they are being viewed.
-        // Indices in {@code section} are off-by-one (index 0 is the header).
+        // Indices in section are off-by-one (index 0 is the header).
         bindViewHolders(section, 1, 3);
 
         // Remove last two items.
@@ -531,8 +534,8 @@ public class SuggestionsSectionTest {
 
         assertEquals(1, section.getSuggestionsCount());
 
-        section.setSuggestions(
-                createDummySuggestions(4), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(4, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         // We do not touch the current list if all has been seen.
         assertEquals(1, section.getSuggestionsCount());
         assertEquals(snippets.get(0), section.getSuggestionAt(1));
@@ -544,22 +547,47 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testSectionDoesNotUpdateOnNewSuggestionsWhenAllSeen() {
-        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
+        List<SnippetArticle> snippets = createDummySuggestions(4, TEST_CATEGORY_ID, "old");
         SuggestionsSection section = createSectionWithSuggestions(snippets);
         assertEquals(4, section.getSuggestionsCount());
 
         // Bind all the suggestions - indicate that they are being viewed.
         bindViewHolders(section);
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         // All old snippets should be in place.
-        assertEquals(4, section.getSuggestionsCount());
-        int index = 1;
-        for (SnippetArticle snippet : snippets) {
-            assertEquals(snippet, section.getSuggestionAt(index++));
-        }
+        verifySnippets(section, snippets);
+    }
+
+    /**
+     * Tests that the UI does not update when anything has been appended.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSectionDoesNotUpdateOnNewSuggestionsWhenAppended() {
+        List<SnippetArticle> snippets = createDummySuggestions(4, TEST_CATEGORY_ID, "old");
+        SuggestionsSection section = createSectionWithSuggestions(snippets);
+
+        // Append another 3 suggestions.
+        List<SnippetArticle> appendedSnippets =
+                createDummySuggestions(3, TEST_CATEGORY_ID, "appended");
+        section.setSuggestions(
+                appendedSnippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ false);
+
+        // All 7 snippets should be in place.
+        snippets.addAll(appendedSnippets);
+        verifySnippets(section, snippets);
+
+        // Try to replace them with another list. Should have no effect.
+        List<SnippetArticle> newSnippets =
+                createDummySuggestions(5, TEST_CATEGORY_ID, "new");
+        section.setSuggestions(newSnippets, CategoryStatus.AVAILABLE,
+                /* replaceExisting = */ true);
+
+        // All previous snippets should be in place.
+        verifySnippets(section, snippets);
     }
 
     private SuggestionsSection createSectionWithSuggestions(List<SnippetArticle> snippets) {
@@ -570,7 +598,7 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSectionWithReloadAction(boolean hasReloadAction) {
-        CategoryInfoBuilder builder = new CategoryInfoBuilder(42).showIfEmpty();
+        CategoryInfoBuilder builder = new CategoryInfoBuilder(TEST_CATEGORY_ID).showIfEmpty();
         if (hasReloadAction) builder.withReloadAction();
         return createSection(builder.build());
     }
@@ -606,5 +634,14 @@ public class SuggestionsSectionTest {
                         ? times(1)
                         : never())
                 .fetchSuggestions(anyInt(), any(String[].class));
+    }
+
+    private static void verifySnippets(SuggestionsSection section, List<SnippetArticle> snippets) {
+        assertEquals(snippets.size(), section.getSuggestionsCount());
+        // Indices in section are off-by-one (index 0 is the header).
+        int index = 1;
+        for (SnippetArticle snippet : snippets) {
+            assertEquals(snippet, section.getSuggestionAt(index++));
+        }
     }
 }
