@@ -226,6 +226,14 @@ public class BrowserStartupController {
         return ContentMain.start();
     }
 
+    /**
+     * @return Whether the browser process completed successfully.
+     */
+    public boolean isStartupSuccessfullyCompleted() {
+        ThreadUtils.assertOnUiThread();
+        return mStartupDone && mStartupSuccess;
+    }
+
     public void addStartupCompletedObserver(StartupCallback callback) {
         ThreadUtils.assertOnUiThread();
         if (mStartupDone) {

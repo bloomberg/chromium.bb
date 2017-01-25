@@ -12,6 +12,7 @@ import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.TraceEvent;
@@ -90,6 +92,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsActivity;
@@ -128,7 +131,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
@@ -414,11 +419,67 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
     }
 
+    /**
+     * Determine whether the incognito profile needs to be destroyed as part of startup.  This is
+     * only needed on L+ when it is possible to swipe away tasks from Android recents without
+     * killing the process.  When this occurs, the normal incognito profile shutdown does not
+     * happen, which can leave behind incognito cookies from an existing session.
+     */
+    @SuppressLint("NewApi")
+    private boolean shouldDestroyIncognitoProfile() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
+
+        Context context = ContextUtils.getApplicationContext();
+        ActivityManager manager =
+                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        PackageManager pm = context.getPackageManager();
+
+        Set<Integer> tabbedModeTaskIds = new HashSet<>();
+        for (AppTask task : manager.getAppTasks()) {
+            RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
+            if (info == null) continue;
+            String className = DocumentUtils.getTaskClassName(task, pm);
+
+            if (TextUtils.equals(className, ChromeTabbedActivity.class.getName())) {
+                tabbedModeTaskIds.add(info.id);
+            }
+        }
+
+        if (tabbedModeTaskIds.size() == 0) {
+            return Profile.getLastUsedProfile().hasOffTheRecordProfile();
+        }
+
+        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
+        for (int i = 0; i < activities.size(); i++) {
+            Activity activity = activities.get(i).get();
+            if (activity == null) continue;
+            tabbedModeTaskIds.remove(activity.getTaskId());
+        }
+
+        // If all tabbed mode tasks listed in Android recents are alive, check to see if
+        // any have incognito tabs exist.  If all are alive and no tabs exist, we should ensure that
+        // we delete the incognito profile if one is around still.
+        if (tabbedModeTaskIds.size() == 0) {
+            return TabWindowManager.getInstance().getIncognitoTabCount() == 0
+                    && Profile.getLastUsedProfile().hasOffTheRecordProfile();
+        }
+
+        // In this case, we have tabbed mode activities listed in recents that do not have an
+        // active running activity associated with them.  We can not accurately get an incognito
+        // tab count as we do not know if any incognito tabs are associated with the yet unrestored
+        // tabbed mode.  Thus we do not proactivitely destroy the incognito profile.
+        return false;
+    }
+
     @Override
     public void onResumeWithNative() {
         super.onResumeWithNative();
 
-        CookiesFetcher.restoreCookies(this);
+        if (shouldDestroyIncognitoProfile()) {
+            Profile.getLastUsedProfile().getOffTheRecordProfile().destroyWhenAppropriate();
+        } else {
+            CookiesFetcher.restoreCookies(this);
+        }
         StartupMetrics.getInstance().recordHistogram(false);
 
         if (FeatureUtilities.isTabModelMergingEnabled()) {
