@@ -336,6 +336,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     getTabModelSelector(),
                     getControlContainerHeightResource());
         }
+
+        if (mBottomSheet != null) {
+            mBottomSheet.setTabModelSelector(mTabModelSelector);
+        }
     }
 
     @Override

@@ -10,15 +10,23 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Region;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
+import android.support.v4.view.ScrollingView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.NativePage;
+import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
 
 import java.lang.annotation.Retention;
@@ -69,6 +77,9 @@ public class BottomSheet extends LinearLayout {
     /** The interpolator that the height animator uses. */
     private final Interpolator mInterpolator = new DecelerateInterpolator(1.0f);
 
+    /** This is a cached array for getting the window location of different views. */
+    private final int[] mLocationArray = new int[2];
+
     /** For detecting scroll and fling events on the bottom sheet. */
     private GestureDetector mGestureDetector;
 
@@ -84,11 +95,29 @@ public class BottomSheet extends LinearLayout {
     /** The height of the toolbar. */
     private float mToolbarHeight;
 
+    /** The width of the view that contains the bottom sheet. */
+    private float mContainerWidth;
+
     /** The height of the view that contains the bottom sheet. */
     private float mContainerHeight;
 
     /** The current sheet state. If the sheet is moving, this will be the target state. */
     private int mCurrentState;
+
+    /** Used for getting the current tab. */
+    private TabModelSelector mTabModelSelector;
+
+    /** A handle to the native page being shown by the sheet. */
+    private NativePage mNativePage;
+
+    /** A handle to the toolbar control container. */
+    private View mControlContainer;
+
+    /** A handle to the FrameLayout that holds the content of the bottom sheet. */
+    private FrameLayout mBottomSheetContent;
+
+    /** A handle to the main scrolling view in the bottom sheet's content. */
+    private ScrollingView mScrollingContentView;
 
     /**
      * This class is responsible for detecting swipe and scroll events on the bottom sheet or
@@ -113,16 +142,27 @@ public class BottomSheet extends LinearLayout {
 
             // Cancel the settling animation if it is running so it doesn't conflict with where the
             // user wants to move the sheet.
+            boolean wasSettleAnimatorRunning = mSettleAnimator != null;
             cancelAnimation();
 
             mVelocityTracker.addMovement(e2);
 
             float currentShownRatio =
                     mContainerHeight > 0 ? getSheetOffsetFromBottom() / mContainerHeight : 0;
+            boolean isSheetInMaxPosition =
+                    MathUtils.areFloatsEqual(currentShownRatio,
+                            mStateRatios[mStateRatios.length - 1]);
 
-            // If the sheet is in the max position, don't move if the scroll is upward.
-            if (currentShownRatio >= mStateRatios[mStateRatios.length - 1]
-                    && distanceY > 0) {
+            // Allow the bottom sheet's content to be scrolled up without dragging the sheet down.
+            if (!isTouchEventInToolbar(e2) && isSheetInMaxPosition && mScrollingContentView != null
+                    && mScrollingContentView.computeVerticalScrollOffset() > 0) {
+                mIsScrolling = false;
+                return false;
+            }
+
+            // If the sheet is in the max position, don't move the sheet if the scroll is upward.
+            // Instead, allow the sheet's content to handle it if it needs to.
+            if (isSheetInMaxPosition && distanceY > 0) {
                 mIsScrolling = false;
                 return false;
             }
@@ -131,6 +171,12 @@ public class BottomSheet extends LinearLayout {
             if (currentShownRatio <= mStateRatios[0] && distanceY < 0) {
                 mIsScrolling = false;
                 return false;
+            }
+
+            // Send a notification that the sheet is exiting the peeking state into something that
+            // will show content.
+            if (!mIsScrolling && mCurrentState == SHEET_STATE_PEEK && !wasSettleAnimatorRunning) {
+                onExitPeekState();
             }
 
             float newOffset = getSheetOffsetFromBottom() + distanceY;
@@ -166,7 +212,6 @@ public class BottomSheet extends LinearLayout {
         super(context, atts);
 
         setOrientation(LinearLayout.VERTICAL);
-
         mVelocityTracker = VelocityTracker.obtain();
 
         mGestureDetector = new GestureDetector(context, new BottomSheetSwipeDetector());
@@ -220,6 +265,13 @@ public class BottomSheet extends LinearLayout {
     }
 
     /**
+     * @param tabModelSelector A TabModelSelector for getting the current tab and activity.
+     */
+    public void setTabModelSelector(TabModelSelector tabModelSelector) {
+        mTabModelSelector = tabModelSelector;
+    }
+
+    /**
      * Adds layout change listeners to the views that the bottom sheet depends on. Namely the
      * heights of the root view and control container are important as they are used in many of the
      * calculations in this class.
@@ -227,7 +279,11 @@ public class BottomSheet extends LinearLayout {
      * @param controlContainer The container for the toolbar.
      */
     public void init(View root, View controlContainer) {
-        mToolbarHeight = controlContainer.getHeight();
+        mControlContainer = controlContainer;
+        mToolbarHeight = mControlContainer.getHeight();
+
+        mBottomSheetContent = (FrameLayout) findViewById(R.id.bottom_sheet_content);
+
         mCurrentState = SHEET_STATE_PEEK;
 
         // Listen to height changes on the root.
@@ -239,8 +295,9 @@ public class BottomSheet extends LinearLayout {
                     return;
                 }
 
+                mContainerWidth = right - left;
                 mContainerHeight = bottom - top;
-                updateSheetPeekHeight();
+                updateSheetDimensions();
 
                 cancelAnimation();
                 setSheetState(mCurrentState, false);
@@ -257,12 +314,50 @@ public class BottomSheet extends LinearLayout {
                 }
 
                 mToolbarHeight = bottom - top;
-                updateSheetPeekHeight();
+                updateSheetDimensions();
 
                 cancelAnimation();
                 setSheetState(mCurrentState, false);
             }
         });
+    }
+
+    /**
+     * Determines if a touch event is inside the toolbar. This assumes the toolbar is the full
+     * width of the screen and that the toolbar is at the top of the bottom sheet.
+     * @param e The motion event to test.
+     * @return True if the event occured in the toolbar region.
+     */
+    private boolean isTouchEventInToolbar(MotionEvent e) {
+        if (mControlContainer == null) return false;
+
+        mControlContainer.getLocationInWindow(mLocationArray);
+
+        return e.getRawY() < mLocationArray[1] + mToolbarHeight;
+    }
+
+    /**
+     * A notification that the sheet is exiting the peek state into one that shows content.
+     */
+    private void onExitPeekState() {
+        if (mNativePage == null) {
+            showNativePage(new NewTabPage(mTabModelSelector.getCurrentTab().getActivity(),
+                    mTabModelSelector.getCurrentTab(), mTabModelSelector));
+        }
+    }
+
+    /**
+     * Show a native page in the bottom sheet's content area.
+     * @param page The NativePage to show.
+     */
+    private void showNativePage(NativePage page) {
+        if (mNativePage != null) mBottomSheetContent.removeView(mNativePage.getView());
+
+        mNativePage = page;
+        mBottomSheetContent.addView(mNativePage.getView());
+        mScrollingContentView = findScrollingChild(mNativePage.getView());
+
+        mNativePage.updateForUrl("");
     }
 
     /**
@@ -277,12 +372,44 @@ public class BottomSheet extends LinearLayout {
     }
 
     /**
-     * Updates the bottom sheet's peeking height.
+     * Updates the bottom sheet's peeking and content height.
      */
-    private void updateSheetPeekHeight() {
+    private void updateSheetDimensions() {
         if (mContainerHeight <= 0) return;
 
+        // Though mStateRatios is a static constant, the peeking ratio is computed here because
+        // the correct toolbar height and container height are not know until those views are
+        // inflated.
         mStateRatios[0] = mToolbarHeight / mContainerHeight;
+
+        // Compute the height that the content section of the bottom sheet.
+        float contentHeight =
+                (mContainerHeight * mStateRatios[mStateRatios.length - 1]) - mToolbarHeight;
+        mBottomSheetContent.setLayoutParams(
+                new LinearLayout.LayoutParams((int) mContainerWidth, (int) contentHeight));
+    }
+
+    /**
+     * Find the first ScrollingView in a view hierarchy.
+     * TODO(mdjones): The root of native pages should be a ScrollingView so this logic is not
+     * necessary.
+     * @param view The root of the tree or subtree.
+     * @return The first scrolling view or null.
+     */
+    private ScrollingView findScrollingChild(@Nullable View view) {
+        if (view instanceof ScrollingView) {
+            return (ScrollingView) view;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0, count = group.getChildCount(); i < count; i++) {
+                ScrollingView scrollingChild = findScrollingChild(group.getChildAt(i));
+                if (scrollingChild != null) {
+                    return scrollingChild;
+                }
+            }
+        }
+        return null;
     }
 
     /**

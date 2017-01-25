@@ -43,10 +43,9 @@
         </view>
     </org.chromium.chrome.browser.toolbar.ToolbarControlContainer>
 
-    <View
+    <FrameLayout
         android:id="@+id/bottom_sheet_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/white" />
+        android:layout_height="match_parent" />
 
 </org.chromium.chrome.browser.widget.BottomSheet>
