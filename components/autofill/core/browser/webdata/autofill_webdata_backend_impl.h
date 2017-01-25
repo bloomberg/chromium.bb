@@ -152,17 +152,11 @@ class AutofillWebDataBackendImpl
   WebDatabase::State MaskServerCreditCard(const std::string& id,
                                           WebDatabase* db);
 
-  WebDatabase::State UpdateServerCardUsageStats(
-      const CreditCard& credit_card,
-      WebDatabase* db);
+  WebDatabase::State UpdateServerCardMetadata(const CreditCard& credit_card,
+                                              WebDatabase* db);
 
-  WebDatabase::State UpdateServerAddressUsageStats(
-      const AutofillProfile& profile,
-      WebDatabase* db);
-
-  WebDatabase::State UpdateServerCardBillingAddress(
-      const CreditCard& card,
-      WebDatabase* db);
+  WebDatabase::State UpdateServerAddressMetadata(const AutofillProfile& profile,
+                                                 WebDatabase* db);
 
   WebDatabase::State ClearAllServerData(WebDatabase* db);
 

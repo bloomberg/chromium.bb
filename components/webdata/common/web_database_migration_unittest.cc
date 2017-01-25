@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 70;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 71;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1029,6 +1029,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion65ToCurrent) {
 }
 
 // Tests addition of masked server credit card billing address.
+// That column was moved to server_card_metadata in version 71.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion66ToCurrent) {
   ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_66.sql")));
 
@@ -1060,14 +1061,11 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion66ToCurrent) {
     // Check version.
     EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
 
-    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards",
+    // The column was moved to server_card_metadata in version 71.
+    EXPECT_FALSE(connection.DoesColumnExist("masked_credit_cards",
+                                            "billing_address_id"));
+    EXPECT_TRUE(connection.DoesColumnExist("server_card_metadata",
                                            "billing_address_id"));
-
-    sql::Statement read_masked(connection.GetUniqueStatement(
-        "SELECT name_on_card, billing_address_id FROM masked_credit_cards"));
-    ASSERT_TRUE(read_masked.Step());
-    EXPECT_EQ("Alice", read_masked.ColumnString(0));
-    EXPECT_TRUE(read_masked.ColumnString(1).empty());
   }
 }
 
@@ -1164,5 +1162,83 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion69ToCurrent) {
 
     EXPECT_TRUE(connection.DoesTableExist("autofill_sync_metadata"));
     EXPECT_TRUE(connection.DoesTableExist("autofill_model_type_state"));
+  }
+}
+
+// Tests addition of billing_address_id to server_card_metadata and
+// has_converted to server_profile_metadata and tests that the
+// billing_address_id values were moved from the masked_credit_cards table to
+// the server_card_metadata table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion70ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_70.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 70, 70));
+
+    EXPECT_FALSE(connection.DoesColumnExist("server_card_metadata",
+                                            "billing_address_id"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("server_address_metadata", "has_converted"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The billing_address_id column should have moved from masked_credit_cards
+    // to server_card_metadata.
+    EXPECT_FALSE(connection.DoesColumnExist("masked_credit_cards",
+                                            "billing_address_id"));
+    EXPECT_TRUE(connection.DoesColumnExist("server_card_metadata",
+                                           "billing_address_id"));
+
+    // The has_converted column should have been added in
+    // server_address_metadata.
+    EXPECT_TRUE(
+        connection.DoesColumnExist("server_address_metadata", "has_converted"));
+
+    // Make sure that the billing_address_id was moved from the
+    // masked_credit_cards table to the server_card_metadata table. The values
+    // are added to the table in version_70.sql.
+    sql::Statement s_cards_metadata(connection.GetUniqueStatement(
+        "SELECT id, billing_address_id FROM server_card_metadata"));
+    ASSERT_TRUE(s_cards_metadata.Step());
+    EXPECT_EQ("card_1", s_cards_metadata.ColumnString(0));
+    EXPECT_EQ("address_1", s_cards_metadata.ColumnString(1));
+
+    // Make sure that the has_converted column was set to false.
+    sql::Statement s_addresses_metadata(connection.GetUniqueStatement(
+        "SELECT id, has_converted FROM server_address_metadata"));
+    ASSERT_TRUE(s_addresses_metadata.Step());
+    EXPECT_EQ("address_1", s_addresses_metadata.ColumnString(0));
+    EXPECT_FALSE(s_addresses_metadata.ColumnBool(1));
+
+    // Make sure that the values in masked_credit_cards are still present except
+    // for the billing_address_id. The values are added to the table in
+    // version_70.sql.
+    sql::Statement s_masked_cards(connection.GetUniqueStatement(
+        "SELECT id, status, name_on_card, type, last_four, exp_month, exp_year "
+        "FROM masked_credit_cards"));
+    ASSERT_TRUE(s_masked_cards.Step());
+    EXPECT_EQ("card_1", s_masked_cards.ColumnString(0));
+    EXPECT_EQ("status", s_masked_cards.ColumnString(1));
+    EXPECT_EQ("bob", s_masked_cards.ColumnString(2));
+    EXPECT_EQ("MASKED", s_masked_cards.ColumnString(3));
+    EXPECT_EQ("1234", s_masked_cards.ColumnString(4));
+    EXPECT_EQ(12, s_masked_cards.ColumnInt(5));
+    EXPECT_EQ(2050, s_masked_cards.ColumnInt(6));
   }
 }

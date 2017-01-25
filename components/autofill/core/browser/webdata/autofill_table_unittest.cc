@@ -1743,7 +1743,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   outputs.clear();
 }
 
-TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
+TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
   // Add a masked card.
   CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
   masked_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
@@ -1751,6 +1751,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
+  masked_card.set_billing_address_id("1");
   masked_card.SetTypeForMaskedCard(kVisaCard);
 
   std::vector<CreditCard> inputs;
@@ -1771,13 +1772,15 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   // Update the usage stats; make sure they're reflected in GetServerProfiles.
   inputs.back().set_use_count(4U);
   inputs.back().set_use_date(base::Time());
-  table_->UpdateServerCardUsageStats(inputs.back());
+  inputs.back().set_billing_address_id("2");
+  table_->UpdateServerCardMetadata(inputs.back());
   table_->GetServerCreditCards(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
   EXPECT_EQ(base::Time(), outputs[0]->use_date());
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
+  EXPECT_EQ("2", outputs[0]->billing_address_id());
   outputs.clear();
 
   // Setting the cards again shouldn't delete the usage stats.
@@ -1788,6 +1791,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   EXPECT_EQ(4U, outputs[0]->use_count());
   EXPECT_EQ(base::Time(), outputs[0]->use_date());
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
+  EXPECT_EQ("2", outputs[0]->billing_address_id());
   outputs.clear();
 
   // Set a card list where the card is missing --- this should clear metadata.
@@ -1804,34 +1808,8 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   EXPECT_EQ(1U, outputs[0]->use_count());
   EXPECT_NE(base::Time(), outputs[0]->use_date());
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
+  EXPECT_EQ("1", outputs[0]->billing_address_id());
   outputs.clear();
-}
-
-TEST_F(AutofillTableTest, UpdateServerCardBillingAddress) {
-  // Add a masked card.
-  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  masked_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
-                         ASCIIToUTF16("Paul F. Tompkins"));
-  masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
-  masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
-  masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
-  masked_card.set_billing_address_id("billing-address-id-1");
-  masked_card.SetTypeForMaskedCard(kVisaCard);
-  test::SetServerCreditCards(table_.get(),
-                             std::vector<CreditCard>(1, masked_card));
-  std::vector<std::unique_ptr<CreditCard>> outputs;
-  table_->GetServerCreditCards(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-
-  EXPECT_EQ("billing-address-id-1", outputs[0]->billing_address_id());
-
-  masked_card.set_billing_address_id("billing-address-id-2");
-  table_->UpdateServerCardBillingAddress(masked_card);
-  outputs.clear();
-  table_->GetServerCreditCards(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-
-  EXPECT_EQ("billing-address-id-2", outputs[0]->billing_address_id());
 }
 
 TEST_F(AutofillTableTest, SetServerProfile) {
@@ -1880,7 +1858,7 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
   // Update the usage stats; make sure they're reflected in GetServerProfiles.
   inputs.back().set_use_count(4U);
   inputs.back().set_use_date(base::Time::Now());
-  table_->UpdateServerAddressUsageStats(inputs.back());
+  table_->UpdateServerAddressMetadata(inputs.back());
   table_->GetServerProfiles(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(one.server_id(), outputs[0]->server_id());

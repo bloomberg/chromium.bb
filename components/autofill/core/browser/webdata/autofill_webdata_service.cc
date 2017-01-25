@@ -212,28 +212,18 @@ void AutofillWebDataService::ClearAllServerData() {
            autofill_backend_));
 }
 
-void AutofillWebDataService::UpdateServerCardUsageStats(
+void AutofillWebDataService::UpdateServerCardMetadata(
     const CreditCard& credit_card) {
   wdbs_->ScheduleDBTask(
-      FROM_HERE,
-      Bind(&AutofillWebDataBackendImpl::UpdateServerCardUsageStats,
-           autofill_backend_, credit_card));
+      FROM_HERE, Bind(&AutofillWebDataBackendImpl::UpdateServerCardMetadata,
+                      autofill_backend_, credit_card));
 }
 
-void AutofillWebDataService::UpdateServerAddressUsageStats(
+void AutofillWebDataService::UpdateServerAddressMetadata(
     const AutofillProfile& profile) {
   wdbs_->ScheduleDBTask(
-      FROM_HERE,
-      Bind(&AutofillWebDataBackendImpl::UpdateServerAddressUsageStats,
-           autofill_backend_, profile));
-}
-
-void AutofillWebDataService::UpdateServerCardBillingAddress(
-    const CreditCard& credit_card) {
-  wdbs_->ScheduleDBTask(
-      FROM_HERE,
-      Bind(&AutofillWebDataBackendImpl::UpdateServerCardBillingAddress,
-           autofill_backend_, credit_card));
+      FROM_HERE, Bind(&AutofillWebDataBackendImpl::UpdateServerAddressMetadata,
+                      autofill_backend_, profile));
 }
 
 void AutofillWebDataService::RemoveAutofillDataModifiedBetween(

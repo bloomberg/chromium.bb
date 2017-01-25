@@ -167,10 +167,6 @@ struct FormFieldData;
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
 //   exp_year           Four-digit year: 2017
-//   billing_address_id The string that identifies the local or server profile
-//                      which is the billing address for this card. Can be null
-//                      in the database, but always returned as an empty string
-//                      in CreditCard. Added in version 67.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -182,6 +178,7 @@ struct FormFieldData;
 //                      Full card number, encrypted.
 //   use_count          DEPRECATED in version 65. See server_card_metadata.
 //   use_date           DEPRECATED in version 65. See server_card_metadata.
+//                      TODO(crbug.com/682326): Remove deprecated columns.
 //   unmask_date        The date this card was unmasked in units of
 //                      Time::ToInternalValue. Added in version 64.
 //
@@ -195,6 +192,10 @@ struct FormFieldData;
 //                      a form.
 //   use_date           The date this card was last used to fill a form,
 //                      in internal t.
+//   billing_address_id The string that identifies the profile which is the
+//                      billing address for this card. Can be null in the
+//                      database, but always returned as an empty string in
+//                      CreditCard. Added in version 71.
 //
 // server_addresses     This table contains Autofill address data synced from
 //                      the wallet server. It's basically the same as the
@@ -235,6 +236,9 @@ struct FormFieldData;
 //                      a form.
 //   use_date           The date this address was last used to fill a form,
 //                      in internal t.
+//   has_converted      Whether this server address has been converted to a
+//                      local autofill profile.
+//
 // autofill_sync_metadata
 //                      Sync-specific metadata for autofill records.
 //
@@ -375,10 +379,8 @@ class AutofillTable : public WebDatabaseTable {
                               const base::string16& full_number);
   bool MaskServerCreditCard(const std::string& id);
 
-  bool UpdateServerCardUsageStats(const CreditCard& credit_card);
-  bool UpdateServerAddressUsageStats(const AutofillProfile& profile);
-
-  bool UpdateServerCardBillingAddress(const CreditCard& credit_card);
+  bool UpdateServerCardMetadata(const CreditCard& credit_card);
+  bool UpdateServerAddressMetadata(const AutofillProfile& profile);
 
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"
@@ -461,6 +463,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion66AddCardBillingAddress();
   bool MigrateToVersion67AddMaskedCardBillingAddress();
   bool MigrateToVersion70AddSyncMetadata();
+  bool MigrateToVersion71AddHasConvertedAndBillingAddressIdMetadata();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

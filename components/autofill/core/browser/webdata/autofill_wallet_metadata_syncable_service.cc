@@ -506,13 +506,13 @@ bool AutofillWalletMetadataSyncableService::GetLocalData(
 bool AutofillWalletMetadataSyncableService::UpdateAddressStats(
     const AutofillProfile& profile) {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
-      ->UpdateServerAddressUsageStats(profile);
+      ->UpdateServerAddressMetadata(profile);
 }
 
 bool AutofillWalletMetadataSyncableService::UpdateCardStats(
     const CreditCard& credit_card) {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
-      ->UpdateServerCardUsageStats(credit_card);
+      ->UpdateServerCardMetadata(credit_card);
 }
 
 syncer::SyncError
