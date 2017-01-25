@@ -28,8 +28,8 @@ TEST(PresentationRequestTest, TestSingleUrlConstructor) {
 TEST(PresentationRequestTest, TestMultipleUrlConstructor) {
   V8TestingScope scope;
   WTF::Vector<String> urls;
-  urls.append("https://example.com");
-  urls.append("cast://deadbeef?param=foo");
+  urls.push_back("https://example.com");
+  urls.push_back("cast://deadbeef?param=foo");
 
   PresentationRequest* request = PresentationRequest::create(
       scope.getExecutionContext(), urls, scope.getExceptionState());
@@ -46,8 +46,8 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructor) {
 TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidURLFamily) {
   V8TestingScope scope;
   WTF::Vector<String> urls;
-  urls.append("https://example.com");
-  urls.append("about://deadbeef?param=foo");
+  urls.push_back("https://example.com");
+  urls.push_back("about://deadbeef?param=foo");
 
   PresentationRequest::create(scope.getExecutionContext(), urls,
                               scope.getExceptionState());
@@ -59,8 +59,8 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidURLFamily) {
 TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidUrl) {
   V8TestingScope scope;
   WTF::Vector<String> urls;
-  urls.append("https://example.com");
-  urls.append("");
+  urls.push_back("https://example.com");
+  urls.push_back("");
 
   PresentationRequest::create(scope.getExecutionContext(), urls,
                               scope.getExceptionState());
@@ -85,8 +85,8 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorMixedContent) {
       SecurityOrigin::createFromString("https://example.test"));
 
   WTF::Vector<String> urls;
-  urls.append("http://example.com");
-  urls.append("https://example1.com");
+  urls.push_back("http://example.com");
+  urls.push_back("https://example1.com");
 
   PresentationRequest::create(scope.getExecutionContext(), urls,
                               scope.getExceptionState());

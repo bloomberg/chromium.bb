@@ -75,8 +75,8 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
 NGFragmentBuilder& NGFragmentBuilder::AddFloatingObject(
     NGFloatingObject* floating_object,
     const NGLogicalOffset& floating_object_offset) {
-  positioned_floats_.append(floating_object);
-  floating_object_offsets_.append(floating_object_offset);
+  positioned_floats_.push_back(floating_object);
+  floating_object_offsets_.push_back(floating_object_offset);
   return *this;
 }
 
@@ -94,7 +94,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
 
 NGFragmentBuilder& NGFragmentBuilder::AddUnpositionedFloat(
     NGFloatingObject* floating_object) {
-  unpositioned_floats_.append(floating_object);
+  unpositioned_floats_.push_back(floating_object);
   return *this;
 }
 
@@ -177,7 +177,7 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
     NGPhysicalFragment* floating_fragment = floating_object->fragment;
     floating_fragment->SetOffset(floating_object_offsets_[i].ConvertToPhysical(
         writing_mode_, direction_, physical_size, floating_fragment->Size()));
-    positioned_floats.append(floating_object);
+    positioned_floats.push_back(floating_object);
   }
 
   return new NGPhysicalBoxFragment(

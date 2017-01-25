@@ -126,7 +126,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
           exceptionState.throwTypeError("Invalid argument types.");
           return;
         }
-        inputArgumentTypes.append(syntaxDescriptor);
+        inputArgumentTypes.push_back(syntaxDescriptor);
       }
     }
   }

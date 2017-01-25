@@ -23,8 +23,8 @@ namespace {
 TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
   V8TestingScope scope;
   WTF::Vector<KURL> urls;
-  urls.append(URLTestHelpers::toKURL("https://example.com"));
-  urls.append(URLTestHelpers::toKURL("https://another.com"));
+  urls.push_back(URLTestHelpers::toKURL("https://example.com"));
+  urls.push_back(URLTestHelpers::toKURL("https://another.com"));
 
   Persistent<PresentationAvailabilityProperty> resolver =
       new PresentationAvailabilityProperty(

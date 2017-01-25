@@ -165,7 +165,7 @@ class ObjectVectorAttributeSetter : public SparseAttributeSetter {
       if (Element* idElement = scope.getElementById(AtomicString(id))) {
         AXObject* axIdElement = obj.axObjectCache().getOrCreate(idElement);
         if (axIdElement && !axIdElement->accessibilityIsIgnored())
-          objects.append(axIdElement);
+          objects.push_back(axIdElement);
       }
     }
 
@@ -2467,7 +2467,7 @@ String AXNodeObject::nativeTextAlternative(
         // default label
         nameFrom = AXNameFromContents;
         if (nameSources) {
-          nameSources->append(NameSource(*foundTextAlternative));
+          nameSources->push_back(NameSource(*foundTextAlternative));
           nameSources->back().type = nameFrom;
         }
         textAlternative = defaultLabel;

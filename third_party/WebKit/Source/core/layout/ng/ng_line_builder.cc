@@ -179,7 +179,7 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
                             LineLayoutItem(layout_object));
         }
         bidi_runs.addRun(run);
-        fragments_for_bidi_runs.append(fragment);
+        fragments_for_bidi_runs.push_back(fragment);
       }
     }
     // TODO(kojii): bidi needs to find the logical last run.
