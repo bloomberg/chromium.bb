@@ -79,6 +79,8 @@ CORE_EXPORT MediaControlElementType mediaControlElementType(const Node*);
 
 // ----------------------------
 
+// TODO(mustaq): The Media control elements that use MouseEvents should be
+// ported to use PointerEvents instead.
 class MediaControlElement : public GarbageCollectedMixin {
  public:
   // These hold the state about whether this control should be shown if
