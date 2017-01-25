@@ -177,13 +177,18 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                         boundToUs = mService.bindToCaller();
                     } catch (RemoteException ex) {
                     }
-                    if (!boundToUs) {
-                        if (mStartCallback != null) {
+
+                    if (mStartCallback != null) {
+                        if (boundToUs) {
+                            mStartCallback.onChildStarted();
+                        } else {
                             mStartCallback.onChildStartFailed();
                         }
+                        mStartCallback = null;
+                    }
+
+                    if (!boundToUs) {
                         return;
-                    } else if (mStartCallback != null) {
-                        mStartCallback.onChildStarted();
                     }
 
                     // Run the setup if the connection parameters have already been provided. If

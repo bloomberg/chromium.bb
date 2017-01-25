@@ -399,6 +399,8 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                     }
                 });
 
+        triggerConnectionSetup((ChildProcessConnectionImpl) conn);
+
         assertEquals(0, conn.getServiceNumber());
         assertEquals(-1, conn.getPid());  // PID gets set to -1 if service is already bound.
 
