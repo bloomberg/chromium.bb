@@ -1,41 +1,41 @@
-layer at (0,0) size 800x600 scrollWidth 1506 scrollHeight 1660
+layer at (0,0) size 800x600 clip at (0,0) size 785x585 scrollWidth 1506 scrollHeight 1660
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x1660 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x1660.19
-    LayoutBlockFlow {BODY} at (8,17.41) size 784x1629.78 [color=#00FF00] [bgcolor=#333333]
-      LayoutBlockFlow {H1} at (0,0) size 784x30
+layer at (0,0) size 785x1660 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
+  LayoutBlockFlow {HTML} at (0,0) size 785x1660.19
+    LayoutBlockFlow {BODY} at (8,17.41) size 769x1629.78 [color=#00FF00] [bgcolor=#333333]
+      LayoutBlockFlow {H1} at (0,0) size 769x30
         LayoutText {#text} at (0,0) size 515x30
           text run at (0,0) width 515: "CSS2 Table Backgrounds Test Suite"
-      LayoutBlockFlow {H2} at (0,47.41) size 784x23
+      LayoutBlockFlow {H2} at (0,47.41) size 769x23
         LayoutText {#text} at (0,0) size 246x23
           text run at (0,0) width 246: "Part E: Special Tests"
-      LayoutBlockFlow {H3} at (0,86.58) size 784x17
+      LayoutBlockFlow {H3} at (0,86.58) size 769x17
         LayoutText {#text} at (0,0) size 156x17
           text run at (0,0) width 156: "Fixed Backgrounds"
-      LayoutBlockFlow {UL} at (0,118.78) size 784x60
-        LayoutListItem {LI} at (40,0) size 744x45
+      LayoutBlockFlow {UL} at (0,118.78) size 769x60
+        LayoutListItem {LI} at (40,0) size 729x45
           LayoutListMarker (anonymous) at (-16,0) size 6x15: bullet
-          LayoutText {#text} at (0,0) size 742x45
-            text run at (0,0) width 742: "If you scroll the table over the top left corner of the viewport, the first, second, and fourth"
-            text run at (0,15) width 718: "rows as well as cell L should reveal a purple and aqua band forming a 90-degree angle in the"
-            text run at (0,30) width 125: "top left corner."
-        LayoutListItem {LI} at (40,45) size 744x15
+          LayoutText {#text} at (0,0) size 718x45
+            text run at (0,0) width 687: "If you scroll the table over the top left corner of the viewport, the first, second, and"
+            text run at (0,15) width 718: "fourth rows as well as cell L should reveal a purple and aqua band forming a 90-degree angle"
+            text run at (0,30) width 180: "in the top left corner."
+        LayoutListItem {LI} at (40,45) size 729x15
           LayoutListMarker (anonymous) at (-16,0) size 6x15: bullet
           LayoutText {#text} at (0,0) size 648x15
             text run at (0,0) width 648: "Cells A and P should have a rainbow background that seems attached to the viewport."
-      LayoutBlockFlow {DL} at (0,191.78) size 784x60
-        LayoutBlockFlow {DT} at (0,0) size 784x15
+      LayoutBlockFlow {DL} at (0,191.78) size 769x60
+        LayoutBlockFlow {DT} at (0,0) size 769x15
           LayoutText {#text} at (0,0) size 63x15
             text run at (0,0) width 63: "previous"
-        LayoutBlockFlow {DD} at (40,15) size 744x15
+        LayoutBlockFlow {DD} at (40,15) size 729x15
           LayoutInline {A} at (0,0) size 172x15 [color=#FFFF00]
             LayoutText {#text} at (0,0) size 172x15
               text run at (0,0) width 172: "Special Tests: opacity"
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {DT} at (0,30) size 784x15
+        LayoutBlockFlow {DT} at (0,30) size 769x15
           LayoutText {#text} at (0,0) size 63x15
             text run at (0,0) width 63: "contents"
-        LayoutBlockFlow {DD} at (40,45) size 744x15
+        LayoutBlockFlow {DD} at (40,45) size 729x15
           LayoutInline {A} at (0,0) size 133x15 [color=#FFFF00]
             LayoutText {#text} at (0,0) size 133x15
               text run at (0,0) width 133: "Table of Contents"
@@ -154,14 +154,14 @@ layer at (0,0) size 800x1660 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutTableCell {TD} at (465,136) size 112x25 [border: (1px dotted #000000)] [r=1 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 43x22
                 text run at (2,2) width 43: "TD L"
-      LayoutBlockFlow {DIV} at (0,1162.78) size 784x34
+      LayoutBlockFlow {DIV} at (0,1162.78) size 769x34
         LayoutInline {A} at (0,0) size 88x15 [color=#FFFF00]
           LayoutImage {IMG} at (0,0) size 88x31
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {ADDRESS} at (0,1196.78) size 784x15
+      LayoutBlockFlow {ADDRESS} at (0,1196.78) size 769x15
         LayoutText {#text} at (0,0) size 687x15
           text run at (0,0) width 687: "CSS2 Table Backgrounds Test Suite designed and written by fantasai <fantasai@escape.com>"
-      LayoutBlockFlow {PRE} at (0,1224.78) size 784x405
+      LayoutBlockFlow {PRE} at (0,1224.78) size 769x405
         LayoutText {#text} at (0,0) size 1498x405
           text run at (0,0) width 1498: "................................................................................................................................................................................................"
           text run at (1497,0) width 1: " "
