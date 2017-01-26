@@ -87,7 +87,9 @@ class WPTGitHub(object):
 
     def merge_pull_request(self, pull_request_number):
         path = '/repos/w3c/web-platform-tests/pulls/%d/merge' % pull_request_number
-        body = {}
+        body = {
+            'merge_method': 'rebase',
+        }
         data, status_code = self.request(path, method='PUT', body=body)
 
         if status_code == 200:
