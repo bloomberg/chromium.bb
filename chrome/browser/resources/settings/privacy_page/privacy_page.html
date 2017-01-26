@@ -307,7 +307,10 @@
       </template>
       <template is="dom-if" route-path="/handlers" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryHandlers}">
-          <protocol-handlers></protocol-handlers>
+          <protocol-handlers
+              toggle-off-label="$i18n{siteSettingsHandlersBlocked}"
+              toggle-on-label="$i18n{siteSettingsHandlersAskRecommended}">
+          </protocol-handlers>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/zoomLevels" no-search>

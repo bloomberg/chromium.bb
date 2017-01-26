@@ -54,7 +54,11 @@ Polymer({
      * The targetted object for menu operations.
      * @private {?Object}
      */
-    actionMenuModel_: Object
+    actionMenuModel_: Object,
+
+    /* Labels for the toggle on/off positions. */
+    toggleOffLabel: String,
+    toggleOnLabel: String,
   },
 
   ready: function() {
@@ -73,10 +77,7 @@ Polymer({
    * @private
    */
   computeHandlersDescription_: function() {
-    var setting = this.categoryEnabled ?
-        settings.PermissionValues.ALLOW : settings.PermissionValues.BLOCK;
-    return this.computeCategoryDesc(
-        settings.ContentSettingsTypes.PROTOCOL_HANDLERS, setting, true);
+    return this.categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
   },
 
   /**
