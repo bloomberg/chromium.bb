@@ -31,12 +31,6 @@ add_cxx_preproc_definition("__STDC_LIMIT_MACROS")
 
 # Set up compiler flags and build properties.
 include_directories("${LIBWEBM_SRC_DIR}")
-if (WIN32)
-  # Use libwebm and libwebm.lib for project and library name on Windows (instead
-  # webm and webm.lib).
-  set_target_properties(webm PROPERTIES PROJECT_LABEL libwebm)
-  set_target_properties(webm PROPERTIES PREFIX lib)
-endif ()
 
 if (MSVC)
   add_cxx_flag_if_supported("/W4")
@@ -325,6 +319,13 @@ add_library(webvtt_common OBJECT ${webvtt_common_sources})
 add_library(webm STATIC ${libwebm_common_sources}
             $<TARGET_OBJECTS:mkvmuxer>
             $<TARGET_OBJECTS:mkvparser>)
+
+if (WIN32)
+  # Use libwebm and libwebm.lib for project and library name on Windows (instead
+  # webm and webm.lib).
+  set_target_properties(webm PROPERTIES PROJECT_LABEL libwebm)
+  set_target_properties(webm PROPERTIES PREFIX lib)
+endif ()
 
 add_executable(mkvparser_sample ${mkvparser_sample_sources})
 target_link_libraries(mkvparser_sample LINK_PUBLIC webm)
