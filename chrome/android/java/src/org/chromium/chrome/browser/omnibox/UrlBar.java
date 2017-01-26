@@ -30,6 +30,7 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputConnectionWrapper;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
@@ -1158,6 +1159,17 @@ public class UrlBar extends VerticallyFixedEditText {
      */
     public boolean isPastedText() {
         return mIsPastedText;
+    }
+
+    @Override
+    public CharSequence getAccessibilityClassName() {
+        // When UrlBar is used as a read-only TextView, force Talkback to pronounce it like
+        // TextView. Otherwise Talkback will say "Edit box, http://...". crbug.com/636988
+        if (isEnabled()) {
+            return super.getAccessibilityClassName();
+        } else {
+            return TextView.class.getName();
+        }
     }
 
     private void notifyAutocompleteTextStateChanged(boolean textDeleted) {
