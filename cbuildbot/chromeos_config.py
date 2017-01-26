@@ -2112,7 +2112,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'reef',
       'samus',
       'smaug',
-      'storm',
       'stout',
       'strago',
       'stumpy',

@@ -23372,12 +23372,12 @@
     },
     "storm-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "storm"
         ],
         "chrome_sdk": false,
         "description": "Commit Queue (internal)",
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

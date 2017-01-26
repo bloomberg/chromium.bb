@@ -953,7 +953,7 @@ class OverrideForTrybotTest(ChromeosConfigTestBase):
     self.assertEquals(new['vm_tests'], old['vm_tests'])
 
     # Don't override vm tests for brillo boards.
-    old = self.site_config['storm-paladin']
+    old = self.site_config['whirlwind-paladin']
     new = config_lib.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], old['vm_tests'])
 
