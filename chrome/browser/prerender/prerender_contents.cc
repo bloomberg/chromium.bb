@@ -577,6 +577,13 @@ void PrerenderContents::DidFinishLoad(
 void PrerenderContents::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // Prevent ORIGIN_OFFLINE prerenders from being destroyed on location.href
+  // change, since the history is never merged for offline prerenders. Also
+  // avoid adding aliases as they may potentially mark other valid requests to
+  // offline as duplicate.
+  if (origin() == ORIGIN_OFFLINE)
+    return;
+
   // If the prerender made a second navigation entry, abort the prerender. This
   // avoids having to correctly implement a complex history merging case (this
   // interacts with location.replace) and correctly synchronize with the
