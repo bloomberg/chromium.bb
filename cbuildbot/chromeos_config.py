@@ -2103,6 +2103,7 @@ def CqBuilders(site_config, ge_build_config):
   _paladin_hwtest_boards = frozenset([
       'daisy_skate',
       'elm',
+      'kevin',
       'kip',
       'link',
       'lumpy',
