@@ -214,6 +214,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     InitParams(const InitParams& other);
     ~InitParams();
 
+    // Returns the activatablity based on |activatable|, but also handles the
+    // case where |activatable| is |ACTIVATABLE_DEFAULT|.
+    bool CanActivate() const;
+
     Type type;
     // If null, a default implementation will be constructed. The default
     // implementation deletes itself when the Widget closes.

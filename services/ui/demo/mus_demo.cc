@@ -138,6 +138,8 @@ bool MusDemo::OnWmSetProperty(aura::Window* window,
   return true;
 }
 
+void MusDemo::OnWmSetCanFocus(aura::Window* window, bool can_focus) {}
+
 aura::Window* MusDemo::OnWmCreateTopLevelWindow(
     mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {

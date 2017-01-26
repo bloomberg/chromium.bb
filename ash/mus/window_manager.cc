@@ -321,6 +321,13 @@ bool WindowManager::OnWmSetProperty(
          name == ui::mojom::WindowManager::kWindowTitle_Property;
 }
 
+void WindowManager::OnWmSetCanFocus(aura::Window* window, bool can_focus) {
+  NonClientFrameController* non_client_frame_controller =
+      NonClientFrameController::Get(window);
+  if (non_client_frame_controller)
+    non_client_frame_controller->set_can_activate(can_focus);
+}
+
 aura::Window* WindowManager::OnWmCreateTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {

@@ -94,6 +94,10 @@ class AURA_EXPORT WindowManagerDelegate {
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) = 0;
 
+  // A client requested to change focusibility of |window|. We currently assume
+  // this always succeeds.
+  virtual void OnWmSetCanFocus(Window* window, bool can_focus) = 0;
+
   // A client has requested a new top level window. The delegate should create
   // and parent the window appropriately and return it. |properties| is the
   // supplied properties from the client requesting the new window. The

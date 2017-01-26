@@ -151,6 +151,9 @@ MusClient::ConfigurePropertiesFromParams(
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(init_params.type));
 
+  properties[ui::mojom::WindowManager::kFocusable_InitProperty] =
+      mojo::ConvertTo<std::vector<uint8_t>>(init_params.CanActivate());
+
   if (!init_params.bounds.IsEmpty()) {
     properties[ui::mojom::WindowManager::kBounds_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);

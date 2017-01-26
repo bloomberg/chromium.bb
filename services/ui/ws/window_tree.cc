@@ -1548,10 +1548,20 @@ void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {
 void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
-  // TODO(sky): there should be an else case (it shouldn't route to wm and
-  // policy allows, then set_can_focus).
-  if (window && ShouldRouteToWindowManager(window))
+  if (!window) {
+    DVLOG(1) << "SetCanFocus failed (invalid id)";
+    return;
+  }
+
+  if (ShouldRouteToWindowManager(window)) {
+    WindowManagerDisplayRoot* display_root =
+        GetWindowManagerDisplayRoot(window);
+    WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
+    wm_tree->window_manager_internal_->WmSetCanFocus(transport_window_id,
+                                                     can_focus);
+  } else if (access_policy_->CanSetFocus(window)) {
     window->set_can_focus(can_focus);
+  }
 }
 
 void WindowTree::SetCanAcceptEvents(Id transport_window_id,

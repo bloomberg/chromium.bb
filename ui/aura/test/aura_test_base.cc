@@ -169,6 +169,8 @@ bool AuraTestBase::OnWmSetProperty(
   return true;
 }
 
+void AuraTestBase::OnWmSetCanFocus(Window* window, bool can_focus) {}
+
 Window* AuraTestBase::OnWmCreateTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {

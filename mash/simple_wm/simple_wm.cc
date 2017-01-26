@@ -428,6 +428,8 @@ bool SimpleWM::OnWmSetProperty(
   return true;
 }
 
+void SimpleWM::OnWmSetCanFocus(aura::Window* window, bool can_focus) {}
+
 aura::Window* SimpleWM::OnWmCreateTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {

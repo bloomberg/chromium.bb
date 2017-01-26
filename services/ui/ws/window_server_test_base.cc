@@ -172,6 +172,12 @@ bool WindowServerTestBase::OnWmSetProperty(
              : true;
 }
 
+void WindowServerTestBase::OnWmSetCanFocus(aura::Window* window,
+                                           bool can_focus) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmSetCanFocus(window, can_focus);
+}
+
 aura::Window* WindowServerTestBase::OnWmCreateTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {

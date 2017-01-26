@@ -21,6 +21,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 
@@ -185,6 +186,17 @@ aura::Window* CreateAndParentTopLevelWindow(
             [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property]));
     // No need to persist this value.
     properties->erase(ui::mojom::WindowManager::kWindowIgnoredByShelf_Property);
+  }
+  if (properties->count(ui::mojom::WindowManager::kFocusable_InitProperty)) {
+    bool can_focus = mojo::ConvertTo<bool>(
+        (*properties)[ui::mojom::WindowManager::kFocusable_InitProperty]);
+    window_manager->window_tree_client()->SetCanFocus(window, can_focus);
+    NonClientFrameController* non_client_frame_controller =
+        NonClientFrameController::Get(window);
+    if (non_client_frame_controller)
+      non_client_frame_controller->set_can_activate(can_focus);
+    // No need to persist this value.
+    properties->erase(ui::mojom::WindowManager::kFocusable_InitProperty);
   }
   return window;
 }

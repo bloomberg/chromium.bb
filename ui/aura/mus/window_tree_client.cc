@@ -1422,6 +1422,12 @@ void WindowTreeClient::WmSetProperty(
     window_manager_internal_client_->WmResponse(change_id, result);
 }
 
+void WindowTreeClient::WmSetCanFocus(Id window_id, bool can_focus) {
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (window)
+    window_manager_delegate_->OnWmSetCanFocus(window->GetWindow(), can_focus);
+}
+
 void WindowTreeClient::WmCreateTopLevelWindow(
     uint32_t change_id,
     ClientSpecificId requesting_client_id,
