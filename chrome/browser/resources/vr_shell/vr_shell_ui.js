@@ -544,4 +544,4 @@ var vrShellUi = (function() {
   };
 })();
 
-document.addEventListener('DOMContentLoaded', vrShellUi.initialize);
+window.addEventListener('load', vrShellUi.initialize);
