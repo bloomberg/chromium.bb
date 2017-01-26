@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
@@ -32,7 +33,9 @@ ResourcePrefetcher::ResourcePrefetcher(
     : state_(INITIALIZED),
       delegate_(delegate),
       config_(config),
-      main_frame_url_(main_frame_url) {
+      main_frame_url_(main_frame_url),
+      prefetched_count_(0),
+      prefetched_bytes_(0) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   std::copy(urls.begin(), urls.end(), std::back_inserter(request_queue_));
@@ -99,6 +102,13 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
     CHECK(host_inflight_counts_.empty());
     CHECK(request_queue_.empty() || state_ == STOPPED);
 
+    UMA_HISTOGRAM_COUNTS_100(
+        internal::kResourcePrefetchPredictorPrefetchedCountHistogram,
+        prefetched_count_);
+    UMA_HISTOGRAM_COUNTS_10000(
+        internal::kResourcePrefetchPredictorPrefetchedSizeHistogram,
+        prefetched_bytes_ / 1024);
+
     state_ = FINISHED;
     delegate_->ResourcePrefetcherFinished(this);
   }
@@ -149,11 +159,23 @@ void ResourcePrefetcher::ReadFullResponse(net::URLRequest* request) {
     if (bytes_read == net::ERR_IO_PENDING) {
       return;
     } else if (bytes_read <= 0) {
+      if (bytes_read == 0)
+        RequestComplete(request);
       FinishRequest(request);
       return;
     }
 
   } while (bytes_read > 0);
+}
+
+void ResourcePrefetcher::RequestComplete(net::URLRequest* request) {
+  ++prefetched_count_;
+  prefetched_bytes_ += request->GetTotalReceivedBytes();
+
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kResourcePrefetchPredictorCachePatternHistogram,
+      request->response_info().cache_entry_status,
+      net::HttpResponseInfo::CacheEntryStatus::ENTRY_MAX);
 }
 
 void ResourcePrefetcher::OnReceivedRedirect(

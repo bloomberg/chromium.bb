@@ -27,6 +27,15 @@ class URLRequestContext;
 
 namespace predictors {
 
+namespace internal {
+constexpr char kResourcePrefetchPredictorCachePatternHistogram[] =
+    "ResourcePrefetchPredictor.CachePattern";
+constexpr char kResourcePrefetchPredictorPrefetchedCountHistogram[] =
+    "ResourcePrefetchPredictor.PrefetchedCount";
+constexpr char kResourcePrefetchPredictorPrefetchedSizeHistogram[] =
+    "ResourcePrefetchPredictor.PrefetchedSizeKB";
+}  // namespace internal
+
 // Responsible for prefetching resources for a single main frame URL based on
 // the input list of resources.
 //  - Limits the max number of resources in flight for any host and also across
@@ -81,6 +90,9 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   // be cached correctly. Stubbed out during testing.
   virtual void ReadFullResponse(net::URLRequest* request);
 
+  // Called after successfull reading of response to save stats for histograms.
+  void RequestComplete(net::URLRequest* request);
+
   // net::URLRequest::Delegate methods.
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
@@ -108,7 +120,10 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   Delegate* const delegate_;
   ResourcePrefetchPredictorConfig const config_;
   GURL main_frame_url_;
-  std::unique_ptr<GURL> urls_;
+
+  // For histogram reports.
+  size_t prefetched_count_;
+  int64_t prefetched_bytes_;
 
   std::map<net::URLRequest*, std::unique_ptr<net::URLRequest>>
       inflight_requests_;
