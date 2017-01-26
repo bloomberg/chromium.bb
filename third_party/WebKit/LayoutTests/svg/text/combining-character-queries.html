@@ -22,8 +22,8 @@
     <text x="400" y="125" class="testTextRun" font-family="sans-serif" direction="rtl">&#8207;a&#8207;b&#x030c;&#8207;c&#x030c;&#x030c;</text>
 
     <!-- multiple combining diacritics on ligatures in LTR -->
-    <!-- MacOS has differences with the "ffi" glyph and diacritics in cursive font family so the first run uses 'fi' as a workaround. -->
-    <text x="50" y="200" class="testTextRun" font-family="cursive">fi&#x030c; fi&#x030c;&#x030c;</text>
+    <!-- MacOS has differences with multiple diacritics in cursive font family so this is skipped, see: https://crbug.com/669693. -->
+    <!-- <text x="50" y="200" class="testTextRun" font-family="cursive">fi&#x030c; ffi&#x030c;&#x030c;</text> -->
     <text x="200" y="200" class="testTextRun" font-family="serif">fi&#x030c; ffi&#x030c;&#x030c;</text>
     <text x="350" y="200" class="testTextRun" font-family="sans-serif">fi&#x030c; ffi&#x030c;&#x030c;</text>
 
