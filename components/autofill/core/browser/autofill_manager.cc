@@ -638,7 +638,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   }
 
   // Show a "Payment not secure" message.
-  if (!is_context_secure && is_http_warning_enabled) {
+  if (!is_context_secure && is_filling_credit_card && is_http_warning_enabled) {
 #if !defined(OS_ANDROID)
     if (!suggestions.empty()) {
       suggestions.insert(suggestions.begin(), Suggestion());

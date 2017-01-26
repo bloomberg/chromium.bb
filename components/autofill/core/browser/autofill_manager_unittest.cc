@@ -1245,6 +1245,24 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {
       Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
+// Test that the HttpWarning does not appear on non-payment forms.
+TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValueNotSecure) {
+  SetHttpWarningEnabled();
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const FormFieldData& field = form.fields[0];
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+}
+
 // Test that we return only matching address profile suggestions when the
 // selected form field has been partially filled out.
 TEST_F(AutofillManagerTest, GetProfileSuggestions_MatchCharacter) {
