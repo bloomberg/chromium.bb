@@ -241,7 +241,7 @@ void TabManager::Stop() {
   memory_pressure_listener_.reset();
 }
 
-TabStatsList TabManager::GetTabStats() {
+TabStatsList TabManager::GetTabStats() const {
   TabStatsList stats_list(GetUnsortedTabStats());
 
   // Sort the collected data so that least desirable to be killed is first, most
@@ -251,7 +251,8 @@ TabStatsList TabManager::GetTabStats() {
   return stats_list;
 }
 
-std::vector<content::RenderProcessHost*> TabManager::GetOrderedRenderers() {
+std::vector<content::RenderProcessHost*>
+TabManager::GetOrderedRenderers() const {
   // Get the tab stats.
   auto tab_stats = GetTabStats();
 
@@ -397,7 +398,7 @@ void TabManager::set_test_tick_clock(base::TickClock* test_tick_clock) {
 // 1) whether or not a tab is pinned
 // 2) last time a tab was selected
 // 3) is the tab currently selected
-TabStatsList TabManager::GetUnsortedTabStats() {
+TabStatsList TabManager::GetUnsortedTabStats() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open.
@@ -440,7 +441,8 @@ void TabManager::SetTabAutoDiscardableState(content::WebContents* contents,
   GetWebContentsData(contents)->SetAutoDiscardableState(state);
 }
 
-content::WebContents* TabManager::GetWebContentsById(int64_t tab_contents_id) {
+content::WebContents* TabManager::GetWebContentsById(
+    int64_t tab_contents_id) const {
   TabStripModel* model = nullptr;
   int index = FindTabStripModelById(tab_contents_id, &model);
   if (index == -1)
@@ -448,7 +450,7 @@ content::WebContents* TabManager::GetWebContentsById(int64_t tab_contents_id) {
   return model->GetWebContentsAt(index);
 }
 
-bool TabManager::CanSuspendBackgroundedRenderer(int render_process_id) {
+bool TabManager::CanSuspendBackgroundedRenderer(int render_process_id) const {
   // A renderer can be suspended if it's not playing media.
   auto tab_stats = GetUnsortedTabStats();
   for (auto& tab : tab_stats) {
@@ -632,7 +634,7 @@ int TabManager::GetTabCount() const {
   return tab_count;
 }
 
-void TabManager::AddTabStats(TabStatsList* stats_list) {
+void TabManager::AddTabStats(TabStatsList* stats_list) const {
   BrowserList* browser_list = BrowserList::GetInstance();
   for (BrowserList::const_reverse_iterator browser_iterator =
            browser_list->begin_last_active();
@@ -651,7 +653,7 @@ void TabManager::AddTabStats(TabStatsList* stats_list) {
 void TabManager::AddTabStats(const TabStripModel* model,
                              bool is_app,
                              bool active_model,
-                             TabStatsList* stats_list) {
+                             TabStatsList* stats_list) const {
   for (int i = 0; i < model->count(); i++) {
     WebContents* contents = model->GetWebContentsAt(i);
     if (!contents->IsCrashed()) {
@@ -1020,7 +1022,7 @@ content::WebContents* TabManager::DiscardTabImpl() {
 // Check the variation parameter to see if a tab can be discarded only once or
 // multiple times.
 // Default is to only discard once per tab.
-bool TabManager::CanOnlyDiscardOnce() {
+bool TabManager::CanOnlyDiscardOnce() const {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // On Windows and MacOS, default to discarding only once unless otherwise
   // specified by the variation parameter.

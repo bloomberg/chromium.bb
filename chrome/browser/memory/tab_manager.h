@@ -85,10 +85,10 @@ class TabManager : public TabStripModelObserver {
 
   // Returns the list of the stats for all renderers. Must be called on the UI
   // thread. The returned list is sorted by reversed importance.
-  TabStatsList GetTabStats();
+  TabStatsList GetTabStats() const;
 
   // Returns a sorted list of renderers, from most important to least important.
-  std::vector<content::RenderProcessHost*> GetOrderedRenderers();
+  std::vector<content::RenderProcessHost*> GetOrderedRenderers() const;
 
   // Returns true if |contents| is currently discarded.
   bool IsTabDiscarded(content::WebContents* contents) const;
@@ -128,7 +128,7 @@ class TabManager : public TabStripModelObserver {
 
   // Returns the list of the stats for all renderers. Must be called on the UI
   // thread.
-  TabStatsList GetUnsortedTabStats();
+  TabStatsList GetUnsortedTabStats() const;
 
   void AddObserver(TabManagerObserver* observer);
   void RemoveObserver(TabManagerObserver* observer);
@@ -148,7 +148,7 @@ class TabManager : public TabStripModelObserver {
   void SetTabAutoDiscardableState(content::WebContents* contents, bool state);
 
   // Returns true when a given renderer can suspend when it is backgrounded.
-  bool CanSuspendBackgroundedRenderer(int render_process_id);
+  bool CanSuspendBackgroundedRenderer(int render_process_id) const;
 
   // Returns true if |first| is considered less desirable to be killed than
   // |second|.
@@ -239,14 +239,14 @@ class TabManager : public TabStripModelObserver {
   int GetTabCount() const;
 
   // Adds all the stats of the tabs to |stats_list|.
-  void AddTabStats(TabStatsList* stats_list);
+  void AddTabStats(TabStatsList* stats_list) const;
 
   // Adds all the stats of the tabs in |tab_strip_model| into |stats_list|.
   // If |active_model| is true, consider its first tab as being active.
   void AddTabStats(const TabStripModel* model,
                    bool is_app,
                    bool active_model,
-                   TabStatsList* stats_list);
+                   TabStatsList* stats_list) const;
 
   // Callback for when |update_timer_| fires. Takes care of executing the tasks
   // that need to be run periodically (see comment in implementation).
@@ -274,7 +274,7 @@ class TabManager : public TabStripModelObserver {
     SUSPENDED,
   };
   // Returns WebContents whose contents id matches the given tab_contents_id.
-  content::WebContents* GetWebContentsById(int64_t tab_contents_id);
+  content::WebContents* GetWebContentsById(int64_t tab_contents_id) const;
 
   // Returns the next state of the purge and suspend.
   PurgeAndSuspendState GetNextPurgeAndSuspendState(
@@ -329,7 +329,7 @@ class TabManager : public TabStripModelObserver {
   content::WebContents* DiscardTabImpl();
 
   // Returns true if tabs can be discarded only once.
-  bool CanOnlyDiscardOnce();
+  bool CanOnlyDiscardOnce() const;
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
