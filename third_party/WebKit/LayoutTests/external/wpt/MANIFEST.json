@@ -17853,6 +17853,12 @@
      {}
     ]
    ],
+   "IndexedDB/idbcursor-continuePrimaryKey.htm": [
+    [
+     "/IndexedDB/idbcursor-continuePrimaryKey.htm",
+     {}
+    ]
+   ],
    "IndexedDB/idbcursor-continuePrimaryKey-exception-order.htm": [
     [
      "/IndexedDB/idbcursor-continuePrimaryKey-exception-order.htm",
