@@ -219,24 +219,6 @@ void SurfaceManager::RemoveSurfaceReference(const SurfaceId& parent_id,
   GarbageCollectSurfaces();
 }
 
-void SurfaceManager::AddSurfaceReferences(
-    const std::vector<SurfaceReference>& references) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  for (const auto& reference : references)
-    AddSurfaceReference(reference.parent_id(), reference.child_id());
-}
-
-void SurfaceManager::RemoveSurfaceReferences(
-    const std::vector<SurfaceReference>& references) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // TODO(kylechar): Each remove reference can trigger GC, it would be better if
-  // we GC only once if removing multiple references.
-  for (const auto& reference : references)
-    RemoveSurfaceReference(reference.parent_id(), reference.child_id());
-}
-
 size_t SurfaceManager::GetSurfaceReferenceCount(
     const SurfaceId& surface_id) const {
   auto iter = child_to_parent_refs_.find(surface_id);

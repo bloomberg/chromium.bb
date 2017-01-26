@@ -19,7 +19,6 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
-#include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
@@ -37,21 +36,17 @@ class SurfaceManager;
 class SyntheticBeginFrameSource;
 }
 
-namespace display_compositor {
-class GpuCompositorFrameSink;
-}
-
 namespace ui {
+
+class GpuCompositorFrameSink;
 
 // The DisplayCompositor object is an object global to the Window Server app
 // that holds the SurfaceServer and allocates new Surfaces namespaces.
 // This object lives on the main thread of the Window Server.
 // TODO(rjkroege, fsamuel): This object will need to change to support multiple
 // displays.
-class DisplayCompositor
-    : public cc::SurfaceObserver,
-      public display_compositor::GpuCompositorFrameSinkDelegate,
-      public cc::mojom::DisplayCompositor {
+class DisplayCompositor : public cc::SurfaceObserver,
+                          public cc::mojom::DisplayCompositor {
  public:
   DisplayCompositor(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
@@ -63,11 +58,24 @@ class DisplayCompositor
 
   cc::SurfaceManager* manager() { return &manager_; }
 
-  // display_compositor::GpuCompositorFrameSinkDelegate implementation.
-  void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id,
-                              bool destroy_compositor_frame_sink) override;
-  void OnPrivateConnectionLost(const cc::FrameSinkId& frame_sink_id,
-                               bool destroy_compositor_frame_sink) override;
+  // Adds surface references. For each reference added, this will remove the
+  // temporary reference to the child surface if one exists.
+  void AddSurfaceReferences(
+      const std::vector<cc::SurfaceReference>& references);
+
+  // Removes surface references.
+  void RemoveSurfaceReferences(
+      const std::vector<cc::SurfaceReference>& references);
+
+  // We must avoid destroying a GpuCompositorFrameSink until both the display
+  // compositor host and the client drop their connection to avoid getting into
+  // a state where surfaces references are inconsistent.
+  void OnCompositorFrameSinkClientConnectionLost(
+      const cc::FrameSinkId& frame_sink_id,
+      bool destroy_compositor_frame_sink);
+  void OnCompositorFrameSinkPrivateConnectionLost(
+      const cc::FrameSinkId& frame_sink_id,
+      bool destroy_compositor_frame_sink);
 
   // cc::mojom::DisplayCompositor implementation:
   void CreateDisplayCompositorFrameSink(
@@ -120,10 +128,9 @@ class DisplayCompositor
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* image_factory_;
 
-  std::unordered_map<
-      cc::FrameSinkId,
-      std::unique_ptr<display_compositor::GpuCompositorFrameSink>,
-      cc::FrameSinkIdHash>
+  std::unordered_map<cc::FrameSinkId,
+                     std::unique_ptr<GpuCompositorFrameSink>,
+                     cc::FrameSinkIdHash>
       compositor_frame_sinks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

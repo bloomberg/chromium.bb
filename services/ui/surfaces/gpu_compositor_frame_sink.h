@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_H_
+#ifndef SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_
+#define SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_
 
 #include <memory>
 #include <vector>
@@ -15,25 +15,24 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
-#include "components/display_compositor/display_compositor_export.h"
-#include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace cc {
 class Display;
 }
 
-namespace display_compositor {
+namespace ui {
+
+class DisplayCompositor;
 
 // Server side representation of a WindowSurface.
-class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
-    : public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSink),
-      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSinkPrivate) {
+class GpuCompositorFrameSink
+    : public cc::CompositorFrameSinkSupportClient,
+      public cc::mojom::MojoCompositorFrameSink,
+      public cc::mojom::MojoCompositorFrameSinkPrivate {
  public:
   GpuCompositorFrameSink(
-      GpuCompositorFrameSinkDelegate* delegate,
-      cc::SurfaceManager* surface_manager,
+      DisplayCompositor* display_compositor,
       const cc::FrameSinkId& frame_sink_id,
       std::unique_ptr<cc::Display> display,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
@@ -60,9 +59,8 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   void OnClientConnectionLost();
   void OnPrivateConnectionLost();
 
-  GpuCompositorFrameSinkDelegate* const delegate_;
+  DisplayCompositor* const display_compositor_;
   cc::CompositorFrameSinkSupport support_;
-  cc::SurfaceManager* const surface_manager_;
 
  private:
   // cc::CompositorFrameSinkSupportClient implementation:
@@ -85,6 +83,6 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };
 
-}  // namespace display_compositor
+}  // namespace ui
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_H_
+#endif  // SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_

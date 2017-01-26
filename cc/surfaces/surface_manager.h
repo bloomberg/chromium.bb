@@ -129,10 +129,6 @@ class CC_SURFACES_EXPORT SurfaceManager
                            const SurfaceId& child_id) override;
   void RemoveSurfaceReference(const SurfaceId& parent_id,
                               const SurfaceId& child_id) override;
-  void AddSurfaceReferences(
-      const std::vector<SurfaceReference>& references) override;
-  void RemoveSurfaceReferences(
-      const std::vector<SurfaceReference>& references) override;
   size_t GetSurfaceReferenceCount(const SurfaceId& surface_id) const override;
   size_t GetReferencedSurfaceCount(const SurfaceId& surface_id) const override;
 
