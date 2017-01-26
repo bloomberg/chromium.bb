@@ -76,6 +76,7 @@ TEST(CollectionViewModelTest, SingleSection) {
       toSectionWithIdentifier:SectionIdentifierCheese];
 
   // Check there are some items but not more.
+  EXPECT_EQ(NO, [model hasItemAtIndexPath:nil]);
   EXPECT_EQ(YES, [model hasItemAtIndexPath:[NSIndexPath indexPathForItem:0
                                                                inSection:0]]);
   EXPECT_EQ(YES, [model hasItemAtIndexPath:[NSIndexPath indexPathForItem:2

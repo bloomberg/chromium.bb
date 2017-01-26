@@ -147,6 +147,9 @@ typedef NSMutableArray<CollectionViewItem*> SectionItems;
 #pragma mark Query items from index paths
 
 - (BOOL)hasItemAtIndexPath:(NSIndexPath*)indexPath {
+  if (!indexPath)
+    return NO;
+
   if (static_cast<NSUInteger>(indexPath.section) < [_sections count]) {
     SectionItems* items = [_sections objectAtIndex:indexPath.section];
     return static_cast<NSUInteger>(indexPath.item) < [items count];
@@ -155,6 +158,7 @@ typedef NSMutableArray<CollectionViewItem*> SectionItems;
 }
 
 - (CollectionViewItem*)itemAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK(indexPath);
   DCHECK_LT(static_cast<NSUInteger>(indexPath.section), [_sections count]);
   SectionItems* items = [_sections objectAtIndex:indexPath.section];
 
