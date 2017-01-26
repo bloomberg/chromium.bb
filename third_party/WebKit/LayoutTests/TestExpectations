@@ -144,6 +144,9 @@ crbug.com/664852 virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ 
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
+# Added 2017-01-26
+crbug.com/682964 virtual/gpu/fast/canvas/canvas-lose-restore-max-int-size.html [ Pass Failure ]
+
 # Added 2016-12-14
 crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
