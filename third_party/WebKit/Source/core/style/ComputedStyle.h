@@ -3361,6 +3361,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool isOriginalDisplayInlineType() const {
     return isDisplayInlineType(originalDisplay());
   }
+  bool isDisplayBlockContainer() const {
+    return isDisplayBlockContainer(display());
+  }
   bool isDisplayFlexibleOrGridBox() const {
     return isDisplayFlexibleBox(display()) || isDisplayGridBox(display());
   }
@@ -3710,6 +3713,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setVisitedLinkCaretColor(const StyleAutoColor& v) {
     SET_VAR_WITH_SETTER(m_rareInheritedData, visitedLinkCaretColor,
                         setVisitedLinkCaretColor, v);
+  }
+
+  static bool isDisplayBlockContainer(EDisplay display) {
+    return display == EDisplay::Block || display == EDisplay::ListItem ||
+           display == EDisplay::InlineBlock || display == EDisplay::FlowRoot ||
+           display == EDisplay::TableCell || display == EDisplay::TableCaption;
   }
 
   static bool isDisplayFlexibleBox(EDisplay display) {
