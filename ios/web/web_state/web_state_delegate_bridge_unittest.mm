@@ -80,13 +80,6 @@ TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
   EXPECT_EQ(params.is_renderer_initiated, result_params->is_renderer_initiated);
 }
 
-// Tests |LoadProgressChanged| forwarding.
-TEST_F(WebStateDelegateBridgeTest, LoadProgressChanged) {
-  ASSERT_EQ(0.0, [delegate_ changedProgress]);
-  bridge_->LoadProgressChanged(nullptr, 1.0);
-  EXPECT_EQ(1.0, [delegate_ changedProgress]);
-}
-
 // Tests |HandleContextMenu| forwarding.
 TEST_F(WebStateDelegateBridgeTest, HandleContextMenu) {
   EXPECT_EQ(nil, [delegate_ contextMenuParams]);

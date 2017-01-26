@@ -1805,6 +1805,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [webControllerSnapshotHelper_ setSnapshotCoalescingEnabled:NO];
 }
 
+- (void)webState:(web::WebState*)webState
+    didChangeLoadingProgress:(double)progress {
+  // TODO(crbug.com/546406): It is probably possible to do something smarter,
+  // but the fact that this is not always sent will have to be taken into
+  // account.
+  [parentTabModel_ notifyTabChanged:self];
+}
+
 - (void)webLoadCancelled:(const GURL&)url {
   // When a load is cancelled, this is the maximum that a page will ever load.
   [fullScreenController_ enableFullScreen];

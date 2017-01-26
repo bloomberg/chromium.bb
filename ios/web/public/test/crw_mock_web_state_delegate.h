@@ -16,8 +16,6 @@
     const web::WebState::OpenURLParams* openURLParams;
 // web::WebState received in delegate method calls.
 @property(nonatomic, readonly) web::WebState* webState;
-// Progress received in |webState:didChangeProgress| call.
-@property(nonatomic, readonly) double changedProgress;
 // ContextMenuParams reveived in |webState:handleContextMenu:| call.
 // nullptr if that delegate method was not called.
 @property(nonatomic, readonly) web::ContextMenuParams* contextMenuParams;

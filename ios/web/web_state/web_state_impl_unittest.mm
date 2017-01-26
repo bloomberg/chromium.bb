@@ -406,11 +406,6 @@ TEST_F(WebStateTest, DelegateTest) {
   TestWebStateDelegate delegate;
   web_state_->SetDelegate(&delegate);
 
-  // Test that LoadProgressChanged() is called.
-  EXPECT_FALSE(delegate.load_progress_changed_called());
-  web_state_->SendChangeLoadProgress(0.0);
-  EXPECT_TRUE(delegate.load_progress_changed_called());
-
   // Test that HandleContextMenu() is called.
   EXPECT_FALSE(delegate.handle_context_menu_called());
   web::ContextMenuParams context_menu_params;

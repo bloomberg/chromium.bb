@@ -28,11 +28,6 @@ class WebStateDelegate {
   virtual WebState* OpenURLFromWebState(WebState*,
                                         const WebState::OpenURLParams&);
 
-  // Notifies the delegate that the page has made some progress loading.
-  // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
-  // loaded).
-  virtual void LoadProgressChanged(WebState* source, double progress);
-
   // Notifies the delegate that the user triggered the context menu with the
   // given |ContextMenuParams|. Returns true if the context menu operation was
   // handled by the delegate.

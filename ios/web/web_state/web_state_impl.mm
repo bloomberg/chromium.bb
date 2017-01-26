@@ -442,9 +442,8 @@ void WebStateImpl::ClearTransientContentView() {
 }
 
 void WebStateImpl::SendChangeLoadProgress(double progress) {
-  if (delegate_) {
-    delegate_->LoadProgressChanged(this, progress);
-  }
+  for (auto& observer : observers_)
+    observer.LoadProgressChanged(progress);
 }
 
 bool WebStateImpl::HandleContextMenu(const web::ContextMenuParams& params) {

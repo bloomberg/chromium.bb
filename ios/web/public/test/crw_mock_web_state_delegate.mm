@@ -17,7 +17,6 @@
 }
 
 @synthesize webState = _webState;
-@synthesize changedProgress = _changedProgress;
 @synthesize repostFormWarningRequested = _repostFormWarningRequested;
 @synthesize authenticationRequested = _authenticationRequested;
 
@@ -26,11 +25,6 @@
   _webState = webState;
   _openURLParams.reset(new web::WebState::OpenURLParams(params));
   return webState;
-}
-
-- (void)webState:(web::WebState*)webState didChangeProgress:(double)progress {
-  _webState = webState;
-  _changedProgress = progress;
 }
 
 - (BOOL)webState:(web::WebState*)webState

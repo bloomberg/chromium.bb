@@ -22,12 +22,6 @@ WebState* WebStateDelegateBridge::OpenURLFromWebState(
   return nullptr;
 }
 
-void WebStateDelegateBridge::LoadProgressChanged(WebState* source,
-                                                 double progress) {
-  if ([delegate_ respondsToSelector:@selector(webState:didChangeProgress:)])
-    [delegate_ webState:source didChangeProgress:progress];
-}
-
 bool WebStateDelegateBridge::HandleContextMenu(
     WebState* source,
     const ContextMenuParams& params) {

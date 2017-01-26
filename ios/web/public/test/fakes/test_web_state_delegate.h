@@ -43,7 +43,6 @@ class TestWebStateDelegate : public WebStateDelegate {
 
   // WebStateDelegate overrides:
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(WebState*) override;
-  void LoadProgressChanged(WebState* source, double progress) override;
   bool HandleContextMenu(WebState* source,
                          const ContextMenuParams& params) override;
   void ShowRepostFormWarningDialog(
@@ -54,11 +53,6 @@ class TestWebStateDelegate : public WebStateDelegate {
                       NSURLProtectionSpace* protection_space,
                       NSURLCredential* proposed_credential,
                       const AuthCallback& callback) override;
-
-  // True if the WebStateDelegate LoadProgressChanged method has been called.
-  bool load_progress_changed_called() const {
-    return load_progress_changed_called_;
-  }
 
   // True if the WebStateDelegate HandleContextMenu method has been called.
   bool handle_context_menu_called() const {
@@ -88,7 +82,6 @@ class TestWebStateDelegate : public WebStateDelegate {
   }
 
  private:
-  bool load_progress_changed_called_ = false;
   bool handle_context_menu_called_ = false;
   std::unique_ptr<TestRepostFormRequest> last_repost_form_request_;
   bool get_java_script_dialog_presenter_called_ = false;

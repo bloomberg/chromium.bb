@@ -32,10 +32,6 @@ JavaScriptDialogPresenter* TestWebStateDelegate::GetJavaScriptDialogPresenter(
   return &java_script_dialog_presenter_;
 }
 
-void TestWebStateDelegate::LoadProgressChanged(WebState*, double) {
-  load_progress_changed_called_ = true;
-}
-
 bool TestWebStateDelegate::HandleContextMenu(WebState*,
                                              const ContextMenuParams&) {
   handle_context_menu_called_ = true;

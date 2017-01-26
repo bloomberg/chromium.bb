@@ -24,8 +24,6 @@ WebState* WebStateDelegate::OpenURLFromWebState(
   return nullptr;
 }
 
-void WebStateDelegate::LoadProgressChanged(WebState*, double) {}
-
 bool WebStateDelegate::HandleContextMenu(WebState*, const ContextMenuParams&) {
   return false;
 }

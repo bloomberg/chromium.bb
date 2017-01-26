@@ -155,11 +155,8 @@
   }
 }
 
-// -----------------------------------------------------------------------
-// CRWWebStateDelegate implementation.
-
-- (void)webState:(web::WebState*)webState didChangeProgress:(double)progress {
-  _loadProgress = progress;
+- (void)webState:(web::WebState*)webState
+    didChangeLoadingProgress:(double)progress {
   [self notifyDidUpdateWithChanges:CRIWVWebViewUpdateTypeProgress];
 }
 

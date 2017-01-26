@@ -2411,15 +2411,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   };
 }
 
-- (void)webState:(web::WebState*)webState didChangeProgress:(double)progress {
-  if (webState == [_model currentTab].webState) {
-    // TODO(crbug.com/546406): It is probably possible to do something smarter,
-    // but the fact that this is not always sent will have to be taken into
-    // account.
-    [self updateToolbar];
-  }
-}
-
 - (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
   // Prevent context menu from displaying for a tab which is no longer the

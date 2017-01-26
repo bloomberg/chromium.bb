@@ -66,6 +66,11 @@ class WebStateObserver {
   // Called on history state change events.
   virtual void HistoryStateChanged() {}
 
+  // Notifies the observer that the page has made some progress loading.
+  // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
+  // loaded).
+  virtual void LoadProgressChanged(double progress) {}
+
   // Called on form submission. |user_initiated| is true if the user
   // interacted with the page.
   virtual void DocumentSubmitted(const std::string& form_name,
