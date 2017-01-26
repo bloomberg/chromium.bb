@@ -1639,12 +1639,10 @@ def generate_gtest(tester_name, tester_config, test, test_config,
     result = copy.deepcopy(NON_SWARMED_GTESTS[test])
     result['name'] = test
   else:
-    # Put the swarming dimensions in anyway. If the tester is later
-    # swarmed, they will come in handy.
     if not 'swarming' in result:
       result['swarming'] = {}
     result['swarming'].update({
-      'can_use_on_swarming_builders': True,
+      'can_use_on_swarming_builders': tester_config['swarming'],
       'dimension_sets': tester_config['swarming_dimensions']
     })
     if is_android(tester_config):
@@ -1751,9 +1749,7 @@ def generate_isolated_test(tester_name, tester_config, test, test_config,
     step_name = '%s_tests' % step_name
   # Prepend GPU-specific flags.
   swarming = {
-    # Always say this is true regardless of whether the tester
-    # supports swarming. It doesn't hurt.
-    'can_use_on_swarming_builders': True,
+    'can_use_on_swarming_builders': tester_config['swarming'],
     'dimension_sets': tester_config['swarming_dimensions']
   }
   if 'swarming' in test_config:
