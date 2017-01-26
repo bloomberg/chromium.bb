@@ -18,27 +18,8 @@
 
 namespace cc {
 
-LayerTree::Inputs::Inputs()
-    : top_controls_height(0.f),
-      top_controls_shown_ratio(0.f),
-      browser_controls_shrink_blink_size(false),
-      bottom_controls_height(0.f),
-      device_scale_factor(1.f),
-      painted_device_scale_factor(1.f),
-      page_scale_factor(1.f),
-      min_page_scale_factor(1.f),
-      max_page_scale_factor(1.f),
-      background_color(SK_ColorWHITE),
-      has_transparent_background(false),
-      have_scroll_event_handlers(false),
-      event_listener_properties() {}
-
-LayerTree::Inputs::~Inputs() = default;
-
 LayerTree::LayerTree(MutatorHost* mutator_host, LayerTreeHost* layer_tree_host)
-    : needs_full_tree_sync_(true),
-      needs_meta_info_recomputation_(true),
-      in_paint_layer_contents_(false),
+    : event_listener_properties_(),
       mutator_host_(mutator_host),
       layer_tree_host_(layer_tree_host) {
   DCHECK(mutator_host_);
@@ -52,26 +33,26 @@ LayerTree::~LayerTree() {
   // We must clear any pointers into the layer tree prior to destroying it.
   RegisterViewportLayers(nullptr, nullptr, nullptr, nullptr);
 
-  if (inputs_.root_layer) {
-    inputs_.root_layer->SetLayerTreeHost(nullptr);
+  if (root_layer_) {
+    root_layer_->SetLayerTreeHost(nullptr);
 
     // The root layer must be destroyed before the layer tree. We've made a
     // contract with our animation controllers that the animation_host will
     // outlive them, and we must make good.
-    inputs_.root_layer = nullptr;
+    root_layer_ = nullptr;
   }
 }
 
 void LayerTree::SetRootLayer(scoped_refptr<Layer> root_layer) {
-  if (inputs_.root_layer.get() == root_layer.get())
+  if (root_layer_.get() == root_layer.get())
     return;
 
-  if (inputs_.root_layer.get())
-    inputs_.root_layer->SetLayerTreeHost(nullptr);
-  inputs_.root_layer = root_layer;
-  if (inputs_.root_layer.get()) {
-    DCHECK(!inputs_.root_layer->parent());
-    inputs_.root_layer->SetLayerTreeHost(layer_tree_host_);
+  if (root_layer_.get())
+    root_layer_->SetLayerTreeHost(nullptr);
+  root_layer_ = root_layer;
+  if (root_layer_.get()) {
+    DCHECK(!root_layer_->parent());
+    root_layer_->SetLayerTreeHost(layer_tree_host_);
   }
 
   if (hud_layer_.get())
@@ -91,85 +72,85 @@ void LayerTree::RegisterViewportLayers(
     scoped_refptr<Layer> outer_viewport_scroll_layer) {
   DCHECK(!inner_viewport_scroll_layer ||
          inner_viewport_scroll_layer != outer_viewport_scroll_layer);
-  inputs_.overscroll_elasticity_layer = overscroll_elasticity_layer;
-  inputs_.page_scale_layer = page_scale_layer;
-  inputs_.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
-  inputs_.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
+  overscroll_elasticity_layer_ = overscroll_elasticity_layer;
+  page_scale_layer_ = page_scale_layer;
+  inner_viewport_scroll_layer_ = inner_viewport_scroll_layer;
+  outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
 }
 
 void LayerTree::RegisterSelection(const LayerSelection& selection) {
-  if (inputs_.selection == selection)
+  if (selection_ == selection)
     return;
 
-  inputs_.selection = selection;
+  selection_ = selection;
   SetNeedsCommit();
 }
 
 void LayerTree::SetHaveScrollEventHandlers(bool have_event_handlers) {
-  if (inputs_.have_scroll_event_handlers == have_event_handlers)
+  if (have_scroll_event_handlers_ == have_event_handlers)
     return;
 
-  inputs_.have_scroll_event_handlers = have_event_handlers;
+  have_scroll_event_handlers_ = have_event_handlers;
   SetNeedsCommit();
 }
 
 void LayerTree::SetEventListenerProperties(EventListenerClass event_class,
                                            EventListenerProperties properties) {
   const size_t index = static_cast<size_t>(event_class);
-  if (inputs_.event_listener_properties[index] == properties)
+  if (event_listener_properties_[index] == properties)
     return;
 
-  inputs_.event_listener_properties[index] = properties;
+  event_listener_properties_[index] = properties;
   SetNeedsCommit();
 }
 
 void LayerTree::SetViewportSize(const gfx::Size& device_viewport_size) {
-  if (inputs_.device_viewport_size == device_viewport_size)
+  if (device_viewport_size_ == device_viewport_size)
     return;
 
-  inputs_.device_viewport_size = device_viewport_size;
+  device_viewport_size_ = device_viewport_size;
 
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
 
 void LayerTree::SetBrowserControlsHeight(float height, bool shrink) {
-  if (inputs_.top_controls_height == height &&
-      inputs_.browser_controls_shrink_blink_size == shrink)
+  if (top_controls_height_ == height &&
+      browser_controls_shrink_blink_size_ == shrink)
     return;
 
-  inputs_.top_controls_height = height;
-  inputs_.browser_controls_shrink_blink_size = shrink;
+  top_controls_height_ = height;
+  browser_controls_shrink_blink_size_ = shrink;
   SetNeedsCommit();
 }
 
 void LayerTree::SetBrowserControlsShownRatio(float ratio) {
-  if (inputs_.top_controls_shown_ratio == ratio)
+  if (top_controls_shown_ratio_ == ratio)
     return;
 
-  inputs_.top_controls_shown_ratio = ratio;
+  top_controls_shown_ratio_ = ratio;
   SetNeedsCommit();
 }
 
 void LayerTree::SetBottomControlsHeight(float height) {
-  if (inputs_.bottom_controls_height == height)
+  if (bottom_controls_height_ == height)
     return;
 
-  inputs_.bottom_controls_height = height;
+  bottom_controls_height_ = height;
   SetNeedsCommit();
 }
 
 void LayerTree::SetPageScaleFactorAndLimits(float page_scale_factor,
                                             float min_page_scale_factor,
                                             float max_page_scale_factor) {
-  if (inputs_.page_scale_factor == page_scale_factor &&
-      inputs_.min_page_scale_factor == min_page_scale_factor &&
-      inputs_.max_page_scale_factor == max_page_scale_factor)
+  if (page_scale_factor_ == page_scale_factor &&
+      min_page_scale_factor_ == min_page_scale_factor &&
+      max_page_scale_factor_ == max_page_scale_factor)
     return;
 
-  inputs_.page_scale_factor = page_scale_factor;
-  inputs_.min_page_scale_factor = min_page_scale_factor;
-  inputs_.max_page_scale_factor = max_page_scale_factor;
+  page_scale_factor_ = page_scale_factor;
+  min_page_scale_factor_ = min_page_scale_factor;
+  max_page_scale_factor_ = max_page_scale_factor;
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
@@ -178,37 +159,37 @@ void LayerTree::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                         bool use_anchor,
                                         float scale,
                                         base::TimeDelta duration) {
-  inputs_.pending_page_scale_animation.reset(new PendingPageScaleAnimation(
+  pending_page_scale_animation_.reset(new PendingPageScaleAnimation(
       target_offset, use_anchor, scale, duration));
 
   SetNeedsCommit();
 }
 
 bool LayerTree::HasPendingPageScaleAnimation() const {
-  return !!inputs_.pending_page_scale_animation.get();
+  return !!pending_page_scale_animation_.get();
 }
 
 void LayerTree::SetDeviceScaleFactor(float device_scale_factor) {
-  if (inputs_.device_scale_factor == device_scale_factor)
+  if (device_scale_factor_ == device_scale_factor)
     return;
-  inputs_.device_scale_factor = device_scale_factor;
+  device_scale_factor_ = device_scale_factor;
 
   property_trees_.needs_rebuild = true;
   SetNeedsCommit();
 }
 
 void LayerTree::SetPaintedDeviceScaleFactor(float painted_device_scale_factor) {
-  if (inputs_.painted_device_scale_factor == painted_device_scale_factor)
+  if (painted_device_scale_factor_ == painted_device_scale_factor)
     return;
-  inputs_.painted_device_scale_factor = painted_device_scale_factor;
+  painted_device_scale_factor_ = painted_device_scale_factor;
 
   SetNeedsCommit();
 }
 
 void LayerTree::SetDeviceColorSpace(const gfx::ColorSpace& device_color_space) {
-  if (inputs_.device_color_space == device_color_space)
+  if (device_color_space_ == device_color_space)
     return;
-  inputs_.device_color_space = device_color_space;
+  device_color_space_ = device_color_space;
   LayerTreeHostCommon::CallFunctionForEveryLayer(
       this, [](Layer* layer) { layer->SetNeedsDisplay(); });
 }
@@ -277,7 +258,7 @@ void LayerTree::SetNeedsMetaInfoRecomputation(bool needs_recomputation) {
 
 void LayerTree::SetPageScaleFromImplSide(float page_scale) {
   DCHECK(layer_tree_host_->CommitRequested());
-  inputs_.page_scale_factor = page_scale;
+  page_scale_factor_ = page_scale;
   SetPropertyTreesNeedRebuild();
 }
 
@@ -293,8 +274,8 @@ void LayerTree::UpdateHudLayer(bool show_hud_info) {
       hud_layer_ = HeadsUpDisplayLayer::Create();
     }
 
-    if (inputs_.root_layer.get() && !hud_layer_->parent())
-      inputs_.root_layer->AddChild(hud_layer_);
+    if (root_layer_.get() && !hud_layer_->parent())
+      root_layer_->AddChild(hud_layer_);
   } else if (hud_layer_.get()) {
     hud_layer_->RemoveFromParent();
     hud_layer_ = nullptr;
@@ -333,9 +314,9 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->set_hud_layer(nullptr);
   }
 
-  tree_impl->set_background_color(inputs_.background_color);
-  tree_impl->set_has_transparent_background(inputs_.has_transparent_background);
-  tree_impl->set_have_scroll_event_handlers(inputs_.have_scroll_event_handlers);
+  tree_impl->set_background_color(background_color_);
+  tree_impl->set_has_transparent_background(has_transparent_background_);
+  tree_impl->set_have_scroll_event_handlers(have_scroll_event_handlers_);
   tree_impl->set_event_listener_properties(
       EventListenerClass::kTouchStartOrMove,
       event_listener_properties(EventListenerClass::kTouchStartOrMove));
@@ -346,30 +327,26 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
       EventListenerClass::kTouchEndOrCancel,
       event_listener_properties(EventListenerClass::kTouchEndOrCancel));
 
-  if (inputs_.page_scale_layer && inputs_.inner_viewport_scroll_layer) {
+  if (page_scale_layer_ && inner_viewport_scroll_layer_) {
     tree_impl->SetViewportLayersFromIds(
-        inputs_.overscroll_elasticity_layer
-            ? inputs_.overscroll_elasticity_layer->id()
-            : Layer::INVALID_ID,
-        inputs_.page_scale_layer->id(),
-        inputs_.inner_viewport_scroll_layer->id(),
-        inputs_.outer_viewport_scroll_layer
-            ? inputs_.outer_viewport_scroll_layer->id()
-            : Layer::INVALID_ID);
-    DCHECK(inputs_.inner_viewport_scroll_layer
-               ->IsContainerForFixedPositionLayers());
+        overscroll_elasticity_layer_ ? overscroll_elasticity_layer_->id()
+                                     : Layer::INVALID_ID,
+        page_scale_layer_->id(), inner_viewport_scroll_layer_->id(),
+        outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
+                                     : Layer::INVALID_ID);
+    DCHECK(inner_viewport_scroll_layer_->IsContainerForFixedPositionLayers());
   } else {
     tree_impl->ClearViewportLayers();
   }
 
-  tree_impl->RegisterSelection(inputs_.selection);
+  tree_impl->RegisterSelection(selection_);
 
   bool property_trees_changed_on_active_tree =
       tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
   // Property trees may store damage status. We preserve the sync tree damage
   // status by pushing the damage status from sync tree property trees to main
   // thread property trees or by moving it onto the layers.
-  if (inputs_.root_layer && property_trees_changed_on_active_tree) {
+  if (root_layer_ && property_trees_changed_on_active_tree) {
     if (property_trees_.sequence_number ==
         tree_impl->property_trees()->sequence_number)
       tree_impl->property_trees()->PushChangeTrackingTo(&property_trees_);
@@ -379,28 +356,25 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
   // Setting property trees must happen before pushing the page scale.
   tree_impl->SetPropertyTrees(&property_trees_);
 
-  tree_impl->PushPageScaleFromMainThread(inputs_.page_scale_factor,
-                                         inputs_.min_page_scale_factor,
-                                         inputs_.max_page_scale_factor);
+  tree_impl->PushPageScaleFromMainThread(
+      page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
 
   tree_impl->set_browser_controls_shrink_blink_size(
-      inputs_.browser_controls_shrink_blink_size);
-  tree_impl->set_top_controls_height(inputs_.top_controls_height);
-  tree_impl->set_bottom_controls_height(inputs_.bottom_controls_height);
-  tree_impl->PushBrowserControlsFromMainThread(
-      inputs_.top_controls_shown_ratio);
+      browser_controls_shrink_blink_size_);
+  tree_impl->set_top_controls_height(top_controls_height_);
+  tree_impl->set_bottom_controls_height(bottom_controls_height_);
+  tree_impl->PushBrowserControlsFromMainThread(top_controls_shown_ratio_);
   tree_impl->elastic_overscroll()->PushFromMainThread(elastic_overscroll_);
   if (tree_impl->IsActiveTree())
     tree_impl->elastic_overscroll()->PushPendingToActive();
 
-  tree_impl->set_painted_device_scale_factor(
-      inputs_.painted_device_scale_factor);
+  tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);
 
-  tree_impl->SetDeviceColorSpace(inputs_.device_color_space);
+  tree_impl->SetDeviceColorSpace(device_color_space_);
 
-  if (inputs_.pending_page_scale_animation) {
+  if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(
-        std::move(inputs_.pending_page_scale_animation));
+        std::move(pending_page_scale_animation_));
   }
 
   DCHECK(!tree_impl->ViewportSizeInvalid());
@@ -514,7 +488,7 @@ gfx::ScrollOffset LayerTree::GetScrollOffsetForAnimation(
 }
 
 LayerListIterator<Layer> LayerTree::begin() const {
-  return LayerListIterator<Layer>(inputs_.root_layer.get());
+  return LayerListIterator<Layer>(root_layer_.get());
 }
 
 LayerListIterator<Layer> LayerTree::end() const {
@@ -522,7 +496,7 @@ LayerListIterator<Layer> LayerTree::end() const {
 }
 
 LayerListReverseIterator<Layer> LayerTree::rbegin() {
-  return LayerListReverseIterator<Layer>(inputs_.root_layer.get());
+  return LayerListReverseIterator<Layer>(root_layer_.get());
 }
 
 LayerListReverseIterator<Layer> LayerTree::rend() {

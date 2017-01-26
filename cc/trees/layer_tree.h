@@ -44,8 +44,8 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   virtual ~LayerTree();
 
   void SetRootLayer(scoped_refptr<Layer> root_layer);
-  Layer* root_layer() { return inputs_.root_layer.get(); }
-  const Layer* root_layer() const { return inputs_.root_layer.get(); }
+  Layer* root_layer() { return root_layer_.get(); }
+  const Layer* root_layer() const { return root_layer_.get(); }
 
   void RegisterViewportLayers(scoped_refptr<Layer> overscroll_elasticity_layer,
                               scoped_refptr<Layer> page_scale_layer,
@@ -53,35 +53,33 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
                               scoped_refptr<Layer> outer_viewport_scroll_layer);
 
   Layer* overscroll_elasticity_layer() const {
-    return inputs_.overscroll_elasticity_layer.get();
+    return overscroll_elasticity_layer_.get();
   }
-  Layer* page_scale_layer() const { return inputs_.page_scale_layer.get(); }
+  Layer* page_scale_layer() const { return page_scale_layer_.get(); }
   Layer* inner_viewport_scroll_layer() const {
-    return inputs_.inner_viewport_scroll_layer.get();
+    return inner_viewport_scroll_layer_.get();
   }
   Layer* outer_viewport_scroll_layer() const {
-    return inputs_.outer_viewport_scroll_layer.get();
+    return outer_viewport_scroll_layer_.get();
   }
 
   void RegisterSelection(const LayerSelection& selection);
-  const LayerSelection& selection() const { return inputs_.selection; }
+  const LayerSelection& selection() const { return selection_; }
 
   void SetHaveScrollEventHandlers(bool have_event_handlers);
   bool have_scroll_event_handlers() const {
-    return inputs_.have_scroll_event_handlers;
+    return have_scroll_event_handlers_;
   }
 
   void SetEventListenerProperties(EventListenerClass event_class,
                                   EventListenerProperties event_properties);
   EventListenerProperties event_listener_properties(
       EventListenerClass event_class) const {
-    return inputs_.event_listener_properties[static_cast<size_t>(event_class)];
+    return event_listener_properties_[static_cast<size_t>(event_class)];
   }
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
-  gfx::Size device_viewport_size() const {
-    return inputs_.device_viewport_size;
-  }
+  gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
   void SetBrowserControlsHeight(float height, bool shrink);
   void SetBrowserControlsShownRatio(float ratio);
@@ -90,18 +88,18 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,
                                    float max_page_scale_factor);
-  float page_scale_factor() const { return inputs_.page_scale_factor; }
-  float min_page_scale_factor() const { return inputs_.min_page_scale_factor; }
-  float max_page_scale_factor() const { return inputs_.max_page_scale_factor; }
+  float page_scale_factor() const { return page_scale_factor_; }
+  float min_page_scale_factor() const { return min_page_scale_factor_; }
+  float max_page_scale_factor() const { return max_page_scale_factor_; }
 
-  void set_background_color(SkColor color) { inputs_.background_color = color; }
-  SkColor background_color() const { return inputs_.background_color; }
+  void set_background_color(SkColor color) { background_color_ = color; }
+  SkColor background_color() const { return background_color_; }
 
   void set_has_transparent_background(bool transparent) {
-    inputs_.has_transparent_background = transparent;
+    has_transparent_background_ = transparent;
   }
   bool has_transparent_background() const {
-    return inputs_.has_transparent_background;
+    return has_transparent_background_;
   }
 
   void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
@@ -111,16 +109,16 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   bool HasPendingPageScaleAnimation() const;
 
   void SetDeviceScaleFactor(float device_scale_factor);
-  float device_scale_factor() const { return inputs_.device_scale_factor; }
+  float device_scale_factor() const { return device_scale_factor_; }
 
   void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
   float painted_device_scale_factor() const {
-    return inputs_.painted_device_scale_factor;
+    return painted_device_scale_factor_;
   }
 
   void SetDeviceColorSpace(const gfx::ColorSpace& device_color_space);
   const gfx::ColorSpace& device_color_space() const {
-    return inputs_.device_color_space;
+    return device_color_space_;
   }
 
   // Used externally by blink for setting the PropertyTrees when
@@ -218,51 +216,43 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;
 
-  // Encapsulates the data, callbacks, interfaces received from the embedder.
-  struct Inputs {
-    Inputs();
-    ~Inputs();
+  scoped_refptr<Layer> root_layer_;
 
-    scoped_refptr<Layer> root_layer;
+  scoped_refptr<Layer> overscroll_elasticity_layer_;
+  scoped_refptr<Layer> page_scale_layer_;
+  scoped_refptr<Layer> inner_viewport_scroll_layer_;
+  scoped_refptr<Layer> outer_viewport_scroll_layer_;
 
-    scoped_refptr<Layer> overscroll_elasticity_layer;
-    scoped_refptr<Layer> page_scale_layer;
-    scoped_refptr<Layer> inner_viewport_scroll_layer;
-    scoped_refptr<Layer> outer_viewport_scroll_layer;
+  float top_controls_height_ = 0.f;
+  float top_controls_shown_ratio_ = 0.f;
+  bool browser_controls_shrink_blink_size_ = false;
 
-    float top_controls_height;
-    float top_controls_shown_ratio;
-    bool browser_controls_shrink_blink_size;
+  float bottom_controls_height_ = 0.f;
 
-    float bottom_controls_height;
+  float device_scale_factor_ = 1.f;
+  float painted_device_scale_factor_ = 1.f;
+  float page_scale_factor_ = 1.f;
+  float min_page_scale_factor_ = 1.f;
+  float max_page_scale_factor_ = 1.f;
+  gfx::ColorSpace device_color_space_;
 
-    float device_scale_factor;
-    float painted_device_scale_factor;
-    float page_scale_factor;
-    float min_page_scale_factor;
-    float max_page_scale_factor;
-    gfx::ColorSpace device_color_space;
+  SkColor background_color_ = SK_ColorWHITE;
+  bool has_transparent_background_ = false;
 
-    SkColor background_color;
-    bool has_transparent_background;
+  LayerSelection selection_;
 
-    LayerSelection selection;
+  gfx::Size device_viewport_size_;
 
-    gfx::Size device_viewport_size;
+  bool have_scroll_event_handlers_ = false;
+  EventListenerProperties event_listener_properties_[static_cast<size_t>(
+      EventListenerClass::kNumClasses)];
 
-    bool have_scroll_event_handlers;
-    EventListenerProperties event_listener_properties[static_cast<size_t>(
-        EventListenerClass::kNumClasses)];
-
-    std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation;
-  };
-
-  Inputs inputs_;
+  std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
   PropertyTrees property_trees_;
 
-  bool needs_full_tree_sync_;
-  bool needs_meta_info_recomputation_;
+  bool needs_full_tree_sync_ = true;
+  bool needs_meta_info_recomputation_ = true;
 
   gfx::Vector2dF elastic_overscroll_;
 
@@ -277,7 +267,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   using ElementLayersMap = std::unordered_map<ElementId, Layer*, ElementIdHash>;
   ElementLayersMap element_layers_map_;
 
-  bool in_paint_layer_contents_;
+  bool in_paint_layer_contents_ = false;
 
   MutatorHost* mutator_host_;
   LayerTreeHost* layer_tree_host_;
