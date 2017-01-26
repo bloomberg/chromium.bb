@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # TODO(kjellander): Remove remaining dependencies on the WebRTC codebase.
-import("../webrtc/build/webrtc.gni")
+import("../webrtc/webrtc.gni")
 
 group("libjingle_xmpp") {
   public_deps = [

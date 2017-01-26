@@ -9,7 +9,7 @@ import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
-import("//third_party/webrtc/build/webrtc.gni")
+import("//third_party/webrtc/webrtc.gni")
 
 # See //content/BUILD.gn for how this works.
 group("common") {
