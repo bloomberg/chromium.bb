@@ -285,8 +285,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
     provider_ = base::MakeUnique<DownloadSuggestionsProvider>(
         &observer_, show_offline_pages ? &offline_pages_model_ : nullptr,
         show_assets ? &downloads_manager_ : nullptr, &download_history_,
-        pref_service(),
-        /*download_manager_ui_enabled=*/false);
+        pref_service());
     return provider_.get();
   }
 

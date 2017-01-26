@@ -126,11 +126,9 @@ void RegisterDownloadsProvider(OfflinePageModel* offline_page_model,
                                DownloadHistory* download_history,
                                ContentSuggestionsService* service,
                                PrefService* pref_service) {
-  bool download_manager_ui_enabled =
-      base::FeatureList::IsEnabled(chrome::android::kDownloadsUiFeature);
   auto provider = base::MakeUnique<DownloadSuggestionsProvider>(
       service, offline_page_model, download_manager, download_history,
-      pref_service, download_manager_ui_enabled);
+      pref_service);
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID

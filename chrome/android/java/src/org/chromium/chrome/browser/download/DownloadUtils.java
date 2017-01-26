@@ -9,7 +9,6 @@ import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -29,7 +28,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -78,9 +76,6 @@ public class DownloadUtils {
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
 
-    private static final String PREF_IS_DOWNLOAD_HOME_ENABLED =
-            "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
-
     private static final long BYTES_PER_KILOBYTE = 1024;
     private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
     private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
@@ -89,30 +84,10 @@ public class DownloadUtils {
     static final String ELLIPSIS = "\u2026";
 
     /**
-     * @return Whether or not the Download Home is enabled.
-     */
-    public static boolean isDownloadHomeEnabled() {
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        return preferences.getBoolean(PREF_IS_DOWNLOAD_HOME_ENABLED, false);
-    }
-
-    /**
-     * Caches the native flag that enables the Download Home in SharedPreferences.
-     * This is necessary because the DownloadActivity can be opened before native has been loaded.
-     */
-    public static void cacheIsDownloadHomeEnabled() {
-        boolean isEnabled = ChromeFeatureList.isEnabled("DownloadsUi");
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        preferences.edit().putBoolean(PREF_IS_DOWNLOAD_HOME_ENABLED, isEnabled).apply();
-    }
-
-    /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
      * @return Whether the UI was shown.
      */
     public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab) {
-        if (!isDownloadHomeEnabled()) return false;
-
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (tab == null && activity instanceof ChromeTabbedActivity) {

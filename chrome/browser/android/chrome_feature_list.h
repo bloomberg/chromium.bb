@@ -20,7 +20,6 @@ extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kChromeHomeFeature;
 extern const base::Feature kContextualSearchSingleActions;
-extern const base::Feature kDownloadsUiFeature;
 extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kImprovedA2HS;
 extern const base::Feature kNativeAndroidHistoryManager;

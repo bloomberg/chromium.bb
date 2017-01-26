@@ -75,8 +75,6 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
 
     @Override
     public void navigateToDownloadManager() {
-        assert DownloadUtils.isDownloadHomeEnabled();
-
         RecordUserAction.record("MobileNTPSwitchToDownloadManager");
         DownloadUtils.showDownloadManager(mActivity, mTab);
     }

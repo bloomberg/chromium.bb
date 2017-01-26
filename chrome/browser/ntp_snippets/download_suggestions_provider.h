@@ -46,8 +46,7 @@ class DownloadSuggestionsProvider
       offline_pages::OfflinePageModel* offline_page_model,
       content::DownloadManager* download_manager,
       DownloadHistory* download_history,
-      PrefService* pref_service,
-      bool download_manager_ui_enabled);
+      PrefService* pref_service);
   ~DownloadSuggestionsProvider() override;
 
   // ContentSuggestionsProvider implementation.
@@ -221,10 +220,6 @@ class DownloadSuggestionsProvider
   // than |kMaxSuggestionsCount| asset downloads, then all of them which satisfy
   // the criteria above are cached, otherwise only |kMaxSuggestionsCount|.
   std::vector<const content::DownloadItem*> cached_asset_downloads_;
-
-  // Whether the Download Manager UI is enabled, in which case the More button
-  // for the Downloads section can redirect there.
-  const bool download_manager_ui_enabled_;
 
   bool is_asset_downloads_initialization_complete_;
 

@@ -114,25 +114,18 @@ public class AppMenuPropertiesDelegate {
 
                 MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
                 if (offlineMenuItem != null) {
-                    if (DownloadUtils.isDownloadHomeEnabled()) {
-                        offlineMenuItem.setEnabled(
-                                DownloadUtils.isAllowedToDownloadPage(currentTab));
+                    offlineMenuItem.setEnabled(
+                            DownloadUtils.isAllowedToDownloadPage(currentTab));
 
-                        Drawable drawable = offlineMenuItem.getIcon();
-                        if (drawable != null) {
-                            int iconTint = ApiCompatibilityUtils.getColor(
-                                    mActivity.getResources(), R.color.light_normal_color);
-                            drawable.mutate();
-                            drawable.setColorFilter(iconTint, PorterDuff.Mode.SRC_ATOP);
-                        }
-                    } else {
-                        offlineMenuItem.setVisible(false);
+                    Drawable drawable = offlineMenuItem.getIcon();
+                    if (drawable != null) {
+                        int iconTint = ApiCompatibilityUtils.getColor(
+                                mActivity.getResources(), R.color.light_normal_color);
+                        drawable.mutate();
+                        drawable.setColorFilter(iconTint, PorterDuff.Mode.SRC_ATOP);
                     }
                 }
             }
-
-            menu.findItem(R.id.downloads_menu_id)
-                    .setVisible(DownloadUtils.isDownloadHomeEnabled());
 
             menu.findItem(R.id.update_menu_id).setVisible(
                     UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));

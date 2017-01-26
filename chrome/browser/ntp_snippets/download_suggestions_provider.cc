@@ -127,8 +127,7 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
     offline_pages::OfflinePageModel* offline_page_model,
     content::DownloadManager* download_manager,
     DownloadHistory* download_history,
-    PrefService* pref_service,
-    bool download_manager_ui_enabled)
+    PrefService* pref_service)
     : ContentSuggestionsProvider(observer),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(Category::FromKnownCategory(
@@ -137,7 +136,6 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
       download_manager_(download_manager),
       download_history_(download_history),
       pref_service_(pref_service),
-      download_manager_ui_enabled_(download_manager_ui_enabled),
       is_asset_downloads_initialization_complete_(false),
       weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
@@ -192,7 +190,7 @@ CategoryInfo DownloadSuggestionsProvider::GetCategoryInfo(Category category) {
       ntp_snippets::ContentSuggestionsCardLayout::MINIMAL_CARD,
       /*has_more_action=*/false,
       /*has_reload_action=*/false,
-      /*has_view_all_action=*/download_manager_ui_enabled_,
+      /*has_view_all_action=*/true,
       /*show_if_empty=*/false,
       l10n_util::GetStringUTF16(IDS_NTP_DOWNLOADS_SUGGESTIONS_SECTION_EMPTY));
 }
