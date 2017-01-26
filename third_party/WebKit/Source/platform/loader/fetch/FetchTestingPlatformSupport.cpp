@@ -47,7 +47,12 @@ class AssertWebURLLoader : public WebURLLoader {
 FetchTestingPlatformSupport::FetchTestingPlatformSupport()
     : m_urlLoaderMockFactory(new WebURLLoaderMockFactoryImpl(this)) {}
 
-FetchTestingPlatformSupport::~FetchTestingPlatformSupport() = default;
+FetchTestingPlatformSupport::~FetchTestingPlatformSupport() {
+  // Shutdowns WebURLLoaderMockFactory gracefully, serving all pending requests
+  // first, then flushing all registered URLs.
+  m_urlLoaderMockFactory->serveAsynchronousRequests();
+  m_urlLoaderMockFactory->unregisterAllURLs();
+}
 
 MockFetchContext* FetchTestingPlatformSupport::context() {
   if (!m_context) {

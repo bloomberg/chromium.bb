@@ -75,12 +75,7 @@ constexpr int kTestResourceSize = 103;  // size of web/tests/data/white-1x1.png
 class ResourceFetcherTest : public ::testing::Test {
  public:
   ResourceFetcherTest() = default;
-  ~ResourceFetcherTest() override = default;
-
-  void TearDown() override {
-    m_platform->getURLLoaderMockFactory()->unregisterAllURLs();
-    memoryCache()->evictResources();
-  }
+  ~ResourceFetcherTest() override { memoryCache()->evictResources(); }
 
  protected:
   MockFetchContext* context() { return m_platform->context(); }
