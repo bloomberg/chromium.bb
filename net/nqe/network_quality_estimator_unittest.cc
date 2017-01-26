@@ -192,13 +192,26 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   base::RunLoop().Run();
 
   // Both RTT and downstream throughput should be updated.
-  EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
+  base::TimeDelta http_rtt;
+  EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &http_rtt));
   EXPECT_TRUE(
       estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
-  EXPECT_FALSE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  base::TimeDelta transport_rtt;
+  EXPECT_FALSE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &transport_rtt));
 
+  // Verify the contents of the net log.
   EXPECT_EQ(
-      1, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+      2, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+  EXPECT_EQ(http_rtt.InMilliseconds(),
+            estimator.GetNetLogLastIntegerValue(
+                NetLogEventType::NETWORK_QUALITY_CHANGED, "http_rtt_ms"));
+  EXPECT_EQ(-1,
+            estimator.GetNetLogLastIntegerValue(
+                NetLogEventType::NETWORK_QUALITY_CHANGED, "transport_rtt_ms"));
+  EXPECT_EQ(kbps, estimator.GetNetLogLastIntegerValue(
+                      NetLogEventType::NETWORK_QUALITY_CHANGED,
+                      "downstream_throughput_kbps"));
 
   // Check UMA histograms.
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 0);
@@ -361,13 +374,28 @@ TEST(NetworkQualityEstimatorTest, Caching) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, observer.effective_connection_types().size());
   EXPECT_EQ(
-      1, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+      2, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test");
 
+  // Verify the contents of the net log.
   EXPECT_LE(
-      2, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+      3, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+  EXPECT_NE(-1, estimator.GetNetLogLastIntegerValue(
+                    NetLogEventType::NETWORK_QUALITY_CHANGED, "http_rtt_ms"));
+  EXPECT_EQ(-1,
+            estimator.GetNetLogLastIntegerValue(
+                NetLogEventType::NETWORK_QUALITY_CHANGED, "transport_rtt_ms"));
+  EXPECT_NE(-1, estimator.GetNetLogLastIntegerValue(
+                    NetLogEventType::NETWORK_QUALITY_CHANGED,
+                    "downstream_throughput_kbps"));
+  EXPECT_EQ(
+      GetNameForEffectiveConnectionType(estimator.GetEffectiveConnectionType()),
+      estimator.GetNetLogLastStringValue(
+          NetLogEventType::NETWORK_QUALITY_CHANGED,
+          "effective_connection_type"));
+
   histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable", true,
                                      1);
   histogram_tester.ExpectTotalCount("NQE.CachedNetworkQualityAvailable", 2);
@@ -525,8 +553,15 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
   EXPECT_NE(
       EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
       effective_connection_type_observer.effective_connection_types().front());
-  EXPECT_EQ(
-      2, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+
+  // Verify the contents of the net log.
+  EXPECT_LE(
+      3, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+  EXPECT_NE(
+      GetNameForEffectiveConnectionType(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      estimator.GetNetLogLastStringValue(
+          NetLogEventType::NETWORK_QUALITY_CHANGED,
+          "effective_connection_type"));
 
   EXPECT_EQ(3, rtt_throughput_estimates_observer.notifications_received());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(272),
@@ -1536,6 +1571,21 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
   EXPECT_EQ(1U, observer.effective_connection_types().size());
   EXPECT_EQ(
       1, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
+
+  // Verify the contents of the net log.
+  EXPECT_EQ(GetNameForEffectiveConnectionType(EFFECTIVE_CONNECTION_TYPE_2G),
+            estimator.GetNetLogLastStringValue(
+                NetLogEventType::NETWORK_QUALITY_CHANGED,
+                "effective_connection_type"));
+  EXPECT_EQ(1500, estimator.GetNetLogLastIntegerValue(
+                      NetLogEventType::NETWORK_QUALITY_CHANGED, "http_rtt_ms"));
+  EXPECT_EQ(-1,
+            estimator.GetNetLogLastIntegerValue(
+                NetLogEventType::NETWORK_QUALITY_CHANGED, "transport_rtt_ms"));
+  EXPECT_EQ(100000, estimator.GetNetLogLastIntegerValue(
+                        NetLogEventType::NETWORK_QUALITY_CHANGED,
+                        "downstream_throughput_kbps"));
+
   histogram_tester.ExpectUniqueSample("NQE.MainFrame.EffectiveConnectionType",
                                       EFFECTIVE_CONNECTION_TYPE_2G, 1);
   histogram_tester.ExpectUniqueSample(

@@ -33,7 +33,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
-#include "net/nqe/event_creator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/socket_watcher_factory.h"
 #include "net/nqe/throughput_analyzer.h"
@@ -290,7 +289,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
               variation_params)),
       forced_effective_connection_type_(
           nqe::internal::forced_effective_connection_type(variation_params)),
-      net_log_(net_log),
+      event_creator_(net_log),
       weak_ptr_factory_(this) {
   // None of the algorithms can have an empty name.
   DCHECK(algorithm_name_to_enum_.end() ==
@@ -747,12 +746,9 @@ void NetworkQualityEstimator::ReportEffectiveConnectionTypeForTesting(
     EffectiveConnectionType effective_connection_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  nqe::internal::AddEffectiveConnectionTypeChangedEventToNetLog(
-      net_log_, typical_network_quality_[effective_connection_type].http_rtt(),
-      typical_network_quality_[effective_connection_type].transport_rtt(),
-      typical_network_quality_[effective_connection_type]
-          .downstream_throughput_kbps(),
-      effective_connection_type);
+  event_creator_.MaybeAddEffectiveConnectionTypeChangedEventToNetLog(
+      effective_connection_type_,
+      typical_network_quality_[effective_connection_type]);
 
   for (auto& observer : effective_connection_type_observer_list_)
     observer.OnEffectiveConnectionTypeChanged(effective_connection_type);
@@ -1041,6 +1037,9 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
 
   if (past_type != effective_connection_type_)
     NotifyObserversOfEffectiveConnectionTypeChanged();
+
+  event_creator_.MaybeAddEffectiveConnectionTypeChangedEventToNetLog(
+      effective_connection_type_, network_quality_);
 
   rtt_observations_size_at_last_ect_computation_ = rtt_observations_.Size();
   throughput_observations_size_at_last_ect_computation_ =
@@ -1586,11 +1585,6 @@ void NetworkQualityEstimator::
     NotifyObserversOfEffectiveConnectionTypeChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(EFFECTIVE_CONNECTION_TYPE_LAST, effective_connection_type_);
-
-  nqe::internal::AddEffectiveConnectionTypeChangedEventToNetLog(
-      net_log_, network_quality_.http_rtt(), network_quality_.transport_rtt(),
-      network_quality_.downstream_throughput_kbps(),
-      effective_connection_type_);
 
   // TODO(tbansal): Add hysteresis in the notification.
   for (auto& observer : effective_connection_type_observer_list_)
