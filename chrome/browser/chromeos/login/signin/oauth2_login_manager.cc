@@ -96,6 +96,12 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 }
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
+  // Just return if there is a pending TokenService::LoadCredentials call.
+  // Session restore continues in OnRefreshTokenAvailable when the call
+  // finishes.
+  if (pending_token_service_load_)
+    return;
+
   ProfileOAuth2TokenService* token_service = GetTokenService();
   const std::string& primary_account_id = GetPrimaryAccountId();
   if (token_service->RefreshTokenIsAvailable(primary_account_id)) {
@@ -113,6 +119,7 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
         AccountId::FromUserEmail(primary_account_id),
         user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
 
+    pending_token_service_load_ = true;
     token_service->LoadCredentials(primary_account_id);
   }
 }
@@ -153,6 +160,8 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         AccountId::FromUserEmail(user_email),
         user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+
+    pending_token_service_load_ = false;
     VerifySessionCookies();
   }
 }

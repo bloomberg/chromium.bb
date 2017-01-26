@@ -235,6 +235,9 @@ class OAuth2LoginManager : public KeyedService,
   SessionRestoreStrategy restore_strategy_;
   SessionRestoreState state_;
 
+  // Whether there is pending TokenService::LoadCredentials call.
+  bool pending_token_service_load_ = false;
+
   std::unique_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
   std::unique_ptr<OAuth2LoginVerifier> login_verifier_;
   std::unique_ptr<gaia::GaiaOAuthClient> account_info_fetcher_;
