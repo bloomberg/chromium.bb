@@ -666,7 +666,9 @@ Range* InputMethodController::compositionRange() const {
 String InputMethodController::composingText() const {
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       document().lifecycle());
-  return plainText(compositionEphemeralRange(), TextIteratorEmitsOriginalText);
+  return plainText(
+      compositionEphemeralRange(),
+      TextIteratorBehavior::Builder().setEmitsOriginalText(true).build());
 }
 
 PlainTextRange InputMethodController::getSelectionOffsets() const {
@@ -724,10 +726,12 @@ PlainTextRange InputMethodController::createRangeForSelection(
   if (range.isNull())
     return PlainTextRange();
 
-  const TextIteratorBehaviorFlags behaviorFlags =
-      TextIteratorEmitsObjectReplacementCharacter |
-      TextIteratorEmitsCharactersBetweenAllVisiblePositions;
-  TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
+  const TextIteratorBehavior& behavior =
+      TextIteratorBehavior::Builder()
+          .setEmitsObjectReplacementCharacter(true)
+          .setEmitsCharactersBetweenAllVisiblePositions(true)
+          .build();
+  TextIterator it(range.startPosition(), range.endPosition(), behavior);
 
   int rightBoundary = 0;
   for (; !it.atEnd(); it.advance())
@@ -885,8 +889,10 @@ WebTextInputInfo InputMethodController::textInputInfo() const {
   // Emits an object replacement character for each replaced element so that
   // it is exposed to IME and thus could be deleted by IME on android.
   info.value = plainText(EphemeralRange::rangeOfContents(*element),
-                         TextIteratorEmitsObjectReplacementCharacter |
-                             TextIteratorEmitsSpaceForNbsp);
+                         TextIteratorBehavior::Builder()
+                             .setEmitsObjectReplacementCharacter(true)
+                             .setEmitsSpaceForNbsp(true)
+                             .build());
 
   if (info.value.isEmpty())
     return info;

@@ -946,7 +946,9 @@ static VisiblePositionTemplate<Strategy> nextBoundary(
       PositionTemplate<Strategy>::lastPositionInNode(boundary);
   TextIteratorAlgorithm<Strategy> it(
       searchStart, searchEnd,
-      TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+      TextIteratorBehavior::Builder()
+          .setEmitsCharactersBetweenAllVisiblePositions(true)
+          .build());
   const unsigned invalidOffset = static_cast<unsigned>(-1);
   unsigned next = invalidOffset;
   unsigned offset = prefixLength;
@@ -996,7 +998,9 @@ static VisiblePositionTemplate<Strategy> nextBoundary(
     // position.
     CharacterIteratorAlgorithm<Strategy> charIt(
         searchStart, searchEnd,
-        TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+        TextIteratorBehavior::Builder()
+            .setEmitsCharactersBetweenAllVisiblePositions(true)
+            .build());
     charIt.advance(next - prefixLength - 1);
     pos = charIt.endPosition();
 

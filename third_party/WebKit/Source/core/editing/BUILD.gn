@@ -157,6 +157,8 @@ blink_core_sources("editing") {
     "iterators/TextBufferBase.h",
     "iterators/TextIterator.cpp",
     "iterators/TextIterator.h",
+    "iterators/TextIteratorBehavior.cpp",
+    "iterators/TextIteratorBehavior.h",
     "iterators/TextIteratorTextState.cpp",
     "iterators/TextIteratorTextState.h",
     "iterators/TextSearcherICU.cpp",

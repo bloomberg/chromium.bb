@@ -26,21 +26,23 @@
 #ifndef TextIteratorTextState_h
 #define TextIteratorTextState_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/editing/iterators/ForwardsTextBuffer.h"
-#include "core/editing/iterators/TextIteratorFlags.h"
+#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class LayoutText;
+class TextIteratorBehavior;
 
 class CORE_EXPORT TextIteratorTextState {
   STACK_ALLOCATED();
 
  public:
-  explicit TextIteratorTextState(TextIteratorBehaviorFlags);
+  explicit TextIteratorTextState(const TextIteratorBehavior&);
   ~TextIteratorTextState() {}
 
   const String& string() const { return m_text; }
@@ -99,12 +101,14 @@ class CORE_EXPORT TextIteratorTextState {
   // any other content
   bool m_hasEmitted;
   UChar m_lastCharacter;
-  const bool m_emitsOriginalText;
-  const bool m_emitsSpaceForNbsp;
+
+  const TextIteratorBehavior m_behavior;
 
   // Stores the length of :first-letter when we are at the remaining text.
   // Equals to 0 in all other cases.
   int m_textStartOffset;
+
+  DISALLOW_COPY_AND_ASSIGN(TextIteratorTextState);
 };
 
 }  // namespace blink

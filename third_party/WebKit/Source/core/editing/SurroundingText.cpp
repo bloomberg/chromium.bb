@@ -68,7 +68,7 @@ void SurroundingText::initialize(const Position& startPosition,
   CharacterIterator forwardIterator(
       endPosition, Position::lastPositionInNode(document->documentElement())
                        .parentAnchoredEquivalent(),
-      TextIteratorStopsOnFormControls);
+      TextIteratorBehavior::Builder().setStopsOnFormControls(true).build());
   // FIXME: why do we stop going trough the text if we were not able to select
   // something on the right?
   if (!forwardIterator.atEnd())
@@ -87,7 +87,8 @@ void SurroundingText::initialize(const Position& startPosition,
   BackwardsCharacterIterator backwardsIterator(
       Position::firstPositionInNode(document->documentElement())
           .parentAnchoredEquivalent(),
-      startPosition, TextIteratorStopsOnFormControls);
+      startPosition,
+      TextIteratorBehavior::Builder().setStopsOnFormControls(true).build());
   if (!backwardsIterator.atEnd())
     backwardsIterator.advance(halfMaxLength);
 

@@ -545,7 +545,9 @@ void SpellChecker::chunkAndMarkAllMisspellings(
 
   CharacterIterator checkRangeIterator(
       fullParagraphToCheck.checkingRange(),
-      TextIteratorEmitsObjectReplacementCharacter);
+      TextIteratorBehavior::Builder()
+          .setEmitsObjectReplacementCharacter(true)
+          .build());
   for (int requestNum = 0; !checkRangeIterator.atEnd(); requestNum++) {
     EphemeralRange chunkRange =
         checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);

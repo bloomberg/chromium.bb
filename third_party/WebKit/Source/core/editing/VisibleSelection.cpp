@@ -249,7 +249,9 @@ void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace() {
 
   CharacterIteratorAlgorithm<Strategy> charIt(
       searchRange.startPosition(), searchRange.endPosition(),
-      TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+      TextIteratorBehavior::Builder()
+          .setEmitsCharactersBetweenAllVisiblePositions(true)
+          .build());
   bool changed = false;
 
   for (; charIt.length(); charIt.advance(1)) {

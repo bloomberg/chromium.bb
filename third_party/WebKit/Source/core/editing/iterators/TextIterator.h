@@ -31,7 +31,7 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
-#include "core/editing/iterators/TextIteratorFlags.h"
+#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "core/editing/iterators/TextIteratorTextState.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -44,10 +44,10 @@ class LayoutTextFragment;
 
 CORE_EXPORT String
 plainText(const EphemeralRange&,
-          TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+          const TextIteratorBehavior& = TextIteratorBehavior());
 
 String plainText(const EphemeralRangeInFlatTree&,
-                 TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+                 const TextIteratorBehavior& = TextIteratorBehavior());
 
 // Iterates through the DOM range, returning all the text, and 0-length
 // boundaries at points where replaced elements break up the text flow.  The
@@ -60,10 +60,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
  public:
   // [start, end] indicates the document range that the iteration should take
   // place within (both ends inclusive).
-  TextIteratorAlgorithm(
-      const PositionTemplate<Strategy>& start,
-      const PositionTemplate<Strategy>& end,
-      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+  TextIteratorAlgorithm(const PositionTemplate<Strategy>& start,
+                        const PositionTemplate<Strategy>& end,
+                        const TextIteratorBehavior& = TextIteratorBehavior());
   ~TextIteratorAlgorithm();
 
   bool atEnd() const { return !m_textState.positionNode() || m_shouldStop; }
@@ -88,7 +87,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   }
 
   bool breaksAtReplacedElement() {
-    return !(m_behavior & TextIteratorDoesNotBreakAtReplacedElement);
+    return !m_behavior.doesNotBreakAtReplacedElement();
   }
 
   // Calculate the minimum |actualLength >= minLength| such that code units
@@ -164,49 +163,41 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // phased out when we rewrite moveParagraphs to not clone/destroy moved
   // content.
   bool emitsCharactersBetweenAllVisiblePositions() const {
-    return m_behavior & TextIteratorEmitsCharactersBetweenAllVisiblePositions;
+    return m_behavior.emitsCharactersBetweenAllVisiblePositions();
   }
 
-  bool entersTextControls() const {
-    return m_behavior & TextIteratorEntersTextControls;
-  }
+  bool entersTextControls() const { return m_behavior.entersTextControls(); }
 
   // Used in pasting inside password field.
-  bool emitsOriginalText() const {
-    return m_behavior & TextIteratorEmitsOriginalText;
-  }
+  bool emitsOriginalText() const { return m_behavior.emitsOriginalText(); }
 
   // Used when the visibility of the style should not affect text gathering.
   bool ignoresStyleVisibility() const {
-    return m_behavior & TextIteratorIgnoresStyleVisibility;
+    return m_behavior.ignoresStyleVisibility();
   }
 
   // Used when the iteration should stop if form controls are reached.
-  bool stopsOnFormControls() const {
-    return m_behavior & TextIteratorStopsOnFormControls;
-  }
+  bool stopsOnFormControls() const { return m_behavior.stopsOnFormControls(); }
 
-  bool emitsImageAltText() const {
-    return m_behavior & TextIteratorEmitsImageAltText;
-  }
+  bool emitsImageAltText() const { return m_behavior.emitsImageAltText(); }
 
   bool entersOpenShadowRoots() const {
-    return m_behavior & TextIteratorEntersOpenShadowRoots;
+    return m_behavior.entersOpenShadowRoots();
   }
 
   bool emitsObjectReplacementCharacter() const {
-    return m_behavior & TextIteratorEmitsObjectReplacementCharacter;
+    return m_behavior.emitsObjectReplacementCharacter();
   }
 
   bool excludesAutofilledValue() const {
-    return m_behavior & TextIteratorExcludeAutofilledValue;
+    return m_behavior.excludeAutofilledValue();
   }
 
   bool doesNotBreakAtReplacedElement() const {
-    return m_behavior & TextIteratorDoesNotBreakAtReplacedElement;
+    return m_behavior.doesNotBreakAtReplacedElement();
   }
 
-  bool forInnerText() const { return m_behavior & TextIteratorForInnerText; }
+  bool forInnerText() const { return m_behavior.forInnerText(); }
 
   bool isBetweenSurrogatePair(int position) const;
 
@@ -252,7 +243,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   Vector<InlineTextBox*> m_sortedTextBoxes;
   size_t m_sortedTextBoxesPosition;
 
-  const TextIteratorBehaviorFlags m_behavior;
+  const TextIteratorBehavior m_behavior;
 
   // Used when deciding text fragment created by :first-letter should be looked
   // into.

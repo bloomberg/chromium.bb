@@ -60,7 +60,7 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
     SimplifiedBackwardsTextIteratorAlgorithm(
         const PositionTemplate<Strategy>& start,
         const PositionTemplate<Strategy>& end,
-        TextIteratorBehaviorFlags behavior)
+        const TextIteratorBehavior& behavior)
     : m_node(nullptr),
       m_offset(0),
       m_handledNode(false),
@@ -77,12 +77,13 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
       m_singleCharacterBuffer(0),
       m_havePassedStartNode(false),
       m_shouldHandleFirstLetter(false),
-      m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls),
+      m_stopsOnFormControls(behavior.stopsOnFormControls()),
       m_shouldStop(false),
       m_emitsOriginalText(false) {
-  DCHECK(behavior == TextIteratorDefaultBehavior ||
-         behavior == TextIteratorStopsOnFormControls)
-      << behavior;
+  DCHECK(
+      behavior == TextIteratorBehavior() ||
+      behavior ==
+          TextIteratorBehavior::Builder().setStopsOnFormControls(true).build());
 
   Node* startNode = start.anchorNode();
   if (!startNode)

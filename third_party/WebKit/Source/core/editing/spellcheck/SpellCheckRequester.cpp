@@ -83,7 +83,9 @@ SpellCheckRequest* SpellCheckRequest::create(
     return nullptr;
 
   String text =
-      plainText(checkingRange, TextIteratorEmitsObjectReplacementCharacter);
+      plainText(checkingRange, TextIteratorBehavior::Builder()
+                                   .setEmitsObjectReplacementCharacter(true)
+                                   .build());
   if (text.isEmpty())
     return nullptr;
 

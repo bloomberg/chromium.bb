@@ -33,7 +33,7 @@ template <typename Strategy>
 BackwardsCharacterIteratorAlgorithm<Strategy>::
     BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start,
                                         const PositionTemplate<Strategy>& end,
-                                        TextIteratorBehaviorFlags behavior)
+                                        const TextIteratorBehavior& behavior)
     : m_offset(0),
       m_runOffset(0),
       m_atBreak(true),

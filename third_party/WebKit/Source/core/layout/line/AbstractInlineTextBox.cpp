@@ -158,14 +158,15 @@ String AbstractInlineTextBox::text() const {
   unsigned start = m_inlineTextBox->start();
   unsigned len = m_inlineTextBox->len();
   if (Node* node = m_lineLayoutItem.node()) {
-    if (node->isTextNode())
+    if (node->isTextNode()) {
       return plainText(
           EphemeralRange(Position(node, start), Position(node, start + len)),
-          TextIteratorIgnoresStyleVisibility);
+          TextIteratorBehavior::ignoresStyleVisibilityBehavior());
+    }
     return plainText(
         EphemeralRange(Position(node, PositionAnchorType::BeforeAnchor),
                        Position(node, PositionAnchorType::AfterAnchor)),
-        TextIteratorIgnoresStyleVisibility);
+        TextIteratorBehavior::ignoresStyleVisibilityBehavior());
   }
 
   String result = m_lineLayoutItem.text()

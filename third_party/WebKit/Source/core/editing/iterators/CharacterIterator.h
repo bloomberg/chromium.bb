@@ -30,7 +30,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/editing/iterators/TextIteratorFlags.h"
+#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
@@ -45,10 +45,10 @@ class CORE_EXPORT CharacterIteratorAlgorithm {
   CharacterIteratorAlgorithm(
       const PositionTemplate<Strategy>& start,
       const PositionTemplate<Strategy>& end,
-      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+      const TextIteratorBehavior& = TextIteratorBehavior());
   explicit CharacterIteratorAlgorithm(
       const EphemeralRangeTemplate<Strategy>&,
-      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+      const TextIteratorBehavior& = TextIteratorBehavior());
 
   void advance(int numCharacters);
 

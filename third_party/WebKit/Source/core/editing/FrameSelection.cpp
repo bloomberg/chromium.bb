@@ -1126,15 +1126,22 @@ String FrameSelection::selectedHTMLForClipboard() const {
                       ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
-String FrameSelection::selectedText(TextIteratorBehavior behavior) const {
+String FrameSelection::selectedText(
+    const TextIteratorBehavior& behavior) const {
   return extractSelectedText(*this, behavior);
 }
 
+String FrameSelection::selectedText() const {
+  return selectedText(TextIteratorBehavior());
+}
+
 String FrameSelection::selectedTextForClipboard() const {
-  if (m_frame->settings() &&
-      m_frame->settings()->getSelectionIncludesAltImageText())
-    return extractSelectedText(*this, TextIteratorEmitsImageAltText);
-  return extractSelectedText(*this, TextIteratorDefaultBehavior);
+  return extractSelectedText(
+      *this, TextIteratorBehavior::Builder()
+                 .setEmitsImageAltText(
+                     m_frame->settings() &&
+                     m_frame->settings()->getSelectionIncludesAltImageText())
+                 .build());
 }
 
 LayoutRect FrameSelection::bounds() const {

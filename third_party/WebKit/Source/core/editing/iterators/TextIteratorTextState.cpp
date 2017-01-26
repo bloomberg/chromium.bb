@@ -27,11 +27,13 @@
 
 #include "core/editing/iterators/TextIteratorTextState.h"
 
+#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "core/layout/LayoutText.h"
 
 namespace blink {
 
-TextIteratorTextState::TextIteratorTextState(TextIteratorBehaviorFlags behavior)
+TextIteratorTextState::TextIteratorTextState(
+    const TextIteratorBehavior& behavior)
     : m_textLength(0),
       m_singleCharacterBuffer(0),
       m_positionNode(nullptr),
@@ -39,8 +41,7 @@ TextIteratorTextState::TextIteratorTextState(TextIteratorBehaviorFlags behavior)
       m_positionEndOffset(0),
       m_hasEmitted(false),
       m_lastCharacter(0),
-      m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText),
-      m_emitsSpaceForNbsp(behavior & TextIteratorEmitsSpaceForNbsp),
+      m_behavior(behavior),
       m_textStartOffset(0) {}
 
 UChar TextIteratorTextState::characterAt(unsigned index) const {
@@ -148,10 +149,11 @@ void TextIteratorTextState::emitText(Node* textNode,
                                      int textStartOffset,
                                      int textEndOffset) {
   DCHECK(textNode);
-  m_text =
-      m_emitsOriginalText ? layoutObject->originalText() : layoutObject->text();
-  if (m_emitsSpaceForNbsp)
+  m_text = m_behavior.emitsOriginalText() ? layoutObject->originalText()
+                                          : layoutObject->text();
+  if (m_behavior.emitsSpaceForNbsp())
     m_text.replace(noBreakSpaceCharacter, spaceCharacter);
+
   DCHECK(!m_text.isEmpty());
   DCHECK_LE(0, textStartOffset);
   DCHECK_LT(textStartOffset, static_cast<int>(m_text.length()));

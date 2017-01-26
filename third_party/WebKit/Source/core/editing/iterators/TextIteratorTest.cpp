@@ -35,6 +35,32 @@
 
 namespace blink {
 
+namespace {
+
+TextIteratorBehavior collapseTrailingSpaceBehavior() {
+  return TextIteratorBehavior::Builder().setCollapseTrailingSpace(true).build();
+}
+
+TextIteratorBehavior emitsImageAltTextBehavior() {
+  return TextIteratorBehavior::Builder().setEmitsImageAltText(true).build();
+}
+
+TextIteratorBehavior entersTextControlsBehavior() {
+  return TextIteratorBehavior::Builder().setEntersTextControls(true).build();
+}
+
+TextIteratorBehavior entersOpenShadowRootsBehavior() {
+  return TextIteratorBehavior::Builder().setEntersOpenShadowRoots(true).build();
+}
+
+TextIteratorBehavior emitsObjectReplacementCharacterBehavior() {
+  return TextIteratorBehavior::Builder()
+      .setEmitsObjectReplacementCharacter(true)
+      .build();
+}
+
+}  // namespace
+
 struct DOMTree : NodeTraversal {
   using PositionType = Position;
   using TextIteratorType = TextIterator;
@@ -48,13 +74,13 @@ struct FlatTree : FlatTreeTraversal {
 class TextIteratorTest : public EditingTestBase {
  protected:
   template <typename Tree>
-  std::string iterate(TextIteratorBehavior = TextIteratorDefaultBehavior);
+  std::string iterate(const TextIteratorBehavior& = TextIteratorBehavior());
 
   template <typename Tree>
   std::string iteratePartial(
       const typename Tree::PositionType& start,
       const typename Tree::PositionType& end,
-      TextIteratorBehavior = TextIteratorDefaultBehavior);
+      const TextIteratorBehavior& = TextIteratorBehavior());
 
   Range* getBodyRange() const;
 
@@ -64,7 +90,8 @@ class TextIteratorTest : public EditingTestBase {
 };
 
 template <typename Tree>
-std::string TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior) {
+std::string TextIteratorTest::iterate(
+    const TextIteratorBehavior& iteratorBehavior) {
   Element* body = document().body();
   using PositionType = typename Tree::PositionType;
   auto start = PositionType(body, 0);
@@ -77,7 +104,7 @@ template <typename Tree>
 std::string TextIteratorTest::iteratePartial(
     const typename Tree::PositionType& start,
     const typename Tree::PositionType& end,
-    TextIteratorBehavior iteratorBehavior) {
+    const TextIteratorBehavior& iteratorBehavior) {
   typename Tree::TextIteratorType iterator(start, end, iteratorBehavior);
   return iterateWithIterator<Tree>(iterator);
 }
@@ -122,18 +149,16 @@ TEST_F(TextIteratorTest, BasicIteration) {
 TEST_F(TextIteratorTest, IgnoreAltTextInTextControls) {
   static const char* input = "<p>Hello <input type='text' value='value'>!</p>";
   setBodyContent(input);
-  EXPECT_EQ("[Hello ][][!]", iterate<DOMTree>(TextIteratorEmitsImageAltText));
+  EXPECT_EQ("[Hello ][][!]", iterate<DOMTree>(emitsImageAltTextBehavior()));
   EXPECT_EQ("[Hello ][][\n][value][\n][!]",
-            iterate<FlatTree>(TextIteratorEmitsImageAltText));
+            iterate<FlatTree>(emitsImageAltTextBehavior()));
 }
 
 TEST_F(TextIteratorTest, DisplayAltTextInImageControls) {
   static const char* input = "<p>Hello <input type='image' alt='alt'>!</p>";
   setBodyContent(input);
-  EXPECT_EQ("[Hello ][alt][!]",
-            iterate<DOMTree>(TextIteratorEmitsImageAltText));
-  EXPECT_EQ("[Hello ][alt][!]",
-            iterate<FlatTree>(TextIteratorEmitsImageAltText));
+  EXPECT_EQ("[Hello ][alt][!]", iterate<DOMTree>(emitsImageAltTextBehavior()));
+  EXPECT_EQ("[Hello ][alt][!]", iterate<FlatTree>(emitsImageAltTextBehavior()));
 }
 
 TEST_F(TextIteratorTest, NotEnteringTextControls) {
@@ -147,9 +172,9 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOption) {
   static const char* input = "<p>Hello <input type='text' value='input'>!</p>";
   setBodyContent(input);
   EXPECT_EQ("[Hello ][\n][input][!]",
-            iterate<DOMTree>(TextIteratorEntersTextControls));
+            iterate<DOMTree>(entersTextControlsBehavior()));
   EXPECT_EQ("[Hello ][][\n][input][\n][!]",
-            iterate<FlatTree>(TextIteratorEntersTextControls));
+            iterate<FlatTree>(entersTextControlsBehavior()));
 }
 
 TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex) {
@@ -159,11 +184,11 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex) {
       "value='End of range'>";
   setBodyContent(input);
   EXPECT_EQ("[\n][Beginning of range][\n][Under DOM nodes][\n][End of range]",
-            iterate<DOMTree>(TextIteratorEntersTextControls));
+            iterate<DOMTree>(entersTextControlsBehavior()));
   EXPECT_EQ(
       "[][\n][Beginning of range][\n][][\n][Under DOM nodes][\n][][\n][End of "
       "range]",
-      iterate<FlatTree>(TextIteratorEntersTextControls));
+      iterate<FlatTree>(entersTextControlsBehavior()));
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTree) {
@@ -229,12 +254,12 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithOption) {
   setBodyContent(bodyContent);
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent);
-  // TextIterator emits "shadow" since TextIteratorEntersOpenShadowRoots is
+  // TextIterator emits "shadow" since entersOpenShadowRootsBehavior() is
   // specified.
   EXPECT_EQ("[Hello, ][shadow][ iterator.]",
-            iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<DOMTree>(entersOpenShadowRootsBehavior()));
   EXPECT_EQ("[Hello, ][shadow][ iterator.]",
-            iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<FlatTree>(entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption) {
@@ -250,9 +275,9 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption) {
   // The first isn't emitted because a layoutObject for the first is not
   // created.
   EXPECT_EQ("[Hello, ][second shadow][ iterator.]",
-            iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<DOMTree>(entersOpenShadowRootsBehavior()));
   EXPECT_EQ("[Hello, ][second shadow][ iterator.]",
-            iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<FlatTree>(entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption) {
@@ -267,9 +292,9 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption) {
   createShadowRootForElementWithIDAndSetInnerHTML(
       *shadowRoot1, "host-in-shadow", shadowContent2);
   EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]",
-            iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<DOMTree>(entersOpenShadowRootsBehavior()));
   EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]",
-            iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<FlatTree>(entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest,
@@ -287,9 +312,9 @@ TEST_F(TextIteratorTest,
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent);
   EXPECT_EQ("[Hello, ][ shadow][text][ iterator.]",
-            iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<DOMTree>(entersOpenShadowRootsBehavior()));
   EXPECT_EQ("[Hello, ][text][ shadow][ iterator.]",
-            iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<FlatTree>(entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot) {
@@ -306,14 +331,14 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot) {
   Position end(outerDiv, PositionAnchorType::AfterChildren);
   EXPECT_EQ(
       "[ shadow][text][ iterator.]",
-      iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
+      iteratePartial<DOMTree>(start, end, entersOpenShadowRootsBehavior()));
 
   PositionInFlatTree startInFlatTree(spanInShadow,
                                      PositionAnchorType::BeforeChildren);
   PositionInFlatTree endInFlatTree(outerDiv, PositionAnchorType::AfterChildren);
   EXPECT_EQ("[text][ shadow][ iterator.]",
             iteratePartial<FlatTree>(startInFlatTree, endInFlatTree,
-                                     TextIteratorEntersOpenShadowRoots));
+                                     entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot) {
@@ -330,7 +355,7 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot) {
   Position end(spanInShadow, PositionAnchorType::AfterChildren);
   EXPECT_EQ(
       "[Hello, ][ shadow]",
-      iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
+      iteratePartial<DOMTree>(start, end, entersOpenShadowRootsBehavior()));
 
   PositionInFlatTree startInFlatTree(outerDiv,
                                      PositionAnchorType::BeforeChildren);
@@ -338,7 +363,7 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot) {
                                    PositionAnchorType::AfterChildren);
   EXPECT_EQ("[Hello, ][text][ shadow]",
             iteratePartial<FlatTree>(startInFlatTree, endInFlatTree,
-                                     TextIteratorEntersOpenShadowRoots));
+                                     entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest, FullyClipsContents) {
@@ -380,8 +405,8 @@ TEST_F(TextIteratorTest, FullyClippedContentsDistributed) {
   // FIXME: The text below is actually invisible but TextIterator currently
   // thinks it's visible.
   EXPECT_EQ("[\n][Am I visible?]",
-            iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
-  EXPECT_EQ("", iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<DOMTree>(entersOpenShadowRootsBehavior()));
+  EXPECT_EQ("", iterate<FlatTree>(entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest, IgnoresContainersClipDistributed) {
@@ -400,9 +425,9 @@ TEST_F(TextIteratorTest, IgnoresContainersClipDistributed) {
   // FIXME: The text below is actually visible but TextIterator currently thinks
   // it's invisible.
   // [\n][Nobody can find me!]
-  EXPECT_EQ("", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+  EXPECT_EQ("", iterate<DOMTree>(entersOpenShadowRootsBehavior()));
   EXPECT_EQ("[Nobody can find me!]",
-            iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
+            iterate<FlatTree>(entersOpenShadowRootsBehavior()));
 }
 
 TEST_F(TextIteratorTest, EmitsReplacementCharForInput) {
@@ -414,9 +439,9 @@ TEST_F(TextIteratorTest, EmitsReplacementCharForInput) {
       "</div>";
   setBodyContent(bodyContent);
   EXPECT_EQ("[Before][\xEF\xBF\xBC][After]",
-            iterate<DOMTree>(TextIteratorEmitsObjectReplacementCharacter));
+            iterate<DOMTree>(emitsObjectReplacementCharacterBehavior()));
   EXPECT_EQ("[Before][\xEF\xBF\xBC][After]",
-            iterate<FlatTree>(TextIteratorEmitsObjectReplacementCharacter));
+            iterate<FlatTree>(emitsObjectReplacementCharacterBehavior()));
 }
 
 TEST_F(TextIteratorTest, RangeLengthWithReplacedElements) {
@@ -438,9 +463,9 @@ TEST_F(TextIteratorTest, WhitespaceCollapseForReplacedElements) {
       "text'/><span>Some more text</span>";
   setBodyContent(bodyContent);
   EXPECT_EQ("[Some text ][][Some more text]",
-            iterate<DOMTree>(TextIteratorCollapseTrailingSpace));
+            iterate<DOMTree>(collapseTrailingSpaceBehavior()));
   EXPECT_EQ("[Some text ][][Button text][Some more text]",
-            iterate<FlatTree>(TextIteratorCollapseTrailingSpace));
+            iterate<FlatTree>(collapseTrailingSpaceBehavior()));
 }
 
 TEST_F(TextIteratorTest, copyTextTo) {
@@ -626,8 +651,8 @@ TEST_F(TextIteratorTest, PreserveLeadingSpace) {
   Element* div = document().querySelector("div");
   Position start(div->firstChild()->firstChild()->firstChild(), 0);
   Position end(div->lastChild(), 4);
-  EXPECT_EQ("foo bar", plainText(EphemeralRange(start, end),
-                                 TextIteratorEmitsImageAltText));
+  EXPECT_EQ("foo bar",
+            plainText(EphemeralRange(start, end), emitsImageAltTextBehavior()));
 }
 
 TEST_F(TextIteratorTest, PreserveOnlyLeadingSpace) {
@@ -636,8 +661,8 @@ TEST_F(TextIteratorTest, PreserveOnlyLeadingSpace) {
   Element* div = document().querySelector("div");
   Position start(document().getElementById("foo")->firstChild(), 0);
   Position end(div->lastChild(), 4);
-  EXPECT_EQ("foo bar", plainText(EphemeralRange(start, end),
-                                 TextIteratorEmitsImageAltText));
+  EXPECT_EQ("foo bar",
+            plainText(EphemeralRange(start, end), emitsImageAltTextBehavior()));
 }
 
 TEST_F(TextIteratorTest, StartAtFirstLetter) {

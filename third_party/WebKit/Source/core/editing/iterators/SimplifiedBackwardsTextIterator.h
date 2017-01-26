@@ -29,7 +29,7 @@
 #include "core/editing/Position.h"
 #include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
-#include "core/editing/iterators/TextIteratorFlags.h"
+#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
@@ -47,7 +47,7 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   SimplifiedBackwardsTextIteratorAlgorithm(
       const PositionTemplate<Strategy>& start,
       const PositionTemplate<Strategy>& end,
-      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+      const TextIteratorBehavior& = TextIteratorBehavior());
 
   bool atEnd() const { return !m_positionNode || m_shouldStop; }
   void advance();

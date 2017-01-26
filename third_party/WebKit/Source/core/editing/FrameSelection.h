@@ -33,7 +33,7 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
-#include "core/editing/iterators/TextIteratorFlags.h"
+#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "core/layout/ScrollAlignment.h"
 #include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
@@ -55,6 +55,7 @@ class HTMLFormElement;
 class SelectionEditor;
 class PendingSelection;
 class Text;
+class TextIteratorBehavior;
 
 enum class CursorAlignOnScroll { IfNeeded, Always };
 
@@ -249,7 +250,8 @@ class CORE_EXPORT FrameSelection final
   void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
   String selectedHTMLForClipboard() const;
-  String selectedText(TextIteratorBehavior = TextIteratorDefaultBehavior) const;
+  String selectedText(const TextIteratorBehavior&) const;
+  String selectedText() const;
   String selectedTextForClipboard() const;
 
   // The bounds are clipped to the viewport as this is what callers expect.

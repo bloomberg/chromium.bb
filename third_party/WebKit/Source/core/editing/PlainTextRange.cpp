@@ -70,13 +70,16 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope,
   Position textRunStartPosition;
   Position textRunEndPosition;
 
-  TextIteratorBehaviorFlags behaviorFlags =
-      TextIteratorEmitsObjectReplacementCharacter;
-  if (getRangeFor == ForSelection)
-    behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
+  const TextIteratorBehavior& behavior =
+      TextIteratorBehavior::Builder()
+          .setEmitsObjectReplacementCharacter(true)
+          .setEmitsCharactersBetweenAllVisiblePositions(getRangeFor ==
+                                                        ForSelection)
+          .build();
+
   auto range = EphemeralRange::rangeOfContents(scope);
 
-  TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
+  TextIterator it(range.startPosition(), range.endPosition(), behavior);
 
   // FIXME: the atEnd() check shouldn't be necessary, workaround for
   // <http://bugs.webkit.org/show_bug.cgi?id=6289>.

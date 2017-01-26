@@ -39,7 +39,7 @@ class BackwardsCharacterIteratorAlgorithm {
   BackwardsCharacterIteratorAlgorithm(
       const PositionTemplate<Strategy>&,
       const PositionTemplate<Strategy>&,
-      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+      const TextIteratorBehavior& = TextIteratorBehavior());
 
   void advance(int);
 

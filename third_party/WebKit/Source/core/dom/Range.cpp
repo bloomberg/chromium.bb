@@ -957,7 +957,9 @@ String Range::toString() const {
 String Range::text() const {
   DCHECK(!m_ownerDocument->needsLayoutTreeUpdate());
   return plainText(EphemeralRange(this),
-                   TextIteratorEmitsObjectReplacementCharacter);
+                   TextIteratorBehavior::Builder()
+                       .setEmitsObjectReplacementCharacter(true)
+                       .build());
 }
 
 DocumentFragment* Range::createContextualFragment(

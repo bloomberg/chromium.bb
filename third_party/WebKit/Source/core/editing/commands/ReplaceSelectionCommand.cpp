@@ -237,9 +237,11 @@ ReplacementFragment::ReplacementFragment(Document* document,
       createVisibleSelection(
           SelectionInDOMTree::Builder().selectAllChildren(*holder).build())
           .toNormalizedEphemeralRange();
-  String text = plainText(range, static_cast<TextIteratorBehavior>(
-                                     TextIteratorEmitsOriginalText |
-                                     TextIteratorIgnoresStyleVisibility));
+  const TextIteratorBehavior& behavior = TextIteratorBehavior::Builder()
+                                             .setEmitsOriginalText(true)
+                                             .setIgnoresStyleVisibility(true)
+                                             .build();
+  const String& text = plainText(range, behavior);
 
   removeInterchangeNodes(holder);
   removeUnrenderedNodes(holder);

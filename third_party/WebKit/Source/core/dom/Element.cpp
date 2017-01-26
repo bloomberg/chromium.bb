@@ -3037,8 +3037,9 @@ String Element::innerText() {
   if (!layoutObject())
     return textContent(true);
 
-  return plainText(EphemeralRange::rangeOfContents(*this),
-                   TextIteratorForInnerText);
+  return plainText(
+      EphemeralRange::rangeOfContents(*this),
+      TextIteratorBehavior::Builder().setForInnerText(true).build());
 }
 
 String Element::outerText() {
