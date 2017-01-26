@@ -152,6 +152,7 @@ class CONTENT_EXPORT RTCVideoDecoder
       media::VideoPixelFormat pixel_format);
 
   // Resets VDA.
+  void Reset_Locked();
   void ResetInternal();
 
   // Static method is to allow it to run even after RVD is deleted.

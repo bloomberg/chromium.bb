@@ -317,6 +317,30 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForTesting) {
   EXPECT_EQ(2, rtc_decoder_->GetVDAErrorCounterForTesting());
 }
 
+TEST_P(RTCVideoDecoderTest, Reinitialize) {
+  const webrtc::VideoCodecType codec_type = GetParam();
+  CreateDecoder(codec_type);
+  Initialize();
+
+  webrtc::EncodedImage input_image;
+  uint8_t buffer[1];
+  input_image._buffer = buffer;
+  input_image._completeFrame = true;
+  input_image._encodedWidth = 640;
+  input_image._encodedHeight = 480;
+  input_image._frameType = webrtc::kVideoFrameKey;
+  input_image._length = sizeof(buffer);
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+  RunUntilIdle();
+
+  // InitDecode and Decode after Release should succeed.
+  rtc_decoder_->Release();
+  Initialize();
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+}
+
 INSTANTIATE_TEST_CASE_P(CodecProfiles,
                         RTCVideoDecoderTest,
                         Values(webrtc::kVideoCodecVP8,

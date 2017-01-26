@@ -267,8 +267,7 @@ int32_t RTCVideoDecoder::Decode(
     }
 
     if (need_to_reset_for_midstream_resize) {
-      base::AutoUnlock auto_unlock(lock_);
-      Release();
+      Reset_Locked();
     }
     return WEBRTC_VIDEO_CODEC_OK;
   }
@@ -303,14 +302,8 @@ int32_t RTCVideoDecoder::Release() {
     reset_bitstream_buffer_id_ = next_bitstream_buffer_id_ - 1;
   else
     reset_bitstream_buffer_id_ = ID_LAST;
-  // If VDA is already resetting, no need to request the reset again.
-  if (state_ != RESETTING) {
-    state_ = RESETTING;
-    factories_->GetTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoDecoder::ResetInternal,
-                   weak_factory_.GetWeakPtr()));
-  }
+  frame_size_.SetSize(0, 0);
+  Reset_Locked();
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -659,6 +652,19 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
     SaveToDecodeBuffers_Locked(input_image, std::move(shm_buffer), buffer_data);
     delete[] input_image._buffer;
     pending_buffers_.pop_front();
+  }
+}
+
+void RTCVideoDecoder::Reset_Locked() {
+  DVLOG(2) << __func__;
+  lock_.AssertAcquired();
+  // If VDA is already resetting, no need to request the reset again.
+  if (state_ != RESETTING) {
+    state_ = RESETTING;
+    factories_->GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&RTCVideoDecoder::ResetInternal,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
