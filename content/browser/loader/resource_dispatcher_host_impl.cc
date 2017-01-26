@@ -1456,12 +1456,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   bool report_raw_headers = request_data.report_raw_headers;
-  if (report_raw_headers && !policy->CanReadRawCookies(child_id) &&
-      !requester_info->IsNavigationPreload()) {
-    // For navigation preload, the child_id is -1 so CanReadRawCookies would
-    // return false. But |report_raw_headers| of the navigation preload request
-    // was copied from the original request, so this check has already been
-    // carried out.
+  if (report_raw_headers && !policy->CanReadRawCookies(child_id)) {
     // TODO: crbug.com/523063 can we call bad_message::ReceivedBadMessage here?
     VLOG(1) << "Denied unauthorized request for raw headers";
     report_raw_headers = false;

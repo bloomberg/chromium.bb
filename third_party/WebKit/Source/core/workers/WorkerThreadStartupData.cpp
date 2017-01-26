@@ -49,8 +49,7 @@ WorkerThreadStartupData::WorkerThreadStartupData(
     WebAddressSpace addressSpace,
     const Vector<String>* originTrialTokens,
     std::unique_ptr<WorkerSettings> workerSettings,
-    WorkerV8Settings workerV8Settings,
-    bool inspectorNetworkCapability)
+    WorkerV8Settings workerV8Settings)
     : m_scriptURL(scriptURL.copy()),
       m_userAgent(userAgent.isolatedCopy()),
       m_sourceCode(sourceCode.isolatedCopy()),
@@ -62,8 +61,7 @@ WorkerThreadStartupData::WorkerThreadStartupData(
       m_workerClients(workerClients),
       m_addressSpace(addressSpace),
       m_workerSettings(std::move(workerSettings)),
-      m_workerV8Settings(workerV8Settings),
-      m_inspectorNetworkCapability(inspectorNetworkCapability) {
+      m_workerV8Settings(workerV8Settings) {
   m_contentSecurityPolicyHeaders = WTF::makeUnique<Vector<CSPHeaderAndType>>();
   if (contentSecurityPolicyHeaders) {
     for (const auto& header : *contentSecurityPolicyHeaders) {

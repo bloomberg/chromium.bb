@@ -33,7 +33,6 @@
 #include "core/InstrumentingAgents.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLogAgent.h"
-#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/inspector/protocol/Protocol.h"
 #include "core/workers/WorkerBackingThread.h"
@@ -44,23 +43,18 @@
 namespace blink {
 
 WorkerInspectorController* WorkerInspectorController::create(
-    WorkerThread* thread,
-    bool networkCapability) {
+    WorkerThread* thread) {
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::from(thread->isolate());
-  return debugger ? new WorkerInspectorController(thread, debugger,
-                                                  networkCapability)
-                  : nullptr;
+  return debugger ? new WorkerInspectorController(thread, debugger) : nullptr;
 }
 
 WorkerInspectorController::WorkerInspectorController(
     WorkerThread* thread,
-    WorkerThreadDebugger* debugger,
-    bool networkCapability)
+    WorkerThreadDebugger* debugger)
     : m_debugger(debugger),
       m_thread(thread),
-      m_instrumentingAgents(new InstrumentingAgents()),
-      m_networkCapability(networkCapability) {}
+      m_instrumentingAgents(new InstrumentingAgents()) {}
 
 WorkerInspectorController::~WorkerInspectorController() {
   DCHECK(!m_thread);
@@ -77,8 +71,6 @@ void WorkerInspectorController::connectFrontend() {
       m_debugger->contextGroupId(m_thread), nullptr);
   m_session->append(
       new InspectorLogAgent(m_thread->consoleMessageStorage(), nullptr));
-  if (m_networkCapability)
-    m_session->append(InspectorNetworkAgent::create(nullptr));
   m_thread->workerBackingThread().backingThread().addTaskObserver(this);
 }
 

@@ -67,14 +67,12 @@ class CORE_EXPORT WorkerThreadStartupData final {
       WebAddressSpace addressSpace,
       const Vector<String>* originTrialTokens,
       std::unique_ptr<WorkerSettings> workerSettings,
-      WorkerV8Settings workerV8Settings,
-      bool inspectorNetworkCapability) {
+      WorkerV8Settings workerV8Settings) {
     return WTF::wrapUnique(new WorkerThreadStartupData(
         scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode,
         contentSecurityPolicyHeaders, referrerPolicy, starterOrigin,
         workerClients, addressSpace, originTrialTokens,
-        std::move(workerSettings), workerV8Settings,
-        inspectorNetworkCapability));
+        std::move(workerSettings), workerV8Settings));
   }
 
   ~WorkerThreadStartupData();
@@ -115,8 +113,6 @@ class CORE_EXPORT WorkerThreadStartupData final {
 
   WorkerV8Settings m_workerV8Settings;
 
-  const bool m_inspectorNetworkCapability;
-
  private:
   WorkerThreadStartupData(
       const KURL& scriptURL,
@@ -131,8 +127,7 @@ class CORE_EXPORT WorkerThreadStartupData final {
       WebAddressSpace,
       const Vector<String>* originTrialTokens,
       std::unique_ptr<WorkerSettings>,
-      WorkerV8Settings,
-      bool inspectorNetworkCapability);
+      WorkerV8Settings);
 };
 
 }  // namespace blink

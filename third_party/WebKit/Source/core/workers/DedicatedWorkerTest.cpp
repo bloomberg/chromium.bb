@@ -125,7 +125,7 @@ class InProcessWorkerMessagingProxyForTest
         "" /* referrerPolicy */, m_securityOrigin.get(),
         nullptr /* workerClients */, WebAddressSpaceLocal,
         nullptr /* originTrialTokens */, nullptr /* workerSettings */,
-        WorkerV8Settings::Default(), false /* inspectorNetworkCapability */));
+        WorkerV8Settings::Default()));
 
     workerInspectorProxy()->workerThreadCreated(
         toDocument(getExecutionContext()), m_workerThread.get(), scriptURL);

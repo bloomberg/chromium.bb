@@ -156,28 +156,28 @@ class XMLHttpRequest;
     void didChangeResourcePriority(LocalFrame*, unsigned long identifier, ResourceLoadPriority loadPriority);
 
     [Network]
-    void willSendRequest(ExecutionContext*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+    void willSendRequest([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
 
     [Network]
     void markResourceAsCached(LocalFrame*, unsigned long identifier);
 
     [Network]
-    void didReceiveResourceResponse([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
+    void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
     [Network]
-    void didReceiveData(LocalFrame*, unsigned long identifier, const char* data, int dataLength);
+    void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength);
 
     [Network]
     void didReceiveEncodedDataLength([Keep] LocalFrame*, unsigned long identifier, int encodedDataLength);
 
     [Network]
-    void didFinishLoading(ExecutionContext*, unsigned long identifier, double finishTime, int64_t encodedDataLength);
+    void didFinishLoading(LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength);
 
     [Network]
     void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
     [Network]
-    void didFailLoading(ExecutionContext*, unsigned long identifier, const ResourceError&);
+    void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
 
     [Network]
     void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
