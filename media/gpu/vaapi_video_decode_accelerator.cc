@@ -1010,12 +1010,16 @@ void VaapiVideoDecodeAccelerator::Reset() {
   // Drop all remaining input buffers, if present.
   while (!input_buffers_.empty()) {
     const auto& input_buffer = input_buffers_.front();
-    if (!input_buffer->is_flush())
+    if (!input_buffer->is_flush()) {
       task_runner_->PostTask(
           FROM_HERE, base::Bind(&Client::NotifyEndOfBitstreamBuffer, client_,
                                 input_buffer->id));
+      --num_stream_bufs_at_decoder_;
+    }
     input_buffers_.pop();
   }
+  TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
+                 num_stream_bufs_at_decoder_);
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::ResetTask,
@@ -1049,7 +1053,6 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
     return;
   }
 
-  num_stream_bufs_at_decoder_ = 0;
   state_ = kIdle;
 
   task_runner_->PostTask(FROM_HERE,
