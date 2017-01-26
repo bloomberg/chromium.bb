@@ -104,7 +104,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
 
   // Will destroy itself when its WebViewPlugin is going away.
   return new ChromePluginPlaceholder(render_frame, frame, params, html_data,
-                                     params.mimeType);
+                                     params.mimeType.utf16());
 }
 
 // static
