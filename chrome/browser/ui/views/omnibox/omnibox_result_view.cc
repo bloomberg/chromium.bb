@@ -586,9 +586,13 @@ bool OmniboxResultView::ShowOnlyKeywordMatch() const {
 
 void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
   if (!contents_rendertext_) {
-    contents_rendertext_.reset(
-        CreateClassifiedRenderText(
-            match_.contents, match_.contents_class, false).release());
+    if (match_.answer) {
+      contents_rendertext_ =
+          CreateAnswerLine(match_.answer->first_line(), font_list_);
+    } else {
+      contents_rendertext_ = CreateClassifiedRenderText(
+          match_.contents, match_.contents_class, false);
+    }
   }
 }
 
@@ -643,8 +647,6 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
 
     if (!description_rendertext_) {
       if (match_.answer) {
-        contents_rendertext_ =
-            CreateAnswerLine(match_.answer->first_line(), font_list_);
         description_rendertext_ =
             CreateAnswerLine(match_.answer->second_line(), font_list_);
       } else if (!match_.description.empty()) {
@@ -661,17 +663,13 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
     int x = GetMirroredXForRect(keyword_text_bounds_);
     mirroring_context_->Initialize(x, keyword_text_bounds_.width());
     if (!keyword_contents_rendertext_) {
-      keyword_contents_rendertext_.reset(
-          CreateClassifiedRenderText(keyword_match->contents,
-                                     keyword_match->contents_class,
-                                     false).release());
+      keyword_contents_rendertext_ = CreateClassifiedRenderText(
+          keyword_match->contents, keyword_match->contents_class, false);
     }
     if (!keyword_description_rendertext_ &&
         !keyword_match->description.empty()) {
-      keyword_description_rendertext_.reset(
-          CreateClassifiedRenderText(keyword_match->description,
-                                     keyword_match->description_class,
-                                     true).release());
+      keyword_description_rendertext_ = CreateClassifiedRenderText(
+          keyword_match->description, keyword_match->description_class, true);
     }
     PaintMatch(*keyword_match, keyword_contents_rendertext_.get(),
                keyword_description_rendertext_.get(), canvas, x);
