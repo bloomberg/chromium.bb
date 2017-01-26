@@ -149,6 +149,8 @@ component("base") {
     "allocator/allocator_check.h",
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
+    "allocator/allocator_interception_mac.h",
+    "allocator/allocator_interception_mac.mm",
     "allocator/allocator_shim.h",
     "allocator/oom.h",
     "android/animation_frame_time_histogram.cc",
