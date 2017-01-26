@@ -571,10 +571,24 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mv_ref_search[3].col = -1;
   mv_ref_search[4].row = -1;
   mv_ref_search[4].col = -1;
+#if CONFIG_EXT_PARTITION_TYPES
+  if (num_8x8_blocks_wide == num_8x8_blocks_high) {
+    mv_ref_search[5].row = -1;
+    mv_ref_search[5].col = 0;
+    mv_ref_search[6].row = 0;
+    mv_ref_search[6].col = -1;
+  } else {
+    mv_ref_search[5].row = -1;
+    mv_ref_search[5].col = num_8x8_blocks_wide;
+    mv_ref_search[6].row = num_8x8_blocks_high;
+    mv_ref_search[6].col = -1;
+  }
+#else
   mv_ref_search[5].row = -1;
   mv_ref_search[5].col = num_8x8_blocks_wide;
   mv_ref_search[6].row = num_8x8_blocks_high;
   mv_ref_search[6].col = -1;
+#endif  // CONFIG_EXT_PARTITION_TYPES
   mv_ref_search[7].row = -1;
   mv_ref_search[7].col = -3;
   mv_ref_search[8].row = num_8x8_blocks_high - 1;
@@ -748,10 +762,24 @@ void av1_update_mv_context(const MACROBLOCKD *xd, MODE_INFO *mi,
   mv_ref_search[3].col = -1;
   mv_ref_search[4].row = -1;
   mv_ref_search[4].col = -1;
+#if CONFIG_EXT_PARTITION_TYPES
+  if (num_8x8_blocks_wide == num_8x8_blocks_high) {
+    mv_ref_search[5].row = -1;
+    mv_ref_search[5].col = 0;
+    mv_ref_search[6].row = 0;
+    mv_ref_search[6].col = -1;
+  } else {
+    mv_ref_search[5].row = -1;
+    mv_ref_search[5].col = num_8x8_blocks_wide;
+    mv_ref_search[6].row = num_8x8_blocks_high;
+    mv_ref_search[6].col = -1;
+  }
+#else
   mv_ref_search[5].row = -1;
   mv_ref_search[5].col = num_8x8_blocks_wide;
   mv_ref_search[6].row = num_8x8_blocks_high;
   mv_ref_search[6].col = -1;
+#endif  // CONFIG_EXT_PARTITION_TYPES
   mv_ref_search[7].row = -1;
   mv_ref_search[7].col = -3;
   mv_ref_search[8].row = num_8x8_blocks_high - 1;
