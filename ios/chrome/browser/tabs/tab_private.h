@@ -7,6 +7,10 @@
 
 #include "ios/net/request_tracker.h"
 
+namespace web {
+class WebStateImpl;
+}
+
 // Exposed private methods for testing purpose.
 @interface Tab ()
 
@@ -22,7 +26,9 @@
 
 // Replaces the existing web state. This method should be called once
 // right after init and before any call to |view|.
-- (void)replaceWebStateImpl:(std::unique_ptr<web::WebStateImpl>)webStateImpl;
+// TODO(crbug.com/620465): change to std::unique_ptr<web::WebState> once
+// Tab no longer uses private //ios/web APIs.
+- (void)replaceWebState:(std::unique_ptr<web::WebStateImpl>)webState;
 
 // Replaces the existing |externalAppLauncher_|.
 - (void)replaceExternalAppLauncher:(id)externalAppLauncher;

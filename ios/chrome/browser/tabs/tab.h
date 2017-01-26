@@ -61,7 +61,6 @@ namespace web {
 class NavigationManagerImpl;
 struct Referrer;
 class WebState;
-class WebStateImpl;
 }
 
 // Notification sent by a Tab when it starts to load a new URL. This
@@ -124,8 +123,7 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // |YES| if snapshot overlay should load from the grey image cache.
 @property(nonatomic, assign) BOOL useGreyImageCache;
 
-// webStateImpl is deprecated: use webState instead.
-@property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
+// The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
 
 @property(nonatomic, readonly) CRWWebController* webController;

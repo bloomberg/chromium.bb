@@ -171,7 +171,7 @@ const CGFloat kMaxFloatDelta = 0.01;
 - (PendingSnapshotRequest)pendingRequestForTab:(Tab*)tab {
   DCHECK([NSThread isMainThread]);
   PendingSnapshotRequest pendingRequest;
-  if (![tab webStateImpl])
+  if (!tab.webState)
     return pendingRequest;
   NSUInteger sessionId = [[self keyForTab:tab] hash];
   base::AutoLock guard(_lock);

@@ -746,7 +746,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NSString*)title {
-  base::string16 title = self.webStateImpl->GetTitle();
+  base::string16 title = webStateImpl_->GetTitle();
   if (title.empty())
     title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
   return base::SysUTF16ToNSString(title);
@@ -781,10 +781,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (web::WebState*)webState {
-  return webStateImpl_.get();
-}
-
-- (web::WebStateImpl*)webStateImpl {
   return webStateImpl_.get();
 }
 
@@ -835,9 +831,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NavigationManagerImpl*)navigationManager {
-  if (!self.webStateImpl)
+  if (!webStateImpl_)
     return nil;
-  return &(self.webStateImpl->GetNavigationManagerImpl());
+  return &(webStateImpl_->GetNavigationManagerImpl());
 }
 
 - (id<StoreKitLauncher>)storeKitLauncher {
@@ -874,7 +870,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self.webController removeObserver:fullScreenController_];
     fullScreenController_.reset([[FullScreenController alloc]
          initWithDelegate:fullScreenControllerDelegate_
-        navigationManager:&(self.webStateImpl->GetNavigationManagerImpl())
+        navigationManager:&(webStateImpl_->GetNavigationManagerImpl())
                 sessionID:self.tabId]);
     [self.webController addObserver:fullScreenController_];
     // If the content of the page was loaded without knowledge of the
@@ -933,7 +929,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // a FullScreenController during teardown.
   if (!fullScreenController_ && fullScreenControllerDelegate) {
     NavigationManagerImpl* navigationManager =
-        &(self.webStateImpl->GetNavigationManagerImpl());
+        &(webStateImpl_->GetNavigationManagerImpl());
     fullScreenController_.reset([[FullScreenController alloc]
          initWithDelegate:fullScreenControllerDelegate
         navigationManager:navigationManager
@@ -992,8 +988,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // TODO(crbug.com/546218): See if this can be removed; it's not clear that
   // other platforms send this (tab sync triggers need to be compared against
   // upstream).
-  if (self.webStateImpl)
-    self.webStateImpl->GetNavigationManagerImpl().OnNavigationItemChanged();
+  if (webStateImpl_)
+    webStateImpl_->GetNavigationManagerImpl().OnNavigationItemChanged();
 
   [self saveTitleToHistoryDB];
 }
@@ -1773,7 +1769,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   if (loadSuccess) {
     scoped_refptr<net::HttpResponseHeaders> headers =
-        self.webStateImpl->GetHttpResponseHeaders();
+        webStateImpl_->GetHttpResponseHeaders();
     [self handleExportableFile:headers.get()];
   }
 
@@ -2226,14 +2222,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 @implementation Tab (TestingSupport)
 
-- (void)replaceWebStateImpl:(std::unique_ptr<web::WebStateImpl>)webState {
+- (void)replaceWebState:(std::unique_ptr<web::WebStateImpl>)webState {
   // Stop observing the old InfoBarManager and FaviconDriver since they will
   // be deleted with the old web controller.
   [self setShouldObserveInfoBarManager:NO];
   [self setShouldObserveFaviconChanges:NO];
   [self.webController setDelegate:nil];
   // Set the new web state.
-  webStateImpl_.reset(webState.release());
+  webStateImpl_ = std::move(webState);
   [self.webController setDelegate:self];
   webStateObserver_.reset(
       new web::WebStateObserverBridge(webStateImpl_.get(), self));

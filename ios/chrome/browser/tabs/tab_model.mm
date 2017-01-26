@@ -66,13 +66,17 @@ NSString* const kTabModelOpenInBackgroundKey = @"shouldOpenInBackground";
 namespace {
 
 // Updates CRWSessionCertificatePolicyManager's certificate policy cache.
-void UpdateCertificatePolicyCacheFromWebState(web::WebStateImpl* webState) {
+void UpdateCertificatePolicyCacheFromWebState(web::WebState* web_state) {
   DCHECK([NSThread isMainThread]);
-  DCHECK(webState);
+  DCHECK(web_state);
   scoped_refptr<web::CertificatePolicyCache> policy_cache =
-      web::BrowserState::GetCertificatePolicyCache(webState->GetBrowserState());
-  CRWSessionController* controller =
-      webState->GetNavigationManagerImpl().GetSessionController();
+      web::BrowserState::GetCertificatePolicyCache(
+          web_state->GetBrowserState());
+  // TODO(crbug.com/454984): Remove CRWSessionController usage once certificate
+  // policy manager is moved to NavigationManager.
+  CRWSessionController* controller = static_cast<web::WebStateImpl*>(web_state)
+                                         ->GetNavigationManagerImpl()
+                                         .GetSessionController();
   [[controller sessionCertificatePolicyManager]
       updateCertificatePolicyCache:policy_cache];
 }
@@ -82,7 +86,7 @@ void UpdateCertificatePolicyCacheFromWebState(web::WebStateImpl* webState) {
 void RestoreCertificatePolicyCacheFromTabs(NSArray* tabs) {
   DCHECK([NSThread isMainThread]);
   for (Tab* tab in tabs) {
-    UpdateCertificatePolicyCacheFromWebState(tab.webStateImpl);
+    UpdateCertificatePolicyCacheFromWebState(tab.webState);
   }
 }
 
@@ -268,7 +272,7 @@ void CleanCertificatePolicyCache(
         [_tabs addObject:tab];
 
         TabParentingGlobalObserver::GetInstance()->OnTabParented(
-            [tab webStateImpl]);
+            tab.get().webState);
       }
       if ([_tabs count]) {
         DCHECK(window.selectedIndex < [_tabs count]);
@@ -326,7 +330,7 @@ void CleanCertificatePolicyCache(
     tab.webController.usePlaceholderOverlay = YES;
     // Restore the CertificatePolicyCache. Note that after calling Pass()
     // |webState| is invalid, so we need to get the webstate from |tab|.
-    UpdateCertificatePolicyCacheFromWebState(tab.webStateImpl);
+    UpdateCertificatePolicyCacheFromWebState(tab.webState);
   }
   DCHECK([_tabs count] > oldCount);
   // If any tab was restored, the saved selected tab must be selected.
@@ -758,7 +762,7 @@ void CleanCertificatePolicyCache(
   int itemCount = navigationManager->GetItemCount();
   if (restoreService && (![self isNTPTab:closedTab] || itemCount > 1)) {
     restoreService->CreateHistoricalTab(
-        sessions::IOSLiveTab::GetForWebState(closedTab.webStateImpl),
+        sessions::IOSLiveTab::GetForWebState(closedTab.webState),
         static_cast<int>(closedTabIndex));
   }
   // This needs to be called before the tab is removed from the list.
@@ -849,9 +853,11 @@ void CleanCertificatePolicyCache(
   // window may never be saved (if another call comes in before the delay).
   SessionWindowIOS* window = [[[SessionWindowIOS alloc] init] autorelease];
   for (Tab* tab in _tabs.get()) {
-    DCHECK(tab.webStateImpl);
+    DCHECK(tab.webState);
+    // TODO(crbug.com/454984): remove that cast to web::WebStateImpl once a
+    // public serialisation mechanism is available via web::WebState.
     std::unique_ptr<web::WebStateImpl> webStateCopy(
-        tab.webStateImpl->CopyForSessionWindow());
+        static_cast<web::WebStateImpl*>(tab.webState)->CopyForSessionWindow());
     [window addSession:std::move(webStateCopy)];
   }
   window.selectedIndex = [self indexOfTab:_currentTab];

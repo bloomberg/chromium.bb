@@ -86,7 +86,7 @@ using web::WebStateImpl;
     BOOL yes = YES;
     [[[webControllerMock stub] andReturnValue:OCMOCK_VALUE(yes)] isViewAlive];
 
-    [self replaceWebStateImpl:std::move(webStateImpl)];
+    [self replaceWebState:std::move(webStateImpl)];
   }
   return self;
 }
