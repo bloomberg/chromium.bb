@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/web_state_delegate_stub.h"
+#import "ios/web/public/test/crw_mock_web_state_delegate.h"
 
-#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/web_state/web_state.h"
 
-@implementation CRWWebStateDelegateStub {
+@implementation CRWMockWebStateDelegate {
   // Backs up the property with the same name.
   std::unique_ptr<web::WebState::OpenURLParams> _openURLParams;
   // Backs up the property with the same name.

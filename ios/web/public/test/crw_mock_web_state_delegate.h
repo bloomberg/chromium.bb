@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_WEB_STATE_DELEGATE_STUB_H_
-#define IOS_WEB_WEB_STATE_WEB_STATE_DELEGATE_STUB_H_
+#ifndef IOS_WEB_PUBLIC_TEST_CRW_MOCK_WEB_STATE_DELEGATE_H_
+#define IOS_WEB_PUBLIC_TEST_CRW_MOCK_WEB_STATE_DELEGATE_H_
 
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 
 // Stub implementation for CRWWebStateDelegate protocol.
-@interface CRWWebStateDelegateStub
+@interface CRWMockWebStateDelegate
     : OCMockComplexTypeHelper<CRWWebStateDelegate>
 // web::WebState::OpenURLParams in |webState:openURLWithParams:| call.
 @property(nonatomic, readonly)
@@ -32,4 +32,4 @@
 
 @end
 
-#endif  // IOS_WEB_WEB_STATE_WEB_STATE_DELEGATE_STUB_H_
+#endif  // IOS_WEB_PUBLIC_TEST_CRW_MOCK_WEB_STATE_DELEGATE_H_

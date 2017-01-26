@@ -11,9 +11,9 @@
 #include "base/mac/bind_objc_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
+#import "ios/web/public/test/crw_mock_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#import "ios/web/web_state/web_state_delegate_stub.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"
@@ -35,7 +35,7 @@ class WebStateDelegateBridgeTest : public PlatformTest {
 
     id originalMockDelegate =
         [OCMockObject niceMockForProtocol:@protocol(CRWWebStateDelegate)];
-    delegate_.reset([[CRWWebStateDelegateStub alloc]
+    delegate_.reset([[CRWMockWebStateDelegate alloc]
         initWithRepresentedObject:originalMockDelegate]);
     empty_delegate_.reset([[TestEmptyWebStateDelegate alloc] init]);
 
