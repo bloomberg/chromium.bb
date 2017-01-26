@@ -104,10 +104,9 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
                                                              error:&error];
     return error == nil;
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout,
-                                           condition),
-      [NSString stringWithFormat:@"Waiting for matcher %@ failed.", matcher]);
+  GREYAssert(testing::WaitUntilConditionOrTimeout(
+                 testing::kWaitForUIElementTimeout, condition),
+             @"Waiting for matcher %@ failed.", matcher);
 }
 
 // Asserts that |identity| is actually signed in to the active profile.

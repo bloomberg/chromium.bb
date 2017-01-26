@@ -70,8 +70,7 @@ void WaitForContextMenuItemDisappeared(id<GREYMatcher> contextMenuItemButton) {
   };
   GREYAssert(testing::WaitUntilConditionOrTimeout(
                  testing::kWaitForUIElementTimeout, condition),
-             [NSString stringWithFormat:@"Waiting for matcher %@ failed.",
-                                        contextMenuItemButton]);
+             @"Waiting for matcher %@ failed.", contextMenuItemButton);
 }
 
 // Long press on |elementId| to trigger context menu and then tap on

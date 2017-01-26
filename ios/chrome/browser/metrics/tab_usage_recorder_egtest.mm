@@ -71,7 +71,7 @@ void Wait(id<GREYMatcher> matcher, NSString* name) {
   };
   GREYAssert(
       testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
-      [NSString stringWithFormat:@"Waiting for matcher %@ failed.", name]);
+      @"Waiting for matcher %@ failed.", name);
 }
 
 // Wait until |matcher| is accessible (not nil) and tap on it.
@@ -373,10 +373,9 @@ void SelectTabUsingUI(NSString* title) {
       histogramTester.GetHistogramSamplesSinceCreation(
           kPageLoadsBeforeEvictedTabSelected);
   int sampleSum = samples ? samples->sum() : 0;
-  GREYAssertEqual(
-      sampleSum, numberOfTabs * 2,
-      [NSString stringWithFormat:@"Expected page loads is %d, actual %d.",
-                                 numberOfTabs * 2, sampleSum]);
+  GREYAssertEqual(sampleSum, numberOfTabs * 2,
+                  @"Expected page loads is %d, actual %d.", numberOfTabs * 2,
+                  sampleSum);
 }
 
 // Tests that tabs reloaded on cold start are reported as
@@ -779,10 +778,8 @@ void SelectTabUsingUI(NSString* title) {
       histogramTester.GetHistogramSamplesSinceCreation(
           kPageLoadsBeforeEvictedTabSelected);
   int sampleSum = samples->sum();
-  GREYAssertEqual(
-      sampleSum, 1,
-      [NSString stringWithFormat:@"Expected page loads is %d, actual is %d.", 1,
-                                 sampleSum]);
+  GREYAssertEqual(sampleSum, 1, @"Expected page loads is %d, actual is %d.", 1,
+                  sampleSum);
 }
 
 // Tests that navigations are correctly reported in
@@ -826,10 +823,8 @@ void SelectTabUsingUI(NSString* title) {
       histogramTester.GetHistogramSamplesSinceCreation(
           kPageLoadsBeforeEvictedTabSelected);
   int sampleSum = samples->sum();
-  GREYAssertEqual(
-      sampleSum, 2,
-      [NSString stringWithFormat:@"Expected page loads is %d, actual %d.", 2,
-                                 sampleSum]);
+  GREYAssertEqual(sampleSum, 2, @"Expected page loads is %d, actual %d.", 2,
+                  sampleSum);
 
   FailureBlock failureBlock = ^(NSString* error) {
     GREYFail(error);

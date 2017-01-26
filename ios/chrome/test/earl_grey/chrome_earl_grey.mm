@@ -87,10 +87,8 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error) {
   BOOL success =
       web::test::TapWebViewElementWithId(chrome_test_util::GetCurrentWebState(),
                                          base::SysNSStringToUTF8(elementID));
-  GREYAssertTrue(
-      success,
-      [NSString stringWithFormat:@"Failed to tap web view element with ID: %@",
-                                 elementID]);
+  GREYAssertTrue(success, @"Failed to tap web view element with ID: %@",
+                 elementID);
 }
 
 @end
