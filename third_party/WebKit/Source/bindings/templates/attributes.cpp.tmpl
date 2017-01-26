@@ -188,7 +188,7 @@ if ({{cpp_value}}.isEmpty()) {
 
 {##############################################################################}
 {% macro attribute_getter_callback(attribute, world_suffix) %}
-{{exported}}void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
+void {{v8_class_or_partial}}::{{attribute.name}}AttributeGetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 {%- else %}
@@ -229,7 +229,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro attribute_cache_property_callback(attribute) %}
-{{exported}}v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
+v8::Local<v8::Private> {{v8_class_or_partial}}::{{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
 {
     return V8PrivateProperty::get{{attribute.cached_accessor_name}}(isolate).getPrivate();
 }
@@ -238,7 +238,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
-{{exported}}void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::{{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if attribute.deprecate_as %}
   Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
   {% endif %}
@@ -366,7 +366,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
-{{exported}}void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
+void {{v8_class_or_partial}}::{{attribute.name}}AttributeSetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- else %}
@@ -424,31 +424,30 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% from 'utilities.cpp.tmpl' import property_location %}
 {% if attribute.constructor_type %}
 {% set getter_callback =
-       '%sV8Internal::%sConstructorGetterCallback' % (cpp_class_or_partial, attribute.name)
+       '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.name)
        if attribute.needs_constructor_getter_callback else
        'v8ConstructorAttributeGetter' %}
-{% set setter_callback = '0' %}
+{% set setter_callback = 'nullptr' %}
 {% else %}{# regular attributes #}
-{% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
-           (cpp_class_or_partial, attribute.name) %}
-{% set setter_callback = '%sV8Internal::%sAttributeSetterCallback' %
-           (cpp_class_or_partial, attribute.name)
-       if attribute.has_setter else '0' %}
+{% set getter_callback = '%s::%sAttributeGetterCallback' %
+           (v8_class_or_partial, attribute.name) %}
+{% set setter_callback = '%s::%sAttributeSetterCallback' %
+           (v8_class_or_partial, attribute.name)
+           if attribute.has_setter else 'nullptr' %}
 {% endif %}
 {% set getter_callback_for_main_world =
        '%sForMainWorld' % getter_callback
-       if attribute.is_per_world_bindings else '0' %}
+       if attribute.is_per_world_bindings else 'nullptr' %}
 {% set setter_callback_for_main_world =
        '%sForMainWorld' % setter_callback
-       if attribute.is_per_world_bindings and attribute.has_setter else '0' %}
+       if attribute.is_per_world_bindings and attribute.has_setter else 'nullptr' %}
 {% set wrapper_type_info =
-       'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
-           attribute.constructor_type
-       if attribute.constructor_type else '0' %}
+       'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' % attribute.constructor_type
+       if attribute.constructor_type else 'nullptr' %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
 {% set cached_accessor_callback =
-       '%sV8Internal::%sCachedAccessorCallback' % (cpp_class_or_partial, attribute.name)
+       '%s::%sCachedAccessorCallback' % (v8_class_or_partial, attribute.name)
        if attribute.is_cached_accessor else
        'nullptr' %}
 {% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'

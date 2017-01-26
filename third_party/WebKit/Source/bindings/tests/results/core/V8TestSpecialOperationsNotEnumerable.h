@@ -41,6 +41,11 @@ class V8TestSpecialOperationsNotEnumerable {
     visitor->traceWrappers(scriptWrappable->toImpl<TestSpecialOperationsNotEnumerable>());
   }
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+
+  // Callback functions
+
+  CORE_EXPORT static void namedPropertyGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
 };
 
 template <>

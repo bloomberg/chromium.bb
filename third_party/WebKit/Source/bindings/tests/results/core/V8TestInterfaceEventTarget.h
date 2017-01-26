@@ -50,6 +50,8 @@ class V8TestInterfaceEventTarget {
   }
   static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
+
+  // Callback functions
 };
 
 template <>

@@ -84,47 +84,30 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% endfor %}
 {% endif %}
 
-{# Constants #}
-{% from 'constants.cpp.tmpl' import constant_getter_callback
-       with context %}
-{% for constant in constants | has_special_getter %}
-{{constant_getter_callback(constant)}}
-{% endfor %}
-{# Attributes #}
 {##############################################################################}
+{# Attributes #}
 {% from 'attributes.cpp.tmpl' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback,
        attribute_cache_property_callback,
        with context %}
 {% for attribute in attributes %}
-{% if attribute.is_cached_accessor %}
-{{attribute_cache_property_callback(attribute)}}
-{% endif %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter and not attribute.constructor_type %}
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
-{% if not attribute.constructor_type %}
-{{attribute_getter_callback(attribute, world_suffix)}}
-{% elif attribute.needs_constructor_getter_callback %}
-{{constructor_getter_callback(attribute, world_suffix)}}
-{% endif %}
-{% if attribute.has_setter %}
-{% if not attribute.has_custom_setter %}
+{% if attribute.has_setter and not attribute.has_custom_setter %}
 {{attribute_setter(attribute, world_suffix)}}
-{% endif %}
-{{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}
 {% endfor %}
 {##############################################################################}
 {# Methods #}
 {% from 'methods.cpp.tmpl' import generate_method, overload_resolution_method,
-       method_callback, origin_safe_method_getter, generate_constructor,
-       generate_post_message_impl, runtime_determined_length_method,
-       runtime_determined_maxarg_method
-       with context %}
+      origin_safe_method_getter, generate_constructor,
+      generate_post_message_impl, runtime_determined_length_method,
+      runtime_determined_maxarg_method
+      with context %}
 {% for method in methods %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom and not method.is_post_message and method.visible %}
@@ -142,17 +125,6 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% endif %}
 {{overload_resolution_method(method.overloads, world_suffix)}}
 {% endif %}
-{% if not method.overload_index or method.overloads %}
-{# Document about the following condition: #}
-{# https://docs.google.com/document/d/1qBC7Therp437Jbt_QYAtNYMZs6zQ_7_tnMkNUG_ACqs/edit?usp=sharing #}
-{% if (method.overloads and method.overloads.visible and
-       (not method.overloads.has_partial_overloads or not is_partial)) or
-      (not method.overloads and method.visible) %}
-{# A single callback is generated for overloaded methods #}
-{# with considering partial overloads #}
-{{method_callback(method, world_suffix)}}
-{% endif %}
-{% endif %}
 {% if method.is_cross_origin and method.visible %}
 {{origin_safe_method_getter(method, world_suffix)}}
 {% endif %}
@@ -160,7 +132,6 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% endfor %}
 {% if iterator_method %}
 {{generate_method(iterator_method)}}
-{{method_callback(iterator_method)}}
 {% endif %}
 {% block origin_safe_method_setter %}{% endblock %}
 {# Constructors #}
@@ -168,44 +139,17 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {{generate_constructor(constructor)}}
 {% endfor %}
 {% block overloaded_constructor %}{% endblock %}
-{% block event_constructor %}{% endblock %}
 {# Special operations (methods) #}
 {% block named_property_getter %}{% endblock %}
-{% block named_property_getter_callback %}{% endblock %}
 {% block named_property_setter %}{% endblock %}
-{% block named_property_setter_callback %}{% endblock %}
 {% block named_property_deleter %}{% endblock %}
-{% block named_property_deleter_callback %}{% endblock %}
 {% block named_property_query %}{% endblock %}
-{% block named_property_query_callback %}{% endblock %}
 {% block named_property_enumerator %}{% endblock %}
-{% block named_property_enumerator_callback %}{% endblock %}
 {% block indexed_property_getter %}{% endblock %}
-{% block indexed_property_getter_callback %}{% endblock %}
 {% block indexed_property_setter %}{% endblock %}
-{% block indexed_property_setter_callback %}{% endblock %}
 {% block indexed_property_deleter %}{% endblock %}
-{% block indexed_property_deleter_callback %}{% endblock %}
 {##############################################################################}
-{% block security_check_functions %}
-{% if has_access_check_callbacks and not is_partial %}
-{{exported}}bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data) {
-  {% if interface_name == 'Window' %}
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(accessedObject, isolate);
-  if (window.IsEmpty())
-    return false;  // the frame is gone.
-
-  const DOMWindow* targetWindow = V8Window::toImpl(window);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
-  {% else %}{# if interface_name == 'Window' #}
-  {# Not 'Window' means it\'s Location. #}
-  {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
-  {% endif %}{# if interface_name == 'Window' #}
-}
-
-{% if has_cross_origin_named_enumerator %}
+{% if has_access_check_callbacks and not is_partial and has_cross_origin_named_enumerator %}
 static const struct {
   using GetterCallback = void(*)(const v8::PropertyCallbackInfo<v8::Value>&);
   using SetterCallback = void(*)(v8::Local<v8::Value>, const V8CrossOriginSetterInfo&);
@@ -228,14 +172,94 @@ static const struct {
   {% endfor %}
 };
 {% endif %}
+{##############################################################################}
+} // namespace {{cpp_class_or_partial}}V8Internal
+
+{# Constants #}
+{% from 'constants.cpp.tmpl' import constant_getter_callback with context %}
+{% for constant in constants | has_special_getter %}
+{{constant_getter_callback(constant)}}
+{% endfor %}
+{# Attributes #}
+{% from 'attributes.cpp.tmpl' import constructor_getter_callback,
+       attribute_getter_callback, attribute_setter_callback,
+       attribute_cache_property_callback,
+       with context %}
+{% for attribute in attributes %}
+{% if attribute.is_cached_accessor %}
+{{attribute_cache_property_callback(attribute)}}
+{% endif %}
+{% for world_suffix in attribute.world_suffixes %}
+{% if not attribute.constructor_type %}
+{{attribute_getter_callback(attribute, world_suffix)}}
+{% elif attribute.needs_constructor_getter_callback %}
+{{constructor_getter_callback(attribute, world_suffix)}}
+{% endif %}
+{% if attribute.has_setter %}
+{{attribute_setter_callback(attribute, world_suffix)}}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+{# Methods #}
+{% from 'methods.cpp.tmpl' import origin_safe_method_getter_callback,
+      method_callback with context %}
+{% for method in methods %}
+{% for world_suffix in method.world_suffixes %}
+{% if not method.overload_index or method.overloads %}
+{# Document about the following condition: #}
+{# https://docs.google.com/document/d/1qBC7Therp437Jbt_QYAtNYMZs6zQ_7_tnMkNUG_ACqs/edit?usp=sharing #}
+{% if (method.overloads and method.overloads.visible and
+       (not method.overloads.has_partial_overloads or not is_partial)) or
+      (not method.overloads and method.visible) %}
+{# A single callback is generated for overloaded methods #}
+{# with considering partial overloads #}
+{{method_callback(method, world_suffix)}}
+{% endif %}
+{% endif %}
+{% if method.is_cross_origin and method.visible %}
+{{origin_safe_method_getter_callback(method, world_suffix)}}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% if iterator_method %}
+{{method_callback(iterator_method)}}
+{% endif %}
+{% block origin_safe_method_setter_callback %}{% endblock %}
+{# Special operations (methods) #}
+{% block named_property_getter_callback %}{% endblock %}
+{% block named_property_setter_callback %}{% endblock %}
+{% block named_property_deleter_callback %}{% endblock %}
+{% block named_property_query_callback %}{% endblock %}
+{% block named_property_enumerator_callback %}{% endblock %}
+{% block indexed_property_getter_callback %}{% endblock %}
+{% block indexed_property_setter_callback %}{% endblock %}
+{% block indexed_property_deleter_callback %}{% endblock %}
+
+{% if has_access_check_callbacks and not is_partial %}
+bool {{v8_class_or_partial}}::securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data) {
+  {% if interface_name == 'Window' %}
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(accessedObject, isolate);
+  if (window.IsEmpty())
+    return false;  // the frame is gone.
+
+  const DOMWindow* targetWindow = V8Window::toImpl(window);
+  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
+  {% else %}{# if interface_name == 'Window' #}
+  {# Not 'Window' means it\'s Location. #}
+  {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
+  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
+  {% endif %}{# if interface_name == 'Window' #}
+}
 
 {% if has_cross_origin_named_getter %}
-{{exported}}void crossOriginNamedGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-  for (const auto& attribute : kCrossOriginAttributeTable) {
+  for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable) {
     if (propertyName == attribute.name && attribute.getter) {
       attribute.getter(info);
       return;
@@ -257,12 +281,12 @@ static const struct {
 {% endif %}
 
 {% if has_cross_origin_named_setter %}
-{{exported}}void crossOriginNamedSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::crossOriginNamedSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-  for (const auto& attribute : kCrossOriginAttributeTable) {
+  for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable) {
     if (propertyName == attribute.name && attribute.setter) {
       attribute.setter(value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
       return;
@@ -280,9 +304,9 @@ static const struct {
 {% endif %}
 
 {% if has_cross_origin_named_enumerator %}
-{{exported}}void crossOriginNamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
+void {{v8_class_or_partial}}::crossOriginNamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   Vector<String> names;
-  for (const auto& attribute : kCrossOriginAttributeTable)
+  for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable)
     names.push_back(attribute.name);
 
   v8SetReturnValue(
@@ -292,7 +316,7 @@ static const struct {
 {% endif %}
 
 {% if has_cross_origin_indexed_getter %}
-{{exported}}void crossOriginIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::crossOriginIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if indexed_property_getter.is_custom %}
   {{v8_class}}::indexedPropertyGetterCustom(index, info);
   {% else %}
@@ -300,11 +324,7 @@ static const struct {
   {% endif %}
 }
 {% endif %}
-
-{% endif %}
-{% endblock %}
-{##############################################################################}
-} // namespace {{cpp_class_or_partial}}V8Internal
+{% endif %}{# has_access_check_callbacks #}
 
 {% block visit_dom_wrapper %}{% endblock %}
 {##############################################################################}
@@ -452,11 +472,11 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
 
   {% if has_access_check_callbacks and not is_partial %}
   // Cross-origin access check
-  {% set cross_origin_named_getter = '%sV8Internal::crossOriginNamedGetter' % cpp_class if has_cross_origin_named_getter else 'nullptr' %}
-  {% set cross_origin_named_setter = '%sV8Internal::crossOriginNamedSetter' % cpp_class if has_cross_origin_named_setter else 'nullptr' %}
-  {% set cross_origin_named_enumerator = '%sV8Internal::crossOriginNamedEnumerator' % cpp_class if has_cross_origin_named_enumerator else 'nullptr' %}
-  {% set cross_origin_indexed_getter = '%sV8Internal::crossOriginIndexedGetter' % cpp_class if has_cross_origin_indexed_getter else 'nullptr' %}
-  instanceTemplate->SetAccessCheckCallbackAndHandler({{cpp_class}}V8Internal::securityCheck, v8::NamedPropertyHandlerConfiguration({{cross_origin_named_getter}}, {{cross_origin_named_setter}}, nullptr, nullptr, {{cross_origin_named_enumerator}}), v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}), v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
+  {% set cross_origin_named_getter = '%s::crossOriginNamedGetter' % v8_class_or_partial if has_cross_origin_named_getter else 'nullptr' %}
+  {% set cross_origin_named_setter = '%s::crossOriginNamedSetter' % v8_class_or_partial if has_cross_origin_named_setter else 'nullptr' %}
+  {% set cross_origin_named_enumerator = '%s::crossOriginNamedEnumerator' % v8_class_or_partial if has_cross_origin_named_enumerator else 'nullptr' %}
+  {% set cross_origin_indexed_getter = '%s::crossOriginIndexedGetter' % v8_class_or_partial if has_cross_origin_indexed_getter else 'nullptr' %}
+  instanceTemplate->SetAccessCheckCallbackAndHandler({{v8_class_or_partial}}::securityCheck, v8::NamedPropertyHandlerConfiguration({{cross_origin_named_getter}}, {{cross_origin_named_setter}}, nullptr, nullptr, {{cross_origin_named_enumerator}}), v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}), v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
   {% endif %}
 
   {% for feature_name, attribute_list in runtime_enabled_attributes | groupby('runtime_enabled_feature_name') %}
@@ -491,7 +511,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% filter exposed(iterator_method.exposed_test) %}
   {% filter runtime_enabled(iterator_method.runtime_enabled_feature_name) %}
   // Iterator (@@iterator)
-  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
+  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{v8_class_or_partial}}::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
   {% endfilter %}
   {% endfilter %}

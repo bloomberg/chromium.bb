@@ -38,6 +38,8 @@ class V8Uint8ClampedArray {
     visitor->traceWrappers(scriptWrappable->toImpl<TestUint8ClampedArray>());
   }
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+
+  // Callback functions
 };
 
 template <>

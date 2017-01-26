@@ -41,6 +41,11 @@ class V8SVGTestInterface {
     visitor->traceWrappers(scriptWrappable->toImpl<SVGTestInterface>());
   }
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+
+  // Callback functions
+
+  CORE_EXPORT static void typeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void typeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>

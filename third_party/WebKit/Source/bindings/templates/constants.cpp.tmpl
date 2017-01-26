@@ -1,6 +1,6 @@
 {##############################################################################}
 {% macro constant_getter_callback(constant) %}
-{{exported}}void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::{{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if constant.deprecate_as %}
   Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
   {% endif %}
@@ -41,7 +41,7 @@ V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplat
 {% endfor %}
 {# Constants with [DeprecateAs] or [MeasureAs] #}
 {% for constant in constants | has_special_getter %}
-V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "{{constant.name}}", {{cpp_class}}V8Internal::{{constant.name}}ConstantGetterCallback);
+V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "{{constant.name}}", {{v8_class_or_partial}}::{{constant.name}}ConstantGetterCallback);
 {% endfor %}
 {# Check constants #}
 {% if not do_not_check_constants %}

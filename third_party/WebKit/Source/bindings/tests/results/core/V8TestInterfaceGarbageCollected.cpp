@@ -65,10 +65,6 @@ static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info
   v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
-CORE_EXPORT void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetter(info);
-}
-
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
@@ -85,12 +81,6 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
   }
 
   impl->setAttr1(cppValue);
-}
-
-CORE_EXPORT void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
 }
 
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -112,10 +102,6 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   impl->func(arg);
 }
 
-CORE_EXPORT  void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::funcMethod(info);
-}
-
 static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "keys");
 
@@ -128,10 +114,6 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
   v8SetReturnValue(info, result);
-}
-
-CORE_EXPORT  void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::keysMethod(info);
 }
 
 static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -148,10 +130,6 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result);
 }
 
-CORE_EXPORT  void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::valuesMethod(info);
-}
-
 static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "entries");
 
@@ -164,10 +142,6 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
   v8SetReturnValue(info, result);
-}
-
-CORE_EXPORT  void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::entriesMethod(info);
 }
 
 static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -199,10 +173,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
-CORE_EXPORT  void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::forEachMethod(info);
-}
-
 static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "has");
 
@@ -225,10 +195,6 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
   v8SetReturnValueBool(info, result);
-}
-
-CORE_EXPORT  void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::hasMethod(info);
 }
 
 static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -255,10 +221,6 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result);
 }
 
-CORE_EXPORT  void addMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::addMethod(info);
-}
-
 static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "clear");
 
@@ -270,10 +232,6 @@ static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (exceptionState.hadException()) {
     return;
   }
-}
-
-CORE_EXPORT  void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::clearMethod(info);
 }
 
 static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -300,10 +258,6 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValueBool(info, result);
 }
 
-CORE_EXPORT  void deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::deleteMethod(info);
-}
-
 static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "iterator");
 
@@ -316,10 +270,6 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
   v8SetReturnValue(info, result);
-}
-
-CORE_EXPORT  void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollectedV8Internal::iteratorMethod(info);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -341,20 +291,70 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 } // namespace TestInterfaceGarbageCollectedV8Internal
 
+void V8TestInterfaceGarbageCollected::attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetter(info);
+}
+
+void V8TestInterfaceGarbageCollected::attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
+
+  TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
+}
+
+void V8TestInterfaceGarbageCollected::funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::funcMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::keysMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::valuesMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::entriesMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::forEachMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::hasMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::addMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::addMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::clearMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::deleteMethod(info);
+}
+
+void V8TestInterfaceGarbageCollected::iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::iteratorMethod(info);
+}
+
 const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceGarbageCollectedAccessors[] = {
-    {"attr1", TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetterCallback, TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetterCallback, 0, 0, nullptr, 0, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"attr1", V8TestInterfaceGarbageCollected::attr1AttributeGetterCallback, V8TestInterfaceGarbageCollected::attr1AttributeSetterCallback, nullptr, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceGarbageCollectedMethods[] = {
-    {"func", TestInterfaceGarbageCollectedV8Internal::funcMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"keys", TestInterfaceGarbageCollectedV8Internal::keysMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"values", TestInterfaceGarbageCollectedV8Internal::valuesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"entries", TestInterfaceGarbageCollectedV8Internal::entriesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"forEach", TestInterfaceGarbageCollectedV8Internal::forEachMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"has", TestInterfaceGarbageCollectedV8Internal::hasMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"add", TestInterfaceGarbageCollectedV8Internal::addMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"clear", TestInterfaceGarbageCollectedV8Internal::clearMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"delete", TestInterfaceGarbageCollectedV8Internal::deleteMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"func", V8TestInterfaceGarbageCollected::funcMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"keys", V8TestInterfaceGarbageCollected::keysMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"values", V8TestInterfaceGarbageCollected::valuesMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"entries", V8TestInterfaceGarbageCollected::entriesMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"forEach", V8TestInterfaceGarbageCollected::forEachMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"has", V8TestInterfaceGarbageCollected::hasMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"add", V8TestInterfaceGarbageCollected::addMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"clear", V8TestInterfaceGarbageCollected::clearMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"delete", V8TestInterfaceGarbageCollected::deleteMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 void V8TestInterfaceGarbageCollected::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -389,7 +389,7 @@ static void installV8TestInterfaceGarbageCollectedTemplate(v8::Isolate* isolate,
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceGarbageCollectedMethods, WTF_ARRAY_LENGTH(V8TestInterfaceGarbageCollectedMethods));
 
   // Iterator (@@iterator)
-  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceGarbageCollectedV8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
+  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, V8TestInterfaceGarbageCollected::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
 }
 

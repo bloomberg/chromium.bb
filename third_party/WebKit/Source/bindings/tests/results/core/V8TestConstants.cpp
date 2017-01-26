@@ -57,17 +57,17 @@ static_assert(
 
 namespace TestConstantsV8Internal {
 
-CORE_EXPORT void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+} // namespace TestConstantsV8Internal
+
+void V8TestConstants::DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
   Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
   v8SetReturnValueInt(info, 1);
 }
 
-CORE_EXPORT void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestConstants::MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
   UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
   v8SetReturnValueInt(info, 1);
 }
-
-} // namespace TestConstantsV8Internal
 
 static void installV8TestConstantsTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
@@ -117,8 +117,8 @@ static void installV8TestConstantsTemplate(v8::Isolate* isolate, const DOMWrappe
     const V8DOMConfiguration::ConstantConfiguration constantFeature2EnabledConst2Configuration = {"FEATURE2_ENABLED_CONST2", 4, 0, V8DOMConfiguration::ConstantTypeShort};
     V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature2EnabledConst2Configuration);
   }
-  V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestConstantsV8Internal::DEPRECATED_CONSTANTConstantGetterCallback);
-  V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestConstantsV8Internal::MEASURED_CONSTANTConstantGetterCallback);
+  V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", V8TestConstants::DEPRECATED_CONSTANTConstantGetterCallback);
+  V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "MEASURED_CONSTANT", V8TestConstants::MEASURED_CONSTANTConstantGetterCallback);
   static_assert(0 == TestConstants::kConstValueZero, "the value of TestConstants_kConstValueZero does not match with implementation");
   static_assert(1 == TestConstants::kConstValueOne, "the value of TestConstants_kConstValueOne does not match with implementation");
   static_assert(2 == TestConstants::kConstValueTwo, "the value of TestConstants_kConstValueTwo does not match with implementation");

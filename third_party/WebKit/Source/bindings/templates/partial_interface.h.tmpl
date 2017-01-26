@@ -51,6 +51,58 @@ class {{v8_class_or_partial}} {
       v8::Local<v8::Function> interface);
   {% endif %}
 
+  // Callback functions
+  {% for attribute in attributes %}
+  {% if attribute.is_cached_accessor %}
+  {{exported}}static v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate);
+  {% endif %}
+  {% for world_suffix in attribute.world_suffixes %}
+  {% if not attribute.constructor_type %}
+  {{exported}}static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
+    {%- if attribute.is_data_type_property %}
+    v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
+    {%- else %}
+    const v8::FunctionCallbackInfo<v8::Value>& info
+    {%- endif %});
+  {% elif attribute.needs_constructor_getter_callback %}
+  {{exported}}static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+  {% endif %}
+  {% if attribute.has_setter %}
+  {{exported}}static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
+    {%- if attribute.is_data_type_property %}
+    v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
+    {%- else %}
+    const v8::FunctionCallbackInfo<v8::Value>& info
+    {%- endif %});
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+
+  {% for method in methods %}
+  {% for world_suffix in method.world_suffixes %}
+  {% if not method.overload_index or method.overloads %}
+  {# Document about the following condition: #}
+  {# https://docs.google.com/document/d/1qBC7Therp437Jbt_QYAtNYMZs6zQ_7_tnMkNUG_ACqs/edit?usp=sharing #}
+  {% if (method.overloads and method.overloads.visible and
+         (not method.overloads.has_partial_overloads or not is_partial)) or
+        (not method.overloads and method.visible) %}
+  {# A single callback is generated for overloaded methods #}
+  {# with considering partial overloads #}
+  {{exported}}static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info);
+  {% endif %}
+  {% endif %}
+  {% if method.is_cross_origin and method.visible %}
+  {{exported}}static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info);
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+  {% if iterator_method %}
+  {{exported}}static void {{iterator_method.name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  {% endif %}
+  {% if has_origin_safe_method_setter %}
+  {{exported}}static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info);
+  {% endif %}
+
  private:
   static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 };

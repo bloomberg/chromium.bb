@@ -36,6 +36,10 @@ class V8ArrayBuffer {
     visitor->traceWrappers(scriptWrappable->toImpl<TestArrayBuffer>());
   }
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+
+  // Callback functions
+
+  CORE_EXPORT static void byteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>

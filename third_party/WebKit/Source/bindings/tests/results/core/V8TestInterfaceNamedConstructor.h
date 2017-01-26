@@ -48,6 +48,8 @@ class V8TestInterfaceNamedConstructor {
     visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceNamedConstructor>());
   }
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+
+  // Callback functions
 };
 
 template <>
