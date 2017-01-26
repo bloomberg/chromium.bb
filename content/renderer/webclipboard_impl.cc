@@ -80,7 +80,11 @@ WebVector<WebString> WebClipboardImpl::readAvailableTypes(
   if (ConvertBufferType(buffer, &clipboard_type)) {
     delegate_->ReadAvailableTypes(clipboard_type, &types, contains_filenames);
   }
-  return types;
+  WebVector<WebString> web_types(types.size());
+  std::transform(
+      types.begin(), types.end(), web_types.begin(),
+      [](const base::string16& s) { return WebString::fromUTF16(s); });
+  return web_types;
 }
 
 WebString WebClipboardImpl::readPlainText(Buffer buffer) {
@@ -90,7 +94,7 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
 
   base::string16 text;
   delegate_->ReadText(clipboard_type, &text);
-  return text;
+  return WebString::fromUTF16(text);
 }
 
 WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
@@ -106,7 +110,7 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
                       static_cast<uint32_t*>(fragment_start),
                       static_cast<uint32_t*>(fragment_end));
   *source_url = gurl;
-  return html_stdstr;
+  return WebString::fromUTF16(html_stdstr);
 }
 
 WebString WebClipboardImpl::readRTF(Buffer buffer) {
@@ -141,20 +145,21 @@ WebString WebClipboardImpl::readCustomData(Buffer buffer,
     return WebString();
 
   base::string16 data;
-  delegate_->ReadCustomData(clipboard_type, type, &data);
-  return data;
+  delegate_->ReadCustomData(clipboard_type, type.utf16(), &data);
+  return WebString::fromUTF16(data);
 }
 
 void WebClipboardImpl::writePlainText(const WebString& plain_text) {
-  delegate_->WriteText(ui::CLIPBOARD_TYPE_COPY_PASTE, plain_text);
+  delegate_->WriteText(ui::CLIPBOARD_TYPE_COPY_PASTE, plain_text.utf16());
   delegate_->CommitWrite(ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 
 void WebClipboardImpl::writeHTML(
     const WebString& html_text, const WebURL& source_url,
     const WebString& plain_text, bool write_smart_paste) {
-  delegate_->WriteHTML(ui::CLIPBOARD_TYPE_COPY_PASTE, html_text, source_url);
-  delegate_->WriteText(ui::CLIPBOARD_TYPE_COPY_PASTE, plain_text);
+  delegate_->WriteHTML(ui::CLIPBOARD_TYPE_COPY_PASTE, html_text.utf16(),
+                       source_url);
+  delegate_->WriteText(ui::CLIPBOARD_TYPE_COPY_PASTE, plain_text.utf16());
 
   if (write_smart_paste)
     delegate_->WriteSmartPasteMarker(ui::CLIPBOARD_TYPE_COPY_PASTE);
@@ -170,7 +175,7 @@ void WebClipboardImpl::writeImage(const WebImage& image,
     return;
 
   if (!url.isEmpty()) {
-    delegate_->WriteBookmark(ui::CLIPBOARD_TYPE_COPY_PASTE, url, title);
+    delegate_->WriteBookmark(ui::CLIPBOARD_TYPE_COPY_PASTE, url, title.utf16());
 #if !defined(OS_MACOSX)
     // When writing the image, we also write the image markup so that pasting
     // into rich text editors, such as Gmail, reveals the image. We also don't

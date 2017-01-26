@@ -16,6 +16,7 @@
 #include "ui/base/clipboard/clipboard.h"
 
 using blink::WebDragData;
+using blink::WebString;
 using blink::WebVector;
 
 namespace content {
@@ -31,33 +32,33 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
     const WebDragData::Item& item = item_list[i];
     switch (item.storageType) {
       case WebDragData::Item::StorageTypeString: {
-        base::string16 str_type(item.stringType);
+        base::string16 str_type(item.stringType.utf16());
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeText)) {
-          result.text = base::NullableString16(item.stringData, false);
+          result.text = WebString::toNullableString16(item.stringData);
           break;
         }
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeURIList)) {
           result.url = blink::WebStringToGURL(item.stringData);
-          result.url_title = item.title;
+          result.url_title = item.title.utf16();
           break;
         }
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeDownloadURL)) {
-          result.download_metadata = item.stringData;
+          result.download_metadata = item.stringData.utf16();
           break;
         }
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeHTML)) {
-          result.html = base::NullableString16(item.stringData, false);
+          result.html = WebString::toNullableString16(item.stringData);
           result.html_base_url = item.baseURL;
           break;
         }
         result.custom_data.insert(
-            std::make_pair(item.stringType, item.stringData));
+            std::make_pair(item.stringType.utf16(), item.stringData.utf16()));
         break;
       }
       case WebDragData::Item::StorageTypeBinaryData:
         result.file_contents.assign(item.binaryData.data(),
                                     item.binaryData.size());
-        result.file_description_filename = item.title;
+        result.file_description_filename = item.title.utf16();
         break;
       case WebDragData::Item::StorageTypeFilename:
         // TODO(varunjain): This only works on chromeos. Support win/mac/gtk.
