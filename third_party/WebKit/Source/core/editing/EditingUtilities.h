@@ -67,7 +67,6 @@ class Range;
 
 // This file contains a set of helper functions used by the editing commands
 
-CORE_EXPORT bool needsLayoutTreeUpdate(const Node&);
 CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
 CORE_EXPORT bool needsLayoutTreeUpdate(const PositionInFlatTree&);
 

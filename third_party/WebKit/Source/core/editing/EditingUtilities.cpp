@@ -81,7 +81,7 @@ std::ostream& operator<<(std::ostream& os, PositionMoveType type) {
 
 }  // namespace
 
-bool needsLayoutTreeUpdate(const Node& node) {
+static bool needsLayoutTreeUpdate(const Node& node) {
   const Document& document = node.document();
   if (document.needsLayoutTreeUpdate())
     return true;
