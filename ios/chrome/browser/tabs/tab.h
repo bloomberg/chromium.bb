@@ -43,8 +43,6 @@ class GURL;
 @protocol TabHeadersDelegate;
 @class TabModel;
 @protocol TabSnapshottingDelegate;
-@class TranslateControllerImplIOS;
-@class WebControllerSnapshotHelper;
 
 namespace infobars {
 class InfoBarManager;
