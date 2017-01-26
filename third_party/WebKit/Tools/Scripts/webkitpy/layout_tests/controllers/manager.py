@@ -282,7 +282,7 @@ class Manager(object):
                 test_expectations.NEEDS_MANUAL_REBASELINE in expectations)
 
     def _test_is_slow(self, test_file):
-        return test_expectations.SLOW in self._expectations.model().get_expectations(test_file)
+        return test_expectations.SLOW in self._expectations.model().get_expectations(test_file) or self._port.is_slow_wpt_test(test_file)
 
     def _needs_servers(self, test_names):
         return any(self._test_requires_lock(test_name) for test_name in test_names)

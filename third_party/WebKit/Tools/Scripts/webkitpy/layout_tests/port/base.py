@@ -762,6 +762,20 @@ class Port(object):
             return items['testharness'][path_in_wpt]
         return None
 
+    @staticmethod
+    def _get_extras_from_manifest_item(item):
+        return item[-1]
+
+    def is_slow_wpt_test(self, test_file):
+        match = re.match(r'external/wpt/(.*)', test_file)
+        if not match:
+            return False
+        items = self._manifest_items_for_path(match.group(1))
+        if not items:
+            return False
+        extras = Port._get_extras_from_manifest_item(items[0])
+        return 'timeout' in extras and extras['timeout'] == 'long'
+
     ALL_TEST_TYPES = ['audio', 'harness', 'pixel', 'ref', 'text', 'unknown']
 
     def test_type(self, test_name):

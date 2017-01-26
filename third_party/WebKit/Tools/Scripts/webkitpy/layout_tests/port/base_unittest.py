@@ -251,13 +251,29 @@ class PortTest(unittest.TestCase):
                     'dom/ranges/Range-attributes.html': [
                         ['/dom/ranges/Range-attributes.html', {}]
                     ],
+                    'dom/ranges/Range-attributes-slow.html': [
+                        ['/dom/ranges/Range-attributes.html', {'timeout': 'long'}]
+                    ],
                     'console/console-is-a-namespace.any.js': [
                         ['/console/console-is-a-namespace.any.html', {}],
                         ['/console/console-is-a-namespace.any.worker.html', {}],
                     ],
                 },
                 'manual': {},
-                'reftest': {},
+                'reftest': {
+                    'html/dom/elements/global-attributes/dir_auto-EN-L.html': [
+                        [
+                            '/html/dom/elements/global-attributes/dir_auto-EN-L.html',
+                            [
+                                [
+                                    '/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html',
+                                    '=='
+                                ]
+                            ],
+                            {'timeout': 'long'}
+                        ]
+                    ],
+                },
             }}))
         filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes.html', '')
         filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/console/console-is-a-namespace.any.js', '')
@@ -320,6 +336,16 @@ class PortTest(unittest.TestCase):
         self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt', 'testharness_runner.html'))
         # A file in external/wpt_automation.
         self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt_automation', 'foo.html'))
+
+    def test_is_slow_wpt_test(self):
+        port = self.make_port(with_tests=True)
+        filesystem = port.host.filesystem
+        PortTest._add_manifest_to_mock_file_system(filesystem)
+
+        self.assertFalse(port.is_slow_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))
+        self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes.html'))
+        self.assertTrue(port.is_slow_wpt_test('external/wpt/dom/ranges/Range-attributes-slow.html'))
+        self.assertTrue(port.is_slow_wpt_test('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'))
 
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
