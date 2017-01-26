@@ -506,6 +506,45 @@ TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
   OpenLidToAngle(270.0f);
   EXPECT_FALSE(IsMaximizeModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
+
+  // Tablet mode signal should also be ignored.
+  SetTabletMode(true);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Tests that is a tablet mode signal is received while docked, that maximize
+// mode is enabled upon exiting docked mode.
+TEST_F(MaximizeModeControllerTest, MaximizeModeAfterExitingDockedMode) {
+  UpdateDisplay("200x200, 200x200");
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  ASSERT_FALSE(IsMaximizeModeStarted());
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<display::ManagedDisplayInfo> all_displays;
+  all_displays.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(0).id()));
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  display::ManagedDisplayInfo secondary_display =
+      display_manager()->GetDisplayInfo(
+          display_manager()->GetDisplayAt(1).id());
+  all_displays.push_back(secondary_display);
+  secondary_only.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
+
+  // Tablet mode signal should also be ignored.
+  SetTabletMode(true);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Exiting docked state
+  display_manager()->OnNativeDisplaysChanged(all_displays);
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  EXPECT_TRUE(IsMaximizeModeStarted());
 }
 
 // Verify that the device won't exit touchview / maximize mode for unstable

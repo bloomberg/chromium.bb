@@ -226,6 +226,12 @@ void MaximizeModeController::TabletModeEventReceived(
     bool on,
     const base::TimeTicks& time) {
   tablet_mode_switch_is_on_ = on;
+  // Do not change if docked.
+  if (!display::Display::HasInternalDisplay() ||
+      !WmShell::Get()->IsActiveDisplayId(
+          display::Display::InternalDisplayId())) {
+    return;
+  }
   if (on && !IsMaximizeModeWindowManagerEnabled())
     EnterMaximizeMode();
 }
@@ -359,6 +365,14 @@ void MaximizeModeController::OnDisplayConfigurationChanged() {
       !WmShell::Get()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
     LeaveMaximizeMode();
+  } else if (tablet_mode_switch_is_on_ &&
+             !IsMaximizeModeWindowManagerEnabled()) {
+    // The internal display has returned, as we are exiting docked mode.
+    // The device is still in tablet mode, so trigger maximize mode, as this
+    // switch leads to the ignoring of accelerometer events. When the switch is
+    // not set the next stable accelerometer readings will trigger maximize
+    // mode.
+    EnterMaximizeMode();
   }
 }
 
