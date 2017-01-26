@@ -21,8 +21,15 @@
 
 namespace blink {
 
-static const char* imageOrientationFlipY = "flipY";
-static const char* imageBitmapOptionNone = "none";
+constexpr const char* kImageOrientationFlipY = "flipY";
+constexpr const char* kImageBitmapOptionNone = "none";
+constexpr const char* kImageBitmapOptionDefault = "default";
+constexpr const char* kImageBitmapOptionPremultiply = "premultiply";
+constexpr const char* kImageBitmapOptionResizeQualityHigh = "high";
+constexpr const char* kImageBitmapOptionResizeQualityMedium = "medium";
+constexpr const char* kImageBitmapOptionResizeQualityPixelated = "pixelated";
+constexpr const char* kSRGBImageBitmapColorSpaceConversion = "srgb";
+constexpr const char* kLinearRGBImageBitmapColorSpaceConversion = "linear-rgb";
 
 namespace {
 
@@ -56,35 +63,37 @@ ParsedOptions parseOptions(const ImageBitmapOptions& options,
                            Optional<IntRect> cropRect,
                            IntSize sourceSize) {
   ParsedOptions parsedOptions;
-  if (options.imageOrientation() == imageOrientationFlipY) {
+  if (options.imageOrientation() == kImageOrientationFlipY) {
     parsedOptions.flipY = true;
   } else {
     parsedOptions.flipY = false;
-    DCHECK(options.imageOrientation() == imageBitmapOptionNone);
+    DCHECK(options.imageOrientation() == kImageBitmapOptionNone);
   }
-  if (options.premultiplyAlpha() == imageBitmapOptionNone) {
+  if (options.premultiplyAlpha() == kImageBitmapOptionNone) {
     parsedOptions.premultiplyAlpha = false;
   } else {
     parsedOptions.premultiplyAlpha = true;
-    DCHECK(options.premultiplyAlpha() == "default" ||
-           options.premultiplyAlpha() == "premultiply");
+    DCHECK(options.premultiplyAlpha() == kImageBitmapOptionDefault ||
+           options.premultiplyAlpha() == kImageBitmapOptionPremultiply);
   }
 
-  if (options.colorSpaceConversion() != imageBitmapOptionNone) {
+  if (options.colorSpaceConversion() != kImageBitmapOptionNone) {
     if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
         !RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-      DCHECK_EQ(options.colorSpaceConversion(), "default");
+      DCHECK_EQ(options.colorSpaceConversion(), kImageBitmapOptionDefault);
       if (RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled()) {
         parsedOptions.dstColorSpace = ColorBehavior::globalTargetColorSpace();
         parsedOptions.dstColorType = SkColorType::kN32_SkColorType;
       }
     } else {
-      if (options.colorSpaceConversion() == "default" ||
-          options.colorSpaceConversion() == "srgb") {
+      if (options.colorSpaceConversion() == kImageBitmapOptionDefault ||
+          options.colorSpaceConversion() ==
+              kSRGBImageBitmapColorSpaceConversion) {
         parsedOptions.dstColorSpace =
             SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
         parsedOptions.dstColorType = SkColorType::kN32_SkColorType;
-      } else if (options.colorSpaceConversion() == "linear-rgb") {
+      } else if (options.colorSpaceConversion() ==
+                 kLinearRGBImageBitmapColorSpaceConversion) {
         parsedOptions.dstColorSpace =
             SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
         parsedOptions.dstColorType = SkColorType::kRGBA_F16_SkColorType;
@@ -129,11 +138,11 @@ ParsedOptions parseOptions(const ImageBitmapOptions& options,
   }
   parsedOptions.shouldScaleInput = true;
 
-  if (options.resizeQuality() == "high")
+  if (options.resizeQuality() == kImageBitmapOptionResizeQualityHigh)
     parsedOptions.resizeQuality = kHigh_SkFilterQuality;
-  else if (options.resizeQuality() == "medium")
+  else if (options.resizeQuality() == kImageBitmapOptionResizeQualityMedium)
     parsedOptions.resizeQuality = kMedium_SkFilterQuality;
-  else if (options.resizeQuality() == "pixelated")
+  else if (options.resizeQuality() == kImageBitmapOptionResizeQualityPixelated)
     parsedOptions.resizeQuality = kNone_SkFilterQuality;
   else
     parsedOptions.resizeQuality = kLow_SkFilterQuality;
@@ -557,7 +566,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image,
   if (dstBufferSizeHasOverflow(parsedOptions))
     return;
 
-  if (options.colorSpaceConversion() == imageBitmapOptionNone) {
+  if (options.colorSpaceConversion() == kImageBitmapOptionNone) {
     m_image = cropImageAndApplyColorSpaceConversion(
         input.get(), parsedOptions, PremultiplyAlpha, ColorBehavior::ignore());
   } else {
