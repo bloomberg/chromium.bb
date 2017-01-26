@@ -15,35 +15,6 @@
 
 namespace blink {
 
-namespace {
-
-// WebURLLoader that does nothing. This instance should be passed as a default
-// WebURLLoader to create a WebURLLoader through WebURLLoaderMockFactory.
-class AssertWebURLLoader : public WebURLLoader {
- public:
-  ~AssertWebURLLoader() override {}
-
-  // WebURLLoader:
-  void loadSynchronously(const WebURLRequest&,
-                         WebURLResponse&,
-                         WebURLError&,
-                         WebData&,
-                         int64_t& encodedDataLength,
-                         int64_t& encodedBodyLength) override {
-    NOTREACHED();
-  }
-  void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) override {
-    NOTREACHED();
-  }
-  void cancel() override { NOTREACHED(); }
-  void setDefersLoading(bool defer) override { NOTREACHED(); }
-  void setLoadingTaskRunner(base::SingleThreadTaskRunner*) override {
-    NOTREACHED();
-  }
-};
-
-}  // namespace
-
 FetchTestingPlatformSupport::FetchTestingPlatformSupport()
     : m_urlLoaderMockFactory(new WebURLLoaderMockFactoryImpl(this)) {}
 
@@ -75,7 +46,7 @@ FetchTestingPlatformSupport::getURLLoaderMockFactory() {
 }
 
 WebURLLoader* FetchTestingPlatformSupport::createURLLoader() {
-  return m_urlLoaderMockFactory->createURLLoader(new AssertWebURLLoader);
+  return m_urlLoaderMockFactory->createURLLoader(nullptr);
 }
 
 }  // namespace blink

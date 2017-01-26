@@ -12,6 +12,18 @@
 
 namespace blink {
 
+namespace {
+
+void assertFallbackLoaderAvailability(const WebURL& url,
+                                      const WebURLLoader* default_loader) {
+  DCHECK(KURL(url).protocolIsData()) << "shouldn't be falling back: "
+                                     << url.string().utf8();
+  DCHECK(default_loader) << "default_loader wasn't set: "
+                         << url.string().utf8();
+}
+
+}  // namespace
+
 WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
                                    WebURLLoader* default_loader)
     : factory_(factory),
@@ -104,9 +116,7 @@ void WebURLLoaderMock::loadSynchronously(const WebURLRequest& request,
                                   &encoded_data_length);
     return;
   }
-  DCHECK(KURL(request.url()).protocolIsData())
-      << "loadSynchronously shouldn't be falling back: "
-      << request.url().string().utf8();
+  assertFallbackLoaderAvailability(request.url(), default_loader_.get());
   using_default_loader_ = true;
   default_loader_->loadSynchronously(request, response, error, data,
                                      encoded_data_length, encoded_body_length);
@@ -120,9 +130,7 @@ void WebURLLoaderMock::loadAsynchronously(const WebURLRequest& request,
     factory_->LoadAsynchronouly(request, this);
     return;
   }
-  DCHECK(KURL(request.url()).protocolIsData())
-      << "loadAsynchronously shouldn't be falling back: "
-      << request.url().string().utf8();
+  assertFallbackLoaderAvailability(request.url(), default_loader_.get());
   using_default_loader_ = true;
   default_loader_->loadAsynchronously(request, client);
 }

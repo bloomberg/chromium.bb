@@ -34,7 +34,6 @@ WebURLLoaderMockFactoryImpl::~WebURLLoaderMockFactoryImpl() {}
 
 WebURLLoader* WebURLLoaderMockFactoryImpl::createURLLoader(
     WebURLLoader* default_loader) {
-  DCHECK(default_loader);
   return new WebURLLoaderMock(this, default_loader);
 }
 
