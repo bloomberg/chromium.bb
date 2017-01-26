@@ -75,7 +75,10 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  if (input.from_omnibox_focus()) {
+  const bool input_from_focus = input.from_omnibox_focus();
+  const bool empty_input_from_user = !input_from_focus && input.text().empty();
+
+  if (input_from_focus || empty_input_from_user) {
     ConstructZeroSuggestMatches(data_source->GetMetadataList());
 
     if (!matches_.empty()) {
@@ -83,7 +86,12 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
       had_physical_web_suggestions_at_focus_or_later_ = true;
     }
 
-    if (!zero_suggest_enabled_) {
+    // Don't show zero-suggest suggestions unless the PhysicalWebZeroSuggest
+    // omnibox experiment parameter is enabled. If the omnibox input is empty
+    // because the user cleared it, also require that PhysicalWebAfterTyping is
+    // enabled.
+    if (!zero_suggest_enabled_ ||
+        (empty_input_from_user && !after_typing_enabled_)) {
       matches_.clear();
     }
 
@@ -104,6 +112,8 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
       had_physical_web_suggestions_at_focus_or_later_ = true;
     }
 
+    // Don't show Physical Web suggestions after the user starts typing unless
+    // the PhysicalWebAfterTyping omnibox experiment parameter is enabled.
     if (!after_typing_enabled_) {
       matches_.clear();
     }

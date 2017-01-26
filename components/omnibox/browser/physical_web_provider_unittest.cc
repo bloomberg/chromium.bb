@@ -331,6 +331,37 @@ TEST_F(PhysicalWebProviderTest, TestNoMatchesWithUserInput) {
   EXPECT_TRUE(provider_->matches().empty());
 }
 
+TEST_F(PhysicalWebProviderTest, TestEmptyInputAfterTyping) {
+  FakePhysicalWebDataSource* data_source =
+      client_->GetFakePhysicalWebDataSource();
+  EXPECT_TRUE(data_source);
+
+  data_source->SetMetadataList(CreateMetadata(1));
+
+  // Construct an AutocompleteInput to simulate a blank input field, as if the
+  // user typed a query and then deleted it. The provider should generate
+  // suggestions for the zero-suggest case. No default match should be created.
+  const AutocompleteInput input(
+      base::string16(), 0, std::string(), GURL(),
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
+      true, false, true, true, false, TestSchemeClassifier());
+  provider_->Start(input, false);
+
+  size_t metadata_match_count = 0;
+  size_t default_match_count = 0;
+  for (const auto& match : provider_->matches()) {
+    if (match.type == AutocompleteMatchType::PHYSICAL_WEB) {
+      ++metadata_match_count;
+    } else {
+      EXPECT_TRUE(match.allowed_to_be_default_match);
+      ++default_match_count;
+    }
+  }
+  EXPECT_EQ(1U, provider_->matches().size());
+  EXPECT_EQ(1U, metadata_match_count);
+  EXPECT_EQ(0U, default_match_count);
+}
+
 TEST_F(PhysicalWebProviderTest, TestManyMetadataItemsCreatesOverflowItem) {
   // Create enough metadata to guarantee an overflow item will be created.
   const size_t metadata_count = AutocompleteProvider::kMaxMatches + 1;
