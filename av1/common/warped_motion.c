@@ -413,7 +413,7 @@ static uint8_t warp_interpolate(uint8_t *ref, int x, int y, int width,
 // [-1, 2) * WARPEDPIXEL_PREC_SHIFTS.
 // We need an extra 2 taps to fit this in, for a total of 8 taps.
 /* clang-format off */
-const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS*3][8] = {
+const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3][8] = {
   // [-1, 0)
   { 0,   0, 128,   0,   0, 0, 0, 0 }, { 0, - 1, 128,   2, - 1, 0, 0, 0 },
   { 1, - 3, 127,   4, - 1, 0, 0, 0 }, { 1, - 4, 126,   6, - 2, 1, 0, 0 },

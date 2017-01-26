@@ -7818,7 +7818,7 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_EXT_INTER
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_WARPED_MOTION
-  double pts[144], pts_inref[144];
+  double pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
 #endif  // CONFIG_WARPED_MOTION
   int64_t rd = INT64_MAX;
   BUFFER_SET orig_dst, tmp_dst;

@@ -1510,7 +1510,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
   int16_t mode_ctx = 0;
 #if CONFIG_WARPED_MOTION
-  double pts[144], pts_inref[144];
+  double pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
 #endif  // CONFIG_WARPED_MOTION
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;

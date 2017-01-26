@@ -1087,6 +1087,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       }
     }
   }
+  assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
   // scan the left column
   if (left_available) {
@@ -1129,6 +1130,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       }
     }
   }
+  assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
   if (left_available && up_available) {
     int mi_row_offset = -1;
@@ -1166,6 +1168,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       np += pixelperblock;
     }
   }
+  assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
   for (i = 0; i < (mvnumber - 1); ++i) {
     if (mvasint[i] != mvasint[i + 1]) break;
@@ -1200,6 +1203,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
     }
     np += pixelperblock;
   }
+  assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
   return np;
 }
