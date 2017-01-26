@@ -7,21 +7,20 @@
 #include <Functiondiscoverykeys_devpkey.h>  // MMDeviceAPI.h must come first
 #include <stddef.h>
 
-#include "media/audio/win/audio_manager_win.h"
-
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
+#include "media/audio/win/audio_manager_win.h"
 
 using base::win::ScopedComPtr;
 using base::win::ScopedCoMem;
 
 // Taken from Mmddk.h.
-#define DRV_RESERVED                      0x0800
-#define DRV_QUERYFUNCTIONINSTANCEID       (DRV_RESERVED + 17)
-#define DRV_QUERYFUNCTIONINSTANCEIDSIZE   (DRV_RESERVED + 18)
+#define DRV_RESERVED 0x0800
+#define DRV_QUERYFUNCTIONINSTANCEID (DRV_RESERVED + 17)
+#define DRV_QUERYFUNCTIONINSTANCEIDSIZE (DRV_RESERVED + 18)
 
 namespace media {
 
@@ -41,8 +40,7 @@ static bool GetDeviceNamesWinImpl(EDataFlow data_flow,
   // Generate a collection of active audio endpoint devices.
   // This method will succeed even if all devices are disabled.
   ScopedComPtr<IMMDeviceCollection> collection;
-  hr = enumerator->EnumAudioEndpoints(data_flow,
-                                      DEVICE_STATE_ACTIVE,
+  hr = enumerator->EnumAudioEndpoints(data_flow, DEVICE_STATE_ACTIVE,
                                       collection.Receive());
   if (FAILED(hr))
     return false;
@@ -81,8 +79,8 @@ static bool GetDeviceNamesWinImpl(EDataFlow data_flow,
                                 friendly_name.Receive());
 
       // Store the user-friendly name.
-      if (SUCCEEDED(hr) &&
-          friendly_name.get().vt == VT_LPWSTR && friendly_name.get().pwszVal) {
+      if (SUCCEEDED(hr) && friendly_name.get().vt == VT_LPWSTR &&
+          friendly_name.get().pwszVal) {
         device.device_name = base::WideToUTF8(friendly_name.get().pwszVal);
       }
     }
@@ -99,9 +97,9 @@ static bool GetDeviceNamesWinImpl(EDataFlow data_flow,
 // devices. We deal with this by implementing the logic as a templated
 // function that takes the functions and struct type to use as
 // template parameters.
-template <UINT (__stdcall *NumDevsFunc)(),
+template <UINT(__stdcall* NumDevsFunc)(),
           typename CAPSSTRUCT,
-          MMRESULT (__stdcall *DevCapsFunc)(UINT_PTR, CAPSSTRUCT*, UINT)>
+          MMRESULT(__stdcall* DevCapsFunc)(UINT_PTR, CAPSSTRUCT*, UINT)>
 static bool GetDeviceNamesWinXPImpl(AudioDeviceNames* device_names) {
   // Retrieve the number of active waveform input devices.
   UINT number_of_active_devices = NumDevsFunc();
@@ -118,7 +116,7 @@ static bool GetDeviceNamesWinXPImpl(AudioDeviceNames* device_names) {
   // there is no safe method to retrieve a unique device name on XP.
   for (UINT i = 0; i < number_of_active_devices; ++i) {
     // Retrieve the capabilities of the specified waveform-audio input device.
-    err = DevCapsFunc(i,  &capabilities, sizeof(capabilities));
+    err = DevCapsFunc(i, &capabilities, sizeof(capabilities));
     if (err != MMSYSERR_NOERROR)
       continue;
 
@@ -146,60 +144,13 @@ bool GetOutputDeviceNamesWin(AudioDeviceNames* device_names) {
 }
 
 bool GetInputDeviceNamesWinXP(AudioDeviceNames* device_names) {
-  return GetDeviceNamesWinXPImpl<
-      waveInGetNumDevs, WAVEINCAPSW, waveInGetDevCapsW>(device_names);
+  return GetDeviceNamesWinXPImpl<waveInGetNumDevs, WAVEINCAPSW,
+                                 waveInGetDevCapsW>(device_names);
 }
 
 bool GetOutputDeviceNamesWinXP(AudioDeviceNames* device_names) {
-  return GetDeviceNamesWinXPImpl<
-      waveOutGetNumDevs, WAVEOUTCAPSW, waveOutGetDevCapsW>(device_names);
-}
-
-std::string ConvertToWinXPInputDeviceId(const std::string& device_id) {
-  UINT number_of_active_devices = waveInGetNumDevs();
-  MMRESULT result = MMSYSERR_NOERROR;
-
-  UINT i = 0;
-  for (; i < number_of_active_devices; ++i) {
-    size_t size = 0;
-    // Get the size (including the terminating NULL) of the endpoint ID of the
-    // waveIn device.
-    result = waveInMessage(reinterpret_cast<HWAVEIN>(i),
-                           DRV_QUERYFUNCTIONINSTANCEIDSIZE,
-                           reinterpret_cast<DWORD_PTR>(&size), NULL);
-    if (result != MMSYSERR_NOERROR)
-      continue;
-
-    ScopedCoMem<WCHAR> id;
-    id.Reset(static_cast<WCHAR*>(CoTaskMemAlloc(size)));
-    if (!id)
-      continue;
-
-    // Get the endpoint ID string for this waveIn device.
-    result = waveInMessage(
-        reinterpret_cast<HWAVEIN>(i), DRV_QUERYFUNCTIONINSTANCEID,
-        reinterpret_cast<DWORD_PTR>(static_cast<WCHAR*>(id)), size);
-    if (result != MMSYSERR_NOERROR)
-      continue;
-
-    std::string utf8_id = base::WideToUTF8(static_cast<WCHAR*>(id));
-    // Check whether the endpoint ID string of this waveIn device matches that
-    // of the audio endpoint device.
-    if (device_id == utf8_id)
-      break;
-  }
-
-  // If a matching waveIn device was found, convert the unique endpoint ID
-  // string to a standard friendly name with max 32 characters.
-  if (i < number_of_active_devices) {
-    WAVEINCAPS capabilities;
-
-    result = waveInGetDevCaps(i, &capabilities, sizeof(capabilities));
-    if (result == MMSYSERR_NOERROR)
-      return base::WideToUTF8(capabilities.szPname);
-  }
-
-  return std::string();
+  return GetDeviceNamesWinXPImpl<waveOutGetNumDevs, WAVEOUTCAPSW,
+                                 waveOutGetDevCapsW>(device_names);
 }
 
 }  // namespace media

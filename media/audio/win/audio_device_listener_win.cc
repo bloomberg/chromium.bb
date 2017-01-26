@@ -33,8 +33,8 @@ static std::string RoleToString(ERole role) {
 
 AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
     : listener_cb_(listener_cb), tick_clock_(new base::DefaultTickClock()) {
-  CHECK(CoreAudioUtil::IsSupported());
-
+  // CreateDeviceEnumerator can fail on some installations of Windows such
+  // as "Windows Server 2008 R2" where the desktop experience isn't available.
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator(
       CoreAudioUtil::CreateDeviceEnumerator());
   if (!device_enumerator.get())
