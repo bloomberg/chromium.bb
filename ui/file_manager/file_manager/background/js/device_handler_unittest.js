@@ -71,9 +71,9 @@ function testGoodDevice(callback) {
   var promise = chrome.notifications.resolver.promise.then(
       function(notifications) {
           assertEquals(1, Object.keys(notifications).length);
-          assertEquals(
-              'DEVICE_NAVIGATION',
-              notifications['deviceNavigation:/device/path'].message);
+          var options = notifications['deviceNavigation:/device/path'];
+          assertEquals('DEVICE_NAVIGATION', options.message);
+          assertTrue(options.isClickable);
       });
 
   reportPromise(promise, callback);
@@ -598,6 +598,30 @@ function testDeviceHardUnplugged() {
                    'hardUnplugged:/device/path'].message);
 }
 
+function testNotificationClicked(callback) {
+  var devicePath = '/device/path';
+  var notificationId = 'deviceNavigation:' + devicePath;
+
+  // Add a listener for navigation-requested events.
+  var resolver = new importer.Resolver();
+  handler.addEventListener(
+      DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
+      function(event) {
+        resolver.resolve(event);
+      });
+
+  // Call the notification-body-clicked handler and check that the
+  // navigation-requested event is dispatched.
+  chrome.notifications.onClicked.dispatch(notificationId);
+  var promise = resolver.promise.then(
+      function(event) {
+        assertEquals(null, event.volumeId);
+        assertEquals(devicePath, event.devicePath);
+        assertEquals(null, event.filePath);
+      });
+  reportPromise(promise, callback);
+}
+
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
  * @param {string} volumeId
@@ -653,6 +677,11 @@ function setupChromeApis() {
       clear: function(id, callback) { delete this.items[id]; callback(); },
       items: {},
       onButtonClicked: {
+        addListener: function(listener) {
+          this.dispatch = listener;
+        }
+      },
+      onClicked: {
         addListener: function(listener) {
           this.dispatch = listener;
         }

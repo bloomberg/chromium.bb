@@ -20,8 +20,10 @@ function DeviceHandler() {
       this.onDeviceChanged_.bind(this));
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
+  chrome.notifications.onClicked.addListener(
+      this.onNotificationClicked_.bind(this));
   chrome.notifications.onButtonClicked.addListener(
-      this.onNotificationButtonClicked_.bind(this));
+      this.onNotificationClicked_.bind(this));
 }
 
 DeviceHandler.prototype = {
@@ -42,10 +44,12 @@ DeviceHandler.VOLUME_NAVIGATION_REQUESTED = 'volumenavigationrequested';
  * @param {string} title String ID of title.
  * @param {string} message String ID of message.
  * @param {string=} opt_buttonLabel String ID of the button label.
+ * @param {boolean=} opt_isClickable True if the notification body is clickable.
  * @constructor
  * @struct
  */
-DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
+DeviceHandler.Notification = function(
+    prefix, title, message, opt_buttonLabel, opt_isClickable) {
   /**
    * Prefix of notification ID.
    * @type {string}
@@ -71,6 +75,12 @@ DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
   this.buttonLabel = opt_buttonLabel || null;
 
   /**
+   * True if the notification body is clickable.
+   * @type {boolean}
+   */
+  this.isClickable = opt_isClickable || false;
+
+  /**
    * Queue of API call.
    * @type {AsyncUtil.Queue}
    * @private
@@ -86,7 +96,8 @@ DeviceHandler.Notification.DEVICE_NAVIGATION = new DeviceHandler.Notification(
     'deviceNavigation',
     'REMOVABLE_DEVICE_DETECTION_TITLE',
     'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
-    'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL');
+    'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL',
+    true);
 
 /**
  * @type {DeviceHandler.Notification}
@@ -97,7 +108,8 @@ DeviceHandler.Notification.DEVICE_NAVIGATION_READONLY_POLICY =
         'deviceNavigation',
         'REMOVABLE_DEVICE_DETECTION_TITLE',
         'REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY',
-        'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL');
+        'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL',
+        true);
 
 /**
  * @type {DeviceHandler.Notification}
@@ -107,7 +119,8 @@ DeviceHandler.Notification.DEVICE_IMPORT = new DeviceHandler.Notification(
     'deviceImport',
     'REMOVABLE_DEVICE_DETECTION_TITLE',
     'REMOVABLE_DEVICE_IMPORT_MESSAGE',
-    'REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL');
+    'REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL',
+    true);
 
 /**
  * @type {DeviceHandler.Notification}
@@ -236,7 +249,8 @@ DeviceHandler.Notification.prototype.showInternal_ = function(
         title: str(this.title),
         message: message || str(this.message),
         iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
-        buttons: buttons
+        buttons: buttons,
+        isClickable: this.isClickable
       },
       callback);
 };
@@ -490,7 +504,7 @@ DeviceHandler.prototype.onMount_ = function(event) {
                       // auto-import is disabled in Photos app.
                       if (!appEnabled) {
                         this.openMediaDirectory_(
-                            metadata.volumeId, directory.fullPath);
+                            metadata.volumeId, null, directory.fullPath);
                       }
                     }.bind(this));
           }.bind(this))
@@ -515,37 +529,35 @@ DeviceHandler.prototype.onUnmount_ = function(event) {
 };
 
 /**
- * Handles notification button click.
+ * Handles notification body or button click.
  * @param {string} id ID of the notification.
  * @private
  */
-DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
+DeviceHandler.prototype.onNotificationClicked_ = function(id) {
   var pos = id.indexOf(':');
   var type = id.substr(0, pos);
   var devicePath = id.substr(pos + 1);
   if (type === 'deviceNavigation' || type === 'deviceFail') {
     chrome.notifications.clear(id, function() {});
-    var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
-    event.devicePath = devicePath;
-    this.dispatchEvent(event);
+    this.openMediaDirectory_(null, devicePath, null);
   } else if (type === 'deviceImport') {
     chrome.notifications.clear(id, function() {});
-    var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
-    event.devicePath = devicePath;
-    event.filePath = 'DCIM';
-    this.dispatchEvent(event);
+    this.openMediaDirectory_(null, devicePath, 'DCIM');
   }
 };
 
 /**
- * Handles notification button click.
- * @param {string} volumeId
- * @param {string} path
+ * Opens a directory on removable media.
+ * @param {?string} volumeId
+ * @param {?string} devicePath
+ * @param {?string} filePath
  * @private
  */
-DeviceHandler.prototype.openMediaDirectory_ = function(volumeId, path) {
+DeviceHandler.prototype.openMediaDirectory_ =
+    function(volumeId, devicePath, filePath) {
   var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
   event.volumeId = volumeId;
-  event.filePath = path;
+  event.devicePath = devicePath;
+  event.filePath = filePath;
   this.dispatchEvent(event);
 };
