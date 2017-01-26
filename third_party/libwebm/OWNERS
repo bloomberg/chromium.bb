@@ -5,3 +5,5 @@ niklase@chromium.org
 
 # The following OWNER refer to libwebm content.
 tomfinegan@chromium.org
+
+# COMPONENT: Blink>MediaRecording

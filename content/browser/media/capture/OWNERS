@@ -3,3 +3,6 @@ sergeyu@chromium.org
 wez@chromium.org
 
 per-file image_capture*=mcasas@chromium.org
+
+# TEAM: media-capture-and-streams@grotations.appspotmail.com
+# COMPONENT: Blink>GetUserMedia
