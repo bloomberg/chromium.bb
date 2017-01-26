@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -99,6 +100,15 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // Returns the client_name field for both V3 and V4 protocol manager configs.
   std::string GetProtocolConfigClientName() const;
+
+  // NOTE(vakh): This is not the most reliable way to find out if extended
+  // reporting has been enabled. That's why it starts with estimated_. It
+  // returns true if any of the profiles have extended reporting enabled. It may
+  // be called on any thread. That can lead to a race condition, but that's
+  // acceptable.
+  ExtendedReportingLevel estimated_extended_reporting_by_prefs() const {
+    return estimated_extended_reporting_by_prefs_;
+  }
 
   // Get current enabled status. Must be called on IO thread.
   bool enabled() const {
@@ -273,6 +283,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // Provides phishing and malware statistics. Accessed on IO thread.
   std::unique_ptr<SafeBrowsingPingManager> ping_manager_;
+
+  // Whether SafeBrowsing Extended Reporting is enabled by the current set of
+  // profiles. Updated on the UI thread.
+  ExtendedReportingLevel estimated_extended_reporting_by_prefs_;
 
   // Whether the service is running. 'enabled_' is used by SafeBrowsingService
   // on the IO thread during normal operations.

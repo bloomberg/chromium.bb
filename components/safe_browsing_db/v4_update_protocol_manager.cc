@@ -73,6 +73,21 @@ static const int kV4TimerStartIntervalSecMax = 300;
 // Maximum time, in seconds, to wait for a response to an update request.
 static const int kV4TimerUpdateWaitSecMax = 30;
 
+ChromeClientInfo::SafeBrowsingReportingPopulation GetReportingLevelProtoValue(
+    ExtendedReportingLevel reporting_level) {
+  switch (reporting_level) {
+    case SBER_LEVEL_OFF:
+      return ChromeClientInfo::OPT_OUT;
+    case SBER_LEVEL_LEGACY:
+      return ChromeClientInfo::EXTENDED;
+    case SBER_LEVEL_SCOUT:
+      return ChromeClientInfo::SCOUT;
+    default:
+      NOTREACHED() << "Unexpected reporting_level!";
+      return ChromeClientInfo::UNSPECIFIED;
+  }
+}
+
 // The default V4UpdateProtocolManagerFactory.
 class V4UpdateProtocolManagerFactoryImpl
     : public V4UpdateProtocolManagerFactory {
@@ -82,9 +97,12 @@ class V4UpdateProtocolManagerFactoryImpl
   std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
-      V4UpdateCallback callback) override {
-    return std::unique_ptr<V4UpdateProtocolManager>(
-        new V4UpdateProtocolManager(request_context_getter, config, callback));
+      V4UpdateCallback update_callback,
+      ExtendedReportingLevelCallback extended_reporting_level_callback)
+      override {
+    return std::unique_ptr<V4UpdateProtocolManager>(new V4UpdateProtocolManager(
+        request_context_getter, config, update_callback,
+        extended_reporting_level_callback));
   }
 
  private:
@@ -100,12 +118,14 @@ V4UpdateProtocolManagerFactory* V4UpdateProtocolManager::factory_ = NULL;
 std::unique_ptr<V4UpdateProtocolManager> V4UpdateProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
     const V4ProtocolConfig& config,
-    V4UpdateCallback callback) {
+    V4UpdateCallback update_callback,
+    ExtendedReportingLevelCallback extended_reporting_level_callback) {
   if (!factory_) {
     factory_ = new V4UpdateProtocolManagerFactoryImpl();
   }
   return factory_->CreateProtocolManager(request_context_getter, config,
-                                         callback);
+                                         update_callback,
+                                         extended_reporting_level_callback);
 }
 
 void V4UpdateProtocolManager::ResetUpdateErrors() {
@@ -116,7 +136,8 @@ void V4UpdateProtocolManager::ResetUpdateErrors() {
 V4UpdateProtocolManager::V4UpdateProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
     const V4ProtocolConfig& config,
-    V4UpdateCallback update_callback)
+    V4UpdateCallback update_callback,
+    ExtendedReportingLevelCallback extended_reporting_level_callback)
     : update_error_count_(0),
       update_back_off_mult_(1),
       next_update_interval_(base::TimeDelta::FromSeconds(
@@ -125,7 +146,8 @@ V4UpdateProtocolManager::V4UpdateProtocolManager(
       config_(config),
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0),
-      update_callback_(update_callback) {
+      update_callback_(update_callback),
+      extended_reporting_level_callback_(extended_reporting_level_callback) {
   // Do not auto-schedule updates. Let the owner (V4LocalDatabaseManager) do it
   // when it is ready to process updates.
 }
@@ -215,6 +237,11 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto() {
     list_update_request->mutable_constraints()->add_supported_compressions(RAW);
     list_update_request->mutable_constraints()->add_supported_compressions(
         RICE);
+  }
+
+  if (!extended_reporting_level_callback_.is_null()) {
+    request.mutable_chrome_client_info()->set_reporting_population(
+        GetReportingLevelProtoValue(extended_reporting_level_callback_.Run()));
   }
 
   V4ProtocolManagerUtil::SetClientInfoFromConfig(request.mutable_client(),

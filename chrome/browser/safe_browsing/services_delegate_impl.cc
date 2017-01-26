@@ -54,6 +54,11 @@ void ServicesDelegateImpl::InitializeCsdService(
 #endif  // defined(SAFE_BROWSING_CSD)
 }
 
+ExtendedReportingLevel
+ServicesDelegateImpl::GetEstimatedExtendedReportingLevel() const {
+  return safe_browsing_service_->estimated_extended_reporting_by_prefs();
+}
+
 const scoped_refptr<SafeBrowsingDatabaseManager>&
 ServicesDelegateImpl::v4_local_database_manager() const {
   return v4_local_database_manager_;
@@ -62,8 +67,10 @@ ServicesDelegateImpl::v4_local_database_manager() const {
 void ServicesDelegateImpl::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  v4_local_database_manager_ =
-      V4LocalDatabaseManager::Create(SafeBrowsingService::GetBaseFilename());
+  v4_local_database_manager_ = V4LocalDatabaseManager::Create(
+      SafeBrowsingService::GetBaseFilename(),
+      base::Bind(&ServicesDelegateImpl::GetEstimatedExtendedReportingLevel,
+                 base::Unretained(this)));
 
   download_service_.reset(
       (services_creator_ &&

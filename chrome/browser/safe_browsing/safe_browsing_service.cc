@@ -39,7 +39,6 @@
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing_db/database_manager.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
@@ -297,6 +296,7 @@ SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
 
 SafeBrowsingService::SafeBrowsingService()
     : services_delegate_(ServicesDelegate::Create(this)),
+      estimated_extended_reporting_by_prefs_(SBER_LEVEL_OFF),
       enabled_(false),
       enabled_by_prefs_(false),
       enabled_v4_only_(safe_browsing::V4FeatureList::IsV4OnlyEnabled()) {}
@@ -671,9 +671,9 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   std::unique_ptr<PrefChangeRegistrar> registrar =
       base::MakeUnique<PrefChangeRegistrar>();
   registrar->Init(pref_service);
-  registrar->Add(prefs::kSafeBrowsingEnabled,
-                 base::Bind(&SafeBrowsingService::RefreshState,
-                            base::Unretained(this)));
+  registrar->Add(
+      prefs::kSafeBrowsingEnabled,
+      base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
   // ClientSideDetectionService will need to be refresh the models
   // renderers have if extended-reporting changes.
   registrar->Add(
@@ -721,24 +721,28 @@ SafeBrowsingService::RegisterShutdownCallback(
 void SafeBrowsingService::RefreshState() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Check if any profile requires the service to be active.
-  bool enable = false;
+  enabled_by_prefs_ = false;
+  estimated_extended_reporting_by_prefs_ = SBER_LEVEL_OFF;
   for (const auto& pref : prefs_map_) {
     if (pref.first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-      enable = true;
-      break;
+      enabled_by_prefs_ = true;
+      ExtendedReportingLevel erl =
+          safe_browsing::GetExtendedReportingLevel(*pref.first);
+      if (erl != SBER_LEVEL_OFF) {
+        estimated_extended_reporting_by_prefs_ = erl;
+        break;
+      }
     }
   }
 
-  enabled_by_prefs_ = enable;
-
-  if (enable)
+  if (enabled_by_prefs_)
     Start();
   else
     Stop(false);
 
   state_callback_list_.Notify();
 
-  services_delegate_->RefreshState(enable);
+  services_delegate_->RefreshState(enabled_by_prefs_);
 }
 
 void SafeBrowsingService::SendSerializedDownloadReport(

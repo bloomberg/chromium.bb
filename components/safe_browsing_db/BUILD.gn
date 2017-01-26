@@ -322,6 +322,7 @@ static_library("v4_update_protocol_manager") {
     "v4_update_protocol_manager.h",
   ]
   deps = [
+    ":safe_browsing_prefs",
     ":safebrowsing_proto",
     ":util",
     ":v4_protocol_manager_util",

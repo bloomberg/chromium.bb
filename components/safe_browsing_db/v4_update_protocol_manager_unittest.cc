@@ -58,13 +58,20 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
     }
   }
 
+  ExtendedReportingLevel GetExtendedReportingLevel(ExtendedReportingLevel erl) {
+    return erl;
+  }
+
   std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
       const std::vector<ListUpdateResponse>& expected_lurs,
-      bool disable_auto_update = false) {
+      bool disable_auto_update = false,
+      ExtendedReportingLevel erl = SBER_LEVEL_OFF) {
     return V4UpdateProtocolManager::Create(
         NULL, GetTestV4ProtocolConfig(disable_auto_update),
         base::Bind(&V4UpdateProtocolManagerTest::ValidateGetUpdatesResults,
-                   base::Unretained(this), expected_lurs));
+                   base::Unretained(this), expected_lurs),
+        base::Bind(&V4UpdateProtocolManagerTest::GetExtendedReportingLevel,
+                   base::Unretained(this), erl));
   }
 
   void SetupStoreStates() {
@@ -291,7 +298,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
 
   std::string encoded_request_with_minus =
       pm->GetBase64SerializedUpdateRequestProto();
-  EXPECT_EQ("Cg8KCHVuaXR0ZXN0EgMxLjAaGAgBEAIaCmg4eGZZcVk-OlIiBCABIAIoAQ==",
+  EXPECT_EQ("Cg8KCHVuaXR0ZXN0EgMxLjAaGAgBEAIaCmg4eGZZcVk-OlIiBCABIAIoASICCAE=",
             encoded_request_with_minus);
 
   // TODO(vakh): Add a similar test for underscore for completeness, although
@@ -356,6 +363,29 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesHasTimeout) {
   // No error, back off multiplier is unchanged.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
+}
+
+TEST_F(V4UpdateProtocolManagerTest, TestExtendedReportingLevelIncluded) {
+  store_state_map_->clear();
+  (*store_state_map_)[ListIdentifier(LINUX_PLATFORM, URL, MALWARE_THREAT)] =
+      "state";
+  std::string base = "Cg8KCHVuaXR0ZXN0EgMxLjAaEwgBEAIaBXN0YXRlIgQgASACKAEiAgg";
+
+  std::unique_ptr<V4UpdateProtocolManager> pm_with_off(CreateProtocolManager(
+      std::vector<ListUpdateResponse>({}), false, SBER_LEVEL_OFF));
+  pm_with_off->store_state_map_ = std::move(store_state_map_);
+  EXPECT_EQ(base + "B", pm_with_off->GetBase64SerializedUpdateRequestProto());
+
+  std::unique_ptr<V4UpdateProtocolManager> pm_with_legacy(CreateProtocolManager(
+      std::vector<ListUpdateResponse>({}), false, SBER_LEVEL_LEGACY));
+  pm_with_legacy->store_state_map_ = std::move(pm_with_off->store_state_map_);
+  EXPECT_EQ(base + "C",
+            pm_with_legacy->GetBase64SerializedUpdateRequestProto());
+
+  std::unique_ptr<V4UpdateProtocolManager> pm_with_scout(CreateProtocolManager(
+      std::vector<ListUpdateResponse>({}), false, SBER_LEVEL_SCOUT));
+  pm_with_scout->store_state_map_ = std::move(pm_with_legacy->store_state_map_);
+  EXPECT_EQ(base + "D", pm_with_scout->GetBase64SerializedUpdateRequestProto());
 }
 
 }  // namespace safe_browsing

@@ -21,6 +21,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
@@ -44,6 +45,8 @@ class V4UpdateProtocolManagerFactory;
 typedef base::Callback<void(std::unique_ptr<ParsedServerResponse>)>
     V4UpdateCallback;
 
+typedef base::Callback<ExtendedReportingLevel()> ExtendedReportingLevelCallback;
+
 class V4UpdateProtocolManager : public net::URLFetcherDelegate,
                                 public base::NonThreadSafe {
  public:
@@ -59,7 +62,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   static std::unique_ptr<V4UpdateProtocolManager> Create(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
-      V4UpdateCallback callback);
+      V4UpdateCallback update_callback,
+      ExtendedReportingLevelCallback extended_reporting_level_callback);
 
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -75,7 +79,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   V4UpdateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
-      V4UpdateCallback callback);
+      V4UpdateCallback update_callback,
+      ExtendedReportingLevelCallback extended_reporting_level_callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
@@ -90,6 +95,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest, TestDisableAutoUpdates);
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
                            TestGetUpdatesHasTimeout);
+  FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
+                           TestExtendedReportingLevelIncluded);
   friend class V4UpdateProtocolManagerFactoryImpl;
 
   // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
@@ -183,6 +190,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   // complete.
   base::OneShotTimer timeout_timer_;
 
+  ExtendedReportingLevelCallback extended_reporting_level_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(V4UpdateProtocolManager);
 };
 
@@ -194,7 +203,8 @@ class V4UpdateProtocolManagerFactory {
   virtual std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
-      V4UpdateCallback callback) = 0;
+      V4UpdateCallback update_callback,
+      ExtendedReportingLevelCallback extended_reporting_level_callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(V4UpdateProtocolManagerFactory);
