@@ -11,7 +11,6 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "content/public/browser/web_contents.h"
@@ -91,26 +90,15 @@ void OmniboxPrerender::PrerenderMaybe(
   if (default_match == autocomplete_result->end())
     return;
 
-  AutocompleteActionPredictor::Action recommended_action =
-      AutocompleteActionPredictor::ACTION_NONE;
-  InstantSearchPrerenderer* prerenderer =
-      InstantSearchPrerenderer::GetForProfile(profile);
-  if (prerenderer &&
-      prerenderer->IsAllowed(*default_match, web_contents)) {
-    recommended_action = AutocompleteActionPredictor::ACTION_PRERENDER;
-  } else {
-    AutocompleteActionPredictor* action_predictor =
-        AutocompleteActionPredictorFactory::GetForProfile(profile);
-    if (!action_predictor)
-      return;
+  AutocompleteActionPredictor* action_predictor =
+      AutocompleteActionPredictorFactory::GetForProfile(profile);
+  if (!action_predictor)
+    return;
 
-    if (action_predictor) {
-      action_predictor->
-          RegisterTransitionalMatches(url_string, *autocomplete_result);
-      recommended_action =
-          action_predictor->RecommendAction(url_string, *default_match);
-    }
-  }
+  action_predictor->
+      RegisterTransitionalMatches(url_string, *autocomplete_result);
+  AutocompleteActionPredictor::Action recommended_action =
+      action_predictor->RecommendAction(url_string, *default_match);
 
   GURL current_url = GURL(current_url_string);
   switch (recommended_action) {
@@ -145,14 +133,6 @@ void OmniboxPrerender::DoPrerender(const AutocompleteMatch& match,
   if (!web_contents)
     return;
   gfx::Rect container_bounds = web_contents->GetContainerBounds();
-  InstantSearchPrerenderer* prerenderer =
-      InstantSearchPrerenderer::GetForProfile(profile);
-  if (prerenderer && prerenderer->IsAllowed(match, web_contents)) {
-    prerenderer->Init(
-        web_contents->GetController().GetDefaultSessionStorageNamespace(),
-        container_bounds.size());
-    return;
-  }
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile)->
       StartPrerendering(
           match.destination_url,
