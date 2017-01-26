@@ -170,52 +170,47 @@ strong {
   width: 64vw;
 }
 
-#screenshot-image--default {
-  background: -webkit-image-set(
-    url(https://www.gstatic.com/chrome/login/win10/default-small.webp) 1x,
-    url(https://www.gstatic.com/chrome/login/win10/default-small@2x.webp) 2x);
+#default-image {
+  background: url(chrome://welcome-win10/default.webp);
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-#screenshot-image--taskbar {
-  background: -webkit-image-set(
-    url(https://www.gstatic.com/chrome/login/win10/pin-small.webp) 1x,
-    url(https://www.gstatic.com/chrome/login/win10/pin-small@2x.webp) 2x);
+#taskbar-image {
+  background: url(chrome://welcome-win10/pin.webp);
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-.screenshot-html-overlay {
+.screenshot-overlay {
   box-sizing: border-box;
-  font-size: 6px;
   line-height: 0;
   position: absolute;
 }
 
-#screenshot-html-overlay--browser {
-  left: 54.8%;
-  top: 53%;
+#browser-overlay {
+  left: 41%;
+  top: 81%;
 }
 
-#screenshot-html-overlay--edge {
-  left: 65%;
-  top: 63.5%;
+#edge-overlay {
+  left: 49%;
+  top: 88%;
 }
 
-#screenshot-html-overlay--taskbar {
+#taskbar-overlay {
   left: 31%;
   top: 73%;
 }
 
-#screenshot-html-overlay--taskbar div {
+#taskbar-overlay div {
   color: #ccc;
   font-family: Tahoma, Verdana, Segoe, sans-serif;
   font-weight: 500;
 }
 
-#screenshot-html-overlay--icon {
-  background-image: url(/logo-small.png);
+#icon-overlay {
+  background-image: url(chrome://welcome-win10/logo-small.png);
   background-size: cover;
   height: 8%;
   left: 46%;
@@ -223,17 +218,33 @@ strong {
   width: 6%;
 }
 
-/* This value is precisely set so that the text over the screenshot starts
+/* These values are precisely set so that the text over the screenshot starts
  * scaling at the same time the image starts scaling too. */
-@media (min-width: 312px) {
-  .screenshot-html-overlay {
+@media (max-width: 626px) {
+  #browser-overlay {
+    font-size: 1.28vw;
+  }
+
+  #edge-overlay {
+    font-size: 1.44vw;
+  }
+
+  #taskbar-overlay {
     font-size: 1.95vw;
   }
 }
 
-/* Font-size used when the screenshot exactly reaches its max size. */
+/* Font-sizes used when the screenshot exactly reaches its max size. */
 @media (min-width: 626px) {
-  .screenshot-html-overlay {
+  #browser-overlay {
+    font-size: 8px;
+  }
+
+  #edge-overlay {
+    font-size: 9px;
+  }
+
+  #taskbar-overlay {
     font-size: 12.2px;
   }
 }

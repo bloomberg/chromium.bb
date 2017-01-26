@@ -91,6 +91,8 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui) {
   static const char kCssFilePath[] = "welcome.css";
   static const char kJsFilePath[] = "welcome.js";
+  static const char kDefaultFilePath[] = "default.webp";
+  static const char kPinFilePath[] = "pin.webp";
 
   Profile* profile = Profile::FromWebUI(web_ui);
 
@@ -112,10 +114,18 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   if (is_inline_style) {
     html_source->AddResourcePath(kCssFilePath, IDR_WELCOME_WIN10_INLINE_CSS);
     html_source->AddResourcePath(kJsFilePath, IDR_WELCOME_WIN10_INLINE_JS);
+    html_source->AddResourcePath(kDefaultFilePath,
+                                 IDR_WELCOME_WIN10_DEFAULT_SMALL_WEBP);
+    html_source->AddResourcePath(kPinFilePath,
+                                 IDR_WELCOME_WIN10_PIN_SMALL_WEBP);
     html_source->SetDefaultResource(IDR_WELCOME_WIN10_INLINE_HTML);
   } else {
     html_source->AddResourcePath(kCssFilePath, IDR_WELCOME_WIN10_SECTIONED_CSS);
     html_source->AddResourcePath(kJsFilePath, IDR_WELCOME_WIN10_SECTIONED_JS);
+    html_source->AddResourcePath(kDefaultFilePath,
+                                 IDR_WELCOME_WIN10_DEFAULT_LARGE_WEBP);
+    html_source->AddResourcePath(kPinFilePath,
+                                 IDR_WELCOME_WIN10_PIN_LARGE_WEBP);
     html_source->SetDefaultResource(IDR_WELCOME_WIN10_SECTIONED_HTML);
   }
 

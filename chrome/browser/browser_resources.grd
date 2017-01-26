@@ -633,6 +633,12 @@
       <if expr="is_win">
         <include name="IDR_NACL_BROKER_MANIFEST" file="../../components/nacl/broker/nacl_broker_manifest.json" type="BINDATA" />
       </if>
+      <if expr="is_win">
+        <include name="IDR_WELCOME_WIN10_DEFAULT_LARGE_WEBP" file="resources\welcome\win10\default-large.webp" type="BINDATA" />
+        <include name="IDR_WELCOME_WIN10_DEFAULT_SMALL_WEBP" file="resources\welcome\win10\default-small.webp" type="BINDATA" />
+        <include name="IDR_WELCOME_WIN10_PIN_LARGE_WEBP" file="resources\welcome\win10\pin-large.webp" type="BINDATA" />
+        <include name="IDR_WELCOME_WIN10_PIN_SMALL_WEBP" file="resources\welcome\win10\pin-small.webp" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
