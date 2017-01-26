@@ -1,7 +1,6 @@
 CONSOLE MESSAGE: line 9: one
 CONSOLE MESSAGE: line 10: two
 CONSOLE MESSAGE: line 11: three
-CONSOLE MESSAGE: line 1: console.clear
 Tests that console is cleared upon clear() eval in console.
 
 === Before clear ===

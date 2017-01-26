@@ -41,15 +41,15 @@ onload @ console-tests.html:12 console-message-wrapper console-warning-level > c
 console-tests.html:13 error
 onload @ console-tests.html:13 console-message-wrapper console-error-level > console-message
 5console-tests.html:15 repeated console-message-wrapper console-info-level > console-message repeated-message
-console-tests.html:17 count: 1 console-message-wrapper console-verbose-level > console-message
-console-tests.html:17 count: 2 console-message-wrapper console-verbose-level > console-message
+console-tests.html:17 count: 1 console-message-wrapper console-info-level > console-message
+console-tests.html:17 count: 2 console-message-wrapper console-info-level > console-message
 console-tests.html:18 group console-message-wrapper console-info-level > console-message console-group-title
 console-tests.html:20 1 2 3 console-message-wrapper console-info-level > console-message
 console-tests.html:21 groupCollapsed console-message-wrapper console-info-level > console-message console-group-title
-console-tests.html:33 : 1 console-message-wrapper console-verbose-level > console-message
-console-tests.html:34 : 1 console-message-wrapper console-verbose-level > console-message
-console-tests.html:35 : 1 console-message-wrapper console-verbose-level > console-message
-console-tests.html:36 title: 1 console-message-wrapper console-verbose-level > console-message
-console-tests.html:37 title: 2 console-message-wrapper console-verbose-level > console-message
-console-tests.html:38 title: 3 console-message-wrapper console-verbose-level > console-message
+console-tests.html:33 : 1 console-message-wrapper console-info-level > console-message
+console-tests.html:34 : 1 console-message-wrapper console-info-level > console-message
+console-tests.html:35 : 1 console-message-wrapper console-info-level > console-message
+console-tests.html:36 title: 1 console-message-wrapper console-info-level > console-message
+console-tests.html:37 title: 2 console-message-wrapper console-info-level > console-message
+console-tests.html:38 title: 3 console-message-wrapper console-info-level > console-message
 

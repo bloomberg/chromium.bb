@@ -1,7 +1,6 @@
 CONSOLE MESSAGE: line 10: one
 CONSOLE MESSAGE: line 11: two
 CONSOLE MESSAGE: line 12: three
-CONSOLE MESSAGE: line 19: console.clear
 Tests that console is cleared via console.clear() method
 
 Bug 101021

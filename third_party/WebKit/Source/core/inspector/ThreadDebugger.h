@@ -68,8 +68,8 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient {
                                                    v8::Local<v8::Array>,
                                                    int index,
                                                    v8::Local<v8::Value>);
-  static MessageLevel consoleAPITypeToMessageLevel(
-      v8_inspector::V8ConsoleAPIType);
+  static MessageLevel v8MessageLevelToMessageLevel(
+      v8::Isolate::MessageErrorLevel);
 
   v8::Isolate* m_isolate;
 

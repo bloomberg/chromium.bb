@@ -2297,8 +2297,6 @@ crbug.com/657748 external/csswg-test/css-display-3/display-contents-text-only-00
 
 # ====== End of display: contents tests ======
 
-crbug.com/682521 inspector/console/console-tests.html [ NeedsManualRebaseline ]
-
 crbug.com/676229 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 
 crbug.com/678346 [ Win7 Debug ] fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]

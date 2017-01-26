@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 11: console.clear
 Tests asynchronous call stacks printed in console for a Network.Initiator.
 
 Set timer for test function.

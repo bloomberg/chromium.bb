@@ -77,12 +77,13 @@ class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
   v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*,
                                        v8::Local<v8::Context>) override;
   void consoleAPIMessage(int contextGroupId,
-                         v8_inspector::V8ConsoleAPIType,
+                         v8::Isolate::MessageErrorLevel,
                          const v8_inspector::StringView& message,
                          const v8_inspector::StringView& url,
                          unsigned lineNumber,
                          unsigned columnNumber,
                          v8_inspector::V8StackTrace*) override;
+  void consoleClear(int contextGroupId) override;
 
   int m_pausedContextGroupId;
   WTF::HashMap<int, WorkerThread*> m_workerThreads;

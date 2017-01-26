@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 11: console.clear
 CONSOLE MESSAGE: line 17: console.trace
 CONSOLE ERROR: line 24: Uncaught Error: foo
 CONSOLE MESSAGE: line 29: console.trace

@@ -102,12 +102,13 @@ class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
   bool canExecuteScripts(int contextGroupId) override;
   void runIfWaitingForDebugger(int contextGroupId) override;
   void consoleAPIMessage(int contextGroupId,
-                         v8_inspector::V8ConsoleAPIType,
+                         v8::Isolate::MessageErrorLevel,
                          const v8_inspector::StringView& message,
                          const v8_inspector::StringView& url,
                          unsigned lineNumber,
                          unsigned columnNumber,
                          v8_inspector::V8StackTrace*) override;
+  void consoleClear(int contextGroupId) override;
   void installAdditionalCommandLineAPI(v8::Local<v8::Context>,
                                        v8::Local<v8::Object>) override;
   v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*,
