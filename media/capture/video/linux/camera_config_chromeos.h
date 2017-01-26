@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_LINUX_CAMERA_FACING_CHROMEOS_H_
-#define MEDIA_CAPTURE_VIDEO_LINUX_CAMERA_FACING_CHROMEOS_H_
+#ifndef MEDIA_CAPTURE_VIDEO_LINUX_CAMERA_CONFIG_CHROMEOS_H_
+#define MEDIA_CAPTURE_VIDEO_LINUX_CAMERA_CONFIG_CHROMEOS_H_
 
 #include <stddef.h>
 
@@ -16,7 +16,7 @@
 
 namespace media {
 
-// CameraFacingChromeOS reads the file /etc/camera/camera_characteristics.conf
+// CameraConfigChromeOS reads the file /etc/camera/camera_characteristics.conf
 // and populates |camera_id_to_facing_|, |usb_id_to_camera_id_| and
 // |model_id_to_camera_id_|.
 //
@@ -48,11 +48,11 @@ namespace media {
 //  camera0.module1.lens_info_available_focal_lengths=1.69,2
 //  camera1.lens_facing=1
 //  camera1.sensor_orientation=180
-class CAPTURE_EXPORT CameraFacingChromeOS {
+class CAPTURE_EXPORT CameraConfigChromeOS {
  public:
-  CameraFacingChromeOS();
-  CAPTURE_EXPORT CameraFacingChromeOS(const std::string& config_file_path);
-  CAPTURE_EXPORT ~CameraFacingChromeOS();
+  CameraConfigChromeOS();
+  CAPTURE_EXPORT CameraConfigChromeOS(const std::string& config_file_path);
+  CAPTURE_EXPORT ~CameraConfigChromeOS();
 
   // Get camera facing by specifying USB vid and pid and device path. |model_id|
   // should be formatted as "vid:pid". |device_id| is something like
@@ -61,21 +61,36 @@ class CAPTURE_EXPORT CameraFacingChromeOS {
   CAPTURE_EXPORT VideoFacingMode
   GetCameraFacing(const std::string& device_id,
                   const std::string& model_id) const;
+  // Get the orientation of the camera. The value is the angle that the camera
+  // image needs to be rotated clockwise so it shows correctly on the display in
+  // its natural orientation. It should be 0, 90, 180, or 270.
+  //
+  // For example, suppose a device has a naturally tall screen. The back-facing
+  // camera sensor is mounted in landscape. You are looking at the screen. If
+  // the top side of the camera sensor is aligned with the right edge of the
+  // screen in natural orientation, the value should be 90. If the top side of a
+  // front-facing camera sensor is aligned with the right of the screen, the
+  // value should be 270.
+  int GetOrientation(const std::string& device_id,
+                     const std::string& model_id) const;
 
   static const VideoFacingMode kLensFacingDefault =
       VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
 
  private:
   std::string GetUsbId(const std::string& device_id) const;
+  int GetCameraId(const std::string& device_id,
+                  const std::string& model_id) const;
   // Read file content and populate |camera_id_to_facing_|,
   // |usb_id_to_camera_id_| and |model_id_to_camera_id_|.
   void InitializeDeviceInfo(const std::string& config_file_path);
 
   std::unordered_map<int, VideoFacingMode> camera_id_to_facing_;
+  std::unordered_map<int, int> camera_id_to_orientation_;
   std::unordered_map<std::string, int> usb_id_to_camera_id_;
   std::unordered_map<std::string, int> model_id_to_camera_id_;
 };
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_VIDEO_LINUX_CAMERA_FACING_CHROMEOS_H_
+#endif  // MEDIA_CAPTURE_VIDEO_LINUX_CAMERA_CONFIG_CHROMEOS_H_

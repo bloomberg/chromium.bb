@@ -20,7 +20,7 @@ namespace media {
 
 namespace {
 
-base::LazyInstance<CameraFacingChromeOS>::Leaky g_camera_facing_ =
+base::LazyInstance<CameraConfigChromeOS>::Leaky g_camera_config_ =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -109,8 +109,11 @@ VideoCaptureDeviceChromeOS::VideoCaptureDeviceChromeOS(
       screen_observer_delegate_(
           new ScreenObserverDelegate(this, ui_task_runner)),
       lens_facing_(
-          g_camera_facing_.Get().GetCameraFacing(device_descriptor.device_id,
-                                                 device_descriptor.model_id)) {}
+          g_camera_config_.Get().GetCameraFacing(device_descriptor.device_id,
+                                                 device_descriptor.model_id)),
+      camera_orientation_(
+          g_camera_config_.Get().GetOrientation(device_descriptor.device_id,
+                                                device_descriptor.model_id)) {}
 
 VideoCaptureDeviceChromeOS::~VideoCaptureDeviceChromeOS() {
   screen_observer_delegate_->RemoveObserver();
@@ -153,6 +156,8 @@ void VideoCaptureDeviceChromeOS::SetRotation(int rotation) {
     // Therefore, for back camera, we need to rotate (360 - |rotation|).
     rotation = (360 - rotation) % 360;
   }
+  // Take into account camera orientation w.r.t. the display.
+  rotation = (rotation + camera_orientation_) % 360;
   VideoCaptureDeviceLinux::SetRotation(rotation);
 }
 

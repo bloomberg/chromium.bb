@@ -23,7 +23,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/lazy_instance.h"
-#include "media/capture/video/linux/camera_facing_chromeos.h"
+#include "media/capture/video/linux/camera_config_chromeos.h"
 #include "media/capture/video/linux/video_capture_device_chromeos.h"
 #endif
 #include "media/capture/video/linux/video_capture_device_linux.h"
@@ -33,7 +33,7 @@ namespace media {
 namespace {
 
 #if defined(OS_CHROMEOS)
-base::LazyInstance<media::CameraFacingChromeOS>::Leaky g_camera_facing_helper =
+base::LazyInstance<media::CameraConfigChromeOS>::Leaky g_camera_config =
     LAZY_INSTANCE_INITIALIZER;
 #endif
 }
@@ -220,7 +220,7 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
           reinterpret_cast<char*>(cap.card), unique_id, model_id,
           VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE,
           VideoCaptureTransportType::OTHER_TRANSPORT,
-          g_camera_facing_helper.Get().GetCameraFacing(unique_id, model_id));
+          g_camera_config.Get().GetCameraFacing(unique_id, model_id));
 #else
       device_descriptors->emplace_back(
           reinterpret_cast<char*>(cap.card), unique_id, model_id,

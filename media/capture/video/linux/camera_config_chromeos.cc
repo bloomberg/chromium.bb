@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "camera_facing_chromeos.h"
+#include "camera_config_chromeos.h"
 
 #include <base/files/file_util.h>
 #include <base/logging.h>
@@ -20,7 +20,7 @@ namespace {
 // /etc/camera/camera_characteristics.conf.
 enum LensFacing { FRONT = 0, BACK = 1 };
 
-bool GetCameraId(const base::StringPiece& sub_key, int* camera_id) {
+bool ParseCameraId(const base::StringPiece& sub_key, int* camera_id) {
   const base::StringPiece camera_id_prefix = "camera";
   if (!sub_key.starts_with(camera_id_prefix))
     return false;
@@ -33,51 +33,70 @@ bool GetCameraId(const base::StringPiece& sub_key, int* camera_id) {
 static const char kCameraCharacteristicsConfigFile[] =
     "/etc/camera/camera_characteristics.conf";
 static const char kLensFacing[] = "lens_facing";
+static const char kSensorOrientation[] = "sensor_orientation";
 static const char kUsbVidPid[] = "usb_vid_pid";
 static const char kUsbPath[] = "usb_path";
+static const int kOrientationDefault = 0;
+static const int kCameraIdNotFound = -1;
 
-CameraFacingChromeOS::CameraFacingChromeOS() {
+CameraConfigChromeOS::CameraConfigChromeOS() {
   InitializeDeviceInfo(std::string(kCameraCharacteristicsConfigFile));
 }
 
-CameraFacingChromeOS::CameraFacingChromeOS(
+CameraConfigChromeOS::CameraConfigChromeOS(
     const std::string& config_file_path) {
   InitializeDeviceInfo(config_file_path);
 }
 
-CameraFacingChromeOS::~CameraFacingChromeOS() {}
+CameraConfigChromeOS::~CameraConfigChromeOS() {}
 
-VideoFacingMode CameraFacingChromeOS::GetCameraFacing(
+VideoFacingMode CameraConfigChromeOS::GetCameraFacing(
     const std::string& device_id,
     const std::string& model_id) const {
-  std::string usb_id = GetUsbId(device_id);
-  const auto& usb_id_to_camera_id_const = usb_id_to_camera_id_;
-  const auto& model_id_to_camera_id_const = model_id_to_camera_id_;
+  int camera_id = GetCameraId(device_id, model_id);
   const auto& camera_id_to_facing_const = camera_id_to_facing_;
-  auto usb_id_iter = usb_id_to_camera_id_const.find(usb_id);
-  int camera_id;
-  if (usb_id_iter == usb_id_to_camera_id_const.end()) {
-    // Can't find Usb ID. Fall back to use model_id.
-    auto model_id_iter = model_id_to_camera_id_const.find(model_id);
-    if (model_id_iter == model_id_to_camera_id_const.end()) {
-      DLOG(ERROR) << "Can't find model ID in config file: " << model_id;
-      return kLensFacingDefault;
-    }
-    camera_id = model_id_iter->second;
-  } else {
-    camera_id = usb_id_iter->second;
-  }
-
-  auto camera_id_iter = camera_id_to_facing_const.find(camera_id);
-  if (camera_id_iter == camera_id_to_facing_const.end()) {
+  const auto facing_found = camera_id_to_facing_const.find(camera_id);
+  if (facing_found == camera_id_to_facing_const.end()) {
     DLOG(ERROR) << "Can't find lens_facing of camera ID " << camera_id
                 << " in config file";
     return kLensFacingDefault;
   }
-  return camera_id_iter->second;
+  return facing_found->second;
 }
 
-std::string CameraFacingChromeOS::GetUsbId(const std::string& device_id) const {
+int CameraConfigChromeOS::GetOrientation(const std::string& device_id,
+                                         const std::string& model_id) const {
+  int camera_id = GetCameraId(device_id, model_id);
+  const auto& camera_id_to_orientation = camera_id_to_orientation_;
+  const auto orientation_found = camera_id_to_orientation.find(camera_id);
+  if (orientation_found == camera_id_to_orientation.end()) {
+    DLOG(ERROR) << "Can't find sensor_orientation of camera ID " << camera_id
+                << " in config file";
+    return kOrientationDefault;
+  }
+  return orientation_found->second;
+}
+
+int CameraConfigChromeOS::GetCameraId(const std::string& device_id,
+                                      const std::string& model_id) const {
+  std::string usb_id = GetUsbId(device_id);
+  const auto& usb_id_to_camera_id = usb_id_to_camera_id_;
+  const auto& model_id_to_camera_id = model_id_to_camera_id_;
+
+  const auto usb_id_found = usb_id_to_camera_id.find(usb_id);
+  if (usb_id_found != usb_id_to_camera_id.end())
+    return usb_id_found->second;
+
+  // Can't find Usb ID. Fall back to use |model_id|.
+  const auto model_id_found = model_id_to_camera_id.find(model_id);
+  if (model_id_found != model_id_to_camera_id.end())
+    return model_id_found->second;
+
+  DLOG(ERROR) << "Can't find model ID in config file: " << model_id;
+  return kCameraIdNotFound;
+}
+
+std::string CameraConfigChromeOS::GetUsbId(const std::string& device_id) const {
   // |device_id| is of the form "/dev/video2".  We want to retrieve "video2"
   // into |file_name|.
   const std::string device_dir = "/dev/";
@@ -113,7 +132,7 @@ std::string CameraFacingChromeOS::GetUsbId(const std::string& device_id) const {
   return usb_id_pieces[0].as_string();
 }
 
-void CameraFacingChromeOS::InitializeDeviceInfo(
+void CameraConfigChromeOS::InitializeDeviceInfo(
     const std::string& config_file_path) {
   const base::FilePath path(config_file_path);
   std::string content;
@@ -147,7 +166,7 @@ void CameraFacingChromeOS::InitializeDeviceInfo(
       continue;
     }
     int camera_id = 0;
-    if (!GetCameraId(sub_keys[0], &camera_id)) {
+    if (!ParseCameraId(sub_keys[0], &camera_id)) {
       DLOG(ERROR) << "Invalid sub key for camera id: " << sub_keys[0];
       continue;
     }
@@ -171,6 +190,13 @@ void CameraFacingChromeOS::InitializeDeviceInfo(
           DLOG(ERROR) << "Invalid value for lens_facing: " << lens_facing;
           continue;
       }
+    } else if (sub_keys.size() == 2 && sub_keys[1] == kSensorOrientation) {
+      int orientation = 0;
+      if (!base::StringToInt(value, &orientation)) {
+        DLOG(ERROR) << "Invalid value for sensor_orientation: " << value;
+        continue;
+      }
+      camera_id_to_orientation_[camera_id] = orientation;
     } else if (sub_keys.size() == 3 && sub_keys[2] == kUsbVidPid) {
       if (value.empty()) {
         DLOG(ERROR) << "model_id is empty";
