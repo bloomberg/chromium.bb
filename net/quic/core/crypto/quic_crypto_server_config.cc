@@ -39,6 +39,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_text_utils.h"
+#include "net/quic/platform/api/quic_url_utils.h"
 
 using base::StringPiece;
 using crypto::SecureHash;
@@ -854,7 +855,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     std::unique_ptr<char[]> sni_tmp(new char[info.sni.length() + 1]);
     memcpy(sni_tmp.get(), info.sni.data(), info.sni.length());
     sni_tmp[info.sni.length()] = 0;
-    params->sni = CryptoUtils::NormalizeHostname(sni_tmp.get());
+    params->sni = QuicUrlUtils::NormalizeHostname(sni_tmp.get());
   }
 
   string hkdf_suffix;
@@ -1208,7 +1209,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   }
 
   if (client_hello.GetStringPiece(kSNI, &info->sni) &&
-      !CryptoUtils::IsValidSNI(info->sni)) {
+      !QuicUrlUtils::IsValidSNI(info->sni)) {
     helper.ValidationComplete(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
                               "Invalid SNI name", nullptr);
     return;

@@ -4481,6 +4481,7 @@ test("net_unittests") {
     "quic/platform/api/quic_reference_counted_test.cc",
     "quic/platform/api/quic_str_cat_test.cc",
     "quic/platform/api/quic_text_utils_test.cc",
+    "quic/platform/api/quic_url_utils_test.cc",
     "quic/platform/impl/quic_chromium_clock_test.cc",
     "quic/quartc/quartc_alarm_factory_test.cc",
     "quic/quartc/quartc_session_test.cc",

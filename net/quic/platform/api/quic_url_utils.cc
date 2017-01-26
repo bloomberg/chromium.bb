@@ -19,4 +19,14 @@ bool QuicUrlUtils::IsValidUrl(StringPiece url) {
   return QuicUrlUtilsImpl::IsValidUrl(url);
 }
 
+// static
+bool QuicUrlUtils::IsValidSNI(StringPiece sni) {
+  return QuicUrlUtilsImpl::IsValidSNI(sni);
+}
+
+// static
+char* QuicUrlUtils::NormalizeHostname(char* hostname) {
+  return QuicUrlUtilsImpl::NormalizeHostname(hostname);
+}
+
 }  // namespace net

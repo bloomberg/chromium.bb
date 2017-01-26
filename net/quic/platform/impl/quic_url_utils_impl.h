@@ -21,6 +21,16 @@ class QUIC_EXPORT_PRIVATE QuicUrlUtilsImpl {
   // (e.g. greater than 65535).
   static bool IsValidUrl(base::StringPiece url);
 
+  // Returns true if the sni is valid, false otherwise.
+  //  (1) disallow IP addresses;
+  //  (2) check that the hostname contains valid characters only; and
+  //  (3) contains at least one dot.
+  static bool IsValidSNI(base::StringPiece sni);
+
+  // Convert hostname to lowercase and remove the trailing '.'.
+  // WARNING: mutates |hostname| in place and returns |hostname|.
+  static char* NormalizeHostname(char* hostname);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUrlUtilsImpl);
 };
