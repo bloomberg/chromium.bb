@@ -22,7 +22,6 @@
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
-#import "ios/web/public/crw_navigation_manager_storage.h"
 #include "ios/web/public/web_thread.h"
 
 // When C++ exceptions are disabled, the C++ library defines |try| and
@@ -212,10 +211,8 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   // class on disk.
   [SessionWindowUnarchiver setClass:[CRWSessionCertificatePolicyManager class]
                        forClassName:@"SessionCertificatePolicyManager"];
-  [SessionWindowUnarchiver setClass:[CRWNavigationManagerStorage class]
+  [SessionWindowUnarchiver setClass:[CRWSessionController class]
                        forClassName:@"SessionController"];
-  [SessionWindowUnarchiver setClass:[CRWNavigationManagerStorage class]
-                       forClassName:@"CRWSessionController"];
   [SessionWindowUnarchiver setClass:[CRWSessionEntry class]
                        forClassName:@"SessionEntry"];
   // TODO(crbug.com/661633): Remove this hack.

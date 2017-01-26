@@ -131,7 +131,7 @@ TEST_F(SessionServiceTest, LoadWindowFromDirectory) {
       [service loadWindowForBrowserState:chrome_browser_state_.get()];
   EXPECT_TRUE(sessionWindow != nil);
   EXPECT_EQ(NSNotFound, static_cast<NSInteger>(sessionWindow.selectedIndex));
-  EXPECT_EQ(0U, sessionWindow.sessions.count);
+  EXPECT_EQ(0U, sessionWindow.unclaimedSessions);
 }
 
 TEST_F(SessionServiceTest, LoadCorruptedWindow) {

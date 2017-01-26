@@ -25,7 +25,6 @@
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "url/gurl.h"
 
-@class CRWNavigationManagerStorage;
 @class CRWWebController;
 @protocol CRWWebViewProxy;
 @class NSURLRequest;
@@ -63,11 +62,7 @@ class WebUIIOS;
 //    writing them out for session saves.
 class WebStateImpl : public WebState, public NavigationManagerDelegate {
  public:
-  // Constructor for WebStateImpls created for new sessions.
   WebStateImpl(BrowserState* browser_state);
-  // Constructor for WebStatesImpls created for deserialized sessions
-  WebStateImpl(BrowserState* browser_state,
-               CRWNavigationManagerStorage* session_storage);
   ~WebStateImpl() override;
 
   // Gets/Sets the CRWWebController that backs this object.
@@ -77,6 +72,13 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Gets or sets the delegate used to communicate with the web contents facade.
   WebStateFacadeDelegate* GetFacadeDelegate() const;
   void SetFacadeDelegate(WebStateFacadeDelegate* facade_delegate);
+
+  // Returns a WebStateImpl that doesn't have a browser context, web
+  // controller, or facade set, but which otherwise has the same state variables
+  // as the calling object (including copies of the NavigationManager and its
+  // attendant CRWSessionController).
+  // TODO(crbug.com/546377): Clean up this method.
+  WebStateImpl* CopyForSessionWindow();
 
   // Notifies the observers that a provisional navigation has started.
   void OnProvisionalNavigationStarted(const GURL& url);
@@ -204,7 +206,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void Stop() override;
   const NavigationManager* GetNavigationManager() const override;
   NavigationManager* GetNavigationManager() override;
-  CRWNavigationManagerStorage* BuildSerializedNavigationManager() override;
   CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
   void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
@@ -308,8 +309,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // The CRWWebController that backs this object.
   base::scoped_nsobject<CRWWebController> web_controller_;
 
-  // The NavigationManagerImpl that stores session info for this WebStateImpl.
-  std::unique_ptr<NavigationManagerImpl> navigation_manager_;
+  NavigationManagerImpl navigation_manager_;
 
   // |web::WebUIIOS| object for the current page if it is a WebUI page that
   // uses the web-based WebUI framework, or nullptr otherwise.
