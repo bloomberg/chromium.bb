@@ -3265,7 +3265,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       }
     ],
@@ -3830,7 +3830,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       }
     ],
@@ -4201,7 +4201,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       }
     ]
