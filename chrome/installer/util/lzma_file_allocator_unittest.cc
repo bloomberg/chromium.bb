@@ -32,7 +32,7 @@ DWORD LzmaFileAllocatorTest::GetMemoryType(void* address) {
 }
 
 TEST_F(LzmaFileAllocatorTest, ReadAndWriteWithMultipleSizeTest) {
-  const char kSampleExpectedCharacter = 'a';
+  static const char kSampleExpectedCharacter = 'a';
   SYSTEM_INFO sysinfo;
   ::GetSystemInfo(&sysinfo);
   EXPECT_GT(sysinfo.dwPageSize, 0U);
@@ -44,7 +44,7 @@ TEST_F(LzmaFileAllocatorTest, ReadAndWriteWithMultipleSizeTest) {
     LzmaFileAllocator allocator(temp_dir_.GetPath());
     char* s = reinterpret_cast<char*>(IAlloc_Alloc(&allocator, size));
     std::fill_n(s, size, kSampleExpectedCharacter);
-    char* ret = std::find_if(s, s + size, [&kSampleExpectedCharacter](char c) {
+    char* ret = std::find_if(s, s + size, [](char c) {
       return c != kSampleExpectedCharacter;
     });
     EXPECT_EQ(s + size, ret);
