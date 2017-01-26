@@ -3515,7 +3515,7 @@ def upload_branch_deps(cl, args):
   if root_branch is None:
     DieWithError('Can\'t find dependent branches from detached HEAD state. '
                  'Get on a branch!')
-  if not cl.GetIssue() or not cl.GetPatchset():
+  if not cl.GetIssue() or (not cl.IsGerrit() and not cl.GetPatchset()):
     DieWithError('Current branch does not have an uploaded CL. We cannot set '
                  'patchset dependencies without an uploaded CL.')
 
