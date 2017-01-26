@@ -7,7 +7,7 @@
 [
     Constructor(optional unrestricted double x = 0, optional unrestricted double y = 0,
                 optional unrestricted double z = 0, optional unrestricted double w = 1),
-    // FIXME: Exposed=(Window,Worker)
+    Exposed=(Window,Worker),
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMPoint : DOMPointReadOnly {
     [NewObject] static DOMPoint fromPoint(optional DOMPointInit other);

@@ -228,6 +228,27 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toString
 [Worker]     method transformPoint
 [Worker]     method translate
+[Worker] interface DOMPoint : DOMPointReadOnly
+[Worker]     attribute @@toStringTag
+[Worker]     getter w
+[Worker]     getter x
+[Worker]     getter y
+[Worker]     getter z
+[Worker]     method constructor
+[Worker]     setter w
+[Worker]     setter x
+[Worker]     setter y
+[Worker]     setter z
+[Worker] interface DOMPointReadOnly
+[Worker]     static method fromPoint
+[Worker]     attribute @@toStringTag
+[Worker]     getter w
+[Worker]     getter x
+[Worker]     getter y
+[Worker]     getter z
+[Worker]     method constructor
+[Worker]     method matrixTransform
+[Worker]     method toJSON
 [Worker] interface DOMStringList
 [Worker]     attribute @@toStringTag
 [Worker]     getter length

@@ -217,6 +217,25 @@ interface DOMMatrixReadOnly
     method toString
     method transformPoint
     method translate
+interface DOMPoint : DOMPointReadOnly
+    getter w
+    getter x
+    getter y
+    getter z
+    method constructor
+    setter w
+    setter x
+    setter y
+    setter z
+interface DOMPointReadOnly
+    static method fromPoint
+    getter w
+    getter x
+    getter y
+    getter z
+    method constructor
+    method matrixTransform
+    method toJSON
 interface DOMStringList
     getter length
     method constructor
