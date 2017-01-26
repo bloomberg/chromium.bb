@@ -18,15 +18,22 @@ async_test(t => {
       request.start().then(conn => {
         connection = conn;
         assert_not_equals(connection, null);
+        assert_equals(connection.state, 'connecting');
 
-        request.reconnect(connection.id).then(
-          t.step_func_done(conn => {
-            assert_true(connection === conn);
-        }));
+        connection.onclose = (_ => {
+          assert_equals(connection.state, 'closed');
+          request.reconnect(connection.id).then(
+            t.step_func_done(conn => {
+              assert_equals(connection, conn);
+              assert_equals(connection.state, 'connecting');
+            })
+          );
+        });
+        connection.close();
       });
     }, button);
   });
-}, "Test that Presentation.reconnect() resolves with existing presentation connection.");
+}, "Test that Presentation.reconnect() resolves with a previously closed presentation connection, whose state is updated to 'connecting.'");
 
 </script>
 </body>

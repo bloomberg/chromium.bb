@@ -4,13 +4,12 @@
 
 "use strict";
 
-let presentationServiceMock = loadMojoModules(
-    'presentationServiceMock',
-    [
+const presentationServiceMock =
+    loadMojoModules('presentationServiceMock', [
       'third_party/WebKit/public/platform/modules/presentation/presentation.mojom',
       'mojo/public/js/bindings',
     ]).then(mojo => {
-      let [ presentationService, bindings ] = mojo.modules;
+      const [presentationService, bindings] = mojo.modules;
 
       class PresentationServiceMock {
         constructor(interfaceProvider) {
@@ -22,6 +21,8 @@ let presentationServiceMock = loadMojoModules(
           this.bindingSet_ = new bindings.BindingSet(
               presentationService.PresentationService);
         }
+
+        setClient(client) { this.client_ = client; }
 
         startSession(urls) {
           return Promise.resolve({
@@ -36,6 +37,12 @@ let presentationServiceMock = loadMojoModules(
               error: null,
           });
         }
+
+        closeConnection(url, id) {
+          this.client_.onConnectionClosed(
+              {url: url, id: id},
+              presentationService.PresentationConnectionCloseReason.CLOSED, '');
+        }
       }
 
       return new PresentationServiceMock(mojo.frameInterfaces);
@@ -47,9 +54,9 @@ function waitForClick(callback, button) {
   if (!('eventSender' in window))
     return;
 
-  var boundingRect = button.getBoundingClientRect();
-  var x = boundingRect.left + boundingRect.width / 2;
-  var y = boundingRect.top + boundingRect.height / 2;
+  const boundingRect = button.getBoundingClientRect();
+  const x = boundingRect.left + boundingRect.width / 2;
+  const y = boundingRect.top + boundingRect.height / 2;
 
   eventSender.mouseMoveTo(x, y);
   eventSender.mouseDown();
