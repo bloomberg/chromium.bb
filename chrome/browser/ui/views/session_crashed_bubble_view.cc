@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -61,6 +62,7 @@ enum SessionCrashedBubbleHistogramValue {
   SESSION_CRASHED_BUBBLE_HELP,
   SESSION_CRASHED_BUBBLE_IGNORED,
   SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN,
+  SESSION_CRASHED_BUBBLE_STARTUP_PAGES,
   SESSION_CRASHED_BUBBLE_MAX,
 };
 
@@ -174,15 +176,14 @@ void SessionCrashedBubbleView::ShowForReal(
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ALREADY_UMA_OPTIN);
 }
 
-SessionCrashedBubbleView::SessionCrashedBubbleView(
-    views::View* anchor_view,
-    Browser* browser,
-    bool offer_uma_optin)
+SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
+                                                   Browser* browser,
+                                                   bool offer_uma_optin)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
-      restored_(false) {
+      ignored_(true) {
   set_close_on_deactivate(false);
 }
 
@@ -202,7 +203,7 @@ bool SessionCrashedBubbleView::ShouldShowCloseButton() const {
 }
 
 void SessionCrashedBubbleView::OnWidgetDestroying(views::Widget* widget) {
-  if (!restored_)
+  if (ignored_)
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_IGNORED);
   BubbleDialogDelegateView::OnWidgetDestroying(widget);
 }
@@ -283,6 +284,13 @@ bool SessionCrashedBubbleView::Accept() {
   return true;
 }
 
+// The cancel button is used as an option to open the startup pages instead of
+// restoring the previous session.
+bool SessionCrashedBubbleView::Cancel() {
+  OpenStartupPages();
+  return true;
+}
+
 bool SessionCrashedBubbleView::Close() {
   // Don't default to Accept() just because that's the only choice. Instead, do
   // nothing.
@@ -290,12 +298,25 @@ bool SessionCrashedBubbleView::Close() {
 }
 
 int SessionCrashedBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
+  int buttons = ui::DIALOG_BUTTON_OK;
+  // Offer the option to open the startup pages using the cancel button, but
+  // only when the user has selected the URLS option, and set at least one url.
+  SessionStartupPref session_startup_pref =
+      SessionStartupPref::GetStartupPref(browser_->profile());
+  if (session_startup_pref.type == SessionStartupPref::URLS &&
+      !session_startup_pref.urls.empty()) {
+    buttons |= ui::DIALOG_BUTTON_CANCEL;
+  }
+  return buttons;
 }
 
 base::string16 SessionCrashedBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
+  if (button == ui::DIALOG_BUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
+  DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
+  return l10n_util::GetStringUTF16(
+      IDS_SESSION_CRASHED_VIEW_STARTUP_PAGES_BUTTON);
 }
 
 void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
@@ -309,15 +330,36 @@ void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
 }
 
 void SessionCrashedBubbleView::RestorePreviousSession() {
-  SessionRestore::RestoreSessionAfterCrash(browser_);
-  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_RESTORED);
-  restored_ = true;
+  ignored_ = false;
+  MaybeEnableUMA();
+  CloseBubble();
 
+  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_RESTORED);
+  // Restoring tabs has side effects, so it's preferable to do it after the
+  // bubble was closed.
+  SessionRestore::RestoreSessionAfterCrash(browser_);
+}
+
+void SessionCrashedBubbleView::OpenStartupPages() {
+  ignored_ = false;
+  MaybeEnableUMA();
+  CloseBubble();
+
+  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_STARTUP_PAGES);
+  // Opening tabs has side effects, so it's preferable to do it after the bubble
+  // was closed.
+  SessionRestore::OpenStartupPagesAfterCrash(browser_);
+}
+
+void SessionCrashedBubbleView::MaybeEnableUMA() {
   // Record user's choice for opt-in in to UMA.
   // There's no opt-out choice in the crash restore bubble.
   if (uma_option_ && uma_option_->checked()) {
     ChangeMetricsReportingState(true);
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_UMA_OPTIN);
   }
+}
+
+void SessionCrashedBubbleView::CloseBubble() {
   GetWidget()->Close();
 }

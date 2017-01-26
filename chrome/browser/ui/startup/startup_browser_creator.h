@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "url/gurl.h"
 
+class Browser;
 class GURL;
 class PrefRegistrySimple;
 
@@ -56,6 +57,9 @@ class StartupBrowserCreator {
       const base::CommandLine& command_line,
       const base::FilePath& cur_dir,
       const base::FilePath& startup_profile_dir);
+
+  // Opens the set of startup pages from the current session startup prefs.
+  static void OpenStartupPages(Browser* browser, bool process_startup);
 
   // Returns true if we're launching a profile synchronously. In that case, the
   // opened window should not cause a session restore.

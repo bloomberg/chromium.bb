@@ -858,6 +858,38 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, StartupPagesWithOnlyNtp) {
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  SessionStartupPref pref(SessionStartupPref::URLS);
+  pref.urls.push_back(url1_);
+  pref.urls.push_back(url2_);
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  SessionRestore::OpenStartupPagesAfterCrash(browser());
+
+  ASSERT_EQ(1u, active_browser_list_->size());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(url1_, browser()->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(url2_, browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, StartupPagesWithExistingPages) {
+  ui_test_utils::NavigateToURL(browser(), url3_);
+
+  SessionStartupPref pref(SessionStartupPref::URLS);
+  pref.urls.push_back(url1_);
+  pref.urls.push_back(url2_);
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  SessionRestore::OpenStartupPagesAfterCrash(browser());
+
+  ASSERT_EQ(1u, active_browser_list_->size());
+  ASSERT_EQ(3, browser()->tab_strip_model()->count());
+  EXPECT_EQ(url3_, browser()->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(url1_, browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL());
+  EXPECT_EQ(url2_, browser()->tab_strip_model()->GetWebContentsAt(2)->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoMemoryPressureLoadsAllTabs) {
   // Add several tabs to the browser. Restart the browser and check that all
   // tabs got loaded properly.

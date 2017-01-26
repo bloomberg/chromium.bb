@@ -49,6 +49,7 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   void OnWidgetDestroying(views::Widget* widget) override;
   views::View* CreateFootnoteView() override;
   bool Accept() override;
+  bool Cancel() override;
   bool Close() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -64,6 +65,15 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   // Restore previous session after user selects so.
   void RestorePreviousSession();
 
+  // Open startup pages after user selects so.
+  void OpenStartupPages();
+
+  // Enable UMA if the user accepted the offer.
+  void MaybeEnableUMA();
+
+  // Close and destroy the bubble.
+  void CloseBubble();
+
   // Used for opening the question mark link as well as access the tab strip.
   Browser* browser_;
 
@@ -73,9 +83,9 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   // Whether or not the UMA opt-in option should be shown.
   bool offer_uma_optin_;
 
-  // Whether or not the user chose to restore previous session. It is used to
-  // collect bubble usage stats.
-  bool restored_;
+  // Whether or not the user ignored the bubble. It is used to collect bubble
+  // usage stats.
+  bool ignored_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedBubbleView);
 };

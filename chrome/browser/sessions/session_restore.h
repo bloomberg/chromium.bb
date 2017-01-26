@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_list.h"
@@ -61,6 +62,9 @@ class SessionRestore {
   // Restores the last session when the last session crashed. It's a wrapper
   // of function RestoreSession.
   static void RestoreSessionAfterCrash(Browser* browser);
+
+  // Opens the startup pages when the last session crashed.
+  static void OpenStartupPagesAfterCrash(Browser* browser);
 
   // Specifically used in the restoration of a foreign session.  This function
   // restores the given session windows to multiple browsers. Returns the
