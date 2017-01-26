@@ -183,6 +183,22 @@ cr.define('settings_startup_urls_page', function() {
       document.body.appendChild(dialog);
       return testProxyCalled('editStartupPage');
     });
+
+    test('Enter key submits', function() {
+      document.body.appendChild(dialog);
+
+      // Input a URL and force validation.
+      var inputElement = dialog.$.url;
+      inputElement.value = 'foo.com';
+      pressSpace(inputElement);
+
+      return browserProxy.whenCalled('validateStartupPage').then(function() {
+        MockInteractions.keyEventOn(
+            inputElement, 'keypress', 13, undefined, 'Enter');
+
+        return browserProxy.whenCalled('addStartupPage');
+      });
+    });
   });
 
   suite('StartupUrlsPage', function() {

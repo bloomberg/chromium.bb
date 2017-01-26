@@ -58,6 +58,15 @@ Polymer({
             }.bind(this));
   },
 
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeypress_: function(e) {
+    if (e.key == 'Enter' && !this.$.ok.disabled)
+      this.onOkTap_();
+  },
+
   /** @private */
   validate_: function() {
     var isValid = this.password_ != '' &&

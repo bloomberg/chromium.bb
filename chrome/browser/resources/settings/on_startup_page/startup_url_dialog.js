@@ -67,6 +67,15 @@ Polymer({
     }.bind(this));
   },
 
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeypress_: function(e) {
+    if (e.key == 'Enter' && !this.$.actionButton.disabled)
+      this.onActionButtonTap_();
+  },
+
   /** @private */
   validate_: function() {
     this.browserProxy_.validateStartupPage(this.url_).then(function(isValid) {
