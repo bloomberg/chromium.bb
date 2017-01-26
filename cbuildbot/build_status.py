@@ -68,7 +68,10 @@ class SlaveStatus(object):
 
     # A set of completed builds which will not be retried any more.
     self.completed_builds = set()
-    self.cidb_status = None
+    # Dict mapping newly completed slave config names to CIDBStatusInfo.
+    self.new_cidb_status_dict = None
+    # Dict mapping all slave config names to CIDBStatusInfo.
+    self.all_cidb_status_dict = None
     self.missing_builds = None
     self.scheduled_builds = None
     self.builds_to_retry = None
@@ -80,31 +83,56 @@ class SlaveStatus(object):
 
     self.UpdateSlaveStatus()
 
-  def _GetSlaveStatusesFromCIDB(self, buildbucket_info_dict):
-    """Get statuses of slaves (not in completed_builds set) from CIDB.
+  def _GetAllSlaveCIDBStatusInfo(self, all_buildbucket_info_dict):
+    """Get all slaves status information from CIDB.
 
     Args:
-      buildbucket_info_dict: A dict mapping build config names to their
-        information fetched from Buildbucket server (in format of
+      all_buildbucket_info_dict: A dict mapping all build config names to their
+        information fetched from Buildbucket server (in the format of
         BuildbucketInfo).
 
     Returns:
-      A dict mapping the slave build config name to its CIDBStatusInfo
-      (status information fetched from CIDB).
-      The dict only contains builds not in completed_builds.
+      A dict mapping build config names to their cidb infos (in the format of
+      CIDBStatusInfo). If all_buildbucket_info_dict is not None, the returned
+      map only contains the builds in all_buildbucket_info_dict.
     """
-    cidb_status = {}
+    all_cidb_status_dict = {}
     if self.db is not None:
-      buildbucket_ids = None if buildbucket_info_dict is None else [
-          info.buildbucket_id for info in buildbucket_info_dict.values()]
+      buildbucket_ids = None if all_buildbucket_info_dict is None else [
+          info.buildbucket_id for info in all_buildbucket_info_dict.values()]
 
-      status_list = self.db.GetSlaveStatuses(
+      slave_statuses = self.db.GetSlaveStatuses(
           self.master_build_id, buildbucket_ids=buildbucket_ids)
 
-      for d in status_list:
-        if d['build_config'] not in self.completed_builds:
-          cidb_status[d['build_config']] = CIDBStatusInfo(d['id'], d['status'])
-    return cidb_status
+      all_cidb_status_dict = {
+          s['build_config']: CIDBStatusInfo(s['id'], s['status'])
+          for s in slave_statuses
+          if s['build_config'] not in self.completed_builds}
+
+    return all_cidb_status_dict
+
+  def _GetNewSlaveCIDBStatusInfo(self, all_cidb_status_dict,
+                                 new_buildbucket_info_dict):
+    """Get new slave CIDB status information given buildbucket_info_dict.
+
+    Args:
+      all_cidb_status_dict: A dict mapping all build config names to their
+        information fetched from CIDB (in the format of CIDBStatusInfo).
+      new_buildbucket_info_dict: A dict mapping build config names to their
+        information fetched from Buildbucket server (in the format of
+        BuildbucketInfo). The dict only contains newly completed builds.
+
+    Returns:
+      A dict mapping the build config names to their cidb infos (in the format
+      of CIDBStatusInfo). If new_buildbucket_info_dict is not None, the returned
+      map only contains the builds in new_buildbucket_info_dict.
+    """
+    if new_buildbucket_info_dict is not None:
+      return {build_config: status_info
+              for build_config, status_info in all_cidb_status_dict.iteritems()
+              if build_config in new_buildbucket_info_dict}
+    else:
+      return all_cidb_status_dict
 
   def _GetAllSlaveBuildbucketInfo(self):
     """Get buildbucket info for all slave builds from Buildbucket.
@@ -180,8 +208,10 @@ class SlaveStatus(object):
           self.all_buildbucket_info_dict, self.completed_builds)
       self._SetStatusBuildsDict()
 
-    self.cidb_status = self._GetSlaveStatusesFromCIDB(
-        self.buildbucket_info_dict)
+    self.all_cidb_status_dict = self._GetAllSlaveCIDBStatusInfo(
+        self.all_buildbucket_info_dict)
+    self.new_cidb_status_dict = self._GetNewSlaveCIDBStatusInfo(
+        self.all_cidb_status_dict, self.buildbucket_info_dict)
 
     self.missing_builds = self._GetMissingBuilds()
     self.scheduled_builds = self._GetScheduledBuilds()
@@ -220,7 +250,7 @@ class SlaveStatus(object):
       return set(build for build, info in self.buildbucket_info_dict.iteritems()
                  if info.status is None)
     else:
-      return (set(self.builders_array) - set(self.cidb_status.keys()) -
+      return (set(self.builders_array) - set(self.new_cidb_status_dict.keys()) -
               self.completed_builds)
 
   def _GetScheduledBuilds(self):
@@ -263,14 +293,15 @@ class SlaveStatus(object):
 
       # If build is in self.status, it means a build tuple has been
       # inserted into CIDB buildTable.
-      if build in self.cidb_status:
+      if build in self.new_cidb_status_dict:
         if not config_lib.RetryAlreadyStartedSlaves(self.config):
           logging.info('Not retriable build %s started already.', build)
           continue
 
         assert self.db is not None
 
-        build_stages = self.db.GetBuildStages(self.cidb_status[build].build_id)
+        build_stages = self.db.GetBuildStages(
+            self.new_cidb_status_dict[build].build_id)
         accepted_stages = {stage['name'] for stage in build_stages
                            if stage['status'] in self.ACCEPTED_STATUSES}
 
@@ -312,7 +343,7 @@ class SlaveStatus(object):
       current_completed = current_completed_all - self.builds_to_retry
     else:
       current_completed = set(
-          b for b, s in self.cidb_status.iteritems()
+          b for b, s in self.new_cidb_status_dict.iteritems()
           if s.status in constants.BUILDER_COMPLETED_STATUSES and
           b in self.builders_array)
 
@@ -320,7 +351,7 @@ class SlaveStatus(object):
     for build in current_completed:
       status = (self.buildbucket_info_dict[build].result
                 if self.buildbucket_info_dict is not None
-                else self.cidb_status[build].status)
+                else self.new_cidb_status_dict[build].status)
       logging.info('Build config %s completed with status "%s".',
                    build, status)
 
