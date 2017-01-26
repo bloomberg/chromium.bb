@@ -11,35 +11,38 @@
 namespace media_router {
 
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_MirrorHTML5Video) {
-  OpenMediaPage();
   content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+      browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Play the video on loop.
-  std::string script = "document.getElementsByTagName('video')[0].loop=true;";
-  ExecuteScript(web_contents, script);
-  // Wait for 5s to the video is playing smoothly.
-  Wait(base::TimeDelta::FromSeconds(5));
   content::WebContents* dialog_contents = OpenMRDialog(web_contents);
-  // Wait for 10s to make sure the dialog finishes rendering.
-  Wait(base::TimeDelta::FromSeconds(10));
   ASSERT_TRUE(dialog_contents);
+
+  // Wait util the dialog finishes rendering.
+  WaitUntilDialogFullyLoaded(dialog_contents);
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, receiver());
-  WaitUntilRouteCreated();
 
   // Mirror tab for 10s.
   Wait(base::TimeDelta::FromSeconds(10));
+  dialog_contents = OpenMRDialog(web_contents);
+  WaitUntilDialogFullyLoaded(dialog_contents);
 
-  // Go to full screen.
+  // Check the mirroring session has started successfully.
+  ASSERT_TRUE(!GetRouteId(receiver()).empty());
+  OpenMediaPage();
+
+  // Play the video on loop and wait 5s for it to play smoothly.
+  std::string script = "document.getElementsByTagName('video')[0].loop=true;";
+  ExecuteScript(web_contents, script);
+  Wait(base::TimeDelta::FromSeconds(5));
+
+  // Go to full screen and wait 5s for it to play smoothly.
   script = "document.getElementsByTagName('video')[0]."
       "webkitRequestFullScreen();";
   ExecuteScript(web_contents, script);
-  // Wait for 5s to the video is playing smoothly in full screen.
   Wait(base::TimeDelta::FromSeconds(5));
-  OpenMRDialog(web_contents);
-  // Wait for 5s to make sure the dialog finishes rendering.
-  Wait(base::TimeDelta::FromSeconds(5));
+  dialog_contents = OpenMRDialog(web_contents);
+  WaitUntilDialogFullyLoaded(dialog_contents);
 
   // Check the mirroring session is still live.
   ASSERT_TRUE(!GetRouteId(receiver()).empty());
