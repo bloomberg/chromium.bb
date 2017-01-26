@@ -9306,6 +9306,7 @@
             'per_profile': True,
           },
           'example_value': ['PIN'],
+          'default_for_enterprise_users': [],
           'id': 352,
           'caption': '''Configure allowed quick unlock modes.''',
           'tags': [],

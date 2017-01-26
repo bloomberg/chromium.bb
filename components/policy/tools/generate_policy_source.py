@@ -666,6 +666,32 @@ class SchemaNodesGenerator:
     self.properties_nodes = map(partial(self.ResolveID, 3),
         self.properties_nodes)
 
+def _GenerateDefaultValue(value):
+  """Converts a JSON object into a base::Value entry. Returns a tuple, the first
+  entry being a list of declaration statements to define the variable, the
+  second entry being a way to access the variable.
+
+  If no definition is needed, the first return value will be an empty list. If
+  any error occurs, the second return value will be None (ie, no way to fetch
+  the value).
+
+  |value|: The deserialized value to convert to base::Value."""
+  if type(value) == bool or type(value) == int:
+    return [], 'base::MakeUnique<base::FundamentalValue>(%s)' %\
+                    json.dumps(value)
+  elif type(value) == str:
+    return [], 'base::MakeUnique<base::StringValue>("%s")' % value
+  elif type(value) == list:
+    setup = ['auto default_value = base::MakeUnique<base::ListValue>();']
+    for entry in value:
+      decl, fetch = _GenerateDefaultValue(entry)
+      # Nested lists are not supported.
+      if decl:
+        return [], None
+      setup.append('default_value->Append(%s);' % fetch)
+    return setup, 'std::move(default_value)'
+  return [], None
+
 def _WritePolicyConstantSource(policies, os, f, riskTags):
   f.write('#include "components/policy/policy_constants.h"\n'
           '\n'
@@ -743,27 +769,29 @@ def _WritePolicyConstantSource(policies, os, f, riskTags):
 
   for policy in policies:
     if policy.has_enterprise_default:
-      if policy.policy_type == 'Type::BOOLEAN':
-        creation_expression = 'new base::FundamentalValue(%s)' %\
-                              ('true' if policy.enterprise_default else 'false')
-      elif policy.policy_type == 'Type::INTEGER':
-        creation_expression = 'new base::FundamentalValue(%s)' %\
-                              policy.enterprise_default
-      elif policy.policy_type == 'Type::STRING':
-        creation_expression = 'new base::StringValue("%s")' %\
-                              policy.enterprise_default
-      else:
+      declare_default_stmts, fetch_default =\
+          _GenerateDefaultValue(policy.enterprise_default)
+      if not fetch_default:
         raise RuntimeError('Type %s of policy %s is not supported at '
                            'enterprise defaults' % (policy.policy_type,
                                                     policy.name))
+
+      # Convert declare_default_stmts to a string with the correct identation.
+      if declare_default_stmts:
+        declare_default = '    %s\n' % '\n    '.join(declare_default_stmts)
+      else:
+        declare_default = ''
+
       f.write('  if (!policy_map->Get(key::k%s)) {\n'
+              '%s'
               '    policy_map->Set(key::k%s,\n'
               '                    POLICY_LEVEL_MANDATORY,\n'
               '                    POLICY_SCOPE_USER,\n'
               '                    POLICY_SOURCE_ENTERPRISE_DEFAULT,\n'
-              '                    base::WrapUnique(%s),\n'
-              '                    NULL);\n'
-              '  }\n' % (policy.name, policy.name, creation_expression))
+              '                    %s,\n'
+              '                    nullptr);\n'
+              '  }\n' % (policy.name, declare_default, policy.name,
+                         fetch_default))
 
   f.write('}\n'
           '#endif\n\n')
