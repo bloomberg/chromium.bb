@@ -156,7 +156,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         return optparse.Values(dict(**options))
 
     def test_execute_with_issue_number_given(self):
-        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        return_code = self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertEqual(return_code, 0)
         self.assertLog([
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
@@ -166,7 +167,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_with_no_issue_number(self):
-        self.command.execute(self.command_options(), [], self.tool)
+        return_code = self.command.execute(self.command_options(), [], self.tool)
+        self.assertEqual(return_code, 1)
         self.assertLog(['ERROR: No issue number given and no issue for current branch. This tool requires a CL\n'
                         'to operate on; please run `git cl upload` on this branch first, or use the --issue\n'
                         'option to download baselines for another existing CL.\n'])
@@ -175,7 +177,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         git_cl = GitCL(self.tool)
         git_cl.get_issue_number = lambda: '11112222'
         self.command.git_cl = lambda: git_cl
-        self.command.execute(self.command_options(), [], self.tool)
+        return_code = self.command.execute(self.command_options(), [], self.tool)
+        self.assertEqual(return_code, 0)
         self.assertLog([
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
@@ -185,7 +188,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_with_only_changed_tests_option(self):
-        self.command.execute(self.command_options(issue=11112222, only_changed_tests=True), [], self.tool)
+        return_code = self.command.execute(self.command_options(issue=11112222, only_changed_tests=True), [], self.tool)
+        self.assertEqual(return_code, 0)
         # svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html
         # is in the list of failed tests, but not in the list of files modified
         # in the given CL; it should be included because all_tests is set to True.
@@ -206,7 +210,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             ],
             'ignored': ['svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'],
         }))
-        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        return_code = self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertEqual(return_code, 0)
         self.assertLog([
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
@@ -219,7 +224,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # rebaselined.
         self.tool.buildbot.set_retry_sumary_json(
             Build('MOCK Try Win', 5000), None)
-        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        return_code = self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertEqual(return_code, 0)
         self.assertLog([
             'WARNING: No retry summary available for build Build(builder_name=u\'MOCK Try Win\', build_number=5000).\n',
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
@@ -230,7 +236,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_with_trigger_jobs_option(self):
-        self.command.execute(self.command_options(issue=11112222, trigger_jobs=True), [], self.tool)
+        return_code = self.command.execute(self.command_options(issue=11112222, trigger_jobs=True), [], self.tool)
+        self.assertEqual(return_code, 1)
         self.assertLog([
             'INFO: Triggering try jobs for:\n',
             'INFO:   MOCK Try Linux\n',
@@ -301,7 +308,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_bails_when_one_build_is_missing_results(self):
         self.tool.buildbot.set_results(Build("MOCK Try Win", 5000), None)
-        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        return_code = self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertEqual(return_code, 1)
         self.assertLog([
             'ERROR: Failed to fetch results from '
             '"https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Try_Win/5000/layout-test-results".\n'
@@ -312,7 +320,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_bails_when_there_are_unstaged_baselines(self):
         scm = self.tool.scm()
         scm.unstaged_changes = lambda: {'third_party/WebKit/LayoutTests/my-test-expected.txt': '?'}
-        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        return_code = self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertEqual(return_code, 1)
         self.assertLog([
             'ERROR: Aborting: there are unstaged baselines:\n',
             'ERROR:   /mock-checkout/third_party/WebKit/LayoutTests/my-test-expected.txt\n',

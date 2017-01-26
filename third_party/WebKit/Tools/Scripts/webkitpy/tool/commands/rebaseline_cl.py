@@ -58,11 +58,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             _log.error('Aborting: there are unstaged baselines:')
             for path in unstaged_baselines:
                 _log.error('  %s', path)
-            return
+            return 1
 
         issue_number = self._get_issue_number(options)
         if not issue_number:
-            return
+            return 1
 
         # TODO(qyearsley): Replace this with git cl try-results to remove
         # dependency on Rietveld. See crbug.com/671684.
@@ -71,14 +71,14 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if options.trigger_jobs:
             if self.trigger_jobs_for_missing_builds(builds):
                 _log.info('Please re-run webkit-patch rebaseline-cl once all pending try jobs have finished.')
-                return
+                return 1
         if not builds:
             _log.info('No builds to download baselines from.')
 
         _log.debug('Getting results for Rietveld issue %d.', issue_number)
         builds_to_results = self._fetch_results(builds)
         if builds_to_results is None:
-            return
+            return 1
 
         test_prefix_list = {}
         if args:
@@ -92,9 +92,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         self._log_test_prefix_list(test_prefix_list)
 
-        if options.dry_run:
-            return
-        self.rebaseline(options, test_prefix_list)
+        if not options.dry_run:
+            self.rebaseline(options, test_prefix_list)
+        return 0
+
 
     def _get_issue_number(self, options):
         """Gets the Rietveld CL number from either |options| or from the current local branch."""
