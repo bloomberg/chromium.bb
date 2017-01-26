@@ -16,7 +16,6 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
@@ -35,7 +34,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/security_state/core/security_state.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #if defined(OS_WIN)
@@ -782,16 +780,6 @@ void PasswordManager::Autofill(
   InitPasswordFormFillData(form_for_autofill, best_matches, &preferred_match,
                            wait_for_username, OtherPossibleUsernamesEnabled(),
                            &fill_data);
-  // Show a "Login not secure" warning if the experiment is enabled and the
-  // top-level page is not secure.
-  // TODO(estark): Verify that |origin| is the right URL to check here.
-  // https://crbug.com/676706
-  autofill::AutofillManager* autofill_manager =
-      client_->GetAutofillManagerForMainFrame();
-  fill_data.show_form_not_secure_warning_on_autofill =
-      security_state::IsHttpWarningInFormEnabled() && autofill_manager &&
-      !autofill_manager->client()->IsContextSecure(fill_data.origin);
-
   if (logger)
     logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
   UMA_HISTOGRAM_BOOLEAN(

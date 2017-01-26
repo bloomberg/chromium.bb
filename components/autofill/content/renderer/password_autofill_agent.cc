@@ -1278,15 +1278,12 @@ void PasswordAutofillAgent::FillPasswordForm(
         element.isPasswordField()
             ? element
             : web_input_to_password_info_[element].password_field;
-    if (FillFormOnPasswordReceived(
-            form_data, username_element, password_element,
-            &field_value_and_properties_map_,
-            base::Bind(&PasswordValueGatekeeper::RegisterElement,
-                       base::Unretained(&gatekeeper_)),
-            logger.get())) {
-      if (form_data.show_form_not_secure_warning_on_autofill)
-        autofill_agent_->ShowNotSecureWarning(element);
-    }
+    FillFormOnPasswordReceived(
+        form_data, username_element, password_element,
+        &field_value_and_properties_map_,
+        base::Bind(&PasswordValueGatekeeper::RegisterElement,
+                   base::Unretained(&gatekeeper_)),
+        logger.get());
   }
 }
 

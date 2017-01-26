@@ -75,10 +75,6 @@ struct PasswordFormFillData {
   // True if this form is a change password form.
   bool is_possible_change_password_form;
 
-  // True if a "form not secure" warning should be shown when the form is
-  // autofilled.
-  bool show_form_not_secure_warning_on_autofill;
-
   PasswordFormFillData();
   PasswordFormFillData(const PasswordFormFillData& other);
   ~PasswordFormFillData();

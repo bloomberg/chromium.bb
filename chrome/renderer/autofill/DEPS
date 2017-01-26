@@ -1,7 +1,0 @@
-specific_include_rules = {
-  # TODO(estark): remove this when the Form-Not-Secure feature is fully
-  # launched. https://crbug.com/677295
-  "password_autofill_agent_browsertest\.cc" : [
-    "+components/security_state/core",
-  ],
-}

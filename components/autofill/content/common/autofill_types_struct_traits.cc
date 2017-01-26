@@ -463,8 +463,6 @@ bool StructTraits<mojom::PasswordFormFillDataDataView, PasswordFormFillData>::
   out->wait_for_username = data.wait_for_username();
   out->is_possible_change_password_form =
       data.is_possible_change_password_form();
-  out->show_form_not_secure_warning_on_autofill =
-      data.show_form_not_secure_warning_on_autofill();
 
   return true;
 }

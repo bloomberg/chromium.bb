@@ -355,11 +355,6 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
     return r.is_possible_change_password_form;
   }
 
-  static bool show_form_not_secure_warning_on_autofill(
-      const autofill::PasswordFormFillData& r) {
-    return r.show_form_not_secure_warning_on_autofill;
-  }
-
   static bool Read(autofill::mojom::PasswordFormFillDataDataView data,
                    autofill::PasswordFormFillData* out);
 };

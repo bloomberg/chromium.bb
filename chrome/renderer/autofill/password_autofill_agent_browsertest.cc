@@ -23,7 +23,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/security_state/core/security_state.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -352,11 +351,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         password_manager::features::kFillOnAccountSelect);
   }
 
-  void SetHttpFormWarning() {
-    scoped_feature_list_.InitAndEnableFeature(
-        security_state::kHttpFormWarningFeature);
-  }
-
   void UpdateOriginForHTML(const std::string& html) {
     std::string origin = "data:text/html;charset=utf-8," + html;
     fill_data_.origin = GURL(origin);
@@ -487,11 +481,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   bool GetCalledShowPasswordSuggestions() {
     base::RunLoop().RunUntilIdle();
     return fake_driver_.called_show_pw_suggestions();
-  }
-
-  bool GetCalledShowNotSecureWarning() {
-    base::RunLoop().RunUntilIdle();
-    return fake_driver_.called_show_not_secure_warning();
   }
 
   void ExpectFormSubmittedWithUsernameAndPasswords(
@@ -1365,30 +1354,6 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
       ->FormControlElementClicked(username_element_, true);
   CheckSuggestions("baz", true);
   ClearUsernameAndPasswordFields();
-}
-
-// Tests that the Form Not Secure warning appears when a password form
-// is autofilled when the Form Not Secure feature is enabled.
-TEST_F(PasswordAutofillAgentTest, FormNotSecureWarningOnAutofill) {
-  SetHttpFormWarning();
-
-  fill_data_.show_form_not_secure_warning_on_autofill = true;
-
-  // Simulate the browser autofilling a password form.
-  SimulateOnFillPasswordForm(fill_data_);
-  EXPECT_TRUE(GetCalledShowNotSecureWarning());
-}
-
-// Tests that the Form Not Secure warning does not appear when the
-// PasswordFormFillData does not indicate that it should show.
-TEST_F(PasswordAutofillAgentTest, FormNotSecureWarningNotShownOnAutofill) {
-  SetHttpFormWarning();
-
-  fill_data_.show_form_not_secure_warning_on_autofill = false;
-
-  // Simulate the browser autofilling a password form.
-  SimulateOnFillPasswordForm(fill_data_);
-  EXPECT_FALSE(GetCalledShowNotSecureWarning());
 }
 
 // Tests that there is an autosuggestion from the password manager when the

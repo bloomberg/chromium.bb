@@ -39,7 +39,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/security_state/core/security_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -2864,43 +2863,6 @@ TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
                 form_manager.best_matches().begin()->second->scheme);
     }
   }
-}
-
-class PasswordFormManagerFormNotSecureTest : public PasswordFormManagerTest {
- public:
-  PasswordFormManagerFormNotSecureTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        security_state::kHttpFormWarningFeature);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Tests that PasswordFormFillData's
-// |show_form_not_secure_warning_on_autofill| field is set correctly
-// when processing a frame.
-TEST_F(PasswordFormManagerFormNotSecureTest,
-       ProcessFrameSetsFormNotSecureFlag) {
-  autofill::PasswordFormFillData fill_data;
-  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
-      .WillOnce(SaveArg<0>(&fill_data));
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
-  EXPECT_TRUE(fill_data.show_form_not_secure_warning_on_autofill);
-}
-
-// Tests that PasswordFormFillData's
-// |show_form_not_secure_warning_on_autofill| field is *not* set when
-// the feature is not enabled.
-//
-// TODO(estark): remove this test when the feature is fully
-// launched. https://crbug.com/677295
-TEST_F(PasswordFormManagerTest,
-       ProcessFrameSetsFormNotSecureFlagWithoutFeature) {
-  autofill::PasswordFormFillData fill_data;
-  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
-      .WillOnce(SaveArg<0>(&fill_data));
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
-  EXPECT_FALSE(fill_data.show_form_not_secure_warning_on_autofill);
 }
 
 }  // namespace password_manager
