@@ -37,24 +37,6 @@ bool IsOnlyOneMouseButtonDown(int flags) {
          button_only_flags == ui::EF_RIGHT_MOUSE_BUTTON;
 }
 
-bool IsLocationInNonclientArea(const ServerWindow* target,
-                               const gfx::Point& location) {
-  if (!target->parent())
-    return false;
-
-  gfx::Rect client_area(target->bounds().size());
-  client_area.Inset(target->client_area());
-  if (client_area.Contains(location))
-    return false;
-
-  for (const auto& rect : target->additional_client_areas()) {
-    if (rect.Contains(location))
-      return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -221,31 +203,29 @@ void EventDispatcher::ReleaseCaptureBlockedByAnyModalWindow() {
 
 void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {
   if (mouse_cursor_source_window_) {
-    gfx::Point location = mouse_pointer_last_location_;
-    ServerWindow* target = FindDeepestVisibleWindowForEvents(&location);
-    if (target == mouse_cursor_source_window_) {
-      mouse_cursor_in_non_client_area_ =
-          mouse_cursor_source_window_
-              ? IsLocationInNonclientArea(mouse_cursor_source_window_, location)
-              : false;
+    DeepestWindow deepest_window =
+        FindDeepestVisibleWindowForEvents(mouse_pointer_last_location_);
+    if (deepest_window.window == mouse_cursor_source_window_) {
+      mouse_cursor_in_non_client_area_ = mouse_cursor_source_window_
+                                             ? deepest_window.in_non_client_area
+                                             : false;
     }
   }
 }
 
 void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
   if (!mouse_button_down_) {
-    gfx::Point location = mouse_pointer_last_location_;
-    mouse_cursor_source_window_ = FindDeepestVisibleWindowForEvents(&location);
-    if (!mouse_cursor_source_window_) {
-      location = mouse_pointer_last_location_;
+    DeepestWindow deepest_window =
+        FindDeepestVisibleWindowForEvents(mouse_pointer_last_location_);
+    mouse_cursor_source_window_ = deepest_window.window;
+    if (mouse_cursor_source_window_) {
+      mouse_cursor_in_non_client_area_ = deepest_window.in_non_client_area;
+    } else {
+      gfx::Point location = mouse_pointer_last_location_;
       mouse_cursor_source_window_ =
           delegate_->GetRootWindowContaining(&location);
+      mouse_cursor_in_non_client_area_ = true;
     }
-
-    mouse_cursor_in_non_client_area_ =
-        mouse_cursor_source_window_
-            ? IsLocationInNonclientArea(mouse_cursor_source_window_, location)
-            : false;
   }
 }
 
@@ -467,14 +447,14 @@ void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
 EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
     const ui::LocatedEvent& event) {
   PointerTarget pointer_target;
-  gfx::Point location(event.root_location());
-  ServerWindow* target_window = FindDeepestVisibleWindowForEvents(&location);
+  DeepestWindow deepest_window =
+      FindDeepestVisibleWindowForEvents(event.root_location());
   pointer_target.window =
-      modal_window_controller_.GetTargetForWindow(target_window);
+      modal_window_controller_.GetTargetForWindow(deepest_window.window);
   pointer_target.is_mouse_event = event.IsMousePointerEvent();
   pointer_target.in_nonclient_area =
-      target_window != pointer_target.window || !pointer_target.window ||
-      IsLocationInNonclientArea(pointer_target.window, location);
+      deepest_window.window != pointer_target.window ||
+      !pointer_target.window || deepest_window.in_non_client_area;
   pointer_target.is_pointer_down = event.type() == ui::ET_POINTER_DOWN;
   return pointer_target;
 }
@@ -566,13 +546,14 @@ Accelerator* EventDispatcher::FindAccelerator(
   return nullptr;
 }
 
-ServerWindow* EventDispatcher::FindDeepestVisibleWindowForEvents(
-    gfx::Point* location) {
-  ServerWindow* root = delegate_->GetRootWindowContaining(location);
-  if (!root)
-    return nullptr;
-
-  return ui::ws::FindDeepestVisibleWindowForEvents(root, location);
+DeepestWindow EventDispatcher::FindDeepestVisibleWindowForEvents(
+    const gfx::Point& location) {
+  gfx::Point relative_location(location);
+  // For the case of no root.
+  ServerWindow* root = delegate_->GetRootWindowContaining(&relative_location);
+  return root ? ui::ws::FindDeepestVisibleWindowForEvents(root,
+                                                          relative_location)
+              : DeepestWindow();
 }
 
 void EventDispatcher::CancelImplicitCaptureExcept(ServerWindow* window,

@@ -28,6 +28,7 @@ class LocatedEvent;
 namespace ws {
 
 class Accelerator;
+struct DeepestWindow;
 class DragController;
 class DragSource;
 class DragTargetConnection;
@@ -225,7 +226,7 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   Accelerator* FindAccelerator(const ui::KeyEvent& event,
                                const ui::mojom::AcceleratorPhase phase);
 
-  ServerWindow* FindDeepestVisibleWindowForEvents(gfx::Point* location);
+  DeepestWindow FindDeepestVisibleWindowForEvents(const gfx::Point& location);
 
   // Clears the implicit captures in |pointer_targets_|, with the exception of
   // |window|. |window| may be null. |client_id| is the target client of
