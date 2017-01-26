@@ -202,6 +202,10 @@ void TestResourceHandler::OnResponseCompleted(
 
 void TestResourceHandler::OnDataDownloaded(int bytes_downloaded) {
   EXPECT_TRUE(expect_on_data_downloaded_);
+  EXPECT_EQ(1, on_will_start_called_);
+  EXPECT_EQ(1, on_response_started_called_);
+  EXPECT_EQ(0, on_response_completed_called_);
+
   total_bytes_downloaded_ += bytes_downloaded;
 }
 

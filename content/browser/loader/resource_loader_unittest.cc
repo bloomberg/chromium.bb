@@ -12,8 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/files/file.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -22,7 +20,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -39,7 +36,6 @@
 #include "ipc/ipc_message.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/io_buffer.h"
-#include "net/base/mock_file_stream.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -60,10 +56,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
-#include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using storage::ShareableFileReference;
 
 namespace content {
 namespace {
@@ -348,16 +341,6 @@ class NonChunkedUploadDataStream : public net::UploadDataStream {
 
   DISALLOW_COPY_AND_ASSIGN(NonChunkedUploadDataStream);
 };
-
-// Fails to create a temporary file with the given error.
-void CreateTemporaryError(
-    base::File::Error error,
-    const CreateTemporaryFileStreamCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, error,
-                 base::Passed(std::unique_ptr<net::FileStream>()), nullptr));
-}
 
 }  // namespace
 
@@ -1439,232 +1422,6 @@ TEST_F(ResourceLoaderTest, ResumeCanceledRequest) {
   loader_->StartRequest();
   loader_->CancelRequest(true);
   static_cast<ResourceController*>(loader_.get())->Resume();
-}
-
-class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
- public:
-  ResourceLoaderRedirectToFileTest()
-      : file_stream_(NULL),
-        redirect_to_file_resource_handler_(NULL) {
-  }
-
-  ~ResourceLoaderRedirectToFileTest() override {
-    // Releasing the loader should result in destroying the file asynchronously.
-    file_stream_ = nullptr;
-    deletable_file_ = nullptr;
-    loader_.reset();
-
-    // Wait for the task to delete the file to run, and make sure the file is
-    // cleaned up.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(base::PathExists(temp_path()));
-  }
-
-  base::FilePath temp_path() const { return temp_path_; }
-  ShareableFileReference* deletable_file() const {
-    return deletable_file_.get();
-  }
-  net::testing::MockFileStream* file_stream() const { return file_stream_; }
-  RedirectToFileResourceHandler* redirect_to_file_resource_handler() const {
-    return redirect_to_file_resource_handler_;
-  }
-
-  std::unique_ptr<ResourceHandler> WrapResourceHandler(
-      std::unique_ptr<TestResourceHandler> leaf_handler,
-      net::URLRequest* request) override {
-    leaf_handler->set_expect_on_data_downloaded(true);
-
-    // Make a temporary file.
-    CHECK(base::CreateTemporaryFile(&temp_path_));
-    int flags = base::File::FLAG_WRITE | base::File::FLAG_TEMPORARY |
-                base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_ASYNC;
-    base::File file(temp_path_, flags);
-    CHECK(file.IsValid());
-
-    // Create mock file streams and a ShareableFileReference.
-    std::unique_ptr<net::testing::MockFileStream> file_stream(
-        new net::testing::MockFileStream(std::move(file),
-                                         base::ThreadTaskRunnerHandle::Get()));
-    file_stream_ = file_stream.get();
-    deletable_file_ = ShareableFileReference::GetOrCreate(
-        temp_path_, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
-
-    // Inject them into the handler.
-    std::unique_ptr<RedirectToFileResourceHandler> handler(
-        new RedirectToFileResourceHandler(std::move(leaf_handler), request));
-    redirect_to_file_resource_handler_ = handler.get();
-    handler->SetCreateTemporaryFileStreamFunctionForTesting(
-        base::Bind(&ResourceLoaderRedirectToFileTest::PostCallback,
-                   base::Unretained(this),
-                   base::Passed(&file_stream)));
-    return std::move(handler);
-  }
-
- private:
-  void PostCallback(std::unique_ptr<net::FileStream> file_stream,
-                    const CreateTemporaryFileStreamCallback& callback) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, base::File::FILE_OK, base::Passed(&file_stream),
-                   base::RetainedRef(deletable_file_)));
-  }
-
-  base::FilePath temp_path_;
-  scoped_refptr<ShareableFileReference> deletable_file_;
-  // These are owned by the ResourceLoader.
-  net::testing::MockFileStream* file_stream_;
-  RedirectToFileResourceHandler* redirect_to_file_resource_handler_;
-};
-
-// Tests that a RedirectToFileResourceHandler works and forwards everything
-// downstream.
-TEST_F(ResourceLoaderRedirectToFileTest, Basic) {
-  // Run it to completion.
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-
-  // Check that the handler forwarded all information to the downstream handler.
-  EXPECT_EQ(
-      temp_path(),
-      raw_ptr_resource_handler_->resource_response()->head.download_file_path);
-  EXPECT_EQ(test_redirect_url(), raw_ptr_resource_handler_->start_url());
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS,
-            raw_ptr_resource_handler_->final_status().status());
-  EXPECT_EQ(test_data().size(), static_cast<size_t>(
-      raw_ptr_resource_handler_->total_bytes_downloaded()));
-
-  // Check that the data was written to the file.
-  std::string contents;
-  ASSERT_TRUE(base::ReadFileToString(temp_path(), &contents));
-  EXPECT_EQ(test_data(), contents);
-}
-
-// Tests that RedirectToFileResourceHandler handles errors in creating the
-// temporary file.
-TEST_F(ResourceLoaderRedirectToFileTest, CreateTemporaryError) {
-  // Swap out the create temporary function.
-  redirect_to_file_resource_handler()->
-      SetCreateTemporaryFileStreamFunctionForTesting(
-          base::Bind(&CreateTemporaryError, base::File::FILE_ERROR_FAILED));
-
-  // Run it to completion.
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-
-  // To downstream, the request was canceled.
-  EXPECT_EQ(net::URLRequestStatus::CANCELED,
-            raw_ptr_resource_handler_->final_status().status());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->total_bytes_downloaded());
-}
-
-// Tests that RedirectToFileResourceHandler handles synchronous write errors.
-TEST_F(ResourceLoaderRedirectToFileTest, WriteError) {
-  file_stream()->set_forced_error(net::ERR_FAILED);
-
-  // Run it to completion.
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-
-  // To downstream, the request was canceled sometime after it started, but
-  // before any data was written.
-  EXPECT_EQ(
-      temp_path(),
-      raw_ptr_resource_handler_->resource_response()->head.download_file_path);
-  EXPECT_EQ(test_redirect_url(), raw_ptr_resource_handler_->start_url());
-  EXPECT_EQ(net::URLRequestStatus::CANCELED,
-            raw_ptr_resource_handler_->final_status().status());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->total_bytes_downloaded());
-}
-
-// Tests that RedirectToFileResourceHandler handles asynchronous write errors.
-TEST_F(ResourceLoaderRedirectToFileTest, WriteErrorAsync) {
-  file_stream()->set_forced_error_async(net::ERR_FAILED);
-
-  // Run it to completion.
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-
-  // To downstream, the request was canceled sometime after it started, but
-  // before any data was written.
-  EXPECT_EQ(
-      temp_path(),
-      raw_ptr_resource_handler_->resource_response()->head.download_file_path);
-  EXPECT_EQ(test_redirect_url(), raw_ptr_resource_handler_->start_url());
-  EXPECT_EQ(net::URLRequestStatus::CANCELED,
-            raw_ptr_resource_handler_->final_status().status());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->total_bytes_downloaded());
-}
-
-// Tests that RedirectToFileHandler defers completion if there are outstanding
-// writes and accounts for errors which occur in that time.
-TEST_F(ResourceLoaderRedirectToFileTest, DeferCompletion) {
-  // Program the MockFileStream to error asynchronously, but throttle the
-  // callback.
-  file_stream()->set_forced_error_async(net::ERR_FAILED);
-  file_stream()->ThrottleCallbacks();
-
-  // Run it as far as it will go.
-  loader_->StartRequest();
-  base::RunLoop().RunUntilIdle();
-
-  // At this point, the request should have completed.
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS,
-            raw_ptr_to_request_->status().status());
-
-  // However, the resource loader stack is stuck somewhere after receiving the
-  // response.
-  EXPECT_EQ(
-      temp_path(),
-      raw_ptr_resource_handler_->resource_response()->head.download_file_path);
-  EXPECT_EQ(test_redirect_url(), raw_ptr_resource_handler_->start_url());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->total_bytes_downloaded());
-
-  // Now, release the floodgates.
-  file_stream()->ReleaseCallbacks();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-
-  // Although the URLRequest was successful, the leaf handler sees a failure
-  // because the write never completed.
-  EXPECT_EQ(net::URLRequestStatus::CANCELED,
-            raw_ptr_resource_handler_->final_status().status());
-}
-
-// Tests that a RedirectToFileResourceHandler behaves properly when the
-// downstream handler defers OnWillStart.
-TEST_F(ResourceLoaderRedirectToFileTest, DownstreamDeferStart) {
-  // Defer OnWillStart.
-  raw_ptr_resource_handler_->set_defer_on_will_start(true);
-
-  // Run as far as we'll go.
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilDeferred();
-
-  // The request should have stopped at OnWillStart.
-  EXPECT_EQ(test_redirect_url(), raw_ptr_resource_handler_->start_url());
-  EXPECT_FALSE(raw_ptr_resource_handler_->resource_response());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->total_bytes_downloaded());
-
-  // Now resume the request. Now we complete.
-  raw_ptr_resource_handler_->Resume();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-
-  // Check that the handler forwarded all information to the downstream handler.
-  EXPECT_EQ(
-      temp_path(),
-      raw_ptr_resource_handler_->resource_response()->head.download_file_path);
-  EXPECT_EQ(test_redirect_url(), raw_ptr_resource_handler_->start_url());
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS,
-            raw_ptr_resource_handler_->final_status().status());
-  EXPECT_EQ(test_data().size(), static_cast<size_t>(
-      raw_ptr_resource_handler_->total_bytes_downloaded()));
-
-  // Check that the data was written to the file.
-  std::string contents;
-  ASSERT_TRUE(base::ReadFileToString(temp_path(), &contents));
-  EXPECT_EQ(test_data(), contents);
 }
 
 class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {

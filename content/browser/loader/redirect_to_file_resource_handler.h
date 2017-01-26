@@ -40,6 +40,10 @@ namespace content {
 class CONTENT_EXPORT RedirectToFileResourceHandler
     : public LayeredResourceHandler {
  public:
+  // Exposed for testing.
+  static const int kInitialReadBufSize;
+  static const int kMaxReadBufSize;
+
   typedef base::Callback<void(const CreateTemporaryFileStreamCallback&)>
       CreateTemporaryFileStreamFunction;
 
@@ -65,6 +69,9 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   bool OnReadCompleted(int bytes_read, bool* defer) override;
   void OnResponseCompleted(const net::URLRequestStatus& status,
                            bool* defer) override;
+
+  // Returns the size of |buf_|, to make sure it's being increased as expected.
+  int GetBufferSizeForTesting() const;
 
  private:
   void DidCreateTemporaryFile(base::File::Error error_code,

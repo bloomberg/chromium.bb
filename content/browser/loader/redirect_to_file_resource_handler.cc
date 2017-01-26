@@ -50,8 +50,8 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
 
 namespace content {
 
-static const int kInitialReadBufSize = 32768;
-static const int kMaxReadBufSize = 524288;
+const int RedirectToFileResourceHandler::kInitialReadBufSize = 32768;
+const int RedirectToFileResourceHandler::kMaxReadBufSize = 524288;
 
 // A separate IO thread object to manage the lifetime of the net::FileStream and
 // the ShareableFileReference. When the handler is destroyed, it asynchronously
@@ -214,18 +214,20 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int bytes_read,
   DCHECK(new_offset <= buf_->capacity());
   buf_->set_offset(new_offset);
 
-  if (BufIsFull()) {
-    did_defer_ = *defer = true;
-    request()->LogBlockedBy("RedirectToFileResourceHandler");
-
-    if (buf_->capacity() == bytes_read) {
-      // The network layer has saturated our buffer in one read. Next time, we
-      // should give it a bigger buffer for it to fill.
-      next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
-    }
+  if (buf_->capacity() == bytes_read) {
+    // The network layer has saturated our buffer in one read. Next time, we
+    // should give it a bigger buffer for it to fill.
+    next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
   }
 
-  return WriteMore();
+  bool success = WriteMore();
+
+  if (success && BufIsFull()) {
+    did_defer_ = *defer = true;
+    request()->LogBlockedBy("RedirectToFileResourceHandler");
+  }
+
+  return success;
 }
 
 void RedirectToFileResourceHandler::OnResponseCompleted(
@@ -240,6 +242,10 @@ void RedirectToFileResourceHandler::OnResponseCompleted(
     return;
   }
   next_handler_->OnResponseCompleted(status, defer);
+}
+
+int RedirectToFileResourceHandler::GetBufferSizeForTesting() const {
+  return buf_->capacity();
 }
 
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
@@ -309,22 +315,19 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
 
 bool RedirectToFileResourceHandler::WriteMore() {
   DCHECK(writer_);
+
   for (;;) {
     if (write_cursor_ == buf_->offset()) {
       // We've caught up to the network load, but it may be in the process of
       // appending more data to the buffer.
       if (!buf_write_pending_) {
-        if (BufIsFull()) {
-          request()->LogUnblocked();
-          Resume();
-        }
         buf_->set_offset(0);
         write_cursor_ = 0;
       }
-      return true;
+      break;
     }
     if (writer_->is_writing())
-      return true;
+      break;
     DCHECK(write_cursor_ < buf_->offset());
 
     // Create a temporary buffer pointing to a subsection of the data buffer so
@@ -347,12 +350,20 @@ bool RedirectToFileResourceHandler::WriteMore() {
 
     int rv = writer_->Write(wrapped.get(), write_len);
     if (rv == net::ERR_IO_PENDING)
-      return true;
+      break;
     if (rv <= 0)
       return false;
     next_handler_->OnDataDownloaded(rv);
     write_cursor_ += rv;
   }
+
+  // If the request was deferred to allow writing to the file, and the buffer is
+  // no longer full, resume the request.
+  if (did_defer_ && !completed_during_write_ && !BufIsFull()) {
+    request()->LogUnblocked();
+    Resume();
+  }
+  return true;
 }
 
 bool RedirectToFileResourceHandler::BufIsFull() const {
