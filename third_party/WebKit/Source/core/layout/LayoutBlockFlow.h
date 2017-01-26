@@ -718,7 +718,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return m_floatingObjects.get();
   }
 
-  static void setAncestorShouldPaintFloatingObject(const LayoutBox& floatBox);
+  static void updateAncestorShouldPaintFloatingObject(
+      const LayoutBox& floatBox);
 
  protected:
   LayoutUnit maxPositiveMarginBefore() const {

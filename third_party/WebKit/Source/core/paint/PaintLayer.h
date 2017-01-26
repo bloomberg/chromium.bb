@@ -250,10 +250,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // FIXME: Many people call this function while it has out-of-date information.
   bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
 
-  // PaintLayers which represent LayoutParts may become self-painting due to
-  // being composited.  If this is the case, this method returns true.
-  bool isSelfPaintingOnlyBecauseIsCompositedPart() const;
-
   bool isTransparent() const {
     return layoutObject()->isTransparent() ||
            layoutObject()->style()->hasBlendMode() || layoutObject()->hasMask();
@@ -988,6 +984,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_has3DTransformedDescendant;
   }
 
+  // Whether the value of isSelfPaintingLayer() changed since the last clearing
+  // (which happens after the flag is chedked during compositing update).
+  bool selfPaintingStatusChanged() const {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    return m_selfPaintingStatusChanged;
+  }
+  void clearSelfPaintingStatusChanged() {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    m_selfPaintingStatusChanged = false;
+  }
+
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
   void endShouldKeepAliveAllClientsRecursive();
 #endif
@@ -1115,8 +1122,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
         layer.m_needsPaintPhaseDescendantBlockBackgrounds;
   }
 
-  bool isSelfPaintingLayerForIntrinsicOrScrollingReasons() const;
-
   bool shouldFragmentCompositedBounds(const PaintLayer* compositingLayer) const;
 
   void expandRectForStackingChildren(const PaintLayer& compositedLayer,
@@ -1198,6 +1203,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_hasNonIsolatedDescendantWithBlendMode : 1;
   unsigned m_hasAncestorWithClipPath : 1;
   unsigned m_hasRootScrollerAsDescendant : 1;
+
+  unsigned m_selfPaintingStatusChanged : 1;
 
   LayoutBoxModelObject* m_layoutObject;
 

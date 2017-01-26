@@ -247,6 +247,17 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
   layer->didUpdateCompositingInputs();
 
   m_geometryMap.popMappingsToAncestor(layer->parent());
+
+  if (layer->selfPaintingStatusChanged()) {
+    layer->clearSelfPaintingStatusChanged();
+    // If the floating object becomes non-self-painting, so some ancestor should
+    // paint it; if it becomes self-painting, it should paint itself and no
+    // ancestor should paint it.
+    if (layer->layoutObject()->isFloating()) {
+      LayoutBlockFlow::updateAncestorShouldPaintFloatingObject(
+          *layer->layoutBox());
+    }
+  }
 }
 
 #if DCHECK_IS_ON()
