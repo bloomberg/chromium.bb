@@ -179,6 +179,13 @@ bool Connector::SyncWatch(const bool* should_stop) {
   return sync_watcher_->SyncWatch(should_stop);
 }
 
+void Connector::SetWatcherHeapProfilerTag(const char* tag) {
+  heap_profiler_tag_ = tag;
+  if (handle_watcher_) {
+    handle_watcher_->set_heap_profiler_tag(tag);
+  }
+}
+
 void Connector::OnWatcherHandleReady(MojoResult result) {
   OnHandleReadyInternal(result);
 }
@@ -210,7 +217,8 @@ void Connector::WaitToReadMore() {
   CHECK(!paused_);
   DCHECK(!handle_watcher_);
 
-  handle_watcher_.reset(new Watcher(task_runner_));
+  handle_watcher_.reset(new Watcher(FROM_HERE, task_runner_));
+  handle_watcher_->set_heap_profiler_tag(heap_profiler_tag_);
   MojoResult rv = handle_watcher_->Start(
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&Connector::OnWatcherHandleReady, base::Unretained(this)));

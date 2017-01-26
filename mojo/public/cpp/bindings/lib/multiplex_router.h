@@ -79,7 +79,8 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
 
   // Sets the master interface name for this router. Only used when reporting
   // message header or control message validation errors.
-  void SetMasterInterfaceName(const std::string& name);
+  // |name| must be a string literal.
+  void SetMasterInterfaceName(const char* name);
 
   // ---------------------------------------------------------------------------
   // The following public methods are safe to call from any threads.

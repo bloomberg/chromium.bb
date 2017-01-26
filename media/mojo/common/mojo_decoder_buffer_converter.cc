@@ -63,7 +63,9 @@ std::unique_ptr<MojoDecoderBufferReader> MojoDecoderBufferReader::Create(
 
 MojoDecoderBufferReader::MojoDecoderBufferReader(
     mojo::ScopedDataPipeConsumerHandle consumer_handle)
-    : consumer_handle_(std::move(consumer_handle)), bytes_read_(0) {
+    : consumer_handle_(std::move(consumer_handle)),
+      pipe_watcher_(FROM_HERE),
+      bytes_read_(0) {
   DVLOG(1) << __func__;
 
   MojoResult result =
@@ -183,7 +185,9 @@ std::unique_ptr<MojoDecoderBufferWriter> MojoDecoderBufferWriter::Create(
 
 MojoDecoderBufferWriter::MojoDecoderBufferWriter(
     mojo::ScopedDataPipeProducerHandle producer_handle)
-    : producer_handle_(std::move(producer_handle)), bytes_written_(0) {
+    : producer_handle_(std::move(producer_handle)),
+      pipe_watcher_(FROM_HERE),
+      bytes_written_(0) {
   DVLOG(1) << __func__;
 
   MojoResult result =

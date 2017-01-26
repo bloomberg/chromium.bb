@@ -48,7 +48,7 @@ TEST_F(WatcherTest, WatchBasic) {
 
   bool notified = false;
   base::RunLoop run_loop;
-  Watcher b_watcher;
+  Watcher b_watcher(FROM_HERE);
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
                             OnReady([&] (MojoResult result) {
@@ -71,7 +71,7 @@ TEST_F(WatcherTest, WatchUnsatisfiable) {
   CreateMessagePipe(nullptr, &a, &b);
   a.reset();
 
-  Watcher b_watcher;
+  Watcher b_watcher(FROM_HERE);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
                             NotReached()));
@@ -84,7 +84,7 @@ TEST_F(WatcherTest, WatchInvalidHandle) {
   a.reset();
   b.reset();
 
-  Watcher b_watcher;
+  Watcher b_watcher(FROM_HERE);
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
                             NotReached()));
@@ -96,7 +96,7 @@ TEST_F(WatcherTest, Cancel) {
   CreateMessagePipe(nullptr, &a, &b);
 
   base::RunLoop run_loop;
-  Watcher b_watcher;
+  Watcher b_watcher(FROM_HERE);
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
                             NotReached()));
@@ -118,7 +118,7 @@ TEST_F(WatcherTest, CancelOnClose) {
   CreateMessagePipe(nullptr, &a, &b);
 
   base::RunLoop run_loop;
-  Watcher b_watcher;
+  Watcher b_watcher(FROM_HERE);
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
                             OnReady([&] (MojoResult result) {
@@ -140,7 +140,7 @@ TEST_F(WatcherTest, CancelOnDestruction) {
   CreateMessagePipe(nullptr, &a, &b);
   base::RunLoop run_loop;
   {
-    Watcher b_watcher;
+    Watcher b_watcher(FROM_HERE);
     EXPECT_EQ(MOJO_RESULT_OK,
               b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
                               NotReached()));
@@ -161,7 +161,7 @@ TEST_F(WatcherTest, CloseAndCancel) {
   ScopedMessagePipeHandle a, b;
   CreateMessagePipe(nullptr, &a, &b);
 
-  Watcher b_watcher;
+  Watcher b_watcher(FROM_HERE);
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
                             OnReady([](MojoResult result) { FAIL(); })));

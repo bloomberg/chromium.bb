@@ -121,6 +121,7 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
     : ResourceHandler(request),
       rdh_(rdh),
       binding_(this, std::move(mojo_request)),
+      handle_watcher_(FROM_HERE),
       url_loader_client_(std::move(url_loader_client)),
       weak_factory_(this) {
   DCHECK(url_loader_client_);

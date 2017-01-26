@@ -7,14 +7,17 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/trace_event/heap_profiler.h"
 #include "mojo/public/c/system/functions.h"
 
 namespace mojo {
 
-Watcher::Watcher(scoped_refptr<base::SingleThreadTaskRunner> runner)
+Watcher::Watcher(const tracked_objects::Location& from_here,
+                 scoped_refptr<base::SingleThreadTaskRunner> runner)
     : task_runner_(std::move(runner)),
       is_default_task_runner_(task_runner_ ==
                               base::ThreadTaskRunnerHandle::Get()),
+      heap_profiler_tag_(from_here.file_name()),
       weak_factory_(this) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   weak_self_ = weak_factory_.GetWeakPtr();
@@ -79,8 +82,10 @@ void Watcher::OnHandleReady(MojoResult result) {
   }
 
   // NOTE: It's legal for |callback| to delete |this|.
-  if (!callback.is_null())
+  if (!callback.is_null()) {
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event(heap_profiler_tag_);
     callback.Run(result);
+  }
 }
 
 // static
@@ -94,6 +99,7 @@ void Watcher::CallOnHandleReady(uintptr_t context,
   // TODO: Maybe we should also expose |signals_state| through the Watcher API.
   // Current HandleWatcher users have no need for it, so it's omitted here.
   Watcher* watcher = reinterpret_cast<Watcher*>(context);
+
   if ((flags & MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM) &&
       watcher->task_runner_->RunsTasksOnCurrentThread() &&
       watcher->is_default_task_runner_) {

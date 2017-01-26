@@ -57,6 +57,7 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
       pending_flush_(false),
       current_pending_frame_offset_(0),
       pending_frame_is_eos_(false),
+      write_watcher_(FROM_HERE),
       media_status_(DemuxerStream::kOk),
       producer_handle_(std::move(producer_handle)),
       bytes_written_to_pipe_(0),

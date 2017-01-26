@@ -1274,7 +1274,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
   // Wait on handle 1 using a Watcher.
   {
     base::RunLoop run_loop;
-    Watcher watcher;
+    Watcher watcher(FROM_HERE);
     watcher.Start(Handle(handles[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
                   base::Bind([] (base::RunLoop* loop, MojoResult result) {
                     EXPECT_EQ(MOJO_RESULT_OK, result);

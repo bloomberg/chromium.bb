@@ -361,11 +361,13 @@ MultiplexRouter::~MultiplexRouter() {
   DCHECK(endpoints_.empty());
 }
 
-void MultiplexRouter::SetMasterInterfaceName(const std::string& name) {
+void MultiplexRouter::SetMasterInterfaceName(const char* name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  header_validator_->SetDescription(name + " [master] MessageHeaderValidator");
+  header_validator_->SetDescription(
+      std::string(name) + " [master] MessageHeaderValidator");
   control_message_handler_.SetDescription(
-      name + " [master] PipeControlMessageHandler");
+      std::string(name) + " [master] PipeControlMessageHandler");
+  connector_.SetWatcherHeapProfilerTag(name);
 }
 
 void MultiplexRouter::CreateEndpointHandlePair(

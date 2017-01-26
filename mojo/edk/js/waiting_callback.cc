@@ -53,6 +53,7 @@ WaitingCallback::WaitingCallback(v8::Isolate* isolate,
                                  v8::Handle<v8::Function> callback,
                                  bool one_shot)
     : one_shot_(one_shot),
+      watcher_(FROM_HERE),
       weak_factory_(this) {
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();

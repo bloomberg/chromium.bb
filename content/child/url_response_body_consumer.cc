@@ -48,7 +48,7 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
     : request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
       handle_(std::move(handle)),
-      handle_watcher_(task_runner),
+      handle_watcher_(FROM_HERE, task_runner),
       task_runner_(task_runner),
       has_seen_end_of_data_(!handle_.is_valid()) {
   handle_watcher_.Start(

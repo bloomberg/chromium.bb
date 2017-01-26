@@ -1932,7 +1932,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
             loop->Quit();
         },
         &run_loop, &count);
-    Watcher producer_watcher, consumer_watcher;
+    Watcher producer_watcher(FROM_HERE), consumer_watcher(FROM_HERE);
     producer_watcher.Start(
         Handle(producers[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED, callback);
     consumer_watcher.Start(

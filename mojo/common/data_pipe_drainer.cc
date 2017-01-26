@@ -15,7 +15,10 @@ namespace common {
 
 DataPipeDrainer::DataPipeDrainer(Client* client,
                                  mojo::ScopedDataPipeConsumerHandle source)
-    : client_(client), source_(std::move(source)), weak_factory_(this) {
+    : client_(client),
+      source_(std::move(source)),
+      handle_watcher_(FROM_HERE),
+      weak_factory_(this) {
   DCHECK(client_);
   handle_watcher_.Start(
       source_.get(), MOJO_HANDLE_SIGNAL_READABLE,

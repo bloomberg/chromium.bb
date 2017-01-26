@@ -92,6 +92,7 @@ CastRemotingSender::CastRemotingSender(
       latest_acked_frame_id_(media::cast::FrameId::first() - 1),
       duplicate_ack_counter_(0),
       input_queue_discards_remaining_(0),
+      pipe_watcher_(FROM_HERE),
       flow_restart_pending_(true),
       weak_factory_(this) {
   // Confirm this constructor is running on the IO BrowserThread.

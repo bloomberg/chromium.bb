@@ -6,6 +6,7 @@
 #define IOS_WEB_WEBUI_MOJO_FACADE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #import "base/ios/weak_nsobject.h"
@@ -132,7 +133,7 @@ class MojoFacade {
   // Id of the last created watch.
   int last_watch_id_;
   // Currently active watches created through this facade.
-  std::map<int, mojo::Watcher> watchers_;
+  std::map<int, std::unique_ptr<mojo::Watcher>> watchers_;
 };
 
 }  // web

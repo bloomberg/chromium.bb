@@ -70,6 +70,7 @@ class ChannelAssociatedGroupController
     connector_->set_connection_error_handler(
         base::Bind(&ChannelAssociatedGroupController::OnPipeError,
                    base::Unretained(this)));
+    connector_->SetWatcherHeapProfilerTag("IPC Channel");
   }
 
   void Pause() {

@@ -37,7 +37,7 @@ class WebDataConsumerHandleImpl::Context
 WebDataConsumerHandleImpl::ReaderImpl::ReaderImpl(
     scoped_refptr<Context> context,
     Client* client)
-    : context_(context), client_(client) {
+    : context_(context), handle_watcher_(FROM_HERE), client_(client) {
   if (client_)
     StartWatching();
 }

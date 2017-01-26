@@ -21,7 +21,9 @@ namespace edk {
 namespace js {
 
 DrainData::DrainData(v8::Isolate* isolate, mojo::Handle handle)
-    : isolate_(isolate), handle_(DataPipeConsumerHandle(handle.value())) {
+    : isolate_(isolate),
+      handle_(DataPipeConsumerHandle(handle.value())),
+      handle_watcher_(FROM_HERE) {
   v8::Handle<v8::Context> context(isolate_->GetCurrentContext());
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
 

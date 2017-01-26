@@ -36,8 +36,9 @@ class MOJO_CPP_SYSTEM_EXPORT Watcher {
   //       been cancelled implicitly.
   using ReadyCallback = base::Callback<void(MojoResult result)>;
 
-  explicit Watcher(scoped_refptr<base::SingleThreadTaskRunner> runner =
-                       base::ThreadTaskRunnerHandle::Get());
+  Watcher(const tracked_objects::Location& from_here,
+          scoped_refptr<base::SingleThreadTaskRunner> runner =
+              base::ThreadTaskRunnerHandle::Get());
 
   // NOTE: This destructor automatically calls |Cancel()| if the Watcher is
   // still active.
@@ -74,6 +75,12 @@ class MOJO_CPP_SYSTEM_EXPORT Watcher {
   Handle handle() const { return handle_; }
   ReadyCallback ready_callback() const { return callback_; }
 
+ // Sets the tag used by the heap profiler.
+ // |tag| must be a const string literal.
+ void set_heap_profiler_tag(const char* heap_profiler_tag) {
+   heap_profiler_tag_ = heap_profiler_tag;
+ }
+
  private:
   void OnHandleReady(MojoResult result);
 
@@ -103,6 +110,10 @@ class MOJO_CPP_SYSTEM_EXPORT Watcher {
 
   // The callback to call when the handle is signaled.
   ReadyCallback callback_;
+
+  // Tag used to ID memory allocations that originated from notifications in
+  // this watcher.
+  const char* heap_profiler_tag_ = nullptr;
 
   base::WeakPtrFactory<Watcher> weak_factory_;
 

@@ -150,6 +150,10 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
     return task_runner_.get();
   }
 
+  // Sets the tag used by the heap profiler.
+  // |tag| must be a const string literal.
+  void SetWatcherHeapProfilerTag(const char* tag);
+
  private:
   // Callback of mojo::Watcher.
   void OnWatcherHandleReady(MojoResult result);
@@ -205,6 +209,10 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
 
   base::Lock connected_lock_;
   bool connected_ = true;
+
+  // The tag used to track heap allocations that originated from a Watcher
+  // notification.
+  const char* heap_profiler_tag_ = nullptr;
 
   // Create a single weak ptr and use it everywhere, to avoid the malloc/free
   // cost of creating a new weak ptr whenever it is needed.

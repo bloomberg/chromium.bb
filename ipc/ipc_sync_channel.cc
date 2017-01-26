@@ -525,7 +525,8 @@ SyncChannel::SyncChannel(
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
     WaitableEvent* shutdown_event)
     : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
-      sync_handle_registry_(mojo::SyncHandleRegistry::current()) {
+      sync_handle_registry_(mojo::SyncHandleRegistry::current()),
+      dispatch_watcher_(FROM_HERE) {
   // The current (listener) thread must be distinct from the IPC thread, or else
   // sending synchronous messages will deadlock.
   DCHECK_NE(ipc_task_runner.get(), base::ThreadTaskRunnerHandle::Get().get());
@@ -641,7 +642,7 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
 }
 
 void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
-  mojo::Watcher send_done_watcher;
+  mojo::Watcher send_done_watcher(FROM_HERE);
 
   ReceivedSyncMsgQueue* sync_msg_queue = context->received_sync_msgs();
   DCHECK_NE(sync_msg_queue, nullptr);

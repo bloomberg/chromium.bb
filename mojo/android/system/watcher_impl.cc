@@ -28,7 +28,7 @@ namespace {
 class WatcherWithMessageLoopObserver
     : public base::MessageLoop::DestructionObserver {
  public:
-  WatcherWithMessageLoopObserver() {}
+  WatcherWithMessageLoopObserver() : watcher_(FROM_HERE) {}
 
   ~WatcherWithMessageLoopObserver() override { StopObservingIfNecessary(); }
 
