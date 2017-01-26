@@ -81,14 +81,6 @@ using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
 
-// By default we don't allow access to all file:// urls on ChromeOS and
-// Android.
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-bool ChromeNetworkDelegate::g_allow_file_access_ = false;
-#else
-bool ChromeNetworkDelegate::g_allow_file_access_ = true;
-#endif
-
 namespace {
 
 const char kDNTHeader[] = "DNT";
@@ -218,11 +210,6 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     allowed_domains_for_apps->MoveToThread(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
-}
-
-// static
-void ChromeNetworkDelegate::AllowAccessToAllFiles() {
-  g_allow_file_access_ = true;
 }
 
 int ChromeNetworkDelegate::OnBeforeURLRequest(
@@ -464,9 +451,6 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
 
 bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
                                             const base::FilePath& path) const {
-  if (g_allow_file_access_)
-    return true;
-
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   return true;
 #else

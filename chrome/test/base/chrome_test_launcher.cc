@@ -88,9 +88,6 @@ bool ChromeTestLauncherDelegate::AdjustChildProcessCommandLine(
 
   new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_data_dir);
 
-  // file:// access for ChromeOS.
-  new_command_line.AppendSwitch(switches::kAllowFileAccess);
-
   *command_line = new_command_line;
   return true;
 }

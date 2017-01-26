@@ -480,11 +480,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // ProfileHelper has to be initialized after UserManager instance is created.
   ProfileHelper::Get()->Initialize();
 
-  // TODO(abarth): Should this move to InitializeNetworkOptions()?
-  // Allow access to file:// on ChromeOS for tests.
-  if (parsed_command_line().HasSwitch(::switches::kAllowFileAccess))
-    ChromeNetworkDelegate::AllowAccessToAllFiles();
-
   // If kLoginUser is passed this indicates that user has already
   // logged in and we should behave accordingly.
   bool immediate_login =

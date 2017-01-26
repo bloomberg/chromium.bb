@@ -129,10 +129,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
       StringPrefMember* allowed_domains_for_apps,
       PrefService* pref_service);
 
-  // When called, all file:// URLs will now be accessible.  If this is not
-  // called, then some platforms restrict access to file:// paths.
-  static void AllowAccessToAllFiles();
-
  private:
   // NetworkDelegate implementation.
   int OnBeforeURLRequest(net::URLRequest* request,
@@ -206,9 +202,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   const policy::URLBlacklistManager* url_blacklist_manager_;
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
-
-  // When true, allow access to all file:// URLs.
-  static bool g_allow_file_access_;
 
   bool experimental_web_platform_features_enabled_;
 
