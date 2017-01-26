@@ -157,7 +157,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
       m_hasNonIsolatedDescendantWithBlendMode(false),
       m_hasAncestorWithClipPath(false),
       m_hasRootScrollerAsDescendant(false),
-      m_selfPaintingStatusChanged(false),
       m_layoutObject(layoutObject),
       m_parent(0),
       m_previous(0),
@@ -1517,7 +1516,15 @@ LayoutPoint PaintLayer::visualOffsetFromAncestor(
 }
 
 void PaintLayer::didUpdateNeedsCompositedScrolling() {
+  bool wasSelfPaintingLayer = isSelfPaintingLayer();
   updateSelfPaintingLayer();
+
+  // If the floating object becomes non-self-painting, so some ancestor should
+  // paint it; if it becomes self-painting, it should paint itself and no
+  // ancestor should paint it.
+  if (wasSelfPaintingLayer != isSelfPaintingLayer() &&
+      m_layoutObject->isFloating())
+    LayoutBlockFlow::setAncestorShouldPaintFloatingObject(*layoutBox());
 }
 
 void PaintLayer::updateStackingNode() {
@@ -2786,14 +2793,22 @@ bool PaintLayer::childBackgroundIsKnownToBeOpaqueInRect(
   return false;
 }
 
+bool PaintLayer::isSelfPaintingLayerForIntrinsicOrScrollingReasons() const {
+  return layoutObject()->layerTypeRequired() == NormalPaintLayer ||
+         (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars()) ||
+         needsCompositedScrolling();
+}
+
 bool PaintLayer::shouldBeSelfPaintingLayer() const {
   if (layoutObject()->isLayoutPart() &&
       toLayoutPart(layoutObject())->requiresAcceleratedCompositing())
     return true;
+  return isSelfPaintingLayerForIntrinsicOrScrollingReasons();
+}
 
-  return layoutObject()->layerTypeRequired() == NormalPaintLayer ||
-         (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars()) ||
-         needsCompositedScrolling();
+bool PaintLayer::isSelfPaintingOnlyBecauseIsCompositedPart() const {
+  return shouldBeSelfPaintingLayer() &&
+         !isSelfPaintingLayerForIntrinsicOrScrollingReasons();
 }
 
 void PaintLayer::updateSelfPaintingLayer() {
@@ -2802,7 +2817,6 @@ void PaintLayer::updateSelfPaintingLayer() {
     return;
 
   m_isSelfPaintingLayer = isSelfPaintingLayer;
-  m_selfPaintingStatusChanged = true;
 
   if (PaintLayer* parent = this->parent()) {
     parent->dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
