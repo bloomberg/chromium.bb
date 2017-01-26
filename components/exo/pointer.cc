@@ -307,14 +307,32 @@ void Pointer::UpdateCursorScale() {
   if (!focus_)
     return;
 
+  display::Screen* screen = display::Screen::GetScreen();
+  WMHelper* helper = WMHelper::GetInstance();
+
   // Update cursor scale if the effective UI scale has changed.
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          widget_->GetNativeWindow());
-  float ui_scale = WMHelper::GetInstance()
-                       ->GetDisplayInfo(display.id())
-                       .GetEffectiveUIScale();
-  if (WMHelper::GetInstance()->GetCursorSet() == ui::CURSOR_SET_LARGE)
+      screen->GetDisplayNearestWindow(widget_->GetNativeWindow());
+  float ui_scale = helper->GetDisplayInfo(display.id()).GetEffectiveUIScale();
+
+  if (display::Display::HasInternalDisplay()) {
+    float primary_device_scale_factor =
+        screen->GetPrimaryDisplay().device_scale_factor();
+
+    // The size of the cursor surface is the quotient of its physical size and
+    // the DSF of the primary display. The physical size is proportional to the
+    // DSF of the internal display. For external displays (and the internal
+    // display when secondary to a display with a different DSF), scale the
+    // cursor so its physical size matches with the single display case.
+    if (!display.IsInternal() ||
+        display.device_scale_factor() != primary_device_scale_factor) {
+      ui_scale *= primary_device_scale_factor /
+                  helper->GetDisplayInfo(display::Display::InternalDisplayId())
+                      .device_scale_factor();
+    }
+  }
+
+  if (helper->GetCursorSet() == ui::CURSOR_SET_LARGE)
     ui_scale *= kLargeCursorScale;
 
   if (ui_scale != cursor_scale_) {
