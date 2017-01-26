@@ -600,18 +600,18 @@ function test()
     var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;
     for (var grouping in groupByEnum) {
         var groupingValue = groupByEnum[grouping];
-        testEventTree(Timeline.TimelineDetailsView.Tab.CallTree, groupingValue);
-        testEventTree(Timeline.TimelineDetailsView.Tab.BottomUp, groupingValue);
+        testEventTree(Timeline.TimelinePanel.ViewMode.CallTree, groupingValue);
+        testEventTree(Timeline.TimelinePanel.ViewMode.BottomUp, groupingValue);
     }
 
-    testEventTree(Timeline.TimelineDetailsView.Tab.Events);
+    testEventTree(Timeline.TimelinePanel.ViewMode.EventLog);
     InspectorTest.completeTest();
 
     function testEventTree(type, grouping)
     {
         InspectorTest.addResult("");
-        timeline._detailsView._tabbedPane.selectTab(type, true);
-        var callTree = timeline._detailsView._rangeDetailViews.get(type);
+        timeline._tabbedPane.selectTab(type, true);
+        var callTree = timeline._currentViews[0]._treeView;
         if (grouping) {
             InspectorTest.addResult(type + "  Group by: " + grouping);
             callTree._groupByCombobox.select(callTree._groupByCombobox.options().find(x => x.value === grouping));

@@ -504,7 +504,7 @@ BottomUp  Group by: Frame
         l: 0.100  0.100
           f: 0.100  0.100
 
-Events
+EventLog
   Function Call: 8.875  30.000
     a: 0.000  1.000
       b: 0.000  1.000
