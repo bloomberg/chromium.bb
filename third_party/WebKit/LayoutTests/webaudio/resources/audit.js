@@ -656,7 +656,7 @@ window.Audit = (function () {
             + '\t' + this._actual[index].toExponential(16)
             + '\t' + this._expected[index].toExponential(16);
           if (++counter >= this._options.numberOfErrors) {
-            failDetail += '\n\t...and ' + (numberOfErrors - counter)
+            failDetail += '\n\t...and ' + (errorIndices.length - counter)
               + ' more errors.';
             break;
           }
