@@ -329,7 +329,8 @@ class SuggestionView extends ViewGroup {
                 mContentsView.mTextLine2.setVisibility(INVISIBLE);
             }
             setSuggestedQuery(suggestionItem, true, urlShown, urlHighlighted);
-            setRefinable(!sameAsTyped);
+            setRefinable(!sameAsTyped
+                    && suggestionType != OmniboxSuggestionType.PHYSICAL_WEB_OVERFLOW);
         } else {
             @SuggestionIcon int suggestionIcon = SUGGESTION_ICON_MAGNIFIER;
             if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
