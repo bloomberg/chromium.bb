@@ -5,9 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_RESOURCE_THROTTLE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_RESOURCE_THROTTLE_H_
 
+#include "android_webview/browser/aw_safe_browsing_ui_manager.h"
 #include "base/macros.h"
 #include "components/safe_browsing/base_resource_throttle.h"
-#include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/common/resource_type.h"
@@ -28,7 +28,7 @@ class AwSafeBrowsingResourceThrottle
       content::ResourceType resource_type,
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
           database_manager,
-      scoped_refptr<safe_browsing::BaseUIManager> ui_manager);
+      scoped_refptr<AwSafeBrowsingUIManager> ui_manager);
 
  private:
   AwSafeBrowsingResourceThrottle(
@@ -36,7 +36,7 @@ class AwSafeBrowsingResourceThrottle
       content::ResourceType resource_type,
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
           database_manager,
-      scoped_refptr<safe_browsing::BaseUIManager> ui_manager);
+      scoped_refptr<AwSafeBrowsingUIManager> ui_manager);
 
   ~AwSafeBrowsingResourceThrottle() override;
 
