@@ -284,6 +284,9 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
   } else if (method == "requestFileSystems") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"));
+  } else if (method == "reattach") {
+    agent_host_->DetachClient(this);
+    agent_host_->AttachClient(this);
   } else {
     return;
   }
