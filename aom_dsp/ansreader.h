@@ -11,8 +11,11 @@
 
 #ifndef AOM_DSP_ANSREADER_H_
 #define AOM_DSP_ANSREADER_H_
-// A uABS and rANS decoder implementation of Asymmetric Numeral Systems
+// An implementation of Asymmetric Numeral Systems
 // http://arxiv.org/abs/1311.2540v2
+// Implements decoding of:
+// * rABS (range Asymmetric Binary Systems), a boolean coder
+// * rANS (range Asymmetric Numeral Systems), a multi-symbol coder
 
 #include <assert.h>
 #include "./aom_config.h"
@@ -57,43 +60,33 @@ static INLINE unsigned refill_state(struct AnsDecoder *const ans,
   return state;
 }
 
-static INLINE int uabs_read(struct AnsDecoder *ans, AnsP8 p0) {
-  AnsP8 p = ANS_P8_PRECISION - p0;
-  int s;
-  unsigned xp, sp;
-  unsigned state;
+// Decode one rABS encoded boolean where the probability of the value being zero
+// is p0.
+static INLINE int rabs_read(struct AnsDecoder *ans, AnsP8 p0) {
 #if ANS_MAX_SYMBOLS
   if (ans->symbols_left-- == 0) {
     ans_read_reinit(ans);
     ans->symbols_left--;
   }
 #endif
-  state = ans->state;
-  sp = state * p;
-  xp = sp / ANS_P8_PRECISION;
-  s = (sp & 0xFF) >= p0;
-  if (s)
-    state = xp;
+  unsigned state = ans->state;
+  const unsigned quotient = state / ANS_P8_PRECISION;
+  const unsigned remainder = state % ANS_P8_PRECISION;
+  const int value = remainder >= p0;
+  if (value)
+    state = quotient * (ANS_P8_PRECISION - p0) + remainder - p0;
   else
-    state -= xp;
+    state = quotient * p0 + remainder;
   ans->state = refill_state(ans, state);
-  return s;
+  return value;
 }
 
-static INLINE int uabs_read_bit(struct AnsDecoder *ans) {
-  int s;
-  unsigned state;
-#if ANS_MAX_SYMBOLS
-  if (ans->symbols_left-- == 0) {
-    ans_read_reinit(ans);
-    ans->symbols_left--;
-  }
-#endif
-  state = ans->state;
-  s = (int)(state & 1);
-  state >>= 1;
-  ans->state = refill_state(ans, state);
-  return s;
+// Decode one rABS encoded boolean where the probability of the value being zero
+// is one half.
+static INLINE int rabs_read_bit(struct AnsDecoder *ans) {
+  // TODO(aconverse@google.com): Provide an optimized implementation of this
+  // routine.
+  return rabs_read(ans, 128);
 }
 
 struct rans_dec_sym {

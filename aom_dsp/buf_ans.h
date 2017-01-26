@@ -25,11 +25,11 @@
 extern "C" {
 #endif  // __cplusplus
 
-#define ANS_METHOD_UABS 0
+#define ANS_METHOD_RABS 0
 #define ANS_METHOD_RANS 1
 
 struct buffered_ans_symbol {
-  unsigned int method : 1;  // one of ANS_METHOD_UABS or ANS_METHOD_RANS
+  unsigned int method : 1;  // one of ANS_METHOD_RABS or ANS_METHOD_RANS
   // TODO(aconverse): Should be possible to write this in terms of start for ABS
   unsigned int val_start : RANS_PROB_BITS;  // Boolean value for ABS
                                             // start in symbol cycle for Rans
@@ -71,7 +71,7 @@ static INLINE void buf_ans_write_init(struct BufAnsCoder *const c,
   ans_write_init(&c->ans, output_buffer);
 }
 
-static INLINE void buf_uabs_write(struct BufAnsCoder *const c, uint8_t val,
+static INLINE void buf_rabs_write(struct BufAnsCoder *const c, uint8_t val,
                                   AnsP8 prob) {
   assert(c->offset <= c->size);
 #if !ANS_MAX_SYMBOLS
@@ -79,7 +79,7 @@ static INLINE void buf_uabs_write(struct BufAnsCoder *const c, uint8_t val,
     aom_buf_ans_grow(c);
   }
 #endif
-  c->buf[c->offset].method = ANS_METHOD_UABS;
+  c->buf[c->offset].method = ANS_METHOD_RABS;
   c->buf[c->offset].val_start = val;
   c->buf[c->offset].prob = prob;
   ++c->offset;
@@ -105,17 +105,17 @@ static INLINE void buf_rans_write(struct BufAnsCoder *const c,
 #endif
 }
 
-static INLINE void buf_uabs_write_bit(struct BufAnsCoder *c, int bit) {
-  buf_uabs_write(c, bit, 128);
+static INLINE void buf_rabs_write_bit(struct BufAnsCoder *c, int bit) {
+  buf_rabs_write(c, bit, 128);
 }
 
-static INLINE void buf_uabs_write_literal(struct BufAnsCoder *c, int literal,
+static INLINE void buf_rabs_write_literal(struct BufAnsCoder *c, int literal,
                                           int bits) {
   int bit;
 
   assert(bits < 31);
   for (bit = bits - 1; bit >= 0; bit--)
-    buf_uabs_write_bit(c, 1 & (literal >> bit));
+    buf_rabs_write_bit(c, 1 & (literal >> bit));
 }
 
 static INLINE int buf_ans_write_end(struct BufAnsCoder *const c) {

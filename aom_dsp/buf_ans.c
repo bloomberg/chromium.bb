@@ -57,7 +57,7 @@ void aom_buf_ans_flush(struct BufAnsCoder *const c) {
       sym.cum_prob = c->buf[offset].val_start;
       rans_write(&c->ans, &sym);
     } else {
-      uabs_write(&c->ans, (uint8_t)c->buf[offset].val_start,
+      rabs_write(&c->ans, (uint8_t)c->buf[offset].val_start,
                  (AnsP8)c->buf[offset].prob);
     }
   }

@@ -11,8 +11,11 @@
 
 #ifndef AOM_DSP_ANSWRITER_H_
 #define AOM_DSP_ANSWRITER_H_
-// A uABS and rANS encoder implementation of Asymmetric Numeral Systems
+// An implementation of Asymmetric Numeral Systems
 // http://arxiv.org/abs/1311.2540v2
+// Implements encoding of:
+// * rABS (range Asymmetric Binary Systems), a boolean coder
+// * rANS (range Asymmetric Numeral Systems), a multi-symbol coder
 
 #include <assert.h>
 #include "./aom_config.h"
@@ -106,18 +109,19 @@ static INLINE int ans_write_end(struct AnsCoder *const ans) {
   return ans_size;
 }
 
-// uABS with normalization
-static INLINE void uabs_write(struct AnsCoder *ans, int val, AnsP8 p0) {
-  AnsP8 p = ANS_P8_PRECISION - p0;
-  const unsigned l_s = val ? p : p0;
-  while (ans->state >= L_BASE / ANS_P8_PRECISION * IO_BASE * l_s) {
-    ans->buf[ans->buf_offset++] = ans->state % IO_BASE;
-    ans->state /= IO_BASE;
+// Write one boolean using rABS where p0 is the probability of the value being
+// zero.
+static INLINE void rabs_write(struct AnsCoder *ans, int value, AnsP8 p0) {
+  const AnsP8 p = ANS_P8_PRECISION - p0;
+  const unsigned l_s = value ? p : p0;
+  unsigned state = ans->state;
+  while (state >= L_BASE / ANS_P8_PRECISION * IO_BASE * l_s) {
+    ans->buf[ans->buf_offset++] = state % IO_BASE;
+    state /= IO_BASE;
   }
-  if (!val)
-    ans->state = ANS_DIV8(ans->state * ANS_P8_PRECISION, p0);
-  else
-    ans->state = ANS_DIV8((ans->state + 1) * ANS_P8_PRECISION + p - 1, p) - 1;
+  const unsigned quotient = ANS_DIV8(state, l_s);
+  const unsigned remainder = state - quotient * l_s;
+  ans->state = quotient * ANS_P8_PRECISION + remainder + (value ? p0 : 0);
 }
 
 struct rans_sym {

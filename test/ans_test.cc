@@ -49,14 +49,14 @@ PvVec abs_encode_build_vals(int iters) {
   return ret;
 }
 
-bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
+bool check_rabs(const PvVec &pv_vec, uint8_t *buf) {
   BufAnsCoder a;
   aom_buf_ans_alloc(&a, NULL, kBufAnsSize);
   buf_ans_write_init(&a, buf);
 
   std::clock_t start = std::clock();
   for (PvVec::const_iterator it = pv_vec.begin(); it != pv_vec.end(); ++it) {
-    buf_uabs_write(&a, it->second, 256 - it->first);
+    buf_rabs_write(&a, it->second, 256 - it->first);
   }
   aom_buf_ans_flush(&a);
   std::clock_t enc_time = std::clock() - start;
@@ -70,7 +70,7 @@ bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
   if (ans_read_init(&d, buf, offset)) return false;
   start = std::clock();
   for (PvVec::const_iterator it = pv_vec.begin(); it != pv_vec.end(); ++it) {
-    okay = okay && (uabs_read(&d, 256 - it->first) != 0) == it->second;
+    okay = okay && (rabs_read(&d, 256 - it->first) != 0) == it->second;
   }
   std::clock_t dec_time = std::clock() - start;
   if (!okay) return false;
@@ -180,7 +180,7 @@ class AnsTestFix : public ::testing::Test {
 std::vector<int> AnsTestFix::sym_vec_;
 rans_sym AnsTestFix::rans_sym_tab_[kRansSymbols];
 
-TEST_F(AbsTestFix, Uabs) { EXPECT_TRUE(check_uabs(pv_vec_, buf_)); }
+TEST_F(AbsTestFix, Rabs) { EXPECT_TRUE(check_rabs(pv_vec_, buf_)); }
 TEST_F(AnsTestFix, Rans) {
   EXPECT_TRUE(check_rans(sym_vec_, rans_sym_tab_, buf_));
 }
