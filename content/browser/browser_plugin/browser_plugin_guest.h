@@ -257,6 +257,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
     return can_use_cross_process_frames_;
   }
 
+  gfx::Point GetCoordinatesInEmbedderWebContents(
+      const gfx::Point& relative_point);
+
  protected:
 
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and

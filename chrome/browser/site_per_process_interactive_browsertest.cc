@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
@@ -11,13 +12,19 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/common/constants.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/display/display.h"
@@ -784,4 +791,136 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                             "document.querySelector('iframe').parentNode."
                             "removeChild(document.querySelector('iframe'))"));
   EXPECT_FALSE(main_frame->GetView()->IsMouseLocked());
+}
+
+// Base test class for interactive tests which load and test PDF files.
+class SitePerProcessInteractivePDFTest
+    : public SitePerProcessInteractiveBrowserTest {
+ public:
+  SitePerProcessInteractivePDFTest() : test_guest_view_manager_(nullptr) {}
+  ~SitePerProcessInteractivePDFTest() override {}
+
+  void SetUpOnMainThread() override {
+    SitePerProcessInteractiveBrowserTest::SetUpOnMainThread();
+    guest_view::GuestViewManager::set_factory_for_testing(&factory_);
+    test_guest_view_manager_ = static_cast<guest_view::TestGuestViewManager*>(
+        guest_view::GuestViewManager::CreateWithDelegate(
+            browser()->profile(),
+            extensions::ExtensionsAPIClient::Get()
+                ->CreateGuestViewManagerDelegate(browser()->profile())));
+  }
+
+ protected:
+  guest_view::TestGuestViewManager* test_guest_view_manager() const {
+    return test_guest_view_manager_;
+  }
+
+ private:
+  guest_view::TestGuestViewManagerFactory factory_;
+  guest_view::TestGuestViewManager* test_guest_view_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(SitePerProcessInteractivePDFTest);
+};
+
+// This class observes a WebContents for a navigation to an extension scheme to
+// finish.
+class NavigationToExtensionSchemeObserver
+    : public content::WebContentsObserver {
+ public:
+  explicit NavigationToExtensionSchemeObserver(content::WebContents* contents)
+      : content::WebContentsObserver(contents),
+        extension_loaded_(contents->GetLastCommittedURL().SchemeIs(
+            extensions::kExtensionScheme)) {}
+
+  void Wait() {
+    if (extension_loaded_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner();
+    message_loop_runner_->Run();
+  }
+
+ private:
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    if (!handle->GetURL().SchemeIs(extensions::kExtensionScheme) ||
+        !handle->HasCommitted() || handle->IsErrorPage())
+      return;
+    extension_loaded_ = true;
+    message_loop_runner_->Quit();
+  }
+
+  bool extension_loaded_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationToExtensionSchemeObserver);
+};
+
+// This test loads a PDF inside an OOPIF and then verifies that context menu
+// shows up at the correct position.
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
+                       ContextMenuPositionForEmbeddedPDFInCrossOriginFrame) {
+  // Navigate to a page with an <iframe>.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Initially, no guests are created.
+  EXPECT_EQ(0U, test_guest_view_manager()->num_guests_created());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Change the position of the <iframe> inside the page.
+  EXPECT_TRUE(ExecuteScript(active_web_contents,
+                            "document.querySelector('iframe').style ="
+                            " 'margin-left: 100px; margin-top: 100px;';"));
+
+  // Navigate subframe to a cross-site page with an embedded PDF.
+  GURL frame_url =
+      embedded_test_server()->GetURL("b.com", "/page_with_embedded_pdf.html");
+
+  // Ensure the page finishes loading without crashing.
+  EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
+
+  // Wait until the guest contents for PDF is created.
+  content::WebContents* guest_contents =
+      test_guest_view_manager()->WaitForSingleGuestCreated();
+
+  // Observe navigations in guest to find out when navigation to the (PDF)
+  // extension commits. It will be used as an indicator that BrowserPlugin
+  // has attached.
+  NavigationToExtensionSchemeObserver navigation_observer(guest_contents);
+
+  // Before sending the mouse clicks, we need to make sure the BrowserPlugin has
+  // attached, which happens before navigating the guest to the PDF extension.
+  // When attached, the window rects are updated and the context menu position
+  // can be properly calculated.
+  navigation_observer.Wait();
+
+  content::RenderWidgetHostView* child_view =
+      ChildFrameAt(active_web_contents->GetMainFrame(), 0)->GetView();
+
+  ContextMenuWaiter menu_waiter(content::NotificationService::AllSources());
+
+  // Declaring a lambda to send a right-button mouse event to the embedder
+  // frame.
+  auto send_right_mouse_event = [](content::RenderWidgetHost* host, int x,
+                                   int y, blink::WebInputEvent::Type type) {
+    blink::WebMouseEvent event;
+    event.x = x;
+    event.y = y;
+    event.button = blink::WebMouseEvent::Button::Right;
+    event.setType(type);
+    host->ForwardMouseEvent(event);
+  };
+
+  send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
+                         blink::WebInputEvent::MouseDown);
+  send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
+                         blink::WebInputEvent::MouseUp);
+  menu_waiter.WaitForMenuOpenAndClose();
+
+  gfx::Point point_in_root_window =
+      child_view->TransformPointToRootCoordSpace(gfx::Point(10, 20));
+
+  EXPECT_EQ(point_in_root_window.x(), menu_waiter.params().x);
+  EXPECT_EQ(point_in_root_window.y(), menu_waiter.params().y);
 }

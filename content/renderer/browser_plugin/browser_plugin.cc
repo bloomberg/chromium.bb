@@ -389,9 +389,13 @@ void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
   gfx::Rect old_view_rect = view_rect_;
   // Convert the plugin_rect_in_viewport to window coordinates, which is css.
   WebRect rect_in_css(plugin_rect_in_viewport);
-  blink::WebView* webview = container()->document().frame()->view();
-  RenderViewImpl::FromWebView(webview)->GetWidget()->convertViewportToWindow(
-      &rect_in_css);
+
+  // We will use the local root's RenderWidget to convert coordinates to Window.
+  // If this local root belongs to an OOPIF, on the browser side we will have to
+  // consider the displacement of the child frame in root window.
+  RenderFrameImpl::FromWebFrame(container()->document().frame())
+      ->GetRenderWidget()
+      ->convertViewportToWindow(&rect_in_css);
   view_rect_ = rect_in_css;
 
   if (!ready_) {

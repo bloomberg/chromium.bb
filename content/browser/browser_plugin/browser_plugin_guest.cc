@@ -479,6 +479,21 @@ void BrowserPluginGuest::ResendEventToEmbedder(
   }
 }
 
+gfx::Point BrowserPluginGuest::GetCoordinatesInEmbedderWebContents(
+    const gfx::Point& relative_point) {
+  RenderWidgetHostView* owner_rwhv = GetOwnerRenderWidgetHostView();
+  if (!owner_rwhv)
+    return relative_point;
+
+  gfx::Point point(relative_point);
+
+  // Add the offset form the embedder web contents view.
+  point +=
+      owner_rwhv->TransformPointToRootCoordSpace(guest_window_rect_.origin())
+          .OffsetFromOrigin();
+  return point;
+}
+
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
