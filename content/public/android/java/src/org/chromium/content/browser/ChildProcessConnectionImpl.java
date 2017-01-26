@@ -42,6 +42,9 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     // into the class are synchronized on the lock to protect access to these members.
     private final Object mLock = new Object();
     private IChildProcessService mService;
+    // Set to true when the service connection callback runs. This differs from
+    // mServiceConnectComplete, which tracks that the connection completed successfully.
+    private boolean mDidOnServiceConnected;
     // Set to true when the service connected successfully.
     private boolean mServiceConnectComplete;
     // Set to true when the service disconnects, as opposed to being properly closed. This happens
@@ -163,13 +166,13 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             synchronized (mLock) {
                 // A flag from the parent class ensures we run the post-connection logic only once
                 // (instead of once per each ChildServiceConnection).
-                if (mServiceConnectComplete) {
+                if (mDidOnServiceConnected) {
                     return;
                 }
                 try {
                     TraceEvent.begin(
                             "ChildProcessConnectionImpl.ChildServiceConnection.onServiceConnected");
-                    mServiceConnectComplete = true;
+                    mDidOnServiceConnected = true;
                     mService = IChildProcessService.Stub.asInterface(service);
 
                     boolean boundToUs = false;
@@ -190,6 +193,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                     if (!boundToUs) {
                         return;
                     }
+
+                    mServiceConnectComplete = true;
 
                     // Run the setup if the connection parameters have already been provided. If
                     // not, doConnectionSetupLocked() will be called from setupConnection().
