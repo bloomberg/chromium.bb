@@ -35,13 +35,16 @@ namespace media {
 
 struct VideoFrameStreamTestParams {
   VideoFrameStreamTestParams(bool is_encrypted,
+                             bool has_decryptor,
                              int decoding_delay,
                              int parallel_decoding)
       : is_encrypted(is_encrypted),
+        has_decryptor(has_decryptor),
         decoding_delay(decoding_delay),
         parallel_decoding(parallel_decoding) {}
 
   bool is_encrypted;
+  bool has_decryptor;
   int decoding_delay;
   int parallel_decoding;
 };
@@ -55,25 +58,6 @@ class VideoFrameStreamTest
                                               kNumBuffersInOneConfig,
                                               GetParam().is_encrypted)),
         cdm_context_(new StrictMock<MockCdmContext>()),
-        decryptor_(new NiceMock<MockDecryptor>()),
-        decoder1_(
-            new FakeVideoDecoder(GetParam().decoding_delay,
-                                 GetParam().parallel_decoding,
-                                 base::Bind(
-                                     &VideoFrameStreamTest::OnBytesDecoded,
-                                     base::Unretained(this)))),
-        decoder2_(
-            new FakeVideoDecoder(GetParam().decoding_delay,
-                                 GetParam().parallel_decoding,
-                                 base::Bind(
-                                     &VideoFrameStreamTest::OnBytesDecoded,
-                                     base::Unretained(this)))),
-        decoder3_(
-            new FakeVideoDecoder(GetParam().decoding_delay,
-                                 GetParam().parallel_decoding,
-                                 base::Bind(
-                                     &VideoFrameStreamTest::OnBytesDecoded,
-                                     base::Unretained(this)))),
         is_initialized_(false),
         num_decoded_frames_(0),
         pending_initialize_(false),
@@ -82,6 +66,27 @@ class VideoFrameStreamTest
         pending_stop_(false),
         num_decoded_bytes_unreported_(0),
         has_no_key_(false) {
+    int decoding_delay = GetParam().decoding_delay;
+    int parallel_decoding = GetParam().parallel_decoding;
+    BytesDecodedCB bytes_decoded_cb = base::Bind(
+        &VideoFrameStreamTest::OnBytesDecoded, base::Unretained(this));
+
+    decoder1_ = new FakeVideoDecoder(decoding_delay, parallel_decoding,
+                                     bytes_decoded_cb);
+    decoder2_ = new FakeVideoDecoder(decoding_delay, parallel_decoding,
+                                     bytes_decoded_cb);
+    decoder3_ = new FakeVideoDecoder(decoding_delay, parallel_decoding,
+                                     bytes_decoded_cb);
+
+    // TODO(xhwang): We should test the case where only certain decoder
+    // supports encrypted streams. Currently this is hard to test becasue we use
+    // parameterized tests which need to pass in all combinations.
+    if (GetParam().is_encrypted && !GetParam().has_decryptor) {
+      decoder1_->EnableEncryptedConfigSupport();
+      decoder2_->EnableEncryptedConfigSupport();
+      decoder3_->EnableEncryptedConfigSupport();
+    }
+
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder1_);
     decoders.push_back(decoder2_);
@@ -90,15 +95,19 @@ class VideoFrameStreamTest
     video_frame_stream_.reset(new VideoFrameStream(
         message_loop_.task_runner(), std::move(decoders), new MediaLog()));
 
+    if (GetParam().has_decryptor) {
+      decryptor_.reset(new NiceMock<MockDecryptor>());
+
+      // Decryptor can only decrypt (not decrypt-and-decode) so that
+      // DecryptingDemuxerStream will be used.
+      EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
+          .WillRepeatedly(RunCallback<1>(false));
+      EXPECT_CALL(*decryptor_, Decrypt(_, _, _))
+          .WillRepeatedly(Invoke(this, &VideoFrameStreamTest::Decrypt));
+    }
+
     EXPECT_CALL(*cdm_context_, GetDecryptor())
         .WillRepeatedly(Return(decryptor_.get()));
-
-    // Decryptor can only decrypt (not decrypt-and-decode) so that
-    // DecryptingDemuxerStream will be used.
-    EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-        .WillRepeatedly(RunCallback<1>(false));
-    EXPECT_CALL(*decryptor_, Decrypt(_, _, _))
-        .WillRepeatedly(Invoke(this, &VideoFrameStreamTest::Decrypt));
   }
 
   ~VideoFrameStreamTest() {
@@ -252,9 +261,10 @@ class VideoFrameStreamTest
         break;
 
       case DECRYPTOR_NO_KEY:
-        if (GetParam().is_encrypted)
+        if (GetParam().is_encrypted && GetParam().has_decryptor) {
           EXPECT_CALL(*this, OnWaitingForDecryptionKey());
-        has_no_key_ = true;
+          has_no_key_ = true;
+        }
         ReadOneFrame();
         break;
 
@@ -385,27 +395,29 @@ class VideoFrameStreamTest
 INSTANTIATE_TEST_CASE_P(
     Clear,
     VideoFrameStreamTest,
-    ::testing::Values(
-        VideoFrameStreamTestParams(false, 0, 1),
-        VideoFrameStreamTestParams(false, 3, 1),
-        VideoFrameStreamTestParams(false, 7, 1)));
+    ::testing::Values(VideoFrameStreamTestParams(false, false, 0, 1),
+                      VideoFrameStreamTestParams(false, false, 3, 1),
+                      VideoFrameStreamTestParams(false, false, 7, 1)));
 
 INSTANTIATE_TEST_CASE_P(
-    Encrypted,
+    EncryptedWithDecryptor,
     VideoFrameStreamTest,
-    ::testing::Values(
-        VideoFrameStreamTestParams(true, 7, 1)));
+    ::testing::Values(VideoFrameStreamTestParams(true, true, 7, 1)));
+
+INSTANTIATE_TEST_CASE_P(
+    EncryptedWithoutDecryptor,
+    VideoFrameStreamTest,
+    ::testing::Values(VideoFrameStreamTestParams(true, false, 7, 1)));
 
 INSTANTIATE_TEST_CASE_P(
     Clear_Parallel,
     VideoFrameStreamTest,
-    ::testing::Values(
-        VideoFrameStreamTestParams(false, 0, 3),
-        VideoFrameStreamTestParams(false, 2, 3)));
-
+    ::testing::Values(VideoFrameStreamTestParams(false, false, 0, 3),
+                      VideoFrameStreamTestParams(false, false, 2, 3)));
 
 TEST_P(VideoFrameStreamTest, Initialization) {
   Initialize();
+  EXPECT_TRUE(is_initialized_);
 }
 
 TEST_P(VideoFrameStreamTest, AllDecoderInitializationFails) {

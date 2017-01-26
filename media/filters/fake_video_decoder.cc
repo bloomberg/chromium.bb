@@ -21,10 +21,12 @@ FakeVideoDecoder::FakeVideoDecoder(int decoding_delay,
       total_bytes_decoded_(0),
       fail_to_initialize_(false),
       weak_factory_(this) {
+  DVLOG(1) << __func__;
   DCHECK_GE(decoding_delay, 0);
 }
 
 FakeVideoDecoder::~FakeVideoDecoder() {
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == STATE_UNINITIALIZED)
@@ -40,15 +42,20 @@ FakeVideoDecoder::~FakeVideoDecoder() {
   decoded_frames_.clear();
 }
 
+void FakeVideoDecoder::EnableEncryptedConfigSupport() {
+  supports_encrypted_config_ = true;
+}
+
 std::string FakeVideoDecoder::GetDisplayName() const {
   return "FakeVideoDecoder";
 }
 
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
-                                  CdmContext* /* cdm_context */,
+                                  CdmContext* cdm_context,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb) {
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
   DCHECK(held_decode_callbacks_.empty())
@@ -65,6 +72,11 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (!decoded_frames_.empty()) {
     DVLOG(1) << "Decoded frames dropped during reinitialization.";
     decoded_frames_.clear();
+  }
+
+  if (config.is_encrypted() && (!supports_encrypted_config_ || !cdm_context)) {
+    DVLOG(1) << "Encrypted config not supported.";
+    fail_to_initialize_ = true;
   }
 
   if (fail_to_initialize_) {

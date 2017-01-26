@@ -684,7 +684,7 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
   state_ = STATE_REINITIALIZING_DECODER;
   // Decoders should not need a new CDM during reinitialization.
   traits_.InitializeDecoder(
-      decoder_.get(), stream_, nullptr,
+      decoder_.get(), stream_, cdm_context_,
       base::Bind(&DecoderStream<StreamType>::OnDecoderReinitialized,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
