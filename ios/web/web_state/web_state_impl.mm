@@ -15,7 +15,9 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_manager_storage_builder.h"
 #include "ios/web/public/browser_state.h"
+#import "ios/web/public/crw_navigation_manager_storage.h"
 #import "ios/web/public/image_fetcher/image_data_fetcher.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/navigation_item.h"
@@ -49,6 +51,7 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
   std::unique_ptr<WebStateImpl> web_state(
       new WebStateImpl(params.browser_state));
 
+  // Initialized the new session.
   NSString* window_name = nil;
   NSString* opener_id = nil;
   BOOL opened_by_dom = NO;
@@ -62,17 +65,45 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
   return std::move(web_state);
 }
 
+/* static */
+std::unique_ptr<WebState> WebState::Create(
+    const CreateParams& params,
+    CRWNavigationManagerStorage* session_storage) {
+  std::unique_ptr<WebStateImpl> web_state(
+      new WebStateImpl(params.browser_state, session_storage));
+
+  // This std::move is required to compile with the version of clang shipping
+  // with Xcode 8.0+. Evalute whether the issue is fixed once a new version of
+  // Xcode is released.
+  return std::move(web_state);
+}
+
 WebStateImpl::WebStateImpl(BrowserState* browser_state)
+    : WebStateImpl(browser_state, nullptr) {}
+
+WebStateImpl::WebStateImpl(BrowserState* browser_state,
+                           CRWNavigationManagerStorage* session_storage)
     : delegate_(nullptr),
       is_loading_(false),
       is_being_destroyed_(false),
       facade_delegate_(nullptr),
       web_controller_(nil),
-      navigation_manager_(this, browser_state),
       interstitial_(nullptr),
       weak_factory_(this) {
+  // Create or deserialize the NavigationManager.
+  if (session_storage) {
+    NavigationManagerStorageBuilder session_storage_builder;
+    navigation_manager_ =
+        session_storage_builder.BuildNavigationManagerImpl(session_storage);
+  } else {
+    navigation_manager_.reset(new NavigationManagerImpl());
+  }
+  navigation_manager_->SetDelegate(this);
+  navigation_manager_->SetBrowserState(browser_state);
+  // Send creation event and create the web controller.
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
   web_controller_.reset([[CRWWebController alloc] initWithWebState:this]);
+  // Set up the image fetcher.
   image_fetcher_ =
       base::MakeUnique<ImageDataFetcher>(web::WebThread::GetBlockingPool());
   image_fetcher_->SetRequestContextGetter(browser_state->GetRequestContext());
@@ -162,12 +193,6 @@ WebStateFacadeDelegate* WebStateImpl::GetFacadeDelegate() const {
 
 void WebStateImpl::SetFacadeDelegate(WebStateFacadeDelegate* facade_delegate) {
   facade_delegate_ = facade_delegate;
-}
-
-WebStateImpl* WebStateImpl::CopyForSessionWindow() {
-  WebStateImpl* copy = new WebStateImpl(GetBrowserState());
-  copy->GetNavigationManagerImpl().CopyState(&navigation_manager_);
-  return copy;
 }
 
 void WebStateImpl::OnNavigationCommitted(const GURL& url) {
@@ -310,11 +335,11 @@ void WebStateImpl::OnDocumentSubmitted(const std::string& form_name,
 }
 
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
-  return navigation_manager_;
+  return *navigation_manager_;
 }
 
 const NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() const {
-  return navigation_manager_;
+  return *navigation_manager_;
 }
 
 void WebStateImpl::CreateWebUI(const GURL& url) {
@@ -346,7 +371,7 @@ const base::string16& WebStateImpl::GetTitle() const {
   // TODO(stuartmorgan): Implement the NavigationManager logic necessary to
   // match the WebContents implementation of this method.
   DCHECK(Configured());
-  web::NavigationItem* item = navigation_manager_.GetLastCommittedItem();
+  web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
   return item ? item->GetTitleForDisplay() : empty_string16_;
 }
 
@@ -605,7 +630,7 @@ UIView* WebStateImpl::GetView() {
 }
 
 BrowserState* WebStateImpl::GetBrowserState() const {
-  return navigation_manager_.GetBrowserState();
+  return navigation_manager_->GetBrowserState();
 }
 
 void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
@@ -625,6 +650,11 @@ const NavigationManager* WebStateImpl::GetNavigationManager() const {
 
 NavigationManager* WebStateImpl::GetNavigationManager() {
   return &GetNavigationManagerImpl();
+}
+
+CRWNavigationManagerStorage* WebStateImpl::BuildSerializedNavigationManager() {
+  NavigationManagerStorageBuilder session_storage_builder;
+  return session_storage_builder.BuildSerialization(navigation_manager_.get());
 }
 
 CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {
@@ -664,12 +694,12 @@ bool WebStateImpl::ContentIsHTML() const {
 }
 
 const GURL& WebStateImpl::GetVisibleURL() const {
-  web::NavigationItem* item = navigation_manager_.GetVisibleItem();
+  web::NavigationItem* item = navigation_manager_->GetVisibleItem();
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 
 const GURL& WebStateImpl::GetLastCommittedURL() const {
-  web::NavigationItem* item = navigation_manager_.GetLastCommittedItem();
+  web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 

@@ -193,7 +193,8 @@ class TabModelTest : public PlatformTest {
     SessionWindowIOS* window = [[SessionWindowIOS alloc] init];
     for (int i = 0; i < entries; i++) {
       NSString* windowName = [NSString stringWithFormat:@"window %d", i + 1];
-      [window addSession:CreateWebState(windowName)];
+      [window addSerializedSession:CreateWebState(windowName)
+                                       ->BuildSerializedNavigationManager()];
     }
     if (entries)
       [window setSelectedIndex:1];

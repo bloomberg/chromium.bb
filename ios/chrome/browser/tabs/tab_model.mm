@@ -258,8 +258,10 @@ void CleanCertificatePolicyCache(
     _tabs.reset([[NSMutableArray alloc] init]);
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     if (window) {
-      while (window.unclaimedSessions) {
-        std::unique_ptr<web::WebStateImpl> webState = [window nextSession];
+      web::WebState::CreateParams params(_browserState);
+      for (CRWNavigationManagerStorage* session in window.sessions) {
+        std::unique_ptr<web::WebState> webState =
+            web::WebState::Create(params, session);
         DCHECK_EQ(webState->GetBrowserState(), _browserState);
         // Restore the CertificatePolicyCache.
         UpdateCertificatePolicyCacheFromWebState(webState.get());
@@ -319,12 +321,15 @@ void CleanCertificatePolicyCache(
 - (BOOL)restoreSessionWindow:(SessionWindowIOS*)window {
   DCHECK(_browserState);
   DCHECK(window);
-  if (!window.unclaimedSessions)
+  NSArray* sessions = window.sessions;
+  if (!sessions.count)
     return NO;
   size_t oldCount = [_tabs count];
   size_t index = oldCount;
-  while (window.unclaimedSessions) {
-    std::unique_ptr<web::WebStateImpl> webState = [window nextSession];
+  web::WebState::CreateParams params(_browserState);
+  for (CRWNavigationManagerStorage* session in sessions) {
+    std::unique_ptr<web::WebState> webState =
+        web::WebState::Create(params, session);
     DCHECK_EQ(webState->GetBrowserState(), _browserState);
     Tab* tab = [self insertTabWithWebState:std::move(webState) atIndex:index++];
     tab.webController.usePlaceholderOverlay = YES;
@@ -852,13 +857,10 @@ void CleanCertificatePolicyCache(
   // TODO(crbug.com/661986): This could get expensive especially since this
   // window may never be saved (if another call comes in before the delay).
   SessionWindowIOS* window = [[[SessionWindowIOS alloc] init] autorelease];
-  for (Tab* tab in _tabs.get()) {
-    DCHECK(tab.webState);
-    // TODO(crbug.com/454984): remove that cast to web::WebStateImpl once a
-    // public serialisation mechanism is available via web::WebState.
-    std::unique_ptr<web::WebStateImpl> webStateCopy(
-        static_cast<web::WebStateImpl*>(tab.webState)->CopyForSessionWindow());
-    [window addSession:std::move(webStateCopy)];
+  for (Tab* tab in self) {
+    web::WebState* webState = tab.webState;
+    DCHECK(webState);
+    [window addSerializedSession:webState->BuildSerializedNavigationManager()];
   }
   window.selectedIndex = [self indexOfTab:_currentTab];
   return window;

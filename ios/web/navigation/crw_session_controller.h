@@ -25,7 +25,7 @@ struct Referrer;
 // DEPRECATED, do not use this class and do not add any methods to it.
 // Use web::NavigationManager instead.
 // TODO(crbug.com/454984): Remove this class.
-@interface CRWSessionController : NSObject<NSCoding, NSCopying>
+@interface CRWSessionController : NSObject<NSCopying>
 
 @property(nonatomic, readonly, copy) NSString* tabId;
 @property(nonatomic, readonly, assign) NSInteger currentNavigationIndex;

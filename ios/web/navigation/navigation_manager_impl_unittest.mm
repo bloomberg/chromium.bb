@@ -28,8 +28,9 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
 // Test fixture for NavigationManagerImpl testing.
 class NavigationManagerTest : public PlatformTest {
  protected:
-  NavigationManagerTest()
-      : manager_(new NavigationManagerImpl(&delegate_, &browser_state_)) {
+  NavigationManagerTest() : manager_(new NavigationManagerImpl()) {
+    manager_->SetDelegate(&delegate_);
+    manager_->SetBrowserState(&browser_state_);
     controller_.reset([[CRWSessionController alloc]
            initWithWindowName:nil
                      openerId:nil
