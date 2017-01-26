@@ -2260,6 +2260,21 @@
             ]
         }
     ],
+    "SiteIsolationForExtensions": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "SpeculativeLaunchServiceWorker": [
         {
             "platforms": [
