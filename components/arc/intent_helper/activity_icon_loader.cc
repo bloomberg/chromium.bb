@@ -77,6 +77,7 @@ ActivityIconLoader::ActivityIconLoader()
 ActivityIconLoader::~ActivityIconLoader() {}
 
 void ActivityIconLoader::InvalidateIcons(const std::string& package_name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (auto it = cached_icons_.begin(); it != cached_icons_.end();) {
     if (it->first.package_name == package_name)
       it = cached_icons_.erase(it);
@@ -88,6 +89,7 @@ void ActivityIconLoader::InvalidateIcons(const std::string& package_name) {
 ActivityIconLoader::GetResult ActivityIconLoader::GetActivityIcons(
     const std::vector<ActivityName>& activities,
     const OnIconsReadyCallback& cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<ActivityToIconsMap> result(new ActivityToIconsMap);
   std::vector<mojom::ActivityNamePtr> activities_to_fetch;
 
@@ -160,20 +162,20 @@ void ActivityIconLoader::OnIconsReady(
     std::unique_ptr<ActivityToIconsMap> cached_result,
     const OnIconsReadyCallback& cb,
     std::vector<mojom::ActivityIconPtr> icons) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   ArcServiceManager* manager = ArcServiceManager::Get();
   base::PostTaskAndReplyWithResult(
       manager->blocking_task_runner().get(), FROM_HERE,
-      base::Bind(&ActivityIconLoader::ResizeAndEncodeIcons, this,
+      base::Bind(&ActivityIconLoader::ResizeAndEncodeIcons,
                  base::Passed(&icons)),
       base::Bind(&ActivityIconLoader::OnIconsResized, this,
                  base::Passed(&cached_result), cb));
 }
 
+// static
 std::unique_ptr<ActivityIconLoader::ActivityToIconsMap>
 ActivityIconLoader::ResizeAndEncodeIcons(
     std::vector<mojom::ActivityIconPtr> icons) {
-  // Runs only on the blocking pool.
-  DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<ActivityToIconsMap> result(new ActivityToIconsMap);
 
   for (size_t i = 0; i < icons.size(); ++i) {
@@ -229,6 +231,7 @@ void ActivityIconLoader::OnIconsResized(
     std::unique_ptr<ActivityToIconsMap> cached_result,
     const OnIconsReadyCallback& cb,
     std::unique_ptr<ActivityToIconsMap> result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Update |cached_icons_|.
   for (const auto& kv : *result) {
     cached_icons_.erase(kv.first);

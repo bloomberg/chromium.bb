@@ -101,7 +101,7 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
                     std::vector<mojom::ActivityIconPtr> icons);
 
   // Resizes and encodes |icons| and returns the results as ActivityToIconsMap.
-  std::unique_ptr<ActivityToIconsMap> ResizeAndEncodeIcons(
+  static std::unique_ptr<ActivityToIconsMap> ResizeAndEncodeIcons(
       std::vector<mojom::ActivityIconPtr> icons);
 
   // A function called when ResizeIcons finishes. Append items in |result| to
