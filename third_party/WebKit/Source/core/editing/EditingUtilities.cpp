@@ -2057,23 +2057,6 @@ DispatchEventResult dispatchBeforeInputInsertText(EventTarget* target,
   return target->dispatchEvent(beforeInputEvent);
 }
 
-DispatchEventResult dispatchBeforeInputFromComposition(
-    EventTarget* target,
-    InputEvent::InputType inputType,
-    const String& data,
-    InputEvent::EventCancelable cancelable) {
-  if (!RuntimeEnabledFeatures::inputEventEnabled())
-    return DispatchEventResult::NotCanceled;
-  if (!target)
-    return DispatchEventResult::NotCanceled;
-  // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
-  // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
-  InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
-      inputType, data, cancelable, InputEvent::EventIsComposing::IsComposing,
-      nullptr);
-  return target->dispatchEvent(beforeInputEvent);
-}
-
 DispatchEventResult dispatchBeforeInputEditorCommand(
     EventTarget* target,
     InputEvent::InputType inputType,
