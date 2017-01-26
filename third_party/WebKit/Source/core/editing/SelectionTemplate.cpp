@@ -285,6 +285,13 @@ SelectionTemplate<Strategy>::Builder::setIsDirectional(bool isDirectional) {
   return *this;
 }
 
+template <typename Strategy>
+typename SelectionTemplate<Strategy>::Builder&
+SelectionTemplate<Strategy>::Builder::setIsHandleVisible(bool isHandleVisible) {
+  m_selection.m_isHandleVisible = isHandleVisible;
+  return *this;
+}
+
 template class CORE_TEMPLATE_EXPORT SelectionTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT
     SelectionTemplate<EditingInFlatTreeStrategy>;

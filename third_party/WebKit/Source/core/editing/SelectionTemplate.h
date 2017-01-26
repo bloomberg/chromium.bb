@@ -66,6 +66,7 @@ class CORE_EXPORT SelectionTemplate final {
     Builder& setGranularity(TextGranularity);
     Builder& setHasTrailingWhitespace(bool);
     Builder& setIsDirectional(bool);
+    Builder& setIsHandleVisible(bool);
 
    private:
     SelectionTemplate m_selection;
@@ -87,6 +88,7 @@ class CORE_EXPORT SelectionTemplate final {
   TextGranularity granularity() const { return m_granularity; }
   bool hasTrailingWhitespace() const { return m_hasTrailingWhitespace; }
   bool isDirectional() const { return m_isDirectional; }
+  bool isHandleVisible() const { return m_isHandleVisible; }
   bool isNone() const { return m_base.isNull(); }
 
   // Returns true if |this| selection holds valid values otherwise it causes
@@ -115,6 +117,7 @@ class CORE_EXPORT SelectionTemplate final {
   TextGranularity m_granularity = CharacterGranularity;
   bool m_hasTrailingWhitespace = false;
   bool m_isDirectional = false;
+  bool m_isHandleVisible = false;
 #if DCHECK_IS_ON()
   uint64_t m_domTreeVersion;
 #endif

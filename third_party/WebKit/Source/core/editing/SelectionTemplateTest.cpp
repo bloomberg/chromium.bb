@@ -18,6 +18,7 @@ TEST_F(SelectionTest, defaultConstructor) {
   EXPECT_EQ(CharacterGranularity, selection.granularity());
   EXPECT_FALSE(selection.hasTrailingWhitespace());
   EXPECT_FALSE(selection.isDirectional());
+  EXPECT_FALSE(selection.isHandleVisible());
   EXPECT_TRUE(selection.isNone());
   EXPECT_EQ(Position(), selection.base());
   EXPECT_EQ(Position(), selection.extent());
@@ -36,6 +37,7 @@ TEST_F(SelectionTest, caret) {
   EXPECT_EQ(CharacterGranularity, selection.granularity());
   EXPECT_FALSE(selection.hasTrailingWhitespace());
   EXPECT_FALSE(selection.isDirectional());
+  EXPECT_FALSE(selection.isHandleVisible());
   EXPECT_FALSE(selection.isNone());
   EXPECT_EQ(position, selection.base());
   EXPECT_EQ(position, selection.extent());
@@ -56,6 +58,7 @@ TEST_F(SelectionTest, range) {
   EXPECT_EQ(CharacterGranularity, selection.granularity());
   EXPECT_FALSE(selection.hasTrailingWhitespace());
   EXPECT_FALSE(selection.isDirectional());
+  EXPECT_FALSE(selection.isHandleVisible());
   EXPECT_FALSE(selection.isNone());
   EXPECT_EQ(base, selection.base());
   EXPECT_EQ(extent, selection.extent());
