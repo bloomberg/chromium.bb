@@ -112,7 +112,7 @@ class WebString {
   BLINK_COMMON_EXPORT void assign(const WebUChar* data, size_t len);
 
   BLINK_COMMON_EXPORT bool equals(const WebString&) const;
-  BLINK_COMMON_EXPORT bool equals(const char* characters) const;
+  BLINK_COMMON_EXPORT bool equals(const char* characters, size_t len) const;
 
   BLINK_COMMON_EXPORT size_t length() const;
 
@@ -229,7 +229,7 @@ class WebString {
 };
 
 inline bool operator==(const WebString& a, const char* b) {
-  return a.equals(b);
+  return a.equals(b, b ? strlen(b) : 0);
 }
 
 inline bool operator!=(const WebString& a, const char* b) {
@@ -237,11 +237,11 @@ inline bool operator!=(const WebString& a, const char* b) {
 }
 
 inline bool operator==(const char* a, const WebString& b) {
-  return b.equals(a);
+  return b == a;
 }
 
 inline bool operator!=(const char* a, const WebString& b) {
-  return !(a == b);
+  return !(b == a);
 }
 
 inline bool operator==(const WebString& a, const WebString& b) {
