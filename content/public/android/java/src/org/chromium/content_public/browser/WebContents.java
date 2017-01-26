@@ -352,4 +352,12 @@ public interface WebContents extends Parcelable {
      */
     public int downloadImage(String url, boolean isFavicon, int maxBitmapSize,
             boolean bypassCache, ImageDownloadCallback callback);
+
+    /**
+     * Issues a fake notification about the renderer being killed.
+     *
+     * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
+     *                        (e.g. renderer for the currently selected tab)
+     */
+    public void simulateRendererKilledForTesting(boolean wasOomProtected);
 }

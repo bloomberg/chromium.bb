@@ -76,9 +76,9 @@ public class CustomTabsConnectionService extends CustomTabsService {
     }
 
     @Override
-    protected boolean validatePostMessageOrigin(CustomTabsSessionToken sessionToken) {
-        if (!isFirstRunDone()) return false;
-        return mConnection.validatePostMessageOrigin(sessionToken);
+    protected boolean requestPostMessageChannel(CustomTabsSessionToken sessionToken,
+            Uri postMessageOrigin) {
+        return mConnection.requestPostMessageChannel(sessionToken, postMessageOrigin);
     }
 
     @Override

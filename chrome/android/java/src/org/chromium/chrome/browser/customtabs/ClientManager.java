@@ -165,7 +165,7 @@ class ClientManager {
     public synchronized int postMessage(CustomTabsSessionToken session, String message) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR;
-        return params.postMessageHandler.postMessage(message);
+        return params.postMessageHandler.postMessageFromClientApp(message);
     }
 
     /**
@@ -262,13 +262,23 @@ class ClientManager {
     }
 
     /**
-     * See {@link PostMessageHandler#setPostMessageOrigin(Uri)}.
+     * See {@link PostMessageHandler#bindSessionToPostMessageService(Context, String)}.
      */
-    public synchronized void setPostMessageOriginForSession(
+    public synchronized boolean bindToPostMessageServiceForSession(CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        if (params == null) return false;
+        return params.postMessageHandler.bindSessionToPostMessageService(
+                mContext, params.packageName);
+    }
+
+    /**
+     * See {@link PostMessageHandler#initializeWithOrigin(Uri)}.
+     */
+    public synchronized void initializeWithPostMessageOriginForSession(
             CustomTabsSessionToken session, Uri origin) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
-        params.postMessageHandler.setPostMessageOrigin(origin);
+        params.postMessageHandler.initializeWithOrigin(origin);
     }
 
     /**
@@ -463,6 +473,9 @@ class ClientManager {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
         mSessionParams.remove(session);
+        if (params.postMessageHandler != null) {
+            params.postMessageHandler.unbindFromContext(mContext);
+        }
         if (params.disconnectCallback != null) params.disconnectCallback.run(session);
         mUidHasCalledWarmup.delete(params.uid);
     }

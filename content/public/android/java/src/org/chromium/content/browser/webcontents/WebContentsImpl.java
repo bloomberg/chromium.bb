@@ -371,6 +371,14 @@ import java.util.UUID;
         nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
     }
 
+    @Override
+    @VisibleForTesting
+    public void simulateRendererKilledForTesting(boolean wasOomProtected) {
+        if (mObserverProxy != null) {
+            mObserverProxy.renderProcessGone(wasOomProtected);
+        }
+    }
+
     // root node can be null if parsing fails.
     @CalledByNative
     private static void onAccessibilitySnapshot(AccessibilitySnapshotNode root,

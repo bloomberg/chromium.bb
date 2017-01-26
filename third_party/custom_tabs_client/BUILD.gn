@@ -50,6 +50,8 @@ android_library("custom_tabs_support_java") {
     "src/customtabs/src/android/support/customtabs/CustomTabsServiceConnection.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsSession.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsSessionToken.java",
+    "src/customtabs/src/android/support/customtabs/PostMessageService.java",
+    "src/customtabs/src/android/support/customtabs/PostMessageServiceConnection.java",
   ]
   deps = [
     "//third_party/android_tools:android_support_annotations_java",
@@ -67,5 +69,6 @@ android_aidl("chrome_custom_tabs_service_aidl") {
   sources = [
     "$java_in_dir/ICustomTabsCallback.aidl",
     "$java_in_dir/ICustomTabsService.aidl",
+    "$java_in_dir/IPostMessageService.aidl",
   ]
 }

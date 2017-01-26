@@ -4,3 +4,4 @@
 
 interface android.support.customtabs.ICustomTabsService;
 interface android.support.customtabs.ICustomTabsCallback;
+interface android.support.customtabs.IPostMessageService;

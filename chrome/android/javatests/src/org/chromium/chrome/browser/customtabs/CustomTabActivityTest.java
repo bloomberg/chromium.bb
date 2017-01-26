@@ -83,6 +83,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -1041,7 +1042,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         assertTrue(connection.newSession(token));
-        assertTrue(connection.validatePostMessageOrigin(token));
+        assertTrue(connection.requestPostMessageChannel(token, null));
         try {
             startCustomTabActivityWithIntent(intent);
         } catch (InterruptedException e) {
@@ -1069,6 +1070,58 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 return currentTab.isLoadingAndRenderingDone();
             }
         });
+        assertTrue(connection.postMessage(token, "Message", null)
+                == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
+    }
+
+    /**
+     * Tests that postMessage channel is not functioning after web contents get destroyed and also
+     * not breaking things.
+     */
+    @SmallTest
+    @RetryOnFailure
+    public void testPostMessageWebContentsDestroyed() throws InterruptedException {
+        final CustomTabsConnection connection = warmUpAndWait();
+        Context context = getInstrumentation().getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        assertTrue(connection.newSession(token));
+        assertTrue(connection.requestPostMessageChannel(token, null));
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return mTestPage.equals(currentTab.getUrl());
+            }
+        });
+        assertTrue(connection.postMessage(token, "Message", null)
+                == CustomTabsService.RESULT_SUCCESS);
+
+        final CallbackHelper renderProcessCallback = new CallbackHelper();
+        new WebContentsObserver(getActivity().getActivityTab().getWebContents()) {
+            @Override
+            public void renderProcessGone(boolean wasOomProtected) {
+                renderProcessCallback.notifyCalled();
+            }
+        };
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getActivityTab()
+                        .getWebContents().simulateRendererKilledForTesting(false);
+            }
+        });
+        try {
+            renderProcessCallback.waitForCallback(0);
+        } catch (TimeoutException e) {
+            fail();
+        }
         assertTrue(connection.postMessage(token, "Message", null)
                 == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
     }
@@ -1116,7 +1169,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         assertTrue(connection.newSession(token));
-        assertTrue(connection.validatePostMessageOrigin(token));
+        assertTrue(connection.requestPostMessageChannel(token, null));
         try {
             startCustomTabActivityWithIntent(intent);
         } catch (InterruptedException e) {
@@ -1146,22 +1199,22 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @RetryOnFailure
     public void testPostMessageReceivedFromPage() throws InterruptedException {
+        final CallbackHelper messageChannelHelper = new CallbackHelper();
+        final CallbackHelper onPostMessageHelper = new CallbackHelper();
         final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
         warmUpAndWait();
-        final CallbackHelper channelReadyHelper = new CallbackHelper();
-        final CallbackHelper messageReceivedHelper = new CallbackHelper();
         final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
-            public void onMessageChannelReady(Uri origin, Bundle extras) {
-                channelReadyHelper.notifyCalled();
+            public void onMessageChannelReady(Bundle extras) {
+                messageChannelHelper.notifyCalled();
             }
 
             @Override
             public void onPostMessage(String message, Bundle extras) {
-                messageReceivedHelper.notifyCalled();
+                onPostMessageHelper.notifyCalled();
             }
         });
-        session.validatePostMessageOrigin();
+        session.requestPostMessageChannel(null);
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(
@@ -1176,51 +1229,168 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (InterruptedException e) {
             fail();
         }
+
         try {
-            channelReadyHelper.waitForCallback(0);
+            messageChannelHelper.waitForCallback(0);
         } catch (TimeoutException e) {
             fail();
         }
+
         try {
-            messageReceivedHelper.waitForCallback(0);
+            onPostMessageHelper.waitForCallback(0);
         } catch (TimeoutException e) {
             fail();
         }
     }
 
     /**
-     * Tests a postMessage request chain can start while prerendering and continue afterwards.
+     * Tests the postMessage requests sent from the page is received on the client side even though
+     * the request is sent after the page is created.
      */
     @SmallTest
     @RetryOnFailure
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPostMessageThroughPrerender() throws InterruptedException {
-        final String url =
-                mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
+    public void testPostMessageReceivedFromPageWithLateRequest() throws InterruptedException {
+        final CallbackHelper messageChannelHelper = new CallbackHelper();
+        final CallbackHelper onPostMessageHelper = new CallbackHelper();
+        final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
         warmUpAndWait();
-        final CallbackHelper channelReadyHelper = new CallbackHelper();
-        final CallbackHelper messageReceivedHelper = new CallbackHelper();
         final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
-            public void onMessageChannelReady(Uri origin, Bundle extras) {
-                channelReadyHelper.notifyCalled();
+            public void onMessageChannelReady(Bundle extras) {
+                messageChannelHelper.notifyCalled();
             }
 
             @Override
             public void onPostMessage(String message, Bundle extras) {
-                messageReceivedHelper.notifyCalled();
+                onPostMessageHelper.notifyCalled();
             }
         });
-        session.validatePostMessageOrigin();
-        session.mayLaunchUrl(Uri.parse(url), null, null);
+
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+        intent.setData(Uri.parse(url));
+        intent.setComponent(new ComponentName(
+                getInstrumentation().getTargetContext(), ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         try {
-            channelReadyHelper.waitForCallback(0);
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return url.equals(currentTab.getUrl());
+            }
+        });
+
+        session.requestPostMessageChannel(null);
+
+        try {
+            messageChannelHelper.waitForCallback(0);
         } catch (TimeoutException e) {
             fail();
         }
-        // Initial title update during prerender.
-        assertTrue(session.postMessage("Prerendering ", null)
+
+        try {
+            onPostMessageHelper.waitForCallback(0);
+        } catch (TimeoutException e) {
+            fail();
+        }
+
+        assertTrue(session.postMessage("Message", null)
                 == CustomTabsService.RESULT_SUCCESS);
+    }
+
+    private static final int BEFORE_MAY_LAUNCH_URL = 0;
+    private static final int BEFORE_INTENT = 1;
+    private static final int AFTER_INTENT = 2;
+
+    /**
+     * Tests a postMessage request chain can start while prerendering and continue afterwards.
+     * Request sent before prerendering starts.
+     */
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPostMessageThroughPrerenderWithRequestBeforeMayLaunchUrl()
+            throws InterruptedException {
+        sendPostMessageDuringPrerenderTransition(BEFORE_MAY_LAUNCH_URL);
+    }
+
+    /**
+     * Tests a postMessage request chain can start while prerendering and continue afterwards.
+     * Request sent after prerendering starts and before intent launched.
+     */
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPostMessageThroughPrerenderWithRequestBeforeIntent()
+            throws InterruptedException {
+        sendPostMessageDuringPrerenderTransition(BEFORE_INTENT);
+    }
+
+    /**
+     * Tests a postMessage request chain can start while prerendering and continue afterwards.
+     * Request sent after intent received.
+     */
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPostMessageThroughPrerenderWithRequestAfterIntent()
+            throws InterruptedException {
+        sendPostMessageDuringPrerenderTransition(AFTER_INTENT);
+    }
+
+    private void sendPostMessageDuringPrerenderTransition(int requestTime)
+            throws InterruptedException {
+        final CallbackHelper messageChannelHelper = new CallbackHelper();
+        final String url =
+                mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
+        warmUpAndWait();
+        final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+            @Override
+            public void onMessageChannelReady(Bundle extras) {
+                messageChannelHelper.notifyCalled();
+            }
+        });
+        boolean channelRequested = false;
+        String titleString = "";
+        String currentMessage = "";
+
+        if (requestTime == BEFORE_MAY_LAUNCH_URL) {
+            channelRequested = session.requestPostMessageChannel(null);
+            assertTrue(channelRequested);
+        }
+
+        session.mayLaunchUrl(Uri.parse(url), null, null);
+        try {
+            ensureCompletedPrerenderForUrl(
+                    CustomTabsConnection.getInstance((Application)
+                            getInstrumentation().getTargetContext().getApplicationContext()), url);
+        } catch (Exception e) {
+            fail();
+        }
+
+        if (requestTime == BEFORE_INTENT) {
+            channelRequested = session.requestPostMessageChannel(null);
+            assertTrue(channelRequested);
+        }
+
+        if (channelRequested) {
+            try {
+                messageChannelHelper.waitForCallback(0);
+            } catch (TimeoutException e) {
+                fail();
+            }
+            currentMessage = "Prerendering ";
+            // Initial title update during prerender.
+            assertTrue(session.postMessage(currentMessage, null)
+                    == CustomTabsService.RESULT_SUCCESS);
+            titleString = currentMessage;
+        }
+
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(
@@ -1231,14 +1401,51 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (InterruptedException e) {
             fail();
         }
+
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return url.equals(currentTab.getUrl());
+            }
+        });
+
+        if (requestTime == AFTER_INTENT) {
+            channelRequested = session.requestPostMessageChannel(null);
+            assertTrue(channelRequested);
+            try {
+                messageChannelHelper.waitForCallback(0);
+            } catch (TimeoutException e) {
+                fail();
+            }
+        }
+
+        currentMessage = "and loading ";
         // Update title again and verify both updates went through with the channel still intact.
-        assertTrue(session.postMessage("and loading", null)
+        assertTrue(session.postMessage(currentMessage, null)
                 == CustomTabsService.RESULT_SUCCESS);
+        titleString += currentMessage;
+
+        // Request a new channel, verify it was created.
+        session.requestPostMessageChannel(null);
+        try {
+            messageChannelHelper.waitForCallback(1);
+        } catch (TimeoutException e) {
+            fail();
+        }
+
+        currentMessage = "and refreshing";
+        // Update title again and verify both updates went through with the channel still intact.
+        assertTrue(session.postMessage(currentMessage, null)
+                == CustomTabsService.RESULT_SUCCESS);
+        titleString += currentMessage;
+
+        final String title = titleString;
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = getActivity().getActivityTab();
-                return "Prerendering and loading".equals(currentTab.getTitle());
+                return title.equals(currentTab.getTitle());
             }
         });
     }

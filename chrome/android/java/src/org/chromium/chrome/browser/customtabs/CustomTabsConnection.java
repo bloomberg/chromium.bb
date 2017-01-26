@@ -183,6 +183,7 @@ public class CustomTabsConnection {
     }
 
     private boolean newSessionInternal(CustomTabsSessionToken session) {
+        if (session == null) return false;
         ClientManager.DisconnectCallback onDisconnect = new ClientManager.DisconnectCallback() {
             @Override
             public void run(CustomTabsSessionToken session) {
@@ -474,21 +475,22 @@ public class CustomTabsConnection {
         return result;
     }
 
-    /**
-     * Sends a request to look for a valid postMessage origin that is associated with the app
-     * owning the given {@link CustomTabsSessionToken}.
-     * @param session The session that the request is associated with
-     * @return Whether the validation request was accepted.
-     */
-    public boolean validatePostMessageOrigin(CustomTabsSessionToken session) {
-        boolean success = validatePostMessageOriginInternal(session);
-        logCall("validatePostMessageOrigin()", success);
+    public boolean requestPostMessageChannel(CustomTabsSessionToken session,
+            Uri postMessageOrigin) {
+        boolean success = requestPostMessageChannelInternal(session, postMessageOrigin);
+        logCall("requestPostMessageChannel() with origin "
+                + (postMessageOrigin != null ? postMessageOrigin.toString() : ""), success);
         return success;
     }
 
-    private boolean validatePostMessageOriginInternal(final CustomTabsSessionToken session) {
+    private boolean requestPostMessageChannelInternal(final CustomTabsSessionToken session,
+            final Uri postMessageOrigin) {
         if (!mWarmupHasBeenCalled.get()) return false;
-        if (!isCallerForegroundOrSelf()) return false;
+        if (!isCallerForegroundOrSelf() && !CustomTabActivity.isActiveSession(session)) {
+            return false;
+        }
+        if (!mClientManager.bindToPostMessageServiceForSession(session)) return false;
+
         final int uid = Binder.getCallingUid();
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
@@ -496,8 +498,8 @@ public class CustomTabsConnection {
                 // If the API is not enabled, we don't set the post message origin, which will
                 // avoid PostMessageHandler initialization and disallow postMessage calls.
                 if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_POST_MESSAGE_API)) return;
-                mClientManager.setPostMessageOriginForSession(
-                        session, acquireOriginForSession(session, uid));
+                mClientManager.initializeWithPostMessageOriginForSession(
+                        session, verifyOriginForSession(session, uid, postMessageOrigin));
             }
         });
         return true;
@@ -506,11 +508,14 @@ public class CustomTabsConnection {
     /**
      * Acquire the origin for the client that owns the given session.
      * @param session The session to use for getting client information.
-     * @param clientUID The UID for the client controlling the session.
+     * @param clientUid The UID for the client controlling the session.
+     * @param origin The origin that is suggested by the client. The validated origin may be this or
+     *               a derivative of this.
      * @return The validated origin {@link Uri} for the given session's client.
      */
-    protected Uri acquireOriginForSession(CustomTabsSessionToken session, int clientUID) {
-        if (clientUID == Process.myUid()) return Uri.EMPTY;
+    protected Uri verifyOriginForSession(
+            CustomTabsSessionToken session, int clientUid, Uri origin) {
+        if (clientUid == Process.myUid()) return Uri.EMPTY;
         return null;
     }
 

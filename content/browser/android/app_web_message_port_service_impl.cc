@@ -107,10 +107,11 @@ void AppWebMessagePortServiceImpl::OnConvertedWebToAppMessage(
 void AppWebMessagePortServiceImpl::OnMessagePortMessageFilterClosing(
     AppWebMessagePortMessageFilter* filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (MessagePorts::iterator iter = ports_.begin(); iter != ports_.end();
-       iter++) {
+  for (MessagePorts::iterator iter = ports_.begin(); iter != ports_.end();) {
     if (iter->second == filter) {
-      ports_.erase(iter);
+      iter = ports_.erase(iter);
+    } else {
+      ++iter;
     }
   }
 }
