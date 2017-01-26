@@ -97,6 +97,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsParentMainFrame() override;
   bool IsRendererInitiated() override;
   bool WasServerRedirect() override;
+  const std::vector<GURL>& GetRedirectChain() override;
   int GetFrameTreeNodeId() override;
   int GetParentFrameTreeNodeId() override;
   const base::TimeTicks& NavigationStart() override;

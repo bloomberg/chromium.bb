@@ -160,6 +160,11 @@ class CONTENT_EXPORT NavigationHandle {
   // Whether the navigation has encountered a server redirect or not.
   virtual bool WasServerRedirect() = 0;
 
+  // Lists the redirects that occurred on the way to the current page. The
+  // current page is the last one in the list (so even when there's no redirect,
+  // there will be one entry in the list).
+  virtual const std::vector<GURL>& GetRedirectChain() = 0;
+
   // Whether the navigation has committed. This returns true for either
   // successful commits or error pages that replace the previous page
   // (distinguished by |IsErrorPage|), and false for errors that leave the user

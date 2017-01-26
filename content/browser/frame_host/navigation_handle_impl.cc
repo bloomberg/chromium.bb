@@ -193,6 +193,10 @@ bool NavigationHandleImpl::WasServerRedirect() {
   return was_redirected_;
 }
 
+const std::vector<GURL>& NavigationHandleImpl::GetRedirectChain() {
+  return redirect_chain_;
+}
+
 int NavigationHandleImpl::GetFrameTreeNodeId() {
   return frame_tree_node_->frame_tree_node_id();
 }

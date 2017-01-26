@@ -170,15 +170,12 @@ class PrerenderContents : public content::NotificationObserver,
   void DidStopLoading() override;
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidGetRedirectForResourceRequest(
       const content::ResourceRedirectDetails& details) override;
 

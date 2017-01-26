@@ -32,6 +32,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -42,6 +43,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -549,22 +551,21 @@ void PrerenderContents::DocumentLoadedInFrame(
     NotifyPrerenderDomContentLoaded();
 }
 
-void PrerenderContents::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page) {
-  if (!render_frame_host->GetParent()) {
-    if (!CheckURL(validated_url))
-      return;
+void PrerenderContents::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+    return;
 
-    // Usually, this event fires if the user clicks or enters a new URL.
-    // Neither of these can happen in the case of an invisible prerender.
-    // So the cause is: Some JavaScript caused a new URL to be loaded.  In that
-    // case, the spinner would start again in the browser, so we must reset
-    // has_stopped_loading_ so that the spinner won't be stopped.
-    has_stopped_loading_ = false;
-    has_finished_loading_ = false;
-  }
+  if (!CheckURL(navigation_handle->GetURL()))
+    return;
+
+  // Usually, this event fires if the user clicks or enters a new URL.
+  // Neither of these can happen in the case of an invisible prerender.
+  // So the cause is: Some JavaScript caused a new URL to be loaded.  In that
+  // case, the spinner would start again in the browser, so we must reset
+  // has_stopped_loading_ so that the spinner won't be stopped.
+  has_stopped_loading_ = false;
+  has_finished_loading_ = false;
 }
 
 void PrerenderContents::DidFinishLoad(
@@ -574,9 +575,29 @@ void PrerenderContents::DidFinishLoad(
     has_finished_loading_ = true;
 }
 
-void PrerenderContents::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void PrerenderContents::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsErrorPage()) {
+    return;
+  }
+
+  if (navigation_handle->GetResponseHeaders() &&
+      navigation_handle->GetResponseHeaders()->response_code() >= 400) {
+    // Maintain same behavior as old navigation API when the URL is unreachable
+    // and leads to an error page. While there will be a subsequent navigation
+    // that has navigation_handle->IsErrorPage(), it'll be too late to wait for
+    // it as the renderer side will consider this prerender complete. This
+    // object would therefore have been destructed already and so instead look
+    // for the error response code now.
+    // Also maintain same final status code that previous navigation API
+    // returned, which was reached because the URL for the error page was
+    // kUnreachableWebDataURL and that was interpreted as unsupported scheme.
+    Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
+    return;
+  }
+
   // Prevent ORIGIN_OFFLINE prerenders from being destroyed on location.href
   // change, since the history is never merged for offline prerenders. Also
   // avoid adding aliases as they may potentially mark other valid requests to
@@ -597,13 +618,13 @@ void PrerenderContents::DidNavigateMainFrame(
     return;
   }
 
-  // Add each redirect as an alias. |params.url| is included in
-  // |params.redirects|.
+  // Add each redirect as an alias. |navigation_handle->GetURL()| is included in
+  // |navigation_handle->GetRedirectChain()|.
   //
   // TODO(davidben): We do not correctly patch up history for renderer-initated
   // navigations which add history entries. http://crbug.com/305660.
-  for (size_t i = 0; i < params.redirects.size(); i++) {
-    if (!AddAliasURL(params.redirects[i]))
+  for (const auto& redirect : navigation_handle->GetRedirectChain()) {
+    if (!AddAliasURL(redirect))
       return;
   }
 }
