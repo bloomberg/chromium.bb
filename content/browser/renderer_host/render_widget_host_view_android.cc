@@ -796,6 +796,35 @@ void RenderWidgetHostViewAndroid::OnImeCancelComposition(
   ime_adapter_android_.CancelComposition();
 }
 
+void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+  DCHECK_EQ(text_input_manager_, text_input_manager);
+
+  // TODO(asimjour): remove the flag and fix text selection popup for
+  // virtual reality mode.
+  if (is_in_vr_)
+    return;
+
+  if (!content_view_core_)
+    return;
+
+  RenderWidgetHostImpl* focused_widget = GetFocusedWidget();
+  if (!focused_widget || !focused_widget->GetView())
+    return;
+
+  const TextInputManager::TextSelection& selection =
+      *text_input_manager_->GetTextSelection(focused_widget->GetView());
+  if (selection.range.is_empty()) {
+    content_view_core_->OnSelectionChanged("");
+    return;
+  }
+
+  base::string16 selected_text;
+  if (selection.GetSelectedText(&selected_text))
+    content_view_core_->OnSelectionChanged(base::UTF16ToUTF8(selected_text));
+}
+
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
   if (cached_background_color_ == color)
     return;
@@ -942,38 +971,6 @@ void RenderWidgetHostViewAndroid::Destroy() {
 void RenderWidgetHostViewAndroid::SetTooltipText(
     const base::string16& tooltip_text) {
   // Tooltips don't makes sense on Android.
-}
-
-void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
-                                                   size_t offset,
-                                                   const gfx::Range& range) {
-  // TODO(asimjour): remove the flag and fix text selection popup for
-  // virtual reality mode.
-  if (is_in_vr_)
-    return;
-
-  RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
-
-  if (!content_view_core_)
-    return;
-  if (range.is_empty()) {
-    content_view_core_->OnSelectionChanged("");
-    return;
-  }
-
-  DCHECK(!text.empty());
-  size_t pos = range.GetMin() - offset;
-  size_t n = range.length();
-
-  DCHECK(pos + n <= text.length()) << "The text can not fully cover range.";
-  if (pos >= text.length()) {
-    NOTREACHED() << "The text can not cover range.";
-    return;
-  }
-
-  std::string utf8_selection = base::UTF16ToUTF8(text.substr(pos, n));
-
-  content_view_core_->OnSelectionChanged(utf8_selection);
 }
 
 void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {

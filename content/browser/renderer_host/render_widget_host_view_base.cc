@@ -37,10 +37,6 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       background_color_(SK_ColorWHITE),
       mouse_locked_(false),
       showing_context_menu_(false),
-#if !defined(USE_AURA)
-      selection_text_offset_(0),
-      selection_range_(gfx::Range::InvalidRange()),
-#endif
       current_device_scale_factor_(0),
       current_display_rotation_(display::Display::ROTATE_0),
       text_input_manager_(nullptr),
@@ -138,18 +134,8 @@ float RenderWidgetHostViewBase::GetBottomControlsHeight() const {
 void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {
-// TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
-// Also, remove the following local variables when that happens
-// (https://crbug.com/578168 and https://crbug.com/602427).
-#if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->SelectionChanged(this, text, offset, range);
-#else
-  selection_text_ = text;
-  selection_text_offset_ = offset;
-  selection_range_.set_start(range.start());
-  selection_range_.set_end(range.end());
-#endif
 }
 
 gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
@@ -180,10 +166,6 @@ void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
 }
 
 base::string16 RenderWidgetHostViewBase::GetSelectedText() {
-// TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
-// Also, remove the following local variables when that happens
-// (https://crbug.com/578168 and https://crbug.com/602427).
-#if !defined(OS_ANDROID)
   if (!GetTextInputManager())
     return base::string16();
 
@@ -195,13 +177,6 @@ base::string16 RenderWidgetHostViewBase::GetSelectedText() {
 
   return selection->text.substr(selection->range.GetMin() - selection->offset,
                                 selection->range.length());
-#else
-  if (!selection_range_.IsValid())
-    return base::string16();
-  return selection_text_.substr(
-      selection_range_.GetMin() - selection_text_offset_,
-      selection_range_.length());
-#endif
 }
 
 bool RenderWidgetHostViewBase::IsMouseLocked() {
