@@ -5,10 +5,10 @@
 module ui.mojom;
 
 import "services/ui/public/interfaces/cursor.mojom";
-import "services/ui/public/interfaces/display/display.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
+import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 

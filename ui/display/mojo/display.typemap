@@ -2,12 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/ui/public/interfaces/display/display.mojom"
+mojom = "//ui/display/mojo/display.mojom"
 public_headers = [ "//ui/display/display.h" ]
-traits_headers =
-    [ "//services/ui/public/interfaces/display/display_struct_traits.h" ]
+traits_headers = [ "//ui/display/mojo/display_struct_traits.h" ]
 sources = [
-  "//services/ui/public/interfaces/display/display_struct_traits.cc",
+  "//ui/display/mojo/display_struct_traits.cc",
 ]
 public_deps = [
   "//ui/display",

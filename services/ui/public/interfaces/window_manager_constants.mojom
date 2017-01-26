@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "services/ui/public/interfaces/display/display.mojom";
+import "ui/display/mojo/display.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum WindowManagerErrorCode {

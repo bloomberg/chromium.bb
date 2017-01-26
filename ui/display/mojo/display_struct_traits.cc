@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/interfaces/display/display_struct_traits.h"
+#include "ui/display/mojo/display_struct_traits.h"
 
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 

@@ -6,22 +6,11 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("display") {
   sources = [
-    "display.mojom",
     "display_controller.mojom",
     "test_display_controller.mojom",
   ]
 
   public_deps = [
     "//ui/gfx/geometry/mojo",
-  ]
-}
-
-mojom("test_interfaces") {
-  sources = [
-    "display_struct_traits_test.mojom",
-  ]
-
-  public_deps = [
-    ":display",
   ]
 }

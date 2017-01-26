@@ -4,9 +4,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/display/display_struct_traits_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
+#include "ui/display/mojo/display_struct_traits_test.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 

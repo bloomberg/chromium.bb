@@ -4,7 +4,7 @@
 
 module display.mojom;
 
-import "services/ui/public/interfaces/display/display.mojom";
+import "ui/display/mojo/display.mojom";
 
 interface DisplayStructTraitsTest {
   [Sync]

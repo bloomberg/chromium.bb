@@ -8,22 +8,17 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/icc_profile.h"
 
-#if !defined(OS_IOS)
-#include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
-#endif
-
 namespace display {
 
-#if !defined(OS_IOS)
 namespace mojom {
 class DisplayDataView;
 }
-#endif
 
 // This class typically, but does not always, correspond to a physical display
 // connected to the system. A fake Display may exist on a headless system, or a
@@ -194,6 +189,8 @@ class DISPLAY_EXPORT Display final {
   }
 
  private:
+  friend struct mojo::StructTraits<mojom::DisplayDataView, Display>;
+
   int64_t id_;
   gfx::Rect bounds_;
   // If non-empty, then should be same size as |bounds_|. Used to avoid rounding
@@ -208,10 +205,6 @@ class DISPLAY_EXPORT Display final {
   int color_depth_;
   int depth_per_component_;
   bool is_monochrome_ = false;
-
-#if !defined(OS_IOS)
-  friend struct mojo::StructTraits<mojom::DisplayDataView, Display>;
-#endif
 };
 
 }  // namespace display

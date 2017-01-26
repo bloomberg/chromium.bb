@@ -36,6 +36,7 @@ mojom("interfaces") {
     "//gpu/ipc/common:interfaces",
     "//services/ui/public/interfaces/display",
     "//services/ui/public/interfaces/ime",
+    "//ui/display/mojo:interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
@@ -53,7 +54,6 @@ test("ui_struct_traits_unittests") {
   testonly = true
 
   sources = [
-    "display/display_struct_traits_unittest.cc",
     "ime/ime_struct_traits_unittest.cc",
   ]
 
@@ -61,7 +61,6 @@ test("ui_struct_traits_unittests") {
     "//base",
     "//base/test:test_support",
     "//mojo/edk/test:run_all_unittests",
-    "//services/ui/public/interfaces/display:test_interfaces",
     "//services/ui/public/interfaces/ime:test_interfaces",
     "//testing/gtest",
     "//ui/display/types",
