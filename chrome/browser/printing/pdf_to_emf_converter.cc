@@ -112,7 +112,6 @@ class PdfConverterUtilityProcessHostClient
       const PdfRenderSettings& settings);
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
-             bool print_text_with_gdi,
              const PdfConverter::StartCallback& start_callback);
 
   void GetPage(int page_number,
@@ -169,8 +168,7 @@ class PdfConverterUtilityProcessHostClient
       std::unique_ptr<base::File, content::BrowserThread::DeleteOnFileThread>
           temp_file) = 0;
   // Send the messages to Start, GetPage, and Stop.
-  virtual void SendStartMessage(IPC::PlatformFileForTransit transit,
-                                bool print_text_with_gdi) = 0;
+  virtual void SendStartMessage(IPC::PlatformFileForTransit transit) = 0;
   virtual void SendGetPageMessage(int page_number,
                                   IPC::PlatformFileForTransit transit) = 0;
   virtual void SendStopMessage() = 0;
@@ -180,7 +178,7 @@ class PdfConverterUtilityProcessHostClient
   void OnPageDone(bool success, float scale_factor);
 
   void OnFailed();
-  void OnTempPdfReady(bool print_text_with_gdi, ScopedTempFile pdf);
+  void OnTempPdfReady(ScopedTempFile pdf);
   void OnTempFileReady(GetPageCallbackData* callback_data,
                        ScopedTempFile temp_file);
 
@@ -220,8 +218,7 @@ class PdfToEmfUtilityProcessHostClient
   std::unique_ptr<MetafilePlayer> GetFileFromTemp(
       std::unique_ptr<base::File, content::BrowserThread::DeleteOnFileThread>
           temp_file) override;
-  void SendStartMessage(IPC::PlatformFileForTransit transit,
-                        bool print_text_with_gdi) override;
+  void SendStartMessage(IPC::PlatformFileForTransit transit) override;
   void SendGetPageMessage(int page_number,
                           IPC::PlatformFileForTransit transit) override;
   void SendStopMessage() override;
@@ -241,7 +238,6 @@ class PdfConverterImpl : public PdfConverter {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
-             bool print_text_with_gdi,
              const StartCallback& start_callback) override;
 
   void GetPage(int page_number,
@@ -265,7 +261,6 @@ class PdfToEmfConverterImpl : public PdfConverterImpl {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
-             bool print_text_with_gdi,
              const StartCallback& start_callback) override;
 
  private:
@@ -361,13 +356,12 @@ PdfConverterUtilityProcessHostClient::~PdfConverterUtilityProcessHostClient() {}
 
 void PdfConverterUtilityProcessHostClient::Start(
     const scoped_refptr<base::RefCountedMemory>& data,
-    bool print_text_with_gdi,
     const PdfConverter::StartCallback& start_callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PdfConverterUtilityProcessHostClient::Start, this, data,
-                   print_text_with_gdi, start_callback));
+                   start_callback));
     return;
   }
 
@@ -385,20 +379,16 @@ void PdfConverterUtilityProcessHostClient::Start(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CreateTempPdfFile, data, &temp_dir_),
-      base::Bind(&PdfConverterUtilityProcessHostClient::OnTempPdfReady, this,
-                 print_text_with_gdi));
+      base::Bind(&PdfConverterUtilityProcessHostClient::OnTempPdfReady, this));
 }
 
-void PdfConverterUtilityProcessHostClient::OnTempPdfReady(
-    bool print_text_with_gdi,
-    ScopedTempFile pdf) {
+void PdfConverterUtilityProcessHostClient::OnTempPdfReady(ScopedTempFile pdf) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!utility_process_host_ || !pdf)
     return OnFailed();
   // Should reply with OnPageCount().
   SendStartMessage(
-      IPC::GetPlatformFileForTransit(pdf->GetPlatformFile(), false),
-      print_text_with_gdi);
+      IPC::GetPlatformFileForTransit(pdf->GetPlatformFile(), false));
 }
 
 void PdfConverterUtilityProcessHostClient::OnPageCount(int page_count) {
@@ -574,10 +564,8 @@ void PdfToEmfUtilityProcessHostClient::SendGetPageMessage(
 }
 
 void PdfToEmfUtilityProcessHostClient::SendStartMessage(
-    IPC::PlatformFileForTransit transit,
-    bool print_text_with_gdi) {
-  Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(transit, settings_,
-                                                      print_text_with_gdi));
+    IPC::PlatformFileForTransit transit) {
+  Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(transit, settings_));
 }
 
 void PdfToEmfUtilityProcessHostClient::SendStopMessage() {
@@ -591,7 +579,6 @@ PdfConverterImpl::~PdfConverterImpl() {}
 
 void PdfConverterImpl::Start(const scoped_refptr<base::RefCountedMemory>& data,
                              const PdfRenderSettings& conversion_settings,
-                             bool print_text_with_gdi,
                              const StartCallback& start_callback) {
   DCHECK(!utility_client_.get());
 }
@@ -616,12 +603,11 @@ PdfToEmfConverterImpl::~PdfToEmfConverterImpl() {
 void PdfToEmfConverterImpl::Start(
     const scoped_refptr<base::RefCountedMemory>& data,
     const PdfRenderSettings& conversion_settings,
-    bool print_text_with_gdi,
     const StartCallback& start_callback) {
   DCHECK(!utility_client_.get());
   utility_client_ = new PdfToEmfUtilityProcessHostClient(
       weak_ptr_factory_.GetWeakPtr(), conversion_settings);
-  utility_client_->Start(data, print_text_with_gdi, start_callback);
+  utility_client_->Start(data, start_callback);
 }
 
 }  // namespace

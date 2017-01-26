@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"
 #include "printing/backend/print_backend.h"
 #include "printing/features/features.h"
@@ -26,6 +27,16 @@
 
 // Preview and Cloud Print messages.
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+IPC_ENUM_TRAITS_MAX_VALUE(printing::PdfRenderSettings::Mode,
+                          printing::PdfRenderSettings::Mode::LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(printing::PdfRenderSettings)
+  IPC_STRUCT_TRAITS_MEMBER(area)
+  IPC_STRUCT_TRAITS_MEMBER(dpi)
+  IPC_STRUCT_TRAITS_MEMBER(autorotate)
+  IPC_STRUCT_TRAITS_MEMBER(mode)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(printer_capabilities)
   IPC_STRUCT_TRAITS_MEMBER(caps_mime_type)
@@ -69,7 +80,6 @@ IPC_STRUCT_TRAITS_END()
 //------------------------------------------------------------------------------
 // Utility process messages:
 // These are messages from the browser to the utility process.
-
 // Tell the utility process to render the given PDF into a PWGRaster.
 IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
                      IPC::PlatformFileForTransit /* Input PDF file */,
@@ -99,10 +109,9 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
 // Tell the utility process to start rendering the given PDF into a metafile.
 // Utility process would be alive until
 // ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop message.
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
                      IPC::PlatformFileForTransit /* input_file */,
-                     printing::PdfRenderSettings /* settings */,
-                     bool /* print_text_with_gdi */)
+                     printing::PdfRenderSettings /* settings */)
 
 // Requests conversion of the next page.
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage,

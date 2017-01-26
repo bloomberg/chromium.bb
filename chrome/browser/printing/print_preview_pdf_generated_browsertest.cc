@@ -370,7 +370,8 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
 
       total_height_in_pixels += height_in_pixels;
       gfx::Rect rect(width_in_pixels, height_in_pixels);
-      PdfRenderSettings settings(rect, kDpi, true);
+      PdfRenderSettings settings(rect, kDpi, true,
+                                 PdfRenderSettings::Mode::NORMAL);
 
       int int_max = std::numeric_limits<int>::max();
       if (settings.area.width() > int_max / kColorChannels ||

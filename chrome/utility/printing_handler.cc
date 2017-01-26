@@ -87,10 +87,10 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)
 void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
-    const PdfRenderSettings& settings,
-    bool print_text_with_gdi) {
+    const PdfRenderSettings& settings) {
   pdf_rendering_settings_ = settings;
-  chrome_pdf::SetPDFUseGDIPrinting(print_text_with_gdi);
+  chrome_pdf::SetPDFUseGDIPrinting(pdf_rendering_settings_.mode ==
+                                   PdfRenderSettings::Mode::GDI_TEXT);
   base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
   int page_count = LoadPDF(std::move(pdf_file));
   Send(

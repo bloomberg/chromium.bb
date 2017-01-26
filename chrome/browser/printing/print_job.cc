@@ -236,10 +236,8 @@ class PrintJob::PdfConversionState {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
-             bool print_text_with_gdi,
              const PdfConverter::StartCallback& start_callback) {
-    converter_->Start(data, conversion_settings, print_text_with_gdi,
-                      start_callback);
+    converter_->Start(data, conversion_settings, start_callback);
   }
 
   void GetMorePages(const PdfConverter::GetPageCallback& get_page_callback) {
@@ -286,9 +284,12 @@ void PrintJob::StartPdfToEmfConversion(
       base::MakeUnique<PdfConversionState>(page_size, content_area,
           PdfConverter::CreatePdfToEmfConverter());
   const int kPrinterDpi = settings().dpi();
-  PdfRenderSettings settings(content_area, kPrinterDpi, true /* autorotate? */);
+  PdfRenderSettings settings(
+      content_area, kPrinterDpi, /*autorotate=*/true,
+      print_text_with_gdi ? PdfRenderSettings::Mode::GDI_TEXT
+                          : PdfRenderSettings::Mode::NORMAL);
   pdf_conversion_state_->Start(
-      bytes, settings, print_text_with_gdi,
+      bytes, settings,
       base::Bind(&PrintJob::OnPdfConversionStarted, this));
 }
 
