@@ -226,9 +226,6 @@ source_set("material_components_ios") {
     "src/components/ButtonBar/src",
     "src/components/NavigationBar/src",
     "src/components/OverlayWindow/src",
-
-    # TODO(crbug.com/684379): remove this include once it is not needed anymore.
-    "src/components/Snackbar/src/private",
     "src/components/private/Application/src",
     "src/components/private/Color/src",
     "src/components/private/Icons/src",
