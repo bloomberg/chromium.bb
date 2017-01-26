@@ -210,7 +210,12 @@ class CHROMEOS_EXPORT DebugDaemonClient
       const SetOomScoreAdjCallback& callback) = 0;
 
   // A callback to handle the result of CupsAddPrinter.
-  using CupsAddPrinterCallback = base::Callback<void(bool success)>;
+  using LegacyCupsAddPrinterCallback = base::Callback<void(bool status)>;
+
+  // A callback to handle the result of CupsAdd[Auto|Manually]ConfiguredPrinter.
+  // A zero status means success, non-zero statuses are used to convey different
+  // errors.
+  using CupsAddPrinterCallback = base::Callback<void(int32_t status)>;
 
   // Calls CupsAddPrinter.  |name| is the printer name. |uri| is the device
   // uri. |ppd_path| is the absolute path to the PPD file. |ipp_everywhere|
@@ -218,12 +223,39 @@ class CHROMEOS_EXPORT DebugDaemonClient
   // true if adding the printer to CUPS was successful and false if there was an
   // error.  |error_callback| will be called if there was an error in
   // communicating with debugd.
+  //
+  // Obsoleted by CupsAddAutoConfiguredPrinter and
+  // CupsAddManuallyConfiguredPrinter.
   virtual void CupsAddPrinter(const std::string& name,
                               const std::string& uri,
                               const std::string& ppd_path,
                               bool ipp_everywhere,
-                              const CupsAddPrinterCallback& callback,
+                              const LegacyCupsAddPrinterCallback& callback,
                               const base::Closure& error_callback) = 0;
+
+  // Calls CupsAddManuallyConfiguredPrinter.  |name| is the printer
+  // name. |uri| is the device.  |ppd_contents| is the contents of the
+  // PPD file used to drive the device.  |callback| is called with
+  // true if adding the printer to CUPS was successful and false if
+  // there was an error.  |error_callback| will be called if there was
+  // an error in communicating with debugd.
+  virtual void CupsAddManuallyConfiguredPrinter(
+      const std::string& name,
+      const std::string& uri,
+      const std::string& ppd_contents,
+      const CupsAddPrinterCallback& callback,
+      const base::Closure& error_callback) = 0;
+
+  // Calls CupsAddAutoConfiguredPrinter.  |name| is the printer
+  // name. |uri| is the device.  |callback| is called with true if
+  // adding the printer to CUPS was successful and false if there was
+  // an error.  |error_callback| will be called if there was an error
+  // in communicating with debugd.
+  virtual void CupsAddAutoConfiguredPrinter(
+      const std::string& name,
+      const std::string& uri,
+      const CupsAddPrinterCallback& callback,
+      const base::Closure& error_callback) = 0;
 
   // A callback to handle the result of CupsRemovePrinter.
   using CupsRemovePrinterCallback = base::Callback<void(bool success)>;
