@@ -1762,8 +1762,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self recordInterfaceOrientation];
   navigation_metrics::OriginsSeenService* originsSeenService =
       IOSChromeOriginsSeenServiceFactory::GetForBrowserState(self.browserState);
-  bool alreadySeen =
-      originsSeenService->Insert(url::Origin::Origin(lastCommittedURL));
+  bool alreadySeen = originsSeenService->Insert(url::Origin(lastCommittedURL));
   navigation_metrics::RecordMainFrameNavigation(
       lastCommittedURL, true, self.browserState->IsOffTheRecord(), alreadySeen);
 
