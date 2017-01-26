@@ -101,7 +101,7 @@ NGFragment* NGOutOfFlowLayoutPart::LayoutDescendant(
   Optional<LayoutUnit> block_estimate;
 
   if (AbsoluteNeedsChildInlineSize(*descendant.Style())) {
-    inline_estimate = descendant.ComputeMinAndMaxContentSizesSync();
+    inline_estimate = descendant.ComputeMinAndMaxContentSizes();
   }
 
   NGAbsolutePhysicalPosition node_position =

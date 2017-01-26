@@ -27,9 +27,7 @@ TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
   NGBlockNode* box = new NGBlockNode(style_.get());
   box->SetFirstChild(first_child);
 
-  MinAndMaxContentSizes sizes;
-  while (!box->ComputeMinAndMaxContentSizes(&sizes))
-    continue;
+  MinAndMaxContentSizes sizes = box->ComputeMinAndMaxContentSizes();
   EXPECT_EQ(LayoutUnit(kWidth), sizes.min_content);
   EXPECT_EQ(LayoutUnit(kWidth), sizes.max_content);
 }

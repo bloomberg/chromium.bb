@@ -95,29 +95,23 @@ NGPhysicalFragment* NGBlockNode::Layout(NGConstraintSpace* constraint_space) {
   return fragment_;
 }
 
-MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizesSync() {
+MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
   MinAndMaxContentSizes sizes;
-  while (!ComputeMinAndMaxContentSizes(&sizes))
-    continue;
-  return sizes;
-}
-
-bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
     // TODO(layout-ng): This could be somewhat optimized by directly calling
     // computeIntrinsicLogicalWidths, but that function is currently private.
     // Consider doing that if this becomes a performance issue.
     LayoutUnit borderAndPadding = layout_box_->borderAndPaddingLogicalWidth();
-    sizes->min_content = layout_box_->computeLogicalWidthUsing(
-                             MainOrPreferredSize, Length(MinContent),
-                             LayoutUnit(), layout_box_->containingBlock()) -
-                         borderAndPadding;
-    sizes->max_content = layout_box_->computeLogicalWidthUsing(
-                             MainOrPreferredSize, Length(MaxContent),
-                             LayoutUnit(), layout_box_->containingBlock()) -
-                         borderAndPadding;
-    return true;
+    sizes.min_content = layout_box_->computeLogicalWidthUsing(
+                            MainOrPreferredSize, Length(MinContent),
+                            LayoutUnit(), layout_box_->containingBlock()) -
+                        borderAndPadding;
+    sizes.max_content = layout_box_->computeLogicalWidthUsing(
+                            MainOrPreferredSize, Length(MaxContent),
+                            LayoutUnit(), layout_box_->containingBlock()) -
+                        borderAndPadding;
+    return sizes;
   }
 
   NGConstraintSpace* constraint_space =
@@ -129,8 +123,8 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGBlockLayoutAlgorithm minmax_algorithm(
       layout_box_, Style(), toNGBlockNode(FirstChild()), constraint_space);
-  if (minmax_algorithm.ComputeMinAndMaxContentSizes(sizes))
-    return true;
+  if (minmax_algorithm.ComputeMinAndMaxContentSizes(&sizes))
+    return sizes;
 
   // Have to synthesize this value.
   NGPhysicalFragment* physical_fragment = Layout(constraint_space);
@@ -138,7 +132,7 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
       toNGPhysicalBoxFragment(physical_fragment));
 
-  sizes->min_content = fragment->InlineOverflow();
+  sizes.min_content = fragment->InlineOverflow();
 
   // Now, redo with infinite space for max_content
   constraint_space =
@@ -153,8 +147,8 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   fragment = new NGBoxFragment(
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
       toNGPhysicalBoxFragment(physical_fragment));
-  sizes->max_content = fragment->InlineOverflow();
-  return true;
+  sizes.max_content = fragment->InlineOverflow();
+  return sizes;
 }
 
 ComputedStyle* NGBlockNode::MutableStyle() {

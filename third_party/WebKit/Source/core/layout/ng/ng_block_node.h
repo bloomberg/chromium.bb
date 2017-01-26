@@ -38,16 +38,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   LayoutObject* GetLayoutObject() override;
 
   // Computes the value of min-content and max-content for this box.
-  // The return value has the same meaning as for Layout.
   // If the underlying layout algorithm returns NotImplemented from
   // ComputeMinAndMaxContentSizes, this function will synthesize these sizes
   // using Layout with special constraint spaces.
-  // It is not legal to interleave a pending Layout() with a pending
-  // ComputeOrSynthesizeMinAndMaxContentSizes (i.e. you have to call Layout
-  // often enough that it returns true before calling
-  // ComputeOrSynthesizeMinAndMaxContentSizes)
-  bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*);
-  MinAndMaxContentSizes ComputeMinAndMaxContentSizesSync();
+  MinAndMaxContentSizes ComputeMinAndMaxContentSizes();
 
   const ComputedStyle* Style() const;
   ComputedStyle* MutableStyle();

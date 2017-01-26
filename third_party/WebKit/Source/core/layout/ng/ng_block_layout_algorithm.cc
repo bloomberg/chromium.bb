@@ -208,7 +208,7 @@ bool NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
   for (NGBlockNode* node = first_child_; node; node = node->NextSibling()) {
     Optional<MinAndMaxContentSizes> child_minmax;
     if (NeedMinAndMaxContentSizesForContentContribution(*node->Style())) {
-      child_minmax = node->ComputeMinAndMaxContentSizesSync();
+      child_minmax = node->ComputeMinAndMaxContentSizes();
     }
 
     MinAndMaxContentSizes child_sizes =
@@ -614,7 +614,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   if (NeedMinAndMaxContentSizes(space, style)) {
     // TODO(ikilpatrick): Change ComputeMinAndMaxContentSizes to return
     // MinAndMaxContentSizes.
-    sizes = current_child_->ComputeMinAndMaxContentSizesSync();
+    sizes = current_child_->ComputeMinAndMaxContentSizes();
   }
   LayoutUnit child_inline_size =
       ComputeInlineSizeForFragment(space, style, sizes);
