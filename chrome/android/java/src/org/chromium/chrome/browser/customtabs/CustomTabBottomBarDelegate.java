@@ -120,8 +120,6 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
      */
     public boolean updateRemoteViews(RemoteViews remoteViews, int[] clickableIDs,
             PendingIntent pendingIntent) {
-        // Update only makes sense if we are already showing a RemoteViews.
-        if (mDataProvider.getBottomBarRemoteViews() == null) return false;
         REMOTE_VIEWS_UPDATED.record();
         if (remoteViews == null) {
             if (mBottomBarView == null) return false;
@@ -132,7 +130,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
             // TODO: investigate updating the RemoteViews without replacing the entire hierarchy.
             mClickableIDs = clickableIDs;
             mClickPendingIntent = pendingIntent;
-            getBottomBarView().removeViewAt(1);
+            if (getBottomBarView().getChildCount() > 1) getBottomBarView().removeViewAt(1);
             showRemoteViews(remoteViews);
         }
         return true;
