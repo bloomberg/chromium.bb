@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 
@@ -27,8 +27,8 @@ class UndoGroup {
   ~UndoGroup();
 
   void AddOperation(std::unique_ptr<UndoOperation> operation);
-  const std::vector<UndoOperation*>& undo_operations() {
-    return operations_.get();
+  const std::vector<std::unique_ptr<UndoOperation>>& undo_operations() {
+    return operations_;
   }
   void Undo();
 
@@ -40,7 +40,7 @@ class UndoGroup {
   void set_redo_label_id(int label_id) { redo_label_id_ = label_id; }
 
  private:
-  ScopedVector<UndoOperation> operations_;
+  std::vector<std::unique_ptr<UndoOperation>> operations_;
 
   // The resource string id describing the undo and redo action.
   int undo_label_id_;
@@ -80,10 +80,6 @@ class UndoManager {
   void ResumeUndoTracking();
   bool IsUndoTrakingSuspended() const;
 
-  // Returns all UndoOperations that are awaiting Undo or Redo. Note that
-  // ownership of the UndoOperations is retained by UndoManager.
-  std::vector<UndoOperation*> GetAllUndoOperations() const;
-
   // Remove all undo and redo operations. Note that grouping of actions and
   // suspension of undo tracking states are left unchanged.
   void RemoveAllOperations();
@@ -93,8 +89,10 @@ class UndoManager {
   void RemoveObserver(UndoManagerObserver* observer);
 
  private:
+  friend class UndoManagerTestApi;
+
   void Undo(bool* performing_indicator,
-            ScopedVector<UndoGroup>* active_undo_group);
+            std::vector<std::unique_ptr<UndoGroup>>* active_undo_group);
   bool is_user_action() const { return !performing_undo_ && !performing_redo_; }
 
   // Notifies the observers that the undo manager's state has changed.
@@ -105,11 +103,11 @@ class UndoManager {
 
   // Returns the undo or redo UndoGroup container that should store the next
   // change taking into account if an undo or redo is being executed.
-  ScopedVector<UndoGroup>* GetActiveUndoGroup();
+  std::vector<std::unique_ptr<UndoGroup>>* GetActiveUndoGroup();
 
   // Containers of user actions ready for an undo or redo treated as a stack.
-  ScopedVector<UndoGroup> undo_actions_;
-  ScopedVector<UndoGroup> redo_actions_;
+  std::vector<std::unique_ptr<UndoGroup>> undo_actions_;
+  std::vector<std::unique_ptr<UndoGroup>> redo_actions_;
 
   // The observers to notify when internal state changes.
   base::ObserverList<UndoManagerObserver> observers_;

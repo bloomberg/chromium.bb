@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/undo/undo_manager_observer.h"
 #include "components/undo/undo_operation.h"
 #include "grit/components_strings.h"
@@ -35,14 +36,12 @@ void UndoGroup::AddOperation(std::unique_ptr<UndoOperation> operation) {
     set_undo_label_id(operation->GetUndoLabelId());
     set_redo_label_id(operation->GetRedoLabelId());
   }
-  operations_.push_back(operation.release());
+  operations_.push_back(std::move(operation));
 }
 
 void UndoGroup::Undo() {
-  for (ScopedVector<UndoOperation>::reverse_iterator ri = operations_.rbegin();
-       ri != operations_.rend(); ++ri) {
+  for (auto ri = operations_.rbegin(); ri != operations_.rend(); ++ri)
     (*ri)->Undo();
-  }
 }
 
 // UndoManager ----------------------------------------------------------------
@@ -139,31 +138,6 @@ bool UndoManager::IsUndoTrakingSuspended() const {
   return undo_suspended_count_ > 0;
 }
 
-std::vector<UndoOperation*> UndoManager::GetAllUndoOperations() const {
-  std::vector<UndoOperation*> result;
-  for (size_t i = 0; i < undo_actions_.size(); ++i) {
-    const std::vector<UndoOperation*>& operations =
-        undo_actions_[i]->undo_operations();
-    result.insert(result.end(), operations.begin(), operations.end());
-  }
-  for (size_t i = 0; i < redo_actions_.size(); ++i) {
-    const std::vector<UndoOperation*>& operations =
-        redo_actions_[i]->undo_operations();
-    result.insert(result.end(), operations.begin(), operations.end());
-  }
-  // Ensure that if an Undo is in progress the UndoOperations part of that
-  // UndoGroup are included in the returned set. This will ensure that any
-  // changes (such as renumbering) will be applied to any potentially
-  // unprocessed UndoOperations.
-  if (undo_in_progress_action_) {
-    const std::vector<UndoOperation*>& operations =
-        undo_in_progress_action_->undo_operations();
-    result.insert(result.end(), operations.begin(), operations.end());
-  }
-
-  return result;
-}
-
 void UndoManager::RemoveAllOperations() {
   DCHECK(!group_actions_count_);
   undo_actions_.clear();
@@ -180,8 +154,9 @@ void UndoManager::RemoveObserver(UndoManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void UndoManager::Undo(bool* performing_indicator,
-                       ScopedVector<UndoGroup>* active_undo_group) {
+void UndoManager::Undo(
+    bool* performing_indicator,
+    std::vector<std::unique_ptr<UndoGroup>>* active_undo_group) {
   // Check that action grouping has been correctly ended.
   DCHECK(!group_actions_count_);
 
@@ -189,11 +164,11 @@ void UndoManager::Undo(bool* performing_indicator,
     return;
 
   base::AutoReset<bool> incoming_changes(performing_indicator, true);
-  std::unique_ptr<UndoGroup> action(active_undo_group->back());
+  std::unique_ptr<UndoGroup> action = std::move(active_undo_group->back());
   base::AutoReset<UndoGroup*> action_context(&undo_in_progress_action_,
       action.get());
-  active_undo_group->weak_erase(
-      active_undo_group->begin() + active_undo_group->size() - 1);
+  active_undo_group->erase(active_undo_group->begin() +
+                           active_undo_group->size() - 1);
 
   StartGroupingActions();
   action->Undo();
@@ -208,7 +183,7 @@ void UndoManager::NotifyOnUndoManagerStateChange() {
 }
 
 void UndoManager::AddUndoGroup(UndoGroup* new_undo_group) {
-  GetActiveUndoGroup()->push_back(new_undo_group);
+  GetActiveUndoGroup()->push_back(base::WrapUnique<UndoGroup>(new_undo_group));
 
   // User actions invalidate any available redo actions.
   if (is_user_action())
@@ -221,6 +196,6 @@ void UndoManager::AddUndoGroup(UndoGroup* new_undo_group) {
   NotifyOnUndoManagerStateChange();
 }
 
-ScopedVector<UndoGroup>* UndoManager::GetActiveUndoGroup() {
+std::vector<std::unique_ptr<UndoGroup>>* UndoManager::GetActiveUndoGroup() {
   return performing_undo_ ? &redo_actions_ : &undo_actions_;
 }

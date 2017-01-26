@@ -13,6 +13,56 @@
 
 namespace {
 
+std::vector<UndoOperation*> ConvertToRawPtrVector(
+    const std::vector<std::unique_ptr<UndoOperation>>& args) {
+  std::vector<UndoOperation*> args_rawptrs;
+  for (auto i = args.begin(); i != args.end(); ++i)
+    args_rawptrs.push_back(i->get());
+  return args_rawptrs;
+}
+
+}  // namespace
+
+// UndoManagerTestApi ----------------------------------------------------------
+
+class UndoManagerTestApi {
+ public:
+  // Returns all UndoOperations that are awaiting Undo or Redo.
+  static std::vector<UndoOperation*> GetAllUndoOperations(
+      const UndoManager& undo_manager);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(UndoManagerTestApi);
+};
+
+std::vector<UndoOperation*> UndoManagerTestApi::GetAllUndoOperations(
+    const UndoManager& undo_manager) {
+  std::vector<UndoOperation*> result;
+  for (size_t i = 0; i < undo_manager.undo_actions_.size(); ++i) {
+    const std::vector<UndoOperation*> operations =
+        ConvertToRawPtrVector(undo_manager.undo_actions_[i]->undo_operations());
+    result.insert(result.end(), operations.begin(), operations.end());
+  }
+  for (size_t i = 0; i < undo_manager.redo_actions_.size(); ++i) {
+    const std::vector<UndoOperation*> operations =
+        ConvertToRawPtrVector(undo_manager.redo_actions_[i]->undo_operations());
+    result.insert(result.end(), operations.begin(), operations.end());
+  }
+  // Ensure that if an Undo is in progress the UndoOperations part of that
+  // UndoGroup are included in the returned set. This will ensure that any
+  // changes (such as renumbering) will be applied to any potentially
+  // unprocessed UndoOperations.
+  if (undo_manager.undo_in_progress_action_) {
+    const std::vector<UndoOperation*> operations = ConvertToRawPtrVector(
+        undo_manager.undo_in_progress_action_->undo_operations());
+    result.insert(result.end(), operations.begin(), operations.end());
+  }
+
+  return result;
+}
+
+namespace {
+
 class TestUndoOperation;
 
 // TestUndoService -------------------------------------------------------------
@@ -231,7 +281,7 @@ TEST(UndoServiceTest, GetAllUndoOperations) {
   ASSERT_EQ(1U, undo_service.undo_manager_.redo_count());
 
   std::vector<UndoOperation*> all_operations =
-      undo_service.undo_manager_.GetAllUndoOperations();
+      UndoManagerTestApi::GetAllUndoOperations(undo_service.undo_manager_);
   EXPECT_EQ(4U, all_operations.size());
 }
 
