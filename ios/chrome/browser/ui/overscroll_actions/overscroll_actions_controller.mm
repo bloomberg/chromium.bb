@@ -142,6 +142,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // Records if a transition to the overscroll state ACTION_READY was made.
   // This is used to record a cancel gesture.
   BOOL _didTransitionToActionReady;
+  // Records that the controller will be dismissed at the end of the current
+  // animation. No new action should be started.
+  BOOL _shouldInvalidate;
   // Store the set of notifications that did increment the overscroll actions
   // lock. It is used in order to enforce the fact that the lock should only be
   // incremented/decremented once for a given notification.
@@ -276,6 +279,14 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   self.overscrollActionView.delegate = nil;
   [self invalidate];
   [super dealloc];
+}
+
+- (void)scheduleInvalidate {
+  if (self.overscrollState == OverscrollState::NO_PULL_STARTED) {
+    [self invalidate];
+  } else {
+    _shouldInvalidate = YES;
+  }
 }
 
 - (void)invalidate {
@@ -704,6 +715,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       [[NSNotificationCenter defaultCenter]
           postNotificationName:kOverscrollActionsDidEnd
                         object:self];
+      if (_shouldInvalidate) {
+        [self invalidate];
+      }
     } break;
     case OverscrollState::STARTED_PULLING: {
       if (!self.overscrollActionView.superview) {
@@ -801,6 +815,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 #pragma mark - Bounce dynamic
 
 - (void)startBounceWithInitialVelocity:(CGPoint)velocity {
+  if (_shouldInvalidate) {
+    return;
+  }
   [self stopBounce];
   CADisplayLink* dpLink =
       [CADisplayLink displayLinkWithTarget:self
@@ -863,6 +880,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 - (void)overscrollActionsViewDidTapTriggerAction:
     (OverscrollActionsView*)overscrollActionsView {
+  if (_shouldInvalidate) {
+    return;
+  }
   [self.overscrollActionView displayActionAnimation];
   [self
       recordMetricForTriggeredAction:self.overscrollActionView.selectedAction];

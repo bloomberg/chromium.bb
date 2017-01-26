@@ -96,6 +96,11 @@
 #pragma mark -
 #pragma mark CRWNativeContent implementation
 
+- (void)willBeDismissed {
+  // Invalidate the _overscrollActionsController but let the animation finish.
+  [_overscrollActionsController scheduleInvalidate];
+}
+
 - (void)close {
   [_overscrollActionsController invalidate];
 }

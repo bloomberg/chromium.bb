@@ -74,6 +74,7 @@
 
 - (void)willBeDismissed {
   [self restoreOnlineURL];
+  [super willBeDismissed];
 }
 
 - (void)close {
