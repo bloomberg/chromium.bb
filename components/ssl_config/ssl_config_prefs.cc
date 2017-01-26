@@ -15,6 +15,7 @@ const char kCertEnableSha1LocalAnchors[] = "ssl.sha1_enabled_for_local_anchors";
 const char kSSLVersionMin[] = "ssl.version_min";
 const char kSSLVersionMax[] = "ssl.version_max";
 const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
+const char kDHEEnabled[] = "ssl.dhe_enabled";
 
 }  // namespace prefs
 }  // namespace ssl_config

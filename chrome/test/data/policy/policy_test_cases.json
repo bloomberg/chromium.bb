@@ -1944,11 +1944,9 @@
   },
 
   "SSLVersionMin": {
-    "note": "This policy is retired, see https://crbug.com/487730."
   },
 
   "SSLVersionFallbackMin": {
-    "note": "This policy is retired, see https://crbug.com/621780."
   },
 
   "CertificateTransparencyEnforcementDisabledForUrls": {
@@ -1960,11 +1958,16 @@
   },
 
   "RC4Enabled": {
-    "note": "This policy is retired, see https://crbug.com/375342."
   },
 
   "DHEEnabled": {
-    "note": "This policy is retired, see https://crbug.com/619194."
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DHEEnabled": true },
+    "pref_mappings": [
+      { "pref": "ssl.dhe_enabled",
+        "local_state": true
+      }
+    ]
   },
 
   "WelcomePageOnOSUpgradeEnabled": {

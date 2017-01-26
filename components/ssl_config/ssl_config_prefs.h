@@ -14,6 +14,7 @@ extern const char kCertEnableSha1LocalAnchors[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
 extern const char kCipherSuiteBlacklist[];
+extern const char kDHEEnabled[];
 
 }  // namespace prefs
 }  // namespace ssl_config
