@@ -336,7 +336,7 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
         RunsTasksOnCurrentThread() &&
         (!IsQueueEnabled() || main_thread_only().current_fence);
     any_thread().task_queue_manager->OnQueueHasIncomingImmediateWork(
-        this, queue_is_blocked);
+        this, sequence_number, queue_is_blocked);
     any_thread().time_domain->OnQueueHasImmediateWork(this);
   }
   any_thread().immediate_incoming_queue.emplace_back(
@@ -676,6 +676,16 @@ bool TaskQueueImpl::BlockedByFence() const {
 
   return any_thread().immediate_incoming_queue.front().enqueue_order() >
          main_thread_only().current_fence;
+}
+
+bool TaskQueueImpl::CouldTaskRun(EnqueueOrder enqueue_order) const {
+  if (!IsQueueEnabled())
+    return false;
+
+  if (!main_thread_only().current_fence)
+    return true;
+
+  return enqueue_order < main_thread_only().current_fence;
 }
 
 EnqueueOrder TaskQueueImpl::GetFenceForTest() const {

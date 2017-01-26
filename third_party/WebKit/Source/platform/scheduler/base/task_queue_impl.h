@@ -140,6 +140,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   const char* GetName() const override;
   QueueType GetQueueType() const override;
 
+  // Returns true if a (potentially hypothetical) task with the specified
+  // |enqueue_order| could run on the queue. Must be called from the main
+  // thread.
+  bool CouldTaskRun(EnqueueOrder enqueue_order) const;
+
   // Must only be called from the thread this task queue was created on.
   void ReloadImmediateWorkQueueIfEmpty();
 
