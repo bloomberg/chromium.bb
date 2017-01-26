@@ -29,7 +29,8 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
     blink::WebInputEvent::Type type,
     int window_x,
     int window_y,
-    int modifiers) {
+    int modifiers,
+    blink::WebPointerProperties::PointerType pointer_type) {
   DCHECK(WebInputEvent::isMouseEventType(type));
   WebMouseEvent result(type, modifiers,
                        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
@@ -38,7 +39,7 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
   result.windowX = window_x;
   result.windowY = window_y;
   result.setModifiers(modifiers);
-  result.pointerType = blink::WebPointerProperties::PointerType::Mouse;
+  result.pointerType = pointer_type;
   return result;
 }
 

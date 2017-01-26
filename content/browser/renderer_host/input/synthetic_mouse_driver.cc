@@ -8,7 +8,9 @@
 
 namespace content {
 
-SyntheticMouseDriver::SyntheticMouseDriver() : last_modifiers_(0) {}
+SyntheticMouseDriver::SyntheticMouseDriver() : last_modifiers_(0) {
+  mouse_event_.pointerType = blink::WebPointerProperties::PointerType::Mouse;
+}
 
 SyntheticMouseDriver::~SyntheticMouseDriver() {}
 
@@ -26,7 +28,8 @@ void SyntheticMouseDriver::Press(float x,
   int modifiers =
       SyntheticPointerActionParams::GetWebMouseEventModifier(button);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::MouseDown, x, y, modifiers | last_modifiers_);
+      blink::WebInputEvent::MouseDown, x, y, modifiers | last_modifiers_,
+      mouse_event_.pointerType);
   mouse_event_.clickCount = 1;
   mouse_event_.button =
       SyntheticPointerActionParams::GetWebMouseEventButton(button);
@@ -38,7 +41,8 @@ void SyntheticMouseDriver::Move(float x, float y, int index) {
   blink::WebMouseEvent::Button button = mouse_event_.button;
   int click_count = mouse_event_.clickCount;
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::MouseMove, x, y, last_modifiers_);
+      blink::WebInputEvent::MouseMove, x, y, last_modifiers_,
+      mouse_event_.pointerType);
   mouse_event_.button = button;
   mouse_event_.clickCount = click_count;
 }
@@ -49,7 +53,7 @@ void SyntheticMouseDriver::Release(
   DCHECK_EQ(index, 0);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::MouseUp, mouse_event_.x, mouse_event_.y,
-      last_modifiers_);
+      last_modifiers_, mouse_event_.pointerType);
   mouse_event_.clickCount = 1;
   mouse_event_.button =
       SyntheticPointerActionParams::GetWebMouseEventButton(button);

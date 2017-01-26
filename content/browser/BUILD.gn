@@ -1056,6 +1056,8 @@ source_set("browser") {
     "renderer_host/input/synthetic_gesture_target_mac.mm",
     "renderer_host/input/synthetic_mouse_driver.cc",
     "renderer_host/input/synthetic_mouse_driver.h",
+    "renderer_host/input/synthetic_pen_driver.cc",
+    "renderer_host/input/synthetic_pen_driver.h",
     "renderer_host/input/synthetic_pinch_gesture.cc",
     "renderer_host/input/synthetic_pinch_gesture.h",
     "renderer_host/input/synthetic_pointer_action.cc",

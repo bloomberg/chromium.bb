@@ -40,7 +40,8 @@ struct CONTENT_EXPORT SyntheticGestureParams {
     DEFAULT_INPUT,
     TOUCH_INPUT,
     MOUSE_INPUT,
-    GESTURE_SOURCE_TYPE_MAX = MOUSE_INPUT
+    PEN_INPUT,
+    GESTURE_SOURCE_TYPE_MAX = PEN_INPUT
   };
   GestureSourceType gesture_source_type;
 

@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/input/synthetic_mouse_driver.h"
+#include "content/browser/renderer_host/input/synthetic_pen_driver.h"
 #include "content/browser/renderer_host/input/synthetic_touch_driver.h"
 
 namespace content {
@@ -16,14 +17,18 @@ SyntheticPointerDriver::~SyntheticPointerDriver() {}
 // static
 std::unique_ptr<SyntheticPointerDriver> SyntheticPointerDriver::Create(
     SyntheticGestureParams::GestureSourceType gesture_source_type) {
-  if (gesture_source_type == SyntheticGestureParams::TOUCH_INPUT) {
-    return base::MakeUnique<SyntheticTouchDriver>();
-  } else if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
-    return base::MakeUnique<SyntheticMouseDriver>();
-  } else {
-    NOTREACHED() << "Invalid gesture source type";
-    return std::unique_ptr<SyntheticPointerDriver>();
+  switch (gesture_source_type) {
+    case SyntheticGestureParams::TOUCH_INPUT:
+      return base::MakeUnique<SyntheticTouchDriver>();
+    case SyntheticGestureParams::MOUSE_INPUT:
+      return base::MakeUnique<SyntheticMouseDriver>();
+    case SyntheticGestureParams::PEN_INPUT:
+      return base::MakeUnique<SyntheticPenDriver>();
+    case SyntheticGestureParams::DEFAULT_INPUT:
+      return std::unique_ptr<SyntheticPointerDriver>();
   }
+  NOTREACHED();
+  return std::unique_ptr<SyntheticPointerDriver>();
 }
 
 // static

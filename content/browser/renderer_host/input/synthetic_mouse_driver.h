@@ -33,8 +33,10 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
   bool UserInputCheck(
       const SyntheticPointerActionParams& params) const override;
 
- private:
+ protected:
   blink::WebMouseEvent mouse_event_;
+
+ private:
   unsigned last_modifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticMouseDriver);
