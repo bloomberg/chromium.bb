@@ -658,6 +658,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "image",
       "inputMethodController",
       "inputType",
+      "interpolationTypes",
       "layout",
       "layoutBlock",
       "layoutObject",
