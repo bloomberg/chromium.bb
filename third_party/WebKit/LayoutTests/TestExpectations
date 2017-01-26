@@ -761,6 +761,8 @@ crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-e
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 
+crbug.com/684923 inspector/sources/debugger-async/async-callstack-promises.html [ NeedsManualRebaseline ]
+
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
