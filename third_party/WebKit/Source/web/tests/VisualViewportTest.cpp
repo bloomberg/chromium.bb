@@ -65,12 +65,6 @@
     EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
   } while (false)
 
-#define EXPECT_POINT_EQ(expected, actual)    \
-  do {                                       \
-    EXPECT_EQ((expected).x(), (actual).x()); \
-    EXPECT_EQ((expected).y(), (actual).y()); \
-  } while (false)
-
 #define EXPECT_SIZE_EQ(expected, actual)               \
   do {                                                 \
     EXPECT_EQ((expected).width(), (actual).width());   \
