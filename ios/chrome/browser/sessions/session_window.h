@@ -11,30 +11,30 @@
 
 #import "ios/web/web_state/web_state_impl.h"
 
+@class CRWNavigationManagerStorage;
+
 // Encapsulates everything required to save a session "window". For iOS, there
 // will only be one window at a time.
 @interface SessionWindowIOS : NSObject<NSCoding>
 
-// So that ownership transfer of WebStateImpls is explicit, SessionWindows
-// are initialized "empty" (without any sessions) and sessions are added
-// one at a time. For example:
+// Adds a serialized session to be written to disk.  SessionWindows are
+// initialized "empty" (without any sessions) and sessions are added one at a
+// time.  For example:
 //  SessionWindowIOS* window = [[SessionWindow alloc] init];
-//  [window addSession:some_scoped_webstate_ptr.Pass()];
+//  [window addSession:session_storage];
 //  ...
 //  [window setSelectedInex:mySelectedIndex];
-- (void)addSession:(std::unique_ptr<web::WebStateImpl>)session;
+- (void)addSerializedSession:(CRWNavigationManagerStorage*)session;
 
+// Clears all added sessions.
 - (void)clearSessions;
 
-// Takes the first session stored in the reciever, removes it and passes
-// ownership of it to the caller.
-- (std::unique_ptr<web::WebStateImpl>)nextSession;
+// The serialized session objects.
+@property(nonatomic, readonly) NSArray* sessions;
 
 // The currently selected session. NSNotFound if the sessionWindow contains
 // no sessions; otherwise 0 <= |selectedIndex| < |unclaimedSessions|.
 @property(nonatomic) NSUInteger selectedIndex;
-// A count of the remaining sessions that haven't been claimed.
-@property(nonatomic, readonly) NSUInteger unclaimedSessions;
 
 @end
 

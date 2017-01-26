@@ -32,19 +32,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-NSString* const kCertificatePolicyManagerKey = @"certificatePolicyManager";
-NSString* const kCurrentNavigationIndexKey = @"currentNavigationIndex";
-NSString* const kEntriesKey = @"entries";
-NSString* const kLastVisitedTimestampKey = @"lastVisitedTimestamp";
-NSString* const kOpenerIdKey = @"openerId";
-NSString* const kOpenedByDOMKey = @"openedByDOM";
-NSString* const kOpenerNavigationIndexKey = @"openerNavigationIndex";
-NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
-NSString* const kTabIdKey = @"tabId";
-NSString* const kWindowNameKey = @"windowName";
-}  // namespace
-
 @interface CRWSessionController () {
   // Weak pointer back to the owning NavigationManager. This is to facilitate
   // the incremental merging of the two classes.
@@ -109,6 +96,14 @@ NSString* const kWindowNameKey = @"windowName";
 @property(nonatomic, readwrite, strong) NSArray* entries;
 @property(nonatomic, readwrite, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
+
+// Expose setters for serialization properties.  These are exposed in a category
+// in NavigationManagerStorageBuilder, and will be removed as ownership of
+// their backing ivars moves to NavigationManagerImpl.
+@property(nonatomic, readwrite, copy) NSString* openerId;
+@property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;
+@property(nonatomic, readwrite, assign) NSInteger openerNavigationIndex;
+@property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 
 - (NSString*)uniqueID;
 // Removes all entries after currentNavigationIndex_.
@@ -196,59 +191,6 @@ NSString* const kWindowNameKey = @"windowName";
         [[CRWSessionCertificatePolicyManager alloc] init];
   }
   return self;
-}
-
-- (id)initWithCoder:(NSCoder*)aDecoder {
-  self = [super init];
-  if (self) {
-    NSString* uuid = [aDecoder decodeObjectForKey:kTabIdKey];
-    if (!uuid)
-      uuid = [self uniqueID];
-
-    self.windowName = [aDecoder decodeObjectForKey:kWindowNameKey];
-    _tabId = [uuid copy];
-    _openerId = [[aDecoder decodeObjectForKey:kOpenerIdKey] copy];
-    _openedByDOM = [aDecoder decodeBoolForKey:kOpenedByDOMKey];
-    _openerNavigationIndex =
-        [aDecoder decodeIntForKey:kOpenerNavigationIndexKey];
-    _currentNavigationIndex =
-        [aDecoder decodeIntForKey:kCurrentNavigationIndexKey];
-    _previousNavigationIndex =
-        [aDecoder decodeIntForKey:kPreviousNavigationIndexKey];
-    _pendingEntryIndex = -1;
-    _lastVisitedTimestamp =
-       [aDecoder decodeDoubleForKey:kLastVisitedTimestampKey];
-    NSMutableArray* temp =
-        [NSMutableArray arrayWithArray:
-            [aDecoder decodeObjectForKey:kEntriesKey]];
-    _entries = temp;
-    // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
-    if (![_entries count])
-      _currentNavigationIndex = -1;
-    _sessionCertificatePolicyManager =
-        [aDecoder decodeObjectForKey:kCertificatePolicyManagerKey];
-    if (!_sessionCertificatePolicyManager) {
-      _sessionCertificatePolicyManager =
-          [[CRWSessionCertificatePolicyManager alloc] init];
-    }
-  }
-  return self;
-}
-
-- (void)encodeWithCoder:(NSCoder*)aCoder {
-  [aCoder encodeObject:_tabId forKey:kTabIdKey];
-  [aCoder encodeObject:_openerId forKey:kOpenerIdKey];
-  [aCoder encodeBool:_openedByDOM forKey:kOpenedByDOMKey];
-  [aCoder encodeInt:_openerNavigationIndex forKey:kOpenerNavigationIndexKey];
-  [aCoder encodeObject:_windowName forKey:kWindowNameKey];
-  [aCoder encodeInt:_currentNavigationIndex forKey:kCurrentNavigationIndexKey];
-  [aCoder encodeInt:_previousNavigationIndex
-             forKey:kPreviousNavigationIndexKey];
-  [aCoder encodeDouble:_lastVisitedTimestamp forKey:kLastVisitedTimestampKey];
-  [aCoder encodeObject:_entries forKey:kEntriesKey];
-  [aCoder encodeObject:_sessionCertificatePolicyManager
-                forKey:kCertificatePolicyManagerKey];
-  // rendererInitiated is deliberately not preserved, as upstream.
 }
 
 - (id)copyWithZone:(NSZone*)zone {

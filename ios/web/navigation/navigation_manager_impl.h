@@ -24,14 +24,18 @@ class NavigationItem;
 struct Referrer;
 class NavigationManagerDelegate;
 class NavigationManagerFacadeDelegate;
+class NavigationManagerStorageBuilder;
 
 // Implementation of NavigationManager.
 // Generally mirrors upstream's NavigationController.
 class NavigationManagerImpl : public NavigationManager {
  public:
-  NavigationManagerImpl(NavigationManagerDelegate* delegate,
-                        BrowserState* browser_state);
+  NavigationManagerImpl();
   ~NavigationManagerImpl() override;
+
+  // Setters for NavigationManagerDelegate and BrowserState.
+  void SetDelegate(NavigationManagerDelegate* delegate);
+  void SetBrowserState(BrowserState* browser_state);
 
   // Sets the CRWSessionController that backs this object.
   // Keeps a strong reference to |session_controller|.
@@ -138,6 +142,10 @@ class NavigationManagerImpl : public NavigationManager {
   int GetIndexForOffset(int offset) const;
 
  private:
+  // The NavigationManagerStorageBuilder functions require access to
+  // private variables of NavigationManagerImpl.
+  friend NavigationManagerStorageBuilder;
+
   // Returns true if the PageTransition for the underlying navigation item at
   // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
   bool IsRedirectItemAtIndex(int index) const;

@@ -288,16 +288,19 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
       loadWindowFromPath:[self sessionBackupPath]
          forBrowserState:[_tabModel browserState]];
   DCHECK(window);
-  if (!window.unclaimedSessions)
+  NSArray* sessions = window.sessions;
+  if (!sessions.count)
     return;
   sessions::TabRestoreService* const tabRestoreService =
       IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
   tabRestoreService->LoadTabsFromLastSession();
 
-  while (window.unclaimedSessions) {
+  web::WebState::CreateParams params(_browserState);
+  for (CRWNavigationManagerStorage* session in sessions) {
+    std::unique_ptr<web::WebState> webState =
+        web::WebState::Create(params, session);
     // Add all tabs at the 0 position as the position is relative to an old
     // tabModel.
-    std::unique_ptr<web::WebStateImpl> webState = [window nextSession];
     tabRestoreService->CreateHistoricalTab(
         sessions::IOSLiveTab::GetForWebState(webState.get()), 0);
   }

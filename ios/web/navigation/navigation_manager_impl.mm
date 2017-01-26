@@ -70,20 +70,22 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
   return *this;
 }
 
-NavigationManagerImpl::NavigationManagerImpl(
-    NavigationManagerDelegate* delegate,
-    BrowserState* browser_state)
-    : delegate_(delegate),
-      browser_state_(browser_state),
-      facade_delegate_(nullptr) {
-  DCHECK(browser_state_);
-}
+NavigationManagerImpl::NavigationManagerImpl()
+    : delegate_(nullptr), browser_state_(nullptr), facade_delegate_(nullptr) {}
 
 NavigationManagerImpl::~NavigationManagerImpl() {
   // The facade layer should be deleted before this object.
   DCHECK(!facade_delegate_);
 
   [session_controller_ setNavigationManager:nullptr];
+}
+
+void NavigationManagerImpl::SetDelegate(NavigationManagerDelegate* delegate) {
+  delegate_ = delegate;
+}
+
+void NavigationManagerImpl::SetBrowserState(BrowserState* browser_state) {
+  browser_state_ = browser_state;
 }
 
 void NavigationManagerImpl::SetSessionController(

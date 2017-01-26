@@ -80,7 +80,8 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
     delegate_.reset([[OCMockObject
         mockForProtocol:@protocol(CRWSSLStatusUpdaterDelegate)] retain]);
 
-    nav_manager_.reset(new NavigationManagerImpl(nullptr, GetBrowserState()));
+    nav_manager_.reset(new NavigationManagerImpl());
+    nav_manager_->SetBrowserState(GetBrowserState());
 
     ssl_status_updater_.reset([[CRWSSLStatusUpdater alloc]
         initWithDataSource:data_source_

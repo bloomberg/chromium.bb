@@ -68,6 +68,10 @@ NavigationManager* TestWebState::GetNavigationManager() {
   return navigation_manager_.get();
 }
 
+CRWNavigationManagerStorage* TestWebState::BuildSerializedNavigationManager() {
+  return nil;
+}
+
 void TestWebState::SetNavigationManager(
     std::unique_ptr<NavigationManager> navigation_manager) {
   navigation_manager_ = std::move(navigation_manager);
