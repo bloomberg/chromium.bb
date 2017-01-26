@@ -433,10 +433,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                              ServiceWorkerStatusCode status,
                              base::Time dispatch_event_time);
 
-  void NotifyMainScriptRequestHandlerCreated();
-  void NotifyMainScriptJobCreated(
-      ServiceWorkerContextRequestHandler::CreateJobStatus status);
-
   // Returns the Navigation Preload support status of the service worker.
   //  - Origin Trial: Have an effective token.
   //                                 Command line
@@ -846,10 +842,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Keeps the first purpose of starting the worker for UMA. Cleared in
   // FinishStartWorker().
   base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
-
-  bool main_script_request_handler_created_ = false;
-  ServiceWorkerContextRequestHandler::CreateJobStatus main_script_job_created_ =
-      ServiceWorkerContextRequestHandler::CreateJobStatus::UNINITIALIZED;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

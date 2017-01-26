@@ -52,8 +52,6 @@ ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
                                   resource_type),
       version_(provider_host_->running_hosted_version()) {
   DCHECK(provider_host_->IsHostToRunningServiceWorker());
-  if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER)
-    version_->NotifyMainScriptRequestHandlerCreated();
 }
 
 ServiceWorkerContextRequestHandler::~ServiceWorkerContextRequestHandler() {
@@ -113,8 +111,6 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   const bool is_main_script = resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;
   ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
       status, IsInstalled(version_.get()), is_main_script);
-  if (is_main_script)
-    version_->NotifyMainScriptJobCreated(status);
   if (job)
     return job;
 

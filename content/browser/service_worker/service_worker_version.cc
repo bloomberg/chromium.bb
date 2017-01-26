@@ -945,35 +945,7 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
 }
 
 void ServiceWorkerVersion::OnScriptLoaded() {
-  // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
-  // resolved.
-  if (!GetMainScriptHttpResponseInfo()) {
-    // Stick some information on the stack that may be useful in debugging.
-    Status status = status_;
-    char url[128];
-    base::strlcpy(url, script_url_.spec().c_str(), arraysize(url));
-    size_t script_map_size = script_cache_map_.size();
-    net::URLRequestStatus::Status main_script_status =
-        script_cache_map_.main_script_status().status();
-    ServiceWorkerScriptCacheMap::StartStatus start_status =
-        script_cache_map_.main_script_start_status_;
-    ServiceWorkerScriptCacheMap::FinishStatus finish_status =
-        script_cache_map_.main_script_finish_status_;
-    bool handler_created = main_script_request_handler_created_;
-    ServiceWorkerContextRequestHandler::CreateJobStatus job_created =
-        main_script_job_created_;
-
-    base::debug::Alias(&status);
-    base::debug::Alias(url);
-    base::debug::Alias(&script_map_size);
-    base::debug::Alias(&main_script_status);
-    base::debug::Alias(&start_status);
-    base::debug::Alias(&finish_status);
-    base::debug::Alias(&handler_created);
-    base::debug::Alias(&job_created);
-    CHECK(false);
-  }
-
+  DCHECK(GetMainScriptHttpResponseInfo());
   if (IsInstalled(status()))
     UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", true);
 }
@@ -1128,15 +1100,6 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
   FinishRequest(request_id, status == SERVICE_WORKER_OK, dispatch_event_time);
 
   callback.Run(status);
-}
-
-void ServiceWorkerVersion::NotifyMainScriptRequestHandlerCreated() {
-  main_script_request_handler_created_ = true;
-}
-
-void ServiceWorkerVersion::NotifyMainScriptJobCreated(
-    ServiceWorkerContextRequestHandler::CreateJobStatus status) {
-  main_script_job_created_ = status;
 }
 
 ServiceWorkerVersion::NavigationPreloadSupportStatus
