@@ -1537,7 +1537,7 @@ crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
-crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Failure ]
+crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Failure Crash ]
 crbug.com/491764 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Pass Failure ]
 
 # expected.txt has weird chars that rietveld doesn't handle; will land it manually.
