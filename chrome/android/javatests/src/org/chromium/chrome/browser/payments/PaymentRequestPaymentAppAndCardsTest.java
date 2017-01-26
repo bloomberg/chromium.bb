@@ -129,10 +129,10 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
         assertEquals(
                 instrumentPresence == HAVE_INSTRUMENTS ? 3 : 2, getNumberOfPaymentInstruments());
 
-        // Check the labesl of the instruments.
+        // Check the labels of the instruments.
         int i = 0;
         if (instrumentPresence == HAVE_INSTRUMENTS) {
-            assertEquals("Test Pay", getPaymentInstrumentLabel(i++));
+            assertEquals("https://bobpay.com", getPaymentInstrumentLabel(i++));
         }
         // \u0020\...\u2006 is four dots ellipsis.
         assertEquals(

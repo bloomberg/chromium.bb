@@ -175,6 +175,27 @@ public class PaymentRequestImpl
                 }
             };
 
+    /**
+     * Comparator to sort payment apps by maximum frecency score of the contained instruments. Note
+     * that the first instrument in the list must have the maximum frecency score.
+     */
+    private static final Comparator<List<PaymentInstrument>> APP_FRECENCY_COMPARATOR =
+            new Comparator<List<PaymentInstrument>>() {
+                @Override
+                public int compare(List<PaymentInstrument> a, List<PaymentInstrument> b) {
+                    return compareInstrumentsByFrecency(b.get(0), a.get(0));
+                }
+            };
+
+    /** Comparator to sort instruments in payment apps by frecency. */
+    private static final Comparator<PaymentInstrument> INSTRUMENT_FRECENCY_COMPARATOR =
+            new Comparator<PaymentInstrument>() {
+                @Override
+                public int compare(PaymentInstrument a, PaymentInstrument b) {
+                    return compareInstrumentsByFrecency(b, a);
+                }
+            };
+
     /** Every origin can call canMakePayment() every 30 minutes. */
     private static final int CAN_MAKE_PAYMENT_QUERY_PERIOD_MS = 30 * 60 * 1000;
 
@@ -256,7 +277,7 @@ public class PaymentRequestImpl
     private ContactDetailsSection mContactSection;
     private List<PaymentApp> mApps;
     private List<PaymentApp> mPendingApps;
-    private List<PaymentInstrument> mPendingInstruments;
+    private List<List<PaymentInstrument>> mPendingInstruments;
     private List<PaymentInstrument> mPendingAutofillInstruments;
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
@@ -1137,6 +1158,17 @@ public class PaymentRequestImpl
         if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
             PaymentPreferencesUtil.setPaymentCompleteOnce();
         }
+
+        /**
+         * Update records of the used payment instrument for sorting payment apps and instruments
+         * next time.
+         */
+        PaymentOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
+        PaymentPreferencesUtil.increasePaymentInstrumentUseCount(
+                selectedPaymentMethod.getIdentifier());
+        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(
+                selectedPaymentMethod.getIdentifier(), System.currentTimeMillis());
+
         closeUI(PaymentComplete.FAIL != result);
     }
 
@@ -1230,16 +1262,25 @@ public class PaymentRequestImpl
         // Place the instruments into either "autofill" or "non-autofill" list to be displayed when
         // all apps have responded.
         if (instruments != null) {
+            List<PaymentInstrument> nonAutofillInstruments = new ArrayList<>();
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
                 Set<String> instrumentMethodNames = new HashSet<>(
                         instrument.getInstrumentMethodNames());
                 instrumentMethodNames.retainAll(mMethodData.keySet());
                 if (!instrumentMethodNames.isEmpty()) {
-                    addPendingInstrument(instrument);
+                    if (instrument instanceof AutofillPaymentInstrument) {
+                        mPendingAutofillInstruments.add(instrument);
+                    } else {
+                        nonAutofillInstruments.add(instrument);
+                    }
                 } else {
                     instrument.dismissInstrument();
                 }
+            }
+            if (!nonAutofillInstruments.isEmpty()) {
+                Collections.sort(nonAutofillInstruments, INSTRUMENT_FRECENCY_COMPARATOR);
+                mPendingInstruments.add(nonAutofillInstruments);
             }
         }
 
@@ -1272,18 +1313,19 @@ public class PaymentRequestImpl
         // > Complete autofill instruments.
         // > Incomplete autofill instruments.
         Collections.sort(mPendingAutofillInstruments, COMPLETENESS_COMPARATOR);
-        mPendingInstruments.addAll(mPendingAutofillInstruments);
+        Collections.sort(mPendingInstruments, APP_FRECENCY_COMPARATOR);
+        if (!mPendingAutofillInstruments.isEmpty()) {
+            mPendingInstruments.add(mPendingAutofillInstruments);
+        }
 
         // Log the number of suggested credit cards.
         mJourneyLogger.setNumberOfSuggestionsShown(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS,
                 mPendingAutofillInstruments.size());
 
-        mPendingAutofillInstruments.clear();
-
         // Possibly pre-select the first instrument on the list.
         int selection = SectionInformation.NO_SELECTION;
         if (!mPendingInstruments.isEmpty()) {
-            PaymentInstrument first = mPendingInstruments.get(0);
+            PaymentInstrument first = mPendingInstruments.get(0).get(0);
             if (first instanceof AutofillPaymentInstrument) {
                 AutofillPaymentInstrument creditCard = (AutofillPaymentInstrument) first;
                 if (creditCard.isComplete()) selection = 0;
@@ -1298,8 +1340,12 @@ public class PaymentRequestImpl
         if (query != null) query.setResponse(mCanMakePayment);
 
         // The list of payment instruments is ready to display.
-        mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS,
-                selection, mPendingInstruments);
+        List<PaymentInstrument> sortedInstruments = new ArrayList<>();
+        for (List<PaymentInstrument> a : mPendingInstruments) {
+            sortedInstruments.addAll(a);
+        }
+        mPaymentMethodsSection = new SectionInformation(
+                PaymentRequestUI.TYPE_PAYMENT_METHODS, selection, sortedInstruments);
 
         mPendingInstruments.clear();
 
@@ -1344,20 +1390,6 @@ public class PaymentRequestImpl
     /** @return True after payment apps have been queried. */
     private boolean isFinishedQueryingPaymentApps() {
         return mPendingApps != null && mPendingApps.isEmpty() && mPendingInstruments.isEmpty();
-    }
-
-    /**
-     * Saves the given instrument in either "autofill" or "non-autofill" list. The separation
-     * enables placing autofill instruments on the bottom of the list.
-     *
-     * @param instrument The instrument to add to either "autofill" or "non-autofill" list.
-     */
-    private void addPendingInstrument(PaymentInstrument instrument) {
-        if (instrument instanceof AutofillPaymentInstrument) {
-            mPendingAutofillInstruments.add(instrument);
-        } else {
-            mPendingInstruments.add(instrument);
-        }
     }
 
     /**
@@ -1522,5 +1554,29 @@ public class PaymentRequestImpl
         } else {
             mJourneyLogger.recordJourneyStatsHistograms("OtherAborted");
         }
+    }
+
+    /**
+     * Compares two payment instruments by frecency.
+     * Return negative value if a has strictly lower frecency score than b.
+     * Return zero if a and b have the same frecency score.
+     * Return positive value if a has strictly higher frecency score than b.
+     */
+    private static int compareInstrumentsByFrecency(PaymentInstrument a, PaymentInstrument b) {
+        int aCount = PaymentPreferencesUtil.getPaymentInstrumentUseCount(a.getIdentifier());
+        int bCount = PaymentPreferencesUtil.getPaymentInstrumentUseCount(b.getIdentifier());
+        long aDate = PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(a.getIdentifier());
+        long bDate = PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(a.getIdentifier());
+
+        return Double.compare(getFrecencyScore(aCount, aDate), getFrecencyScore(bCount, bDate));
+    }
+
+    /**
+     * The frecency score is calculated according to use count and last use date. The formula is
+     * the same as the one used in GetFrecencyScore in autofill_data_model.cc.
+     */
+    private static final double getFrecencyScore(int count, long date) {
+        long currentTime = System.currentTimeMillis();
+        return -Math.log((currentTime - date) / (24 * 60 * 60 * 1000) + 2) / Math.log(count + 2);
     }
 }

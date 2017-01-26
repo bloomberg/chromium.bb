@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static java.util.Arrays.asList;
+
 import android.content.Context;
 import android.os.Handler;
 import android.view.View;
@@ -854,7 +856,13 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      */
     protected TestPay installPaymentApp(final String methodName, final int instrumentPresence,
             final int responseSpeed, final int creationSpeed) {
-        final TestPay app = new TestPay(methodName, instrumentPresence, responseSpeed);
+        return installPaymentApp(new ArrayList<String>(asList(methodName)), instrumentPresence,
+                responseSpeed, creationSpeed);
+    }
+
+    protected TestPay installPaymentApp(final List<String> methodNames,
+            final int instrumentPresence, final int responseSpeed, final int creationSpeed) {
+        final TestPay app = new TestPay(methodNames, instrumentPresence, responseSpeed);
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public void create(Context context, WebContents webContents, Set<String> methodNames,
@@ -878,13 +886,13 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
     /** A payment app implementation for test. */
     protected static class TestPay implements PaymentApp {
-        private final String mMethodName;
+        private final List<String> mMethodNames;
         private final int mInstrumentPresence;
         private final int mResponseSpeed;
         private InstrumentsCallback mCallback;
 
-        TestPay(String methodName, int instrumentPresence, int responseSpeed) {
-            mMethodName = methodName;
+        TestPay(List<String> methodNames, int instrumentPresence, int responseSpeed) {
+            mMethodNames = methodNames;
             mInstrumentPresence = instrumentPresence;
             mResponseSpeed = responseSpeed;
         }
@@ -899,7 +907,10 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         void respond() {
             final List<PaymentInstrument> instruments = new ArrayList<>();
             if (mInstrumentPresence == HAVE_INSTRUMENTS) {
-                instruments.add(new TestPayInstrument(mMethodName));
+                for (String methodName : mMethodNames) {
+                    instruments.add(
+                            new TestPayInstrument(getAppIdentifier(), methodName, methodName));
+                }
             }
             Runnable instrumentsReady = new Runnable() {
                 @Override
@@ -918,19 +929,21 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         @Override
         public Set<String> getAppMethodNames() {
             Set<String> methodNames = new HashSet<>();
-            methodNames.add(mMethodName);
+            methodNames.addAll(mMethodNames);
             return methodNames;
         }
 
         @Override
         public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
             assert methodsAndData != null;
-            return methodsAndData.containsKey(mMethodName);
+            Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
+            methodNames.retainAll(getAppMethodNames());
+            return !methodNames.isEmpty();
         }
 
         @Override
         public String getAppIdentifier() {
-            return mMethodName;
+            return TestPay.this.toString();
         }
     }
 
@@ -938,8 +951,8 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     private static class TestPayInstrument extends PaymentInstrument {
         private final String mMethodName;
 
-        TestPayInstrument(String methodName) {
-            super(methodName, "Test Pay", null, null);
+        TestPayInstrument(String appId, String methodName, String label) {
+            super(appId + methodName, label, null, null);
             mMethodName = methodName;
         }
 
