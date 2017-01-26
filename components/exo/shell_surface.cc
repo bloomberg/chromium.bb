@@ -1506,6 +1506,9 @@ void ShellSurface::UpdateShadow() {
     // small style shadow for them.
     if (!activatable_)
       shadow->SetElevation(wm::ShadowElevation::SMALL);
+    // We don't have rounded corners unless frame is enabled.
+    if (!frame_enabled_)
+      shadow->SetRoundedCornerRadius(0);
   }
 }
 

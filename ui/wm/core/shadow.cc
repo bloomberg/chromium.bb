@@ -15,16 +15,19 @@ namespace wm {
 
 namespace {
 
-// Rounded corners are overdrawn on top of the window's content layer,
-// we need to exclude them from the occlusion area.
-const int kRoundedCornerRadius = 2;
-
 // Duration for opacity animation in milliseconds.
 const int kShadowAnimationDurationMs = 100;
 
+// Default rounded corner radius. Shadow::SetRoundedCornerRadius can
+// be used to override this for elements with a different rounded
+// corner radius.
+const int kDefaultRoundedCornerRadius = 2;
+
 }  // namespace
 
-Shadow::Shadow() : desired_elevation_(ShadowElevation::NONE) {}
+Shadow::Shadow()
+    : desired_elevation_(ShadowElevation::NONE),
+      rounded_corner_radius_(kDefaultRoundedCornerRadius) {}
 
 Shadow::~Shadow() {}
 
@@ -77,6 +80,15 @@ void Shadow::SetElevation(ShadowElevation elevation) {
   }
 }
 
+void Shadow::SetRoundedCornerRadius(int rounded_corner_radius) {
+  DCHECK_GE(rounded_corner_radius, 0);
+  if (rounded_corner_radius_ == rounded_corner_radius)
+    return;
+
+  rounded_corner_radius_ = rounded_corner_radius;
+  UpdateLayerBounds();
+}
+
 void Shadow::OnImplicitAnimationsCompleted() {
   fading_layer_.reset();
   // The size needed for layer() may be smaller now that |fading_layer_| is
@@ -104,12 +116,12 @@ void Shadow::UpdateLayerBounds() {
   const int smaller_dimension =
       std::min(content_bounds_.width(), content_bounds_.height());
   const int size_adjusted_elevation =
-      std::min((smaller_dimension - 2 * kRoundedCornerRadius) / 4,
+      std::min((smaller_dimension - 2 * rounded_corner_radius_) / 4,
                static_cast<int>(desired_elevation_));
   const auto& details =
-      gfx::ShadowDetails::Get(size_adjusted_elevation, kRoundedCornerRadius);
+      gfx::ShadowDetails::Get(size_adjusted_elevation, rounded_corner_radius_);
   gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
-                            gfx::Insets(kRoundedCornerRadius);
+                            gfx::Insets(rounded_corner_radius_);
   if (size_adjusted_elevation != effective_elevation_) {
     shadow_layer_->UpdateNinePatchLayerImage(details.ninebox_image);
     // The ninebox grid is defined in terms of the image size. The shadow blurs
@@ -156,7 +168,7 @@ void Shadow::UpdateLayerBounds() {
   // Occlude the region inside the bounding box. Occlusion uses shadow layer
   // space. See nine_patch_layer.h for more context on what's going on here.
   gfx::Rect occlusion_bounds(shadow_layer_bounds.size());
-  occlusion_bounds.Inset(-margins + gfx::Insets(kRoundedCornerRadius));
+  occlusion_bounds.Inset(-margins + gfx::Insets(rounded_corner_radius_));
   shadow_layer_->UpdateNinePatchOcclusion(occlusion_bounds);
 
   // The border is the same inset as the aperture.

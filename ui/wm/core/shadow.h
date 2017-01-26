@@ -46,6 +46,10 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // Sets the shadow's appearance, animating opacity as necessary.
   void SetElevation(ShadowElevation elevation);
 
+  // Sets the radius for the rounded corners to take into account when
+  // adjusting the shadow layer to frame |content_bounds|. 0 or greater.
+  void SetRoundedCornerRadius(int rounded_corner_radius);
+
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
 
@@ -65,6 +69,10 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
 
   // The elevation of the shadow image that's currently set on |shadow_layer_|.
   int effective_elevation_ = 0;
+
+  // Rounded corners are drawn on top of the window's content layer,
+  // we need to exclude them from the occlusion area.
+  int rounded_corner_radius_;
 
   // The parent layer of the shadow layer. It serves as a container accessible
   // from the outside to control the visibility of the shadow.
