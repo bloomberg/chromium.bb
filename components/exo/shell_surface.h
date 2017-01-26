@@ -238,6 +238,7 @@ class ShellSurface : public SurfaceDelegate,
   // Overridden from ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
+  aura::Window* shadow_overlay() { return shadow_overlay_; }
   aura::Window* shadow_underlay() { return shadow_underlay_; }
 
  private:

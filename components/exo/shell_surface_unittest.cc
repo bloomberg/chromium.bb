@@ -559,6 +559,14 @@ TEST_F(ShellSurfaceTest, Shadow) {
 
   EXPECT_EQ(wm::ShadowElevation::MEDIUM, wm::GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
+
+  // Shadow overlay should be stacked just above the shadow underlay.
+  auto underlay_it =
+      std::find(window->children().begin(), window->children().end(),
+                shell_surface->shadow_underlay());
+  ASSERT_NE(underlay_it, window->children().end());
+  ASSERT_NE(std::next(underlay_it), window->children().end());
+  EXPECT_EQ(*std::next(underlay_it), shell_surface->shadow_overlay());
 }
 
 TEST_F(ShellSurfaceTest, ShadowWithStateChange) {

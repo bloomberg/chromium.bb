@@ -1498,6 +1498,7 @@ void ShellSurface::UpdateShadow() {
       shadow_overlay_->Init(ui::LAYER_NOT_DRAWN);
       shadow_overlay_->layer()->Add(shadow->layer());
       window->AddChild(shadow_overlay_);
+      window->StackChildAbove(shadow_overlay_, shadow_underlay_);
       shadow_overlay_->Show();
     }
     shadow_overlay_->SetBounds(shadow_bounds);
