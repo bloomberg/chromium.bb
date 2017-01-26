@@ -92,7 +92,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            MaxPendingJoinSessionRequests);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           ListenForConnectionStateChangeAndChangeState);
+                           ListenForConnectionStateChange);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ListenForConnectionClose);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
@@ -237,9 +237,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   void OnSendMessageCallback(bool sent);
 
   // Calls to |delegate_| to start listening for state changes for |connection|.
-  // State changes will be returned via |OnConnectionStateChanged|. Change
-  // |connection|'s state to 'connected' after listening.
-  void ListenForConnectionStateChangeAndChangeState(
+  // State changes will be returned via |OnConnectionStateChanged|.
+  void ListenForConnectionStateChange(
       const PresentationSessionInfo& connection);
 
   // Passed to embedder's implementation of PresentationServiceDelegate for

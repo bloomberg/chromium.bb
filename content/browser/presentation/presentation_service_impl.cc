@@ -295,16 +295,15 @@ int PresentationServiceImpl::RegisterJoinSessionCallback(
   return request_id;
 }
 
-void PresentationServiceImpl::ListenForConnectionStateChangeAndChangeState(
+void PresentationServiceImpl::ListenForConnectionStateChange(
     const PresentationSessionInfo& connection) {
+  // NOTE: Blink will automatically transition the connection's state to
+  // 'connected'.
   if (controller_delegate_) {
     controller_delegate_->ListenForConnectionStateChange(
         render_process_id_, render_frame_id_, connection,
         base::Bind(&PresentationServiceImpl::OnConnectionStateChanged,
                    weak_factory_.GetWeakPtr(), connection));
-    OnConnectionStateChanged(connection,
-                             PresentationConnectionStateChangeInfo(
-                                 PRESENTATION_CONNECTION_STATE_CONNECTED));
   }
 }
 
@@ -318,7 +317,7 @@ void PresentationServiceImpl::OnStartSessionSucceeded(
   pending_start_session_cb_->Run(
       blink::mojom::PresentationSessionInfo::From(session_info),
       blink::mojom::PresentationErrorPtr());
-  ListenForConnectionStateChangeAndChangeState(session_info);
+  ListenForConnectionStateChange(session_info);
   pending_start_session_cb_.reset();
   start_session_request_id_ = kInvalidRequestSessionId;
 }
@@ -343,7 +342,7 @@ void PresentationServiceImpl::OnJoinSessionSucceeded(
           request_session_id,
           blink::mojom::PresentationSessionInfo::From(session_info),
           blink::mojom::PresentationErrorPtr())) {
-    ListenForConnectionStateChangeAndChangeState(session_info);
+    ListenForConnectionStateChange(session_info);
   }
 }
 
@@ -616,7 +615,7 @@ void PresentationServiceImpl::OnDefaultPresentationStarted(
   DCHECK(client_.get());
   client_->OnDefaultSessionStarted(
       blink::mojom::PresentationSessionInfo::From(connection));
-  ListenForConnectionStateChangeAndChangeState(connection);
+  ListenForConnectionStateChange(connection);
 }
 
 PresentationServiceImpl::ScreenAvailabilityListenerImpl::

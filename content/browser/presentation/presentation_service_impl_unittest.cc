@@ -544,7 +544,7 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
 }
 
 TEST_F(PresentationServiceImplTest,
-       ListenForConnectionStateChangeAndChangeState) {
+       ListenForConnectionStateChange) {
   content::PresentationSessionInfo connection(presentation_url1_,
                                               kPresentationId);
   content::PresentationConnectionStateChangedCallback state_changed_cb;
@@ -555,11 +555,7 @@ TEST_F(PresentationServiceImplTest,
 
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .WillOnce(SaveArg<3>(&state_changed_cb));
-  EXPECT_CALL(mock_client_,
-              OnConnectionStateChanged(
-                  SessionInfoEquals(ByRef(presentation_connection)),
-                  blink::mojom::PresentationConnectionState::CONNECTED));
-  service_impl_->ListenForConnectionStateChangeAndChangeState(connection);
+  service_impl_->ListenForConnectionStateChange(connection);
 
   {
     base::RunLoop run_loop;
@@ -580,7 +576,7 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
   content::PresentationConnectionStateChangedCallback state_changed_cb;
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .WillOnce(SaveArg<3>(&state_changed_cb));
-  service_impl_->ListenForConnectionStateChangeAndChangeState(connection);
+  service_impl_->ListenForConnectionStateChange(connection);
 
   // Trigger connection close. It should be propagated back up to
   // |mock_client_|.
