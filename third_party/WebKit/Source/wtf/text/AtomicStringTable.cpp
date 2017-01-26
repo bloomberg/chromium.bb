@@ -188,7 +188,7 @@ StringImpl* AtomicStringTable::add(StringImpl* string) {
   if (!string->length())
     return StringImpl::empty();
 
-  StringImpl* result = *m_table.add(string).storedValue;
+  StringImpl* result = *m_table.insert(string).storedValue;
 
   if (!result->isAtomic())
     result->setIsAtomic(true);

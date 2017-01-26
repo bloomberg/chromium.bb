@@ -54,7 +54,7 @@ void testReserveCapacity() {
 
   // Adding items up to size should never change the capacity.
   for (size_t i = 0; i < size; ++i) {
-    testSet.add(i + 1);  // Avoid adding '0'.
+    testSet.insert(i + 1);  // Avoid adding '0'.
     EXPECT_EQ(initialCapacity, testSet.capacity());
   }
 
@@ -62,12 +62,12 @@ void testReserveCapacity() {
   // capacity.
   unsigned capacityLimit = initialCapacity / 2 - 1;
   for (size_t i = size; i < capacityLimit; ++i) {
-    testSet.add(i + 1);
+    testSet.insert(i + 1);
     EXPECT_EQ(initialCapacity, testSet.capacity());
   }
 
   // Adding one more item increases the capacity.
-  testSet.add(capacityLimit + 1);
+  testSet.insert(capacityLimit + 1);
   EXPECT_GT(testSet.capacity(), initialCapacity);
 
   testReserveCapacity<size - 1>();
@@ -96,7 +96,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
     // AddResult in a separate scope to avoid assertion hit,
     // since we modify the container further.
     HashSet<std::unique_ptr<Dummy>>::AddResult res1 =
-        set.add(WTF::wrapUnique(ptr1));
+        set.insert(WTF::wrapUnique(ptr1));
     EXPECT_EQ(ptr1, res1.storedValue->get());
   }
 
@@ -109,7 +109,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
   Dummy* ptr2 = new Dummy(deleted2);
   {
     HashSet<std::unique_ptr<Dummy>>::AddResult res2 =
-        set.add(WTF::wrapUnique(ptr2));
+        set.insert(WTF::wrapUnique(ptr2));
     EXPECT_EQ(res2.storedValue->get(), ptr2);
   }
 
@@ -130,8 +130,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
   deleted2 = false;
   {
     OwnPtrSet set;
-    set.add(WTF::makeUnique<Dummy>(deleted1));
-    set.add(WTF::makeUnique<Dummy>(deleted2));
+    set.insert(WTF::makeUnique<Dummy>(deleted1));
+    set.insert(WTF::makeUnique<Dummy>(deleted2));
   }
   EXPECT_TRUE(deleted1);
   EXPECT_TRUE(deleted2);
@@ -144,8 +144,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
   ptr2 = new Dummy(deleted2);
   {
     OwnPtrSet set;
-    set.add(WTF::wrapUnique(ptr1));
-    set.add(WTF::wrapUnique(ptr2));
+    set.insert(WTF::wrapUnique(ptr1));
+    set.insert(WTF::wrapUnique(ptr2));
     ownPtr1 = set.take(ptr1);
     EXPECT_EQ(1UL, set.size());
     ownPtr2 = set.takeAny();
@@ -183,7 +183,7 @@ TEST(HashSetTest, HashSetRefPtr) {
   RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
   EXPECT_EQ(0, DummyRefCounted::s_refInvokesCount);
   HashSet<RefPtr<DummyRefCounted>> set;
-  set.add(ptr);
+  set.insert(ptr);
   // Referenced only once (to store a copy in the container).
   EXPECT_EQ(1, DummyRefCounted::s_refInvokesCount);
 
@@ -264,7 +264,7 @@ namespace {
 TEST(HashSetTest, MoveShouldNotMakeCopy) {
   HashSet<CountCopy> set;
   int counter = 0;
-  set.add(CountCopy(&counter));
+  set.insert(CountCopy(&counter));
 
   HashSet<CountCopy> other(set);
   counter = 0;
@@ -351,7 +351,7 @@ TEST(HashSetTest, MoveOnlyValue) {
   using TheSet = HashSet<MoveOnly>;
   TheSet set;
   {
-    TheSet::AddResult addResult = set.add(MoveOnly(1, 1));
+    TheSet::AddResult addResult = set.insert(MoveOnly(1, 1));
     EXPECT_TRUE(addResult.isNewEntry);
     EXPECT_EQ(1, addResult.storedValue->value());
     EXPECT_EQ(1, addResult.storedValue->id());
@@ -364,7 +364,7 @@ TEST(HashSetTest, MoveOnlyValue) {
   EXPECT_TRUE(iter == set.end());
 
   for (int i = 2; i < 32; ++i) {
-    TheSet::AddResult addResult = set.add(MoveOnly(i, i));
+    TheSet::AddResult addResult = set.insert(MoveOnly(i, i));
     EXPECT_TRUE(addResult.isNewEntry);
     EXPECT_EQ(i, addResult.storedValue->value());
     EXPECT_EQ(i, addResult.storedValue->id());
@@ -382,7 +382,7 @@ TEST(HashSetTest, MoveOnlyValue) {
 
   {
     TheSet::AddResult addResult =
-        set.add(MoveOnly(7, 777));  // With different ID for identification.
+        set.insert(MoveOnly(7, 777));  // With different ID for identification.
     EXPECT_FALSE(addResult.isNewEntry);
     EXPECT_EQ(7, addResult.storedValue->value());
     EXPECT_EQ(7, addResult.storedValue->id());
@@ -407,7 +407,7 @@ TEST(HashSetTest, UniquePtr) {
   Set set;
   int* onePointer = new int(1);
   {
-    Set::AddResult addResult = set.add(Pointer(onePointer));
+    Set::AddResult addResult = set.insert(Pointer(onePointer));
     EXPECT_TRUE(addResult.isNewEntry);
     EXPECT_EQ(onePointer, addResult.storedValue->get());
     EXPECT_EQ(1, **addResult.storedValue);
@@ -422,7 +422,7 @@ TEST(HashSetTest, UniquePtr) {
 
   // Insert more to cause a rehash.
   for (int i = 2; i < 32; ++i) {
-    Set::AddResult addResult = set.add(Pointer(new int(i)));
+    Set::AddResult addResult = set.insert(Pointer(new int(i)));
     EXPECT_TRUE(addResult.isNewEntry);
     EXPECT_EQ(i, **addResult.storedValue);
   }
@@ -443,7 +443,7 @@ TEST(HashSetTest, UniquePtr) {
 
   // Re-insert to the deleted slot.
   {
-    Set::AddResult addResult = set.add(std::move(one));
+    Set::AddResult addResult = set.insert(std::move(one));
     EXPECT_TRUE(addResult.isNewEntry);
     EXPECT_EQ(onePointer, addResult.storedValue->get());
     EXPECT_EQ(1, **addResult.storedValue);
@@ -474,9 +474,9 @@ TEST(HashSetTest, InitializerList) {
   EXPECT_TRUE(oneTwoThree.contains(3));
 
   // Put some jank so we can check if the assignments later can clear them.
-  empty.add(9999);
-  one.add(9999);
-  oneTwoThree.add(9999);
+  empty.insert(9999);
+  one.insert(9999);
+  oneTwoThree.insert(9999);
 
   empty = {};
   EXPECT_TRUE(empty.isEmpty());

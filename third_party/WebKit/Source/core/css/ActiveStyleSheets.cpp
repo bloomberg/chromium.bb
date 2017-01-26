@@ -44,7 +44,7 @@ ActiveSheetsChange compareActiveStyleSheets(
     bool ruleSetsChangedInCommonPrefix = !changedRuleSets.isEmpty();
     for (; index < newStyleSheetCount; index++) {
       if (newStyleSheets[index].second)
-        changedRuleSets.add(newStyleSheets[index].second);
+        changedRuleSets.insert(newStyleSheets[index].second);
     }
     if (ruleSetsChangedInCommonPrefix)
       return ActiveSheetsChanged;
@@ -57,7 +57,7 @@ ActiveSheetsChange compareActiveStyleSheets(
     // Sheets removed from the end.
     for (; index < oldStyleSheetCount; index++) {
       if (oldStyleSheets[index].second)
-        changedRuleSets.add(oldStyleSheets[index].second);
+        changedRuleSets.insert(oldStyleSheets[index].second);
     }
     return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
                                      : ActiveSheetsChanged;
@@ -86,7 +86,7 @@ ActiveSheetsChange compareActiveStyleSheets(
         (*mergedIterator).first != sheet1.first) {
       // Sheet either removed or inserted.
       if (sheet1.second)
-        changedRuleSets.add(sheet1.second);
+        changedRuleSets.insert(sheet1.second);
       continue;
     }
 
@@ -99,9 +99,9 @@ ActiveSheetsChange compareActiveStyleSheets(
     // Active rules for the given stylesheet changed.
     // DOM, CSSOM, or media query changes.
     if (sheet1.second)
-      changedRuleSets.add(sheet1.second);
+      changedRuleSets.insert(sheet1.second);
     if (sheet2.second)
-      changedRuleSets.add(sheet2.second);
+      changedRuleSets.insert(sheet2.second);
   }
   return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
                                    : ActiveSheetsChanged;
