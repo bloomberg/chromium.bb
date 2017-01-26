@@ -33,3 +33,5 @@ per-file database_*=michaeln@chromium.org
 per-file offscreen_canvas*.*=xlai@chromium.org
 per-file offscreen_canvas*.*=xidachen@chromium.org
 per-file offscreen_canvas*.*=junov@chromium.org
+
+# COMPONENT: Internals>Core
