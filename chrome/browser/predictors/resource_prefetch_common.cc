@@ -8,17 +8,30 @@
 #include <tuple>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
 namespace predictors {
 
+const char kSpeculativeResourcePrefetchingFeatureName[] =
+    "SpeculativeResourcePrefetching";
+const char kModeParamName[] = "mode";
+const char kLearningMode[] = "learning";
+const char kExternalPrefetchingMode[] = "external-prefetching";
+const char kPrefetchingMode[] = "prefetching";
+
 namespace {
+
+const base::Feature kSpeculativeResourcePrefetchingFeature{
+    kSpeculativeResourcePrefetchingFeatureName,
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -41,35 +54,27 @@ bool IsSpeculativeResourcePrefetchingEnabled(
     ResourcePrefetchPredictorConfig* config) {
   DCHECK(config);
 
-  // Off the record - disabled.
+  // Disabled for of-the-record. Policy choice, not a technical limitation.
   if (!profile || profile->IsOffTheRecord())
     return false;
 
-  // Enabled by command line switch. The config has the default params already
-  // set. The command line with just enable them with the default params.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSpeculativeResourcePrefetching)) {
-    const std::string value =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kSpeculativeResourcePrefetching);
+  if (!base::FeatureList::IsEnabled(kSpeculativeResourcePrefetchingFeature))
+    return false;
 
-    if (value == switches::kSpeculativeResourcePrefetchingDisabled) {
-      return false;
-    } else if (value == switches::kSpeculativeResourcePrefetchingLearning) {
-      config->mode |= ResourcePrefetchPredictorConfig::LEARNING;
-      return true;
-    } else if (value ==
-               switches::kSpeculativeResourcePrefetchingEnabledExternal) {
-      config->mode |= ResourcePrefetchPredictorConfig::LEARNING |
-                      ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL;
-      return true;
-    } else if (value == switches::kSpeculativeResourcePrefetchingEnabled) {
-      config->mode |=
-          ResourcePrefetchPredictorConfig::LEARNING |
-          ResourcePrefetchPredictorConfig::PREFETCHING_FOR_NAVIGATION |
-          ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL;
-      return true;
-    }
+  std::string mode_value = variations::GetVariationParamValueByFeature(
+      kSpeculativeResourcePrefetchingFeature, kModeParamName);
+  if (mode_value == kLearningMode) {
+    config->mode |= ResourcePrefetchPredictorConfig::LEARNING;
+    return true;
+  } else if (mode_value == kExternalPrefetchingMode) {
+    config->mode |= ResourcePrefetchPredictorConfig::LEARNING |
+                    ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL;
+    return true;
+  } else if (mode_value == kPrefetchingMode) {
+    config->mode |= ResourcePrefetchPredictorConfig::LEARNING |
+                    ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL |
+                    ResourcePrefetchPredictorConfig::PREFETCHING_FOR_NAVIGATION;
+    return true;
   }
 
   return false;

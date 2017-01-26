@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
@@ -289,9 +290,13 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kSpeculativeResourcePrefetching,
-        switches::kSpeculativeResourcePrefetchingEnabledExternal);
+    command_line->AppendSwitchASCII("force-fieldtrials", "trial/group");
+    std::string parameter = base::StringPrintf(
+        "trial.group:%s/%s", kModeParamName, kExternalPrefetchingMode);
+    command_line->AppendSwitchASCII("force-fieldtrial-params", parameter);
+    std::string enabled_feature = base::StringPrintf(
+        "%s<trial", kSpeculativeResourcePrefetchingFeatureName);
+    command_line->AppendSwitchASCII("enable-features", enabled_feature);
   }
 
   void SetUpOnMainThread() override {

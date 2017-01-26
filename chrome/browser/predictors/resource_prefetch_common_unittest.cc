@@ -12,10 +12,10 @@
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,11 +49,6 @@ class ResourcePrefetchCommonTest : public testing::Test {
 
   void SetPreference(NetworkPredictionOptions value) {
     profile_->GetPrefs()->SetInteger(prefs::kNetworkPredictionOptions, value);
-  }
-
-  void SetCommandLineValue(const std::string& value) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kSpeculativeResourcePrefetching, value);
   }
 
   void TestIsPrefetchEnabledForOrigin(
@@ -103,7 +98,10 @@ TEST_F(ResourcePrefetchCommonTest, IsDisabledByDefault) {
 }
 
 TEST_F(ResourcePrefetchCommonTest, EnableLearning) {
-  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingLearning);
+  variations::testing::VariationParamsManager params_manager(
+      "dummy-trial", {{kModeParamName, kLearningMode}},
+      {kSpeculativeResourcePrefetchingFeatureName});
+
   ResourcePrefetchPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchLearning(config);
@@ -111,7 +109,10 @@ TEST_F(ResourcePrefetchCommonTest, EnableLearning) {
 }
 
 TEST_F(ResourcePrefetchCommonTest, EnablePrefetch) {
-  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingEnabled);
+  variations::testing::VariationParamsManager params_manager(
+      "dummy-trial", {{kModeParamName, kPrefetchingMode}},
+      {kSpeculativeResourcePrefetchingFeatureName});
+
   ResourcePrefetchPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
@@ -120,7 +121,10 @@ TEST_F(ResourcePrefetchCommonTest, EnablePrefetch) {
 }
 
 TEST_F(ResourcePrefetchCommonTest, EnablePrefetchExternalOnly) {
-  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingEnabledExternal);
+  variations::testing::VariationParamsManager params_manager(
+      "dummy-trial", {{kModeParamName, kExternalPrefetchingMode}},
+      {kSpeculativeResourcePrefetchingFeatureName});
+
   ResourcePrefetchPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
@@ -132,7 +136,10 @@ TEST_F(ResourcePrefetchCommonTest, EnablePrefetchExternalOnly) {
 // Verifies whether prefetching is disabled according to the network type. But
 // learning should not be disabled by network.
 TEST_F(ResourcePrefetchCommonTest, RespectsNetworkSettings) {
-  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingEnabled);
+  variations::testing::VariationParamsManager params_manager(
+      "dummy-trial", {{kModeParamName, kPrefetchingMode}},
+      {kSpeculativeResourcePrefetchingFeatureName});
+
   ResourcePrefetchPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);

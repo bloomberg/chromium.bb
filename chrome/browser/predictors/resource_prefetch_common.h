@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
@@ -18,6 +19,12 @@ class WebContents;
 }
 
 namespace predictors {
+
+extern const char kSpeculativeResourcePrefetchingFeatureName[];
+extern const char kModeParamName[];
+extern const char kLearningMode[];
+extern const char kExternalPrefetchingMode[];
+extern const char kPrefetchingMode[];
 
 struct ResourcePrefetchPredictorConfig;
 
