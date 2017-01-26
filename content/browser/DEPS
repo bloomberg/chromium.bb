@@ -27,6 +27,8 @@ include_rules = [
   "+device/vibration",  # For Vibration API
   "+device/vr",  # For WebVR API
   "+device/wake_lock",
+  # This can only be used on POSIX, in particular it mustn't be used on Windows
+  # in the browser DLL.
   "+gin/v8_initializer.h",
   "+mojo",
   "+services",

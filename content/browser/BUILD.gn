@@ -79,7 +79,6 @@ source_set("browser") {
     "//device/sensors/public/cpp",
     "//device/vibration",
     "//device/wake_lock",
-    "//gin",
     "//google_apis",
     "//gpu",
     "//gpu/command_buffer/client:gles2_implementation",
@@ -1458,6 +1457,9 @@ source_set("browser") {
       "file_descriptor_info_impl.cc",
       "file_descriptor_info_impl.h",
     ]
+
+    # On Windows, the browser cannot depend on gin/V8.
+    deps += [ "//gin" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {

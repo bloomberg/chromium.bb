@@ -1544,7 +1544,6 @@ split_static_library("browser") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",
     "//net:extras",
-    "//net:net_with_v8",
     "//ppapi/features",
     "//printing/features",
     "//rlz/features",
@@ -1589,8 +1588,18 @@ split_static_library("browser") {
     "//ui/strings",
     "//ui/surface",
     "//ui/web_dialogs",
-    "//v8",
   ]
+
+  # Android does in-process PAC, so must link against V8 directly. Other
+  # platforms use OOP Mojo resolution.
+  if (is_android) {
+    deps += [
+      "//net:net_with_v8",
+      "//v8",
+    ]
+  } else {
+    deps += [ "//net:net" ]
+  }
 
   if (is_chromeos && use_cras) {
     defines += [ "USE_CRAS" ]

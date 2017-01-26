@@ -2514,7 +2514,7 @@ if (use_v8_in_net) {
   }
 }
 
-if (use_v8_in_net && !is_android) {
+if (!is_ios && !is_android) {
   source_set("net_browser_services") {
     sources = [
       "dns/mojo_host_resolver_impl.cc",
@@ -2527,7 +2527,7 @@ if (use_v8_in_net && !is_android) {
     ]
 
     public_deps = [
-      ":net_with_v8",
+      ":net",
       "//base",
       "//mojo/public/cpp/bindings",
       "//net/interfaces",

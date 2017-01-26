@@ -575,7 +575,7 @@ split_static_library("ui") {
     "//device/usb",
     "//extensions/features",
     "//media",
-    "//net:net_with_v8",
+    "//net:net",
     "//ppapi/features",
     "//printing/features",
     "//rlz/features",
