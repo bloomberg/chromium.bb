@@ -1192,7 +1192,7 @@ message CertificateBasedDeviceRegistrationData {
 message ActiveDirectoryEnrollPlayUserRequest {}
 
 // The result when a new user logs in to Play Store with Active Directory.
-// 903 Arc Disabled HTTP error code is returned if the reason of the failure is
+// 904 Arc Disabled HTTP error code is returned if the reason of the failure is
 //     that ARC is not enabled for the domain.
 // 403 Forbidden HTTP error code is returned if the device can't get Managed
 //     Google Play accounts.
@@ -1283,6 +1283,9 @@ message ActiveDirectoryPlayActivityResponse {}
 //   gcm_id_update: gcm_id_update_request
 //   check_android_management: check_android_management_request
 //   certificate_based_register: certificate_based_register_request
+//   active_directory_enroll_play_user:
+//       active_directory_enroll_play_user_request
+//   active_directory_play_activity: active_directory_play_activity_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1369,7 +1372,8 @@ message DeviceManagementRequest {
 // 500 Internal Server Error: most likely a bug in DM server.
 // 503 Service Unavailable: most likely a backend error.
 // 902 Policy Not Found: the policy is not found.
-// 903 Arc Disabled: ARC is not enabled on the domain.
+// 903 Deprovisioned: the device has been deprovisioned.
+// 904 Arc Disabled: ARC is not enabled on the domain.
 message DeviceManagementResponse {
   // TODO(hong): move error handling to HTTP level.
   // Error code to client.
