@@ -502,7 +502,7 @@ kefka-unittest-stress (gce_beefy)
   arm-generic-no-vmtest-pre-cq
   x86-generic-no-vmtest-pre-cq
 [kernel-3_14-b-pre-cq] (gce_beefy)
-  storm-no-vmtest-pre-cq
+  whirlwind-no-vmtest-pre-cq
 [kernel-3_14-c-pre-cq] (gce_beefy)
   veyron_pinky-no-vmtest-pre-cq
 kevin-compile-only-pre-cq (gce_beefy)

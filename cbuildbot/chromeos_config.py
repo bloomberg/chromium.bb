@@ -1880,7 +1880,7 @@ def PreCqBuilders(site_config, ge_build_config):
 
   site_config.AddGroup(
       'kernel-3_14-b-pre-cq',
-      site_config['storm-no-vmtest-pre-cq'],
+      site_config['whirlwind-no-vmtest-pre-cq'],
   )
 
   site_config.AddGroup(
