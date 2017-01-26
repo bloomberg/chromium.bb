@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_REVISIT_BROADCASTER_H_
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_REVISIT_BROADCASTER_H_
 
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -45,7 +46,7 @@ class PageRevisitBroadcaster {
   // The client of this sync sessions datatype.
   SyncSessionsClient* const sessions_client_;
 
-  ScopedVector<PageVisitObserver> revisit_observers_;
+  std::vector<std::unique_ptr<PageVisitObserver>> revisit_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PageRevisitBroadcaster);
 };

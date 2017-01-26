@@ -51,18 +51,20 @@ PageRevisitBroadcaster::PageRevisitBroadcaster(
       base::FieldTrialList::FindFullName("PageRevisitInstrumentation");
   bool shouldInstrument = group_name == "Enabled";
   if (shouldInstrument) {
-    revisit_observers_.push_back(new SessionsPageRevisitObserver(
+    revisit_observers_.push_back(base::MakeUnique<SessionsPageRevisitObserver>(
         base::MakeUnique<SessionsSyncManagerWrapper>(manager)));
 
     history::HistoryService* history = sessions_client_->GetHistoryService();
     if (history) {
-      revisit_observers_.push_back(new TypedUrlPageRevisitObserver(history));
+      revisit_observers_.push_back(
+          base::MakeUnique<TypedUrlPageRevisitObserver>(history));
     }
 
     bookmarks::BookmarkModel* bookmarks = sessions_client_->GetBookmarkModel();
     if (bookmarks) {
-      revisit_observers_.push_back(new BookmarksPageRevisitObserver(
-          base::MakeUnique<BookmarksByUrlProviderImpl>(bookmarks)));
+      revisit_observers_.push_back(
+          base::MakeUnique<BookmarksPageRevisitObserver>(
+              base::MakeUnique<BookmarksByUrlProviderImpl>(bookmarks)));
     }
   }
 }
@@ -74,7 +76,7 @@ void PageRevisitBroadcaster::OnPageVisit(const GURL& url,
   if (sessions_client_->ShouldSyncURL(url)) {
     PageVisitObserver::TransitionType converted(
         ConvertTransitionEnum(transition));
-    for (auto* observer : revisit_observers_) {
+    for (auto& observer : revisit_observers_) {
       observer->OnPageVisit(url, converted);
     }
   }
