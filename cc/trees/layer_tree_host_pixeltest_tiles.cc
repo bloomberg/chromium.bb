@@ -11,6 +11,8 @@
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_test.h"
+#include "cc/test/test_compositor_frame_sink.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 
@@ -173,6 +175,18 @@ class LayerTreeHostTilesTestPartialInvalidation
         DoReadback();
         break;
     }
+  }
+
+  void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
+    // Issue a GL finish before preparing tiles to ensure resources become
+    // available for use in a timely manner. Needed for the one-copy path.
+    ContextProvider* context_provider =
+        host_impl->compositor_frame_sink()->worker_context_provider();
+    if (!context_provider)
+      return;
+
+    ContextProvider::ScopedContextLock lock(context_provider);
+    lock.ContextGL()->Finish();
   }
 
  protected:
