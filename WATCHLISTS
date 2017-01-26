@@ -751,7 +751,9 @@
           'chrome/browser/ui/webui/options/',
     },
     'origin_trials': {
-      'filepath': 'origin_trials',
+      'filepath': 'origin_trials'\
+                  '|OriginTrial'\
+                  '|ConditionalFeature',
     },
     'ozone': {
       'filepath': 'ui/ozone/|'\
