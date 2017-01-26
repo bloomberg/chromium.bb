@@ -575,6 +575,31 @@ TEST_P(ScrollAnchorTest, DescendsIntoContainerWithOverflow) {
             scrollAnchor(viewport).anchorObject());
 }
 
+// Test that we account for the origin of the layout overflow rect when
+// computing bounds for possible descent.
+TEST_P(ScrollAnchorTest, NegativeLayoutOverflow) {
+  setBodyInnerHTML(
+      "<style>"
+      "    body { height: 1200px; }"
+      "    #header { position: relative; height: 100px; }"
+      "    #evil { position: relative; "
+      "      top: -900px; height: 1000px; width: 100px; }"
+      "    #changer { height: 100px; }"
+      "    #anchor { height: 100px; background-color: green }"
+      "</style>"
+      "<div id='header'>"
+      "    <div id='evil'></div>"
+      "</div>"
+      "<div id='changer'></div>"
+      "<div id='anchor'></div>");
+
+  ScrollableArea* viewport = layoutViewport();
+
+  scrollLayoutViewport(ScrollOffset(0, 250));
+  setHeight(document().getElementById("changer"), 200);
+  EXPECT_EQ(350, viewport->scrollOffsetInt().height());
+}
+
 // Test that we descend into zero-height containers that have floating content.
 TEST_P(ScrollAnchorTest, DescendsIntoContainerWithFloat) {
   setBodyInnerHTML(
