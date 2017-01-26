@@ -67,12 +67,28 @@ class PaymentRequest : payments::mojom::PaymentRequest {
       const std::string& currency_system,
       const std::string& locale_name);
 
-  // Returns the Autofill Profile, representing the shipping address and contact
-  // information, currently selected for this PaymentRequest flow. If
-  // unpopulated, populates with and returns the 0th profile on record for this
-  // user, if it exists; or nullptr otherwise. Profile is owned by the request
-  // object, not the caller.
-  autofill::AutofillProfile* GetCurrentlySelectedProfile();
+  // Returns the appropriate Autofill Profiles for this user. On the first
+  // invocation of either getter, the profiles are fetched from the
+  // PersonalDataManager; on subsequent invocations, a cached version is
+  // returned. The profiles returned are owned by the request object.
+  const std::vector<autofill::AutofillProfile*>& shipping_profiles();
+  const std::vector<autofill::AutofillProfile*>& contact_profiles();
+
+  // Gets/sets the Autofill Profile representing the shipping address or contact
+  // information currently selected for this PaymentRequest flow. Can return
+  // null.
+  autofill::AutofillProfile* selected_shipping_profile() const {
+    return selected_shipping_profile_;
+  }
+  void set_selected_shipping_profile(autofill::AutofillProfile* profile) {
+    selected_shipping_profile_ = profile;
+  }
+  autofill::AutofillProfile* selected_contact_profile() const {
+    return selected_contact_profile_;
+  }
+  void set_selected_contact_profile(autofill::AutofillProfile* profile) {
+    selected_contact_profile_ = profile;
+  }
 
   // Returns the currently selected credit card for this PaymentRequest flow.
   // It's not guaranteed to be complete. Returns nullptr if there is no selected
@@ -83,6 +99,13 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   content::WebContents* web_contents() { return web_contents_; }
 
  private:
+  // Fetches the Autofill Profiles for this user from the PersonalDataManager,
+  // and stores copies of them, owned by this Request, in profile_cache_.
+  void PopulateProfileCache();
+
+  // Sets the default values for the selected Shipping and Contact profiles.
+  void SetDefaultProfileSelections();
+
   content::WebContents* web_contents_;
   std::unique_ptr<PaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
@@ -91,7 +114,15 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   payments::mojom::PaymentRequestClientPtr client_;
   payments::mojom::PaymentDetailsPtr details_;
   std::unique_ptr<CurrencyFormatter> currency_formatter_;
-  std::unique_ptr<autofill::AutofillProfile> profile_;
+
+  // Profiles may change due to (e.g.) sync events, so profiles are cached after
+  // loading and owned here. They are populated once only, and ordered by
+  // frecency.
+  std::vector<std::unique_ptr<autofill::AutofillProfile>> profile_cache_;
+  std::vector<autofill::AutofillProfile*> shipping_profiles_;
+  std::vector<autofill::AutofillProfile*> contact_profiles_;
+  autofill::AutofillProfile* selected_shipping_profile_;
+  autofill::AutofillProfile* selected_contact_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

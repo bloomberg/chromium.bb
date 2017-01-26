@@ -213,7 +213,7 @@ void PaymentSheetViewController::ButtonPressed(
       break;
 
     case static_cast<int>(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON):
-      // TODO(tmartino): Transition to shipping page once it exists.
+      dialog()->ShowShippingListSheet();
       break;
 
     case static_cast<int>(
@@ -266,7 +266,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
 
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateShippingSectionContent() {
-  auto profile = request()->GetCurrentlySelectedProfile();
+  auto profile = request()->selected_shipping_profile();
 
   // TODO(tmartino): Empty string param is app locale; this should be passed
   // at construct-time and stored as a member in a future CL.
@@ -351,7 +351,7 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
 
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateContactInfoSectionContent() {
-  auto profile = request()->GetCurrentlySelectedProfile();
+  auto profile = request()->selected_contact_profile();
   // TODO(tmartino): Replace empty string with app locale.
   return profile ? payments::GetContactInfoLabel(AddressStyleType::SUMMARY,
                                                  std::string(), *profile, true,

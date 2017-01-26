@@ -56,6 +56,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
   void GoBack();
   void ShowOrderSummary();
+  void ShowShippingListSheet();
   void ShowPaymentMethodSheet();
 
  private:

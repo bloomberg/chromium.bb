@@ -11,10 +11,10 @@
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
+#include "chrome/browser/ui/views/payments/shipping_list_view_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/payment_request.h"
-#include "components/payments/payment_request_dialog.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
@@ -101,13 +101,19 @@ void PaymentRequestDialogView::GoBack() {
 void PaymentRequestDialogView::ShowOrderSummary() {
   view_stack_.Push(CreateViewAndInstallController<OrderSummaryViewController>(
                        &controller_map_, request_, this),
-                   true);
+                   /* animate = */ true);
 }
 
 void PaymentRequestDialogView::ShowPaymentMethodSheet() {
   view_stack_.Push(CreateViewAndInstallController<PaymentMethodViewController>(
                        &controller_map_, request_, this),
-                   true);
+                   /* animate = */ true);
+}
+
+void PaymentRequestDialogView::ShowShippingListSheet() {
+  view_stack_.Push(CreateViewAndInstallController<ShippingListViewController>(
+                       &controller_map_, request_, this),
+                   /* animate = */ true);
 }
 
 void PaymentRequestDialogView::ShowDialog() {
@@ -122,7 +128,7 @@ void PaymentRequestDialogView::CloseDialog() {
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   view_stack_.Push(CreateViewAndInstallController<PaymentSheetViewController>(
                        &controller_map_, request_, this),
-                   false);
+                   /* animate = */ false);
   if (observer_for_testing_)
     observer_for_testing_->OnDialogOpened();
 }

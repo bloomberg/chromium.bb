@@ -1804,6 +1804,8 @@ split_static_library("ui") {
         "views/payments/payment_request_views_util.h",
         "views/payments/payment_sheet_view_controller.cc",
         "views/payments/payment_sheet_view_controller.h",
+        "views/payments/shipping_list_view_controller.cc",
+        "views/payments/shipping_list_view_controller.h",
         "views/payments/view_stack.cc",
         "views/payments/view_stack.h",
         "views/process_singleton_dialog_linux.cc",

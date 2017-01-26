@@ -22,7 +22,9 @@ PaymentRequest::PaymentRequest(
     : web_contents_(web_contents),
       delegate_(std::move(delegate)),
       manager_(manager),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      selected_shipping_profile_(nullptr),
+      selected_contact_profile_(nullptr) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
@@ -30,6 +32,7 @@ PaymentRequest::PaymentRequest(
   // set_connection_error_with_reason_handler with Binding::CloseWithReason.
   binding_.set_connection_error_handler(base::Bind(
       &PaymentRequest::OnConnectionTerminated, base::Unretained(this)));
+
 }
 
 PaymentRequest::~PaymentRequest() {}
@@ -48,6 +51,8 @@ void PaymentRequest::Init(
   }
   client_ = std::move(client);
   details_ = std::move(details);
+  PopulateProfileCache();
+  SetDefaultProfileSelections();
 }
 
 void PaymentRequest::Show() {
@@ -105,17 +110,14 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
   return currency_formatter_.get();
 }
 
-autofill::AutofillProfile* PaymentRequest::GetCurrentlySelectedProfile() {
-  // TODO(tmartino): Implement more sophisticated algorithm for populating
-  // this when it starts empty.
-  if (!profile_) {
-    autofill::PersonalDataManager* data_manager =
-        delegate_->GetPersonalDataManager();
-    auto profiles = data_manager->GetProfiles();
-    if (!profiles.empty())
-      profile_ = base::MakeUnique<autofill::AutofillProfile>(*profiles[0]);
-  }
-  return profile_ ? profile_.get() : nullptr;
+const std::vector<autofill::AutofillProfile*>&
+    PaymentRequest::shipping_profiles() {
+  return shipping_profiles_;
+}
+
+const std::vector<autofill::AutofillProfile*>&
+    PaymentRequest::contact_profiles() {
+  return contact_profiles_;
 }
 
 autofill::CreditCard* PaymentRequest::GetCurrentlySelectedCreditCard() {
@@ -135,6 +137,34 @@ autofill::CreditCard* PaymentRequest::GetCurrentlySelectedCreditCard() {
   });
 
   return first_complete_card == cards.end() ? nullptr : *first_complete_card;
+}
+
+void PaymentRequest::PopulateProfileCache() {
+  autofill::PersonalDataManager* data_manager =
+      delegate_->GetPersonalDataManager();
+  std::vector<autofill::AutofillProfile*> profiles =
+      data_manager->GetProfilesToSuggest();
+
+  // PaymentRequest may outlive the Profiles returned by the Data Manager.
+  // Thus, we store copies, and return a vector of pointers to these copies
+  // whenever Profiles are requested.
+  for (size_t i = 0; i < profiles.size(); i++) {
+    profile_cache_.push_back(
+        base::MakeUnique<autofill::AutofillProfile>(*profiles[i]));
+
+    // TODO(tmartino): Implement deduplication rules specific to shipping and
+    // contact profiles.
+    shipping_profiles_.push_back(profile_cache_[i].get());
+    contact_profiles_.push_back(profile_cache_[i].get());
+  }
+}
+
+void PaymentRequest::SetDefaultProfileSelections() {
+  if (!shipping_profiles().empty())
+    set_selected_shipping_profile(shipping_profiles()[0]);
+
+  if (!contact_profiles().empty())
+    set_selected_contact_profile(contact_profiles()[0]);
 }
 
 }  // namespace payments
