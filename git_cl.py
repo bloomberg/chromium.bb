@@ -463,11 +463,6 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options,
   http = authenticator.authorize(httplib2.Http())
   http.force_exception_to_status_code = True
 
-  # TODO(tandrii): consider caching Gerrit CL details just like
-  # _RietveldChangelistImpl does, then caching values in these two variables
-  # won't be necessary.
-  owner_email = changelist.GetIssueOwner()
-
   buildbucket_put_url = (
       'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
           hostname=options.buildbucket_host))
@@ -498,7 +493,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options,
       parameters = {
           'builder_name': builder,
           'changes': [{
-              'author': {'email': owner_email},
+              'author': {'email': changelist.GetIssueOwner()},
               'revision': options.revision,
           }],
           'properties': shared_parameters_properties.copy(),
@@ -4721,6 +4716,10 @@ def CMDtry(parser, args):
   cl = Changelist(auth_config=auth_config)
   if not cl.GetIssue():
     parser.error('Need to upload first')
+
+  if cl.IsGerrit():
+    # HACK: warm up Gerrit change detail cache to save on RPCs.
+    cl._codereview_impl._GetChangeDetail(['DETAILED_ACCOUNTS', 'ALL_REVISIONS'])
 
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:

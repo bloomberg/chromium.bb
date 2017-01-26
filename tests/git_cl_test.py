@@ -2278,8 +2278,24 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
-        (('GetChangeDetail', 'chromium-review.googlesource.com', '123456', []),
-         { 'status': 'OPEN' }),
+        (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
+         ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
+          'project': 'depot_tools',
+          'status': 'OPEN',
+          'owner': {'email': 'owner@e.mail'},
+          'revisions': {
+            'deadbeaf':  {
+              '_number': 6,
+            },
+            'beeeeeef': {
+              '_number': 7,
+              'fetch': {'http': {
+                'url': 'https://chromium.googlesource.com/depot_tools',
+                'ref': 'refs/changes/56/123456/7'
+              }},
+            },
+          },
+        }),
         ((['git', 'config', 'branch.feature.merge'],), 'feature'),
         ((['git', 'config', 'branch.feature.remote'],), 'origin'),
         ((['get_or_create_merge_base', 'feature', 'feature'],),
@@ -2370,14 +2386,11 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
-        (('GetChangeDetail', 'chromium-review.googlesource.com', '123456', []),
-         { 'status': 'OPEN' }),
         (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
-         ['DETAILED_ACCOUNTS']),
-         {'owner': {'email': 'owner@e.mail'}}),
-        (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
-         ['ALL_REVISIONS', 'CURRENT_COMMIT']), {
+         ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
           'project': 'depot_tools',
+          'status': 'OPEN',
+          'owner': {'email': 'owner@e.mail'},
           'revisions': {
             'deadbeaf':  {
               '_number': 6,
