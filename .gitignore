@@ -439,6 +439,7 @@ vs-chromium-project.txt
 /third_party/retrolambda/*.jar
 /third_party/robolectric/lib/*.jar
 /third_party/robolectric/robolectric
+/third_party/scan-build/src
 /third_party/scons-2.0.1
 /third_party/sfntly/src
 /third_party/shaderc/src
