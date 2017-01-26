@@ -1863,7 +1863,7 @@ def PreCqBuilders(site_config, ge_build_config):
   site_config.AddGroup(
       'mixed-c-pre-cq',
       # brillo
-      site_config['storm-compile-only-pre-cq'],
+      site_config['whirlwind-compile-only-pre-cq'],
   )
 
   site_config.AddGroup(

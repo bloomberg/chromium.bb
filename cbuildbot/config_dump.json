@@ -15435,19 +15435,19 @@
     "mixed-c-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
-            "storm"
+            "whirlwind"
         ],
         "child_configs": [
             {
                 "_template": "compile_only_pre_cq",
                 "boards": [
-                    "storm"
+                    "whirlwind"
                 ],
                 "grouped": true,
                 "internal": true,
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "name": "storm-compile-only-pre-cq",
+                "name": "whirlwind-compile-only-pre-cq",
                 "overlays": "both",
                 "sync_chrome": false,
                 "useflags": [

@@ -576,7 +576,7 @@ mccloud-unittest-stress (gce_beefy)
 [mixed-b-pre-cq] (gce_beefy)
   samus-compile-only-pre-cq
 [mixed-c-pre-cq] (gce_beefy)
-  storm-compile-only-pre-cq
+  whirlwind-compile-only-pre-cq
 [mixed-wificell-pre-cq] (baremetal)
   daisy-wificell-pre-cq
   veyron_jerry-wificell-pre-cq
