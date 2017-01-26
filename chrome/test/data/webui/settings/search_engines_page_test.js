@@ -328,7 +328,7 @@ cr.define('settings_search_engines_page', function() {
       // button is tapped.
       test('AddSearchEngineDialog', function() {
         assertFalse(!!page.$$('settings-search-engine-dialog'));
-        var addSearchEngineButton = page.$.addSearchEngine;
+        var addSearchEngineButton = page.$$('#addSearchEngine > a');
         assertTrue(!!addSearchEngineButton);
 
         MockInteractions.tap(addSearchEngineButton);

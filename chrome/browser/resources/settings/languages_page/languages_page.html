@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -29,7 +30,7 @@
 
 <dom-module id="settings-languages-page">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared action-link">
       #languagesCollapse .list-item.selected {
         min-height: var(--settings-row-two-line-min-height);
       }
@@ -125,8 +126,11 @@
                 </paper-icon-button>
               </div>
             </template>
-            <div class="list-item list-button" on-tap="onAddLanguagesTap_">
-              <a is="action-link">$i18n{addLanguages}</a>
+            <div class="list-item">
+              <a is="action-link" class="list-button"
+                  on-tap="onAddLanguagesTap_">
+                $i18n{addLanguages}
+              </a>
             </div>
           </div>
         </iron-collapse>
@@ -167,9 +171,11 @@
                 </paper-icon-button>
               </div>
             </template>
-            <div class="list-item list-button"
-                on-tap="onManageInputMethodsTap_">
-              <a is="action-link">$i18n{manageInputMethods}</a>
+            <div class="list-item">
+              <a is="action-link" class="list-button"
+                  on-tap="onManageInputMethodsTap_">
+                $i18n{manageInputMethods}
+              </a>
             </div>
           </div>
         </iron-collapse>
@@ -199,8 +205,11 @@
                 </paper-checkbox>
               </label>
             </template>
-            <div class="list-item list-button" on-tap="onEditDictionaryTap_">
-              <a is="action-link">$i18n{manageSpellCheck}</a>
+            <div class="list-item">
+              <a is="action-link" class="list-button"
+                  on-tap="onEditDictionaryTap_">
+                $i18n{manageSpellCheck}
+              </a>
             </div>
           </div>
         </iron-collapse>

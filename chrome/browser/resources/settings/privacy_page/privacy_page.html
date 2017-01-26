@@ -352,7 +352,10 @@
 <if expr="chromeos">
           <div actionable class="settings-box"
               on-tap="onAdobeFlashStorageClicked_">
-            <div class="list-item list-button">$i18n{adobeFlashStorage}</div>
+            <div class="start">
+              $i18n{adobeFlashStorage}
+            </div>
+            <button class="icon-external" is="paper-icon-button-light"></button>
           </div>
 </if>
           <category-setting-exceptions

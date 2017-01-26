@@ -1,4 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -11,7 +13,7 @@
 
 <dom-module id="settings-startup-urls-page">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared action-link">
       #outer {
         @apply(--settings-list-frame-padding);
         max-height: 395px;  /** Enough height to show six entries. */
@@ -39,11 +41,17 @@
       </div>
       <template is="dom-if" if="[[!prefs.session.startup_urls.controlledBy]]"
           restamp>
-        <div class="list-item list-button" id="addPage" on-tap="onAddPageTap_">
-          $i18n{onStartupAddNewPage}
+        <div class="list-item" id="addPage">
+          <a is="action-link" class="list-button" on-tap="onAddPageTap_">
+            $i18n{onStartupAddNewPage}
+          </a>
         </div>
-        <div class="list-item list-button" id="useCurrentPages"
-            on-tap="onUseCurrentPagesTap_">$i18n{onStartupUseCurrent}</div>
+        <div class="list-item" id="useCurrentPages">
+          <a is="action-link" class="list-button"
+              on-tap="onUseCurrentPagesTap_">
+            $i18n{onStartupUseCurrent}
+          </a>
+        </div>
       </template>
       <template is="dom-if" if="[[prefs.session.startup_urls.extensionId]]"
           restamp>

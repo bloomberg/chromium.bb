@@ -1,4 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
@@ -12,7 +14,7 @@
 
 <dom-module id="site-details">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared action-link">
       .favicon-image {
         margin: 2px;
       }
@@ -108,8 +110,10 @@
           label="$i18n{siteSettingsUnsandboxedPlugins}" site="[[site]]">
       </site-details-permission>
 
-      <div on-tap="onClearAndReset_" raised class="list-item list-button">
-        $i18n{siteSettingsClearAndReset}
+      <div class="list-item">
+        <a is="action-link" class="list-button" on-tap="onClearAndReset_" >
+          $i18n{siteSettingsClearAndReset}
+        </a>
       </div>
     </div>
     <website-usage-private-api id="usageApi"

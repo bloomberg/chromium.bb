@@ -1,6 +1,7 @@
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="/search_engines_page/search_engines_browser_proxy.html">
 <link rel="import" href="/search_engines_page/search_engine_dialog.html">
@@ -9,9 +10,8 @@
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-search-engines-page">
-  <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared action-link">
       .extension-engines {
         @apply(--settings-list-frame-padding);
       }
@@ -35,12 +35,12 @@
     <div class="settings-box first">
       <h2>$i18n{searchEnginesOther}</h2>
     </div>
-    <!-- TODO(dbeam): why does on-click work with keyboard but on-tap
-         doesn't? -->
     <settings-search-engines-list engines="[[otherEngines]]">
-      <a class="list-item list-button" is="action-link"
-          on-tap="onAddSearchEngineTap_" id="addSearchEngine">
-          $i18n{searchEnginesAddSearchEngine}</a>
+      <div class="list-item" id="addSearchEngine">
+        <a is="action-link" class="list-button" on-tap="onAddSearchEngineTap_">
+          $i18n{searchEnginesAddSearchEngine}
+        </a>
+      </div>
     </settings-search-engines-list>
 
     <template is="dom-if" if="[[showExtensionsList_]]">

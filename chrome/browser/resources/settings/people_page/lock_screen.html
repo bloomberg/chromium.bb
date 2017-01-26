@@ -1,6 +1,7 @@
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/people_page/lock_screen_constants.html">
@@ -13,14 +14,10 @@
 
 <dom-module id="settings-lock-screen">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared action-link"></style>
     <style>
       .radio-indent {
-        margin-left: 28px;
-      }
-
-      paper-button {
-        text-transform: none;
+        margin-left: 36px;
       }
     </style>
 
@@ -33,15 +30,13 @@
           <paper-radio-button name="pin+password">
             $i18n{lockScreenPinOrPassword}
           </paper-radio-button>
-          <div class="settings-box continuation radio-indent"
-              hidden$="[[!showConfigurePinButton_(selectedUnlockType)]]">
-            <!-- TODO(dbeam): I seriously doubt paper-button[is=action-link] is
-                 a good idea. -->
-            <paper-button is="action-link" on-tap="onConfigurePin_">
-              [[getSetupPinText_(hasPin)]]
-            </paper-button>
-          </div>
         </paper-radio-group>
+        <div class="list-item radio-indent"
+            hidden$="[[!showConfigurePinButton_(selectedUnlockType)]]">
+          <a is="action-link" class="list-button" on-tap="onConfigurePin_">
+            [[getSetupPinText_(hasPin)]]
+          </a>
+        </div>
       </div>
 
       <div class="settings-box">

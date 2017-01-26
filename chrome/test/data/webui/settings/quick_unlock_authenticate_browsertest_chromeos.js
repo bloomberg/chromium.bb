@@ -237,7 +237,7 @@ cr.define('settings_people_page_quick_unlock', function() {
               getFromElement('paper-radio-button[name="password"]');
           pinPasswordRadioButton =
               getFromElement('paper-radio-button[name="pin+password"]');
-          configureButton = getFromElement('paper-button');
+          configureButton = getFromElement('a[is="action-link"]');
 
           done();
         });

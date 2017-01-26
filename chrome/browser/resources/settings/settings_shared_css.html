@@ -78,10 +78,6 @@
         -webkit-margin-start: 4px;
       }
 
-      [is='action-link'],
-      [is='action-link']:active,
-      [is='action-link']:hover,
-      [is='action-link']:visited,
       .primary-button,
       .tertiary-button,
       a[href] {
@@ -95,8 +91,7 @@
         };
       }
 
-      a[href],
-      [is='action-link']:hover {
+      a[href] {
         text-decoration: none;
       }
 
@@ -232,10 +227,11 @@
       }
 
       /* This button has no ink ripple. */
-      .list-item.list-button {
-        @apply(--settings-actionable);
+      .list-button[is='action-link'] {
+        min-height: inherit;
+        display: flex;
         align-items: center;
-        color: var(--google-blue-500);
+        flex: 1;
         font-weight: 500;
       }
 

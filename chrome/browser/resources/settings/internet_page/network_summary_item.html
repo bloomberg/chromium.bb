@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -13,7 +15,7 @@
 
 <dom-module name="network-summary-item">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared action-link">
       paper-spinner {
         @apply(--cr-icon-height-width);
         margin: 0 var(--settings-box-row-padding);
@@ -21,12 +23,6 @@
 
       network-siminfo {
         padding: 0 var(--settings-box-row-padding);
-      }
-
-      .button-row {
-        align-items: center;
-        display: flex;
-        min-height: var(--settings-row-min-height);
       }
 
       .padded {
@@ -109,8 +105,11 @@
           </cr-network-list>
           <template is="dom-if"
               if="[[knownNetworksIsVisible_(activeNetworkState)]]">
-            <div class="button-row" actionable on-tap="onKnownNetworksTap_">
-              <a is="action-link">$i18n{knownNetworksButton}</a>
+            <div class="list-item">
+              <a is="action-link" class="list-button"
+                  on-tap="onKnownNetworksTap_">
+                $i18n{knownNetworksButton}
+              </a>
             </div>
           </template>
         </div>

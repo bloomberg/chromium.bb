@@ -22,11 +22,13 @@
       </settings-toggle-button>
     </div>
 
+    <!-- TODO(scottchen): Make a proper a[href].settings-box with
+         icon-external (see: https://crbug.com/684005)-->
     <div class="settings-box">
       <!-- TODO(jdufault): This should launch an intent (using the
         enable-intent-picker flag) that opens up the play store to a curated
         list of apps. -->
-      <a is="action-link" target="_blank"
+      <a target="_blank"
          href="https://play.google.com/store/apps/collection/promotion_30023cb_stylus_apps">
         $i18n{stylusFindMoreApps}
       </a>

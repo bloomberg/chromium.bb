@@ -1,3 +1,5 @@
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -8,7 +10,7 @@
 
 <dom-module id="settings-users-page">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared action-link">
       .users {
         /* The users box must line up with the checkbox text. */
         -webkit-margin-start: var(--settings-indent-width);
@@ -59,11 +61,12 @@
             disabled="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
                 prefs.cros.accounts.allowGuest.value)]]">
         </settings-user-list>
-        <div id="add-user-button" class="list-item list-button"
-            on-tap="openAddUserDialog_"
+        <div id="add-user-button" class="list-item"
             hidden="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
                 prefs.cros.accounts.allowGuest.value)]]">
-          $i18n{addUsers}
+          <a is="action-link" class="list-button" on-tap="openAddUserDialog_">
+            $i18n{addUsers}
+          </a>
         </div>
       </div>
     </div>

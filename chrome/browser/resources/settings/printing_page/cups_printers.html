@@ -1,3 +1,5 @@
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="/printing_page/cups_add_printer_dialog.html">
 <link rel="import" href="/printing_page/cups_printers_list.html">
@@ -5,17 +7,7 @@
 
 <dom-module id="settings-cups-printers">
   <template>
-    <style include="settings-shared">
-      a[is='action-link'] {
-        display: inline-block;
-        text-decoration: none;
-      }
-
-      a[is='action-link']:hover {
-        color: blue;
-        text-decoration: underline;
-      }
-
+    <style include="settings-shared action-link">
       .settings-box .start {
         color: var(--paper-grey-500);
       }
@@ -54,7 +46,7 @@
     </style>
 
     <div class="settings-box first">
-      <a is="action-link" on-tap="onAddPrinterTap_" actionable
+      <a is="action-link" on-tap="onAddPrinterTap_"
           hidden="[[!canAddPrinter_]]">
         $i18n{addCupsPrinter}
       </a>
@@ -79,7 +71,7 @@
       </div>
       <div class="center" id="addPrinterErrorMessage" hidden>
         <span>$i18n{printerAddedFailedMessage}</span>
-        <a is="action-link" on-tap="onAddPrinterTap_" actionable>
+        <a is="action-link" on-tap="onAddPrinterTap_">
           $i18n{printerAddedTryAgainMessage}
         </a>
       </div>

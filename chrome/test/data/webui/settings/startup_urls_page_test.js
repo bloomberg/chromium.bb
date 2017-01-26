@@ -216,14 +216,14 @@ cr.define('settings_startup_urls_page', function() {
     });
 
     test('UseCurrentPages', function() {
-      var useCurrentPagesButton = page.$$('#useCurrentPages');
+      var useCurrentPagesButton = page.$$('#useCurrentPages > a');
       assertTrue(!!useCurrentPagesButton);
       MockInteractions.tap(useCurrentPagesButton);
       return browserProxy.whenCalled('useCurrentPages');
     });
 
     test('AddPage_OpensDialog', function() {
-      var addPageButton = page.$$('#addPage');
+      var addPageButton = page.$$('#addPage > a');
       assertTrue(!!addPageButton);
       assertFalse(!!page.$$('settings-startup-url-dialog'));
 

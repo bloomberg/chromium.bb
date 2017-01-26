@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -14,7 +15,7 @@
 
 <dom-module id="downloads-item">
   <template>
-    <style>
+    <style include="action-link">
       :host {
         display: flex;
         flex-direction: column;
@@ -316,6 +317,5 @@
     </div>
 
   </template>
-  <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <script src="chrome://downloads/item.js"></script>
 </dom-module>

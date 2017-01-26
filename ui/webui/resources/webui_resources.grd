@@ -265,6 +265,8 @@ without changes to the corresponding grd file. -->
 
       <structure name="IDR_WEBUI_HTML_ACTION_LINK"
                  file="html/action_link.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_ACTION_LINK_CSS"
+                 file="html/action_link_css.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_ASSERT"
                  file="html/assert.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_PROMISE_RESOLVER"
