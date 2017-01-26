@@ -147,8 +147,6 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
-#include "components/browser_watcher/stability_data_names.h"
-#include "components/browser_watcher/stability_debugging.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -230,9 +228,7 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
   clean_exit_beacon->WriteBeaconValue(true);
-  // Note: the in-memory MetricsService::execution_phase_ is not updated.
-  local_state->SetInteger(prefs::kStabilityExecutionPhase,
-                          MetricsService::SHUTDOWN_COMPLETE);
+  ExecutionPhaseManager(local_state).OnAppEnterBackground();
   // Start writing right away (write happens on a different thread).
   local_state->CommitPendingWrite();
 }
@@ -243,9 +239,6 @@ void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
 // static
 MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
     MetricsService::CLEANLY_SHUTDOWN;
-
-MetricsService::ExecutionPhase MetricsService::execution_phase_ =
-    MetricsService::UNINITIALIZED_PHASE;
 
 // static
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -260,8 +253,7 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kStabilityStatsVersion, std::string());
   registry->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
   registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
-  registry->RegisterIntegerPref(prefs::kStabilityExecutionPhase,
-                                UNINITIALIZED_PHASE);
+  ExecutionPhaseManager::RegisterPrefs(registry);
   registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
   registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
 
@@ -502,9 +494,7 @@ void MetricsService::OnAppEnterBackground() {
 
 void MetricsService::OnAppEnterForeground() {
   clean_exit_beacon_.WriteBeaconValue(false);
-  // Restore the execution phase stored in prefs. It was altered in
-  // OnAppEnterBackground by a call to MarkAppCleanShutdownAndCommit.
-  local_state_->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
+  ExecutionPhaseManager(local_state_).OnAppEnterForeground();
   StartSchedulerIfNecessary();
 }
 #else
@@ -518,10 +508,7 @@ void MetricsService::LogNeedForCleanShutdown() {
 // static
 void MetricsService::SetExecutionPhase(ExecutionPhase execution_phase,
                                        PrefService* local_state) {
-  execution_phase_ = execution_phase;
-  local_state->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
-  browser_watcher::SetStabilityDataInt(
-      browser_watcher::kStabilityExecutionPhase, execution_phase_);
+  ExecutionPhaseManager(local_state).SetExecutionPhase(execution_phase);
 }
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
@@ -614,13 +601,10 @@ void MetricsService::InitializeMetricsState() {
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     clean_exit_beacon_.WriteBeaconValue(true);
-    // TODO(rtenneti): On windows, consider saving/getting execution_phase from
-    // the registry.
-    int execution_phase =
-        local_state_->GetInteger(prefs::kStabilityExecutionPhase);
+    ExecutionPhaseManager manager(local_state_);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
-                                execution_phase);
-    SetExecutionPhase(UNINITIALIZED_PHASE, local_state_);
+                                static_cast<int>(manager.GetExecutionPhase()));
+    manager.SetExecutionPhase(ExecutionPhase::UNINITIALIZED_PHASE);
   }
 
   // ProvidersHaveInitialStabilityMetrics is called first to ensure it is never
@@ -670,8 +654,7 @@ void MetricsService::InitializeMetricsState() {
   // Stability bookkeeping
   IncrementPrefValue(prefs::kStabilityLaunchCount);
 
-  DCHECK_EQ(UNINITIALIZED_PHASE, execution_phase_);
-  SetExecutionPhase(START_METRICS_RECORDING, local_state_);
+  SetExecutionPhase(ExecutionPhase::START_METRICS_RECORDING, local_state_);
 
   if (!local_state_->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
     IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);
@@ -1269,7 +1252,7 @@ void MetricsService::LogCleanShutdown(bool end_completed) {
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
   client_->OnLogCleanShutdown();
   clean_exit_beacon_.WriteBeaconValue(true);
-  SetExecutionPhase(MetricsService::SHUTDOWN_COMPLETE, local_state_);
+  SetExecutionPhase(ExecutionPhase::SHUTDOWN_COMPLETE, local_state_);
   local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, end_completed);
 }
 

@@ -307,7 +307,7 @@ void SessionEnding() {
   ShutdownWatcherHelper shutdown_watcher;
   shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
   metrics::MetricsService::SetExecutionPhase(
-      metrics::MetricsService::SHUTDOWN_TIMEBOMB_ARM,
+      metrics::ExecutionPhase::SHUTDOWN_TIMEBOMB_ARM,
       g_browser_process->local_state());
 
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);

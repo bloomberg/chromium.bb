@@ -25,6 +25,8 @@ static_library("metrics") {
     "drive_metrics_provider_win.cc",
     "enabled_state_provider.cc",
     "enabled_state_provider.h",
+    "execution_phase.cc",
+    "execution_phase.h",
     "file_metrics_provider.cc",
     "file_metrics_provider.h",
     "histogram_encoder.cc",

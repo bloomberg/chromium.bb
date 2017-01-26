@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/data_use_tracker.h"
+#include "components/metrics/execution_phase.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_provider.h"
@@ -60,18 +61,6 @@ class MetricsStateManager;
 // See metrics_service.cc for a detailed description.
 class MetricsService : public base::HistogramFlattener {
  public:
-  // The execution phase of the browser.
-  enum ExecutionPhase {
-    UNINITIALIZED_PHASE = 0,
-    START_METRICS_RECORDING = 100,
-    CREATE_PROFILE = 200,
-    STARTUP_TIMEBOMB_ARM = 300,
-    THREAD_WATCHER_START = 400,
-    MAIN_MESSAGE_LOOP_RUN = 500,
-    SHUTDOWN_TIMEBOMB_ARM = 600,
-    SHUTDOWN_COMPLETE = 700,
-  };
-
   // Creates the MetricsService with the given |state_manager|, |client|, and
   // |local_state|.  Does not take ownership of the paramaters; instead stores
   // a weak pointer to each. Caller should ensure that the parameters are valid
@@ -454,9 +443,6 @@ class MetricsService : public base::HistogramFlattener {
   // List of observers of |synthetic_trial_groups_| changes.
   base::ObserverList<variations::SyntheticTrialObserver>
       synthetic_trial_observer_list_;
-
-  // Execution phase the browser is in.
-  static ExecutionPhase execution_phase_;
 
   // Redundant marker to check that we completed our shutdown, and set the
   // exited-cleanly bit in the prefs.

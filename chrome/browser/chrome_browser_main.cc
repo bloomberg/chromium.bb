@@ -1624,7 +1624,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Profile creation ----------------------------------------------------------
 
   metrics::MetricsService::SetExecutionPhase(
-      metrics::MetricsService::CREATE_PROFILE,
+      metrics::ExecutionPhase::CREATE_PROFILE,
       g_browser_process->local_state());
 
   UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep1Time",
@@ -1793,7 +1793,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // ThreadWatcher takes over or when browser is shutdown or when
   // startup_watcher_ is deleted.
   metrics::MetricsService::SetExecutionPhase(
-      metrics::MetricsService::STARTUP_TIMEBOMB_ARM,
+      metrics::ExecutionPhase::STARTUP_TIMEBOMB_ARM,
       g_browser_process->local_state());
   startup_watcher_->Arm(base::TimeDelta::FromSeconds(600));
 
@@ -1817,7 +1817,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Start watching all browser threads for responsiveness.
   metrics::MetricsService::SetExecutionPhase(
-      metrics::MetricsService::THREAD_WATCHER_START,
+      metrics::ExecutionPhase::THREAD_WATCHER_START,
       g_browser_process->local_state());
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
@@ -1995,7 +1995,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 
   metrics::MetricsService::SetExecutionPhase(
-      metrics::MetricsService::MAIN_MESSAGE_LOOP_RUN,
+      metrics::ExecutionPhase::MAIN_MESSAGE_LOOP_RUN,
       g_browser_process->local_state());
   run_loop.Run();
 
@@ -2019,7 +2019,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
   metrics::MetricsService::SetExecutionPhase(
-      metrics::MetricsService::SHUTDOWN_TIMEBOMB_ARM,
+      metrics::ExecutionPhase::SHUTDOWN_TIMEBOMB_ARM,
       g_browser_process->local_state());
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 

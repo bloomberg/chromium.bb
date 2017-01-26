@@ -83,7 +83,7 @@ class MetricsServiceTest : public testing::Test {
   }
 
   ~MetricsServiceTest() override {
-    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE,
+    MetricsService::SetExecutionPhase(ExecutionPhase::UNINITIALIZED_PHASE,
                                       GetLocalState());
   }
 
