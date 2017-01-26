@@ -433,6 +433,9 @@ FileTable.decorate = function(
   self.setRenderFunction(self.renderTableRow_.bind(self,
       self.getRenderFunction()));
 
+  self.scrollBar_ = new ScrollBar();
+  self.scrollBar_.initialize(self, self.list);
+
   // Keep focus on the file list when clicking on the header.
   self.header.addEventListener('mousedown', function(e) {
     self.list.focus();

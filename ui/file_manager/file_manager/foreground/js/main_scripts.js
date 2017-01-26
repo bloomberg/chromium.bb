@@ -168,6 +168,7 @@
 // <include src="ui/multi_profile_share_dialog.js">
 // <include src="ui/progress_center_panel.js">
 // <include src="ui/providers_menu.js">
+// <include src="ui/scrollbar.js">
 // <include src="ui/search_box.js">
 // <include src="ui/share_dialog.js">
 // <include src="ui/suggest_apps_dialog.js">

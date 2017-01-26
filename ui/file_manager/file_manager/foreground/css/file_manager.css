@@ -60,6 +60,50 @@ a:focus {
   opacity: 0.8;
 }
 
+.dialog-container ::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
+
+/* TODO(mtomasz): Flip scrollbars to the opposite side for RTL languages. */
+.scrollbar-vertical {
+  bottom: 0;
+  flex: none;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 10px;
+  z-index: 500;  /* Must be below the contextmenu (600). */
+}
+
+.scrollbar-button {
+  background-color: black;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  height: 50%;
+  margin-right: 2px;
+  opacity: 0;
+  pointer-events: auto;
+  position: absolute;
+  transition: opacity 100ms;
+  width: 8px;
+}
+
+:hover > .scrollbar-vertical > .scrollbar-button,
+.scrollbar-vertical > .scrollbar-button.scrolling {
+  opacity: 0.3;
+}
+
+.scrollbar-vertical > .scrollbar-button:hover {
+  opacity: 0.4;
+}
+
+.scrollbar-vertical > .scrollbar-button.pressed {
+  opacity: 0.5;
+}
+
 /* Main part of the dialog between header and footer. */
 .dialog-container {
   align-items: stretch;
@@ -128,10 +172,6 @@ div.splitter {
   position: absolute;
   right: 0;
   top: 0;
-
-  /* TODO(yamaguchi): Remove these when crbug.com/671644 is resolved. */
-  background-color: rgb(250, 250, 250);
-  contain: paint;
 }
 
 #directory-tree .tree-row {
@@ -964,9 +1004,9 @@ html[dir='rtl'] .breadcrumbs .separator {
 }
 
 #file-list {
-  /* TODO(yamaguchi): Remove these when crbug.com/671644 is resolved. */
-  background-color: rgb(250, 250, 250);
-  contain: paint;
+  /* Override overflow specifying by table_list.js to use the original scroll
+     bar. crbug.com/391698 */
+  overflow: scroll !important;
 }
 
 #file-list .drag-selection-border {
