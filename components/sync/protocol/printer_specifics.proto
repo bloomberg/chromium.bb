@@ -53,4 +53,7 @@ message PrinterSpecifics {
 
   // Structure representing the user's ppd configuration.
   optional PrinterPPDReference ppd_reference = 9;
+
+  // Timestamp when printer was last updated.
+  optional int64 updated_timestamp = 10;
 }
