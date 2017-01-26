@@ -34,6 +34,16 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
       webrtc::MediaStreamInterface* local_stream) override;
   void RemoveStream(
       webrtc::MediaStreamInterface* local_stream) override;
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> AddTrack(
+      webrtc::MediaStreamTrackInterface* track,
+      std::vector<webrtc::MediaStreamInterface*> streams) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+  bool RemoveTrack(webrtc::RtpSenderInterface* sender) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
   rtc::scoped_refptr<webrtc::DtmfSenderInterface>
       CreateDtmfSender(webrtc::AudioTrackInterface* track) override;
   rtc::scoped_refptr<webrtc::DataChannelInterface>
