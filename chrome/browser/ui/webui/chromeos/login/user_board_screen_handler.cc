@@ -9,8 +9,8 @@
 
 namespace chromeos {
 
-UserBoardScreenHandler::UserBoardScreenHandler() : model_(nullptr) {
-}
+UserBoardScreenHandler::UserBoardScreenHandler()
+    : model_(nullptr), weak_factory_(this) {}
 
 UserBoardScreenHandler::~UserBoardScreenHandler() {
 }
@@ -102,6 +102,10 @@ void UserBoardScreenHandler::Bind(UserBoardModel& model) {
 void UserBoardScreenHandler::Unbind() {
   model_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
+}
+
+base::WeakPtr<UserBoardView> UserBoardScreenHandler::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace chromeos

@@ -54,8 +54,10 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
 
   void Bind(UserBoardModel& model) override;
   void Unbind() override;
+  base::WeakPtr<UserBoardView> GetWeakPtr() override;
 
   UserBoardModel* model_;
+  base::WeakPtrFactory<UserBoardScreenHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserBoardScreenHandler);
 };

@@ -28,9 +28,13 @@ SignInScreenController::SignInScreenController(
   user_selection_screen_.reset(new ChromeUserSelectionScreen(display_type));
   user_selection_screen_->SetLoginDisplayDelegate(login_display_delegate);
 
-  UserBoardView* user_board_view = oobe_ui_->GetUserBoardScreenActor();
-  user_selection_screen_->SetView(user_board_view);
-  user_board_view->Bind(*user_selection_screen_.get());
+  user_board_view_ = oobe_ui_->GetUserBoardScreenActor()->GetWeakPtr();
+  user_selection_screen_->SetView(user_board_view_.get());
+  // TODO(jdufault): Bind and Unbind should be controlled by either the
+  // Model/View which are then each responsible for automatically unbinding the
+  // other associated View/Model instance. Then we can eliminate this exposed
+  // WeakPtr logic. See crbug.com/685287.
+  user_board_view_->Bind(*user_selection_screen_);
 
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
@@ -38,6 +42,9 @@ SignInScreenController::SignInScreenController(
 }
 
 SignInScreenController::~SignInScreenController() {
+  if (user_board_view_)
+    user_board_view_->Unbind();
+
   user_manager::UserManager::Get()->RemoveObserver(this);
   instance_ = nullptr;
 }
