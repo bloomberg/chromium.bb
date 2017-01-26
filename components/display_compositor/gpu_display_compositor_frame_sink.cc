@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/gpu_display_compositor_frame_sink.h"
+#include "components/display_compositor/gpu_display_compositor_frame_sink.h"
 
-namespace ui {
+namespace display_compositor {
 
 GpuDisplayCompositorFrameSink::GpuDisplayCompositorFrameSink(
-    DisplayCompositor* display_compositor,
+    GpuCompositorFrameSinkDelegate* delegate,
+    cc::SurfaceManager* surface_manager,
     const cc::FrameSinkId& frame_sink_id,
     std::unique_ptr<cc::Display> display,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
@@ -16,7 +17,8 @@ GpuDisplayCompositorFrameSink::GpuDisplayCompositorFrameSink(
         compositor_frame_sink_private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
-    : GpuCompositorFrameSink(display_compositor,
+    : GpuCompositorFrameSink(delegate,
+                             surface_manager,
                              frame_sink_id,
                              std::move(display),
                              std::move(begin_frame_source),
@@ -52,4 +54,4 @@ void GpuDisplayCompositorFrameSink::SetOutputIsSecure(bool secure) {
   support_.display()->SetOutputIsSecure(secure);
 }
 
-}  // namespace ui
+}  // namespace display_compositor

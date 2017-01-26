@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_GPU_DISPLAY_COMPOSITOR_FRAME_SINK_H_
-#define SERVICES_UI_SURFACES_GPU_DISPLAY_COMPOSITOR_FRAME_SINK_H_
+#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GPU_DISPLAY_COMPOSITOR_FRAME_SINK_H_
+#define COMPONENTS_DISPLAY_COMPOSITOR_GPU_DISPLAY_COMPOSITOR_FRAME_SINK_H_
 
+#include "components/display_compositor/gpu_compositor_frame_sink.h"
+#include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/ui/surfaces/gpu_compositor_frame_sink.h"
 
-namespace ui {
+namespace display_compositor {
 
-class GpuDisplayCompositorFrameSink : public GpuCompositorFrameSink,
-                                      public cc::mojom::DisplayPrivate {
+class DISPLAY_COMPOSITOR_EXPORT GpuDisplayCompositorFrameSink
+    : public GpuCompositorFrameSink,
+      public NON_EXPORTED_BASE(cc::mojom::DisplayPrivate) {
  public:
   GpuDisplayCompositorFrameSink(
-      DisplayCompositor* display_compositor,
+      GpuCompositorFrameSinkDelegate* delegate,
+      cc::SurfaceManager* surface_manager,
       const cc::FrameSinkId& frame_sink_id,
       std::unique_ptr<cc::Display> display,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
@@ -38,6 +41,6 @@ class GpuDisplayCompositorFrameSink : public GpuCompositorFrameSink,
   DISALLOW_COPY_AND_ASSIGN(GpuDisplayCompositorFrameSink);
 };
 
-}  // namespace ui
+}  // namespace display_compositor
 
-#endif  // SERVICES_UI_SURFACES_GPU_DISPLAY_COMPOSITOR_FRAME_SINK_H_
+#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GPU_DISPLAY_COMPOSITOR_FRAME_SINK_H_

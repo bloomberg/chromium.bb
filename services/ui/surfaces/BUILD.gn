@@ -10,12 +10,6 @@ source_set("surfaces") {
     "display_compositor.h",
     "display_output_surface.cc",
     "display_output_surface.h",
-    "gpu_compositor_frame_sink.cc",
-    "gpu_compositor_frame_sink.h",
-    "gpu_display_compositor_frame_sink.cc",
-    "gpu_display_compositor_frame_sink.h",
-    "gpu_offscreen_compositor_frame_sink.cc",
-    "gpu_offscreen_compositor_frame_sink.h",
   ]
 
   deps = [
