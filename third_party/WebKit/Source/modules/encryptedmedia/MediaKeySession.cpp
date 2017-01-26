@@ -959,9 +959,7 @@ void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS) {
 
   // 3. If the new expiration time is not NaN, let expiration time be the
   //    new expiration time in milliseconds since 01 January 1970 UTC.
-  //    (Note that Chromium actually passes 0 to indicate no expiry.)
-  // FIXME: Get Chromium to pass NaN.
-  if (!std::isnan(updatedExpiryTimeInMS) && updatedExpiryTimeInMS != 0.0)
+  if (!std::isnan(updatedExpiryTimeInMS))
     expirationTime = updatedExpiryTimeInMS;
 
   // 4. Set the session's expiration attribute to expiration time.
