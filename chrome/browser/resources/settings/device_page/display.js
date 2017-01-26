@@ -296,8 +296,13 @@ Polymer({
       var display = this.displays[i];
       if (id != display.id)
         continue;
-      this.currentSelectedModeIndex_ = -1;
-      this.selectedDisplay = display;
+      if (this.selectedDisplay != display) {
+        // Set currentSelectedModeIndex_ to -1 so that getResolutionText_ does
+        // not flicker. selectedDisplayChanged will update selectedModeIndex_
+        // and currentSelectedModeIndex_ correctly.
+        this.currentSelectedModeIndex_ = -1;
+        this.selectedDisplay = display;
+      }
     }
   },
 
