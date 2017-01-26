@@ -459,13 +459,6 @@ class WebFrame {
 
   static void traceFrame(Visitor*, WebFrame*);
   static bool isFrameAlive(const WebFrame*);
-
-  template <typename VisitorDispatcher>
-  static void traceFramesImpl(VisitorDispatcher, WebFrame*);
-  template <typename VisitorDispatcher>
-  void clearWeakFramesImpl(VisitorDispatcher);
-  template <typename VisitorDispatcher>
-  static void traceFrameImpl(VisitorDispatcher, WebFrame*);
 #endif
 
   const WebTreeScopeType m_scope;

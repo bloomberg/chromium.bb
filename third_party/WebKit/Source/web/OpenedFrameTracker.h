@@ -34,9 +34,6 @@ class OpenedFrameTracker {
   void traceFrames(Visitor*);
 
  private:
-  template <typename VisitorDispatcher>
-  void traceFramesImpl(VisitorDispatcher);
-
   WTF::HashSet<WebFrame*> m_openedFrames;
 };
 

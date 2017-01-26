@@ -301,9 +301,7 @@ ALWAYS_INLINE bool WebFrame::isFrameAlive(const WebFrame* frame) {
   return ThreadHeap::isHeapObjectAlive(toWebRemoteFrameImpl(frame));
 }
 
-template <typename VisitorDispatcher>
-ALWAYS_INLINE void WebFrame::traceFrameImpl(VisitorDispatcher visitor,
-                                            WebFrame* frame) {
+void WebFrame::traceFrame(Visitor* visitor, WebFrame* frame) {
   if (!frame)
     return;
 
@@ -313,9 +311,7 @@ ALWAYS_INLINE void WebFrame::traceFrameImpl(VisitorDispatcher visitor,
     visitor->trace(toWebRemoteFrameImpl(frame));
 }
 
-template <typename VisitorDispatcher>
-ALWAYS_INLINE void WebFrame::traceFramesImpl(VisitorDispatcher visitor,
-                                             WebFrame* frame) {
+void WebFrame::traceFrames(Visitor* visitor, WebFrame* frame) {
   DCHECK(frame);
   traceFrame(visitor, frame->m_parent);
   for (WebFrame* child = frame->firstChild(); child;
@@ -325,25 +321,9 @@ ALWAYS_INLINE void WebFrame::traceFramesImpl(VisitorDispatcher visitor,
   frame->m_openedFrameTracker->traceFrames(visitor);
 }
 
-template <typename VisitorDispatcher>
-ALWAYS_INLINE void WebFrame::clearWeakFramesImpl(VisitorDispatcher visitor) {
+void WebFrame::clearWeakFrames(Visitor* visitor) {
   if (!isFrameAlive(m_opener))
     m_opener = nullptr;
 }
-
-#define DEFINE_VISITOR_METHOD(VisitorDispatcher)                           \
-  void WebFrame::traceFrame(VisitorDispatcher visitor, WebFrame* frame) {  \
-    traceFrameImpl(visitor, frame);                                        \
-  }                                                                        \
-  void WebFrame::traceFrames(VisitorDispatcher visitor, WebFrame* frame) { \
-    traceFramesImpl(visitor, frame);                                       \
-  }                                                                        \
-  void WebFrame::clearWeakFrames(VisitorDispatcher visitor) {              \
-    clearWeakFramesImpl(visitor);                                          \
-  }
-
-DEFINE_VISITOR_METHOD(Visitor*)
-
-#undef DEFINE_VISITOR_METHOD
 
 }  // namespace blink
