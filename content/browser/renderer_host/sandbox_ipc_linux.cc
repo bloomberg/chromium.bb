@@ -26,7 +26,6 @@
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/set_process_title.h"
 #include "content/public/common/content_switches.h"
-#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "ui/gfx/font.h"

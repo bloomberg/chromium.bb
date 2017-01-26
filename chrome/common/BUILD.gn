@@ -150,8 +150,6 @@ static_library("common") {
     "url_constants.h",
     "web_application_info.cc",
     "web_application_info.h",
-    "widevine_cdm_constants.cc",
-    "widevine_cdm_constants.h",
   ]
   defines = []
 
@@ -477,6 +475,12 @@ static_library("common") {
     sources += [
       "pepper_permission_util.cc",
       "pepper_permission_util.h",
+    ]
+  }
+  if (enable_pepper_cdms) {
+    sources += [
+      "widevine_cdm_constants.cc",
+      "widevine_cdm_constants.h",
     ]
   }
   if (!enable_webrtc) {

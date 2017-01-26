@@ -181,7 +181,6 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
-#include "ppapi/shared_impl/ppapi_switches.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -235,6 +234,7 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
+#include "ppapi/shared_impl/ppapi_switches.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)

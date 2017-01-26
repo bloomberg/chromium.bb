@@ -32,7 +32,6 @@
 #include "content/test/mock_webclipboard_impl.h"
 #include "gin/modules/module_registry.h"
 #include "media/media_features.h"
-#include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"

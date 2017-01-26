@@ -12,5 +12,5 @@
 
 #include "content/common/content_message_generator.h"
 #if BUILDFLAG(ENABLE_PLUGINS)
-#include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppapi_messages.h"  // nogncheck
 #endif

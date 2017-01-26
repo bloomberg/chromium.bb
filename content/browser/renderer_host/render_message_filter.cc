@@ -66,7 +66,6 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ppapi/shared_impl/file_type_conversion.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

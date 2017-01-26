@@ -12,8 +12,11 @@
 #include <string>
 
 #include "base/posix/eintr_wrapper.h"
-#include "ppapi/c/private/pp_private_font_charset.h"
-#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
+
+// TODO(crbug/685022): Guard the inclusion of ppapi headers with
+// BUILDFLAG(ENABLE_PLUGINS).
+#include "ppapi/c/private/pp_private_font_charset.h"  // nogncheck
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"  // nogncheck
 
 namespace {
 

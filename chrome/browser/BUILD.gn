@@ -3061,8 +3061,6 @@ split_static_library("browser") {
       "chrome_browser_main_posix.h",
       "chrome_process_singleton.cc",
       "chrome_process_singleton.h",
-      "component_updater/widevine_cdm_component_installer.cc",
-      "component_updater/widevine_cdm_component_installer.h",
       "custom_handlers/register_protocol_handler_permission_request.cc",
       "custom_handlers/register_protocol_handler_permission_request.h",
       "custom_home_pages_table_model.cc",
@@ -3449,6 +3447,13 @@ split_static_library("browser") {
       "//components/web_modal",
       "//device/battery",
       "//net:net_browser_services",
+    ]
+  }
+
+  if (enable_pepper_cdms) {
+    sources += [
+      "component_updater/widevine_cdm_component_installer.cc",
+      "component_updater/widevine_cdm_component_installer.h",
     ]
   }
 

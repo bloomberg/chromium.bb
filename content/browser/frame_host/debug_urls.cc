@@ -22,12 +22,12 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "ppapi/features/features.h"
-#include "ppapi/proxy/ppapi_messages.h"
 #include "third_party/kasko/kasko_features.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-#include "content/browser/ppapi_plugin_process_host.h"
+#include "content/browser/ppapi_plugin_process_host.h"  // nogncheck
+#include "ppapi/proxy/ppapi_messages.h"  // nogncheck
 #endif
 
 namespace content {
