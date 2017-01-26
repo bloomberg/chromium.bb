@@ -2275,13 +2275,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   GURL url_a = child->current_url();
 
   // Disable host resolution in the test server and try to navigate the subframe
-  // cross-site, which will lead to a committed net error (which looks like
-  // success to the TestNavigationObserver).
+  // cross-site, which will lead to a committed net error.
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title3.html");
   host_resolver()->ClearRules();
   TestNavigationObserver observer(shell()->web_contents());
   NavigateIframeToURL(shell()->web_contents(), "child-0", url_b);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_FALSE(observer.last_navigation_succeeded());
   EXPECT_EQ(url_b, observer.last_navigation_url());
   EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
 
