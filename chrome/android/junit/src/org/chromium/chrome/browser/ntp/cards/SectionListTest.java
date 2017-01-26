@@ -225,11 +225,11 @@ public class SectionListTest {
         bindViewHolders(sectionList);
 
         assertThat(sectionList.getSectionForTesting(KnownCategories.ARTICLES)
-                           .getActionItem()
+                           .getActionItemForTesting()
                            .getPerSectionRank(),
                 equalTo(0));
         assertThat(sectionList.getSectionForTesting(KnownCategories.DOWNLOADS)
-                           .getActionItem()
+                           .getActionItemForTesting()
                            .getPerSectionRank(),
                 equalTo(3));
     }

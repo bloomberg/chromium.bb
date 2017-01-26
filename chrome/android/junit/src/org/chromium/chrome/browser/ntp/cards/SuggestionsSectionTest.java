@@ -94,7 +94,7 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSectionWithReloadAction(true);
 
         section.setStatus(CategoryStatus.AVAILABLE);
-        assertNotNull(section.getActionItem());
+        assertNotNull(section.getActionItemForTesting());
 
         // Without snippets.
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
@@ -120,7 +120,7 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSectionWithReloadAction(true);
 
         section.setStatus(CategoryStatus.AVAILABLE);
-        assertNotNull(section.getActionItem());
+        assertNotNull(section.getActionItemForTesting());
 
         // Without snippets.
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
@@ -315,13 +315,13 @@ public class SuggestionsSectionTest {
                         .build());
         SuggestionsSection section = createSection(info);
 
-        assertTrue(section.getActionItem().isVisible());
+        assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_VIEW_ALL);
 
         section.setSuggestions(
                 createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
-        assertTrue(section.getActionItem().isVisible());
+        assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_VIEW_ALL);
     }
 
@@ -340,13 +340,13 @@ public class SuggestionsSectionTest {
                         .build());
         SuggestionsSection section = createSection(info);
 
-        assertTrue(section.getActionItem().isVisible());
+        assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_RELOAD);
 
         section.setSuggestions(
                 createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
-        assertTrue(section.getActionItem().isVisible());
+        assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_FETCH_MORE);
     }
 
@@ -360,13 +360,13 @@ public class SuggestionsSectionTest {
                 new CategoryInfoBuilder(TEST_CATEGORY_ID).withReloadAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
 
-        assertTrue(section.getActionItem().isVisible());
+        assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_RELOAD);
 
         section.setSuggestions(
                 createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
-        assertFalse(section.getActionItem().isVisible());
+        assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
     }
 
@@ -380,13 +380,13 @@ public class SuggestionsSectionTest {
                 new CategoryInfoBuilder(TEST_CATEGORY_ID).withMoreAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
 
-        assertFalse(section.getActionItem().isVisible());
+        assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
 
         section.setSuggestions(
                 createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
-        assertTrue(section.getActionItem().isVisible());
+        assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_FETCH_MORE);
     }
 
@@ -400,13 +400,13 @@ public class SuggestionsSectionTest {
                 spy(new CategoryInfoBuilder(TEST_CATEGORY_ID).showIfEmpty().build());
         SuggestionsSection section = createSection(info);
 
-        assertFalse(section.getActionItem().isVisible());
+        assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
 
         section.setSuggestions(
                 createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
-        assertFalse(section.getActionItem().isVisible());
+        assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
     }
 
@@ -443,6 +443,8 @@ public class SuggestionsSectionTest {
 
         section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
                 CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        verify(mParent).onItemRangeRemoved(section, 1, 4);
+        verify(mParent).onItemRangeInserted(section, 1, 3);
         assertEquals(3, section.getSuggestionsCount());
     }
 
@@ -463,6 +465,8 @@ public class SuggestionsSectionTest {
 
         section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
                 CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        verify(mParent, never()).onItemRangeRemoved(any(TreeNode.class), anyInt(), anyInt());
+        verify(mParent, never()).onItemRangeInserted(any(TreeNode.class), anyInt(), anyInt());
         assertEquals(4, section.getSuggestionsCount());
     }
 
@@ -487,10 +491,14 @@ public class SuggestionsSectionTest {
         // Copy the list when passing to the section - it may alter it but we later need it.
         section.setSuggestions(new ArrayList<>(newSnippets), CategoryStatus.AVAILABLE,
                 /* replaceExisting = */ true);
+        verify(mParent).onItemRangeRemoved(section, 2, 3);
+        verify(mParent).onItemRangeInserted(section, 2, 2);
         assertEquals(3, section.getSuggestionsCount());
         assertEquals(snippets.get(0), section.getSuggestionAt(1));
         assertNotEquals(snippets.get(1), section.getSuggestionAt(2));
         assertEquals(newSnippets.get(0), section.getSuggestionAt(2));
+        assertNotEquals(snippets.get(2), section.getSuggestionAt(3));
+        assertEquals(newSnippets.get(1), section.getSuggestionAt(3));
     }
 
     /**
@@ -515,6 +523,8 @@ public class SuggestionsSectionTest {
         // Copy the list when passing to the section - it may alter it but we later need it.
         section.setSuggestions(new ArrayList<>(newSnippets), CategoryStatus.AVAILABLE,
                 /* replaceExisting = */ true);
+        verify(mParent).onItemRangeRemoved(section, 3, 2);
+        verify(mParent).onItemRangeInserted(section, 3, 1);
         assertEquals(3, section.getSuggestionsCount());
         assertEquals(snippets.get(0), section.getSuggestionAt(1));
         assertEquals(snippets.get(1), section.getSuggestionAt(2));
@@ -543,6 +553,8 @@ public class SuggestionsSectionTest {
                 CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         // Even though the new list has just one suggestion, we need to keep the two seen ones
         // around.
+        verify(mParent).onItemRangeRemoved(section, 3, 2);
+        verify(mParent, never()).onItemRangeInserted(any(TreeNode.class), anyInt(), anyInt());
         assertEquals(2, section.getSuggestionsCount());
         assertEquals(snippets.get(0), section.getSuggestionAt(1));
         assertEquals(snippets.get(1), section.getSuggestionAt(2));
@@ -568,12 +580,15 @@ public class SuggestionsSectionTest {
         // Remove last two items.
         section.removeSuggestionById(section.getSuggestionAt(3).mIdWithinCategory);
         section.removeSuggestionById(section.getSuggestionAt(2).mIdWithinCategory);
+        reset(mParent);
 
         assertEquals(1, section.getSuggestionsCount());
 
         section.setSuggestions(createDummySuggestions(4, TEST_CATEGORY_ID),
                 CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         // We do not touch the current list if all has been seen.
+        verify(mParent, never()).onItemRangeRemoved(any(TreeNode.class), anyInt(), anyInt());
+        verify(mParent, never()).onItemRangeInserted(any(TreeNode.class), anyInt(), anyInt());
         assertEquals(1, section.getSuggestionsCount());
         assertEquals(snippets.get(0), section.getSuggestionAt(1));
     }
@@ -593,6 +608,8 @@ public class SuggestionsSectionTest {
 
         section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
                 CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        verify(mParent, never()).onItemRangeRemoved(any(TreeNode.class), anyInt(), anyInt());
+        verify(mParent, never()).onItemRangeInserted(any(TreeNode.class), anyInt(), anyInt());
 
         // All old snippets should be in place.
         verifySnippets(section, snippets);
@@ -631,6 +648,10 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSectionWithReloadAction(true);
         section.setStatus(CategoryStatus.AVAILABLE);
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+
+        // Reset any notification invocations on the parent from setting the initial list
+        // of suggestions.
+        reset(mParent);
         return section;
     }
 
@@ -667,7 +688,7 @@ public class SuggestionsSectionTest {
         when(manager.getMetricsReporter()).thenReturn(mock(SuggestionsMetricsReporter.class));
 
         if (action != ActionItem.ACTION_NONE) {
-            section.getActionItem().performAction(manager);
+            section.getActionItemForTesting().performAction(manager);
         }
 
         verify(section.getCategoryInfo(),
