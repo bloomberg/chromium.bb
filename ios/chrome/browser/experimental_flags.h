@@ -49,9 +49,6 @@ bool IsAllBookmarksEnabled();
 // Whether auto-reload is enabled.
 bool IsAutoReloadEnabled();
 
-// Whether the credential management API is enabled.
-bool IsCredentialManagementEnabled();
-
 // Whether "Save Image" should be renamed as "Download Image".
 bool IsDownloadRenamingEnabled();
 

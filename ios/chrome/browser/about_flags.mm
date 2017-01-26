@@ -163,9 +163,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
         "MAP * " + base::SysNSStringToUTF8(webPageReplayProxy));
   }
 
-  if ([defaults boolForKey:@"EnableCredentialManagement"])
-    command_line->AppendSwitch(switches::kEnableCredentialManagerAPI);
-
   NSString* autoReloadEnabledValue =
       [defaults stringForKey:@"AutoReloadEnabled"];
   if ([autoReloadEnabledValue isEqualToString:@"Enabled"]) {

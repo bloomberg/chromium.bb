@@ -71,9 +71,6 @@ const char kEnableAllBookmarksView[] = "enable-all-bookmarks-view";
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
-// Enable the experimental Credential Manager JavaScript API.
-const char kEnableCredentialManagerAPI[] = "enable-credential-manager-api";
-
 // Enables a workaround for fast inset updates for UIWebView.scrollView.
 const char kEnableIOSFastWebScrollViewInsets[] =
     "enable-fast-web-scroll-view-insets";

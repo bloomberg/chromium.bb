@@ -6,8 +6,6 @@ import("//ios/web/js_compile.gni")
 
 source_set("passwords") {
   sources = [
-    "credential_manager.h",
-    "credential_manager.mm",
     "ios_chrome_password_manager_client.h",
     "ios_chrome_password_manager_client.mm",
     "ios_chrome_password_manager_driver.h",
@@ -22,8 +20,6 @@ source_set("passwords") {
     "ios_chrome_save_password_infobar_delegate.mm",
     "ios_chrome_update_password_infobar_delegate.h",
     "ios_chrome_update_password_infobar_delegate.mm",
-    "js_credential_manager.h",
-    "js_credential_manager.mm",
     "js_password_manager.h",
     "js_password_manager.mm",
     "password_controller.h",
@@ -100,8 +96,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "credential_manager_js_unittest.mm",
-    "credential_manager_unittest.mm",
     "password_controller_js_unittest.mm",
     "password_controller_off_the_record_unittest.mm",
     "password_controller_unittest.mm",
@@ -136,7 +130,6 @@ source_set("unit_tests") {
 js_compile_unchecked("injected_js") {
   visibility = [ ":passwords" ]
   sources = [
-    "resources/credential_manager.js",
     "resources/password_controller.js",
   ]
 }

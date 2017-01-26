@@ -29,7 +29,6 @@ extern const char kDisableSuggestionsUI[];
 
 extern const char kEnableAllBookmarksView[];
 extern const char kEnableContextualSearch[];
-extern const char kEnableCredentialManagerAPI[];
 extern const char kEnableIOSFastWebScrollViewInsets[];
 extern const char kEnableIOSFeatures[];
 extern const char kEnableIOSHandoffToOtherDevices[];

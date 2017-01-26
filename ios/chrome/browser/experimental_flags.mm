@@ -115,11 +115,6 @@ bool IsAutoReloadEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
-bool IsCredentialManagementEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableCredentialManagerAPI);
-}
-
 bool IsDownloadRenamingEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

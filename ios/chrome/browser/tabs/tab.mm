@@ -70,8 +70,6 @@
 #include "ios/chrome/browser/metrics/ios_chrome_origins_seen_service_factory.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller.h"
-#import "ios/chrome/browser/passwords/credential_manager.h"
-#import "ios/chrome/browser/passwords/js_credential_manager.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
 #import "ios/chrome/browser/web/form_resubmission_tab_helper.h"
@@ -317,9 +315,6 @@ enum class RendererTerminationTabState {
 
   // C++ observer used to trigger snapshots after the removal of InfoBars.
   std::unique_ptr<TabInfoBarObserver> tabInfoBarObserver_;
-
-  // C++ observer to implement the credential management JavaScript API.
-  std::unique_ptr<CredentialManager> credentialManager_;
 }
 
 // Returns the current sessionEntry for the sesionController associated with
@@ -597,14 +592,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         [[FormInputAccessoryViewController alloc]
             initWithWebState:self.webState
                    providers:[self accessoryViewProviders]]);
-    if (experimental_flags::IsCredentialManagementEnabled()) {
-      credentialManager_.reset(new CredentialManager(
-          self.webState, [passwordController_ passwordManagerClient],
-          [passwordController_ passwordManagerDriver],
-          base::mac::ObjCCastStrict<JSCredentialManager>(
-              [self.webState->GetJSInjectionReceiver()
-                  instanceOfClass:[JSCredentialManager class]])));
-    }
 
     ios::ChromeBrowserState* original_browser_state =
         ios::ChromeBrowserState::FromBrowserState(
