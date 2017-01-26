@@ -17,8 +17,6 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "net/base/address_family.h"
-#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/crypto/quic_decrypter.h"

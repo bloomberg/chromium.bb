@@ -31,9 +31,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support,
           true)
 
-// This flag is not in use, just to keep consistency for shared code.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_log_bugs_for_tests, true)
-
 // If true, multipath is enabled for the connection.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_multipath, false)
 

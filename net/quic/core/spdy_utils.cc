@@ -120,7 +120,7 @@ bool SpdyUtils::ParseTrailers(const char* data,
     // TODO(rjshade): Check for other forbidden keys, following the HTTP/2 spec.
   }
 
-  QUIC_DVLOG(1) << "Successfully parsed Trailers.";
+  QUIC_DVLOG(1) << "Successfully parsed Trailers: " << trailers->DebugString();
   return true;
 }
 

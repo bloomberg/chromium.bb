@@ -42,7 +42,6 @@
 #include "net/quic/platform/api/quic_url_utils.h"
 
 using base::StringPiece;
-using crypto::SecureHash;
 using std::string;
 
 namespace net {
@@ -66,6 +65,8 @@ string DeriveSourceAddressTokenKey(StringPiece source_address_token_secret) {
 }
 
 }  // namespace
+
+using crypto::SecureHash;
 
 class ValidateClientHelloHelper {
  public:

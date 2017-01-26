@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "net/base/parse_number.h"
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/quic_write_blocked_list.h"
@@ -293,7 +292,6 @@ bool QuicSpdyStream::ParseHeaderStatusCode(const SpdyHeaderBlock& header,
   if (status.size() != 3) {
     return false;
   }
-
   // First character must be an integer in range [1,5].
   if (status[0] < '1' || status[0] > '5') {
     return false;
