@@ -43,6 +43,22 @@ VideoCaptureDeviceDescriptor::~VideoCaptureDeviceDescriptor() {}
 VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     const VideoCaptureDeviceDescriptor& other) = default;
 
+bool VideoCaptureDeviceDescriptor::operator<(
+    const VideoCaptureDeviceDescriptor& other) const {
+  static constexpr int kFacingMapping[NUM_MEDIA_VIDEO_FACING_MODE] = {0, 2, 1};
+  static_assert(kFacingMapping[MEDIA_VIDEO_FACING_NONE] == 0,
+                "FACING_NONE has a wrong value");
+  static_assert(kFacingMapping[MEDIA_VIDEO_FACING_ENVIRONMENT] == 1,
+                "FACING_ENVIRONMENT has a wrong value");
+  static_assert(kFacingMapping[MEDIA_VIDEO_FACING_USER] == 2,
+                "FACING_USER has a wrong value");
+  if (kFacingMapping[facing] > kFacingMapping[other.facing])
+    return true;
+  if (device_id < other.device_id)
+    return true;
+  return capture_api < other.capture_api;
+}
+
 const char* VideoCaptureDeviceDescriptor::GetCaptureApiTypeString() const {
   switch (capture_api) {
     case VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE:

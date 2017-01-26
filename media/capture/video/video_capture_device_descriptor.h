@@ -66,11 +66,7 @@ struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
   bool operator==(const VideoCaptureDeviceDescriptor& other) const {
     return (other.device_id == device_id) && (other.capture_api == capture_api);
   }
-  bool operator<(const VideoCaptureDeviceDescriptor& other) const {
-    if (device_id < other.device_id)
-      return true;
-    return capture_api < other.capture_api;
-  }
+  bool operator<(const VideoCaptureDeviceDescriptor& other) const;
 
   const char* GetCaptureApiTypeString() const;
   // Friendly name of a device, plus the model identifier in parentheses.

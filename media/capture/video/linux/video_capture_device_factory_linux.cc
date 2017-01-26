@@ -228,6 +228,10 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
 #endif
     }
   }
+  // Since JS doesn't have API to get camera facing, we sort the list to make
+  // sure apps use the front camera by default.
+  // TODO(henryhsu): remove this after JS API completed (crbug.com/543997).
+  std::sort(device_descriptors->begin(), device_descriptors->end());
 }
 
 void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
