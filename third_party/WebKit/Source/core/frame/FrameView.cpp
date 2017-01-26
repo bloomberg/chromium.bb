@@ -4656,6 +4656,13 @@ void FrameView::updateViewportIntersectionsForSubtree(
         ->intersectionObserverController()
         ->computeTrackedIntersectionObservations();
 
+  // Don't throttle display:none frames (see updateRenderThrottlingStatus).
+  HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
+  if (m_hiddenForThrottling && ownerElement && !ownerElement->layoutObject()) {
+    updateRenderThrottlingStatus(m_hiddenForThrottling, m_subtreeThrottled);
+    DCHECK(!canThrottleRendering());
+  }
+
   for (Frame* child = m_frame->tree().firstChild(); child;
        child = child->tree().nextSibling()) {
     if (!child->isLocalFrame())
@@ -4676,9 +4683,11 @@ void FrameView::updateRenderThrottlingStatus(bool hidden,
   DCHECK(!m_frame->document() || !m_frame->document()->inStyleRecalc());
   bool wasThrottled = canThrottleRendering();
 
-  // Note that we disallow throttling of 0x0 frames because some sites use
-  // them to drive UI logic.
-  m_hiddenForThrottling = hidden && !frameRect().isEmpty();
+  // Note that we disallow throttling of 0x0 and display:none frames because
+  // some sites use them to drive UI logic.
+  HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
+  m_hiddenForThrottling = hidden && !frameRect().isEmpty() &&
+                          (ownerElement && ownerElement->layoutObject());
   m_subtreeThrottled = subtreeThrottled;
 
   bool isThrottled = canThrottleRendering();

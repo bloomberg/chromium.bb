@@ -977,4 +977,25 @@ TEST_F(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
             innerDiv->layoutObject()->paintProperties()->transform()->matrix());
 }
 
+TEST_F(FrameThrottlingTest, DisplayNoneNotThrottled) {
+  SimRequest mainResource("https://example.com/", "text/html");
+
+  loadURL("https://example.com/");
+  mainResource.complete(
+      "<style>iframe { transform: translateY(480px); }</style>"
+      "<iframe sandbox id=frame></iframe>");
+
+  auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+  auto* frameDocument = frameElement->contentDocument();
+
+  // Initially the frame is throttled as it is offscreen.
+  compositeFrame();
+  EXPECT_TRUE(frameDocument->view()->canThrottleRendering());
+
+  // Setting display:none unthrottles the frame.
+  frameElement->setAttribute(styleAttr, "display: none");
+  compositeFrame();
+  EXPECT_FALSE(frameDocument->view()->canThrottleRendering());
+}
+
 }  // namespace blink
