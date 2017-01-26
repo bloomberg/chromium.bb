@@ -10,16 +10,15 @@ from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.layout_test_results import LayoutTestResult, LayoutTestResults
 from webkitpy.common.net.web_mock import MockWeb
-from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder, MARKER_COMMENT
+from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, MARKER_COMMENT
 
 
-class UpdateW3CTestExpectationsTest(LoggingTestCase):
+class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def setUp(self):
-        super(UpdateW3CTestExpectationsTest, self).setUp()
+        super(WPTExpectationsUpdaterTest, self).setUp()
         self.host = MockHost()
         self.host.builders = BuilderList({
             'mac': {'port_name': 'test-mac'},
@@ -36,14 +35,14 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                 },
             },
         }))
-        line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertEqual(line_adder.get_failing_results_dict(Build('mac', 123)), {})
+        updater = WPTExpectationsUpdater(self.host)
+        self.assertEqual(updater.get_failing_results_dict(Build('mac', 123)), {})
 
     def test_get_failing_results_dict_no_results(self):
         self.host.buildbot = MockBuildBot()
         self.host.buildbot.set_results(Build('mac', 123), None)
-        line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertEqual(line_adder.get_failing_results_dict(Build('mac', 123)), {})
+        updater = WPTExpectationsUpdater(self.host)
+        self.assertEqual(updater.get_failing_results_dict(Build('mac', 123)), {})
 
     def test_get_failing_results_dict_some_failing_results(self):
         self.host.buildbot.set_results(Build('mac', 123), LayoutTestResults({
@@ -57,8 +56,8 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                 },
             },
         }))
-        line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertEqual(line_adder.get_failing_results_dict(Build('mac', 123)), {
+        updater = WPTExpectationsUpdater(self.host)
+        self.assertEqual(updater.get_failing_results_dict(Build('mac', 123)), {
             'x/failing-test.html': {
                 'Mac': {
                     'actual': 'IMAGE',
@@ -69,18 +68,18 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         })
 
     def test_merge_same_valued_keys_all_match(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         self.assertEqual(
-            line_adder.merge_same_valued_keys({
+            updater.merge_same_valued_keys({
                 'one': {'expected': 'FAIL', 'actual': 'PASS'},
                 'two': {'expected': 'FAIL', 'actual': 'PASS'},
             }),
             {('two', 'one'): {'expected': 'FAIL', 'actual': 'PASS'}})
 
     def test_merge_same_valued_keys_one_mismatch(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         self.assertEqual(
-            line_adder.merge_same_valued_keys({
+            updater.merge_same_valued_keys({
                 'one': {'expected': 'FAIL', 'actual': 'PASS'},
                 'two': {'expected': 'FAIL', 'actual': 'TIMEOUT'},
                 'three': {'expected': 'FAIL', 'actual': 'PASS'},
@@ -91,37 +90,37 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             })
 
     def test_get_expectations(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         self.assertEqual(
-            line_adder.get_expectations({'expected': 'FAIL', 'actual': 'PASS'}),
+            updater.get_expectations({'expected': 'FAIL', 'actual': 'PASS'}),
             {'Pass'})
         self.assertEqual(
-            line_adder.get_expectations({'expected': 'FAIL', 'actual': 'TIMEOUT'}),
+            updater.get_expectations({'expected': 'FAIL', 'actual': 'TIMEOUT'}),
             {'Timeout'})
         self.assertEqual(
-            line_adder.get_expectations({'expected': 'TIMEOUT', 'actual': 'PASS'}),
+            updater.get_expectations({'expected': 'TIMEOUT', 'actual': 'PASS'}),
             {'Pass'})
         self.assertEqual(
-            line_adder.get_expectations({'expected': 'PASS', 'actual': 'TIMEOUT CRASH FAIL'}),
+            updater.get_expectations({'expected': 'PASS', 'actual': 'TIMEOUT CRASH FAIL'}),
             {'Crash', 'Failure', 'Timeout'})
         self.assertEqual(
-            line_adder.get_expectations({'expected': 'SLOW CRASH FAIL TIMEOUT', 'actual': 'PASS'}),
+            updater.get_expectations({'expected': 'SLOW CRASH FAIL TIMEOUT', 'actual': 'PASS'}),
             {'Pass'})
 
     def test_create_line_list_old_tests(self):
         # In this example, there are two failures that are not in w3c tests.
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         results = {
             'fake/test/path.html': {
                 'one': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
                 'two': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
             }
         }
-        self.assertEqual(line_adder.create_line_list(results), [])
+        self.assertEqual(updater.create_line_list(results), [])
 
     def test_create_line_list_new_tests(self):
         # In this example, there are unexpected non-fail results in w3c tests.
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         results = {
             'external/fake/test/path.html': {
                 'one': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
@@ -130,7 +129,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             }
         }
         self.assertEqual(
-            line_adder.create_line_list(results),
+            updater.create_line_list(results),
             [
                 'crbug.com/test [ three ] external/fake/test/path.html [ Pass ]',
                 'crbug.com/test [ two ] external/fake/test/path.html [ Timeout ]',
@@ -138,10 +137,10 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             ])
 
     def test_merge_dicts_with_conflict_raise_exception(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         # Both dicts here have the key "one", and the value is not equal.
         with self.assertRaises(ValueError):
-            line_adder.merge_dicts(
+            updater.merge_dicts(
                 {
                     'external/fake/test/path.html': {
                         'one': {'expected': 'FAIL', 'actual': 'PASS'},
@@ -156,7 +155,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                 })
 
     def test_merge_dicts_merges_second_dict_into_first(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         one = {
             'fake/test/path.html': {
                 'one': {'expected': 'FAIL', 'actual': 'PASS'},
@@ -176,13 +175,13 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             }
         }
 
-        output = line_adder.merge_dicts(one, three)
+        output = updater.merge_dicts(one, three)
         self.assertEqual(output, one)
-        output = line_adder.merge_dicts(two, three)
+        output = updater.merge_dicts(two, three)
         self.assertEqual(output, two)
 
     def test_generate_results_dict(self):
-        line_adder = W3CExpectationsLineAdder(MockHost())
+        updater = WPTExpectationsUpdater(MockHost())
         layout_test_list = [
             LayoutTestResult(
                 'test/name.html', {
@@ -192,7 +191,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                     'has_stderr': True,
                 }
             )]
-        self.assertEqual(line_adder.generate_results_dict('dummy_platform', layout_test_list), {
+        self.assertEqual(updater.generate_results_dict('dummy_platform', layout_test_list), {
             'test/name.html': {
                 'dummy_platform': {
                     'expected': 'bar',
@@ -205,10 +204,10 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
     def test_write_to_test_expectations_with_marker_comment(self):
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
         self.host.filesystem.files[expectations_path] = MARKER_COMMENT + '\n'
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         line_list = ['crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]']
-        line_adder.write_to_test_expectations(line_list)
-        value = line_adder.host.filesystem.read_text_file(expectations_path)
+        updater.write_to_test_expectations(line_list)
+        value = updater.host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
             (MARKER_COMMENT + '\n'
@@ -217,9 +216,9 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
     def test_write_to_test_expectations_with_no_marker_comment(self):
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
         self.host.filesystem.files[expectations_path] = 'crbug.com/111 [ FakePlatform ]\n'
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         line_list = ['crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]']
-        line_adder.write_to_test_expectations(line_list)
+        updater.write_to_test_expectations(line_list)
         value = self.host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
@@ -230,12 +229,12 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
     def test_write_to_test_expectations_skips_existing_lines(self):
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
         self.host.filesystem.files[expectations_path] = 'crbug.com/111 dont/copy/me.html [ Failure ]\n'
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         line_list = [
             'crbug.com/111 dont/copy/me.html [ Failure ]',
             'crbug.com/222 do/copy/me.html [ Failure ]'
         ]
-        line_adder.write_to_test_expectations(line_list)
+        updater.write_to_test_expectations(line_list)
         value = self.host.filesystem.read_text_file(expectations_path)
         self.assertEqual(
             value,
@@ -248,9 +247,9 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         self.host.filesystem.files[expectations_path] = (
             MARKER_COMMENT + '\n'
             'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n')
-        line_adder = W3CExpectationsLineAdder(self.host)
-        line_adder.write_to_test_expectations([])
-        value = line_adder.host.filesystem.read_text_file(expectations_path)
+        updater = WPTExpectationsUpdater(self.host)
+        updater.write_to_test_expectations([])
+        value = updater.host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
             (MARKER_COMMENT + '\n'
@@ -259,25 +258,25 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
     def test_is_js_test_true(self):
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/foo/bar.html'] = (
             '<script src="/resources/testharness.js"></script>')
-        line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertTrue(line_adder.is_js_test('foo/bar.html'))
+        updater = WPTExpectationsUpdater(self.host)
+        self.assertTrue(updater.is_js_test('foo/bar.html'))
 
     def test_is_js_test_false(self):
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/foo/bar.html'] = (
             '<script src="ref-test.html"></script>')
-        line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertFalse(line_adder.is_js_test('foo/bar.html'))
+        updater = WPTExpectationsUpdater(self.host)
+        self.assertFalse(updater.is_js_test('foo/bar.html'))
 
     def test_is_js_test_non_existent_file(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertFalse(line_adder.is_js_test('foo/bar.html'))
+        updater = WPTExpectationsUpdater(self.host)
+        self.assertFalse(updater.is_js_test('foo/bar.html'))
 
     def test_get_test_to_rebaseline_returns_only_tests_with_failures(self):
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/external/fake/test/path.html'] = (
             '<script src="/resources/testharness.js"></script>')
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/external/other/test/path.html'] = (
             '<script src="/resources/testharness.js"></script>')
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         two = {
             'external/fake/test/path.html': {
                 'one': {'expected': 'FAIL', 'actual': 'PASS'},
@@ -285,14 +284,14 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                 'three': {'expected': 'FAIL', 'actual': 'PASS'},
             }
         }
-        tests_to_rebaseline, _ = line_adder.get_tests_to_rebaseline(two)
+        tests_to_rebaseline, _ = updater.get_tests_to_rebaseline(two)
         # The other test doesn't have an entry in the test results dict, so it is not listed as a test to rebaseline.
         self.assertEqual(tests_to_rebaseline, ['external/fake/test/path.html'])
 
     def test_get_test_to_rebaseline_returns_only_js_tests(self):
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/external/fake/test/path.html'] = (
             'this file does not look like a testharness JS test.')
-        line_adder = W3CExpectationsLineAdder(self.host)
+        updater = WPTExpectationsUpdater(self.host)
         two = {
             'external/fake/test/path.html': {
                 'one': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
@@ -300,7 +299,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                 'three': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
             }
         }
-        tests_to_rebaseline, _ = line_adder.get_tests_to_rebaseline(two)
+        tests_to_rebaseline, _ = updater.get_tests_to_rebaseline(two)
         self.assertEqual(tests_to_rebaseline, [])
 
     def test_get_tests_to_rebaseline_returns_updated_dict(self):
@@ -313,8 +312,8 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         test_results_dict_copy = copy.deepcopy(test_results_dict)
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/external/fake/test/path.html'] = (
             '<script src="/resources/testharness.js"></script>')
-        line_adder = W3CExpectationsLineAdder(self.host)
-        tests_to_rebaseline, modified_test_results = line_adder.get_tests_to_rebaseline(
+        updater = WPTExpectationsUpdater(self.host)
+        tests_to_rebaseline, modified_test_results = updater.get_tests_to_rebaseline(
             test_results_dict)
         self.assertEqual(tests_to_rebaseline, ['external/fake/test/path.html'])
         # The record for the builder with a timeout is kept, but not with a text mismatch,
@@ -337,8 +336,8 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         test_results_dict_copy = copy.deepcopy(test_results_dict)
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/external/fake/test/path.html'] = (
             '<script src="/resources/testharness.js"></script>')
-        line_adder = W3CExpectationsLineAdder(self.host)
-        tests_to_rebaseline, modified_test_results = line_adder.get_tests_to_rebaseline(
+        updater = WPTExpectationsUpdater(self.host)
+        tests_to_rebaseline, modified_test_results = updater.get_tests_to_rebaseline(
             test_results_dict)
         self.assertEqual(tests_to_rebaseline, ['external/fake/test/path.html'])
         # The record for the builder with a timeout is kept, but not with a text mismatch,
@@ -352,9 +351,9 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         self.assertEqual(test_results_dict, test_results_dict_copy)
 
     def test_run_no_issue_number(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
-        line_adder.get_issue_number = lambda: 'None'
-        self.assertEqual(1, line_adder.run(args=[]))
+        updater = WPTExpectationsUpdater(self.host)
+        updater.get_issue_number = lambda: 'None'
+        self.assertEqual(1, updater.run(args=[]))
         self.assertLog(['ERROR: No issue on current branch.\n'])
 
     def test_run_no_try_results(self):
@@ -366,10 +365,10 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                 'try_job_results': []
             })
         })
-        line_adder = W3CExpectationsLineAdder(self.host)
-        line_adder.get_issue_number = lambda: '11112222'
-        line_adder.get_try_bots = lambda: ['test-builder-name']
-        self.assertEqual(1, line_adder.run(args=[]))
+        updater = WPTExpectationsUpdater(self.host)
+        updater.get_issue_number = lambda: '11112222'
+        updater.get_try_bots = lambda: ['test-builder-name']
+        self.assertEqual(1, updater.run(args=[]))
         self.assertEqual(
             self.host.web.urls_fetched,
             [

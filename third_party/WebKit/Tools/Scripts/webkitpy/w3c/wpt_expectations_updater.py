@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A class for updating layout test expectations when updating w3c tests.
+"""Updates layout test expectations and baselines when updating w3c tests.
 
-Specifically, this class fetches results from try bots for the current CL, and:
-  1. Downloads new baseline files for any tests that can be rebaselined.
-  2. Updates the generic TestExpectations file for any other failing tests.
-
-This is used as part of the w3c test auto-import process.
+Specifically, this class fetches results from try bots for the current CL, then
+(1) downloads new baseline files for any tests that can be rebaselined, and
+(2) updates the generic TestExpectations file for any other failing tests.
 """
 
 import argparse
@@ -26,7 +24,7 @@ _log = logging.getLogger(__name__)
 MARKER_COMMENT = '# ====== New tests from w3c-test-autoroller added here ======'
 
 
-class W3CExpectationsLineAdder(object):
+class WPTExpectationsUpdater(object):
 
     def __init__(self, host):
         self.host = host

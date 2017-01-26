@@ -23,9 +23,10 @@ import re
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
-from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
-from webkitpy.w3c.test_copier import TestCopier
 from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME
+from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from webkitpy.w3c.test_copier import TestCopier
+from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60
@@ -324,7 +325,7 @@ class TestImporter(object):
 
     def _upload_cl(self):
         _log.info('Uploading change list.')
-        cc_list = self.get_directory_owners_to_cc()
+        cc_list = self.get_directory_owners()
         description = self._cl_description()
         self.git_cl.run([
             'upload',
@@ -333,6 +334,14 @@ class TestImporter(object):
             '-m',
             description,
         ] + ['--cc=' + email for email in cc_list])
+
+    def get_directory_owners(self):
+        """Returns a list of email addresses of owners of changed tests."""
+        _log.info('Gathering directory owners emails to CC.')
+        changed_files = self.host.cwd().changed_files()
+        extractor = DirectoryOwnersExtractor(self.fs)
+        extractor.read_owner_map()
+        return extractor.list_owners(changed_files)
 
     def _cl_description(self):
         description = self.check_run(['git', 'log', '-1', '--format=%B'])
@@ -355,54 +364,10 @@ class TestImporter(object):
             return None
         return 'https://build.chromium.org/p/%s/builders/%s/builds/%s' % (master_name, builder_name, build_number)
 
-    def get_directory_owners_to_cc(self):
-        """Returns a list of email addresses to CC for the current import."""
-        _log.info('Gathering directory owners emails to CC.')
-        directory_owners_file_path = self.finder.path_from_webkit_base(
-            'Tools', 'Scripts', 'webkitpy', 'w3c', 'directory_owners.json')
-        with open(directory_owners_file_path) as data_file:
-            directory_to_owner = self.parse_directory_owners(json.load(data_file))
-        out = self.check_run(['git', 'diff', 'origin/master', '--name-only'])
-        changed_files = out.splitlines()
-        return self.generate_email_list(changed_files, directory_to_owner)
-
-    @staticmethod
-    def parse_directory_owners(decoded_data_file):
-        directory_dict = {}
-        for dict_set in decoded_data_file:
-            if dict_set['notification-email']:
-                directory_dict[dict_set['directory']] = dict_set['notification-email']
-        return directory_dict
-
-    def generate_email_list(self, changed_files, directory_to_owner):
-        """Returns a list of email addresses based on the given file list and
-        directory-to-owner mapping.
-
-        Args:
-            changed_files: A list of file paths relative to the repository root.
-            directory_to_owner: A dict mapping layout test directories to emails.
-
-        Returns:
-            A list of the email addresses to be notified for the current import.
-        """
-        email_addresses = set()
-        for file_path in changed_files:
-            test_path = self.finder.layout_test_name(file_path)
-            if test_path is None:
-                continue
-            test_dir = self.fs.dirname(test_path)
-            if test_dir in directory_to_owner:
-                address = directory_to_owner[test_dir]
-                if not re.match(r'\S+@\S+', address):
-                    _log.warning('%s appears not be an email address, skipping.', address)
-                    continue
-                email_addresses.add(address)
-        return sorted(email_addresses)
-
     def fetch_new_expectations_and_baselines(self):
         """Adds new expectations and downloads baselines based on try job results, then commits and uploads the change."""
         _log.info('Adding test expectations lines to LayoutTests/TestExpectations.')
-        line_adder = W3CExpectationsLineAdder(self.host)
+        line_adder = WPTExpectationsUpdater(self.host)
         line_adder.run()
         message = 'Update test expectations and baselines.'
         self.check_run(['git', 'commit', '-a', '-m', message])

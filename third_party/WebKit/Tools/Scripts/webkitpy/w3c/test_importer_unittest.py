@@ -11,34 +11,6 @@ from webkitpy.w3c.test_importer import TestImporter
 
 class TestImporterTest(unittest.TestCase):
 
-    def test_generate_email_list(self):
-        importer = TestImporter(MockHost())
-        changed_files = [
-            'third_party/WebKit/LayoutTests/foo/bar/file.html',
-            'third_party/WebKit/LayoutTests/foo/bar/otherfile.html',
-            'third_party/WebKit/LayoutTests/foo/baz/files.html',
-            'some/non-test.file',
-        ]
-        directory_to_owner = {
-            'foo/bar': 'someone@gmail.com',
-            'foo/baz': 'not an email address',
-            'foo/bat': 'noone@gmail.com',
-        }
-        self.assertEqual(
-            importer.generate_email_list(changed_files, directory_to_owner),
-            ['someone@gmail.com'])
-
-    def test_parse_directory_owners(self):
-        importer = TestImporter(MockHost())
-        data_file = [
-            {'notification-email': 'charizard@gmail.com', 'directory': 'foo/bar'},
-            {'notification-email': 'blastoise@gmail.com', 'directory': 'foo/baz'},
-            {'notification-email': '', 'directory': 'gol/bat'},
-        ]
-        self.assertEqual(
-            importer.parse_directory_owners(data_file),
-            {'foo/bar': 'charizard@gmail.com', 'foo/baz': 'blastoise@gmail.com'})
-
     def test_update_test_expectations(self):
         host = MockHost()
         host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'] = (
