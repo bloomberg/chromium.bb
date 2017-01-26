@@ -1993,7 +1993,8 @@
           "telemetry_unittests_run"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": false,
+          "shards": 2
         }
       }
     ]
@@ -4479,7 +4480,8 @@
           "telemetry_unittests_run"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         }
       }
     ],
