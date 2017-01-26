@@ -6,10 +6,10 @@ static_library("renderer") {
   sources = [
     "document_subresource_filter.cc",
     "document_subresource_filter.h",
-    "ruleset_dealer.cc",
-    "ruleset_dealer.h",
     "subresource_filter_agent.cc",
     "subresource_filter_agent.h",
+    "unverified_ruleset_dealer.cc",
+    "unverified_ruleset_dealer.h",
   ]
   deps = [
     "//base",
@@ -26,7 +26,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "document_subresource_filter_unittest.cc",
-    "ruleset_dealer_unittest.cc",
     "subresource_filter_agent_unittest.cc",
   ]
   deps = [

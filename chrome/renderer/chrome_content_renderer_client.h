@@ -68,7 +68,7 @@ class PhishingClassifierFilter;
 }
 
 namespace subresource_filter {
-class RulesetDealer;
+class UnverifiedRulesetDealer;
 }
 
 namespace web_cache {
@@ -245,7 +245,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif
   std::unique_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
-  std::unique_ptr<subresource_filter::RulesetDealer>
+  std::unique_ptr<subresource_filter::UnverifiedRulesetDealer>
       subresource_filter_ruleset_dealer_;
   std::unique_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
 #if BUILDFLAG(ENABLE_WEBRTC)

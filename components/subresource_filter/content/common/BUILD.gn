@@ -5,6 +5,8 @@
 static_library("common") {
   sources = [
     "document_load_statistics.h",
+    "ruleset_dealer.cc",
+    "ruleset_dealer.h",
     "subresource_filter_message_generator.cc",
     "subresource_filter_message_generator.h",
     "subresource_filter_messages.h",
@@ -13,5 +15,21 @@ static_library("common") {
     "//components/subresource_filter/core/common",
     "//content/public/common",
     "//ipc",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "ruleset_dealer_unittest.cc",
+  ]
+  deps = [
+    ":common",
+    "//base",
+    "//components/subresource_filter/core/common",
+    "//components/subresource_filter/core/common:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
   ]
 }

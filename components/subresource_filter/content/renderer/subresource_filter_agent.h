@@ -23,7 +23,7 @@ class WebDocumentSubresourceFilter;
 
 namespace subresource_filter {
 
-class RulesetDealer;
+class UnverifiedRulesetDealer;
 class DocumentSubresourceFilter;
 
 // The renderer-side agent of the ContentSubresourceFilterDriver. There is one
@@ -37,7 +37,7 @@ class SubresourceFilterAgent
   // The |ruleset_dealer| must not be null and must outlive this instance. The
   // |render_frame| may be null in unittests.
   explicit SubresourceFilterAgent(content::RenderFrame* render_frame,
-                                  RulesetDealer* ruleset_dealer);
+                                  UnverifiedRulesetDealer* ruleset_dealer);
   ~SubresourceFilterAgent() override;
 
  protected:
@@ -77,7 +77,7 @@ class SubresourceFilterAgent
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Owned by the ChromeContentRendererClient and outlives us.
-  RulesetDealer* ruleset_dealer_;
+  UnverifiedRulesetDealer* ruleset_dealer_;
 
   ActivationState activation_state_for_provisional_load_;
   GURL url_for_provisional_load_;

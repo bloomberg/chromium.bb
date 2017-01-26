@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
-#include "components/subresource_filter/content/renderer/ruleset_dealer.h"
+#include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,7 +40,8 @@ namespace {
 //   chrome/browser/subresource_filter/subresource_filter_browsertest.cc.
 class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
  public:
-  explicit SubresourceFilterAgentUnderTest(RulesetDealer* ruleset_dealer)
+  explicit SubresourceFilterAgentUnderTest(
+      UnverifiedRulesetDealer* ruleset_dealer)
       : SubresourceFilterAgent(nullptr /* RenderFrame */, ruleset_dealer) {}
   ~SubresourceFilterAgentUnderTest() = default;
 
@@ -183,7 +184,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
 
  private:
   testing::TestRulesetCreator test_ruleset_creator_;
-  RulesetDealer ruleset_dealer_;
+  UnverifiedRulesetDealer ruleset_dealer_;
 
   std::unique_ptr<SubresourceFilterAgentUnderTest> agent_;
 

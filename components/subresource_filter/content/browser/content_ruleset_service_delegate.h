@@ -18,7 +18,7 @@ namespace subresource_filter {
 //
 // Its main responsibility is receiving new versions of subresource filtering
 // rules from the RulesetService, and distributing them to renderer processes,
-// where they will be memory-mapped as-needed by the RulesetDealer.
+// where they will be memory-mapped as-needed by the UnverifiedRulesetDealer.
 //
 // The distribution pipeline looks like this:
 //
@@ -30,7 +30,7 @@ namespace subresource_filter {
 //        - - - - - - -|- - - - - - - |- - - - - - - - - -
 //                     |       |      |
 //                     v              v
-//           RulesetDealer     |   RulesetDealer
+//          *RulesetDealer     |  *RulesetDealer
 //                 |                |       |
 //                 |           |    |       v
 //                 v                |      SubresourceFilterAgent
@@ -40,6 +40,8 @@ namespace subresource_filter {
 //
 //         Renderer #1         |          Renderer #n
 //
+// Note: UnverifiedRulesetDealer is shortened to *RulesetDealer above. There is
+// also a VerifiedRulesetDealer which is used similarly on the browser side.
 class ContentRulesetServiceDelegate : public RulesetServiceDelegate,
                                       content::NotificationObserver {
  public:
@@ -48,7 +50,7 @@ class ContentRulesetServiceDelegate : public RulesetServiceDelegate,
 
   void SetRulesetPublishedCallbackForTesting(base::Closure callback);
 
-  // RulesetDistributor:
+  // RulesetServiceDelegate:
   void PostAfterStartupTask(base::Closure task) override;
   void PublishNewRulesetVersion(base::File ruleset_data) override;
 
