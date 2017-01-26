@@ -345,7 +345,7 @@
           "--upload-results",
           "--output-format=chartjson",
           "--browser=android-chromium",
-          "--story-filter load:search:google",
+          "--story-filter=load:search:google",
           "--extra-browser-args \"--enable-heap-profiler\""
         ],
         "isolate_name": "telemetry_perf_tests",
