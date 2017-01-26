@@ -101,7 +101,7 @@ TEST_F(EventsXTest, ButtonEvents) {
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON,
             ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
 
   InitButtonEvent(&event, true, location, 2, Button1Mask | ShiftMask);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(&event));
@@ -110,21 +110,21 @@ TEST_F(EventsXTest, ButtonEvents) {
             ui::EventFlagsFromNative(&event));
   EXPECT_EQ(ui::EF_MIDDLE_MOUSE_BUTTON,
             ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
 
   InitButtonEvent(&event, false, location, 3, 0);
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, ui::EventTypeFromNative(&event));
   EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON,
             ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
 
   // Scroll up.
   InitButtonEvent(&event, true, location, 4, 0);
   EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_GT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
@@ -134,7 +134,7 @@ TEST_F(EventsXTest, ButtonEvents) {
   EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_LT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
@@ -144,7 +144,7 @@ TEST_F(EventsXTest, ButtonEvents) {
   EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_EQ(0, offset.y());
   EXPECT_GT(offset.x(), 0);
@@ -154,7 +154,7 @@ TEST_F(EventsXTest, ButtonEvents) {
   EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_EQ(0, offset.y());
   EXPECT_LT(offset.x(), 0);
@@ -189,7 +189,9 @@ TEST_F(EventsXTest, EnterLeaveEvent) {
   // the way views handle mouse enter. See comments for EnterNotify case in
   // ui::EventTypeFromNative for more details.
   EXPECT_EQ(ui::ET_MOUSE_MOVED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ("10,20", ui::EventLocationFromNative(&event).ToString());
+  EXPECT_EQ(
+      "10,20",
+      gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)).ToString());
   EXPECT_EQ("110,120", ui::EventSystemLocationFromNative(&event).ToString());
 
   event.xcrossing.type = LeaveNotify;
@@ -198,7 +200,9 @@ TEST_F(EventsXTest, EnterLeaveEvent) {
   event.xcrossing.x_root = 230;
   event.xcrossing.y_root = 240;
   EXPECT_EQ(ui::ET_MOUSE_EXITED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ("30,40", ui::EventLocationFromNative(&event).ToString());
+  EXPECT_EQ(
+      "30,40",
+      gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)).ToString());
   EXPECT_EQ("230,240", ui::EventSystemLocationFromNative(&event).ToString());
 }
 
@@ -243,9 +247,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("10,10", ui::EventLocationFromNative(scoped_xevent).ToString());
-  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
+  EXPECT_EQ("10,10",
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
+                .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.15f);
   PointerDetails pointer_details =
@@ -260,9 +264,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
   scoped_xevent.InitTouchEvent(
       0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("20,20", ui::EventLocationFromNative(scoped_xevent).ToString());
-  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
+  EXPECT_EQ("20,20",
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
+                .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
@@ -278,9 +282,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("200,200", ui::EventLocationFromNative(scoped_xevent).ToString());
-  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
+  EXPECT_EQ("200,200",
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
+                .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
@@ -294,9 +298,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
   scoped_xevent.InitTouchEvent(
       0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("30,30", ui::EventLocationFromNative(scoped_xevent).ToString());
-  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
+  EXPECT_EQ("30,30",
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
+                .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
@@ -310,9 +314,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
   scoped_xevent.InitTouchEvent(
       0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("200,200", ui::EventLocationFromNative(scoped_xevent).ToString());
-  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
+  EXPECT_EQ("200,200",
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
+                .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);

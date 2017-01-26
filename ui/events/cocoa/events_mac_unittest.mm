@@ -215,33 +215,25 @@ TEST_F(EventsMacTest, ButtonEvents) {
       TestMouseEvent(kCGEventLeftMouseDown, location, kNoEventFlags);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(event));
-  EXPECT_EQ(ui::EventLocationFromNative(event),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
 
   event =
       TestMouseEvent(kCGEventOtherMouseDown, location, kCGEventFlagMaskShift);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_SHIFT_DOWN,
             ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(event));
-  EXPECT_EQ(ui::EventLocationFromNative(event),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
 
   event = TestMouseEvent(kCGEventRightMouseUp, location, kNoEventFlags);
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(event));
-  EXPECT_EQ(ui::EventLocationFromNative(event),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
 
   // Scroll up.
   event = TestScrollEvent(location, 0, 1);
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location.ToString(), ui::EventLocationFromNative(event).ToString());
-  EXPECT_EQ(ui::EventLocationFromNative(event),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_GT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
@@ -250,9 +242,7 @@ TEST_F(EventsMacTest, ButtonEvents) {
   event = TestScrollEvent(location, 0, -1);
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(event));
-  EXPECT_EQ(ui::EventLocationFromNative(event),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_LT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
@@ -261,9 +251,7 @@ TEST_F(EventsMacTest, ButtonEvents) {
   event = TestScrollEvent(location, 1, 0);
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(event));
-  EXPECT_EQ(ui::EventLocationFromNative(event),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_GT(offset.x(), 0);
@@ -272,9 +260,7 @@ TEST_F(EventsMacTest, ButtonEvents) {
   event = TestScrollEvent(location, -1, 0);
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(event));
-  EXPECT_EQ(ui::EventLocationFromNative(event),
-            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_LT(offset.x(), 0);
@@ -296,7 +282,7 @@ TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
       TestMouseEvent(kCGEventLeftMouseDown, location, kNoEventFlags);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(event));
+  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
 
   // And be explicit, to ensure the test doesn't depend on some property of the
   // test harness. The change to the frame rect could be OS-specfic, so set it
@@ -315,7 +301,8 @@ TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
                            clickCount:0
                              pressure:1.0];
   // Bottom-left corner should be flipped.
-  EXPECT_EQ(gfx::Point(0, kTestHeight), ui::EventLocationFromNative(event));
+  EXPECT_EQ(gfx::Point(0, kTestHeight),
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
 
   // Removing the border, and sending the same event should move it down in the
   // toolkit-views coordinate system.
@@ -324,7 +311,7 @@ TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
   [test_window() setStyleMask:NSBorderlessWindowMask];
   [test_window() setFrame:frame_rect display:YES];
   EXPECT_EQ(gfx::Point(0, kTestHeight + height_change),
-            ui::EventLocationFromNative(event));
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
 }
 
 // Testing for ui::EventTypeFromNative() not covered by ButtonEvents.

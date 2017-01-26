@@ -837,7 +837,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (!hostedView_)
     return;
 
-  const gfx::Point locationInContent = ui::EventLocationFromNative(theEvent);
+  const gfx::Point locationInContent =
+      gfx::ToFlooredPoint(ui::EventLocationFromNative(theEvent));
   views::View* target = hostedView_->GetEventHandlerForPoint(locationInContent);
   if (!target)
     return;

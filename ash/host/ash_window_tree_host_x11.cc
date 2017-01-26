@@ -197,7 +197,8 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
       // space so the bounds check will not work so well.
       if (touch_display_id == display::kInvalidDisplayId) {
         if (base::SysInfo::IsRunningOnChromeOS() &&
-            !bounds().Contains(ui::EventLocationFromNative(xev)))
+            !bounds().Contains(
+                gfx::ToFlooredPoint(ui::EventLocationFromNative(xev))))
           return false;
       } else {
         display::Screen* screen = display::Screen::GetScreen();

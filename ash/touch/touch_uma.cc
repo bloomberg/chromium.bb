@@ -104,7 +104,8 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 
   // Prefer raw event location (when available) over calibrated location.
   if (event.HasNativeEvent()) {
-    position = ui::EventLocationFromNative(event.native_event());
+    position =
+        gfx::ToFlooredPoint(ui::EventLocationFromNative(event.native_event()));
     position = gfx::ScaleToFlooredPoint(
         position, 1.f / target->layer()->device_scale_factor());
   }

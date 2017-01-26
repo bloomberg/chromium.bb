@@ -32,11 +32,7 @@ gfx::Point EventSystemLocationFromNative(
   return e->location();
 }
 
-gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
-  return EventSystemLocationFromNative(native_event);
-}
-
-gfx::PointF EventLocationFromNativeF(const base::NativeEvent& native_event) {
+gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
   const ui::LocatedEvent* e =
       static_cast<const ui::LocatedEvent*>(native_event);
   DCHECK(e->IsMouseEvent() || e->IsTouchEvent() || e->IsGestureEvent() ||

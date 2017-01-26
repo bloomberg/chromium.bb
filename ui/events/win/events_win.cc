@@ -229,7 +229,7 @@ base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   return EventTimeForNow();
 }
 
-gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
+gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
   POINT native_point;
   if ((native_event.message == WM_MOUSELEAVE ||
        native_event.message == WM_NCMOUSELEAVE) ||
@@ -242,7 +242,7 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     // Note: Wheel events are considered client, but their position is in screen
     //       coordinates.
     // Client message. The position is contained in the LPARAM.
-    return gfx::Point(native_event.lParam);
+    return gfx::PointF(gfx::Point(native_event.lParam));
   } else {
     DCHECK(IsNonClientMouseEvent(native_event) ||
            IsMouseWheelEvent(native_event) || IsScrollEvent(native_event));
@@ -252,11 +252,7 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     native_point.y = GET_Y_LPARAM(native_event.lParam);
   }
   ScreenToClient(native_event.hwnd, &native_point);
-  return gfx::Point(native_point);
-}
-
-gfx::PointF EventLocationFromNativeF(const base::NativeEvent& native_event) {
-  return gfx::PointF(EventLocationFromNative(native_event));
+  return gfx::PointF(gfx::Point(native_point));
 }
 
 gfx::Point EventSystemLocationFromNative(
