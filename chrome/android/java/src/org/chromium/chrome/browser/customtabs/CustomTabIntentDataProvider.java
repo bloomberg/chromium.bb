@@ -335,6 +335,7 @@ public class CustomTabIntentDataProvider {
      * @return A array of {@link View} ids, of which the onClick event is handled by the custom tab.
      */
     public int[] getClickableViewIDs() {
+        if (mClickableViewIds == null) return null;
         return mClickableViewIds.clone();
     }
 
