@@ -207,7 +207,6 @@ DownloadTargetDeterminer::Result
     // (WebStore, Drag&Drop). Treat the path as a virtual path. We will
     // eventually determine whether this is a local path and if not, figure out
     // a local path.
-
     std::string suggested_filename = download_->GetSuggestedFilename();
     if (suggested_filename.empty() &&
         download_->GetMimeType() == "application/x-x509-user-cert") {
@@ -233,12 +232,18 @@ DownloadTargetDeterminer::Result
     } else {
       target_directory = download_prefs_->DownloadPath();
     }
-    virtual_path_ = target_directory.Append(generated_filename);
 #if defined(OS_ANDROID)
-    conflict_action_ = DownloadPathReservationTracker::PROMPT;
+    // If |virtual_path_| is not empty, we are resuming a download which already
+    // has a target path. Don't prompt user in this case.
+    if (!virtual_path_.empty()) {
+      conflict_action_ = DownloadPathReservationTracker::UNIQUIFY;
+    } else {
+      conflict_action_ = DownloadPathReservationTracker::PROMPT;
+    }
 #else
     conflict_action_ = DownloadPathReservationTracker::UNIQUIFY;
 #endif
+    virtual_path_ = target_directory.Append(generated_filename);
     should_notify_extensions_ = true;
   } else {
     virtual_path_ = download_->GetForcedFilePath();
@@ -620,7 +625,6 @@ void DownloadTargetDeterminer::CheckDownloadUrlDone(
 DownloadTargetDeterminer::Result
     DownloadTargetDeterminer::DoCheckVisitedReferrerBefore() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   next_state_ = STATE_DETERMINE_INTERMEDIATE_PATH;
 
   // Checking if there are prior visits to the referrer is only necessary if the

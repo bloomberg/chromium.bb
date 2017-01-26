@@ -1569,7 +1569,14 @@ TEST_F(DownloadTargetDeterminerTest, ResumedNoPrompt) {
     // type == AUTOMATIC.
     EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))
         .Times(test_case.test_type == AUTOMATIC ? 1 : 0);
-    EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
+    // When resuming an AUTOMATIC download with non-empty initial path, the file
+    // name conflict action should be UNIQUIFY.
+    DownloadPathReservationTracker::FilenameConflictAction action =
+        test_case.test_type == AUTOMATIC ?
+            DownloadPathReservationTracker::UNIQUIFY :
+            DownloadPathReservationTracker::OVERWRITE;
+    EXPECT_CALL(*delegate(), ReserveVirtualPath(
+        _, expected_path, false, action, _));
     EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, expected_path, _))
         .Times(0);
     EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
