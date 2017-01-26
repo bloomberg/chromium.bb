@@ -8,6 +8,7 @@ source_set("unittests") {
   testonly = true
   sources = [
     "accelerators/accelerator_table_unittest.cc",
+    "drag_drop/drag_image_view_unittest.cc",
     "system/chromeos/audio/tray_audio_unittest.cc",
     "system/chromeos/brightness/tray_brightness_unittest.cc",
     "system/chromeos/network/vpn_list_unittest.cc",

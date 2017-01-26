@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/geometry/point.h"
@@ -29,7 +30,7 @@ class WmWindow;
 // does this by creating a widget and setting the content as the given view. The
 // caller can then use this object to freely move / drag it around on the
 // desktop in screen coordinates.
-class DragImageView : public views::ImageView {
+class ASH_EXPORT DragImageView : public views::ImageView {
  public:
   // |root_window| is the root window on which to create the drag image widget.
   // |source| is the event source that started this drag drop operation (touch
@@ -67,8 +68,12 @@ class DragImageView : public views::ImageView {
   // Sets the |opacity| of the image view between 0.0 and 1.0.
   void SetOpacity(float opacity);
 
+  gfx::Size GetMinimumSize() const override;
+
  private:
   gfx::Image* DragHint() const;
+  // Drag hint images are only drawn when the input source is touch.
+  bool ShouldDrawDragHint() const;
 
   // Overridden from views::ImageView.
   void OnPaint(gfx::Canvas* canvas) override;
@@ -77,7 +82,12 @@ class DragImageView : public views::ImageView {
   void Layout() override;
 
   std::unique_ptr<views::Widget> widget_;
-  gfx::Size widget_size_;
+
+  // Save the requested drag image size. We may need to display a drag hint
+  // image, which potentially expands |widget_|'s size. That drag hint image
+  // may be disabled (e.g. during the drag cancel animation). In that case,
+  // we need to know the originally requested size to render the drag image.
+  gfx::Size drag_image_size_;
 
   ui::DragDropTypes::DragEventSource drag_event_source_;
 

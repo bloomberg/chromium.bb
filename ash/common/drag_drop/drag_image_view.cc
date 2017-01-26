@@ -58,12 +58,13 @@ DragImageView::~DragImageView() {
 }
 
 void DragImageView::SetBoundsInScreen(const gfx::Rect& bounds) {
+  drag_image_size_ = bounds.size();
   widget_->SetBounds(bounds);
-  widget_size_ = bounds.size();
 }
 
 void DragImageView::SetScreenPosition(const gfx::Point& position) {
-  widget_->SetBounds(gfx::Rect(position, widget_size_));
+  widget_->SetBounds(
+      gfx::Rect(position, widget_->GetWindowBoundsInScreen().size()));
 }
 
 gfx::Rect DragImageView::GetBoundsInScreen() const {
@@ -82,6 +83,12 @@ void DragImageView::SetWidgetVisible(bool visible) {
 void DragImageView::SetTouchDragOperationHintOff() {
   // Simply set the drag type to non-touch so that no hint is drawn.
   drag_event_source_ = ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+
+  // This disables the drag hint image. This should reduce the widget size if
+  // the drag image is smaller than the drag hint image, so we set new bounds.
+  gfx::Rect new_bounds = GetBoundsInScreen();
+  new_bounds.set_size(drag_image_size_);
+  SetBoundsInScreen(new_bounds);
   SchedulePaint();
 }
 
@@ -110,32 +117,30 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   if (GetImage().isNull())
     return;
 
-  // |widget_size_| is in DIP. ImageSkia::size() also returns the size in DIP.
-  if (GetImage().size() == widget_size_) {
+  // |drag_image_size_| is in DIP.
+  // ImageSkia::size() also returns the size in DIP.
+  if (GetImage().size() == drag_image_size_) {
     canvas->DrawImageInt(GetImage(), 0, 0);
   } else {
     WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_.get());
     const float device_scale =
         window->GetDisplayNearestWindow().device_scale_factor();
     // The drag image already has device scale factor applied. But
-    // |widget_size_| is in DIP units.
-    gfx::Size scaled_widget_size =
-        gfx::ScaleToRoundedSize(widget_size_, device_scale);
+    // |drag_image_size_| is in DIP units.
+    gfx::Size drag_image_size_pixels =
+        gfx::ScaleToRoundedSize(drag_image_size_, device_scale);
     gfx::ImageSkiaRep image_rep = GetImage().GetRepresentation(device_scale);
     if (image_rep.is_null())
       return;
     SkBitmap scaled = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(), skia::ImageOperations::RESIZE_LANCZOS3,
-        scaled_widget_size.width(), scaled_widget_size.height());
+        drag_image_size_pixels.width(), drag_image_size_pixels.height());
     gfx::ImageSkia image_skia(gfx::ImageSkiaRep(scaled, device_scale));
     canvas->DrawImageInt(image_skia, 0, 0);
   }
 
-  if (drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
-    return;
-
   gfx::Image* drag_hint = DragHint();
-  if (drag_hint->IsEmpty())
+  if (!ShouldDrawDragHint() || drag_hint->IsEmpty())
     return;
 
   // Make sure drag hint image is positioned within the widget.
@@ -143,7 +148,9 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   gfx::Point drag_hint_position = touch_drag_operation_indicator_position_;
   drag_hint_position.Offset(-drag_hint_size.width() / 2, 0);
   gfx::Rect drag_hint_bounds(drag_hint_position, drag_hint_size);
-  drag_hint_bounds.AdjustToFit(gfx::Rect(widget_size_));
+
+  gfx::Size widget_size = widget_->GetWindowBoundsInScreen().size();
+  drag_hint_bounds.AdjustToFit(gfx::Rect(widget_size));
 
   // Draw image.
   canvas->DrawImageInt(*(drag_hint->ToImageSkia()), drag_hint_bounds.x(),
@@ -168,21 +175,34 @@ gfx::Image* DragImageView::DragHint() const {
   return drag_hint;
 }
 
+bool DragImageView::ShouldDrawDragHint() const {
+  return drag_event_source_ == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+}
+
+gfx::Size DragImageView::GetMinimumSize() const {
+  gfx::Size minimum_size = drag_image_size_;
+  if (ShouldDrawDragHint())
+    minimum_size.SetToMax(DragHint()->Size());
+  return minimum_size;
+}
+
 void DragImageView::Layout() {
   View::Layout();
 
+  // Only consider resizing the widget for the drag hint image if we are in a
+  // touch initiated drag.
   gfx::Image* drag_hint = DragHint();
-  if (drag_hint->IsEmpty())
+  if (!ShouldDrawDragHint() || drag_hint->IsEmpty())
     return;
 
   gfx::Size drag_hint_size = drag_hint->Size();
 
   // Enlarge widget if required to fit the drag hint image.
-  if (drag_hint_size.width() > widget_size_.width() ||
-      drag_hint_size.height() > widget_size_.height()) {
-    gfx::Size new_widget_size = widget_size_;
-    new_widget_size.SetToMax(drag_hint_size);
-    widget_->SetSize(new_widget_size);
+  gfx::Size widget_size = widget_->GetWindowBoundsInScreen().size();
+  if (drag_hint_size.width() > widget_size.width() ||
+      drag_hint_size.height() > widget_size.height()) {
+    widget_size.SetToMax(drag_hint_size);
+    widget_->SetSize(widget_size);
   }
 }
 
