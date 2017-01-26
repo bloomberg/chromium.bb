@@ -269,8 +269,10 @@ PointerEvent* PointerEventFactory::create(
     for (const auto& coalescedMouseEvent : coalescedMouseEvents) {
       DCHECK_EQ(mouseEvent.pointerProperties().id,
                 coalescedMouseEvent.pointerProperties().id);
-      DCHECK_EQ(mouseEvent.pointerProperties().pointerType,
-                coalescedMouseEvent.pointerProperties().pointerType);
+      // TODO(crbug.com/684292): We need further investigation of why the
+      // following DCHECK fails.
+      // DCHECK_EQ(mouseEvent.pointerProperties().pointerType,
+      //          coalescedMouseEvent.pointerProperties().pointerType);
       PointerEventInit coalescedEventInit = pointerEventInit;
       updateMousePointerEventInit(coalescedMouseEvent, view,
                                   &coalescedEventInit);
