@@ -98,24 +98,21 @@ MaximizeModeController::MaximizeModeController()
   // unavailable. This will require refactoring
   // IsMaximizeModeWindowManagerEnabled to check for the existance of the
   // controller.
-  const bool is_enabled = IsEnabled();
-  if (is_enabled)
+  if (IsEnabled()) {
     WmShell::Get()->AddDisplayObserver(this);
-
-  if (is_enabled)
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
+  }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
 }
 
 MaximizeModeController::~MaximizeModeController() {
   WmShell::Get()->RemoveShellObserver(this);
-  const bool is_enabled = IsEnabled();
-  if (is_enabled)
-    WmShell::Get()->RemoveDisplayObserver(this);
 
-  if (is_enabled)
+  if (IsEnabled()) {
+    WmShell::Get()->RemoveDisplayObserver(this);
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
+  }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 }
@@ -123,15 +120,8 @@ MaximizeModeController::~MaximizeModeController() {
 bool MaximizeModeController::CanEnterMaximizeMode() {
   // If we have ever seen accelerometer data, then HandleHingeRotation may
   // trigger maximize mode at some point in the future.
-  // The --enable-touch-view-testing switch can also mean that we may enter
-  // maximize mode.
-  // TODO(mgiuca): This can result in false positives, as it returns true for
-  // any device with an accelerometer. Have TouchView-enabled devices explicitly
-  // set a flag, and change this implementation to simply return true iff the
-  // flag is present (http://crbug.com/457445).
-  return have_seen_accelerometer_data_ ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshEnableTouchViewTesting);
+  // All TouchView-enabled devices can enter maximized mode.
+  return have_seen_accelerometer_data_ || IsEnabled();
 }
 
 // TODO(jcliang): Hide or remove EnableMaximizeModeWindowManager
@@ -322,13 +312,6 @@ void MaximizeModeController::EnterMaximizeMode() {
   event_blocker_ =
       WmShell::Get()->CreateScopedDisableInternalMouseAndKeyboard();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchViewTesting)) {
-    // We don't let accelerometer updates interfere with the maximize mode
-    // status as set by the touch-view-testing keyboard shortcut.
-    return;
-  }
-
   if (IsMaximizeModeWindowManagerEnabled())
     return;
   EnableMaximizeModeWindowManager(true);
@@ -336,13 +319,6 @@ void MaximizeModeController::EnterMaximizeMode() {
 
 void MaximizeModeController::LeaveMaximizeMode() {
   event_blocker_.reset();
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchViewTesting)) {
-    // We don't let accelerometer updates interfere with the maximize mode
-    // status as set by the touch-view-testing keyboard shortcut.
-    return;
-  }
 
   if (!IsMaximizeModeWindowManagerEnabled())
     return;

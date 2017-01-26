@@ -5885,12 +5885,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_DESCRIPTION" desc="Description for the flag which can be used to enable docking windows to right or left.">
           Enable docking windows to the left and right of the screen.
         </message>
-        <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
-          Enable TouchView maximizing UI for testing
-        </message>
-        <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION" desc="Description for the flag to enable the TouchView testing mode.">
-          Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximizing mode.
-        </message>
         <message name="IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_NAME" desc="Title for the flag to enable the mirrored screen mode.">
           Enable mirrored screen mode.
         </message>

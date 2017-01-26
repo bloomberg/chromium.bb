@@ -1041,12 +1041,6 @@ const FeatureEntry kFeatureEntries[] = {
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableDockedWindows),
     },
     {
-        "ash-enable-touch-view-testing",
-        IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME,
-        IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION, kOsCrOS,
-        SINGLE_VALUE_TYPE(ash::switches::kAshEnableTouchViewTesting),
-    },
-    {
         "ash-enable-mirrored-screen", IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_NAME,
         IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION, kOsCrOS,
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),

@@ -22,9 +22,7 @@ namespace {
 
 bool IsTouchViewEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshEnableTouchView) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshEnableTouchViewTesting);
+      switches::kAshEnableTouchView);
 }
 
 }  // namespace

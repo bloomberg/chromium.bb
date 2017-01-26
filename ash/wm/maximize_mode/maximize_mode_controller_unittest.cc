@@ -445,16 +445,6 @@ TEST_F(MaximizeModeControllerTest, VerticalHingeTest) {
   }
 }
 
-// Tests that CanEnterMaximizeMode returns false until a valid accelerometer
-// event has been received, and that it returns true afterwards.
-TEST_F(MaximizeModeControllerTest,
-       CanEnterMaximizeModeRequiresValidAccelerometerUpdate) {
-  // Should be false until an accelerometer event is sent.
-  ASSERT_FALSE(maximize_mode_controller()->CanEnterMaximizeMode());
-  OpenLidToAngle(90.0f);
-  EXPECT_TRUE(maximize_mode_controller()->CanEnterMaximizeMode());
-}
-
 // Tests that when an accelerometer event is received which has no keyboard that
 // we enter maximize mode.
 TEST_F(MaximizeModeControllerTest,
@@ -575,31 +565,6 @@ TEST_F(MaximizeModeControllerTest, VerticalHingeUnstableAnglesTest) {
     // one failure rather than potentially hundreds.
     ASSERT_TRUE(IsMaximizeModeStarted());
   }
-}
-
-class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
- public:
-  MaximizeModeControllerSwitchesTest() {}
-  ~MaximizeModeControllerSwitchesTest() override {}
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableTouchViewTesting);
-    MaximizeModeControllerTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MaximizeModeControllerSwitchesTest);
-};
-
-// Tests that when the command line switch for testing maximize mode is on, that
-// accelerometer updates which would normally cause it to exit do not.
-TEST_F(MaximizeModeControllerSwitchesTest, IgnoreHingeAngles) {
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
-
-  // Would normally trigger an exit from maximize mode.
-  OpenLidToAngle(90.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
 }
 
 }  // namespace ash

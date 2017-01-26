@@ -161,8 +161,6 @@ ScreenOrientationControllerTest::CreateSecondaryWebContents() {
 void ScreenOrientationControllerTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kUseFirstDisplayAsInternal);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableTouchViewTesting);
   test::AshTestBase::SetUp();
 }
 

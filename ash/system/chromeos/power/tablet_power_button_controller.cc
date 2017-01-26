@@ -29,8 +29,7 @@ constexpr int kShutdownTimeoutMs = 500;
 // ignored.
 constexpr int kIgnorePowerButtonAfterResumeMs = 2000;
 
-// Returns true if device is a convertible/tablet device or has
-// kAshEnableTouchViewTesting in test, otherwise false.
+// Returns true if device is a convertible/tablet device, otherwise false.
 bool IsTabletModeSupported() {
   MaximizeModeController* maximize_mode_controller =
       WmShell::Get()->maximize_mode_controller();

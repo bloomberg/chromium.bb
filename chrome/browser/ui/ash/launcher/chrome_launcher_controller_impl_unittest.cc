@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shelf/shelf_item_types.h"
@@ -299,7 +298,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
-    command_line->AppendSwitch(ash::switches::kAshEnableTouchViewTesting);
 
     app_list::AppListSyncableServiceFactory::SetUseInTesting();
 

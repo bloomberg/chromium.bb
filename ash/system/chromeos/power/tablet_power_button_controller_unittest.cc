@@ -52,7 +52,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     power_manager_client_ = new chromeos::FakePowerManagerClient();
     dbus_setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableTouchViewTesting);
+        switches::kAshEnableTouchView);
     AshTestBase::SetUp();
 
     lock_state_controller_ = Shell::GetInstance()->lock_state_controller();

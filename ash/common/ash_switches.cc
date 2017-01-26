@@ -68,11 +68,6 @@ const char kAshEnableTouchView[] = "enable-touchview";
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 
-// Enables touch view testing.
-// TODO(skuhne): Remove DEBUG_TOGGLE_TOUCH_VIEW accelerator once this flag is
-// removed.
-const char kAshEnableTouchViewTesting[] = "ash-enable-touch-view-testing";
-
 // Hides notifications that are irrelevant to Chrome OS device factory testing,
 // such as battery level updates.
 const char kAshHideNotificationsForFactory[] =
