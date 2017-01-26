@@ -556,7 +556,8 @@ bool IsTopLevelNavigation(WebFrame* frame) {
 WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
     std::unique_ptr<StreamOverrideParameters> stream_override,
-    bool is_view_source_mode_enabled) {
+    bool is_view_source_mode_enabled,
+    int nav_entry_id) {
   WebURLRequest request(common_params.url);
   if (is_view_source_mode_enabled)
     request.setCachePolicy(WebCachePolicy::ReturnCacheDataElseLoad);
@@ -579,6 +580,7 @@ WebURLRequest CreateURLRequestForNavigation(
 
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(std::move(stream_override));
+  extra_data->set_navigation_initiated_by_renderer(nav_entry_id == 0);
   request.setExtraData(extra_data);
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
@@ -4335,6 +4337,16 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
         navigation_state->start_params().transferred_request_child_id);
     extra_data->set_transferred_request_request_id(
         navigation_state->start_params().transferred_request_request_id);
+
+    // For navigation requests, we should copy the flag which indicates if this
+    // was a navigation initiated by the renderer to the new RequestExtraData
+    // instance.
+    RequestExtraData* current_request_data = static_cast<RequestExtraData*>(
+      request.getExtraData());
+    if (current_request_data) {
+      extra_data->set_navigation_initiated_by_renderer(
+          current_request_data->navigation_initiated_by_renderer());
+    }
   }
 
   request.setExtraData(extra_data);
@@ -5172,7 +5184,7 @@ void RenderFrameImpl::OnFailedNavigation(
       CreateWebURLError(common_params.url, has_stale_copy_in_cache, error_code);
   WebURLRequest failed_request = CreateURLRequestForNavigation(
       common_params, std::unique_ptr<StreamOverrideParameters>(),
-      frame_->isViewSourceModeEnabled());
+      frame_->isViewSourceModeEnabled(), request_params.nav_entry_id);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
@@ -5846,7 +5858,8 @@ void RenderFrameImpl::NavigateInternal(
   WebHistoryItem item_for_history_navigation;
   WebURLRequest request =
       CreateURLRequestForNavigation(common_params, std::move(stream_params),
-                                    frame_->isViewSourceModeEnabled());
+                                    frame_->isViewSourceModeEnabled(),
+                                    request_params.nav_entry_id);
   request.setFrameType(IsTopLevelNavigation(frame_)
                            ? blink::WebURLRequest::FrameTypeTopLevel
                            : blink::WebURLRequest::FrameTypeNested);

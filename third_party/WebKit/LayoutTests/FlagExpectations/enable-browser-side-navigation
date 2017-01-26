@@ -30,29 +30,8 @@ crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initi
 
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
-crbug.com/625765 http/tests/cache/iframe-304-crash.html [ Failure ]
-crbug.com/625765 http/tests/history/post-replace-state-reload.html [ Failure ]
 crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
-crbug.com/625765 http/tests/navigation/location-reload-after-post.php [ Failure ]
-crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
-crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-invalid.html [ Failure ]
-crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure ]
-crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
-crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
-crbug.com/625765 fast/loader/main-document-url-for-non-http-loads.html [ Failure ]
-crbug.com/625765 external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
-crbug.com/625765 virtual/stable/http/tests/navigation/location-reload-after-post.php [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/cache/iframe-304-crash.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/history/post-replace-state-reload.html [ Failure ]
 crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [ Crash Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/navigation/location-reload-after-post.php [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-deny.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-invalid.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-multiple-headers-conflict.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.

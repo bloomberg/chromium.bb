@@ -23,6 +23,7 @@
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/child/request_extra_data.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/screen_info.h"
@@ -602,6 +603,12 @@ void ForceTextInputStateUpdateForRenderFrame(RenderFrame* frame) {
           static_cast<RenderFrameImpl*>(frame)->GetRenderWidget()) {
     render_widget->ShowVirtualKeyboard();
   }
+}
+
+bool IsNavigationInitiatedByRenderer(const blink::WebURLRequest& request) {
+  RequestExtraData* extra_data = static_cast<RequestExtraData*>(
+      request.getExtraData());
+  return extra_data && extra_data->navigation_initiated_by_renderer();
 }
 
 }  // namespace content

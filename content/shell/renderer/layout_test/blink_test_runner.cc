@@ -747,6 +747,11 @@ void BlinkTestRunner::ForceTextInputStateUpdate(WebFrame* frame) {
   ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
 }
 
+bool BlinkTestRunner::IsNavigationInitiatedByRenderer(
+    const WebURLRequest& request) {
+  return content::IsNavigationInitiatedByRenderer(request);
+}
+
 bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);

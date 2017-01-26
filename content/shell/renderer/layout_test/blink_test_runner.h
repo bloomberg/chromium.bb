@@ -31,6 +31,7 @@ namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebFrame;
+class WebURLRequest;
 class WebView;
 }
 
@@ -162,6 +163,8 @@ class BlinkTestRunner : public RenderViewObserver,
   float GetDeviceScaleFactor() const override;
   void RunIdleTasks(const base::Closure& callback) override;
   void ForceTextInputStateUpdate(blink::WebFrame* frame) override;
+  bool IsNavigationInitiatedByRenderer(
+      const blink::WebURLRequest& request) override;
 
   // Resets a RenderView to a known state for layout tests. It is used both when
   // a RenderView is created and when reusing an existing RenderView for the

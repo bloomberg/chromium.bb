@@ -28,7 +28,8 @@ RequestExtraData::RequestExtraData()
       initiated_in_secure_context_(false),
       is_prefetch_(false),
       download_to_network_cache_only_(false),
-      block_mixed_plugin_content_(false) {}
+      block_mixed_plugin_content_(false),
+      navigation_initiated_by_renderer_(false) {}
 
 RequestExtraData::~RequestExtraData() {
 }

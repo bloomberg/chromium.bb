@@ -158,6 +158,15 @@ class CONTENT_EXPORT RequestExtraData
     block_mixed_plugin_content_ = block_mixed_plugin_content;
   }
 
+  // PlzNavigate
+  // Indicates whether a navigation was initiated by the browser or renderer.
+  bool navigation_initiated_by_renderer() const {
+    return navigation_initiated_by_renderer_;
+  }
+  void set_navigation_initiated_by_renderer(bool navigation_by_renderer) {
+    navigation_initiated_by_renderer_ = navigation_by_renderer;
+  }
+
   void CopyToResourceRequest(ResourceRequest* request) const;
 
  private:
@@ -181,6 +190,7 @@ class CONTENT_EXPORT RequestExtraData
   bool is_prefetch_;
   bool download_to_network_cache_only_;
   bool block_mixed_plugin_content_;
+  bool navigation_initiated_by_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

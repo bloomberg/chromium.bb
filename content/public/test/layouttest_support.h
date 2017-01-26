@@ -23,6 +23,7 @@ class WebDeviceOrientationData;
 class WebInputEvent;
 class WebLocalFrame;
 struct WebSize;
+class WebURLRequest;
 class WebView;
 class WebWidget;
 class WebURLResponse;
@@ -175,6 +176,11 @@ void SchedulerRunIdleTasks(const base::Closure& callback);
 // Causes the RenderWidget corresponding to |render_frame| to update its
 // TextInputState.
 void ForceTextInputStateUpdateForRenderFrame(RenderFrame* render_frame);
+
+// PlzNavigate
+// Returns true if the navigation identified by the |request| was initiated by
+// the browser or renderer.
+bool IsNavigationInitiatedByRenderer(const blink::WebURLRequest& request);
 
 }  // namespace content
 

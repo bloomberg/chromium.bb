@@ -32,6 +32,7 @@ class WebMediaStream;
 class WebPlugin;
 struct WebPluginParams;
 struct WebSize;
+class WebURLRequest;
 class WebURLResponse;
 class WebView;
 }
@@ -291,6 +292,11 @@ class WebTestDelegate {
   // Forces a text input state update for the client of WebFrameWidget
   // associated with |frame|.
   virtual void ForceTextInputStateUpdate(blink::WebFrame* frame) = 0;
+
+  // PlzNavigate
+  // Indicates if the navigation was initiated by the browser or renderer.
+  virtual bool IsNavigationInitiatedByRenderer(
+      const blink::WebURLRequest& request) = 0;
 };
 
 }  // namespace test_runner

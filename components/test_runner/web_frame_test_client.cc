@@ -538,6 +538,12 @@ void WebFrameTestClient::didDispatchPingLoader(const blink::WebURL& url) {
 
 void WebFrameTestClient::willSendRequest(blink::WebLocalFrame* frame,
                                          blink::WebURLRequest& request) {
+  // PlzNavigate
+  // Navigation requests initiated by the renderer will have been logged when
+  // the navigation was sent to the browser. Please see
+  // the RenderFrameImpl::BeginNavigation() function.
+  if (delegate_->IsNavigationInitiatedByRenderer(request))
+    return;
   // Need to use GURL for host() and SchemeIs()
   GURL url = request.url();
   std::string request_url = url.possibly_invalid_spec();
