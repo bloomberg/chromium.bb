@@ -44,6 +44,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps.h"
@@ -7097,4 +7098,37 @@ TEST_F(ExtensionServiceTest, CorruptExtensionUpdate) {
 
   EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
   EXPECT_FALSE(prefs->HasDisableReason(id, Extension::DISABLE_CORRUPTED));
+}
+
+// Try re-enabling a reloading extension. Regression test for crbug.com/676815.
+TEST_F(ExtensionServiceTest, ReloadAndReEnableExtension) {
+  InitializeEmptyExtensionService();
+
+  // Add an extension in an unpacked location.
+  scoped_refptr<const Extension> extension =
+      extensions::ChromeTestExtensionLoader(profile()).
+          LoadExtension(data_dir().AppendASCII("simple_with_file"));
+  const std::string kExtensionId = extension->id();
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extensions::Manifest::IsUnpackedLocation(extension->location()));
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(kExtensionId));
+
+  // Begin the reload process.
+  service()->ReloadExtension(extension->id());
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(kExtensionId));
+
+  // While the extension is reloading, try to re-enable it. This is the flow
+  // that could happen if, e.g., the user hit the enable toggle in the
+  // chrome://extensions page while it was reloading.
+  service()->GrantPermissionsAndEnableExtension(extension.get());
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(kExtensionId));
+
+  // Wait for the reload to complete. This previously crashed (see
+  // crbug.com/676815).
+  base::RunLoop().RunUntilIdle();
+  // The extension should be enabled again...
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(kExtensionId));
+  // ...and should have reloaded (for ease, we just compare the extension
+  // objects).
+  EXPECT_NE(extension, registry()->enabled_extensions().GetByID(kExtensionId));
 }

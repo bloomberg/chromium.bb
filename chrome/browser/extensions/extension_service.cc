@@ -860,6 +860,11 @@ bool ExtensionService::IsExtensionEnabled(
 void ExtensionService::EnableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // If the extension is currently reloading, it will be enabled once the reload
+  // is complete.
+  if (reloading_extensions_.count(extension_id) > 0)
+    return;
+
   if (IsExtensionEnabled(extension_id) ||
       extension_prefs_->IsExtensionBlacklisted(extension_id))
     return;
