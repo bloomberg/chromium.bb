@@ -38,6 +38,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -63,6 +64,7 @@
 #include "components/previews/core/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/translate/core/browser/language_model.h"
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -373,6 +375,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (bookmark_model) {
       ntp_snippets::RemoveLastVisitedDatesBetween(delete_begin_, delete_end_,
                                                   filter, bookmark_model);
+    }
+
+    translate::LanguageModel* language_model =
+        LanguageModelFactory::GetInstance()->GetForBrowserContext(profile_);
+    if (language_model) {
+      language_model->ClearHistory(delete_begin_, delete_end_);
     }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

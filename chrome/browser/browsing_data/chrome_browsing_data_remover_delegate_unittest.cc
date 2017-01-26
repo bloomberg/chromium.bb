@@ -27,6 +27,7 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
+#include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,6 +55,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/translate/core/browser/language_model.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -91,6 +93,7 @@ using domain_reliability::DomainReliabilityServiceFactory;
 using testing::_;
 using testing::ByRef;
 using testing::Eq;
+using testing::FloatEq;
 using testing::Invoke;
 using testing::IsEmpty;
 using testing::Matcher;
@@ -1738,4 +1741,36 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
           /*consider_visits_from_desktop=*/true);
   EXPECT_THAT(remaining_nodes, SizeIs(1));
   EXPECT_THAT(remaining_nodes[0]->url().spec(), Eq("http://foo-2.org/"));
+}
+
+// Test that the remover clears language model data (normally added by the
+// ChromeTranslateClient).
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       LanguageModelClearedOnClearingCompleteHistory) {
+  translate::LanguageModel* language_model =
+      LanguageModelFactory::GetInstance()->GetForBrowserContext(GetProfile());
+
+  // Simulate browsing.
+  for (int i = 0; i < 100; i++) {
+    language_model->OnPageVisited("en");
+    language_model->OnPageVisited("en");
+    language_model->OnPageVisited("en");
+    language_model->OnPageVisited("es");
+  }
+
+  // Clearing a part of the history has no effect.
+  BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
+                                BrowsingDataRemover::REMOVE_HISTORY, false);
+
+  EXPECT_THAT(language_model->GetTopLanguages(), SizeIs(2));
+  EXPECT_THAT(language_model->GetLanguageFrequency("en"), FloatEq(0.75));
+  EXPECT_THAT(language_model->GetLanguageFrequency("es"), FloatEq(0.25));
+
+  // Clearing the full history does the trick.
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::REMOVE_HISTORY, false);
+
+  EXPECT_THAT(language_model->GetTopLanguages(), SizeIs(0));
+  EXPECT_THAT(language_model->GetLanguageFrequency("en"), FloatEq(0.0));
+  EXPECT_THAT(language_model->GetLanguageFrequency("es"), FloatEq(0.0));
 }

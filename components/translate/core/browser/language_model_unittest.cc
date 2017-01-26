@@ -11,6 +11,7 @@
 using testing::ElementsAre;
 using testing::FloatEq;
 using testing::Gt;
+using testing::SizeIs;
 
 namespace {
 
@@ -103,6 +104,44 @@ TEST(LanguageModelTest, RareLanguageDiscarded) {
   // Lang 2 is removed from the model.
   EXPECT_THAT(model.GetTopLanguages(),
               ElementsAre(LanguageModel::LanguageInfo{kLang1, 1}));
+}
+
+TEST(LanguageModelTest, ShouldClearHistoryIfAllTimes) {
+  TestingPrefServiceSimple prefs;
+  LanguageModel::RegisterProfilePrefs(prefs.registry());
+  LanguageModel model(&prefs);
+
+  for (int i = 0; i < 100; i++) {
+    model.OnPageVisited(kLang1);
+  }
+
+  EXPECT_THAT(model.GetTopLanguages(), SizeIs(1));
+  EXPECT_THAT(model.GetLanguageFrequency(kLang1), FloatEq(1.0));
+
+  model.ClearHistory(base::Time(), base::Time::Max());
+
+  EXPECT_THAT(model.GetTopLanguages(), SizeIs(0));
+  EXPECT_THAT(model.GetLanguageFrequency(kLang1), FloatEq(0.0));
+}
+
+TEST(LanguageModelTest, ShouldNotClearHistoryIfNotAllTimes) {
+  TestingPrefServiceSimple prefs;
+  LanguageModel::RegisterProfilePrefs(prefs.registry());
+  LanguageModel model(&prefs);
+
+  for (int i = 0; i < 100; i++) {
+    model.OnPageVisited(kLang1);
+  }
+
+  EXPECT_THAT(model.GetTopLanguages(), SizeIs(1));
+  EXPECT_THAT(model.GetLanguageFrequency(kLang1), FloatEq(1.0));
+
+  // Clearing only the last hour of the history has no effect.
+  model.ClearHistory(base::Time::Now() - base::TimeDelta::FromHours(2),
+                     base::Time::Max());
+
+  EXPECT_THAT(model.GetTopLanguages(), SizeIs(1));
+  EXPECT_THAT(model.GetLanguageFrequency(kLang1), FloatEq(1.0));
 }
 
 }  // namespace translate

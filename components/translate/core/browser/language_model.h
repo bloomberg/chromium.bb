@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefRegistrySimple;
@@ -55,6 +56,9 @@ class LanguageModel : public KeyedService {
 
   // Informs the model that a page with the given language has been visited.
   void OnPageVisited(const std::string& language_code);
+
+  // Reflect in the model that history from |begin| to |end| gets cleared.
+  void ClearHistory(base::Time begin, base::Time end);
 
  private:
   PrefService* pref_service_;

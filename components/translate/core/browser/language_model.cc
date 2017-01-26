@@ -132,4 +132,14 @@ void LanguageModel::OnPageVisited(const std::string& language_code) {
     DiscountAndCleanCounters(dict);
 }
 
+void LanguageModel::ClearHistory(base::Time begin, base::Time end) {
+  // Ignore all partial removals and react only to "entire" history removal.
+  bool is_entire_history = (begin == base::Time() && end == base::Time::Max());
+  if (!is_entire_history) {
+    return;
+  }
+
+  pref_service_->ClearPref(kLanguageModelCounters);
+}
+
 }  // namespace translate
