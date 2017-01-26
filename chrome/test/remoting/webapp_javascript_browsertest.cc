@@ -14,7 +14,8 @@ namespace remoting {
 
 // Disable test on (dbg) as it takes longer than 30s to complete.
 // https://crbug.com/504204.
-#if (!defined(NDEBUG))
+// Also disable on ASAN due to flake: crbug.com/685025
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
 #define MAYBE_Remoting_Webapp_Js_Unittest DISABLED_Remoting_Webapp_Js_Unittest
 #else
 #define MAYBE_Remoting_Webapp_Js_Unittest Remoting_Webapp_Js_Unittest
