@@ -339,6 +339,9 @@ void WizardController::Init(OobeScreen first_screen) {
            GetLocalState()->GetBoolean(prefs::kOobeMdMode))
     SetShowMdOobe(true);
 
+  // Disable md oobe by default in m57.
+  SetShowMdOobe(false);
+
   // TODO(drcrash): Remove this after testing (http://crbug.com/647411).
   if (IsRemoraPairingOobe() || IsSharkRequisition() || IsRemoraRequisition()) {
     SetShowMdOobe(false);
