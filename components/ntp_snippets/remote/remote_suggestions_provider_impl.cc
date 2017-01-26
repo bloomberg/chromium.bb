@@ -53,9 +53,6 @@ const char kCategoryContentTitle[] = "title";
 const char kCategoryContentProvidedByServer[] = "provided_by_server";
 const char kCategoryContentAllowFetchingMore[] = "allow_fetching_more";
 
-// TODO(treib): Remove after M57.
-const char kDeprecatedSnippetHostsPref[] = "ntp_snippets.hosts";
-
 template <typename SnippetPtrContainer>
 std::unique_ptr<std::vector<std::string>> GetSnippetIDVector(
     const SnippetPtrContainer& suggestions) {
@@ -294,8 +291,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       provider_status_callback_(nullptr),
       nuke_when_initialized_(false),
       clock_(base::MakeUnique<base::DefaultClock>()) {
-  pref_service_->ClearPref(kDeprecatedSnippetHostsPref);
-
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
   // TODO(treib): Rethink this.
@@ -329,8 +324,6 @@ RemoteSuggestionsProviderImpl::~RemoteSuggestionsProviderImpl() = default;
 // static
 void RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  // TODO(treib): Remove after M57.
-  registry->RegisterListPref(kDeprecatedSnippetHostsPref);
   registry->RegisterListPref(prefs::kRemoteSuggestionCategories);
   registry->RegisterInt64Pref(prefs::kLastSuccessfulBackgroundFetchTime, 0);
 
