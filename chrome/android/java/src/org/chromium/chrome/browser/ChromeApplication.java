@@ -428,4 +428,30 @@ public class ChromeApplication extends ContentApplication {
     public AccountManagerDelegate createAccountManagerDelegate() {
         return new SystemAccountManagerDelegate(this);
     }
+
+    /**
+     * Instantiates an object of a given type.
+     * This method exists as a utility to generate objects of types that have different
+     * implementations upstream and downstream.  To use this,
+     * - give the upstream class a public parameterless constructor (required!)
+     *   e.g., public MyType() {},
+     * - generate the downstream object in createObjectImpl in the ChromeApplication subclass.
+     *   e.g., if (klass.getName().equals(MyType.class.getName()) return (T)new MySubType(), and
+     * - invoke this method on the appropriate class,
+     *   e.g., ChromeApplication.createObject(MyType.class).
+     * @param klass The class that the Chrome Application should create an instance of.
+     */
+    public static <T> T createObject(Class<T> klass) {
+        return ((ChromeApplication) ContextUtils.getApplicationContext()).createObjectImpl(klass);
+    }
+
+    protected <T> T createObjectImpl(Class<T> klass) {
+        try {
+            return klass.newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Asked to create unexpected class: " + klass.getName(), e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Asked to create unexpected class: " + klass.getName(), e);
+        }
+    }
 }
