@@ -212,7 +212,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       gaia_cookie_manager_service_(init_params.gaia_cookie_manager_service),
       network_resources_(new syncer::HttpBridgeNetworkResources),
       start_behavior_(init_params.start_behavior),
-      catch_up_configure_in_progress_(false),
       passphrase_prompt_triggered_by_version_(false),
       sync_enabled_weak_factory_(this),
       weak_factory_(this) {
@@ -784,7 +783,6 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   encrypt_everything_ = false;
   encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
-  catch_up_configure_in_progress_ = false;
   access_token_.clear();
   request_access_token_retry_timer_.Stop();
   last_snapshot_ = syncer::SyncCycleSnapshot();
@@ -1311,7 +1309,6 @@ void ProfileSyncService::BeginConfigureCatchUpBeforeClear() {
   sync_prefs_.GetNigoriSpecificsForPassphraseTransition(
       &saved_nigori_state_->nigori_specifics);
   const syncer::ModelTypeSet types = GetActiveDataTypes();
-  catch_up_configure_in_progress_ = true;
   data_type_manager_->Configure(types, syncer::CONFIGURE_REASON_CATCH_UP);
 }
 
@@ -1383,7 +1380,7 @@ void ProfileSyncService::OnConfigureDone(
 
   // Handle unrecoverable error.
   if (configure_status_ != DataTypeManager::OK) {
-    if (catch_up_configure_in_progress_) {
+    if (result.was_catch_up_configure) {
       // Record catchup configuration failure.
       UMA_HISTOGRAM_ENUMERATION(kClearServerDataEventsHistogramName,
                                 CLEAR_SERVER_DATA_CATCHUP_FAILED,
@@ -1427,8 +1424,7 @@ void ProfileSyncService::OnConfigureDone(
     return;
   }
 
-  if (catch_up_configure_in_progress_) {
-    catch_up_configure_in_progress_ = false;
+  if (result.was_catch_up_configure) {
     ClearAndRestartSyncForPassphraseEncryption();
     return;
   }
@@ -1731,12 +1727,9 @@ void ProfileSyncService::ChangePreferredDataTypes(
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!IsSyncActive() || !ConfigurationDone())
+  if (!data_type_manager_)
     return syncer::ModelTypeSet();
-  const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
-  const syncer::ModelTypeSet failed_types =
-      data_type_status_table_.GetFailedTypes();
-  return Difference(preferred_types, failed_types);
+  return data_type_manager_->GetActiveDataTypes();
 }
 
 syncer::SyncClient* ProfileSyncService::GetSyncClient() const {

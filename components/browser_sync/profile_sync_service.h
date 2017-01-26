@@ -943,12 +943,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
       saved_nigori_state_;
 
-  // When BeginConfigureCatchUpBeforeClear is called it will set
-  // catch_up_configure_in_progress_ to true. This is needed to detect that call
-  // to OnConfigureDone originated from BeginConfigureCatchUpBeforeClear and
-  // needs to be followed by ClearAndRestartSyncForPassphraseEncryption().
-  bool catch_up_configure_in_progress_;
-
   // Whether the major version has changed since the last time Chrome ran,
   // and therefore a passphrase required state should result in prompting
   // the user. This logic is only enabled on platforms that consume the

@@ -50,6 +50,7 @@ class DataTypeManager {
     ConfigureStatus status;
     ModelTypeSet requested_types;
     DataTypeStatusTable data_type_status_table;
+    bool was_catch_up_configure = false;
   };
 
   virtual ~DataTypeManager() {}
@@ -87,6 +88,12 @@ class DataTypeManager {
   // configure and any data types that have been started will be
   // stopped.
   virtual void Stop() = 0;
+
+  // Get the set of current active data types (those chosen or configured by the
+  // user which have not also encountered a runtime error). Note that during
+  // configuration, this will the the empty set. Once the configuration
+  // completes the set will be updated.
+  virtual ModelTypeSet GetActiveDataTypes() const = 0;
 
   // The current state of the data type manager.
   virtual State state() const = 0;

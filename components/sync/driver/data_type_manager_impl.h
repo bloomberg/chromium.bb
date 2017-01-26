@@ -56,6 +56,7 @@ class DataTypeManagerImpl : public DataTypeManager,
                          ConfigureReason reason) override;
 
   void Stop() override;
+  ModelTypeSet GetActiveDataTypes() const override;
   State state() const override;
 
   // |ModelAssociationManagerDelegate| implementation.

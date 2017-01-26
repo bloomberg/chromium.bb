@@ -41,6 +41,7 @@
 
 using syncer::DataTypeController;
 using syncer::FakeSyncEngine;
+using syncer::ModelTypeSet;
 using syncer::SyncMergeResult;
 using testing::Return;
 
@@ -71,7 +72,8 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
   void PurgeForMigration(syncer::ModelTypeSet undesired_types,
                          syncer::ConfigureReason reason) override {}
   void Stop() override{};
-  State state() const override { return syncer::DataTypeManager::CONFIGURED; };
+  ModelTypeSet GetActiveDataTypes() const override { return ModelTypeSet(); }
+  State state() const override { return syncer::DataTypeManager::CONFIGURED; }
 
  private:
   ConfigureCalled configure_called_;
@@ -259,6 +261,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void OnConfigureCalled(syncer::ConfigureReason configure_reason) {
     syncer::DataTypeManager::ConfigureResult result;
     result.status = syncer::DataTypeManager::OK;
+    if (configure_reason == syncer::CONFIGURE_REASON_CATCH_UP)
+      result.was_catch_up_configure = true;
     service()->OnConfigureDone(result);
   }
 
@@ -734,7 +738,9 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
   EXPECT_TRUE(captured_callback.is_null());
 
   // Simulate configure successful. Ensure that SBH::ClearServerData is called.
+  result.was_catch_up_configure = true;
   service()->OnConfigureDone(result);
+  result.was_catch_up_configure = false;
   EXPECT_FALSE(captured_callback.is_null());
 
   // Once SBH::ClearServerData finishes successfully ensure that sync is
@@ -793,7 +799,9 @@ TEST_F(ProfileSyncServiceTest,
 
   // Simulate catch up configure successful. Ensure that SBH::ClearServerData is
   // called.
+  result.was_catch_up_configure = true;
   service()->OnConfigureDone(result);
+  result.was_catch_up_configure = false;
   EXPECT_FALSE(captured_callback.is_null());
 
   ExpectSyncEngineCreation(1);
@@ -845,7 +853,9 @@ TEST_F(ProfileSyncServiceTest,
 
   // Simulate catch up configure successful. Ensure that SBH::ClearServerData is
   // called.
+  result.was_catch_up_configure = true;
   service()->OnConfigureDone(result);
+  result.was_catch_up_configure = false;
   EXPECT_FALSE(captured_callback.is_null());
 
   ExpectSyncEngineCreation(1);

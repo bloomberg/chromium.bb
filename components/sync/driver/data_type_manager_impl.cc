@@ -798,13 +798,14 @@ void DataTypeManagerImpl::NotifyStart() {
 }
 
 void DataTypeManagerImpl::NotifyDone(const ConfigureResult& raw_result) {
-  catch_up_in_progress_ = false;
-
   DCHECK(!last_restart_time_.is_null());
   base::TimeDelta configure_time = base::Time::Now() - last_restart_time_;
 
   ConfigureResult result = raw_result;
   result.data_type_status_table = data_type_status_table_;
+  result.was_catch_up_configure = catch_up_in_progress_;
+
+  catch_up_in_progress_ = false;
 
   DVLOG(1) << "Total time spent configuring: " << configure_time.InSecondsF()
            << "s";
@@ -835,6 +836,12 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& raw_result) {
       break;
   }
   observer_->OnConfigureDone(result);
+}
+
+ModelTypeSet DataTypeManagerImpl::GetActiveDataTypes() const {
+  if (state_ != CONFIGURED)
+    return ModelTypeSet();
+  return GetEnabledTypes();
 }
 
 DataTypeManager::State DataTypeManagerImpl::state() const {

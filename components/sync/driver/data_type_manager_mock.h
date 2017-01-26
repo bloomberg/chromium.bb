@@ -22,6 +22,7 @@ class DataTypeManagerMock : public DataTypeManager {
   MOCK_METHOD2(PurgeForMigration, void(ModelTypeSet, ConfigureReason));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(controllers, const DataTypeController::TypeMap&());
+  MOCK_CONST_METHOD0(GetActiveDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(state, State());
 
  private:
