@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -32,7 +33,7 @@ class SelectedKeywordDecorationTest : public CocoaTest {
     // initialize it now.
     const int kDefaultIconSize = 16;
     decoration_.SetImage(NSImageFromImageSkia(gfx::CreateVectorIcon(
-        gfx::VectorIconId::OMNIBOX_SEARCH, kDefaultIconSize, SK_ColorBLACK)));
+        omnibox::kSearchIcon, kDefaultIconSize, SK_ColorBLACK)));
   }
 
   SelectedKeywordDecoration decoration_;

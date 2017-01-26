@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/location_bar/location_bar_util.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/search_engines/template_url_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
@@ -32,7 +33,7 @@ SelectedKeywordView::~SelectedKeywordView() {
 }
 
 void SelectedKeywordView::ResetImage() {
-  SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH,
+  SetImage(gfx::CreateVectorIcon(omnibox::kSearchIcon,
                                  LocationBarView::kIconWidth, GetTextColor()));
 }
 

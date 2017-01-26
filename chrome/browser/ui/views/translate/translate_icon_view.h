@@ -22,7 +22,7 @@ class TranslateIconView : public BubbleIconView {
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
   void OnPressed(bool activated) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
-  gfx::VectorIconId GetVectorIcon() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateIconView);

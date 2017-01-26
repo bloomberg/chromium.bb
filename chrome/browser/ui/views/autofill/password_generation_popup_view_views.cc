@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -13,7 +14,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -99,8 +99,8 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
     SetLayoutManager(box_layout);
 
     views::ImageView* key_image = new views::ImageView();
-    key_image->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::AUTOLOGIN, 32,
-                                              gfx::kChromeIconGrey));
+    key_image->SetImage(
+        gfx::CreateVectorIcon(kAutologinIcon, 32, gfx::kChromeIconGrey));
     AddChildView(key_image);
 
     PasswordTextBox* password_text_box = new PasswordTextBox();

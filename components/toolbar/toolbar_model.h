@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }
 
 // This class is the model used by the toolbar, location bar and autocomplete
@@ -47,7 +47,7 @@ class ToolbarModel {
   // current URL.  When search term replacement is active, this returns a search
   // icon.  This doesn't cover specialized icons while the user is editing; see
   // OmniboxView::GetVectorIcon().
-  virtual gfx::VectorIconId GetVectorIcon() const = 0;
+  virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
 
   // Returns text for the omnibox secure verbose chip.
   virtual base::string16 GetSecureVerboseText() const = 0;

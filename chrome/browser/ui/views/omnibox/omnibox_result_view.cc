@@ -27,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,7 +42,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
 
 using ui::NativeTheme;
@@ -198,8 +198,7 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
   CHECK_GE(model_index, 0);
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
-  keyword_icon_->SetImage(
-      GetVectorIcon(gfx::VectorIconId::OMNIBOX_KEYWORD_SEARCH));
+  keyword_icon_->SetImage(GetVectorIcon(omnibox::kKeywordSearchIcon));
   keyword_icon_->SizeToPreferredSize();
 }
 
@@ -566,19 +565,18 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
   if (!image.IsEmpty())
     return image.AsImageSkia();
 
-  return GetVectorIcon(
-      model_->IsStarredMatch(match_)
-          ? gfx::VectorIconId::OMNIBOX_STAR
-          : AutocompleteMatch::TypeToVectorIcon(match_.type));
+  return GetVectorIcon(model_->IsStarredMatch(match_)
+                           ? omnibox::kStarIcon
+                           : AutocompleteMatch::TypeToVectorIcon(match_.type));
 }
 
 gfx::ImageSkia OmniboxResultView::GetVectorIcon(
-    gfx::VectorIconId icon_id) const {
+    const gfx::VectorIcon& icon) const {
   // For selected rows, paint the icon the same color as the text.
   SkColor color = GetColor(GetState(), TEXT);
   if (GetState() != SELECTED)
     color = color_utils::DeriveDefaultIconColor(color);
-  return gfx::CreateVectorIcon(icon_id, 16, color);
+  return gfx::CreateVectorIcon(icon, 16, color);
 }
 
 bool OmniboxResultView::ShowOnlyKeywordMatch() const {

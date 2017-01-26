@@ -13,7 +13,7 @@
 #include "components/toolbar/toolbar_model.h"
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }
 
 // A ToolbarModel that is backed by instance variables, which are initialized
@@ -27,7 +27,7 @@ class TestToolbarModel : public ToolbarModel {
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
-  gfx::VectorIconId GetVectorIcon() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetSecureVerboseText() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
@@ -37,7 +37,7 @@ class TestToolbarModel : public ToolbarModel {
   void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
   }
-  void set_icon(gfx::VectorIconId icon) { icon_ = icon; }
+  void set_icon(const gfx::VectorIcon& icon) { icon_ = &icon; }
   void set_ev_cert_name(const base::string16& ev_cert_name) {
     ev_cert_name_ = ev_cert_name;
   }
@@ -49,7 +49,7 @@ class TestToolbarModel : public ToolbarModel {
   base::string16 text_;
   GURL url_;
   security_state::SecurityLevel security_level_;
-  gfx::VectorIconId icon_;
+  const gfx::VectorIcon* icon_ = nullptr;
   base::string16 ev_cert_name_;
   bool should_display_url_;
 

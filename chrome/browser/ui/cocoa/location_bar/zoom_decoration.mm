@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
@@ -20,9 +21,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)
-    : owner_(owner),
-      bubble_(nil),
-      vector_icon_id_(gfx::VectorIconId::VECTOR_ICON_NONE) {}
+    : owner_(owner), bubble_(nullptr), vector_icon_(nullptr) {}
 
 ZoomDecoration::~ZoomDecoration() {
   [bubble_ closeWithoutAnimation];
@@ -97,14 +96,14 @@ void ZoomDecoration::HideUI() {
 void ZoomDecoration::UpdateUI(zoom::ZoomController* zoom_controller,
                               NSString* tooltip_string,
                               bool location_bar_is_dark) {
-  vector_icon_id_ = gfx::VectorIconId::VECTOR_ICON_NONE;
+  vector_icon_ = nullptr;
   zoom::ZoomController::RelativeZoom relative_zoom =
       zoom_controller->GetZoomRelativeToDefault();
   // There is no icon at the default zoom factor.
   if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
-    vector_icon_id_ = gfx::VectorIconId::ZOOM_MINUS;
+    vector_icon_ = &kZoomMinusIcon;
   } else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {
-    vector_icon_id_ = gfx::VectorIconId::ZOOM_PLUS;
+    vector_icon_ = &kZoomPlusIcon;
   }
 
   SetImage(GetMaterialIcon(location_bar_is_dark));
@@ -170,6 +169,6 @@ void ZoomDecoration::OnClose() {
   }
 }
 
-gfx::VectorIconId ZoomDecoration::GetMaterialVectorIconId() const {
-  return vector_icon_id_;
+const gfx::VectorIcon* ZoomDecoration::GetMaterialVectorIcon() const {
+  return vector_icon_;
 }

@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/save_credit_card_decoration.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -12,7 +13,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 SaveCreditCardDecoration::SaveCreditCardDecoration(
     CommandUpdater* command_updater)
@@ -25,8 +25,8 @@ void SaveCreditCardDecoration::SetIcon(bool locationBarIsDark) {
   SkColor theColor = theColor =
       locationBarIsDark ? SK_ColorWHITE : gfx::kChromeIconGrey;
 
-  SetImage(NSImageFromImageSkia(gfx::CreateVectorIcon(
-        gfx::VectorIconId::CREDIT_CARD, 16, theColor)));
+  SetImage(NSImageFromImageSkia(
+      gfx::CreateVectorIcon(kCreditCardIcon, 16, theColor)));
 }
 
 NSPoint SaveCreditCardDecoration::GetBubblePointInFrame(NSRect frame) {

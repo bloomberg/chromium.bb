@@ -32,9 +32,9 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #endif
 
 #if defined(OS_WIN)
@@ -95,8 +95,8 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
 }
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_WIN)
-gfx::ImageSkia GetFolderIcon(gfx::VectorIconId id, SkColor text_color) {
-  return gfx::CreateVectorIcon(id,
+gfx::ImageSkia GetFolderIcon(const gfx::VectorIcon& icon, SkColor text_color) {
+  return gfx::CreateVectorIcon(icon,
                                color_utils::DeriveDefaultIconColor(text_color));
 }
 #endif
@@ -298,7 +298,7 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER);
 #else
-  return GetFolderIcon(gfx::VectorIconId::FOLDER, text_color);
+  return GetFolderIcon(kFolderIcon, text_color);
 #endif
 }
 
@@ -307,7 +307,7 @@ gfx::ImageSkia GetBookmarkSupervisedFolderIcon(SkColor text_color) {
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER_SUPERVISED);
 #else
-  return GetFolderIcon(gfx::VectorIconId::FOLDER_SUPERVISED, text_color);
+  return GetFolderIcon(kFolderSupervisedIcon, text_color);
 #endif
 }
 
@@ -316,7 +316,7 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER_MANAGED);
 #else
-  return GetFolderIcon(gfx::VectorIconId::FOLDER_MANAGED, text_color);
+  return GetFolderIcon(kFolderManagedIcon, text_color);
 #endif
 }
 #endif

@@ -53,7 +53,7 @@ class ZoomDecoration : public ImageDecoration,
                         bool location_bar_is_dark);
 
   // Overridden from LocationBarDecoration:
-  gfx::VectorIconId GetMaterialVectorIconId() const override;
+  const gfx::VectorIcon* GetMaterialVectorIcon() const override;
 
  private:
   friend ZoomDecorationTest;
@@ -82,7 +82,7 @@ class ZoomDecoration : public ImageDecoration,
   // The string to show for a tooltip.
   base::scoped_nsobject<NSString> tooltip_;
 
-  gfx::VectorIconId vector_icon_id_;
+  const gfx::VectorIcon* vector_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomDecoration);
 };

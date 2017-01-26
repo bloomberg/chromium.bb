@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
@@ -15,7 +16,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 // ManagePasswordsIconCocoa
 
@@ -104,8 +104,9 @@ void ManagePasswordsDecoration::HideBubble() {
     ManagePasswordsBubbleCocoa::instance()->Close();
 }
 
-gfx::VectorIconId ManagePasswordsDecoration::GetMaterialVectorIconId() const {
-  // Note: update unit tests if this vector id ever changes (it's hard-coded
+const gfx::VectorIcon* ManagePasswordsDecoration::GetMaterialVectorIcon()
+    const {
+  // Note: update unit tests if this vector icon ever changes (it's hard-coded
   // there).
-  return gfx::VectorIconId::AUTOLOGIN;
+  return &kAutologinIcon;
 }

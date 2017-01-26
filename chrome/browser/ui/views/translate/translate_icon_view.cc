@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -14,7 +15,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/vector_icons_public.h"
 
 TranslateIconView::TranslateIconView(CommandUpdater* command_updater)
     : BubbleIconView(command_updater, IDC_TRANSLATE_PAGE) {
@@ -37,6 +37,6 @@ views::BubbleDialogDelegateView* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();
 }
 
-gfx::VectorIconId TranslateIconView::GetVectorIcon() const {
-  return gfx::VectorIconId::TRANSLATE;
+const gfx::VectorIcon& TranslateIconView::GetVectorIcon() const {
+  return kTranslateIcon;
 }

@@ -34,7 +34,7 @@ class StarDecoration : public ImageDecoration {
  protected:
   // Overridden from LocationBarDecoration:
   SkColor GetMaterialIconColor(bool location_bar_is_dark) const override;
-  gfx::VectorIconId GetMaterialVectorIconId() const override;
+  const gfx::VectorIcon* GetMaterialVectorIcon() const override;
 
  private:
   // For bringing up bookmark bar.

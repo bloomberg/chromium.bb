@@ -133,7 +133,7 @@ class OmniboxResultView : public views::View,
   gfx::ImageSkia GetIcon() const;
 
   // Utility function for creating vector icons.
-  gfx::ImageSkia GetVectorIcon(gfx::VectorIconId icon_id) const;
+  gfx::ImageSkia GetVectorIcon(const gfx::VectorIcon& icon_id) const;
 
   // Whether to render only the keyword match.  Returns true if |match_| has an
   // associated keyword match that has been animated so close to the start that

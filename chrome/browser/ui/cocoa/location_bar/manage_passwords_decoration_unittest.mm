@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
@@ -22,7 +23,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -104,13 +104,13 @@ TEST_P(ManagePasswordsDecorationStateTest, TestState) {
   NSImage* expected_image = nil;
   if (GetParam().image) {
     // IDR_SAVE_PASSWORD_ACTIVE and IDR_SAVE_PASSWORD_INACTIVE map to
-    // gfx::VectorIconId::AUTOLOGIN in Material Design; fail the test if
-    // somehow some other value is present.
+    // kAutologinIcon in Material Design; fail the test if somehow some other
+    // value is present.
     EXPECT_TRUE(GetParam().image == IDR_SAVE_PASSWORD_ACTIVE ||
                 GetParam().image == IDR_SAVE_PASSWORD_INACTIVE);
     const int kIconSize = 16;
-    expected_image = NSImageFromImageSkia(gfx::CreateVectorIcon(
-        gfx::VectorIconId::AUTOLOGIN, kIconSize, gfx::kChromeIconGrey));
+    expected_image = NSImageFromImageSkia(
+        gfx::CreateVectorIcon(kAutologinIcon, kIconSize, gfx::kChromeIconGrey));
   }
   EXPECT_TRUE(ImagesEqual(expected_image, decoration()->GetImage()));
   EXPECT_NSEQ(GetParam().toolTip

@@ -32,7 +32,7 @@ class TranslateDecoration : public ImageDecoration {
 
  protected:
   // Overridden from LocationBarDecoration:
-  gfx::VectorIconId GetMaterialVectorIconId() const override;
+  const gfx::VectorIcon* GetMaterialVectorIcon() const override;
 
  private:
   // For showing the translate bubble up.

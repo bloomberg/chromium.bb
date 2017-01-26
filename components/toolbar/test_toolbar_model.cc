@@ -4,14 +4,14 @@
 
 #include "components/toolbar/test_toolbar_model.h"
 
-#include "ui/gfx/vector_icons_public.h"
+#if defined(TOOLKIT_VIEWS)
+#include "components/toolbar/vector_icons.h"  // nogncheck
+#endif
 
 TestToolbarModel::TestToolbarModel()
     : security_level_(security_state::NONE),
 #if defined(TOOLKIT_VIEWS)
-      icon_(gfx::VectorIconId::LOCATION_BAR_HTTP),
-#else
-      icon_(gfx::VectorIconId::VECTOR_ICON_NONE),
+      icon_(&toolbar::kHttpIcon),
 #endif
       should_display_url_(true) {
 }
@@ -31,8 +31,8 @@ security_state::SecurityLevel TestToolbarModel::GetSecurityLevel(
   return security_level_;
 }
 
-gfx::VectorIconId TestToolbarModel::GetVectorIcon() const {
-  return icon_;
+const gfx::VectorIcon& TestToolbarModel::GetVectorIcon() const {
+  return *icon_;
 }
 
 base::string16 TestToolbarModel::GetSecureVerboseText() const {

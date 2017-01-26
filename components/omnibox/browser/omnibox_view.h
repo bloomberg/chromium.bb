@@ -89,8 +89,8 @@ class OmniboxView {
   // the field is empty.
   bool IsEditingOrEmpty() const;
 
-  // Like GetIcon(), but returns a vector icon identifier.
-  gfx::VectorIconId GetVectorIcon() const;
+  // Returns the vector icon to display as the location icon.
+  const gfx::VectorIcon& GetVectorIcon() const;
 
   // The user text is the text the user has manually keyed in.  When present,
   // this is shown in preference to the permanent text; hitting escape will

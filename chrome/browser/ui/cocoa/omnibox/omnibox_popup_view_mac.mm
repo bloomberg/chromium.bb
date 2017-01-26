@@ -20,6 +20,7 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/toolbar/vector_icons.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
@@ -32,7 +33,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -332,13 +332,13 @@ NSImage* OmniboxPopupViewMac::ImageForMatch(
   bool is_dark_mode = [matrix_ hasDarkTheme];
   const SkColor icon_color =
       is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xCC) : gfx::kChromeIconGrey;
-  const gfx::VectorIconId vector_icon_id =
+  const gfx::VectorIcon& vector_icon =
       model_->IsStarredMatch(match)
-          ? gfx::VectorIconId::LOCATION_BAR_STAR
+          ? toolbar::kStarIcon
           : AutocompleteMatch::TypeToVectorIcon(match.type);
   const int kIconSize = 16;
   return NSImageFromImageSkia(
-      gfx::CreateVectorIcon(vector_icon_id, kIconSize, icon_color));
+      gfx::CreateVectorIcon(vector_icon, kIconSize, icon_color));
 }
 
 void OmniboxPopupViewMac::OpenURLForRow(size_t row,

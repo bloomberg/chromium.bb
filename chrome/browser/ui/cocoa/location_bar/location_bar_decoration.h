@@ -10,10 +10,13 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/vector_icons_public.h"
 
 @class DecorationMouseTrackingDelegate;
 @class CrTrackingArea;
+
+namespace gfx {
+struct VectorIcon;
+}
 
 // Base class for decorations at the left and right of the location
 // bar.  For instance, the location icon.
@@ -157,10 +160,10 @@ class LocationBarDecoration {
   // override.
   virtual SkColor GetMaterialIconColor(bool location_bar_is_dark) const;
 
-  // Gets the id of the decoration's Material Design vector icon. Subclasses
-  // should override to return the correct id. Not an abstract method because
-  // some decorations are assigned their icon (vs. creating it themselves).
-  virtual gfx::VectorIconId GetMaterialVectorIconId() const;
+  // Gets the decoration's Material Design vector icon. Subclasses should
+  // override to return the correct icon. Not an abstract method because some
+  // decorations are assigned their icon (vs. creating it themselves).
+  virtual const gfx::VectorIcon* GetMaterialVectorIcon() const;
 
   // Gets the color used for the divider. Only used in Material design.
   NSColor* GetDividerColor(bool location_bar_is_dark) const;

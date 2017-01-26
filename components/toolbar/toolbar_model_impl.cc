@@ -19,7 +19,11 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/gfx/vector_icon_types.h"
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "components/toolbar/vector_icons.h"  // nogncheck
+#endif
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate,
                                    size_t max_url_display_chars)
@@ -67,30 +71,34 @@ security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
              : delegate_->GetSecurityLevel();
 }
 
-gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
+const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   const auto icon_override = delegate_->GetVectorIconOverride();
-  if (icon_override != gfx::VectorIconId::VECTOR_ICON_NONE)
-    return icon_override;
+  if (icon_override)
+    return *icon_override;
 
   switch (GetSecurityLevel(false)) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
-      return gfx::VectorIconId::LOCATION_BAR_HTTP;
+      return toolbar::kHttpIcon;
     case security_state::EV_SECURE:
     case security_state::SECURE:
-      return gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID;
+      return toolbar::kHttpsValidIcon;
     case security_state::SECURITY_WARNING:
       // Surface Dubious as Neutral.
-      return gfx::VectorIconId::LOCATION_BAR_HTTP;
+      return toolbar::kHttpIcon;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return gfx::VectorIconId::BUSINESS;
+      return toolbar::kBusinessIcon;
     case security_state::DANGEROUS:
-      return gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID;
+      return toolbar::kHttpsInvalidIcon;
   }
-#endif
   NOTREACHED();
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
+  return toolbar::kHttpIcon;
+#else
+  NOTREACHED();
+  static const gfx::VectorIcon dummy = {};
+  return dummy;
+#endif
 }
 
 base::string16 ToolbarModelImpl::GetEVCertName() const {

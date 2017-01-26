@@ -4,6 +4,52 @@
 
 import("//build/config/ui.gni")
 
+action("aggregate_vector_icons") {
+  visibility = [ ":*" ]
+
+  script = "//ui/gfx/vector_icons/aggregate_vector_icons.py"
+
+  icons = [
+    # TODO(estade): this is the same as ui/gfx/vector_icons/business.icon. Use
+    # that one instead once it's been updated from VectorIconId to VectorIcon.
+    "vector_icons/business.icon",
+    "vector_icons/http.1x.icon",
+    "vector_icons/http.icon",
+    "vector_icons/https_invalid.1x.icon",
+    "vector_icons/https_invalid.icon",
+    "vector_icons/https_valid.1x.icon",
+    "vector_icons/https_valid.icon",
+    "vector_icons/https_valid_in_chip.1x.icon",
+    "vector_icons/https_valid_in_chip.icon",
+    "vector_icons/product.1x.icon",
+    "vector_icons/product.icon",
+    "vector_icons/star_active.icon",
+    "vector_icons/star.icon",
+  ]
+
+  output_cc = "$target_gen_dir/vector_icons.cc"
+  output_h = "$target_gen_dir/vector_icons.h"
+
+  inputs = icons
+  inputs += [
+    "vector_icons/vector_icons.cc.template",
+    "vector_icons/vector_icons.h.template",
+  ]
+  outputs = [
+    output_cc,
+    output_h,
+  ]
+
+  response_file_contents = rebase_path(icons, root_build_dir)
+
+  args = [
+    "--working_directory=" + rebase_path("./vector_icons"),
+    "--file_list={{response_file_name}}",
+    "--output_cc=" + rebase_path(output_cc, root_build_dir),
+    "--output_h=" + rebase_path(output_h, root_build_dir),
+  ]
+}
+
 static_library("toolbar") {
   sources = [
     "toolbar_model.h",
@@ -25,6 +71,11 @@ static_library("toolbar") {
     "//ui/gfx",
     "//url",
   ]
+
+  if (!is_android && !is_ios) {
+    sources += get_target_outputs(":aggregate_vector_icons")
+    deps += [ ":aggregate_vector_icons" ]
+  }
 }
 
 static_library("test_support") {

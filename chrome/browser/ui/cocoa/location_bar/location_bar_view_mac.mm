@@ -56,9 +56,11 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/grit/components_scaled_resources.h"
 #import "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/toolbar/vector_icons.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/zoom/zoom_controller.h"
@@ -76,7 +78,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 using content::WebContents;
 
@@ -606,11 +607,10 @@ void LocationBarViewMac::UpdateWithoutTabRestore() {
 
 void LocationBarViewMac::UpdateLocationIcon() {
   SkColor vector_icon_color = GetLocationBarIconColor();
-  gfx::VectorIconId vector_icon_id =
-      ShouldShowEVBubble() ? gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID
-                           : omnibox_view_->GetVectorIcon();
+  const gfx::VectorIcon& vector_icon_id = ShouldShowEVBubble()
+                                              ? toolbar::kHttpsValidIcon
+                                              : omnibox_view_->GetVectorIcon();
 
-  DCHECK(vector_icon_id != gfx::VectorIconId::VECTOR_ICON_NONE);
   NSImage* image = NSImageFromImageSkiaWithColorSpace(
       gfx::CreateVectorIcon(vector_icon_id, kDefaultIconSize,
                             vector_icon_color),
@@ -714,8 +714,7 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
   SkColor icon_color =
       IsLocationBarDark() ? kMaterialDarkVectorIconColor : gfx::kGoogleBlue700;
   return NSImageFromImageSkiaWithColorSpace(
-      gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH, kDefaultIconSize,
-                            icon_color),
+      gfx::CreateVectorIcon(omnibox::kSearchIcon, kDefaultIconSize, icon_color),
       base::mac::GetSRGBColorSpace());
 }
 

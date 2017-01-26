@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #import "chrome/browser/ui/cocoa/device_chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
@@ -27,7 +28,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -118,10 +118,10 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
     NSImageView* image_view = [device_chooser_content_view_
         tableRowViewImage:static_cast<NSInteger>(row)];
     ASSERT_TRUE(image_view);
-    EXPECT_TRUE(gfx::test::AreImagesEqual(
-        gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::BLUETOOTH_CONNECTED,
-                                         expected_color)),
-        gfx::Image([[image_view image] copy])));
+    EXPECT_TRUE(
+        gfx::test::AreImagesEqual(gfx::Image(gfx::CreateVectorIcon(
+                                      kBluetoothConnectedIcon, expected_color)),
+                                  gfx::Image([[image_view image] copy])));
   }
 
   void ExpectRowTextIs(int row, NSString* expected_text) {

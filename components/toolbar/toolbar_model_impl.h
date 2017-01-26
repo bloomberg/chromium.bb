@@ -32,7 +32,7 @@ class ToolbarModelImpl : public ToolbarModel {
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
-  gfx::VectorIconId GetVectorIcon() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetSecureVerboseText() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;

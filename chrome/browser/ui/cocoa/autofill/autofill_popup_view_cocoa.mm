@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "components/toolbar/vector_icons.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/window_size_constants.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_mac.h"
 
@@ -291,15 +291,15 @@ using autofill::AutofillPopupLayoutModel;
   // pages, reuse the omnibox vector icons.
   if (icon == base::ASCIIToUTF16("httpWarning")) {
     return NSImageFromImageSkiaWithColorSpace(
-        gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTP,
-                              kHttpWarningIconWidth, gfx::kChromeIconGrey),
+        gfx::CreateVectorIcon(toolbar::kHttpIcon, kHttpWarningIconWidth,
+                              gfx::kChromeIconGrey),
         base::mac::GetSRGBColorSpace());
   }
 
   if (icon == base::ASCIIToUTF16("httpsInvalid")) {
     return NSImageFromImageSkiaWithColorSpace(
-        gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID,
-                              kHttpWarningIconWidth, gfx::kGoogleRed700),
+        gfx::CreateVectorIcon(toolbar::kHttpsInvalidIcon, kHttpWarningIconWidth,
+                              gfx::kGoogleRed700),
         base::mac::GetSRGBColorSpace());
   }
 

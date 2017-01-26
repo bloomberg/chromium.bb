@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/cocoa/spinner_view.h"
@@ -21,7 +22,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -147,8 +147,8 @@ base::scoped_nsobject<NSTextField> CreateLabel(NSString* text) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     NSImage* image = nullptr;
     if (isConnected) {
-      image = gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
-          gfx::VectorIconId::BLUETOOTH_CONNECTED, gfx::kChromeIconGrey));
+      image = gfx::NSImageFromImageSkia(
+          gfx::CreateVectorIcon(kBluetoothConnectedIcon, gfx::kChromeIconGrey));
     } else if (level != -1) {
       DCHECK_GE(level, 0);
       DCHECK_LT(level, base::checked_cast<NSInteger>(
@@ -857,7 +857,7 @@ void ChooserContentViewController::UpdateTableView() {
       if (chooserController_->IsConnected(rowIndex)) {
         [[self tableRowViewImage:rowIndex]
             setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
-                         gfx::VectorIconId::BLUETOOTH_CONNECTED,
+                         kBluetoothConnectedIcon,
                          isSelected ? SK_ColorWHITE : gfx::kChromeIconGrey))];
       } else {
         int signalStrengthLevel =

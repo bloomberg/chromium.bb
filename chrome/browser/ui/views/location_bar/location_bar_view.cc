@@ -248,24 +248,29 @@ void LocationBarView::Init() {
   }
 
   zoom_view_ = new ZoomView(delegate_);
+  zoom_view_->Init();
   AddChildView(zoom_view_);
 
   open_pdf_in_reader_view_ = new OpenPDFInReaderView();
   AddChildView(open_pdf_in_reader_view_);
 
   manage_passwords_icon_view_ = new ManagePasswordsIconViews(command_updater());
+  manage_passwords_icon_view_->Init();
   AddChildView(manage_passwords_icon_view_);
 
   save_credit_card_icon_view_ =
       new autofill::SaveCardIconView(command_updater(), browser_);
+  save_credit_card_icon_view_->Init();
   save_credit_card_icon_view_->SetVisible(false);
   AddChildView(save_credit_card_icon_view_);
 
   translate_icon_view_ = new TranslateIconView(command_updater());
+  translate_icon_view_->Init();
   translate_icon_view_->SetVisible(false);
   AddChildView(translate_icon_view_);
 
   star_view_ = new StarView(command_updater(), browser_);
+  star_view_->Init();
   star_view_->SetVisible(false);
   AddChildView(star_view_);
 

@@ -14,7 +14,7 @@
 class GURL;
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }
 
 namespace net {
@@ -54,7 +54,7 @@ class ToolbarModelDelegate {
   // gfx::VectorIconId::VECTOR_ICON_NONE if the icon should be selected by the
   // caller. This is useful for associating particular URLs with particular
   // schemes without importing knowledge of those schemes into this component.
-  virtual gfx::VectorIconId GetVectorIconOverride() const = 0;
+  virtual const gfx::VectorIcon* GetVectorIconOverride() const = 0;
 
  protected:
   virtual ~ToolbarModelDelegate() {}

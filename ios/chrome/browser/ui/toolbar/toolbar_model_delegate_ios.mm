@@ -107,6 +107,6 @@ bool ToolbarModelDelegateIOS::FailsMalwareCheck() const {
          security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
-gfx::VectorIconId ToolbarModelDelegateIOS::GetVectorIconOverride() const {
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
+const gfx::VectorIcon* ToolbarModelDelegateIOS::GetVectorIconOverride() const {
+  return nullptr;
 }

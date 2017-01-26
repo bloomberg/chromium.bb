@@ -8,6 +8,8 @@ action("aggregate_vector_icons") {
   script = "//ui/gfx/vector_icons/aggregate_vector_icons.py"
 
   icons = [
+    "autologin.icon",
+    "bluetooth_connected.icon",
     "browser_tools.icon",
     "browser_tools_error.icon",
     "browser_tools_update.icon",
@@ -15,6 +17,17 @@ action("aggregate_vector_icons") {
     "caret_down.icon",
     "caret_up.1x.icon",
     "caret_up.icon",
+    "crashed_tab.icon",
+    "credit_card.1x.icon",
+    "credit_card.icon",
+    "folder.1x.icon",
+    "folder.icon",
+    "folder_managed.1x.icon",
+    "folder_managed.icon",
+    "folder_supervised.1x.icon",
+    "folder_supervised.icon",
+    "incognito.1x.icon",
+    "incognito.icon",
     "laptop.icon",
     "navigate_back.1x.icon",
     "navigate_back.icon",
@@ -26,6 +39,8 @@ action("aggregate_vector_icons") {
     "navigate_reload.icon",
     "navigate_stop.1x.icon",
     "navigate_stop.icon",
+    "overflow_chevron.1x.icon",
+    "overflow_chevron.icon",
     "smartphone.icon",
     "tab.icon",
     "tab_audio.1x.icon",
@@ -42,6 +57,9 @@ action("aggregate_vector_icons") {
     "tab_usb_connected.1x.icon",
     "tab_usb_connected.icon",
     "tablet.icon",
+    "translate.icon",
+    "zoom_minus.icon",
+    "zoom_plus.icon",
   ]
 
   output_cc = "$target_gen_dir/vector_icons.cc"

@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -17,7 +16,7 @@
 class CommandUpdater;
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }
 
 namespace views {
@@ -27,6 +26,9 @@ class BubbleDialogDelegateView;
 // Represents an icon on the omnibox that shows a bubble when clicked.
 class BubbleIconView : public views::InkDropHostView,
                        public views::WidgetObserver {
+ public:
+  void Init();
+
  protected:
   enum ExecuteSource {
     EXECUTE_SOURCE_MOUSE,
@@ -89,7 +91,7 @@ class BubbleIconView : public views::InkDropHostView,
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
 
   // Gets the given vector icon in the correct color and size based on |active|.
-  virtual gfx::VectorIconId GetVectorIcon() const;
+  virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

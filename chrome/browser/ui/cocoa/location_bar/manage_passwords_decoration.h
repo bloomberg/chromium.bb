@@ -59,7 +59,7 @@ class ManagePasswordsDecoration : public ImageDecoration {
 
  protected:
   // Overridden from LocationBarDecoration:
-  gfx::VectorIconId GetMaterialVectorIconId() const override;
+  const gfx::VectorIcon* GetMaterialVectorIcon() const override;
 
  private:
   // Triggers a redraw after a state change.

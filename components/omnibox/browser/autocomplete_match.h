@@ -28,7 +28,7 @@ class Time;
 }  // namespace base
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }  // namespace gfx
 
 const char kACMatchPropertyInputText[] = "input text";
@@ -109,7 +109,7 @@ struct AutocompleteMatch {
   AutocompleteMatch& operator=(const AutocompleteMatch& match);
 
   // Gets the vector icon identifier for the icon to be shown for |type|.
-  static gfx::VectorIconId TypeToVectorIcon(Type type);
+  static const gfx::VectorIcon& TypeToVectorIcon(Type type);
 
   // Comparison function for determining when one match is better than another.
   static bool MoreRelevant(const AutocompleteMatch& elem1,

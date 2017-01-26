@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -86,7 +87,6 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -2097,7 +2097,7 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
 
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(gfx::VectorIconId::OVERFLOW_CHEVRON, 8,
+      gfx::CreateVectorIcon(kOverflowChevronIcon, 8,
                             theme_provider->GetColor(
                                 ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
 

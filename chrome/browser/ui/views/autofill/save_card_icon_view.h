@@ -28,7 +28,7 @@ class SaveCardIconView : public BubbleIconView, public TabStripModelObserver {
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
-  gfx::VectorIconId GetVectorIcon() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
 
   // TabStripModelObserver:
   void TabDeactivated(content::WebContents* contents) override;

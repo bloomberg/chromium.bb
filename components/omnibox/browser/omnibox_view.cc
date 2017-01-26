@@ -79,7 +79,7 @@ bool OmniboxView::IsEditingOrEmpty() const {
       (GetOmniboxTextLength() == 0);
 }
 
-gfx::VectorIconId OmniboxView::GetVectorIcon() const {
+const gfx::VectorIcon& OmniboxView::GetVectorIcon() const {
   if (!IsEditingOrEmpty())
     return controller_->GetToolbarModel()->GetVectorIcon();
 

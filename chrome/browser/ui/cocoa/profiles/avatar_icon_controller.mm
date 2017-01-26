@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,7 +21,6 @@
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/gfx/vector_icons_public.h"
 
 @interface AvatarIconController (Private)
 - (void)setButtonEnabled:(BOOL)flag;
@@ -77,7 +77,7 @@
                            forAttribute:NSAccessibilityDescriptionAttribute];
 
     NSImage* icon = NSImageFromImageSkia(
-        gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, 24, SK_ColorWHITE));
+        gfx::CreateVectorIcon(kIncognitoIcon, 24, SK_ColorWHITE));
     [button_ setImage:icon];
     [button_ setEnabled:NO];
 

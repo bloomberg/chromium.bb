@@ -17,18 +17,20 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
-BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
-    : image_(new views::ImageView()),
-      command_updater_(command_updater),
-      command_id_(command_id),
-      active_(false),
-      suppress_mouse_released_action_(false) {
+void BubbleIconView::Init() {
   AddChildView(image_);
   image_->set_interactive(false);
   image_->EnableCanvasFlippingForRTLUI(true);
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
+
+BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
+    : image_(new views::ImageView()),
+      command_updater_(command_updater),
+      command_id_(command_id),
+      active_(false),
+      suppress_mouse_released_action_(false) {}
 
 BubbleIconView::~BubbleIconView() {}
 
@@ -183,10 +185,6 @@ void BubbleIconView::ExecuteCommand(ExecuteSource source) {
   OnExecuting(source);
   if (command_updater_)
     command_updater_->ExecuteCommand(command_id_);
-}
-
-gfx::VectorIconId BubbleIconView::GetVectorIcon() const {
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
 void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

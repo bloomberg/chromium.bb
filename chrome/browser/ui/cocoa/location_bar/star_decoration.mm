@@ -11,6 +11,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/toolbar/vector_icons.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
@@ -67,7 +68,6 @@ SkColor StarDecoration::GetMaterialIconColor(bool location_bar_is_dark) const {
   return starred_ ? gfx::kGoogleBlue500 : gfx::kChromeIconGrey;
 }
 
-gfx::VectorIconId StarDecoration::GetMaterialVectorIconId() const {
-  return starred_ ? gfx::VectorIconId::LOCATION_BAR_STAR_ACTIVE
-                  : gfx::VectorIconId::LOCATION_BAR_STAR;
+const gfx::VectorIcon* StarDecoration::GetMaterialVectorIcon() const {
+  return starred_ ? &toolbar::kStarActiveIcon : &toolbar::kStarIcon;
 }

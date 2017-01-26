@@ -5,8 +5,8 @@
 // vector_icons.h.template is used to generate vector_icons.h. Edit the former
 // rather than the latter.
 
-#ifndef CHROME_APP_VECTOR_ICONS_VECTOR_ICONS_H_
-#define CHROME_APP_VECTOR_ICONS_VECTOR_ICONS_H_
+#ifndef COMPONENTS_TOOLBAR_VECTOR_ICONS_H_
+#define COMPONENTS_TOOLBAR_VECTOR_ICONS_H_
 
 namespace gfx {
 struct VectorIcon;
@@ -15,8 +15,12 @@ struct VectorIcon;
 #define VECTOR_ICON_TEMPLATE_H(icon_name) \
 extern const gfx::VectorIcon icon_name;
 
+namespace toolbar {
+
 TEMPLATE_PLACEHOLDER
+
+}
 
 #undef VECTOR_ICON_TEMPLATE_H
 
-#endif  // CHROME_APP_VECTOR_ICONS_VECTOR_ICONS_H_
+#endif  // COMPONENTS_TOOLBAR_VECTOR_ICONS_H_

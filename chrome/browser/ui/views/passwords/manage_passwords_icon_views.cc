@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
@@ -12,7 +13,6 @@
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/vector_icons_public.h"
 
 ManagePasswordsIconViews::ManagePasswordsIconViews(CommandUpdater* updater)
     : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE),
@@ -83,8 +83,8 @@ views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
   return ManagePasswordsBubbleView::manage_password_bubble();
 }
 
-gfx::VectorIconId ManagePasswordsIconViews::GetVectorIcon() const {
-  return gfx::VectorIconId::AUTOLOGIN;
+const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {
+  return kAutologinIcon;
 }
 
 void ManagePasswordsIconViews::AboutToRequestFocusFromTabTraversal(

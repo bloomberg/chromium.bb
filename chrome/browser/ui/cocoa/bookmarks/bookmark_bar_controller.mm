@@ -12,6 +12,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -57,6 +58,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -73,7 +75,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
@@ -288,14 +289,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_WHITE).CopyNSImage());
 
     const int kIconSize = 16;
-    defaultImage_.reset([NSImageFromImageSkia(
-        gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_HTTP,
-                              kIconSize,
-                              gfx::kChromeIconGrey)) retain]);
-    defaultImageIncognito_.reset([NSImageFromImageSkia(
-        gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_HTTP,
-                              kIconSize,
-                              SkColorSetA(SK_ColorWHITE, 0xCC))) retain]);
+    defaultImage_.reset([NSImageFromImageSkia(gfx::CreateVectorIcon(
+        omnibox::kHttpIcon, kIconSize, gfx::kChromeIconGrey)) retain]);
+    defaultImageIncognito_.reset([NSImageFromImageSkia(gfx::CreateVectorIcon(
+        omnibox::kHttpIcon, kIconSize, SkColorSetA(SK_ColorWHITE, 0xCC)))
+        retain]);
 
     innerContentAnimationsEnabled_ = YES;
     stateAnimationsEnabled_ = YES;
@@ -890,9 +888,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   SkColor vectorIconColor = forDarkMode ? SkColorSetA(SK_ColorWHITE, 0xCC)
                                         : gfx::kChromeIconGrey;
   return NSImageFromImageSkia(
-      gfx::CreateVectorIcon(gfx::VectorIconId::OVERFLOW_CHEVRON,
-                            kIconSize,
-                            vectorIconColor));
+      gfx::CreateVectorIcon(kOverflowChevronIcon, kIconSize, vectorIconColor));
 }
 
 #pragma mark Private Methods

@@ -15,9 +15,9 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
@@ -168,10 +168,10 @@ void OmniboxResult::UpdateIcon() {
   bool is_bookmarked =
       bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
 
-  gfx::VectorIconId icon_id = is_bookmarked ?
-      gfx::VectorIconId::OMNIBOX_STAR :
-      AutocompleteMatch::TypeToVectorIcon(match_.type);
-  SetIcon(gfx::CreateVectorIcon(icon_id, 16, app_list::kIconColor));
+  const gfx::VectorIcon& icon =
+      is_bookmarked ? omnibox::kStarIcon
+                    : AutocompleteMatch::TypeToVectorIcon(match_.type);
+  SetIcon(gfx::CreateVectorIcon(icon, 16, app_list::kIconColor));
 }
 
 void OmniboxResult::UpdateTitleAndDetails() {

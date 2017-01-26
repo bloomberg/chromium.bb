@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/grit/generated_resources.h"
@@ -41,6 +42,6 @@ NSString* TranslateDecoration::GetToolTip() {
   return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_TRANSLATE);
 }
 
-gfx::VectorIconId TranslateDecoration::GetMaterialVectorIconId() const {
-  return gfx::VectorIconId::TRANSLATE;
+const gfx::VectorIcon* TranslateDecoration::GetMaterialVectorIcon() const {
+  return &kTranslateIcon;
 }
