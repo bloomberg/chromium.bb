@@ -699,7 +699,7 @@ void InspectorCSSAgent::flushPendingProtocolNotifications() {
   HeapHashSet<Member<Document>> invalidatedDocuments;
   m_invalidatedDocuments.swap(invalidatedDocuments);
   for (Document* document : invalidatedDocuments)
-    updateActiveStyleSheets(document, ExistingFrontendRefresh);
+    updateActiveStyleSheets(document);
 }
 
 void InspectorCSSAgent::reset() {
@@ -745,7 +745,7 @@ void InspectorCSSAgent::wasEnabled() {
   m_domAgent->setDOMListener(this);
   HeapVector<Member<Document>> documents = m_domAgent->documents();
   for (Document* document : documents)
-    updateActiveStyleSheets(document, InitialFrontendLoad);
+    updateActiveStyleSheets(document);
 }
 
 Response InspectorCSSAgent::disable() {
@@ -778,20 +778,15 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document) {
   m_invalidatedDocuments.insert(document);
 }
 
-void InspectorCSSAgent::updateActiveStyleSheets(
-    Document* document,
-    StyleSheetsUpdateType styleSheetsUpdateType) {
+void InspectorCSSAgent::updateActiveStyleSheets(Document* document) {
   HeapVector<Member<CSSStyleSheet>> newSheetsVector;
   InspectorCSSAgent::collectAllDocumentStyleSheets(document, newSheetsVector);
-  setActiveStyleSheets(document, newSheetsVector, styleSheetsUpdateType);
+  setActiveStyleSheets(document, newSheetsVector);
 }
 
 void InspectorCSSAgent::setActiveStyleSheets(
     Document* document,
-    const HeapVector<Member<CSSStyleSheet>>& allSheetsVector,
-    StyleSheetsUpdateType styleSheetsUpdateType) {
-  bool isInitialFrontendLoad = styleSheetsUpdateType == InitialFrontendLoad;
-
+    const HeapVector<Member<CSSStyleSheet>>& allSheetsVector) {
   HeapHashSet<Member<CSSStyleSheet>>* documentCSSStyleSheets =
       m_documentToCSSStyleSheets.get(document);
   if (!documentCSSStyleSheets) {
@@ -804,8 +799,6 @@ void InspectorCSSAgent::setActiveStyleSheets(
   for (CSSStyleSheet* cssStyleSheet : allSheetsVector) {
     if (removedSheets.contains(cssStyleSheet)) {
       removedSheets.remove(cssStyleSheet);
-      if (isInitialFrontendLoad)
-        addedSheets.push_back(cssStyleSheet);
     } else {
       addedSheets.push_back(cssStyleSheet);
     }
@@ -819,21 +812,18 @@ void InspectorCSSAgent::setActiveStyleSheets(
     documentCSSStyleSheets->remove(cssStyleSheet);
     if (m_idToInspectorStyleSheet.contains(inspectorStyleSheet->id())) {
       String id = unbindStyleSheet(inspectorStyleSheet);
-      if (frontend() && !isInitialFrontendLoad)
+      if (frontend())
         frontend()->styleSheetRemoved(id);
     }
   }
 
   for (CSSStyleSheet* cssStyleSheet : addedSheets) {
-    bool isNew = isInitialFrontendLoad ||
-                 !m_cssStyleSheetToInspectorStyleSheet.contains(cssStyleSheet);
-    if (isNew) {
       InspectorStyleSheet* newStyleSheet = bindStyleSheet(cssStyleSheet);
       documentCSSStyleSheets->insert(cssStyleSheet);
-      if (frontend())
+      if (frontend()) {
         frontend()->styleSheetAdded(
             newStyleSheet->buildObjectForStyleSheetInfo());
-    }
+      }
   }
 
   if (documentCSSStyleSheets->isEmpty())
@@ -842,8 +832,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
 
 void InspectorCSSAgent::documentDetached(Document* document) {
   m_invalidatedDocuments.remove(document);
-  setActiveStyleSheets(document, HeapVector<Member<CSSStyleSheet>>(),
-                       ExistingFrontendRefresh);
+  setActiveStyleSheets(document, HeapVector<Member<CSSStyleSheet>>());
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element,
@@ -1508,7 +1497,7 @@ Response InspectorCSSAgent::createStyleSheet(
   if (!inspectorStyleSheet)
     return Response::Error("No target stylesheet found");
 
-  updateActiveStyleSheets(document, ExistingFrontendRefresh);
+  updateActiveStyleSheets(document);
 
   *outStyleSheetId = inspectorStyleSheet->id();
   return Response::OK();
