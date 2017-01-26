@@ -642,7 +642,7 @@ TEST_F(CRWWebControllerPageScrollStateTest,
 };
 
 // TODO(crbug/493427): Flaky on the bots.
-TEST_F(CRWWebControllerPageScrollStateTest, FLAKY_AtTop) {
+TEST_F(CRWWebControllerPageScrollStateTest, DISABLED_AtTop) {
   // This test fails on iPhone 6/6+; skip until it's fixed. crbug.com/453105
   if (IsIPhone6Or6Plus())
     return;
