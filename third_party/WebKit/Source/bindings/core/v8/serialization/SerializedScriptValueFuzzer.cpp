@@ -5,12 +5,12 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/Settings.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "wtf/StringHasher.h"
@@ -48,6 +48,8 @@ class WebMessagePortChannelImpl final : public WebMessagePortChannel {
 }  // namespace
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  const char kExposeGC[] = "--expose_gc";
+  v8::V8::SetFlagsFromString(kExposeGC, sizeof(kExposeGC));
   InitializeBlinkFuzzTest(argc, argv);
   RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(true);
   pageHolder = DummyPageHolder::create().release();
@@ -97,13 +99,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CHECK(!tryCatch.HasCaught())
       << "deserialize() should return null rather than throwing an exception.";
 
-  // Clean up. We have to periodically run pending tasks so that scheduled
-  // Oilpan GC occurs.
-  static int iterations = 0;
-  if (iterations++ == 2048) {
-    testing::runPendingTasks();
-    iterations = 0;
-  }
+  // Request a V8 GC. Oilpan will be invoked by the GC epilogue.
+  //
+  // Multiple GCs may be required to ensure everything is collected (due to
+  // a chain of persistent handles), so some objects may not be collected until
+  // a subsequent iteration. This is slow enough as is, so we compromise on one
+  // major GC, as opposed to the 5 used in V8GCController for unit tests.
+  V8PerIsolateData::mainThreadIsolate()->RequestGarbageCollectionForTesting(
+      v8::Isolate::kFullGarbageCollection);
 
   return 0;
 }
