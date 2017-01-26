@@ -151,6 +151,7 @@ class CC_EXPORT GpuImageDecodeCache
   size_t GetDrawImageSizeForTesting(const DrawImage& image);
   void SetImageDecodingFailedForTesting(const DrawImage& image);
   bool DiscardableIsLockedForTesting(const DrawImage& image);
+  bool IsInInUseCacheForTesting(const DrawImage& image) const;
 
  private:
   enum class DecodedDataMode { GPU, CPU };

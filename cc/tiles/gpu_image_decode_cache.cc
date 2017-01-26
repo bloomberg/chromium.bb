@@ -453,6 +453,10 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   if (new_data)
     persistent_cache_.Put(image_id, std::move(new_data));
 
+  // Ref the image before creating a task - this ref is owned by the caller, and
+  // it is their responsibility to release it by calling UnrefImage.
+  RefImage(draw_image);
+
   if (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK) {
     // Ref image and create a upload and decode tasks. We will release this ref
     // in UploadTaskCompleted.
@@ -466,9 +470,6 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     *task = GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
   }
 
-  // Ref the image again - this ref is owned by the caller, and it is their
-  // responsibility to release it by calling UnrefImage.
-  RefImage(draw_image);
   return true;
 }
 
@@ -1258,6 +1259,12 @@ bool GpuImageDecodeCache::DiscardableIsLockedForTesting(
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
   return image_data->decode.is_locked();
+}
+
+bool GpuImageDecodeCache::IsInInUseCacheForTesting(
+    const DrawImage& image) const {
+  auto found = in_use_cache_.find(GenerateInUseCacheKey(image));
+  return found != in_use_cache_.end();
 }
 
 void GpuImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {

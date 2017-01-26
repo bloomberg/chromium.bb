@@ -1365,5 +1365,31 @@ TEST(GpuImageDecodeCacheTest, MemoryStateSuspended) {
   cache.UnrefImage(draw_image);
 }
 
+TEST(GpuImageDecodeCacheTest, OutOfRasterDecodeTask) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  TestGpuImageDecodeCache cache(context_provider.get());
+
+  sk_sp<SkImage> image = CreateImage(1, 1);
+  bool is_decomposable = true;
+  SkMatrix matrix = CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       kLow_SkFilterQuality, matrix);
+
+  scoped_refptr<TileTask> task;
+  bool need_unref =
+      cache.GetOutOfRasterDecodeTaskForImageAndRef(draw_image, &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(cache.IsInInUseCacheForTesting(draw_image));
+
+  // Run the decode task.
+  TestTileTaskRunner::ProcessTask(task.get());
+
+  // The image should remain in the cache till we unref it.
+  EXPECT_TRUE(cache.IsInInUseCacheForTesting(draw_image));
+  cache.UnrefImage(draw_image);
+}
+
 }  // namespace
 }  // namespace cc
