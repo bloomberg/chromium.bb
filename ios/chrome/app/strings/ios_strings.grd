@@ -963,6 +963,12 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_TITLE" desc="Title of the view that allows the user to select the shipping address for satisfying a payment request [iOS only].">
         Shipping Address
       </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_MESSAGE" desc="Message instructing the user to select a shipping address for satisfying a payment request [iOS only].">
+        Select a shipping address to check shipping methods and requirements.
+      </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_CHECKING_LABEL" desc="Label showing that the new shipping address or the shipping option is being verified. [iOS only]">
+        Checking
+      </message>
       <message name="IDS_IOS_PAYMENT_REQUEST_SHIPPING_OPTION_SELECTION_TITLE" desc="Title of the view that allows the user to select the shipping option for satisfying a payment request [iOS only].">
         Shipping Method
       </message>

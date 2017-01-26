@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
+
 #include <vector>
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
+#import "ios/chrome/browser/payments/cells/payments_text_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 namespace {
 
 class ShippingOptionSelectionViewControllerTest
@@ -50,14 +52,43 @@ TEST_F(ShippingOptionSelectionViewControllerTest, TestModel) {
 
   ASSERT_EQ(1, NumberOfSections());
   // One item for each of shipping options.
-  EXPECT_EQ(shippingOptions.size(),
-            static_cast<unsigned int>(NumberOfItemsInSection(0)));
+  EXPECT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
 
-  // The first option should appear to be selected.
-  CollectionViewTextItem* item = GetCollectionViewItem(0, 0);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, item.accessoryType);
+  // The next two items should be of type CollectionViewTextItem. The first one
+  // should appear to be selected.
+  id item = GetCollectionViewItem(0, 0);
+  ASSERT_TRUE([item isMemberOfClass:[CollectionViewTextItem class]]);
+  CollectionViewTextItem* textItem = item;
+  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, textItem.accessoryType);
+
   item = GetCollectionViewItem(0, 1);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, item.accessoryType);
+  ASSERT_TRUE([item isMemberOfClass:[CollectionViewTextItem class]]);
+  textItem = item;
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, textItem.accessoryType);
+
+  // Test the error state.
+  [ShippingOptionSelectionController() setErrorMessage:@"Lorem ipsum"];
+  [ShippingOptionSelectionController() loadModel];
+
+  ASSERT_EQ(1, NumberOfSections());
+  // There should be 3 items now in total.
+  EXPECT_EQ(3U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+
+  // The first item should also be of type TextAndMessageItem.
+  item = GetCollectionViewItem(0, 0);
+  ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+
+  // Test the loading state.
+  [ShippingOptionSelectionController() setIsLoading:YES];
+  [ShippingOptionSelectionController() loadModel];
+
+  ASSERT_EQ(1, NumberOfSections());
+  // There should be only one item.
+  EXPECT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+
+  // The item should be of type StatusItem.
+  item = GetCollectionViewItem(0, 0);
+  ASSERT_TRUE([item isMemberOfClass:[StatusItem class]]);
 }
 
 }  // namespace

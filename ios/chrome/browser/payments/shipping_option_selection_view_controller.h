@@ -40,6 +40,12 @@
 // The shipping option selected by the user, if any.
 @property(nonatomic, assign) web::PaymentShippingOption* selectedShippingOption;
 
+// Whether or not the view is in a loading state.
+@property(nonatomic, assign) BOOL isLoading;
+
+// The error message to display, if any.
+@property(nonatomic, assign) NSString* errorMessage;
+
 // The delegate to be notified when the user selects a shipping option or
 // returns without selecting one.
 @property(nonatomic, weak) id<ShippingOptionSelectionViewControllerDelegate>

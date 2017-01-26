@@ -8,6 +8,8 @@ source_set("cells") {
     "page_info_item.mm",
     "payment_method_item.h",
     "payment_method_item.mm",
+    "payments_text_item.h",
+    "payments_text_item.mm",
     "shipping_address_item.h",
     "shipping_address_item.mm",
   ]
@@ -26,6 +28,7 @@ source_set("unit_tests") {
   sources = [
     "page_info_item_unittest.mm",
     "payment_method_item_unittest.mm",
+    "payments_text_item_unittest.mm",
     "shipping_address_item_unittest.mm",
   ]
 

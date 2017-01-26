@@ -44,6 +44,12 @@ class AutofillProfile;
 // The shipping address selected by the user, if any.
 @property(nonatomic, assign) autofill::AutofillProfile* selectedShippingAddress;
 
+// Whether or not the view is in a loading state.
+@property(nonatomic, assign) BOOL isLoading;
+
+// The error message to display, if any.
+@property(nonatomic, assign) NSString* errorMessage;
+
 // The delegate to be notified when the user selects a shipping address or
 // returns without selecting one.
 @property(nonatomic, weak) id<ShippingAddressSelectionViewControllerDelegate>

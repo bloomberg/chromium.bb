@@ -28,6 +28,8 @@ const CGFloat kHorizontalPadding = 16;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
 
+#pragma mark CollectionViewItem
+
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
@@ -35,8 +37,6 @@ const CGFloat kHorizontalPadding = 16;
   }
   return self;
 }
-
-#pragma mark CollectionViewItem
 
 - (void)configureCell:(PageInfoCell*)cell {
   [super configureCell:cell];

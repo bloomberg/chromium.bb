@@ -8,15 +8,16 @@
 
 #import "base/mac/foundation_util.h"
 #include "components/grit/components_scaled_resources.h"
+#import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/storage_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/account_control_item.h"
@@ -40,6 +41,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSwitchCell,
   SectionIdentifierNativeAppCell,
   SectionIdentifierAutofill,
+  SectionIdentifierPayments,
   SectionIdentifierAccountCell,
   SectionIdentifierAccountControlCell,
   SectionIdentifierFooters,
@@ -216,6 +218,11 @@ const CGFloat kHorizontalImageFixedSize = 40;
       toSectionWithIdentifier:SectionIdentifierAutofill];
   [model addItem:[self storageSwitchItem]
       toSectionWithIdentifier:SectionIdentifierAutofill];
+
+  // Autofill cells.
+  [model addSectionWithIdentifier:SectionIdentifierPayments];
+  [model addItem:[self paymentsItemWithWrappingTextandOptionalImage]
+      toSectionWithIdentifier:SectionIdentifierPayments];
 
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];
@@ -434,6 +441,15 @@ const CGFloat kHorizontalImageFixedSize = 40;
   item.detailText =
       @"This is a very long text that is intended to overflow to two lines.";
   item.on = NO;
+  return item;
+}
+
+- (CollectionViewItem*)paymentsItemWithWrappingTextandOptionalImage {
+  PaymentsTextItem* item = [[[PaymentsTextItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight] autorelease];
+  item.text = @"If you want to display a long text that wraps to the next line "
+              @"and may need to feature an image this is the cell to use.";
+  item.image = [UIImage imageNamed:@"app_icon_placeholder"];
   return item;
 }
 

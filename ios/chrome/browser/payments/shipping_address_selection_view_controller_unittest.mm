@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
+
 #include <vector>
 
 #include "base/mac/foundation_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/payments/cells/payments_text_item.h"
+#import "ios/chrome/browser/payments/cells/shipping_address_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,15 +52,50 @@ TEST_F(ShippingAddressSelectionViewControllerTest, TestModel) {
   [ShippingAddressSelectionController() loadModel];
 
   ASSERT_EQ(1, NumberOfSections());
-  // One item for each of shipping addresses plus 1 for the add button.
-  EXPECT_EQ(shippingAddresses.size() + 1,
-            static_cast<unsigned int>(NumberOfItemsInSection(0)));
+  // One item for each of shipping addresses plus 2 for the message and the add
+  // button.
+  EXPECT_EQ(4U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
 
-  // The first address should appear to be selected.
-  CollectionViewTextItem* item = GetCollectionViewItem(0, 0);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, item.accessoryType);
+  // The first item should be of type TextAndMessageItem.
+  id item = GetCollectionViewItem(0, 0);
+  ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+
+  // The next two items should be of type ShippingAddressItem. The first one
+  // should appear to be selected.
   item = GetCollectionViewItem(0, 1);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, item.accessoryType);
+  ASSERT_TRUE([item isMemberOfClass:[ShippingAddressItem class]]);
+  ShippingAddressItem* shippingAddressItem = item;
+  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark,
+            shippingAddressItem.accessoryType);
+
+  item = GetCollectionViewItem(0, 2);
+  ASSERT_TRUE([item isMemberOfClass:[ShippingAddressItem class]]);
+  shippingAddressItem = item;
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+            shippingAddressItem.accessoryType);
+
+  // The last item should also be of type TextAndMessageItem.
+  item = GetCollectionViewItem(0, 3);
+  ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+
+  // Test the error state.
+  [ShippingAddressSelectionController() setErrorMessage:@"Lorem ipsum"];
+  [ShippingAddressSelectionController() loadModel];
+  ASSERT_EQ(1, NumberOfSections());
+  // There should stil be 4 items in total.
+  EXPECT_EQ(4U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+
+  // Test the loading state.
+  [ShippingAddressSelectionController() setIsLoading:YES];
+  [ShippingAddressSelectionController() loadModel];
+
+  ASSERT_EQ(1, NumberOfSections());
+  // There should be only one item.
+  EXPECT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+
+  // The item should be of type StatusItem.
+  item = GetCollectionViewItem(0, 0);
+  ASSERT_TRUE([item isMemberOfClass:[StatusItem class]]);
 }
 
 }  // namespace

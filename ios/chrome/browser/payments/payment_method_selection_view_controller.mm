@@ -5,18 +5,24 @@
 #import "ios/chrome/browser/payments/payment_method_selection_view_controller.h"
 
 #import "base/ios/weak_nsobject.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -101,9 +107,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     int methodTypeIconID =
         autofill::data_util::GetPaymentRequestData(paymentMethod->type())
             .icon_resource_id;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    paymentMethodItem.methodTypeIcon =
-        rb.GetNativeImageNamed(methodTypeIconID).ToUIImage();
+    paymentMethodItem.methodTypeIcon = NativeImage(methodTypeIconID);
 
     if (paymentMethod == _selectedPaymentMethod)
       paymentMethodItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -111,10 +115,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:SectionIdentifierPayment];
   }
 
-  CollectionViewTextItem* addPaymentMethod = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeAddMethod] autorelease];
+  PaymentsTextItem* addPaymentMethod =
+      [[[PaymentsTextItem alloc] initWithType:ItemTypeAddMethod] autorelease];
   addPaymentMethod.text =
       l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_ADD_METHOD_BUTTON);
+  addPaymentMethod.image = NativeImage(IDR_IOS_PAYMENTS_ADD);
   addPaymentMethod.accessibilityTraits |= UIAccessibilityTraitButton;
   [model addItem:addPaymentMethod
       toSectionWithIdentifier:SectionIdentifierPayment];
@@ -153,11 +158,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CGFloat)collectionView:(UICollectionView*)collectionView
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  if (type == ItemTypeAddMethod)
-    return MDCCellDefaultOneLineHeight;
-  else
-    return MDCCellDefaultTwoLineHeight;
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  switch (item.type) {
+    case ItemTypePaymentMethod:
+      return MDCCellDefaultTwoLineHeight;
+    case ItemTypeAddMethod:
+      return [MDCCollectionViewCell
+          cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
+                             forItem:item];
+    default:
+      NOTREACHED();
+      return MDCCellDefaultOneLineHeight;
+  }
 }
 
 @end

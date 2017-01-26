@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
@@ -294,9 +295,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         autofill::data_util::GetPaymentRequestData(
             _selectedPaymentMethod->type())
             .icon_resource_id;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    paymentMethod.methodTypeIcon =
-        rb.GetNativeImageNamed(selectedMethodCardTypeIconID).ToUIImage();
+    paymentMethod.methodTypeIcon = NativeImage(selectedMethodCardTypeIconID);
 
     paymentMethod.accessoryType =
         MDCCollectionViewCellAccessoryDisclosureIndicator;

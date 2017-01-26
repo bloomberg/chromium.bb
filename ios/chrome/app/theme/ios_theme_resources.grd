@@ -66,6 +66,8 @@
       <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_BAD" file="omnibox/pageinfo_bad.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_GOOD" file="omnibox/pageinfo_good.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_INFO" file="omnibox/pageinfo_info.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAYMENTS_ADD" file="payments_add.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAYMENTS_WARNING" file="payments_warning.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_PROMO_INFO" file="promo_info.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_SETTINGS_INFO_24" file="settings_info_24.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_DARK_BACK" file="toolbar_dark_back.png" />
