@@ -755,11 +755,15 @@ void NodeController::AcceptIncomingMessages() {
     CHECK_LE(num_messages_accepted, kMaxAcceptedMessages);
   }
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.MessagesAcceptedPerEvent",
-                              static_cast<int32_t>(num_messages_accepted),
-                              1 /* min */,
-                              500 /* max */,
-                              50 /* bucket count */);
+  if (num_messages_accepted >= 4) {
+    // Note: We avoid logging this histogram for the vast majority of cases.
+    // See https://crbug.com/685763 for more context.
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.MessagesAcceptedPerEvent",
+                                static_cast<int32_t>(num_messages_accepted),
+                                1 /* min */,
+                                500 /* max */,
+                                50 /* bucket count */);
+  }
 
   AttemptShutdownIfRequested();
 }
