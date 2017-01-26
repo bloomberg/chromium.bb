@@ -29,8 +29,7 @@ class V8ArrayBuffer {
   CORE_EXPORT static TestArrayBuffer* toImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestArrayBuffer* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  template<typename VisitorDispatcher>
-  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->trace(scriptWrappable->toImpl<TestArrayBuffer>());
   }
   static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {

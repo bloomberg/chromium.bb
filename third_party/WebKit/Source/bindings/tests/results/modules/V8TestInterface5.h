@@ -37,8 +37,7 @@ class V8TestInterface5 {
   }
   MODULES_EXPORT static TestInterface5Implementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   MODULES_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  template<typename VisitorDispatcher>
-  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->trace(scriptWrappable->toImpl<TestInterface5Implementation>());
   }
   static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {

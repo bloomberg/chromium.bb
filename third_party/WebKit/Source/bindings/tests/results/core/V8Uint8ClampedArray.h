@@ -31,8 +31,7 @@ class V8Uint8ClampedArray {
   CORE_EXPORT static TestUint8ClampedArray* toImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestUint8ClampedArray* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  template<typename VisitorDispatcher>
-  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->trace(scriptWrappable->toImpl<TestUint8ClampedArray>());
   }
   static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
