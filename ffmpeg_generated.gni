@@ -521,11 +521,9 @@ if (is_linux && current_cpu == "arm64") {
 
 if ((is_android && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_linux && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_linux && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS")) {
   ffmpeg_c_sources += [
-    "libavcodec/aarch64/imdct15_init.c",
     "libavcodec/aarch64/mpegaudiodsp_init.c",
   ]
   ffmpeg_gas_sources += [
-    "libavcodec/aarch64/imdct15_neon.S",
     "libavcodec/aarch64/mpegaudiodsp_neon.S",
   ]
 }
