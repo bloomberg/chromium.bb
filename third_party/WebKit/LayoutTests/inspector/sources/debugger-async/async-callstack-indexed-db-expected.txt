@@ -15,6 +15,9 @@ Call stack:
     0) openDB (async-callstack-indexed-db.html:23)
     [setTimeout]
     0) testFunction (async-callstack-indexed-db.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onSuccessDeleteDatabase (async-callstack-indexed-db.html:104)
@@ -30,6 +33,13 @@ Call stack:
     [IndexedDB]
     0) populateDB (async-callstack-indexed-db.html:52)
     1) onSuccessOpenDB (async-callstack-indexed-db.html:45)
+    [IndexedDB]
+    0) openDB (async-callstack-indexed-db.html:23)
+    [setTimeout]
+    0) testFunction (async-callstack-indexed-db.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onSuccessDeleteItem (async-callstack-indexed-db.html:90)
@@ -44,6 +54,11 @@ Call stack:
     1) onSuccessOpenDB (async-callstack-indexed-db.html:45)
     [IndexedDB]
     0) openDB (async-callstack-indexed-db.html:23)
+    [setTimeout]
+    0) testFunction (async-callstack-indexed-db.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onSuccessOpenDB (async-callstack-indexed-db.html:43)

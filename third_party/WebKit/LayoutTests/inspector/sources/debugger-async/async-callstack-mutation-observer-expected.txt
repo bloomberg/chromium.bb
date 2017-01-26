@@ -53,6 +53,11 @@ Call stack:
     [attributes]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) timeout1 (async-callstack-mutation-observer.html:44)
+    [setTimeout]
+    0) testFunction (async-callstack-mutation-observer.html:35)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) timeoutFromMutation (async-callstack-mutation-observer.html:70)
@@ -79,5 +84,8 @@ Call stack:
     1) timeout1 (async-callstack-mutation-observer.html:44)
     [setTimeout]
     0) testFunction (async-callstack-mutation-observer.html:35)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

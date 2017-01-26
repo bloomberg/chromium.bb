@@ -23,7 +23,7 @@ function sendSyncXHR() { sendXHR(false); }
 function sendXHR(async)
 {
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() 
+    xhr.onreadystatechange = function()
     {
         if (xhr.readyState == 4) {
             xhr.onreadystatechange = null;
@@ -69,8 +69,7 @@ function sendXHR(async)
 var test = function()
 {
     var totalDebuggerStatements = 9;
-    var maxAsyncCallStackDepth = 4;
-    InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
+    InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements);
 }
 
 </script>

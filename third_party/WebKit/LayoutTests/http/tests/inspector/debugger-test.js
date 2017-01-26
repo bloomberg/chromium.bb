@@ -104,12 +104,14 @@ InspectorTest.runTestFunctionAndWaitUntilPausedPromise = function()
 
 InspectorTest.runAsyncCallStacksTest = function(totalDebuggerStatements, maxAsyncCallStackDepth)
 {
+    var defaultMaxAsyncCallStackDepth = 8;
+
     InspectorTest.setQuiet(true);
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth || defaultMaxAsyncCallStackDepth, step2);
     }
 
     function step2()
