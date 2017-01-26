@@ -36,19 +36,16 @@ namespace blink {
 class ComputedStyle;
 class LayoutBox;
 class LayoutScrollbarPart;
-class LocalFrame;
 class Node;
 
 class LayoutScrollbar final : public Scrollbar {
  public:
   static Scrollbar* createCustomScrollbar(ScrollableArea*,
                                           ScrollbarOrientation,
-                                          Node*,
-                                          LocalFrame* owningFrame = nullptr);
+                                          Node*);
   ~LayoutScrollbar() override;
 
   LayoutBox* owningLayoutObject() const;
-  LayoutBox* owningLayoutObjectWithinFrame() const;
 
   IntRect buttonRect(ScrollbarPart) const;
   IntRect trackRect(int startLength, int endLength) const;
@@ -70,7 +67,7 @@ class LayoutScrollbar final : public Scrollbar {
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  LayoutScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame*);
+  LayoutScrollbar(ScrollableArea*, ScrollbarOrientation, Node*);
 
  private:
   friend class Scrollbar;
@@ -97,8 +94,6 @@ class LayoutScrollbar final : public Scrollbar {
   // containing FrameView which this Node pointer can in no way keep alive.
   // See webkit bug 80610.
   Member<Node> m_owner;
-
-  Member<LocalFrame> m_owningFrame;
 
   HashMap<unsigned, LayoutScrollbarPart*> m_parts;
 };

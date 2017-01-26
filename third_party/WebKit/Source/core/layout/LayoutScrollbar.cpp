@@ -27,7 +27,6 @@
 
 #include "core/css/PseudoStyleRequest.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutScrollbarTheme.h"
@@ -42,24 +41,20 @@ namespace blink {
 Scrollbar* LayoutScrollbar::createCustomScrollbar(
     ScrollableArea* scrollableArea,
     ScrollbarOrientation orientation,
-    Node* ownerNode,
-    LocalFrame* owningFrame) {
-  return new LayoutScrollbar(scrollableArea, orientation, ownerNode,
-                             owningFrame);
+    Node* ownerNode) {
+  return new LayoutScrollbar(scrollableArea, orientation, ownerNode);
 }
 
 LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollableArea,
                                  ScrollbarOrientation orientation,
-                                 Node* ownerNode,
-                                 LocalFrame* owningFrame)
+                                 Node* ownerNode)
     : Scrollbar(scrollableArea,
                 orientation,
                 RegularScrollbar,
                 nullptr,
                 LayoutScrollbarTheme::layoutScrollbarTheme()),
-      m_owner(ownerNode),
-      m_owningFrame(owningFrame) {
-  ASSERT(ownerNode || owningFrame);
+      m_owner(ownerNode) {
+  DCHECK(ownerNode);
 
   // FIXME: We need to do this because LayoutScrollbar::styleChanged is called
   // as soon as the scrollbar is created.
@@ -95,23 +90,13 @@ LayoutScrollbar::~LayoutScrollbar() {
 
 DEFINE_TRACE(LayoutScrollbar) {
   visitor->trace(m_owner);
-  visitor->trace(m_owningFrame);
   Scrollbar::trace(visitor);
 }
 
 LayoutBox* LayoutScrollbar::owningLayoutObject() const {
-  if (m_owningFrame)
-    return toLayoutBox(
-        LayoutAPIShim::layoutObjectFrom(m_owningFrame->ownerLayoutItem()));
   return m_owner && m_owner->layoutObject()
              ? m_owner->layoutObject()->enclosingBox()
              : 0;
-}
-
-LayoutBox* LayoutScrollbar::owningLayoutObjectWithinFrame() const {
-  if (m_owningFrame)
-    return m_owningFrame->contentLayoutObject();
-  return owningLayoutObject();
 }
 
 void LayoutScrollbar::setParent(Widget* parent) {
@@ -164,18 +149,9 @@ PassRefPtr<ComputedStyle> LayoutScrollbar::getScrollbarPseudoStyle(
   if (!owningLayoutObject())
     return nullptr;
 
-  RefPtr<ComputedStyle> result = owningLayoutObject()->getUncachedPseudoStyle(
+  return owningLayoutObject()->getUncachedPseudoStyle(
       PseudoStyleRequest(pseudoId, this, partType),
       owningLayoutObject()->style());
-  // Scrollbars for root frames should always have background color
-  // unless explicitly specified as transparent. So we force it.
-  // This is because WebKit assumes scrollbar to be always painted and missing
-  // background causes visual artifact like non-paint invalidated dirty region.
-  if (result && m_owningFrame && m_owningFrame->view() &&
-      !m_owningFrame->view()->isTransparent() && !result->hasBackground())
-    result->setBackgroundColor(StyleColor(Color::white));
-
-  return result;
 }
 
 void LayoutScrollbar::updateScrollbarParts(bool destroy) {
@@ -208,7 +184,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy) {
     setFrameRect(
         IntRect(location(), IntSize(isHorizontal ? width() : newThickness,
                                     isHorizontal ? newThickness : height())));
-    if (LayoutBox* box = owningLayoutObjectWithinFrame()) {
+    if (LayoutBox* box = owningLayoutObject()) {
       if (box->isLayoutBlock())
         toLayoutBlock(box)->notifyScrollbarThicknessChanged();
       box->setChildNeedsLayout();

@@ -427,14 +427,11 @@ void FrameView::ScrollbarManager::setHasVerticalScrollbar(bool hasScrollbar) {
 Scrollbar* FrameView::ScrollbarManager::createScrollbar(
     ScrollbarOrientation orientation) {
   Element* customScrollbarElement = nullptr;
-  LocalFrame* customScrollbarFrame = nullptr;
-
   LayoutBox* box = m_scrollableArea->layoutBox();
-  if (box->document().view()->shouldUseCustomScrollbars(customScrollbarElement,
-                                                        customScrollbarFrame)) {
+  if (box->document().view()->shouldUseCustomScrollbars(
+          customScrollbarElement)) {
     return LayoutScrollbar::createCustomScrollbar(
-        m_scrollableArea.get(), orientation, customScrollbarElement,
-        customScrollbarFrame);
+        m_scrollableArea.get(), orientation, customScrollbarElement);
   }
 
   // Nobody set a custom style, so we just use a native scrollbar.
@@ -634,10 +631,8 @@ void FrameView::setCanHaveScrollbars(bool canHaveScrollbars) {
 }
 
 bool FrameView::shouldUseCustomScrollbars(
-    Element*& customScrollbarElement,
-    LocalFrame*& customScrollbarFrame) const {
+    Element*& customScrollbarElement) const {
   customScrollbarElement = nullptr;
-  customScrollbarFrame = nullptr;
 
   if (Settings* settings = m_frame->settings()) {
     if (!settings->getAllowCustomScrollbarInMainFrame() &&
@@ -4095,9 +4090,7 @@ bool FrameView::adjustScrollbarExistence(
 
 bool FrameView::needsScrollbarReconstruction() const {
   Element* customScrollbarElement = nullptr;
-  LocalFrame* customScrollbarFrame = nullptr;
-  bool shouldUseCustom =
-      shouldUseCustomScrollbars(customScrollbarElement, customScrollbarFrame);
+  bool shouldUseCustom = shouldUseCustomScrollbars(customScrollbarElement);
 
   bool hasAnyScrollbar = horizontalScrollbar() || verticalScrollbar();
   bool hasCustom =

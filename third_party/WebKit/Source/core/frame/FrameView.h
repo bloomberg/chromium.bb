@@ -973,11 +973,10 @@ class CORE_EXPORT FrameView final
   // visible.
   bool hasOverlayScrollbars() const;
 
-  // Returns true if the frame should use custom scrollbars. If true, one of
-  // either |customScrollbarElement| or |customScrollbarFrame| will be set to
-  // the element or frame which owns the scrollbar with the other set to null.
-  bool shouldUseCustomScrollbars(Element*& customScrollbarElement,
-                                 LocalFrame*& customScrollbarFrame) const;
+  // Returns true if the frame should use custom scrollbars. If true, sets
+  // customScrollbarElement to the element that supplies the scrollbar's style
+  // information.
+  bool shouldUseCustomScrollbars(Element*& customScrollbarElement) const;
 
   // Returns true if a scrollbar needs to go from native -> custom or vice
   // versa.
