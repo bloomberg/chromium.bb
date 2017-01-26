@@ -33,7 +33,7 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "base/memory/ptr_util.h"
-#include "ppapi/shared_impl/ppapi_constants.h"
+#include "ppapi/shared_impl/ppapi_constants.h"  // nogncheck
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
