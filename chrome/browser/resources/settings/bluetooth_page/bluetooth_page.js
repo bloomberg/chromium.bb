@@ -587,7 +587,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  dialogIsVisible_(dialogId, dialogToShow) {
+  dialogIsVisible_: function(dialogId, dialogToShow) {
     return dialogToShow == dialogId;
   },
 

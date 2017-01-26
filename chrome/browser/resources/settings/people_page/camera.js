@@ -141,8 +141,8 @@ Polymer({
    */
   stopVideoTracks_: function(stream) {
     var tracks = stream.getVideoTracks();
-    for (var t of tracks)
-      t.stop();
+    for (var i = 0; i < tracks.length; i++)
+      tracks[i].stop();
   },
 
   /**

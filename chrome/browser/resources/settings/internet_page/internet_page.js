@@ -236,7 +236,7 @@ Polymer({
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @return {boolean}
    */
-  allowAddConnection_(globalPolicy) {
+  allowAddConnection_: function(globalPolicy) {
     return !globalPolicy.AllowOnlyPolicyNetworksToConnect;
   },
 

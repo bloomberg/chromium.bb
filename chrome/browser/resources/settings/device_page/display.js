@@ -118,7 +118,7 @@ Polymer({
    * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @private
    */
-  displayInfoFetched_(displays) {
+  displayInfoFetched_: function(displays) {
     if (!displays.length)
       return;
     settings.display.systemDisplayApi.getDisplayLayout(
@@ -130,7 +130,7 @@ Polymer({
    * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
    * @private
    */
-  displayLayoutFetched_(displays, layouts) {
+  displayLayoutFetched_: function(displays, layouts) {
     this.layouts = layouts;
     this.displays = displays;
     this.updateDisplayInfo_();

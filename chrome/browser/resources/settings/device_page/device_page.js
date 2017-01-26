@@ -219,7 +219,7 @@ Polymer({
    * @return {string} Description of the power source.
    * @private
    */
-  computePowerSourceName_(powerSources, lowPowerCharger) {
+  computePowerSourceName_: function (powerSources, lowPowerCharger) {
     if (lowPowerCharger)
       return this.i18n('powerSourceLowPowerCharger');
     if (powerSources.length)
