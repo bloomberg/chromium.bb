@@ -21,7 +21,7 @@ namespace blink {
 class ExceptionState;
 
 class CORE_EXPORT Float32ImageData final
-    : public GarbageCollectedFinalized<Float32ImageData>,
+    : public GarbageCollected<Float32ImageData>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -59,8 +59,8 @@ class CORE_EXPORT Float32ImageData final
     return ImageData::getImageDataColorSpaceName(m_colorSpace);
   }
   ImageDataColorSpace imageDataColorSpace() { return m_colorSpace; }
-  const DOMFloat32Array* data() const { return m_data.get(); }
-  DOMFloat32Array* data() { return m_data.get(); }
+  const DOMFloat32Array* data() const { return m_data; }
+  DOMFloat32Array* data() { return m_data; }
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
 

@@ -23,7 +23,7 @@ class PerformanceObserverInit;
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
 class CORE_EXPORT PerformanceObserver final
-    : public GarbageCollectedFinalized<PerformanceObserver>,
+    : public GarbageCollected<PerformanceObserver>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   friend class PerformanceBase;
