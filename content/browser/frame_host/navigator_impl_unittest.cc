@@ -306,12 +306,17 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   FrameTreeNode* subframe_node = subframe_rfh->frame_tree_node();
   RequestNavigation(subframe_node, kUrl2);
   NavigationRequest* subframe_request = subframe_node->navigation_request();
+
+  // We should be waiting for the BeforeUnload event to execute in the subframe.
+  ASSERT_TRUE(subframe_request);
+  EXPECT_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
+            subframe_request->state());
+  EXPECT_TRUE(subframe_rfh->is_waiting_for_beforeunload_ack());
+
+  // Simulate the BeforeUnload ACK. The navigation should start.
+  subframe_rfh->SendBeforeUnloadACK(true);
   TestNavigationURLLoader* subframe_loader =
       GetLoaderForNavigationRequest(subframe_request);
-
-  // Subframe navigations should start right away as they don't have to request
-  // beforeUnload to run at the renderer.
-  ASSERT_TRUE(subframe_request);
   ASSERT_TRUE(subframe_loader);
   EXPECT_EQ(NavigationRequest::STARTED, subframe_request->state());
   EXPECT_EQ(kUrl2, subframe_request->common_params().url);

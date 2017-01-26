@@ -1421,7 +1421,6 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   TRACE_EVENT_ASYNC_END1("navigation", "RenderFrameHostImpl BeforeUnload", this,
                          "FrameTreeNode id",
                          frame_tree_node_->frame_tree_node_id());
-  DCHECK(!GetParent());
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnDidCommitProvisionalLoad, in which case we
   // can ignore this message.
@@ -2537,8 +2536,7 @@ void RenderFrameHostImpl::SimulateBeforeUnloadAck() {
 }
 
 bool RenderFrameHostImpl::ShouldDispatchBeforeUnload() {
-  // TODO(creis): Support beforeunload on subframes.
-  return !GetParent() && IsRenderFrameLive();
+  return IsRenderFrameLive();
 }
 
 void RenderFrameHostImpl::UpdateOpener() {

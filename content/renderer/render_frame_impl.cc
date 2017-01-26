@@ -1659,17 +1659,18 @@ void RenderFrameImpl::SetPendingNavigationParams(
 void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnBeforeUnload",
                "id", routing_id_);
-  // TODO(creis): Right now, this is only called on the main frame.  Make the
-  // browser process send dispatchBeforeUnloadEvent to every frame that needs
-  // it.
-  CHECK(!frame_->parent());
-
   // Save the routing_id, as the RenderFrameImpl can be deleted in
   // dispatchBeforeUnloadEvent. See https://crbug.com/666714 for details.
   int routing_id = routing_id_;
 
   base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
+
+  // TODO(clamy): Ensure BeforeUnload is dispatched to all subframes, even when
+  // --site-per-process is enabled. |dispatchBeforeUnloadEvent| will only
+  // execute the BeforeUnload event in this frame and local child frames. It
+  // should also be dispatched to out-of-process child frames.
   bool proceed = frame_->dispatchBeforeUnloadEvent(is_reload);
+
   base::TimeTicks before_unload_end_time = base::TimeTicks::Now();
   RenderThread::Get()->Send(new FrameHostMsg_BeforeUnload_ACK(
       routing_id, proceed, before_unload_start_time, before_unload_end_time));

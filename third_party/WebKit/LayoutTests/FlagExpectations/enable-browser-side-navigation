@@ -12,9 +12,6 @@ crbug.com/575210 external/wpt/html/browsers/browsing-the-web/history-traversal/p
 crbug.com/575210 external/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
 crbug.com/575210 external/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
 
-# https://crbug.com/683891: Execute BeforeUnload on subframes during browser-initiated navigations
-crbug.com/683891 external/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html [ Failure ]
-
 # https://crbug.com/551000: PlzNavigate: DevTools support
 crbug.com/551000 http/tests/inspector/extensions-ignore-cache.html [ Failure ]
 crbug.com/551000 http/tests/inspector/extensions-network-redirect.html [ Timeout ]
