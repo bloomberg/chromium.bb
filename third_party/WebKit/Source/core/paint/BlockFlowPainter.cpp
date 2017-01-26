@@ -53,6 +53,10 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo,
       continue;
 
     const LayoutBox* floatingLayoutObject = floatingObject->layoutObject();
+    // TODO(wangxianzhu): Should this be a DCHECK?
+    if (floatingLayoutObject->hasSelfPaintingLayer())
+      continue;
+
     // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make
     // this much cleaner.
     LayoutPoint childPoint = m_layoutBlockFlow.flipFloatForWritingModeForChild(

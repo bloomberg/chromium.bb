@@ -3998,7 +3998,9 @@ bool LayoutBlockFlow::hitTestFloats(HitTestResult& result,
   for (FloatingObjectSetIterator it = floatingObjectSet.end(); it != begin;) {
     --it;
     const FloatingObject& floatingObject = *it->get();
-    if (floatingObject.shouldPaint()) {
+    if (floatingObject.shouldPaint() &&
+        // TODO(wangxianzhu): Should this be a DCHECK?
+        !floatingObject.layoutObject()->hasSelfPaintingLayer()) {
       LayoutUnit xOffset = xPositionForFloatIncludingMargin(floatingObject) -
                            floatingObject.layoutObject()->location().x();
       LayoutUnit yOffset = yPositionForFloatIncludingMargin(floatingObject) -
@@ -4051,7 +4053,7 @@ LayoutUnit LayoutBlockFlow::logicalRightFloatOffsetForLine(
   return fixedOffset;
 }
 
-void LayoutBlockFlow::setAncestorShouldPaintFloatingObject(
+void LayoutBlockFlow::updateAncestorShouldPaintFloatingObject(
     const LayoutBox& floatBox) {
   ASSERT(floatBox.isFloating());
   bool floatBoxIsSelfPaintingLayer =

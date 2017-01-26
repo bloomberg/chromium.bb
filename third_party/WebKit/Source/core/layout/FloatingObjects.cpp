@@ -29,8 +29,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <memory>
@@ -78,6 +76,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject,
       m_originatingLine(nullptr),
       m_frameRect(frameRect),
       m_type(type),
+      m_shouldPaint(shouldPaint),
       m_isDescendant(isDescendant),
       m_isPlaced(true),
       m_isLowestNonOverhangingFloatInChild(isLowestNonOverhangingFloatInChild)
@@ -86,22 +85,6 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject,
       m_isInPlacedTree(false)
 #endif
 {
-  m_shouldPaint = shouldPaint || shouldPaintForCompositedLayoutPart();
-}
-
-bool FloatingObject::shouldPaintForCompositedLayoutPart() {
-  // HACK: only non-self-painting floats should paint. However, due to the
-  // fundamental compositing bug, some LayoutPart objects may become
-  // self-painting due to being composited. This leads to a chicken-egg issue
-  // because layout may not depend on compositing.
-  // If this is the case, set shouldPaint() to true even if the layer is
-  // technically self-painting. This lets the float which contains a LayoutPart
-  // start painting as soon as it stops being composited, without having to
-  // re-layout the float.
-  // This hack can be removed after SPv2.
-  return m_layoutObject->layer() &&
-         m_layoutObject->layer()->isSelfPaintingOnlyBecauseIsCompositedPart() &&
-         !RuntimeEnabledFeatures::slimmingPaintV2Enabled();
 }
 
 std::unique_ptr<FloatingObject> FloatingObject::create(
@@ -111,16 +94,11 @@ std::unique_ptr<FloatingObject> FloatingObject::create(
 
   // If a layer exists, the float will paint itself. Otherwise someone else
   // will.
-  newObj->setShouldPaint(!layoutObject->hasSelfPaintingLayer() ||
-                         newObj->shouldPaintForCompositedLayoutPart());
+  newObj->setShouldPaint(!layoutObject->hasSelfPaintingLayer());
 
   newObj->setIsDescendant(true);
 
   return newObj;
-}
-
-bool FloatingObject::shouldPaint() const {
-  return m_shouldPaint && !m_layoutObject->hasSelfPaintingLayer();
 }
 
 std::unique_ptr<FloatingObject> FloatingObject::copyToNewContainer(
