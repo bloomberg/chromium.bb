@@ -206,6 +206,25 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
 }
 
+TEST_F(TooltipControllerTest, HideEmptyTooltip) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsMus())
+    return;
+
+  view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
+  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
+  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+
+  generator_->MoveMouseToCenterOf(GetWindow());
+  generator_->MoveMouseBy(1, 0);
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+
+  view_->set_tooltip_text(ASCIIToUTF16("    "));
+  generator_->MoveMouseBy(1, 0);
+  EXPECT_FALSE(helper_->IsTooltipVisible());
+}
+
 #if defined(OS_CHROMEOS)
 // crbug.com/664370.
 TEST_F(TooltipControllerTest, MaxWidth) {

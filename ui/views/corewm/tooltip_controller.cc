@@ -308,6 +308,7 @@ void TooltipController::UpdateIfRequired() {
                          &tooltip_text_whitespace_trimmed_);
     if (tooltip_text_whitespace_trimmed_.empty()) {
       tooltip_->Hide();
+      tooltip_defer_timer_.Stop();
     } else if (tooltip_show_delayed_) {
       // Initialize the one-shot timer to show the tooltip in a while.
       // If there is already a request queued then cancel it and post the new
