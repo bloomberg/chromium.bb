@@ -54,7 +54,13 @@ TEST(OAuthRequestSignerTest, Encode) {
             "%23a%40A%3EZtcQ%2Fyb.~%5EQ_%5DdaRT%3FffK%3E%40A%3AafWuZL");
 }
 
-TEST(OAuthRequestSignerTest, DecodeEncoded) {
+// http://crbug.com/685352
+#if defined(OS_WIN)
+#define MAYBE_DecodeEncoded DISABLED_DecodeEncoded
+#else
+#define MAYBE_DecodeEncoded DecodeEncoded
+#endif
+TEST(OAuthRequestSignerTest, MAYBE_DecodeEncoded) {
   srand(RANDOM_SEED);
   static const int kIterations = 500;
   static const int kLengthLimit = 500;
