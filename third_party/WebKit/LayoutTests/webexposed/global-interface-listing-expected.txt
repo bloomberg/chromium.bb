@@ -5015,6 +5015,8 @@ interface ReadableStream
     method cancel
     method constructor
     method getReader
+    method pipeThrough
+    method pipeTo
     method tee
 interface RelatedApplication
     attribute @@toStringTag

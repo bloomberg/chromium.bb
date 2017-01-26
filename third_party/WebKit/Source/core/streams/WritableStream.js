@@ -364,6 +364,26 @@
     }
   }
 
+  // Functions to expose internals for ReadableStream.pipeTo. These are not
+  // part of the standard.
+  function isWritableStreamErrored(stream) {
+    TEMP_ASSERT(
+        IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    return stream[_state] === ERRORED;
+  }
+
+  function isWritableStreamClosingOrClosed(stream) {
+    TEMP_ASSERT(
+        IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    return stream[_state] === CLOSING || stream[_state] === CLOSED;
+  }
+
+  function getWritableStreamStoredError(stream) {
+    TEMP_ASSERT(
+        IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    return stream[_storedError];
+  }
+
   class WritableStreamDefaultWriter {
     constructor(stream) {
       if (!IsWritableStream(stream)) {
@@ -504,6 +524,20 @@
     return stream[_pendingCloseRequest];
   }
 
+  function WritableStreamDefaultWriterCloseWithErrorPropagation(writer) {
+    const stream = writer[_ownerWritableStream];
+    TEMP_ASSERT(stream !== undefined, 'stream is not undefined.');
+    const state = stream[_state];
+    if (state === CLOSING || state === CLOSED) {
+      return Promise_resolve(undefined);
+    }
+    if (state === ERRORED) {
+      return Promise_reject(stream[_storedError]);
+    }
+    TEMP_ASSERT(state === WRITABLE, 'state is "writable".');
+    return WritableStreamDefaultWriterClose(writer);
+  }
+
   function WritableStreamDefaultWriterGetDesiredSize(writer) {
     const stream = writer[_ownerWritableStream];
     const state = stream[_state];
@@ -561,6 +595,22 @@
     WritableStreamDefaultControllerWrite(stream[_writableStreamController],
                                          chunk);
     return promise;
+  }
+
+  // Functions to expose internals for ReadableStream.pipeTo. These do not
+  // appear in the standard.
+  function getWritableStreamDefaultWriterClosedPromise(writer) {
+    TEMP_ASSERT(
+        IsWritableStreamDefaultWriter(writer),
+        'writer is a WritableStreamDefaultWriter.');
+    return writer[_closedPromise];
+  }
+
+  function getWritableStreamDefaultWriterReadyPromise(writer) {
+    TEMP_ASSERT(
+        IsWritableStreamDefaultWriter(writer),
+        'writer is a WritableStreamDefaultWriter.');
+    return writer[_readyPromise];
   }
 
   class WritableStreamDefaultController {
@@ -934,4 +984,25 @@
   });
 
   // TODO(ricea): Exports to Blink
+
+  // Exports for ReadableStream
+  binding.AcquireWritableStreamDefaultWriter =
+      AcquireWritableStreamDefaultWriter;
+  binding.IsWritableStream = IsWritableStream;
+  binding.isWritableStreamClosingOrClosed = isWritableStreamClosingOrClosed;
+  binding.isWritableStreamErrored = isWritableStreamErrored;
+  binding.IsWritableStreamLocked = IsWritableStreamLocked;
+  binding.WritableStreamAbort = WritableStreamAbort;
+  binding.WritableStreamDefaultWriterCloseWithErrorPropagation =
+      WritableStreamDefaultWriterCloseWithErrorPropagation;
+  binding.getWritableStreamDefaultWriterClosedPromise =
+      getWritableStreamDefaultWriterClosedPromise;
+  binding.WritableStreamDefaultWriterGetDesiredSize =
+      WritableStreamDefaultWriterGetDesiredSize;
+  binding.getWritableStreamDefaultWriterReadyPromise =
+      getWritableStreamDefaultWriterReadyPromise;
+  binding.WritableStreamDefaultWriterRelease =
+      WritableStreamDefaultWriterRelease;
+  binding.WritableStreamDefaultWriterWrite = WritableStreamDefaultWriterWrite;
+  binding.getWritableStreamStoredError = getWritableStreamStoredError;
 });

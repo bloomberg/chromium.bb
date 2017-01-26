@@ -242,6 +242,8 @@ CONSOLE MESSAGE: line 138:     getter locked
 CONSOLE MESSAGE: line 138:     method cancel
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method getReader
+CONSOLE MESSAGE: line 138:     method pipeThrough
+CONSOLE MESSAGE: line 138:     method pipeTo
 CONSOLE MESSAGE: line 138:     method tee
 CONSOLE MESSAGE: line 138: interface StylePropertyMap
 CONSOLE MESSAGE: line 138:     method append

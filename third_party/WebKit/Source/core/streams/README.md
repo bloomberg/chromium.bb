@@ -6,9 +6,11 @@ https://streams.spec.whatwg.org/. There is also a legacy streams implementation.
 - ByteLengthQueuingStrategy.js
 - CountQueuingStrategy.js
 - ReadableStream.js
+- ReadableStreamExperimentalPipeTo.js
 - ReadableStreamController.h
 - ReadableStreamOperations.{cpp,h}
 - UnderlyingSourceBase.{cpp,h,idl}
+- WritableStream.js
 
 These files implement ReadableStream using [V8 extras][1]. All new code should
 use this implementation.

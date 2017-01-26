@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Piping from a non-empty ReadableStream into a WritableStream that does not desire chunks rs.pipeTo is not a function
-FAIL Piping from a non-empty ReadableStream into a WritableStream that does not desire chunks, but then does rs.pipeTo is not a function
-FAIL Piping from an empty ReadableStream into a WritableStream that does not desire chunks, but then the readable stream becomes non-empty and the writable stream starts desiring chunks promise_test: Unhandled rejection with value: object "TypeError: rs.pipeTo is not a function"
-FAIL Piping to a WritableStream that does not consume the writes fast enough exerts backpressure on the ReadableStream promise_test: Unhandled rejection with value: object "TypeError: rs.pipeTo is not a function"
-Harness: the test ran to completion.
-

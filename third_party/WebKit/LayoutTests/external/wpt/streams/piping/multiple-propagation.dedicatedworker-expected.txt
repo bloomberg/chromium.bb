@@ -1,8 +1,9 @@
+CONSOLE ERROR: line 77: Uncaught (in promise) TypeError: The stream has been aborted
 This is a testharness.js-based test.
-FAIL Piping from an errored readable stream to an errored writable stream rs.pipeTo is not a function
-FAIL Piping from an errored readable stream to an errored writable stream; preventAbort = true rs.pipeTo is not a function
-FAIL Piping from an errored readable stream to a closed writable stream rs.pipeTo is not a function
-FAIL Piping from a closed readable stream to an errored writable stream rs.pipeTo is not a function
-FAIL Piping from a closed readable stream to a closed writable stream rs.pipeTo is not a function
+PASS Piping from an errored readable stream to an errored writable stream 
+PASS Piping from an errored readable stream to an errored writable stream; preventAbort = true 
+FAIL Piping from an errored readable stream to a closed writable stream assert_array_equals: lengths differ, expected 1 got 2
+PASS Piping from a closed readable stream to an errored writable stream 
+PASS Piping from a closed readable stream to a closed writable stream 
 Harness: the test ran to completion.
 

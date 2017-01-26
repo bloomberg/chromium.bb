@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Piping through a duck-typed pass-through transform stream should work sequentialReadableStream(...).pipeThrough is not a function
-FAIL Piping through a transform errored on the writable end does not cause an unhandled promise rejection sequentialReadableStream(...).pipeThrough is not a function
-FAIL pipeThrough generically calls pipeTo with the appropriate args Cannot read property 'call' of undefined
-FAIL pipeThrough can handle calling a pipeTo that returns a non-promise object Cannot read property 'call' of undefined
-FAIL pipeThrough can handle calling a pipeTo that returns a non-promise thenable object Cannot read property 'call' of undefined
-Harness: the test ran to completion.
-
