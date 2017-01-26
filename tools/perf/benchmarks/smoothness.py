@@ -451,6 +451,13 @@ class SmoothnessPathologicalMobileSites(_Smoothness):
   def Name(cls):
     return 'smoothness.pathological_mobile_sites'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # http://crbug.com/685342
+    if possible_browser.platform.GetDeviceTypeName() == 'Nexus 7':
+      return True
+    return False
+
 
 class SmoothnessToughTextureUploadCases(_Smoothness):
   page_set = page_sets.ToughTextureUploadCasesPageSet
