@@ -2,26 +2,35 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 </script>
-<iframe sandbox="allow-scripts"
-        src="data:text/html,<script>
-            try {
-              top.navigator;
-              console.log('FAIL');
-            } catch(e) {
-              console.log(e);
-            }
-            this.x = 7;
-            window.name='navigator';
-            console.log(top.navigator === this ? 'PASS' : 'FAIL');
-            console.log(top.navigator.x === 7 ? 'PASS' : 'FAIL');
-            </script>"></iframe>
-<iframe sandbox="allow-scripts"
-        src="data:text/html,<script>
-            console.log(top.navigator !== this ? 'PASS' : 'FAIL');
-            try {
-              top.navigator.x;
-              console.log('FAIL');
-            } catch(e) {
-              console.log(e);
-            }
-            </script>"></iframe>
+<iframe
+  sandbox="allow-scripts"
+  srcdoc="
+<script>
+  try {
+    top.navigator;
+    console.log('FAIL');
+  } catch (e) {
+    console.log(e.toString());
+  }
+  this.x = 7;
+  window.name = 'navigator';
+  try {
+    top.navigator;
+    console.log('FAIL');
+  } catch (e) {
+    console.log(e.toString());
+  }
+</script>"
+></iframe>
+<iframe
+  sandbox="allow-scripts"
+  srcdoc="
+<script>
+  try {
+    top.navigator;
+    console.log('FAIL');
+  } catch (e) {
+    console.log(e.toString());
+  }
+</script>"
+></iframe>

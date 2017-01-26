@@ -107,7 +107,10 @@ void HTMLIFrameElement::parseAttribute(
       document.removeExtraNamedItem(m_name);
       document.addExtraNamedItem(value);
     }
+    AtomicString oldName = m_name;
     m_name = value;
+    if (m_name != oldName)
+      frameOwnerPropertiesChanged();
   } else if (name == sandboxAttr) {
     m_sandbox->setValue(value);
     UseCounter::count(document(), UseCounter::SandboxViaIFrame);

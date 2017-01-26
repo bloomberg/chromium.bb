@@ -14,6 +14,8 @@ RemoteFrameOwner::RemoteFrameOwner(
     SandboxFlags flags,
     const WebFrameOwnerProperties& frameOwnerProperties)
     : m_sandboxFlags(flags),
+      m_browsingContextContainerName(
+          static_cast<String>(frameOwnerProperties.name)),
       m_scrolling(
           static_cast<ScrollbarMode>(frameOwnerProperties.scrollingMode)),
       m_marginWidth(frameOwnerProperties.marginWidth),

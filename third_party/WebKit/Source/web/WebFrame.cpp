@@ -152,6 +152,7 @@ void WebFrame::setFrameOwnerProperties(
         static_cast<ScrollbarMode>(properties.scrollingMode));
   }
 
+  owner->setBrowsingContextContainerName(properties.name);
   owner->setScrollingMode(properties.scrollingMode);
   owner->setMarginWidth(properties.marginWidth);
   owner->setMarginHeight(properties.marginHeight);

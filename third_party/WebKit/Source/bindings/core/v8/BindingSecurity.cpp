@@ -105,7 +105,7 @@ bool canAccessFrame(const LocalDOMWindow* accessingWindow,
 bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
                                           const DOMWindow* target,
                                           ExceptionState& exceptionState) {
-  ASSERT(target);
+  DCHECK(target);
   const Frame* frame = target->frame();
   if (!frame || !frame->securityContext())
     return false;
@@ -117,7 +117,7 @@ bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
 bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
                                           const DOMWindow* target,
                                           ErrorReportOption reportingOption) {
-  ASSERT(target);
+  DCHECK(target);
   const Frame* frame = target->frame();
   if (!frame || !frame->securityContext())
     return false;
@@ -129,7 +129,7 @@ bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
 bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
                                           const EventTarget* target,
                                           ExceptionState& exceptionState) {
-  ASSERT(target);
+  DCHECK(target);
   const DOMWindow* window = target->toDOMWindow();
   if (!window) {
     // We only need to check the access to Window objects which are
@@ -148,7 +148,7 @@ bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
 bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
                                           const Location* target,
                                           ExceptionState& exceptionState) {
-  ASSERT(target);
+  DCHECK(target);
   const Frame* frame = target->frame();
   if (!frame || !frame->securityContext())
     return false;
@@ -160,7 +160,7 @@ bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
 bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
                                           const Location* target,
                                           ErrorReportOption reportingOption) {
-  ASSERT(target);
+  DCHECK(target);
   const Frame* frame = target->frame();
   if (!frame || !frame->securityContext())
     return false;
@@ -221,6 +221,33 @@ bool BindingSecurity::shouldAllowAccessToDetachedWindow(
   return canAccessFrame(accessingWindow,
                         target->document()->getSecurityOrigin(), target,
                         exceptionState);
+}
+
+bool BindingSecurity::shouldAllowNamedAccessTo(const DOMWindow* accessingWindow,
+                                               const DOMWindow* targetWindow) {
+  const Frame* accessingFrame = accessingWindow->frame();
+  DCHECK(accessingFrame);
+  DCHECK(accessingFrame->securityContext());
+  const SecurityOrigin* accessingOrigin =
+      accessingFrame->securityContext()->getSecurityOrigin();
+
+  const Frame* targetFrame = targetWindow->frame();
+  DCHECK(targetFrame);
+  DCHECK(targetFrame->securityContext());
+  const SecurityOrigin* targetOrigin =
+      targetFrame->securityContext()->getSecurityOrigin();
+  SECURITY_CHECK(!(targetWindow && targetWindow->frame()) ||
+                 targetWindow == targetWindow->frame()->domWindow());
+
+  if (!accessingOrigin->canAccessCheckSuborigins(targetOrigin))
+    return false;
+
+  // Note that there is no need to call back
+  // FrameLoader::didAccessInitialDocument() because |targetWindow| must be
+  // a child window inside iframe or frame and it doesn't have a URL bar,
+  // so there is no need to worry about URL spoofing.
+
+  return true;
 }
 
 void BindingSecurity::failedAccessCheckFor(v8::Isolate* isolate,

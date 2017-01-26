@@ -82,6 +82,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   SandboxFlags getSandboxFlags() const final { return m_sandboxFlags; }
   bool canRenderFallbackContent() const override { return false; }
   void renderFallbackContent() override {}
+  AtomicString browsingContextContainerName() const override {
+    return getAttribute(HTMLNames::nameAttr);
+  }
   ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
   int marginWidth() const override { return -1; }
   int marginHeight() const override { return -1; }

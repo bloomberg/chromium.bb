@@ -46,6 +46,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -281,14 +282,24 @@ void V8Window::namedPropertyGetterCustom(
   if (!frame)
     return;
 
-  // Note that the spec doesn't allow any cross-origin named access to the
-  // window object. However, UAs have traditionally allowed named access to
-  // named child browsing contexts, even across origins. So first, search child
-  // frames for a frame with a matching name.
+  // Note that named access on WindowProxy is allowed in the cross-origin case.
+  // 7.4.5 [[GetOwnProperty]] (P), step 6.
+  // https://html.spec.whatwg.org/multipage/browsers.html#windowproxy-getownproperty
+  //
+  // 7.3.3 Named access on the Window object
+  // The document-tree child browsing context name property set
+  // https://html.spec.whatwg.org/multipage/browsers.html#document-tree-child-browsing-context-name-property-set
   Frame* child = frame->tree().scopedChild(name);
   if (child) {
-    v8SetReturnValueFast(info, child->domWindow(), window);
-    return;
+    // step 3. Remove each browsing context from childBrowsingContexts whose
+    // active document's origin is not same origin with activeDocument's origin
+    // and whose browsing context name does not match the name of its browsing
+    // context container's name content attribute value.
+    if (BindingSecurity::shouldAllowNamedAccessTo(window, child->domWindow()) ||
+        name == child->owner()->browsingContextContainerName()) {
+      v8SetReturnValueFast(info, child->domWindow(), window);
+      return;
+    }
   }
 
   // This is a cross-origin interceptor. Check that the caller has access to the

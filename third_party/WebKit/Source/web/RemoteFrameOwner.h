@@ -38,6 +38,10 @@ class RemoteFrameOwner final
   // TODO(dcheng): Implement.
   bool canRenderFallbackContent() const override { return false; }
   void renderFallbackContent() override {}
+
+  AtomicString browsingContextContainerName() const override {
+    return m_browsingContextContainerName;
+  }
   ScrollbarMode scrollingMode() const override { return m_scrolling; }
   int marginWidth() const override { return m_marginWidth; }
   int marginHeight() const override { return m_marginHeight; }
@@ -48,6 +52,9 @@ class RemoteFrameOwner final
     return m_delegatedPermissions;
   }
 
+  void setBrowsingContextContainerName(const WebString& name) {
+    m_browsingContextContainerName = name;
+  }
   void setScrollingMode(WebFrameOwnerProperties::ScrollingMode);
   void setMarginWidth(int marginWidth) { m_marginWidth = marginWidth; }
   void setMarginHeight(int marginHeight) { m_marginHeight = marginHeight; }
@@ -75,6 +82,7 @@ class RemoteFrameOwner final
 
   Member<Frame> m_frame;
   SandboxFlags m_sandboxFlags;
+  AtomicString m_browsingContextContainerName;
   ScrollbarMode m_scrolling;
   int m_marginWidth;
   int m_marginHeight;

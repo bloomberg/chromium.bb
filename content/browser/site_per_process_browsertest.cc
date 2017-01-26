@@ -3915,8 +3915,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
   EXPECT_EQ(root->child_at(0)->frame_name(), "updated-name");
 
   // The proxy in the parent process should also receive the updated name.
-  // Check that it can reference the child frame by its new name.
+  // Now iframe's name and the content window's name differ, so it shouldn't
+  // be possible to access to the content window with the updated name.
   bool success = false;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(shell(),
+                                  "window.domAutomationController.send("
+                                  "    frames['updated-name'] === undefined);",
+                                  &success));
+  EXPECT_TRUE(success);
+  // Change iframe's name to match the content window's name so that it can
+  // reference the child frame by its new name in case of cross origin.
+  EXPECT_TRUE(
+      ExecuteScript(root, "window['3-1-id'].name = 'updated-name';"));
+  success = false;
   EXPECT_TRUE(
       ExecuteScriptAndExtractBool(shell(),
                                   "window.domAutomationController.send("

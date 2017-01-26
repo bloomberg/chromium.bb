@@ -891,6 +891,7 @@ void FrameLoaderClientImpl::didChangeFrameOwnerProperties(
   m_webFrame->client()->didChangeFrameOwnerProperties(
       WebFrame::fromFrame(frameElement->contentFrame()),
       WebFrameOwnerProperties(
+          frameElement->browsingContextContainerName(),
           frameElement->scrollingMode(), frameElement->marginWidth(),
           frameElement->marginHeight(), frameElement->allowFullscreen(),
           frameElement->allowPaymentRequest(), frameElement->csp(),

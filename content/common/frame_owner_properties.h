@@ -30,6 +30,7 @@ struct CONTENT_EXPORT FrameOwnerProperties {
     return !(*this == other);
   }
 
+  std::string name;  // browsing context container's name
   blink::WebFrameOwnerProperties::ScrollingMode scrolling_mode;
   int margin_width;
   int margin_height;

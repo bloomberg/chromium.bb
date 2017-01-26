@@ -18,7 +18,8 @@ FrameOwnerProperties::FrameOwnerProperties(const FrameOwnerProperties& other) =
 
 FrameOwnerProperties::FrameOwnerProperties(
     const blink::WebFrameOwnerProperties& web_frame_owner_properties)
-    : scrolling_mode(web_frame_owner_properties.scrollingMode),
+    : name(web_frame_owner_properties.name.utf8()),
+      scrolling_mode(web_frame_owner_properties.scrollingMode),
       margin_width(web_frame_owner_properties.marginWidth),
       margin_height(web_frame_owner_properties.marginHeight),
       allow_fullscreen(web_frame_owner_properties.allowFullscreen),
@@ -34,6 +35,7 @@ blink::WebFrameOwnerProperties FrameOwnerProperties::ToWebFrameOwnerProperties()
     const {
   blink::WebFrameOwnerProperties result;
 
+  result.name = blink::WebString::fromUTF8(name);
   result.scrollingMode = scrolling_mode;
   result.marginWidth = margin_width;
   result.marginHeight = margin_height;
@@ -47,7 +49,8 @@ blink::WebFrameOwnerProperties FrameOwnerProperties::ToWebFrameOwnerProperties()
 }
 
 bool FrameOwnerProperties::operator==(const FrameOwnerProperties& other) const {
-  return scrolling_mode == other.scrolling_mode &&
+  return name == other.name &&
+         scrolling_mode == other.scrolling_mode &&
          margin_width == other.margin_width &&
          margin_height == other.margin_height &&
          allow_fullscreen == other.allow_fullscreen &&

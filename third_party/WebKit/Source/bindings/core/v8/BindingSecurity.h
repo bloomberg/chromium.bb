@@ -117,6 +117,21 @@ class CORE_EXPORT BindingSecurity {
       ExceptionState&);
 
   static void failedAccessCheckFor(v8::Isolate*, const Frame* target);
+
+ private:
+  // Returns true if |accessingWindow| is allowed named access to |targetWindow|
+  // because they're the same origin.  Note that named access should be allowed
+  // even if they're cross origin as long as the browsing context name matches
+  // the browsing context container's name.
+  //
+  // Unlike shouldAllowAccessTo, this function returns true even when
+  // |accessingWindow| or |targetWindow| is a RemoteDOMWindow, but remember that
+  // only limited operations are allowed on a RemoteDOMWindow.
+  //
+  // This function should be only used from V8Window::namedPropertyGetterCustom.
+  friend class V8Window;
+  static bool shouldAllowNamedAccessTo(const DOMWindow* accessingWindow,
+                                       const DOMWindow* targetWindow);
 };
 
 }  // namespace blink

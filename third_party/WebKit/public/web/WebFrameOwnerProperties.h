@@ -15,6 +15,7 @@ namespace blink {
 struct WebFrameOwnerProperties {
   enum class ScrollingMode { Auto, AlwaysOff, AlwaysOn, Last = AlwaysOn };
 
+  WebString name;  // browsing context container's name
   ScrollingMode scrollingMode;
   int marginWidth;
   int marginHeight;
@@ -32,6 +33,7 @@ struct WebFrameOwnerProperties {
 
 #if INSIDE_BLINK
   WebFrameOwnerProperties(
+      const WebString& name,
       ScrollbarMode scrollingMode,
       int marginWidth,
       int marginHeight,
@@ -39,7 +41,8 @@ struct WebFrameOwnerProperties {
       bool allowPaymentRequest,
       const WebString& requiredCsp,
       const WebVector<WebPermissionType>& delegatedPermissions)
-      : scrollingMode(static_cast<ScrollingMode>(scrollingMode)),
+      : name(name),
+        scrollingMode(static_cast<ScrollingMode>(scrollingMode)),
         marginWidth(marginWidth),
         marginHeight(marginHeight),
         allowFullscreen(allowFullscreen),

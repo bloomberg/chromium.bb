@@ -39,6 +39,10 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool canRenderFallbackContent() const = 0;
   virtual void renderFallbackContent() = 0;
 
+  // Returns the 'name' content attribute value of the browsing context
+  // container.
+  // https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-container
+  virtual AtomicString browsingContextContainerName() const = 0;
   virtual ScrollbarMode scrollingMode() const = 0;
   virtual int marginWidth() const = 0;
   virtual int marginHeight() const = 0;
@@ -69,6 +73,9 @@ class CORE_EXPORT DummyFrameOwner
   void dispatchLoad() override {}
   bool canRenderFallbackContent() const override { return false; }
   void renderFallbackContent() override {}
+  AtomicString browsingContextContainerName() const override {
+    return AtomicString();
+  }
   ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
   int marginWidth() const override { return -1; }
   int marginHeight() const override { return -1; }
