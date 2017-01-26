@@ -441,7 +441,6 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
                      weak_ptr_factory_.GetWeakPtr(), measuring_delay),
           measuring_delay);
     }
-    UpdateSignalStrength();
   }
 
   LoadTimingInfo load_timing_info;
@@ -834,7 +833,6 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
   throughput_analyzer_->OnConnectionTypeChanged();
   MaybeComputeEffectiveConnectionType();
-  UpdateSignalStrength();
 }
 
 void NetworkQualityEstimator::MaybeQueryExternalEstimateProvider() const {
@@ -1015,6 +1013,8 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
 
 void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  UpdateSignalStrength();
 
   const base::TimeTicks now = tick_clock_->NowTicks();
 
