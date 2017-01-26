@@ -326,7 +326,8 @@ void DataReductionProxyMetricsObserver::SendPingback(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint,
-      parse_blocked_on_script_load_duration, parse_stop);
+      parse_blocked_on_script_load_duration, parse_stop, network_bytes_,
+      original_network_bytes_);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 

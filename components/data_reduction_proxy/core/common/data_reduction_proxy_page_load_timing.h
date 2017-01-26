@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_PAGE_LOAD_TIMING_H
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_PAGE_LOAD_TIMING_H
 
+#include <stdint.h>
+
 #include "base/optional.h"
 #include "base/time/time.h"
 
@@ -22,7 +24,9 @@ struct DataReductionProxyPageLoadTiming {
           experimental_first_meaningful_paint,
       const base::Optional<base::TimeDelta>&
           parse_blocked_on_script_load_duration,
-      const base::Optional<base::TimeDelta>& parse_stop);
+      const base::Optional<base::TimeDelta>& parse_stop,
+      int64_t network_bytes,
+      int64_t original_network_bytes);
 
   DataReductionProxyPageLoadTiming(
       const DataReductionProxyPageLoadTiming& other);
@@ -48,6 +52,11 @@ struct DataReductionProxyPageLoadTiming {
   const base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
   // Time when parsing completed.
   const base::Optional<base::TimeDelta> parse_stop;
+  // The number of bytes served over the network, not including headers.
+  const int64_t network_bytes;
+  // The number of bytes that would have been served over the network if the
+  // user were not using data reduction proxy, not including headers.
+  const int64_t original_network_bytes;
 };
 
 }  // namespace data_reduction_proxy

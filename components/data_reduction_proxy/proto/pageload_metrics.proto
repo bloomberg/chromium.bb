@@ -55,10 +55,10 @@ message PageloadMetrics {
 
   // The sum of original-content-length values, over resources that were not
   // loaded from browser cache.
-  optional int32 original_page_size_bytes = 10;
+  optional int64 original_page_size_bytes = 10;
   // The sum of (compressed) content-length, over resources that were not loaded
   // from browser cache.
-  optional int32 compressed_page_size_bytes = 11;
+  optional int64 compressed_page_size_bytes = 11;
 
   // The effective connection type at the start of the navigation.
   optional EffectiveConnectionType effective_connection_type = 12;

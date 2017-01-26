@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 
+#include <stdint.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
@@ -88,6 +90,8 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   request->set_effective_connection_type(
       protobuf_parser::ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
           request_data.effective_connection_type()));
+  request->set_compressed_page_size_bytes(timing.network_bytes);
+  request->set_original_page_size_bytes(timing.original_network_bytes);
 }
 
 // Adds |current_time| as the metrics sent time to |request_data|, and returns

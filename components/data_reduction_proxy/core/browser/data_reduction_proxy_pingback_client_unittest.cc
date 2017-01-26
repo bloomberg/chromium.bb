@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 
@@ -37,6 +39,8 @@ static const char kHistogramAttempted[] =
     "DataReductionProxy.Pingback.Attempted";
 static const char kSessionKey[] = "fake-session";
 static const char kFakeURL[] = "http://www.google.com/";
+static const int64_t kBytes = 10000;
+static const int64_t kBytesOriginal = 1000000;
 
 }  // namespace
 
@@ -98,7 +102,9 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
             base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
                 100)) /* parse_blocked_on_script_load_duration */,
             base::Optional<base::TimeDelta>(
-                base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */) {}
+                base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
+            kBytes /* network_bytes */,
+            kBytesOriginal /* original_network_bytes */) {}
 
   TestDataReductionProxyPingbackClient* pingback_client() const {
     return pingback_client_.get();
@@ -181,6 +187,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
 
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
+  EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
+  EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
+
   EXPECT_EQ(
       PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
       pageload_metrics.effective_connection_type());
@@ -250,6 +259,8 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
 
     EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
+    EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
+    EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
     EXPECT_EQ(
         PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
         pageload_metrics.effective_connection_type());
