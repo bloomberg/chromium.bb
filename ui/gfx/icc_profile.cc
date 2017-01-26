@@ -9,6 +9,8 @@
 #include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/color_transform.h"
 
 namespace gfx {
@@ -43,17 +45,7 @@ ICCProfile& ICCProfile::operator=(const ICCProfile& other) = default;
 ICCProfile::~ICCProfile() = default;
 
 bool ICCProfile::operator==(const ICCProfile& other) const {
-  if (type_ != other.type_)
-    return false;
-  switch (type_) {
-    case Type::INVALID:
-      return true;
-    case Type::FROM_COLOR_SPACE:
-      return color_space_ == other.color_space_;
-    case Type::FROM_DATA:
-      return data_ == other.data_;
-  }
-  return false;
+  return data_ == data_;
 }
 
 bool ICCProfile::operator!=(const ICCProfile& other) const {
@@ -61,37 +53,37 @@ bool ICCProfile::operator!=(const ICCProfile& other) const {
 }
 
 // static
-ICCProfile ICCProfile::FromData(const char* data, size_t size) {
-  ICCProfile icc_profile;
-  if (IsValidProfileLength(size)) {
-    icc_profile.type_ = Type::FROM_DATA;
-    icc_profile.data_.insert(icc_profile.data_.begin(), data, data + size);
-  } else {
+ICCProfile ICCProfile::FromData(const void* data, size_t size) {
+  if (!IsValidProfileLength(size)) {
+    if (size != 0)
+      DLOG(ERROR) << "Invalid ICC profile length: " << size << ".";
     return ICCProfile();
   }
 
-  Cache& cache = g_cache.Get();
-  base::AutoLock lock(cache.lock);
-
-  // Linearly search the cached ICC profiles to find one with the same data.
-  // If it exists, re-use its id and touch it in the cache.
-  for (auto iter = cache.id_to_icc_profile_mru.begin();
-       iter != cache.id_to_icc_profile_mru.end(); ++iter) {
-    if (icc_profile.data_ == iter->second.data_) {
-      icc_profile = iter->second;
-      cache.id_to_icc_profile_mru.Get(icc_profile.id_);
-      return icc_profile;
+  uint64_t new_profile_id = 0;
+  const char* data_as_char = reinterpret_cast<const char*>(data);
+  {
+    // Linearly search the cached ICC profiles to find one with the same data.
+    // If it exists, re-use its id and touch it in the cache.
+    Cache& cache = g_cache.Get();
+    base::AutoLock lock(cache.lock);
+    for (auto iter = cache.id_to_icc_profile_mru.begin();
+         iter != cache.id_to_icc_profile_mru.end(); ++iter) {
+      const std::vector<char>& iter_data = iter->second.data_;
+      if (iter_data.size() != size || memcmp(data, iter_data.data(), size))
+        continue;
+      auto found = cache.id_to_icc_profile_mru.Get(iter->second.id_);
+      return found->second;
     }
+    new_profile_id = cache.next_unused_id++;
   }
 
   // Create a new cached id and add it to the cache.
-  icc_profile.id_ = cache.next_unused_id++;
-  icc_profile.color_space_ =
-      ColorSpace(ColorSpace::PrimaryID::CUSTOM, ColorSpace::TransferID::CUSTOM,
-                 ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  icc_profile.color_space_.icc_profile_id_ = icc_profile.id_;
-  icc_profile.color_space_.sk_color_space_ = SkColorSpace::MakeICC(data, size);
-  cache.id_to_icc_profile_mru.Put(icc_profile.id_, icc_profile);
+  ICCProfile icc_profile;
+  icc_profile.id_ = new_profile_id;
+  icc_profile.data_.insert(icc_profile.data_.begin(), data_as_char,
+                           data_as_char + size);
+  icc_profile.ComputeColorSpaceAndCache();
   return icc_profile;
 }
 
@@ -112,19 +104,32 @@ ICCProfile ICCProfile::FromColorSpace(const gfx::ColorSpace& color_space) {
   if (color_space.icc_profile_id_) {
     Cache& cache = g_cache.Get();
     base::AutoLock lock(cache.lock);
-
     auto found = cache.id_to_icc_profile_mru.Get(color_space.icc_profile_id_);
-    if (found != cache.id_to_icc_profile_mru.end()) {
+    if (found != cache.id_to_icc_profile_mru.end())
       return found->second;
-    }
   }
 
-  // TODO(ccameron): Support constructing ICC profiles from arbitrary ColorSpace
-  // objects.
-  ICCProfile icc_profile;
-  icc_profile.type_ = gfx::ICCProfile::Type::FROM_COLOR_SPACE;
-  icc_profile.color_space_ = color_space;
-  return icc_profile;
+  // Otherwise, construct an ICC profile based on the best approximated
+  // primaries and matrix.
+  SkMatrix44 to_XYZD50_matrix;
+  color_space.GetPrimaryMatrix(&to_XYZD50_matrix);
+  SkColorSpaceTransferFn fn;
+  if (!color_space.GetTransferFunction(&fn)) {
+    DLOG(ERROR) << "Failed to get ColorSpace transfer function for ICCProfile.";
+    return ICCProfile();
+  }
+
+  sk_sp<SkData> data = SkICC::WriteToICC(fn, to_XYZD50_matrix);
+  if (!data) {
+    DLOG(ERROR) << "Failed to create SkICC.";
+    return ICCProfile();
+  }
+
+  // gfx::ColorTransform assumes that this will return an empty profile for any
+  // color space that was not constructed from an ICC profile.
+  // TODO(ccameron): Fix this assumption.
+  // return FromData(data->data(), data->size());
+  return ICCProfile();
 }
 
 ICCProfile ICCProfile::FromSkColorSpace(sk_sp<SkColorSpace> color_space) {
@@ -148,6 +153,7 @@ ICCProfile ICCProfile::FromSkColorSpace(sk_sp<SkColorSpace> color_space) {
 
   // TODO(ccameron): Support constructing ICC profiles from arbitrary
   // SkColorSpace objects.
+  DLOG(ERROR) << "Failed to find ICC profile matching SkColorSpace.";
   return icc_profile;
 }
 
@@ -155,68 +161,85 @@ const std::vector<char>& ICCProfile::GetData() const {
   return data_;
 }
 
-ColorSpace ICCProfile::GetColorSpace() const {
-  if (type_ == Type::INVALID)
-    return gfx::ColorSpace();
-  if (type_ == Type::FROM_COLOR_SPACE)
-    return color_space_;
+const ColorSpace& ICCProfile::GetColorSpace() const {
+  // Move this ICC profile to the most recently used end of the cache,
+  // inserting if needed.
+  if (id_) {
+    Cache& cache = g_cache.Get();
+    base::AutoLock lock(cache.lock);
+    auto found = cache.id_to_icc_profile_mru.Get(id_);
+    if (found == cache.id_to_icc_profile_mru.end())
+      found = cache.id_to_icc_profile_mru.Put(id_, *this);
+  }
+  return color_space_;
+}
 
-  ColorSpace color_space = color_space_;
+void ICCProfile::ComputeColorSpaceAndCache() {
+  if (!id_)
+    return;
 
-  // Move this ICC profile to the most recently used end of the cache.
+  // If this already exists in the cache, just update its |color_space_|.
   {
     Cache& cache = g_cache.Get();
     base::AutoLock lock(cache.lock);
-
     auto found = cache.id_to_icc_profile_mru.Get(id_);
-    if (found == cache.id_to_icc_profile_mru.end())
-      cache.id_to_icc_profile_mru.Put(id_, *this);
+    if (found != cache.id_to_icc_profile_mru.end()) {
+      color_space_ = found->second.color_space_;
+      return;
+    }
   }
 
-  ColorSpace unity_colorspace(
-      ColorSpace::PrimaryID::CUSTOM, ColorSpace::TransferID::LINEAR,
+  // Compute the color space.
+  color_space_ = gfx::ColorSpace(
+      ColorSpace::PrimaryID::CUSTOM, ColorSpace::TransferID::CUSTOM,
       ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  unity_colorspace.custom_primary_matrix_[0] = 1.0f;
-  unity_colorspace.custom_primary_matrix_[1] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[2] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[3] = 0.0f;
+  color_space_.icc_profile_id_ = id_;
+  color_space_.sk_color_space_ =
+      SkColorSpace::MakeICC(data_.data(), data_.size());
 
-  unity_colorspace.custom_primary_matrix_[4] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[5] = 1.0f;
-  unity_colorspace.custom_primary_matrix_[6] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[7] = 0.0f;
+  sk_sp<SkICC> sk_icc = SkICC::Make(data_.data(), data_.size());
+  if (sk_icc) {
+    bool result;
+    SkMatrix44 to_XYZD50_matrix;
+    result = sk_icc->toXYZD50(&to_XYZD50_matrix);
+    if (result) {
+      for (int row = 0; row < 3; ++row) {
+        for (int col = 0; col < 3; ++col) {
+          color_space_.custom_primary_matrix_[3 * row + col] =
+              to_XYZD50_matrix.get(row, col);
+        }
+      }
+    } else {
+      // Just say that the primaries were the sRGB primaries if we can't
+      // extract them.
+      color_space_.primaries_ = ColorSpace::PrimaryID::BT709;
+      DLOG(ERROR) << "Unable to handle ICCProfile primaries.";
+    }
+    SkColorSpaceTransferFn fn;
+    result = sk_icc->isNumericalTransferFn(&fn);
+    if (result) {
+      color_space_.custom_transfer_params_[0] = fn.fA;
+      color_space_.custom_transfer_params_[1] = fn.fB;
+      color_space_.custom_transfer_params_[2] = fn.fC;
+      color_space_.custom_transfer_params_[3] = fn.fD;
+      color_space_.custom_transfer_params_[4] = fn.fE;
+      color_space_.custom_transfer_params_[5] = fn.fF;
+      color_space_.custom_transfer_params_[6] = fn.fG;
+    } else {
+      // Just say that the transfer function was sRGB if we cannot read it.
+      // TODO(ccameron): Use a least squares approximation of the transfer
+      // function when it is not numerical.
+      color_space_.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
+      DLOG(ERROR) << "Unable to handle ICCProfile transfer function.";
+    }
+  }
 
-  unity_colorspace.custom_primary_matrix_[8] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[9] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[10] = 1.0f;
-  unity_colorspace.custom_primary_matrix_[11] = 0.0f;
-
-  // This will look up and use the ICC profile.
-  std::unique_ptr<ColorTransform> transform(ColorTransform::NewColorTransform(
-      color_space, unity_colorspace, ColorTransform::Intent::INTENT_ABSOLUTE));
-
-  ColorTransform::TriStim tmp[4];
-  tmp[0].set_x(1.0f);
-  tmp[1].set_y(1.0f);
-  tmp[2].set_z(1.0f);
-  transform->transform(tmp, arraysize(tmp));
-
-  color_space.custom_primary_matrix_[0] = tmp[0].x() - tmp[3].x();
-  color_space.custom_primary_matrix_[1] = tmp[1].x() - tmp[3].x();
-  color_space.custom_primary_matrix_[2] = tmp[2].x() - tmp[3].x();
-  color_space.custom_primary_matrix_[3] = tmp[3].x();
-
-  color_space.custom_primary_matrix_[4] = tmp[0].y() - tmp[3].y();
-  color_space.custom_primary_matrix_[5] = tmp[1].y() - tmp[3].y();
-  color_space.custom_primary_matrix_[6] = tmp[2].y() - tmp[3].y();
-  color_space.custom_primary_matrix_[7] = tmp[3].y();
-
-  color_space.custom_primary_matrix_[8] = tmp[0].z() - tmp[3].z();
-  color_space.custom_primary_matrix_[9] = tmp[1].z() - tmp[3].z();
-  color_space.custom_primary_matrix_[10] = tmp[2].z() - tmp[3].z();
-  color_space.custom_primary_matrix_[11] = tmp[3].z();
-
-  return color_space;
+  // Add to the cache.
+  {
+    Cache& cache = g_cache.Get();
+    base::AutoLock lock(cache.lock);
+    cache.id_to_icc_profile_mru.Put(id_, *this);
+  }
 }
 
 // static

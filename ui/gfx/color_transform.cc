@@ -21,6 +21,14 @@ extern "C" {
 
 namespace gfx {
 
+float EvalSkTransferFn(const SkColorSpaceTransferFn& fn, float x) {
+  if (x < 0)
+    return 0;
+  if (x < fn.fD)
+    return fn.fC * x + fn.fF;
+  return powf(fn.fA * x + fn.fB, fn.fG) + fn.fE;
+}
+
 Transform Invert(const Transform& t) {
   Transform ret = t;
   if (!t.GetInverse(&ret)) {
@@ -29,179 +37,11 @@ Transform Invert(const Transform& t) {
   return ret;
 }
 
-GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id) {
-  SkColorSpacePrimaries primaries = {0};
-  switch (id) {
-    case ColorSpace::PrimaryID::CUSTOM:
-      NOTREACHED();
-
-    case ColorSpace::PrimaryID::RESERVED0:
-    case ColorSpace::PrimaryID::RESERVED:
-    case ColorSpace::PrimaryID::UNSPECIFIED:
-    case ColorSpace::PrimaryID::UNKNOWN:
-    case ColorSpace::PrimaryID::BT709:
-      // BT709 is our default case. Put it after the switch just
-      // in case we somehow get an id which is not listed in the switch.
-      // (We don't want to use "default", because we want the compiler
-      //  to tell us if we forgot some enum values.)
-      primaries.fRX = 0.640f;
-      primaries.fRY = 0.330f;
-      primaries.fGX = 0.300f;
-      primaries.fGY = 0.600f;
-      primaries.fBX = 0.150f;
-      primaries.fBY = 0.060f;
-      primaries.fWX = 0.3127f;
-      primaries.fWY = 0.3290f;
-      break;
-
-    case ColorSpace::PrimaryID::BT470M:
-      primaries.fRX = 0.67f;
-      primaries.fRY = 0.33f;
-      primaries.fGX = 0.21f;
-      primaries.fGY = 0.71f;
-      primaries.fBX = 0.14f;
-      primaries.fBY = 0.08f;
-      primaries.fWX = 0.31f;
-      primaries.fWY = 0.316f;
-      break;
-
-    case ColorSpace::PrimaryID::BT470BG:
-      primaries.fRX = 0.64f;
-      primaries.fRY = 0.33f;
-      primaries.fGX = 0.29f;
-      primaries.fGY = 0.60f;
-      primaries.fBX = 0.15f;
-      primaries.fBY = 0.06f;
-      primaries.fWX = 0.3127f;
-      primaries.fWY = 0.3290f;
-      break;
-
-    case ColorSpace::PrimaryID::SMPTE170M:
-    case ColorSpace::PrimaryID::SMPTE240M:
-      primaries.fRX = 0.630f;
-      primaries.fRY = 0.340f;
-      primaries.fGX = 0.310f;
-      primaries.fGY = 0.595f;
-      primaries.fBX = 0.155f;
-      primaries.fBY = 0.070f;
-      primaries.fWX = 0.3127f;
-      primaries.fWY = 0.3290f;
-      break;
-
-    case ColorSpace::PrimaryID::FILM:
-      primaries.fRX = 0.681f;
-      primaries.fRY = 0.319f;
-      primaries.fGX = 0.243f;
-      primaries.fGY = 0.692f;
-      primaries.fBX = 0.145f;
-      primaries.fBY = 0.049f;
-      primaries.fWX = 0.310f;
-      primaries.fWY = 0.136f;
-      break;
-
-    case ColorSpace::PrimaryID::BT2020:
-      primaries.fRX = 0.708f;
-      primaries.fRY = 0.292f;
-      primaries.fGX = 0.170f;
-      primaries.fGY = 0.797f;
-      primaries.fBX = 0.131f;
-      primaries.fBY = 0.046f;
-      primaries.fWX = 0.3127f;
-      primaries.fWY = 0.3290f;
-      break;
-
-    case ColorSpace::PrimaryID::SMPTEST428_1:
-      primaries.fRX = 1.0f;
-      primaries.fRY = 0.0f;
-      primaries.fGX = 0.0f;
-      primaries.fGY = 1.0f;
-      primaries.fBX = 0.0f;
-      primaries.fBY = 0.0f;
-      primaries.fWX = 1.0f / 3.0f;
-      primaries.fWY = 1.0f / 3.0f;
-      break;
-
-    case ColorSpace::PrimaryID::SMPTEST431_2:
-      primaries.fRX = 0.680f;
-      primaries.fRY = 0.320f;
-      primaries.fGX = 0.265f;
-      primaries.fGY = 0.690f;
-      primaries.fBX = 0.150f;
-      primaries.fBY = 0.060f;
-      primaries.fWX = 0.314f;
-      primaries.fWY = 0.351f;
-      break;
-
-    case ColorSpace::PrimaryID::SMPTEST432_1:
-      primaries.fRX = 0.680f;
-      primaries.fRY = 0.320f;
-      primaries.fGX = 0.265f;
-      primaries.fGY = 0.690f;
-      primaries.fBX = 0.150f;
-      primaries.fBY = 0.060f;
-      primaries.fWX = 0.3127f;
-      primaries.fWY = 0.3290f;
-      break;
-
-    case ColorSpace::PrimaryID::XYZ_D50:
-      primaries.fRX = 1.0f;
-      primaries.fRY = 0.0f;
-      primaries.fGX = 0.0f;
-      primaries.fGY = 1.0f;
-      primaries.fBX = 0.0f;
-      primaries.fBY = 0.0f;
-      primaries.fWX = 0.34567f;
-      primaries.fWY = 0.35850f;
-      break;
-  }
-
-  SkMatrix44 matrix;
-  primaries.toXYZD50(&matrix);
-  return Transform(matrix);
-}
-
-GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
+float FromLinear(ColorSpace::TransferID id, float v) {
   switch (id) {
     case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
       // Should already be handled.
-      NOTREACHED();
-    case ColorSpace::TransferID::CUSTOM:
-    // TODO(hubbe): Actually implement custom transfer functions.
-    case ColorSpace::TransferID::RESERVED0:
-    case ColorSpace::TransferID::RESERVED:
-    case ColorSpace::TransferID::UNSPECIFIED:
-    case ColorSpace::TransferID::UNKNOWN:
-    // All unknown values default to BT709
-
-    case ColorSpace::TransferID::BT709:
-    case ColorSpace::TransferID::SMPTE170M:
-    case ColorSpace::TransferID::BT2020_10:
-    case ColorSpace::TransferID::BT2020_12:
-      // BT709 is our "default" cause, so put the code after the switch
-      // to avoid "control reaches end of non-void function" errors.
       break;
-
-    case ColorSpace::TransferID::GAMMA22:
-      v = fmax(0.0f, v);
-      return powf(v, 1.0f / 2.2f);
-
-    case ColorSpace::TransferID::GAMMA28:
-      v = fmax(0.0f, v);
-      return powf(v, 1.0f / 2.8f);
-
-    case ColorSpace::TransferID::SMPTE240M: {
-      v = fmax(0.0f, v);
-      float a = 1.11157219592173128753f;
-      float b = 0.02282158552944503135f;
-      if (v <= b) {
-        return 4.0f * v;
-      } else {
-        return a * powf(v, 0.45f) - (a - 1.0f);
-      }
-    }
-
-    case ColorSpace::TransferID::LINEAR:
-      return v;
 
     case ColorSpace::TransferID::LOG:
       if (v < 0.01f)
@@ -238,16 +78,6 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
       }
     }
 
-    case ColorSpace::TransferID::IEC61966_2_1: {  // SRGB
-      v = fmax(0.0f, v);
-      float a = 1.055f;
-      float b = 0.0031308f;
-      if (v < b) {
-        return 12.92f * v;
-      } else {
-        return a * powf(v, 1.0f / 2.4f) - (a - 1.0f);
-      }
-    }
     case ColorSpace::TransferID::SMPTEST2084: {
       // Go from scRGB levels to 0-1.
       v *= 80.0f / 10000.0f;
@@ -259,10 +89,6 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
       float c3 = (2392.0f / 4096.0f) * 32.0f;
       return powf((c1 + c2 * powf(v, m1)) / (1.0f + c3 * powf(v, m1)), m2);
     }
-
-    case ColorSpace::TransferID::SMPTEST428_1:
-      v = fmax(0.0f, v);
-      return powf(48.0f * v + 52.37f, 1.0f / 2.6f);
 
     // Spec: http://www.arib.or.jp/english/html/overview/doc/2-STD-B67v1_0.pdf
     case ColorSpace::TransferID::ARIB_STD_B67: {
@@ -276,62 +102,16 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
         return a * log(v - b) + c;
     }
 
-    // Chrome-specific values below
-    case ColorSpace::TransferID::GAMMA24:
-      v = fmax(0.0f, v);
-      return powf(v, 1.0f / 2.4f);
+    default:
+      // Handled by SkColorSpaceTransferFn.
+      break;
   }
-
-  v = fmax(0.0f, v);
-  float a = 1.099296826809442f;
-  float b = 0.018053968510807f;
-  if (v <= b) {
-    return 4.5f * v;
-  } else {
-    return a * powf(v, 0.45f) - (a - 1.0f);
-  }
+  NOTREACHED();
+  return 0;
 }
 
-GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
+float ToLinear(ColorSpace::TransferID id, float v) {
   switch (id) {
-    case ColorSpace::TransferID::CUSTOM:
-    // TODO(hubbe): Actually implement custom transfer functions.
-    case ColorSpace::TransferID::RESERVED0:
-    case ColorSpace::TransferID::RESERVED:
-    case ColorSpace::TransferID::UNSPECIFIED:
-    case ColorSpace::TransferID::UNKNOWN:
-    // All unknown values default to BT709
-
-    case ColorSpace::TransferID::BT709:
-    case ColorSpace::TransferID::SMPTE170M:
-    case ColorSpace::TransferID::BT2020_10:
-    case ColorSpace::TransferID::BT2020_12:
-      // BT709 is our "default" cause, so put the code after the switch
-      // to avoid "control reaches end of non-void function" errors.
-      break;
-
-    case ColorSpace::TransferID::GAMMA22:
-      v = fmax(0.0f, v);
-      return powf(v, 2.2f);
-
-    case ColorSpace::TransferID::GAMMA28:
-      v = fmax(0.0f, v);
-      return powf(v, 2.8f);
-
-    case ColorSpace::TransferID::SMPTE240M: {
-      v = fmax(0.0f, v);
-      float a = 1.11157219592173128753f;
-      float b = 0.02282158552944503135f;
-      if (v <= FromLinear(ColorSpace::TransferID::SMPTE240M, b)) {
-        return v / 4.0f;
-      } else {
-        return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
-      }
-    }
-
-    case ColorSpace::TransferID::LINEAR:
-      return v;
-
     case ColorSpace::TransferID::LOG:
       if (v < 0.0f)
         return 0.0f;
@@ -367,17 +147,6 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
       }
     }
 
-    case ColorSpace::TransferID::IEC61966_2_1: {  // SRGB
-      v = fmax(0.0f, v);
-      float a = 1.055f;
-      float b = 0.0031308f;
-      if (v < FromLinear(ColorSpace::TransferID::IEC61966_2_1, b)) {
-        return v / 12.92f;
-      } else {
-        return powf((v + a - 1.0f) / a, 2.4f);
-      }
-    }
-
     case ColorSpace::TransferID::SMPTEST2084: {
       v = fmax(0.0f, v);
       float m1 = (2610.0f / 4096.0f) / 4.0f;
@@ -394,14 +163,6 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
       v *= 10000.0f / 80.0f;
       return v;
     }
-
-    case ColorSpace::TransferID::SMPTEST428_1:
-      return (powf(v, 2.6f) - 52.37f) / 48.0f;
-
-    // Chrome-specific values below
-    case ColorSpace::TransferID::GAMMA24:
-      v = fmax(0.0f, v);
-      return powf(v, 2.4f);
 
     case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
       v = fmax(0.0f, v);
@@ -421,16 +182,13 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
       }
       return v_;
     }
-  }
 
-  v = fmax(0.0f, v);
-  float a = 1.099296826809442f;
-  float b = 0.018053968510807f;
-  if (v < FromLinear(ColorSpace::TransferID::BT709, b)) {
-    return v / 4.5f;
-  } else {
-    return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
+    default:
+      // Handled by SkColorSpaceTransferFn.
+      break;
   }
+  NOTREACHED();
+  return 0;
 }
 
 GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
@@ -617,8 +375,10 @@ class ColorTransformMatrix : public ColorTransformInternal {
 
 class ColorTransformFromLinear : public ColorTransformInternal {
  public:
-  explicit ColorTransformFromLinear(ColorSpace::TransferID transfer)
-      : transfer_(transfer) {}
+  explicit ColorTransformFromLinear(ColorSpace::TransferID transfer,
+                                    const SkColorSpaceTransferFn& fn,
+                                    bool fn_valid)
+      : transfer_(transfer), fn_(fn), fn_valid_(fn_valid) {}
   bool Prepend(ColorTransformInternal* prev) override {
     return prev->Join(*this);
   }
@@ -626,22 +386,34 @@ class ColorTransformFromLinear : public ColorTransformInternal {
   bool IsNull() override { return transfer_ == ColorSpace::TransferID::LINEAR; }
 
   void transform(ColorTransform::TriStim* colors, size_t num) override {
-    for (size_t i = 0; i < num; i++) {
-      colors[i].set_x(FromLinear(transfer_, colors[i].x()));
-      colors[i].set_y(FromLinear(transfer_, colors[i].y()));
-      colors[i].set_z(FromLinear(transfer_, colors[i].z()));
+    if (fn_valid_) {
+      for (size_t i = 0; i < num; i++) {
+        colors[i].set_x(EvalSkTransferFn(fn_, colors[i].x()));
+        colors[i].set_y(EvalSkTransferFn(fn_, colors[i].y()));
+        colors[i].set_z(EvalSkTransferFn(fn_, colors[i].z()));
+      }
+    } else {
+      for (size_t i = 0; i < num; i++) {
+        colors[i].set_x(FromLinear(transfer_, colors[i].x()));
+        colors[i].set_y(FromLinear(transfer_, colors[i].y()));
+        colors[i].set_z(FromLinear(transfer_, colors[i].z()));
+      }
     }
   }
 
  private:
   friend class ColorTransformToLinear;
   ColorSpace::TransferID transfer_;
+  SkColorSpaceTransferFn fn_;
+  bool fn_valid_ = false;
 };
 
 class ColorTransformToLinear : public ColorTransformInternal {
  public:
-  explicit ColorTransformToLinear(ColorSpace::TransferID transfer)
-      : transfer_(transfer) {}
+  explicit ColorTransformToLinear(ColorSpace::TransferID transfer,
+                                  const SkColorSpaceTransferFn& fn,
+                                  bool fn_valid)
+      : transfer_(transfer), fn_(fn), fn_valid_(fn_valid) {}
 
   bool Prepend(ColorTransformInternal* prev) override {
     return prev->Join(*this);
@@ -677,7 +449,13 @@ class ColorTransformToLinear : public ColorTransformInternal {
   }
 
   void transform(ColorTransform::TriStim* colors, size_t num) override {
-    if (transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
+    if (fn_valid_) {
+      for (size_t i = 0; i < num; i++) {
+        colors[i].set_x(EvalSkTransferFn(fn_, colors[i].x()));
+        colors[i].set_y(EvalSkTransferFn(fn_, colors[i].y()));
+        colors[i].set_z(EvalSkTransferFn(fn_, colors[i].z()));
+      }
+    } else if (transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
       for (size_t i = 0; i < num; i++) {
         ColorTransform::TriStim ret(ToLinear(transfer_, colors[i].x()),
                                     ToLinear(transfer_, colors[i].y()),
@@ -703,6 +481,8 @@ class ColorTransformToLinear : public ColorTransformInternal {
 
  private:
   ColorSpace::TransferID transfer_;
+  SkColorSpaceTransferFn fn_;
+  bool fn_valid_ = false;
 };
 
 // BT2020 Constant Luminance is different than most other
@@ -858,17 +638,9 @@ class TransformBuilder {
 class ColorSpaceToColorSpaceTransform {
  public:
   static Transform GetPrimaryTransform(const ColorSpace& c) {
-    if (c.primaries_ == ColorSpace::PrimaryID::CUSTOM) {
-      return Transform(c.custom_primary_matrix_[0], c.custom_primary_matrix_[1],
-                       c.custom_primary_matrix_[2], c.custom_primary_matrix_[3],
-                       c.custom_primary_matrix_[4], c.custom_primary_matrix_[5],
-                       c.custom_primary_matrix_[6], c.custom_primary_matrix_[7],
-                       c.custom_primary_matrix_[8], c.custom_primary_matrix_[9],
-                       c.custom_primary_matrix_[10],
-                       c.custom_primary_matrix_[11], 0.0f, 0.0f, 0.0f, 1.0f);
-    } else {
-      return GetPrimaryMatrix(c.primaries_);
-    }
+    SkMatrix44 sk_matrix;
+    c.GetPrimaryMatrix(&sk_matrix);
+    return Transform(sk_matrix);
   }
 
   static void ColorSpaceToColorSpace(ColorSpace from,
@@ -911,11 +683,18 @@ class ColorSpaceToColorSpaceTransform {
 
       // TODO(hubbe): shrink gamuts here (never stretch gamuts)
     }
+
     builder->Append(base::MakeUnique<ColorTransformMatrix>(
         GetRangeAdjustMatrix(from.range_, from.matrix_)));
+
     builder->Append(base::MakeUnique<ColorTransformMatrix>(
         Invert(GetTransferMatrix(from.matrix_))));
-    builder->Append(base::MakeUnique<ColorTransformToLinear>(from.transfer_));
+
+    SkColorSpaceTransferFn to_linear_fn;
+    bool to_linear_fn_valid = from.GetTransferFunction(&to_linear_fn);
+    builder->Append(base::MakeUnique<ColorTransformToLinear>(
+        from.transfer_, to_linear_fn, to_linear_fn_valid));
+
     if (from.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
       // BT2020 CL is a special case.
       builder->Append(base::MakeUnique<ColorTransformFromBT2020CL>());
@@ -930,9 +709,14 @@ class ColorSpaceToColorSpaceTransform {
       builder->Append(base::MakeUnique<ColorTransformToBT2020CL>());
     }
 
-    builder->Append(base::MakeUnique<ColorTransformFromLinear>(to.transfer_));
+    SkColorSpaceTransferFn from_linear_fn;
+    bool from_linear_fn_valid = to.GetInverseTransferFunction(&from_linear_fn);
+    builder->Append(base::MakeUnique<ColorTransformFromLinear>(
+        to.transfer_, from_linear_fn, from_linear_fn_valid));
+
     builder->Append(
         base::MakeUnique<ColorTransformMatrix>(GetTransferMatrix(to.matrix_)));
+
     builder->Append(base::MakeUnique<ColorTransformMatrix>(
         Invert(GetRangeAdjustMatrix(to.range_, to.matrix_))));
   }
@@ -1026,6 +810,35 @@ std::unique_ptr<ColorTransform> ColorTransform::NewColorTransform(
   }
 
   return builder.GetTransform();
+}
+
+// static
+float ColorTransform::ToLinearForTesting(ColorSpace::TransferID transfer,
+                                         float v) {
+  ColorSpace space(ColorSpace::PrimaryID::BT709, transfer,
+                   ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+  SkColorSpaceTransferFn to_linear_fn;
+  bool to_linear_fn_valid = space.GetTransferFunction(&to_linear_fn);
+  ColorTransformToLinear to_linear_transform(transfer, to_linear_fn,
+                                             to_linear_fn_valid);
+  TriStim color(v, v, v);
+  to_linear_transform.transform(&color, 1);
+  return color.x();
+}
+
+// static
+float ColorTransform::FromLinearForTesting(ColorSpace::TransferID transfer,
+                                           float v) {
+  ColorSpace space(ColorSpace::PrimaryID::BT709, transfer,
+                   ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+  SkColorSpaceTransferFn from_linear_fn;
+  bool from_linear_fn_valid = space.GetInverseTransferFunction(&from_linear_fn);
+
+  ColorTransformFromLinear from_linear_transform(transfer, from_linear_fn,
+                                                 from_linear_fn_valid);
+  TriStim color(v, v, v);
+  from_linear_transform.transform(&color, 1);
+  return color.x();
 }
 
 }  // namespace gfx

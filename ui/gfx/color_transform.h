@@ -9,12 +9,11 @@
 #include <stdint.h>
 
 #include "build/build_config.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
-
-class ColorSpace;
 
 class GFX_EXPORT ColorTransform {
  public:
@@ -33,6 +32,9 @@ class GFX_EXPORT ColorTransform {
       const ColorSpace& from,
       const ColorSpace& to,
       Intent intent);
+
+  static float ToLinearForTesting(ColorSpace::TransferID id, float v);
+  static float FromLinearForTesting(ColorSpace::TransferID id, float v);
 };
 }  // namespace gfx
 

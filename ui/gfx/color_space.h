@@ -150,6 +150,8 @@ class GFX_EXPORT ColorSpace {
   static MatrixID MatrixIDFromInt(int matrix_id);
 
   static ColorSpace CreateSRGB();
+  static ColorSpace CreateCustom(const SkMatrix44& to_XYZD50,
+                                 const SkColorSpaceTransferFn& fn);
   // scRGB is like RGB, but linear and values outside of 0-1 are allowed.
   // scRGB is normally used with fp16 textures.
   static ColorSpace CreateSCRGBLinear();
@@ -170,14 +172,23 @@ class GFX_EXPORT ColorSpace {
   const sk_sp<SkColorSpace>& ToSkColorSpace() const { return sk_color_space_; }
   static ColorSpace FromSkColorSpace(const sk_sp<SkColorSpace>& sk_color_space);
 
+  void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
+  bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;
+  bool GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const;
+
  private:
   PrimaryID primaries_ = PrimaryID::UNSPECIFIED;
   TransferID transfer_ = TransferID::UNSPECIFIED;
   MatrixID matrix_ = MatrixID::UNSPECIFIED;
   RangeID range_ = RangeID::LIMITED;
 
-  // Only used if primaries_ == PrimaryID::CUSTOM
-  float custom_primary_matrix_[12];
+  // Only used if primaries_ is PrimaryID::CUSTOM.
+  float custom_primary_matrix_[9];
+
+  // Only used if transfer_ is TransferID::CUSTOM. This array consists of the A
+  // through G entries of the SkColorSpaceTransferFn structure in alphabetical
+  // order.
+  float custom_transfer_params_[7];
 
   // This is used to look up the ICCProfile from which this ColorSpace was
   // created, if possible.
