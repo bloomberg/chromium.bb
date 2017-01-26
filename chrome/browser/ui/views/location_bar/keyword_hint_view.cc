@@ -113,7 +113,8 @@ gfx::Size KeywordHintView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return gfx::Size(leading_label_->GetPreferredSize().width() +
                        tab_key_view_->GetPreferredSize().width() +
-                       trailing_label_->GetPreferredSize().width(),
+                       trailing_label_->GetPreferredSize().width() +
+                       LocationBarView::kIconInteriorPadding,
                    0);
 }
 

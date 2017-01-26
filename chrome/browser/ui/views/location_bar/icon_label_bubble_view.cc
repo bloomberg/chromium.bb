@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
+#include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
@@ -29,6 +31,8 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
   // Disable separate hit testing for |image_|.  This prevents views treating
   // |image_| as a separate mouse hover region from |this|.
   image_->set_interactive(false);
+  image_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(LocationBarView::kIconInteriorPadding)));
   AddChildView(image_);
 
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -93,39 +97,26 @@ bool IconLabelBubbleView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void IconLabelBubbleView::Layout() {
-  // Compute the image bounds. Leading and trailing padding are the same.
-  int image_x = LocationBarView::kHorizontalPadding;
-  int bubble_trailing_padding = image_x;
-
-  // If ShouldShowLabel() is true, then either we show a label in the
-  // steady state, or we're not yet in the last portion of the animation.  In
-  // these cases, we leave the leading and trailing padding alone.  If this is
-  // false, however, then we're only showing the image, and either the view
-  // width is the image width, or it's animating downwards and getting close to
-  // it.  In these cases, we want to shrink the trailing padding first, so the
-  // image slides all the way to the trailing edge before slowing or stopping;
-  // then we want to shrink the leading padding down to zero.
-  const int image_preferred_width = image_->GetPreferredSize().width();
-  if (!ShouldShowLabel()) {
-    image_x = std::min(image_x, width() - image_preferred_width);
-    bubble_trailing_padding = std::min(
-        bubble_trailing_padding, width() - image_preferred_width - image_x);
+  // We may not have horizontal room for both the image and the trailing
+  // padding. When the view is expanding (or showing-label steady state), the
+  // image. When the view is contracting (or hidden-label steady state), whittle
+  // away at the trailing padding instead.
+  int bubble_trailing_padding = GetPostSeparatorPadding();
+  int image_width = image_->GetPreferredSize().width();
+  const int space_shortage = image_width + bubble_trailing_padding - width();
+  if (space_shortage > 0) {
+    if (ShouldShowLabel())
+      image_width -= space_shortage;
+    else
+      bubble_trailing_padding -= space_shortage;
   }
-
-  // Now that we've computed the padding values, give the image all the
-  // remaining width.  This will be less than the image's preferred width during
-  // the first portion of the animation; during the very beginning there may not
-  // be enough room to show the image at all.
-  const int image_width =
-      std::min(image_preferred_width,
-               std::max(0, width() - image_x - bubble_trailing_padding));
-  image_->SetBounds(image_x, 0, image_width, height());
+  image_->SetBounds(0, 0, image_width, height());
 
   // Compute the label bounds.  The label gets whatever size is left over after
   // accounting for the preferred image width and padding amounts.  Note that if
   // the label has zero size it doesn't actually matter what we compute its X
   // value to be, since it won't be visible.
-  const int label_x = image_x + image_width + GetInternalSpacing();
+  const int label_x = image_->bounds().right() + GetInternalSpacing();
   const int label_width =
       std::max(0, width() - label_x - bubble_trailing_padding);
   label_->SetBounds(label_x, 0, label_width, height());
@@ -192,9 +183,8 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
     // enough to show the icon. We don't want to shrink all the way back to
     // zero, since this would mean the view would completely disappear and then
     // pop back to an icon after the animation finishes.
-    const int max_width = LocationBarView::kHorizontalPadding +
-                          image_->GetPreferredSize().width() +
-                          GetInternalSpacing() + label_width + post_label_width;
+    const int max_width =
+        size.width() + GetInternalSpacing() + label_width + post_label_width;
     const int current_width = WidthMultiplier() * max_width;
     size.set_width(shrinking ? std::max(current_width, size.width())
                              : current_width);
@@ -205,12 +195,14 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 int IconLabelBubbleView::GetInternalSpacing() const {
   return image_->GetPreferredSize().IsEmpty()
              ? 0
-             : LocationBarView::kHorizontalPadding;
+             : GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
 }
 
 int IconLabelBubbleView::GetPostSeparatorPadding() const {
-  // The location bar will add LocationBarView::kHorizontalPadding after us.
-  return kSpaceBesideSeparator - LocationBarView::kHorizontalPadding;
+  // The location bar will add LOCATION_BAR_ELEMENT_PADDING after us.
+  return kSpaceBesideSeparator -
+         GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) -
+         next_element_interior_padding_;
 }
 
 float IconLabelBubbleView::GetScaleFactor() const {
@@ -234,10 +226,9 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
   const SkColor separator_color = SkColorSetA(
       plain_text_color, color_utils::IsDark(plain_text_color) ? 0x59 : 0xCC);
 
-  gfx::Rect bounds(GetLocalBounds());
+  gfx::Rect bounds(label_->bounds());
   const int kSeparatorHeight = 16;
-  bounds.Inset(GetPostSeparatorPadding(),
-               (bounds.height() - kSeparatorHeight) / 2);
+  bounds.Inset(0, (bounds.height() - kSeparatorHeight) / 2);
 
   // Draw the 1 px separator.
   gfx::ScopedCanvas scoped_canvas(canvas);

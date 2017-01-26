@@ -43,11 +43,9 @@ ContentSettingImageView::ContentSettingImageView(
       pause_animation_state_(0.0),
       bubble_view_(nullptr),
       suppress_mouse_released_action_(false) {
+  set_next_element_interior_padding(LocationBarView::kIconInteriorPadding);
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  image()->SetHorizontalAlignment(base::i18n::IsRTL()
-                                      ? views::ImageView::TRAILING
-                                      : views::ImageView::LEADING);
   image()->EnableCanvasFlippingForRTLUI(true);
   label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetVisible(false);
@@ -161,9 +159,7 @@ SkColor ContentSettingImageView::GetTextColor() const {
 }
 
 bool ContentSettingImageView::ShouldShowLabel() const {
-  return (!IsShrinking() ||
-          (width() > (image()->GetPreferredSize().width() +
-                      2 * LocationBarView::kHorizontalPadding))) &&
+  return (!IsShrinking() || (width() > image()->GetPreferredSize().width())) &&
          (slide_animator_.is_animating() || pause_animation_);
 }
 

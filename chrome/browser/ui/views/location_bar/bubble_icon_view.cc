@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
@@ -59,7 +61,13 @@ bool BubbleIconView::GetTooltipText(const gfx::Point& p,
 }
 
 gfx::Size BubbleIconView::GetPreferredSize() const {
-  return image_->GetPreferredSize();
+  gfx::Rect image_rect(image_->GetPreferredSize());
+  image_rect.Inset(-gfx::Insets(LocationBarView::kIconInteriorPadding));
+  DCHECK_EQ(image_rect.height(),
+            GetLayoutConstant(LOCATION_BAR_HEIGHT) -
+                2 * (GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
+                     BackgroundWith1PxBorder::kLocationBarBorderThicknessDip));
+  return image_rect.size();
 }
 
 void BubbleIconView::Layout() {

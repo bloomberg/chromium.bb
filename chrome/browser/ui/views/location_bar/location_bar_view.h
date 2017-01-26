@@ -108,12 +108,13 @@ class LocationBarView : public LocationBar,
     SECURITY_CHIP_TEXT,
   };
 
-  // Width (and height) of icons in location bar.
+  // Visual width (and height) of icons in location bar.
   static constexpr int kIconWidth = 16;
 
-  // Space between items in the location bar, as well as between items and the
-  // edges.
-  static constexpr int kHorizontalPadding = 6;
+  // The amount of padding between the visual edge of an icon and the edge of
+  // its click target, for all all sides of the icon. The total edge length of
+  // each icon view should be kIconWidth + 2 * kIconInteriorPadding.
+  static constexpr int kIconInteriorPadding = 4;
 
   // The additional vertical padding of a bubble.
   static constexpr int kBubbleVerticalPadding = 3;

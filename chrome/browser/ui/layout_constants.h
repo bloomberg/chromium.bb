@@ -19,6 +19,10 @@ enum LayoutConstant {
   // images inside.
   LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET,
 
+  // The horizontal padding between location bar decorations as well as the
+  // vertical and horizontal padding inside the border.
+  LOCATION_BAR_ELEMENT_PADDING,
+
   // The height to be occupied by the LocationBar.
   LOCATION_BAR_HEIGHT,
 

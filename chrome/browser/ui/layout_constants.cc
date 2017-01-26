@@ -18,6 +18,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       if (ui::MaterialDesignController::IsSecondaryUiMaterial())
         return 1;
       return hybrid ? 8 : 6;
+    case LOCATION_BAR_ELEMENT_PADDING:
+      return hybrid ? 3 : 1;
     case LOCATION_BAR_HEIGHT:
       return hybrid ? 32 : 28;
     case TABSTRIP_NEW_TAB_BUTTON_OVERLAP:

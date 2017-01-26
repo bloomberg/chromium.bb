@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/image_view.h"
@@ -65,7 +66,8 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   bool ShouldShowLabel() const override {
     return !IsShrinking() ||
            (width() > (image()->GetPreferredSize().width() +
-                       2 * LocationBarView::kHorizontalPadding));
+                       2 * LocationBarView::kIconInteriorPadding +
+                       2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING)));
   }
 
   double WidthMultiplier() const override {
@@ -130,7 +132,7 @@ class IconLabelBubbleViewTest : public views::ViewsTestBase {
     minimum_size_reached_ = false;
     previous_width_ = 0;
     initial_image_x_ = GetImageBounds().x();
-    EXPECT_NE(0, initial_image_x_);
+    EXPECT_EQ(0, initial_image_x_);
   }
 
   void VerifyAnimationStep() {
@@ -152,7 +154,6 @@ class IconLabelBubbleViewTest : public views::ViewsTestBase {
         if (steady_reached_)
           EXPECT_EQ(previous_width_, width());
         EXPECT_EQ(initial_image_x_, GetImageBounds().x());
-        EXPECT_GT(GetImageBounds().x(), 0);
         EXPECT_LT(GetImageBounds().right(), width());
         EXPECT_TRUE(IsLabelVisible());
         EXPECT_GT(GetLabelBounds().x(), GetImageBounds().right());
