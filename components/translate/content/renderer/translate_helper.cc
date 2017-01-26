@@ -30,7 +30,6 @@
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
-using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebLocalFrame;
 using blink::WebScriptSource;
@@ -189,7 +188,7 @@ void TranslateHelper::ExecuteScript(const std::string& script) {
   if (!main_frame)
     return;
 
-  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
   main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1);
 }
 
@@ -201,7 +200,7 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
-  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
   main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsBoolean()) {
     NOTREACHED();
@@ -219,7 +218,7 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
-  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
   main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsString()) {
     NOTREACHED();
@@ -241,7 +240,7 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
-  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
   main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsNumber()) {
     NOTREACHED();
