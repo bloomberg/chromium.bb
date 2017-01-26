@@ -52,6 +52,16 @@ Polymer({
     return this.certificateType != CertificateType.OTHER;
   },
 
+// <if expr="chromeos">
+  /**
+   * @return {boolean}
+   * @private
+   */
+  canImportAndBind_: function() {
+    return this.certificateType == CertificateType.PERSONAL;
+  },
+// </if>
+
   /**
    * Handles a rejected Promise returned from |browserProxy_|.
    * @param {*} error Expects {!CertificatesError|!CertificatesImportError}.
@@ -86,9 +96,24 @@ Polymer({
 
   /** @private */
   onImportTap_: function() {
+    this.handleImport_(false);
+  },
+
+// <if expr="chromeos">
+  /** @private */
+  onImportAndBindTap_: function() {
+    this.handleImport_(true);
+  },
+// </if>
+
+  /**
+   * @param {boolean} useHardwareBacked
+   * @private
+   */
+  handleImport_: function(useHardwareBacked) {
     var browserProxy = settings.CertificatesBrowserProxyImpl.getInstance();
     if (this.certificateType == CertificateType.PERSONAL) {
-      browserProxy.importPersonalCertificate(false).then(
+      browserProxy.importPersonalCertificate(useHardwareBacked).then(
           function(showPasswordPrompt) {
             if (showPasswordPrompt)
               this.dispatchImportActionEvent_(null);

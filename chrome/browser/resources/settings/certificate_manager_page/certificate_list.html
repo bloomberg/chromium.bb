@@ -17,9 +17,14 @@
     <div class="settings-box first">
       <span class="start">
           [[getDescription_(certificateType, certificates)]]</span>
-      <paper-button on-tap="onImportTap_"
+      <paper-button id="import" on-tap="onImportTap_"
           hidden="[[!canImport_(certificateType)]]">
         $i18n{certificateManagerImport}</paper-button>
+<if expr="chromeos">
+      <paper-button id="importAndBind" on-tap="onImportAndBindTap_"
+          hidden="[[!canImportAndBind_(certificateType)]]">
+        $i18n{certificateManagerImportAndBind}</paper-button>
+</if>
     </div>
     <template is="dom-repeat" items="[[certificates]]">
       <settings-certificate-entry model="[[item]]"

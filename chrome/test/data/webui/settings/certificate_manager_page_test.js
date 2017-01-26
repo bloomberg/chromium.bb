@@ -113,8 +113,8 @@ cr.define('certificate_manager_page', function() {
     },
 
     /** @override */
-    importPersonalCertificate: function() {
-      this.methodCalled('importPersonalCertificate');
+    importPersonalCertificate: function(useHardwareBacked) {
+      this.methodCalled('importPersonalCertificate', useHardwareBacked);
       return Promise.resolve(true);
     },
 
@@ -799,13 +799,15 @@ cr.define('certificate_manager_page', function() {
        * @param {boolean} actionEventExpected Whether a
        *     settings.CertificateActionEvent is expected to fire as a result
        *     tapping the Import button.
+       * @param {boolean} bindBtn Whether to click on the import and bind btn.
        */
       function testImportForCertificateType(
-          certificateType, proxyMethodName, actionEventExpected) {
-        element.certificateType = certificateType
+          certificateType, proxyMethodName, actionEventExpected, bindBtn) {
+        element.certificateType = certificateType;
         Polymer.dom.flush();
 
-        var importButton = element.$$('paper-button');
+        var importButton =
+            bindBtn ? element.$$('#importAndBind') : element.$$('#import');
         assertTrue(!!importButton);
 
         var waitForActionEvent = actionEventExpected ?
@@ -813,32 +815,43 @@ cr.define('certificate_manager_page', function() {
             Promise.resolve(null);
 
         MockInteractions.tap(importButton);
-        return browserProxy.whenCalled(proxyMethodName).then(function() {
-          return waitForActionEvent;
-        }).then(function(event) {
-          if (actionEventExpected) {
-            assertEquals(
-                CertificateAction.IMPORT, event.detail.action);
-            assertEquals(certificateType, event.detail.certificateType);
-          }
-        });
+        return browserProxy.whenCalled(proxyMethodName)
+            .then(function(arg) {
+              if (proxyMethodName == 'importPersonalCertificate') {
+                assertNotEquals(arg, undefined);
+                assertEquals(arg, bindBtn);
+              }
+              return waitForActionEvent;
+            })
+            .then(function(event) {
+              if (actionEventExpected) {
+                assertEquals(CertificateAction.IMPORT, event.detail.action);
+                assertEquals(certificateType, event.detail.certificateType);
+              }
+            });
       }
 
       test('ImportButton_Personal', function() {
         return testImportForCertificateType(
-            CertificateType.PERSONAL,
-            'importPersonalCertificate', true);
+            CertificateType.PERSONAL, 'importPersonalCertificate', true, false);
       });
+
+      if (cr.isChromeOS) {
+        test('ImportAndBindButton_Personal', function() {
+          return testImportForCertificateType(
+              CertificateType.PERSONAL, 'importPersonalCertificate', true,
+              true);
+        });
+      }
 
       test('ImportButton_Server', function() {
         return testImportForCertificateType(
-            CertificateType.SERVER, 'importServerCertificate',
-            false);
+            CertificateType.SERVER, 'importServerCertificate', false, false);
       });
 
       test('ImportButton_CA', function() {
         return testImportForCertificateType(
-            CertificateType.CA, 'importCaCertificate', true);
+            CertificateType.CA, 'importCaCertificate', true, false);
       });
     });
   }

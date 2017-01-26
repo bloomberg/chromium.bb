@@ -612,7 +612,7 @@
       Import
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_AND_BIND" desc="Label for import and bind button in certificate manager.">
-      Import and Bind to Device
+      Import and Bind
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_EXPORT" desc="Label for export button in certificate manager.">
       Export
