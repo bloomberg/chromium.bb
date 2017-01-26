@@ -61,15 +61,15 @@
 
 using service_manager::mojom::ServiceFactory;
 
+// Defined externally by the ":catalog_cpp_source" target.
+extern const char kChromeMashCatalogContents[];
+
 namespace {
 
 // kProcessType used to identify child processes.
 const char* kMashChild = "mash-child";
 
 const char kChromeMashServiceName[] = "chrome_mash";
-
-const base::FilePath::CharType kChromeMashCatalogFilename[] =
-    FILE_PATH_LITERAL("chrome_mash_catalog.json");
 
 bool IsChild() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -177,14 +177,8 @@ void MashRunner::RunMain() {
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
-  std::string catalog_contents;
-  base::FilePath exe_path;
-  base::PathService::Get(base::DIR_EXE, &exe_path);
-  base::FilePath catalog_path = exe_path.Append(kChromeMashCatalogFilename);
-  bool result = base::ReadFileToString(catalog_path, &catalog_contents);
-  DCHECK(result);
   std::unique_ptr<base::Value> manifest_value =
-      base::JSONReader::Read(catalog_contents);
+      base::JSONReader::Read(kChromeMashCatalogContents);
   DCHECK(manifest_value);
 
   // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
