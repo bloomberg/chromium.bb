@@ -1677,7 +1677,7 @@ class TestGitCl(TestCase):
 
       self.calls += [
         (('GetChangeDetail', git_short_host + '-review.googlesource.com',
-          '123456', ['ALL_REVISIONS']),
+          '123456', ['ALL_REVISIONS', 'CURRENT_COMMIT']),
          {
            'current_revision': '7777777777',
            'revisions': {
@@ -2042,13 +2042,7 @@ class TestGitCl(TestCase):
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stdout', out)
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
-        ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
-        ((['git', 'config', 'branch.master.remote'],), 'origin'),
-        ((['git', 'config', 'remote.origin.url'],),
-         'https://git.review.org/repo.git'),
-        (('GetChangeDetail', 'git-review.review.org',
+        (('GetChangeDetail', 'code.review.org',
           '123123', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
          {
            'current_revision': 'sha1',
@@ -2382,7 +2376,7 @@ class TestGitCl(TestCase):
          ['DETAILED_ACCOUNTS']),
          {'owner': {'email': 'owner@e.mail'}}),
         (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
-         ['ALL_REVISIONS']), {
+         ['ALL_REVISIONS', 'CURRENT_COMMIT']), {
           'project': 'depot_tools',
           'revisions': {
             'deadbeaf':  {

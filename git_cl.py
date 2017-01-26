@@ -1785,13 +1785,13 @@ class _ChangelistCodereviewBase(object):
 
 
 class _RietveldChangelistImpl(_ChangelistCodereviewBase):
-  def __init__(self, changelist, auth_config=None, rietveld_server=None):
+  def __init__(self, changelist, auth_config=None, codereview_host=None):
     super(_RietveldChangelistImpl, self).__init__(changelist)
     assert settings, 'must be initialized in _ChangelistCodereviewBase'
-    if not rietveld_server:
+    if not codereview_host:
       settings.GetDefaultServerUrl()
 
-    self._rietveld_server = rietveld_server
+    self._rietveld_server = codereview_host
     self._auth_config = auth_config or auth.make_auth_config()
     self._props = None
     self._rpc_server = None
@@ -2208,15 +2208,20 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
 
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
-  def __init__(self, changelist, auth_config=None):
+  def __init__(self, changelist, auth_config=None, codereview_host=None):
     # auth_config is Rietveld thing, kept here to preserve interface only.
     super(_GerritChangelistImpl, self).__init__(changelist)
     self._change_id = None
     # Lazily cached values.
-    self._gerrit_server = None  # e.g. https://chromium-review.googlesource.com
     self._gerrit_host = None    # e.g. chromium-review.googlesource.com
+    self._gerrit_server = None  # e.g. https://chromium-review.googlesource.com
     # Map from change number (issue) to its detail cache.
     self._detail_cache = {}
+
+    if codereview_host is not None:
+      assert not codereview_host.startswith('https://'), codereview_host
+      self._gerrit_host = codereview_host
+      self._gerrit_server = 'https://%s' % codereview_host
 
   def _GetGerritHost(self):
     # Lazy load of configs.
@@ -2443,6 +2448,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     options = options or []
     issue = issue or self.GetIssue()
     assert issue, 'issue is required to query Gerrit'
+
+    # Optimization to avoid multiple RPCs:
+    if (('CURRENT_REVISION' in options or 'ALL_REVISIONS' in options) and
+        'CURRENT_COMMIT' not in options):
+      options.append('CURRENT_COMMIT')
 
     # Normalize issue and options for consistent keys in cache.
     issue = str(issue)
@@ -3926,10 +3936,10 @@ def CMDdescription(parser, args):
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
 
-  target_issue = None
+  target_issue_arg = None
   if len(args) > 0:
-    target_issue = ParseIssueNumberArgument(args[0])
-    if not target_issue.valid:
+    target_issue_arg = ParseIssueNumberArgument(args[0])
+    if not target_issue_arg.valid:
       parser.print_help()
       return 1
 
@@ -3939,10 +3949,9 @@ def CMDdescription(parser, args):
       'auth_config': auth_config,
       'codereview': options.forced_codereview,
   }
-  if target_issue:
-    kwargs['issue'] = target_issue.issue
-    if options.forced_codereview == 'rietveld':
-      kwargs['rietveld_server'] = target_issue.hostname
+  if target_issue_arg:
+    kwargs['issue'] = target_issue_arg.issue
+    kwargs['codereview_host'] = target_issue_arg.hostname
 
   cl = Changelist(**kwargs)
 
