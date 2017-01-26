@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="IDS_STANDARD_FONT_FAMILY">,PingFang SC,STHeiti</translation>
-<translation id="IDS_SERIF_FONT_FAMILY">STSong</translation>
+<translation id="IDS_SERIF_FONT_FAMILY">Songti SC</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">,PingFang SC,STHeiti</translation>
 <translation id="IDS_CURSIVE_FONT_FAMILY">Kaiti SC</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">12</translation>

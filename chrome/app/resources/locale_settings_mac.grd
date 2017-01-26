@@ -215,7 +215,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        STSong
+        Songti SC
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
@@ -239,7 +239,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        LiSong Pro
+        Songti TC
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
