@@ -3,18 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Pull latest revisions of the W3C test repos and update our DEPS entries."""
+"""Pulls the latest revisions of the web-platform-tests or csswg-test repos."""
 
 from webkitpy.common import version_check
 from webkitpy.common.host import Host
-from webkitpy.w3c.deps_updater import DepsUpdater
+from webkitpy.w3c.test_importer import TestImporter
 
 
 if __name__ == '__main__':
     host = Host()
-    updater = DepsUpdater(host)
+    importer = TestImporter(host)
     try:
-        host.exit(updater.main())
+        host.exit(importer.main())
     except KeyboardInterrupt:
         host.print_("Interrupted, exiting")
         host.exit(130)
