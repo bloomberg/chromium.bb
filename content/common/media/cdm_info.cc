@@ -19,4 +19,10 @@ CdmInfo::CdmInfo(const CdmInfo& other) = default;
 
 CdmInfo::~CdmInfo() {}
 
+CdmHostFilePath::CdmHostFilePath(const base::FilePath& file_path,
+                                 const base::FilePath& sig_file_path)
+    : file_path(file_path), sig_file_path(sig_file_path) {}
+
+CdmHostFilePath::~CdmHostFilePath() {}
+
 }  // namespace content

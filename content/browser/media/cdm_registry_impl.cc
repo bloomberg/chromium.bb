@@ -30,7 +30,7 @@ CdmRegistryImpl::~CdmRegistryImpl() {}
 
 void CdmRegistryImpl::Init() {
   // Let embedders register CDMs.
-  GetContentClient()->AddContentDecryptionModules(&cdms_);
+  GetContentClient()->AddContentDecryptionModules(&cdms_, nullptr);
 }
 
 void CdmRegistryImpl::RegisterCdm(const CdmInfo& info) {

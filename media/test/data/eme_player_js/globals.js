@@ -45,6 +45,8 @@ var OUTPUT_PROTECTION_TEST_KEYSYSTEM =
 var PLATFORM_VERIFICATION_TEST_KEYSYSTEM =
     'org.chromium.externalclearkey.platformverificationtest';
 var CRASH_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.crash';
+var VERIFY_HOST_FILES_TEST_KEYSYSTEM =
+    'org.chromium.externalclearkey.verifycdmhosttest';
 
 // Key system name:value map to show on the document page.
 var KEY_SYSTEMS = {

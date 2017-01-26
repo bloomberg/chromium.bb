@@ -63,6 +63,8 @@ static bool IsPepperCdmAvailable(
 // External Clear Key (used for testing).
 static void AddExternalClearKey(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
+  // TODO(xhwang): Move these into an array so we can use a for loop to add
+  // supported key systems below.
   static const char kExternalClearKeyKeySystem[] =
       "org.chromium.externalclearkey";
   static const char kExternalClearKeyDecryptOnlyKeySystem[] =
@@ -79,6 +81,8 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey.initializefail";
   static const char kExternalClearKeyCrashKeySystem[] =
       "org.chromium.externalclearkey.crash";
+  static const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
+      "org.chromium.externalclearkey.verifycdmhosttest";
 
   std::vector<base::string16> additional_param_names;
   std::vector<base::string16> additional_param_values;
@@ -120,6 +124,10 @@ static void AddExternalClearKey(
   // A key system that triggers a crash in ClearKeyCdm.
   concrete_key_systems->emplace_back(
       new cdm::ExternalClearKeyProperties(kExternalClearKeyCrashKeySystem));
+
+  // A key system that triggers the verify host files test in ClearKeyCdm.
+  concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
+      kExternalClearKeyVerifyCdmHostTestKeySystem));
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)

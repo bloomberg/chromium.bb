@@ -13,6 +13,15 @@ namespace media {
 // Name of the ClearKey CDM library.
 const char kClearKeyCdmLibraryName[] = "clearkeycdm";
 
+const char kClearKeyCdmAdapterFileName[] =
+#if defined(OS_MACOSX)
+    "clearkeycdmadapter.plugin";
+#elif defined(OS_WIN)
+    "clearkeycdmadapter.dll";
+#elif defined(OS_POSIX)
+    "libclearkeycdmadapter.so";
+#endif
+
 // Note: This file must be in sync with cdm_paths.gni.
 // TODO(xhwang): Improve how we enable platform specific path. See
 // http://crbug.com/468584

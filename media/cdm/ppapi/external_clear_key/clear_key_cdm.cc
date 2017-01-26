@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -18,6 +19,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
@@ -64,6 +66,8 @@ const char kExternalClearKeyPlatformVerificationTestKeySystem[] =
     "org.chromium.externalclearkey.platformverificationtest";
 const char kExternalClearKeyCrashKeySystem[] =
     "org.chromium.externalclearkey.crash";
+const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
+    "org.chromium.externalclearkey.verifycdmhosttest";
 
 // Constants for the enumalted session that can be loaded by LoadSession().
 // These constants need to be in sync with
@@ -234,7 +238,8 @@ void* CreateCdmInstance(int cdm_interface_version,
       key_system_string != kExternalClearKeyFileIOTestKeySystem &&
       key_system_string != kExternalClearKeyOutputProtectionTestKeySystem &&
       key_system_string != kExternalClearKeyPlatformVerificationTestKeySystem &&
-      key_system_string != kExternalClearKeyCrashKeySystem) {
+      key_system_string != kExternalClearKeyCrashKeySystem &&
+      key_system_string != kExternalClearKeyVerifyCdmHostTestKeySystem) {
     DVLOG(1) << "Unsupported key system:" << key_system_string;
     return NULL;
   }
@@ -254,6 +259,42 @@ void* CreateCdmInstance(int cdm_interface_version,
 
 const char* GetCdmVersion() {
   return kClearKeyCdmVersion;
+}
+
+static bool g_verify_host_files_result = false;
+
+// Makes sure files and corresponding signature files are readable but not
+// writable.
+bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
+  DVLOG(1) << __func__;
+
+  // We should always have the CDM and CDM adapter.
+  // We might not have any common CDM host file (e.g. chrome) since we are
+  // running in browser_tests.
+  if (num_files < 2) {
+    LOG(ERROR) << "Too few host files: " << num_files;
+    g_verify_host_files_result = false;
+    return true;
+  }
+
+  for (uint32_t i = 0; i < num_files; ++i) {
+    const int kBytesToRead = 10;
+    std::vector<char> buffer(kBytesToRead);
+
+    base::File file(static_cast<base::PlatformFile>(host_files[i].file));
+    int bytes_read = file.Read(0, buffer.data(), buffer.size());
+    if (bytes_read != kBytesToRead) {
+      LOG(ERROR) << "File bytes read: " << bytes_read;
+      g_verify_host_files_result = false;
+      return true;
+    }
+
+    // TODO(xhwang): Check that the files are not writable.
+    // TODO(xhwang): Also verify the signature file when it's available.
+  }
+
+  g_verify_host_files_result = true;
+  return true;
 }
 
 namespace media {
@@ -317,6 +358,8 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
   } else if (key_system_ ==
              kExternalClearKeyPlatformVerificationTestKeySystem) {
     StartPlatformVerificationTest();
+  } else if (key_system_ == kExternalClearKeyVerifyCdmHostTestKeySystem) {
+    VerifyCdmHostTest();
   }
 }
 
@@ -980,6 +1023,12 @@ void ClearKeyCdm::StartPlatformVerificationTest() {
 
   host_->SendPlatformChallenge(service_id.data(), service_id.size(),
                                challenge.data(), challenge.size());
+}
+
+void ClearKeyCdm::VerifyCdmHostTest() {
+  // VerifyCdmHost() should have already been called and test result stored
+  // in |g_verify_host_files_result|.
+  OnUnitTestComplete(g_verify_host_files_result);
 }
 
 }  // namespace media

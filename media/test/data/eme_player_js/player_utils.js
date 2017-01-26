@@ -213,6 +213,7 @@ PlayerUtils.createPlayer = function(video, testConfig) {
       case FILE_IO_TEST_KEYSYSTEM:
       case OUTPUT_PROTECTION_TEST_KEYSYSTEM:
       case PLATFORM_VERIFICATION_TEST_KEYSYSTEM:
+      case VERIFY_HOST_FILES_TEST_KEYSYSTEM:
         return UnitTestPlayer;
       default:
         Utils.timeLog(keySystem + ' is not a known key system');

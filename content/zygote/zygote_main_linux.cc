@@ -76,6 +76,10 @@
 #include <sanitizer/coverage_interface.h>
 #endif
 
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#include "content/common/media/cdm_host_files.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -365,6 +369,10 @@ static void ZygotePreSandboxInit() {
 #endif
 #if BUILDFLAG(ENABLE_WEBRTC)
   InitializeWebRtcModule();
+#endif
+
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+  CdmHostFiles::CreateGlobalInstance();
 #endif
 
   SkFontConfigInterface::SetGlobal(

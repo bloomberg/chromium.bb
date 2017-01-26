@@ -65,6 +65,10 @@
 #include "content/common/sandbox_init_mac.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#include "content/common/media/cdm_host_files.h"
+#endif
+
 #if defined(OS_WIN)
 const char kWidevineCdmAdapterFileName[] = "widevinecdmadapter.dll";
 
@@ -372,6 +376,22 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     }
   }
 
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+  // Use a local instance of CdmHostFiles so that if we return early for any
+  // error, all files will closed automatically.
+  std::unique_ptr<CdmHostFiles> cdm_host_files;
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // Open CDM host files before the process is sandboxed.
+  if (!is_broker_ && IsCdm(path))
+    cdm_host_files = CdmHostFiles::Create(path);
+#elif defined(OS_LINUX)
+  cdm_host_files = CdmHostFiles::TakeGlobalInstance();
+  if (is_broker_ || !IsCdm(path))
+    cdm_host_files.reset();  // Close all opened files.
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+
 #if defined(OS_WIN)
   // If code subsequently tries to exit using abort(), force a crash (since
   // otherwise these would be silent terminations and fly under the radar).
@@ -458,6 +478,18 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
       ReportLoadResult(path, INIT_FAILED);
       return;
     }
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+    // Now the process is sandboxed. Verify CDM host.
+    if (cdm_host_files) {
+      DCHECK(IsCdm(path));
+      if (!cdm_host_files->VerifyFiles(library.get(), path)) {
+        LOG(WARNING) << "CDM host verification failed.";
+        // TODO(xhwang): Add a new load result if needed.
+        ReportLoadResult(path, INIT_FAILED);
+        return;
+      }
+    }
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
   }
 
   // Initialization succeeded, so keep the plugin DLL loaded.

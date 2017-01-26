@@ -39,6 +39,18 @@ struct CONTENT_EXPORT CdmInfo {
   std::vector<std::string> supported_codecs;
 };
 
+struct CONTENT_EXPORT CdmHostFilePath {
+  CdmHostFilePath(const base::FilePath& file_path,
+                  const base::FilePath& sig_file_path);
+  ~CdmHostFilePath();
+
+  // Path to a file that takes part in hosting the CDM.
+  base::FilePath file_path;
+
+  // Path to a signature file of the file at |file_path|.
+  base::FilePath sig_file_path;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CDM_INFO_H_

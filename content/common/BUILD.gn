@@ -531,6 +531,23 @@ source_set("common") {
       "external_ipc_dumper.h",
     ]
   }
+
+  if (enable_pepper_cdms) {
+    sources += [
+      "media/cdm_host_file.cc",
+      "media/cdm_host_file.h",
+      "media/cdm_host_files.cc",
+      "media/cdm_host_files.h",
+    ]
+    deps += [
+      "//media:cdm_paths",
+
+      # Needed for finding CDM path from CDM adapter path.
+      # TODO(xhwang): Remove this dependency when CDM adapter is deprecated.
+      # See http://crbug.com/403462
+      "//third_party/widevine/cdm:headers",
+    ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

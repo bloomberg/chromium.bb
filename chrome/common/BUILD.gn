@@ -530,6 +530,14 @@ static_library("common") {
       "//sandbox/linux:sandbox_services",
     ]
   }
+
+  if (enable_pepper_cdms) {
+    sources += [
+      "media/cdm_host_file_path.cc",
+      "media/cdm_host_file_path.h",
+    ]
+    public_deps += [ "//chrome/common:version_header" ]
+  }
 }
 
 process_version("version_header") {

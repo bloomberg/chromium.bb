@@ -112,6 +112,10 @@
 #include "crypto/nss_util.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#include "content/common/media/cdm_host_files.h"
+#endif
+
 namespace content {
 extern int GpuMain(const content::MainFunctionParams&);
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -333,6 +337,15 @@ int RunZygote(const MainFunctionParams& main_function_params,
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   ContentClientInitializer::Set(process_type, delegate);
+
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+  if (process_type != switches::kPpapiPluginProcess) {
+    DVLOG(1) << "Closing CDM files for non-ppapi process.";
+    CdmHostFiles::TakeGlobalInstance().reset();
+  } else {
+    DVLOG(1) << "Not closing CDM files for ppapi process.";
+  }
+#endif
 
   MainFunctionParams main_params(command_line);
   main_params.zygote_child = true;

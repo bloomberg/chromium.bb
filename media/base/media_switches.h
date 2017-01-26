@@ -71,6 +71,8 @@ MEDIA_EXPORT extern const char kForceVideoOverlays[];
 MEDIA_EXPORT extern const char kMSEAudioBufferSizeLimit[];
 MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimit[];
 
+MEDIA_EXPORT extern const char kIgnoreMissingCdmHostFile[];
+
 }  // namespace switches
 
 namespace media {

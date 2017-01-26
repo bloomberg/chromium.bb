@@ -60,6 +60,8 @@ const char kExternalClearKeyPlatformVerificationTestKeySystem[] =
     "org.chromium.externalclearkey.platformverificationtest";
 const char kExternalClearKeyCrashKeySystem[] =
     "org.chromium.externalclearkey.crash";
+const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
+    "org.chromium.externalclearkey.verifycdmhosttest";
 
 // Supported media types.
 const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
@@ -274,6 +276,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
                         kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
                         kClearKeyCdmPepperMimeType);
+      // Need to tell CdmHostFile(s) to ignore missing CDM host files in tests.
+      command_line->AppendSwitch(switches::kIgnoreMissingCdmHostFile);
       command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                       media::kExternalClearKeyForTesting.name);
     }
@@ -671,6 +675,11 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
   TestPlaybackCase(kExternalClearKeyKeySystem, kUnknownSession,
                    kEmeSessionNotFound);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, VerifyCdmHostTest) {
+  TestNonPlaybackCases(kExternalClearKeyVerifyCdmHostTestKeySystem,
+                       kUnitTestSuccess);
 }
 
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)

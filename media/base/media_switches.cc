@@ -126,6 +126,11 @@ const char kForceVideoOverlays[] = "force-video-overlays";
 const char kMSEAudioBufferSizeLimit[] = "mse-audio-buffer-size-limit";
 const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 
+// By default, if any CDM host (including signature) file is missing, the CDM
+// will not be called to verify the host. Enable this switch to ignore missing
+// CDM host files. This can be used in tests.
+const char kIgnoreMissingCdmHostFile[] = "ignore-missing-cdm-host-file";
+
 }  // namespace switches
 
 namespace media {
