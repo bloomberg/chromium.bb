@@ -36,6 +36,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
+#include "remoting/base/logging.h"
 #include "url/gurl.h"
 
 namespace {
@@ -236,6 +237,13 @@ void TokenValidatorBase::ContinueWithCertificate(
     net::X509Certificate* client_cert,
     net::SSLPrivateKey* client_private_key) {
   if (request_) {
+    if (client_cert) {
+      HOST_LOG << "Using certificate issued by: '"
+               << client_cert->issuer().common_name << "' with start date: '"
+               << client_cert->valid_start() << "' and expiry date: '"
+               << client_cert->valid_expiry() << "'";
+    }
+
     request_->ContinueWithCertificate(client_cert, client_private_key);
   }
 }
