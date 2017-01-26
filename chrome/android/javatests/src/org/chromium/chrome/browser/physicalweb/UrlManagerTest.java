@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -271,6 +272,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertTrue(urlManager.containsInAnyCache(URL2));
     }
 
+    @FlakyTest(message = "https://crbug.com/685471")
     @SmallTest
     @RetryOnFailure
     public void testSerializationWorksWithoutGarbageCollection() throws Exception {
