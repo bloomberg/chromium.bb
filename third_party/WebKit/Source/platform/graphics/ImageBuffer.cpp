@@ -550,13 +550,19 @@ void ImageBuffer::setSurface(std::unique_ptr<ImageBufferSurface> surface) {
   sk_sp<SkImage> image =
       m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
 
+  // image can be null if alloaction failed in which case we should just
+  // abort the surface switch to reatain the old surface which is still
+  // functional.
+  if (!image)
+    return;
+
   if (surface->isRecording()) {
     // Using a GPU-backed image with RecordingImageBufferSurface
     // will fail at playback time.
     image = image->makeNonTextureImage();
   }
-
   surface->canvas()->drawImage(image.get(), 0, 0);
+
   surface->setImageBuffer(this);
   if (m_client)
     m_client->restoreCanvasMatrixClipStack(surface->canvas());
