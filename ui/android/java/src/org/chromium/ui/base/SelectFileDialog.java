@@ -27,6 +27,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
 
@@ -54,6 +55,21 @@ public class SelectFileDialog
     private static final String ANY_TYPES = "*/*";
 
     /**
+     * The SELECT_FILE_DIALOG_SCOPE_* enumerations are used to measure the sort of content that
+     * developers are requesting to be shown in the select file dialog. Values must be kept in sync
+     * with their definition in //tools/metrics/histograms/histograms.xml, and both the numbering
+     * and meaning of the values must remain constant as they're recorded by UMA.
+     *
+     * Values are package visible because they're tested in the SelectFileDialogTest junit test.
+     */
+    static final int SELECT_FILE_DIALOG_SCOPE_GENERIC = 0;
+    static final int SELECT_FILE_DIALOG_SCOPE_IMAGES = 1;
+    static final int SELECT_FILE_DIALOG_SCOPE_VIDEOS = 2;
+    static final int SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS = 3;
+    static final int SELECT_FILE_DIALOG_SCOPE_COUNT =
+            SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS + 1;
+
+    /**
      * If set, overrides the WindowAndroid passed in {@link selectFile()}.
      */
     private static WindowAndroid sOverrideWindowAndroid;
@@ -79,6 +95,14 @@ public class SelectFileDialog
     @VisibleForTesting
     public static void setWindowAndroidForTests(WindowAndroid window) {
         sOverrideWindowAndroid = window;
+    }
+
+    /**
+     * Overrides the list of accepted file types for testing purposes.
+     */
+    @VisibleForTesting
+    public void setFileTypesForTests(List<String> fileTypes) {
+        mFileTypes = fileTypes;
     }
 
     /**
@@ -173,6 +197,9 @@ public class SelectFileDialog
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && mAllowMultiple) {
             getContentIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         }
+
+        RecordHistogram.recordEnumeratedHistogram("Android.SelectFileDialogScope",
+                determineSelectFileDialogScope(), SELECT_FILE_DIALOG_SCOPE_COUNT);
 
         ArrayList<Intent> extraIntents = new ArrayList<Intent>();
         if (!noSpecificType()) {
@@ -355,6 +382,28 @@ public class SelectFileDialog
         nativeOnFileNotSelected(mNativeSelectFileDialog);
     }
 
+    // Determines the scope of the requested select file dialog for use in a UMA histogram. Right
+    // now we want to distinguish between generic, photo and visual media pickers.
+    @VisibleForTesting
+    int determineSelectFileDialogScope() {
+        boolean isGeneric = noSpecificType();
+
+        if (!isGeneric && shouldShowImageTypes()) {
+            return SELECT_FILE_DIALOG_SCOPE_IMAGES;
+        } else if (!isGeneric && shouldShowVideoTypes()) {
+            return SELECT_FILE_DIALOG_SCOPE_VIDEOS;
+        } else if (mFileTypes.size() == 2) {
+            // The shouldShow{Image,Video}Types() methods cannot be used here since they test for
+            // a generic dialog, which any request with more than one file type is considered as.
+            if ((mFileTypes.contains(ALL_IMAGE_TYPES) || acceptSpecificType(IMAGE_TYPE))
+                    && (mFileTypes.contains(ALL_VIDEO_TYPES) || acceptSpecificType(VIDEO_TYPE))) {
+                return SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS;
+            }
+        }
+
+        return SELECT_FILE_DIALOG_SCOPE_GENERIC;
+    }
+
     private boolean noSpecificType() {
         // We use a single Intent to decide the type of the file chooser we display to the user,
         // which means we can only give it a single type. If there are multiple accept types
@@ -453,8 +502,9 @@ public class SelectFileDialog
         }
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private static SelectFileDialog create(long nativeSelectFileDialog) {
+    static SelectFileDialog create(long nativeSelectFileDialog) {
         return new SelectFileDialog(nativeSelectFileDialog);
     }
 
