@@ -97,7 +97,7 @@ class LocalWPT(object):
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'add', '.'])
         self.run(['git', 'commit', '--author', author, '-am', message])
-        self.run(['git', 'push', REMOTE_NAME, self.branch_name])
+        self.run(['git', 'push', '-f', REMOTE_NAME, self.branch_name])
 
         return self.branch_name
 
