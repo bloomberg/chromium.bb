@@ -366,8 +366,9 @@ String BluetoothUUID::getDescriptor(StringOrUnsignedLong name,
 String BluetoothUUID::canonicalUUID(unsigned alias) {
   StringBuilder builder;
   builder.reserveCapacity(36 /* 36 chars or 128 bits, length of a UUID */);
-  appendUnsignedAsHexFixedSize(
-      alias, builder, 8 /* 8 chars or 32 bits, prefix length */, Lowercase);
+  HexNumber::appendUnsignedAsHexFixedSize(
+      alias, builder, 8 /* 8 chars or 32 bits, prefix length */,
+      HexNumber::Lowercase);
 
   builder.append("-0000-1000-8000-00805f9b34fb");
   return builder.toString();

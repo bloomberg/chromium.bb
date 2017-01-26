@@ -326,7 +326,7 @@ String stringForSkColor(const SkColor& color) {
   // #AARRGGBB.
   Vector<LChar, 9> result;
   result.push_back('#');
-  appendUnsignedAsHex(color, result);
+  HexNumber::appendUnsignedAsHex(color, result);
   return String(result.data(), result.size());
 }
 

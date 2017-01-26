@@ -24,66 +24,80 @@
 
 namespace WTF {
 
-enum HexConversionMode { Lowercase, Uppercase };
-
 namespace Internal {
 
 const LChar lowerHexDigits[17] = "0123456789abcdef";
 const LChar upperHexDigits[17] = "0123456789ABCDEF";
-inline const LChar* hexDigitsForMode(HexConversionMode mode) {
-  return mode == Lowercase ? lowerHexDigits : upperHexDigits;
-}
 
 }  // namespace Internal
 
-template <typename T>
-inline void appendByteAsHex(unsigned char byte,
-                            T& destination,
-                            HexConversionMode mode = Uppercase) {
-  const LChar* hexDigits = Internal::hexDigitsForMode(mode);
-  destination.append(hexDigits[byte >> 4]);
-  destination.append(hexDigits[byte & 0xF]);
-}
+class HexNumber final {
+  STATIC_ONLY(HexNumber);
 
-template <typename T>
-inline void appendUnsignedAsHex(unsigned number,
-                                T& destination,
-                                HexConversionMode mode = Uppercase) {
-  const LChar* hexDigits = Internal::hexDigitsForMode(mode);
-  Vector<LChar, 8> result;
-  do {
-    result.prepend(hexDigits[number % 16]);
-    number >>= 4;
-  } while (number > 0);
+ public:
+  enum HexConversionMode { Lowercase, Uppercase };
 
-  destination.append(result.data(), result.size());
-}
+  template <typename T>
+  static inline void appendByteAsHex(unsigned char byte,
+                                     T& destination,
+                                     HexConversionMode mode = Uppercase) {
+    const LChar* hexDigits = hexDigitsForMode(mode);
+    destination.append(hexDigits[byte >> 4]);
+    destination.append(hexDigits[byte & 0xF]);
+  }
 
-// Same as appendUnsignedAsHex, but using exactly 'desiredDigits' for the
-// conversion.
-template <typename T>
-inline void appendUnsignedAsHexFixedSize(unsigned number,
+  static inline void appendByteAsHex(unsigned char byte,
+                                     Vector<LChar>& destination,
+                                     HexConversionMode mode = Uppercase) {
+    const LChar* hexDigits = hexDigitsForMode(mode);
+    destination.push_back(hexDigits[byte >> 4]);
+    destination.push_back(hexDigits[byte & 0xF]);
+  }
+
+  template <typename T>
+  static inline void appendUnsignedAsHex(unsigned number,
                                          T& destination,
-                                         unsigned desiredDigits,
                                          HexConversionMode mode = Uppercase) {
-  DCHECK(desiredDigits);
+    const LChar* hexDigits = hexDigitsForMode(mode);
+    Vector<LChar, 8> result;
+    do {
+      result.prepend(hexDigits[number % 16]);
+      number >>= 4;
+    } while (number > 0);
 
-  const LChar* hexDigits = Internal::hexDigitsForMode(mode);
-  Vector<LChar, 8> result;
-  do {
-    result.prepend(hexDigits[number % 16]);
-    number >>= 4;
-  } while (result.size() < desiredDigits);
+    destination.append(result.data(), result.size());
+  }
 
-  DCHECK_EQ(result.size(), desiredDigits);
-  destination.append(result.data(), result.size());
-}
+  // Same as appendUnsignedAsHex, but using exactly 'desiredDigits' for the
+  // conversion.
+  template <typename T>
+  static inline void appendUnsignedAsHexFixedSize(
+      unsigned number,
+      T& destination,
+      unsigned desiredDigits,
+      HexConversionMode mode = Uppercase) {
+    DCHECK(desiredDigits);
+
+    const LChar* hexDigits = hexDigitsForMode(mode);
+    Vector<LChar, 8> result;
+    do {
+      result.prepend(hexDigits[number % 16]);
+      number >>= 4;
+    } while (result.size() < desiredDigits);
+
+    DCHECK_EQ(result.size(), desiredDigits);
+    destination.append(result.data(), result.size());
+  }
+
+ private:
+  static inline const LChar* hexDigitsForMode(HexConversionMode mode) {
+    return mode == Lowercase ? Internal::lowerHexDigits
+                             : Internal::upperHexDigits;
+  }
+};
 
 }  // namespace WTF
 
-using WTF::appendByteAsHex;
-using WTF::appendUnsignedAsHex;
-using WTF::appendUnsignedAsHexFixedSize;
-using WTF::Lowercase;
+using WTF::HexNumber;
 
 #endif  // HexNumber_h

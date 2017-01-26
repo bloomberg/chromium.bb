@@ -48,7 +48,7 @@ static inline void append(Vector<char>& buffer, const CString& string) {
 
 static inline void appendPercentEncoded(Vector<char>& buffer, unsigned char c) {
   append(buffer, '%');
-  appendByteAsHex(c, buffer);
+  HexNumber::appendByteAsHex(c, buffer);
 }
 
 static void appendQuotedString(Vector<char>& buffer, const CString& string) {

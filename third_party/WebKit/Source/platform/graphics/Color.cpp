@@ -231,9 +231,9 @@ String Color::serialized() const {
     StringBuilder builder;
     builder.reserveCapacity(7);
     builder.append('#');
-    appendByteAsHex(red(), builder, Lowercase);
-    appendByteAsHex(green(), builder, Lowercase);
-    appendByteAsHex(blue(), builder, Lowercase);
+    HexNumber::appendByteAsHex(red(), builder, HexNumber::Lowercase);
+    HexNumber::appendByteAsHex(green(), builder, HexNumber::Lowercase);
+    HexNumber::appendByteAsHex(blue(), builder, HexNumber::Lowercase);
     return builder.toString();
   }
 

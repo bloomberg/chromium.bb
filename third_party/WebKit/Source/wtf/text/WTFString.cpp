@@ -58,7 +58,7 @@ Vector<char> asciiDebug(StringImpl* impl) {
     } else {
       buffer.push_back('\\');
       buffer.push_back('u');
-      appendUnsignedAsHexFixedSize(ch, buffer, 4);
+      HexNumber::appendUnsignedAsHexFixedSize(ch, buffer, 4);
     }
   }
   buffer.push_back('\0');

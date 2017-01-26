@@ -145,7 +145,7 @@ String quoteAndEscapeNonPrintables(const String& s) {
         result.append('\\');
         result.append('x');
         result.append('{');
-        appendUnsignedAsHex(c, result);
+        HexNumber::appendUnsignedAsHex(c, result);
         result.append('}');
       }
     }

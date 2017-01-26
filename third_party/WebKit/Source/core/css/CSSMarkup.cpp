@@ -77,7 +77,7 @@ static void serializeCharacter(UChar32 c, StringBuilder& appendTo) {
 
 static void serializeCharacterAsCodePoint(UChar32 c, StringBuilder& appendTo) {
   appendTo.append('\\');
-  appendUnsignedAsHex(c, appendTo, Lowercase);
+  HexNumber::appendUnsignedAsHex(c, appendTo, HexNumber::Lowercase);
   appendTo.append(' ');
 }
 
