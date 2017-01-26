@@ -18,6 +18,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
+#include "media/base/test_helpers.h"
 #include "media/base/video_decoder_config.h"
 #include "media/remoting/rpc.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,6 +30,17 @@ using testing::Return;
 
 namespace media {
 namespace remoting {
+namespace {
+
+void VerifyCdmPromiseResultsEqual(const CdmPromiseResult& cdm1,
+                                  const CdmPromiseResult& cdm2) {
+  ASSERT_EQ(cdm1.success(), cdm2.success());
+  ASSERT_EQ(cdm1.exception(), cdm2.exception());
+  ASSERT_EQ(cdm1.system_code(), cdm2.system_code());
+  ASSERT_EQ(cdm1.error_message(), cdm2.error_message());
+}
+
+}  // namespace
 
 class ProtoUtilsTest : public testing::Test {
  protected:
@@ -149,7 +161,15 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   EXPECT_EQ(0, memcmp(&original, &converted, sizeof(converted)));
 }
 
-// TODO(miu): Tests for all other conversion functions.
+TEST_F(ProtoUtilsTest, VideoDecoderConfigConversionTest) {
+  const VideoDecoderConfig video_config = TestVideoConfig::Normal();
+  ASSERT_TRUE(video_config.IsValidConfig());
+  pb::VideoDecoderConfig message;
+  ConvertVideoDecoderConfigToProto(video_config, &message);
+  VideoDecoderConfig converted;
+  ASSERT_TRUE(ConvertProtoToVideoDecoderConfig(message, &converted));
+  ASSERT_TRUE(converted.Matches(video_config));
+}
 
 TEST_F(ProtoUtilsTest, CdmPromiseResultConversion) {
   CdmPromiseResult success_result = CdmPromiseResult::SuccessResult();
@@ -160,10 +180,34 @@ TEST_F(ProtoUtilsTest, CdmPromiseResultConversion) {
   CdmPromiseResult output_result;
   ASSERT_TRUE(ConvertProtoToCdmPromise(promise_message, &output_result));
 
-  ASSERT_EQ(success_result.success(), output_result.success());
-  ASSERT_EQ(success_result.exception(), output_result.exception());
-  ASSERT_EQ(success_result.system_code(), output_result.system_code());
-  ASSERT_EQ(success_result.error_message(), output_result.error_message());
+  VerifyCdmPromiseResultsEqual(success_result, output_result);
+}
+
+TEST_F(ProtoUtilsTest, CdmPromiseResultWithCdmIdSessionIdConversion) {
+  const int kCdmId = 5;
+  const std::string kSessionId = "session3";
+  CdmPromiseResult success_result = CdmPromiseResult::SuccessResult();
+
+  pb::RpcMessage rpc;
+  rpc.set_handle(1);
+  pb::CdmPromise* promise_message = rpc.mutable_cdm_promise_rpc();
+
+  ConvertCdmPromiseWithSessionIdToProto(success_result, kSessionId,
+                                        promise_message);
+  CdmPromiseResult output_result;
+  std::string converted_session_id;
+  ASSERT_TRUE(ConvertProtoToCdmPromiseWithCdmIdSessionId(
+      rpc, &output_result, nullptr, &converted_session_id));
+  VerifyCdmPromiseResultsEqual(success_result, output_result);
+  ASSERT_EQ(converted_session_id, kSessionId);
+
+  ConvertCdmPromiseWithCdmIdToProto(success_result, kCdmId, promise_message);
+  int converted_cdm_id;
+  output_result = CdmPromiseResult();
+  ASSERT_TRUE(ConvertProtoToCdmPromiseWithCdmIdSessionId(
+      rpc, &output_result, &converted_cdm_id, nullptr));
+  VerifyCdmPromiseResultsEqual(success_result, output_result);
+  ASSERT_EQ(converted_cdm_id, kCdmId);
 }
 
 TEST_F(ProtoUtilsTest, CdmKeyInformationConversion) {
