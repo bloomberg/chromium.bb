@@ -106,8 +106,7 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(USE_AURA)
-#include "content/public/common/service_manager_connection.h"
-#include "content/renderer/mus/render_widget_mus_connection.h"
+#include "content/renderer/mus/renderer_window_tree_client.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -385,6 +384,12 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                                           ->NewRenderWidgetSchedulingState();
     render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
+#if defined(USE_AURA)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMusInRenderer)) {
+    RendererWindowTreeClient::Create(routing_id_);
+  }
+#endif
 }
 
 RenderWidget::~RenderWidget() {

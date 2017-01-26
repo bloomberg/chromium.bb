@@ -16,7 +16,7 @@
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/renderer/mus/render_widget_mus_connection.h"
+#include "content/renderer/mus/renderer_window_tree_client.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -31,9 +31,7 @@ namespace {
 void BindMusConnectionOnMainThread(
     uint32_t routing_id,
     ui::mojom::WindowTreeClientRequest request) {
-  RenderWidgetMusConnection* connection =
-      RenderWidgetMusConnection::GetOrCreate(routing_id);
-  connection->Bind(std::move(request));
+  RendererWindowTreeClient::Get(routing_id)->Bind(std::move(request));
 }
 
 // This object's lifetime is managed by ServiceManagerConnection because it's a

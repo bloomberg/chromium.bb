@@ -199,8 +199,8 @@
 #endif
 
 #include "content/public/common/service_manager_connection.h"
-#include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
+#include "content/renderer/mus/renderer_window_tree_client.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 
 #if defined(ENABLE_IPC_FUZZER)
@@ -1894,13 +1894,12 @@ RenderThreadImpl::CreateCompositorFrameSink(
     use_software = true;
 
 #if defined(USE_AURA)
-  if (GetServiceManagerConnection() && !use_software &&
-      command_line.HasSwitch(switches::kUseMusInRenderer)) {
-    RenderWidgetMusConnection* connection =
-        RenderWidgetMusConnection::GetOrCreate(routing_id);
-    return connection->CreateCompositorFrameSink(
-        frame_sink_id, gpu_->CreateContextProvider(EstablishGpuChannelSync()),
-        GetGpuMemoryBufferManager());
+  if (!use_software && command_line.HasSwitch(switches::kUseMusInRenderer)) {
+    return RendererWindowTreeClient::Get(routing_id)
+        ->CreateCompositorFrameSink(
+            frame_sink_id,
+            gpu_->CreateContextProvider(EstablishGpuChannelSync()),
+            GetGpuMemoryBufferManager());
   }
 #endif
 
