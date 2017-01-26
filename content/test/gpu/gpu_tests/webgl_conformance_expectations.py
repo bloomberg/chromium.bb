@@ -352,7 +352,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/' +
         'copytexsubimage2d-large-partial-copy-corruption.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
-    self.Flaky('conformance/textures/misc/copytexsubimage2d-subrects.html',
+    self.Fail('conformance/textures/misc/copytexsubimage2d-subrects.html',
         ['win10', 'intel', 'passthrough', 'd3d11'], bug=685232)
 
     # Mac failures
