@@ -1914,7 +1914,6 @@ crbug.com/626703 external/wpt/web-animations/timing-model/animations/set-the-tar
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
-crbug.com/626703 external/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout ]
