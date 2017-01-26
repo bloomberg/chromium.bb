@@ -224,7 +224,8 @@ sk_sp<const SkPicture> LayoutSVGResourceClipper::createContentPicture() {
   // - stroke is set to the initial stroke paint server (none)
   PaintInfo info(pictureBuilder.context(), LayoutRect::infiniteIntRect(),
                  PaintPhaseForeground, GlobalPaintNormalPhase,
-                 PaintLayerPaintingRenderingClipPathAsMask);
+                 PaintLayerPaintingRenderingClipPathAsMask |
+                     PaintLayerPaintingRenderingResourceSubtree);
 
   for (const SVGElement& childElement :
        Traversal<SVGElement>::childrenOf(*element())) {

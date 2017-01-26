@@ -37,8 +37,14 @@ static inline bool textShouldBePainted(
 
 bool SVGInlineTextBoxPainter::shouldPaintSelection(
     const PaintInfo& paintInfo) const {
-  return !paintInfo.isPrinting() &&
-         m_svgInlineTextBox.getSelectionState() != SelectionNone;
+  // Don't paint selections when printing.
+  if (paintInfo.isPrinting())
+    return false;
+  // Don't paint selections when rendering a mask, clip-path (as a mask),
+  // pattern or feImage (element reference.)
+  if (paintInfo.isRenderingResourceSubtree())
+    return false;
+  return m_svgInlineTextBox.getSelectionState() != SelectionNone;
 }
 
 static bool hasShadow(const PaintInfo& paintInfo, const ComputedStyle& style) {

@@ -85,6 +85,9 @@ struct CORE_EXPORT PaintInfo {
   bool isRenderingClipPathAsMaskImage() const {
     return m_paintFlags & PaintLayerPaintingRenderingClipPathAsMask;
   }
+  bool isRenderingResourceSubtree() const {
+    return m_paintFlags & PaintLayerPaintingRenderingResourceSubtree;
+  }
 
   bool skipRootBackground() const {
     return m_paintFlags & PaintLayerPaintingSkipRootBackground;

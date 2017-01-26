@@ -224,7 +224,8 @@ void SVGPaintContext::paintSubtree(GraphicsContext& context,
   DCHECK(!item->needsLayout());
 
   PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground,
-                 GlobalPaintNormalPhase, PaintLayerNoFlag);
+                 GlobalPaintNormalPhase,
+                 PaintLayerPaintingRenderingResourceSubtree);
   item->paint(info, IntPoint());
 }
 
