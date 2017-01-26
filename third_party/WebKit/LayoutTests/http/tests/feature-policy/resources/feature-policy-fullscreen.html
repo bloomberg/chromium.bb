@@ -7,8 +7,10 @@ document.onwebkitfullscreenerror = function() {
 };
 
 document.onwebkitfullscreenchange = function() {
-  document.webkitExitFullscreen();
-  parent.postMessage({ type: 'change', enabled: document.webkitFullscreenEnabled }, '*');
+  if (document.webkitFullscreenElement) {
+    document.webkitExitFullscreen();
+    parent.postMessage({ type: 'change', enabled: document.webkitFullscreenEnabled }, '*');
+  }
 };
 
 document.addEventListener('keypress', function() {

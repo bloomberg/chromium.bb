@@ -4,8 +4,8 @@
 // found in the LICENSE file.
 
 // This test ensures that fullscreen feature when enabled for all works across
-// origins when allowfullscreen is set. No iframe may call it when
-// allowfullscreen is not set.
+// origins regardless of whether allowfullscreen is set. (Feature policy header
+// takes precedence over the absence of allowfullscreen.)
 
 Header("Feature-Policy: {\"fullscreen\": [\"*\"]}");
 ?>
@@ -32,13 +32,8 @@ function loadFrames(iframe) {
           resolve(e.data);
         }, { once: true });
       }).then(function(data) {
-        if (iframe.id === "f2") {
-          assert_true(data.enabled, 'Document.fullscreenEnabled:');
-          assert_equals(data.type, 'change', 'Document.requestFullscreen():');
-        } else {
-          assert_false(data.enabled, 'Document.fullscreenEnabled:');
-          assert_equals(data.type, 'error', 'Document.requestFullscreen():');
-        }
+        assert_true(data.enabled, 'Document.fullscreenEnabled:');
+        assert_equals(data.type, 'change', 'Document.requestFullscreen():');
       });
     }, 'Fullscreen enabled for all on URL: ' + src + ' with allowfullscreen = ' + iframe.allowFullscreen);
   }

@@ -63,19 +63,52 @@ bool allowedToUseFullscreen(const Frame* frame) {
   if (!frame)
     return false;
 
-  // 2. If |document|'s browsing context is a top-level browsing context, then
-  // return true.
-  if (frame->isMainFrame())
+  if (!RuntimeEnabledFeatures::featurePolicyEnabled()) {
+    // 2. If |document|'s browsing context is a top-level browsing context, then
+    // return true.
+    if (frame->isMainFrame())
+      return true;
+
+    // 3. If |document|'s browsing context has a browsing context container that
+    // is an iframe element with an |allowattribute| attribute specified, and
+    // whose node document is allowed to use the feature indicated by
+    // |allowattribute|, then return true.
+    if (frame->owner() && frame->owner()->allowFullscreen())
+      return allowedToUseFullscreen(frame->tree().parent());
+
+    // 4. Return false.
+    return false;
+  }
+
+  // If Feature Policy is enabled, then we need this hack to support it, until
+  // we have proper support for <iframe allowfullscreen> in FP:
+
+  // 1. If FP, by itself, enables fullscreen in this document, then fullscreen
+  // is allowed.
+  if (frame->securityContext()->getFeaturePolicy()->isFeatureEnabled(
+          kFullscreenFeature)) {
     return true;
+  }
 
-  // 3. If |document|'s browsing context has a browsing context container that
-  // is an iframe element with an |allowattribute| attribute specified, and
-  // whose node document is allowed to use the feature indicated by
-  // |allowattribute|, then return true.
-  if (frame->owner() && frame->owner()->allowFullscreen())
-    return allowedToUseFullscreen(frame->tree().parent());
+  // 2. Otherwise, if the embedding frame's document is allowed to use
+  // fullscreen (either through FP or otherwise), and either:
+  //   a) this is a same-origin embedded document, or
+  //   b) this document's iframe has the allowfullscreen attribute set,
+  // then fullscreen is allowed.
+  if (!frame->isMainFrame()) {
+    if (allowedToUseFullscreen(frame->tree().parent())) {
+      return (frame->owner() && frame->owner()->allowFullscreen()) ||
+             frame->tree()
+                 .parent()
+                 ->securityContext()
+                 ->getSecurityOrigin()
+                 ->isSameSchemeHostPortAndSuborigin(
+                     frame->securityContext()->getSecurityOrigin());
+    }
+  }
 
-  // 4. Return false.
+  // Otherwise, fullscreen is not allowed. (If we reach here and this is the
+  // main frame, then fullscreen must have been disabled by FP.)
   return false;
 }
 
@@ -104,43 +137,14 @@ bool allowedToRequestFullscreen(Document& document) {
 }
 
 // https://fullscreen.spec.whatwg.org/#fullscreen-is-supported
-// TODO(lunalu): update the placement of the feature policy code once it is in
-// https://fullscreen.spec.whatwg.org/.
-bool fullscreenIsSupported(Document& document) {
+bool fullscreenIsSupported(const Document& document) {
   LocalFrame* frame = document.frame();
   if (!frame)
     return false;
 
   // Fullscreen is supported if there is no previously-established user
   // preference, security risk, or platform limitation.
-  bool fullscreenSupported =
-      !document.settings() || document.settings()->getFullscreenSupported();
-
-  if (!RuntimeEnabledFeatures::featurePolicyEnabled()) {
-    return fullscreenSupported;
-  }
-
-  // TODO(lunalu): clean all of this up once iframe attributes are supported
-  // for feature policy.
-  if (Frame* parent = frame->tree().parent()) {
-    // If FeaturePolicy is enabled, check the fullscreen is not disabled by
-    // policy in the parent frame.
-    if (fullscreenSupported &&
-        parent->securityContext()->getFeaturePolicy()->isFeatureEnabled(
-            kFullscreenFeature)) {
-      return true;
-    }
-  }
-  // Even if the iframe allowfullscreen attribute is not present, allow
-  // fullscreen to be enabled by feature policy.
-  else if (isFeatureEnabledInFrame(kFullscreenFeature, frame)) {
-    return true;
-  }
-
-  document.addConsoleMessage(ConsoleMessage::create(
-      JSMessageSource, WarningMessageLevel,
-      "Fullscreen API is disabled by feature policy for this frame"));
-  return false;
+  return !document.settings() || document.settings()->getFullscreenSupported();
 }
 
 // https://fullscreen.spec.whatwg.org/#fullscreen-element-ready-check

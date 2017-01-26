@@ -1,7 +1,3 @@
-CONSOLE WARNING: line 15: Fullscreen API is disabled by feature policy for this frame
-CONSOLE WARNING: line 6: Fullscreen API is disabled by feature policy for this frame
-CONSOLE WARNING: line 15: Fullscreen API is disabled by feature policy for this frame
-CONSOLE WARNING: line 6: Fullscreen API is disabled by feature policy for this frame
 This is a testharness.js-based test.
 PASS Fullscreen disabled on URL: resources/feature-policy-fullscreen.html with allowfullscreen = false 
 PASS Fullscreen disabled on URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowfullscreen = false 
