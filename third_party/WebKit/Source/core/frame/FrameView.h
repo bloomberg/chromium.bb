@@ -979,7 +979,7 @@ class CORE_EXPORT FrameView final
   bool shouldUseCustomScrollbars(Element*& customScrollbarElement) const;
 
   // Returns true if a scrollbar needs to go from native -> custom or vice
-  // versa.
+  // versa, or if a custom scrollbar has a stale owner.
   bool needsScrollbarReconstruction() const;
 
   bool shouldIgnoreOverflowHidden() const;

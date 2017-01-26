@@ -639,9 +639,6 @@ bool FrameView::shouldUseCustomScrollbars(
         m_frame->isMainFrame())
       return false;
   }
-
-  // FIXME: We need to update the scrollbar dynamically as documents change (or
-  // as doc elements and bodies get discovered that have custom styles).
   Document* doc = m_frame->document();
 
   // Try the <body> element first as a scrollbar source.
@@ -4089,15 +4086,32 @@ bool FrameView::adjustScrollbarExistence(
 }
 
 bool FrameView::needsScrollbarReconstruction() const {
-  Element* customScrollbarElement = nullptr;
-  bool shouldUseCustom = shouldUseCustomScrollbars(customScrollbarElement);
-
-  bool hasAnyScrollbar = horizontalScrollbar() || verticalScrollbar();
-  bool hasCustom =
-      (horizontalScrollbar() && horizontalScrollbar()->isCustomScrollbar()) ||
-      (verticalScrollbar() && verticalScrollbar()->isCustomScrollbar());
-
-  return hasAnyScrollbar && (shouldUseCustom != hasCustom);
+  Scrollbar* scrollbar = horizontalScrollbar();
+  if (!scrollbar)
+    scrollbar = verticalScrollbar();
+  if (!scrollbar) {
+    // We have no scrollbar to reconstruct.
+    return false;
+  }
+  Element* styleSource = nullptr;
+  bool needsCustom = shouldUseCustomScrollbars(styleSource);
+  bool isCustom = scrollbar->isCustomScrollbar();
+  if (needsCustom != isCustom) {
+    // We have a native scrollbar that should be custom, or vice versa.
+    return true;
+  }
+  if (!needsCustom) {
+    // We have a native scrollbar that should remain native.
+    return false;
+  }
+  DCHECK(needsCustom && isCustom);
+  DCHECK(styleSource);
+  if (toLayoutScrollbar(scrollbar)->owningLayoutObject() !=
+      styleSource->layoutObject()) {
+    // We have a custom scrollbar with a stale m_owner.
+    return true;
+  }
+  return false;
 }
 
 bool FrameView::shouldIgnoreOverflowHidden() const {
