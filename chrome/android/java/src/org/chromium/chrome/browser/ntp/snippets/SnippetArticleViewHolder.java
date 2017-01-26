@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
-import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
@@ -48,8 +47,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A class that represents the view for a single card snippet.
  */
-public class SnippetArticleViewHolder
-        extends CardViewHolder implements ImpressionTracker.Listener, ContextMenuManager.Delegate {
+public class SnippetArticleViewHolder extends CardViewHolder implements ImpressionTracker.Listener {
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
@@ -127,37 +125,21 @@ public class SnippetArticleViewHolder
     }
 
     @Override
-    public void removeItem() {
-        getRecyclerView().dismissItemWithAnimation(this);
-    }
-
-    @Override
     public String getUrl() {
         return mArticle.mUrl;
     }
 
     @Override
     public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
-        if (mArticle.isDownload()) {
-            if (menuItemId == ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB) return false;
-            if (menuItemId == ContextMenuManager.ID_SAVE_FOR_OFFLINE) return false;
-            return true;
-        }
-        if (mArticle.isRecentTab()) {
-            if (menuItemId == ContextMenuManager.ID_REMOVE) return true;
-            return false;
-        }
-        return true;
+        Boolean isSupported = mCategoryInfo.isContextMenuItemSupported(menuItemId);
+        if (isSupported != null) return isSupported;
+
+        return super.isItemSupported(menuItemId);
     }
 
     @Override
     public void onContextMenuCreated() {
         mUiDelegate.getMetricsReporter().onSuggestionMenuOpened(mArticle);
-    }
-
-    @Override
-    protected Delegate getContextMenuDelegate() {
-        return this;
     }
 
     /**
@@ -400,10 +382,5 @@ public class SnippetArticleViewHolder
         ApiCompatibilityUtils.setCompoundDrawablesRelative(
                 mPublisherTextView, drawable, null, null, null);
         mPublisherTextView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public boolean isDismissable() {
-        return !isPeeking();
     }
 }

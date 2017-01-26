@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.graphics.Rect;
 import android.support.annotation.CallSuper;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.Nullable;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
@@ -22,6 +21,7 @@ import android.view.animation.Interpolator;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -43,7 +43,8 @@ import org.chromium.chrome.browser.util.ViewUtils;
  * Note: If a subclass overrides {@link #onBindViewHolder()}, it should call the
  * parent implementation to reset the private state when a card is recycled.
  */
-public abstract class CardViewHolder extends NewTabPageViewHolder {
+public abstract class CardViewHolder
+        extends NewTabPageViewHolder implements ContextMenuManager.Delegate {
     private static final Interpolator TRANSITION_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     /** Value used for max peeking card height and padding. */
@@ -111,10 +112,7 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
             public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
                 if (isPeeking()) return;
 
-                ContextMenuManager.Delegate delegate = getContextMenuDelegate();
-                if (delegate == null) return;
-
-                contextMenuManager.createContextMenu(menu, itemView, delegate);
+                contextMenuManager.createContextMenu(menu, itemView, CardViewHolder.this);
             }
         });
 
@@ -130,6 +128,39 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
         mDefaultLateralMargin = -(mCardShadow.left + cardCornerRadius);
         mMarginResizer.setMargins(mDefaultLateralMargin);
     }
+
+    @Override
+    public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
+        return menuItemId == ContextMenuManager.ID_REMOVE && isDismissable();
+    }
+
+    @Override
+    public void removeItem() {
+        getRecyclerView().dismissItemWithAnimation(this);
+    }
+
+    @Override
+    public void openItem(int windowDisposition) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getUrl() {
+        return null;
+    }
+
+    @Override
+    public boolean isDismissable() {
+        if (isPeeking()) return false;
+
+        int position = getAdapterPosition();
+        if (position == RecyclerView.NO_POSITION) return false;
+
+        return !mRecyclerView.getNewTabPageAdapter().getItemDismissalGroup(position).isEmpty();
+    }
+
+    @Override
+    public void onContextMenuCreated() {}
 
     /**
      * Called when the NTP cards adapter is requested to update the currently visible ViewHolder
@@ -238,13 +269,6 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
      * currently peeking.
      */
     protected void onCardTapped() {}
-
-    /**
-     * @return a context menu delegate for the card, or {@code null} if context menu should not be
-     * supported.
-     */
-    @Nullable
-    protected abstract ContextMenuManager.Delegate getContextMenuDelegate();
 
     private void setPeekingPercentage(float peekingPercentage) {
         if (mPeekingPercentage == peekingPercentage) return;

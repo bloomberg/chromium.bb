@@ -9,6 +9,9 @@ import android.support.annotation.CallSuper;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * An optional leaf (i.e. single item) in the tree. Depending on its internal state (see
  * {@link #isVisible()}), the item will be present or absent from the tree, by manipulating the
@@ -44,15 +47,15 @@ public abstract class OptionalLeaf extends ChildNode {
     }
 
     @Override
-    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
+    public Set<Integer> getItemDismissalGroup(int position) {
         checkIndex(position);
-        dismiss(itemRemovedCallback);
+        return canBeDismissed() ? Collections.singleton(0) : Collections.<Integer>emptySet();
     }
 
     @Override
-    public int getDismissSiblingPosDelta(int position) {
+    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
         checkIndex(position);
-        return 0;
+        dismiss(itemRemovedCallback);
     }
 
     /** @return Whether the optional item is currently visible. */
@@ -91,6 +94,13 @@ public abstract class OptionalLeaf extends ChildNode {
      */
     @ItemViewType
     protected abstract int getItemViewType();
+
+    /**
+     * @return Whether the item can be dismissed.
+     */
+    protected boolean canBeDismissed() {
+        return false;
+    }
 
     /**
      * Dismiss this item. The default implementation asserts, as by default items can't be

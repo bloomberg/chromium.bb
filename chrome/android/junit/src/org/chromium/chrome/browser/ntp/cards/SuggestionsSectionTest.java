@@ -10,8 +10,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -50,8 +50,11 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Unit tests for {@link SuggestionsSection}.
@@ -59,6 +62,9 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SuggestionsSectionTest {
+    @Rule
+    public EnableFeatures.Processor mEnableFeatureProcessor = new EnableFeatures.Processor();
+
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
@@ -82,6 +88,7 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
+    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testDismissSibling() {
         List<SnippetArticle> snippets = createDummySuggestions(3);
         SuggestionsSection section = createSectionWithReloadAction(true);
@@ -90,15 +97,45 @@ public class SuggestionsSectionTest {
         assertNotNull(section.getActionItem());
 
         // Without snippets.
-        assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
-        assertEquals(-1, section.getDismissSiblingPosDelta(2));
+        assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
         assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
-        assertEquals(1, section.getDismissSiblingPosDelta(1));
+        assertEquals(setOf(1, 2), section.getItemDismissalGroup(1));
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
+        assertEquals(setOf(1, 2), section.getItemDismissalGroup(2));
 
         // With snippets.
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
-        assertEquals(0, section.getDismissSiblingPosDelta(1));
+        assertEquals(Collections.singleton(1), section.getItemDismissalGroup(1));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    @EnableFeatures({})
+    public void testDismissSiblingWithSectionDismissalDisabled() {
+        List<SnippetArticle> snippets = createDummySuggestions(3);
+        SuggestionsSection section = createSectionWithReloadAction(true);
+
+        section.setStatus(CategoryStatus.AVAILABLE);
+        assertNotNull(section.getActionItem());
+
+        // Without snippets.
+        assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(1));
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(2));
+
+        // With snippets.
+        section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
+        assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
+        assertEquals(Collections.singleton(1), section.getItemDismissalGroup(1));
     }
 
     @Test
@@ -595,6 +632,13 @@ public class SuggestionsSectionTest {
         section.setStatus(CategoryStatus.AVAILABLE);
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         return section;
+    }
+
+    @SafeVarargs
+    private static <T> Set<T> setOf(T... elements) {
+        Set<T> set = new TreeSet<T>();
+        set.addAll(Arrays.asList(elements));
+        return set;
     }
 
     private SuggestionsSection createSectionWithReloadAction(boolean hasReloadAction) {

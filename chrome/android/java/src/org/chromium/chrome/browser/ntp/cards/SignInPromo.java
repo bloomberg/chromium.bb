@@ -114,6 +114,11 @@ public class SignInPromo extends OptionalLeaf
         super.setVisible(!mDismissed && visible);
     }
 
+    @Override
+    protected boolean canBeDismissed() {
+        return true;
+    }
+
     /** Hides the sign in promo and sets a preference to make sure it is not shown again. */
     @Override
     public void dismiss(Callback<String> itemRemovedCallback) {
@@ -187,11 +192,6 @@ public class SignInPromo extends OptionalLeaf
         @Override
         protected int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
             return R.drawable.ntp_signin_promo_card_single;
-        }
-
-        @Override
-        public boolean isDismissable() {
-            return true;
         }
     }
 }

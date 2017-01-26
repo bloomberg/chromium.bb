@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.suggestions.PartialUpdateId;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A class that handles merging above the fold elements and below the fold cards into an adapter
@@ -245,23 +245,22 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     /**
-     * Dismisses the item at the provided adapter position. Can also cause the dismissal of other
-     * items or even entire sections.
+     * @return the set of item positions that should be dismissed simultaneously when dismissing the
+     *         item at the given {@code position} (including the position itself), or an empty set
+     *         if the item can't be dismissed.
      */
-    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
-        mRoot.dismissItem(position, itemRemovedCallback);
+    public Set<Integer> getItemDismissalGroup(int position) {
+        return mRoot.getItemDismissalGroup(position);
     }
 
     /**
-     * Returns another view holder that should be dismissed at the same time as the provided one.
+     * Dismisses the item at the provided adapter position. Can also cause the dismissal of other
+     * items or even entire sections.
+     * @param position the position of an item to be dismissed.
+     * @param itemRemovedCallback
      */
-    public NewTabPageViewHolder getDismissSibling(ViewHolder viewHolder) {
-        int swipePos = viewHolder.getAdapterPosition();
-        int siblingPosDelta = mRoot.getDismissSiblingPosDelta(swipePos);
-        if (siblingPosDelta == 0) return null;
-
-        return (NewTabPageViewHolder) mRecyclerView.findViewHolderForAdapterPosition(
-                siblingPosDelta + swipePos);
+    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
+        mRoot.dismissItem(position, itemRemovedCallback);
     }
 
     private boolean hasAllBeenDismissed() {

@@ -9,7 +9,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An inner node in the tree: the root of a subtree, with a list of child nodes.
@@ -85,17 +88,19 @@ public class InnerNode extends ChildNode implements NodeParent {
     }
 
     @Override
+    public Set<Integer> getItemDismissalGroup(int position) {
+        int index = getChildIndexForPosition(position);
+        int offset = getStartingOffsetForChildIndex(index);
+        Set<Integer> itemDismissalGroup =
+                getChildren().get(index).getItemDismissalGroup(position - offset);
+        return offsetBy(itemDismissalGroup, offset);
+    }
+
+    @Override
     public void dismissItem(int position, Callback<String> itemRemovedCallback) {
         int index = getChildIndexForPosition(position);
         getChildren().get(index).dismissItem(
                 position - getStartingOffsetForChildIndex(index), itemRemovedCallback);
-    }
-
-    @Override
-    public int getDismissSiblingPosDelta(int position) {
-        int index = getChildIndexForPosition(position);
-        return mChildren.get(index).getDismissSiblingPosDelta(
-                position - getStartingOffsetForChildIndex(index));
     }
 
     @Override
@@ -171,5 +176,25 @@ public class InnerNode extends ChildNode implements NodeParent {
     @VisibleForTesting
     final List<TreeNode> getChildren() {
         return mChildren;
+    }
+
+    /**
+     * Helper method that adds an offset value to a set of integers.
+     * @param set a set of integers
+     * @param offset the offset to add to the set.
+     * @return a set of integers with the {@code offset} value added to the input {@code set}.
+     */
+    private static Set<Integer> offsetBy(Set<Integer> set, int offset) {
+        // Optimizations for empty and singleton sets:
+        if (set.isEmpty()) return Collections.emptySet();
+        if (set.size() == 1) {
+            return Collections.singleton(set.iterator().next() + offset);
+        }
+
+        Set<Integer> offsetSet = new HashSet<>();
+        for (int value : set) {
+            offsetSet.add(value + offset);
+        }
+        return offsetSet;
     }
 }

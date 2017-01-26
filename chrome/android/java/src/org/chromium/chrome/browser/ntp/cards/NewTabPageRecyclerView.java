@@ -38,9 +38,11 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ViewUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Simple wrapper on top of a RecyclerView that will acquire focus when tapped.  Ensures the
@@ -415,10 +417,9 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     public void onItemDismissStarted(ViewHolder viewHolder) {
         assert !mCompensationHeightMap.containsKey(viewHolder);
 
-        int dismissedHeight = viewHolder.itemView.getHeight();
-
-        ViewHolder siblingViewHolder = getNewTabPageAdapter().getDismissSibling(viewHolder);
-        if (siblingViewHolder != null) {
+        int dismissedHeight = 0;
+        List<ViewHolder> siblings = getDismissalGroupViewHolders(viewHolder);
+        for (ViewHolder siblingViewHolder : siblings) {
             dismissedHeight += siblingViewHolder.itemView.getHeight();
         }
 
@@ -525,21 +526,13 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * in {@link CardViewHolder#onBindViewHolder()}.
      */
     public void dismissItemWithAnimation(final ViewHolder viewHolder) {
-        if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) {
-            // The item does not exist anymore, so ignore.
-            return;
-        }
-
-        if (!((NewTabPageViewHolder) viewHolder).isDismissable()) {
-            // The item is not dismissable (anymore), so ignore.
-            return;
-        }
+        List<ViewHolder> siblings = getDismissalGroupViewHolders(viewHolder);
+        if (siblings.isEmpty()) return;
 
         List<Animator> animations = new ArrayList<>();
-        addDismissalAnimators(animations, viewHolder.itemView);
-
-        final ViewHolder dismissSibling = getNewTabPageAdapter().getDismissSibling(viewHolder);
-        if (dismissSibling != null) addDismissalAnimators(animations, dismissSibling.itemView);
+        for (ViewHolder dismissSibling : siblings) {
+            addDismissalAnimators(animations, dismissSibling.itemView);
+        }
 
         AnimatorSet animation = new AnimatorSet();
         animation.playTogether(animations);
@@ -596,9 +589,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * @param dX The amount of horizontal displacement caused by user's action.
      * @param viewHolder The view holder containing the view to be updated.
      */
-    public void updateViewStateForDismiss(float dX, NewTabPageViewHolder viewHolder) {
-        if (!viewHolder.isDismissable()) return;
-
+    private void updateViewStateForDismiss(float dX, ViewHolder viewHolder) {
         viewHolder.itemView.setTranslationX(dX);
 
         float input = Math.abs(dX) / viewHolder.itemView.getMeasuredWidth();
@@ -688,24 +679,30 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         @Override
         public void onChildDraw(Canvas c, RecyclerView recyclerView, ViewHolder viewHolder,
                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            assert viewHolder instanceof NewTabPageViewHolder;
-
-            // The item has already been removed. We have nothing more to do.
             // In some cases a removed child may call this method when unrelated items are
-            // interacted with, but this check also covers the case.
-            // See https://crbug.com/664466, b/32900699
-            if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) return;
+            // interacted with (https://crbug.com/664466, b/32900699), but in that case
+            // getSiblingDismissalViewHolders() below will return an empty list.
 
             // We use our own implementation of the dismissal animation, so we don't call the
             // parent implementation. (by default it changes the translation-X and elevation)
-            updateViewStateForDismiss(dX, (NewTabPageViewHolder) viewHolder);
-
-            // If there is another item that should be animated at the same time, do the same to it.
-            NewTabPageViewHolder siblingViewHolder =
-                    getNewTabPageAdapter().getDismissSibling(viewHolder);
-            if (siblingViewHolder != null) {
+            for (ViewHolder siblingViewHolder : getDismissalGroupViewHolders(viewHolder)) {
                 updateViewStateForDismiss(dX, siblingViewHolder);
             }
         }
+    }
+
+    private List<ViewHolder> getDismissalGroupViewHolders(ViewHolder viewHolder) {
+        int position = viewHolder.getAdapterPosition();
+        if (position == NO_POSITION) return Collections.emptyList();
+
+        List<ViewHolder> viewHolders = new ArrayList<>();
+        Set<Integer> dismissalRange = getNewTabPageAdapter().getItemDismissalGroup(position);
+        for (int i : dismissalRange) {
+            ViewHolder siblingViewHolder = findViewHolderForAdapterPosition(i);
+            if (siblingViewHolder == null) continue;
+
+            viewHolders.add(siblingViewHolder);
+        }
+        return viewHolders;
     }
 }

@@ -10,11 +10,8 @@ import android.view.View;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
-import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
@@ -138,40 +135,6 @@ public class ActionItem extends OptionalLeaf {
                 }
             });
         }
-
-        @Override
-        public boolean isDismissable() {
-            return SnippetsConfig.isSectionDismissalEnabled()
-                    && !mActionListItem.mParentSection.hasSuggestions();
-        }
-
-        @Override
-        protected Delegate getContextMenuDelegate() {
-            return this;
-        }
-
-        @Override
-        public void openItem(int windowDisposition) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void removeItem() {
-            getRecyclerView().dismissItemWithAnimation(this);
-        }
-
-        @Override
-        public String getUrl() {
-            return null;
-        }
-
-        @Override
-        public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
-            return menuItemId == ContextMenuManager.ID_REMOVE && isDismissable();
-        }
-
-        @Override
-        public void onContextMenuCreated() {}
 
         public void onBindViewHolder(ActionItem item) {
             super.onBindViewHolder();
