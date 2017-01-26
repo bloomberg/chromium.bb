@@ -196,7 +196,7 @@ void validateAndConvertShippingOptions(
       return;
     }
 
-    uniqueIds.add(option.id());
+    uniqueIds.insert(option.id());
 
     validateShippingOptionOrPaymentItem(option, exceptionState);
     if (exceptionState.hadException())

@@ -588,7 +588,7 @@ static inline void setLogicalWidthForTextRun(
         for (HashSet<const SimpleFontData*>::const_iterator it =
                  wordMeasurement.fallbackFonts.begin();
              it != end; ++it)
-          fallbackFonts.add(*it);
+          fallbackFonts.insert(*it);
       }
     }
     wordMeasurementsIndex = i;

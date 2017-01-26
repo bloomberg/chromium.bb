@@ -37,7 +37,7 @@ ScriptPromise BarcodeDetector::doDetect(
         NotSupportedError, "Barcode detection service unavailable."));
     return promise;
   }
-  m_barcodeServiceRequests.add(resolver);
+  m_barcodeServiceRequests.insert(resolver);
   m_barcodeService->Detect(
       std::move(sharedBufferHandle), imageWidth, imageHeight,
       convertToBaseCallback(WTF::bind(&BarcodeDetector::onDetectBarcodes,

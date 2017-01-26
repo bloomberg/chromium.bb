@@ -212,7 +212,7 @@ void PaintWorkletGlobalScope::addPendingGenerator(
       m_pendingGenerators.add(name, nullptr).storedValue->value;
   if (!set)
     set = new GeneratorHashSet;
-  set->add(generator);
+  set->insert(generator);
 }
 
 DEFINE_TRACE(PaintWorkletGlobalScope) {

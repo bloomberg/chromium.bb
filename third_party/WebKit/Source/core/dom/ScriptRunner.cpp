@@ -53,7 +53,7 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader,
   m_document->incrementLoadEventDelayCount();
   switch (executionType) {
     case Async:
-      m_pendingAsyncScripts.add(scriptLoader);
+      m_pendingAsyncScripts.insert(scriptLoader);
       break;
 
     case InOrder:

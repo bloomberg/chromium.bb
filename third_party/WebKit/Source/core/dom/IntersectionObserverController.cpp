@@ -42,7 +42,7 @@ void IntersectionObserverController::postTaskToDeliverObservations() {
 
 void IntersectionObserverController::scheduleIntersectionObserverForDelivery(
     IntersectionObserver& observer) {
-  m_pendingIntersectionObservers.add(&observer);
+  m_pendingIntersectionObservers.insert(&observer);
   postTaskToDeliverObservations();
 }
 
@@ -84,7 +84,7 @@ void IntersectionObserverController::computeTrackedIntersectionObservations() {
 
 void IntersectionObserverController::addTrackedObserver(
     IntersectionObserver& observer) {
-  m_trackedIntersectionObservers.add(&observer);
+  m_trackedIntersectionObservers.insert(&observer);
 }
 
 void IntersectionObserverController::removeTrackedObserversForRoot(

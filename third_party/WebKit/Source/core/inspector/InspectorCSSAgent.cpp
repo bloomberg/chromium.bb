@@ -130,7 +130,7 @@ HeapVector<Member<CSSStyleRule>> filterDuplicateRules(CSSRuleList* ruleList) {
     if (!rule || rule->type() != CSSRule::kStyleRule ||
         uniqRulesSet.contains(rule))
       continue;
-    uniqRulesSet.add(rule);
+    uniqRulesSet.insert(rule);
     uniqRules.push_back(toCSSStyleRule(rule));
   }
   uniqRules.reverse();
@@ -775,7 +775,7 @@ void InspectorCSSAgent::fontsUpdated() {
 }
 
 void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document) {
-  m_invalidatedDocuments.add(document);
+  m_invalidatedDocuments.insert(document);
 }
 
 void InspectorCSSAgent::updateActiveStyleSheets(
@@ -829,7 +829,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
                  !m_cssStyleSheetToInspectorStyleSheet.contains(cssStyleSheet);
     if (isNew) {
       InspectorStyleSheet* newStyleSheet = bindStyleSheet(cssStyleSheet);
-      documentCSSStyleSheets->add(cssStyleSheet);
+      documentCSSStyleSheets->insert(cssStyleSheet);
       if (frontend())
         frontend()->styleSheetAdded(
             newStyleSheet->buildObjectForStyleSheetInfo());
@@ -2057,7 +2057,7 @@ void InspectorCSSAgent::resetPseudoStates() {
   for (auto& state : m_nodeIdToForcedPseudoState) {
     Element* element = toElement(m_domAgent->nodeForId(state.key));
     if (element && element->ownerDocument())
-      documentsToChange.add(element->ownerDocument());
+      documentsToChange.insert(element->ownerDocument());
   }
 
   m_nodeIdToForcedPseudoState.clear();

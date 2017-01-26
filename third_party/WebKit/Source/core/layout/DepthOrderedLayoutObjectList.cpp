@@ -38,7 +38,7 @@ bool DepthOrderedLayoutObjectList::isEmpty() const {
 
 void DepthOrderedLayoutObjectList::add(LayoutObject& object) {
   ASSERT(!object.frameView()->isInPerformLayout());
-  m_data->m_objects.add(&object);
+  m_data->m_objects.insert(&object);
   m_data->m_orderedObjects.clear();
 }
 

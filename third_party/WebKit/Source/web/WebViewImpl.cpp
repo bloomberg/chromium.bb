@@ -417,7 +417,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
 
   m_devToolsEmulator = DevToolsEmulator::create(this);
 
-  allInstances().add(this);
+  allInstances().insert(this);
 
   m_pageImportanceSignals.setObserver(client);
   m_resizeViewportAnchor = new ResizeViewportAnchor(*m_page);

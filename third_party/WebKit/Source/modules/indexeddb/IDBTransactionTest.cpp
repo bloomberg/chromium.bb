@@ -73,13 +73,13 @@ TEST(IDBTransactionTest, EnsureLifetime) {
 
   const int64_t transactionId = 1234;
   HashSet<String> transactionScope = HashSet<String>();
-  transactionScope.add("test-store-name");
+  transactionScope.insert("test-store-name");
   Persistent<IDBTransaction> transaction =
       IDBTransaction::createNonVersionChange(
           scope.getScriptState(), transactionId, transactionScope,
           WebIDBTransactionModeReadOnly, db.get());
   PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
-  set.add(transaction);
+  set.insert(transaction);
 
   ThreadState::current()->collectAllGarbage();
   EXPECT_EQ(1u, set.size());
@@ -113,13 +113,13 @@ TEST(IDBTransactionTest, TransactionFinish) {
                           FakeIDBDatabaseCallbacks::create());
 
   HashSet<String> transactionScope = HashSet<String>();
-  transactionScope.add("test-store-name");
+  transactionScope.insert("test-store-name");
   Persistent<IDBTransaction> transaction =
       IDBTransaction::createNonVersionChange(
           scope.getScriptState(), transactionId, transactionScope,
           WebIDBTransactionModeReadOnly, db.get());
   PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
-  set.add(transaction);
+  set.insert(transaction);
 
   ThreadState::current()->collectAllGarbage();
   EXPECT_EQ(1u, set.size());

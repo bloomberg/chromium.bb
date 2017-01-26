@@ -195,7 +195,7 @@ std::unique_ptr<protocol::DictionaryValue> buildElementInfo(Element* element) {
     size_t classNameCount = classNamesString.size();
     for (size_t i = 0; i < classNameCount; ++i) {
       const AtomicString& className = classNamesString[i];
-      if (!usedClassNames.add(className).isNewEntry)
+      if (!usedClassNames.insert(className).isNewEntry)
         continue;
       classNames.append('.');
       classNames.append(className);

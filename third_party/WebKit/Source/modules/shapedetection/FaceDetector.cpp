@@ -46,7 +46,7 @@ ScriptPromise FaceDetector::doDetect(
         NotSupportedError, "Face detection service unavailable."));
     return promise;
   }
-  m_faceServiceRequests.add(resolver);
+  m_faceServiceRequests.insert(resolver);
   m_faceService->Detect(std::move(sharedBufferHandle), imageWidth, imageHeight,
                         convertToBaseCallback(WTF::bind(
                             &FaceDetector::onDetectFaces, wrapPersistent(this),

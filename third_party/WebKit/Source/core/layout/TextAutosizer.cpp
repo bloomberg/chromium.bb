@@ -361,7 +361,7 @@ void TextAutosizer::destroy(LayoutBlock* block) {
 TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(
     LayoutBlock* block) {
 #if DCHECK_IS_ON()
-  m_blocksThatHaveBegunLayout.add(block);
+  m_blocksThatHaveBegunLayout.insert(block);
 #endif
 
   if (!m_firstBlockToBeginLayout) {
@@ -386,7 +386,7 @@ void TextAutosizer::prepareClusterStack(LayoutObject* layoutObject) {
   if (layoutObject->isLayoutBlock()) {
     LayoutBlock* block = toLayoutBlock(layoutObject);
 #if DCHECK_IS_ON()
-    m_blocksThatHaveBegunLayout.add(block);
+    m_blocksThatHaveBegunLayout.insert(block);
 #endif
     if (Cluster* cluster = maybeCreateCluster(block))
       m_clusterStack.push_back(WTF::wrapUnique(cluster));
@@ -556,8 +556,8 @@ void TextAutosizer::markSuperclusterForConsistencyCheck(LayoutObject* object) {
         if (supercluster &&
             supercluster->m_inheritParentMultiplier == DontInheritMultiplier) {
           if (supercluster->m_hasEnoughTextToAutosize == NotEnoughText) {
-            m_fingerprintMapper.getPotentiallyInconsistentSuperclusters().add(
-                supercluster);
+            m_fingerprintMapper.getPotentiallyInconsistentSuperclusters()
+                .insert(supercluster);
           }
           return;
         }
@@ -572,7 +572,7 @@ void TextAutosizer::markSuperclusterForConsistencyCheck(LayoutObject* object) {
 
   // If we didn't add any supercluster, we should add one.
   if (lastSupercluster) {
-    m_fingerprintMapper.getPotentiallyInconsistentSuperclusters().add(
+    m_fingerprintMapper.getPotentiallyInconsistentSuperclusters().insert(
         lastSupercluster);
   }
 }
@@ -1278,7 +1278,7 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(
       m_blocksForFingerprint.add(fingerprint, std::unique_ptr<BlockSet>());
   if (addResult.isNewEntry)
     addResult.storedValue->value = WTF::wrapUnique(new BlockSet);
-  addResult.storedValue->value->add(block);
+  addResult.storedValue->value->insert(block);
 #if DCHECK_IS_ON()
   assertMapsAreConsistent();
 #endif

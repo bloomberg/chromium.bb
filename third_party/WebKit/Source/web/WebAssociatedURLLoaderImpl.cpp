@@ -221,7 +221,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::didReceiveResponse(
     if (FetchUtils::isForbiddenResponseHeaderName(header.key) ||
         (!isOnAccessControlResponseHeaderWhitelist(header.key) &&
          !exposedHeaders.contains(header.key)))
-      blockedHeaders.add(header.key);
+      blockedHeaders.insert(header.key);
   }
 
   if (blockedHeaders.isEmpty()) {

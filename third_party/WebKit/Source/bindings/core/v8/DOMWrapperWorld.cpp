@@ -304,7 +304,7 @@ void DOMWrapperWorld::registerDOMObjectHolderInternal(
   ASSERT(!m_domObjectHolders.contains(holderBase.get()));
   holderBase->setWorld(this);
   holderBase->setWeak(&DOMWrapperWorld::weakCallbackForDOMObjectHolder);
-  m_domObjectHolders.add(std::move(holderBase));
+  m_domObjectHolders.insert(std::move(holderBase));
 }
 
 void DOMWrapperWorld::unregisterDOMObjectHolder(

@@ -193,7 +193,7 @@ void IDBDatabase::onChanges(
         const std::pair<int64_t, std::vector<int64_t>>& obs_txn = it->second;
         HashSet<String> stores;
         for (int64_t store_id : obs_txn.second) {
-          stores.add(m_metadata.objectStores.get(store_id)->name);
+          stores.insert(m_metadata.objectStores.get(store_id)->name);
         }
 
         transaction = IDBTransaction::createObserver(
@@ -361,14 +361,14 @@ IDBTransaction* IDBDatabase::transaction(
 
   HashSet<String> scope;
   if (storeNames.isString()) {
-    scope.add(storeNames.getAsString());
+    scope.insert(storeNames.getAsString());
   } else if (storeNames.isStringSequence()) {
     for (const String& name : storeNames.getAsStringSequence())
-      scope.add(name);
+      scope.insert(name);
   } else if (storeNames.isDOMStringList()) {
     const Vector<String>& list = *storeNames.getAsDOMStringList();
     for (const String& name : list)
-      scope.add(name);
+      scope.insert(name);
   } else {
     NOTREACHED();
   }

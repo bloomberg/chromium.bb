@@ -231,7 +231,7 @@ SerializedScriptValue::transferImageBitmapContents(
   for (size_t i = 0; i < imageBitmaps.size(); ++i) {
     if (visited.contains(imageBitmaps[i]))
       continue;
-    visited.add(imageBitmaps[i]);
+    visited.insert(imageBitmaps[i]);
     contents->push_back(imageBitmaps[i]->transfer());
   }
   return contents;
@@ -269,7 +269,7 @@ void SerializedScriptValue::transferOffscreenCanvas(
                               " has an associated context.");
       return;
     }
-    visited.add(offscreenCanvases[i].get());
+    visited.insert(offscreenCanvases[i].get());
     offscreenCanvases[i].get()->setNeutered();
   }
 }
@@ -421,7 +421,7 @@ SerializedScriptValue::transferArrayBufferContents(
     DOMArrayBufferBase* arrayBuffer = *it;
     if (visited.contains(arrayBuffer))
       continue;
-    visited.add(arrayBuffer);
+    visited.insert(arrayBuffer);
 
     size_t index = std::distance(arrayBuffers.begin(), it);
     if (arrayBuffer->isShared()) {

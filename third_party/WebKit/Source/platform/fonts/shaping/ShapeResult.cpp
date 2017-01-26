@@ -230,7 +230,7 @@ void ShapeResult::fallbackFonts(
         m_runs[i]->m_fontData != m_primaryFont &&
         !m_runs[i]->m_fontData->isTextOrientationFallbackOf(
             m_primaryFont.get())) {
-      fallback->add(m_runs[i]->m_fontData.get());
+      fallback->insert(m_runs[i]->m_fontData.get());
     }
   }
 }

@@ -34,7 +34,7 @@ void SampledEffect::updateReplacedProperties(
     HashSet<PropertyHandle>& replacedProperties) {
   for (const auto& interpolation : m_interpolations) {
     if (!interpolation->dependsOnUnderlyingValue())
-      replacedProperties.add(interpolation->getProperty());
+      replacedProperties.insert(interpolation->getProperty());
   }
 }
 

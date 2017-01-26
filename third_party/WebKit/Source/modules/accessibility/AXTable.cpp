@@ -419,7 +419,7 @@ void AXTable::addChildren() {
       m_rows.push_back(row);
       if (!row->accessibilityIsIgnored())
         m_children.push_back(row);
-      appendedRows.add(row);
+      appendedRows.insert(row);
     }
 
     tableSection = table->sectionBelow(tableSection, SkipEmptySections);

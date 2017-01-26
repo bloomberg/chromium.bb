@@ -73,7 +73,7 @@ FetchResponseData* createFetchResponseDataFromWebResponse(
     case WebServiceWorkerResponseTypeCORS: {
       HTTPHeaderSet headerNames;
       for (const auto& header : webResponse.corsExposedHeaderNames())
-        headerNames.add(String(header));
+        headerNames.insert(String(header));
       response = response->createCORSFilteredResponse(headerNames);
       break;
     }

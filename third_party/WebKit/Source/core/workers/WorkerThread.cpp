@@ -301,7 +301,7 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
       m_workerThreadLifecycleContext(new WorkerThreadLifecycleContext) {
   DCHECK(isMainThread());
   MutexLocker lock(threadSetMutex());
-  workerThreads().add(this);
+  workerThreads().insert(this);
 }
 
 void WorkerThread::terminateInternal(TerminationMode mode) {

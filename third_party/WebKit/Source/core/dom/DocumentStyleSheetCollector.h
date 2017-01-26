@@ -59,7 +59,7 @@ class DocumentStyleSheetCollector {
   bool hasVisited(Document* document) const {
     return m_visitedDocuments->contains(document);
   }
-  void willVisit(Document* document) { m_visitedDocuments->add(document); }
+  void willVisit(Document* document) { m_visitedDocuments->insert(document); }
 
  private:
   Member<StyleSheetCollection> m_collection;

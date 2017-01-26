@@ -354,7 +354,7 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   DCHECK(!m_effectNodesConverted.contains(nextEffect))
       << "Malformed paint artifact. Paint chunks under the same effect should "
          "be contiguous.";
-  m_effectNodesConverted.add(nextEffect);
+  m_effectNodesConverted.insert(nextEffect);
 #endif
 
   // An effect node can't omit render surface if it has child with exotic

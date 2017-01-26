@@ -79,18 +79,18 @@ PropertyHandleSet StringKeyframe::properties() const {
         << "Web Animations: Encountered unexpanded shorthand CSS property ("
         << propertyReference.id() << ").";
     if (propertyReference.id() == CSSPropertyVariable)
-      properties.add(PropertyHandle(
+      properties.insert(PropertyHandle(
           toCSSCustomPropertyDeclaration(propertyReference.value()).name()));
     else
-      properties.add(PropertyHandle(propertyReference.id(), false));
+      properties.insert(PropertyHandle(propertyReference.id(), false));
   }
 
   for (unsigned i = 0; i < m_presentationAttributeMap->propertyCount(); ++i)
-    properties.add(
+    properties.insert(
         PropertyHandle(m_presentationAttributeMap->propertyAt(i).id(), true));
 
   for (const auto& key : m_svgAttributeMap.keys())
-    properties.add(PropertyHandle(*key));
+    properties.insert(PropertyHandle(*key));
 
   return properties;
 }

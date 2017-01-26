@@ -107,7 +107,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(
     return promise;
   }
 
-  m_serviceRequests.add(resolver);
+  m_serviceRequests.insert(resolver);
 
   // m_streamTrack->component()->source()->id() is the renderer "name" of the
   // camera;
@@ -138,7 +138,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState,
     return promise;
   }
 
-  m_serviceRequests.add(resolver);
+  m_serviceRequests.insert(resolver);
 
   // TODO(mcasas): should be using a mojo::StructTraits instead.
   media::mojom::blink::PhotoSettingsPtr settings =
@@ -223,7 +223,7 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState,
     return promise;
   }
 
-  m_serviceRequests.add(resolver);
+  m_serviceRequests.insert(resolver);
 
   // m_streamTrack->component()->source()->id() is the renderer "name" of the
   // camera;

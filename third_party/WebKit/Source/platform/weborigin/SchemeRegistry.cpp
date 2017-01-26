@@ -47,13 +47,13 @@ class URLSchemesRegistry final {
         fetchAPISchemes({"http", "https"}),
         allowedInReferrerSchemes({"http", "https"}) {
     for (auto& scheme : url::GetLocalSchemes())
-      localSchemes.add(scheme.c_str());
+      localSchemes.insert(scheme.c_str());
     for (auto& scheme : url::GetSecureSchemes())
-      secureSchemes.add(scheme.c_str());
+      secureSchemes.insert(scheme.c_str());
     for (auto& scheme : url::GetNoAccessSchemes())
-      schemesWithUniqueOrigins.add(scheme.c_str());
+      schemesWithUniqueOrigins.insert(scheme.c_str());
     for (auto& scheme : url::GetCORSEnabledSchemes())
-      CORSEnabledSchemes.add(scheme.c_str());
+      CORSEnabledSchemes.insert(scheme.c_str());
   }
   ~URLSchemesRegistry() = default;
 
@@ -104,7 +104,7 @@ void SchemeRegistry::initialize() {
 
 void SchemeRegistry::registerURLSchemeAsLocal(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().localSchemes.add(scheme);
+  getMutableURLSchemesRegistry().localSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme) {
@@ -116,7 +116,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme) {
 
 void SchemeRegistry::registerURLSchemeAsNoAccess(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().schemesWithUniqueOrigins.add(scheme);
+  getMutableURLSchemesRegistry().schemesWithUniqueOrigins.insert(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsNoAccess(const String& scheme) {
@@ -128,7 +128,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNoAccess(const String& scheme) {
 
 void SchemeRegistry::registerURLSchemeAsDisplayIsolated(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().displayIsolatedURLSchemes.add(scheme);
+  getMutableURLSchemesRegistry().displayIsolatedURLSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(
@@ -147,7 +147,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(
 
 void SchemeRegistry::registerURLSchemeAsSecure(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().secureSchemes.add(scheme);
+  getMutableURLSchemesRegistry().secureSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme) {
@@ -159,7 +159,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme) {
 
 void SchemeRegistry::registerURLSchemeAsEmptyDocument(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().emptyDocumentSchemes.add(scheme);
+  getMutableURLSchemesRegistry().emptyDocumentSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(const String& scheme) {
@@ -177,7 +177,7 @@ void SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(
     return;
 
   if (forbidden) {
-    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.add(
+    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.insert(
         scheme);
   } else {
     getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.remove(
@@ -202,7 +202,8 @@ bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme) {
 void SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().notAllowingJavascriptURLsSchemes.add(scheme);
+  getMutableURLSchemesRegistry().notAllowingJavascriptURLsSchemes.insert(
+      scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
@@ -216,7 +217,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
 
 void SchemeRegistry::registerURLSchemeAsCORSEnabled(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().CORSEnabledSchemes.add(scheme);
+  getMutableURLSchemesRegistry().CORSEnabledSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
@@ -259,7 +260,7 @@ bool SchemeRegistry::shouldTrackUsageMetricsForScheme(const String& scheme) {
 void SchemeRegistry::registerURLSchemeAsAllowingServiceWorkers(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().serviceWorkerSchemes.add(scheme);
+  getMutableURLSchemesRegistry().serviceWorkerSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
@@ -273,7 +274,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
 void SchemeRegistry::registerURLSchemeAsSupportingFetchAPI(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().fetchAPISchemes.add(scheme);
+  getMutableURLSchemesRegistry().fetchAPISchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
@@ -287,7 +288,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
 void SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.add(scheme);
+  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.insert(scheme);
 }
 
 void SchemeRegistry::removeURLSchemeAsFirstPartyWhenTopLevel(
@@ -307,7 +308,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(
 void SchemeRegistry::registerURLSchemeAsAllowedForReferrer(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().allowedInReferrerSchemes.add(scheme);
+  getMutableURLSchemesRegistry().allowedInReferrerSchemes.insert(scheme);
 }
 
 void SchemeRegistry::removeURLSchemeAsAllowedForReferrer(const String& scheme) {
@@ -354,7 +355,7 @@ bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
 void SchemeRegistry::registerURLSchemeBypassingSecureContextCheck(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().secureContextBypassingSchemes.add(scheme);
+  getMutableURLSchemesRegistry().secureContextBypassingSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::schemeShouldBypassSecureContextCheck(

@@ -136,7 +136,7 @@ bool ScriptCustomElementDefinitionBuilder::retrieveObservedAttributes() {
     return true;
   m_observedAttributes.reserveCapacityForSize(list.size());
   for (const auto& attribute : list)
-    m_observedAttributes.add(attribute);
+    m_observedAttributes.insert(attribute);
   return true;
 }
 

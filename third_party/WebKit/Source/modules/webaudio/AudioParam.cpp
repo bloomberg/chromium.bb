@@ -294,7 +294,7 @@ void AudioParamHandler::connect(AudioNodeOutput& output) {
     return;
 
   output.addParam(*this);
-  m_outputs.add(&output);
+  m_outputs.insert(&output);
   changedOutputs();
 }
 

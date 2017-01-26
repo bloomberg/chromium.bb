@@ -28,7 +28,7 @@ DisplayItemClient::DisplayItemClient() {
   }
   if (!liveDisplayItemClients)
     liveDisplayItemClients = new HashSet<const DisplayItemClient*>();
-  liveDisplayItemClients->add(this);
+  liveDisplayItemClients->insert(this);
 }
 
 DisplayItemClient::~DisplayItemClient() {

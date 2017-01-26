@@ -199,7 +199,7 @@ ImageBitmapFactories& ImageBitmapFactories::fromInternal(GlobalObject& object) {
 }
 
 void ImageBitmapFactories::addLoader(ImageBitmapLoader* loader) {
-  m_pendingLoaders.add(loader);
+  m_pendingLoaders.insert(loader);
 }
 
 void ImageBitmapFactories::didFinishLoading(ImageBitmapLoader* loader) {

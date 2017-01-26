@@ -57,7 +57,7 @@ StyleEngineTest::scheduleInvalidationsForRules(TreeScope& treeScope,
   ruleSet.compactRulesIfNeeded();
   if (ruleSet.needsFullRecalcForRuleSetInvalidation())
     return RuleSetInvalidationFullRecalc;
-  ruleSets.add(&ruleSet);
+  ruleSets.insert(&ruleSet);
   styleEngine().scheduleInvalidationsForRuleSets(treeScope, ruleSets);
   return RuleSetInvalidationsScheduled;
 }

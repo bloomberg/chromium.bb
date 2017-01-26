@@ -884,7 +884,7 @@ void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child) {
                child.scrollbarLogicalWidth() - child.scrollbarLogicalWidth();
   }
   m_intrinsicSizeAlongMainAxis.set(&child, mainSize);
-  m_relaidOutChildren.add(&child);
+  m_relaidOutChildren.insert(&child);
 }
 
 void LayoutFlexibleBox::clearCachedMainSizeForChild(const LayoutBox& child) {
@@ -1827,7 +1827,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(
     if (!child->needsLayout())
       markChildForPaginationRelayoutIfNeeded(*child, layoutScope);
     if (child->needsLayout())
-      m_relaidOutChildren.add(child);
+      m_relaidOutChildren.insert(child);
     child->layoutIfNeeded();
 
     updateAutoMarginsInMainAxis(*child, autoMarginOffset);

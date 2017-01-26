@@ -36,7 +36,7 @@ static HashSet<v8::Isolate*>& isolates() {
 
 static void addWorkerIsolate(v8::Isolate* isolate) {
   MutexLocker lock(isolatesMutex());
-  isolates().add(isolate);
+  isolates().insert(isolate);
 }
 
 static void removeWorkerIsolate(v8::Isolate* isolate) {

@@ -69,13 +69,13 @@ void MediaStreamSource::setReadyState(ReadyState readyState) {
 }
 
 void MediaStreamSource::addObserver(MediaStreamSource::Observer* observer) {
-  m_observers.add(observer);
+  m_observers.insert(observer);
 }
 
 void MediaStreamSource::addAudioConsumer(AudioDestinationConsumer* consumer) {
   ASSERT(m_requiresConsumer);
   MutexLocker locker(m_audioConsumersLock);
-  m_audioConsumers.add(consumer);
+  m_audioConsumers.insert(consumer);
 }
 
 bool MediaStreamSource::removeAudioConsumer(

@@ -57,7 +57,7 @@ DataObject* DataObject::createFromPasteboard(PasteMode pasteMode) {
       continue;
     dataObject->m_itemList.push_back(
         DataObjectItem::createFromPasteboard(type, sequenceNumber));
-    ASSERT(typesSeen.add(type).isNewEntry);
+    ASSERT(typesSeen.insert(type).isNewEntry);
   }
   return dataObject;
 }
@@ -142,7 +142,7 @@ Vector<String> DataObject::types() const {
       case DataObjectItem::StringKind:
         // Per the spec, type must be unique among all items of kind 'string'.
         results.push_back(item->type());
-        ASSERT(typesSeen.add(item->type()).isNewEntry);
+        ASSERT(typesSeen.insert(item->type()).isNewEntry);
         break;
       case DataObjectItem::FileKind:
         containsFiles = true;
@@ -151,7 +151,7 @@ Vector<String> DataObject::types() const {
   }
   if (containsFiles) {
     results.push_back(mimeTypeFiles);
-    ASSERT(typesSeen.add(mimeTypeFiles).isNewEntry);
+    ASSERT(typesSeen.insert(mimeTypeFiles).isNewEntry);
   }
   return results;
 }

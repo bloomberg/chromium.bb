@@ -1494,7 +1494,7 @@ bool ContentSecurityPolicy::shouldSendViolationReport(
 }
 
 void ContentSecurityPolicy::didSendViolationReport(const String& report) {
-  m_violationReportsSent.add(report.impl()->hash());
+  m_violationReportsSent.insert(report.impl()->hash());
 }
 
 const char* ContentSecurityPolicy::getDirectiveName(const DirectiveType& type) {

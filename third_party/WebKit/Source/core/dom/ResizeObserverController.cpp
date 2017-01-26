@@ -12,7 +12,7 @@ ResizeObserverController::ResizeObserverController()
     : m_observersChanged(false) {}
 
 void ResizeObserverController::addObserver(ResizeObserver& observer) {
-  m_observers.add(&observer);
+  m_observers.insert(&observer);
 }
 
 size_t ResizeObserverController::gatherObservations(size_t deeperThan) {

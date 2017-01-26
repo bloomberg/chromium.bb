@@ -279,7 +279,7 @@ void Resource::ResourceCallback::schedule(Resource* resource) {
                 BLINK_FROM_HERE,
                 WTF::bind(&ResourceCallback::runTask, WTF::unretained(this)));
   }
-  m_resourcesWithPendingClients.add(resource);
+  m_resourcesWithPendingClients.insert(resource);
 }
 
 void Resource::ResourceCallback::cancel(Resource* resource) {

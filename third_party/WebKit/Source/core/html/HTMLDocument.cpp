@@ -210,7 +210,7 @@ static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet() {
 
   attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsensitiveAttributes));
   for (const QualifiedName* attr : caseInsensitiveAttributes)
-    attrSet->add(attr->localName().impl());
+    attrSet->insert(attr->localName().impl());
 
   return attrSet;
 }

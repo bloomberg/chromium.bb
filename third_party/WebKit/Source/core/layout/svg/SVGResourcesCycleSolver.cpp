@@ -46,7 +46,7 @@ struct ActiveFrame {
 
   ActiveFrame(ResourceSet& activeSet, LayoutSVGResourceContainer* resource)
       : m_activeSet(activeSet), m_resource(resource) {
-    m_activeSet.add(m_resource);
+    m_activeSet.insert(m_resource);
   }
   ~ActiveFrame() { m_activeSet.remove(m_resource); }
 
@@ -87,7 +87,7 @@ bool SVGResourcesCycleSolver::resourceContainsCycles(
   }
 
   // No cycles found in (or from) this resource. Add it to the "DAG cache".
-  m_dagCache.add(resource);
+  m_dagCache.insert(resource);
   return false;
 }
 
@@ -97,7 +97,7 @@ void SVGResourcesCycleSolver::resolveCycles() {
   // If the starting LayoutObject is a resource container itself, then add it
   // to the active set (to break direct self-references.)
   if (m_layoutObject->isSVGResourceContainer())
-    m_activeResources.add(toLayoutSVGResourceContainer(m_layoutObject));
+    m_activeResources.insert(toLayoutSVGResourceContainer(m_layoutObject));
 
   ResourceSet localResources;
   m_resources->buildSetOfResources(localResources);

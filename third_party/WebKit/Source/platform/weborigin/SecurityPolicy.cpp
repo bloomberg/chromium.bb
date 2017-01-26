@@ -199,7 +199,7 @@ void SecurityPolicy::addOriginTrustworthyWhiteList(
 #endif
   if (origin->isUnique())
     return;
-  trustworthyOriginSet().add(origin->toRawString());
+  trustworthyOriginSet().insert(origin->toRawString());
 }
 
 bool SecurityPolicy::isOriginWhiteListedTrustworthy(

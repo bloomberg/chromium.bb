@@ -164,7 +164,7 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
       if (!changedTouches[pointState].m_touches)
         changedTouches[pointState].m_touches = TouchList::create();
       changedTouches[pointState].m_touches->append(touch);
-      changedTouches[pointState].m_targets.add(touchInfo.touchNode);
+      changedTouches[pointState].m_targets.insert(touchInfo.touchNode);
       changedTouches[pointState].m_pointerType =
           point.pointerProperties().pointerType;
     }

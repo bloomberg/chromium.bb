@@ -145,7 +145,7 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed() {
 template <typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::addObserver(Observer* observer) {
   RELEASE_ASSERT(m_iterationState & AllowingAddition);
-  m_observers.add(observer);
+  m_observers.insert(observer);
 }
 
 template <typename T, typename Observer>
@@ -153,7 +153,7 @@ inline void LifecycleNotifier<T, Observer>::removeObserver(Observer* observer) {
   // If immediate removal isn't currently allowed,
   // |observer| is recorded for pending removal.
   if (m_iterationState & AllowPendingRemoval) {
-    m_observers.add(observer);
+    m_observers.insert(observer);
     return;
   }
   RELEASE_ASSERT(m_iterationState & AllowingRemoval);

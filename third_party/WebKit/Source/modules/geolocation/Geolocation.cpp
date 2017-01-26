@@ -171,7 +171,7 @@ void Geolocation::getCurrentPosition(PositionCallback* successCallback,
       GeoNotifier::create(this, successCallback, errorCallback, options);
   startRequest(notifier);
 
-  m_oneShots.add(notifier);
+  m_oneShots.insert(notifier);
 }
 
 int Geolocation::watchPosition(PositionCallback* successCallback,
@@ -216,7 +216,7 @@ void Geolocation::startRequest(GeoNotifier* notifier) {
   else if (!isAllowed()) {
     // If we don't yet have permission, request for permission before calling
     // startUpdating()
-    m_pendingForPermissionNotifiers.add(notifier);
+    m_pendingForPermissionNotifiers.insert(notifier);
     requestPermission();
   } else {
     startUpdating(notifier);
@@ -375,7 +375,7 @@ void Geolocation::extractNotifiersWithCachedPosition(
 void Geolocation::copyToSet(const GeoNotifierVector& src,
                             GeoNotifierSet& dest) {
   for (GeoNotifier* notifier : src)
-    dest.add(notifier);
+    dest.insert(notifier);
 }
 
 void Geolocation::handleError(PositionError* error) {

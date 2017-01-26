@@ -77,7 +77,7 @@ void MediaListDirective::parse(const UChar* begin, const UChar* end) {
       policy()->reportInvalidPluginTypes(String(begin, position - begin));
       continue;
     }
-    m_pluginTypes.add(String(begin, position - begin));
+    m_pluginTypes.insert(String(begin, position - begin));
 
     ASSERT(position == end || isASCIISpace(*position));
   }
@@ -111,7 +111,7 @@ HashSet<String> MediaListDirective::getIntersect(
   HashSet<String> normalized;
   for (const auto& type : m_pluginTypes) {
     if (other.contains(type))
-      normalized.add(type);
+      normalized.insert(type);
   }
 
   return normalized;

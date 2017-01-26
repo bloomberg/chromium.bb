@@ -455,7 +455,7 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names) {
     const AtomicString& idAttribute = element->getIdAttribute();
     if (!idAttribute.isEmpty()) {
       HashSet<AtomicString>::AddResult addResult =
-          existingNames.add(idAttribute);
+          existingNames.insert(idAttribute);
       if (addResult.isNewEntry)
         names.push_back(idAttribute);
     }
@@ -466,7 +466,7 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names) {
         (type() != DocAll ||
          nameShouldBeVisibleInDocumentAll(toHTMLElement(*element)))) {
       HashSet<AtomicString>::AddResult addResult =
-          existingNames.add(nameAttribute);
+          existingNames.insert(nameAttribute);
       if (addResult.isNewEntry)
         names.push_back(nameAttribute);
     }

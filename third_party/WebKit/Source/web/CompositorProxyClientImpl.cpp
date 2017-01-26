@@ -109,7 +109,7 @@ bool CompositorProxyClientImpl::executeAnimationFrameCallbacks(
 
 void CompositorProxyClientImpl::registerCompositorProxy(
     CompositorProxy* proxy) {
-  m_proxies.add(proxy);
+  m_proxies.insert(proxy);
 }
 
 void CompositorProxyClientImpl::unregisterCompositorProxy(

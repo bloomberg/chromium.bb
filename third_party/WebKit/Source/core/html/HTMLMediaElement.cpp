@@ -164,7 +164,7 @@ void addElementToDocumentMap(HTMLMediaElement* element, Document* document) {
   } else {
     set = it->value;
   }
-  set->add(element);
+  set->insert(element);
 }
 
 void removeElementFromDocumentMap(HTMLMediaElement* element,

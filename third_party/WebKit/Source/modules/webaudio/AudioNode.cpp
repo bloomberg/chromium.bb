@@ -644,7 +644,7 @@ AudioNode* AudioNode::connect(AudioNode* destination,
       .connect(handler().output(outputIndex));
   if (!m_connectedNodes[outputIndex])
     m_connectedNodes[outputIndex] = new HeapHashSet<Member<AudioNode>>();
-  m_connectedNodes[outputIndex]->add(destination);
+  m_connectedNodes[outputIndex]->insert(destination);
 
   // Let context know that a connection has been made.
   context()->incrementConnectionCount();
@@ -687,7 +687,7 @@ void AudioNode::connect(AudioParam* param,
   param->handler().connect(handler().output(outputIndex));
   if (!m_connectedParams[outputIndex])
     m_connectedParams[outputIndex] = new HeapHashSet<Member<AudioParam>>();
-  m_connectedParams[outputIndex]->add(param);
+  m_connectedParams[outputIndex]->insert(param);
 }
 
 void AudioNode::disconnectAllFromOutput(unsigned outputIndex) {

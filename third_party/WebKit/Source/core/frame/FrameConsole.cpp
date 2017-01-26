@@ -103,7 +103,7 @@ void FrameConsole::addMessageFromWorker(
 void FrameConsole::addSingletonMessage(ConsoleMessage* consoleMessage) {
   if (m_singletonMessages.contains(consoleMessage->message()))
     return;
-  m_singletonMessages.add(consoleMessage->message());
+  m_singletonMessages.insert(consoleMessage->message());
   addMessage(consoleMessage);
 }
 

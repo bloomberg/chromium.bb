@@ -105,7 +105,7 @@ float deviceScaleFactor(LocalFrame* frame) {
 
 Page* Page::createOrdinary(PageClients& pageClients) {
   Page* page = create(pageClients);
-  ordinaryPages().add(page);
+  ordinaryPages().insert(page);
   if (ScopedPageSuspender::isActive())
     page->setSuspended(true);
   return page;
@@ -139,7 +139,7 @@ Page::Page(PageClients& pageClients)
   ASSERT(m_editorClient);
 
   ASSERT(!allPages().contains(this));
-  allPages().add(this);
+  allPages().insert(this);
 }
 
 Page::~Page() {

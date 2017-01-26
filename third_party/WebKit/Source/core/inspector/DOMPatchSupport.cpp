@@ -335,7 +335,7 @@ bool DOMPatchSupport::innerPatchChildren(
       usedNewOrdinals;
   for (size_t i = 0; i < oldList.size(); ++i) {
     if (oldMap[i].first) {
-      if (usedNewOrdinals.add(oldMap[i].second).isNewEntry)
+      if (usedNewOrdinals.insert(oldMap[i].second).isNewEntry)
         continue;
       oldMap[i].first = 0;
       oldMap[i].second = 0;
@@ -387,7 +387,7 @@ bool DOMPatchSupport::innerPatchChildren(
       newMap[i].second = 0;
       continue;
     }
-    usedOldOrdinals.add(oldOrdinal);
+    usedOldOrdinals.insert(oldOrdinal);
     markNodeAsUsed(newMap[i].first);
   }
 

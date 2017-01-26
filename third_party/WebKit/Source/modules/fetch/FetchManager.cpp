@@ -918,7 +918,7 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState,
   Loader* loader =
       Loader::create(getExecutionContext(), this, resolver, request,
                      scriptState->world().isIsolatedWorld());
-  m_loaders.add(loader);
+  m_loaders.insert(loader);
   loader->start();
   return promise;
 }

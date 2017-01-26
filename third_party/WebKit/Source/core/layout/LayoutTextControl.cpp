@@ -224,7 +224,7 @@ bool LayoutTextControl::hasValidAvgCharWidth(const SimpleFontData* fontData,
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontFamiliesWithInvalidCharWidth);
          ++i)
-      fontFamiliesWithInvalidCharWidthMap->add(
+      fontFamiliesWithInvalidCharWidthMap->insert(
           AtomicString(fontFamiliesWithInvalidCharWidth[i]));
   }
 

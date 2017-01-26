@@ -269,7 +269,7 @@ void SVGElement::setWebAnimatedAttribute(const QualifiedName& attribute,
       notifyAnimValChanged(element, attribute);
     }
   });
-  ensureSVGRareData()->webAnimatedAttributes().add(&attribute);
+  ensureSVGRareData()->webAnimatedAttributes().insert(&attribute);
 }
 
 void SVGElement::clearWebAnimatedAttributes() {
@@ -528,7 +528,7 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
 
     bool hadRelativeLengths = currentElement.hasRelativeLengths();
     if (clientHasRelativeLengths)
-      currentElement.m_elementsWithRelativeLengths.add(clientElement);
+      currentElement.m_elementsWithRelativeLengths.insert(clientElement);
     else
       currentElement.m_elementsWithRelativeLengths.remove(clientElement);
 
@@ -614,7 +614,7 @@ void SVGElement::mapInstanceToElement(SVGElement* instance) {
       ensureSVGRareData()->elementInstances();
   ASSERT(!instances.contains(instance));
 
-  instances.add(instance);
+  instances.insert(instance);
 }
 
 void SVGElement::removeInstanceMapping(SVGElement* instance) {
@@ -1235,8 +1235,8 @@ SVGElementSet* SVGElement::setOfIncomingReferences() const {
 void SVGElement::addReferenceTo(SVGElement* targetElement) {
   ASSERT(targetElement);
 
-  ensureSVGRareData()->outgoingReferences().add(targetElement);
-  targetElement->ensureSVGRareData()->incomingReferences().add(this);
+  ensureSVGRareData()->outgoingReferences().insert(targetElement);
+  targetElement->ensureSVGRareData()->incomingReferences().insert(this);
 }
 
 void SVGElement::rebuildAllIncomingReferences() {

@@ -35,7 +35,7 @@ ScriptPromise TextDetector::doDetect(
         NotSupportedError, "Text detection service unavailable."));
     return promise;
   }
-  m_textServiceRequests.add(resolver);
+  m_textServiceRequests.insert(resolver);
   m_textService->Detect(std::move(sharedBufferHandle), imageWidth, imageHeight,
                         convertToBaseCallback(WTF::bind(
                             &TextDetector::onDetectText, wrapPersistent(this),

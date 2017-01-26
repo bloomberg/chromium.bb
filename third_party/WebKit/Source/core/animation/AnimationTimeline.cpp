@@ -89,7 +89,7 @@ bool AnimationTimeline::isActive() {
 void AnimationTimeline::animationAttached(Animation& animation) {
   DCHECK_EQ(animation.timeline(), this);
   DCHECK(!m_animations.contains(&animation));
-  m_animations.add(&animation);
+  m_animations.insert(&animation);
 }
 
 Animation* AnimationTimeline::play(AnimationEffectReadOnly* child) {
@@ -281,7 +281,7 @@ void AnimationTimeline::clearOutdatedAnimation(Animation* animation) {
 void AnimationTimeline::setOutdatedAnimation(Animation* animation) {
   DCHECK(animation->outdated());
   m_outdatedAnimationCount++;
-  m_animationsNeedingUpdate.add(animation);
+  m_animationsNeedingUpdate.insert(animation);
   if (isActive() && !m_document->page()->animator().isServicingAnimations())
     m_timing->serviceOnNextFrame();
 }

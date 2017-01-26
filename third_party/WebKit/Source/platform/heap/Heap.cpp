@@ -215,7 +215,7 @@ ThreadHeap::ThreadHeap()
     s_mainThreadHeap = this;
 
   MutexLocker locker(ThreadHeap::allHeapsMutex());
-  allHeaps().add(this);
+  allHeaps().insert(this);
 }
 
 ThreadHeap::~ThreadHeap() {
@@ -235,7 +235,7 @@ HashSet<ThreadHeap*>& ThreadHeap::allHeaps() {
 
 void ThreadHeap::attach(ThreadState* thread) {
   MutexLocker locker(m_threadAttachMutex);
-  m_threads.add(thread);
+  m_threads.insert(thread);
 }
 
 void ThreadHeap::detach(ThreadState* thread) {

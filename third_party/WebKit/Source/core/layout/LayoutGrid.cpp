@@ -1135,7 +1135,7 @@ double LayoutGrid::computeFlexFactorUnitSize(
       flexFactorSum -= flexFactor;
       if (!additionalTracksToTreatAsInflexible)
         additionalTracksToTreatAsInflexible = WTF::makeUnique<TrackIndexSet>();
-      additionalTracksToTreatAsInflexible->add(index);
+      additionalTracksToTreatAsInflexible->insert(index);
       validFlexFactorUnit = false;
     }
   }
@@ -1532,7 +1532,7 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctions(
                              ? sizingData.columnTracks[trackIndex]
                              : sizingData.rowTracks[trackIndex];
       while (LayoutBox* gridItem = iterator.nextGridItem()) {
-        if (itemsSet.add(gridItem).isNewEntry) {
+        if (itemsSet.insert(gridItem).isNewEntry) {
           const GridSpan& span = grid.gridItemSpan(*gridItem, direction);
           if (span.integerSpan() == 1) {
             resolveContentBasedTrackSizingFunctionsForNonSpanningItems(

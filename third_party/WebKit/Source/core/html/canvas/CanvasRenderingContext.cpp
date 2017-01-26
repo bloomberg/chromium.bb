@@ -171,9 +171,9 @@ bool CanvasRenderingContext::wouldTaintOrigin(
 
   if (hasURL) {
     if (taintOrigin)
-      m_dirtyURLs.add(sourceURL.getString());
+      m_dirtyURLs.insert(sourceURL.getString());
     else
-      m_cleanURLs.add(sourceURL.getString());
+      m_cleanURLs.insert(sourceURL.getString());
   }
   return taintOrigin;
 }

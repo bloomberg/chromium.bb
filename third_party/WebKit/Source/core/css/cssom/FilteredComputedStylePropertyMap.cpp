@@ -12,11 +12,11 @@ FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(
     const Vector<AtomicString>& customProperties)
     : ComputedStylePropertyMap(computedStyleDeclaration) {
   for (const auto& nativeProperty : nativeProperties) {
-    m_nativeProperties.add(nativeProperty);
+    m_nativeProperties.insert(nativeProperty);
   }
 
   for (const auto& customProperty : customProperties) {
-    m_customProperties.add(customProperty);
+    m_customProperties.insert(customProperty);
   }
 }
 

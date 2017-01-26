@@ -176,7 +176,7 @@ void ServiceWorkerRegistrationNotifications::prepareShow(
       WTF::bind(&ServiceWorkerRegistrationNotifications::didLoadResources,
                 wrapWeakPersistent(this), origin.release(), data,
                 WTF::passed(std::move(callbacks))));
-  m_loaders.add(loader);
+  m_loaders.insert(loader);
   loader->start(getExecutionContext(), data);
 }
 

@@ -430,7 +430,7 @@ void SVGSMILElement::parseBeginOrEnd(const String& parseString,
   HashSet<SMILTime> existing;
   for (unsigned n = 0; n < timeList.size(); ++n) {
     if (!timeList[n].time().isUnresolved())
-      existing.add(timeList[n].time().value());
+      existing.insert(timeList[n].time().value());
   }
   Vector<String> splitString;
   parseString.split(';', splitString);
@@ -1178,7 +1178,7 @@ void SVGSMILElement::notifyDependentsIntervalChanged() {
   // use a HashSet of untraced heap references -- any conservative GC which
   // strikes before unwinding will find these elements on the stack.
   DEFINE_STATIC_LOCAL(HashSet<UntracedMember<SVGSMILElement>>, loopBreaker, ());
-  if (!loopBreaker.add(this).isNewEntry)
+  if (!loopBreaker.insert(this).isNewEntry)
     return;
 
   for (SVGSMILElement* element : m_syncBaseDependents)
@@ -1216,7 +1216,7 @@ void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase) {
 }
 
 void SVGSMILElement::addSyncBaseDependent(SVGSMILElement* animation) {
-  m_syncBaseDependents.add(animation);
+  m_syncBaseDependents.insert(animation);
   if (m_interval.begin.isFinite())
     animation->createInstanceTimesFromSyncbase(this);
 }

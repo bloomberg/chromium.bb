@@ -258,7 +258,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       crossThreadBind(updatePlaceholderImage, this->createWeakPtr(),
                       WTF::passed(std::move(dispatcherTaskRunner)),
                       m_placeholderCanvasId, std::move(image), resource.id));
-  m_spareResourceLocks.add(m_nextResourceId);
+  m_spareResourceLocks.insert(m_nextResourceId);
 
   commitTypeHistogram.count(commitType);
 

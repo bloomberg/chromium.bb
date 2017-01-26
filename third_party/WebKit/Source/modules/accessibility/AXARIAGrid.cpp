@@ -70,7 +70,7 @@ bool AXARIAGrid::addTableRowChild(AXObject* child,
   else
     m_children.appendVector(row->children());
 
-  appendedRows.add(row);
+  appendedRows.insert(row);
   return true;
 }
 

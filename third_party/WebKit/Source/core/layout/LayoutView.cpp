@@ -592,7 +592,7 @@ IntRect LayoutView::selectionBounds() {
       while (cb && !cb->isLayoutView()) {
         selRect.unite(selectionRectForLayoutObject(cb));
         VisitedContainingBlockSet::AddResult addResult =
-            visitedContainingBlocks.add(cb);
+            visitedContainingBlocks.insert(cb);
         if (!addResult.isNewEntry)
           break;
         cb = cb->containingBlock();

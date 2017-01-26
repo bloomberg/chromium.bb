@@ -162,7 +162,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
     if (name.isEmpty())
       continue;
 
-    uniqueParamNames.add(name.impl());
+    uniqueParamNames.insert(name.impl());
     paramNames.push_back(p->name());
     paramValues.push_back(p->value());
 
@@ -191,7 +191,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
   String codebase;
   if (MIMETypeRegistry::isJavaAppletMIMEType(serviceType)) {
     codebase = "codebase";
-    uniqueParamNames.add(
+    uniqueParamNames.insert(
         codebase.impl());  // pretend we found it in a PARAM already
   }
 

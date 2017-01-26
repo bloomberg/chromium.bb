@@ -132,7 +132,7 @@ void PresentationController::setDefaultRequestUrl(
 
 void PresentationController::registerConnection(
     PresentationConnection* connection) {
-  m_connections.add(connection);
+  m_connections.insert(connection);
 }
 
 void PresentationController::contextDestroyed(ExecutionContext*) {

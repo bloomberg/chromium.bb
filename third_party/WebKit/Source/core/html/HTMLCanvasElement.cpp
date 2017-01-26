@@ -773,7 +773,7 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback,
 }
 
 void HTMLCanvasElement::addListener(CanvasDrawListener* listener) {
-  m_listeners.add(listener);
+  m_listeners.insert(listener);
 }
 
 void HTMLCanvasElement::removeListener(CanvasDrawListener* listener) {

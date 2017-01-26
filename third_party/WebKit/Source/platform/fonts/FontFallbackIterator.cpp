@@ -78,7 +78,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::uniqueOrNext(
   // We don't want to skip subsetted ranges because HarfBuzzShaper's behavior
   // depends on the subsetting.
   if (candidate->isEntireRange())
-    m_uniqueFontDataForRangeSetsReturned.add(candidateId);
+    m_uniqueFontDataForRangeSetsReturned.insert(candidateId);
   return candidate;
 }
 
@@ -234,7 +234,7 @@ PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHintList(
 
   if (!hint || m_previouslyAskedForHint.contains(hint))
     return nullptr;
-  m_previouslyAskedForHint.add(hint);
+  m_previouslyAskedForHint.insert(hint);
   return fontCache->fallbackFontForCharacter(
       m_fontDescription, hint,
       m_fontFallbackList->primarySimpleFontData(m_fontDescription));

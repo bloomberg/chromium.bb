@@ -436,7 +436,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
   AnimationsVector scheduledAnimationsInSameGroup;
   for (const auto& entry : m_scheduledAnimations) {
     if (!entry.key.first || entry.value->isEmpty()) {
-      invalidKeys.add(entry.key);
+      invalidKeys.insert(entry.key);
       continue;
     }
 

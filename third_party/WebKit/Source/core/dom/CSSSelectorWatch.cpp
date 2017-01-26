@@ -104,7 +104,7 @@ void CSSSelectorWatch::updateSelectorMatches(
     if (it != m_addedSelectors.end())
       m_addedSelectors.remove(it);
     else
-      m_removedSelectors.add(selector);
+      m_removedSelectors.insert(selector);
   }
 
   for (const auto& selector : addedSelectors) {
@@ -118,7 +118,7 @@ void CSSSelectorWatch::updateSelectorMatches(
     if (it != m_removedSelectors.end())
       m_removedSelectors.remove(it);
     else
-      m_addedSelectors.add(selector);
+      m_addedSelectors.insert(selector);
   }
 
   if (!shouldUpdateTimer)

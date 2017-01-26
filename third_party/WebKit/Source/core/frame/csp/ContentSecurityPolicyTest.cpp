@@ -383,7 +383,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
 TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
   KURL url(KURL(), "https://example.test");
   IntegrityMetadataSet integrityMetadata;
-  integrityMetadata.add(
+  integrityMetadata.insert(
       IntegrityMetadata("1234", HashAlgorithmSha384).toPair());
   csp->bindToExecutionContext(document.get());
   // Enforce
@@ -551,7 +551,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
 TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
   KURL url(KURL(), "https://example.test");
   IntegrityMetadataSet integrityMetadata;
-  integrityMetadata.add(
+  integrityMetadata.insert(
       IntegrityMetadata("1234", HashAlgorithmSha384).toPair());
   csp->bindToExecutionContext(document.get());
   // Enforce

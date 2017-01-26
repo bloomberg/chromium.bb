@@ -732,7 +732,7 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
       clientToInvalidate = &oldItem.client();
     }
     if (clientToInvalidate &&
-        invalidatedClientsInOldChunk.add(clientToInvalidate).isNewEntry) {
+        invalidatedClientsInOldChunk.insert(clientToInvalidate).isNewEntry) {
       addRasterInvalidationInfo(
           isPotentiallyInvalidClient ? nullptr : clientToInvalidate, newChunk,
           FloatRect(m_currentPaintArtifact.getDisplayItemList().visualRect(
@@ -745,7 +745,7 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
        ++newIndex) {
     const DisplayItem& newItem = m_newDisplayItemList[newIndex];
     if (newItem.drawsContent() && !clientCacheIsValid(newItem.client()) &&
-        invalidatedClientsInNewChunk.add(&newItem.client()).isNewEntry) {
+        invalidatedClientsInNewChunk.insert(&newItem.client()).isNewEntry) {
       addRasterInvalidationInfo(&newItem.client(), newChunk,
                                 FloatRect(newItem.client().visualRect()));
     }

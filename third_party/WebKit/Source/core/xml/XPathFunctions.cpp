@@ -364,7 +364,7 @@ Value FunId::evaluate(EvaluationContext& context) const {
     // this case is formally undefined.
     Node* node = contextScope.getElementById(
         AtomicString(idList.substring(startPos, endPos - startPos)));
-    if (node && resultSet.add(node).isNewEntry)
+    if (node && resultSet.insert(node).isNewEntry)
       result->append(node);
 
     startPos = endPos;

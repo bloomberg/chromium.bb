@@ -32,9 +32,9 @@ ActiveSheetsChange compareActiveStyleSheets(
       continue;
 
     if (newStyleSheets[index].second)
-      changedRuleSets.add(newStyleSheets[index].second);
+      changedRuleSets.insert(newStyleSheets[index].second);
     if (oldStyleSheets[index].second)
-      changedRuleSets.add(oldStyleSheets[index].second);
+      changedRuleSets.insert(oldStyleSheets[index].second);
   }
 
   if (index == oldStyleSheetCount) {

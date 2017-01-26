@@ -186,7 +186,7 @@ void LayoutSVGResourceContainer::markClientForInvalidation(
 
 void LayoutSVGResourceContainer::addClient(LayoutObject* client) {
   ASSERT(client);
-  m_clients.add(client);
+  m_clients.insert(client);
   clearInvalidationMask();
 }
 
@@ -269,7 +269,7 @@ static inline void removeFromCacheAndInvalidateDependencies(
 
   for (SVGElement* element : *dependencies) {
     if (LayoutObject* layoutObject = element->layoutObject()) {
-      if (UNLIKELY(!invalidatingDependencies.add(element).isNewEntry)) {
+      if (UNLIKELY(!invalidatingDependencies.insert(element).isNewEntry)) {
         // Reference cycle: we are in process of invalidating this dependant.
         continue;
       }

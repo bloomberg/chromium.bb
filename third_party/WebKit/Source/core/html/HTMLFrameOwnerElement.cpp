@@ -116,7 +116,7 @@ HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope() {
 // Unlike moveWidgetToParentSoon, this will not call dispose the Widget.
 void temporarilyRemoveWidgetFromParentSoon(Widget* widget) {
   if (s_updateSuspendCount) {
-    widgetsPendingTemporaryRemovalFromParent().add(widget);
+    widgetsPendingTemporaryRemovalFromParent().insert(widget);
   } else {
     if (toFrameView(widget->parent()))
       toFrameView(widget->parent())->removeChild(widget);
@@ -215,7 +215,7 @@ bool HTMLFrameOwnerElement::isKeyboardFocusable() const {
 
 void HTMLFrameOwnerElement::disposeWidgetSoon(Widget* widget) {
   if (s_updateSuspendCount) {
-    widgetsPendingDispose().add(widget);
+    widgetsPendingDispose().insert(widget);
     return;
   }
   widget->dispose();

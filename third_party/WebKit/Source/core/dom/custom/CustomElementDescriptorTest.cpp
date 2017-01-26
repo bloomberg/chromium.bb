@@ -30,7 +30,7 @@ TEST(CustomElementDescriptorTest, notEqual) {
 
 TEST(CustomElementDescriptorTest, hashable) {
   HashSet<CustomElementDescriptor> descriptors;
-  descriptors.add(CustomElementDescriptor("foo-bar", "foo-bar"));
+  descriptors.insert(CustomElementDescriptor("foo-bar", "foo-bar"));
   EXPECT_TRUE(
       descriptors.contains(CustomElementDescriptor("foo-bar", "foo-bar")))
       << "the identical descriptor should be found in the hash set";

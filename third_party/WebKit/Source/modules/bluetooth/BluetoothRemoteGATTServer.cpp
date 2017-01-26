@@ -38,7 +38,7 @@ BluetoothRemoteGATTServer* BluetoothRemoteGATTServer::create(
 
 void BluetoothRemoteGATTServer::AddToActiveAlgorithms(
     ScriptPromiseResolver* resolver) {
-  auto result = m_activeAlgorithms.add(resolver);
+  auto result = m_activeAlgorithms.insert(resolver);
   CHECK(result.isNewEntry);
 }
 

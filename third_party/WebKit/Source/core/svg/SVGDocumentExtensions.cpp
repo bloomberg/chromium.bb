@@ -37,7 +37,7 @@ SVGDocumentExtensions::SVGDocumentExtensions(Document* document)
 SVGDocumentExtensions::~SVGDocumentExtensions() {}
 
 void SVGDocumentExtensions::addTimeContainer(SVGSVGElement* element) {
-  m_timeContainers.add(element);
+  m_timeContainers.insert(element);
 }
 
 void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element) {
@@ -47,7 +47,7 @@ void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element) {
 void SVGDocumentExtensions::addWebAnimationsPendingSVGElement(
     SVGElement& element) {
   ASSERT(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
-  m_webAnimationsPendingSVGElements.add(&element);
+  m_webAnimationsPendingSVGElements.insert(&element);
 }
 
 void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document) {
@@ -122,7 +122,7 @@ void SVGDocumentExtensions::reportError(const String& message) {
 void SVGDocumentExtensions::addSVGRootWithRelativeLengthDescendents(
     SVGSVGElement* svgRoot) {
   ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
-  m_relativeLengthSVGRoots.add(svgRoot);
+  m_relativeLengthSVGRoots.insert(svgRoot);
 }
 
 void SVGDocumentExtensions::removeSVGRootWithRelativeLengthDescendents(

@@ -401,7 +401,7 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target,
 
 void WebGL2RenderingContextBase::registerGetBufferSubDataAsyncCallback(
     WebGLGetBufferSubDataAsyncCallback* callback) {
-  m_getBufferSubDataAsyncCallbacks.add(callback);
+  m_getBufferSubDataAsyncCallbacks.insert(callback);
 }
 
 void WebGL2RenderingContextBase::unregisterGetBufferSubDataAsyncCallback(

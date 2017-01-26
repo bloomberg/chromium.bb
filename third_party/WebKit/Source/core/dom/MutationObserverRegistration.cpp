@@ -87,7 +87,7 @@ void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node) {
     m_registrationNodeKeepAlive =
         m_registrationNode.get();  // Balanced in clearTransientRegistrations.
   }
-  m_transientRegistrationNodes->add(&node);
+  m_transientRegistrationNodes->insert(&node);
 }
 
 void MutationObserverRegistration::clearTransientRegistrations() {
@@ -139,12 +139,12 @@ bool MutationObserverRegistration::shouldReceiveMutationFrom(
 void MutationObserverRegistration::addRegistrationNodesToSet(
     HeapHashSet<Member<Node>>& nodes) const {
   DCHECK(m_registrationNode);
-  nodes.add(m_registrationNode.get());
+  nodes.insert(m_registrationNode.get());
   if (!m_transientRegistrationNodes)
     return;
   for (NodeHashSet::const_iterator iter = m_transientRegistrationNodes->begin();
        iter != m_transientRegistrationNodes->end(); ++iter)
-    nodes.add(iter->get());
+    nodes.insert(iter->get());
 }
 
 DEFINE_TRACE(MutationObserverRegistration) {

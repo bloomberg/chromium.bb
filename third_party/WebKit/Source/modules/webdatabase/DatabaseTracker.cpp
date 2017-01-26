@@ -111,7 +111,7 @@ void DatabaseTracker::addOpenDatabase(Database* database) {
     nameMap->set(name, databaseSet);
   }
 
-  databaseSet->add(database);
+  databaseSet->insert(database);
 }
 
 void DatabaseTracker::removeOpenDatabase(Database* database) {

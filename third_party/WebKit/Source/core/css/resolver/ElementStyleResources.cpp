@@ -67,7 +67,7 @@ StyleImage* ElementStyleResources::generatedOrPendingFromValue(
     CSSPropertyID property,
     const CSSImageGeneratorValue& value) {
   if (value.isPending()) {
-    m_pendingImageProperties.add(property);
+    m_pendingImageProperties.insert(property);
     return StylePendingImage::create(value);
   }
   return StyleGeneratedImage::create(value);
@@ -77,7 +77,7 @@ StyleImage* ElementStyleResources::setOrPendingFromValue(
     CSSPropertyID property,
     const CSSImageSetValue& value) {
   if (value.isCachePending(m_deviceScaleFactor)) {
-    m_pendingImageProperties.add(property);
+    m_pendingImageProperties.insert(property);
     return StylePendingImage::create(value);
   }
   return value.cachedImage(m_deviceScaleFactor);
@@ -87,7 +87,7 @@ StyleImage* ElementStyleResources::cachedOrPendingFromValue(
     CSSPropertyID property,
     const CSSImageValue& value) {
   if (value.isCachePending()) {
-    m_pendingImageProperties.add(property);
+    m_pendingImageProperties.insert(property);
     return StylePendingImage::create(value);
   }
   value.restoreCachedResourceIfNeeded(*m_document);

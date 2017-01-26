@@ -134,7 +134,7 @@ TEST_F(AnimationEffectStackTest, CancelledAnimations) {
       play(makeKeyframeEffect(makeEffectModel(CSSPropertyFontSize,
                                               AnimatableDouble::create(1))),
            0);
-  cancelledAnimations.add(animation);
+  cancelledAnimations.insert(animation);
   play(makeKeyframeEffect(
            makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(2))),
        0);

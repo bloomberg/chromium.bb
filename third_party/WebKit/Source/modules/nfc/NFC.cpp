@@ -636,7 +636,7 @@ ScriptPromise NFC::push(ScriptState* scriptState,
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  m_requests.add(resolver);
+  m_requests.insert(resolver);
   auto callback = convertToBaseCallback(WTF::bind(&NFC::OnRequestCompleted,
                                                   wrapPersistent(this),
                                                   wrapPersistent(resolver)));
@@ -654,7 +654,7 @@ ScriptPromise NFC::cancelPush(ScriptState* scriptState, const String& target) {
     return promise;
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  m_requests.add(resolver);
+  m_requests.insert(resolver);
   auto callback = convertToBaseCallback(WTF::bind(&NFC::OnRequestCompleted,
                                                   wrapPersistent(this),
                                                   wrapPersistent(resolver)));
@@ -674,7 +674,7 @@ ScriptPromise NFC::watch(ScriptState* scriptState,
 
   callback->setScriptState(scriptState);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  m_requests.add(resolver);
+  m_requests.insert(resolver);
   auto watchCallback = convertToBaseCallback(
       WTF::bind(&NFC::OnWatchRegistered, wrapPersistent(this),
                 wrapPersistent(callback), wrapPersistent(resolver)));
@@ -697,7 +697,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* scriptState, long id) {
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  m_requests.add(resolver);
+  m_requests.insert(resolver);
   m_nfc->CancelWatch(id, convertToBaseCallback(WTF::bind(
                              &NFC::OnRequestCompleted, wrapPersistent(this),
                              wrapPersistent(resolver))));
@@ -713,7 +713,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* scriptState) {
 
   m_callbacks.clear();
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  m_requests.add(resolver);
+  m_requests.insert(resolver);
   m_nfc->CancelAllWatches(convertToBaseCallback(
       WTF::bind(&NFC::OnRequestCompleted, wrapPersistent(this),
                 wrapPersistent(resolver))));

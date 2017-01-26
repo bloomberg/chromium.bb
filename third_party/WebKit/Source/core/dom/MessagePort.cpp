@@ -259,7 +259,7 @@ std::unique_ptr<MessagePortChannelArray> MessagePort::disentanglePorts(
           "Port at index " + String::number(i) + " is " + type + ".");
       return nullptr;
     }
-    visited.add(port);
+    visited.insert(port);
   }
 
   UseCounter::count(context, UseCounter::MessagePortsTransferred);

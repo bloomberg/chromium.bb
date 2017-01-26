@@ -116,7 +116,7 @@ void ScopedStyleResolver::collectFeaturesTo(
     ASSERT(m_authorStyleSheets[i]->ownerNode());
     StyleSheetContents* contents = m_authorStyleSheets[i]->contents();
     if (contents->hasOneClient() ||
-        visitedSharedStyleSheetContents.add(contents).isNewEntry)
+        visitedSharedStyleSheetContents.insert(contents).isNewEntry)
       features.add(contents->ruleSet().features());
   }
 

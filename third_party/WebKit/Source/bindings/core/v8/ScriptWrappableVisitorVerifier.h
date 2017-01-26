@@ -61,7 +61,7 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
 
   bool markWrapperHeader(HeapObjectHeader* header) const override {
     if (!m_visitedHeaders.contains(header)) {
-      m_visitedHeaders.add(header);
+      m_visitedHeaders.insert(header);
       return true;
     }
     return false;

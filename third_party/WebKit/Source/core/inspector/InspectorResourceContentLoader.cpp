@@ -120,14 +120,14 @@ void InspectorResourceContentLoader::start() {
     resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
 
     if (!resourceRequest.url().getString().isEmpty()) {
-      urlsToFetch.add(resourceRequest.url().getString());
+      urlsToFetch.insert(resourceRequest.url().getString());
       FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
       Resource* resource = RawResource::fetch(request, document->fetcher());
       if (resource) {
         // Prevent garbage collection by holding a reference to this resource.
         m_resources.push_back(resource);
         ResourceClient* resourceClient = new ResourceClient(this);
-        m_pendingResourceClients.add(resourceClient);
+        m_pendingResourceClients.insert(resourceClient);
         resourceClient->waitForResource(resource);
       }
     }
@@ -140,7 +140,7 @@ void InspectorResourceContentLoader::start() {
       String url = styleSheet->href();
       if (url.isEmpty() || urlsToFetch.contains(url))
         continue;
-      urlsToFetch.add(url);
+      urlsToFetch.insert(url);
       FetchRequest request(ResourceRequest(url),
                            FetchInitiatorTypeNames::internal);
       request.mutableResourceRequest().setRequestContext(
@@ -152,7 +152,7 @@ void InspectorResourceContentLoader::start() {
       // Prevent garbage collection by holding a reference to this resource.
       m_resources.push_back(resource);
       ResourceClient* resourceClient = new ResourceClient(this);
-      m_pendingResourceClients.add(resourceClient);
+      m_pendingResourceClients.insert(resourceClient);
       resourceClient->waitForResource(resource);
     }
   }

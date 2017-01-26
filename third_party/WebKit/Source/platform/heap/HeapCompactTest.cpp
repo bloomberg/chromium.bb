@@ -406,7 +406,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetMap) {
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::create(i);
     Inner* inner = new Inner;
-    inner->add(value);
+    inner->insert(value);
     set->add(inner);
   }
   EXPECT_EQ(13u, set->size());

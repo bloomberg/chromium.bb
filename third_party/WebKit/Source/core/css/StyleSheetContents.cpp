@@ -565,7 +565,7 @@ void StyleSheetContents::registerClient(CSSStyleSheet* sheet) {
     if (sheet->ownerDocument() != document)
       m_hasSingleOwnerDocument = false;
   }
-  m_loadingClients.add(sheet);
+  m_loadingClients.insert(sheet);
 }
 
 void StyleSheetContents::unregisterClient(CSSStyleSheet* sheet) {
@@ -587,13 +587,13 @@ void StyleSheetContents::clientLoadCompleted(CSSStyleSheet* sheet) {
   // In this case, we don't need to add the stylesheet to completed clients.
   if (!sheet->ownerDocument())
     return;
-  m_completedClients.add(sheet);
+  m_completedClients.insert(sheet);
 }
 
 void StyleSheetContents::clientLoadStarted(CSSStyleSheet* sheet) {
   ASSERT(m_completedClients.contains(sheet));
   m_completedClients.remove(sheet);
-  m_loadingClients.add(sheet);
+  m_loadingClients.insert(sheet);
 }
 
 void StyleSheetContents::setReferencedFromResource(

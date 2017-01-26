@@ -320,7 +320,7 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
   if (m_validatedURLs.size() >= kMaxValidatedURLsSize) {
     m_validatedURLs.clear();
   }
-  m_validatedURLs.add(request.resourceRequest().url());
+  m_validatedURLs.insert(request.resourceRequest().url());
 }
 
 static std::unique_ptr<TracedValue> urlForTraceEvent(const KURL& url) {
@@ -423,7 +423,7 @@ void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(
       m_nonBlockingLoaders.contains(resource->loader()) &&
       resource->isLinkPreload() && !request.forPreload()) {
     m_nonBlockingLoaders.remove(resource->loader());
-    m_loaders.add(resource->loader());
+    m_loaders.insert(resource->loader());
   }
 }
 
@@ -1031,7 +1031,7 @@ void ResourceFetcher::preloadStarted(Resource* resource) {
   m_preloads->add(resource);
 
   if (m_preloadedURLsForTest)
-    m_preloadedURLsForTest->add(resource->url().getString());
+    m_preloadedURLsForTest->insert(resource->url().getString());
 }
 
 void ResourceFetcher::enableIsPreloadedForTest() {
@@ -1041,7 +1041,7 @@ void ResourceFetcher::enableIsPreloadedForTest() {
 
   if (m_preloads) {
     for (const auto& resource : *m_preloads)
-      m_preloadedURLsForTest->add(resource->url().getString());
+      m_preloadedURLsForTest->insert(resource->url().getString());
   }
 }
 
@@ -1185,7 +1185,7 @@ void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader) {
   DCHECK(loader);
   // TODO(yoav): Convert CHECK to DCHECK if no crash reports come in.
   CHECK(m_loaders.contains(loader));
-  m_nonBlockingLoaders.add(loader);
+  m_nonBlockingLoaders.insert(loader);
   m_loaders.remove(loader);
 }
 
@@ -1217,9 +1217,9 @@ bool ResourceFetcher::startLoad(Resource* resource) {
 
   ResourceLoader* loader = ResourceLoader::create(this, resource);
   if (resource->shouldBlockLoadEvent())
-    m_loaders.add(loader);
+    m_loaders.insert(loader);
   else
-    m_nonBlockingLoaders.add(loader);
+    m_nonBlockingLoaders.insert(loader);
 
   storePerformanceTimingInitiatorInformation(resource);
   resource->setFetcherSecurityOrigin(sourceOrigin);

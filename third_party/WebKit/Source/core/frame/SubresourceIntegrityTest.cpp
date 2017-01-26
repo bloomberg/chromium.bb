@@ -141,7 +141,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
       size_t expectedMetadataArraySize) {
     IntegrityMetadataSet expectedMetadataSet;
     for (size_t i = 0; i < expectedMetadataArraySize; i++) {
-      expectedMetadataSet.add(expectedMetadataArray[i].toPair());
+      expectedMetadataSet.insert(expectedMetadataArray[i].toPair());
     }
     IntegrityMetadataSet metadataSet;
     EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult,

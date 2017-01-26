@@ -232,7 +232,7 @@ void FontFaceSet::addToLoadingFonts(FontFace* fontFace) {
       m_ready->reset();
     handlePendingEventsAndPromisesSoon();
   }
-  m_loadingFonts.add(fontFace);
+  m_loadingFonts.insert(fontFace);
   fontFace->addCallback(this);
 }
 

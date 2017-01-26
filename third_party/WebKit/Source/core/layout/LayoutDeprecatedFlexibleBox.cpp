@@ -103,7 +103,7 @@ class FlexBoxIterator {
       }
 
       if (m_currentChild && notFirstOrdinalValue())
-        m_ordinalValues.add(m_currentChild->style()->boxOrdinalGroup());
+        m_ordinalValues.insert(m_currentChild->style()->boxOrdinalGroup());
     } while (!m_currentChild ||
              (!m_currentChild->isAnonymous() &&
               m_currentChild->style()->boxOrdinalGroup() != m_currentOrdinal));

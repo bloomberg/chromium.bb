@@ -1641,7 +1641,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const {
   for (Node* node = firstNode(); node != stopNode;
        node = NodeTraversal::next(*node)) {
     if (node->isElementNode())
-      nodeSet.add(node);
+      nodeSet.insert(node);
   }
 
   for (Node* node = firstNode(); node != stopNode;

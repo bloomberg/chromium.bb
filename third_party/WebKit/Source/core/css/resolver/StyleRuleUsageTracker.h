@@ -13,7 +13,7 @@ class StyleRule;
 
 class StyleRuleUsageTracker : public GarbageCollected<StyleRuleUsageTracker> {
  public:
-  void track(StyleRule* rule) { m_ruleList.add(rule); }
+  void track(StyleRule* rule) { m_ruleList.insert(rule); }
 
   bool contains(StyleRule*) const;
 

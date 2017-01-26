@@ -485,7 +485,7 @@ void LocalDOMWindow::frameDestroyed() {
 
 void LocalDOMWindow::registerEventListenerObserver(
     EventListenerObserver* eventListenerObserver) {
-  m_eventListenerObservers.add(eventListenerObserver);
+  m_eventListenerObservers.insert(eventListenerObserver);
 }
 
 void LocalDOMWindow::reset() {
@@ -623,7 +623,7 @@ void LocalDOMWindow::schedulePostMessage(MessageEvent* event,
                            UserGestureIndicator::currentToken());
   timer->startOneShot(0, BLINK_FROM_HERE);
   timer->suspendIfNeeded();
-  m_postMessageTimers.add(timer);
+  m_postMessageTimers.insert(timer);
 }
 
 void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer) {

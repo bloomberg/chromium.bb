@@ -47,7 +47,7 @@ static void initCustomSchemeHandlerWhitelist() {
       "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
   };
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(schemes); ++i)
-    schemeWhitelist->add(schemes[i]);
+    schemeWhitelist->insert(schemes[i]);
 }
 
 static bool verifyCustomHandlerURL(const Document& document,

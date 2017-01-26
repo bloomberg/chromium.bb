@@ -69,7 +69,7 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(
     HTTPHeaderSet headers;
     if (foreignFetchResponse.hasHeaders()) {
       for (const String& header : foreignFetchResponse.headers())
-        headers.add(header);
+        headers.insert(header);
       if (response->response()->getType() == FetchResponseData::CORSType) {
         const HTTPHeaderSet& existingHeaders =
             response->response()->corsExposedHeaderNames();
@@ -77,7 +77,7 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(
         for (HTTPHeaderSet::iterator it = headers.begin(); it != headers.end();
              ++it) {
           if (!existingHeaders.contains(*it))
-            headersToRemove.add(*it);
+            headersToRemove.insert(*it);
         }
         headers.removeAll(headersToRemove);
       }

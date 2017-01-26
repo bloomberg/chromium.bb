@@ -250,7 +250,7 @@ void SerializerMarkupAccumulator::appendRewrittenAttribute(
     const String& attributeValue) {
   if (m_elementsWithRewrittenLinks.contains(&element))
     return;
-  m_elementsWithRewrittenLinks.add(&element);
+  m_elementsWithRewrittenLinks.insert(&element);
 
   // Append the rewritten attribute.
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
@@ -395,7 +395,7 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet,
     m_resources->append(
         SerializedResource(url, String("text/css"),
                            SharedBuffer::create(text.data(), text.length())));
-    m_resourceURLs.add(url);
+    m_resourceURLs.insert(url);
   }
 
   // Sub resources need to be serialized even if the CSS definition doesn't
@@ -478,7 +478,7 @@ void FrameSerializer::addToResources(
   }
 
   m_resources->append(SerializedResource(url, mimeType, std::move(data)));
-  m_resourceURLs.add(url);
+  m_resourceURLs.insert(url);
 }
 
 void FrameSerializer::addImageToResources(ImageResourceContent* image,

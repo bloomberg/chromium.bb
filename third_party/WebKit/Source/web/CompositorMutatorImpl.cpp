@@ -78,7 +78,7 @@ void CompositorMutatorImpl::registerProxyClient(
     CompositorProxyClientImpl* client) {
   TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::registerClient");
   DCHECK(!m_proxyClients.contains(client));
-  m_proxyClients.add(client);
+  m_proxyClients.insert(client);
   setNeedsMutate();
 }
 

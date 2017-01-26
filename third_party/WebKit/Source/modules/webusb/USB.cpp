@@ -88,7 +88,7 @@ ScriptPromise USB::getDevices(ScriptState* scriptState) {
     if (!executionContext->isSecureContext(errorMessage)) {
       resolver->reject(DOMException::create(SecurityError, errorMessage));
     } else {
-      m_deviceManagerRequests.add(resolver);
+      m_deviceManagerRequests.insert(resolver);
       m_deviceManager->GetDevices(
           nullptr, convertToBaseCallback(WTF::bind(&USB::onGetDevices,
                                                    wrapPersistent(this),
@@ -135,7 +135,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState,
       for (const auto& filter : options.filters())
         filters.push_back(convertDeviceFilter(filter));
     }
-    m_chooserServiceRequests.add(resolver);
+    m_chooserServiceRequests.insert(resolver);
     m_chooserService->GetPermission(
         std::move(filters), convertToBaseCallback(WTF::bind(
                                 &USB::onGetPermission, wrapPersistent(this),

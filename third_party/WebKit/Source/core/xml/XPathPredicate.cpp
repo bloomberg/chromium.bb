@@ -240,10 +240,10 @@ Value Union::evaluate(EvaluationContext& context) const {
 
   HeapHashSet<Member<Node>> nodes;
   for (const auto& node : resultSet)
-    nodes.add(node);
+    nodes.insert(node);
 
   for (const auto& node : rhsNodes) {
-    if (nodes.add(node).isNewEntry)
+    if (nodes.insert(node).isNewEntry)
       resultSet.append(node);
   }
 

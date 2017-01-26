@@ -936,7 +936,7 @@ void InspectorNetworkAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr) {
   if (!m_replayXHRs.contains(xhr))
     return;
   DCHECK(m_removeFinishedReplayXHRTimer);
-  m_replayXHRsToBeDeleted.add(xhr);
+  m_replayXHRsToBeDeleted.insert(xhr);
   m_replayXHRs.remove(xhr);
   m_removeFinishedReplayXHRTimer->startOneShot(0, BLINK_FROM_HERE);
 }
@@ -1397,7 +1397,7 @@ Response InspectorNetworkAgent::replayXHR(const String& requestId) {
   xhr->sendForInspectorXHRReplay(xhrReplayData->formData(),
                                  IGNORE_EXCEPTION_FOR_TESTING);
 
-  m_replayXHRs.add(xhr);
+  m_replayXHRs.insert(xhr);
   return Response::OK();
 }
 

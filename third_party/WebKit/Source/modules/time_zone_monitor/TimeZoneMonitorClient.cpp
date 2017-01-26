@@ -73,7 +73,7 @@ void TimeZoneMonitorClient::OnTimeZoneChange(const String& timeZoneInfo) {
     thread->postTask(BLINK_FROM_HERE,
                      crossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
                                      WTF::crossThreadUnretained(thread)));
-    posted.add(&thread->workerBackingThread());
+    posted.insert(&thread->workerBackingThread());
   }
 }
 

@@ -47,7 +47,7 @@ void IdTargetObserverRegistry::addObserver(const AtomicString& id,
   if (result.isNewEntry)
     result.storedValue->value = new ObserverSet();
 
-  result.storedValue->value->add(observer);
+  result.storedValue->value->insert(observer);
 }
 
 void IdTargetObserverRegistry::removeObserver(const AtomicString& id,

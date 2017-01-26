@@ -143,11 +143,11 @@ void HTMLFormControlsCollection::updateIdNameCache() const {
       const AtomicString& nameAttrVal = element->getNameAttribute();
       if (!idAttrVal.isEmpty()) {
         cache->addElementWithId(idAttrVal, element);
-        foundInputElements.add(idAttrVal.impl());
+        foundInputElements.insert(idAttrVal.impl());
       }
       if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal) {
         cache->addElementWithName(nameAttrVal, element);
-        foundInputElements.add(nameAttrVal.impl());
+        foundInputElements.insert(nameAttrVal.impl());
       }
     }
   }
@@ -205,14 +205,14 @@ void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names) {
     const AtomicString& idAttribute = element->getIdAttribute();
     if (!idAttribute.isEmpty()) {
       HashSet<AtomicString>::AddResult addResult =
-          existingNames.add(idAttribute);
+          existingNames.insert(idAttribute);
       if (addResult.isNewEntry)
         names.push_back(idAttribute);
     }
     const AtomicString& nameAttribute = element->getNameAttribute();
     if (!nameAttribute.isEmpty()) {
       HashSet<AtomicString>::AddResult addResult =
-          existingNames.add(nameAttribute);
+          existingNames.insert(nameAttribute);
       if (addResult.isNewEntry)
         names.push_back(nameAttribute);
     }

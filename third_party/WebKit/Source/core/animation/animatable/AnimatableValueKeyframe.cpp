@@ -23,7 +23,7 @@ PropertyHandleSet AnimatableValueKeyframe::properties() const {
   PropertyHandleSet properties;
   for (PropertyValueMap::const_iterator iter = m_propertyValues.begin();
        iter != m_propertyValues.end(); ++iter)
-    properties.add(PropertyHandle(*iter.keys()));
+    properties.insert(PropertyHandle(*iter.keys()));
   return properties;
 }
 

@@ -45,7 +45,7 @@ void MemoryCoordinator::registerClient(MemoryCoordinatorClient* client) {
   DCHECK(isMainThread());
   DCHECK(client);
   DCHECK(!m_clients.contains(client));
-  m_clients.add(client);
+  m_clients.insert(client);
 }
 
 void MemoryCoordinator::unregisterClient(MemoryCoordinatorClient* client) {

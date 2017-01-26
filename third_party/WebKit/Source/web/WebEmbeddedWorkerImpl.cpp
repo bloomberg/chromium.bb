@@ -101,7 +101,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       m_askedToTerminate(false),
       m_pauseAfterDownloadState(DontPauseAfterDownload),
       m_waitingForDebuggerState(NotWaitingForDebugger) {
-  runningWorkerInstances().add(this);
+  runningWorkerInstances().insert(this);
 }
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {

@@ -20,7 +20,7 @@ void PlatformEventDispatcher::addController(
   if (m_controllers.contains(controller))
     return;
 
-  m_controllers.add(controller);
+  m_controllers.insert(controller);
 
   if (!m_isListening) {
     startListening();

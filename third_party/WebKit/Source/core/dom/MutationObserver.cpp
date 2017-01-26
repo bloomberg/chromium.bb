@@ -77,7 +77,7 @@ void MutationObserver::observe(Node* node,
   HashSet<AtomicString> attributeFilter;
   if (observerInit.hasAttributeFilter()) {
     for (const auto& name : observerInit.attributeFilter())
-      attributeFilter.add(AtomicString(name));
+      attributeFilter.insert(AtomicString(name));
     options |= AttributeFilter;
   }
 
@@ -157,7 +157,7 @@ void MutationObserver::disconnect() {
 void MutationObserver::observationStarted(
     MutationObserverRegistration* registration) {
   DCHECK(!m_registrations.contains(registration));
-  m_registrations.add(registration);
+  m_registrations.insert(registration);
 }
 
 void MutationObserver::observationEnded(
@@ -211,7 +211,7 @@ void MutationObserver::cleanSlotChangeList(Document& document) {
 
 static void activateObserver(MutationObserver* observer) {
   ensureEnqueueMicrotask();
-  activeMutationObservers().add(observer);
+  activeMutationObservers().insert(observer);
 }
 
 void MutationObserver::enqueueMutationRecord(MutationRecord* mutation) {
@@ -303,7 +303,7 @@ void MutationObserver::deliverMutations() {
   std::sort(observers.begin(), observers.end(), ObserverLessThan());
   for (const auto& observer : observers) {
     if (observer->shouldBeSuspended())
-      suspendedMutationObservers().add(observer);
+      suspendedMutationObservers().insert(observer);
     else
       observer->deliver();
   }

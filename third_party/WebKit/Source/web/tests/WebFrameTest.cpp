@@ -11146,7 +11146,7 @@ TEST_F(WebFrameTest, UniqueNames) {
   HashSet<AtomicString> names;
   for (Frame* frame = mainFrame->tree().firstChild(); frame;
        frame = frame->tree().traverseNext()) {
-    EXPECT_TRUE(names.add(frame->tree().uniqueName()).isNewEntry);
+    EXPECT_TRUE(names.insert(frame->tree().uniqueName()).isNewEntry);
   }
   EXPECT_EQ(10u, names.size());
 }

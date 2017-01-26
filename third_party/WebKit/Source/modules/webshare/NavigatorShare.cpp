@@ -108,7 +108,7 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ShareClientImpl* client = new ShareClientImpl(this, resolver);
-  m_clients.add(client);
+  m_clients.insert(client);
   ScriptPromise promise = resolver->promise();
 
   m_service->Share(shareData.hasTitle() ? shareData.title() : emptyString(),

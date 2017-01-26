@@ -90,7 +90,7 @@ void HTMLResourcePreloader::preload(
     Settings* settings = m_document->settings();
     if (settings && (settings->getCSSExternalScannerNoPreload() ||
                      settings->getCSSExternalScannerPreload()))
-      m_cssPreloaders.add(new CSSPreloaderResourceClient(resource, this));
+      m_cssPreloaders.insert(new CSSPreloaderResourceClient(resource, this));
   }
 }
 

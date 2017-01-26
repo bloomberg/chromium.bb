@@ -403,7 +403,7 @@ void V8PerIsolateData::addActiveScriptWrappable(
   if (!m_activeScriptWrappables)
     m_activeScriptWrappables = new ActiveScriptWrappableSet();
 
-  m_activeScriptWrappables->add(wrappable);
+  m_activeScriptWrappables->insert(wrappable);
 }
 
 void V8PerIsolateData::TemporaryScriptWrappableVisitorScope::

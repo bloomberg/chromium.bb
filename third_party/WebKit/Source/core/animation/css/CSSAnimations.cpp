@@ -100,7 +100,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
     const StylePropertySet& properties = styleKeyframe->properties();
     for (unsigned j = 0; j < properties.propertyCount(); j++) {
       CSSPropertyID property = properties.propertyAt(j).id();
-      specifiedPropertiesForUseCounter.add(property);
+      specifiedPropertiesForUseCounter.insert(property);
       if (property == CSSPropertyAnimationTimingFunction) {
         const CSSValue& value = properties.propertyAt(j).value();
         RefPtr<TimingFunction> timingFunction;
@@ -879,7 +879,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
           elementAnimations->cssAnimations().m_transitions;
       for (CSSPropertyID id : update.cancelledTransitions()) {
         DCHECK(transitionMap.contains(id));
-        cancelledAnimations.add(transitionMap.get(id).animation.get());
+        cancelledAnimations.insert(transitionMap.get(id).animation.get());
       }
     }
 

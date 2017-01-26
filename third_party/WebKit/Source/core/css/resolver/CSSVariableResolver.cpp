@@ -40,7 +40,7 @@ bool CSSVariableResolver::resolveFallback(CSSParserTokenRange range,
 CSSVariableData* CSSVariableResolver::valueForCustomProperty(
     AtomicString name) {
   if (m_variablesSeen.contains(name)) {
-    m_cycleStartPoints.add(name);
+    m_cycleStartPoints.insert(name);
     return nullptr;
   }
 
@@ -94,7 +94,7 @@ PassRefPtr<CSSVariableData> CSSVariableResolver::resolveCustomProperty(
   bool disallowAnimationTainted = false;
   bool isAnimationTainted = variableData.isAnimationTainted();
   Vector<CSSParserToken> tokens;
-  m_variablesSeen.add(name);
+  m_variablesSeen.insert(name);
   bool success =
       resolveTokenRange(variableData.tokens(), disallowAnimationTainted, tokens,
                         isAnimationTainted);

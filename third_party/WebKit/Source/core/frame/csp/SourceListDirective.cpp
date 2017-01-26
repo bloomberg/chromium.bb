@@ -561,13 +561,13 @@ void SourceListDirective::addSourceUnsafeHashedAttributes() {
 }
 
 void SourceListDirective::addSourceNonce(const String& nonce) {
-  m_nonces.add(nonce);
+  m_nonces.insert(nonce);
 }
 
 void SourceListDirective::addSourceHash(
     const ContentSecurityPolicyHashAlgorithm& algorithm,
     const DigestValue& hash) {
-  m_hashes.add(CSPHashValue(algorithm, hash));
+  m_hashes.insert(CSPHashValue(algorithm, hash));
   m_hashAlgorithmsUsed |= algorithm;
 }
 
@@ -719,7 +719,7 @@ HashSet<String> SourceListDirective::getIntersectNonces(
   HashSet<String> normalized;
   for (const auto& nonce : m_nonces) {
     if (other.contains(nonce))
-      normalized.add(nonce);
+      normalized.insert(nonce);
   }
 
   return normalized;
@@ -733,7 +733,7 @@ HashSet<CSPHashValue> SourceListDirective::getIntersectHashes(
   HashSet<CSPHashValue> normalized;
   for (const auto& hash : m_hashes) {
     if (other.contains(hash))
-      normalized.add(hash);
+      normalized.insert(hash);
   }
 
   return normalized;

@@ -49,7 +49,7 @@ PropertyHandleSet KeyframeEffectModelBase::properties() const {
   PropertyHandleSet result;
   for (const auto& keyframe : m_keyframes) {
     for (const auto& property : keyframe->properties())
-      result.add(property);
+      result.insert(property);
   }
   return result;
 }

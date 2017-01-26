@@ -350,7 +350,7 @@ Response InspectorAnimationAgent::releaseAnimations(
     m_idToAnimationClone.remove(animationId);
     m_idToAnimation.remove(animationId);
     m_idToAnimationType.remove(animationId);
-    m_clearedAnimations.add(animationId);
+    m_clearedAnimations.insert(animationId);
   }
   return Response::OK();
 }

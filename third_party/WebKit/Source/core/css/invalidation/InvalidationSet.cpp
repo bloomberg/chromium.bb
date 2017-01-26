@@ -205,28 +205,28 @@ void InvalidationSet::addClass(const AtomicString& className) {
   if (wholeSubtreeInvalid())
     return;
   DCHECK(!className.isEmpty());
-  ensureClassSet().add(className);
+  ensureClassSet().insert(className);
 }
 
 void InvalidationSet::addId(const AtomicString& id) {
   if (wholeSubtreeInvalid())
     return;
   DCHECK(!id.isEmpty());
-  ensureIdSet().add(id);
+  ensureIdSet().insert(id);
 }
 
 void InvalidationSet::addTagName(const AtomicString& tagName) {
   if (wholeSubtreeInvalid())
     return;
   DCHECK(!tagName.isEmpty());
-  ensureTagNameSet().add(tagName);
+  ensureTagNameSet().insert(tagName);
 }
 
 void InvalidationSet::addAttribute(const AtomicString& attribute) {
   if (wholeSubtreeInvalid())
     return;
   DCHECK(!attribute.isEmpty());
-  ensureAttributeSet().add(attribute);
+  ensureAttributeSet().insert(attribute);
 }
 
 void InvalidationSet::setWholeSubtreeInvalid() {

@@ -764,7 +764,7 @@ void parseCommaDelimitedHeader(const String& headerValue,
   Vector<String> results;
   headerValue.split(",", results);
   for (auto& value : results)
-    headerSet.add(value.stripWhiteSpace(isWhitespace));
+    headerSet.insert(value.stripWhiteSpace(isWhitespace));
 }
 
 bool parseSuboriginHeader(const String& header,

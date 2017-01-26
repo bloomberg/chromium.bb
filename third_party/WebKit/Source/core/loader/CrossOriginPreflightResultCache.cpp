@@ -72,7 +72,7 @@ static void addToAccessControlAllowList(const String& string,
   while (end && isSpaceOrNewline((*stringImpl)[end]))
     --end;
 
-  set.add(string.substring(start, end - start + 1));
+  set.insert(string.substring(start, end - start + 1));
 }
 
 template <class HashType>

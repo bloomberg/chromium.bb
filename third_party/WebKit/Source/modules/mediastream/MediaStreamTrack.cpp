@@ -313,7 +313,7 @@ std::unique_ptr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource() {
 void MediaStreamTrack::registerMediaStream(MediaStream* mediaStream) {
   CHECK(!m_isIteratingRegisteredMediaStreams);
   CHECK(!m_registeredMediaStreams.contains(mediaStream));
-  m_registeredMediaStreams.add(mediaStream);
+  m_registeredMediaStreams.insert(mediaStream);
 }
 
 void MediaStreamTrack::unregisterMediaStream(MediaStream* mediaStream) {

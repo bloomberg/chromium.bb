@@ -63,7 +63,7 @@ void SubtreeLayoutScope::setChildNeedsLayout(LayoutObject* descendant) {
 void SubtreeLayoutScope::recordObjectMarkedForLayout(
     LayoutObject* layoutObject) {
 #if DCHECK_IS_ON()
-  m_layoutObjectsToLayout.add(layoutObject);
+  m_layoutObjectsToLayout.insert(layoutObject);
 #endif
 }
 

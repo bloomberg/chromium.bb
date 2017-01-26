@@ -45,7 +45,7 @@ ScriptPromise Worklet::import(ScriptState* scriptState, const String& url) {
   if (resource) {
     WorkletScriptLoader* workletLoader =
         WorkletScriptLoader::create(resolver, this, resource);
-    m_scriptLoaders.add(workletLoader);
+    m_scriptLoaders.insert(workletLoader);
   } else {
     resolver->reject(DOMException::create(NetworkError));
   }

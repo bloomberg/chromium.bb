@@ -126,7 +126,7 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse(
         (explicitlyExposed &&
          !FetchUtils::isForbiddenResponseHeaderName(name))) {
       if (explicitlyExposed)
-        response->m_corsExposedHeaderNames.add(name);
+        response->m_corsExposedHeaderNames.insert(name);
       response->m_headerList->append(name, header->second);
     }
   }

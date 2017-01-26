@@ -214,7 +214,7 @@ void OriginTrialContext::validateToken(const String& token) {
   WebOriginTrialTokenStatus tokenResult =
       m_trialTokenValidator->validateToken(token, origin, &trialName);
   if (tokenResult == WebOriginTrialTokenStatus::Success)
-    m_enabledTrials.add(trialName);
+    m_enabledTrials.insert(trialName);
 
   tokenValidationResultHistogram().count(static_cast<int>(tokenResult));
 }

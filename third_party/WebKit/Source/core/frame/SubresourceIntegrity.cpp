@@ -415,7 +415,7 @@ SubresourceIntegrity::parseIntegrityAttribute(
     }
 
     IntegrityMetadata integrityMetadata(digest, algorithm);
-    metadataSet.add(integrityMetadata.toPair());
+    metadataSet.insert(integrityMetadata.toPair());
   }
 
   if (metadataSet.size() == 0 && error)

@@ -78,7 +78,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   String addressSpaceForBindings() const;
 
   void addInsecureNavigationUpgrade(unsigned hashedHost) {
-    m_insecureNavigationsToUpgrade.add(hashedHost);
+    m_insecureNavigationsToUpgrade.insert(hashedHost);
   }
   InsecureNavigationsSet* insecureNavigationsToUpgrade() {
     return &m_insecureNavigationsToUpgrade;

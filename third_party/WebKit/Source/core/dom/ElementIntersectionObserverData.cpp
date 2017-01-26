@@ -23,7 +23,7 @@ IntersectionObservation* ElementIntersectionObserverData::getObservationFor(
 
 void ElementIntersectionObserverData::addObserver(
     IntersectionObserver& observer) {
-  m_intersectionObservers.add(&observer);
+  m_intersectionObservers.insert(&observer);
 }
 
 void ElementIntersectionObserverData::removeObserver(

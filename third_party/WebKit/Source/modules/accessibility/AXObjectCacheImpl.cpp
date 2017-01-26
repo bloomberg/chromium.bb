@@ -542,7 +542,7 @@ AXID AXObjectCacheImpl::getAXID(AXObject* obj) {
 
   objID = platformGenerateAXID();
 
-  m_idsInUse.add(objID);
+  m_idsInUse.insert(objID);
   obj->setAXObjectID(objID);
 
   return objID;
@@ -712,7 +712,7 @@ void AXObjectCacheImpl::updateAriaOwns(
   HashSet<String> newIds;
   bool idsChanged = false;
   for (const String& id : idVector) {
-    newIds.add(id);
+    newIds.insert(id);
     if (!currentIds.contains(id)) {
       idsChanged = true;
       HashSet<AXID>* owners = m_idToAriaOwnersMapping.get(id);
@@ -720,7 +720,7 @@ void AXObjectCacheImpl::updateAriaOwns(
         owners = new HashSet<AXID>();
         m_idToAriaOwnersMapping.set(id, WTF::wrapUnique(owners));
       }
-      owners->add(owner->axObjectID());
+      owners->insert(owner->axObjectID());
     }
   }
   for (const String& id : currentIds) {

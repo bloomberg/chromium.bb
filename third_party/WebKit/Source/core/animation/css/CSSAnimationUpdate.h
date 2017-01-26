@@ -144,7 +144,7 @@ class CSSAnimationUpdate final {
   }
   void cancelAnimation(size_t index, const Animation& animation) {
     m_cancelledAnimationIndices.push_back(index);
-    m_suppressedAnimations.add(&animation);
+    m_suppressedAnimations.insert(&animation);
   }
   void toggleAnimationIndexPaused(size_t index) {
     m_animationIndicesWithPauseToggled.push_back(index);
@@ -156,7 +156,7 @@ class CSSAnimationUpdate final {
                        StyleRuleKeyframes* styleRule) {
     m_animationsWithUpdates.push_back(UpdatedCSSAnimation(
         index, animation, effect, specifiedTiming, styleRule));
-    m_suppressedAnimations.add(animation);
+    m_suppressedAnimations.insert(animation);
   }
   void updateCompositorKeyframes(Animation* animation) {
     m_updatedCompositorKeyframes.push_back(animation);
@@ -180,8 +180,8 @@ class CSSAnimationUpdate final {
   bool isCancelledTransition(CSSPropertyID id) const {
     return m_cancelledTransitions.contains(id);
   }
-  void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.add(id); }
-  void finishTransition(CSSPropertyID id) { m_finishedTransitions.add(id); }
+  void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.insert(id); }
+  void finishTransition(CSSPropertyID id) { m_finishedTransitions.insert(id); }
 
   const HeapVector<NewCSSAnimation>& newAnimations() const {
     return m_newAnimations;

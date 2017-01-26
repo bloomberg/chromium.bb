@@ -158,7 +158,7 @@ bool SVGRadialGradientElement::collectGradientAttributes(
   SVGGradientElement* current = this;
 
   setGradientAttributes(current, attributes);
-  processedGradients.add(current);
+  processedGradients.insert(current);
 
   while (true) {
     // Respect xlink:href, take attributes from referenced element
@@ -176,7 +176,7 @@ bool SVGRadialGradientElement::collectGradientAttributes(
 
       setGradientAttributes(current, attributes,
                             isSVGRadialGradientElement(*current));
-      processedGradients.add(current);
+      processedGradients.insert(current);
     } else {
       break;
     }

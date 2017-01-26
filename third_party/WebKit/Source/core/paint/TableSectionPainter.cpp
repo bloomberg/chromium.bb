@@ -311,7 +311,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
           if (overflowingCells.contains(cell))
             continue;
           if (cell->rowSpan() > 1 || cell->colSpan() > 1) {
-            if (!spanningCells.add(cell).isNewEntry)
+            if (!spanningCells.insert(cell).isNewEntry)
               continue;
           }
           cells.push_back(cell);

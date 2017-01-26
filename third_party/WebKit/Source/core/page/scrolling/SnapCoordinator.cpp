@@ -68,7 +68,7 @@ void SnapCoordinator::snapContainerDidChange(LayoutBox& snapContainer,
     m_snapContainers.remove(&snapContainer);
     snapContainer.clearSnapAreas();
   } else {
-    m_snapContainers.add(&snapContainer);
+    m_snapContainers.insert(&snapContainer);
   }
 
   // TODO(majidvp): Add logic to correctly handle orphaned snap areas here.

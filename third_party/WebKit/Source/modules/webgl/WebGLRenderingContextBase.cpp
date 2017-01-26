@@ -223,7 +223,7 @@ void WebGLRenderingContextBase::activateContext(
   }
 
   ASSERT(!context->isContextLost());
-  activeContexts().add(context);
+  activeContexts().insert(context);
 }
 
 void WebGLRenderingContextBase::deactivateContext(

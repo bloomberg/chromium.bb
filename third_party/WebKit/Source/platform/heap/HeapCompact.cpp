@@ -37,7 +37,7 @@ class HeapCompact::MovableObjectFixups final {
   // can move (independently from the reference the slot points to.)
   void addCompactingPage(BasePage* page) {
     DCHECK(!page->isLargeObjectPage());
-    m_relocatablePages.add(page);
+    m_relocatablePages.insert(page);
   }
 
   void addInteriorFixup(MovableReference* slot) {

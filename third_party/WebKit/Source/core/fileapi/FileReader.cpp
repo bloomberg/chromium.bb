@@ -135,7 +135,7 @@ class FileReader::ThrottlingController final
         m_runningReaders.size() < m_maxRunningReaders) {
       reader->executePendingRead();
       ASSERT(!m_runningReaders.contains(reader));
-      m_runningReaders.add(reader);
+      m_runningReaders.insert(reader);
       return;
     }
     m_pendingReaders.append(reader);
@@ -170,7 +170,7 @@ class FileReader::ThrottlingController final
         return;
       FileReader* reader = m_pendingReaders.takeFirst();
       reader->executePendingRead();
-      m_runningReaders.add(reader);
+      m_runningReaders.insert(reader);
     }
   }
 

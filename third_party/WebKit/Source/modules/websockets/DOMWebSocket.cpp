@@ -364,7 +364,7 @@ void DOMWebSocket::connect(const String& url,
   // Fail if there're duplicated elements in |protocols|.
   HashSet<String> visited;
   for (size_t i = 0; i < protocols.size(); ++i) {
-    if (!visited.add(protocols[i]).isNewEntry) {
+    if (!visited.insert(protocols[i]).isNewEntry) {
       m_state = kClosed;
       exceptionState.throwDOMException(
           SyntaxError, "The subprotocol '" +

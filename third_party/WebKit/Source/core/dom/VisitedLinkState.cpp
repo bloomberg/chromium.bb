@@ -129,7 +129,7 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(
     return EInsideLink::kInsideVisitedLink;
 
   if (LinkHash hash = linkHashForElement(element, attribute)) {
-    m_linksCheckedForVisitedState.add(hash);
+    m_linksCheckedForVisitedState.insert(hash);
     if (Platform::current()->isLinkVisited(hash))
       return EInsideLink::kInsideVisitedLink;
   }

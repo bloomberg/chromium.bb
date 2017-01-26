@@ -201,7 +201,7 @@ inline CSSPrimitiveValue* zoomAdjustedPixelValue(double value,
 
 void logUnimplementedPropertyID(CSSPropertyID propertyID) {
   DEFINE_STATIC_LOCAL(HashSet<CSSPropertyID>, propertyIDSet, ());
-  if (!propertyIDSet.add(propertyID).isNewEntry)
+  if (!propertyIDSet.insert(propertyID).isNewEntry)
     return;
 
   DLOG(ERROR) << "Blink does not yet implement getComputedStyle for '"

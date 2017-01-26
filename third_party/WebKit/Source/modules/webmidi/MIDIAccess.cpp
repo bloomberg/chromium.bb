@@ -110,7 +110,7 @@ MIDIInputMap* MIDIAccess::inputs() const {
     MIDIInput* input = m_inputs[i];
     if (input->getState() != PortState::DISCONNECTED) {
       inputs.push_back(input);
-      ids.add(input->id());
+      ids.insert(input->id());
     }
   }
   if (inputs.size() != ids.size()) {
@@ -127,7 +127,7 @@ MIDIOutputMap* MIDIAccess::outputs() const {
     MIDIOutput* output = m_outputs[i];
     if (output->getState() != PortState::DISCONNECTED) {
       outputs.push_back(output);
-      ids.add(output->id());
+      ids.insert(output->id());
     }
   }
   if (outputs.size() != ids.size()) {

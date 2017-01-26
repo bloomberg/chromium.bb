@@ -59,7 +59,7 @@ SensorProxy* SensorProviderProxy::createSensorProxy(
 
   SensorProxy* sensor =
       new SensorProxy(type, this, document, std::move(readingFactory));
-  m_sensorProxies.add(sensor);
+  m_sensorProxies.insert(sensor);
 
   return sensor;
 }

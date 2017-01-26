@@ -145,7 +145,8 @@ void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const {
         resultIsSorted = false;
 
       for (const auto& node : *matches) {
-        if (!needToCheckForDuplicateNodes || newNodesSet.add(node).isNewEntry)
+        if (!needToCheckForDuplicateNodes ||
+            newNodesSet.insert(node).isNewEntry)
           newNodes->append(node);
       }
     }

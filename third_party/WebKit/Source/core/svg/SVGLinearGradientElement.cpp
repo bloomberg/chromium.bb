@@ -143,7 +143,7 @@ bool SVGLinearGradientElement::collectGradientAttributes(
   SVGGradientElement* current = this;
 
   setGradientAttributes(current, attributes);
-  processedGradients.add(current);
+  processedGradients.insert(current);
 
   while (true) {
     // Respect xlink:href, take attributes from referenced element
@@ -161,7 +161,7 @@ bool SVGLinearGradientElement::collectGradientAttributes(
 
       setGradientAttributes(current, attributes,
                             isSVGLinearGradientElement(*current));
-      processedGradients.add(current);
+      processedGradients.insert(current);
     } else {
       return true;
     }

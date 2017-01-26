@@ -171,8 +171,8 @@ TEST_F(FetchResponseDataTest,
 TEST_F(FetchResponseDataTest, CORSFilterWithExplicitHeaderSet) {
   FetchResponseData* internalResponse = createInternalResponse();
   HTTPHeaderSet exposedHeaders;
-  exposedHeaders.add("set-cookie");
-  exposedHeaders.add("bar");
+  exposedHeaders.insert("set-cookie");
+  exposedHeaders.insert("bar");
 
   FetchResponseData* corsResponseData =
       internalResponse->createCORSFilteredResponse(exposedHeaders);

@@ -1285,7 +1285,7 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows,
 #endif
       if (cell->hasVisualOverflow() &&
           !m_forceSlowPaintPathWithOverflowingCell) {
-        m_overflowingCells.add(cell);
+        m_overflowingCells.insert(cell);
         if (m_overflowingCells.size() > maxAllowedOverflowingCellsCount) {
           // We need to set m_forcesSlowPaintPath only if there is a least one
           // overflowing cells as the hit testing code rely on this information.

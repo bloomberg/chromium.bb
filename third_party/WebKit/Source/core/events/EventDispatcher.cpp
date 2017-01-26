@@ -94,7 +94,7 @@ void EventDispatcher::dispatchSimulatedClick(
   if (nodesDispatchingSimulatedClicks.contains(&node))
     return;
 
-  nodesDispatchingSimulatedClicks.add(&node);
+  nodesDispatchingSimulatedClicks.insert(&node);
 
   if (mouseEventOptions == SendMouseOverUpDownEvents)
     EventDispatcher(node, MouseEvent::create(EventTypeNames::mouseover,

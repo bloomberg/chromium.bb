@@ -399,7 +399,7 @@ void parseAccessControlExposeHeadersAllowList(const String& headerValue,
   for (unsigned headerCount = 0; headerCount < headers.size(); headerCount++) {
     String strippedHeader = headers[headerCount].stripWhiteSpace();
     if (!strippedHeader.isEmpty())
-      headerSet.add(strippedHeader);
+      headerSet.insert(strippedHeader);
   }
 }
 
@@ -412,7 +412,7 @@ void extractCorsExposedHeaderNamesList(const ResourceResponse& response,
   // header.
   if (response.wasFetchedViaServiceWorker()) {
     for (const auto& header : response.corsExposedHeaderNames())
-      headerSet.add(header);
+      headerSet.insert(header);
     return;
   }
   parseAccessControlExposeHeadersAllowList(

@@ -86,7 +86,7 @@ DEFINE_TRACE(AudioListener) {
 
 void AudioListener::addPanner(PannerHandler& panner) {
   DCHECK(isMainThread());
-  m_panners.add(&panner);
+  m_panners.insert(&panner);
 }
 
 void AudioListener::removePanner(PannerHandler& panner) {

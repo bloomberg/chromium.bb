@@ -288,7 +288,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 
   DCHECK_GT(rate, 0);
 
-  m_decodeAudioResolvers.add(resolver);
+  m_decodeAudioResolvers.insert(resolver);
   m_audioDecoder.decodeAsync(audioData, rate, successCallback, errorCallback,
                              resolver, this);
 
@@ -668,7 +668,7 @@ bool BaseAudioContext::releaseFinishedSourceNodes() {
         continue;
       if (handler == &node->handler()) {
         handler->breakConnection();
-        m_finishedSourceNodes.add(node);
+        m_finishedSourceNodes.insert(node);
         didRemove = true;
         break;
       }

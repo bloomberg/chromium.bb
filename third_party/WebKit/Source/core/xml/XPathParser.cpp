@@ -507,7 +507,7 @@ void Parser::registerString(String* s) {
     return;
 
   DCHECK(!m_strings.contains(s));
-  m_strings.add(WTF::wrapUnique(s));
+  m_strings.insert(WTF::wrapUnique(s));
 }
 
 void Parser::deleteString(String* s) {

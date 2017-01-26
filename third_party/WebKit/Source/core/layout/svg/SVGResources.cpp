@@ -442,33 +442,33 @@ void SVGResources::buildSetOfResources(
     ASSERT(!m_clipperFilterMaskerData);
     ASSERT(!m_markerData);
     ASSERT(!m_fillStrokeData);
-    set.add(m_linkedResource);
+    set.insert(m_linkedResource);
     return;
   }
 
   if (m_clipperFilterMaskerData) {
     if (m_clipperFilterMaskerData->clipper)
-      set.add(m_clipperFilterMaskerData->clipper);
+      set.insert(m_clipperFilterMaskerData->clipper);
     if (m_clipperFilterMaskerData->filter)
-      set.add(m_clipperFilterMaskerData->filter);
+      set.insert(m_clipperFilterMaskerData->filter);
     if (m_clipperFilterMaskerData->masker)
-      set.add(m_clipperFilterMaskerData->masker);
+      set.insert(m_clipperFilterMaskerData->masker);
   }
 
   if (m_markerData) {
     if (m_markerData->markerStart)
-      set.add(m_markerData->markerStart);
+      set.insert(m_markerData->markerStart);
     if (m_markerData->markerMid)
-      set.add(m_markerData->markerMid);
+      set.insert(m_markerData->markerMid);
     if (m_markerData->markerEnd)
-      set.add(m_markerData->markerEnd);
+      set.insert(m_markerData->markerEnd);
   }
 
   if (m_fillStrokeData) {
     if (m_fillStrokeData->fill)
-      set.add(m_fillStrokeData->fill);
+      set.insert(m_fillStrokeData->fill);
     if (m_fillStrokeData->stroke)
-      set.add(m_fillStrokeData->stroke);
+      set.insert(m_fillStrokeData->stroke);
   }
 }
 

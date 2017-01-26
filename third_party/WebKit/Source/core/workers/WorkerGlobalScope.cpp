@@ -134,7 +134,7 @@ void WorkerGlobalScope::registerEventListener(
     V8AbstractEventListener* eventListener) {
   // TODO(sof): remove once crbug.com/677654 has been diagnosed.
   CHECK(&ThreadState::fromObject(this)->heap() == &ThreadState::fromObject(eventListener)->heap());
-  bool newEntry = m_eventListeners.add(eventListener).isNewEntry;
+  bool newEntry = m_eventListeners.insert(eventListener).isNewEntry;
   CHECK(newEntry);
 }
 

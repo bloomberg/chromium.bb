@@ -57,7 +57,7 @@ bool WorkerEventQueue::enqueueEvent(Event* event) {
     return false;
   InspectorInstrumentation::asyncTaskScheduled(
       event->target()->getExecutionContext(), event->type(), event);
-  m_pendingEvents.add(event);
+  m_pendingEvents.insert(event);
   m_workerGlobalScope->postTask(
       TaskType::UnspecedTimer, BLINK_FROM_HERE,
       createSameThreadTask(&WorkerEventQueue::dispatchEvent,

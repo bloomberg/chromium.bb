@@ -18,7 +18,7 @@ void splitStringHelper(const String& str, HashSet<String>& set) {
   Vector<String> substrings;
   str.split(' ', substrings);
   for (size_t i = 0; i < substrings.size(); ++i)
-    set.add(substrings[i]);
+    set.insert(substrings[i]);
 }
 
 }  // anonymous namespace

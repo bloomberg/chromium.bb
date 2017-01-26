@@ -120,7 +120,7 @@ static inline void filterProperties(
           toCSSCustomPropertyDeclaration(property.value())->name();
       if (seenCustomProperties.contains(name))
         continue;
-      seenCustomProperties.add(name);
+      seenCustomProperties.insert(name);
     } else if (property.id() == CSSPropertyApplyAtRule) {
       // TODO(timloh): Do we need to do anything here?
     } else {

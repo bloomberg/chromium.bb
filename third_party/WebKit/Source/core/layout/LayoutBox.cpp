@@ -5673,7 +5673,7 @@ void LayoutBox::clearSnapAreas() {
 }
 
 void LayoutBox::addSnapArea(const LayoutBox& snapArea) {
-  ensureRareData().ensureSnapAreas().add(&snapArea);
+  ensureRareData().ensureSnapAreas().insert(&snapArea);
 }
 
 void LayoutBox::removeSnapArea(const LayoutBox& snapArea) {

@@ -85,7 +85,7 @@ void DocumentParser::suspendScheduledTasks() {}
 void DocumentParser::resumeScheduledTasks() {}
 
 void DocumentParser::addClient(DocumentParserClient* client) {
-  m_clients.add(client);
+  m_clients.insert(client);
 }
 
 void DocumentParser::removeClient(DocumentParserClient* client) {

@@ -48,7 +48,7 @@ DEFINE_TRACE(SensorProxy) {
 
 void SensorProxy::addObserver(Observer* observer) {
   if (!m_observers.contains(observer))
-    m_observers.add(observer);
+    m_observers.insert(observer);
 }
 
 void SensorProxy::removeObserver(Observer* observer) {

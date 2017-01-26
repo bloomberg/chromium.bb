@@ -1438,7 +1438,7 @@ LayoutReplaced* FrameView::embeddedReplacedContent() const {
 }
 
 void FrameView::addPart(LayoutPart* object) {
-  m_parts.add(object);
+  m_parts.insert(object);
 }
 
 void FrameView::removePart(LayoutPart* object) {
@@ -1477,7 +1477,7 @@ void FrameView::addPartToUpdate(LayoutEmbeddedObject& object) {
   if (isHTMLObjectElement(*node) || isHTMLEmbedElement(*node))
     toHTMLPlugInElement(node)->setNeedsWidgetUpdate(true);
 
-  m_partUpdateSet.add(&object);
+  m_partUpdateSet.insert(&object);
 }
 
 void FrameView::setDisplayMode(WebDisplayMode mode) {
@@ -1539,7 +1539,7 @@ bool FrameView::contentsInCompositedLayer() const {
 void FrameView::addBackgroundAttachmentFixedObject(LayoutObject* object) {
   ASSERT(!m_backgroundAttachmentFixedObjects.contains(object));
 
-  m_backgroundAttachmentFixedObjects.add(object);
+  m_backgroundAttachmentFixedObjects.insert(object);
   if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
     scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(
         this);
@@ -1575,7 +1575,7 @@ void FrameView::addViewportConstrainedObject(LayoutObject* object) {
   }
 
   if (!m_viewportConstrainedObjects->contains(object)) {
-    m_viewportConstrainedObjects->add(object);
+    m_viewportConstrainedObjects->insert(object);
 
     if (ScrollingCoordinator* scrollingCoordinator =
             this->scrollingCoordinator())
@@ -3606,7 +3606,7 @@ std::unique_ptr<JSONArray> FrameView::trackedObjectPaintInvalidationsAsJSON()
 void FrameView::addResizerArea(LayoutBox& resizerBox) {
   if (!m_resizerAreas)
     m_resizerAreas = WTF::wrapUnique(new ResizerAreaSet);
-  m_resizerAreas->add(&resizerBox);
+  m_resizerAreas->insert(&resizerBox);
 }
 
 void FrameView::removeResizerArea(LayoutBox& resizerBox) {
@@ -3622,7 +3622,7 @@ void FrameView::addScrollableArea(ScrollableArea* scrollableArea) {
   ASSERT(scrollableArea);
   if (!m_scrollableAreas)
     m_scrollableAreas = new ScrollableAreaSet;
-  m_scrollableAreas->add(scrollableArea);
+  m_scrollableAreas->insert(scrollableArea);
 
   if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
     scrollingCoordinator->scrollableAreasDidChange();
@@ -3641,7 +3641,7 @@ void FrameView::addAnimatingScrollableArea(ScrollableArea* scrollableArea) {
   ASSERT(scrollableArea);
   if (!m_animatingScrollableAreas)
     m_animatingScrollableAreas = new ScrollableAreaSet;
-  m_animatingScrollableAreas->add(scrollableArea);
+  m_animatingScrollableAreas->insert(scrollableArea);
 }
 
 void FrameView::removeAnimatingScrollableArea(ScrollableArea* scrollableArea) {
@@ -3766,7 +3766,7 @@ IntSize FrameView::maximumScrollOffsetInt() const {
 void FrameView::addChild(Widget* child) {
   ASSERT(child != this && !child->parent());
   child->setParent(this);
-  m_children.add(child);
+  m_children.insert(child);
 }
 
 void FrameView::setScrollbarModes(ScrollbarMode horizontalMode,

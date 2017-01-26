@@ -1262,7 +1262,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding() {
          ++it) {
       const FloatingObject& floatingObject = *it->get();
       if (!floatingObject.isDescendant())
-        oldIntrudingFloatSet.add(floatingObject.layoutObject());
+        oldIntrudingFloatSet.insert(floatingObject.layoutObject());
     }
   }
 

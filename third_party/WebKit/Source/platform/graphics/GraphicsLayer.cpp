@@ -409,7 +409,7 @@ void GraphicsLayer::registerContentsLayer(WebLayer* layer) {
     s_registeredLayerSet = new HashSet<int>;
   if (s_registeredLayerSet->contains(layer->id()))
     CRASH();
-  s_registeredLayerSet->add(layer->id());
+  s_registeredLayerSet->insert(layer->id());
 }
 
 void GraphicsLayer::unregisterContentsLayer(WebLayer* layer) {

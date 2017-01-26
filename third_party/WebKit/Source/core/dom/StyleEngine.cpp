@@ -214,7 +214,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node& node) {
 
   setNeedsActiveStyleUpdate(treeScope);
   if (treeScope != m_document)
-    m_activeTreeScopes.add(&treeScope);
+    m_activeTreeScopes.insert(&treeScope);
 }
 
 void StyleEngine::removeStyleSheetCandidateNode(Node& node,
@@ -306,7 +306,7 @@ void StyleEngine::updateActiveStyleSheetsInShadow(
   DCHECK(collection);
   collection->updateActiveStyleSheets(*this);
   if (!collection->hasStyleSheetCandidateNodes()) {
-    treeScopesRemoved.add(treeScope);
+    treeScopesRemoved.insert(treeScope);
     // When removing TreeScope from ActiveTreeScopes,
     // its resolver should be destroyed by invoking resetAuthorStyle.
     DCHECK(!treeScope->scopedStyleResolver());
@@ -505,7 +505,7 @@ void StyleEngine::markTreeScopeDirty(TreeScope& scope) {
   }
 
   DCHECK(m_styleSheetCollectionMap.contains(&scope));
-  m_dirtyTreeScopes.add(&scope);
+  m_dirtyTreeScopes.insert(&scope);
   document().scheduleLayoutTreeUpdateIfNeeded();
 }
 

@@ -55,7 +55,7 @@ void SVGTreeScopeResources::addPendingResource(const AtomicString& id,
       m_pendingResources.add(id, nullptr);
   if (result.isNewEntry)
     result.storedValue->value = new SVGPendingElements;
-  result.storedValue->value->add(element);
+  result.storedValue->value->insert(element);
 
   element->setHasPendingResources();
 }

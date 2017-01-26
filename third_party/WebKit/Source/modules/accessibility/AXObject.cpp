@@ -321,7 +321,7 @@ const char* ariaWidgets[] = {
 static ARIAWidgetSet* createARIARoleWidgetSet() {
   ARIAWidgetSet* widgetSet = new HashSet<String, CaseFoldingHash>();
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(ariaWidgets); ++i)
-    widgetSet->add(String(ariaWidgets[i]));
+    widgetSet->insert(String(ariaWidgets[i]));
   return widgetSet;
 }
 
@@ -744,7 +744,7 @@ String AXObject::ariaTextAlternative(bool recursive,
                                      bool* foundTextAlternative) const {
   String textAlternative;
   bool alreadyVisited = visited.contains(this);
-  visited.add(this);
+  visited.insert(this);
 
   // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.

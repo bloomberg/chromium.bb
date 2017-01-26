@@ -139,7 +139,7 @@ void getClassNamesFromRule(CSSStyleRule* rule, HashSet<String>& uniqueNames) {
     const CSSSelector* simpleSelector = subSelector;
     while (simpleSelector) {
       if (simpleSelector->match() == CSSSelector::Class)
-        uniqueNames.add(simpleSelector->value());
+        uniqueNames.insert(simpleSelector->value());
       simpleSelector = simpleSelector->tagHistory();
     }
   }
@@ -775,13 +775,13 @@ void InspectorStyle::populateAllProperties(
         m_sourceData->propertyData;
     for (const auto& data : sourcePropertyData) {
       result.push_back(data);
-      sourcePropertyNames.add(data.name.lower());
+      sourcePropertyNames.insert(data.name.lower());
     }
   }
 
   for (int i = 0, size = m_style->length(); i < size; ++i) {
     String name = m_style->item(i);
-    if (!sourcePropertyNames.add(name.lower()).isNewEntry)
+    if (!sourcePropertyNames.insert(name.lower()).isNewEntry)
       continue;
 
     String value = m_style->getPropertyValue(name);
@@ -839,7 +839,7 @@ std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::styleWithProperties() {
 
       String shorthand = m_style->getPropertyShorthand(name);
       if (!shorthand.isEmpty()) {
-        if (foundShorthands.add(shorthand).isNewEntry) {
+        if (foundShorthands.insert(shorthand).isNewEntry) {
           std::unique_ptr<protocol::CSS::ShorthandEntry> entry =
               protocol::CSS::ShorthandEntry::create()
                   .setName(shorthand)

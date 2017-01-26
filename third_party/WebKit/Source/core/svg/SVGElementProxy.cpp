@@ -180,7 +180,7 @@ DEFINE_TRACE(SVGElementProxy) {
 }
 
 void SVGElementProxySet::add(SVGElementProxy& elementProxy) {
-  m_elementProxies.add(&elementProxy);
+  m_elementProxies.insert(&elementProxy);
 }
 
 bool SVGElementProxySet::isEmpty() const {

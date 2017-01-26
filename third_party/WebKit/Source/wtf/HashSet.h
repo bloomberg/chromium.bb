@@ -106,6 +106,8 @@ class HashSet {
   // The return value is a pair of an iterator to the new value's location,
   // and a bool that is true if an new entry was added.
   template <typename IncomingValueType>
+  AddResult insert(IncomingValueType&&);
+  template <typename IncomingValueType>
   AddResult add(IncomingValueType&&);
 
   // An alternate version of add() that finds the object by hashing and
@@ -173,7 +175,7 @@ HashSet<Value, HashFunctions, Traits, Allocator>::HashSet(
   if (elements.size())
     m_impl.reserveCapacityForSize(elements.size());
   for (const ValueType& element : elements)
-    add(element);
+    insert(element);
 }
 
 template <typename Value,
@@ -249,6 +251,15 @@ inline bool HashSet<Value, HashFunctions, Traits, Allocator>::contains(
       value);
 }
 
+template <typename T, typename U, typename V, typename W>
+template <typename IncomingValueType>
+inline typename HashSet<T, U, V, W>::AddResult HashSet<T, U, V, W>::insert(
+    IncomingValueType&& value) {
+  return m_impl.add(std::forward<IncomingValueType>(value));
+}
+
+// TODO(pilgrim) remove this method once all references and subclasses
+// have been migrated to insert() method
 template <typename T, typename U, typename V, typename W>
 template <typename IncomingValueType>
 inline typename HashSet<T, U, V, W>::AddResult HashSet<T, U, V, W>::add(

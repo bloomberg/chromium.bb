@@ -541,7 +541,7 @@ Document::Document(const DocumentInit& initializer,
   DCHECK(!parentDocument() || !parentDocument()->isContextSuspended());
 
 #ifndef NDEBUG
-  liveDocumentSet().add(this);
+  liveDocumentSet().insert(this);
 #endif
 }
 
@@ -2330,7 +2330,7 @@ void Document::setIsViewSource(bool isViewSource) {
 }
 
 void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element) {
-  m_useElementsNeedingUpdate.add(&element);
+  m_useElementsNeedingUpdate.insert(&element);
   scheduleLayoutTreeUpdateIfNeeded();
 }
 
@@ -4156,10 +4156,10 @@ static void liveNodeListBaseWriteBarrier(void* parent,
 
 void Document::registerNodeList(const LiveNodeListBase* list) {
   DCHECK(!m_nodeLists[list->invalidationType()].contains(list));
-  m_nodeLists[list->invalidationType()].add(list);
+  m_nodeLists[list->invalidationType()].insert(list);
   liveNodeListBaseWriteBarrier(this, list);
   if (list->isRootedAtTreeScope())
-    m_listsInvalidatedAtDocument.add(list);
+    m_listsInvalidatedAtDocument.insert(list);
 }
 
 void Document::unregisterNodeList(const LiveNodeListBase* list) {
@@ -4173,7 +4173,7 @@ void Document::unregisterNodeList(const LiveNodeListBase* list) {
 
 void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list) {
   DCHECK(!m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
-  m_nodeLists[InvalidateOnIdNameAttrChange].add(list);
+  m_nodeLists[InvalidateOnIdNameAttrChange].insert(list);
   liveNodeListBaseWriteBarrier(this, list);
 }
 
@@ -4183,7 +4183,7 @@ void Document::unregisterNodeListWithIdNameCache(const LiveNodeListBase* list) {
 }
 
 void Document::attachNodeIterator(NodeIterator* ni) {
-  m_nodeIterators.add(ni);
+  m_nodeIterators.insert(ni);
 }
 
 void Document::detachNodeIterator(NodeIterator* ni) {
@@ -4415,7 +4415,7 @@ void Document::runExecutionContextTask(
 void Document::registerEventFactory(
     std::unique_ptr<EventFactoryBase> eventFactory) {
   DCHECK(!eventFactories().contains(eventFactory.get()));
-  eventFactories().add(std::move(eventFactory));
+  eventFactories().insert(std::move(eventFactory));
 }
 
 Event* Document::createEvent(ExecutionContext* executionContext,
@@ -5622,7 +5622,7 @@ void Document::updateFocusAppearanceTimerFired(TimerBase*) {
 
 void Document::attachRange(Range* range) {
   DCHECK(!m_ranges.contains(range));
-  m_ranges.add(range);
+  m_ranges.insert(range);
 }
 
 void Document::detachRange(Range* range) {

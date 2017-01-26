@@ -660,7 +660,7 @@ static void projectRectsToGraphicsLayerSpace(
   for (const auto& layerRect : layerRects) {
     const PaintLayer* layer = layerRect.key;
     do {
-      if (!layersWithRects.add(layer).isNewEntry)
+      if (!layersWithRects.insert(layer).isNewEntry)
         break;
 
       if (layer->parent()) {
@@ -735,7 +735,7 @@ void ScrollingCoordinator::setTouchEventTargetRects(
           layerRect.key
               ->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
       DCHECK(compositedLayer);
-      m_layersWithTouchRects.add(compositedLayer);
+      m_layersWithTouchRects.insert(compositedLayer);
     }
   }
 

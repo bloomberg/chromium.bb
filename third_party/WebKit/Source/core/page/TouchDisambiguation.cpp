@@ -121,7 +121,7 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame,
       Node* containerNode = container->node();
       if (!containerNode)
         continue;
-      if (!blackList.add(containerNode).isNewEntry)
+      if (!blackList.insert(containerNode).isNewEntry)
         break;
     }
   }

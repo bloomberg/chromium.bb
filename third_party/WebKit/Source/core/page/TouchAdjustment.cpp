@@ -295,7 +295,7 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
         for (visitedNode = parentShadowHostOrOwner(visitedNode); visitedNode;
              visitedNode = parentShadowHostOrOwner(visitedNode)) {
           HeapHashSet<Member<Node>>::AddResult addResult =
-              ancestorsToRespondersSet.add(visitedNode);
+              ancestorsToRespondersSet.insert(visitedNode);
           if (!addResult.isNewEntry)
             break;
         }
@@ -336,7 +336,7 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
           replacement = nullptr;
           break;
         }
-        editableAncestors.add(replacement);
+        editableAncestors.insert(replacement);
         parent = parent->parentOrShadowHostNode();
       }
       candidate = replacement;

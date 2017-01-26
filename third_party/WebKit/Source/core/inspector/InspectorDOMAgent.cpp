@@ -162,7 +162,7 @@ InspectorRevalidateDOMTask::InspectorRevalidateDOMTask(
 
 void InspectorRevalidateDOMTask::scheduleStyleAttrRevalidationFor(
     Element* element) {
-  m_styleAttrInvalidatedElements.add(element);
+  m_styleAttrInvalidatedElements.insert(element);
   if (!m_timer.isActive())
     m_timer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -569,7 +569,7 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
         continue;
       const SpaceSplitString& classNameList = element.classNames();
       for (unsigned i = 0; i < classNameList.size(); ++i)
-        uniqueNames.add(classNameList[i]);
+        uniqueNames.insert(classNameList[i]);
     }
   }
   for (const String& className : uniqueNames)
@@ -1719,14 +1719,14 @@ InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
     if (firstChild && firstChild->getNodeType() == Node::kTextNode &&
         !firstChild->nextSibling()) {
       children->addItem(buildObjectForNode(firstChild, 0, pierce, nodesMap));
-      m_childrenRequested.add(bind(container, nodesMap));
+      m_childrenRequested.insert(bind(container, nodesMap));
     }
     return children;
   }
 
   Node* child = innerFirstChild(container);
   depth--;
-  m_childrenRequested.add(bind(container, nodesMap));
+  m_childrenRequested.insert(bind(container, nodesMap));
 
   while (child) {
     children->addItem(buildObjectForNode(child, depth, pierce, nodesMap));

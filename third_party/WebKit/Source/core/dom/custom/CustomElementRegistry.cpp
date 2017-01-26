@@ -238,7 +238,7 @@ bool CustomElementRegistry::nameIsDefined(const AtomicString& name) const {
 }
 
 void CustomElementRegistry::entangle(V0CustomElementRegistrationContext* v0) {
-  m_v0->add(v0);
+  m_v0->insert(v0);
   v0->setV1(this);
 }
 
@@ -267,7 +267,7 @@ void CustomElementRegistry::addCandidate(Element* candidate) {
     set = m_upgradeCandidates->add(name, new UpgradeCandidateSet())
               .storedValue->value;
   }
-  set->add(candidate);
+  set->insert(candidate);
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-whendefined
