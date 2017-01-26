@@ -8881,7 +8881,7 @@
       'name': 'NetworkThrottlingEnabled',
       'device_only': True,
       'caption': '''Enables throttling network bandwidth''',
-      'desc': '''Allows choosing whether network throttling is enabled or not.
+      'desc': '''Allows enabling or disabling network throttling.
       This applies to all users, and to all interfaces on the device. Once set,
       the throttling persists until the policy is changed to disable it.
 
