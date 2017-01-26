@@ -25,11 +25,8 @@ class PrePaintTreeWalk {
   void walk(FrameView& rootFrame);
 
  private:
-  // Throttled rendering (see: FrameView::shouldThrottleRendering()) can prevent
-  // updating a subtree. We return true if the subtree was fully walked/updated,
-  // and false if the walk was interrupted by throttling.
-  bool walk(FrameView&, const PrePaintTreeWalkContext&);
-  bool walk(const LayoutObject&, const PrePaintTreeWalkContext&);
+  void walk(FrameView&, const PrePaintTreeWalkContext&);
+  void walk(const LayoutObject&, const PrePaintTreeWalkContext&);
 
   PaintPropertyTreeBuilder m_propertyTreeBuilder;
   PaintInvalidator m_paintInvalidator;

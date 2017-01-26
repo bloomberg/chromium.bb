@@ -44,12 +44,11 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame) {
   m_paintInvalidator.processPendingDelayedPaintInvalidations();
 }
 
-bool PrePaintTreeWalk::walk(FrameView& frameView,
+void PrePaintTreeWalk::walk(FrameView& frameView,
                             const PrePaintTreeWalkContext& parentContext) {
   if (frameView.shouldThrottleRendering()) {
-    // The walk was interrupted by throttled rendering so this subtree was not
-    // fully updated.
-    return false;
+    // Skip the throttled frame. Will update it when it becomes unthrottled.
+    return;
   }
 
   PrePaintTreeWalkContext context(parentContext);
@@ -59,17 +58,13 @@ bool PrePaintTreeWalk::walk(FrameView& frameView,
   m_paintInvalidator.invalidatePaintIfNeeded(frameView,
                                              context.paintInvalidatorContext);
 
-  LayoutView* view = frameView.layoutView();
-  bool descendantsFullyUpdated = view ? walk(*view, context) : true;
-  if (descendantsFullyUpdated) {
+  if (LayoutView* view = frameView.layoutView()) {
+    walk(*view, context);
 #if DCHECK_IS_ON()
-    frameView.layoutView()->assertSubtreeClearedPaintInvalidationFlags();
+    view->assertSubtreeClearedPaintInvalidationFlags();
 #endif
-    // If descendants were not fully updated, do not clear flags. During the
-    // next PrePaintTreeWalk, these flags will be used again.
-    frameView.clearNeedsPaintPropertyUpdate();
   }
-  return descendantsFullyUpdated;
+  frameView.clearNeedsPaintPropertyUpdate();
 }
 
 static void updateAuxiliaryObjectProperties(const LayoutObject& object,
@@ -94,7 +89,7 @@ static void updateAuxiliaryObjectProperties(const LayoutObject& object,
     context.ancestorOverflowPaintLayer = paintLayer;
 }
 
-bool PrePaintTreeWalk::walk(const LayoutObject& object,
+void PrePaintTreeWalk::walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& parentContext) {
   PrePaintTreeWalkContext context(parentContext);
 
@@ -115,9 +110,7 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
       !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
       !object
            .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()) {
-    // Even though the subtree was not walked, we know that a walk will not
-    // change anything and can return true as if the subtree was fully updated.
-    return true;
+    return;
   }
 
   m_propertyTreeBuilder.updatePropertiesForSelf(object,
@@ -127,16 +120,13 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
   m_propertyTreeBuilder.updatePropertiesForChildren(object,
                                                     context.treeBuilderContext);
 
-  bool descendantsFullyUpdated = true;
   for (const LayoutObject* child = object.slowFirstChild(); child;
        child = child->nextSibling()) {
     if (child->isLayoutMultiColumnSpannerPlaceholder()) {
       child->getMutableForPainting().clearPaintFlags();
       continue;
     }
-    bool childFullyUpdated = walk(*child, context);
-    if (!childFullyUpdated)
-      descendantsFullyUpdated = false;
+    walk(*child, context);
   }
 
   if (object.isLayoutPart()) {
@@ -148,19 +138,12 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
           widget->frameRect().location();
       context.treeBuilderContext.current.paintOffset =
           roundedIntPoint(context.treeBuilderContext.current.paintOffset);
-      bool frameFullyUpdated = walk(*toFrameView(widget), context);
-      if (!frameFullyUpdated)
-        descendantsFullyUpdated = false;
+      walk(*toFrameView(widget), context);
     }
     // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
   }
 
-  if (descendantsFullyUpdated) {
-    // If descendants were not updated, do not clear flags. During the next
-    // PrePaintTreeWalk, these flags will be used again.
-    object.getMutableForPainting().clearPaintFlags();
-  }
-  return descendantsFullyUpdated;
+  object.getMutableForPainting().clearPaintFlags();
 }
 
 }  // namespace blink

@@ -3044,6 +3044,13 @@ void FrameView::prePaint() {
 
   forAllNonThrottledFrameViews([](FrameView& frameView) {
     frameView.lifecycle().advanceTo(DocumentLifecycle::InPrePaint);
+    if (frameView.canThrottleRendering()) {
+      // This frame can be throttled but not throttled, meaning we are not in an
+      // AllowThrottlingScope. Now this frame may contain dirty paint flags, and
+      // we need to propagate the flags into the ancestor chain so that
+      // PrePaintTreeWalk can reach this frame.
+      frameView.setNeedsPaintPropertyUpdate();
+    }
   });
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())

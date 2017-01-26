@@ -328,6 +328,9 @@ TEST_P(PaintPropertyTreeUpdateTest, UpdatingFrameViewContentClip) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 5, 5), frameContentClip()->clipRect());
 }
 
+// There is also FrameThrottlingTest.UpdatePaintPropertiesOnUnthrottling
+// testing with real frame viewport intersection observer. This one tests
+// paint property update with or without AllowThrottlingScope.
 TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
@@ -378,7 +381,7 @@ TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
     // actively throttled descendants.
     document().view()->updateAllLifecyclePhases();
     EXPECT_FALSE(document().layoutView()->needsPaintPropertyUpdate());
-    EXPECT_TRUE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+    EXPECT_FALSE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
     EXPECT_FALSE(transform->needsPaintPropertyUpdate());
     EXPECT_FALSE(transform->descendantNeedsPaintPropertyUpdate());
     EXPECT_FALSE(iframeLayoutView->needsPaintPropertyUpdate());
