@@ -55,6 +55,11 @@ const char kAllowFailedPolicyFetchForTest[] =
 // mode. This can be enabled by this flag.
 const char kAllowRAInDevMode[] = "allow-ra-in-dev-mode";
 
+// Specifies whether an app launched in kiosk mode was auto launched with zero
+// delay. Used in order to properly restore auto-launched state during session
+// restore flow.
+const char kAppAutoLaunched[] = "app-auto-launched";
+
 // Path for app's OEM manifest file.
 const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 
