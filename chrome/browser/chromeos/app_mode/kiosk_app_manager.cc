@@ -40,7 +40,6 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -52,7 +51,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
-#include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace chromeos {
 
@@ -149,14 +147,6 @@ base::Version GetPlatformVersion() {
                                           minor_version, bugfix_version));
 }
 
-// Converts a flag constant to actual command line switch value.
-std::string GetSwitchString(const std::string& flag_name) {
-  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
-  cmd_line.AppendSwitch(flag_name);
-  DCHECK_EQ(2U, cmd_line.argv().size());
-  return cmd_line.argv()[1];
-}
-
 }  // namespace
 
 // static
@@ -251,68 +241,8 @@ void KioskAppManager::InitSession(Profile* profile,
                                    const std::string& app_id) {
   LOG_IF(FATAL, app_session_) << "Kiosk session is already initialized.";
 
-  base::CommandLine session_flags(base::CommandLine::NO_PROGRAM);
-  if (GetSwitchesForSessionRestore(app_id, &session_flags)) {
-    base::CommandLine::StringVector flags;
-    // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.
-    flags.assign(session_flags.argv().begin() + 1, session_flags.argv().end());
-
-    // Update user flags, but do not restart Chrome - the purpose of the flags
-    // set here is to be able to properly restore session if the session is
-    // restarted - e.g. due to crash. For example, this will ensure restarted
-    // app session restores auto-launched state.
-    DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-        cryptohome::Identification(
-            user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()),
-        flags);
-  }
-
   app_session_.reset(new AppSession);
   app_session_->Init(profile, app_id);
-}
-
-bool KioskAppManager::GetSwitchesForSessionRestore(
-    const std::string& app_id,
-    base::CommandLine* switches) {
-  bool auto_launched = app_id == currently_auto_launched_with_zero_delay_app_;
-  const base::CommandLine* current_command_line =
-      base::CommandLine::ForCurrentProcess();
-  bool has_auto_launched_flag =
-      current_command_line->HasSwitch(switches::kAppAutoLaunched);
-  if (auto_launched == has_auto_launched_flag)
-    return false;
-
-  // Collect current policy defined switches, so they can be passed on to the
-  // session manager as well - otherwise they would get lost on restart.
-  // This ignores 'flag-switches-begin' - 'flag-switches-end' flags, but those
-  // should not be present for kiosk sessions.
-  bool in_policy_switches_block = false;
-  const std::string policy_switches_begin =
-      GetSwitchString(switches::kPolicySwitchesBegin);
-  const std::string policy_switches_end =
-      GetSwitchString(switches::kPolicySwitchesEnd);
-
-  for (const auto& it : current_command_line->argv()) {
-    if (it == policy_switches_begin) {
-      DCHECK(!in_policy_switches_block);
-      in_policy_switches_block = true;
-    }
-
-    if (in_policy_switches_block)
-      switches->AppendSwitch(it);
-
-    if (it == policy_switches_end) {
-      DCHECK(in_policy_switches_block);
-      in_policy_switches_block = false;
-    }
-  }
-
-  DCHECK(!in_policy_switches_block);
-
-  if (auto_launched)
-    switches->AppendSwitch(switches::kAppAutoLaunched);
-
-  return true;
 }
 
 void KioskAppManager::AddAppForTest(

@@ -30,7 +30,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
@@ -860,13 +859,6 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
   // Disable window animation since kiosk app runs in a single full screen
   // window and window animation causes start-up janks.
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
-
-  // If restoring auto-launched kiosk session, make sure the app is marked
-  // as auto-launched.
-  if (command_line->HasSwitch(switches::kLoginUser) &&
-      command_line->HasSwitch(switches::kAppAutoLaunched)) {
-    KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(kiosk_app_id);
-  }
 }
 
 void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
