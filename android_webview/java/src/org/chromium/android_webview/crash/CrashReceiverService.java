@@ -44,26 +44,14 @@ public class CrashReceiverService extends Service {
     private Object mCopyingLock = new Object();
     private boolean mIsCopying = false;
 
-    // same switch as kEnableCrashReporterForTesting in //base/base_switches.h
-    static final String CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH =
-            "enable-crash-reporter-for-testing";
-
     @Override
     public void onCreate() {
         super.onCreate();
-        SynchronizedWebViewCommandLine.initOnSeparateThread();
     }
 
     private final ICrashReceiverService.Stub mBinder = new ICrashReceiverService.Stub() {
         @Override
         public void transmitCrashes(ParcelFileDescriptor[] fileDescriptors) {
-            // TODO(gsennton): replace this check with a check for Android Checkbox when we have
-            // access to that value through GmsCore.
-            if (!SynchronizedWebViewCommandLine.hasSwitch(
-                        CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH)) {
-                Log.i(TAG, "Crash reporting is not enabled, bailing!");
-                return;
-            }
             int uid = Binder.getCallingUid();
             performMinidumpCopyingSerially(
                     CrashReceiverService.this, uid, fileDescriptors, true /* scheduleUploads */);

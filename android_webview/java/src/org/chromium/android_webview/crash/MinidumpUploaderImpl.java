@@ -105,14 +105,15 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
             }
             @Override
             public boolean isUsageAndCrashReportingPermittedByUser() {
-                // TODO(gsennton): make this depend on Android Checkbox when we can read that
-                // through GmsCore.
-                return false;
+                // We ensure we have user permission before copying minidumps to the directory used
+                // by this process - so always return true here.
+                return true;
             }
             @Override
             public boolean isUploadEnabledForTests() {
-                return SynchronizedWebViewCommandLine.hasSwitch(
-                        CrashReceiverService.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                // We are already checking whether this feature is enabled for manual testing before
+                // copying minidumps.
+                return false;
             }
         };
     }
@@ -165,7 +166,7 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
 
     @Override
     public void uploadAllMinidumps(
-            MinidumpUploader.UploadsFinishedCallback uploadsFinishedCallback) {
+            final MinidumpUploader.UploadsFinishedCallback uploadsFinishedCallback) {
         if (mWorkerThread != null) {
             throw new RuntimeException("Only one upload-job should be active at a time");
         }

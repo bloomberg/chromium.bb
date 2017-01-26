@@ -23,7 +23,6 @@ public class MinidumpUploadJobService extends JobService {
     @Override
     public void onCreate() {
         super.onCreate();
-        SynchronizedWebViewCommandLine.initOnSeparateThread();
     }
 
     @Override

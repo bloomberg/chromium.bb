@@ -87,6 +87,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private static final String VERSION_CODE_PREF = "lastVersionCodeUsed";
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/webview-command-line";
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
+    // same switch as kEnableCrashReporterForTesting in //base/base_switches.h
+    public static final String CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH =
+            "enable-crash-reporter-for-testing";
 
     private class WebViewChromiumRunQueue {
         public WebViewChromiumRunQueue() {
@@ -423,13 +426,23 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         final boolean isExternalService = true;
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, isExternalService);
         AwBrowserProcess.start();
-        AwBrowserProcess.handleMinidumps(webViewPackageName);
 
+        final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
+                CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+        if (enableMinidumpUploadingForTesting) {
+            AwBrowserProcess.handleMinidumps(webViewPackageName, true /* enabled */);
+        }
+
+        // Actions conditioned on whether the Android Checkbox is toggled on
         PlatformServiceBridge.getInstance(context)
                 .queryMetricsSetting(new ValueCallback<Boolean>() {
                     public void onReceiveValue(Boolean enabled) {
                         ThreadUtils.assertOnUiThread();
                         AwMetricsServiceClient.setConsentSetting(context, enabled);
+
+                        if (!enableMinidumpUploadingForTesting) {
+                            AwBrowserProcess.handleMinidumps(webViewPackageName, enabled);
+                        }
                     }
                 });
 
