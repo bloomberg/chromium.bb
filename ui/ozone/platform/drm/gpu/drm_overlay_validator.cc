@@ -67,7 +67,6 @@ uint32_t FindOptimalBufferFormat(uint32_t original_format,
                                  const gfx::Rect& plane_bounds,
                                  const gfx::Rect& window_bounds,
                                  HardwareDisplayController* controller) {
-  bool force_primary_format = false;
   uint32_t z_order = plane_z_order;
   // If Overlay completely covers primary and isn't transparent, try to find
   // optimal format w.r.t primary plane. This guarantees that optimal format
@@ -75,16 +74,7 @@ uint32_t FindOptimalBufferFormat(uint32_t original_format,
   if (plane_bounds == window_bounds &&
       !NeedsAlphaComposition(original_format)) {
     z_order = 0;
-#if !defined(USE_DRM_ATOMIC)
-    // Page flip can fail when trying to flip a buffer of format other than
-    // what was used during Modeset on non atomic kernels. There is no
-    // definitive way to query this.
-    force_primary_format = true;
-#endif
   }
-
-  if (force_primary_format)
-    return DRM_FORMAT_XRGB8888;
 
   // YUV is preferable format if supported.
   if (controller->IsFormatSupported(DRM_FORMAT_UYVY, z_order)) {

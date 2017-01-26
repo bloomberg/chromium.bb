@@ -23,9 +23,7 @@ const float kFixedPointScaleValue = 65536.0f;
 }  // namespace
 
 HardwareDisplayPlaneList::HardwareDisplayPlaneList() {
-#if defined(USE_DRM_ATOMIC)
   atomic_property_set.reset(drmModeAtomicAlloc());
-#endif  // defined(USE_DRM_ATOMIC)
 }
 
 HardwareDisplayPlaneList::~HardwareDisplayPlaneList() {
@@ -222,9 +220,7 @@ void HardwareDisplayPlaneManager::ResetCurrentPlaneList(
 
   plane_list->plane_list.clear();
   plane_list->legacy_page_flips.clear();
-#if defined(USE_DRM_ATOMIC)
   plane_list->atomic_property_set.reset(drmModeAtomicAlloc());
-#endif
 }
 
 void HardwareDisplayPlaneManager::BeginFrame(

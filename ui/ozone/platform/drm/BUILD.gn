@@ -5,17 +5,7 @@
 import("//build/config/linux/pkg_config.gni")
 import("//ui/ozone/ozone.gni")
 
-declare_args() {
-  use_drm_atomic = true
-}
-
 visibility = [ "//ui/ozone/*" ]
-
-config("drm_atomic") {
-  if (use_drm_atomic) {
-    defines = [ "USE_DRM_ATOMIC" ]
-  }
-}
 
 source_set("gbm") {
   sources = [
@@ -75,8 +65,12 @@ source_set("gbm") {
     "gpu/hardware_display_controller.h",
     "gpu/hardware_display_plane.cc",
     "gpu/hardware_display_plane.h",
+    "gpu/hardware_display_plane_atomic.cc",
+    "gpu/hardware_display_plane_atomic.h",
     "gpu/hardware_display_plane_manager.cc",
     "gpu/hardware_display_plane_manager.h",
+    "gpu/hardware_display_plane_manager_atomic.cc",
+    "gpu/hardware_display_plane_manager_atomic.h",
     "gpu/hardware_display_plane_manager_legacy.cc",
     "gpu/hardware_display_plane_manager_legacy.h",
     "gpu/inter_thread_messaging_proxy.cc",
@@ -150,21 +144,10 @@ source_set("gbm") {
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
-
-  if (use_drm_atomic) {
-    configs += [ ":drm_atomic" ]
-    sources += [
-      "gpu/hardware_display_plane_atomic.cc",
-      "gpu/hardware_display_plane_atomic.h",
-      "gpu/hardware_display_plane_manager_atomic.cc",
-      "gpu/hardware_display_plane_manager_atomic.h",
-    ]
-  }
 }
 
 source_set("gbm_unittests") {
   testonly = true
-  configs += [ ":drm_atomic" ]
   sources = [
     "gpu/drm_overlay_validator_unittest.cc",
     "gpu/drm_window_unittest.cc",

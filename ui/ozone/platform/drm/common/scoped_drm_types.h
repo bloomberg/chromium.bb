@@ -45,11 +45,9 @@ struct DrmPlaneResDeleter {
 struct DrmPropertyDeleter {
   void operator()(drmModePropertyRes* property) const;
 };
-#if defined(USE_DRM_ATOMIC)
 struct DrmAtomicReqDeleter {
   void operator()(drmModeAtomicReq* property) const;
 };
-#endif  // defined(USE_DRM_ATOMIC)
 struct DrmPropertyBlobDeleter {
   void operator()(drmModePropertyBlobRes* property) const;
 };
@@ -69,10 +67,8 @@ typedef std::unique_ptr<drmModePlaneRes, DrmPlaneResDeleter>
     ScopedDrmPlaneResPtr;
 typedef std::unique_ptr<drmModePropertyRes, DrmPropertyDeleter>
     ScopedDrmPropertyPtr;
-#if defined(USE_DRM_ATOMIC)
 typedef std::unique_ptr<drmModeAtomicReq, DrmAtomicReqDeleter>
     ScopedDrmAtomicReqPtr;
-#endif  // defined(USE_DRM_ATOMIC)
 typedef std::unique_ptr<drmModePropertyBlobRes, DrmPropertyBlobDeleter>
     ScopedDrmPropertyBlobPtr;
 typedef std::unique_ptr<drmModeFB, DrmFramebufferDeleter>

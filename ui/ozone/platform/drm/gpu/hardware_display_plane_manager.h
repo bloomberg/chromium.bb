@@ -62,9 +62,7 @@ struct HardwareDisplayPlaneList {
   // pageflipping.
   std::vector<PageFlipInfo> legacy_page_flips;
 
-#if defined(USE_DRM_ATOMIC)
   ScopedDrmAtomicReqPtr atomic_property_set;
-#endif  // defined(USE_DRM_ATOMIC)
 };
 
 class HardwareDisplayPlaneManager {

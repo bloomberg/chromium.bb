@@ -89,10 +89,8 @@ void DrmThread::Start() {
 
 void DrmThread::Init() {
   bool use_atomic = false;
-#if defined(USE_DRM_ATOMIC)
   use_atomic = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDrmAtomic);
-#endif
 
   device_manager_.reset(
       new DrmDeviceManager(base::MakeUnique<GbmDeviceGenerator>(use_atomic)));

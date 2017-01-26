@@ -23,11 +23,9 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
+#include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 
-#if defined(USE_DRM_ATOMIC)
-#include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
-#endif
 
 namespace ui {
 
@@ -411,11 +409,9 @@ bool DrmDevice::Initialize(bool use_atomic) {
     return false;
   }
 
-#if defined(USE_DRM_ATOMIC)
   // Use atomic only if the build, kernel & flags all allow it.
   if (use_atomic && SetCapability(DRM_CLIENT_CAP_ATOMIC, 1))
     plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
-#endif  // defined(USE_DRM_ATOMIC)
 
   if (!plane_manager_)
     plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
@@ -661,7 +657,6 @@ bool DrmDevice::CommitProperties(drmModeAtomicReq* properties,
                                  uint32_t flags,
                                  uint32_t crtc_count,
                                  const PageFlipCallback& callback) {
-#if defined(USE_DRM_ATOMIC)
   uint64_t id = 0;
   bool page_flip_event_requested = flags & DRM_MODE_PAGE_FLIP_EVENT;
 
@@ -675,7 +670,6 @@ bool DrmDevice::CommitProperties(drmModeAtomicReq* properties,
 
     return true;
   }
-#endif  // defined(USE_DRM_ATOMIC)
   return false;
 }
 
