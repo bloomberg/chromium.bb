@@ -82,8 +82,9 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
                            generic_stages.ArchivingStageMixin):
   """Stage that records Android container version in metadata.
 
-  This should attempt to generate two types of metadata:
+  This should attempt to generate three types of metadata:
   - a unique Android version if it exists.
+  - a unique Android branch if it exists.
   - a per-board Android version for each board.
   """
 
@@ -91,22 +92,30 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
     super(AndroidMetadataStage, self).__init__(builder_run, **kwargs)
     # PerformStage() will fill this out for us.
     self.android_version = None
+    self.android_branch = None
 
   def _GetAndroidVersionFromMetadata(self):
     """Return the Android version from metadata; None if is does not exist."""
     version_dict = self._run.attrs.metadata.GetDict().get('version', {})
     return version_dict.get('android')
 
+  def _GetAndroidBranchFromMetadata(self):
+    """Return the Android branch from metadata; None if is does not exist."""
+    version_dict = self._run.attrs.metadata.GetDict().get('version', {})
+    return version_dict.get('android-branch')
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     # Initially get version from metadata in case the initial sync
     # stage set it.
     self.android_version = self._GetAndroidVersionFromMetadata()
+    self.android_branch = self._GetAndroidBranchFromMetadata()
 
     # Need to always iterate through and generate the board-specific
     # Android version metadata.  Each board must be handled separately
     # since there might be differing builds in the same release group.
     versions = set([])
+    branches = set([])
     for builder_run in self._run.GetUngroupedBuilderRuns():
       for board in builder_run.config.boards:
         try:
@@ -118,12 +127,22 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
           logging.info('Board %s has Android version %s', board, version)
         except cbuildbot_run.NoAndroidVersionError as ex:
           logging.info('Board %s does not contain Android (%s)', board, ex)
-
-    # If there wasn't a version specified in the manifest but there is
+        try:
+        # Determine the branch for each board and record metadata.
+          branch = self._run.DetermineAndroidBranch(board)
+          builder_run.attrs.metadata.UpdateBoardDictWithDict(
+              board, {'android-container-branch': branch})
+          branches.add(branch)
+          logging.info('Board %s has Android branch %s', board, branch)
+        except cbuildbot_run.NoAndroidBranchError as ex:
+          logging.info('Board %s does not contain Android (%s)', board, ex)
+    # If there wasn't a version or branch specified in the manifest but there is
     # a unique one across all the boards, treat it as the version for the
     # entire step.
     if self.android_version is None and len(versions) == 1:
       self.android_version = versions.pop()
+    if self.android_branch is None and len(branches) == 1:
+      self.android_branch = branches.pop()
 
     if self.android_version:
       logging.PrintBuildbotStepText('tag %s' % self.android_version)
@@ -133,7 +152,7 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
     self._run.attrs.metadata.UpdateKeyDictWithDict(
         'version',
         {'android': self._run.attrs.android_version,
-         'android-branch':  constants.ANDROID_BUILD_BRANCH})
+         'android-branch':  self._run.attrs.android_branch})
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
   def Finish(self):

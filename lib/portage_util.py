@@ -1560,6 +1560,15 @@ def FindPackageNameMatches(pkg_str, board=None,
   return matches
 
 
+def FindEbuildForBoardPackage(pkg_str, board):
+  """Returns a path to an ebuild for a particular board."""
+  equery = 'equery-%s' % board
+  cmd = [equery, 'which', pkg_str]
+  return cros_build_lib.RunCommand(
+      cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+      capture_output=True).output.strip()
+
+
 def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
                          extra_env=None, error_code_ok=True):
   """Returns a path to an ebuild responsible for package matching |pkg_str|.
