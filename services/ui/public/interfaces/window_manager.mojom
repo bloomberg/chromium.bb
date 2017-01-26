@@ -196,6 +196,9 @@ interface WindowManager {
   // to the next. The window manager may completely ignore this message.
   WmDeactivateWindow(uint32 window_id);
 
+  // Asks the WindowMangaer to stack |above_id| in front of |below_id|.
+  WmStackAbove(uint32 change_id, uint32 above_id, uint32 below_id);
+
   // Asks the WindowManager to stack |window_id| as the first child of its
   // window manager owned parent.
   WmStackAtTop(uint32 change_id, uint32 window_id);

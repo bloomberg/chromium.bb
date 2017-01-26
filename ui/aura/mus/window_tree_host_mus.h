@@ -75,6 +75,10 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   // Requests that the window manager change the activation to the next window.
   void DeactivateWindow();
 
+  // Requests that our root window be stacked above this other root window
+  // which our connection owns.
+  void StackAbove(Window* window);
+
   // Requests that our root window be stacked above all other parallel root
   // windows which we might not own.
   void StackAtTop();

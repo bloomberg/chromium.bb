@@ -60,6 +60,8 @@ class AccessPolicy {
   virtual bool CanSetHitTestMask(const ServerWindow* window) const = 0;
   virtual bool CanSetAcceptDrops(const ServerWindow* window) const = 0;
   virtual bool CanSetAcceptEvents(const ServerWindow* window) const = 0;
+  virtual bool CanStackAbove(const ServerWindow* above,
+                             const ServerWindow* below) const = 0;
   virtual bool CanStackAtTop(const ServerWindow* window) const = 0;
   // Used for all client controllable cursor properties; which cursor should be
   // displayed, visibility, locking, etc.

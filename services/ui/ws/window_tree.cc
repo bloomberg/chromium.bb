@@ -1282,6 +1282,9 @@ void WindowTree::ReorderWindow(uint32_t change_id,
                                Id window_id,
                                Id relative_window_id,
                                mojom::OrderDirection direction) {
+  // TODO(erg): This implementation allows reordering two windows that are
+  // children of a parent window which the two implementations can't see. There
+  // should be a security check to prevent this.
   bool success = false;
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   ServerWindow* relative_window =
@@ -1594,6 +1597,64 @@ void WindowTree::DeactivateWindow(Id window_id) {
   WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
   wm_tree->window_manager_internal_->WmDeactivateWindow(
       wm_tree->ClientWindowIdForWindow(window).id);
+}
+
+void WindowTree::StackAbove(uint32_t change_id, Id above_id, Id below_id) {
+  ServerWindow* above = GetWindowByClientId(ClientWindowId(above_id));
+  if (!above) {
+    DVLOG(1) << "StackAtTop failed (invalid above id)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  ServerWindow* below = GetWindowByClientId(ClientWindowId(below_id));
+  if (!below) {
+    DVLOG(1) << "StackAtTop failed (invalid below id)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  if (!access_policy_->CanStackAbove(above, below)) {
+    DVLOG(1) << "StackAtTop failed (access denied)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  ServerWindow* parent = above->parent();
+  ServerWindow* below_parent = below->parent();
+  if (!parent) {
+    DVLOG(1) << "StackAtTop failed (above unparented)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+  if (!below_parent) {
+    DVLOG(1) << "StackAtTop failed (below unparented)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+  if (parent != below_parent) {
+    DVLOG(1) << "StackAtTop failed (windows have different parents)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(above);
+  if (!display_root) {
+    DVLOG(1) << "StackAtTop (no display root)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  // Window reordering assumes that it is the owner of parent who is sending
+  // the message, and does not deal gracefully with other clients reordering
+  // their windows. So tell the window manager to send us a reorder message.
+  WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
+  const uint32_t wm_change_id =
+      window_server_->GenerateWindowManagerChangeId(this, change_id);
+  wm_tree->window_manager_internal_->WmStackAbove(
+      wm_change_id,
+      wm_tree->ClientWindowIdForWindow(above).id,
+      wm_tree->ClientWindowIdForWindow(below).id);
 }
 
 void WindowTree::StackAtTop(uint32_t change_id, Id window_id) {

@@ -476,6 +476,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
   void WmCancelMoveLoop(uint32_t window_id) override { NOTIMPLEMENTED(); }
   void WmDeactivateWindow(uint32_t window_id) override { NOTIMPLEMENTED(); }
+  void WmStackAbove(uint32_t change_id, uint32_t above_id,
+                    uint32_t below_id) override {
+    NOTIMPLEMENTED();
+  }
   void WmStackAtTop(uint32_t change_id, uint32_t window_id) override {
     NOTIMPLEMENTED();
   }

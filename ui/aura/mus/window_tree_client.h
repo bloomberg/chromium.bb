@@ -409,6 +409,7 @@ class AURA_EXPORT WindowTreeClient
                          const gfx::Point& cursor_location) override;
   void WmCancelMoveLoop(uint32_t window_id) override;
   void WmDeactivateWindow(Id window_id) override;
+  void WmStackAbove(uint32_t change_id, Id above_id, Id below_id) override;
   void WmStackAtTop(uint32_t change_id, uint32_t window_id) override;
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
@@ -442,6 +443,8 @@ class AURA_EXPORT WindowTreeClient
       const base::Optional<gfx::Rect>& mask_rect) override;
   void OnWindowTreeHostDeactivateWindow(
       WindowTreeHostMus* window_tree_host) override;
+  void OnWindowTreeHostStackAbove(WindowTreeHostMus* window_tree_host,
+                                  Window* window) override;
   void OnWindowTreeHostStackAtTop(WindowTreeHostMus* window_tree_host) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
       const std::map<std::string, std::vector<uint8_t>>* properties) override;

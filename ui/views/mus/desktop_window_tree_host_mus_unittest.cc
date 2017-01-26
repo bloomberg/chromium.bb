@@ -184,6 +184,20 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTopAlreadyOnTop) {
   waiter.Wait();
 }
 
+TEST_F(DesktopWindowTreeHostMusTest, StackAbove) {
+  std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
+  widget1->Show();
+
+  std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
+  widget2->Show();
+
+  aura::test::ChangeCompletionWaiter waiter(
+      MusClient::Get()->window_tree_client(),
+      aura::ChangeType::REORDER, true);
+  widget1->StackAboveWidget(widget2.get());
+  waiter.Wait();
+}
+
 TEST_F(DesktopWindowTreeHostMusTest, TransientParentWiredToHostWindow) {
   std::unique_ptr<Widget> widget1(CreateWidget());
   widget1->Show();

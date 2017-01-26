@@ -46,6 +46,11 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
   virtual void OnWindowTreeHostDeactivateWindow(
       WindowTreeHostMus* window_tree_host) = 0;
 
+  // Called to stack the native window above the native window of |window|.
+  virtual void OnWindowTreeHostStackAbove(
+      WindowTreeHostMus* window_tree_host,
+      Window* window) = 0;
+
   // Called to stack the native window above other native windows.
   virtual void OnWindowTreeHostStackAtTop(
       WindowTreeHostMus* window_tree_host) = 0;

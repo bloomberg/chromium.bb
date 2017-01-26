@@ -264,6 +264,10 @@ interface WindowTree {
   // window manager change the focus to the next activatable window.
   DeactivateWindow(uint32 window_id);
 
+  // Stacks the window |above_id| above |below_id|. These two windows must
+  // share the same parent.
+  StackAbove(uint32 change_id, uint32 above_id, uint32 below_id);
+
   // Stacks the window above all sibling windows.
   StackAtTop(uint32 change_id, uint32 window_id);
 

@@ -149,6 +149,10 @@ void WindowTreeHostMus::DeactivateWindow() {
   delegate_->OnWindowTreeHostDeactivateWindow(this);
 }
 
+void WindowTreeHostMus::StackAbove(Window* window) {
+  delegate_->OnWindowTreeHostStackAbove(this, window);
+}
+
 void WindowTreeHostMus::StackAtTop() {
   delegate_->OnWindowTreeHostStackAtTop(this);
 }

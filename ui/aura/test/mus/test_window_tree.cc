@@ -268,6 +268,9 @@ void TestWindowTree::OnWindowInputEventAck(uint32_t event_id,
 
 void TestWindowTree::DeactivateWindow(uint32_t window_id) {}
 
+void TestWindowTree::StackAbove(uint32_t change_id, uint32_t above_id,
+                                uint32_t below_id) {}
+
 void TestWindowTree::StackAtTop(uint32_t change_id, uint32_t window_id) {}
 
 void TestWindowTree::GetWindowManagerClient(

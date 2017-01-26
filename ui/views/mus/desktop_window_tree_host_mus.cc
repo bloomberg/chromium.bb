@@ -406,9 +406,12 @@ void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
   SetBoundsInDIP(screen_bounds);
 }
 
-void DesktopWindowTreeHostMus::StackAbove(aura::Window* window) {
-  // TODO: implement window stacking, http://crbug.com/663617.
-  NOTIMPLEMENTED();
+void DesktopWindowTreeHostMus::StackAbove(aura::Window* relative) {
+  // Windows and X11 check for |relative| being nullptr and fail silently. It
+  // also looks like |relative| is usually multiple children deep in the root
+  // window, which we must pass instead.
+  if (relative && relative->GetRootWindow())
+    WindowTreeHostMus::StackAbove(relative->GetRootWindow());
 }
 
 void DesktopWindowTreeHostMus::StackAtTop() {
