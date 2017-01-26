@@ -216,6 +216,8 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
+              toggle-off-label="$i18n{siteSettingsAutoDownloadBlock}"
+              toggle-on-label="$i18n{siteSettingsAutoDownloadAskRecommended}"
               category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
           </category-default-setting>
           <category-setting-exceptions
@@ -228,6 +230,9 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
+              toggle-off-label="$i18n{siteSettingsBackgroundSyncBlocked}"
+              toggle-on-label=
+                  "$i18n{siteSettingsAllowRecentlyClosedSitesRecommended}"
               category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
           </category-default-setting>
           <category-setting-exceptions
@@ -240,7 +245,10 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="camera"></media-picker>
-          <category-default-setting category="{{ContentSettingsTypes.CAMERA}}">
+          <category-default-setting category="{{ContentSettingsTypes.CAMERA}}"
+              toggle-off-label="$i18n{siteSettingsBlocked}"
+              toggle-on-label=
+                  "$i18n{siteSettingsAskBeforeAccessingRecommended}">
           </category-default-setting>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.CAMERA}}">
@@ -252,6 +260,8 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting category="{{ContentSettingsTypes.COOKIES}}"
+              toggle-off-label="$i18n{siteSettingsBlocked}"
+              toggle-on-label="$i18n{siteSettingsCookiesAllowedRecommended}"
               sub-option-label="$i18n{deleteDataPostSession}"
               sub-option-secondary=""><!-- To work with :empty. -->
           </category-default-setting>
@@ -272,7 +282,9 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <category-default-setting category="{{ContentSettingsTypes.IMAGES}}">
+          <category-default-setting category="{{ContentSettingsTypes.IMAGES}}"
+              toggle-off-label="$i18n{siteSettingsDontShowImages}"
+              toggle-on-label="$i18n{siteSettingsShowAllRecommended}">
           </category-default-setting>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.IMAGES}}">
@@ -284,6 +296,8 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
+              toggle-off-label="$i18n{siteSettingsBlocked}"
+              toggle-on-label="$i18n{siteSettingsAskBeforeAccessingRecommended}"
               category="{{ContentSettingsTypes.GEOLOCATION}}">
           </category-default-setting>
           <category-setting-exceptions
@@ -311,6 +325,8 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
+              toggle-off-label="$i18n{siteSettingsBlocked}"
+              toggle-on-label="$i18n{siteSettingsAllowedRecommended}"
               category="{{ContentSettingsTypes.JAVASCRIPT}}">
           </category-default-setting>
           <category-setting-exceptions
@@ -323,7 +339,10 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="mic"></media-picker>
-          <category-default-setting category="{{ContentSettingsTypes.MIC}}">
+          <category-default-setting category="{{ContentSettingsTypes.MIC}}"
+              toggle-off-label="$i18n{siteSettingsBlocked}"
+              toggle-on-label=
+                  "$i18n{siteSettingsAskBeforeAccessingRecommended}">
           </category-default-setting>
           <category-setting-exceptions category="{{ContentSettingsTypes.MIC}}">
           </category-setting-exceptions>
@@ -334,6 +353,8 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
+              toggle-off-label="$i18n{siteSettingsBlocked}"
+              toggle-on-label="$i18n{siteSettingsAskBeforeSendingRecommended}"
               category="{{ContentSettingsTypes.NOTIFICATIONS}}">
           </category-default-setting>
           <category-setting-exceptions
@@ -346,6 +367,8 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting category="{{ContentSettingsTypes.PLUGINS}}"
+              toggle-off-label="$i18n{siteSettingsFlashBlock}"
+              toggle-on-label="$i18n{siteSettingsFlashAllow}"
               sub-option-label="$i18n{siteSettingsFlashAskBefore}"
               sub-option-secondary="$i18n{siteSettingsFlashAskBeforeSubtitle}">
           </category-default-setting>
@@ -367,7 +390,9 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <category-default-setting category="{{ContentSettingsTypes.POPUPS}}">
+          <category-default-setting category="{{ContentSettingsTypes.POPUPS}}"
+              toggle-off-label="$i18n{siteSettingsBlockedRecommended}"
+              toggle-on-label="$i18n{siteSettingsAllowed}">
           </category-default-setting>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.POPUPS}}">
@@ -379,6 +404,9 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
+              toggle-off-label="$i18n{siteSettingsUnsandboxedPluginsBlock}"
+              toggle-on-label=
+                  "$i18n{siteSettingsUnsandboxedPluginsAskRecommended}"
               category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">
           </category-default-setting>
           <category-setting-exceptions

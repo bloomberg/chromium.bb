@@ -46,6 +46,10 @@ Polymer({
         return /** @type {chrome.settingsPrivate.PrefObject} */({});
       },
     },
+
+    /* Labels for the toggle on/off positions. */
+    toggleOffLabel: String,
+    toggleOnLabel: String,
   },
 
   observers: [
@@ -190,8 +194,9 @@ Polymer({
                 setting == settings.PermissionValues.SESSION_ONLY) {
               setting = settings.PermissionValues.ALLOW;
             }
+            var categoryEnabled = setting != settings.PermissionValues.BLOCK;
             this.sliderDescription_ =
-                this.computeCategoryDesc(this.category, setting, true);
+                categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
           }.bind(this));
   },
 });
