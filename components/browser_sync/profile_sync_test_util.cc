@@ -261,7 +261,10 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.url_request_context = url_request_context();
   init_params.debug_identifier = "dummyDebugName";
   init_params.channel = version_info::Channel::UNKNOWN;
-  init_params.blocking_pool = worker_pool_owner_.pool().get();
+  init_params.blocking_task_runner =
+      worker_pool_owner_.pool()->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool_owner_.pool()->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   return init_params;
 }

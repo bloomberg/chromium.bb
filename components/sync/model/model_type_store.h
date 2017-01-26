@@ -195,6 +195,10 @@ class ModelTypeStore {
   // It will delete all metadata records and global metadata record.
 };
 
+// Typedef for a store factory that has all params bound except InitCallback.
+using ModelTypeStoreFactory =
+    base::Callback<void(const ModelTypeStore::InitCallback&)>;
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_MODEL_MODEL_TYPE_STORE_H_

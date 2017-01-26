@@ -55,7 +55,12 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   init_params.url_request_context = profile->GetRequestContext();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
-  init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool* blocking_pool =
+      content::BrowserThread::GetBlockingPool();
+  init_params.blocking_task_runner =
+      blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          blocking_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   return init_params;
 }

@@ -38,7 +38,11 @@ CreateProfileSyncServiceParamsForTest(
   init_params.url_request_context = browser_state->GetRequestContext();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
-  init_params.blocking_pool = web::WebThread::GetBlockingPool();
+  base::SequencedWorkerPool* blocking_pool = web::WebThread::GetBlockingPool();
+  init_params.blocking_task_runner =
+      blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          blocking_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   return init_params;
 }

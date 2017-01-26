@@ -34,11 +34,8 @@ namespace syncer {
 class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
                              public DeviceInfoTracker {
  public:
-  typedef base::Callback<void(const ModelTypeStore::InitCallback& callback)>
-      StoreFactoryFunction;
-
   DeviceInfoSyncBridge(LocalDeviceInfoProvider* local_device_info_provider,
-                       const StoreFactoryFunction& callback,
+                       const ModelTypeStoreFactory& store_factory,
                        const ChangeProcessorFactory& change_processor_factory);
   ~DeviceInfoSyncBridge() override;
 

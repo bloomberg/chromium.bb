@@ -69,7 +69,6 @@
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/model/change_processor.h"
 #include "components/sync/model/model_type_change_processor.h"
-#include "components/sync/model/model_type_store.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
@@ -193,7 +192,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
       url_request_context_(init_params.url_request_context),
-      blocking_pool_(init_params.blocking_pool),
+      blocking_task_runner_(std::move(init_params.blocking_task_runner)),
       is_first_time_sync_configure_(false),
       engine_initialized_(false),
       sync_disabled_by_admin_(false),
@@ -274,19 +273,11 @@ void ProfileSyncService::Initialize() {
                  syncer::ModelTypeSet(syncer::SESSIONS)));
 
   if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-        blocking_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
-            blocking_pool_->GetSequenceToken(),
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
     // TODO(skym): Stop creating leveldb files when signed out.
     // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
     // as the Local State file is guaranteed to be UTF-8.
     device_info_sync_bridge_ = base::MakeUnique<DeviceInfoSyncBridge>(
-        local_device_.get(),
-        base::Bind(&ModelTypeStore::CreateStore, syncer::DEVICE_INFO,
-                   sync_data_folder_.Append(base::FilePath(kLevelDBFolderName))
-                       .AsUTF8Unsafe(),
-                   blocking_task_runner),
+        local_device_.get(), GetModelTypeStoreFactory(syncer::DEVICE_INFO),
         base::BindRepeating(
             &ModelTypeChangeProcessor::Create,
             base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
@@ -974,7 +965,7 @@ void ProfileSyncService::OnEngineInitialized(
 
   // Initialize local device info.
   local_device_->Initialize(cache_guid, signin_scoped_device_id,
-                            blocking_pool_);
+                            blocking_task_runner_);
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -1821,6 +1812,14 @@ void ProfileSyncService::SetPlatformSyncAllowedProvider(
     const PlatformSyncAllowedProvider& platform_sync_allowed_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   platform_sync_allowed_provider_ = platform_sync_allowed_provider;
+}
+
+syncer::ModelTypeStoreFactory ProfileSyncService::GetModelTypeStoreFactory(
+    ModelType type) {
+  return base::Bind(&ModelTypeStore::CreateStore, type,
+                    sync_data_folder_.Append(base::FilePath(kLevelDBFolderName))
+                        .AsUTF8Unsafe(),
+                    blocking_task_runner_);
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {

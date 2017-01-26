@@ -49,6 +49,7 @@
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/js/sync_js_controller.h"
+#include "components/sync/model/model_type_store.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -244,7 +245,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
     scoped_refptr<net::URLRequestContextGetter> url_request_context;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
-    base::SequencedWorkerPool* blocking_pool = nullptr;
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
     base::FilePath local_sync_backend_folder;
 
    private:
@@ -580,6 +581,11 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   void SetPlatformSyncAllowedProvider(
       const PlatformSyncAllowedProvider& platform_sync_allowed_provider);
 
+  // Returns a function for |type| that will create a ModelTypeStore that shares
+  // the sync LevelDB backend.
+  syncer::ModelTypeStoreFactory GetModelTypeStoreFactory(
+      syncer::ModelType type);
+
   // Needed to test whether the directory is deleted properly.
   base::FilePath GetDirectoryPathForTest() const;
 
@@ -793,8 +799,8 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // The request context in which sync should operate.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 
-  // Threading context.
-  base::SequencedWorkerPool* blocking_pool_;
+  // The task runner to use for blocking IO operations.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // Indicates if this is the first time sync is being configured.  This value
   // is equal to !IsFirstSetupComplete() at the time of OnEngineInitialized().
