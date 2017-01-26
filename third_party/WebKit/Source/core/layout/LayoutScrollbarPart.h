@@ -74,7 +74,7 @@ class LayoutScrollbarPart final : public LayoutBlock {
     return type == LayoutObjectLayoutScrollbarPart ||
            LayoutBlock::isOfType(type);
   }
-  LayoutObject* layoutObjectOwningScrollbar() const;
+  LayoutObject* scrollbarStyleSource() const;
 
   // Must call setStyleWithWritingModeOfParent() instead.
   void setStyle(PassRefPtr<ComputedStyle>) = delete;

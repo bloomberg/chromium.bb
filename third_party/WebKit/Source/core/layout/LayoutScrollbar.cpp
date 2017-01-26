@@ -41,20 +41,20 @@ namespace blink {
 Scrollbar* LayoutScrollbar::createCustomScrollbar(
     ScrollableArea* scrollableArea,
     ScrollbarOrientation orientation,
-    Node* ownerNode) {
-  return new LayoutScrollbar(scrollableArea, orientation, ownerNode);
+    Element* styleSource) {
+  return new LayoutScrollbar(scrollableArea, orientation, styleSource);
 }
 
 LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollableArea,
                                  ScrollbarOrientation orientation,
-                                 Node* ownerNode)
+                                 Element* styleSource)
     : Scrollbar(scrollableArea,
                 orientation,
                 RegularScrollbar,
                 nullptr,
                 LayoutScrollbarTheme::layoutScrollbarTheme()),
-      m_owner(ownerNode) {
-  DCHECK(ownerNode);
+      m_styleSource(styleSource) {
+  DCHECK(styleSource);
 
   // FIXME: We need to do this because LayoutScrollbar::styleChanged is called
   // as soon as the scrollbar is created.
@@ -89,13 +89,13 @@ LayoutScrollbar::~LayoutScrollbar() {
 }
 
 DEFINE_TRACE(LayoutScrollbar) {
-  visitor->trace(m_owner);
+  visitor->trace(m_styleSource);
   Scrollbar::trace(visitor);
 }
 
-LayoutBox* LayoutScrollbar::owningLayoutObject() const {
-  return m_owner && m_owner->layoutObject()
-             ? m_owner->layoutObject()->enclosingBox()
+LayoutBox* LayoutScrollbar::styleSource() const {
+  return m_styleSource && m_styleSource->layoutObject()
+             ? m_styleSource->layoutObject()->enclosingBox()
              : 0;
 }
 
@@ -146,12 +146,11 @@ void LayoutScrollbar::setPressedPart(ScrollbarPart part) {
 PassRefPtr<ComputedStyle> LayoutScrollbar::getScrollbarPseudoStyle(
     ScrollbarPart partType,
     PseudoId pseudoId) {
-  if (!owningLayoutObject())
+  if (!styleSource())
     return nullptr;
 
-  return owningLayoutObject()->getUncachedPseudoStyle(
-      PseudoStyleRequest(pseudoId, this, partType),
-      owningLayoutObject()->style());
+  return styleSource()->getUncachedPseudoStyle(
+      PseudoStyleRequest(pseudoId, this, partType), styleSource()->style());
 }
 
 void LayoutScrollbar::updateScrollbarParts(bool destroy) {
@@ -184,7 +183,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy) {
     setFrameRect(
         IntRect(location(), IntSize(isHorizontal ? width() : newThickness,
                                     isHorizontal ? newThickness : height())));
-    if (LayoutBox* box = owningLayoutObject()) {
+    if (LayoutBox* box = styleSource()) {
       if (box->isLayoutBlock())
         toLayoutBlock(box)->notifyScrollbarThicknessChanged();
       box->setChildNeedsLayout();
@@ -266,7 +265,7 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType,
   LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
   if (!partLayoutObject && needLayoutObject && m_scrollableArea) {
     partLayoutObject = LayoutScrollbarPart::createAnonymous(
-        &owningLayoutObject()->document(), m_scrollableArea, this, partType);
+        &styleSource()->document(), m_scrollableArea, this, partType);
     m_parts.set(partType, partLayoutObject);
     setNeedsPaintInvalidation(partType);
   } else if (partLayoutObject && !needLayoutObject) {

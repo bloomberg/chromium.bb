@@ -4106,7 +4106,7 @@ bool FrameView::needsScrollbarReconstruction() const {
   }
   DCHECK(needsCustom && isCustom);
   DCHECK(styleSource);
-  if (toLayoutScrollbar(scrollbar)->owningLayoutObject() !=
+  if (toLayoutScrollbar(scrollbar)->styleSource() !=
       styleSource->layoutObject()) {
     // We have a custom scrollbar with a stale m_owner.
     return true;

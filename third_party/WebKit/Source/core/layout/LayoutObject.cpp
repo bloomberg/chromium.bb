@@ -920,7 +920,7 @@ LayoutBlock* LayoutObject::containingBlockForAbsolutePosition(
 LayoutBlock* LayoutObject::containingBlock(AncestorSkipInfo* skipInfo) const {
   LayoutObject* object = parent();
   if (!object && isLayoutScrollbarPart())
-    object = toLayoutScrollbarPart(this)->layoutObjectOwningScrollbar();
+    object = toLayoutScrollbarPart(this)->scrollbarStyleSource();
   if (!isTextOrSVGChild()) {
     if (m_style->position() == FixedPosition)
       return containerForFixedPosition(skipInfo);
