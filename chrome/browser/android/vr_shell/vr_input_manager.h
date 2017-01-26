@@ -23,7 +23,6 @@ class VrInputManager {
   explicit VrInputManager(content::WebContents* web_contents);
   ~VrInputManager();
 
-  base::WeakPtr<VrInputManager> GetWeakPtr();
   void ProcessUpdatedGesture(std::unique_ptr<blink::WebInputEvent> event);
 
  private:
@@ -32,8 +31,6 @@ class VrInputManager {
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event);
 
   content::WebContents* web_contents_;
-
-  base::WeakPtrFactory<VrInputManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VrInputManager);
 };

@@ -24,6 +24,10 @@ class ListValue;
 class Thread;
 }
 
+namespace blink {
+class WebInputEvent;
+}
+
 namespace content {
 class WebContents;
 }
@@ -65,7 +69,9 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
           bool reprojected_rendering);
-
+  void SwapContents(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    const base::android::JavaParamRef<jobject>& web_contents);
   void LoadUIContent(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -89,6 +95,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   // Called when our WebContents have been hidden. Usually a sign that something
   // like another tab placed in front of it.
   void ContentWasHidden();
+  void ContentWasShown();
 
   // html/js UI hooks.
   static base::WeakPtr<VrShell> GetWeakPtr(
@@ -136,9 +143,11 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   void ForceExitVr();
 
+  void ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event);
+  void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
+
  private:
   ~VrShell() override;
-  void SetIsInVR(bool is_in_vr);
   void PostToGlThreadWhenReady(const base::Closure& task);
 
   // content::WebContentsObserver implementation. All called on UI thread.

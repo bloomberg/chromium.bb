@@ -30,6 +30,8 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -74,6 +76,7 @@ public class VrShellDelegate {
 
     private final ChromeTabbedActivity mActivity;
     private TabObserver mTabObserver;
+    private TabModelSelectorObserver mTabModelSelectorObserver;
     private Intent mEnterVRIntent;
 
     @VrSupportLevel
@@ -111,6 +114,7 @@ public class VrShellDelegate {
             mVrSupportLevel = VR_NOT_AVAILABLE;
             mEnterVRIntent = null;
             mTabObserver = null;
+            mTabModelSelectorObserver = null;
             return;
         }
 
@@ -144,6 +148,14 @@ public class VrShellDelegate {
                 public void onLoadProgressChanged(Tab tab, int progress) {
                     if (!mInVr) return;
                     mVrShell.onLoadProgressChanged(progress / 100.0);
+                }
+            };
+        }
+        if (mTabModelSelectorObserver == null) {
+            mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+                @Override
+                public void onChange() {
+                    swapToForegroundTab();
                 }
             };
         }
@@ -250,6 +262,7 @@ public class VrShellDelegate {
         mVrShell.resume();
         mTab.updateFullscreenEnabledState();
         setEnterVRResult(true, requestedWebVR);
+        mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
     }
 
     private void setEnterVRResult(boolean success, boolean requestedWebVR) {
@@ -258,6 +271,22 @@ public class VrShellDelegate {
             mVrClassesWrapper.setVrModeEnabled(false);
         }
         mRequestedWebVR = false;
+    }
+
+    private void swapToForegroundTab() {
+        Tab tab = mActivity.getActivityTab();
+        if (tab == mTab) return;
+        if (!canEnterVR(tab)) {
+            forceExitVr();
+            return;
+        }
+        mTab.removeObserver(mTabObserver);
+        mTab.updateFullscreenEnabledState();
+
+        mVrShell.swapTab(tab);
+        mTab = tab;
+        mTab.addObserver(mTabObserver);
+        mTab.updateFullscreenEnabledState();
     }
 
     private boolean canEnterVR(Tab tab) {
@@ -511,6 +540,7 @@ public class VrShellDelegate {
             mVrClassesWrapper.setVrModeEnabled(false);
             mLastVRExit = SystemClock.uptimeMillis();
         }
+        mActivity.getTabModelSelector().removeObserver(mTabModelSelectorObserver);
         mActivity.setRequestedOrientation(mRestoreOrientation);
         mVrShell.pause();
         removeVrViews();

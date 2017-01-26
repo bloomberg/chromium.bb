@@ -19,6 +19,11 @@ public interface VrShell {
     void initializeNative(Tab currentTab, VrShellDelegate delegate, boolean forWebVR);
 
     /**
+     * Swaps to the designated tab.
+     */
+    void swapTab(Tab currentTab);
+
+    /**
      * Pauses VrShell.
      */
     void pause();

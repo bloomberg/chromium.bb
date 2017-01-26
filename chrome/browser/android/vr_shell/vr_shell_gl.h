@@ -36,7 +36,6 @@ namespace vr_shell {
 
 class UiScene;
 class VrController;
-class VrInputManager;
 class VrShell;
 class VrShellRenderer;
 struct ContentRectangle;
@@ -53,8 +52,6 @@ class VrShellGl {
 
   VrShellGl(
       const base::WeakPtr<VrShell>& weak_vr_shell,
-      const base::WeakPtr<VrInputManager>& content_input_manager,
-      const base::WeakPtr<VrInputManager>& ui_input_manager,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
       bool initially_web_vr,
@@ -176,8 +173,6 @@ class VrShellGl {
   base::TimeDelta vsync_interval_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
-  base::WeakPtr<VrInputManager> content_input_manager_;
-  base::WeakPtr<VrInputManager> ui_input_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;

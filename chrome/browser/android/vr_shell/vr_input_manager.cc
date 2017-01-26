@@ -30,15 +30,10 @@ WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
 }  // namespace
 
 VrInputManager::VrInputManager(content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      weak_ptr_factory_(this) {
+    : web_contents_(web_contents) {
 }
 
 VrInputManager::~VrInputManager() = default;
-
-base::WeakPtr<VrInputManager> VrInputManager::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
 
 void VrInputManager::ProcessUpdatedGesture(
     std::unique_ptr<blink::WebInputEvent> event) {

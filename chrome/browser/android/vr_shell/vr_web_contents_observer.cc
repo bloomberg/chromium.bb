@@ -81,6 +81,11 @@ void VrWebContentsObserver::WasHidden() {
   vr_shell_->ContentWasHidden();
 }
 
+void VrWebContentsObserver::WasShown() {
+  vr_shell_->ContentWasShown();
+}
+
+
 void VrWebContentsObserver::MainFrameWasResized(bool width_changed) {
   vr_shell_->ContentFrameWasResized(width_changed);
 }

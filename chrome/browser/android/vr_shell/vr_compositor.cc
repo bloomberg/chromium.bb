@@ -20,12 +20,8 @@ VrCompositor::VrCompositor(ui::WindowAndroid* window, bool transparent)
 }
 
 VrCompositor::~VrCompositor() {
-  if (layer_) {
-    layer_->SetBackgroundColor(background_color_);
-    if (layer_parent_) {
-      layer_parent_->AddChild(layer_);
-    }
-  }
+  if (layer_)
+    RestoreLayer();
 }
 
 void VrCompositor::UpdateLayerTreeHost() {}
@@ -33,7 +29,8 @@ void VrCompositor::UpdateLayerTreeHost() {}
 void VrCompositor::OnSwapBuffersCompleted(int pending_swap_buffers) {}
 
 void VrCompositor::SetLayer(content::WebContents* web_contents) {
-  assert(layer_ == nullptr);
+  if (layer_)
+    RestoreLayer();
   ui::ViewAndroid* view_android = web_contents->GetNativeView();
 
   // When we pass the layer for the ContentViewCore to the compositor it may be
@@ -48,6 +45,13 @@ void VrCompositor::SetLayer(content::WebContents* web_contents) {
   }
   layer_parent_ = layer_->parent();
   compositor_->SetRootLayer(layer_);
+}
+
+void VrCompositor::RestoreLayer() {
+  layer_->SetBackgroundColor(background_color_);
+  if (layer_parent_) {
+    layer_parent_->AddChild(layer_);
+  }
 }
 
 void VrCompositor::SurfaceDestroyed() {

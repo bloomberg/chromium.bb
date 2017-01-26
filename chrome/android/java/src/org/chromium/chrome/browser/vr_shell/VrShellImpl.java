@@ -65,6 +65,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private final CompositorViewHolder mCompositorViewHolder;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
     private final VirtualDisplayAndroid mUiVirtualDisplay;
+    private final TabRedirectHandler mTabRedirectHandler;
 
     private long mNativeVrShell;
 
@@ -87,6 +88,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     private TabRedirectHandler mNonVrTabRedirectHandler;
     private TabModelSelector mTabModelSelector;
+    private float mLastContentWidth;
+    private float mLastContentHeight;
+    private float mLastContentDpr;
 
     public VrShellImpl(Activity activity, CompositorViewHolder compositorViewHolder) {
         super(activity);
@@ -123,6 +127,13 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mContentVirtualDisplay.setTo(primaryDisplay);
         mUiVirtualDisplay = VirtualDisplayAndroid.createVirtualDisplay();
         mUiVirtualDisplay.setTo(primaryDisplay);
+
+        mTabRedirectHandler = new TabRedirectHandler(mActivity) {
+            @Override
+            public boolean shouldStayInChrome(boolean hasExternalProtocol) {
+                return true;
+            }
+        };
     }
 
     @Override
@@ -131,15 +142,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mTab = currentTab;
         mContentCVC = mTab.getContentViewCore();
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
-
-        // Make sure we are not redirecting to another app, i.e. out of VR mode.
-        mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
-        mTab.setTabRedirectHandler(new TabRedirectHandler(mActivity) {
-            @Override
-            public boolean shouldStayInChrome(boolean hasExternalProtocol) {
-                return true;
-            }
-        });
 
         mUiVrWindowAndroid = new VrWindowAndroid(mActivity, mUiVirtualDisplay);
         mUiContents = WebContentsFactory.createWebContents(true, false);
@@ -187,9 +189,35 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mUiCVC.setTopControlsHeight(0, false);
         mUiVrWindowAndroid.onVisibilityChanged(true);
 
+        initializeTabForVR();
+    }
+
+    private void initializeTabForVR() {
         mOriginalWindowAndroid = mContentCVC.getWindowAndroid();
         mTab.updateWindowAndroid(mContentVrWindowAndroid);
         mContentCVC.onAttachedToWindow();
+
+        // Make sure we are not redirecting to another app, i.e. out of VR mode.
+        mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
+        mTab.setTabRedirectHandler(mTabRedirectHandler);
+    }
+
+    private void restoreTabFromVR() {
+        mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
+        mTab.updateWindowAndroid(mOriginalWindowAndroid);
+        mOriginalWindowAndroid = null;
+        mNonVrTabRedirectHandler = null;
+    }
+
+    @Override
+    public void swapTab(final Tab newTab) {
+        restoreTabFromVR();
+        mTab = newTab;
+        mContentCVC = mTab.getContentViewCore();
+        initializeTabForVR();
+
+        nativeSwapContents(mNativeVrShell, mContentCVC.getWebContents());
+        setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
     }
 
     @CalledByNative
@@ -212,6 +240,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     @CalledByNative
     public void setContentCssSize(float width, float height, float dpr) {
         ThreadUtils.assertOnUiThread();
+        mLastContentWidth = width;
+        mLastContentHeight = height;
+        mLastContentDpr = dpr;
         int surfaceWidth = (int) Math.ceil(width * dpr);
         int surfaceHeight = (int) Math.ceil(height * dpr);
 
@@ -270,15 +301,12 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
         }
-        mCompositorViewHolder.onExitVR(mTabModelSelector);
-        mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
-        mTab.updateWindowAndroid(mOriginalWindowAndroid);
-        mContentCVC.onSizeChanged(mContentCVC.getContainerView().getWidth(),
-                mContentCVC.getContainerView().getHeight(), 0, 0);
+        restoreTabFromVR();
         mUiContents.destroy();
         mContentVirtualDisplay.destroy();
         mUiVirtualDisplay.destroy();
         super.shutdown();
+        mCompositorViewHolder.onExitVR(mTabModelSelector);
     }
 
     @Override
@@ -333,6 +361,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             long nativeContentWindowAndroid, WebContents uiWebContents, long nativeUiWindowAndroid,
             boolean forWebVR, VrShellDelegate delegate, long gvrApi, boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
+    private native void nativeSwapContents(long nativeVrShell, WebContents webContents);
     private native void nativeLoadUIContent(long nativeVrShell);
     private native void nativeDestroy(long nativeVrShell);
     private native void nativeOnTriggerEvent(long nativeVrShell);

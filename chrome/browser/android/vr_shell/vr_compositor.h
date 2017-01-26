@@ -45,6 +45,8 @@ class VrCompositor : public content::CompositorClient {
   void OnSwapBuffersCompleted(int pending_swap_buffers) override;
 
  private:
+  void RestoreLayer();
+
   std::unique_ptr<content::Compositor> compositor_;
   gfx::Size bounds_;
 

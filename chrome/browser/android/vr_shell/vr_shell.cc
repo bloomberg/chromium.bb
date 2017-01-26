@@ -27,6 +27,7 @@
 #include "content/public/common/referrer.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "jni/VrShellImpl_jni.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
@@ -46,16 +47,12 @@ static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
 class GLThread : public base::Thread {
  public:
   GLThread(const base::WeakPtr<VrShell>& weak_vr_shell,
-           const base::WeakPtr<VrInputManager>& content_input_manager,
-           const base::WeakPtr<VrInputManager>& ui_input_manager,
            scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
            gvr_context* gvr_api,
            bool initially_web_vr,
            bool reprojected_rendering)
       : base::Thread("VrShellGL"),
         weak_vr_shell_(weak_vr_shell),
-        content_input_manager_(content_input_manager),
-        ui_input_manager_(ui_input_manager),
         main_thread_task_runner_(std::move(main_thread_task_runner)),
         gvr_api_(gvr_api),
         initially_web_vr_(initially_web_vr),
@@ -70,8 +67,6 @@ class GLThread : public base::Thread {
  protected:
   void Init() override {
     vr_shell_gl_.reset(new VrShellGl(std::move(weak_vr_shell_),
-                                     std::move(content_input_manager_),
-                                     std::move(ui_input_manager_),
                                      std::move(main_thread_task_runner_),
                                      gvr_api_,
                                      initially_web_vr_,
@@ -89,13 +84,16 @@ class GLThread : public base::Thread {
   base::WeakPtr<VrShellGl> weak_vr_shell_gl_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
-  base::WeakPtr<VrInputManager> content_input_manager_;
-  base::WeakPtr<VrInputManager> ui_input_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
   bool initially_web_vr_;
   bool reprojected_rendering_;
 };
+
+void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
+  if (contents->GetRenderWidgetHostView())
+    contents->GetRenderWidgetHostView()->SetIsInVR(is_in_vr);
+}
 
 }  // namespace
 
@@ -111,11 +109,12 @@ VrShell::VrShell(JNIEnv* env,
                  bool reprojected_rendering)
     : WebContentsObserver(ui_contents),
       main_contents_(main_contents),
-      content_compositor_(new VrCompositor(content_window, false)),
+      content_compositor_(
+          base::MakeUnique<VrCompositor>(content_window, false)),
       ui_contents_(ui_contents),
-      ui_compositor_(new VrCompositor(ui_window, true)),
+      ui_compositor_(base::MakeUnique<VrCompositor>(ui_window, true)),
       delegate_(delegate),
-      metrics_helper_(new VrMetricsHelper(main_contents_)),
+      metrics_helper_(base::MakeUnique<VrMetricsHelper>(main_contents_)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       reprojected_rendering_(reprojected_rendering),
       weak_ptr_factory_(this) {
@@ -123,19 +122,15 @@ VrShell::VrShell(JNIEnv* env,
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
 
-  content_input_manager_.reset(new VrInputManager(main_contents_));
-  ui_input_manager_.reset(new VrInputManager(ui_contents_));
+  content_input_manager_ = base::MakeUnique<VrInputManager>(main_contents_);
+  ui_input_manager_ = base::MakeUnique<VrInputManager>(ui_contents_);
 
   content_compositor_->SetLayer(main_contents_);
   ui_compositor_->SetLayer(ui_contents_);
 
-  gl_thread_.reset(new GLThread(weak_ptr_factory_.GetWeakPtr(),
-                                content_input_manager_->GetWeakPtr(),
-                                ui_input_manager_->GetWeakPtr(),
-                                main_thread_task_runner_,
-                                gvr_api,
-                                for_web_vr,
-                                reprojected_rendering_));
+  gl_thread_ = base::MakeUnique<GLThread>(weak_ptr_factory_.GetWeakPtr(),
+                                          main_thread_task_runner_, gvr_api,
+                                          for_web_vr, reprojected_rendering_);
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -143,17 +138,37 @@ VrShell::VrShell(JNIEnv* env,
 
   if (for_web_vr)
     metrics_helper_->SetWebVREnabled(true);
-  html_interface_.reset(new UiInterface(
+  html_interface_ = base::MakeUnique<UiInterface>(
       for_web_vr ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD,
-      main_contents_->IsFullscreen()));
-  vr_web_contents_observer_.reset(new VrWebContentsObserver(
-      main_contents, html_interface_.get(), this));
+      main_contents_->IsFullscreen());
+  vr_web_contents_observer_ = base::MakeUnique<VrWebContentsObserver>(
+      main_contents_, html_interface_.get(), this);
 
-  SetIsInVR(true);
+  SetIsInVR(main_contents_, true);
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
+}
+
+void VrShell::SwapContents(JNIEnv* env, const JavaParamRef<jobject>& obj,
+                           const JavaParamRef<jobject>& web_contents) {
+  SetIsInVR(main_contents_, false);
+  content::WebContents* contents =
+      content::WebContents::FromJavaWebContents(web_contents);
+  main_contents_ = contents;
+  content_input_manager_ = base::MakeUnique<VrInputManager>(main_contents_);
+  content_compositor_->SetLayer(main_contents_);
+  vr_web_contents_observer_ = base::MakeUnique<VrWebContentsObserver>(
+      main_contents_, html_interface_.get(), this);
+  SetIsInVR(main_contents_, true);
+
+  // TODO(billorr): Make VrMetricsHelper tab-aware and able to track multiple
+  // tabs. crbug.com/684661
+  metrics_helper_ = base::MakeUnique<VrMetricsHelper>(main_contents_);
+  metrics_helper_->SetVRActive(true);
+  metrics_helper_->SetWebVREnabled(
+      html_interface_->GetMode() == UiInterface::Mode::WEB_VR);
 }
 
 void VrShell::LoadUIContent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -209,7 +224,7 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   // exit vr session
   metrics_helper_->SetVRActive(false);
-  SetIsInVR(false);
+  SetIsInVR(main_contents_, false);
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -218,7 +233,7 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
       FROM_HERE, base::Bind(&VrShellGl::OnResume, thread->GetVrShellGl()));
 
   metrics_helper_->SetVRActive(true);
-  SetIsInVR(true);
+  SetIsInVR(main_contents_, true);
 }
 
 void VrShell::SetSurface(JNIEnv* env,
@@ -231,10 +246,6 @@ void VrShell::SetSurface(JNIEnv* env,
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::InitializeGl,
                                      thread->GetVrShellGl(),
                                      base::Unretained(window)));
-}
-
-void VrShell::SetIsInVR(bool is_in_vr) {
-  main_contents_->GetRenderWidgetHostView()->SetIsInVR(is_in_vr);
 }
 
 base::WeakPtr<VrShell> VrShell::GetWeakPtr(
@@ -448,9 +459,11 @@ void VrShell::ContentWebContentsDestroyed() {
 
 void VrShell::ContentWasHidden() {
   // Ensure we don't continue sending input to it.
-  content_input_manager_.reset();
-  // TODO(mthiesse): Handle web contents being hidden.
-  ForceExitVr();
+  content_input_manager_ = nullptr;
+}
+
+void VrShell::ContentWasShown() {
+  content_input_manager_ = base::MakeUnique<VrInputManager>(main_contents_);
 }
 
 void VrShell::ForceExitVr() {
@@ -467,6 +480,21 @@ void VrShell::SetUiCssSize(float width, float height, float dpr) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_setUiCssSize(env, j_vr_shell_.obj(), width, height, dpr);
 }
+
+void VrShell::ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event) {
+  if (ui_input_manager_) {
+    ui_input_manager_->ProcessUpdatedGesture(std::move(event));
+  }
+
+}
+
+void VrShell::ProcessContentGesture(
+    std::unique_ptr<blink::WebInputEvent> event) {
+  if (content_input_manager_) {
+    content_input_manager_->ProcessUpdatedGesture(std::move(event));
+  }
+}
+
 
 // ----------------------------------------------------------------------------
 // Native JNI methods

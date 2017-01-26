@@ -12,11 +12,11 @@
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
-#include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
@@ -180,8 +180,6 @@ void WaitForSwapAck(const base::Closure& callback, gfx::SwapResult result) {
 
 VrShellGl::VrShellGl(
     const base::WeakPtr<VrShell>& weak_vr_shell,
-    const base::WeakPtr<VrInputManager>& content_input_manager,
-    const base::WeakPtr<VrInputManager>& ui_input_manager,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
@@ -190,8 +188,6 @@ VrShellGl::VrShellGl(
         surfaceless_rendering_(reprojected_rendering),
         task_runner_(base::ThreadTaskRunnerHandle::Get()),
         weak_vr_shell_(weak_vr_shell),
-        content_input_manager_(content_input_manager),
-        ui_input_manager_(ui_input_manager),
         main_thread_task_runner_(std::move(main_thread_task_runner)),
         weak_ptr_factory_(this) {
   GvrInit(gvr_api);
@@ -580,13 +576,12 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
 void VrShellGl::SendGesture(InputTarget input_target,
                             std::unique_ptr<blink::WebInputEvent> event) {
   DCHECK(input_target != InputTarget::NONE);
-  const base::WeakPtr<VrInputManager>& weak_ptr =
-      input_target == InputTarget::CONTENT ? content_input_manager_
-                                           : ui_input_manager_;
+  auto&& target = input_target == InputTarget::CONTENT
+                      ? &VrShell::ProcessContentGesture
+                      : &VrShell::ProcessUIGesture;
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VrInputManager::ProcessUpdatedGesture, weak_ptr,
-                 base::Passed(std::move(event))));
+      base::Bind(target, weak_vr_shell_, base::Passed(std::move(event))));
 }
 
 void VrShellGl::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
