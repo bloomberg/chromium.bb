@@ -32,14 +32,10 @@ class PrerenderTabHelper
   void DidGetRedirectForResourceRequest(
       const content::ResourceRedirectDetails& details) override;
   void DidStopLoading() override;
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) override;
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      ui::PageTransition transition_type) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Called when the URL of the main frame changed, either when the load
   // commits, or a redirect happens.

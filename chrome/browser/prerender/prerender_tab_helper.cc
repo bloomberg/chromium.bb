@@ -11,6 +11,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
@@ -37,19 +38,21 @@ void PrerenderTabHelper::DidGetRedirectForResourceRequest(
   MainFrameUrlDidChange(details.new_url);
 }
 
-void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    ui::PageTransition transition_type) {
-  if (render_frame_host->GetParent())
+void PrerenderTabHelper::DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsErrorPage()) {
     return;
-  url_ = validated_url;
+  }
+
+  url_ = navigation_handle->GetURL();
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
   if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
     return;
-  prerender_manager->RecordNavigation(validated_url);
+  prerender_manager->RecordNavigation(url_);
 }
 
 void PrerenderTabHelper::DidStopLoading() {
@@ -90,10 +93,11 @@ void PrerenderTabHelper::DidStopLoading() {
   actual_load_start_ = base::TimeTicks();
 }
 
-void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page) {
+void PrerenderTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSamePage())
+    return;
+
   // Determine the navigation type.
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (prerender_manager &&
@@ -103,14 +107,14 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
     navigation_type_ = NAVIGATION_TYPE_NORMAL;
   }
 
-  if (render_frame_host->GetParent())
+  if (!navigation_handle->IsInMainFrame())
     return;
 
   // Record PPLT state for the beginning of a new navigation.
   pplt_load_start_ = GetTimeTicksFromPrerenderManager();
   actual_load_start_ = base::TimeTicks();
 
-  MainFrameUrlDidChange(validated_url);
+  MainFrameUrlDidChange(navigation_handle->GetURL());
 }
 
 void PrerenderTabHelper::MainFrameUrlDidChange(const GURL& url) {
