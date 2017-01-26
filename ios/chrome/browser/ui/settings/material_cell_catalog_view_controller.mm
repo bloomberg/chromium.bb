@@ -9,6 +9,7 @@
 #import "base/mac/foundation_util.h"
 #include "components/grit/components_scaled_resources.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
+#import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/storage_switch_item.h"
@@ -65,6 +66,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAccountCheckMark,
   ItemTypeAccountSignIn,
   ItemTypeApp,
+  ItemTypePaymentsSingleLine,
+  ItemTypePaymentsDynamicHeight,
   ItemTypeAutofillDynamicHeight,
   ItemTypeAutofillCVC,
   ItemTypeAutofillStatus,
@@ -219,10 +222,34 @@ const CGFloat kHorizontalImageFixedSize = 40;
   [model addItem:[self storageSwitchItem]
       toSectionWithIdentifier:SectionIdentifierAutofill];
 
-  // Autofill cells.
+  // Payments cells.
   [model addSectionWithIdentifier:SectionIdentifierPayments];
   [model addItem:[self paymentsItemWithWrappingTextandOptionalImage]
       toSectionWithIdentifier:SectionIdentifierPayments];
+  PriceItem* priceItem1 =
+      [[[PriceItem alloc] initWithType:ItemTypePaymentsSingleLine] autorelease];
+  priceItem1.item = @"Total";
+  priceItem1.notification = @"Updated";
+  priceItem1.price = @"USD $100.00";
+  [model addItem:priceItem1 toSectionWithIdentifier:SectionIdentifierPayments];
+  PriceItem* priceItem2 =
+      [[[PriceItem alloc] initWithType:ItemTypePaymentsSingleLine] autorelease];
+  priceItem2.item = @"Price label is long and should get clipped";
+  priceItem2.notification = @"Updated";
+  priceItem2.price = @"USD $1,000,000.00";
+  [model addItem:priceItem2 toSectionWithIdentifier:SectionIdentifierPayments];
+  PriceItem* priceItem3 =
+      [[[PriceItem alloc] initWithType:ItemTypePaymentsSingleLine] autorelease];
+  priceItem3.item = @"Price label is long and should get clipped";
+  priceItem3.notification = @"Should get clipped too";
+  priceItem3.price = @"USD $1,000,000.00";
+  [model addItem:priceItem3 toSectionWithIdentifier:SectionIdentifierPayments];
+  PriceItem* priceItem4 =
+      [[[PriceItem alloc] initWithType:ItemTypePaymentsSingleLine] autorelease];
+  priceItem4.item = @"Price label is long and should get clipped";
+  priceItem4.notification = @"Should get clipped too";
+  priceItem4.price = @"USD $1,000,000,000.00";
+  [model addItem:priceItem4 toSectionWithIdentifier:SectionIdentifierPayments];
 
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];
@@ -290,6 +317,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
     case ItemTypeAutofillCVC:
     case ItemTypeAutofillStatus:
     case ItemTypeAutofillStorageSwitch:
+    case ItemTypePaymentsDynamicHeight:
     case ItemTypeAutofillDynamicHeight:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
@@ -446,7 +474,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
 
 - (CollectionViewItem*)paymentsItemWithWrappingTextandOptionalImage {
   PaymentsTextItem* item = [[[PaymentsTextItem alloc]
-      initWithType:ItemTypeAutofillDynamicHeight] autorelease];
+      initWithType:ItemTypePaymentsDynamicHeight] autorelease];
   item.text = @"If you want to display a long text that wraps to the next line "
               @"and may need to feature an image this is the cell to use.";
   item.image = [UIImage imageNamed:@"app_icon_placeholder"];

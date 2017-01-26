@@ -10,12 +10,15 @@ source_set("cells") {
     "payment_method_item.mm",
     "payments_text_item.h",
     "payments_text_item.mm",
+    "price_item.h",
+    "price_item.mm",
     "shipping_address_item.h",
     "shipping_address_item.mm",
   ]
 
   deps = [
     "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/colors",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
   ]
@@ -29,6 +32,7 @@ source_set("unit_tests") {
     "page_info_item_unittest.mm",
     "payment_method_item_unittest.mm",
     "payments_text_item_unittest.mm",
+    "price_item_unittest.mm",
     "shipping_address_item_unittest.mm",
   ]
 

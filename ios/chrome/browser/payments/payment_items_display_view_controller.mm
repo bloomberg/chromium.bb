@@ -10,8 +10,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/payment_request_utils.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -142,15 +142,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierPayment];
 
   // Add the total entry.
-  CollectionViewDetailItem* totalItem = [[[CollectionViewDetailItem alloc]
-      initWithType:ItemTypePaymentItemTotal] autorelease];
+  PriceItem* totalItem =
+      [[[PriceItem alloc] initWithType:ItemTypePaymentItemTotal] autorelease];
   totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
-  totalItem.text = base::SysUTF16ToNSString(_total.label);
+  totalItem.item = base::SysUTF16ToNSString(_total.label);
 
   NSString* currencyCode = base::SysUTF16ToNSString(_total.amount.currency);
   NSDecimalNumber* value = [NSDecimalNumber
       decimalNumberWithString:SysUTF16ToNSString(_total.amount.value)];
-  totalItem.detailText =
+  totalItem.price =
       payment_request_utils::FormattedCurrencyString(value, currencyCode);
 
   [model addItem:totalItem toSectionWithIdentifier:SectionIdentifierPayment];
@@ -158,17 +158,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Add the line item entries.
   for (size_t i = 0; i < _paymentItems.size(); ++i) {
     web::PaymentItem paymentItem = _paymentItems[i];
-    CollectionViewDetailItem* paymentItemItem =
-        [[[CollectionViewDetailItem alloc] initWithType:ItemTypePaymentItem]
-            autorelease];
+    PriceItem* paymentItemItem =
+        [[[PriceItem alloc] initWithType:ItemTypePaymentItem] autorelease];
     paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
-    paymentItemItem.text = base::SysUTF16ToNSString(paymentItem.label);
+    paymentItemItem.item = base::SysUTF16ToNSString(paymentItem.label);
 
     NSString* currencyCode =
         base::SysUTF16ToNSString(paymentItem.amount.currency);
     NSDecimalNumber* value = [NSDecimalNumber
         decimalNumberWithString:SysUTF16ToNSString(paymentItem.amount.value)];
-    paymentItemItem.detailText =
+    paymentItemItem.price =
         payment_request_utils::FormattedCurrencyString(value, currencyCode);
     [model addItem:paymentItemItem
         toSectionWithIdentifier:SectionIdentifierPayment];
@@ -196,26 +195,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypePaymentItemTotal: {
-      CollectionViewDetailCell* detailCell =
-          base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
-      detailCell.textLabel.font =
+      PriceCell* priceCell = base::mac::ObjCCastStrict<PriceCell>(cell);
+      priceCell.itemLabel.font =
           [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:14];
-      detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint600];
-      detailCell.detailTextLabel.font =
+      priceCell.itemLabel.textColor = [[MDCPalette greyPalette] tint600];
+      priceCell.priceLabel.font =
           [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:14];
-      detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
+      priceCell.priceLabel.textColor = [[MDCPalette greyPalette] tint900];
       break;
     }
     case ItemTypePaymentItem: {
-      CollectionViewDetailCell* detailCell =
-          base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
-      detailCell.textLabel.font =
+      PriceCell* priceCell = base::mac::ObjCCastStrict<PriceCell>(cell);
+      priceCell.itemLabel.font =
           [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
-      detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+      priceCell.itemLabel.textColor = [[MDCPalette greyPalette] tint900];
 
-      detailCell.detailTextLabel.font =
+      priceCell.priceLabel.font =
           [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
-      detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
+      priceCell.priceLabel.textColor = [[MDCPalette greyPalette] tint900];
       break;
     }
     default:

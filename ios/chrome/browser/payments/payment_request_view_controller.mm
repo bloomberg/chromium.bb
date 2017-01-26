@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
+#import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #import "ios/chrome/browser/payments/payment_request_utils.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
@@ -74,7 +75,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::scoped_nsobject<UIBarButtonItem> _cancelButton;
   base::scoped_nsobject<MDCFlatButton> _payButton;
 
-  CollectionViewDetailItem* _paymentSummaryItem;
+  PriceItem* _paymentSummaryItem;
   ShippingAddressItem* _selectedShippingAddressItem;
   CollectionViewTextItem* _selectedShippingOptionItem;
 
@@ -207,8 +208,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   pageInfo.pageHost = _pageHost;
   [model setHeader:pageInfo forSectionWithIdentifier:SectionIdentifierSummary];
 
-  _paymentSummaryItem = [[[CollectionViewDetailItem alloc]
-      initWithType:ItemTypeSummaryTotal] autorelease];
+  _paymentSummaryItem =
+      [[[PriceItem alloc] initWithType:ItemTypeSummaryTotal] autorelease];
   [self fillPaymentSummaryItem:_paymentSummaryItem
                withPaymentItem:_paymentRequest.details.total];
   if (!_paymentRequest.details.display_items.empty()) {
@@ -358,15 +359,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Helper methods
 
-- (void)fillPaymentSummaryItem:(CollectionViewDetailItem*)item
+- (void)fillPaymentSummaryItem:(PriceItem*)item
                withPaymentItem:(web::PaymentItem)paymentItem {
-  item.text = l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER);
+  item.item = l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER);
   NSString* currencyCode =
       base::SysUTF16ToNSString(_paymentRequest.details.total.amount.currency);
   NSDecimalNumber* value = [NSDecimalNumber
       decimalNumberWithString:SysUTF16ToNSString(
                                   _paymentRequest.details.total.amount.value)];
-  item.detailText =
+  item.price =
       payment_request_utils::FormattedCurrencyString(value, currencyCode);
 }
 
