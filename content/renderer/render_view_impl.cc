@@ -53,7 +53,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/render_message_filter.mojom.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -77,7 +76,6 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
-#include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/ime_event_guard.h"
@@ -712,10 +710,6 @@ void RenderViewImpl::Initialize(
     OnEnableAutoResize(params.min_size, params.max_size);
   }
 
-  // We don't use HistoryController in OOPIF-enabled modes.
-  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
-    history_controller_.reset(new HistoryController(this));
-
   new IdleUserDetector(this);
 
   if (command_line.HasSwitch(switches::kDomAutomationController))
@@ -1343,18 +1337,6 @@ void RenderViewImpl::OnAudioStateChanged(bool is_audio_playing) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void RenderViewImpl::SendUpdateState() {
-  // We don't use this path in OOPIF-enabled modes.
-  DCHECK(!SiteIsolationPolicy::UseSubframeNavigationEntries());
-
-  HistoryEntry* entry = history_controller_->GetCurrentEntry();
-  if (!entry)
-    return;
-
-  Send(new ViewHostMsg_UpdateState(GetRoutingID(),
-                                   HistoryEntryToPageState(entry)));
-}
-
 void RenderViewImpl::ShowCreatedPopupWidget(RenderWidget* popup_widget,
                                             WebNavigationPolicy policy,
                                             const gfx::Rect& initial_rect) {
@@ -1371,9 +1353,6 @@ void RenderViewImpl::ShowCreatedFullscreenWidget(
 }
 
 void RenderViewImpl::SendFrameStateUpdates() {
-  // We only use this path in OOPIF-enabled modes.
-  DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
-
   // Tell each frame with pending state to send its UpdateState message.
   for (int render_frame_routing_id : frames_with_pending_state_) {
     RenderFrameImpl* frame =
@@ -1681,9 +1660,8 @@ gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
 }
 
 void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
-  // In OOPIF modes, keep track of which frames have pending updates.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    frames_with_pending_state_.insert(frame->GetRoutingID());
+  // Keep track of which frames have pending updates.
+  frames_with_pending_state_.insert(frame->GetRoutingID());
 
   int delay;
   if (send_content_state_immediately_)
@@ -1702,15 +1680,9 @@ void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
     nav_state_sync_timer_.Stop();
   }
 
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // In OOPIF modes, tell each frame with pending state to inform the browser.
-    nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
-                                &RenderViewImpl::SendFrameStateUpdates);
-  } else {
-    // By default, send an UpdateState for the current history item.
-    nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
-                                &RenderViewImpl::SendUpdateState);
-  }
+  // Tell each frame with pending state to inform the browser.
+  nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
+                              &RenderViewImpl::SendFrameStateUpdates);
 }
 
 void RenderViewImpl::setMouseOverURL(const WebURL& url) {

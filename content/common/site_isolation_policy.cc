@@ -38,9 +38,4 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
       switches::kTopDocumentIsolation);
 }
 
-// static
-bool SiteIsolationPolicy::UseSubframeNavigationEntries() {
-  return true;
-}
-
 }  // namespace content

@@ -769,7 +769,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
@@ -831,20 +830,6 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // RenderViewHostImpl and destroy itself.
   // TODO(nasko): Remove this hack once RenderViewHost and RenderWidgetHost are
   // decoupled.
-}
-
-void RenderViewHostImpl::OnUpdateState(const PageState& state) {
-  // Without this check, the renderer can trick the browser into using
-  // filenames it can't access in a future session restore.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  int child_id = GetProcess()->GetID();
-  if (!policy->CanReadAllFiles(child_id, state.GetReferencedFiles())) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RVH_CAN_ACCESS_FILES_OF_PAGE_STATE);
-    return;
-  }
-
-  delegate_->UpdateState(this, state);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {

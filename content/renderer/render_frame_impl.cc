@@ -100,7 +100,7 @@
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
-#include "content/renderer/history_controller.h"
+#include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/image_downloader/image_downloader_impl.h"
 #include "content/renderer/ime_event_guard.h"
@@ -1693,10 +1693,7 @@ void RenderFrameImpl::OnSwapOut(
   // other active RenderFrames in it.
 
   // Send an UpdateState message before we get deleted.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    SendUpdateState();
-  else
-    render_view_->SendUpdateState();
+  SendUpdateState();
 
   // There should always be a proxy to replace this RenderFrame.  Create it now
   // so its routing id is registered for receiving IPC messages.
@@ -3094,8 +3091,7 @@ void RenderFrameImpl::frameDetached(blink::WebLocalFrame* frame,
     observer.FrameDetached(frame);
 
   // Send a state update before the frame is detached.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    SendUpdateState();
+  SendUpdateState();
 
   // We only notify the browser process when the frame is being detached for
   // removal and it was initiated from the renderer process.
@@ -3297,12 +3293,9 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
 }
 
 blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame() {
-  // OOPIF enabled modes will punt this navigation to the browser in
-  // decidePolicyForNavigation.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    return WebHistoryItem();
-
-  return render_view_->history_controller()->GetItemForNewChildFrame(this);
+  // We will punt this navigation to the browser in decidePolicyForNavigation.
+  // TODO(creis): Look into cleaning this up.
+  return WebHistoryItem();
 }
 
 void RenderFrameImpl::willSendSubmitEvent(const blink::WebFormElement& form) {
@@ -3472,11 +3465,8 @@ void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
     blink::WebLocalFrame* frame) {
   DCHECK_EQ(frame_, frame);
 
-  // We don't use HistoryController in OOPIF enabled modes.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    return;
-
-  render_view_->history_controller()->RemoveChildrenForRedirect(this);
+  // TODO(creis): Determine if this can be removed or if we need to clear any
+  // local state here to fix https://crbug.com/671276.
 }
 
 void RenderFrameImpl::didFailProvisionalLoad(
@@ -3615,13 +3605,8 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   // When we perform a new navigation, we need to update the last committed
   // session history entry with state for the page we are leaving. Do this
   // before updating the current history item.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    SendUpdateState();
-  } else {
-    render_view_->SendUpdateState();
-    render_view_->history_controller()->UpdateForCommit(
-        this, item, commit_type, navigation_state->WasWithinSamePage());
-  }
+  SendUpdateState();
+
   // Update the current history item for this frame (both in default Chrome and
   // subframe FrameNavigationEntry modes).
   current_history_item_ = item;
@@ -4880,31 +4865,14 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   render_view_->navigation_gesture_ = NavigationGestureUnknown;
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
-  // that committed entry has it at all times.
-  int64_t post_id = -1;
-  if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
-    if (entry) {
-      params.page_state = HistoryEntryToPageState(entry);
-      post_id = ExtractPostId(entry->root());
-    } else {
-      params.page_state = PageState::CreateFromURL(request.url());
-    }
-  } else {
-    // In --site-per-process, just send a single HistoryItem for this frame,
-    // rather than the whole tree.  It will be stored in the corresponding
-    // FrameNavigationEntry.
-    params.page_state = SingleHistoryItemToPageState(item);
-    post_id = ExtractPostId(item);
-  }
+  // that committed entry has it at all times.  Send a single HistoryItem for
+  // this frame, rather than the whole tree.  It will be stored in the
+  // corresponding FrameNavigationEntry.
+  params.page_state = SingleHistoryItemToPageState(item);
 
-  // When using subframe navigation entries, method and post id are set for all
-  // frames. Otherwise, they are only set for the main frame navigation.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    params.method = request.httpMethod().latin1();
-    if (params.method == "POST")
-      params.post_id = post_id;
-  }
+  params.method = request.httpMethod().latin1();
+  if (params.method == "POST")
+    params.post_id = ExtractPostId(item);
 
   params.frame_unique_name = item.target().utf8();
   params.item_sequence_number = item.itemSequenceNumber();
@@ -4976,14 +4944,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     if (ds->isClientRedirect()) {
       params.transition = ui::PageTransitionFromInt(
           params.transition | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-    }
-
-    // When using subframe navigation entries, method and post id have already
-    // been set.
-    if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-      params.method = request.httpMethod().latin1();
-      if (params.method == "POST")
-        params.post_id = post_id;
     }
 
     // Send the user agent override back.
@@ -5297,15 +5257,13 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
-  // In OOPIF-enabled modes, back/forward navigations in newly created subframes
-  // should be sent to the browser if there is a matching FrameNavigationEntry,
-  // and if it isn't just staying at about:blank.  If this frame isn't in the
-  // map of unique names that have history items, or if it's staying at the
-  // initial about:blank URL, fall back to loading the default url.  (We remove
-  // each name as we encounter it, because it will only be used once as the
-  // frame is created.)
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
-      info.isHistoryNavigationInNewChildFrame && is_content_initiated &&
+  // Back/forward navigations in newly created subframes should be sent to the
+  // browser if there is a matching FrameNavigationEntry, and if it isn't just
+  // staying at about:blank.  If this frame isn't in the map of unique names
+  // that have history items, or if it's staying at the initial about:blank URL,
+  // fall back to loading the default url.  (We remove each name as we encounter
+  // it, because it will only be used once as the frame is created.)
+  if (info.isHistoryNavigationInNewChildFrame && is_content_initiated &&
       frame_->parent()) {
     // Check whether the browser has a history item for this frame that isn't
     // just staying at the initial about:blank document.
@@ -5825,10 +5783,8 @@ void RenderFrameImpl::OpenURL(
     WebUserGestureIndicator::consumeUserGesture();
   }
 
-  if (is_history_navigation_in_new_child) {
-    DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
+  if (is_history_navigation_in_new_child)
     params.is_history_navigation_in_new_child = true;
-  }
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
@@ -5857,11 +5813,7 @@ void RenderFrameImpl::NavigateInternal(
   if (request_params.has_committed_real_load && frame_->parent())
     frame_->setCommittedFirstRealLoad();
 
-  bool no_current_entry =
-      SiteIsolationPolicy::UseSubframeNavigationEntries()
-          ? current_history_item_.isNull()
-          : !render_view_->history_controller()->GetCurrentEntry();
-  if (is_reload && no_current_entry) {
+  if (is_reload && current_history_item_.isNull()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.
     is_reload = false;
@@ -5943,78 +5895,62 @@ void RenderFrameImpl::NavigateInternal(
     std::unique_ptr<HistoryEntry> entry =
         PageStateToHistoryEntry(request_params.page_state);
     if (entry) {
-      if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-        // By default, tell the HistoryController to go the deserialized
-        // HistoryEntry.  This only works if all frames are in the same
-        // process.
-        DCHECK(!frame_->parent());
-        DCHECK(!browser_side_navigation);
-        std::unique_ptr<NavigationParams> navigation_params(
-            new NavigationParams(*pending_navigation_params_.get()));
-        has_history_navigation_in_frame =
-            render_view_->history_controller()->GoToEntry(
-                frame_, std::move(entry), std::move(navigation_params),
-                cache_policy);
-      } else {
-        // In --site-per-process, the browser process sends a single
-        // WebHistoryItem destined for this frame.
-        // TODO(creis): Change PageState to FrameState.  In the meantime, we
-        // store the relevant frame's WebHistoryItem in the root of the
-        // PageState.
-        item_for_history_navigation = entry->root();
-        history_load_type = request_params.is_same_document_history_load
-                                ? blink::WebHistorySameDocumentLoad
-                                : blink::WebHistoryDifferentDocumentLoad;
-        load_type = request_params.is_history_navigation_in_new_child
-                        ? blink::WebFrameLoadType::InitialHistoryLoad
-                        : blink::WebFrameLoadType::BackForward;
-        should_load_request = true;
+      // The browser process sends a single WebHistoryItem for this frame.
+      // TODO(creis): Change PageState to FrameState.  In the meantime, we
+      // store the relevant frame's WebHistoryItem in the root of the
+      // PageState.
+      item_for_history_navigation = entry->root();
+      history_load_type = request_params.is_same_document_history_load
+                              ? blink::WebHistorySameDocumentLoad
+                              : blink::WebHistoryDifferentDocumentLoad;
+      load_type = request_params.is_history_navigation_in_new_child
+                      ? blink::WebFrameLoadType::InitialHistoryLoad
+                      : blink::WebFrameLoadType::BackForward;
+      should_load_request = true;
 
-        // Keep track of which subframes the browser process has history items
-        // for during a history navigation.
-        history_subframe_unique_names_ = request_params.subframe_unique_names;
+      // Keep track of which subframes the browser process has history items
+      // for during a history navigation.
+      history_subframe_unique_names_ = request_params.subframe_unique_names;
 
-        if (history_load_type == blink::WebHistorySameDocumentLoad) {
-          // If this is marked as a same document load but we haven't committed
-          // anything, treat it as a new load.  The browser shouldn't let this
-          // happen.
-          if (current_history_item_.isNull()) {
+      if (history_load_type == blink::WebHistorySameDocumentLoad) {
+        // If this is marked as a same document load but we haven't committed
+        // anything, treat it as a new load.  The browser shouldn't let this
+        // happen.
+        if (current_history_item_.isNull()) {
+          history_load_type = blink::WebHistoryDifferentDocumentLoad;
+          NOTREACHED();
+        } else {
+          // Additionally, if the |current_history_item_|'s document
+          // sequence number doesn't match the one sent from the browser, it
+          // is possible that this renderer has committed a different
+          // document. In such case, don't use WebHistorySameDocumentLoad.
+          if (current_history_item_.documentSequenceNumber() !=
+              item_for_history_navigation.documentSequenceNumber()) {
             history_load_type = blink::WebHistoryDifferentDocumentLoad;
-            NOTREACHED();
-          } else {
-            // Additionally, if the |current_history_item_|'s document
-            // sequence number doesn't match the one sent from the browser, it
-            // is possible that this renderer has committed a different
-            // document. In such case, don't use WebHistorySameDocumentLoad.
-            if (current_history_item_.documentSequenceNumber() !=
-                item_for_history_navigation.documentSequenceNumber()) {
-              history_load_type = blink::WebHistoryDifferentDocumentLoad;
-            }
           }
         }
+      }
 
-        // If this navigation is to a history item for a new child frame, we may
-        // want to ignore it in some cases.  If a Javascript navigation (i.e.,
-        // client redirect) interrupted it and has either been scheduled,
-        // started loading, or has committed, we should ignore the history item.
-        bool interrupted_by_client_redirect =
-            frame_->isNavigationScheduledWithin(0) ||
-            frame_->provisionalDataSource() ||
-            !current_history_item_.isNull();
-        if (request_params.is_history_navigation_in_new_child &&
-            interrupted_by_client_redirect) {
-          should_load_request = false;
-          has_history_navigation_in_frame = false;
-        }
+      // If this navigation is to a history item for a new child frame, we may
+      // want to ignore it in some cases.  If a Javascript navigation (i.e.,
+      // client redirect) interrupted it and has either been scheduled,
+      // started loading, or has committed, we should ignore the history item.
+      bool interrupted_by_client_redirect =
+          frame_->isNavigationScheduledWithin(0) ||
+          frame_->provisionalDataSource() || !current_history_item_.isNull();
+      if (request_params.is_history_navigation_in_new_child &&
+          interrupted_by_client_redirect) {
+        should_load_request = false;
+        has_history_navigation_in_frame = false;
+      }
 
-        // Generate the request for the load from the HistoryItem.
-        // PlzNavigate: use the data sent by the browser for the url and the
-        // HTTP state. The restoration of user state such as scroll position
-        // will be done based on the history item during the load.
-        if (!browser_side_navigation && should_load_request) {
-          request = frame_->requestFromHistoryItem(item_for_history_navigation,
-                                                   cache_policy);
-        }
+      // Generate the request for the load from the HistoryItem.
+      // PlzNavigate: use the data sent by the browser for the url and the
+      // HTTP state. The restoration of user state such as scroll position
+      // will be done based on the history item during the load.
+      if (!browser_side_navigation && should_load_request) {
+        request = frame_->requestFromHistoryItem(item_for_history_navigation,
+                                                 cache_policy);
       }
     }
   } else {
@@ -6075,7 +6011,7 @@ void RenderFrameImpl::NavigateInternal(
     // that the load stopped if needed.
     // Note: in the case of history navigations, |should_load_request| will be
     // false, and the frame may not have been set in a loading state. Do not
-    // send a stop message if the HistoryController is loading in this frame
+    // send a stop message if a history navigation is loading in this frame
     // nonetheless. This behavior will go away with subframe navigation
     // entries.
     if (frame_ && !frame_->isLoading() && !has_history_navigation_in_frame)
@@ -6353,7 +6289,6 @@ void RenderFrameImpl::LoadDataURL(
 }
 
 void RenderFrameImpl::SendUpdateState() {
-  DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
   if (current_history_item_.isNull())
     return;
 

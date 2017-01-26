@@ -657,10 +657,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_Close_ACK,
 // message.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
 
-// Notifies the browser that we have session history information.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateState,
-                    content::PageState /* state */)
-
 // Notifies the browser that we want to show a destination url for a potential
 // action (e.g. when the user is hovering over a link).
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,

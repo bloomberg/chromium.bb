@@ -17,7 +17,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -313,11 +312,7 @@ void TestRenderViewHost::TestOnUpdateStateWithFile(
     const base::FilePath& file_path) {
   PageState state = PageState::CreateForTesting(GURL("http://www.google.com"),
                                                 false, "data", &file_path);
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    static_cast<RenderFrameHostImpl*>(GetMainFrame())->OnUpdateState(state);
-  } else {
-    OnUpdateState(state);
-  }
+  static_cast<RenderFrameHostImpl*>(GetMainFrame())->OnUpdateState(state);
 }
 
 RenderViewHostImplTestHarness::RenderViewHostImplTestHarness() {

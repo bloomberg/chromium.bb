@@ -20,7 +20,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/resize_params.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -30,7 +29,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/frame_load_waiter.h"
-#include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -212,17 +210,12 @@ void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
 PageState RenderViewTest::GetCurrentPageState() {
   RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(view_);
 
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // This returns a PageState object for the main frame, excluding subframes.
-    // This could be extended to all local frames if needed by tests, but it
-    // cannot include out-of-process frames.
-    TestRenderFrame* frame =
-        static_cast<TestRenderFrame*>(view_impl->GetMainRenderFrame());
-    return SingleHistoryItemToPageState(frame->current_history_item());
-  } else {
-    return HistoryEntryToPageState(
-        view_impl->history_controller()->GetCurrentEntry());
-  }
+  // This returns a PageState object for the main frame, excluding subframes.
+  // This could be extended to all local frames if needed by tests, but it
+  // cannot include out-of-process frames.
+  TestRenderFrame* frame =
+      static_cast<TestRenderFrame*>(view_impl->GetMainRenderFrame());
+  return SingleHistoryItemToPageState(frame->current_history_item());
 }
 
 void RenderViewTest::GoBack(const GURL& url, const PageState& state) {

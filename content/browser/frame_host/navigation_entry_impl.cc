@@ -355,11 +355,6 @@ const base::string16& NavigationEntryImpl::GetTitle() const {
 }
 
 void NavigationEntryImpl::SetPageState(const PageState& state) {
-  if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    frame_tree_->frame_entry->SetPageState(state);
-    return;
-  }
-
   // SetPageState should only be called before the NavigationEntry has been
   // loaded, such as for restore (when there are no subframe
   // FrameNavigationEntries yet).  However, some callers expect to call this
@@ -387,10 +382,9 @@ void NavigationEntryImpl::SetPageState(const PageState& state) {
 }
 
 PageState NavigationEntryImpl::GetPageState() const {
-  // Just return the main frame's PageState in default Chrome, or if there are
-  // no subframe FrameNavigationEntries.
-  if (!SiteIsolationPolicy::UseSubframeNavigationEntries() ||
-      frame_tree_->children.size() == 0U)
+  // Just return the main frame's state if there are no subframe
+  // FrameNavigationEntries.
+  if (frame_tree_->children.size() == 0U)
     return frame_tree_->frame_entry->page_state();
 
   // When we're using subframe entries, each FrameNavigationEntry has a

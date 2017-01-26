@@ -4392,33 +4392,6 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
     observer.RenderViewDeleted(rvh);
 }
 
-void WebContentsImpl::UpdateState(RenderViewHost* rvh,
-                                  const PageState& page_state) {
-  DCHECK(!SiteIsolationPolicy::UseSubframeNavigationEntries());
-
-  // Ensure that this state update comes from a RenderViewHost that belongs to
-  // this WebContents.
-  // TODO(nasko): This should go through RenderFrameHost.
-  if (rvh->GetDelegate()->GetAsWebContents() != this)
-    return;
-
-  if (!rvh->GetMainFrame()) {
-    // When UseSubframeNavigationEntries is turned off, state updates only come
-    // in on main frames. When UseSubframeNavigationEntries is turned on,
-    // UpdateStateForFrame() should have been called rather than this function.
-    NOTREACHED();
-    return;
-  }
-
-  NavigationEntryImpl* entry = controller_.GetEntryWithUniqueID(
-      static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame())->nav_entry_id());
-
-  if (page_state == entry->GetPageState())
-    return;  // Nothing to update.
-  entry->SetPageState(page_state);
-  controller_.NotifyEntryChanged(entry);
-}
-
 void WebContentsImpl::UpdateTargetURL(RenderViewHost* render_view_host,
                                       const GURL& url) {
   if (fullscreen_widget_routing_id_ != MSG_ROUTING_NONE) {
@@ -4584,8 +4557,6 @@ void WebContentsImpl::DocumentOnLoadCompleted(
 
 void WebContentsImpl::UpdateStateForFrame(RenderFrameHost* render_frame_host,
                                           const PageState& page_state) {
-  DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
-
   // The state update affects the last NavigationEntry associated with the given
   // |render_frame_host|. This may not be the last committed NavigationEntry (as
   // in the case of an UpdateState from a frame being swapped out). We track

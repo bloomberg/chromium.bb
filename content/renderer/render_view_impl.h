@@ -94,7 +94,6 @@ class WebHitTestResult;
 
 namespace content {
 
-class HistoryController;
 class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
@@ -165,10 +164,6 @@ class CONTENT_EXPORT RenderViewImpl
     send_content_state_immediately_ = value;
   }
 
-  HistoryController* history_controller() {
-    return history_controller_.get();
-  }
-
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
@@ -217,9 +212,6 @@ class CONTENT_EXPORT RenderViewImpl
   // timer isn't already running. This allows multiple state changing events to
   // be coalesced into one update.
   void StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame);
-
-  // Synchronously sends the current navigation state to the browser.
-  void SendUpdateState();
 
   // A popup widget opened by this view needs to be shown.
   void ShowCreatedPopupWidget(RenderWidget* popup_widget,
@@ -795,8 +787,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.
   SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
-
-  std::unique_ptr<HistoryController> history_controller_;
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------

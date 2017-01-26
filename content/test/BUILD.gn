@@ -654,7 +654,6 @@ test("content_browsertests") {
     "../renderer/accessibility/render_accessibility_impl_browsertest.cc",
     "../renderer/blink_platform_audio_hardware_browsertest.cc",
     "../renderer/gin_browsertest.cc",
-    "../renderer/history_controller_browsertest.cc",
     "../renderer/media/renderer_webmediaplayer_delegate_browsertest.cc",
     "../renderer/mouse_lock_dispatcher_browsertest.cc",
     "../renderer/render_frame_impl_browsertest.cc",

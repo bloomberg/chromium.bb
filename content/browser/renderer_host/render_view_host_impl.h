@@ -35,7 +35,6 @@
 
 namespace content {
 
-class PageState;
 struct FrameReplicationState;
 
 // This implements the RenderViewHost interface that is exposed to
@@ -233,7 +232,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int route_id);
   void OnRenderProcessGone(int status, int error_code);
-  void OnUpdateState(const PageState& state);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);

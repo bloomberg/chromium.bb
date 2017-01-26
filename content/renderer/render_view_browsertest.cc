@@ -50,7 +50,7 @@
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
-#include "content/renderer/history_controller.h"
+#include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -585,8 +585,6 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
   // We should NOT have gotten a form state change notification yet.
   EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_UpdateState::ID));
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_UpdateState::ID));
   render_thread_->sink().ClearMessages();
 
   // Change the value of the input. We should have gotten an update state
@@ -937,10 +935,10 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Check for a valid UpdateState message for page A.
   ProcessPendingMessages();
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_UpdateState::ID);
+      FrameHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
-  ViewHostMsg_UpdateState::Param param;
-  ViewHostMsg_UpdateState::Read(msg_A, &param);
+  FrameHostMsg_UpdateState::Param param;
+  FrameHostMsg_UpdateState::Read(msg_A, &param);
   PageState state_A = std::get<0>(param);
   render_thread_->sink().ClearMessages();
 
@@ -950,9 +948,9 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Check for a valid UpdateState for page B.
   ProcessPendingMessages();
   const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_UpdateState::ID);
+      FrameHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
-  ViewHostMsg_UpdateState::Read(msg_B, &param);
+  FrameHostMsg_UpdateState::Read(msg_B, &param);
   PageState state_B = std::get<0>(param);
   EXPECT_NE(state_A, state_B);
   render_thread_->sink().ClearMessages();
@@ -963,9 +961,9 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Check for a valid UpdateState for page C.
   ProcessPendingMessages();
   const IPC::Message* msg_C = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_UpdateState::ID);
+      FrameHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
-  ViewHostMsg_UpdateState::Read(msg_C, &param);
+  FrameHostMsg_UpdateState::Read(msg_C, &param);
   PageState state_C = std::get<0>(param);
   EXPECT_NE(state_B, state_C);
   render_thread_->sink().ClearMessages();
@@ -978,6 +976,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_C.current_history_list_length = 4;
   request_params_C.current_history_list_offset = 3;
   request_params_C.pending_history_list_offset = 2;
+  request_params_C.nav_entry_id = 3;
   request_params_C.page_state = state_C;
   frame()->Navigate(common_params_C, StartNavigationParams(), request_params_C);
   ProcessPendingMessages();
@@ -995,6 +994,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_B.current_history_list_length = 4;
   request_params_B.current_history_list_offset = 2;
   request_params_B.pending_history_list_offset = 1;
+  request_params_B.nav_entry_id = 2;
   request_params_B.page_state = state_B;
   frame()->Navigate(common_params_B, StartNavigationParams(), request_params_B);
 
@@ -1006,6 +1006,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params.current_history_list_length = 4;
   request_params.current_history_list_offset = 2;
   request_params.pending_history_list_offset = 0;
+  request_params.nav_entry_id = 1;
   request_params.page_state = state_A;
   frame()->Navigate(common_params, StartNavigationParams(), request_params);
   ProcessPendingMessages();
@@ -1013,9 +1014,9 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Now ensure that the UpdateState message we receive is consistent
   // and represents page C in state.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_UpdateState::ID);
+      FrameHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
-  ViewHostMsg_UpdateState::Read(msg, &param);
+  FrameHostMsg_UpdateState::Read(msg, &param);
   PageState state = std::get<0>(param);
   EXPECT_NE(state_A, state);
   EXPECT_NE(state_B, state);

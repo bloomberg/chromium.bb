@@ -751,8 +751,7 @@ void NavigatorImpl::RequestOpenURL(
   // Send the navigation to the current FrameTreeNode if it's destined for a
   // subframe in the current tab.  We'll assume it's for the main frame
   // (possibly of a new or different WebContents) otherwise.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
-      disposition == WindowOpenDisposition::CURRENT_TAB &&
+  if (disposition == WindowOpenDisposition::CURRENT_TAB &&
       render_frame_host->GetParent()) {
     frame_tree_node_id =
         render_frame_host->frame_tree_node()->frame_tree_node_id();
@@ -867,7 +866,6 @@ void NavigatorImpl::RequestTransferURL(
   std::unique_ptr<NavigationEntryImpl> entry;
   if (!node->IsMainFrame()) {
     // Subframe case: create FrameNavigationEntry.
-    CHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
     if (controller_->GetLastCommittedEntry()) {
       entry = controller_->GetLastCommittedEntry()->Clone();
       entry->set_extra_headers(extra_headers);

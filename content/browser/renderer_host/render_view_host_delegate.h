@@ -32,7 +32,6 @@ namespace content {
 
 class BrowserContext;
 class FrameTree;
-class PageState;
 class RenderViewHost;
 class RenderViewHostImpl;
 class RenderViewHostDelegateView;
@@ -84,10 +83,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The RenderView is going to be deleted. This is called when each
   // RenderView is going to be destroyed
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
-
-  // The state for the page changed and should be updated.
-  virtual void UpdateState(RenderViewHost* render_view_host,
-                           const PageState& state) {}
 
   // The destination URL has changed should be updated.
   virtual void UpdateTargetURL(RenderViewHost* render_view_host,

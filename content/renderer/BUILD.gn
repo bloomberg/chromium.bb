@@ -147,8 +147,6 @@ target(link_target_type, "renderer") {
     "gpu/renderer_compositor_frame_sink.h",
     "gpu/stream_texture_host_android.cc",
     "gpu/stream_texture_host_android.h",
-    "history_controller.cc",
-    "history_controller.h",
     "history_entry.cc",
     "history_entry.h",
     "history_serialization.cc",

@@ -99,7 +99,6 @@ void FrameNavigationEntry::SetPageState(const PageState& page_state) {
 
 scoped_refptr<ResourceRequestBodyImpl> FrameNavigationEntry::GetPostData()
     const {
-  DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
   if (method_ != "POST")
     return nullptr;
 
