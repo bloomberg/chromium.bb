@@ -994,12 +994,12 @@ const aom_prob av1_default_palette_uv_color_prob
 
 #undef UNUSED_PROB
 
-static const int palette_color_context_lookup[PALETTE_COLOR_CONTEXTS] = {
-  // (3, 0, 0), (3, 3, 2)
-  363, 398,
-  // (5, 3, 0), (6, 2, 0), (8, 0, 0)
-  638, 748, 968
+#define MAX_COLOR_CONTEXT_HASH 8
+// Negative values are invalid
+static const int palette_color_context_lookup[MAX_COLOR_CONTEXT_HASH + 1] = {
+  -1, -1, 0, -1, -1, 4, 3, 2, 1
 };
+
 #endif  // CONFIG_PALETTE
 
 // The transform size is coded as an offset to the smallest transform
@@ -1064,6 +1064,7 @@ static const aom_prob
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_PALETTE
+#define NUM_PALETTE_NEIGHBORS 3
 int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
                                   int c, int palette_size, uint8_t *color_order,
                                   int *color_idx) {
@@ -1072,12 +1073,14 @@ int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
   // is above array bounds [-Werror=array-bounds]" without it, possibly due to
   // this (or similar) bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59124
   int scores[PALETTE_MAX_SIZE + 10];
-  const int weights[3] = { 3, 2, 3 };
+  const int weights[NUM_PALETTE_NEIGHBORS] = { 2, 1, 2 };
+  const int hash_multipliers[NUM_PALETTE_NEIGHBORS] = { 1, 2, 2 };
   int color_ctx_hash;
   int color_ctx;
-  int color_neighbors[3];
+  int color_neighbors[NUM_PALETTE_NEIGHBORS];
   int inverse_color_order[PALETTE_MAX_SIZE];
   assert(palette_size <= PALETTE_MAX_SIZE);
+  assert(r > 0 || c > 0);
 
   // Get color indices of neighbors.
   color_neighbors[0] = (c - 1 >= 0) ? color_map[r * stride + c - 1] : -1;
@@ -1090,14 +1093,14 @@ int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
     inverse_color_order[i] = i;
   }
   memset(scores, 0, PALETTE_MAX_SIZE * sizeof(scores[0]));
-  for (i = 0; i < 3; ++i) {
+  for (i = 0; i < NUM_PALETTE_NEIGHBORS; ++i) {
     if (color_neighbors[i] >= 0) {
       scores[color_neighbors[i]] += weights[i];
     }
   }
 
-  // Get the top 3 scores (sorted from large to small).
-  for (i = 0; i < 3; ++i) {
+  // Get the top NUM_PALETTE_NEIGHBORS scores (sorted from large to small).
+  for (i = 0; i < NUM_PALETTE_NEIGHBORS; ++i) {
     int max = scores[i];
     int max_idx = i;
     int j;
@@ -1126,23 +1129,25 @@ int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
 
   // Get hash value of context.
   color_ctx_hash = 0;
-  for (i = 0; i < 3; ++i) color_ctx_hash = color_ctx_hash * 11 + scores[i];
+  for (i = 0; i < NUM_PALETTE_NEIGHBORS; ++i) {
+    color_ctx_hash += scores[i] * hash_multipliers[i];
+  }
+  assert(color_ctx_hash > 0);
+  assert(color_ctx_hash <= MAX_COLOR_CONTEXT_HASH);
 
   // Lookup context from hash.
-  color_ctx = -1;
-  for (i = 0; i < PALETTE_COLOR_CONTEXTS; ++i) {
-    if (color_ctx_hash == palette_color_context_lookup[i]) {
-      color_ctx = i;
-      break;
-    }
-  }
+  color_ctx = palette_color_context_lookup[color_ctx_hash];
   assert(color_ctx >= 0);
+  assert(color_ctx < PALETTE_COLOR_CONTEXTS);
 
   if (color_idx != NULL) {
     *color_idx = inverse_color_order[color_map[r * stride + c]];
   }
   return color_ctx;
 }
+#undef NUM_PALETTE_NEIGHBORS
+#undef MAX_COLOR_CONTEXT_HASH
+
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_VAR_TX
