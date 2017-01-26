@@ -47,11 +47,13 @@ class StructureDecoderTest : public RandomDecoderTest {
  protected:
   typedef S Structure;
 
-  StructureDecoderTest() {
+  StructureDecoderTest() : random_decode_count_(100) {
+    CHECK_LE(random_decode_count_, 1000u * 1000u) << "That should be plenty!";
     // IF the test adds more data after the encoded structure, stop as
     // soon as the structure is decoded.
     stop_decode_on_done_ = true;
   }
+  ~StructureDecoderTest() override {}
 
   // Reset the decoding to the start of the structure, and overwrite the
   // current contents of |structure_|, in to which we'll decode the buffer.
@@ -165,6 +167,7 @@ class StructureDecoderTest : public RandomDecoderTest {
 
   // Generate
   void TestDecodingRandomizedStructures(size_t count) {
+    EXPECT_LT(count, 1000u * 1000u) << "That should be plenty!";
     for (size_t i = 0; i < count && !HasFailure(); ++i) {
       Structure input;
       Randomize(&input);
@@ -172,6 +175,11 @@ class StructureDecoderTest : public RandomDecoderTest {
     }
   }
 
+  void TestDecodingRandomizedStructures() {
+    TestDecodingRandomizedStructures(random_decode_count_);
+  }
+
+  const size_t random_decode_count_;
   uint32_t decode_offset_ = 0;
   S structure_;
   size_t fast_decode_count_ = 0;
@@ -218,7 +226,7 @@ TEST_F(FrameHeaderDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(FrameHeaderDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -255,7 +263,7 @@ TEST_F(PriorityFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(PriorityFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -287,7 +295,7 @@ TEST_F(RstStreamFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(RstStreamFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -323,7 +331,7 @@ TEST_F(SettingFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(SettingFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -355,7 +363,7 @@ TEST_F(PushPromiseFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(PushPromiseFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -395,7 +403,7 @@ TEST_F(PingFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(PingFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -443,7 +451,7 @@ TEST_F(GoAwayFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(GoAwayFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -475,10 +483,12 @@ TEST_F(WindowUpdateFieldsDecoderTest, DecodesLiteral) {
   {
     // Increment has R-bit (reserved for future use) set, which
     // should be cleared by the decoder.
+    // clang-format off
     const char kData[] = {
-        0xffu, 0xffu, 0xffu,
-        0xffu,  // Window Size Increment: max uint31 and R-bit
+        // Window Size Increment: max uint31 and R-bit
+        0xffu, 0xffu, 0xffu, 0xffu,
     };
+    // clang-format on
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
       EXPECT_EQ(StreamIdMask(), structure_.window_size_increment);
@@ -487,7 +497,7 @@ TEST_F(WindowUpdateFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(WindowUpdateFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 //------------------------------------------------------------------------------
@@ -526,7 +536,7 @@ TEST_F(AltSvcFieldsDecoderTest, DecodesLiteral) {
 }
 
 TEST_F(AltSvcFieldsDecoderTest, DecodesRandomized) {
-  TestDecodingRandomizedStructures(100);
+  TestDecodingRandomizedStructures();
 }
 
 }  // namespace

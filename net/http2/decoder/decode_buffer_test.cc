@@ -16,6 +16,7 @@ using std::string;
 
 namespace net {
 namespace test {
+namespace {
 
 enum class TestEnumClass32 {
   kValue1 = 1,
@@ -374,5 +375,6 @@ TEST(DecodeBufferSubsetDeathTest, BaseCursorAdvanced) {
 }
 #endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
+}  // namespace
 }  // namespace test
 }  // namespace net
