@@ -142,32 +142,43 @@ static INLINE int ans_read_init(struct AnsDecoder *const ans,
   ans->buf = buf + offset;
   ans->buf_offset = -offset;
   x = buf[0];
-  if ((x & 0x80) == 0) {
+  if ((x & 0x80) == 0) {  // Marker is 0xxx xxxx
     if (offset < 2) return 1;
     ans->buf_offset += 2;
     ans->state = mem_get_be16(buf) & 0x7FFF;
-  } else {
+#if L_BASE * IO_BASE > (1 << 23)
+  } else if ((x & 0xC0) == 0x80) {  // Marker is 10xx xxxx
+    if (offset < 3) return 1;
+    ans->buf_offset += 3;
+    ans->state = mem_get_be24(buf) & 0x3FFFFF;
+  } else {  // Marker is 11xx xxxx
+    if (offset < 4) return 1;
+    ans->buf_offset += 4;
+    ans->state = mem_get_be32(buf) & 0x3FFFFFFF;
+#else
+  } else {  // Marker is 1xxx xxxx
     if (offset < 3) return 1;
     ans->buf_offset += 3;
     ans->state = mem_get_be24(buf) & 0x7FFFFF;
+#endif
   }
 #else
   ans->buf = buf;
   x = buf[offset - 1];
-  if ((x & 0x80) == 0) {
+  if ((x & 0x80) == 0) {  // Marker is 0xxx xxxx
     if (offset < 2) return 1;
     ans->buf_offset = offset - 2;
     ans->state = mem_get_le16(buf + offset - 2) & 0x7FFF;
-  } else if ((x & 0xC0) == 0x80) {
+  } else if ((x & 0xC0) == 0x80) {  // Marker is 10xx xxxx
     if (offset < 3) return 1;
     ans->buf_offset = offset - 3;
     ans->state = mem_get_le24(buf + offset - 3) & 0x3FFFFF;
-  } else if ((x & 0xE0) == 0xE0) {
+  } else if ((x & 0xE0) == 0xE0) {  // Marker is 111x xxxx
     if (offset < 4) return 1;
     ans->buf_offset = offset - 4;
     ans->state = mem_get_le32(buf + offset - 4) & 0x1FFFFFFF;
   } else {
-    // 110xxxxx implies this byte is a superframe marker
+    // Marker 110x xxxx implies this byte is a superframe marker
     return 1;
   }
 #endif  // ANS_REVERSE

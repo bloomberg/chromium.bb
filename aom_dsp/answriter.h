@@ -65,9 +65,18 @@ static INLINE int ans_write_end(struct AnsCoder *const ans) {
     mem_put_le16(ans->buf + ans->buf_offset, (0x00u << 15) + state);
     ans_size = ans->buf_offset + 2;
 #if ANS_REVERSE
+#if L_BASE * IO_BASE > (1 << 23)
+  } else if (state < (1u << 22)) {
+    mem_put_le24(ans->buf + ans->buf_offset, (0x02u << 22) + state);
+    ans_size = ans->buf_offset + 3;
+  } else if (state < (1u << 30)) {
+    mem_put_le32(ans->buf + ans->buf_offset, (0x03u << 30) + state);
+    ans_size = ans->buf_offset + 4;
+#else
   } else if (state < (1u << 23)) {
     mem_put_le24(ans->buf + ans->buf_offset, (0x01u << 23) + state);
     ans_size = ans->buf_offset + 3;
+#endif
 #else
   } else if (state < (1u << 22)) {
     mem_put_le24(ans->buf + ans->buf_offset, (0x02u << 22) + state);
