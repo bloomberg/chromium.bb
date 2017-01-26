@@ -937,6 +937,11 @@ void WmWindow::OnWindowPropertyChanged(aura::Window* window,
     ash::wm::GetWindowState(window_)->OnWindowShowStateChanged();
     return;
   }
+  if (key == aura::client::kImmersiveFullscreenKey) {
+    bool enable = window_->GetProperty(aura::client::kImmersiveFullscreenKey);
+    GetWindowState()->set_in_immersive_fullscreen(enable);
+    return;
+  }
   WmWindowProperty wm_property;
   if (key == aura::client::kAlwaysOnTopKey) {
     wm_property = WmWindowProperty::ALWAYS_ON_TOP;

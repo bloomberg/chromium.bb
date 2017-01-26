@@ -53,6 +53,13 @@ AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 // attention.
 AURA_EXPORT extern const aura::WindowProperty<bool>* const kDrawAttentionKey;
 
+// A property key to indicate that a window should be in immersive mode when the
+// window enters the fullscreen mode. The immersive fullscreen mode is slightly
+// different from the normal fullscreen mode by allowing the user to reveal the
+// top portion of the window through a touch / mouse gesture.
+AURA_EXPORT extern const aura::WindowProperty<bool>* const
+    kImmersiveFullscreenKey;
+
 // A property key to indicate that a window is being "mirrored" and its contents
 // should render regardless of its actual visibility state.
 AURA_EXPORT extern const aura::WindowProperty<bool>* const kMirroringEnabledKey;

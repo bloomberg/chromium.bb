@@ -85,6 +85,11 @@ interface WindowManager {
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
   const string kExcludeFromMru_Property = "prop:exclude_from_mru";
 
+  // If true, when a window is in in fullscreen mode, the user cannot reveal
+  // the top portion of the window through a touch / mouse gesture.
+  // Type: bool.
+  const string kImmersiveFullscreen_Property = "prop:immersive-fullscreen";
+
   // Internal window name. Useful for debugging. Maps to aura::client::kNameKey.
   // Type: mojom::String
   const string kName_Property = "prop:name";

@@ -35,6 +35,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kAppIdKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(int, kAppType, 0);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kConstrainedWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kDrawAttentionKey, false);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kImmersiveFullscreenKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kMirroringEnabledKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(Window*, kHostWindowKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);

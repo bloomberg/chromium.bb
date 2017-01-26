@@ -37,6 +37,8 @@ PropertyConverter::PropertyConverter() {
                    ui::mojom::WindowManager::kAppIcon_Property);
   RegisterProperty(client::kAppIdKey,
                    ui::mojom::WindowManager::kAppID_Property);
+  RegisterProperty(client::kImmersiveFullscreenKey,
+                   ui::mojom::WindowManager::kImmersiveFullscreen_Property);
   RegisterProperty(client::kNameKey, ui::mojom::WindowManager::kName_Property);
   RegisterProperty(client::kPreferredSize,
                    ui::mojom::WindowManager::kPreferredSize_Property);
