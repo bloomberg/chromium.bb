@@ -61,6 +61,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "components/zoom/zoom_controller.h"
 #endif
@@ -68,13 +69,6 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
 
 namespace autofill {
-
-namespace {
-
-const char kSecurityIndicatorHelpCenterUrl[] =
-    "https://support.google.com/chrome/answer/95617";
-
-}  // anonymous namespace
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -384,6 +378,21 @@ void ChromeAutofillClient::StartSigninFlow() {
 }
 
 void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
+#if !defined(OS_ANDROID)
+  // On desktop platforms, open Page Info, which briefly explains the HTTP
+  // warning message and provides a link to the Help Center for more details.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (browser && chrome::ShowWebsiteSettings(browser, web_contents()))
+    return;
+// Otherwise fall through to the section below that opens the URL directly.
+#endif
+
+  // On Android, where Page Info does not (yet) contain a link to the Help
+  // Center (https://crbug.com/679532), or in corner cases where Page Info is
+  // not shown (for example, no navigation entry), just launch the Help topic
+  // directly.
+  const GURL kSecurityIndicatorHelpCenterUrl(
+      "https://support.google.com/chrome/?p=ui_security_indicator");
   web_contents()->OpenURL(content::OpenURLParams(
       GURL(kSecurityIndicatorHelpCenterUrl), content::Referrer(),
       WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,

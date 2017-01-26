@@ -296,9 +296,7 @@ SimpleWebViewDialog::GetContentSettingBubbleModelDelegate() {
 }
 
 void SimpleWebViewDialog::ShowWebsiteSettings(
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info) {
+    content::WebContents* web_contents) {
   NOTIMPLEMENTED();
   // TODO (markusheintz@): implement this
 }

@@ -6,7 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -15,17 +14,12 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/security_state/core/security_state.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 
-using content::NavigationController;
-using content::NavigationEntry;
 using content::WebContents;
 
 // The info-bubble point should look like it points to the bottom of the lock
@@ -128,20 +122,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
     return true;
 
   WebContents* tab = owner_->GetWebContents();
-  const NavigationController& controller = tab->GetController();
-  // Important to use GetVisibleEntry to match what's showing in the omnibox.
-  NavigationEntry* nav_entry = controller.GetVisibleEntry();
-  if (!nav_entry)
-    return true;
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
-
-  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
-  DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-
-  chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetVirtualURL(),
-                              security_info);
+  chrome::ShowWebsiteSettings(browser, tab);
   return true;
 }
 

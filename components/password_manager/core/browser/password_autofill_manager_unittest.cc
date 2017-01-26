@@ -619,8 +619,8 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneNotSecureWarning) {
   password_autofill_manager_->OnShowNotSecureWarning(base::i18n::RIGHT_TO_LEFT,
                                                      element_bounds);
 
-  // Accepting the warning message should trigger a call to open the url and
-  // hide the popup.
+  // Accepting the warning message should trigger a call to open an explanation
+  // of the message and hide the popup.
   EXPECT_CALL(*autofill_client, ShowHttpNotSecureExplanation());
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
@@ -680,8 +680,8 @@ TEST_F(PasswordAutofillManagerTest, NonSecurePasswordFieldHttpWarningMessage) {
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
 
-  // Accepting the warning message should trigger a call to open the url and
-  // hide the popup.
+  // Accepting the warning message should trigger a call to open an explanation
+  // of the message and hide the popup.
   EXPECT_CALL(*autofill_client, ShowHttpNotSecureExplanation());
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
@@ -736,8 +736,8 @@ TEST_F(PasswordAutofillManagerTest, NonSecureUsernameFieldHttpWarningMessage) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_, 0, element_bounds);
 
-  // Accepting the warning message should trigger a call to open the url and
-  // hide the popup.
+  // Accepting the warning message should trigger a call to open an explanation
+  // of the message and hide the popup.
   EXPECT_CALL(*autofill_client, ShowHttpNotSecureExplanation());
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
