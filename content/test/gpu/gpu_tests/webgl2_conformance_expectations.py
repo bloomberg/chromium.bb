@@ -222,6 +222,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba16f-rgba-half_float.html',
         ['mac', ('nvidia', 0xfe9)], bug=682834)
+    self.Fail('conformance/uniforms/' +
+        'no-over-optimization-on-uniform-array-12.html',
+        ['mac', ('nvidia', 0xfe9)], bug=684903)
 
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
