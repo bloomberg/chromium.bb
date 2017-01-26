@@ -218,14 +218,6 @@ void MockSignIn() {
 
 // Tests that no history is shown if there has been no navigation.
 - (void)testDisplayNoHistory {
-  // TODO(crbug.com/685570): Fix the tap instead of adding a delay.
-  GREYCondition* myCondition = [GREYCondition
-      conditionWithName:@"Delay to ensure the toolbar menu can be opened"
-                  block:^BOOL {
-                    return NO;
-                  }];
-  [myCondition waitWithTimeout:0.5];
-
   [self openHistoryPanel];
   [self assertNoHistoryShown];
 }
@@ -451,14 +443,6 @@ void MockSignIn() {
 
 // Navigates to history and checks elements for accessibility.
 - (void)testAccessibilityOnHistory {
-  // TODO(crbug.com/685570): Fix the tap instead of adding a delay.
-  GREYCondition* myCondition = [GREYCondition
-      conditionWithName:@"Delay to ensure the toolbar menu can be opened"
-                  block:^BOOL {
-                    return NO;
-                  }];
-  [myCondition waitWithTimeout:0.5];
-
   [self openHistoryPanel];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   // Close history.

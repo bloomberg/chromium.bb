@@ -19,6 +19,14 @@ using testing::kWaitForPageLoadTimeout;
 @implementation ChromeEarlGreyUI
 
 + (void)openToolsMenu {
+  // TODO(crbug.com/685570): Fix the tap instead of adding a delay.
+  GREYCondition* myCondition = [GREYCondition
+      conditionWithName:@"Delay to ensure the toolbar menu can be opened"
+                  block:^BOOL {
+                    return NO;
+                  }];
+  [myCondition waitWithTimeout:0.5];
+
   // TODO(crbug.com/639524): Add logic to ensure the app is in the correct
   // state, for example DCHECK if no tabs are displayed.
   [[[EarlGrey
