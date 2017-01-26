@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -28,6 +27,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/app/mash/chrome_mash_catalog.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/common/content_switches.h"
@@ -60,9 +60,6 @@
 #endif
 
 using service_manager::mojom::ServiceFactory;
-
-// Defined externally by the ":catalog_cpp_source" target.
-extern const char kChromeMashCatalogContents[];
 
 namespace {
 
@@ -177,16 +174,12 @@ void MashRunner::RunMain() {
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
-  std::unique_ptr<base::Value> manifest_value =
-      base::JSONReader::Read(kChromeMashCatalogContents);
-  DCHECK(manifest_value);
-
   // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
   service_manager::BackgroundServiceManager background_service_manager(
-      &service_process_launcher_delegate, std::move(manifest_value));
+      &service_process_launcher_delegate, CreateChromeMashCatalog());
   service_manager::mojom::ServicePtr service;
   context_.reset(new service_manager::ServiceContext(
       base::MakeUnique<mash::MashPackagedService>(),

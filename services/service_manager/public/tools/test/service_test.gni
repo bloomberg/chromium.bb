@@ -32,6 +32,6 @@ template("service_test") {
 
   catalog_cpp_source(catalog_source_target) {
     catalog = invoker.catalog
-    output_symbol_name = "service_manager::test::kServiceTestCatalog"
+    generated_function_name = "service_manager::test::CreateTestCatalog"
   }
 }

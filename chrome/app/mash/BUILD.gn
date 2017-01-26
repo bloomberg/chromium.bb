@@ -11,7 +11,7 @@ source_set("mash") {
     "mash_runner.h",
   ]
   deps = [
-    ":catalog_cpp_source",
+    ":chrome_mash_catalog",
     "//base:i18n",
     "//components/tracing:startup_tracing",
     "//content/public/common",
@@ -77,7 +77,7 @@ catalog("catalog") {
   catalog_deps = [ "//chrome/app:catalog" ]
 }
 
-catalog_cpp_source("catalog_cpp_source") {
+catalog_cpp_source("chrome_mash_catalog") {
   catalog = ":catalog"
-  output_symbol_name = "kChromeMashCatalogContents"
+  generated_function_name = "CreateChromeMashCatalog"
 }

@@ -147,13 +147,14 @@ template("catalog") {
 #   catalog
 #       The catalog target whose output should be stringified.
 #
-#   output_symbol_name
+#   generated_function_name
 #       The fully qualified symbol name of the C++ string constant to define in
 #       the generate source_set.
 #
 template("catalog_cpp_source") {
   assert(defined(invoker.catalog), "catalog is required")
-  assert(defined(invoker.output_symbol_name), "output_symbol_name is required")
+  assert(defined(invoker.generated_function_name),
+         "generated_function_name is required")
 
   catalog_target = invoker.catalog
   catalog_target_dir = get_label_info(catalog_target, "target_gen_dir")
@@ -161,21 +162,27 @@ template("catalog_cpp_source") {
   catalog_filename = "$catalog_target_dir/${catalog_target_name}.json"
 
   generator_target_name = "${target_name}__generator"
-  generated_filename = "${target_gen_dir}/${target_name}.cc"
+  generated_filename_base = "${target_gen_dir}/${target_name}"
 
   action(generator_target_name) {
     testonly = defined(invoker.testonly) && invoker.testonly
     script = "//services/catalog/public/tools/sourcify_manifest.py"
     inputs = [
       catalog_filename,
+
+      "//services/catalog/public/tools/catalog.cc.tmpl",
+      "//services/catalog/public/tools/catalog.h.tmpl",
     ]
     outputs = [
-      generated_filename,
+      "${generated_filename_base}.cc",
+      "${generated_filename_base}.h",
     ]
     args = [
       "--input=" + rebase_path(catalog_filename, root_build_dir),
-      "--output=" + rebase_path(generated_filename, root_build_dir),
-      "--symbol-name=" + invoker.output_symbol_name,
+      "--output-filename-base=" +
+          rebase_path(generated_filename_base, root_build_dir),
+      "--output-function-name=" + invoker.generated_function_name,
+      "--module-path=" + rebase_path(generated_filename_base, root_gen_dir),
     ]
     if (is_debug || dcheck_always_on) {
       args += [ "--pretty" ]
@@ -190,6 +197,7 @@ template("catalog_cpp_source") {
     sources = get_target_outputs(":$generator_target_name")
     deps = [
       ":$generator_target_name",
+      "//base",
     ]
   }
 }
