@@ -6,8 +6,6 @@
 
 #include "core/paint/PaintTiming.h"
 #include "core/testing/DummyPageHolder.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -16,7 +14,7 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
  protected:
   void SetUp() override {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    s_timeElapsed = timeOrigin();
+    s_timeElapsed = 0.0;
     m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
   }
 
@@ -26,7 +24,6 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
 
   Document& document() { return m_dummyPageHolder->document(); }
   PaintTiming& paintTiming() { return PaintTiming::from(document()); }
-
   FirstMeaningfulPaintDetector& detector() {
     return paintTiming().firstMeaningfulPaintDetector();
   }
@@ -46,14 +43,6 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
   static double returnMockTime() {
     s_timeElapsed += 1.0;
     return s_timeElapsed;
-  }
-
-  double timeOrigin() {
-    Performance* performance = DOMWindowPerformance::performance(
-        *m_dummyPageHolder->frame().domWindow());
-    if (!performance)
-      return 0.0;
-    return performance->timeOrigin();
   }
 
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
