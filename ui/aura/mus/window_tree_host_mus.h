@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host_platform.h"
 
@@ -82,6 +83,16 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   // Requests that our root window be stacked above all other parallel root
   // windows which we might not own.
   void StackAtTop();
+
+  // Tells the window manager to take control of moving the window. Returns
+  // true if the move wasn't canceled.
+  void PerformWindowMove(ui::mojom::MoveLoopSource mus_source,
+                         const gfx::Point& cursor_location,
+                         const base::Callback<void(bool)>& callback);
+
+  // Tells the window manager to abort any current move initiated by
+  // PerformWindowMove().
+  void CancelWindowMove();
 
   // Intended only for WindowTreeClient to call.
   void set_display_id(int64_t id) { display_id_ = id; }

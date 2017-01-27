@@ -55,6 +55,18 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
   virtual void OnWindowTreeHostStackAtTop(
       WindowTreeHostMus* window_tree_host) = 0;
 
+  // Called to start a move loop, where the window manager will take over
+  // moving a window during a drag.
+  virtual void OnWindowTreeHostPerformWindowMove(
+      WindowTreeHostMus* window_tree_host,
+      ui::mojom::MoveLoopSource mus_source,
+      const gfx::Point& cursor_location,
+      const base::Callback<void(bool)>& callback) = 0;
+
+  // Called to cancel a move loop.
+  virtual void OnWindowTreeHostCancelWindowMove(
+      WindowTreeHostMus* window_tree_host) = 0;
+
   // Called when a WindowTreeHostMus is created without a WindowPort.
   // TODO: this should take an unordered_map, see http://crbug.com/670515.
   virtual std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(

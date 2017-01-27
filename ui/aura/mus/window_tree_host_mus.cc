@@ -157,6 +157,18 @@ void WindowTreeHostMus::StackAtTop() {
   delegate_->OnWindowTreeHostStackAtTop(this);
 }
 
+void WindowTreeHostMus::PerformWindowMove(
+    ui::mojom::MoveLoopSource mus_source,
+    const gfx::Point& cursor_location,
+    const base::Callback<void(bool)>& callback) {
+  delegate_->OnWindowTreeHostPerformWindowMove(
+      this, mus_source, cursor_location, callback);
+}
+
+void WindowTreeHostMus::CancelWindowMove() {
+  delegate_->OnWindowTreeHostCancelWindowMove(this);
+}
+
 display::Display WindowTreeHostMus::GetDisplay() const {
   display::Display display;
   display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);

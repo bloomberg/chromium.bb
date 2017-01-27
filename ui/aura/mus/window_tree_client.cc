@@ -806,26 +806,6 @@ void WindowTreeClient::StopPointerWatcher() {
   has_pointer_watcher_ = false;
 }
 
-void WindowTreeClient::PerformWindowMove(
-    Window* window,
-    ui::mojom::MoveLoopSource source,
-    const gfx::Point& cursor_location,
-    const base::Callback<void(bool)>& callback) {
-  DCHECK(on_current_move_finished_.is_null());
-  on_current_move_finished_ = callback;
-
-  WindowMus* window_mus = WindowMus::Get(window);
-  current_move_loop_change_ = ScheduleInFlightChange(
-      base::MakeUnique<InFlightDragChange>(window_mus, ChangeType::MOVE_LOOP));
-  // Tell the window manager to take over moving us.
-  tree_->PerformWindowMove(current_move_loop_change_, window_mus->server_id(),
-                           source, cursor_location);
-}
-
-void WindowTreeClient::CancelWindowMove(Window* window) {
-  tree_->CancelWindowMove(WindowMus::Get(window)->server_id());
-}
-
 void WindowTreeClient::AddObserver(WindowTreeClientObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -1711,6 +1691,28 @@ void WindowTreeClient::OnWindowTreeHostStackAtTop(
   const uint32_t change_id = ScheduleInFlightChange(
       base::MakeUnique<CrashInFlightChange>(window, ChangeType::REORDER));
   tree_->StackAtTop(change_id, window->server_id());
+}
+
+void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
+    WindowTreeHostMus* window_tree_host,
+    ui::mojom::MoveLoopSource source,
+    const gfx::Point& cursor_location,
+    const base::Callback<void(bool)>& callback) {
+  DCHECK(on_current_move_finished_.is_null());
+  on_current_move_finished_ = callback;
+
+  WindowMus* window_mus = WindowMus::Get(window_tree_host->window());
+  current_move_loop_change_ = ScheduleInFlightChange(
+      base::MakeUnique<InFlightDragChange>(window_mus, ChangeType::MOVE_LOOP));
+  // Tell the window manager to take over moving us.
+  tree_->PerformWindowMove(current_move_loop_change_, window_mus->server_id(),
+                           source, cursor_location);
+}
+
+void WindowTreeClient::OnWindowTreeHostCancelWindowMove(
+    WindowTreeHostMus* window_tree_host) {
+  tree_->CancelWindowMove(
+      WindowMus::Get(window_tree_host->window())->server_id());
 }
 
 std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(

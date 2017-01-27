@@ -155,17 +155,6 @@ class AURA_EXPORT WindowTreeClient
   void StartPointerWatcher(bool want_moves);
   void StopPointerWatcher();
 
-  // Performs a window move. |callback| will be asynchronously called with the
-  // whether the move loop completed successfully.
-  void PerformWindowMove(Window* window,
-                         ui::mojom::MoveLoopSource source,
-                         const gfx::Point& cursor_location,
-                         const base::Callback<void(bool)>& callback);
-
-  // Cancels a in progress window move. (If no window is currently being moved,
-  // does nothing.)
-  void CancelWindowMove(Window* window);
-
   void AddObserver(WindowTreeClientObserver* observer);
   void RemoveObserver(WindowTreeClientObserver* observer);
 
@@ -447,6 +436,13 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowTreeHostStackAbove(WindowTreeHostMus* window_tree_host,
                                   Window* window) override;
   void OnWindowTreeHostStackAtTop(WindowTreeHostMus* window_tree_host) override;
+  void OnWindowTreeHostPerformWindowMove(
+      WindowTreeHostMus* window_tree_host,
+      ui::mojom::MoveLoopSource mus_source,
+      const gfx::Point& cursor_location,
+      const base::Callback<void(bool)>& callback) override;
+  void OnWindowTreeHostCancelWindowMove(
+      WindowTreeHostMus* window_tree_host) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
       const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;
