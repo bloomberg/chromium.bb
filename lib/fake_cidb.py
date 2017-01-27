@@ -270,6 +270,36 @@ class FakeCIDBConnection(object):
             for _id in self.buildStageTable
             if self.buildStageTable[_id]['build_id'] == build_id]
 
+  def GetSlaveStages(self, master_build_id, buildbucket_ids=None):
+    """Get the slave stages of the given build.
+
+    Args:
+      master_build_id: The build id (string) of the master build.
+      buildbucket_ids: A list of buildbucket ids (strings) of the slaves.
+
+    Returns:
+      A list of slave stages (in format of dicts).
+    """
+    slave_builds = []
+
+    if buildbucket_ids is None:
+      slave_builds = {b['id']: b for b in self.buildTable
+                      if b['master_build_id'] == master_build_id}
+    else:
+      slave_builds = {b['id']: b for b in self.buildTable
+                      if b['master_build_id'] == master_build_id and
+                      b['buildbucket_id'] in buildbucket_ids}
+
+    slave_stages = []
+    for _id in self.buildStageTable:
+      build_id = self.buildStageTable[_id]['build_id']
+      if build_id in slave_builds:
+        stage = self.buildStageTable[_id].copy()
+        stage['build_config'] = slave_builds[build_id]['build_config']
+        slave_stages.append(stage)
+
+    return slave_stages
+
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None, milestone_version=None):
