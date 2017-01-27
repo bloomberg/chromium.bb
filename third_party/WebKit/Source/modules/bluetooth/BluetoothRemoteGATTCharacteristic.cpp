@@ -51,6 +51,8 @@ void BluetoothRemoteGATTCharacteristic::setValue(DOMDataView* domDataView) {
 
 void BluetoothRemoteGATTCharacteristic::dispatchCharacteristicValueChanged(
     const Vector<uint8_t>& value) {
+  if (!getGatt()->connected())
+    return;
   this->setValue(BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(value));
   dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
 }

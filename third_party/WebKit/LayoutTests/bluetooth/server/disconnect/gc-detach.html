@@ -10,7 +10,7 @@
       if (messageEvent.data === 'Ready') {
         let iframe = document.querySelector('iframe');
         callWithKeyDown(() => {
-          iframe.contentWindow.postMessage('Go', '*');
+          iframe.contentWindow.postMessage('RequestAndConnect', '*');
         });
       } else if (messageEvent.data === 'Connected') {
         let iframe = document.querySelector('iframe');
@@ -27,7 +27,7 @@
     setBluetoothFakeAdapter('HeartRateAdapter')
       .then(() => {
         let iframe = document.createElement('iframe');
-        iframe.src = '../../../resources/bluetooth/connect-iframe.html';
+        iframe.src = '../../../resources/bluetooth/heart-rate-iframe.html';
         document.body.appendChild(iframe);
       });
   }, 'Garbage collect then detach frame. We shouldn\'t crash.');
