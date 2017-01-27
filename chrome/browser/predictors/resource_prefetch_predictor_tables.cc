@@ -451,14 +451,14 @@ void ResourcePrefetchPredictorTables::LogDatabaseStats() {
       base::StringPrintf("SELECT count(*) FROM %s", kUrlResourceTableName)
           .c_str()));
   if (statement.Step())
-    UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.UrlTableRowCount",
+    UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.UrlTableRowCount2",
                          statement.ColumnInt(0));
 
   statement.Assign(DB()->GetUniqueStatement(
       base::StringPrintf("SELECT count(*) FROM %s", kHostResourceTableName)
           .c_str()));
   if (statement.Step())
-    UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HostTableRowCount",
+    UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HostTableRowCount2",
                          statement.ColumnInt(0));
 }
 

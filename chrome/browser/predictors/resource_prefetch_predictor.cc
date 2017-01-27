@@ -736,11 +736,6 @@ void ResourcePrefetchPredictor::CreateCaches(
   url_redirect_table_cache_ = std::move(url_redirect_data_map);
   host_redirect_table_cache_ = std::move(host_redirect_data_map);
 
-  UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.UrlTableMainFrameUrlCount",
-                       url_table_cache_->size());
-  UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HostTableHostCount",
-                       host_table_cache_->size());
-
   ConnectToHistoryService();
 }
 
