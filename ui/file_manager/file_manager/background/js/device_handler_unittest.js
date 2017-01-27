@@ -68,15 +68,15 @@ function testGoodDevice(callback) {
     shouldNotify: true
   });
 
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-          assertEquals(1, Object.keys(notifications).length);
-          var options = notifications['deviceNavigation:/device/path'];
-          assertEquals('DEVICE_NAVIGATION', options.message);
-          assertTrue(options.isClickable);
-      });
-
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertEquals(1, Object.keys(notifications).length);
+            var options = notifications['deviceNavigation:/device/path'];
+            assertEquals('DEVICE_NAVIGATION', options.message);
+            assertTrue(options.isClickable);
+          }),
+      callback);
 }
 
 function testRemovableMediaDeviceWithImportEnabled(callback) {
@@ -100,20 +100,21 @@ function testRemovableMediaDeviceWithImportEnabled(callback) {
       });
 
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
-      eventType: 'mount',
-      status: 'success',
-      volumeMetadata: {
-        volumeId: 'blabbity',
-        deviceType: 'usb'
-      },
-      shouldNotify: true
-    });
-   resolver.promise.then(
-      function(event) {
-        assertEquals('blabbity', event.volumeId);
-      });
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      volumeId: 'blabbity',
+      deviceType: 'usb'
+    },
+    shouldNotify: true
+  });
 
-  reportPromise(resolver.promise, callback);
+  reportPromise(
+      resolver.promise.then(
+          function(event) {
+            assertEquals('blabbity', event.volumeId);
+          }),
+      callback);
 }
 
 function testMtpMediaDeviceWithImportEnabled(callback) {
@@ -137,20 +138,21 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
       });
 
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
-      eventType: 'mount',
-      status: 'success',
-      volumeMetadata: {
-        volumeId: 'blabbity',
-        deviceType: 'mtp'
-      },
-      shouldNotify: true
-    });
-    resolver.promise.then(
-        function(event) {
-          assertEquals('blabbity', event.volumeId);
-        });
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      volumeId: 'blabbity',
+      deviceType: 'mtp'
+    },
+    shouldNotify: true
+  });
 
-  reportPromise(resolver.promise, callback);
+  reportPromise(
+      resolver.promise.then(
+          function(event) {
+            assertEquals('blabbity', event.volumeId);
+          }),
+      callback);
 }
 
 function testMediaDeviceWithImportDisabled(callback) {
@@ -169,17 +171,17 @@ function testMediaDeviceWithImportDisabled(callback) {
     shouldNotify: true
   });
 
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertEquals(1, Object.keys(notifications).length);
-        assertEquals(
-            'DEVICE_NAVIGATION',
-            notifications[
-                'deviceNavigation:/device/path'].message,
-            'Device notification did not have the right message.');
-      });
-
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertEquals(1, Object.keys(notifications).length);
+            assertEquals(
+                'DEVICE_NAVIGATION',
+                notifications[
+                    'deviceNavigation:/device/path'].message,
+                'Device notification did not have the right message.');
+          }),
+      callback);
 }
 
 function testGoodDeviceNotNavigated() {
@@ -212,15 +214,15 @@ function testGoodDeviceWithBadParent(callback) {
     shouldNotify: true
   });
 
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertFalse(!!notifications['device:/device/path']);
-        assertEquals(
-            'DEVICE_UNKNOWN: label',
-            notifications['deviceFail:/device/path'].message);
-      });
-
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertFalse(!!notifications['device:/device/path']);
+            assertEquals(
+                'DEVICE_UNKNOWN: label',
+                notifications['deviceFail:/device/path'].message);
+          }),
+      callback);
 }
 
 function testGoodDeviceWithBadParent_DuplicateMount(callback) {
@@ -250,15 +252,15 @@ function testGoodDeviceWithBadParent_DuplicateMount(callback) {
     shouldNotify: true
   });
 
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertEquals(1, Object.keys(notifications).length);
-        assertEquals(
-            'DEVICE_NAVIGATION',
-            notifications['deviceNavigation:/device/path'].message);
-      });
-
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertEquals(1, Object.keys(notifications).length);
+            assertEquals(
+                'DEVICE_NAVIGATION',
+                notifications['deviceNavigation:/device/path'].message);
+          }),
+      callback);
 }
 
 function testUnsupportedDevice(callback) {
@@ -273,15 +275,16 @@ function testUnsupportedDevice(callback) {
     },
     shouldNotify: true
   });
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertFalse(!!chrome.notifications.items['device:/device/path']);
-        assertEquals(
-            'DEVICE_UNSUPPORTED: label',
-            chrome.notifications.items['deviceFail:/device/path'].message);
-      });
 
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertFalse(!!chrome.notifications.items['device:/device/path']);
+            assertEquals(
+                'DEVICE_UNSUPPORTED: label',
+                chrome.notifications.items['deviceFail:/device/path'].message);
+          }),
+      callback);
 }
 
 function testUnknownDevice(callback) {
@@ -297,16 +300,17 @@ function testUnknownDevice(callback) {
     },
     shouldNotify: true
   });
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertFalse(!!chrome.notifications.items['device:/device/path']);
-        var item = chrome.notifications.items['deviceFail:/device/path'];
-        assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
-        // "Format device" button should appear.
-        assertEquals('DEVICE_UNKNOWN_BUTTON_LABEL', item.buttons[0].title);
-      });
 
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertFalse(!!chrome.notifications.items['device:/device/path']);
+            var item = chrome.notifications.items['deviceFail:/device/path'];
+            assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
+            // "Format device" button should appear.
+            assertEquals('DEVICE_UNKNOWN_BUTTON_LABEL', item.buttons[0].title);
+          }),
+      callback);
 }
 
 function testUnknownReadonlyDevice(callback) {
@@ -322,16 +326,17 @@ function testUnknownReadonlyDevice(callback) {
     },
     shouldNotify: true
   });
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertFalse(!!chrome.notifications.items['device:/device/path']);
-        var item = chrome.notifications.items['deviceFail:/device/path'];
-        assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
-        // "Format device" button should not appear.
-        assertFalse(!!item.buttons);
-      });
 
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertFalse(!!chrome.notifications.items['device:/device/path']);
+            var item = chrome.notifications.items['deviceFail:/device/path'];
+            assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
+            // "Format device" button should not appear.
+            assertFalse(!!item.buttons);
+          }),
+      callback);
 }
 
 function testUnsupportedWithUnknownParentReplacesNotification() {
@@ -382,14 +387,14 @@ function testMountPartialSuccess(callback) {
     shouldNotify: true
   });
 
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertEquals(1, Object.keys(notifications).length);
-        assertEquals(
-            'DEVICE_NAVIGATION',
-            notifications['deviceNavigation:/device/path'].message);
-      }).then(
-          function() {
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertEquals(1, Object.keys(notifications).length);
+            assertEquals(
+                'DEVICE_NAVIGATION',
+                notifications['deviceNavigation:/device/path'].message);
+          }).then(function() {
             chrome.fileManagerPrivate.onMountCompleted.dispatch({
               eventType: 'mount',
               status: 'error_unsupported_filesystem',
@@ -401,17 +406,15 @@ function testMountPartialSuccess(callback) {
               },
               shouldNotify: true
             });
-          }).then(
-              function() {
-                var notifications = chrome.notifications.items;
-                assertEquals(
-                    2, Object.keys(notifications).length);
-                assertEquals(
-                    'MULTIPART_DEVICE_UNSUPPORTED: label',
-                    notifications['deviceFail:/device/path'].message);
-              });
-
-  reportPromise(promise, callback);
+          }).then(function() {
+            var notifications = chrome.notifications.items;
+            assertEquals(
+                2, Object.keys(notifications).length);
+            assertEquals(
+                'MULTIPART_DEVICE_UNSUPPORTED: label',
+                notifications['deviceFail:/device/path'].message);
+          }),
+      callback);
 }
 
 function testUnknown(callback) {
@@ -427,15 +430,15 @@ function testUnknown(callback) {
     shouldNotify: true
   });
 
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertEquals(1, Object.keys(notifications).length);
-        assertEquals(
-            'DEVICE_UNKNOWN: label',
-            notifications['deviceFail:/device/path'].message);
-      });
-
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertEquals(1, Object.keys(notifications).length);
+            assertEquals(
+                'DEVICE_UNKNOWN: label',
+                notifications['deviceFail:/device/path'].message);
+          }),
+      callback);
 }
 
 function testNonASCIILabel(callback) {
@@ -452,15 +455,15 @@ function testNonASCIILabel(callback) {
     shouldNotify: true
   });
 
-  var promise = chrome.notifications.resolver.promise.then(
-      function(notifications) {
-        assertEquals(1, Object.keys(notifications).length);
-        assertEquals(
-            'DEVICE_UNKNOWN: \u30E9\u30D9\u30EB',
-            notifications['deviceFail:/device/path'].message);
-      });
-
-  reportPromise(promise, callback);
+  reportPromise(
+      chrome.notifications.resolver.promise.then(
+          function(notifications) {
+            assertEquals(1, Object.keys(notifications).length);
+            assertEquals(
+                'DEVICE_UNKNOWN: \u30E9\u30D9\u30EB',
+                notifications['deviceFail:/device/path'].message);
+          }),
+      callback);
 }
 
 function testMulitpleFail() {
@@ -613,13 +616,14 @@ function testNotificationClicked(callback) {
   // Call the notification-body-clicked handler and check that the
   // navigation-requested event is dispatched.
   chrome.notifications.onClicked.dispatch(notificationId);
-  var promise = resolver.promise.then(
-      function(event) {
-        assertEquals(null, event.volumeId);
-        assertEquals(devicePath, event.devicePath);
-        assertEquals(null, event.filePath);
-      });
-  reportPromise(promise, callback);
+  reportPromise(
+      resolver.promise.then(
+          function(event) {
+            assertEquals(null, event.volumeId);
+            assertEquals(devicePath, event.devicePath);
+            assertEquals(null, event.filePath);
+          }),
+      callback);
 }
 
 /**
