@@ -8,14 +8,9 @@
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
-#include "services/catalog/catalog.h"
-#include "services/service_manager/public/cpp/test/service_test_catalog.h"
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-
-  catalog::Catalog::SetDefaultCatalogManifest(
-      service_manager::test::CreateTestCatalog());
 
   mojo::edk::Init();
 

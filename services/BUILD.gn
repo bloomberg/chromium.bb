@@ -12,6 +12,6 @@ import("//testing/test.gni")
 test("service_unittests") {
   deps = [
     "//services/image_decoder:tests",
-    "//services/service_manager/public/cpp/test:run_all_service_tests",
+    "//services/test:run_all_unittests",
   ]
 }

@@ -6,7 +6,6 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/service_manager/background/background_service_manager_main.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -27,7 +26,7 @@ class MusGpuTestSuite : public base::TestSuite {
   }
 };
 
-int MasterProcessMain(int argc, char** argv) {
+int main(int argc, char** argv) {
   MusGpuTestSuite test_suite(argc, argv);
   mojo::edk::Init();
   return base::LaunchUnitTests(

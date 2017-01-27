@@ -26,7 +26,7 @@ template("service_test") {
     }
     deps += [
       ":$catalog_source_target",
-      "//services/service_manager/public/cpp/test:run_all_service_tests_with_catalog",
+      "//services/service_manager/public/cpp/test:run_all_service_tests",
     ]
   }
 

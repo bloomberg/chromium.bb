@@ -28,7 +28,6 @@ source_set("shutdown") {
   data_deps = [
     ":shutdown_client",
     ":shutdown_service",
-    ":shutdown_unittest_manifest",
   ]
 }
 
@@ -59,9 +58,6 @@ service("shutdown_service") {
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
   ]
-  data_deps = [
-    ":shutdown_service_manifest",
-  ]
 }
 
 service_manifest("shutdown_client_manifest") {
@@ -79,9 +75,6 @@ service("shutdown_client") {
     "//base",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
-  ]
-  data_deps = [
-    ":shutdown_client_manifest",
   ]
 }
 

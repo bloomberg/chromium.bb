@@ -4,6 +4,7 @@
 
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -43,23 +44,24 @@ source_set("navigation") {
   ]
 }
 
-test("navigation_unittests") {
+service_test("navigation_unittests") {
   sources = [
     "navigation_unittest.cc",
   ]
 
+  catalog = ":navigation_unittests_catalog"
+
   deps = [
     "//base",
-    "//base/test:test_support",
+    "//mojo/public/cpp/bindings",
     "//services/navigation/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp/test:run_all_service_tests",
+    "//services/service_manager/public/interfaces",
     "//testing/gtest",
   ]
 
   data_deps = [
-    ":unittest_manifest",
     "//content/shell:content_shell",
     "//services/ui/test_wm",
   ]
@@ -73,4 +75,13 @@ service_manifest("manifest") {
 service_manifest("unittest_manifest") {
   name = "navigation_unittests"
   source = "unittest_manifest.json"
+}
+
+catalog("navigation_unittests_catalog") {
+  embedded_services = [ ":unittest_manifest" ]
+  standalone_services = [
+    ":manifest",
+    "//services/ui:manifest",
+    "//services/ui/test_wm:manifest",
+  ]
 }

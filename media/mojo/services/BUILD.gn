@@ -196,12 +196,13 @@ service_manifest("test_manifest") {
   source = "test_manifest.json"
 }
 
-test("media_pipeline_integration_unittests") {
+service_test("media_pipeline_integration_unittests") {
   testonly = true
+
+  catalog = ":media_pipeline_integration_unittests_catalog"
 
   deps = [
     "//media/test:mojo_pipeline_integration_tests",
-    "//services/service_manager/public/cpp/test:run_all_service_tests",
   ]
 
   data_deps = [
@@ -216,5 +217,10 @@ service_manifest("pipeline_test_manifest") {
 
 catalog("media_service_unittests_catalog") {
   embedded_services = [ ":test_manifest" ]
+  standalone_services = [ ":media_manifest" ]
+}
+
+catalog("media_pipeline_integration_unittests_catalog") {
+  embedded_services = [ ":pipeline_test_manifest" ]
   standalone_services = [ ":media_manifest" ]
 }

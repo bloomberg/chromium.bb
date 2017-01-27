@@ -67,7 +67,6 @@ source_set("run_all_service_tests") {
   deps = [
     "//base/test:test_support",
     "//mojo/edk/system",
-    "//services/service_manager/background:main",
   ]
 
   if (use_ozone) {
