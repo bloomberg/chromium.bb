@@ -116,6 +116,10 @@ class AutofillPopupLayoutModel {
   // Returns true if suggestion icon must be displayed before suggestion text.
   bool IsIconAtStart(int frontend_id) const;
 
+  // Returns the margin for icon, label and between icon and label, or 0 if the
+  // margin isn't configured in an experiment to tweak autofill popup layout.
+  unsigned int GetMargin() const;
+
  private:
   // Returns the enclosing rectangle for the element_bounds.
   const gfx::Rect RoundedElementBounds() const;

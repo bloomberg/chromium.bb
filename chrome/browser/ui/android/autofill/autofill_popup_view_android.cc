@@ -118,7 +118,8 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
       env, java_object_, data_array, controller_->IsRTL(),
       controller_->layout_model().GetBackgroundColor(),
       controller_->layout_model().GetDividerColor(),
-      controller_->layout_model().GetDropdownItemHeight());
+      controller_->layout_model().GetDropdownItemHeight(),
+      controller_->layout_model().GetMargin());
 }
 
 void AutofillPopupViewAndroid::SuggestionSelected(

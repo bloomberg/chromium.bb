@@ -67,10 +67,12 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
      * suggestion label's type face is {@code Typeface.NORMAL}.
      * @param dropdownItemHeight height of each dropdown item in dimension independent pixel units,
      * 0 if unspecified.
+     * @param margin Margin for icon, label and between icon and label in dimension independent
+     * pixel units, 0 if not specified.
      */
     @SuppressLint("InlinedApi")
     public void filterAndShow(AutofillSuggestion[] suggestions, boolean isRtl,
-            int backgroundColor, int dividerColor, int dropdownItemHeight) {
+            int backgroundColor, int dividerColor, int dropdownItemHeight, int margin) {
         mSuggestions = new ArrayList<AutofillSuggestion>(Arrays.asList(suggestions));
         // Remove the AutofillSuggestions with IDs that are not supported by Android
         ArrayList<DropdownItem> cleanedData = new ArrayList<DropdownItem>();
@@ -87,7 +89,8 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         setAdapter(new DropdownAdapter(mContext, cleanedData, separators,
                 backgroundColor == Color.TRANSPARENT ? null : backgroundColor,
                 dividerColor == Color.TRANSPARENT ? null : dividerColor,
-                dropdownItemHeight == 0 ? null : dropdownItemHeight));
+                dropdownItemHeight == 0 ? null : dropdownItemHeight,
+                margin == 0 ? null : margin));
         setRtl(isRtl);
         show();
         getListView().setOnItemLongClickListener(this);

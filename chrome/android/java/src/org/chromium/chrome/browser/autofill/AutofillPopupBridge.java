@@ -99,12 +99,14 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
      * not specified in experiment.
      * @param dropdownItemHeight height of each dropdown item in dimension independent pixel units,
      * 0 if not specified in experiment.
+     * @param margin Margin for icon, label and between icon and label in dimension independent
+     * pixel units, 0 if not specified in experiment.
      */
     @CalledByNative
     private void show(AutofillSuggestion[] suggestions, boolean isRtl, int backgroundColor,
-            int dividerColor, int dropdownItemHeight) {
+            int dividerColor, int dropdownItemHeight, int margin) {
         if (mAutofillPopup != null) mAutofillPopup.filterAndShow(suggestions, isRtl,
-                backgroundColor, dividerColor, dropdownItemHeight);
+                backgroundColor, dividerColor, dropdownItemHeight, margin);
     }
 
     @CalledByNative

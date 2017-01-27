@@ -70,7 +70,8 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
                 mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false /* isRtl */,
                         Color.TRANSPARENT /* backgroundColor */,
-                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */);
+                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */,
+                        0 /* margin */);
             }
         });
     }
@@ -137,7 +138,8 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             public void run() {
                 mAutofillPopup.filterAndShow(suggestions, false /* isRtl */,
                         Color.TRANSPARENT /* backgroundColor */,
-                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */);
+                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */,
+                        0 /* margin */);
             }
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {

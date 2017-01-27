@@ -676,7 +676,8 @@ kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight[] = {
 const FeatureEntry::FeatureParam
 kAutofillCreditCardPopupLayoutFeatureVariationExpanded[] = {
   {"is_credit_card_icon_at_start", "true"},
-  {"dropdown_item_height", "56"}};
+  {"dropdown_item_height", "56"},
+  {"margin", "18"}};
 
 const FeatureEntry::FeatureVariation
 kAutofillCreditCardPopupLayoutFeatureVariations[] = {

@@ -86,6 +86,11 @@ bool IsIconInCreditCardPopupAtStart();
 // experiment is enabled to tweak the display of the value and label.
 void ModifyAutofillCreditCardSuggestion(struct Suggestion* suggestion);
 
+// Returns the margin for the icon, label and between icon and label. Returns 0
+// if the margin isn't configured in an experiment to tweak autofill popup
+// layout.
+unsigned int GetPopupMargin();
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_EXPERIMENTS_H_

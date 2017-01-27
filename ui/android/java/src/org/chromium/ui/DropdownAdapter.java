@@ -7,6 +7,7 @@ package org.chromium.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -34,6 +35,9 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
     private final Integer mBackgroundColor;
     private final Integer mDividerColor;
     private final Integer mDropdownItemHeight;
+    private final int mLabelVerticalMargin;
+    private final int mLabelHorizontalMargin;
+    private final boolean mHasUniformHorizontalMargin;
 
     /**
      * Creates an {@code ArrayAdapter} with specified parameters.
@@ -47,10 +51,14 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
      * uses the values in colors.xml for the dark divider for the separators.
      * @param dropdownItemHeight If {@code null}, uses the {@code dropdown_item_height} in
      * dimens.xml. Otherwise, uses {@param dropdownItemHeight}.
+     * @param margin If {@code null}, uses the {@code dropdown_icon_margin} and
+     * {@code dropdown_item_label_margin} in dropdown_item.xml. Otherwise, uses {@param margin}
+     * for uniform margin for icon, label and between icon and label.
      */
     public DropdownAdapter(Context context, List<? extends DropdownItem> items,
-            Set<Integer> separators, Integer backgroundColor, Integer dividerColor,
-            Integer dropdownItemHeight) {
+            Set<Integer> separators, @Nullable Integer backgroundColor,
+            @Nullable Integer dividerColor, @Nullable Integer dropdownItemHeight,
+            @Nullable Integer margin) {
         super(context, R.layout.dropdown_item);
         mContext = context;
         addAll(items);
@@ -59,6 +67,20 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         mBackgroundColor = backgroundColor;
         mDividerColor = dividerColor;
         mDropdownItemHeight = dropdownItemHeight;
+        mLabelVerticalMargin = context.getResources().getDimensionPixelSize(
+                R.dimen.dropdown_item_label_margin);
+        if (margin == null) {
+            mLabelHorizontalMargin = mLabelVerticalMargin;
+            mHasUniformHorizontalMargin = false;
+        } else {
+            // We use a uniform margin between start and the icon, between icon and the label and
+            // between the label and the end.
+            // <-- margin -->|icon|<-- margin -->|label|<-- margin -->
+            // <-- margin -->|label|<-- margin -->
+            mLabelHorizontalMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    margin, context.getResources().getDisplayMetrics());
+            mHasUniformHorizontalMargin = true;
+        }
     }
 
     private boolean checkAreAllItemsEnabled() {
@@ -130,27 +152,27 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         labelView.setText(item.getLabel());
         labelView.setSingleLine(!item.isMultilineLabel());
 
+        LinearLayout.LayoutParams layoutParams;
         if (item.isLabelAndSublabelOnSameLine()) {
-            labelView.setLayoutParams(
-                    new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
+            layoutParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
         } else {
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            int labelMargin = mContext.getResources().getDimensionPixelSize(
-                    R.dimen.dropdown_item_label_margin);
-            ApiCompatibilityUtils.setMarginStart(layoutParams, labelMargin);
-            ApiCompatibilityUtils.setMarginEnd(layoutParams, labelMargin);
-            labelView.setLayoutParams(layoutParams);
+            layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT);
+            if (item.getIconId() == DropdownItem.NO_ICON || !mHasUniformHorizontalMargin) {
+                ApiCompatibilityUtils.setMarginStart(layoutParams, mLabelHorizontalMargin);
+            }
+            ApiCompatibilityUtils.setMarginEnd(layoutParams, mLabelHorizontalMargin);
             if (item.isMultilineLabel()) {
-                // If there is a multiline label, we add extra padding top and bottom because
+                // If there is a multiline label, we add extra padding at the top and bottom because
                 // WRAP_CONTENT, defined above for multiline labels, leaves none.
                 int existingStart = ApiCompatibilityUtils.getPaddingStart(labelView);
                 int existingEnd = ApiCompatibilityUtils.getPaddingEnd(labelView);
-                ApiCompatibilityUtils.setPaddingRelative(
-                        labelView, existingStart, labelMargin, existingEnd, labelMargin);
+                ApiCompatibilityUtils.setPaddingRelative(labelView,
+                        existingStart, mLabelVerticalMargin, existingEnd, mLabelVerticalMargin);
             }
         }
 
+        labelView.setLayoutParams(layoutParams);
         labelView.setEnabled(item.isEnabled());
         if (item.isGroupHeader() || item.isBoldLabel()) {
             labelView.setTypeface(null, Typeface.BOLD);
@@ -168,6 +190,7 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         if (TextUtils.isEmpty(sublabel)) {
             sublabelView.setVisibility(View.GONE);
         } else {
+            sublabelView.setLayoutParams(layoutParams);
             sublabelView.setText(sublabel);
             sublabelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     mContext.getResources().getDimension(item.getSublabelFontSizeResId()));
@@ -190,15 +213,15 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             int iconSize = iconSizeResId == 0
                     ? LayoutParams.WRAP_CONTENT
                     : mContext.getResources().getDimensionPixelSize(iconSizeResId);
-            ViewGroup.MarginLayoutParams layoutParams =
+            ViewGroup.MarginLayoutParams iconLayoutParams =
                     (ViewGroup.MarginLayoutParams) iconView.getLayoutParams();
-            layoutParams.width = iconSize;
-            layoutParams.height = iconSize;
-            int iconMargin =
-                    mContext.getResources().getDimensionPixelSize(item.getIconMarginResId());
-            ApiCompatibilityUtils.setMarginStart(layoutParams, iconMargin);
-            ApiCompatibilityUtils.setMarginEnd(layoutParams, iconMargin);
-            iconView.setLayoutParams(layoutParams);
+            iconLayoutParams.width = iconSize;
+            iconLayoutParams.height = iconSize;
+            int iconMargin = mHasUniformHorizontalMargin ? mLabelHorizontalMargin
+                    : mContext.getResources().getDimensionPixelSize(item.getIconMarginResId());
+            ApiCompatibilityUtils.setMarginStart(iconLayoutParams, iconMargin);
+            ApiCompatibilityUtils.setMarginEnd(iconLayoutParams, iconMargin);
+            iconView.setLayoutParams(iconLayoutParams);
             iconView.setImageDrawable(AppCompatResources.getDrawable(mContext, item.getIconId()));
             iconView.setVisibility(View.VISIBLE);
         }

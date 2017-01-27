@@ -300,4 +300,8 @@ bool AutofillPopupLayoutModel::IsIconAtStart(int frontend_id) const {
       (is_credit_card_popup_ && IsIconInCreditCardPopupAtStart());
 }
 
+unsigned int AutofillPopupLayoutModel::GetMargin() const {
+  return GetPopupMargin();
+}
+
 }  // namespace autofill

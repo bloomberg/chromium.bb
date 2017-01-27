@@ -66,7 +66,7 @@ public class AwAutofillClient {
                 });
         }
         mAutofillPopup.filterAndShow(suggestions, isRtl, Color.TRANSPARENT /* backgroundColor */,
-                Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */);
+                Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */, 0 /* margin */);
     }
 
     @CalledByNative

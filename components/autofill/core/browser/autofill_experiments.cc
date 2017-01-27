@@ -39,6 +39,7 @@ const char kAutofillPopupDropdownItemHeightKey[] =
     "dropdown_item_height";
 const char kAutofillCreditCardPopupIsIconAtStartKey[] =
     "is_credit_card_icon_at_start";
+const char kAutofillPopupMarginKey[] = "margin";
 
 namespace {
 
@@ -126,6 +127,10 @@ void ModifyAutofillCreditCardSuggestion(Suggestion* suggestion) {
     }
     suggestion->label.clear();
   }
+}
+
+unsigned int GetPopupMargin() {
+  return GetCreditCardPopupParameterUintValue(kAutofillPopupMarginKey);
 }
 
 bool OfferStoreUnmaskedCards() {
