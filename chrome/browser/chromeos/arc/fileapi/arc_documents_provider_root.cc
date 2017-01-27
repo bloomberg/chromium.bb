@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/mime_util.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -53,17 +52,13 @@ base::FilePath::StringType GetFileNameForDocument(
       base::ToLowerASCII(base::FilePath(filename).Extension());
   if (!extension.empty())
     extension = extension.substr(1);  // Strip the leading dot.
-  std::vector<base::FilePath::StringType> possible_extensions;
-  net::GetExtensionsForMimeType(document->mime_type, &possible_extensions);
+  std::vector<base::FilePath::StringType> possible_extensions =
+      GetExtensionsForArcMimeType(document->mime_type);
   if (!possible_extensions.empty() &&
       std::find(possible_extensions.begin(), possible_extensions.end(),
                 extension) == possible_extensions.end()) {
-    base::FilePath::StringType new_extension;
-    if (!net::GetPreferredExtensionForMimeType(document->mime_type,
-                                               &new_extension)) {
-      new_extension = possible_extensions[0];
-    }
-    filename = base::FilePath(filename).AddExtension(new_extension).value();
+    filename =
+        base::FilePath(filename).AddExtension(possible_extensions[0]).value();
   }
 
   return filename;

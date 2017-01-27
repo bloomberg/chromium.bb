@@ -199,6 +199,28 @@ TEST(ArcDocumentsProviderUtilTest, BuildDocumentUrl) {
   EXPECT_EQ("content://../document/..", BuildDocumentUrl("..", "..").spec());
 }
 
+TEST(ArcDocumentsProviderUtilTest, GetExtensionsForArcMimeType) {
+  // MIME types already known to Chromium.
+  EXPECT_NE(0u, GetExtensionsForArcMimeType("audio/mp3").size());
+  EXPECT_NE(0u, GetExtensionsForArcMimeType("image/jpeg").size());
+  EXPECT_NE(0u, GetExtensionsForArcMimeType("text/html").size());
+  EXPECT_NE(
+      0u, GetExtensionsForArcMimeType("application/x-chrome-extension").size());
+
+  // MIME types known to Android only.
+  EXPECT_NE(0u,
+            GetExtensionsForArcMimeType("application/x-android-drm-fl").size());
+  EXPECT_NE(0u, GetExtensionsForArcMimeType("audio/x-wav").size());
+
+  // Unknown types.
+  EXPECT_EQ(0u, GetExtensionsForArcMimeType("abc/xyz").size());
+  EXPECT_EQ(
+      0u, GetExtensionsForArcMimeType("vnd.android.document/directory").size());
+
+  // Specially handled types.
+  EXPECT_EQ(0u, GetExtensionsForArcMimeType("application/octet-stream").size());
+}
+
 }  // namespace
 
 }  // namespace arc

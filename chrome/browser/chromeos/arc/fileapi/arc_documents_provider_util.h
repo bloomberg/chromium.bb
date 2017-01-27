@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DOCUMENTS_PROVIDER_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 
@@ -60,6 +61,14 @@ bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,
 // C++ implementation of DocumentsContract.buildDocumentUri() in Android.
 GURL BuildDocumentUrl(const std::string& authority,
                       const std::string& document_id);
+
+// Similar to net::GetExtensionsForMimeType(), but this covers more MIME types
+// used in Android.
+// Returns an empty vector if the MIME type is not known.
+// If the returned vector is not empty, the first extension is the preferred
+// extension.
+std::vector<base::FilePath::StringType> GetExtensionsForArcMimeType(
+    const std::string& mime_type);
 
 }  // namespace arc
 
