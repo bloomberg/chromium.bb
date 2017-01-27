@@ -11,11 +11,8 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefRegistrySimple;
 class PrefService;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}  // namespace user_prefs
 
 class PinStorageTestApi;
 
@@ -27,7 +24,7 @@ class PinStorage : public KeyedService {
   static const int kMaximumUnlockAttempts = 3;
 
   // Registers profile prefs.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   explicit PinStorage(PrefService* pref_service);
   ~PinStorage() override;
