@@ -55,6 +55,10 @@ class BluetoothRemoteGATTDescriptor final
 
   BluetoothRemoteGATTServer* getGatt() { return m_characteristic->getGatt(); }
 
+  void ReadValueCallback(ScriptPromiseResolver*,
+                         mojom::blink::WebBluetoothResult,
+                         const Optional<Vector<uint8_t>>&);
+
   mojom::blink::WebBluetoothRemoteGATTDescriptorPtr m_descriptor;
   Member<BluetoothRemoteGATTCharacteristic> m_characteristic;
   Member<DOMDataView> m_value;

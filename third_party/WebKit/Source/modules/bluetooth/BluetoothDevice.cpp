@@ -71,6 +71,10 @@ BluetoothDevice::getOrCreateBluetoothRemoteGATTDescriptor(
       std::move(descriptor), characteristic);
 }
 
+bool BluetoothDevice::isValidDescriptor(const String& descriptorInstanceId) {
+  return m_attributeInstanceMap->containsDescriptor(descriptorInstanceId);
+}
+
 void BluetoothDevice::dispose() {
   disconnectGATTIfConnected();
 }

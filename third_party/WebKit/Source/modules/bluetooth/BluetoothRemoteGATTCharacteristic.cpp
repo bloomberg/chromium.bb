@@ -101,8 +101,7 @@ void BluetoothRemoteGATTCharacteristic::ReadValueCallback(
       resolver->getExecutionContext()->isContextDestroyed())
     return;
 
-  // If the resolver is not in the set of ActiveAlgorithms then the frame
-  // disconnected so we reject.
+  // If the device is disconnected, reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
     resolver->reject(BluetoothRemoteGATTUtils::CreateDOMException(
         BluetoothRemoteGATTUtils::ExceptionType::kGATTServerDisconnected));
@@ -122,7 +121,6 @@ void BluetoothRemoteGATTCharacteristic::ReadValueCallback(
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::readValue(
     ScriptState* scriptState) {
-  // We always check that the device is connected.
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -160,8 +158,7 @@ void BluetoothRemoteGATTCharacteristic::WriteValueCallback(
       resolver->getExecutionContext()->isContextDestroyed())
     return;
 
-  // If the resolver is not in the set of ActiveAlgorithms then the frame
-  // disconnected so we reject.
+  // If the device is disconnected, reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
     resolver->reject(BluetoothRemoteGATTUtils::CreateDOMException(
         BluetoothRemoteGATTUtils::ExceptionType::kGATTServerDisconnected));
@@ -179,7 +176,6 @@ void BluetoothRemoteGATTCharacteristic::WriteValueCallback(
 ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
     ScriptState* scriptState,
     const DOMArrayPiece& value) {
-  // We always check that the device is connected.
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -231,8 +227,7 @@ void BluetoothRemoteGATTCharacteristic::NotificationsCallback(
       resolver->getExecutionContext()->isContextDestroyed())
     return;
 
-  // If the resolver is not in the set of ActiveAlgorithms then the frame
-  // disconnected so we reject.
+  // If the device is disconnected, reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
     resolver->reject(BluetoothRemoteGATTUtils::CreateDOMException(
         BluetoothRemoteGATTUtils::ExceptionType::kGATTServerDisconnected));
@@ -248,7 +243,6 @@ void BluetoothRemoteGATTCharacteristic::NotificationsCallback(
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
     ScriptState* scriptState) {
-  // We always check that the device is connected.
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -280,7 +274,6 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
     ScriptState* scriptState) {
-  // We always check that the device is connected.
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -392,8 +385,7 @@ void BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback(
       resolver->getExecutionContext()->isContextDestroyed())
     return;
 
-  // If the resolver is not in the set of ActiveAlgorithms then the frame
-  // disconnected so we reject.
+  // If the device is disconnected, reject.
   if (!service()->device()->gatt()->RemoveFromActiveAlgorithms(resolver)) {
     resolver->reject(BluetoothRemoteGATTUtils::CreateDOMException(
         BluetoothRemoteGATTUtils::ExceptionType::kGATTServerDisconnected));

@@ -18,7 +18,8 @@ class BluetoothRemoteGATTUtils final {
   enum ExceptionType {
     kGATTServerDisconnected,
     kGATTServerNotConnected,
-    kInvalidCharacteristic
+    kInvalidCharacteristic,
+    kInvalidDescriptor
   };
 
   static DOMException* CreateDOMException(ExceptionType);

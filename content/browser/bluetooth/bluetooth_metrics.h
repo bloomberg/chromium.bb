@@ -51,6 +51,7 @@ enum class CacheQueryOutcome {
   NO_DEVICE = 2,
   NO_SERVICE = 3,
   NO_CHARACTERISTIC = 4,
+  NO_DESCRIPTOR = 5,
 };
 
 // requestDevice() Metrics
@@ -236,6 +237,7 @@ enum class UMAGATTOperation {
   CHARACTERISTIC_READ,
   CHARACTERISTIC_WRITE,
   START_NOTIFICATIONS,
+  DESCRIPTOR_READ,
   // Note: Add new GATT Operations immediately above this line.
   COUNT
 };

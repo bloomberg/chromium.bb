@@ -243,6 +243,7 @@ void RecordGetCharacteristicsOutcome(
                                       UMAGetCharacteristicOutcome::NO_SERVICE);
       return;
     case CacheQueryOutcome::NO_CHARACTERISTIC:
+    case CacheQueryOutcome::NO_DESCRIPTOR:
       NOTREACHED();
       return;
   }
@@ -279,6 +280,9 @@ void RecordGATTOperationOutcome(UMAGATTOperation operation,
     case UMAGATTOperation::START_NOTIFICATIONS:
       RecordStartNotificationsOutcome(outcome);
       return;
+    case UMAGATTOperation::DESCRIPTOR_READ:
+      // TODO(667319) Add reporting to descriptors
+      return;
     case UMAGATTOperation::COUNT:
       NOTREACHED();
       return;
@@ -300,6 +304,8 @@ static UMAGATTOperationOutcome TranslateCacheQueryOutcomeToGATTOperationOutcome(
       return UMAGATTOperationOutcome::NO_SERVICE;
     case CacheQueryOutcome::NO_CHARACTERISTIC:
       return UMAGATTOperationOutcome::NO_CHARACTERISTIC;
+    case CacheQueryOutcome::NO_DESCRIPTOR:
+      return UMAGATTOperationOutcome::NO_DESCRIPTOR;
   }
   NOTREACHED() << "No need to record success or renderer crash";
   return UMAGATTOperationOutcome::NOT_SUPPORTED;

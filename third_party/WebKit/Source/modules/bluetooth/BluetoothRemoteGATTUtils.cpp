@@ -35,6 +35,12 @@ DOMException* BluetoothRemoteGATTUtils::CreateDOMException(ExceptionType type) {
           "Characteristic is no longer valid. Remember to retrieve the "
           "characteristic again after reconnecting.");
 
+    case ExceptionType::kInvalidDescriptor:
+      return DOMException::create(
+          InvalidStateError,
+          "Descriptor is no longer valid. Remember to retrieve the "
+          "Descriptor again after reconnecting.");
+
     default:
       NOTREACHED();
       return nullptr;

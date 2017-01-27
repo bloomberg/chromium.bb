@@ -28,6 +28,8 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*,
                 "GATT Service no longer exists.");
       MAP_ERROR(CHARACTERISTIC_NO_LONGER_EXISTS, InvalidStateError,
                 "GATT Characteristic no longer exists.");
+      MAP_ERROR(DESCRIPTOR_NO_LONGER_EXISTS, InvalidStateError,
+                "GATT Descriptor no longer exists.");
 
       // NetworkErrors:
       MAP_ERROR(CONNECT_ALREADY_IN_PROGRESS, NetworkError,

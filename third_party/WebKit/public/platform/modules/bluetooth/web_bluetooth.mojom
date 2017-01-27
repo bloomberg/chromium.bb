@@ -103,6 +103,7 @@ enum WebBluetoothResult {
   REQUEST_DEVICE_WITH_BLOCKLISTED_UUID,
   REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME,
   REQUEST_DEVICE_WITHOUT_FRAME,
+  DESCRIPTOR_NO_LONGER_EXISTS,
 };
 
 struct WebBluetoothScanFilter {
@@ -239,6 +240,16 @@ interface WebBluetoothService {
     bluetooth.mojom.UUID? descriptor_uuid) => (
       WebBluetoothResult result,
       array<WebBluetoothRemoteGATTDescriptor>? descriptors);
+
+  // Reads the value for the descriptor identified by
+  // |descriptor_instance_id|. If the value is successfully read the callback
+  // will be run with WebBluetoothResult::SUCCESS and the descriptor's value. If
+  // the value is not successfully read the callback with be run with the
+  // corresponding error and nullptr for value
+  RemoteDescriptorReadValue(
+    string descriptor_instance_id) => (
+    WebBluetoothResult result,
+    array<uint8>? value);
 };
 
 // Classes should implement this interface and pass an associated pointer

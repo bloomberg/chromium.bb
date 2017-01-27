@@ -152,6 +152,8 @@ struct CacheQueryResult {
       case CacheQueryOutcome::NO_CHARACTERISTIC:
         return blink::mojom::WebBluetoothResult::
             CHARACTERISTIC_NO_LONGER_EXISTS;
+      case CacheQueryOutcome::NO_DESCRIPTOR:
+        return blink::mojom::WebBluetoothResult::DESCRIPTOR_NO_LONGER_EXISTS;
     }
     NOTREACHED();
     return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
@@ -160,6 +162,7 @@ struct CacheQueryResult {
   device::BluetoothDevice* device = nullptr;
   device::BluetoothRemoteGattService* service = nullptr;
   device::BluetoothRemoteGattCharacteristic* characteristic = nullptr;
+  device::BluetoothRemoteGattDescriptor* descriptor = nullptr;
   CacheQueryOutcome outcome;
 };
 
@@ -737,6 +740,37 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStopNotifications(
       weak_ptr_factory_.GetWeakPtr(), characteristic_instance_id, callback));
 }
 
+void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
+    const std::string& descriptor_instance_id,
+    const RemoteDescriptorReadValueCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const CacheQueryResult query_result =
+      QueryCacheForDescriptor(descriptor_instance_id);
+
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
+    return;
+  }
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    callback.Run(query_result.GetWebResult(), base::nullopt /* value */);
+    return;
+  }
+
+  if (BluetoothBlocklist::Get().IsExcludedFromReads(
+          query_result.descriptor->GetUUID())) {
+    callback.Run(blink::mojom::WebBluetoothResult::BLOCKLISTED_READ,
+                 base::nullopt /* value */);
+    return;
+  }
+
+  query_result.descriptor->ReadRemoteDescriptor(
+      base::Bind(&WebBluetoothServiceImpl::OnDescriptorReadValueSuccess,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&WebBluetoothServiceImpl::OnDescriptorReadValueFailed,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void WebBluetoothServiceImpl::RequestDeviceImpl(
     blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
     const RequestDeviceCallback& callback,
@@ -938,6 +972,23 @@ void WebBluetoothServiceImpl::OnStopNotifySessionComplete(
   callback.Run();
 }
 
+void WebBluetoothServiceImpl::OnDescriptorReadValueSuccess(
+    const RemoteDescriptorReadValueCallback& callback,
+    const std::vector<uint8_t>& value) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  callback.Run(blink::mojom::WebBluetoothResult::SUCCESS, value);
+}
+
+void WebBluetoothServiceImpl::OnDescriptorReadValueFailed(
+    const RemoteDescriptorReadValueCallback& callback,
+    device::BluetoothRemoteGattService::GattErrorCode error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(667319) We are reporting failures to UMA but not reporting successes.
+  callback.Run(TranslateGATTErrorAndRecord(error_code,
+                                           UMAGATTOperation::DESCRIPTOR_READ),
+               base::nullopt /* value */);
+}
+
 CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDevice(
     const WebBluetoothDeviceId& device_id) {
   const std::string& device_address =
@@ -1015,6 +1066,34 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForCharacteristic(
 
   if (result.characteristic == nullptr) {
     result.outcome = CacheQueryOutcome::NO_CHARACTERISTIC;
+  }
+
+  return result;
+}
+
+CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDescriptor(
+    const std::string& descriptor_instance_id) {
+  auto descriptor_iter =
+      descriptor_id_to_characteristic_id_.find(descriptor_instance_id);
+
+  // Kill the render, see "ID Not in Map Note" above.
+  if (descriptor_iter == descriptor_id_to_characteristic_id_.end()) {
+    CrashRendererAndClosePipe(bad_message::BDH_INVALID_DESCRIPTOR_ID);
+    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
+  }
+
+  CacheQueryResult result =
+      QueryCacheForCharacteristic(descriptor_iter->second);
+
+  if (result.outcome != CacheQueryOutcome::SUCCESS) {
+    return result;
+  }
+
+  result.descriptor =
+      result.characteristic->GetDescriptor(descriptor_instance_id);
+
+  if (result.descriptor == nullptr) {
+    result.outcome = CacheQueryOutcome::NO_DESCRIPTOR;
   }
 
   return result;

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['health_thermometer']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
+    .then(service => service.getCharacteristic('measurement_interval'))
+    .then(characteristic => characteristic.getDescriptor(user_description.name))
+    .then(descriptor => {
+      assert_equals(descriptor.value, null);
+      return descriptor.readValue()
+          .then(() => {
+            let decoder = new TextDecoder('utf-8');
+            let value_str = decoder.decode(descriptor.value);
+            assert_equals(value_str, user_description.name);
+          });
+    });
+}, 'Succesful read should update descriptor\'s value.');
+</script>

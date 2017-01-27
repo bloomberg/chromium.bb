@@ -133,6 +133,9 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& characteristics_uuid,
       const RemoteCharacteristicGetDescriptorsCallback& callback) override;
+  void RemoteDescriptorReadValue(
+      const std::string& characteristic_instance_id,
+      const RemoteDescriptorReadValueCallback& callback) override;
 
   void RequestDeviceImpl(
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
@@ -195,6 +198,14 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       const std::string& characteristic_instance_id,
       const RemoteCharacteristicStopNotificationsCallback& callback);
 
+  // Callbacks for BluetoothRemoteGattDescriptor::ReadRemoteDescriptor.
+  void OnDescriptorReadValueSuccess(
+      const RemoteDescriptorReadValueCallback& callback,
+      const std::vector<uint8_t>& value);
+  void OnDescriptorReadValueFailed(
+      const RemoteDescriptorReadValueCallback& callback,
+      device::BluetoothRemoteGattService::GattErrorCode error_code);
+
   // Functions to query the platform cache for the bluetooth object.
   // result.outcome == CacheQueryOutcome::SUCCESS if the object was found in the
   // cache. Otherwise result.outcome that can used to record the outcome and
@@ -216,6 +227,12 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // |service| and |characteristic| fields if successful.
   CacheQueryResult QueryCacheForCharacteristic(
       const std::string& characteristic_instance_id);
+
+  // Queries the platform cache for a descriptor with |descriptor_instance_id|.
+  // Fills in the |outcome| field, and |device|, |service|, |characteristic|,
+  // |descriptor| fields if successful.
+  CacheQueryResult QueryCacheForDescriptor(
+      const std::string& descriptor_instance_id);
 
   RenderProcessHost* GetRenderProcessHost();
   device::BluetoothAdapter* GetAdapter();

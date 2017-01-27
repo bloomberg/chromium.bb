@@ -4,8 +4,13 @@
 
 #include "modules/bluetooth/BluetoothRemoteGATTDescriptor.h"
 
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "modules/bluetooth/Bluetooth.h"
+#include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
+#include "modules/bluetooth/BluetoothRemoteGATTUtils.h"
 #include <memory>
 
 namespace blink {
@@ -24,14 +29,61 @@ BluetoothRemoteGATTDescriptor* BluetoothRemoteGATTDescriptor::create(
   return result;
 }
 
+void BluetoothRemoteGATTDescriptor::ReadValueCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::WebBluetoothResult result,
+    const Optional<Vector<uint8_t>>& value) {
+  if (!resolver->getExecutionContext() ||
+      resolver->getExecutionContext()->isContextDestroyed())
+    return;
+
+  // If the device is disconnected, reject.
+  if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
+    resolver->reject(BluetoothRemoteGATTUtils::CreateDOMException(
+        BluetoothRemoteGATTUtils::ExceptionType::kGATTServerDisconnected));
+    return;
+  }
+
+  if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
+    DCHECK(value);
+    DOMDataView* domDataView =
+        BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(value.value());
+    m_value = domDataView;
+    resolver->resolve(domDataView);
+  } else {
+    resolver->reject(BluetoothError::take(resolver, result));
+  }
+}
+
 ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
     ScriptState* scriptState) {
-  // TODO(668837): Implement WebBluetooth descriptor.readValue()
-  return ScriptPromise::rejectWithDOMException(
-      scriptState,
-      DOMException::create(NotSupportedError,
-                           "descriptor readValue is not implemented "
-                           "yet. See https://goo.gl/J6ASzs"));
+  if (!getGatt()->connected()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        BluetoothRemoteGATTUtils::CreateDOMException(
+            BluetoothRemoteGATTUtils::ExceptionType::kGATTServerNotConnected));
+  }
+
+  if (!getGatt()->device()->isValidDescriptor(m_descriptor->instance_id)) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        BluetoothRemoteGATTUtils::CreateDOMException(
+            BluetoothRemoteGATTUtils::ExceptionType::kInvalidDescriptor));
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  getGatt()->AddToActiveAlgorithms(resolver);
+
+  mojom::blink::WebBluetoothService* service =
+      m_characteristic->m_device->bluetooth()->service();
+  service->RemoteDescriptorReadValue(
+      m_descriptor->instance_id,
+      convertToBaseCallback(
+          WTF::bind(&BluetoothRemoteGATTDescriptor::ReadValueCallback,
+                    wrapPersistent(this), wrapPersistent(resolver))));
+
+  return promise;
 }
 
 ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(

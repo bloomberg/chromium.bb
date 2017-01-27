@@ -1,0 +1,30 @@
+'use strict';
+promise_test(
+    () => {
+        return setBluetoothFakeAdapter('FailingGATTOperationsAdapter')
+            .then(
+                () => requestDeviceWithKeyDown(
+                    {filters: [{services: [errorUUID(0xA0)]}]}))
+            .then(device => device.gatt.connect())
+            .then(gattServer => gattServer.getPrimaryService(errorUUID(0xA0)))
+            .then(
+                service => {
+                    service.getCharacteristic(errorUUID(0xA1))
+                        .then(characteristic => {
+                          let tests = Promise.resolve();
+                          gatt_errors_tests.forEach(testSpec => {
+                            tests =
+                                tests
+                                    .then(
+                                        () => characteristic.getDescriptor(
+                                            testSpec.uuid))
+                                    .then(
+                                        descriptor =>
+                                            assert_promise_rejects_with_message(
+                                                descriptor.CALLS([readValue()]),
+                                                testSpec.error,
+                                                testSpec.testName));
+                          });
+                          return tests;
+                        })})},
+    'FUNCTION_NAME fails. Should reject with appropriate error.');

@@ -61,6 +61,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   BluetoothRemoteGATTDescriptor* getOrCreateBluetoothRemoteGATTDescriptor(
       mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
       BluetoothRemoteGATTCharacteristic*);
+  bool isValidDescriptor(const String& descriptorInstanceId);
 
   // We should disconnect from the device in all of the following cases:
   // 1. When the object gets GarbageCollected e.g. it went out of scope.

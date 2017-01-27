@@ -105,8 +105,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
       resolver->getExecutionContext()->isContextDestroyed())
     return;
 
-  // If the resolver is not in the set of ActiveAlgorithms then the frame
-  // disconnected so we reject.
+  // If the device is disconnected, reject.
   if (!RemoveFromActiveAlgorithms(resolver)) {
     resolver->reject(
         DOMException::create(NetworkError, kGATTServerDisconnected));
@@ -174,7 +173,6 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServicesImpl(
     ScriptState* scriptState,
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
     String servicesUUID) {
-  // We always check that the device is connected.
   if (!connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
