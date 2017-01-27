@@ -281,6 +281,7 @@ class ValidationPool(object):
     self.candidates = candidates or []
     self.non_manifest_changes = non_os_changes or []
     self.applied = applied or []
+    self.applied_patches = None
 
     # Note, we hold onto these CLs since they conflict against our current CLs
     # being tested; if our current ones succeed, we notify the user to deal
@@ -295,6 +296,17 @@ class ValidationPool(object):
 
     # Set to False if the tree was not open when we acquired changes.
     self.tree_was_open = tree_was_open
+
+  def GetAppliedPatches(self):
+    """Get the applied_patches instance.
+
+    Returns:
+      Return applied_patches (a patch_series.PatchSeries instance) if it's
+      not None so we can reuse the cached Gerrit query results; else,
+      create and return a patch_series.PatchSeries instance.
+    """
+    return self.applied_patches or patch_series.PatchSeries(
+        self.build_root, helper_pool=self._helper_pool)
 
   @property
   def build_log(self):
@@ -736,7 +748,8 @@ class ValidationPool(object):
     applied = []
     failed_tot = []
     failed_inflight = []
-    patches = patch_series.PatchSeries(
+
+    self.applied_patches = patch_series.PatchSeries(
         self.build_root, helper_pool=self._helper_pool)
 
     if self.is_master:
@@ -745,7 +758,7 @@ class ValidationPool(object):
                       c not in self.applied and filter_fn(c)]
 
         # pylint: disable=E1123
-        applied, failed_tot, failed_inflight = patches.Apply(
+        applied, failed_tot, failed_inflight = self.applied_patches.Apply(
             candidates, manifest=manifest)
       except (KeyboardInterrupt, RuntimeError, SystemExit):
         raise
@@ -786,7 +799,7 @@ class ValidationPool(object):
       for change in self.candidates:
         try:
           # pylint: disable=E1123
-          patches.ApplyChange(change, manifest=manifest)
+          self.applied_patches.ApplyChange(change, manifest=manifest)
         except cros_patch.PatchException as e:
           # Fail if any patch cannot be applied.
           self._HandleApplyFailure([InternalCQError(change, e)])

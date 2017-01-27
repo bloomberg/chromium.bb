@@ -147,6 +147,27 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     status_obj = build_status.BuilderStatus(status, self.message)
     return {self._bot_id: status_obj}
 
+  def _GetSlaveBuildStatus(self, manager, build_id, db, builder_names,
+                           timeout):
+    """Return the statuses of slave builds.
+
+    Args:
+      manager: An instance of BuildSpecsManager.
+      build_id: The build id of the master build.
+      db: An instance of cidb.CIDBConnection.
+      builder_names: A list of builder names (strings) of slave builds.
+      timeout: Number of seconds to wait for the results.
+
+    Returns:
+      A build_config name-> status dictionary of build statuses
+      (See BuildSpecsManager.GetBuildersStatus).
+    """
+    return manager.GetBuildersStatus(
+        build_id,
+        db,
+        builder_names,
+        timeout=timeout)
+
   def _FetchSlaveStatuses(self):
     """Fetch and return build status for slaves of this build.
 
@@ -186,11 +207,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       manager = self._run.attrs.manifest_manager
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
-      slave_statuses.update(manager.GetBuildersStatus(
-          build_id,
-          db,
-          builder_names,
-          timeout=timeout))
+      slave_statuses.update(self._GetSlaveBuildStatus(
+          manager, build_id, db, builder_names, timeout))
     return slave_statuses
 
   def _HandleStageException(self, exc_info):
@@ -801,6 +819,29 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     sanity_check_slaves = sanity_check_slaves or []
     return not any([x in slave_statuses and slave_statuses[x].Failed() for
                     x in sanity_check_slaves])
+
+  def _GetSlaveBuildStatus(self, manager, build_id, db, builder_names, timeout):
+    """Return the statuses of slave builds.
+
+    Args:
+      manager: An instance of BuildSpecsManager.
+      build_id: The build id of the master build.
+      db: An instance of cidb.CIDBConnection.
+      builder_names: A list of builder names (strings) of slave builds.
+      timeout: Number of seconds to wait for the results.
+
+    Returns:
+      A build_config name-> status dictionary of build statuses
+      (See BuildSpecsManager.GetBuildersStatus).
+    """
+    # CQ master build needs needs validation_pool to keep track of applied
+    # changes and change dependencies.
+    return manager.GetBuildersStatus(
+        build_id,
+        db,
+        builder_names,
+        pool=self.sync_stage.pool,
+        timeout=timeout)
 
   def PerformStage(self):
     """Run CommitQueueCompletionStage."""

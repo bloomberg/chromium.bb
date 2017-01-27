@@ -303,6 +303,15 @@ class ValidationFailureOrTimeout(MoxBase):
       action_history = self.fake_db.GetActionsForChanges([change])
       self.assertEqual([x.action for x in action_history], actions)
 
+  def testGetAppliedPatches(self):
+    """Test GetAppliedPatches."""
+    self.assertTrue(isinstance(self._pool.GetAppliedPatches(),
+                               patch_series.PatchSeries))
+
+    mock_patches = mock.Mock()
+    self._pool.applied_patches = mock_patches
+    self.assertEqual(self._pool.GetAppliedPatches(), mock_patches)
+
   def testPatchesWereRejectedByFailure(self):
     """Tests that all patches are rejected by failure."""
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])

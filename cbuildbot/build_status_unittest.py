@@ -12,11 +12,12 @@ import time
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import build_status
+from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib import constants
 from chromite.lib import config_lib
-from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
+from chromite.lib import patch_unittest
 
 # pylint: disable=protected-access
 
@@ -77,7 +78,7 @@ class BuildbucketInfos(object):
         result=None
     )
 
-class SlaveStatusTest(cros_test_lib.MockTestCase):
+class SlaveStatusTest(patch_unittest.MockPatchBase):
   """Test methods testing methods in SalveStatus class."""
 
   def setUp(self):
@@ -99,7 +100,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
   def _GetSlaveStatus(self, start_time=None, builders_array=None,
                       master_build_id=None, db=None, config=None,
                       metadata=None, buildbucket_client=None,
-                      dry_run=True):
+                      pool=None, dry_run=True):
     if start_time is None:
       start_time = self.time_now
     if builders_array is None:
@@ -118,6 +119,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         config=config,
         metadata=metadata,
         buildbucket_client=buildbucket_client,
+        pool=pool,
         dry_run=dry_run)
 
   def _Mock_GetSlaveStatusesFromCIDB(self, cidb_status=None):
@@ -125,7 +127,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
                             '_GetNewSlaveCIDBStatusInfo',
                             return_value=cidb_status)
 
-  def _Mock_GetSlaveStatusesFromBuildbucket(self, buildbucket_info_dict):
+  def _Mock_GetSlaveStatusesFromBuildbucket(self, buildbucket_info_dict=None):
+    buildbucket_info_dict = buildbucket_info_dict or {}
     return self.PatchObject(build_status.SlaveStatus,
                             '_GetNewlyCompletedSlaveBuildbucketInfo',
                             return_value=buildbucket_info_dict)
@@ -195,6 +198,31 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         cidb_status.pop(exclude_build, None)
 
     return cidb_status
+
+  def testGetSlaveStatusWithValidationPool(self):
+    """Test build SlaveStatus with ValidationPool."""
+    self.patch_mock = self.StartPatcher(
+        validation_pool_unittest.MockPatchSeries())
+    p = self.GetPatches(how_many=3)
+    pool = validation_pool_unittest.MakePool(applied=p)
+
+    self.patch_mock.SetGerritDependencies(p[0], [])
+    self.patch_mock.SetGerritDependencies(p[1], [])
+    self.patch_mock.SetGerritDependencies(p[2], [])
+
+    self.patch_mock.SetCQDependencies(p[1], [p[0]])
+    self.patch_mock.SetCQDependencies(p[2], [p[0]])
+
+    slave_status = self._GetSlaveStatus(
+        builders_array=self._GetFullBuildConfigs(),
+        config=self.master_cq_config,
+        pool=pool)
+
+    expected_map = {
+        p[0]: {p[1], p[2]},
+    }
+
+    self.assertDictEqual(expected_map, slave_status.dependency_map)
 
   def testGetMissingBuilds(self):
     """Tests GetMissingBuilds returns the missing builders."""

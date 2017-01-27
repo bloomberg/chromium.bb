@@ -43,7 +43,7 @@ class SlaveStatus(object):
 
   def __init__(self, start_time, builders_array, master_build_id, db,
                config=None, metadata=None, buildbucket_client=None,
-               dry_run=True):
+               pool=None, dry_run=True):
     """Initializes a SlaveStatus instance.
 
     Args:
@@ -55,6 +55,8 @@ class SlaveStatus(object):
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 build.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
+      pool: An instance of ValidationPool.validation_pool used by sync stage
+            to apply changes.
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
     self.start_time = start_time
@@ -64,6 +66,7 @@ class SlaveStatus(object):
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
+    self.pool = pool
     self.dry_run = dry_run
 
     # A set of completed builds which will not be retried any more.
@@ -80,6 +83,13 @@ class SlaveStatus(object):
     # Dict mapping all slave config names to BuildbucketInfo
     self.all_buildbucket_info_dict = None
     self.status_buildset_dict = None
+
+    self.dependency_map = None
+
+    if self.pool is not None:
+      # Pre-compute dependency map for applied changes.
+      self.dependency_map = self.pool.GetDependMapForChanges(
+          self.pool.applied, self.pool.GetAppliedPatches())
 
     self.UpdateSlaveStatus()
 

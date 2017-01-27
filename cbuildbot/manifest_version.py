@@ -593,7 +593,7 @@ class BuildSpecsManager(object):
 
     return BuildSpecsManager._UnpickleBuildStatus(output)
 
-  def GetBuildersStatus(self, master_build_id, db, builders_array,
+  def GetBuildersStatus(self, master_build_id, db, builders_array, pool=None,
                         timeout=3 * 60):
     """Get the statuses of the slave builders of the master.
 
@@ -606,6 +606,8 @@ class BuildSpecsManager(object):
       master_build_id: Master build id to check.
       db: An instance of cidb.CIDBConnection.
       builders_array: The name list of the build configs to check.
+      pool: An instance of ValidationPool.validation_pool used by sync stage
+            to apply changes.
       timeout: Number of seconds to wait for the results.
 
     Returns:
@@ -624,6 +626,7 @@ class BuildSpecsManager(object):
         config=self.config,
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client,
+        pool=pool,
         dry_run=self.dry_run)
 
     try:
