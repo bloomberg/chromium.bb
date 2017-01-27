@@ -481,6 +481,12 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        if (mTabVisible == null || mTabVisible.getContentViewCore() == null) return;
+        mTabVisible.getContentViewCore().setBottomControlsHeight(bottomControlsHeight);
+    }
+
+    @Override
     public void onToggleOverlayVideoMode(boolean enabled) {
         if (mCompositorView != null) {
             mCompositorView.setOverlayVideoMode(enabled);

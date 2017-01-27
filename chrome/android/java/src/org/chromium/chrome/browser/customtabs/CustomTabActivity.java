@@ -173,8 +173,6 @@ public class CustomTabActivity extends ChromeActivity {
         public void didAddTab(Tab tab, TabLaunchType type) {
             PageLoadMetrics.addObserver(mMetricsObserver);
             tab.addObserver(mTabObserver);
-            getFullscreenManager().setBottomControlsHeight(mBottomBarDelegate.getBottomBarHeight());
-            getFullscreenManager().addListener(mBottomBarDelegate);
         }
 
         @Override
@@ -354,7 +352,8 @@ public class CustomTabActivity extends ChromeActivity {
         // Setting task title and icon to be null will preserve the client app's title and icon.
         ApiCompatibilityUtils.setTaskDescription(this, null, null, toolbarColor);
         showCustomButtonOnToolbar();
-        mBottomBarDelegate = new CustomTabBottomBarDelegate(this, mIntentDataProvider);
+        mBottomBarDelegate = new CustomTabBottomBarDelegate(this, mIntentDataProvider,
+                getFullscreenManager());
         mBottomBarDelegate.showBottomBarIfNecessary();
     }
 
@@ -435,7 +434,6 @@ public class CustomTabActivity extends ChromeActivity {
                         finishAndClose(false);
                     }
                 });
-        getFullscreenManager().setBottomControlsHeight(mBottomBarDelegate.getBottomBarHeight());
 
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override

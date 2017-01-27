@@ -435,6 +435,10 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
             @Override
             public void onContentOffsetChanged(float offset) {
             }
+
+            @Override
+            public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+            }
         });
 
         float dragX = 50f;

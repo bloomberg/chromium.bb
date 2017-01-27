@@ -103,6 +103,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -340,6 +341,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mBottomSheet != null) {
             mBottomSheet.setTabModelSelector(mTabModelSelector);
         }
+        ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
     }
 
     @Override

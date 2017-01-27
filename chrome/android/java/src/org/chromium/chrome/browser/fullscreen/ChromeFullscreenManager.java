@@ -96,6 +96,11 @@ public class ChromeFullscreenManager
          * @param enabled Whether to enter or leave overlay video mode.
          */
         public void onToggleOverlayVideoMode(boolean enabled);
+
+        /**
+         * Called when the height of the controls are changed.
+         */
+        public void onBottomControlsHeightChanged(int bottomControlsHeight);
     }
 
     private final Runnable mUpdateVisibilityRunnable = new Runnable() {
@@ -335,7 +340,11 @@ public class ChromeFullscreenManager
      * Sets the height of the bottom controls.
      */
     public void setBottomControlsHeight(int bottomControlsHeight) {
+        if (mBottomControlContainerHeight == bottomControlsHeight) return;
         mBottomControlContainerHeight = bottomControlsHeight;
+        for (int i = 0; i < mListeners.size(); i++) {
+            mListeners.get(i).onBottomControlsHeightChanged(mBottomControlContainerHeight);
+        }
     }
 
     @Override
