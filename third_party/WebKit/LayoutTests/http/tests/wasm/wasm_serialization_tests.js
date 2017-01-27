@@ -57,12 +57,7 @@ function TestIncompatibleDowngrade() {
       assert_true(invalidated,
                   "the serialized blob should contain some non-null bytes.");
 
-      var deserialized = undefined;
-      try {
-        deserialized = window.internals.deserializeBuffer(byteView.buffer);
-        assert_unreached();
-      } catch (e) {
-        assert_equals(deserialized, undefined);
-      }
+      var deserialized = window.internals.deserializeBuffer(byteView.buffer);
+      assert_equals(deserialized, null);
     });
 }
