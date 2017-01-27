@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -36,7 +35,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * Instrumentation tests for VR Shell (Chrome VR)
  */
 @CommandLineFlags.Add("enable-features=VrShell")
-@FlakyTest(message = "Only run on VR FYI bot until shown to be stable")
 public class VrShellTest extends ChromeTabbedActivityTestBase {
     private static final String GOLDEN_DIR =
             "chrome/test/data/android/render_tests";

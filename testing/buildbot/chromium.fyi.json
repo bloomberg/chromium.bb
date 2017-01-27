@@ -230,11 +230,7 @@
     ],
     "instrumentation_tests": [
       {
-        "args": [
-          "--test-filter",
-          "VrShellTest#*"
-        ],
-        "test": "chrome_public_test_apk"
+        "test": "chrome_public_test_vr_apk"
       }
     ]
   },
