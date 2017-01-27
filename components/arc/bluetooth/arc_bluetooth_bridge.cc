@@ -1119,7 +1119,12 @@ void ArcBluetoothBridge::SearchService(mojom::BluetoothAddressPtr remote_addr) {
 
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
-  DCHECK(device);
+  if (!device) {
+    LOG(ERROR) << "Unknown device " << remote_addr->To<std::string>();
+    bluetooth_instance->OnSearchComplete(
+        std::move(remote_addr), mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
 
   // Call the callback if discovery is completed
   if (device->IsGattServicesDiscoveryComplete()) {
