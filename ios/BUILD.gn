@@ -9,7 +9,22 @@ declare_args() {
   # components/cronet/tools/cr_cronet.py as cronet requires specific
   # gn args to build correctly).
   is_cronet_build = false
+
+  # TODO(brettw) bug 684096: Remove these. These are to prevent unused
+  # override warnings on iOS from the setting of the default_args in the
+  # toplevel //.gn file. Since iOS doesn't compile V8, GN complains that
+  # the overrides are never used.
+  v8_extra_library_files = []
+  v8_experimental_extra_library_files = []
+  v8_enable_gdbjit = false
+  v8_imminent_deprecation_warnings = false
 }
+
+# Prevent warnings for unused build args above.
+assert(v8_extra_library_files != 0)
+assert(v8_experimental_extra_library_files != 0)
+assert(!v8_enable_gdbjit)
+assert(!v8_imminent_deprecation_warnings)
 
 # This list all targets that needs to be build as part of "gn_all" on iOS.
 # This list should generally only include executables, but since some code
