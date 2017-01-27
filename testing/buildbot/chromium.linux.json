@@ -2579,12 +2579,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "ppapi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "sandbox_linux_unittests"
       },
       {

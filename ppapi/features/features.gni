@@ -6,12 +6,11 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 
 declare_args() {
-  enable_plugins = (!is_android && !is_ios) || is_chromecast
+  enable_plugins = !is_android && !is_ios && !is_chromecast
 }
 
 # Enables the use of CDMs in pepper plugins.
 #
 # This is available as a buildflag for C++ preprocessor, see
 # //ppapi:features.
-enable_pepper_cdms =
-    enable_plugins && (is_linux || is_mac || is_win) && !is_chromecast
+enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
