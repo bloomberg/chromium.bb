@@ -164,7 +164,7 @@ void Sensor::initSensorProxyIfNeeded() {
   m_sensorProxy = provider->getSensorProxy(m_type);
 
   if (!m_sensorProxy) {
-    m_sensorProxy = provider->createSensorProxy(m_type, document,
+    m_sensorProxy = provider->createSensorProxy(m_type, document->page(),
                                                 createSensorReadingFactory());
   }
 }

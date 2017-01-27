@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class Document;
 class SensorProxy;
 
 // This class encapsulates sensor reading update notification logic.
@@ -28,6 +29,7 @@ class SensorReadingUpdater : public GarbageCollected<SensorReadingUpdater> {
   virtual void onAnimationFrameInternal() = 0;
 
   Member<SensorProxy> m_sensorProxy;
+  WeakMember<Document> m_document;
   bool m_hasPendingAnimationFrameTask;
 
  private:

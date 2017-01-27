@@ -14,15 +14,26 @@ using device::mojom::blink::ReportingMode;
 namespace blink {
 
 SensorReadingUpdater::SensorReadingUpdater(SensorProxy* sensorProxy)
-    : m_sensorProxy(sensorProxy), m_hasPendingAnimationFrameTask(false) {}
+    : m_sensorProxy(sensorProxy),
+      m_document(m_sensorProxy->document()),
+      m_hasPendingAnimationFrameTask(false) {}
 
 void SensorReadingUpdater::enqueueAnimationFrameTask() {
+  if (!m_document || m_document->isDetached()) {
+    // If the document has detached the scheduled callbacks
+    // will never be called.
+    m_hasPendingAnimationFrameTask = false;
+    m_document = m_sensorProxy->document();
+    if (!m_document || m_document->isDetached())
+      return;
+  }
+
   if (m_hasPendingAnimationFrameTask)
     return;
 
   auto callback = WTF::bind(&SensorReadingUpdater::onAnimationFrame,
                             wrapWeakPersistent(this));
-  m_sensorProxy->document()->enqueueAnimationFrameTask(std::move(callback));
+  m_document->enqueueAnimationFrameTask(std::move(callback));
   m_hasPendingAnimationFrameTask = true;
 }
 
@@ -36,6 +47,7 @@ void SensorReadingUpdater::onAnimationFrame() {
 }
 
 DEFINE_TRACE(SensorReadingUpdater) {
+  visitor->trace(m_document);
   visitor->trace(m_sensorProxy);
 }
 

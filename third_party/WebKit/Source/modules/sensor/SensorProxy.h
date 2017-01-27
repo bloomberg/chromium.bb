@@ -86,7 +86,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
   double maximumFrequency() const { return m_maximumFrequency; }
 
-  Document* document() const { return m_document; }
+  Document* document() const;
   const WTF::Vector<double>& frequenciesUsed() const {
     return m_frequenciesUsed;
   }
@@ -99,7 +99,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   friend class SensorReadingUpdaterOnChange;
   SensorProxy(device::mojom::blink::SensorType,
               SensorProviderProxy*,
-              Document*,
+              Page*,
               std::unique_ptr<SensorReadingFactory>);
 
   // Updates sensor reading from shared buffer.
@@ -145,7 +145,6 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   mojo::ScopedSharedBufferHandle m_sharedBufferHandle;
   mojo::ScopedSharedBufferMapping m_sharedBuffer;
   bool m_suspended;
-  Member<Document> m_document;
   Member<SensorReading> m_reading;
   std::unique_ptr<SensorReadingFactory> m_readingFactory;
   double m_maximumFrequency;

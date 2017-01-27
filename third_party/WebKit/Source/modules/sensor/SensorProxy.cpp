@@ -18,16 +18,15 @@ namespace blink {
 
 SensorProxy::SensorProxy(SensorType sensorType,
                          SensorProviderProxy* provider,
-                         Document* document,
+                         Page* page,
                          std::unique_ptr<SensorReadingFactory> readingFactory)
-    : PageVisibilityObserver(document->page()),
+    : PageVisibilityObserver(page),
       m_type(sensorType),
       m_mode(ReportingMode::CONTINUOUS),
       m_provider(provider),
       m_clientBinding(this),
       m_state(SensorProxy::Uninitialized),
       m_suspended(false),
-      m_document(document),
       m_readingFactory(std::move(readingFactory)),
       m_maximumFrequency(0.0) {}
 
@@ -38,7 +37,6 @@ void SensorProxy::dispose() {
 }
 
 DEFINE_TRACE(SensorProxy) {
-  visitor->trace(m_document);
   visitor->trace(m_readingUpdater);
   visitor->trace(m_reading);
   visitor->trace(m_observers);
@@ -118,6 +116,10 @@ void SensorProxy::resume() {
 const SensorConfiguration* SensorProxy::defaultConfig() const {
   DCHECK(isInitialized());
   return m_defaultConfig.get();
+}
+
+Document* SensorProxy::document() const {
+  return m_provider->supplementable()->document();
 }
 
 void SensorProxy::updateSensorReading() {
