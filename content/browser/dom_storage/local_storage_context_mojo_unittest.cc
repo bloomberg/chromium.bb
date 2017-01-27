@@ -662,7 +662,8 @@ class LocalStorageContextMojoTestWithService
     : public service_manager::test::ServiceTest {
  public:
   LocalStorageContextMojoTestWithService()
-      : ServiceTest("content_unittests", false) {}
+      : ServiceTest("content_unittests", false),
+        thread_bundle_(TestBrowserThreadBundle::REAL_FILE_THREAD) {}
   ~LocalStorageContextMojoTestWithService() override {}
 
  protected:

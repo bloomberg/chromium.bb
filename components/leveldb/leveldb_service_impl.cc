@@ -21,8 +21,8 @@
 namespace leveldb {
 
 LevelDBServiceImpl::LevelDBServiceImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : thread_(new LevelDBMojoProxy(std::move(task_runner))) {}
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+    : thread_(new LevelDBMojoProxy(std::move(file_task_runner))) {}
 
 LevelDBServiceImpl::~LevelDBServiceImpl() {}
 

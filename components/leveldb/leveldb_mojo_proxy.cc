@@ -28,7 +28,9 @@ struct LevelDBMojoProxy::OpaqueDir {
 
 LevelDBMojoProxy::LevelDBMojoProxy(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)), outstanding_opaque_dirs_(0) {}
+    : task_runner_(std::move(task_runner)), outstanding_opaque_dirs_(0) {
+  DCHECK(!task_runner_->BelongsToCurrentThread());
+}
 
 LevelDBMojoProxy::OpaqueDir* LevelDBMojoProxy::RegisterDirectory(
     filesystem::mojom::DirectoryPtr directory) {

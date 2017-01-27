@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/threading/thread.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -35,6 +36,8 @@ class LevelDBApp
   tracing::Provider tracing_;
   std::unique_ptr<mojom::LevelDBService> service_;
   mojo::BindingSet<mojom::LevelDBService> bindings_;
+
+  base::Thread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBApp);
 };

@@ -6,6 +6,7 @@
 
 #if ENABLE_SYNC_CALL_RESTRICTIONS
 
+#include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
@@ -45,6 +46,7 @@ SyncCallSettings* SyncCallSettings::current() {
   SyncCallSettings* result = g_sync_call_settings.Pointer()->Get();
   if (!result) {
     result = new SyncCallSettings();
+    ANNOTATE_LEAKING_OBJECT_PTR(result);
     DCHECK_EQ(result, g_sync_call_settings.Pointer()->Get());
   }
   return result;

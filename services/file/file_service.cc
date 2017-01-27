@@ -48,8 +48,9 @@ class FileService::LevelDBServiceObjects
     : public base::SupportsWeakPtr<LevelDBServiceObjects> {
  public:
   // Created on the main thread.
-  LevelDBServiceObjects(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : task_runner_(std::move(task_runner)) {}
+  LevelDBServiceObjects(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+      : file_task_runner_(std::move(file_task_runner)) {}
 
   // Destroyed on the |leveldb_service_runner_|.
   ~LevelDBServiceObjects() {}
@@ -58,12 +59,13 @@ class FileService::LevelDBServiceObjects
   void OnLevelDBServiceRequest(const service_manager::Identity& remote_identity,
                                leveldb::mojom::LevelDBServiceRequest request) {
     if (!leveldb_service_)
-      leveldb_service_.reset(new leveldb::LevelDBServiceImpl(task_runner_));
+      leveldb_service_.reset(
+          new leveldb::LevelDBServiceImpl(file_task_runner_));
     leveldb_bindings_.AddBinding(leveldb_service_.get(), std::move(request));
   }
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   // Variables that are only accessible on the |leveldb_service_runner_| thread.
   std::unique_ptr<leveldb::mojom::LevelDBService> leveldb_service_;
@@ -94,7 +96,7 @@ void FileService::OnStart() {
   file_system_objects_.reset(new FileService::FileSystemObjects(
       GetUserDirForUserId(context()->identity().user_id())));
   leveldb_objects_.reset(
-      new FileService::LevelDBServiceObjects(leveldb_service_runner_));
+      new FileService::LevelDBServiceObjects(file_service_runner_));
 }
 
 bool FileService::OnConnect(const service_manager::ServiceInfo& remote_info,
