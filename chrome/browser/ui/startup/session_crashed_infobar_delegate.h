@@ -12,6 +12,9 @@ class Browser;
 class Profile;
 
 // A delegate for the InfoBar shown when the previous session has crashed.
+//
+// TODO: remove this class once mac supports SessionCrashedBubble.
+// http://crbug.com/653966.
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // If |browser| is not incognito, creates a session crashed infobar and

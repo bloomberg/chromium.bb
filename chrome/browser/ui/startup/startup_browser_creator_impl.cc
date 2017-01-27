@@ -71,7 +71,6 @@
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/google_api_keys_infobar_delegate.h"
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
-#include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
@@ -105,10 +104,15 @@
 #include "net/base/network_change_notifier.h"
 #include "rlz/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
+#endif
+
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 #endif
 
 #if defined(OS_WIN)
@@ -797,7 +801,9 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 
   if (HasPendingUncleanExit(browser->profile()) &&
       !SessionCrashedBubble::Show(browser)) {
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
     SessionCrashedInfoBarDelegate::Create(browser);
+#endif
   }
 
   // The below info bars are only added to the first profile which is launched.

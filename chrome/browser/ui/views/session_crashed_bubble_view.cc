@@ -71,16 +71,11 @@ void RecordBubbleHistogramValue(SessionCrashedBubbleHistogramValue value) {
       "SessionCrashed.Bubble", value, SESSION_CRASHED_BUBBLE_MAX);
 }
 
-// Whether or not the bubble UI should be used.
-// TODO(crbug.com/653966): Enable this on all desktop platforms.
-bool IsBubbleUIEnabled() {
-// Function ChangeMetricsReportingState (called when the user chooses to
-// opt-in to UMA) does not support Chrome OS yet, so don't show the bubble on
-// Chrome OS.
-#if defined(OS_CHROMEOS)
-  return false;
-#else
+bool DoesSupportConsentCheck() {
+#if defined(GOOGLE_CHROME_BUILD)
   return true;
+#else
+  return false;
 #endif
 }
 
@@ -113,9 +108,6 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 
 // static
 bool SessionCrashedBubble::Show(Browser* browser) {
-  if (!IsBubbleUIEnabled())
-    return false;
-
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (browser->profile()->IsOffTheRecord())
     return true;
@@ -125,21 +117,18 @@ bool SessionCrashedBubble::Show(Browser* browser) {
       browser_observer(
           new SessionCrashedBubbleView::BrowserRemovalObserver(browser));
 
-// Stats collection only applies to Google Chrome builds.
-#if defined(GOOGLE_CHROME_BUILD)
-  // Schedule a task to run GoogleUpdateSettings::GetCollectStatsConsent() on
-  // FILE thread, since it does IO. Then, call
-  // SessionCrashedBubbleView::ShowForReal with the result.
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&GoogleUpdateSettings::GetCollectStatsConsent),
-      base::Bind(&SessionCrashedBubbleView::ShowForReal,
-                 base::Passed(&browser_observer)));
-#else
-  SessionCrashedBubbleView::ShowForReal(std::move(browser_observer), false);
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
+  if (DoesSupportConsentCheck()) {
+    // Schedule a task to run GoogleUpdateSettings::GetCollectStatsConsent() on
+    // FILE thread, since it does IO. Then, call
+    // SessionCrashedBubbleView::ShowForReal with the result.
+    content::BrowserThread::PostTaskAndReplyWithResult(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&GoogleUpdateSettings::GetCollectStatsConsent),
+        base::Bind(&SessionCrashedBubbleView::ShowForReal,
+                   base::Passed(&browser_observer)));
+  } else {
+    SessionCrashedBubbleView::ShowForReal(std::move(browser_observer), false);
+  }
   return true;
 }
 
@@ -152,10 +141,8 @@ void SessionCrashedBubbleView::ShowForReal(
   // and the preference is modifiable by the user.
   bool offer_uma_optin = false;
 
-#if defined(GOOGLE_CHROME_BUILD)
-  if (!uma_opted_in_already)
+  if (DoesSupportConsentCheck() && !uma_opted_in_already)
     offer_uma_optin = !IsMetricsReportingPolicyManaged();
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
   Browser* browser = browser_observer->browser();
 

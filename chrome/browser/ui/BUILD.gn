@@ -813,8 +813,6 @@ split_static_library("ui") {
       "startup/google_api_keys_infobar_delegate.h",
       "startup/obsolete_system_infobar_delegate.cc",
       "startup/obsolete_system_infobar_delegate.h",
-      "startup/session_crashed_infobar_delegate.cc",
-      "startup/session_crashed_infobar_delegate.h",
       "startup/startup_browser_creator.cc",
       "startup/startup_browser_creator.h",
       "startup/startup_browser_creator_impl.cc",
@@ -2026,6 +2024,10 @@ split_static_library("ui") {
         "views/frame/avatar_button_manager.h",
         "views/profiles/new_avatar_button.cc",
         "views/profiles/new_avatar_button.h",
+      ]
+      sources += [
+        "startup/session_crashed_infobar_delegate.cc",
+        "startup/session_crashed_infobar_delegate.h",
       ]
     }
   }
