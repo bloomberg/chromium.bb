@@ -373,6 +373,10 @@ static const uint16_t orders_verta_8x8[256] = {
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  // 2X2,           2X4,              4X2
+  orders_4x4,       orders_4x4,       orders_4x4,
+#endif
   //                                  4X4
                                       orders_verta_8x8,
   // 4X8,           8X4,              8X8
