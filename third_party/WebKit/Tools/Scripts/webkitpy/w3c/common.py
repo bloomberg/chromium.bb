@@ -23,27 +23,27 @@ CSS_REPO_URL = 'https://chromium.googlesource.com/external/w3c/csswg-test.git'
 _log = logging.getLogger(__name__)
 
 
-def exportable_commits_since(commit, host, local_wpt):
+def exportable_commits_since(chromium_commit_hash, host, local_wpt):
     """Lists exportable commits after a certain point.
 
     Args:
-        commit: The SHA of the Chromium commit from which this method will look.
+        chromium_commit_hash: The SHA of the Chromium commit from which this
+            method will look. This commit is not included in the commits searched.
         host: A Host object.
         local_wpt: A LocalWPT instance, used to see whether a Chromium commit
             can be applied cleanly in the upstream repo.
 
     Returns:
-        A list of ChromiumCommit objects for commits that are exportable since
+        A list of ChromiumCommit objects for commits that are exportable after
         the given commit, in chronological order.
     """
     chromium_repo_root = host.executive.run_command(['git', 'rev-parse', '--show-toplevel']).strip()
 
     wpt_path = chromium_repo_root + '/' + CHROMIUM_WPT_DIR
-    commit_hashes = host.executive.run_command(
-        ['git', 'rev-list', '{}..HEAD'.format(commit), '--reverse', '--', wpt_path]).splitlines()
-
+    commit_range = '{}..HEAD'.format(chromium_commit_hash)
+    commit_hashes = host.executive.run_command(['git', 'rev-list', commit_range, '--reverse', '--', wpt_path]).splitlines()
     chromium_commits = [ChromiumCommit(host, sha=sha) for sha in commit_hashes]
-    return [c for c in chromium_commits if is_exportable(c, local_wpt)]
+    return [commit for commit in chromium_commits if is_exportable(commit, local_wpt)]
 
 
 def is_exportable(chromium_commit, local_wpt):

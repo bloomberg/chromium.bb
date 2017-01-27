@@ -49,17 +49,17 @@ class LocalWPT(object):
 
     def most_recent_chromium_commit(self):
         """Finds the most recent commit in WPT with a Chromium commit position."""
-        sha = self.run(['git', 'rev-list', 'HEAD', '-n', '1', '--grep=Cr-Commit-Position'])
-        if not sha:
+        wpt_commit_hash = self.run(['git', 'rev-list', 'HEAD', '-n', '1', '--grep=Cr-Commit-Position'])
+        if not wpt_commit_hash:
             return None, None
 
-        sha = sha.strip()
-        position = self.run(['git', 'footers', '--position', sha])
+        wpt_commit_hash = wpt_commit_hash.strip()
+        position = self.run(['git', 'footers', '--position', wpt_commit_hash])
         position = position.strip()
         assert position
 
         chromium_commit = ChromiumCommit(self.host, position=position)
-        return sha, chromium_commit
+        return wpt_commit_hash, chromium_commit
 
     def clean(self):
         self.run(['git', 'reset', '--hard', 'HEAD'])

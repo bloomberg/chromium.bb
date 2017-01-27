@@ -23,8 +23,9 @@ import re
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
-from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME
+from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME, exportable_commits_since
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
 from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 
@@ -60,13 +61,30 @@ class TestImporter(object):
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
         chromium_commit = show_ref_output.split()[0]
 
+        assert options.target in ('wpt', 'css')
+        dest_dir_name = WPT_DEST_NAME
+        repo_url = WPT_REPO_URL
+        if options.target != 'wpt':
+            dest_dir_name = CSS_DEST_NAME
+            repo_url = CSS_REPO_URL
+
+        # TODO(qyearsley): Simplify this to use LocalWPT.fetch when csswg-test
+        # is merged into web-platform-tests.
+        temp_repo_path = self.path_from_webkit_base(dest_dir_name)
+        _log.info('Cloning %s into %s.', repo_url, temp_repo_path)
+        self.run(['git', 'clone', repo_url, temp_repo_path])
+
         if options.target == 'wpt':
-            import_commit = self.update(WPT_DEST_NAME, WPT_REPO_URL, options.keep_w3c_repos_around, options.revision)
+            commits = self.exportable_but_not_exported_commits(temp_repo_path)
+            if commits:
+                _log.error('There were exportable but not-yet-exported commits: %r', commits)
+                _log.error('Aborting import to prevent clobbering these commits.')
+                return 1
+
+        import_commit = self.update(dest_dir_name, temp_repo_path, options.keep_w3c_repos_around, options.revision)
+
+        if options.target == 'wpt':
             self._copy_resources()
-        elif options.target == 'css':
-            import_commit = self.update(CSS_DEST_NAME, CSS_REPO_URL, options.keep_w3c_repos_around, options.revision)
-        else:
-            raise AssertionError("Unsupported target %s" % options.target)
 
         has_changes = self._has_changes()
         if not has_changes:
@@ -123,6 +141,21 @@ class TestImporter(object):
 
         return True
 
+    def exportable_but_not_exported_commits(self, wpt_path):
+        """Checks for commits that might be overwritten by importing.
+
+        Args:
+            wpt_path: The path to a local checkout of web-platform-tests.
+
+        Returns:
+            A list of commits in the Chromium repo that are exportable
+            but not yet exported to the web-platform-tests repo.
+        """
+        local_wpt = LocalWPT(self.host, path=wpt_path)
+        assert self.host.filesystem.exists(wpt_path)
+        _, chromium_commit = local_wpt.most_recent_chromium_commit()
+        return exportable_commits_since(chromium_commit.sha, self.host, local_wpt)
+
     def _copy_resources(self):
         """Copies resources from wpt to LayoutTests/resources.
 
@@ -159,21 +192,18 @@ class TestImporter(object):
         self.run([manifest_command, '--work', '--tests-root', dest_path])
         self.run(['git', 'add', self.fs.join(dest_path, 'MANIFEST.json')])
 
-    def update(self, dest_dir_name, url, keep_w3c_repos_around, revision):
+    def update(self, dest_dir_name, temp_repo_path, keep_w3c_repos_around, revision):
         """Updates an imported repository.
 
         Args:
             dest_dir_name: The destination directory name.
-            url: URL of the git repository.
-            revision: Commit hash or None.
+            temp_repo_path: Path to local checkout of W3C test repo.
+            keep_w3c_repos_around: If True, the temp directory won't be cleaned up.
+            revision: A W3C test repo commit hash, or None.
 
         Returns:
             A string for the commit description "<destination>@<commitish>".
         """
-        temp_repo_path = self.path_from_webkit_base(dest_dir_name)
-        _log.info('Cloning %s into %s.', url, temp_repo_path)
-        self.run(['git', 'clone', url, temp_repo_path])
-
         if revision is not None:
             _log.info('Checking out %s', revision)
             self.run(['git', 'checkout', revision], cwd=temp_repo_path)

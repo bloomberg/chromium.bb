@@ -11,6 +11,12 @@ from webkitpy.w3c.test_importer import TestImporter
 
 class TestImporterTest(unittest.TestCase):
 
+    def test_abort_on_exportable_commits(self):
+        importer = TestImporter(MockHost())
+        importer.exportable_but_not_exported_commits = lambda _: ['aaaa']
+        return_code = importer.main(['wpt'])
+        self.assertEqual(return_code, 1)
+
     def test_update_test_expectations(self):
         host = MockHost()
         host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'] = (
