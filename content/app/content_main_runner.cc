@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/allocator/allocator_check.h"
 #include "base/allocator/allocator_extension.h"
@@ -318,7 +319,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
     { switches::kUtilityProcess,     UtilityMain },
   };
 
-  ScopedVector<ZygoteForkDelegate> zygote_fork_delegates;
+  std::vector<std::unique_ptr<ZygoteForkDelegate>> zygote_fork_delegates;
   if (delegate) {
     delegate->ZygoteStarting(&zygote_fork_delegates);
     media::InitializeMediaLibrary();

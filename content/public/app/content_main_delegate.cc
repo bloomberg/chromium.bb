@@ -45,8 +45,7 @@ bool ContentMainDelegate::DelaySandboxInitialization(
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 
 void ContentMainDelegate::ZygoteStarting(
-    ScopedVector<ZygoteForkDelegate>* delegates) {
-}
+    std::vector<std::unique_ptr<ZygoteForkDelegate>>* delegates) {}
 
 #endif
 

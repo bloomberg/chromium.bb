@@ -6,15 +6,13 @@
 #define CHROME_APP_CHROME_MAIN_DELEGATE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/app/content_main_delegate.h"
-
-template <typename>
-class ScopedVector;
 
 namespace base {
 class CommandLine;
@@ -45,8 +43,8 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   bool ShouldSendMachPort(const std::string& process_type) override;
   bool DelaySandboxInitialization(const std::string& process_type) override;
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-  void ZygoteStarting(
-      ScopedVector<content::ZygoteForkDelegate>* delegates) override;
+  void ZygoteStarting(std::vector<std::unique_ptr<content::ZygoteForkDelegate>>*
+                          delegates) override;
   void ZygoteForked() override;
 #endif
   bool ShouldEnableProfilerRecording() override;

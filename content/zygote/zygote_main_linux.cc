@@ -15,16 +15,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <memory>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_vector.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -574,8 +571,9 @@ static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
   }
 }
 
-bool ZygoteMain(const MainFunctionParams& params,
-                ScopedVector<ZygoteForkDelegate> fork_delegates) {
+bool ZygoteMain(
+    const MainFunctionParams& params,
+    std::vector<std::unique_ptr<ZygoteForkDelegate>> fork_delegates) {
   g_am_zygote_or_renderer = true;
 
   std::vector<int> fds_to_close_post_fork;
@@ -628,7 +626,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   VLOG(1) << "ZygoteMain: initializing " << fork_delegates.size()
           << " fork delegates";
-  for (ZygoteForkDelegate* fork_delegate : fork_delegates) {
+  for (const auto& fork_delegate : fork_delegates) {
     fork_delegate->Init(GetSandboxFD(), using_layer1_sandbox);
   }
 

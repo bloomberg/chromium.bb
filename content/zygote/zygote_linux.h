@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/small_map.h"
 #include "base/files/scoped_file.h"
-#include "base/memory/scoped_vector.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
@@ -32,7 +32,8 @@ class ZygoteForkDelegate;
 // runs it.
 class Zygote {
  public:
-  Zygote(int sandbox_flags, ScopedVector<ZygoteForkDelegate> helpers,
+  Zygote(int sandbox_flags,
+         std::vector<std::unique_ptr<ZygoteForkDelegate>> helpers,
          const std::vector<base::ProcessHandle>& extra_children,
          const std::vector<int>& extra_fds);
   ~Zygote();
@@ -135,7 +136,7 @@ class Zygote {
   ZygoteProcessMap process_info_map_;
 
   const int sandbox_flags_;
-  ScopedVector<ZygoteForkDelegate> helpers_;
+  std::vector<std::unique_ptr<ZygoteForkDelegate>> helpers_;
 
   // Count of how many fork delegates for which we've invoked InitialUMA().
   size_t initial_uma_index_;

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NACL_ZYGOTE_NACL_FORK_DELEGATE_LINUX_H_
 #define COMPONENTS_NACL_ZYGOTE_NACL_FORK_DELEGATE_LINUX_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,14 +18,11 @@ namespace base {
 struct LaunchOptions;
 }
 
-template <typename>
-class ScopedVector;
-
 namespace nacl {
 
 // Appends any ZygoteForkDelegate instances needed by NaCl to |*delegates|.
 void AddNaClZygoteForkDelegates(
-    ScopedVector<content::ZygoteForkDelegate>* delegates);
+    std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates);
 
 // The NaClForkDelegate is created during Chrome linux zygote
 // initialization, and provides "fork()" functionality with

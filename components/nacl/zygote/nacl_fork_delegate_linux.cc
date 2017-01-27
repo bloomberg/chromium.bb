@@ -10,7 +10,6 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 
-#include <memory>
 #include <set>
 
 #include "base/command_line.h"
@@ -19,7 +18,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -131,9 +130,11 @@ bool SendIPCRequestAndReadReply(int ipc_channel,
 namespace nacl {
 
 void AddNaClZygoteForkDelegates(
-    ScopedVector<content::ZygoteForkDelegate>* delegates) {
-  delegates->push_back(new NaClForkDelegate(false /* nonsfi_mode */));
-  delegates->push_back(new NaClForkDelegate(true /* nonsfi_mode */));
+    std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
+  delegates->push_back(
+      base::MakeUnique<NaClForkDelegate>(false /* nonsfi_mode */));
+  delegates->push_back(
+      base::MakeUnique<NaClForkDelegate>(true /* nonsfi_mode */));
 }
 
 NaClForkDelegate::NaClForkDelegate(bool nonsfi_mode)

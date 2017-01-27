@@ -5,13 +5,12 @@
 #ifndef CONTENT_PUBLIC_APP_CONTENT_MAIN_DELEGATE_H_
 #define CONTENT_PUBLIC_APP_CONTENT_MAIN_DELEGATE_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-
-template <typename>
-class ScopedVector;
 
 namespace content {
 
@@ -70,7 +69,8 @@ class CONTENT_EXPORT ContentMainDelegate {
   // Tells the embedder that the zygote process is starting, and allows it to
   // specify one or more zygote delegates if it wishes by storing them in
   // |*delegates|.
-  virtual void ZygoteStarting(ScopedVector<ZygoteForkDelegate>* delegates);
+  virtual void ZygoteStarting(
+      std::vector<std::unique_ptr<ZygoteForkDelegate>>* delegates);
 
   // Called every time the zygote process forks.
   virtual void ZygoteForked() {}

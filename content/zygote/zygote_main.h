@@ -5,16 +5,17 @@
 #ifndef CONTENT_ZYGOTE_ZYGOTE_MAIN_H_
 #define CONTENT_ZYGOTE_ZYGOTE_MAIN_H_
 
-template <typename>
-class ScopedVector;
+#include <memory>
+#include <vector>
 
 namespace content {
 
 struct MainFunctionParams;
 class ZygoteForkDelegate;
 
-bool ZygoteMain(const MainFunctionParams& params,
-                ScopedVector<ZygoteForkDelegate> fork_delegates);
+bool ZygoteMain(
+    const MainFunctionParams& params,
+    std::vector<std::unique_ptr<ZygoteForkDelegate>> fork_delegates);
 
 }  // namespace content
 

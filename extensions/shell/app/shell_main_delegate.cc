@@ -124,7 +124,7 @@ content::ContentUtilityClient* ShellMainDelegate::CreateContentUtilityClient() {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void ShellMainDelegate::ZygoteStarting(
-    ScopedVector<content::ZygoteForkDelegate>* delegates) {
+    std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
 #if !defined(DISABLE_NACL)
   nacl::AddNaClZygoteForkDelegates(delegates);
 #endif  // DISABLE_NACL

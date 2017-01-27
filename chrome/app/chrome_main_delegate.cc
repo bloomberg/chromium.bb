@@ -1010,7 +1010,7 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
 }
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 void ChromeMainDelegate::ZygoteStarting(
-    ScopedVector<content::ZygoteForkDelegate>* delegates) {
+    std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
 #if defined(OS_CHROMEOS)
     chromeos::ReloadElfTextInHugePages();
 #endif

@@ -6,10 +6,10 @@
 #define EXTENSIONS_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 
@@ -33,8 +33,8 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   content::ContentRendererClient* CreateContentRendererClient() override;
   content::ContentUtilityClient* CreateContentUtilityClient() override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  void ZygoteStarting(
-      ScopedVector<content::ZygoteForkDelegate>* delegates) override;
+  void ZygoteStarting(std::vector<std::unique_ptr<content::ZygoteForkDelegate>>*
+                          delegates) override;
 #endif
 
  protected:
