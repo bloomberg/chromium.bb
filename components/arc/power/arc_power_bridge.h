@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/macros.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/instance_holder.h"
@@ -22,6 +23,7 @@ class ArcBridgeService;
 // ARC instances.
 class ArcPowerBridge : public ArcService,
                        public InstanceHolder<mojom::PowerInstance>::Observer,
+                       public chromeos::PowerManagerClient::Observer,
                        public display::DisplayConfigurator::Observer,
                        public mojom::PowerHost {
  public:
@@ -32,13 +34,16 @@ class ArcPowerBridge : public ArcService,
   void OnInstanceReady() override;
   void OnInstanceClosed() override;
 
+  // chromeos::PowerManagerClient::Observer overrides.
+  void SuspendImminent() override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
   // DisplayConfigurator::Observer overrides.
   void OnPowerStateChanged(chromeos::DisplayPowerState power_state) override;
 
   // mojom::PowerHost overrides.
   void OnAcquireDisplayWakeLock(mojom::DisplayWakeLockType type) override;
   void OnReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) override;
-
   void IsDisplayOn(const IsDisplayOnCallback& callback) override;
 
  private:

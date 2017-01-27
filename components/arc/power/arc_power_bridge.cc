@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "base/logging.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -31,11 +32,35 @@ void ArcPowerBridge::OnInstanceReady() {
   DCHECK(power_instance);
   power_instance->Init(binding_.CreateInterfacePtrAndBind());
   ash::Shell::GetInstance()->display_configurator()->AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      AddObserver(this);
 }
 
 void ArcPowerBridge::OnInstanceClosed() {
   ash::Shell::GetInstance()->display_configurator()->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RemoveObserver(this);
   ReleaseAllDisplayWakeLocks();
+}
+
+void ArcPowerBridge::SuspendImminent() {
+  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->power(), Suspend);
+  if (!power_instance)
+    return;
+
+  power_instance->Suspend(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+        GetSuspendReadinessCallback());
+}
+
+void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
+  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->power(), Resume);
+  if (!power_instance)
+    return;
+
+  power_instance->Resume();
 }
 
 void ArcPowerBridge::OnPowerStateChanged(

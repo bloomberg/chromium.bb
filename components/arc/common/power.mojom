@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next min version: 3
+
 module arc.mojom;
 
 // Enumerates the types of wake lock the ARC instance can request from the
@@ -17,6 +19,7 @@ enum DisplayWakeLockType {
   DIM = 1
 };
 
+// Next method ID: 3
 interface PowerHost {
   // Acquire and release wake locks on the host side.
   OnAcquireDisplayWakeLock@0(DisplayWakeLockType type);
@@ -26,10 +29,18 @@ interface PowerHost {
   [MinVersion=1] IsDisplayOn@2() => (bool is_on);
 };
 
+// Next method ID: 4
 interface PowerInstance {
   // Establishes full-duplex communication with the host.
   Init@0(PowerHost host_ptr);
 
   // Alerts the instance to a change in interactive state.
   [MinVersion=1] SetInteractive@1(bool enabled);
+
+  // Called when the system is about to suspend. The callback will be invoked
+  // when pre-suspend work is complete.
+  [MinVersion=2] Suspend@2() => ();
+
+  // Called when the system has just resumed.
+  [MinVersion=2] Resume@3();
 };
