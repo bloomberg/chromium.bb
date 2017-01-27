@@ -174,7 +174,7 @@ surface_commit_color(struct client *client, struct wl_surface *surface,
 	return buf;
 }
 
-FAIL_TEST(subsurface_z_order)
+TEST(subsurface_z_order)
 {
 	const char *test_name = get_test_name();
 	struct client *client;
