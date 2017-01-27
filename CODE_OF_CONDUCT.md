@@ -30,14 +30,6 @@ they are doing - politely bringing their behavior to their attention is
 encouraged.
 
 If you are uncomfortable speaking up, or feel that your concerns are not being
-duly considered, you can email community@chromium.org to request involvement
-from a community manager. You may also email any of the community managers
-directly. All concerns shared with community managers will be kept
-confidential. In cases where a public response is deemed necessary, the
-identities of victims and reporters will remain confidential unless those
-individuals instruct us otherwise.
-
-If you are uncomfortable speaking up, or feel that your concerns are not being
 duly considered, you can email community@chromium.org, dknox@google.com, or
 groby@chromium.org to request involvement from a community manager. All
 concerns shared with community managers will be kept confidential, but you may
