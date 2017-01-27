@@ -1060,4 +1060,49 @@ TEST_P(PaintLayerPainterTest, DoPaintWithNonTinyOpacity) {
       PaintLayerPainter(*targetLayer).paintedOutputInvisible(paintingInfo));
 }
 
+TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
+  setBodyInnerHTML(
+      "<style> "
+      "div { "
+      "  width: 100px; "
+      "  height: 100px; "
+      "  animation-name: example; "
+      "  animation-duration: 4s; "
+      "} "
+      "@keyframes example { "
+      "  from { opacity: 0.0;} "
+      "  to { opacity: 1.0;} "
+      "} "
+      "</style> "
+      "<div id='target'></div>");
+  PaintLayer* targetLayer =
+      toLayoutBox(getLayoutObjectByElementId("target"))->layer();
+  PaintLayerPaintingInfo paintingInfo(nullptr, LayoutRect(),
+                                      GlobalPaintNormalPhase, LayoutSize());
+  EXPECT_FALSE(
+      PaintLayerPainter(*targetLayer).paintedOutputInvisible(paintingInfo));
+}
+
+TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
+  setBodyInnerHTML(
+      "<style> "
+      "div#target { "
+      "  animation-name: example; "
+      "  animation-duration: 4s; "
+      "  opacity: 0.0; "
+      "} "
+      "@keyframes example { "
+      " from { transform: translate(0px, 0px); } "
+      " to { transform: translate(3em, 0px); } "
+      "} "
+      "</style> "
+      "<div id='target'>x</div></div>");
+  PaintLayer* targetLayer =
+      toLayoutBox(getLayoutObjectByElementId("target"))->layer();
+  PaintLayerPaintingInfo paintingInfo(nullptr, LayoutRect(),
+                                      GlobalPaintNormalPhase, LayoutSize());
+  EXPECT_FALSE(
+      PaintLayerPainter(*targetLayer).paintedOutputInvisible(paintingInfo));
+}
+
 }  // namespace blink

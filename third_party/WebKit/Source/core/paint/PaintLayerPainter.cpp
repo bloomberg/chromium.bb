@@ -66,12 +66,23 @@ static ShouldRespectOverflowClipType shouldRespectOverflowClip(
 
 bool PaintLayerPainter::paintedOutputInvisible(
     const PaintLayerPaintingInfo& paintingInfo) {
-  if (m_paintLayer.layoutObject()->hasBackdropFilter())
+  const LayoutObject& layoutObject = *m_paintLayer.layoutObject();
+  if (layoutObject.hasBackdropFilter())
     return false;
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      m_paintLayer.layoutObject()->styleRef().opacity())
-    return false;
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (layoutObject.styleRef().opacity())
+      return false;
+
+    const EffectPaintPropertyNode* effect =
+        layoutObject.paintProperties()->effect();
+    const TransformPaintPropertyNode* transform =
+        layoutObject.paintProperties()->transform();
+    if ((effect && effect->requiresCompositingForAnimation()) ||
+        (transform && transform->requiresCompositingForAnimation())) {
+      return false;
+    }
+  }
 
   // 0.0004f < 1/2048. With 10-bit color channels (only available on the
   // newest Macs; otherwise it's 8-bit), we see that an alpha of 1/2048 or
@@ -79,8 +90,7 @@ bool PaintLayerPainter::paintedOutputInvisible(
   // not visible.
   static const float kMinimumVisibleOpacity = 0.0004f;
   if (m_paintLayer.paintsWithTransparency(paintingInfo.getGlobalPaintFlags())) {
-    if (m_paintLayer.layoutObject()->styleRef().opacity() <
-        kMinimumVisibleOpacity) {
+    if (layoutObject.styleRef().opacity() < kMinimumVisibleOpacity) {
       return true;
     }
   }

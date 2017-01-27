@@ -100,6 +100,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return m_directCompositingReasons != CompositingReasonNone;
   }
 
+  bool requiresCompositingForAnimation() const {
+    return m_directCompositingReasons & CompositingReasonActiveAnimation;
+  }
+
   const CompositorElementId& compositorElementId() const {
     return m_compositorElementId;
   }

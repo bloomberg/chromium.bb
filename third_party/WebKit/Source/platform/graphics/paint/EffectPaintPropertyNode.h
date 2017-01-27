@@ -113,6 +113,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return m_directCompositingReasons != CompositingReasonNone;
   }
 
+  bool requiresCompositingForAnimation() const {
+    return m_directCompositingReasons & CompositingReasonActiveAnimation;
+  }
+
   const CompositorElementId& compositorElementId() const {
     return m_compositorElementId;
   }

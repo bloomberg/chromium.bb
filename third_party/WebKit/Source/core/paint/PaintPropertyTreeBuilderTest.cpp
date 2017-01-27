@@ -3118,6 +3118,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_TRUE(properties->transform());
   EXPECT_NE(CompositorElementId(),
             properties->transform()->compositorElementId());
+  EXPECT_TRUE(properties->transform()->requiresCompositingForAnimation());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
@@ -3125,6 +3126,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
   const ObjectPaintProperties* properties = paintPropertiesForElement("target");
   EXPECT_TRUE(properties->effect());
   EXPECT_NE(CompositorElementId(), properties->effect()->compositorElementId());
+  EXPECT_TRUE(properties->effect()->requiresCompositingForAnimation());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {

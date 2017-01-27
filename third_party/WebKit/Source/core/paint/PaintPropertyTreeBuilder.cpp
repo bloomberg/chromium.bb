@@ -509,10 +509,11 @@ void PaintPropertyTreeBuilder::updateEffect(
       // We should generate a special clip node to represent this expansion.
     }
 
-    CompositingReasons compositingReasons =
-        CompositingReasonFinder::requiresCompositingForEffectAnimation(style);
-    if (compositingReasons != CompositingReasonNone)
+    CompositingReasons compositingReasons = CompositingReasonNone;
+    if (CompositingReasonFinder::requiresCompositingForEffectAnimation(style)) {
+      compositingReasons = CompositingReasonActiveAnimation;
       effectNodeNeeded = true;
+    }
 
     CompositorElementId compositorElementId =
         (style.hasCurrentOpacityAnimation() ||
