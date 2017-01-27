@@ -2,7 +2,8 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
   <script src="../resources/audioparam-testing.js"></script>
@@ -10,8 +11,6 @@
 
 <body>
   <script>
-    description('Test method chaining feature of AudioParam automation methods.');
-    window.jsTestIsAsync = true;
 
     var sampleRate = 44100;
 
@@ -29,10 +28,9 @@
     ];
 
     function verifyReturnedParam(config) {
-      if (config.source === config.returned)
-        testPassed('The return value of ' + config.desc + ' matches the source AudioParam.');
-      else
-        testFailed('The return value of ' + config.desc + ' does NOT match source AudioParam.');
+      Should('The return value of ' + config.desc + ' matches the source AudioParam',
+             config.source === config.returned)
+        .beEqualTo(true);
     }
 
     var audit = Audit.createTaskRunner();
@@ -131,7 +129,6 @@
     });
 
     audit.defineTask('finish', function (done) {
-      finishJSTest();
       done();
     });
 

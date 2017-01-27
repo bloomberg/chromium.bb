@@ -2,15 +2,14 @@
 <html>
   <head>
     <title>Test Exceptions from setValueCurveAtTime</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description("Test Exceptions from setValueCurveAtTime");
-      window.jsTestIsAsync = true;
 
       var sampleRate = 48000;
       // Some short duration because we don't need to run the test for very long.
@@ -57,10 +56,9 @@
         }).notThrow() && success;
 
         var prefix = "Automation functions overlapping an existing setValueCurveAtTime";
-        if (success)
-          testPassed(prefix + " correctly signaled errors.\n");
-        else
-          testFailed(prefix + " failed to signal errors.\n");
+        Should(prefix, success)
+          .summarize(" correctly signaled errors",
+                     " failed to signal errors");
 
         done();
       });      
@@ -133,10 +131,9 @@
         }).throw("NotSupportedError") && success;
 
         var prefix = "setValueCurve overlapping existing automation functions";
-        if (success)
-          testPassed(prefix + " correctly signaled errors.\n");
-        else
-          testFailed(prefix + " failed to signal errors.\n");
+        Should(prefix, success)
+          .summarize(" correctly signaled errors",
+                     " failed to signal errors");
 
         done();
       });
@@ -170,10 +167,9 @@
           var success = Should("Handled setValueCurve exception so output", resultBuffer.getChannelData(0))
             .beConstantValueOf(1);
 
-          if (success)
-            testPassed("setValueCurveAtTime correctly not inserted into timeline.\n");
-          else
-            testFailed("setValueCurveAtTime incorrectly still inserted into timeline.\n");
+          Should("setValueCurveAtTime", success)
+            .summarize("correctly not inserted into timeline",
+                       "incorrectly still inserted into timeline");
         }).then(done);
       });
 
@@ -235,10 +231,9 @@
         }).notThrow() && success;
 
         var prefix = "setValueCurve with adjoining automation functions";
-        if (success)
-          testPassed(prefix + " allowed as expected.\n");
-        else
-          testFailed(prefix + " unexpectedly signaled errors.\n");
+        Should(prefix, success)
+          .summarize("allowed as expected",
+                     "unexpectedly signaled errors");
 
         done();
       });
@@ -262,16 +257,14 @@
           g.gain.setValueCurveAtTime(Float32Array.from([1,2]), time, 0.01);
         }).notThrow() && success;
 
-        if (success)
-          testPassed("Exceptions for curve length correctly handled.\n");
-        else
-          testFailed("Exceptions for curve length not correctly handled.\n");
+        Should("Exceptions for curve length", success)
+          .summarize("correctly handled",
+                     "not correctly handled");
 
         done();
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

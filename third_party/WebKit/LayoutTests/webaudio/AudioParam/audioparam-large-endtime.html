@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>AudioParam with Huge End Time</title>
@@ -9,9 +10,6 @@
 
   <body>
     <script>
-      description("Test AudioParam with Huge Time Value")
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
       // Render for some small (but fairly arbitrary) time.
       var renderDuration = 0.125;
@@ -30,7 +28,9 @@
 
         graph.source.start();
         graph.context.startRendering().then(function (buffer) {
-          testPassed("linearRampToValue(0.1, " + largeTime + ") successfully rendered.");
+          Should("linearRampToValue(0.1, " + largeTime + ")", true)
+            .summarize("successfully rendered",
+                       "unsuccessfully rendered");
         }).then(done);
       });
 
@@ -41,12 +41,13 @@
 
         graph.source.start();
         graph.context.startRendering().then(function (buffer) {
-          testPassed("exponentialRampToValue(0.1, " + largeTime + ") successfully rendered.");
+          Should("exponentialRampToValue(0.1, " + largeTime + ")", true)
+            .summarize("successfully rendered",
+                       "unsuccessfully rendered");
         }).then(done);
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

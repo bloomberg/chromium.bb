@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Test Automation Following setValueCurveAtTime Automations</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/audio-param.js"></script>
@@ -10,8 +11,6 @@
 
   <body>
     <script>
-      description("Test Automation Following setValueCurveAtTime Automations");
-      window.jsTestIsAsync = true;
 
       var sampleRate = 12800;
       // Some short duration because we don't need to run the test for very long.
@@ -72,7 +71,6 @@
       }
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

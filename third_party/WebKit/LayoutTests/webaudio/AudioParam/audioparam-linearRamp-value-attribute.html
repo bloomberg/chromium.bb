@@ -2,15 +2,14 @@
 <html>
   <head>
     <title>Test linearRampToValue Updates the Param Value</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description("Test linearRampToValue Updates the Param Value");
-      window.jsTestIsAsync = true;
 
       var renderQuantumSize = 128;
       // Should be a power of two to get rid of rounding errors when converting between time and
@@ -70,15 +69,13 @@
         // Rock and roll!
         source.start();
         context.startRendering().then(function (result) {
-          if (success)
-            testPassed("linearRampToValue properly set the AudioParam value.");
-          else
-            testFailed("linearRampToValue did not properly set the AudioParam value.");
+          Should("linearRampToValue", success)
+            .summarize("properly set the AudioParam value",
+                       "did not properly set the AudioParam value");
         }).then(done);
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

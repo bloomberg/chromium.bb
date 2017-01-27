@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/audio-param.js"></script>
@@ -10,8 +11,6 @@
 
   <body>
     <script>
-      description("Test Updating of Value Attribute from Timeline");
-      window.jsTestIsAsync = true;
 
       // This should be a power of two so that all time computations have no round-off errors.
       var sampleRate = 32768;
@@ -84,7 +83,6 @@
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
@@ -124,8 +122,11 @@
         var test = testFunction(gain, v0, t0, v1, t1);
 
         // Print an informative message about the test being run.
-        testPassed("Initialize " + test.message + " with setValueAtTime(" + v0 + ", " + t0 + ").");
-
+        //testPassed("Initialize " + test.message + " with setValueAtTime(" + v0 + ", " + t0 + ").");
+        Should("Initialize", true)
+          .summarize(test.message + " with setValueAtTime(" + v0 + ", " + t0 + ")",
+                     "");
+          
         var success = true;
 
         // Max relative error found for this test. This is printed if the test fails so that setting
@@ -159,12 +160,9 @@
 
         return context.startRendering().then(function (resultBuffer) {
           // Just print a final pass (or fail) message.
-          if (success)
-            testPassed("Gain .value attribute correctly updated during automation.\n");
-          else
-            testFailed(
-              "Gain .value attribute not correctly updated during automation; max error = " +
-              maxError + ".\n");
+          Should("Gain .value attribute", success)
+            .summarize("correctly updated during automation",
+                       "not correctly updated during automation; max error = " + maxError);
         });
       }
     </script>

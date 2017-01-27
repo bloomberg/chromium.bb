@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>Test Clamping of Automations</title>
@@ -9,8 +10,6 @@
 
   <body>
     <script>
-      description("Test Clamping of Automations.");
-      window.jsTestIsAsync = true;
 
       // Some arbitrary sample rate for the offline context. 
       var sampleRate = 48000;
@@ -94,18 +93,14 @@
           success == Should("Actual Clamp end",
             actualClampEnd).beGreaterThanOrEqualTo(clampEndFrame) && success;
 
-          if (success)
-            testPassed("Clamping of BiquadFilter.frequency automation performed correctly.")
-          else
-            testFailed(
-              "Clamping of BiquadFilter.frequency automation performed incorrectly.")
-
+          Should("Clamping of BiquadFilter.frequency automation performed",
+              success)
+            .summarize("correctly", "incorrectly");
         }).then(done);
       });
 
       // All done!
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

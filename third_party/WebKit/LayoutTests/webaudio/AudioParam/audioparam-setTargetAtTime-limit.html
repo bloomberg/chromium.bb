@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Test setTargetAtTime Approach to Limit</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
@@ -10,8 +11,6 @@
 
   <body>
     <script>
-      description("Test setTargetAtTime Approach to Limit");
-      window.jsTestIsAsync = true;
 
       var audit = Audit.createTaskRunner();
 
@@ -141,15 +140,13 @@
               actual.slice(tailFrame))
             .containValues([options.v1]) && success;
 
-          if (success)
-            testPassed(message + " had the expected values.\n");
-          else
-            testFailed(message + " did not have the expected values.\n");
+          Should(message, success)
+            .summarize("had the expected values",
+                       "did not have the expected values");
         });
       }
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

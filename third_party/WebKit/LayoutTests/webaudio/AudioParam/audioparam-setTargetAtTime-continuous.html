@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
@@ -10,8 +11,6 @@
 
   <body>
     <script>
-      description("Test SetTarget Followed by Linear or Exponential Ramp");
-      window.jsTestIsAsync = true;
 
       var sampleRate = 48000;
       var renderQuantum = 128;
@@ -84,7 +83,6 @@
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
@@ -209,7 +207,9 @@
                 length))
               .beCloseToArray(expected.setTargetPart, thresholdSetTarget) && success;
           } else {
-            testPassed("SetTarget part was correctly replaced by the ramp");
+            Should("SetTarget part", !length)
+              .summarize("was correctly replaced by the ramp",
+                         "was incorrectly replaced by the ramp");
           }
 
           // Verify the ramp part of the curve
@@ -223,10 +223,9 @@
           success = Should(prefix + ": Tail part", result.slice(startIndex))
             .beCloseToArray(expected.tailPart, 0) && success;
 
-          if (success)
-            testPassed(prefix + " preceded by SetTarget is continuous.\n");
-          else
-            testFailed(prefix + " preceded by SetTarget was not continuous.\n");
+          Should(prefix, success)
+            .summarize("preceded by SetTarget is continuous",
+                       "preceded by SetTarget was not continuous");
         });
       }
     </script>

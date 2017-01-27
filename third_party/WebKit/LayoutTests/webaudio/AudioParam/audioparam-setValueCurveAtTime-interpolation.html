@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Test Interpolation for AudioParam.setValueCurveAtTime</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>Test Interpolation for AudioParam.setValueCurveAtTime</title>
@@ -10,8 +11,6 @@
 
   <body>
     <script>
-      description("Test Interpolation for AudioParam.setValueCurveAtTime");
-      window.jsTestIsAsync = true;
 
       // Play a constant signal through a gain node that is automated using setValueCurveAtTime with
       // a 2-element curve.  The output should be a linear change.
@@ -168,16 +167,13 @@
             data[timeToSampleFrame(midPoint, context.sampleRate)]).beCloseTo(0, Math.pow(2, -51)) && success;
           success = Should("Curve value at time " + endTime,
             data[timeToSampleFrame(endTime, context.sampleRate)]).beEqualTo(c[2]) && success;
-          if (success)
-            testPassed("Test: crbug.com/44471\n");
-          else
-            testFailed("Test: crbug.com/44471\n");
+          Should("Test: crbug.com/44471", success)
+            .summarize("passed", "failed");
         }).then(done);
       });
 
       // Must be the last defined task.
       audit.defineTask("end", function (done) {
-        finishJSTest();
         done();
       });
 
@@ -249,21 +245,15 @@
             brief: true
           }).beGreaterThanOrEqualTo(config.snrThreshold);
 
-          if (maxDiff <= config.maxErrorThreshold) {
-            testPassed("Max difference is less than or equal to " + config.maxErrorThreshold + ".");
-          } else {
-            testFailed("Max difference (" + maxDiff + ") NOT less than or equal to " +
-              config.maxErrorThreshold + " at frame " + posn + ".");
-            success = false;
-          }
+          success = Should("Max difference", maxDiff)
+            .beLessThanOrEqualTo(config.maxErrorThreshold) && success;
 
-          var message = "Test: curve length = " + config.curveLength + "; duration frames = " +
-          config.curveDuration * sampleRate + ".\n";
-      
-          if (success)
-            testPassed(message);
-          else
-            testFailed(message);
+          var message = "Test: curve length = " + config.curveLength +
+            "; duration frames = " +
+            config.curveDuration * sampleRate;
+
+          Should(message, success)
+            .summarize("passed", "failed");
         }
       }
 

@@ -2,7 +2,8 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
   <script src="../resources/audioparam-testing.js"></script>
@@ -11,8 +12,6 @@
 
 <body>
   <script>
-    description("Test Automation Ramps without Initial Event");
-    window.jsTestIsAsync = true;
 
     var sampleRate = 48000;
     // Number of frames in a rendering quantum.
@@ -92,7 +91,6 @@
     });
 
     audit.defineTask("finish", function (done) {
-      finishJSTest();
       done();
     });
 

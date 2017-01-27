@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/panner-formulas.js"></script>
@@ -10,8 +11,6 @@
 
   <body>
     <script>
-      description("Test setValueCurveAtTime Copies the Curve Data");
-      window.jsTestIsAsync = true;
 
       var sampleRate = 48000;
       var renderFrames = 1024;
@@ -79,15 +78,12 @@
           // changing the curve data should not affect the automation.
           var success = Should("setValueCurve output", testData).beEqualToArray(refData);
 
-          if (success)
-            testPassed("Changing the curve data did not change the result.");
-          else
-            testFailed("Changing the curve data unexpectedly changed the result.");
+          Should("Changing the curve data", success)
+            .summarize("did not change the result", "unexpectedly changed the result");
         }).then(done);
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
@@ -10,9 +11,7 @@
 
   <body>
     <script>
-      description("Test Sampling of LinearRampToValueAtTime");
  
-      window.jsTestIsAsync = true;
       var sampleRate = 12800;
       var context;
 
@@ -65,10 +64,8 @@
               precision: 7
             }).beCloseTo(expectedEnd, config.endValueThreshold) && success;
 
-          if (success)
-            testPassed(config.desc + " passed.\n");
-          else
-            testFailed(config.desc + " failed.\n");
+          Should(config.desc, success)
+            .summarize("passed", "failed");
         });
       }
 
@@ -171,7 +168,6 @@
       }
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

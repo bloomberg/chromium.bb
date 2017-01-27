@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>Test AudioParam Nominal Range Values</title>
@@ -9,8 +10,6 @@
 
   <body>
     <script>
-      description("Test AudioParam Nominal Range Values.");
-      window.jsTestIsAsync = true;
 
       // Some arbitrary sample rate for the offline context. 
       var sampleRate = 48000;
@@ -231,7 +230,7 @@
       });
 
       // Create a task for each entry in testConfigs
-      for (var test in testConfigs) {
+      for (let test in testConfigs) {
         var config = testConfigs[test]
         audit.defineTask(config.creator, (function (c) {
           return function (done) {
@@ -304,14 +303,15 @@
 
         // It's a test failure if we didn't test all of the create methods in the context (except
         // createMediaStreamSource, of course).
+        var output = [];
         if (diff.size) {
-          var output = [];
           for (let item of diff)
             output.push(" " + item.substring(6));
-          testFailed("These nodes were not tested:" + output + "\n");
-        } else {
-          testPassed("All nodes were tested.\n");
         }
+
+        Should("Number of nodes not tested", output.length === 0)
+          .summarize(": 0",
+                     ": " + output);
       
         done();
       });
@@ -332,7 +332,6 @@
 
       // All done!
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
@@ -370,19 +369,18 @@
           var isReadOnly;
           isReadOnly = Should(prefix + ".minValue = Math.PI", parameter.minValue)
             .notBeEqualTo(Math.PI);
-          if (isReadOnly)
-            testPassed(prefix + ".minValue is read-only.");
-          else
-            testFailed(prefix + ".minValue should be read-only but was changed.");
+
+          Should(prefix + ".minValue is read-only", isReadOnly)
+            .beEqualTo(true);
+
           isCorrect = isReadOnly && isCorrect;
 
           parameter.maxValue = Math.PI;
           isReadOnly = Should(prefix + ".maxValue = Math.PI", parameter.maxValue)
             .notBeEqualTo(Math.PI);
-          if (isReadOnly)
-            testPassed(prefix + ".maxValue is read-only.");
-          else
-            testFailed(prefix + ".maxValue should be read-only but was changed.");
+          Should(prefix + ".maxValue is read-only", isReadOnly)
+            .beEqualTo(true);
+
           isCorrect = isReadOnly && isCorrect;
 
           // Now try to set the parameter outside the nominal range.
@@ -410,10 +408,8 @@
           }
 
           if (clippingTested) {
-            if (isClipped)
-              testPassed(prefix + " was correctly clipped to lie within the nominal range.")
-            else
-              testPassed(prefix + " was not correctly clipped to lie within the nominal range.")
+            Should(prefix + "was clipped to lie within the nominal range", isClipped)
+              .beEqualTo(true);
           }
 
           isCorrect = isCorrect && isClipped;
@@ -421,7 +417,10 @@
           success = isCorrect && success;
         } else {
           // Test config didn't specify valid limits.  Fail this test!
-          testFailed("Limits for " + nodeName + "." + paramName + " were not correctly defined.");
+//          testFailed("Limits for " + nodeName + "." + paramName + " were not correctly defined.");
+          Should("Limits for " + nodeName + "." + paramName + " were correctly defined", clippingTested)
+            .beEqualTo(false);
+       
           success = false;
         }
 
@@ -458,16 +457,14 @@
         // Print an appropriate message depending on whether there were AudioParams defined or not.
         if (audioParams.length) {
           var message = "Nominal ranges for AudioParam(s) of " + node.constructor.name;
-          if (success)
-            testPassed(message + " are correct.\n");
-          else
-            testFailed(message + " are incorrect for: " + incorrectParams + ".\n");
+          Should(message, success)
+            .summarize("are correct",
+                       "are incorrect for: " +  + incorrectParams);
           return success;
         } else {
-          if (limits)
-            testFailed(nodeName + " has no AudioParams but test expected " + limits + ".\n");
-          else
-            testPassed(nodeName + " has no AudioParams as expected.\n");
+          Should(nodeName, !limits)
+            .summarize("has no AudioParams as expected",
+                       "has no AudioParams but test expected " + limits);
         }
       }
     </script>
