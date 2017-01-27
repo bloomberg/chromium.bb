@@ -1999,6 +1999,8 @@ crbug.com/508728 virtual/mojo-localstorage/external/wpt/webstorage/document-doma
 
 crbug.com/676572 [ Debug ] virtual/mojo-localstorage/external/wpt/webstorage/storage_local_setitem_quotaexceedederr.html [ Pass Timeout ]
 
+crbug.com/686057 [ Mac ] external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Pass Failure ]
+
 crbug.com/508728 external/wpt/workers/Worker_cross_origin_security_err.htm [ Timeout ]
 
 # This test needs to be updated: fails because it expects showModalDialog and some other APIs.
