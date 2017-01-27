@@ -5,21 +5,12 @@
 #ifndef CONTENT_TEST_TEST_FRAME_NAVIGATION_OBSERVER_H_
 #define CONTENT_TEST_TEST_FRAME_NAVIGATION_OBSERVER_H_
 
-#include <memory>
-#include <set>
-
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
-
-class GURL;
 
 namespace content {
-class RenderFrameHost;
 
 // Helper for waiting until the navigation in a specific frame tree node (and
 // all of its subframes) has completed loading.
@@ -43,13 +34,8 @@ class TestFrameNavigationObserver : public WebContentsObserver {
 
  private:
   // WebContentsObserver
-  void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
-                                       const GURL& validated_url,
-                                       bool is_error_page) override;
-  void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
+  void DidStartNavigation(NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void DidStopLoading() override;
 
   // The id of the FrameTreeNode in which navigations are peformed.
