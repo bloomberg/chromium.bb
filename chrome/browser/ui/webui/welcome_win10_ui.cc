@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/webui/welcome_win10_handler.h"
@@ -94,10 +95,9 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   static const char kDefaultFilePath[] = "default.webp";
   static const char kPinFilePath[] = "pin.webp";
 
-  Profile* profile = Profile::FromWebUI(web_ui);
-
-  // Store that this profile has been shown the Win10 promo page.
-  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWin10PromoPage, true);
+  // Remember that the Win10 promo page has been shown.
+  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
+                                               true);
 
   // Determine which variation to show.
   bool is_first_run = !UrlContainsKeyValueInQuery(url, "text", "faster");
@@ -132,7 +132,7 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("logo-small.png", IDR_PRODUCT_LOGO_64);
   html_source->AddResourcePath("logo-large.png", IDR_PRODUCT_LOGO_128);
 
-  content::WebUIDataSource::Add(profile, html_source);
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 }
 
 WelcomeWin10UI::~WelcomeWin10UI() = default;
