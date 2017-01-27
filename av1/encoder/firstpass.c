@@ -720,8 +720,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       x->mv_col_min = -((mb_col * 16) + BORDER_MV_PIXELS_B16);
       x->mv_col_max = ((cm->mb_cols - 1 - mb_col) * 16) + BORDER_MV_PIXELS_B16;
 
-      // Other than for the first frame do a motion search.
-      if (cm->current_video_frame > 0) {
+      if (!frame_is_intra_only(cm)) {  // Do a motion search
         int tmp_err, motion_error, raw_motion_error;
         // Assume 0,0 motion with no mv overhead.
         MV mv = { 0, 0 }, tmp_mv = { 0, 0 };
