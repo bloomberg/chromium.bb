@@ -164,14 +164,6 @@ STATIC_ASSERT_ENUM(WebMediaPlayer::CORSModeAnonymous, UrlData::CORS_ANONYMOUS);
 STATIC_ASSERT_ENUM(WebMediaPlayer::CORSModeUseCredentials,
                    UrlData::CORS_USE_CREDENTIALS);
 
-#define BIND_TO_RENDER_LOOP(function) \
-  (DCHECK(main_task_runner_->BelongsToCurrentThread()), \
-  BindToCurrentLoop(base::Bind(function, AsWeakPtr())))
-
-#define BIND_TO_RENDER_LOOP1(function, arg1) \
-  (DCHECK(main_task_runner_->BelongsToCurrentThread()), \
-  BindToCurrentLoop(base::Bind(function, AsWeakPtr(), arg1)))
-
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
@@ -1441,9 +1433,9 @@ void WebMediaPlayerImpl::OnFrameShown() {
   if ((!paused_ && IsBackgroundOptimizationCandidate()) ||
       paused_when_hidden_) {
     VideoFrameCompositor::OnNewProcessedFrameCB new_processed_frame_cb =
-        BIND_TO_RENDER_LOOP1(
+        BindToCurrentLoop(base::Bind(
             &WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame,
-            base::TimeTicks::Now());
+            AsWeakPtr(), base::TimeTicks::Now()));
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VideoFrameCompositor::SetOnNewProcessedFrameCallback,
@@ -1666,13 +1658,15 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
 }
 
 std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
   if (force_video_overlays_)
     EnableOverlay();
 
   RequestSurfaceCB request_surface_cb;
 #if defined(OS_ANDROID)
-  request_surface_cb =
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnSurfaceRequested);
+  request_surface_cb = BindToCurrentLoop(
+      base::Bind(&WebMediaPlayerImpl::OnSurfaceRequested, AsWeakPtr()));
 #endif
   return renderer_factory_->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
@@ -1683,7 +1677,8 @@ void WebMediaPlayerImpl::StartPipeline() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnEncryptedMediaInitData);
+      BindToCurrentLoop(base::Bind(
+          &WebMediaPlayerImpl::OnEncryptedMediaInitData, AsWeakPtr()));
 
   if (use_fallback_path_) {
     demuxer_.reset(
@@ -1700,7 +1695,8 @@ void WebMediaPlayerImpl::StartPipeline() {
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
     Demuxer::MediaTracksUpdatedCB media_tracks_updated_cb =
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated);
+        BindToCurrentLoop(base::Bind(
+            &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, AsWeakPtr()));
 
     demuxer_.reset(new FFmpegDemuxer(media_task_runner_, data_source_.get(),
                                      encrypted_media_init_data_cb,
@@ -1714,7 +1710,8 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!data_source_);
 
     chunk_demuxer_ = new ChunkDemuxer(
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
+        BindToCurrentLoop(
+            base::Bind(&WebMediaPlayerImpl::OnDemuxerOpened, AsWeakPtr())),
         encrypted_media_init_data_cb, media_log_);
     demuxer_.reset(chunk_demuxer_);
   }
