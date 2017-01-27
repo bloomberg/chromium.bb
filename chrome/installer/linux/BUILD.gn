@@ -289,8 +289,6 @@ template("linux_package") {
       branding_path_component,
       "-s",
       rebase_path(sysroot),
-      "-e",
-      rebase_path("//third_party/dpkg-dev"),
     ]
     deps = [
       ":installer_deps",
