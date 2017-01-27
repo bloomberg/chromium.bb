@@ -1,6 +1,6 @@
-CONSOLE MESSAGE: line 236: callback not yet supported
-CONSOLE MESSAGE: line 236: callback not yet supported
-CONSOLE MESSAGE: line 236: callback not yet supported
+CONSOLE MESSAGE: line 251: callback not yet supported
+CONSOLE MESSAGE: line 251: callback not yet supported
+CONSOLE MESSAGE: line 251: callback not yet supported
 This is a testharness.js-based test.
 PASS Document interface: attribute rootElement 
 PASS SVGElement interface: existence and properties of interface object 

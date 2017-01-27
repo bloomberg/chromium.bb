@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = The stream has been aborted
+PASS Service worker test setup 
+PASS Piping from an errored readable stream to an errored writable stream 
+PASS Piping from an errored readable stream to an errored writable stream; preventAbort = true 
+FAIL Piping from an errored readable stream to a closed writable stream assert_array_equals: lengths differ, expected 1 got 2
+PASS Piping from a closed readable stream to an errored writable stream 
+PASS Piping from a closed readable stream to a closed writable stream 
+Harness: the test ran to completion.
+

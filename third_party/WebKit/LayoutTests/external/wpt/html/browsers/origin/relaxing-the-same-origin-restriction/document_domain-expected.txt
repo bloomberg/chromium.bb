@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS sanity checks 
+PASS current document 
+FAIL new document Illegal constructor
+Harness: the test ran to completion.
+

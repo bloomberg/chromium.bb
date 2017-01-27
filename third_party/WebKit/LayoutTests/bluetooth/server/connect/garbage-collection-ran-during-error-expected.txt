@@ -1,0 +1,6 @@
+CONSOLE ERROR: Uncaught (in promise) NetworkError: Authentication canceled.
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Authentication canceled.
+PASS Garbage collection ran during a connect call that fails. Should not crash. 
+Harness: the test ran to completion.
+

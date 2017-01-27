@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 8: Uncaught (in promise) Error: e
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = e
+PASS Attaching a handler in unhandledrejection should not trigger rejectionhandled. 
+Harness: the test ran to completion.
+

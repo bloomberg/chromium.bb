@@ -1,0 +1,4 @@
+CONSOLE MESSAGE: line 7: SecurityError: Blocked a frame with origin "null" from accessing a cross-origin frame.
+CONSOLE MESSAGE: line 15: SecurityError: Blocked a frame with origin "null" from accessing a cross-origin frame.
+CONSOLE MESSAGE: line 7: SecurityError: Blocked a frame with origin "null" from accessing a cross-origin frame.
+ 

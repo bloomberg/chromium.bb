@@ -1,0 +1,13 @@
+CONSOLE ERROR: line 29: Uncaught (in promise) AbortError: The user aborted a request.
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = The user aborted a request.
+PASS The ready attribute should be a Promise 
+PASS The ready promise should be resolved when an animation is in the idle play state 
+PASS The ready promise should be replaced when the animation is cancelled 
+PASS The ready promise should be replaced when the animation enters the pending state 
+PASS A pending ready promise should be rejected when the animation is cancelled 
+PASS A pending ready promise should be resolved and not replaced when the animation enters the running state 
+PASS A pending ready promise should be resolved and not replaced when the animation enters the finished state 
+PASS A pending ready promise should be resolved and not replaced when the animation enters the paused state 
+Harness: the test ran to completion.
+

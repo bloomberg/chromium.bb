@@ -1,0 +1,16 @@
+CONSOLE ERROR: Uncaught (in promise) NotFoundError: Invalid NFC watch Id was provided.
+CONSOLE ERROR: Uncaught (in promise) NotFoundError: Invalid NFC watch Id was provided.
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Invalid NFC watch Id was provided.
+PASS Test that nfc.watch succeeds if NFC hardware is enabled. 
+PASS Test that nfc.watch fails if NFC hardware is disabled. 
+PASS Test that nfc.watch fails if NFC hardware is not supported. 
+PASS Test that default NFCWatchOptions values are set correctly. 
+PASS Test that NFCWatchOptions values are correctly converted. 
+PASS Test that nfc.cancelWatch fails if invalid watch ID is provided. 
+PASS Test that nfc.cancelWatch fails if there are no active watchers. 
+PASS Test that nfc.cancelWatch succeeds if correct watch id is provided. 
+PASS Test that nfc.cancelWatch succeeds if there are active watchers. 
+PASS Test that watch callback is triggered with valid NFCMessage. 
+Harness: the test ran to completion.
+

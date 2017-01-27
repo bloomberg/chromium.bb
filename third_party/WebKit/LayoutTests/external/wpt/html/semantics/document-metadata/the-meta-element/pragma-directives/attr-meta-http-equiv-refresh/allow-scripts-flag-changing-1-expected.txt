@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 47: Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+PASS Meta refresh is blocked by the allow-scripts sandbox flag at its creation time, not when refresh comes due 
+Harness: the test ran to completion.
+

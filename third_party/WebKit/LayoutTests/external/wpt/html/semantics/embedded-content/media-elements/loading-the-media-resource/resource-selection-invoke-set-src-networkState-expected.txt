@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 12: Uncaught (in promise) AbortError: The play() request was interrupted by a new load request.
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = The play() request was interrupted by a new load request.
+PASS invoking load by setting src when networkState is not NETWORK_EMPTY 
+Harness: the test ran to completion.
+

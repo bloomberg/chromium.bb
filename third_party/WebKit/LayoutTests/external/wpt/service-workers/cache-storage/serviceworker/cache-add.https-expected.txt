@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Partial response (status code 206) is unsupported
 PASS Cache.add and Cache.addAll 
 PASS Cache.add called with no arguments 
 PASS Cache.add called with relative URL specified as a string 
