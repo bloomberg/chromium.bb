@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
@@ -16,6 +17,8 @@ namespace tracing {
 namespace {
 
 using base::Bind;
+using base::Closure;
+using base::RunLoop;
 using base::Thread;
 using base::Unretained;
 using base::WaitableEvent;
@@ -44,7 +47,7 @@ class TraceEventPerfTest : public ::testing::Test {
   }
 
   static void OnTraceDataCollected(
-      base::Closure quit_closure,
+      Closure quit_closure,
       const scoped_refptr<base::RefCountedString>& events_str,
       bool has_more_events) {
 
@@ -77,6 +80,12 @@ class TraceEventPerfTest : public ::testing::Test {
     complete_event->Signal();
   }
 
+  static void SubmitTraceEvents(int count) {
+    for (int i = 0; i < count; i++) {
+      TRACE_EVENT0("test_category", "some call");
+    }
+  }
+
  private:
   base::MessageLoop _message_loop;
 };
@@ -85,9 +94,7 @@ TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0) {
   BeginTrace();
   IterableStopwatch stopwatch("events");
   for (int lap = 0; lap < kNumRuns; lap++) {
-    for (int i = 0; i < 10000; i++) {
-      TRACE_EVENT0("test_category", "TRACE_EVENT0 call");
-    }
+    SubmitTraceEvents(10000);
     stopwatch.NextLap();
   }
   EndTraceAndFlush();
@@ -98,9 +105,7 @@ TEST_F(TraceEventPerfTest, Long_TRACE_EVENT0) {
   IterableStopwatch stopwatch("long_event");
   for (int lap = 0; lap < kNumRuns; lap++) {
     TRACE_EVENT0("test_category", "Outer event");
-    for (int i = 0; i < 10000; i++) {
-      TRACE_EVENT0("test_category", "TRACE_EVENT0 call");
-    }
+    SubmitTraceEvents(10000);
     stopwatch.NextLap();
   }
   EndTraceAndFlush();
@@ -163,6 +168,23 @@ TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_multithreaded) {
   for (int i = 0; i < kNumThreads; i++) {
     threads[i]->Stop();
   }
+}
+
+TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_in_traceable_tasks) {
+  BeginTrace();
+  IterableStopwatch task_sw("events_in_task");
+  for (int i = 0; i < 100; i++) {
+    base::PendingTask pending_task(FROM_HERE, Bind(&SubmitTraceEvents, 10000));
+    TRACE_TASK_EXECUTION("TraceEventPerfTest::PendingTask", pending_task);
+    std::move(pending_task.task).Run();
+    task_sw.NextLap();
+  }
+  EndTraceAndFlush();
+}
+
+TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_with_tracing_disabled) {
+  ScopedStopwatch stopwatch("events");
+  SubmitTraceEvents(10000);
 }
 
 }  // namespace
