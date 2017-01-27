@@ -169,26 +169,15 @@ MessageBox::MessageBox(const base::string16& title_label,
                      cancel_label,
                      result_callback,
                      this)) {
-  thread_checker_.DetachFromThread();
+  core_->Show();
 }
 
 MessageBox::~MessageBox() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (core_) {
     core_->OnMessageBoxDestroyed();
     core_->Hide();
     core_ = nullptr;
-  }
-}
-
-void MessageBox::Show() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  core_->Show();
-}
-
-void MessageBox::Hide() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (core_) {
-    core_->Hide();
   }
 }
 

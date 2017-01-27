@@ -15,7 +15,7 @@ namespace remoting {
 // Overview:
 // Shows a system modal message box with OK and cancel buttons. This class
 // is not thread-safe, it must be called on the UI thread of the browser
-// process.
+// process. Destroy the instance to hide the message box.
 class MessageBox {
  public:
   enum Result {
@@ -33,9 +33,6 @@ class MessageBox {
              const base::string16& cancel_label,
              ResultCallback result_callback);
   ~MessageBox();
-
-  void Show();
-  void Hide();
 
  private:
   class Core;
