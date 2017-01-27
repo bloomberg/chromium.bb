@@ -37,6 +37,7 @@ class TaskRunner;
 namespace cryptauth {
 
 namespace weave {
+
 // Creates GATT connection on top of the BLE connection and act as a Client.
 // uWeave communication follows the flow:
 // Client                           | Server
@@ -55,18 +56,28 @@ class BluetoothLowEnergyWeaveClientConnection
   class Factory {
    public:
     static std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
-    NewInstance();
+    NewInstance(
+        const RemoteDevice& remote_device,
+        const std::string& device_address,
+        scoped_refptr<device::BluetoothAdapter> adapter,
+        const device::BluetoothUUID remote_service_uuid,
+        BluetoothThrottler* bluetooth_throttler);
 
     // Exposed for testing.
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetInstanceForTesting(std::shared_ptr<Factory> factory);
 
    protected:
     // Exposed for testing.
     virtual std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
-    BuildInstance();
+    BuildInstance(
+        const RemoteDevice& remote_device,
+        const std::string& device_address,
+        scoped_refptr<device::BluetoothAdapter> adapter,
+        const device::BluetoothUUID remote_service_uuid,
+        BluetoothThrottler* bluetooth_throttler);
 
    private:
-    static Factory* factory_instance_;
+    static std::shared_ptr<Factory> factory_instance_;
   };
 
   // The sub-state of a BluetoothLowEnergyWeaveClientConnection
@@ -89,10 +100,10 @@ class BluetoothLowEnergyWeaveClientConnection
   // made.
   BluetoothLowEnergyWeaveClientConnection(
       const RemoteDevice& remote_device,
+      const std::string& device_address,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      BluetoothThrottler* bluetooth_throttler,
-      int max_number_of_write_attempts);
+      BluetoothThrottler* bluetooth_throttler);
 
   ~BluetoothLowEnergyWeaveClientConnection() override;
 
@@ -233,9 +244,6 @@ class BluetoothLowEnergyWeaveClientConnection
   // Prints the time elapsed since |Connect()| was called.
   void PrintTimeElapsed();
 
-  // Returns the device corresponding to |remote_device_address_|.
-  device::BluetoothDevice* GetRemoteDevice();
-
   // Returns the service corresponding to |remote_service_| in the current
   // device.
   device::BluetoothRemoteGattService* GetRemoteService();
@@ -249,6 +257,12 @@ class BluetoothLowEnergyWeaveClientConnection
   // connection.
   // Will crash if the receiver is not in CONNECTION_CLOSED state.
   std::string GetReasonForClose();
+
+  // Returns the device corresponding to |device_address_|.
+  device::BluetoothDevice* GetBluetoothDevice();
+
+  // The device to which to connect.
+  const std::string device_address_;
 
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;
@@ -296,9 +310,6 @@ class BluetoothLowEnergyWeaveClientConnection
   bool write_remote_characteristic_pending_;
 
   std::queue<WriteRequest> write_requests_queue_;
-
-  // Maximum number of tries to send any write request.
-  int max_number_of_write_attempts_;
 
   // Stores when the instace was created.
   base::TimeTicks start_time_;

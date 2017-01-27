@@ -297,7 +297,7 @@ void BleScanner::CheckForMatchingScanFilters(
     PA_LOG(INFO) << "Received advertisement from remote device with ID "
                  << identified_device->GetTruncatedDeviceIdForLogs() << ".";
     for (auto& observer : observer_list_) {
-      observer.OnReceivedAdvertisementFromDevice(bluetooth_device,
+      observer.OnReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(),
                                                  *identified_device);
     }
   } else {

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cryptauth/bluetooth_throttler.h"
@@ -16,16 +17,10 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 
-using device::BluetoothAdapter;
-using device::BluetoothDevice;
-using device::BluetoothGattConnection;
-using device::BluetoothRemoteGattService;
-using device::BluetoothRemoteGattCharacteristic;
-using device::BluetoothGattNotifySession;
-using device::BluetoothUUID;
-
 namespace cryptauth {
+
 namespace weave {
+
 namespace {
 
 typedef BluetoothLowEnergyWeavePacketReceiver::State ReceiverState;
@@ -36,16 +31,63 @@ const char kTXCharacteristicUUID[] = "00000100-0004-1000-8000-001A11000101";
 // The UUID of the RX characteristic used to receive data from the server.
 const char kRXCharacteristicUUID[] = "00000100-0004-1000-8000-001A11000102";
 
+// If sending a message fails, retry up to 2 additional times. This means that
+// each message gets 3 attempts: the first one, and 2 retries.
+const int kMaxNumberOfRetryAttempts = 2;
+
 }  // namespace
+
+// static
+std::shared_ptr<BluetoothLowEnergyWeaveClientConnection::Factory>
+    BluetoothLowEnergyWeaveClientConnection::Factory::factory_instance_ =
+        nullptr;
+
+// static
+std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
+BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
+    const RemoteDevice& remote_device,
+    const std::string& device_address,
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    const device::BluetoothUUID remote_service_uuid,
+    BluetoothThrottler* bluetooth_throttler) {
+  if (!factory_instance_) {
+    factory_instance_.reset(new Factory());
+  }
+  return factory_instance_->BuildInstance(
+      remote_device,
+      device_address,
+      adapter,
+      remote_service_uuid,
+      bluetooth_throttler);
+}
+
+// static
+void BluetoothLowEnergyWeaveClientConnection::Factory::SetInstanceForTesting(
+    std::shared_ptr<Factory> factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
+BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
+    const RemoteDevice& remote_device,
+    const std::string& device_address,
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    const device::BluetoothUUID remote_service_uuid,
+    BluetoothThrottler* bluetooth_throttler) {
+  return base::MakeUnique<BluetoothLowEnergyWeaveClientConnection>(
+      remote_device, device_address, adapter, remote_service_uuid,
+      bluetooth_throttler);
+}
 
 BluetoothLowEnergyWeaveClientConnection::
     BluetoothLowEnergyWeaveClientConnection(
         const RemoteDevice& device,
+        const std::string& device_address,
         scoped_refptr<device::BluetoothAdapter> adapter,
-        const BluetoothUUID remote_service_uuid,
-        BluetoothThrottler* bluetooth_throttler,
-        int max_number_of_write_attempts)
+        const device::BluetoothUUID remote_service_uuid,
+        BluetoothThrottler* bluetooth_throttler)
     : Connection(device),
+      device_address_(device_address),
       adapter_(adapter),
       remote_service_({remote_service_uuid, ""}),
       packet_generator_(
@@ -53,13 +95,12 @@ BluetoothLowEnergyWeaveClientConnection::
       packet_receiver_(
           BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
               BluetoothLowEnergyWeavePacketReceiver::ReceiverType::CLIENT)),
-      tx_characteristic_({BluetoothUUID(kTXCharacteristicUUID), ""}),
-      rx_characteristic_({BluetoothUUID(kRXCharacteristicUUID), ""}),
+      tx_characteristic_({device::BluetoothUUID(kTXCharacteristicUUID), ""}),
+      rx_characteristic_({device::BluetoothUUID(kRXCharacteristicUUID), ""}),
       bluetooth_throttler_(bluetooth_throttler),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       sub_status_(SubStatus::DISCONNECTED),
       write_remote_characteristic_pending_(false),
-      max_number_of_write_attempts_(max_number_of_write_attempts),
       weak_ptr_factory_(this) {
   DCHECK(adapter_);
   DCHECK(adapter_->IsInitialized());
@@ -75,7 +116,7 @@ BluetoothLowEnergyWeaveClientConnection::
 
   if (adapter_) {
     adapter_->RemoveObserver(this);
-    adapter_ = NULL;
+    adapter_ = nullptr;
   }
 }
 
@@ -108,21 +149,23 @@ void BluetoothLowEnergyWeaveClientConnection::Connect() {
 void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
   DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
 
-  BluetoothDevice* remote_device = GetRemoteDevice();
-  if (remote_device) {
-    PA_LOG(INFO) << "Creating GATT connection with "
-                 << remote_device->GetAddress();
+  PA_LOG(INFO) << "Creating GATT connection with " << device_address_;
 
-    remote_device->CreateGattConnection(
-        base::Bind(
-            &BluetoothLowEnergyWeaveClientConnection::OnGattConnectionCreated,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BluetoothLowEnergyWeaveClientConnection::
-                       OnCreateGattConnectionError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    SetSubStatus(SubStatus::DISCONNECTED);
+  device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
+  if (!bluetooth_device) {
+    PA_LOG(WARNING) << "Could not create GATT connection with "
+                    << device_address_ << " because the device could not be "
+                    << "found.";
+    return;
   }
+
+  bluetooth_device->CreateGattConnection(
+      base::Bind(
+          &BluetoothLowEnergyWeaveClientConnection::OnGattConnectionCreated,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothLowEnergyWeaveClientConnection::
+                     OnCreateGattConnectionError,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::Disconnect() {
@@ -200,8 +243,8 @@ void BluetoothLowEnergyWeaveClientConnection::SendMessageImpl(
 // here. If the GATT connection is dropped, we should call DestroyConnection()
 // anyway, so the object can notify its observers.
 void BluetoothLowEnergyWeaveClientConnection::DeviceChanged(
-    BluetoothAdapter* adapter,
-    BluetoothDevice* device) {
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device) {
   DCHECK(device);
   if (sub_status() == SubStatus::DISCONNECTED ||
       device->GetAddress() != GetDeviceAddress())
@@ -219,8 +262,8 @@ void BluetoothLowEnergyWeaveClientConnection::DeviceChanged(
 }
 
 void BluetoothLowEnergyWeaveClientConnection::DeviceRemoved(
-    BluetoothAdapter* adapter,
-    BluetoothDevice* device) {
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device) {
   DCHECK(device);
   if (sub_status_ == SubStatus::DISCONNECTED ||
       device->GetAddress() != GetDeviceAddress())
@@ -231,8 +274,8 @@ void BluetoothLowEnergyWeaveClientConnection::DeviceRemoved(
 }
 
 void BluetoothLowEnergyWeaveClientConnection::GattCharacteristicValueChanged(
-    BluetoothAdapter* adapter,
-    BluetoothRemoteGattCharacteristic* characteristic,
+    device::BluetoothAdapter* adapter,
+    device::BluetoothRemoteGattCharacteristic* characteristic,
     const Packet& value) {
   DCHECK_EQ(adapter, adapter_.get());
   if (sub_status() != SubStatus::WAITING_CONNECTION_RESPONSE &&
@@ -319,7 +362,7 @@ BluetoothLowEnergyWeaveClientConnection::CreateCharacteristicsFinder(
     const BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
         error_callback) {
   return new BluetoothLowEnergyCharacteristicsFinder(
-      adapter_, GetRemoteDevice(), remote_service_, tx_characteristic_,
+      adapter_, GetBluetoothDevice(), remote_service_, tx_characteristic_,
       rx_characteristic_, success_callback, error_callback);
 }
 
@@ -359,7 +402,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFinderError(
 
 void BluetoothLowEnergyWeaveClientConnection::StartNotifySession() {
   DCHECK(sub_status() == SubStatus::CHARACTERISTICS_FOUND);
-  BluetoothRemoteGattCharacteristic* characteristic =
+  device::BluetoothRemoteGattCharacteristic* characteristic =
       GetGattCharacteristic(rx_characteristic_.id);
   CHECK(characteristic);
 
@@ -384,7 +427,7 @@ void BluetoothLowEnergyWeaveClientConnection::StartNotifySession() {
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted(
-    std::unique_ptr<BluetoothGattNotifySession> notify_session) {
+    std::unique_ptr<device::BluetoothGattNotifySession> notify_session) {
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   PA_LOG(INFO) << "Notification session started "
                << notify_session->GetCharacteristicIdentifier();
@@ -397,7 +440,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted(
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError(
-    BluetoothRemoteGattService::GattErrorCode error) {
+    device::BluetoothRemoteGattService::GattErrorCode error) {
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   PA_LOG(WARNING) << "Error starting notification session: " << error;
   DestroyConnection();
@@ -425,12 +468,11 @@ void BluetoothLowEnergyWeaveClientConnection::SendConnectionRequest() {
 void BluetoothLowEnergyWeaveClientConnection::WriteRemoteCharacteristic(
     const WriteRequest& request) {
   write_requests_queue_.push(request);
-  PA_LOG(ERROR) << "you got " << request.message.get();
   ProcessNextWriteRequest();
 }
 
 void BluetoothLowEnergyWeaveClientConnection::ProcessNextWriteRequest() {
-  BluetoothRemoteGattCharacteristic* characteristic =
+  device::BluetoothRemoteGattCharacteristic* characteristic =
       GetGattCharacteristic(tx_characteristic_.id);
   if (!write_requests_queue_.empty() && !write_remote_characteristic_pending_ &&
       characteristic) {
@@ -478,7 +520,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnWriteRemoteCharacteristicError(
-    BluetoothRemoteGattService::GattErrorCode error) {
+    device::BluetoothRemoteGattService::GattErrorCode error) {
   PA_LOG(WARNING) << "Error " << error << " writing characteristic: "
                   << tx_characteristic_.uuid.canonical_value();
 
@@ -487,9 +529,11 @@ void BluetoothLowEnergyWeaveClientConnection::OnWriteRemoteCharacteristicError(
   DCHECK(!write_requests_queue_.empty());
   WriteRequest* request = &write_requests_queue_.front();
 
-  // Increases the number of failed attempts and retry.
+  ++request->number_of_failed_attempts;
 
-  if (++request->number_of_failed_attempts >= max_number_of_write_attempts_) {
+  // If the message has failed to send the first time and up to
+  // |kMaxNumberOfRetryAttempts| retries, give up.
+  if (request->number_of_failed_attempts >= kMaxNumberOfRetryAttempts + 1) {
     switch (request->request_type) {
       case WriteRequestType::REGULAR:
       case WriteRequestType::MESSAGE_COMPLETE:
@@ -502,8 +546,9 @@ void BluetoothLowEnergyWeaveClientConnection::OnWriteRemoteCharacteristicError(
         NOTREACHED();
     }
 
-    // If the previous write failed that many times, probably can't write a
-    // connection close either, so just destroy the connection.
+    // If the previous write has failed each retry attempt up to the maximum
+    // number allowed, a "connection close" message cannot be sent since the
+    // connection is not working. Destroy the connection.
     DestroyConnection();
   } else {
     ProcessNextWriteRequest();
@@ -544,52 +589,43 @@ std::string BluetoothLowEnergyWeaveClientConnection::GetDeviceAddress() {
   // paired. The address in |gatt_connection_| is automatically updated in this
   // case.
   return gatt_connection_ ? gatt_connection_->GetDeviceAddress()
-                          : remote_device().bluetooth_address;
+                          : device_address_;
 }
 
-BluetoothDevice* BluetoothLowEnergyWeaveClientConnection::GetRemoteDevice() {
-  // It's not possible to simply use
-  // |adapter_->GetDevice(GetDeviceAddress())| to find the device with MAC
-  // address |GetDeviceAddress()|. For paired devices,
-  // BluetoothAdapter::GetDevice(XXX) searches for the temporary MAC address
-  // XXX, whereas |GetDeviceAddress()| is the real MAC address. This is a
-  // bug in the way device::BluetoothAdapter is storing the devices (see
-  // crbug.com/497841).
-  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
-  for (const auto& device : devices) {
-    if (device->GetAddress() == GetDeviceAddress())
-      return device;
-  }
-
-  return nullptr;
+device::BluetoothDevice*
+BluetoothLowEnergyWeaveClientConnection::GetBluetoothDevice() {
+  return adapter_->GetDevice(device_address_);
 }
 
-BluetoothRemoteGattService*
+device::BluetoothRemoteGattService*
 BluetoothLowEnergyWeaveClientConnection::GetRemoteService() {
-  BluetoothDevice* remote_device = GetRemoteDevice();
-  if (!remote_device) {
-    PA_LOG(WARNING) << "Remote device not found.";
-    return NULL;
+  device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
+  if (!bluetooth_device) {
+    PA_LOG(WARNING) << "Could not create GATT connection with "
+                    << device_address_ << " because the device could not be "
+                    << "found.";
+    return nullptr;
   }
+
   if (remote_service_.id.empty()) {
-    std::vector<BluetoothRemoteGattService*> services =
-        remote_device->GetGattServices();
+    std::vector<device::BluetoothRemoteGattService*> services =
+        bluetooth_device->GetGattServices();
     for (const auto& service : services)
       if (service->GetUUID() == remote_service_.uuid) {
         remote_service_.id = service->GetIdentifier();
         break;
       }
   }
-  return remote_device->GetGattService(remote_service_.id);
+  return bluetooth_device->GetGattService(remote_service_.id);
 }
 
-BluetoothRemoteGattCharacteristic*
+device::BluetoothRemoteGattCharacteristic*
 BluetoothLowEnergyWeaveClientConnection::GetGattCharacteristic(
     const std::string& gatt_characteristic) {
-  BluetoothRemoteGattService* remote_service = GetRemoteService();
+  device::BluetoothRemoteGattService* remote_service = GetRemoteService();
   if (!remote_service) {
     PA_LOG(WARNING) << "Remote service not found.";
-    return NULL;
+    return nullptr;
   }
   return remote_service->GetCharacteristic(gatt_characteristic);
 }

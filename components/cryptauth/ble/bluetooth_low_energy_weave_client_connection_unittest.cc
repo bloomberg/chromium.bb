@@ -305,15 +305,15 @@ class TestBluetoothLowEnergyWeaveClientConnection
  public:
   TestBluetoothLowEnergyWeaveClientConnection(
       const RemoteDevice& remote_device,
+      const std::string& device_address,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      BluetoothThrottler* bluetooth_throttler,
-      int max_number_of_write_attempts)
+      BluetoothThrottler* bluetooth_throttler)
       : BluetoothLowEnergyWeaveClientConnection(remote_device,
+                                                device_address,
                                                 adapter,
                                                 remote_service_uuid,
-                                                bluetooth_throttler,
-                                                max_number_of_write_attempts) {}
+                                                bluetooth_throttler) {}
 
   ~TestBluetoothLowEnergyWeaveClientConnection() override {}
 
@@ -371,12 +371,13 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   }
 
   void SetUp() override {
-    device_ = base::MakeUnique<NiceMock<device::MockBluetoothDevice>>(
-        adapter_.get(), 0, kTestRemoteDeviceName,
-        kTestRemoteDeviceBluetoothAddress, false, false);
+    mock_bluetooth_device_ =
+        base::MakeUnique<NiceMock<device::MockBluetoothDevice>>(
+            adapter_.get(), 0, kTestRemoteDeviceName,
+            kTestRemoteDeviceBluetoothAddress, false, false);
 
     service_ = base::MakeUnique<NiceMock<device::MockBluetoothGattService>>(
-        device_.get(), kServiceID, service_uuid_, true, false);
+        mock_bluetooth_device_.get(), kServiceID, service_uuid_, true, false);
     tx_characteristic_ =
         base::MakeUnique<NiceMock<device::MockBluetoothGattCharacteristic>>(
             service_.get(), kTXCharacteristicID, tx_characteristic_uuid_, false,
@@ -392,11 +393,11 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
     std::vector<const device::BluetoothDevice*> devices;
-    devices.push_back(device_.get());
+    devices.push_back(mock_bluetooth_device_.get());
     ON_CALL(*adapter_, GetDevices()).WillByDefault(Return(devices));
     ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
-        .WillByDefault(Return(device_.get()));
-    ON_CALL(*device_, GetGattService(kServiceID))
+        .WillByDefault(Return(mock_bluetooth_device_.get()));
+    ON_CALL(*mock_bluetooth_device_, GetGattService(kServiceID))
         .WillByDefault(Return(service_.get()));
     ON_CALL(*service_, GetCharacteristic(kRXCharacteristicID))
         .WillByDefault(Return(rx_characteristic_.get()));
@@ -413,8 +414,8 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
 
     std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
         new TestBluetoothLowEnergyWeaveClientConnection(
-            remote_device_, adapter_, service_uuid_, bluetooth_throttler_.get(),
-            kMaxNumberOfTries));
+            remote_device_, kTestRemoteDeviceBluetoothAddress, adapter_,
+            service_uuid_, bluetooth_throttler_.get()));
 
     EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
     EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
@@ -431,7 +432,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   // state, without an existing GATT connection.
   void ConnectGatt(TestBluetoothLowEnergyWeaveClientConnection* connection) {
     // Preparing |connection| for a CreateGattConnection call.
-    EXPECT_CALL(*device_, CreateGattConnection(_, _))
+    EXPECT_CALL(*mock_bluetooth_device_, CreateGattConnection(_, _))
         .WillOnce(DoAll(SaveArg<0>(&create_gatt_connection_success_callback_),
                         SaveArg<1>(&create_gatt_connection_error_callback_)));
 
@@ -592,7 +593,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   device::BluetoothUUID service_uuid_;
   device::BluetoothUUID tx_characteristic_uuid_;
   device::BluetoothUUID rx_characteristic_uuid_;
-  std::unique_ptr<device::MockBluetoothDevice> device_;
+  std::unique_ptr<device::MockBluetoothDevice> mock_bluetooth_device_;
   std::unique_ptr<device::MockBluetoothGattService> service_;
   std::unique_ptr<device::MockBluetoothGattCharacteristic> tx_characteristic_;
   std::unique_ptr<device::MockBluetoothGattCharacteristic> rx_characteristic_;
@@ -632,8 +633,8 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
        CreateAndDestroyWithoutConnectCallDoesntCrash) {
   BluetoothLowEnergyWeaveClientConnection connection(
-      remote_device_, adapter_, service_uuid_, bluetooth_throttler_.get(),
-      kMaxNumberOfTries);
+      remote_device_, kTestRemoteDeviceBluetoothAddress, adapter_,
+      service_uuid_, bluetooth_throttler_.get());
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
@@ -1024,7 +1025,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 
   EXPECT_CALL(*bluetooth_throttler_, GetDelay())
       .WillOnce(Return(base::TimeDelta(base::TimeDelta::FromSeconds(1))));
-  EXPECT_CALL(*device_, CreateGattConnection(_, _))
+  EXPECT_CALL(*mock_bluetooth_device_, CreateGattConnection(_, _))
       .WillOnce(DoAll(SaveArg<0>(&create_gatt_connection_success_callback_),
                       SaveArg<1>(&create_gatt_connection_error_callback_)));
 

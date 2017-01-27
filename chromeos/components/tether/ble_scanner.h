@@ -29,7 +29,7 @@ class BleScanner : public device::BluetoothAdapter::Observer {
   class Observer {
    public:
     virtual void OnReceivedAdvertisementFromDevice(
-        const device::BluetoothDevice* bluetooth_device,
+        const std::string& device_address,
         cryptauth::RemoteDevice remote_device) = 0;
   };
 
