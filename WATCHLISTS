@@ -679,8 +679,14 @@
     'net': {
       'filepath': 'net/',
     },
+    'net_base': {
+      'filepath': 'net/base/',
+    },
     'net_error_list': {
       'filepath': 'net/base/net_error_list.h',
+    },
+    'net_http2': {
+      'filepath': 'net/http2/',
     },
     'net_log': {
       'filepath': 'net/log/|' \
@@ -688,6 +694,9 @@
         'chrome/browser/resources/net_internals/|' \
         'chrome/browser/ui/webui/net_internals/|' \
 	'components/net_log/'
+    },
+    'net_spdy': {
+      'filepath': 'net/spdy/',
     },
     'netinfo': {
       'filepath': 'netinfo',
@@ -1939,9 +1948,13 @@
                    'nasko+codewatch@chromium.org'],
     'net': ['cbentzel+watch@chromium.org',
             'net-reviews@chromium.org'],
+    'net_base': ['bnc+watch@chromium.org'],
     'net_error_list': ['mmenke@chromium.org'],
-    'net_log': ['eroman@chromium.org',
+    'net_http2': ['bnc+watch@chromium.org'],
+    'net_log': ['bnc+watch@chromium.org',
+                'eroman@chromium.org',
                 'mmenke@chromium.org'],
+    'net_spdy': ['bnc+watch@chromium.org'],
     'netinfo': ['jkarlin+watch@chromium.org'],
     'notifications': ['awdf+watch@chromium.org',
                       'mlamouri+watch-notifications@chromium.org',
