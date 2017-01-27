@@ -71,11 +71,10 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   LayerTestCommon::LayerImplTest impl;
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(impl.host_impl()->active_tree(), 2);
-  root->SetHasRenderSurface(true);
   std::unique_ptr<LayerImpl> surface =
       LayerImpl::Create(impl.host_impl()->active_tree(), 3);
   surface->SetBounds(layer_size);
-  surface->SetHasRenderSurface(true);
+  surface->test_properties()->force_render_surface = true;
 
   gfx::Transform scale;
   scale.Scale(2, 2);

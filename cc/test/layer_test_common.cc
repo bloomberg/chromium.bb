@@ -130,7 +130,6 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_->host_impl()->active_tree(), 1);
   host_->host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
-  root_layer_for_testing()->SetHasRenderSurface(true);
   host_->host_impl()->SetVisible(true);
   EXPECT_TRUE(
       host_->host_impl()->InitializeRenderer(compositor_frame_sink_.get()));

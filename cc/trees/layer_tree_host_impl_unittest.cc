@@ -1395,7 +1395,6 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   auto* root = root_owned.get();
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_owned));
   root->SetBounds(gfx::Size(50, 50));
-  root->SetHasRenderSurface(true);
 
   auto child_owned = LayerImpl::Create(host_impl_->active_tree(), 2);
   auto* child = child_owned.get();
@@ -1516,7 +1515,6 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
       LayerImpl::Create(host_impl_->active_tree(), 1));
   LayerImpl* root = *host_impl_->active_tree()->begin();
   root->SetBounds(gfx::Size(50, 50));
-  root->SetHasRenderSurface(true);
 
   root->test_properties()->AddChild(std::unique_ptr<MissingTilesLayer>(
       new MissingTilesLayer(host_impl_->active_tree(), 2)));

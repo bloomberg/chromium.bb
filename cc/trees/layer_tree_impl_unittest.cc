@@ -1066,7 +1066,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
     grand_child->SetPosition(gfx::PointF(0.f, 40.f));
     grand_child->SetBounds(gfx::Size(100, 50));
     grand_child->SetDrawsContent(true);
-    grand_child->SetHasRenderSurface(true);
+    grand_child->test_properties()->force_render_surface = true;
 
     // This should let |grand_child| "escape" |child|'s clip.
     grand_child->test_properties()->clip_parent = root;
@@ -1118,7 +1118,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
 
     grand_child->SetBounds(gfx::Size(200, 200));
     grand_child->SetDrawsContent(true);
-    grand_child->SetHasRenderSurface(true);
+    grand_child->test_properties()->force_render_surface = true;
 
     scroll_child->test_properties()->AddChild(std::move(grand_child));
     root->test_properties()->AddChild(std::move(scroll_child));

@@ -101,14 +101,13 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   std::unique_ptr<LayerImpl> root_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
 
+  int owning_layer_id = 2;
   std::unique_ptr<LayerImpl> owning_layer =
-      LayerImpl::Create(host_impl.active_tree(), 2);
-  owning_layer->SetHasRenderSurface(true);
-  ASSERT_TRUE(owning_layer->render_surface());
+      LayerImpl::Create(host_impl.active_tree(), owning_layer_id);
+  owning_layer->test_properties()->force_render_surface = true;
 
   SkBlendMode blend_mode = SkBlendMode::kSoftLight;
   owning_layer->test_properties()->blend_mode = blend_mode;
-  RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
   root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
@@ -116,6 +115,11 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   host_impl.InitializeRenderer(compositor_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+
+  ASSERT_TRUE(
+      host_impl.active_tree()->LayerById(owning_layer_id)->render_surface());
+  RenderSurfaceImpl* render_surface =
+      host_impl.active_tree()->LayerById(owning_layer_id)->render_surface();
 
   gfx::Rect content_rect(0, 0, 50, 50);
   gfx::Rect clip_rect(5, 5, 40, 40);

@@ -1163,7 +1163,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   mask->SetBounds(layer_bounds);
   mask->SetDrawsContent(true);
   pending_layer()->test_properties()->SetMaskLayer(std::move(mask));
-  pending_layer()->SetHasRenderSurface(true);
+  pending_layer()->test_properties()->force_render_surface = true;
   RebuildPropertyTreesOnPendingTree();
   host_impl()->pending_tree()->UpdateDrawProperties(false);
 

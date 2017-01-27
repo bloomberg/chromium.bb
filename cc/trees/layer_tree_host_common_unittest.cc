@@ -563,7 +563,6 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
       LayerImpl::Create(host_impl.active_tree(), 3));
   root->SetBounds(gfx::Size(3, 4));
   root->test_properties()->AddChild(std::move(clip_layer_scoped_ptr));
-  root->SetHasRenderSurface(true);
   LayerImpl* root_layer = root.get();
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
 
@@ -3384,9 +3383,8 @@ TEST_F(LayerTreeHostCommonTest,
   // Each layer's drawable content rect is its bounds in target space; the only
   // thing that changes with surfaces disabled is that target space is always
   // screen space.
-  root->SetHasRenderSurface(true);
-  child1->SetHasRenderSurface(true);
-  child2->SetHasRenderSurface(true);
+  child1->test_properties()->force_render_surface = true;
+  child2->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, 0, 98, 98), parent->visible_layer_rect());
@@ -5050,7 +5048,6 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 
   const int child_id = child->id();
   root->test_properties()->AddChild(std::move(child));
-  root->SetHasRenderSurface(true);
   LayerImpl* root_layer = root.get();
   host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
   host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -5375,7 +5372,6 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
 
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
-  root->SetHasRenderSurface(true);
   host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
 
   LayerImplList render_surface_layer_list;
@@ -8333,7 +8329,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   // If we force render surface, but none of the layers are in the layer list,
   // then this layer should not appear in RSLL.
-  grand_child1_raw->SetHasRenderSurface(true);
+  grand_child1_raw->test_properties()->force_render_surface = true;
   grand_child1_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
@@ -8371,9 +8367,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   // Now child is forced to have a render surface, and one if its children draws
   // content.
   grand_child1_raw->SetDrawsContent(false);
-  grand_child1_raw->SetHasRenderSurface(false);
+  grand_child1_raw->test_properties()->force_render_surface = false;
   grand_child1_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  child_raw->SetHasRenderSurface(true);
+  child_raw->test_properties()->force_render_surface = true;
   grand_child2_raw->SetDrawsContent(true);
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
@@ -9511,7 +9507,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
 
   // A double sided render surface with backface visible should not be skipped
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
-  child_ptr->SetHasRenderSurface(true);
+  child_ptr->test_properties()->force_render_surface = true;
   child_ptr->test_properties()->double_sided = true;
   child_ptr->test_properties()->transform = rotate_back_and_translate;
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
