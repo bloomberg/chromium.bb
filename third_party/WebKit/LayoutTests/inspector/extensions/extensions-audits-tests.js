@@ -15,6 +15,8 @@ var initialize_ExtensionsAuditsTest = function()
         var extensionCategories = document.querySelectorAll(".audit-categories-container > label");
         for (var i = 0; i < extensionCategories.length; ++i) {
             var shouldBeEnabled = extensionCategories[i].textContent.includes("Extension");
+            if (!shouldBeEnabled && extensionCategories[i].textElement)
+                shouldBeEnabled = extensionCategories[i].textElement.textContent.includes("Extension");
             if (shouldBeEnabled !== extensionCategories[i].checkboxElement.checked)
                 extensionCategories[i].checkboxElement.click();
         }
