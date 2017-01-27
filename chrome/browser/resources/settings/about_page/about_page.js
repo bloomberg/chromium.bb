@@ -373,8 +373,12 @@ Polymer({
    * @private
    */
   computeShowCheckUpdates_: function() {
-    return !this.hasCheckedForUpdates_ ||
-        this.checkStatus_(UpdateStatus.FAILED);
+    // Enable the update button if we are in a stale 'updated' status or
+    // update has failed. Disable it otherwise.
+    var staleUpdatedStatus = !this.hasCheckedForUpdates_ &&
+        this.checkStatus_(UpdateStatus.UPDATED);
+
+    return staleUpdatedStatus || this.checkStatus_(UpdateStatus.FAILED);
   },
 
   /**

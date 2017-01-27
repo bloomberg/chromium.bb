@@ -380,6 +380,17 @@ cr.define('settings_about_page', function() {
           assertTrue(relaunch.hidden);
           assertTrue(relaunchAndPowerwash.hidden);
 
+          // Check that the "Check for updates" button gets hidden for certain
+          // UpdateStatus values, even if the CHECKING state was never
+          // encountered (for example triggering update from crosh command
+          // line).
+          fireStatusChanged(UpdateStatus.UPDATING);
+          assertAllHidden();
+          fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
+          assertTrue(checkForUpdates.hidden);
+          assertFalse(relaunch.hidden);
+          assertTrue(relaunchAndPowerwash.hidden);
+
           fireStatusChanged(UpdateStatus.CHECKING);
           assertAllHidden();
 
