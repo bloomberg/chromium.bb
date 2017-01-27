@@ -6,13 +6,13 @@
 #error "This file requires ARC support."
 #endif
 
-#import "remoting/client/ios/app_delegate.h"
+#import "remoting/client/ios/app/app_delegate.h"
 
 #include "base/logging.h"
 
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#import "remoting/client/ios/example_view_controller.h"
+#import "remoting/client/ios/app/example_view_controller.h"
 
 
 @implementation AppDelegate

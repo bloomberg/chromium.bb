@@ -45,6 +45,13 @@ if (is_mac) {
   _template += "uninstaller_bundle_id = \"@MAC_UNINSTALLER_BUNDLE_ID@\""
 }
 
+if (is_ios) {
+  _template += "ios_bundle_id = \"@IOS_BUNDLE_ID@\""
+  _template += "ios_display_name = \"@IOS_DISPLAY_NAME@\""
+  _template += "ios_exec_name = \"@IOS_EXEC_NAME@\""
+  _template += "ios_product_name = \"@IOS_PRODUCT_NAME@\""
+}
+
 _result = exec_script(_version_py_abspath,
                       [
                         "-f",
@@ -88,4 +95,11 @@ if (is_mac) {
       exec_script("//remoting/tools/remove_spaces.py",
                   [ "$host_uninstaller_name" ],
                   "trim string")
+}
+
+if (is_ios) {
+  remoting_ios_bundle_id = _result.ios_bundle_id
+  remoting_ios_display_name = _result.ios_display_name
+  remoting_ios_executable_name = _result.ios_exec_name
+  remoting_ios_product_name = _result.ios_product_name
 }

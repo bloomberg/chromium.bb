@@ -1,0 +1,45 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("all") {
+  testonly = true
+
+  deps = [
+    ":display",
+  ]
+}
+
+group("all_test") {
+  testonly = true
+
+  deps = []
+}
+
+source_set("display") {
+  sources = [
+    "gl_demo_screen.h",
+    "gl_demo_screen.mm",
+    "gl_display_handler.h",
+    "gl_display_handler.mm",
+  ]
+
+  public_deps = [
+    "//remoting/client",
+    "//remoting/client/display",
+    "//remoting/client/ios/bridge",
+    "//third_party/webrtc/base:rtc_base_approved",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  libs = [
+    "CoreGraphics.framework",
+    "GLKit.framework",
+    "OpenGLES.framework",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

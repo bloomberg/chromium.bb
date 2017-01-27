@@ -1,6 +1,10 @@
 APK_PACKAGE_NAME=org.chromium.chromoting
 DAEMON_FILE_NAME=Chromoting Host Service
 IT2ME_HOST_DESCRIPTION=Remote Assistance Host for Chromoting
+IOS_BUNDLE_ID=org.chromium.Chromium
+IOS_DISPLAY_NAME=Chromoting for iOS
+IOS_EXEC_NAME=chromoting
+IOS_PRODUCT_NAME=ChromotingForIos
 MAC_BUNDLE_ID=org.chromium.Chromium
 MAC_CREATOR=Cr24
 MAC_HOST_BUNDLE_ID=org.chromium.chromoting.me2me-host

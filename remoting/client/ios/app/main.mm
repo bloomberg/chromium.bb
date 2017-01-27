@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#import "remoting/client/ios/app_delegate.h"
+#import "remoting/client/ios/app/app_delegate.h"
 
 int main(int argc, char* argv[]) {
   // This class is designed to fulfill the dependents needs when it goes out of

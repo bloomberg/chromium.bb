@@ -9,7 +9,6 @@ group("all") {
 
   deps = [
     ":ios_core",
-    ":main",
     "./bridge:all",
   ]
 }
@@ -21,30 +20,6 @@ group("all_test") {
     ":ios_core_unit_tests",
     "./bridge:bridge_unit_tests",
   ]
-}
-
-source_set("main") {
-  sources = [
-    "app_delegate.h",
-    "app_delegate.mm",
-    "example_view_controller.h",
-    "example_view_controller.mm",
-    "main.mm",
-  ]
-
-  deps = [
-    "//base",
-    "//remoting/base",
-    "//remoting/client",
-    "//remoting/client/ios/bridge",
-    "//remoting/protocol",
-    "//third_party/google_toolbox_for_mac",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/resources",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("ios_core") {

@@ -1,6 +1,10 @@
 APK_PACKAGE_NAME=com.google.chromeremotedesktop
 DAEMON_FILE_NAME=Chrome Remote Desktop Host Service
 IT2ME_HOST_DESCRIPTION=Remote Assistance Host for Chrome Remote Desktop
+IOS_BUNDLE_ID=com.google.Chrome
+IOS_DISPLAY_NAME=Chrome Remote Desktop for iOS
+IOS_EXEC_NAME=ChromeRemoteDesktopiOS
+IOS_PRODUCT_NAME=Chrome Remote Desktop for iOS
 MAC_BUNDLE_ID=com.google.Chrome
 MAC_CREATOR=rimZ
 MAC_HOST_BUNDLE_ID=com.google.chromeremotedesktop.me2me-host

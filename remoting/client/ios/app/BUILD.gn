@@ -1,0 +1,81 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/mac/tweak_info_plist.gni")
+import("//build/config/ios/rules.gni")
+import("//build/config/chrome_build.gni")
+import("//build/util/process_version.gni")
+import("//remoting/build/config/remoting_build.gni")
+
+group("all") {
+  testonly = true
+
+  deps = [
+    ":ios_remoting_app",
+  ]
+}
+
+source_set("main") {
+  sources = [
+    "app_delegate.h",
+    "app_delegate.mm",
+    "example_view_controller.h",
+    "example_view_controller.mm",
+    "main.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//remoting/base",
+    "//remoting/client",
+    "//remoting/protocol",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/resources",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+tweak_info_plist("tweak_info_plist") {
+  info_plist = "//remoting/client/ios/app/resources/Info.plist"
+  args = [ "--platform=ios" ]
+}
+
+ios_app_bundle("ios_remoting_app") {
+  output_name = "remoting-ios"
+
+  entitlements_path = "resources/Remoting.entitlements"
+  info_plist_target = ":tweak_info_plist"
+
+  extra_substitutions = [
+    "BUNDLE_IDENTIFIER=$remoting_ios_bundle_id",
+    "DISPLAY_NAME=$remoting_ios_display_name",
+    "EXECUTABLE_NAME=$remoting_ios_executable_name",
+    "MINIMUM_OS_VERSION=7.0",
+    "PRODUCT_NAME=$remoting_ios_product_name",
+    "VERSION_FULL=$remoting_version_full",
+    "VERSION_SHORT=$remoting_version_short",
+  ]
+
+  libs = [
+    "Accelerate.framework",
+    "AudioToolbox.framework",
+    "CoreAudio.framework",
+    "CoreData.framework",
+    "CoreMIDI.framework",
+    "CoreVideo.framework",
+    "GLKit.framework",
+    "OpenGLES.framework",
+    "Webkit.framework",
+    "SafariServices.framework",
+    "SystemConfiguration.framework",
+  ]
+
+  deps = [
+    ":main",
+    "//base",
+    "//remoting/client/ios/display",
+  ]
+}
