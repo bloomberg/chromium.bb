@@ -101,6 +101,7 @@ source_set("unit_tests_internal") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base",
     "//url",
   ]
 }
