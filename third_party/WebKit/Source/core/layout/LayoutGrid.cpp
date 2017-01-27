@@ -2042,6 +2042,13 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(
   if (needsToFulfillMinimumSize)
     ++repetitions;
 
+  // Clamp the number of repetitions so we don't end up with too many tracks.
+  if (repetitions > kGridMaxTracks) {
+    DCHECK_GT(autoRepeatTrackListLength, 0u);
+    repetitions =
+        (kGridMaxTracks - trackSizes.size()) / autoRepeatTrackListLength;
+  }
+
   return repetitions * autoRepeatTrackListLength;
 }
 
