@@ -23,26 +23,49 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       scroll_layer_id_(scroll_layer_id),
       currently_scrolling_(false),
       scroll_gesture_has_scrolled_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 ScrollbarAnimationController::~ScrollbarAnimationController() {}
 
+SingleScrollbarAnimationControllerThinning&
+ScrollbarAnimationController::GetScrollbarAnimationController(
+    ScrollbarOrientation orientation) const {
+  DCHECK(NeedThinningAnimation());
+  if (orientation == ScrollbarOrientation::VERTICAL)
+    return *(vertical_controller_.get());
+  else
+    return *(horizontal_controller_.get());
+}
+
 bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
-  if (!is_animating_)
-    return false;
+  bool animated = false;
 
-  if (last_awaken_time_.is_null())
-    last_awaken_time_ = now;
+  if (is_animating_) {
+    if (last_awaken_time_.is_null())
+      last_awaken_time_ = now;
 
-  float progress = AnimationProgressAtTime(now);
-  RunAnimationFrame(progress);
+    float progress = AnimationProgressAtTime(now);
+    RunAnimationFrame(progress);
 
-  if (is_animating_)
-    client_->SetNeedsAnimateForScrollbarAnimation();
-  return true;
+    if (is_animating_)
+      client_->SetNeedsAnimateForScrollbarAnimation();
+    animated = true;
+  }
+
+  if (NeedThinningAnimation()) {
+    animated |= vertical_controller_->Animate(now);
+    animated |= horizontal_controller_->Animate(now);
+  }
+
+  return animated;
 }
 
 bool ScrollbarAnimationController::ScrollbarsHidden() const {
+  return false;
+}
+
+bool ScrollbarAnimationController::NeedThinningAnimation() const {
   return false;
 }
 
@@ -77,6 +100,75 @@ void ScrollbarAnimationController::DidScrollEnd() {
   currently_scrolling_ = false;
 }
 
+void ScrollbarAnimationController::DidMouseDown() {
+  if (!NeedThinningAnimation() || ScrollbarsHidden())
+    return;
+
+  vertical_controller_->DidMouseDown();
+  horizontal_controller_->DidMouseDown();
+}
+
+void ScrollbarAnimationController::DidMouseUp() {
+  if (!NeedThinningAnimation())
+    return;
+
+  vertical_controller_->DidMouseUp();
+  horizontal_controller_->DidMouseUp();
+
+  if (!mouse_is_near_any_scrollbar())
+    PostDelayedAnimationTask(false);
+}
+
+void ScrollbarAnimationController::DidMouseLeave() {
+  if (!NeedThinningAnimation())
+    return;
+
+  vertical_controller_->DidMouseLeave();
+  horizontal_controller_->DidMouseLeave();
+}
+
+void ScrollbarAnimationController::DidMouseMoveNear(
+    ScrollbarOrientation orientation,
+    float distance) {
+  if (!NeedThinningAnimation())
+    return;
+
+  GetScrollbarAnimationController(orientation).DidMouseMoveNear(distance);
+
+  if (ScrollbarsHidden() || Captured())
+    return;
+
+  if (mouse_is_near_any_scrollbar()) {
+    ApplyOpacityToScrollbars(1);
+    StopAnimation();
+  } else if (!animating_fade()) {
+    PostDelayedAnimationTask(false);
+  }
+}
+
+bool ScrollbarAnimationController::mouse_is_over_scrollbar(
+    ScrollbarOrientation orientation) const {
+  DCHECK(NeedThinningAnimation());
+  return GetScrollbarAnimationController(orientation).mouse_is_over_scrollbar();
+}
+
+bool ScrollbarAnimationController::mouse_is_near_scrollbar(
+    ScrollbarOrientation orientation) const {
+  DCHECK(NeedThinningAnimation());
+  return GetScrollbarAnimationController(orientation).mouse_is_near_scrollbar();
+}
+
+bool ScrollbarAnimationController::mouse_is_near_any_scrollbar() const {
+  DCHECK(NeedThinningAnimation());
+  return vertical_controller_->mouse_is_near_scrollbar() ||
+         horizontal_controller_->mouse_is_near_scrollbar();
+}
+
+bool ScrollbarAnimationController::Captured() const {
+  DCHECK(NeedThinningAnimation());
+  return vertical_controller_->captured() || horizontal_controller_->captured();
+}
+
 void ScrollbarAnimationController::PostDelayedAnimationTask(bool on_resize) {
   base::TimeDelta delay =
       on_resize ? resize_delay_before_starting_ : delay_before_starting_;
@@ -101,6 +193,12 @@ void ScrollbarAnimationController::StopAnimation() {
 
 ScrollbarSet ScrollbarAnimationController::Scrollbars() const {
   return client_->ScrollbarsFor(scroll_layer_id_);
+}
+
+void ScrollbarAnimationController::set_mouse_move_distance_for_test(
+    float distance) {
+  vertical_controller_->set_mouse_move_distance_for_test(distance);
+  horizontal_controller_->set_mouse_move_distance_for_test(distance);
 }
 
 }  // namespace cc

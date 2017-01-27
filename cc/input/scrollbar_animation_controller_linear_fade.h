@@ -40,7 +40,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
 
  private:
   float OpacityAtTime(base::TimeTicks now) const;
-  void ApplyOpacityToScrollbars(float opacity);
+  void ApplyOpacityToScrollbars(float opacity) override;
 
   base::TimeDelta duration_;
 

@@ -3248,7 +3248,6 @@ void LayerTreeHostImpl::MouseUp() {
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
-  float distance_to_scrollbar = std::numeric_limits<float>::max();
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
@@ -3261,10 +3260,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   int new_id = Layer::INVALID_ID;
   if (layer_impl && layer_impl->ToScrollbarLayer())
     new_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
-  if (new_id != Layer::INVALID_ID) {
-    // Mouse over a scrollbar.
-    distance_to_scrollbar = 0;
-  } else {
+  if (new_id == Layer::INVALID_ID) {
     bool scroll_on_main_thread = false;
     uint32_t main_thread_scrolling_reasons;
     LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
@@ -3293,12 +3289,12 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   if (!new_animation_controller)
     return;
 
-  for (ScrollbarLayerImplBase* scrollbar : ScrollbarsFor(new_id))
-    distance_to_scrollbar =
-        std::min(distance_to_scrollbar,
-                 DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar));
-  new_animation_controller->DidMouseMoveNear(
-      distance_to_scrollbar / active_tree_->device_scale_factor());
+  for (ScrollbarLayerImplBase* scrollbar : ScrollbarsFor(new_id)) {
+    new_animation_controller->DidMouseMoveNear(
+        scrollbar->orientation(),
+        DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar) /
+            active_tree_->device_scale_factor());
+  }
 }
 
 void LayerTreeHostImpl::MouseLeave() {

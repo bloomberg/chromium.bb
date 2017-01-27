@@ -2944,7 +2944,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
 
     if (expecting_animations) {
       host_impl_->ScrollbarAnimationControllerForId(scroll->id())
-          ->DidMouseMoveNear(0);
+          ->DidMouseMoveNear(VERTICAL, 0);
     } else {
       EXPECT_EQ(nullptr,
                 host_impl_->ScrollbarAnimationControllerForId(scroll->id()));
@@ -3204,26 +3204,34 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   scrollbar_animation_controller->set_mouse_move_distance_for_test(100.f);
 
   host_impl_->MouseMoveAt(gfx::Point(200, 1));
-  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
 
   host_impl_->MouseMoveAt(gfx::Point(100, 50));
-  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
 
   host_impl_->MouseMoveAt(gfx::Point(116, 100));
-  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
 
   scrollbar_animation_controller->set_mouse_move_distance_for_test(102.f);
   host_impl_->MouseMoveAt(gfx::Point(116, 100));
-  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
 
   did_request_redraw_ = false;
-  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(10, 100));
-  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(10, 120));
-  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(150, 120));
-  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_animation_controller->mouse_is_over_scrollbar(VERTICAL));
 }
 
 TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf1) {
@@ -11604,20 +11612,30 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   // Mouse moves close to the scrollbar, goes over the scrollbar, and
   // moves back to where it was.
   host_impl_->MouseMoveAt(gfx::Point(100, 150));
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
-  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(10, 150));
-  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
-  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(100, 150));
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
 
   // scrollbar_2 on child.
   std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_2 =
@@ -11658,25 +11676,41 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   // Mouse goes over scrollbar_2, moves close to scrollbar_2, moves close to
   // scrollbar_1, goes over scrollbar_1.
   host_impl_->MouseMoveAt(gfx::Point(60, 150));
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
-  EXPECT_TRUE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_TRUE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_2_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_2_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(100, 150));
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
-  EXPECT_TRUE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_2_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_2_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
-  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
-  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_2_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_2_animation_controller->mouse_is_over_scrollbar(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(10, 150));
-  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
-  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
-  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_2_animation_controller->mouse_is_near_scrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_2_animation_controller->mouse_is_over_scrollbar(VERTICAL));
 }
 
 TEST_F(LayerTreeHostImplTest,
