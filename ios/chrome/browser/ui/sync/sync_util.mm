@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/sync/sync_util.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"

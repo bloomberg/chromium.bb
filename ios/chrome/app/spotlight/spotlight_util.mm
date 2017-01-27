@@ -6,7 +6,7 @@
 
 #import <CoreSpotlight/CoreSpotlight.h>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/spotlight/spotlight_provider.h"

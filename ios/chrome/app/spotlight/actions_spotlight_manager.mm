@@ -8,7 +8,7 @@
 
 #include "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/experimental_flags.h"

@@ -8,7 +8,7 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"

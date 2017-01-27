@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"

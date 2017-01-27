@@ -11,7 +11,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"

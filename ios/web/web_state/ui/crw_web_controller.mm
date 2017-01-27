@@ -29,7 +29,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"

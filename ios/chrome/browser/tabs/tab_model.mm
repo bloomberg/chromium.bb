@@ -12,7 +12,7 @@
 #import "base/ios/crb_protocol_observers.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"

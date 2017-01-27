@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/web_thread.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
+
 NSString* const kChromeFirstRunUIWillFinishNotification =
     @"kChromeFirstRunUIWillFinishNotification";
 

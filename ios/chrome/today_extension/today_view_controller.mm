@@ -18,6 +18,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"

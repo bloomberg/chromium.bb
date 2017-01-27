@@ -11,6 +11,7 @@
 #include "base/mac/bind_objc_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"

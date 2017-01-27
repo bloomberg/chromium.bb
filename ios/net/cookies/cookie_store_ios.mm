@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"

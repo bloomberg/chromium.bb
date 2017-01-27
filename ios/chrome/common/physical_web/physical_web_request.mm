@@ -9,7 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"

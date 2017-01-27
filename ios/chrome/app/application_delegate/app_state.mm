@@ -6,6 +6,7 @@
 
 #include "base/critical_closure.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/metrics/metrics_service.h"
 #import "ios/chrome/app/main_application_delegate.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"

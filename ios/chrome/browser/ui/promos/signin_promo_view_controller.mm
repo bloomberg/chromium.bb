@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"

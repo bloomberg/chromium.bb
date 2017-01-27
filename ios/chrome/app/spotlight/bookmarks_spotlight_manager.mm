@@ -9,7 +9,7 @@
 #import <CoreSpotlight/CoreSpotlight.h>
 
 #include "base/ios/weak_nsobject.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"

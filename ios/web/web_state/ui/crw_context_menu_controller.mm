@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"

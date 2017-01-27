@@ -8,7 +8,7 @@
 #import <CoreLocation/CoreLocation.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/physical_web/physical_web_constants.h"
 #include "ios/chrome/browser/pref_names.h"
