@@ -192,7 +192,7 @@ void ReadingListWebStateObserver::StartCheckingLoading() {
   try_number_ = 0;
   timer_.reset(new base::Timer(false, true));
   const base::TimeDelta kDelayUntilLoadingProgressIsChecked =
-      base::TimeDelta::FromSeconds(1);
+      base::TimeDelta::FromMilliseconds(1500);
   timer_->Start(
       FROM_HERE, kDelayUntilLoadingProgressIsChecked,
       base::Bind(
