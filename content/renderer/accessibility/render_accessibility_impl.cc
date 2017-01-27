@@ -504,7 +504,7 @@ void RenderAccessibilityImpl::OnPerformAction(
       target.setSequentialFocusNavigationStartingPoint();
       break;
     case ui::AX_ACTION_SET_VALUE:
-      target.setValue(data.value);
+      target.setValue(blink::WebString::fromUTF16(data.value));
       HandleAXEvent(target, ui::AX_EVENT_VALUE_CHANGED);
       break;
     case ui::AX_ACTION_SHOW_CONTEXT_MENU:

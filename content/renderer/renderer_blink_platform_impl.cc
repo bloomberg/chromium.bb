@@ -709,8 +709,7 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
 
   int session_id = 0;
   if (input_device_id.isNull() ||
-      !base::StringToInt(base::UTF16ToUTF8(
-          base::StringPiece16(input_device_id)), &session_id)) {
+      !base::StringToInt(input_device_id.utf8(), &session_id)) {
     if (input_channels > 0)
       DLOG(WARNING) << "createAudioDevice(): request for audio input ignored";
 
@@ -759,13 +758,14 @@ void RendererBlinkPlatformImpl::getPluginList(
   RenderThread::Get()->Send(
       new FrameHostMsg_GetPlugins(refresh, mainFrameOrigin, &plugins));
   for (const WebPluginInfo& plugin : plugins) {
-    builder->addPlugin(
-        plugin.name, plugin.desc,
-        plugin.path.BaseName().AsUTF16Unsafe());
+    builder->addPlugin(WebString::fromUTF16(plugin.name),
+                       WebString::fromUTF16(plugin.desc),
+                       blink::FilePathToWebString(plugin.path.BaseName()));
 
     for (const WebPluginMimeType& mime_type : plugin.mime_types) {
       builder->addMediaTypeToLastPlugin(
-          WebString::fromUTF8(mime_type.mime_type), mime_type.description);
+          WebString::fromUTF8(mime_type.mime_type),
+          WebString::fromUTF16(mime_type.description));
 
       for (const auto& extension : mime_type.file_extensions) {
         builder->addFileExtensionToLastMediaType(
@@ -1107,7 +1107,7 @@ blink::WebCompositorSupport* RendererBlinkPlatformImpl::compositorSupport() {
 
 blink::WebString RendererBlinkPlatformImpl::convertIDNToUnicode(
     const blink::WebString& host) {
-  return url_formatter::IDNToUnicode(host.utf8());
+  return WebString::fromUTF16(url_formatter::IDNToUnicode(host.utf8()));
 }
 
 //------------------------------------------------------------------------------

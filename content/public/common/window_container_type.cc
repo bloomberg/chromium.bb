@@ -31,11 +31,14 @@ WindowContainerType WindowFeaturesToContainerType(
   bool persistent = false;
 
   for (size_t i = 0; i < window_features.additionalFeatures.size(); ++i) {
-    base::string16 feature = window_features.additionalFeatures[i];
-    if (base::LowerCaseEqualsASCII(feature, kBackground))
-      background = true;
-    else if (base::LowerCaseEqualsASCII(feature, kPersistent))
-      persistent = true;
+    blink::WebString feature = window_features.additionalFeatures[i];
+    if (feature.containsOnlyASCII()) {
+      std::string featureASCII = feature.ascii();
+      if (base::LowerCaseEqualsASCII(featureASCII, kBackground))
+        background = true;
+      else if (base::LowerCaseEqualsASCII(featureASCII, kPersistent))
+        persistent = true;
+    }
   }
 
   if (background) {

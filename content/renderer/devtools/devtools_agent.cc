@@ -330,7 +330,7 @@ void DevToolsAgent::GotManifest(int session_id,
   }
 
   WebString url = frame_->GetWebFrame()->document().manifestURL().string();
-  result->SetString("url", url);
+  result->SetString("url", url.utf16());
   if (!failed)
     result->SetString("data", debug_info.raw_data);
   result->Set("errors", errors.release());

@@ -150,10 +150,12 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
     attribute_name = "data";
   } else if (element.hasHTMLTagName("link")) {
     // If the link element is not linked to css, ignore it.
-    if (base::LowerCaseEqualsASCII(
-            base::StringPiece16(element.getAttribute("type")), "text/css") ||
-        base::LowerCaseEqualsASCII(
-            base::StringPiece16(element.getAttribute("rel")), "stylesheet")) {
+    WebString type = element.getAttribute("type");
+    WebString rel = element.getAttribute("rel");
+    if ((type.containsOnlyASCII() &&
+         base::LowerCaseEqualsASCII(type.ascii(), "text/css")) ||
+        (rel.containsOnlyASCII() &&
+         base::LowerCaseEqualsASCII(rel.ascii(), "stylesheet"))) {
       // TODO(jnd): Add support for extracting links of sub-resources which
       // are inside style-sheet such as @import, url(), etc.
       // See bug: http://b/issue?id=1111667.

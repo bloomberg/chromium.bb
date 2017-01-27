@@ -64,6 +64,7 @@
 #include "ipc/ipc_sync_message.h"
 #include "ppapi/features/features.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
@@ -187,7 +188,7 @@ WebDragData DropMetaDataToWebDragData(
     if (meta_data_item.kind == DropData::Kind::STRING) {
       WebDragData::Item item;
       item.storageType = WebDragData::Item::StorageTypeString;
-      item.stringType = meta_data_item.mime_type;
+      item.stringType = WebString::fromUTF16(meta_data_item.mime_type);
       // Have to pass a dummy URL here instead of an empty URL because the
       // DropData received by browser_plugins goes through a round trip:
       // DropData::MetaData --> WebDragData-->DropData. In the end, DropData
@@ -208,7 +209,7 @@ WebDragData DropMetaDataToWebDragData(
         !meta_data_item.filename.empty()) {
       WebDragData::Item item;
       item.storageType = WebDragData::Item::StorageTypeFilename;
-      item.filenameData = meta_data_item.filename.AsUTF16Unsafe();
+      item.filenameData = blink::FilePathToWebString(meta_data_item.filename);
       item_list.push_back(item);
       continue;
     }
@@ -240,7 +241,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeString;
     item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeText);
-    item.stringData = drop_data.text.string();
+    item.stringData = WebString::fromUTF16(drop_data.text.string());
     item_list.push_back(item);
   }
 
@@ -249,7 +250,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item.storageType = WebDragData::Item::StorageTypeString;
     item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeURIList);
     item.stringData = WebString::fromUTF8(drop_data.url.spec());
-    item.title = drop_data.url_title;
+    item.title = WebString::fromUTF16(drop_data.url_title);
     item_list.push_back(item);
   }
 
@@ -257,7 +258,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeString;
     item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeHTML);
-    item.stringData = drop_data.html.string();
+    item.stringData = WebString::fromUTF16(drop_data.html.string());
     item.baseURL = drop_data.html_base_url;
     item_list.push_back(item);
   }
@@ -268,8 +269,9 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
        ++it) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeFilename;
-    item.filenameData = it->path.AsUTF16Unsafe();
-    item.displayNameData = it->display_name.AsUTF16Unsafe();
+    item.filenameData = blink::FilePathToWebString(it->path);
+    item.displayNameData =
+        blink::FilePathToWebString(base::FilePath(it->display_name));
     item_list.push_back(item);
   }
 
@@ -291,15 +293,15 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
        ++it) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = it->first;
-    item.stringData = it->second;
+    item.stringType = WebString::fromUTF16(it->first);
+    item.stringData = WebString::fromUTF16(it->second);
     item_list.push_back(item);
   }
 
   WebDragData result;
   result.initialize();
   result.setItems(item_list);
-  result.setFilesystemId(drop_data.filesystem_id);
+  result.setFilesystemId(WebString::fromUTF16(drop_data.filesystem_id));
   return result;
 }
 
@@ -1495,7 +1497,7 @@ WebRect RenderWidget::viewRect() {
 
 void RenderWidget::setToolTipText(const blink::WebString& text,
                                   WebTextDirection hint) {
-  Send(new ViewHostMsg_SetTooltipText(routing_id_, text, hint));
+  Send(new ViewHostMsg_SetTooltipText(routing_id_, text.utf16(), hint));
 }
 
 void RenderWidget::setWindowRect(const WebRect& rect_in_screen) {
@@ -1552,7 +1554,8 @@ void RenderWidget::OnImeSetComposition(
   blink::WebInputMethodController* controller = GetInputMethodController();
   if (!controller ||
       !controller->setComposition(
-          text, WebVector<WebCompositionUnderline>(underlines), selection_start,
+          WebString::fromUTF16(text),
+          WebVector<WebCompositionUnderline>(underlines), selection_start,
           selection_end)) {
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
@@ -1587,7 +1590,8 @@ void RenderWidget::OnImeCommitText(
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
   if (auto* controller = GetInputMethodController())
-    controller->commitText(text, WebVector<WebCompositionUnderline>(underlines),
+    controller->commitText(WebString::fromUTF16(text),
+                           WebVector<WebCompositionUnderline>(underlines),
                            relative_cursor_pos);
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);

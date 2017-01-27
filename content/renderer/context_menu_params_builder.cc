@@ -28,9 +28,9 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.keyword_url = data.keywordURL;
   params.frame_url = data.frameURL;
   params.media_flags = data.mediaFlags;
-  params.selection_text = data.selectedText;
-  params.title_text = data.titleText;
-  params.misspelled_word = data.misspelledWord;
+  params.selection_text = data.selectedText.utf16();
+  params.title_text = data.titleText.utf16();
+  params.misspelled_word = data.misspelledWord.utf16();
   params.misspelling_hash = data.misspellingHash;
   params.spellcheck_enabled = data.isSpellCheckingEnabled;
   params.is_editable = data.isEditable;
@@ -40,7 +40,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.edit_flags = data.editFlags;
   params.frame_charset = data.frameEncoding.utf8();
   params.referrer_policy = data.referrerPolicy;
-  params.suggested_filename = data.suggestedFilename;
+  params.suggested_filename = data.suggestedFilename.utf16();
   params.input_field_type = data.inputFieldType;
 
   if (!data.imageResponse.isNull()) {
@@ -49,7 +49,8 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   }
 
   for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
-    params.dictionary_suggestions.push_back(data.dictionarySuggestions[i]);
+    params.dictionary_suggestions.push_back(
+        data.dictionarySuggestions[i].utf16());
 
   params.custom_context.is_pepper_menu = false;
   for (size_t i = 0; i < data.customItems.size(); ++i)
@@ -60,7 +61,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
         SingleHistoryItemToPageState(data.frameHistoryItem);
   }
 
-  params.link_text = data.linkText;
+  params.link_text = data.linkText.utf16();
 
   return params;
 }

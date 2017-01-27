@@ -76,8 +76,8 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   const std::vector<char> data(kMaxValueSizeForTesting - kKeySize);
   const WebData value(&data.front(), data.size());
   const WebVector<WebBlobInfo> web_blob_info;
-  const WebIDBKey key = WebIDBKey::createString(
-      base::string16(kKeySize / sizeof(base::string16::value_type), 'x'));
+  const WebIDBKey key = WebIDBKey::createString(blink::WebString::fromUTF16(
+      base::string16(kKeySize / sizeof(base::string16::value_type), 'x')));
 
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;

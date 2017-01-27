@@ -18,7 +18,8 @@ namespace content {
 void RendererWebCookieJarImpl::setCookie(
     const WebURL& url, const WebURL& first_party_for_cookies,
     const WebString& value) {
-  std::string value_utf8 = base::UTF16ToUTF8(base::StringPiece16(value));
+  std::string value_utf8 = value.utf8(
+      WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
   RenderThreadImpl::current()->render_frame_message_filter()->SetCookie(
       sender_->GetRoutingID(), url, first_party_for_cookies, value_utf8);
 }

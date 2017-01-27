@@ -459,10 +459,10 @@ void RenderFrameProxy::forwardPostMessage(
 
   FrameMsg_PostMessage_Params params;
   params.is_data_raw_string = false;
-  params.data = event.data().toString();
-  params.source_origin = event.origin();
+  params.data = event.data().toString().utf16();
+  params.source_origin = event.origin().utf16();
   if (!target_origin.isNull())
-    params.target_origin = target_origin.toString();
+    params.target_origin = target_origin.toString().utf16();
 
   params.message_ports =
       WebMessagePortChannelImpl::ExtractMessagePortIDs(event.releaseChannels());

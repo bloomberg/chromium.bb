@@ -1852,7 +1852,7 @@ void RenderFrameImpl::OnCopyToFindPboard() {
   // Since the find pasteboard supports only plain text, this can be simpler
   // than the |OnCopy()| case.
   if (frame_->hasSelection()) {
-    base::string16 selection = frame_->selectionAsText();
+    base::string16 selection = frame_->selectionAsText().utf16();
     RenderThread::Get()->Send(
         new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
   }
@@ -1917,7 +1917,7 @@ void RenderFrameImpl::OnReplace(const base::string16& text) {
   if (!frame_->hasSelection())
     frame_->selectWordAroundCaret();
 
-  frame_->replaceSelection(text);
+  frame_->replaceSelection(WebString::fromUTF16(text));
   SyncSelectionIfRequired();
 }
 
@@ -1925,7 +1925,7 @@ void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {
   if (!frame_->hasSelection())
     return;
 
-  frame_->replaceMisspelledRange(text);
+  frame_->replaceMisspelledRange(WebString::fromUTF16(text));
 }
 
 void RenderFrameImpl::OnCopyImageAt(int x, int y) {
@@ -1953,8 +1953,8 @@ void RenderFrameImpl::OnJavaScriptExecuteRequest(
                        TRACE_EVENT_SCOPE_THREAD);
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Value> result =
-      frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
+  v8::Local<v8::Value> result = frame_->executeScriptAndReturnValue(
+      WebScriptSource(WebString::fromUTF16(jscript)));
 
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
 }
@@ -1972,8 +1972,8 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
   std::unique_ptr<blink::WebScopedUserGesture> gesture(
       has_user_gesture ? new blink::WebScopedUserGesture(frame_) : nullptr);
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
-  v8::Local<v8::Value> result =
-      frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
+  v8::Local<v8::Value> result = frame_->executeScriptAndReturnValue(
+      WebScriptSource(WebString::fromUTF16(jscript)));
 
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
 }
@@ -1996,7 +1996,7 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestInIsolatedWorld(
   }
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebScriptSource script = WebScriptSource(jscript);
+  WebScriptSource script = WebScriptSource(WebString::fromUTF16(jscript));
   JavaScriptIsolatedWorldRequest* request = new JavaScriptIsolatedWorldRequest(
       id, notify_result, routing_id_, weak_factory_.GetWeakPtr());
   frame_->requestExecuteScriptInIsolatedWorld(world_id, &script, 1, false,
@@ -2232,22 +2232,21 @@ void RenderFrameImpl::OnPostMessageEvent(
                                                              context);
     serialized_script_value = WebSerializedScriptValue::serialize(result_value);
   } else {
-    serialized_script_value = WebSerializedScriptValue::fromString(params.data);
+    serialized_script_value =
+        WebSerializedScriptValue::fromString(WebString::fromUTF16(params.data));
   }
 
   // We must pass in the target_origin to do the security check on this side,
   // since it may have changed since the original postMessage call was made.
   WebSecurityOrigin target_origin;
   if (!params.target_origin.empty()) {
-    target_origin =
-        WebSecurityOrigin::createFromString(WebString(params.target_origin));
+    target_origin = WebSecurityOrigin::createFromString(
+        WebString::fromUTF16(params.target_origin));
   }
 
   WebDOMMessageEvent msg_event(serialized_script_value,
-                               params.source_origin,
-                               source_frame,
-                               frame_->document(),
-                               channels);
+                               WebString::fromUTF16(params.source_origin),
+                               source_frame, frame_->document(), channels);
   frame_->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 
@@ -2275,8 +2274,7 @@ void RenderFrameImpl::OnTextSurroundingSelectionRequest(uint32_t max_length) {
   }
 
   Send(new FrameHostMsg_TextSurroundingSelectionResponse(
-      routing_id_,
-      surroundingText.textContent(),
+      routing_id_, surroundingText.textContent().utf16(),
       surroundingText.startOffsetInTextContent(),
       surroundingText.endOffsetInTextContent()));
 }
@@ -2737,8 +2735,8 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
     return plugin;
   }
 
-  if (base::UTF16ToUTF8(base::StringPiece16(params.mimeType)) ==
-      kBrowserPluginMimeType) {
+  if (params.mimeType.containsOnlyASCII() &&
+      params.mimeType.ascii() == kBrowserPluginMimeType) {
     return BrowserPluginManager::Get()->CreateBrowserPlugin(
         this, GetContentClient()
                   ->renderer()
@@ -3026,9 +3024,8 @@ blink::WebLocalFrame* RenderFrameImpl::createChildFrame(
   FrameHostMsg_CreateChildFrame_Params params;
   params.parent_routing_id = routing_id_;
   params.scope = scope;
-  params.frame_name = base::UTF16ToUTF8(base::StringPiece16(name));
-  params.frame_unique_name =
-      base::UTF16ToUTF8(base::StringPiece16(unique_name));
+  params.frame_name = name.utf8();
+  params.frame_unique_name = unique_name.utf8();
   params.sandbox_flags = sandbox_flags;
   params.frame_owner_properties = FrameOwnerProperties(frame_owner_properties);
   Send(new FrameHostMsg_CreateChildFrame(params, &child_routing_id));
@@ -3164,8 +3161,7 @@ void RenderFrameImpl::willCommitProvisionalLoad(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::didChangeName(const blink::WebString& name,
                                     const blink::WebString& unique_name) {
   Send(new FrameHostMsg_DidChangeName(
-      routing_id_, base::UTF16ToUTF8(base::StringPiece16(name)),
-      base::UTF16ToUTF8(base::StringPiece16(unique_name))));
+      routing_id_, name.utf8(), unique_name.utf8()));
 
   if (!committed_first_load_)
     name_changed_before_first_commit_ = true;
@@ -3202,7 +3198,7 @@ void RenderFrameImpl::didAddContentSecurityPolicy(
     return;
 
   ContentSecurityPolicyHeader header;
-  header.header_value = base::UTF16ToUTF8(base::StringPiece16(header_value));
+  header.header_value = header_value.utf8();
   header.type = type;
   header.source = source;
   Send(new FrameHostMsg_DidAddContentSecurityPolicy(routing_id_, header));
@@ -3233,7 +3229,7 @@ void RenderFrameImpl::setHasReceivedUserGesture() {
 bool RenderFrameImpl::shouldReportDetailedMessageForSource(
     const blink::WebString& source) {
   return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(
-      source);
+      source.utf16());
 }
 
 void RenderFrameImpl::didAddMessageToConsole(
@@ -3261,15 +3257,15 @@ void RenderFrameImpl::didAddMessageToConsole(
 
   if (shouldReportDetailedMessageForSource(source_name)) {
     for (auto& observer : observers_) {
-      observer.DetailedConsoleMessageAdded(message.text, source_name,
-                                           stack_trace, source_line,
-                                           static_cast<uint32_t>(log_severity));
+      observer.DetailedConsoleMessageAdded(
+          message.text.utf16(), source_name.utf16(), stack_trace.utf16(),
+          source_line, static_cast<uint32_t>(log_severity));
     }
   }
 
   Send(new FrameHostMsg_DidAddMessageToConsole(
-      routing_id_, static_cast<int32_t>(log_severity), message.text,
-      static_cast<int32_t>(source_line), source_name));
+      routing_id_, static_cast<int32_t>(log_severity), message.text.utf16(),
+      static_cast<int32_t>(source_line), source_name.utf16()));
 }
 
 void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
@@ -3284,7 +3280,7 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
     params.url = request.url();
     params.referrer = referrer;
     params.initiator_origin = request.requestorOrigin();
-    params.suggested_name = suggested_name;
+    params.suggested_name = suggested_name.utf16();
 
     Send(new FrameHostMsg_DownloadUrl(params));
   } else {
@@ -3769,10 +3765,10 @@ void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
   DCHECK_EQ(frame_, frame);
   // Ignore all but top level navigations.
   if (!frame->parent()) {
-    base::string16 title16 = title;
     base::trace_event::TraceLog::GetInstance()->UpdateProcessLabel(
-        routing_id_, base::UTF16ToUTF8(title16));
+        routing_id_, title.utf8());
 
+    base::string16 title16 = title.utf16();
     base::string16 shortened_title = title16.substr(0, kMaxTitleChars);
     Send(new FrameHostMsg_UpdateTitle(routing_id_,
                                       shortened_title, direction));
@@ -4063,19 +4059,13 @@ blink::WebColorChooser* RenderFrameImpl::createColorChooser(
 }
 
 void RenderFrameImpl::runModalAlertDialog(const blink::WebString& message) {
-  RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_ALERT,
-                       message,
-                       base::string16(),
-                       frame_->document().url(),
-                       NULL);
+  RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_ALERT, message.utf16(),
+                       base::string16(), frame_->document().url(), NULL);
 }
 
 bool RenderFrameImpl::runModalConfirmDialog(const blink::WebString& message) {
-  return RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
-                              message,
-                              base::string16(),
-                              frame_->document().url(),
-                              NULL);
+  return RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_CONFIRM, message.utf16(),
+                              base::string16(), frame_->document().url(), NULL);
 }
 
 bool RenderFrameImpl::runModalPromptDialog(
@@ -4084,12 +4074,10 @@ bool RenderFrameImpl::runModalPromptDialog(
     blink::WebString* actual_value) {
   base::string16 result;
   bool ok = RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_PROMPT,
-                                 message,
-                                 default_value,
-                                 frame_->document().url(),
-                                 &result);
+                                 message.utf16(), default_value.utf16(),
+                                 frame_->document().url(), &result);
   if (ok)
-    actual_value->assign(result);
+    actual_value->assign(WebString::fromUTF16(result));
   return ok;
 }
 
@@ -4122,10 +4110,10 @@ bool RenderFrameImpl::runFileChooser(
     ipc_params.mode = FileChooserParams::Save;
   else
     ipc_params.mode = FileChooserParams::Open;
-  ipc_params.title = params.title;
+  ipc_params.title = params.title.utf16();
   ipc_params.accept_types.reserve(params.acceptTypes.size());
   for (const auto& type : params.acceptTypes)
-    ipc_params.accept_types.push_back(type);
+    ipc_params.accept_types.push_back(type.utf16());
   ipc_params.need_local_path = params.needLocalPath;
 #if defined(OS_ANDROID)
   ipc_params.capture = params.useMediaCapture;
@@ -4698,22 +4686,15 @@ void RenderFrameImpl::registerProtocolHandler(const WebString& scheme,
                                               const WebURL& url,
                                               const WebString& title) {
   bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  Send(new FrameHostMsg_RegisterProtocolHandler(
-      routing_id_,
-      base::UTF16ToUTF8(base::StringPiece16(scheme)),
-      url,
-      title,
-      user_gesture));
+  Send(new FrameHostMsg_RegisterProtocolHandler(routing_id_, scheme.utf8(), url,
+                                                title.utf16(), user_gesture));
 }
 
 void RenderFrameImpl::unregisterProtocolHandler(const WebString& scheme,
                                                 const WebURL& url) {
   bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  Send(new FrameHostMsg_UnregisterProtocolHandler(
-      routing_id_,
-      base::UTF16ToUTF8(base::StringPiece16(scheme)),
-      url,
-      user_gesture));
+  Send(new FrameHostMsg_UnregisterProtocolHandler(routing_id_, scheme.utf8(),
+                                                  url, user_gesture));
 }
 
 void RenderFrameImpl::didSerializeDataForFrame(
@@ -5598,7 +5579,8 @@ void RenderFrameImpl::OnFind(int request_id,
       // Just navigate back/forward.
       plugin->selectFindResult(options.forward, request_id);
     } else {
-      if (!plugin->startFind(search_text, options.matchCase, request_id)) {
+      if (!plugin->startFind(WebString::fromUTF16(search_text),
+                             options.matchCase, request_id)) {
         // Send "no results".
         SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
                       gfx::Rect(), true /* final_status_update */);
@@ -5607,7 +5589,7 @@ void RenderFrameImpl::OnFind(int request_id,
     return;
   }
 
-  frame_->requestFind(request_id, search_text, options);
+  frame_->requestFind(request_id, WebString::fromUTF16(search_text), options);
 }
 
 void RenderFrameImpl::OnClearActiveFindMatch() {
@@ -5656,9 +5638,9 @@ void RenderFrameImpl::OnFileChooserResponse(
       files.size());
   for (size_t i = 0; i < files.size(); ++i) {
     blink::WebFileChooserCompletion::SelectedFileInfo selected_file;
-    selected_file.path = files[i].file_path.AsUTF16Unsafe();
+    selected_file.path = blink::FilePathToWebString(files[i].file_path);
     selected_file.displayName =
-        base::FilePath(files[i].display_name).AsUTF16Unsafe();
+        blink::FilePathToWebString(base::FilePath(files[i].display_name));
     if (files[i].file_system_url.is_valid()) {
       selected_file.fileSystemURL = files[i].file_system_url;
       selected_file.length = files[i].length;
@@ -6073,10 +6055,10 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
         offset = 0;
       size_t length =
           selection.endOffset() - offset + kExtraCharsBeforeAndAfterSelection;
-      text = frame_->rangeAsText(WebRange(offset, length));
+      text = frame_->rangeAsText(WebRange(offset, length)).utf16();
     } else {
       offset = selection.startOffset();
-      text = frame_->selectionAsText();
+      text = frame_->selectionAsText().utf16();
       // http://crbug.com/101435
       // In some case, frame->selectionAsText() returned text's length is not
       // equal to the length returned from
@@ -6347,7 +6329,7 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
     blink::WebLocalFrame* frame) {
   bool show_repost_interstitial =
       (error.reason == net::ERR_CACHE_MISS &&
-       base::EqualsASCII(base::StringPiece16(request.httpMethod()), "POST"));
+       base::EqualsASCII(request.httpMethod().utf16(), "POST"));
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.error_code = error.reason;

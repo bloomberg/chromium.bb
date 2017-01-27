@@ -108,8 +108,7 @@ void SpeechRecognitionDispatcher::start(
         SpeechRecognitionGrammar(grammar.src().string().utf8(),
                                  grammar.weight()));
   }
-  msg_params.language =
-      base::UTF16ToUTF8(base::StringPiece16(params.language()));
+  msg_params.language = params.language().utf8();
   msg_params.max_hypotheses = static_cast<uint32_t>(params.maxAlternatives());
   msg_params.continuous = params.continuous();
   msg_params.interim_results = params.interimResults();
@@ -253,7 +252,7 @@ void SpeechRecognitionDispatcher::OnResultsRetrieved(
     WebVector<WebString> transcripts(num_hypotheses);
     WebVector<float> confidences(num_hypotheses);
     for (size_t i = 0; i < num_hypotheses; ++i) {
-      transcripts[i] = result.hypotheses[i].utterance;
+      transcripts[i] = WebString::fromUTF16(result.hypotheses[i].utterance);
       confidences[i] = static_cast<float>(result.hypotheses[i].confidence);
     }
     webkit_result->assign(transcripts, confidences, !result.is_provisional);

@@ -192,8 +192,7 @@ class DomSerializerTests : public ContentBrowserTest,
     // Find corresponding WebFrame according to frame_url.
     WebFrame* web_frame = FindSubFrameByURL(frame_url);
     ASSERT_TRUE(web_frame != NULL);
-    WebString file_path =
-        base::FilePath(FILE_PATH_LITERAL("c:\\dummy.htm")).AsUTF16Unsafe();
+    WebString file_path = WebString::fromUTF8("c:\\dummy.htm");
     SingleLinkRewritingDelegate delegate(frame_url, file_path);
     // Start serializing DOM.
     bool result = WebFrameSerializer::serialize(web_frame->toWebLocalFrame(),
@@ -474,8 +473,8 @@ class DomSerializerTests : public ContentBrowserTest,
     };
     WebString value = body_element.getAttribute("title");
     WebString content = doc.contentAsTextForTesting();
-    ASSERT_TRUE(base::UTF16ToWide(value) == parsed_value);
-    ASSERT_TRUE(base::UTF16ToWide(content) == parsed_value);
+    ASSERT_TRUE(base::UTF16ToWide(value.utf16()) == parsed_value);
+    ASSERT_TRUE(base::UTF16ToWide(content.utf16()) == parsed_value);
 
     // Do serialization.
     SerializeDomForURL(file_url);

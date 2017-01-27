@@ -382,43 +382,43 @@ typedef void (*SetFontFamilyWrapper)(blink::WebSettings*,
 void SetStandardFontFamilyWrapper(WebSettings* settings,
                                   const base::string16& font,
                                   UScriptCode script) {
-  settings->setStandardFontFamily(font, script);
+  settings->setStandardFontFamily(WebString::fromUTF16(font), script);
 }
 
 void SetFixedFontFamilyWrapper(WebSettings* settings,
                                const base::string16& font,
                                UScriptCode script) {
-  settings->setFixedFontFamily(font, script);
+  settings->setFixedFontFamily(WebString::fromUTF16(font), script);
 }
 
 void SetSerifFontFamilyWrapper(WebSettings* settings,
                                const base::string16& font,
                                UScriptCode script) {
-  settings->setSerifFontFamily(font, script);
+  settings->setSerifFontFamily(WebString::fromUTF16(font), script);
 }
 
 void SetSansSerifFontFamilyWrapper(WebSettings* settings,
                                    const base::string16& font,
                                    UScriptCode script) {
-  settings->setSansSerifFontFamily(font, script);
+  settings->setSansSerifFontFamily(WebString::fromUTF16(font), script);
 }
 
 void SetCursiveFontFamilyWrapper(WebSettings* settings,
                                  const base::string16& font,
                                  UScriptCode script) {
-  settings->setCursiveFontFamily(font, script);
+  settings->setCursiveFontFamily(WebString::fromUTF16(font), script);
 }
 
 void SetFantasyFontFamilyWrapper(WebSettings* settings,
                                  const base::string16& font,
                                  UScriptCode script) {
-  settings->setFantasyFontFamily(font, script);
+  settings->setFantasyFontFamily(WebString::fromUTF16(font), script);
 }
 
 void SetPictographFontFamilyWrapper(WebSettings* settings,
                                     const base::string16& font,
                                     UScriptCode script) {
-  settings->setPictographFontFamily(font, script);
+  settings->setPictographFontFamily(WebString::fromUTF16(font), script);
 }
 
 // If |scriptCode| is a member of a family of "similar" script codes, returns
@@ -1395,7 +1395,8 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   params->window_container_type = WindowFeaturesToContainerType(features);
   params->session_storage_namespace_id = session_storage_namespace_id_;
   if (frame_name != "_blank")
-    params->frame_name = base::UTF16ToUTF8(base::StringPiece16(frame_name));
+    params->frame_name = frame_name.utf8(
+        WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
   params->opener_url = creator->document().url();
 
   // The browser process uses the top frame's URL for a content settings check
@@ -1603,8 +1604,8 @@ void RenderViewImpl::showValidationMessage(
     blink::WebTextDirection main_text_hint,
     const blink::WebString& sub_text,
     blink::WebTextDirection sub_text_hint) {
-  base::string16 wrapped_main_text = main_text;
-  base::string16 wrapped_sub_text = sub_text;
+  base::string16 wrapped_main_text = main_text.utf16();
+  base::string16 wrapped_sub_text = sub_text.utf16();
 
   SetValidationMessageDirection(
       &wrapped_main_text, main_text_hint, &wrapped_sub_text, sub_text_hint);
@@ -2071,7 +2072,7 @@ void RenderViewImpl::OnEnumerateDirectoryResponse(
 
   WebVector<WebString> ws_file_names(paths.size());
   for (size_t i = 0; i < paths.size(); ++i)
-    ws_file_names[i] = paths[i].AsUTF16Unsafe();
+    ws_file_names[i] = blink::FilePathToWebString(paths[i]);
 
   enumeration_completions_[id]->didChooseFile(ws_file_names);
   enumeration_completions_.erase(id);

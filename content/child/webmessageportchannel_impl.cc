@@ -173,10 +173,10 @@ void WebMessagePortChannelImpl::postMessage(
     // from two threads, which is a data race.
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WebMessagePortChannelImpl::SendPostMessage, this,
-                              base::Passed(base::string16(message)),
+                              base::Passed(message.utf16()),
                               base::Passed(std::move(channels))));
   } else {
-    SendPostMessage(message, std::move(channels));
+    SendPostMessage(message.utf16(), std::move(channels));
   }
 }
 
@@ -195,7 +195,7 @@ bool WebMessagePortChannelImpl::tryGetMessage(
   if (message_queue_.empty())
     return false;
 
-  *message = message_queue_.front().message;
+  *message = WebString::fromUTF16(message_queue_.front().message);
   channels = message_queue_.front().ports;
   message_queue_.pop();
   return true;

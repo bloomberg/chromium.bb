@@ -137,7 +137,8 @@ int64_t ManifestParser::ParseColor(
     return Manifest::kInvalidOrMissingColor;
 
   blink::WebColor color;
-  if (!blink::WebCSSParser::parseColor(&color, parsed_color.string())) {
+  if (!blink::WebCSSParser::parseColor(
+          &color, blink::WebString::fromUTF16(parsed_color.string()))) {
     AddErrorInfo("property '" + key + "' ignored, '" +
                  base::UTF16ToUTF8(parsed_color.string()) + "' is not a " +
                  "valid color.");
@@ -267,7 +268,8 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
     return sizes;
 
   blink::WebVector<blink::WebSize> web_sizes =
-      blink::WebIconSizesParser::parseIconSizes(sizes_str.string());
+      blink::WebIconSizesParser::parseIconSizes(
+          blink::WebString::fromUTF16(sizes_str.string()));
   sizes.resize(web_sizes.size());
   for (size_t i = 0; i < web_sizes.size(); ++i)
     sizes[i] = web_sizes[i];

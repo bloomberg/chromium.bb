@@ -188,9 +188,8 @@ FrameReplicationState ReconstructReplicationStateForTesting(
   FrameReplicationState result;
   // can't recover result.scope - no way to get WebTreeScopeType via public
   // blink API...
-  result.name = base::UTF16ToUTF8(base::StringPiece16(frame->assignedName()));
-  result.unique_name =
-      base::UTF16ToUTF8(base::StringPiece16(frame->uniqueName()));
+  result.name = frame->assignedName().utf8();
+  result.unique_name = frame->uniqueName().utf8();
   result.sandbox_flags = frame->effectiveSandboxFlags();
   // result.should_enforce_strict_mixed_content_checking is calculated in the
   // browser...
@@ -1276,7 +1275,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       // result.
       const int kMaxOutputCharacters = 128;
       base::string16 output = WebFrameContentDumper::dumpWebViewAsText(
-          view()->GetWebView(), kMaxOutputCharacters);
+                                  view()->GetWebView(), kMaxOutputCharacters)
+                                  .utf16();
       EXPECT_EQ(base::WideToUTF16(ime_message->result), output);
     }
   }
@@ -1325,7 +1325,8 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     // expected result.
     const int kMaxOutputCharacters = 16;
     base::string16 output = WebFrameContentDumper::dumpWebViewAsText(
-        view()->GetWebView(), kMaxOutputCharacters);
+                                view()->GetWebView(), kMaxOutputCharacters)
+                                .utf16();
     EXPECT_EQ(base::WideToUTF16(kTextDirection[i].expected_result), output);
   }
 }
@@ -1693,9 +1694,9 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   // Copy the document content to std::wstring and compare with the
   // expected result.
   const int kMaxOutputCharacters = 256;
-  std::string output = base::UTF16ToUTF8(
-      base::StringPiece16(WebFrameContentDumper::dumpWebViewAsText(
-          view()->GetWebView(), kMaxOutputCharacters)));
+  std::string output = WebFrameContentDumper::dumpWebViewAsText(
+                           view()->GetWebView(), kMaxOutputCharacters)
+                           .utf8();
   EXPECT_EQ(output, "hello  \n\nworld");
 }
 
@@ -1835,9 +1836,9 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
-            base::UTF16ToASCII(
-                base::StringPiece16(WebFrameContentDumper::dumpWebViewAsText(
-                    view()->GetWebView(), kMaxOutputCharacters))));
+            WebFrameContentDumper::dumpWebViewAsText(view()->GetWebView(),
+                                                     kMaxOutputCharacters)
+                .ascii());
 }
 
 #if defined(OS_ANDROID)
@@ -1870,9 +1871,9 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
-            base::UTF16ToASCII(
-                base::StringPiece16(WebFrameContentDumper::dumpWebViewAsText(
-                    view()->GetWebView(), kMaxOutputCharacters))));
+            WebFrameContentDumper::dumpWebViewAsText(view()->GetWebView(),
+                                                     kMaxOutputCharacters)
+                .ascii());
 }
 
 // Ensure the render view sends favicon url update events correctly.

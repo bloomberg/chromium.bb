@@ -142,9 +142,8 @@ void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
     return;
 
   blink::WebElement element = container()->element();
-  blink::WebString web_attribute_name =
-      blink::WebString::fromUTF8(attribute_name);
-  element.setAttribute(web_attribute_name, attribute_value);
+  element.setAttribute(blink::WebString::fromUTF8(attribute_name),
+                       blink::WebString::fromUTF16(attribute_value));
 }
 
 void BrowserPlugin::Attach() {

@@ -13,9 +13,9 @@ namespace content {
 MenuItem MenuItemBuilder::Build(const blink::WebMenuItemInfo& item) {
   MenuItem result;
 
-  result.label = item.label;
-  result.icon = item.icon;
-  result.tool_tip = item.toolTip;
+  result.label = item.label.utf16();
+  result.icon = item.icon.utf16();
+  result.tool_tip = item.toolTip.utf16();
   result.type = static_cast<MenuItem::Type>(item.type);
   result.action = item.action;
   result.rtl = (item.textDirection == blink::WebTextDirectionRightToLeft);

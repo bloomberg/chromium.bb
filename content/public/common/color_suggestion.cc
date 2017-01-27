@@ -9,8 +9,6 @@
 namespace content {
 
 ColorSuggestion::ColorSuggestion(const blink::WebColorSuggestion& suggestion)
-    : color(suggestion.color),
-      label(suggestion.label) {
-}
+    : color(suggestion.color), label(suggestion.label.utf16()) {}
 
 }  // namespace content
