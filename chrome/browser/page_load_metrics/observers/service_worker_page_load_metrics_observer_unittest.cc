@@ -39,6 +39,10 @@ class ServiceWorkerPageLoadMetricsObserverTest
         internal::kHistogramServiceWorkerDomContentLoaded, 0);
     histogram_tester().ExpectTotalCount(internal::kHistogramServiceWorkerLoad,
                                         0);
+    histogram_tester().ExpectTotalCount(
+        internal::kHistogramServiceWorkerParseStart, 0);
+    histogram_tester().ExpectTotalCount(
+        internal::kBackgroundHistogramServiceWorkerParseStart, 0);
   }
 
   void AssertNoInboxHistogramsLogged() {
@@ -118,6 +122,9 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
       internal::kHistogramServiceWorkerLoad,
       timing.load_event_start.value().InMilliseconds(), 1);
 
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramServiceWorkerParseStart, 1);
+
   AssertNoInboxHistogramsLogged();
 }
 
@@ -151,6 +158,8 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorkerBackground) {
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramServiceWorkerLoad, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kBackgroundHistogramServiceWorkerParseStart, 1);
 
   AssertNoInboxHistogramsLogged();
 }
@@ -215,4 +224,6 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, InboxSite) {
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerLoadInbox,
       timing.load_event_start.value().InMilliseconds(), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramServiceWorkerParseStart, 1);
 }

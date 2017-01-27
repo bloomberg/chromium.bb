@@ -9,6 +9,11 @@
 
 namespace internal {
 
+const char kHistogramServiceWorkerParseStart[] =
+    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart";
+const char kBackgroundHistogramServiceWorkerParseStart[] =
+    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
+    "Background";
 const char kHistogramServiceWorkerFirstContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "NavigationToFirstContentfulPaint";
@@ -114,5 +119,20 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
   if (IsInboxSite(info.committed_url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
                         timing.load_event_start.value());
+  }
+}
+
+void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (!IsServiceWorkerControlled(info))
+    return;
+  if (WasStartedInForegroundOptionalEventInForeground(timing.parse_start,
+                                                      info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStart,
+                        timing.parse_start.value());
+  } else {
+    PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramServiceWorkerParseStart,
+                        timing.parse_start.value());
   }
 }
