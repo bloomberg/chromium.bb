@@ -14,13 +14,16 @@ paper-input-container {
   };
   --paper-input-container-input-color: rgba(0, 0, 0, 0.87);
   --paper-input-container-label: {
-    color: rgba(0, 0, 0, 0.54);
     font-size: 15px;
   };
 }
 
 paper-input-container {
   padding: 0;
+}
+
+paper-input-container > label > span {
+  color: rgba(0, 0, 0, 0.54);
 }
 
 :host-context(html[dir=rtl]) input {
