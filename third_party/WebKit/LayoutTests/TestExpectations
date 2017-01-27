@@ -567,7 +567,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/clear-negative-margin-top.ht
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-to-fit.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/containing-block-change-compositing.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/crash-on-absolute-positioning.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/display-flow-root-001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/dynamic-unfloat-pref-width.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/editable-text-overlapping-float.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/element-clears-float-without-clearance.html [ Skip ]
