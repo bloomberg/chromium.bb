@@ -201,6 +201,7 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
     }
 
     case ColorSpace::TransferID::LINEAR:
+    case ColorSpace::TransferID::LINEAR_HDR:
       return v;
 
     case ColorSpace::TransferID::LOG:
@@ -330,6 +331,7 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
     }
 
     case ColorSpace::TransferID::LINEAR:
+    case ColorSpace::TransferID::LINEAR_HDR:
       return v;
 
     case ColorSpace::TransferID::LOG:
@@ -618,7 +620,12 @@ class ColorTransformMatrix : public ColorTransformInternal {
 class ColorTransformFromLinear : public ColorTransformInternal {
  public:
   explicit ColorTransformFromLinear(ColorSpace::TransferID transfer)
-      : transfer_(transfer) {}
+      : transfer_(transfer) {
+    // Map LINEAR_HDR to LINEAR for optimizations.
+    if (transfer_ == ColorSpace::TransferID::LINEAR_HDR) {
+      transfer_ = ColorSpace::TransferID::LINEAR;
+    }
+  }
   bool Prepend(ColorTransformInternal* prev) override {
     return prev->Join(*this);
   }
@@ -641,7 +648,12 @@ class ColorTransformFromLinear : public ColorTransformInternal {
 class ColorTransformToLinear : public ColorTransformInternal {
  public:
   explicit ColorTransformToLinear(ColorSpace::TransferID transfer)
-      : transfer_(transfer) {}
+      : transfer_(transfer) {
+    // Map LINEAR_HDR to LINEAR for optimizations.
+    if (transfer_ == ColorSpace::TransferID::LINEAR_HDR) {
+      transfer_ = ColorSpace::TransferID::LINEAR;
+    }
+  }
 
   bool Prepend(ColorTransformInternal* prev) override {
     return prev->Join(*this);

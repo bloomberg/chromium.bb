@@ -88,7 +88,7 @@ ColorSpace ColorSpace::CreateSRGB() {
 
 // static
 ColorSpace ColorSpace::CreateSCRGBLinear() {
-  return ColorSpace(PrimaryID::BT709, TransferID::LINEAR, MatrixID::RGB,
+  return ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR, MatrixID::RGB,
                     RangeID::FULL);
 }
 
@@ -129,7 +129,8 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
 
 bool ColorSpace::IsHDR() const {
   return transfer_ == TransferID::SMPTEST2084 ||
-         transfer_ == TransferID::ARIB_STD_B67;
+         transfer_ == TransferID::ARIB_STD_B67 ||
+         transfer_ == TransferID::LINEAR_HDR;
 }
 
 bool ColorSpace::operator!=(const ColorSpace& other) const {
