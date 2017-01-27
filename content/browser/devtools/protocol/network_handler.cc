@@ -631,12 +631,22 @@ void NetworkHandler::NavigationPreloadResponseReceived(
                                 head.load_timing.request_start_time)
           .Build());
   if (head.devtools_info) {
-    response->SetStatus(head.devtools_info->http_status_code);
-    response->SetStatusText(head.devtools_info->http_status_text);
-    response->SetRequestHeaders(
-        getHeaders(head.devtools_info->request_headers));
-    response->SetHeaders(getHeaders(head.devtools_info->response_headers));
-    response->SetHeadersText(head.devtools_info->response_headers_text);
+    if (head.devtools_info->http_status_code) {
+      response->SetStatus(head.devtools_info->http_status_code);
+      response->SetStatusText(head.devtools_info->http_status_text);
+    }
+    if (head.devtools_info->request_headers.size()) {
+      response->SetRequestHeaders(
+          getHeaders(head.devtools_info->request_headers));
+    }
+    if (!head.devtools_info->request_headers_text.empty()) {
+      response->SetRequestHeadersText(
+          head.devtools_info->request_headers_text);
+    }
+    if (head.devtools_info->response_headers.size())
+      response->SetHeaders(getHeaders(head.devtools_info->response_headers));
+    if (!head.devtools_info->response_headers_text.empty())
+      response->SetHeadersText(head.devtools_info->response_headers_text);
   }
   response->SetProtocol(getProtocol(url, head));
   response->SetRemoteIPAddress(head.socket_address.HostForURL());
