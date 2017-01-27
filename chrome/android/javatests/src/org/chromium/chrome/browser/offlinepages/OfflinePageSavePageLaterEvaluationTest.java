@@ -513,9 +513,15 @@ public class OfflinePageSavePageLaterEvaluationTest
      * It is encouraged to use run_offline_page_evaluation_test.py to run this test.
      * TimeoutScale is set to 4, in case we hit the hard limit for @Manual tests(10 hours)
      * and gets killed. It expand the timeout to 10 * 4 hours.
+     * We won't be treating svelte devices differently so enable the feature which would let
+     * immediate processing also works on svelte devices. This flag will *not* affect normal
+     * devices.
      */
     @Manual
     @TimeoutScale(4)
+    @CommandLineFlags
+            .Add({"enable-features=OfflinePagesSvelteConcurrentLoading"})
+    @CommandLineFlags.Remove({"disable-features=OfflinePagesSvelteConcurrentLoading"})
     public void testFailureRate() throws IOException, InterruptedException {
         parseConfigFile();
         setUpIOAndBridge(mUseTestScheduler, mUseBackgroundLoader);
@@ -524,11 +530,16 @@ public class OfflinePageSavePageLaterEvaluationTest
 
     /**
      * Runs testFailureRate with background loader enabled.
+     * We won't be treating svelte devices differently so enable the feature which would let
+     * immediate processing also works on svelte devices. This flag will *not* affect normal
+     * devices.
      */
     @Manual
     @TimeoutScale(4)
-    @CommandLineFlags.Add({"enable-features=BackgroundLoader"})
-    @CommandLineFlags.Remove({"disable-features=BackgroundLoader"})
+    @CommandLineFlags
+            .Add({"enable-features=BackgroundLoader,OfflinePagesSvelteConcurrentLoading"})
+    @CommandLineFlags
+            .Remove({"disable-features=BackgroundLoader,OfflinePagesSvelteConcurrentLoading"})
     public void testBackgroundLoaderFailureRate() throws IOException, InterruptedException {
         testFailureRate();
     }
