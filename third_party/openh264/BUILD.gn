@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/sanitizers/sanitizers.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//third_party/openh264/openh264_sources.gni")
+import("//third_party/yasm/yasm_assemble.gni")
 
 # Config shared by all openh264 targets.
 config("config") {
@@ -28,6 +30,77 @@ config("config") {
   }
 }
 
+# YASM assembly is only checked to be working on Windows and Linux.
+# Mac is known to fail certain tests when building, but actual assembly
+# is believed to work.
+# MSAN builds are flaky with assembler. crbug.com/685168
+
+use_assembler = (is_win || is_linux) &&
+                (target_cpu == "x86" || target_cpu == "x64") && !is_msan
+
+# This IF statement will make the targets visible only on specific builds,
+# which will lead to failures on other platforms if accidentally invoked.
+if (use_assembler) {
+  yasm_assemble("openh264_common_yasm") {
+    include_dirs = openh264_common_include_dirs
+    sources = openh264_common_sources_asm_x86
+    if (target_cpu == "x86") {
+      defines = [ "X86_32" ]
+    } else {  # x64
+      if (is_mac) {
+        defines = [
+          "PREFIX",
+          "UNIX64",
+        ]
+      } else if (is_win) {
+        defines = [ "WIN64" ]
+      } else if (is_linux) {
+        defines = [ "UNIX64" ]
+      }
+    }
+  }
+
+  yasm_assemble("openh264_processing_yasm") {
+    include_dirs = openh264_processing_include_dirs
+    include_dirs += [ "./src/codec/common/x86" ]
+    sources = openh264_processing_sources_asm_x86
+    if (target_cpu == "x86") {
+      defines = [ "X86_32" ]
+    } else {  # x64
+      if (is_mac) {
+        defines = [
+          "PREFIX",
+          "UNIX64",
+        ]
+      } else if (is_win) {
+        defines = [ "WIN64" ]
+      } else if (is_linux) {
+        defines = [ "UNIX64" ]
+      }
+    }
+  }
+
+  yasm_assemble("openh264_encoder_yasm") {
+    include_dirs = openh264_encoder_include_dirs
+    include_dirs += [ "./src/codec/common/x86" ]
+    sources = openh264_encoder_sources_asm_x86
+    if (target_cpu == "x86") {
+      defines = [ "X86_32" ]
+    } else {  # x64
+      if (is_mac) {
+        defines = [
+          "PREFIX",
+          "UNIX64",
+        ]
+      } else if (is_win) {
+        defines = [ "WIN64" ]
+      } else if (is_linux) {
+        defines = [ "UNIX64" ]
+      }
+    }
+  }
+}  # if (is_win || is_linux)
+
 source_set("common") {
   sources = openh264_common_sources
   include_dirs = openh264_common_include_dirs
@@ -36,6 +109,10 @@ source_set("common") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   configs += [ ":config" ]
   deps = []
+  if (use_assembler) {
+    defines = [ "X86_ASM" ]
+    deps += [ ":openh264_common_yasm" ]
+  }
   if (is_android) {
     deps += [
       # Defines "android_get/setCpu..." functions. The original OpenH264 build
@@ -57,6 +134,10 @@ source_set("processing") {
   deps = [
     ":common",
   ]
+  if (use_assembler) {
+    defines = [ "X86_ASM" ]
+    deps += [ ":openh264_processing_yasm" ]
+  }
 }
 
 source_set("encoder") {
@@ -76,4 +157,8 @@ source_set("encoder") {
     ":common",
     ":processing",
   ]
+  if (use_assembler) {
+    defines = [ "X86_ASM" ]
+    deps += [ ":openh264_encoder_yasm" ]
+  }
 }
