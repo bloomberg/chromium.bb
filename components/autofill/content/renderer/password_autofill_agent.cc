@@ -1399,7 +1399,7 @@ void PasswordAutofillAgent::FindFocusedPasswordForm(
       render_frame()->GetWebFrame()->document().focusedElement();
   if (!element.isNull() && element.hasHTMLTagName("input")) {
     blink::WebInputElement input = element.to<blink::WebInputElement>();
-    if (input.isPasswordField() && !input.form().isNull()) {
+    if (input.isPasswordField()) {
       if (!input.form().isNull()) {
         password_form = CreatePasswordFormFromWebForm(
             input.form(), &field_value_and_properties_map_, &form_predictions_);
