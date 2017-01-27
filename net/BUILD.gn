@@ -4278,6 +4278,7 @@ test("net_unittests") {
     "http2/decoder/http2_frame_decoder_listener_test_util.h",
     "http2/decoder/http2_frame_decoder_test.cc",
     "http2/decoder/http2_structure_decoder_test.cc",
+    "http2/decoder/http2_structure_decoder_test_util.cc",
     "http2/decoder/http2_structure_decoder_test_util.h",
     "http2/decoder/payload_decoders/altsvc_payload_decoder_test.cc",
     "http2/decoder/payload_decoders/continuation_payload_decoder_test.cc",

@@ -66,7 +66,7 @@ FrameParts::FrameParts(const Http2FrameHeader& header,
   SetTotalPadLength(total_pad_length);
 }
 
-FrameParts::FrameParts(const FrameParts& other) = default;
+FrameParts::FrameParts(const FrameParts& header) = default;
 
 FrameParts::~FrameParts() {}
 

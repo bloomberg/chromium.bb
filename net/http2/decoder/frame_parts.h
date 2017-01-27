@@ -29,8 +29,8 @@
 namespace net {
 namespace test {
 
+// Forward declarations.
 struct FrameParts;
-
 std::ostream& operator<<(std::ostream& out, const FrameParts& v);
 
 struct FrameParts : public Http2FrameDecoderListener {
@@ -47,7 +47,8 @@ struct FrameParts : public Http2FrameDecoderListener {
              base::StringPiece payload,
              size_t total_pad_length);
 
-  FrameParts(const FrameParts& other);
+  // Copy constructor.
+  FrameParts(const FrameParts& header);
 
   ~FrameParts() override;
 
