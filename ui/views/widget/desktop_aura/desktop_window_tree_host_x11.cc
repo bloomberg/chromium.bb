@@ -1094,7 +1094,13 @@ void DesktopWindowTreeHostX11::SetOpacity(float opacity) {
   // X server opacity is in terms of 32 bit unsigned int space, and counts from
   // the opposite direction.
   // XChangeProperty() expects "cardinality" to be long.
-  unsigned long cardinality = static_cast<int>(opacity * 255) * 0x1010101;
+
+  // Scale opacity to [0 .. 255] range.
+  unsigned long opacity_8bit =
+      static_cast<unsigned long>(opacity * 255.0f) & 0xFF;
+  // Use opacity value for all channels.
+  const unsigned long channel_multiplier = 0x1010101;
+  unsigned long cardinality = opacity_8bit * channel_multiplier;
 
   if (cardinality == 0xffffffff) {
     XDeleteProperty(xdisplay_, xwindow_,
