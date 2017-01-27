@@ -23,6 +23,7 @@
 #include "components/dom_distiller/core/viewer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/isolated_world_ids.h"
@@ -55,13 +56,11 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
         callback_(callback),
         wait_for_document_loaded_(wait_for_document_loaded) {}
 
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override {
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
     if (wait_for_document_loaded_)
       return;
-    if (!render_frame_host->GetParent())
+    if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame())
       callback_.Run();
   }
 
