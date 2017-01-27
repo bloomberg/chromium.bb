@@ -6,7 +6,7 @@
 import sys
 
 import css_properties
-import in_generator
+import json5_generator
 from name_utilities import lower_first
 import template_expander
 
@@ -16,8 +16,8 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
         'lower_first': lower_first,
     }
 
-    def __init__(self, in_file_path):
-        super(CSSPropertyMetadataWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(CSSPropertyMetadataWriter, self).__init__(json5_file_path)
         self._outputs = {'CSSPropertyMetadata.cpp': self.generate_css_property_metadata_cpp}
 
     @template_expander.use_jinja('CSSPropertyMetadata.cpp.tmpl', filters=filters)
@@ -35,4 +35,4 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
 
 
 if __name__ == '__main__':
-    in_generator.Maker(CSSPropertyMetadataWriter).main(sys.argv)
+    json5_generator.Maker(CSSPropertyMetadataWriter).main()

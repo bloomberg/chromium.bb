@@ -31,7 +31,7 @@ from collections import defaultdict
 import sys
 
 import css_properties
-import in_generator
+import json5_generator
 from name_utilities import enum_for_css_property
 from name_utilities import lower_first
 import template_expander
@@ -40,8 +40,8 @@ import template_expander
 class StylePropertyShorthandWriter(css_properties.CSSProperties):
     class_name = 'StylePropertyShorthand'
 
-    def __init__(self, in_file_path):
-        super(StylePropertyShorthandWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(StylePropertyShorthandWriter, self).__init__(json5_file_path)
         self._outputs = {
             ('StylePropertyShorthand.cpp'): self.generate_style_property_shorthand_cpp,
             ('StylePropertyShorthand.h'): self.generate_style_property_shorthand_h}
@@ -74,4 +74,4 @@ class StylePropertyShorthandWriter(css_properties.CSSProperties):
         }
 
 if __name__ == '__main__':
-    in_generator.Maker(StylePropertyShorthandWriter).main(sys.argv)
+    json5_generator.Maker(StylePropertyShorthandWriter).main()

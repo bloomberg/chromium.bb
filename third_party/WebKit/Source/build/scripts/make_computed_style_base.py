@@ -6,7 +6,7 @@
 import math
 import sys
 
-import in_generator
+import json5_generator
 import template_expander
 import make_style_builder
 
@@ -68,8 +68,8 @@ class Field(object):
 
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
-    def __init__(self, in_file_path):
-        super(ComputedStyleBaseWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(ComputedStyleBaseWriter, self).__init__(json5_file_path)
         self._outputs = {
             'ComputedStyleBase.h': self.generate_base_computed_style_h,
             'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
@@ -232,4 +232,4 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         }
 
 if __name__ == '__main__':
-    in_generator.Maker(ComputedStyleBaseWriter).main(sys.argv)
+    json5_generator.Maker(ComputedStyleBaseWriter).main()

@@ -5,7 +5,7 @@
 
 import sys
 
-import in_generator
+import json5_generator
 import template_expander
 import make_style_builder
 
@@ -15,7 +15,7 @@ from collections import namedtuple, defaultdict
 # Gets the classname for a given property.
 def get_classname(property):
     if property['api_class'] is True:
-        # This property had the generated_api_class flag set in CSSProperties.in.
+        # This property had the generated_api_class flag set in CSSProperties.json5.
         return 'CSSPropertyAPI' + property['upper_camel_name']
     # This property has a specified class name.
     assert isinstance(property['api_class'], str), \
@@ -24,8 +24,8 @@ def get_classname(property):
 
 
 class CSSPropertyAPIWriter(make_style_builder.StyleBuilderWriter):
-    def __init__(self, in_file_path):
-        super(CSSPropertyAPIWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(CSSPropertyAPIWriter, self).__init__(json5_file_path)
         self._outputs = {
             'CSSPropertyDescriptor.cpp': self.generate_property_descriptor_cpp,
         }
@@ -67,4 +67,4 @@ class CSSPropertyAPIWriter(make_style_builder.StyleBuilderWriter):
         return generate_property_api_h
 
 if __name__ == '__main__':
-    in_generator.Maker(CSSPropertyAPIWriter).main(sys.argv)
+    json5_generator.Maker(CSSPropertyAPIWriter).main()

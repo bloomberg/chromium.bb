@@ -197,7 +197,7 @@ CONTENT OF TEST
 </html>
 """
         converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, None)
-        test_content = self.generate_test_content(converter.prefixed_properties, 22, test_html)
+        test_content = self.generate_test_content(converter.prefixed_properties, 4, test_html)
 
         oc = OutputCapture()
         oc.capture_output()
@@ -285,15 +285,13 @@ CONTENT OF TEST
         return (test_properties, html)
 
     def test_convert_for_webkit_with_non_utf8(self):
-        files = {'/file': 'e\x87[P',
-                 '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '', }
+        files = {'/file': 'e\x87[P', }
         host = MockSystemHost(filesystem=MockFileSystem(files=files))
         convert_for_webkit('', '/file', '', host)
 
     # This test passes if no Exception is raised
     def test_convert_for_webkit_with_utf8(self):
-        files = {'/file': 'foo',
-                 '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '', }
+        files = {'/file': 'foo', }
         host = MockSystemHost(filesystem=MockFileSystem(files=files))
         convert_for_webkit('', '/file', '', host)
 

@@ -124,7 +124,6 @@ class TestCopierTest(unittest.TestCase):
             '/blink/w3c/dir1/my-ref-test.html': '<html><head><link rel="match" href="ref-file.html" />test</head></html>',
             '/blink/w3c/dir1/ref-file.html': '<html><head>test</head></html>',
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
-            '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '',
         })
         copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
         copier.find_importable_tests()
@@ -149,7 +148,6 @@ class TestCopierTest(unittest.TestCase):
         host.filesystem = MockFileSystem(files={
             '/blink/w3c/dir1/my-ref-test.html': '<html><head><link rel="match" href="not-here.html" /></head></html>',
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
-            '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '',
         })
         copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
         copier.find_importable_tests()

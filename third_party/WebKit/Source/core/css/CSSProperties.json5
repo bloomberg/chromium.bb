@@ -1,0 +1,2813 @@
+{
+// This file specifies all the CSS properties we support and the necessary
+// information for our code generation. The various supported arguments
+// are described below with example usage
+
+  parameters: {
+    // - alias_for: "other-property"
+    // Properties specifying alias_for should be virtually identical to the
+    // properties they alias. Minor parsing differences are allowed as long as
+    // the CSSValues created are of the same format of the aliased property.
+    alias_for: {
+    },
+
+    // - runtime_flag: "CSSGridLayout"
+    // The flag on RuntimeEnabledFeatures conditionally enables the property.
+    // This doesn't currently work with alias_for.
+    runtime_flag: {
+    },
+
+    // - descriptor_only
+    // These are actually descriptors and not CSS properties. Properties with
+    // the same name as a descriptor do not get this flag.
+    descriptor_only: {
+    },
+
+    // - longhands: "property;other-property"
+    // The property is a shorthand for several other properties.
+    longhands: {
+      default: '',
+    },
+
+    // - api_class: true|"classname"
+    // Specifies the existance (and optionally name) of a CSSPropertyAPI
+    // implementation for the property to be used by make_css_property_descriptor.py.
+    // See core/css/properties/CSSPropertyAPI.h for API details.
+    // * Add this flag if the API has been implemented for this property.
+    // * If the classname for this is different to the name of the property, specify a
+    //   value for this flag. e.g. api_class=CSSPropertyAPIWebkitPadding
+    // TODO(aazzam): When most properties have been implemented, modify this so that
+    // properties with default classnames do not get this flag, and introduce a
+    // 'not_implemented' flag instead.
+    api_class: {
+    },
+
+    // - keyword_only
+    // These properties only store keyword values. This is used when
+    // generating the ComputedStyle storage for the property. The initial
+    // value for this property on a ComputedStyle is specified with the
+    // initial_keyword flag below.
+    // TODO(sashab): Rename this to field_type=keyword once we support
+    // multiple types of generatable fields in ComputedStyle
+    // TODO(sashab, meade): Remove this once TypedOM types are specified for
+    // every property, since this value can be inferred from that.
+    keyword_only: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - field_storage_type: "path/to/Type"
+    // For properties that have generated field storage in ComputedStyle,
+    // this optional argument will override the field's generated type with
+    // an external one specified at the given path. The type must be defined
+    // in a header file at that path, and have the same name as the file.
+    // Currently, only enum types are supported, and the enum's only values
+    // must be CamelCase values of the keywords of the property.
+    field_storage_type: {
+    },
+
+    // - keywords: ["keyword1", "keyword2"]
+    // This specifies all valid keyword values for the property.
+    // TODO(sashab): Once all properties are represented here, delete
+    // CSSValueKeywords.in and use this list instead.
+    keywords: {
+      default: [],
+    },
+
+    // - initial_keyword: "keyword-value"
+    // This specifies the initial keyword value for the keyword_only
+    // property.
+    initial_keyword: {
+    },
+
+    // Flags which go into CSSOMTypes:
+    // - typedom_types: ["Type", "OtherType"]
+    // The property can take types specified in typedom_types for CSS Typed OM.
+    // Keyword does not need to be specified as every property can take keywords.
+    // - repeated
+    // The property supports a list of values.
+    // - supports_percentage
+    // The property supports percentage types.
+    typedom_types: {
+      default: [],
+    },
+    repeated: {
+      default: false,
+      valid_type: "bool",
+    },
+    supports_percentage: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // Flags which go into CSSPropertyMetadata:
+    // - interpolable
+    // The interpolable flag indicates whether a property can be animated smoothly.
+    // If this flag is set, the property should also be added to the switch
+    // statements in AnimatedStyleBuilder, CSSPropertyEquality and
+    // CSSAnimatableValueFactory.
+    // - inherited
+    // The property will inherit by default if no value is specified, typically
+    // mentioned in specifications as "Inherited: yes"
+    interpolable: {
+      default: false,
+      valid_type: "bool",
+    },
+    inherited: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - independent
+    // This property affects only one field on ComputedStyle, and can be set
+    // directly during inheritance instead of forcing a recalc.
+    // StyleResolver and StyleAdjuster are not invoked when these properties
+    // are changed on a parent. Recalcs only happen if at least one
+    // non-independent inherited property is changed in the parent.
+    independent: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // The remaining arguments are used for the StyleBuilder and allow us to
+    // succinctly describe how to apply properties. When default handlers are not
+    // sufficient, we should prefer to use converter, and failing that define
+    // custom property handlers in StyleBuilderCustom.cpp. We only should use
+    // StyleBuilderFunctions.cpp.tmpl to define handlers when there are multiple
+    // properties requiring the same handling, but converter doesn't suffice.
+
+    // - font
+    // The default property handlers call into the FontBuilder instead of setting
+    // values directly onto the ComputedStyle
+    // - svg
+    // The default property handlers access the SVGComputedStyle
+    font: {
+      default: false,
+      valid_type: "bool",
+    },
+    svg: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - name_for_methods: "BlendMode"
+    // Tweaks how we choose defaults for getter, setter, initial and type_name.
+    // For example, setting this to BlendMode will make us use a setter of setBlendMode
+    // - initial
+    // The initial value accessor on the ComputedStyle, defaults to e.g. initialBoxShadow
+    // - getter
+    // The ComputedStyle getter, defaults to e.g. borderBottomLeft
+    // - setter
+    // The ComputedStyle setter, defaults to e.g. setBorderBottomLeft
+    // - type_name
+    // The computed type for the property. Only required for the default value
+    // application, defaults to e.g. EDisplay
+    name_for_methods: {
+    },
+    getter: {
+    },
+    setter: {
+    },
+    initial: {
+    },
+    type_name: {
+    },
+
+    // - converter: "convertRadius"
+    // The StyleBuilder will call the specified function on StyleBuilderConverter
+    // to convert a CSSValue to an appropriate platform value
+    converter: {
+    },
+
+    // - custom_initial
+    // - custom_inherit
+    // - custom_value
+    // - custom_all
+    // Handlers of the given types will be declared but not defined. Setting
+    // custom_all is equivalent to setting the other three flags
+    custom_all: {
+      default: false,
+      valid_type: "bool",
+    },
+    custom_initial: {
+      default: false,
+      valid_type: "bool",
+    },
+    custom_inherit: {
+      default: false,
+      valid_type: "bool",
+    },
+    custom_value: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - use_handlers_for: "CSSPropertyTransform"
+    // Use handlers for the specified property instead of defining new ones
+    use_handlers_for: {
+    },
+
+    // - builder_skip
+    // Ignore this property in the StyleBuilder
+    builder_skip: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - direction_aware
+    // This property resolves to a different property based on the current direction
+    // and writing mode.
+    direction_aware: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - priority: "High"
+    // The priority level for computing the property. Valid values are
+    // "Animation" (highest), "High" and "Low". Properties with the same
+    // priority level are grouped and computed in alphabetical order. The
+    // default value is "Low".
+    priority: {
+      default: "Low",
+      valid_values: ["Animation", "High", "Low"],
+    },
+
+  },
+
+  data: [
+    // Properties with StyleBuilder handling
+
+    // Animation Priority properties
+    {
+      name: "animation-delay",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "animation-direction",
+      custom_all: true,
+      keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
+      priority: "Animation",
+      repeated: true,
+    },
+    {
+      name: "animation-duration",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "animation-fill-mode",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "animation-iteration-count",
+      custom_all: true,
+      keywords: ["infinite"],
+      priority: "Animation",
+      repeated: true,
+    },
+    {
+      name: "animation-name",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "animation-play-state",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "animation-timing-function",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "transition-delay",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "transition-duration",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "transition-property",
+      custom_all: true,
+      priority: "Animation",
+    },
+    {
+      name: "transition-timing-function",
+      custom_all: true,
+      priority: "Animation",
+    },
+
+    // High Priority and all other font properties.
+    // Other properties can depend upon high priority properties (e.g. font-size / ems)
+    {
+      name: "color",
+      custom_all: true,
+      inherited: true,
+      interpolable: true,
+      priority: "High",
+    },
+    {
+      name: "direction",
+      custom_value: true,
+      field_storage_type: "platform/text/TextDirection",
+      inherited: true,
+      initial_keyword: "ltr",
+      keyword_only: true,
+      keywords: ["ltr", "rtl"],
+      priority: "High",
+    },
+    {
+      name: "font-family",
+      converter: "convertFontFamily",
+      font: true,
+      inherited: true,
+      name_for_methods: "FamilyDescription",
+      priority: "High",
+      type_name: "FontDescription::FamilyDescription",
+    },
+    {
+      name: "font-kerning",
+      font: true,
+      inherited: true,
+      name_for_methods: "Kerning",
+      priority: "High",
+      type_name: "FontDescription::Kerning",
+    },
+    {
+      name: "font-size",
+      converter: "convertFontSize",
+      font: true,
+      getter: "getSize",
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "Size",
+      priority: "High",
+    },
+    {
+      name: "font-size-adjust",
+      api_class: true,
+      converter: "convertFontSizeAdjust",
+      font: true,
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "SizeAdjust",
+      priority: "High",
+      runtime_flag: "CSSFontSizeAdjust",
+    },
+    {
+      name: "font-stretch",
+      font: true,
+      inherited: true,
+      name_for_methods: "Stretch",
+      priority: "High",
+      type_name: "FontStretch",
+    },
+    {
+      name: "font-style",
+      font: true,
+      inherited: true,
+      name_for_methods: "Style",
+      priority: "High",
+      type_name: "FontStyle",
+    },
+    {
+      name: "font-variant-ligatures",
+      api_class: true,
+      converter: "convertFontVariantLigatures",
+      font: true,
+      inherited: true,
+      name_for_methods: "VariantLigatures",
+      priority: "High",
+      type_name: "VariantLigatures",
+    },
+    {
+      name: "font-variant-caps",
+      api_class: true,
+      converter: "convertFontVariantCaps",
+      font: true,
+      inherited: true,
+      name_for_methods: "VariantCaps",
+      priority: "High",
+    },
+    {
+      name: "font-variant-numeric",
+      api_class: true,
+      converter: "convertFontVariantNumeric",
+      font: true,
+      inherited: true,
+      name_for_methods: "VariantNumeric",
+      priority: "High",
+    },
+    {
+      name: "font-weight",
+      converter: "convertFontWeight",
+      font: true,
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "Weight",
+      priority: "High",
+      type_name: "FontWeight",
+    },
+    {
+      name: "font-feature-settings",
+      converter: "convertFontFeatureSettings",
+      font: true,
+      inherited: true,
+      name_for_methods: "FeatureSettings",
+      priority: "High",
+    },
+    {
+      name: "font-variation-settings",
+      api_class: true,
+      converter: "convertFontVariationSettings",
+      font: true,
+      inherited: true,
+      name_for_methods: "VariationSettings",
+      priority: "High",
+      runtime_flag: "CSSVariableFonts",
+    },
+    {
+      name: "-webkit-font-smoothing",
+      font: true,
+      inherited: true,
+      priority: "High",
+      type_name: "FontSmoothingMode",
+    },
+    {
+      name: "-webkit-locale",
+      custom_value: true,
+      font: true,
+      inherited: true,
+      priority: "High",
+    },
+    {
+      name: "text-orientation",
+      custom_value: true,
+      inherited: true,
+      priority: "High",
+      type_name: "TextOrientation",
+    },
+    {
+      name: "-webkit-text-orientation",
+      custom_value: true,
+      inherited: true,
+      priority: "High",
+      type_name: "TextOrientation",
+    },
+    {
+      name: "writing-mode",
+      custom_value: true,
+      field_storage_type: "platform/text/WritingMode",
+      inherited: true,
+      initial_keyword: "horizontal-tb",
+      keyword_only: true,
+      keywords: ["horizontal-tb", "vertical-rl", "vertical-lr"],
+      priority: "High",
+      type_name: "WritingMode",
+    },
+    {
+      name: "-webkit-writing-mode",
+      custom_value: true,
+      inherited: true,
+      priority: "High",
+      type_name: "WritingMode",
+    },
+    {
+      name: "text-rendering",
+      font: true,
+      inherited: true,
+      priority: "High",
+      type_name: "TextRenderingMode",
+    },
+    {
+      name: "zoom",
+      api_class: true,
+      custom_all: true,
+      priority: "High",
+    },
+
+    {
+      name: "align-content",
+      converter: "convertContentAlignmentData",
+      initial: "initialContentAlignment",
+    },
+    {
+      name: "align-items",
+      converter: "convertSelfOrDefaultAlignmentData",
+      initial: "initialDefaultAlignment",
+    },
+    {
+      name: "alignment-baseline",
+      svg: true,
+    },
+    {
+      name: "align-self",
+      converter: "convertSelfOrDefaultAlignmentData",
+      initial: "initialSelfAlignment",
+    },
+    {
+      name: "backdrop-filter",
+      converter: "convertFilterOperations",
+      interpolable: true,
+      runtime_flag: "CSSBackdropFilter",
+    },
+    "backface-visibility",
+    {
+      name: "background-attachment",
+      custom_all: true,
+    },
+    {
+      name: "background-blend-mode",
+      custom_all: true,
+    },
+    {
+      name: "background-clip",
+      custom_all: true,
+    },
+    {
+      name: "background-color",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "background-image",
+      custom_all: true,
+      interpolable: true,
+      keywords: ["auto"],
+      typedom_types: ["Image"],
+    },
+    {
+      name: "background-origin",
+      custom_all: true,
+    },
+    {
+      name: "background-position-x",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "background-position-y",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "background-repeat-x",
+      custom_all: true,
+    },
+    {
+      name: "background-repeat-y",
+      custom_all: true,
+    },
+    {
+      name: "background-size",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "baseline-shift",
+      custom_inherit: true,
+      custom_value: true,
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "border-bottom-color",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "border-bottom-left-radius",
+      api_class: "CSSPropertyAPIBorderRadius",
+      converter: "convertRadius",
+      initial: "initialBorderRadius",
+      interpolable: true,
+    },
+    {
+      name: "border-bottom-right-radius",
+      api_class: "CSSPropertyAPIBorderRadius",
+      converter: "convertRadius",
+      initial: "initialBorderRadius",
+      interpolable: true,
+    },
+    {
+      name: "border-bottom-style",
+      initial: "initialBorderStyle",
+      type_name: "EBorderStyle",
+    },
+    {
+      name: "border-bottom-width",
+      converter: "convertLineWidth<unsigned>",
+      initial: "initialBorderWidth",
+      interpolable: true,
+    },
+    {
+      name: "border-collapse",
+      independent: true,
+      inherited: true,
+      initial_keyword: "separate",
+      keyword_only: true,
+      keywords: ["separate", "collapse"],
+    },
+    {
+      name: "border-image-outset",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "border-image-repeat",
+      custom_all: true,
+    },
+    {
+      name: "border-image-slice",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "border-image-source",
+      api_class: "CSSPropertyAPIImage",
+      custom_value: true,
+      interpolable: true,
+      keywords: ["none"],
+      typedom_types: ["Image"],
+    },
+    {
+      name: "border-image-width",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "border-left-color",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "border-left-style",
+      initial: "initialBorderStyle",
+      type_name: "EBorderStyle",
+    },
+    {
+      name: "border-left-width",
+      converter: "convertLineWidth<unsigned>",
+      initial: "initialBorderWidth",
+      interpolable: true,
+    },
+    {
+      name: "border-right-color",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "border-right-style",
+      initial: "initialBorderStyle",
+      type_name: "EBorderStyle",
+    },
+    {
+      name: "border-right-width",
+      converter: "convertLineWidth<unsigned>",
+      initial: "initialBorderWidth",
+      interpolable: true,
+    },
+    {
+      name: "border-top-color",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "border-top-left-radius",
+      api_class: "CSSPropertyAPIBorderRadius",
+      converter: "convertRadius",
+      initial: "initialBorderRadius",
+      interpolable: true,
+    },
+    {
+      name: "border-top-right-radius",
+      api_class: "CSSPropertyAPIBorderRadius",
+      converter: "convertRadius",
+      initial: "initialBorderRadius",
+      interpolable: true,
+    },
+    {
+      name: "border-top-style",
+      initial: "initialBorderStyle",
+      type_name: "EBorderStyle",
+    },
+    {
+      name: "border-top-width",
+      converter: "convertLineWidth<unsigned>",
+      initial: "initialBorderWidth",
+      interpolable: true,
+      keywords: ["thin", "medium", "thick"],
+      supports_percentage: true,
+      typedom_types: ["Length"],
+    },
+    {
+      name: "bottom",
+      converter: "convertLengthOrAuto",
+      initial: "initialOffset",
+      interpolable: true,
+      keywords: ["auto"],
+      supports_percentage: true,
+      typedom_types: ["Length"],
+    },
+    {
+      name: "box-shadow",
+      converter: "convertShadowList",
+      interpolable: true,
+    },
+    "box-sizing",
+    {
+      name: "break-after",
+      type_name: "EBreak",
+    },
+    {
+      name: "break-before",
+      type_name: "EBreak",
+    },
+    {
+      name: "break-inside",
+      type_name: "EBreak",
+    },
+    {
+      name: "buffered-rendering",
+      svg: true,
+    },
+    {
+      name: "caption-side",
+      independent: true,
+      inherited: true,
+      initial_keyword: "top",
+      keyword_only: true,
+      keywords: ["top", "bottom", "left", "right"],
+    },
+    {
+      name: "caret-color",
+      api_class: true,
+      custom_all: true,
+      inherited: true,
+      interpolable: true,
+    },
+    "clear",
+    {
+      name: "clip",
+      api_class: true,
+      converter: "convertClip",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "clip-path",
+      api_class: true,
+      converter: "convertClipPath",
+      interpolable: true,
+    },
+    {
+      name: "clip-rule",
+      inherited: true,
+      svg: true,
+      type_name: "WindRule",
+    },
+    {
+      name: "color-interpolation",
+      inherited: true,
+      svg: true,
+    },
+    {
+      name: "color-interpolation-filters",
+      inherited: true,
+      svg: true,
+      type_name: "EColorInterpolation",
+    },
+    {
+      name: "color-rendering",
+      inherited: true,
+      svg: true,
+    },
+    {
+      name: "column-fill",
+      type_name: "ColumnFill",
+    },
+    {
+      name: "contain",
+      api_class: true,
+      converter: "convertFlags<Containment>",
+      runtime_flag: "CSSContainment",
+    },
+    {
+      name: "content",
+      api_class: true,
+      custom_all: true,
+      repeated: true,
+      typedom_types: ["Image"],
+    },
+    {
+      name: "counter-increment",
+      custom_all: true,
+    },
+    {
+      name: "counter-reset",
+      custom_all: true,
+    },
+    {
+      name: "cursor",
+      api_class: true,
+      custom_all: true,
+      inherited: true,
+    },
+    {
+      name: "cx",
+      converter: "convertLength",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "cy",
+      converter: "convertLength",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "d",
+      converter: "convertPathOrNone",
+      interpolable: true,
+      svg: true,
+    },
+    "display",
+    {
+      name: "dominant-baseline",
+      inherited: true,
+      svg: true,
+    },
+    {
+      name: "empty-cells",
+      independent: true,
+      inherited: true,
+      initial_keyword: "show",
+      keyword_only: true,
+      keywords: ["show", "hide"],
+      type_name: "EEmptyCells",
+    },
+    {
+      name: "fill",
+      api_class: "CSSPropertyAPIPaintStroke",
+      custom_all: true,
+      inherited: true,
+      interpolable: true,
+      setter: "setFillPaint",
+      svg: true,
+    },
+    {
+      name: "fill-opacity",
+      api_class: "CSSPropertyAPIOpacity",
+      converter: "convertNumberOrPercentage",
+      inherited: true,
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "fill-rule",
+      inherited: true,
+      svg: true,
+      type_name: "WindRule",
+    },
+    {
+      name: "filter",
+      converter: "convertFilterOperations",
+      interpolable: true,
+    },
+    {
+      name: "flex-basis",
+      api_class: true,
+      converter: "convertLengthOrAuto",
+      interpolable: true,
+    },
+    "flex-direction",
+    {
+      name: "flex-grow",
+      interpolable: true,
+      type_name: "float",
+    },
+    {
+      name: "flex-shrink",
+      interpolable: true,
+      type_name: "float",
+    },
+    "flex-wrap",
+    {
+      name: "float",
+      initial_keyword: "none",
+      keyword_only: true,
+      keywords: ["none", "left", "right"],
+      name_for_methods: "Floating",
+      type_name: "EFloat",
+    },
+    {
+      name: "flood-color",
+      api_class: "CSSPropertyAPIColor",
+      converter: "convertColor",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "flood-opacity",
+      api_class: "CSSPropertyAPIOpacity",
+      converter: "convertNumberOrPercentage",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "grid-auto-columns",
+      converter: "convertGridTrackSizeList",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-auto-flow",
+      api_class: true,
+      converter: "convertGridAutoFlow",
+      runtime_flag: "CSSGridLayout",
+      type_name: "GridAutoFlow",
+    },
+    {
+      name: "grid-auto-rows",
+      converter: "convertGridTrackSizeList",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-column-end",
+      converter: "convertGridPosition",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-column-gap",
+      converter: "convertLength",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-column-start",
+      converter: "convertGridPosition",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-row-end",
+      converter: "convertGridPosition",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-row-gap",
+      converter: "convertLength",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-row-start",
+      converter: "convertGridPosition",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-template-areas",
+      custom_all: true,
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-template-columns",
+      custom_all: true,
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-template-rows",
+      custom_all: true,
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "height",
+      converter: "convertLengthSizing",
+      initial: "initialSize",
+      interpolable: true,
+      keywords: ["auto"],
+      supports_percentage: true,
+      typedom_types: ["Length"],
+    },
+    {
+      name: "hyphens",
+      inherited: true,
+      runtime_flag: "CSSHyphens",
+      type_name: "Hyphens",
+    },
+    {
+      name: "image-rendering",
+      inherited: true,
+    },
+    {
+      name: "image-orientation",
+      api_class: true,
+      converter: "convertImageOrientation",
+      inherited: true,
+      name_for_methods: "RespectImageOrientation",
+      runtime_flag: "ImageOrientation",
+    },
+    "isolation",
+    {
+      name: "justify-content",
+      converter: "convertContentAlignmentData",
+      initial: "initialContentAlignment",
+    },
+    {
+      name: "justify-items",
+      converter: "convertSelfOrDefaultAlignmentData",
+      initial: "initialSelfAlignment",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "justify-self",
+      converter: "convertSelfOrDefaultAlignmentData",
+      initial: "initialSelfAlignment",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "left",
+      converter: "convertLengthOrAuto",
+      initial: "initialOffset",
+      interpolable: true,
+      keywords: ["auto"],
+      supports_percentage: true,
+      typedom_types: ["Length"],
+    },
+    {
+      name: "letter-spacing",
+      api_class: "CSSPropertyAPILetterAndWordSpacing",
+      converter: "convertSpacing",
+      inherited: true,
+      initial: "initialLetterWordSpacing",
+      interpolable: true,
+    },
+    {
+      name: "lighting-color",
+      api_class: "CSSPropertyAPIColor",
+      converter: "convertColor",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "line-height",
+      converter: "convertLineHeight",
+      getter: "specifiedLineHeight",
+      inherited: true,
+      interpolable: true,
+    },
+    {
+      name: "list-style-image",
+      api_class: "CSSPropertyAPIImage",
+      custom_value: true,
+      inherited: true,
+      interpolable: true,
+      typedom_types: ["Image"],
+    },
+    {
+      name: "list-style-position",
+      independent: true,
+      inherited: true,
+      initial_keyword: "outside",
+      keyword_only: true,
+      keywords: ["outside", "inside"],
+    },
+    {
+      name: "list-style-type",
+      inherited: true,
+      initial_keyword: "disc",
+      keyword_only: true,
+      keywords: [
+        "disc", "circle", "square", "decimal", "decimal-leading-zero", "arabic-indic", "bengali", "cambodian", "khmer", "devanagari", "gujarati", "gurmukhi", "kannada", "lao", "malayalam", "mongolian", "myanmar", "oriya", "persian", "urdu", "telugu", "tibetan", "thai", "lower-roman", "upper-roman", "lower-greek", "lower-alpha", "lower-latin", "upper-alpha", "upper-latin", "cjk-earthly-branch", "cjk-heavenly-stem", "ethiopic-halehame", "ethiopic-halehame-am", "ethiopic-halehame-ti-er", "ethiopic-halehame-ti-et", "hangul", "hangul-consonant", "korean-hangul-formal", "korean-hanja-formal", "korean-hanja-informal", "hebrew", "armenian", "lower-armenian", "upper-armenian", "georgian", "cjk-ideographic", "simp-chinese-formal", "simp-chinese-informal", "trad-chinese-formal", "trad-chinese-informal", "hiragana", "katakana", "hiragana-iroha", "katakana-iroha", "none",
+      ],
+    },
+    {
+      name: "margin-bottom",
+      converter: "convertQuirkyLength",
+      initial: "initialMargin",
+      interpolable: true,
+    },
+    {
+      name: "margin-left",
+      converter: "convertQuirkyLength",
+      initial: "initialMargin",
+      interpolable: true,
+    },
+    {
+      name: "margin-right",
+      converter: "convertQuirkyLength",
+      initial: "initialMargin",
+      interpolable: true,
+    },
+    {
+      name: "margin-top",
+      converter: "convertQuirkyLength",
+      initial: "initialMargin",
+      interpolable: true,
+    },
+    {
+      name: "marker-end",
+      converter: "convertFragmentIdentifier",
+      inherited: true,
+      name_for_methods: "MarkerEndResource",
+      svg: true,
+    },
+    {
+      name: "marker-mid",
+      converter: "convertFragmentIdentifier",
+      inherited: true,
+      name_for_methods: "MarkerMidResource",
+      svg: true,
+    },
+    {
+      name: "marker-start",
+      converter: "convertFragmentIdentifier",
+      inherited: true,
+      name_for_methods: "MarkerStartResource",
+      svg: true,
+    },
+    {
+      name: "mask",
+      converter: "convertFragmentIdentifier",
+      name_for_methods: "MaskerResource",
+      svg: true,
+    },
+    {
+      name: "mask-source-type",
+      custom_all: true,
+      runtime_flag: "CSSMaskSourceType",
+    },
+    {
+      name: "mask-type",
+      svg: true,
+    },
+    {
+      name: "max-height",
+      converter: "convertLengthMaxSizing",
+      initial: "initialMaxSize",
+      interpolable: true,
+    },
+    {
+      name: "max-width",
+      converter: "convertLengthMaxSizing",
+      initial: "initialMaxSize",
+      interpolable: true,
+    },
+    {
+      name: "min-height",
+      converter: "convertLengthSizing",
+      initial: "initialMinSize",
+      interpolable: true,
+    },
+    {
+      name: "min-width",
+      converter: "convertLengthSizing",
+      initial: "initialMinSize",
+      interpolable: true,
+    },
+    {
+      name: "mix-blend-mode",
+      name_for_methods: "BlendMode",
+      type_name: "blink::WebBlendMode",
+    },
+    {
+      name: "motion-offset",
+      alias_for: "offset-distance",
+    },
+    {
+      name: "motion-path",
+      alias_for: "offset-path",
+    },
+    {
+      name: "motion-rotation",
+      alias_for: "offset-rotation",
+    },
+    {
+      name: "object-fit",
+      type_name: "ObjectFit",
+    },
+    {
+      name: "object-position",
+      converter: "convertPosition",
+      interpolable: true,
+    },
+    {
+      name: "offset-anchor",
+      converter: "convertPositionOrAuto",
+      interpolable: true,
+      runtime_flag: "CSSOffsetPositionAnchor",
+    },
+    {
+      name: "offset-distance",
+      converter: "convertLength",
+      interpolable: true,
+    },
+    {
+      name: "offset-path",
+      converter: "convertPathOrNone",
+    },
+    {
+      name: "offset-position",
+      api_class: true,
+      converter: "convertPositionOrAuto",
+      interpolable: true,
+      runtime_flag: "CSSOffsetPositionAnchor",
+    },
+    {
+      name: "offset-rotate",
+      converter: "convertOffsetRotate",
+      interpolable: true,
+      runtime_flag: "CSSOffsetRotate",
+    },
+    {
+      name: "offset-rotation",
+      converter: "convertOffsetRotate",
+      interpolable: true,
+      runtime_flag: "CSSOffsetRotation",
+    },
+    {
+      name: "opacity",
+      api_class: "CSSPropertyAPIOpacity",
+      interpolable: true,
+      type_name: "float",
+    },
+    {
+      name: "order",
+      api_class: true,
+      type_name: "int",
+    },
+    {
+      name: "orphans",
+      inherited: true,
+      interpolable: true,
+      type_name: "short",
+    },
+    {
+      name: "outline-color",
+      api_class: true,
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "outline-offset",
+      api_class: true,
+      converter: "convertComputedLength<int>",
+      interpolable: true,
+    },
+    {
+      name: "outline-style",
+      custom_all: true,
+    },
+    {
+      name: "outline-width",
+      api_class: true,
+      converter: "convertLineWidth<unsigned short>",
+      interpolable: true,
+    },
+    {
+      name: "overflow-anchor",
+      runtime_flag: "ScrollAnchoring",
+      type_name: "EOverflowAnchor",
+    },
+    {
+      name: "overflow-wrap",
+      inherited: true,
+    },
+    {
+      name: "overflow-x",
+      type_name: "EOverflow",
+    },
+    {
+      name: "overflow-y",
+      type_name: "EOverflow",
+    },
+    {
+      name: "padding-bottom",
+      api_class: "CSSPropertyAPIPadding",
+      converter: "convertLength",
+      initial: "initialPadding",
+      interpolable: true,
+    },
+    {
+      name: "padding-left",
+      api_class: "CSSPropertyAPIPadding",
+      converter: "convertLength",
+      initial: "initialPadding",
+      interpolable: true,
+    },
+    {
+      name: "padding-right",
+      api_class: "CSSPropertyAPIPadding",
+      converter: "convertLength",
+      initial: "initialPadding",
+      interpolable: true,
+    },
+    {
+      name: "padding-top",
+      api_class: "CSSPropertyAPIPadding",
+      converter: "convertLength",
+      initial: "initialPadding",
+      interpolable: true,
+    },
+    {
+      name: "paint-order",
+      api_class: true,
+      converter: "convertPaintOrder",
+      inherited: true,
+      svg: true,
+    },
+    {
+      name: "perspective",
+      converter: "convertPerspective",
+      interpolable: true,
+    },
+    {
+      name: "perspective-origin",
+      converter: "convertPosition",
+      interpolable: true,
+    },
+    {
+      name: "pointer-events",
+      independent: true,
+      inherited: true,
+      initial_keyword: "auto",
+      keyword_only: true,
+      keywords: [
+        "none", "auto", "stroke", "fill", "painted", "visible", "visibleStroke", "visibleFill", "visiblePainted", "bounding-box", "all",
+      ],
+    },
+    {
+      name: "position",
+      custom_inherit: true,
+    },
+    {
+      name: "quotes",
+      api_class: true,
+      converter: "convertQuotes",
+      inherited: true,
+    },
+    {
+      name: "resize",
+      custom_value: true,
+    },
+    {
+      name: "right",
+      converter: "convertLengthOrAuto",
+      initial: "initialOffset",
+      interpolable: true,
+      keywords: ["auto"],
+      supports_percentage: true,
+      typedom_types: ["Length"],
+    },
+    {
+      name: "r",
+      converter: "convertLength",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "rx",
+      api_class: "CSSPropertyAPIRadius",
+      converter: "convertLengthOrAuto",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "ry",
+      api_class: "CSSPropertyAPIRadius",
+      converter: "convertLengthOrAuto",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "scroll-behavior",
+      runtime_flag: "CSSOMSmoothScroll",
+      type_name: "ScrollBehavior",
+    },
+    {
+      name: "scroll-snap-type",
+      runtime_flag: "CSSScrollSnapPoints",
+      type_name: "ScrollSnapType",
+    },
+    {
+      name: "scroll-snap-points-x",
+      converter: "convertSnapPoints",
+      runtime_flag: "CSSScrollSnapPoints",
+    },
+    {
+      name: "scroll-snap-points-y",
+      converter: "convertSnapPoints",
+      runtime_flag: "CSSScrollSnapPoints",
+    },
+    {
+      name: "scroll-snap-destination",
+      converter: "convertPosition",
+      runtime_flag: "CSSScrollSnapPoints",
+    },
+    {
+      name: "scroll-snap-coordinate",
+      api_class: true,
+      converter: "convertSnapCoordinates",
+      runtime_flag: "CSSScrollSnapPoints",
+    },
+    {
+      name: "shape-image-threshold",
+      api_class: true,
+      interpolable: true,
+      type_name: "float",
+    },
+    {
+      name: "shape-margin",
+      api_class: true,
+      converter: "convertLength",
+      interpolable: true,
+    },
+    {
+      name: "shape-outside",
+      api_class: true,
+      converter: "convertShapeValue",
+      interpolable: true,
+      typedom_types: ["Image"],
+    },
+    {
+      name: "shape-rendering",
+      inherited: true,
+      svg: true,
+    },
+    {
+      name: "size",
+      api_class: true,
+      custom_all: true,
+    },
+    {
+      name: "snap-height",
+      api_class: true,
+      custom_all: true,
+      inherited: true,
+      runtime_flag: "CSSSnapSize",
+    },
+    {
+      name: "speak",
+      inherited: true,
+    },
+    {
+      name: "stop-color",
+      api_class: "CSSPropertyAPIColor",
+      converter: "convertColor",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "stop-opacity",
+      api_class: "CSSPropertyAPIOpacity",
+      converter: "convertNumberOrPercentage",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "stroke",
+      api_class: "CSSPropertyAPIPaintStroke",
+      custom_all: true,
+      inherited: true,
+      interpolable: true,
+      setter: "setStrokePaint",
+      svg: true,
+    },
+    {
+      name: "stroke-dasharray",
+      api_class: true,
+      converter: "convertStrokeDasharray",
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "StrokeDashArray",
+      svg: true,
+    },
+    {
+      name: "stroke-dashoffset",
+      converter: "convertLength",
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "StrokeDashOffset",
+      svg: true,
+    },
+    {
+      name: "stroke-linecap",
+      inherited: true,
+      name_for_methods: "CapStyle",
+      svg: true,
+      type_name: "LineCap",
+    },
+    {
+      name: "stroke-linejoin",
+      inherited: true,
+      name_for_methods: "JoinStyle",
+      svg: true,
+      type_name: "LineJoin",
+    },
+    {
+      name: "stroke-miterlimit",
+      api_class: true,
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "StrokeMiterLimit",
+      svg: true,
+      type_name: "float",
+    },
+    {
+      name: "stroke-opacity",
+      api_class: "CSSPropertyAPIOpacity",
+      converter: "convertNumberOrPercentage",
+      inherited: true,
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "stroke-width",
+      converter: "convertUnzoomedLength",
+      inherited: true,
+      interpolable: true,
+      svg: true,
+    },
+    "table-layout",
+    {
+      name: "tab-size",
+      api_class: true,
+      converter: "convertLengthOrTabSpaces",
+      inherited: true,
+      type_name: "TabSize",
+    },
+    {
+      name: "text-align",
+      custom_value: true,
+      inherited: true,
+      initial_keyword: "start",
+      keyword_only: true,
+      keywords: [
+        "left", "right", "center", "justify", "webkitLeft", "webkitRight", "webkitCenter", "start", "end",
+      ],
+    },
+    {
+      name: "text-align-last",
+      inherited: true,
+      type_name: "TextAlignLast",
+    },
+    {
+      name: "text-anchor",
+      inherited: true,
+      svg: true,
+    },
+    {
+      name: "text-combine-upright",
+      inherited: true,
+      name_for_methods: "TextCombine",
+      type_name: "TextCombine",
+    },
+    // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
+    {
+      name: "text-decoration",
+      longhands: "text-decoration-line;text-decoration-style;text-decoration-color",
+      use_handlers_for: "CSSPropertyTextDecorationLine",
+    },
+    {
+      name: "text-decoration-color",
+      api_class: true,
+      custom_all: true,
+      interpolable: true,
+      runtime_flag: "CSS3TextDecorations",
+    },
+    {
+      name: "text-decoration-line",
+      converter: "convertFlags<TextDecoration>",
+      name_for_methods: "TextDecoration",
+      runtime_flag: "CSS3TextDecorations",
+      type_name: "TextDecoration",
+    },
+    {
+      name: "text-decoration-skip",
+      api_class: true,
+      converter: "convertFlags<TextDecorationSkip>",
+      inherited: true,
+      runtime_flag: "CSS3TextDecorations",
+      type_name: "TextDecorationSkip",
+    },
+    {
+      name: "text-decoration-style",
+      runtime_flag: "CSS3TextDecorations",
+      type_name: "TextDecorationStyle",
+    },
+    {
+      name: "text-indent",
+      api_class: true,
+      custom_all: true,
+      inherited: true,
+      interpolable: true,
+    },
+    {
+      name: "text-justify",
+      inherited: true,
+      runtime_flag: "CSS3Text",
+      type_name: "TextJustify",
+    },
+    {
+      name: "text-overflow",
+      type_name: "TextOverflow",
+    },
+    {
+      name: "text-shadow",
+      converter: "convertShadowList",
+      inherited: true,
+      interpolable: true,
+    },
+    {
+      name: "text-size-adjust",
+      api_class: true,
+      converter: "convertTextSizeAdjust",
+      inherited: true,
+      type_name: "TextSizeAdjust",
+    },
+    {
+      name: "text-transform",
+      independent: true,
+      inherited: true,
+      initial_keyword: "none",
+      keyword_only: true,
+      keywords: ["capitalize", "uppercase", "lowercase", "none"],
+    },
+    {
+      name: "text-underline-position",
+      api_class: true,
+      inherited: true,
+      runtime_flag: "CSS3TextDecorations",
+      type_name: "TextUnderlinePosition",
+    },
+    {
+      name: "top",
+      converter: "convertLengthOrAuto",
+      initial: "initialOffset",
+      interpolable: true,
+      keywords: ["auto"],
+      supports_percentage: true,
+      typedom_types: ["Length"],
+    },
+    {
+      name: "touch-action",
+      api_class: true,
+      converter: "convertFlags<TouchAction>",
+      type_name: "TouchAction",
+    },
+    {
+      name: "transform",
+      converter: "convertTransformOperations",
+      interpolable: true,
+      keywords: ["none"],
+      typedom_types: ["Transform"],
+    },
+    {
+      name: "transform-origin",
+      api_class: true,
+      converter: "convertTransformOrigin",
+      interpolable: true,
+    },
+    {
+      name: "transform-style",
+      name_for_methods: "TransformStyle3D",
+    },
+    {
+      name: "translate",
+      api_class: true,
+      converter: "convertTranslate",
+      interpolable: true,
+      runtime_flag: "CSSIndependentTransformProperties",
+    },
+    {
+      name: "rotate",
+      api_class: true,
+      converter: "convertRotate",
+      interpolable: true,
+      runtime_flag: "CSSIndependentTransformProperties",
+    },
+    {
+      name: "scale",
+      api_class: true,
+      converter: "convertScale",
+      interpolable: true,
+      runtime_flag: "CSSIndependentTransformProperties",
+    },
+    {
+      name: "unicode-bidi",
+      field_storage_type: "platform/text/UnicodeBidi",
+      initial_keyword: "normal",
+      keyword_only: true,
+      keywords: [
+        "normal", "embed", "bidi-override", "isolate", "plaintext", "isolate-override",
+      ],
+      type_name: "UnicodeBidi",
+    },
+    {
+      name: "vector-effect",
+      svg: true,
+    },
+    {
+      name: "vertical-align",
+      api_class: true,
+      custom_inherit: true,
+      custom_value: true,
+      interpolable: true,
+    },
+    {
+      name: "visibility",
+      independent: true,
+      inherited: true,
+      initial_keyword: "visible",
+      interpolable: true,
+      keyword_only: true,
+      keywords: ["visible", "hidden", "collapse"],
+    },
+    {
+      name: "x",
+      converter: "convertLength",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "y",
+      converter: "convertLength",
+      interpolable: true,
+      svg: true,
+    },
+    {
+      name: "-webkit-appearance",
+      type_name: "ControlPart",
+    },
+    {
+      name: "-webkit-app-region",
+      custom_all: true,
+    },
+    {
+      name: "-webkit-background-clip",
+      use_handlers_for: "CSSPropertyBackgroundClip",
+    },
+    {
+      name: "-webkit-background-origin",
+      use_handlers_for: "CSSPropertyBackgroundOrigin",
+    },
+    {
+      name: "-webkit-border-horizontal-spacing",
+      converter: "convertComputedLength<short>",
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "HorizontalBorderSpacing",
+    },
+    {
+      name: "-webkit-border-image",
+      custom_value: true,
+      initial: "initialNinePieceImage",
+    },
+    {
+      name: "-webkit-border-vertical-spacing",
+      converter: "convertComputedLength<short>",
+      inherited: true,
+      interpolable: true,
+      name_for_methods: "VerticalBorderSpacing",
+    },
+    {
+      name: "-webkit-box-align",
+      type_name: "EBoxAlignment",
+    },
+    "-webkit-box-decoration-break",
+    {
+      name: "-webkit-box-direction",
+      independent: true,
+      inherited: true,
+      initial_keyword: "normal",
+      keyword_only: true,
+      keywords: ["normal", "reverse"],
+    },
+    {
+      name: "-webkit-box-flex",
+      type_name: "float",
+    },
+    {
+      name: "-webkit-box-flex-group",
+      api_class: true,
+      type_name: "unsigned int",
+    },
+    "-webkit-box-lines",
+    {
+      name: "-webkit-box-ordinal-group",
+      type_name: "unsigned int",
+    },
+    "-webkit-box-orient",
+    "-webkit-box-pack",
+    {
+      name: "-webkit-box-reflect",
+      converter: "convertBoxReflect",
+    },
+    {
+      name: "column-count",
+      custom_all: true,
+      interpolable: true,
+      type_name: "unsigned short",
+    },
+    {
+      name: "column-gap",
+      api_class: true,
+      converter: "convertComputedLength<float>",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "column-rule-color",
+      api_class: "CSSPropertyAPIColor",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "column-rule-style",
+      initial: "initialBorderStyle",
+      type_name: "EBorderStyle",
+    },
+    {
+      name: "column-rule-width",
+      api_class: true,
+      converter: "convertLineWidth<unsigned short>",
+      interpolable: true,
+    },
+    {
+      name: "column-span",
+      api_class: true,
+      type_name: "ColumnSpan",
+    },
+    {
+      name: "column-width",
+      converter: "convertComputedLength<float>",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-highlight",
+      api_class: true,
+      converter: "convertString<CSSValueNone>",
+      inherited: true,
+    },
+    {
+      name: "-webkit-hyphenate-character",
+      converter: "convertString<CSSValueAuto>",
+      inherited: true,
+      name_for_methods: "HyphenationString",
+    },
+    {
+      name: "-webkit-line-break",
+      inherited: true,
+      type_name: "LineBreak",
+    },
+    {
+      name: "-webkit-line-clamp",
+      api_class: true,
+      type_name: "LineClampValue",
+    },
+    {
+      name: "-webkit-margin-after-collapse",
+      type_name: "EMarginCollapse",
+    },
+    {
+      name: "-webkit-margin-before-collapse",
+      type_name: "EMarginCollapse",
+    },
+    {
+      name: "-webkit-margin-bottom-collapse",
+      name_for_methods: "MarginAfterCollapse",
+      type_name: "EMarginCollapse",
+    },
+    {
+      name: "-webkit-margin-top-collapse",
+      name_for_methods: "MarginBeforeCollapse",
+      type_name: "EMarginCollapse",
+    },
+    {
+      name: "-webkit-mask-box-image-outset",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-mask-box-image-repeat",
+      custom_all: true,
+    },
+    {
+      name: "-webkit-mask-box-image-slice",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-mask-box-image-source",
+      api_class: "CSSPropertyAPIImage",
+      custom_value: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-mask-box-image-width",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-mask-clip",
+      custom_all: true,
+    },
+    {
+      name: "-webkit-mask-composite",
+      custom_all: true,
+    },
+    {
+      name: "-webkit-mask-image",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-mask-origin",
+      custom_all: true,
+    },
+    {
+      name: "-webkit-mask-position-x",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-mask-position-y",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-mask-repeat-x",
+      custom_all: true,
+    },
+    {
+      name: "-webkit-mask-repeat-y",
+      custom_all: true,
+    },
+    {
+      name: "-webkit-mask-size",
+      custom_all: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-perspective-origin-x",
+      converter: "convertLength",
+      interpolable: true,
+    },
+    {
+      name: "-webkit-perspective-origin-y",
+      converter: "convertLength",
+      interpolable: true,
+    },
+    {
+      name: "-webkit-print-color-adjust",
+      independent: true,
+      inherited: true,
+      initial_keyword: "economy",
+      keyword_only: true,
+      keywords: ["economy", "exact"],
+    },
+    {
+      name: "-webkit-rtl-ordering",
+      independent: true,
+      inherited: true,
+      initial: "initialRtlOrdering",
+      initial_keyword: "logical",
+      keyword_only: true,
+      keywords: ["logical", "visual"],
+      setter: "setRtlOrdering",
+      type_name: "EOrder",
+    },
+    {
+      name: "-webkit-ruby-position",
+      inherited: true,
+      type_name: "RubyPosition",
+    },
+    {
+      name: "-webkit-tap-highlight-color",
+      api_class: "CSSPropertyAPIColor",
+      converter: "convertColor",
+      inherited: true,
+    },
+    {
+      name: "-webkit-text-combine",
+      inherited: true,
+      name_for_methods: "TextCombine",
+      type_name: "TextCombine",
+    },
+    {
+      name: "-webkit-text-emphasis-color",
+      api_class: "CSSPropertyAPIColor",
+      custom_all: true,
+      inherited: true,
+    },
+    {
+      name: "-webkit-text-emphasis-position",
+      inherited: true,
+      type_name: "TextEmphasisPosition",
+    },
+    {
+      name: "-webkit-text-emphasis-style",
+      api_class: true,
+      custom_all: true,
+      inherited: true,
+    },
+    {
+      name: "-webkit-text-fill-color",
+      api_class: "CSSPropertyAPIColor",
+      custom_all: true,
+      inherited: true,
+    },
+    {
+      name: "-webkit-text-security",
+      inherited: true,
+    },
+    {
+      name: "-webkit-text-stroke-color",
+      api_class: "CSSPropertyAPIColor",
+      custom_all: true,
+      inherited: true,
+      interpolable: true,
+    },
+    {
+      name: "-webkit-text-stroke-width",
+      api_class: true,
+      converter: "convertTextStrokeWidth",
+      inherited: true,
+    },
+    {
+      name: "-webkit-transform-origin-x",
+      converter: "convertLength",
+      interpolable: true,
+    },
+    {
+      name: "-webkit-transform-origin-y",
+      converter: "convertLength",
+      interpolable: true,
+    },
+    {
+      name: "-webkit-transform-origin-z",
+      api_class: true,
+      converter: "convertComputedLength<float>",
+      interpolable: true,
+    },
+    "-webkit-user-drag",
+    {
+      name: "-webkit-user-modify",
+      inherited: true,
+    },
+    {
+      name: "user-select",
+      inherited: true,
+    },
+    {
+      name: "white-space",
+      independent: true,
+      inherited: true,
+      initial_keyword: "normal",
+      keyword_only: true,
+      keywords: ["normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap"],
+    },
+    {
+      name: "widows",
+      inherited: true,
+      interpolable: true,
+      type_name: "short",
+    },
+    {
+      name: "width",
+      converter: "convertLengthSizing",
+      initial: "initialSize",
+      interpolable: true,
+      keywords: ["auto"],
+      supports_percentage: true,
+      typedom_types: ["Length"],
+    },
+    {
+      name: "will-change",
+      api_class: true,
+      custom_all: true,
+    },
+    {
+      name: "word-break",
+      inherited: true,
+    },
+    {
+      name: "word-spacing",
+      api_class: "CSSPropertyAPILetterAndWordSpacing",
+      converter: "convertSpacing",
+      inherited: true,
+      initial: "initialLetterWordSpacing",
+      interpolable: true,
+    },
+    // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
+    {
+      name: "word-wrap",
+      inherited: true,
+      name_for_methods: "OverflowWrap",
+    },
+    {
+      name: "z-index",
+      api_class: true,
+      custom_all: true,
+      interpolable: true,
+      type_name: "int",
+    },
+
+    // CSS logical props
+    {
+      name: "inline-size",
+      direction_aware: true,
+    },
+    {
+      name: "block-size",
+      direction_aware: true,
+    },
+    {
+      name: "min-inline-size",
+      direction_aware: true,
+    },
+    {
+      name: "min-block-size",
+      direction_aware: true,
+    },
+    {
+      name: "max-inline-size",
+      api_class: "CSSPropertyAPIWebkitMaxLogicalWidthOrHeight",
+      direction_aware: true,
+    },
+    {
+      name: "max-block-size",
+      api_class: "CSSPropertyAPIWebkitMaxLogicalWidthOrHeight",
+      direction_aware: true,
+    },
+
+    // Non-standard direction aware properties
+
+    {
+      name: "-webkit-border-end-color",
+      api_class: "CSSPropertyAPIColor",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-end-style",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-end-width",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-start-color",
+      api_class: "CSSPropertyAPIColor",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-start-style",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-start-width",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-before-color",
+      api_class: "CSSPropertyAPIColor",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-before-style",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-before-width",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-after-color",
+      api_class: "CSSPropertyAPIColor",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-after-style",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-border-after-width",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-margin-end",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-margin-start",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-margin-before",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-margin-after",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-padding-end",
+      api_class: "CSSPropertyAPIWebkitPadding",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-padding-start",
+      api_class: "CSSPropertyAPIWebkitPadding",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-padding-before",
+      api_class: "CSSPropertyAPIWebkitPadding",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-padding-after",
+      api_class: "CSSPropertyAPIWebkitPadding",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-logical-width",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-logical-height",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-min-logical-width",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-min-logical-height",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-max-logical-width",
+      api_class: "CSSPropertyAPIWebkitMaxLogicalWidthOrHeight",
+      direction_aware: true,
+    },
+    {
+      name: "-webkit-max-logical-height",
+      api_class: "CSSPropertyAPIWebkitMaxLogicalWidthOrHeight",
+      direction_aware: true,
+    },
+
+    // Properties that we ignore in the StyleBuilder.
+    // TODO(timloh): This seems wrong, most of these shouldn't reach the StyleBuilder
+
+    {
+      name: "all",
+      builder_skip: true,
+    },
+    {
+      name: "page",
+      api_class: true,
+      builder_skip: true,
+    },
+    {
+      name: "-webkit-font-size-delta",
+      api_class: true,
+      builder_skip: true,
+    },
+    {
+      name: "-webkit-text-decorations-in-effect",
+      builder_skip: true,
+      inherited: true,
+    },
+
+    // Descriptors
+
+    {
+      name: "font-display",
+      descriptor_only: true,
+      runtime_flag: "CSSFontDisplay",
+    },
+    {
+      name: "max-zoom",
+      descriptor_only: true,
+    },
+    {
+      name: "min-zoom",
+      descriptor_only: true,
+    },
+    {
+      name: "orientation",
+      descriptor_only: true,
+    },
+    {
+      name: "src",
+      descriptor_only: true,
+    },
+    {
+      name: "unicode-range",
+      descriptor_only: true,
+    },
+    {
+      name: "user-zoom",
+      descriptor_only: true,
+    },
+
+    // Shorthands
+
+    {
+      name: "animation",
+      longhands: "animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state",
+    },
+    {
+      name: "background",
+      longhands: "background-image;background-position-x;background-position-y;background-size;background-repeat-x;background-repeat-y;background-attachment;background-origin;background-clip;background-color",
+    },
+    {
+      name: "background-position",
+      longhands: "background-position-x;background-position-y",
+    },
+    {
+      name: "background-repeat",
+      longhands: "background-repeat-x;background-repeat-y",
+    },
+    {
+      name: "border",
+      longhands: "border-top-color;border-top-style;border-top-width;border-right-color;border-right-style;border-right-width;border-bottom-color;border-bottom-style;border-bottom-width;border-left-color;border-left-style;border-left-width;border-image-source;border-image-slice;border-image-width;border-image-outset;border-image-repeat",
+    },
+    {
+      name: "border-bottom",
+      longhands: "border-bottom-width;border-bottom-style;border-bottom-color",
+    },
+    {
+      name: "border-color",
+      longhands: "border-top-color;border-right-color;border-bottom-color;border-left-color",
+    },
+    {
+      name: "border-image",
+      longhands: "border-image-source;border-image-slice;border-image-width;border-image-outset;border-image-repeat",
+    },
+    {
+      name: "border-left",
+      longhands: "border-left-width;border-left-style;border-left-color",
+    },
+    {
+      name: "border-radius",
+      longhands: "border-top-left-radius;border-top-right-radius;border-bottom-right-radius;border-bottom-left-radius",
+    },
+    {
+      name: "border-right",
+      longhands: "border-right-width;border-right-style;border-right-color",
+    },
+    {
+      name: "border-spacing",
+      longhands: "-webkit-border-horizontal-spacing;-webkit-border-vertical-spacing",
+    },
+    {
+      name: "border-style",
+      longhands: "border-top-style;border-right-style;border-bottom-style;border-left-style",
+    },
+    {
+      name: "border-top",
+      longhands: "border-top-width;border-top-style;border-top-color",
+    },
+    {
+      name: "border-width",
+      longhands: "border-top-width;border-right-width;border-bottom-width;border-left-width",
+    },
+    {
+      name: "flex",
+      longhands: "flex-grow;flex-shrink;flex-basis",
+    },
+    {
+      name: "flex-flow",
+      longhands: "flex-direction;flex-wrap",
+    },
+    {
+      name: "font",
+      longhands: "font-style;font-variant-ligatures;font-variant-caps;font-variant-numeric;font-weight;font-stretch;font-size;line-height;font-family",
+    },
+    {
+      name: "font-variant",
+      longhands: "font-variant-ligatures;font-variant-caps;font-variant-numeric",
+    },
+    {
+      name: "grid",
+      longhands: "grid-template-rows;grid-template-columns;grid-template-areas;grid-auto-flow;grid-auto-rows;grid-auto-columns;grid-column-gap;grid-row-gap",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-area",
+      longhands: "grid-row-start;grid-column-start;grid-row-end;grid-column-end",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-column",
+      longhands: "grid-column-start;grid-column-end",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-gap",
+      longhands: "grid-row-gap;grid-column-gap",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-row",
+      longhands: "grid-row-start;grid-row-end",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "grid-template",
+      longhands: "grid-template-rows;grid-template-columns;grid-template-areas",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
+      name: "list-style",
+      longhands: "list-style-type;list-style-position;list-style-image",
+    },
+    {
+      name: "margin",
+      longhands: "margin-top;margin-right;margin-bottom;margin-left",
+    },
+    {
+      name: "marker",
+      longhands: "marker-start;marker-mid;marker-end",
+    },
+    {
+      name: "motion",
+      longhands: "offset-path;offset-distance;offset-rotation",
+    },
+    {
+      name: "offset",
+      longhands: "offset-path;offset-distance;offset-rotation",
+    },
+    {
+      name: "outline",
+      longhands: "outline-color;outline-style;outline-width",
+    },
+    {
+      name: "overflow",
+      longhands: "overflow-x;overflow-y",
+    },
+    {
+      name: "padding",
+      longhands: "padding-top;padding-right;padding-bottom;padding-left",
+    },
+    {
+      name: "page-break-after",
+      longhands: "break-after",
+    },
+    {
+      name: "page-break-before",
+      longhands: "break-before",
+    },
+    {
+      name: "page-break-inside",
+      longhands: "break-inside",
+    },
+    {
+      name: "transition",
+      longhands: "transition-property;transition-duration;transition-timing-function;transition-delay",
+    },
+    {
+      name: "-webkit-border-after",
+      longhands: "-webkit-border-after-width;-webkit-border-after-style;-webkit-border-after-color",
+    },
+    {
+      name: "-webkit-border-before",
+      longhands: "-webkit-border-before-width;-webkit-border-before-style;-webkit-border-before-color",
+    },
+    {
+      name: "-webkit-border-end",
+      longhands: "-webkit-border-end-width;-webkit-border-end-style;-webkit-border-end-color",
+    },
+    {
+      name: "-webkit-border-start",
+      longhands: "-webkit-border-start-width;-webkit-border-start-style;-webkit-border-start-color",
+    },
+    {
+      name: "-webkit-column-break-after",
+      longhands: "break-after",
+    },
+    {
+      name: "-webkit-column-break-before",
+      longhands: "break-before",
+    },
+    {
+      name: "-webkit-column-break-inside",
+      longhands: "break-inside",
+    },
+    {
+      name: "column-rule",
+      longhands: "column-rule-width;column-rule-style;column-rule-color",
+    },
+    {
+      name: "columns",
+      longhands: "column-width;column-count",
+    },
+    {
+      name: "-webkit-margin-collapse",
+      longhands: "-webkit-margin-before-collapse;-webkit-margin-after-collapse",
+    },
+    {
+      name: "-webkit-mask",
+      longhands: "-webkit-mask-image;-webkit-mask-position-x;-webkit-mask-position-y;-webkit-mask-size;-webkit-mask-repeat-x;-webkit-mask-repeat-y;-webkit-mask-origin;-webkit-mask-clip",
+    },
+    {
+      name: "-webkit-mask-box-image",
+      longhands: "-webkit-mask-box-image-source;-webkit-mask-box-image-slice;-webkit-mask-box-image-width;-webkit-mask-box-image-outset;-webkit-mask-box-image-repeat",
+    },
+    {
+      name: "-webkit-mask-position",
+      longhands: "-webkit-mask-position-x;-webkit-mask-position-y",
+    },
+    {
+      name: "-webkit-mask-repeat",
+      longhands: "-webkit-mask-repeat-x;-webkit-mask-repeat-y",
+    },
+    {
+      name: "-webkit-text-emphasis",
+      longhands: "-webkit-text-emphasis-style;-webkit-text-emphasis-color",
+    },
+    {
+      name: "-webkit-text-stroke",
+      longhands: "-webkit-text-stroke-width;-webkit-text-stroke-color",
+    },
+
+    // Aliases; these map to the same CSSPropertyID
+
+    {
+      name: "-epub-caption-side",
+      alias_for: "caption-side",
+    },
+    {
+      name: "-epub-text-combine",
+      alias_for: "-webkit-text-combine",
+    },
+    {
+      name: "-epub-text-emphasis",
+      alias_for: "-webkit-text-emphasis",
+    },
+    {
+      name: "-epub-text-emphasis-color",
+      alias_for: "-webkit-text-emphasis-color",
+    },
+    {
+      name: "-epub-text-emphasis-style",
+      alias_for: "-webkit-text-emphasis-style",
+    },
+    {
+      name: "-epub-text-orientation",
+      alias_for: "-webkit-text-orientation",
+    },
+    {
+      name: "-epub-text-transform",
+      alias_for: "text-transform",
+    },
+    {
+      name: "-epub-word-break",
+      alias_for: "word-break",
+    },
+    {
+      name: "-epub-writing-mode",
+      alias_for: "-webkit-writing-mode",
+    },
+    {
+      name: "-webkit-align-content",
+      alias_for: "align-content",
+    },
+    {
+      name: "-webkit-align-items",
+      alias_for: "align-items",
+    },
+    {
+      name: "-webkit-align-self",
+      alias_for: "align-self",
+    },
+    {
+      name: "-webkit-animation",
+      alias_for: "animation",
+    },
+    {
+      name: "-webkit-animation-delay",
+      alias_for: "animation-delay",
+    },
+    {
+      name: "-webkit-animation-direction",
+      alias_for: "animation-direction",
+    },
+    {
+      name: "-webkit-animation-duration",
+      alias_for: "animation-duration",
+    },
+    {
+      name: "-webkit-animation-fill-mode",
+      alias_for: "animation-fill-mode",
+    },
+    {
+      name: "-webkit-animation-iteration-count",
+      alias_for: "animation-iteration-count",
+    },
+    {
+      name: "-webkit-animation-name",
+      alias_for: "animation-name",
+    },
+    {
+      name: "-webkit-animation-play-state",
+      alias_for: "animation-play-state",
+    },
+    {
+      name: "-webkit-animation-timing-function",
+      alias_for: "animation-timing-function",
+    },
+    {
+      name: "-webkit-backface-visibility",
+      alias_for: "backface-visibility",
+    },
+    // "-webkit-background-size: 10px" behaves as "background-size: 10px 10px"
+    {
+      name: "-webkit-background-size",
+      alias_for: "background-size",
+    },
+    {
+      name: "-webkit-border-bottom-left-radius",
+      alias_for: "border-bottom-left-radius",
+    },
+    {
+      name: "-webkit-border-bottom-right-radius",
+      alias_for: "border-bottom-right-radius",
+    },
+    // "-webkit-border-radius: 1px 2px" behaves as "border-radius: 1px / 2px"
+    {
+      name: "-webkit-border-radius",
+      alias_for: "border-radius",
+    },
+    {
+      name: "-webkit-border-top-left-radius",
+      alias_for: "border-top-left-radius",
+    },
+    {
+      name: "-webkit-border-top-right-radius",
+      alias_for: "border-top-right-radius",
+    },
+    {
+      name: "-webkit-box-shadow",
+      alias_for: "box-shadow",
+    },
+    {
+      name: "-webkit-box-sizing",
+      alias_for: "box-sizing",
+    },
+    {
+      name: "-webkit-clip-path",
+      alias_for: "clip-path",
+    },
+    {
+      name: "-webkit-column-count",
+      alias_for: "column-count",
+    },
+    {
+      name: "-webkit-column-gap",
+      alias_for: "column-gap",
+    },
+    {
+      name: "-webkit-column-rule",
+      alias_for: "column-rule",
+    },
+    {
+      name: "-webkit-column-rule-color",
+      alias_for: "column-rule-color",
+    },
+    {
+      name: "-webkit-column-rule-style",
+      alias_for: "column-rule-style",
+    },
+    {
+      name: "-webkit-column-rule-width",
+      alias_for: "column-rule-width",
+    },
+    {
+      name: "-webkit-column-span",
+      alias_for: "column-span",
+    },
+    {
+      name: "-webkit-column-width",
+      alias_for: "column-width",
+    },
+    {
+      name: "-webkit-columns",
+      alias_for: "columns",
+    },
+    {
+      name: "-webkit-filter",
+      alias_for: "filter",
+    },
+    {
+      name: "-webkit-flex",
+      alias_for: "flex",
+    },
+    {
+      name: "-webkit-flex-basis",
+      alias_for: "flex-basis",
+    },
+    {
+      name: "-webkit-flex-direction",
+      alias_for: "flex-direction",
+    },
+    {
+      name: "-webkit-flex-flow",
+      alias_for: "flex-flow",
+    },
+    {
+      name: "-webkit-flex-grow",
+      alias_for: "flex-grow",
+    },
+    {
+      name: "-webkit-flex-shrink",
+      alias_for: "flex-shrink",
+    },
+    {
+      name: "-webkit-flex-wrap",
+      alias_for: "flex-wrap",
+    },
+    {
+      name: "-webkit-font-feature-settings",
+      alias_for: "font-feature-settings",
+    },
+    {
+      name: "-webkit-justify-content",
+      alias_for: "justify-content",
+    },
+    {
+      name: "-webkit-opacity",
+      alias_for: "opacity",
+    },
+    {
+      name: "-webkit-order",
+      alias_for: "order",
+    },
+    {
+      name: "-webkit-perspective",
+      alias_for: "perspective",
+    },
+    {
+      name: "-webkit-perspective-origin",
+      alias_for: "perspective-origin",
+    },
+    {
+      name: "-webkit-shape-image-threshold",
+      alias_for: "shape-image-threshold",
+    },
+    {
+      name: "-webkit-shape-margin",
+      alias_for: "shape-margin",
+    },
+    {
+      name: "-webkit-shape-outside",
+      alias_for: "shape-outside",
+    },
+    {
+      name: "-webkit-text-size-adjust",
+      alias_for: "text-size-adjust",
+    },
+    {
+      name: "-webkit-transform",
+      alias_for: "transform",
+    },
+    {
+      name: "-webkit-transform-origin",
+      alias_for: "transform-origin",
+    },
+    {
+      name: "-webkit-transform-style",
+      alias_for: "transform-style",
+    },
+    {
+      name: "-webkit-transition",
+      alias_for: "transition",
+    },
+    {
+      name: "-webkit-transition-delay",
+      alias_for: "transition-delay",
+    },
+    {
+      name: "-webkit-transition-duration",
+      alias_for: "transition-duration",
+    },
+    {
+      name: "-webkit-transition-property",
+      alias_for: "transition-property",
+    },
+    {
+      name: "-webkit-transition-timing-function",
+      alias_for: "transition-timing-function",
+    },
+    {
+      name: "-webkit-user-select",
+      alias_for: "user-select",
+    },
+  ],
+}

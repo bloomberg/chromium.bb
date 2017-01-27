@@ -30,7 +30,7 @@
 import sys
 
 import css_properties
-import in_generator
+import json5_generator
 from name_utilities import lower_first
 import template_expander
 
@@ -40,8 +40,8 @@ class StyleBuilderWriter(css_properties.CSSProperties):
         'lower_first': lower_first,
     }
 
-    def __init__(self, in_file_path):
-        super(StyleBuilderWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(StyleBuilderWriter, self).__init__(json5_file_path)
         self._outputs = {('StyleBuilderFunctions.h'): self.generate_style_builder_functions_h,
                          ('StyleBuilderFunctions.cpp'): self.generate_style_builder_functions_cpp,
                          ('StyleBuilder.cpp'): self.generate_style_builder,
@@ -93,4 +93,4 @@ class StyleBuilderWriter(css_properties.CSSProperties):
 
 
 if __name__ == '__main__':
-    in_generator.Maker(StyleBuilderWriter).main(sys.argv)
+    json5_generator.Maker(StyleBuilderWriter).main()

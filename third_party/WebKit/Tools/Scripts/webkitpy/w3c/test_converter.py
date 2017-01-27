@@ -87,8 +87,14 @@ class _W3CTestConverter(HTMLParser):
         self.resources_relpath = resources_relpath
 
         # These settings might vary between WebKit and Blink.
-        self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSProperties.in')
-        self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
+        # Only -webkit-text-emphasis is currently needed. See:
+        # https://bugs.chromium.org/p/chromium/issues/detail?id=614955#c1
+        self.prefixed_properties = [
+            '-webkit-text-emphasis',
+            '-webkit-text-emphasis-color',
+            '-webkit-text-emphasis-position',
+            '-webkit-text-emphasis-style',
+        ]
         prop_regex = r'([\s{]|^)(' + '|'.join(
             prop.replace('-webkit-', '') for prop in self.prefixed_properties) + r')(\s+:|:)'
         self.prop_re = re.compile(prop_regex)
@@ -98,26 +104,6 @@ class _W3CTestConverter(HTMLParser):
 
     def path_from_webkit_root(self, *comps):
         return self._filesystem.abspath(self._filesystem.join(self._webkit_root, *comps))
-
-    def read_webkit_prefixed_css_property_list(self):
-        prefixed_properties = []
-        unprefixed_properties = set()
-
-        contents = self._filesystem.read_text_file(self._css_property_file)
-        for line in contents.splitlines():
-            if re.match(r'^(#|//|$)', line):
-                # skip comments and preprocessor directives.
-                continue
-            prop = line.split()[0]
-            # Find properties starting with the -webkit- prefix.
-            match = re.match(r'-webkit-([\w|-]*)', prop)
-            if match:
-                prefixed_properties.append(match.group(1))
-            else:
-                unprefixed_properties.add(prop.strip())
-
-        # Ignore any prefixed properties for which an unprefixed version is supported.
-        return [prop for prop in prefixed_properties if prop not in unprefixed_properties]
 
     def add_webkit_prefix_to_unprefixed_properties(self, text):
         """Searches |text| for instances of properties requiring the -webkit- prefix and adds the prefix to them.

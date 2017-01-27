@@ -136,7 +136,7 @@ template("process_in_files") {
 template("css_properties") {
   process_in_files(target_name) {
     script = invoker.script
-    in_files = [ "css/CSSProperties.in" ]
+    in_files = [ "css/CSSProperties.json5" ]
     other_inputs = css_properties_files
     if (defined(invoker.other_inputs)) {
       other_inputs += invoker.other_inputs

@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 import css_properties
-import in_generator
+import json5_generator
 import license
 
 
@@ -184,8 +184,8 @@ CSSPropertyID cssPropertyID(const String& string)
 class CSSPropertyNamesWriter(css_properties.CSSProperties):
     class_name = "CSSPropertyNames"
 
-    def __init__(self, in_file_path):
-        super(CSSPropertyNamesWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(CSSPropertyNamesWriter, self).__init__(json5_file_path)
         self._outputs = {(self.class_name + ".h"): self.generate_header,
                          (self.class_name + ".cpp"): self.generate_implementation,
                         }
@@ -235,4 +235,4 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
 
 
 if __name__ == "__main__":
-    in_generator.Maker(CSSPropertyNamesWriter).main(sys.argv)
+    json5_generator.Maker(CSSPropertyNamesWriter).main()
