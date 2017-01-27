@@ -1085,7 +1085,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
   SkCanvas* c = drawingCanvas();
 
   if (hitRegionPath.isEmpty() || !c || !state().isTransformInvertible() ||
-      !c->getClipDeviceBounds(0)) {
+      c->isClipEmpty()) {
     exceptionState.throwDOMException(NotSupportedError,
                                      "The specified path has no pixels.");
     return;

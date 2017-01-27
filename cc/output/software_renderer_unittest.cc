@@ -388,9 +388,7 @@ class PartialSwapSoftwareOutputDevice : public SoftwareOutputDevice {
     return canvas_;
   }
   void EndPaint() override {
-    SkIRect clip_device_bounds;
-    canvas_->getClipDeviceBounds(&clip_device_bounds);
-    clip_rect_at_end_ = gfx::SkIRectToRect(clip_device_bounds);
+    clip_rect_at_end_ = gfx::SkIRectToRect(canvas_->getDeviceClipBounds());
     SoftwareOutputDevice::EndPaint();
   }
 

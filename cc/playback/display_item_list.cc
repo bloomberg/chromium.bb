@@ -49,7 +49,7 @@ bool DisplayItemsTracingEnabled() {
 
 bool GetCanvasClipBounds(SkCanvas* canvas, gfx::Rect* clip_bounds) {
   SkRect canvas_clip_bounds;
-  if (!canvas->getClipBounds(&canvas_clip_bounds))
+  if (!canvas->getLocalClipBounds(&canvas_clip_bounds))
     return false;
   *clip_bounds = ToEnclosingRect(gfx::SkRectToRectF(canvas_clip_bounds));
   return true;

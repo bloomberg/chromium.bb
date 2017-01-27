@@ -51,7 +51,7 @@ bool IsFullQuad(SkCanvas* canvas, const SkRect& drawn_rect) {
     return false;
 
   SkIRect clip_irect;
-  if (!canvas->getClipDeviceBounds(&clip_irect))
+  if (!canvas->getDeviceClipBounds(&clip_irect))
     return false;
 
   // if the clip is smaller than the canvas, we're partly clipped, so abort.
@@ -90,7 +90,7 @@ void AnalysisCanvas::SetForceNotTransparent(bool flag) {
 void AnalysisCanvas::onDrawPaint(const SkPaint& paint) {
   TRACE_EVENT0("disabled-by-default-skia", "AnalysisCanvas::onDrawPaint");
   SkRect rect;
-  if (getClipBounds(&rect))
+  if (getLocalClipBounds(&rect))
     drawRect(rect, paint);
 }
 
@@ -426,7 +426,7 @@ void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
                                  SkClipOp op,
                                  ClipEdgeStyle edge_style) {
   SkIRect clip_device_bounds;
-  if (getClipDeviceBounds(&clip_device_bounds) &&
+  if (getDeviceClipBounds(&clip_device_bounds) &&
       doesCoverCanvas(rrect, getTotalMatrix(), clip_device_bounds)) {
     // If the canvas is fully contained within the clip, it is as if we weren't
     // clipped at all, so bail early.

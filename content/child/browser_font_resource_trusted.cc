@@ -426,8 +426,7 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
   if (!clip) {
     // Use entire canvas. SkCanvas doesn't have a size on it, so we just use
     // the current clip bounds.
-    SkRect skclip;
-    destination->getClipBounds(&skclip);
+    SkRect skclip = destination->getLocalClipBounds();
     web_clip = WebRect(skclip.fLeft, skclip.fTop, skclip.fRight - skclip.fLeft,
                        skclip.fBottom - skclip.fTop);
   } else {

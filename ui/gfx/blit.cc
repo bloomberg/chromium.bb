@@ -29,8 +29,7 @@ bool HasClipOrTransform(SkCanvas& canvas) {
 
   // Now we know the clip is a regular rectangle, make sure it covers the
   // entire canvas.
-  SkIRect clip_bounds;
-  canvas.getClipDeviceBounds(&clip_bounds);
+  SkIRect clip_bounds = canvas.getDeviceClipBounds();
 
   SkImageInfo info;
   size_t row_bytes;

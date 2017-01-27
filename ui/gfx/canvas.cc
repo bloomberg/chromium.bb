@@ -218,7 +218,7 @@ bool Canvas::IsClipEmpty() const {
 
 bool Canvas::GetClipBounds(Rect* bounds) {
   SkRect out;
-  if (canvas_->getClipBounds(&out)) {
+  if (canvas_->getLocalClipBounds(&out)) {
     *bounds = ToEnclosingRect(SkRectToRectF(out));
     return true;
   }
@@ -546,7 +546,7 @@ void Canvas::Transform(const gfx::Transform& transform) {
 
 bool Canvas::IntersectsClipRect(const SkRect& rect) {
   SkRect clip;
-  return canvas_->getClipBounds(&clip) && clip.intersects(rect);
+  return canvas_->getLocalClipBounds(&clip) && clip.intersects(rect);
 }
 
 void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,

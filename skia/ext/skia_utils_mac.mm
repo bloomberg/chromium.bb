@@ -294,7 +294,7 @@ CGContextRef SkiaBitLocker::cgContext() {
   releaseIfNeeded(); // This flushes any prior bitmap use
 
   SkIRect clip_bounds;
-  if (!canvas_->getClipDeviceBounds(&clip_bounds)) {
+  if (!canvas_->getDeviceClipBounds(&clip_bounds)) {
     // If the clip is empty, then there is nothing to draw. The caller may
     // attempt to draw (to-be-clipped) results, so ensure there is a dummy
     // non-NULL CGContext to use.

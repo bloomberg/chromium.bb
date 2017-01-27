@@ -96,9 +96,8 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
     // of the current transform and clip, which may affect the clip bounds.
     // Since we query the clip bounds of the current canvas to get the list of
     // draw commands to process, this is important to produce correct content.
-    SkIRect raster_bounds;
-    raster_canvas->getClipDeviceBounds(&raster_bounds);
-    canvas.clipRect(SkRect::MakeFromIRect(raster_bounds));
+    canvas.clipRect(
+        SkRect::MakeFromIRect(raster_canvas->getDeviceClipBounds()));
     canvas.setMatrix(raster_canvas->getTotalMatrix());
     canvas.addCanvas(raster_canvas);
 
@@ -115,7 +114,7 @@ bool CanvasIsUnclipped(const SkCanvas* canvas) {
     return false;
 
   SkIRect bounds;
-  if (!canvas->getClipDeviceBounds(&bounds))
+  if (!canvas->getDeviceClipBounds(&bounds))
     return false;
 
   SkISize size = canvas->getBaseLayerSize();
@@ -160,10 +159,7 @@ void RasterSource::PrepareForPlaybackToCanvas(SkCanvas* canvas) const {
   SkIRect opaque_rect;
   content_device_rect.roundIn(&opaque_rect);
 
-  SkIRect raster_bounds;
-  canvas->getClipDeviceBounds(&raster_bounds);
-
-  if (opaque_rect.contains(raster_bounds))
+  if (opaque_rect.contains(canvas->getDeviceClipBounds()))
     return;
 
   // Even if completely covered, for rasterizations that touch the edge of the

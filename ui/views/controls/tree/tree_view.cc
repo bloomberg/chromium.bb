@@ -603,7 +603,7 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
   int min_y, max_y;
   {
     SkRect sk_clip_rect;
-    if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect)) {
+    if (canvas->sk_canvas()->getLocalClipBounds(&sk_clip_rect)) {
       // Pixels partially inside the clip rect should be included.
       gfx::Rect clip_rect = gfx::ToEnclosingRect(
           gfx::SkRectToRectF(sk_clip_rect));

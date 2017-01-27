@@ -132,7 +132,7 @@ void BaseRenderingContext2D::reset() {
     DCHECK(c->getTotalMatrix().isIdentity());
 #if DCHECK_IS_ON()
     SkIRect clipBounds;
-    DCHECK(c->getClipDeviceBounds(&clipBounds));
+    DCHECK(c->getDeviceClipBounds(&clipBounds));
     DCHECK(clipBounds == c->imageInfo().bounds());
 #endif
   }
@@ -842,7 +842,7 @@ void BaseRenderingContext2D::clearRect(double x,
     return;
 
   SkIRect clipBounds;
-  if (!c->getClipDeviceBounds(&clipBounds))
+  if (!c->getDeviceClipBounds(&clipBounds))
     return;
 
   SkPaint clearPaint;
@@ -1459,7 +1459,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
 bool BaseRenderingContext2D::computeDirtyRect(const FloatRect& localRect,
                                               SkIRect* dirtyRect) {
   SkIRect clipBounds;
-  if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
+  if (!drawingCanvas()->getDeviceClipBounds(&clipBounds))
     return false;
   return computeDirtyRect(localRect, clipBounds, dirtyRect);
 }
@@ -1736,7 +1736,7 @@ void BaseRenderingContext2D::checkOverdraw(
       return;
 
     SkIRect skIBounds;
-    if (!c->getClipDeviceBounds(&skIBounds))
+    if (!c->getDeviceClipBounds(&skIBounds))
       return;
     deviceRect = SkRect::Make(skIBounds);
   }

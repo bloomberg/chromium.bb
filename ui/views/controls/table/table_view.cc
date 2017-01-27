@@ -786,7 +786,7 @@ TableView::PaintRegion TableView::GetPaintRegion(
 
 gfx::Rect TableView::GetPaintBounds(gfx::Canvas* canvas) const {
   SkRect sk_clip_rect;
-  if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect))
+  if (canvas->sk_canvas()->getLocalClipBounds(&sk_clip_rect))
     return gfx::ToEnclosingRect(gfx::SkRectToRectF(sk_clip_rect));
   return GetVisibleBounds();
 }

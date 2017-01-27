@@ -370,8 +370,7 @@ void SynchronousCompositorFrameSink::DemandDrawSw(SkCanvas* canvas) {
 
   base::AutoReset<SkCanvas*> canvas_resetter(&current_sw_canvas_, canvas);
 
-  SkIRect canvas_clip;
-  canvas->getClipDeviceBounds(&canvas_clip);
+  SkIRect canvas_clip = canvas->getDeviceClipBounds();
   gfx::Rect viewport = gfx::SkIRectToRect(canvas_clip);
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
