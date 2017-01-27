@@ -554,6 +554,8 @@ component("platform") {
     "exported/WebPrerender.cpp",
     "exported/WebPrerenderingSupport.cpp",
     "exported/WebPresentationAvailabilityObserver.cpp",
+    "exported/WebPresentationConnection.cpp",
+    "exported/WebPresentationConnectionCallbacks.cpp",
     "exported/WebPresentationController.cpp",
     "exported/WebPresentationReceiver.cpp",
     "exported/WebRTCAnswerOptions.cpp",

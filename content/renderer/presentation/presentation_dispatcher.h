@@ -49,6 +49,9 @@ class CONTENT_EXPORT PresentationDispatcher
   ~PresentationDispatcher() override;
 
  private:
+  // TODO(crbug.com/684116): remove friend class after moving message queue
+  // logic from PresentationDispatcher to PresentationConnectionProxy.
+  friend class PresentationConnectionProxy;
   friend class TestPresentationDispatcher;
   friend class PresentationDispatcherTest;
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestStartSession);
@@ -66,47 +69,61 @@ class CONTENT_EXPORT PresentationDispatcher
                            TestSetDefaultPresentationUrls);
 
   struct SendMessageRequest {
-    SendMessageRequest(blink::mojom::PresentationSessionInfoPtr session_info,
-                       blink::mojom::ConnectionMessagePtr message);
+    SendMessageRequest(
+        blink::mojom::PresentationSessionInfoPtr session_info,
+        blink::mojom::ConnectionMessagePtr message,
+        const blink::WebPresentationConnectionProxy* connection_proxy);
     ~SendMessageRequest();
 
     blink::mojom::PresentationSessionInfoPtr session_info;
     blink::mojom::ConnectionMessagePtr message;
+    // Proxy of Blink connection object |connection| calling connection.send().
+    // It does not take ownership of proxy object. Proxy object is owned by
+    // Blink connection. Blink connection is destroyed after
+    // PresentationDispatcher so |connection_proxy| should always be valid.
+    const blink::WebPresentationConnectionProxy* connection_proxy;
   };
 
   static SendMessageRequest* CreateSendTextMessageRequest(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
-      const blink::WebString& message);
+      const blink::WebString& message,
+      const blink::WebPresentationConnectionProxy* connection_proxy);
   static SendMessageRequest* CreateSendBinaryMessageRequest(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       blink::mojom::PresentationMessageType type,
       const uint8_t* data,
-      size_t length);
+      size_t length,
+      const blink::WebPresentationConnectionProxy* connection_proxy);
 
   // WebPresentationClient implementation.
   void setController(blink::WebPresentationController* controller) override;
   void setReceiver(blink::WebPresentationReceiver*) override;
-
   void startSession(const blink::WebVector<blink::WebURL>& presentationUrls,
-                    std::unique_ptr<blink::WebPresentationConnectionCallback>
+                    std::unique_ptr<blink::WebPresentationConnectionCallbacks>
                         callback) override;
   void joinSession(const blink::WebVector<blink::WebURL>& presentationUrls,
                    const blink::WebString& presentationId,
-                   std::unique_ptr<blink::WebPresentationConnectionCallback>
+                   std::unique_ptr<blink::WebPresentationConnectionCallbacks>
                        callback) override;
-  void sendString(const blink::WebURL& presentationUrl,
-                  const blink::WebString& presentationId,
-                  const blink::WebString& message) override;
-  void sendArrayBuffer(const blink::WebURL& presentationUrl,
-                       const blink::WebString& presentationId,
-                       const uint8_t* data,
-                       size_t length) override;
-  void sendBlobData(const blink::WebURL& presentationUrl,
-                    const blink::WebString& presentationId,
-                    const uint8_t* data,
-                    size_t length) override;
+  void sendString(
+      const blink::WebURL& presentationUrl,
+      const blink::WebString& presentationId,
+      const blink::WebString& message,
+      const blink::WebPresentationConnectionProxy* connection_proxy) override;
+  void sendArrayBuffer(
+      const blink::WebURL& presentationUrl,
+      const blink::WebString& presentationId,
+      const uint8_t* data,
+      size_t length,
+      const blink::WebPresentationConnectionProxy* connection_proxy) override;
+  void sendBlobData(
+      const blink::WebURL& presentationUrl,
+      const blink::WebString& presentationId,
+      const uint8_t* data,
+      size_t length,
+      const blink::WebPresentationConnectionProxy* connection_proxy) override;
   void closeSession(const blink::WebURL& presentationUrl,
                     const blink::WebString& presentationId) override;
   void terminateSession(const blink::WebURL& presentationUrl,
@@ -143,7 +160,7 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::mojom::PresentationSessionInfoPtr session_info) override;
 
   void OnSessionCreated(
-      std::unique_ptr<blink::WebPresentationConnectionCallback> callback,
+      std::unique_ptr<blink::WebPresentationConnectionCallbacks> callback,
       blink::mojom::PresentationSessionInfoPtr session_info,
       blink::mojom::PresentationErrorPtr error);
   void OnReceiverConnectionAvailable(

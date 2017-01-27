@@ -43,7 +43,7 @@ class MODULES_EXPORT PresentationReceiver final
   ScriptPromise connectionList(ScriptState*);
 
   // Implementation of WebPresentationController.
-  void onReceiverConnectionAvailable(
+  WebPresentationConnection* onReceiverConnectionAvailable(
       const WebPresentationSessionInfo&) override;
   void registerConnection(PresentationConnection*);
 

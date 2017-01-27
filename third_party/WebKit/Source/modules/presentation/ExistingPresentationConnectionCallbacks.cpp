@@ -40,4 +40,9 @@ void ExistingPresentationConnectionCallbacks::onError(
   NOTREACHED();
 }
 
+WebPresentationConnection*
+ExistingPresentationConnectionCallbacks::getConnection() {
+  return m_connection.get();
+}
+
 }  // namespace blink

@@ -7,9 +7,14 @@
 
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/renderer/presentation/presentation_connection_proxy.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
+#include "content/renderer/presentation/test_presentation_connection.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnection.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnectionCallbacks.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationSessionInfo.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
@@ -19,7 +24,7 @@ using ::testing::Invoke;
 using blink::WebArrayBuffer;
 using blink::WebPresentationAvailabilityCallbacks;
 using blink::WebPresentationAvailabilityObserver;
-using blink::WebPresentationConnectionCallback;
+using blink::WebPresentationConnectionCallbacks;
 using blink::WebPresentationError;
 using blink::WebPresentationSessionInfo;
 using blink::WebString;
@@ -125,7 +130,7 @@ class MockPresentationAvailabilityCallbacks
 };
 
 class TestWebPresentationConnectionCallback
-    : public WebPresentationConnectionCallback {
+    : public WebPresentationConnectionCallbacks {
  public:
   TestWebPresentationConnectionCallback(WebURL url, WebString id)
       : url_(url), id_(id), callback_called_(false) {}
@@ -139,14 +144,19 @@ class TestWebPresentationConnectionCallback
     EXPECT_EQ(info.id, id_);
   }
 
+  blink::WebPresentationConnection* getConnection() override {
+    return &connection_;
+  }
+
  private:
   const WebURL url_;
   const WebString id_;
   bool callback_called_;
+  TestPresentationConnection connection_;
 };
 
 class TestWebPresentationConnectionErrorCallback
-    : public WebPresentationConnectionCallback {
+    : public WebPresentationConnectionCallbacks {
  public:
   TestWebPresentationConnectionErrorCallback(
       WebPresentationError::ErrorType error_type,
@@ -161,6 +171,8 @@ class TestWebPresentationConnectionErrorCallback
     EXPECT_EQ(error.errorType, error_type_);
     EXPECT_EQ(error.message, message_);
   }
+
+  blink::WebPresentationConnection* getConnection() override { return nullptr; }
 
  private:
   const WebPresentationError::ErrorType error_type_;
@@ -390,7 +402,7 @@ TEST_F(PresentationDispatcherTest, TestSendString) {
         EXPECT_EQ(message.utf8(), message_request->message.value());
         callback.Run(true);
       }));
-  dispatcher_.sendString(url1_, presentation_id_, message);
+  dispatcher_.sendString(url1_, presentation_id_, message, nullptr);
   run_loop.RunUntilIdle();
 }
 
@@ -411,7 +423,7 @@ TEST_F(PresentationDispatcherTest, TestSendArrayBuffer) {
         callback.Run(true);
       }));
   dispatcher_.sendArrayBuffer(url1_, presentation_id_, array_buffer_data(),
-                              array_buffer_.byteLength());
+                              array_buffer_.byteLength(), nullptr);
   run_loop.RunUntilIdle();
 }
 
@@ -432,7 +444,7 @@ TEST_F(PresentationDispatcherTest, TestSendBlobData) {
         callback.Run(true);
       }));
   dispatcher_.sendBlobData(url1_, presentation_id_, array_buffer_data(),
-                           array_buffer_.byteLength());
+                           array_buffer_.byteLength(), nullptr);
   run_loop.RunUntilIdle();
 }
 

@@ -10,6 +10,7 @@
 namespace blink {
 
 struct WebPresentationSessionInfo;
+class WebPresentationConnection;
 class WebString;
 
 enum class WebPresentationConnectionCloseReason { Error = 0, Closed, WentAway };
@@ -28,7 +29,8 @@ class BLINK_PLATFORM_EXPORT WebPresentationController {
 
   // Called when the presentation session is started by the embedder using
   // the default presentation URL and id.
-  virtual void didStartDefaultSession(const WebPresentationSessionInfo&) = 0;
+  virtual WebPresentationConnection* didStartDefaultSession(
+      const WebPresentationSessionInfo&) = 0;
 
   // Called when the state of a session changes.
   virtual void didChangeSessionState(const WebPresentationSessionInfo&,

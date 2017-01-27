@@ -7,6 +7,7 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/modules/presentation/WebPresentationConnectionCallbacks.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -20,16 +21,21 @@ struct WebPresentationSessionInfo;
 // underlying promise. It takes the PresentationConnection object that
 // originated the call in its constructor and will resolve underlying promise
 // with that object.
+// TODO(crbug.com/684111): Combine ExistingPresentationConnectionCallbacks with
+// PresentationConnectionCallbacks
 class ExistingPresentationConnectionCallbacks final
-    : public WebCallbacks<const WebPresentationSessionInfo&,
-                          const WebPresentationError&> {
+    : public WebPresentationConnectionCallbacks {
  public:
   ExistingPresentationConnectionCallbacks(ScriptPromiseResolver*,
                                           PresentationConnection*);
   ~ExistingPresentationConnectionCallbacks() override = default;
 
+  // WebCallbacks implementation
   void onSuccess(const WebPresentationSessionInfo&) override;
   void onError(const WebPresentationError&) override;
+
+  // WebPresentationConnectionCallbacks implementation
+  WebPresentationConnection* getConnection() override;
 
  private:
   Persistent<ScriptPromiseResolver> m_resolver;

@@ -153,10 +153,20 @@ PresentationConnection::PresentationConnection(LocalFrame* frame,
       m_id(id),
       m_url(url),
       m_state(WebPresentationConnectionState::Connecting),
-      m_binaryType(BinaryTypeBlob) {}
+      m_binaryType(BinaryTypeBlob),
+      m_proxy(nullptr) {}
 
 PresentationConnection::~PresentationConnection() {
   ASSERT(!m_blobLoader);
+}
+
+void PresentationConnection::bindProxy(
+    std::unique_ptr<WebPresentationConnectionProxy> proxy) {
+  DCHECK(proxy);
+  // TODO(zhaobin): Restore to DCHECK(!m_proxy) when reconnect() is properly
+  // implemented.
+  if (!m_proxy)
+    m_proxy = std::move(proxy);
 }
 
 // static
@@ -308,20 +318,21 @@ bool PresentationConnection::canSendMessage(ExceptionState& exceptionState) {
 
 void PresentationConnection::handleMessageQueue() {
   WebPresentationClient* client = presentationClient(getExecutionContext());
-  if (!client)
+  if (!client || !m_proxy)
     return;
 
   while (!m_messages.isEmpty() && !m_blobLoader) {
     Message* message = m_messages.first().get();
     switch (message->type) {
       case MessageTypeText:
-        client->sendString(m_url, m_id, message->text);
+        client->sendString(m_url, m_id, message->text, m_proxy.get());
         m_messages.removeFirst();
         break;
       case MessageTypeArrayBuffer:
-        client->sendArrayBuffer(m_url, m_id, static_cast<const uint8_t*>(
-                                                 message->arrayBuffer->data()),
-                                message->arrayBuffer->byteLength());
+        client->sendArrayBuffer(
+            m_url, m_id,
+            static_cast<const uint8_t*>(message->arrayBuffer->data()),
+            message->arrayBuffer->byteLength(), m_proxy.get());
         m_messages.removeFirst();
         break;
       case MessageTypeBlob:
@@ -355,7 +366,7 @@ void PresentationConnection::setBinaryType(const String& binaryType) {
   ASSERT_NOT_REACHED();
 }
 
-void PresentationConnection::didReceiveTextMessage(const String& message) {
+void PresentationConnection::didReceiveTextMessage(const WebString& message) {
   if (m_state != WebPresentationConnectionState::Connected)
     return;
 
@@ -459,10 +470,11 @@ void PresentationConnection::didFinishLoadingBlob(DOMArrayBuffer* buffer) {
   ASSERT(buffer && buffer->buffer());
   // Send the loaded blob immediately here and continue processing the queue.
   WebPresentationClient* client = presentationClient(getExecutionContext());
-  if (client)
+  if (client) {
     client->sendBlobData(m_url, m_id,
                          static_cast<const uint8_t*>(buffer->data()),
-                         buffer->byteLength());
+                         buffer->byteLength(), m_proxy.get());
+  }
 
   m_messages.removeFirst();
   m_blobLoader.clear();

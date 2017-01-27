@@ -18,7 +18,7 @@ namespace blink {
 PresentationConnectionCallbacks::PresentationConnectionCallbacks(
     ScriptPromiseResolver* resolver,
     PresentationRequest* request)
-    : m_resolver(resolver), m_request(request) {
+    : m_resolver(resolver), m_request(request), m_connection(nullptr) {
   ASSERT(m_resolver);
   ASSERT(m_request);
 }
@@ -29,16 +29,24 @@ void PresentationConnectionCallbacks::onSuccess(
       m_resolver->getExecutionContext()->isContextDestroyed()) {
     return;
   }
-  m_resolver->resolve(
-      PresentationConnection::take(m_resolver.get(), sessionInfo, m_request));
+
+  m_connection =
+      PresentationConnection::take(m_resolver.get(), sessionInfo, m_request);
+  m_resolver->resolve(m_connection);
 }
 
 void PresentationConnectionCallbacks::onError(
     const WebPresentationError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+      m_resolver->getExecutionContext()->isContextDestroyed()) {
     return;
+  }
   m_resolver->reject(PresentationError::take(error));
+  m_connection = nullptr;
+}
+
+WebPresentationConnection* PresentationConnectionCallbacks::getConnection() {
+  return m_connection ? m_connection.get() : nullptr;
 }
 
 }  // namespace blink

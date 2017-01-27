@@ -45,7 +45,8 @@ class MODULES_EXPORT PresentationController final
   DECLARE_VIRTUAL_TRACE();
 
   // Implementation of WebPresentationController.
-  void didStartDefaultSession(const WebPresentationSessionInfo&) override;
+  WebPresentationConnection* didStartDefaultSession(
+      const WebPresentationSessionInfo&) override;
   void didChangeSessionState(const WebPresentationSessionInfo&,
                              WebPresentationConnectionState) override;
   void didCloseConnection(const WebPresentationSessionInfo&,

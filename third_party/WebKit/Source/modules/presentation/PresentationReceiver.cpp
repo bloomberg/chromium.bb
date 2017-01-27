@@ -39,7 +39,7 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* scriptState) {
   return m_connectionListProperty->promise(scriptState->world());
 }
 
-void PresentationReceiver::onReceiverConnectionAvailable(
+WebPresentationConnection* PresentationReceiver::onReceiverConnectionAvailable(
     const WebPresentationSessionInfo& sessionInfo) {
   // take() will call PresentationReceiver::registerConnection()
   // and register the connection.
@@ -47,7 +47,7 @@ void PresentationReceiver::onReceiverConnectionAvailable(
 
   // receiver.connectionList property not accessed
   if (!m_connectionListProperty)
-    return;
+    return nullptr;
 
   if (m_connectionListProperty->getState() ==
       ScriptPromisePropertyBase::Pending)
@@ -55,6 +55,8 @@ void PresentationReceiver::onReceiverConnectionAvailable(
   else if (m_connectionListProperty->getState() ==
            ScriptPromisePropertyBase::Resolved)
     m_connectionList->dispatchConnectionAvailableEvent(connection);
+
+  return connection;
 }
 
 void PresentationReceiver::registerConnection(
