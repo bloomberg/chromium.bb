@@ -14,13 +14,17 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -31,20 +35,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 
+using sync_preferences::TestingPrefServiceSyncable;
+using testing::_;
+using testing::AnyNumber;
 using testing::DoAll;
-using ::testing::AnyNumber;
-using ::testing::Eq;
-using ::testing::Return;
+using testing::Eq;
+using testing::NiceMock;
+using testing::Return;
 using testing::SetArgPointee;
-using ::testing::NiceMock;
-using ::testing::StrictMock;
-using ::testing::_;
+using testing::StrictMock;
 
 namespace {
 
-// SuggestionsService::AccessTokenFetcher provides an empty account ID if its
-// SigninManager is null.
-const char kAccountId[] = "";
+const char kAccountId[] = "account";
 const char kTestTitle[] = "a title";
 const char kTestUrl[] = "http://go.com";
 const char kTestFaviconUrl[] =
@@ -195,11 +198,17 @@ class SuggestionsServiceTest : public testing::Test {
         suggestions_empty_data_count_(0),
         blacklisting_failed_(false),
         undo_blacklisting_failed_(false),
+        signin_client_(&pref_service_),
+        signin_manager_(&signin_client_, &account_tracker_),
         factory_(nullptr, base::Bind(&CreateURLFetcher)),
         mock_sync_service_(nullptr),
         mock_thumbnail_manager_(nullptr),
         mock_blacklist_store_(nullptr),
         test_suggestions_store_(nullptr) {
+    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
+    SigninManagerBase::RegisterPrefs(pref_service_.registry());
+
+    signin_manager_.SignIn(kAccountId);
     token_service_.UpdateCredentials(kAccountId, "refresh_token");
     token_service_.set_auto_post_fetch_response_on_message_loop(true);
   }
@@ -213,12 +222,18 @@ class SuggestionsServiceTest : public testing::Test {
 
   std::unique_ptr<SuggestionsServiceImpl> CreateSuggestionsServiceWithMocks() {
     mock_sync_service_.reset(new MockSyncService);
-    ON_CALL(*mock_sync_service_, CanSyncStart()).WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_, IsSyncActive()).WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_, ConfigurationDone())
-        .WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_, GetActiveDataTypes())
-        .WillByDefault(
+    EXPECT_CALL(*mock_sync_service_, CanSyncStart())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_, IsSyncActive())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_, ConfigurationDone())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_, GetActiveDataTypes())
+        .Times(AnyNumber())
+        .WillRepeatedly(
             Return(syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)));
 
     // These objects are owned by the returned SuggestionsService, but we keep
@@ -227,7 +242,7 @@ class SuggestionsServiceTest : public testing::Test {
     mock_thumbnail_manager_ = new StrictMock<MockImageManager>();
     mock_blacklist_store_ = new StrictMock<MockBlacklistStore>();
     return base::MakeUnique<SuggestionsServiceImpl>(
-        nullptr /* signin_manager */, &token_service_, mock_sync_service_.get(),
+        &signin_manager_, &token_service_, mock_sync_service_.get(),
         request_context_.get(), base::WrapUnique(test_suggestions_store_),
         base::WrapUnique(mock_thumbnail_manager_),
         base::WrapUnique(mock_blacklist_store_));
@@ -295,6 +310,10 @@ class SuggestionsServiceTest : public testing::Test {
 
  protected:
   base::MessageLoopForIO io_message_loop_;
+  TestingPrefServiceSyncable pref_service_;
+  AccountTrackerService account_tracker_;
+  TestSigninClient signin_client_;
+  FakeSigninManagerBase signin_manager_;
   net::FakeURLFetcherFactory factory_;
   FakeProfileOAuth2TokenService token_service_;
   std::unique_ptr<MockSyncService> mock_sync_service_;
@@ -397,7 +416,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
-  token_service_.RevokeCredentials(kAccountId);
+  token_service_.set_auto_post_fetch_response_on_message_loop(false);
 
   std::unique_ptr<SuggestionsServiceImpl> suggestions_service(
       CreateSuggestionsServiceWithMocks());
@@ -410,6 +429,9 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
       .WillOnce(Return(false));
 
   suggestions_service->FetchSuggestionsData();
+
+  token_service_.IssueErrorForAllPendingRequests(GoogleServiceAuthError(
+      GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
 
   // No network request should be sent.
   base::RunLoop().RunUntilIdle();

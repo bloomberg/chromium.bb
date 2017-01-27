@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -136,73 +137,23 @@ const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
 }  // namespace
 
-// Helper class for fetching OAuth2 access tokens.
-// To get a token, call |GetAccessToken|. Does not support multiple concurrent
-// token requests, i.e. check |HasPendingRequest| first.
-class SuggestionsServiceImpl::AccessTokenFetcher
-    : public OAuth2TokenService::Consumer {
- public:
-  using TokenCallback = base::Callback<void(const std::string&)>;
-
-  AccessTokenFetcher(const SigninManagerBase* signin_manager,
-                     OAuth2TokenService* token_service)
-      : OAuth2TokenService::Consumer("suggestions_service"),
-        signin_manager_(signin_manager),
-        token_service_(token_service) {}
-
-  void GetAccessToken(const TokenCallback& callback) {
-    callback_ = callback;
-    std::string account_id;
-    // |signin_manager_| can be null in unit tests.
-    if (signin_manager_)
-      account_id = signin_manager_->GetAuthenticatedAccountId();
-    OAuth2TokenService::ScopeSet scopes;
-    scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-    token_request_ = token_service_->StartRequest(account_id, scopes, this);
-  }
-
-  bool HasPendingRequest() const { return !!token_request_.get(); }
-
- private:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override {
-    DCHECK_EQ(request, token_request_.get());
-    callback_.Run(access_token);
-    token_request_.reset(nullptr);
-  }
-
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override {
-    DCHECK_EQ(request, token_request_.get());
-    LOG(WARNING) << "Token error: " << error.ToString();
-    callback_.Run(std::string());
-    token_request_.reset(nullptr);
-  }
-
-  const SigninManagerBase* signin_manager_;
-  OAuth2TokenService* token_service_;
-
-  TokenCallback callback_;
-  std::unique_ptr<OAuth2TokenService::Request> token_request_;
-};
-
 SuggestionsServiceImpl::SuggestionsServiceImpl(
-    const SigninManagerBase* signin_manager,
+    SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
     syncer::SyncService* sync_service,
     net::URLRequestContextGetter* url_request_context,
     std::unique_ptr<SuggestionsStore> suggestions_store,
     std::unique_ptr<ImageManager> thumbnail_manager,
     std::unique_ptr<BlacklistStore> blacklist_store)
-    : sync_service_(sync_service),
+    : signin_manager_(signin_manager),
+      token_service_(token_service),
+      sync_service_(sync_service),
       sync_service_observer_(this),
       url_request_context_(url_request_context),
       suggestions_store_(std::move(suggestions_store)),
       thumbnail_manager_(std::move(thumbnail_manager)),
       blacklist_store_(std::move(blacklist_store)),
       scheduling_delay_(TimeDelta::FromSeconds(kDefaultSchedulingDelaySec)),
-      token_fetcher_(new AccessTokenFetcher(signin_manager, token_service)),
       weak_ptr_factory_(this) {
   // |sync_service_| is null if switches::kDisableSync is set (tests use that).
   if (sync_service_)
@@ -387,22 +338,40 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
     return;
   }
   // If there is an ongoing token request, also wait for that.
-  if (token_fetcher_->HasPendingRequest()) {
+  if (token_fetcher_) {
     return;
   }
-  token_fetcher_->GetAccessToken(
-      base::Bind(&SuggestionsServiceImpl::IssueSuggestionsRequest,
-                 base::Unretained(this), url));
+
+  OAuth2TokenService::ScopeSet scopes{GaiaConstants::kChromeSyncOAuth2Scope};
+  token_fetcher_ = base::MakeUnique<AccessTokenFetcher>(
+      "suggestions_service", signin_manager_, token_service_, scopes,
+      base::BindOnce(&SuggestionsServiceImpl::AccessTokenAvailable,
+                     base::Unretained(this), url));
+}
+
+void SuggestionsServiceImpl::AccessTokenAvailable(
+    const GURL& url,
+    const GoogleServiceAuthError& error,
+    const std::string& access_token) {
+  DCHECK(token_fetcher_);
+  std::unique_ptr<AccessTokenFetcher> token_fetcher_deleter(
+      std::move(token_fetcher_));
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    UpdateBlacklistDelay(false);
+    ScheduleBlacklistUpload();
+    return;
+  }
+
+  DCHECK(!access_token.empty());
+
+  IssueSuggestionsRequest(url, access_token);
 }
 
 void SuggestionsServiceImpl::IssueSuggestionsRequest(
     const GURL& url,
     const std::string& access_token) {
-  if (access_token.empty()) {
-    UpdateBlacklistDelay(false);
-    ScheduleBlacklistUpload();
-    return;
-  }
+  DCHECK(!access_token.empty());
   pending_request_ = CreateSuggestionsRequest(url, access_token);
   pending_request_->Start();
   last_request_started_time_ = TimeTicks::Now();

@@ -19,9 +19,11 @@
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/signin/core/browser/access_token_fetcher.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -51,7 +53,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
                                public net::URLFetcherDelegate,
                                public syncer::SyncServiceObserver {
  public:
-  SuggestionsServiceImpl(const SigninManagerBase* signin_manager,
+  SuggestionsServiceImpl(SigninManagerBase* signin_manager,
                          OAuth2TokenService* token_service,
                          syncer::SyncService* sync_service,
                          net::URLRequestContextGetter* url_request_context,
@@ -119,9 +121,13 @@ class SuggestionsServiceImpl : public SuggestionsService,
   // Issues a network request if there isn't already one happening.
   void IssueRequestIfNoneOngoing(const GURL& url);
 
+  // Called when an access token request completes (successfully or not).
+  void AccessTokenAvailable(const GURL& url,
+                            const GoogleServiceAuthError& error,
+                            const std::string& access_token);
+
   // Issues a network request for suggestions (fetch, blacklist, or clear
-  // blacklist, depending on |url|). |access_token| is used only if OAuth2
-  // authentication is enabled.
+  // blacklist, depending on |url|).
   void IssueSuggestionsRequest(const GURL& url,
                                const std::string& access_token);
 
@@ -159,6 +165,9 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   base::ThreadChecker thread_checker_;
 
+  SigninManagerBase* signin_manager_;
+  OAuth2TokenService* token_service_;
+
   syncer::SyncService* sync_service_;
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
@@ -177,8 +186,8 @@ class SuggestionsServiceImpl : public SuggestionsService,
   // Delay used when scheduling a blacklisting task.
   base::TimeDelta scheduling_delay_;
 
-  // Helper for fetching OAuth2 access tokens.
-  class AccessTokenFetcher;
+  // Helper for fetching OAuth2 access tokens. This is non-null iff an access
+  // token request is currently in progress.
   std::unique_ptr<AccessTokenFetcher> token_fetcher_;
 
   // Contains the current suggestions fetch request. Will only have a value

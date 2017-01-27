@@ -17,7 +17,6 @@
 // SigninManagerForTesting to ensure that the right type for their platform is
 // used.
 
-// Overrides InitTokenService to do-nothing in tests.
 class FakeSigninManagerBase : public SigninManagerBase {
  public:
   FakeSigninManagerBase(SigninClient* client,
