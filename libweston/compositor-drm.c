@@ -345,7 +345,6 @@ struct drm_output {
 	uint32_t crtc_id; /* object ID to pass to DRM functions */
 	int pipe; /* index of CRTC in resource array / bitmasks */
 	uint32_t connector_id;
-	drmModeCrtcPtr original_crtc;
 	struct drm_edid edid;
 
 	/* Holds the properties for the connector */
@@ -1697,8 +1696,6 @@ drm_output_set_gamma(struct weston_output *output_base,
 
 	/* check */
 	if (output_base->gamma_size != size)
-		return;
-	if (!output->original_crtc)
 		return;
 
 	rc = drmModeCrtcSetGamma(backend->drm.fd,
@@ -4193,8 +4190,6 @@ drm_output_enable(struct weston_output *base)
 	output->base.assign_planes = drm_assign_planes;
 	output->base.set_dpms = drm_set_dpms;
 	output->base.switch_mode = drm_output_switch_mode;
-
-	output->base.gamma_size = output->original_crtc->gamma_size;
 	output->base.set_gamma = drm_output_set_gamma;
 
 	if (output->cursor_plane)
@@ -4266,7 +4261,6 @@ drm_output_destroy(struct weston_output *base)
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
 	struct drm_mode *drm_mode, *next;
-	drmModeCrtcPtr origcrtc = output->original_crtc;
 
 	if (output->page_flip_pending || output->vblank_pending) {
 		output->destroy_pending = 1;
@@ -4300,14 +4294,6 @@ drm_output_destroy(struct weston_output *base)
 			      base.link) {
 		wl_list_remove(&drm_mode->base.link);
 		free(drm_mode);
-	}
-
-	if (origcrtc) {
-		/* Restore original CRTC state */
-		drmModeSetCrtc(b->drm.fd, origcrtc->crtc_id, origcrtc->buffer_id,
-			       origcrtc->x, origcrtc->y,
-			       &output->connector_id, 1, &origcrtc->mode);
-		drmModeFreeCrtc(origcrtc);
 	}
 
 	if (output->pageflip_timer)
@@ -4427,6 +4413,7 @@ create_output_for_connector(struct drm_backend *b,
 	const char *make = "unknown";
 	const char *model = "unknown";
 	const char *serial_number = "unknown";
+	drmModeCrtcPtr origcrtc;
 	int i;
 
 	static const struct drm_property_info connector_props[] = {
@@ -4452,8 +4439,6 @@ create_output_for_connector(struct drm_backend *b,
 	output->backlight = backlight_init(drm_device,
 					   connector->connector_type);
 
-	output->original_crtc = drmModeGetCrtc(b->drm.fd, output->crtc_id);
-
 	name = make_connector_name(connector);
 	weston_output_init(&output->base, b->compositor, name);
 	free(name);
@@ -4461,6 +4446,13 @@ create_output_for_connector(struct drm_backend *b,
 	output->base.enable = drm_output_enable;
 	output->base.destroy = drm_output_destroy;
 	output->base.disable = drm_output_disable;
+
+	origcrtc = drmModeGetCrtc(b->drm.fd, output->crtc_id);
+	if (origcrtc == NULL)
+		goto err_output;
+
+	output->base.gamma_size = origcrtc->gamma_size;
+	drmModeFreeCrtc(origcrtc);
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
@@ -4480,6 +4472,8 @@ create_output_for_connector(struct drm_backend *b,
 	output->base.serial_number = (char *)serial_number;
 	output->base.subpixel = drm_subpixel_to_wayland(output->connector->subpixel);
 
+	drmModeFreeObjectProperties(props);
+
 	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
 		output->base.connection_internal = true;
@@ -4488,8 +4482,6 @@ create_output_for_connector(struct drm_backend *b,
 
 	output->base.mm_width = output->connector->mmWidth;
 	output->base.mm_height = output->connector->mmHeight;
-
-	drmModeFreeObjectProperties(props);
 
 	for (i = 0; i < output->connector->count_modes; i++) {
 		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);
