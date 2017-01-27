@@ -144,8 +144,8 @@ SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory,
                        CompressionOption option)
     : current_frame_buffer_(kControlFrameBufferSize),
       expect_continuation_(0),
-      visitor_(NULL),
-      debug_visitor_(NULL),
+      visitor_(nullptr),
+      debug_visitor_(nullptr),
       header_handler_(nullptr),
       compression_option_(option),
       probable_http_response_(false),
@@ -1489,7 +1489,7 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
     set_error(SPDY_GOAWAY_FRAME_CORRUPT);
   } else if (remaining_data_length_ == 0) {
     // Signal that there is not more opaque data.
-    visitor_->OnGoAwayFrameData(NULL, 0);
+    visitor_->OnGoAwayFrameData(nullptr, 0);
     CHANGE_STATE(SPDY_FRAME_COMPLETE);
   }
   return original_len;
