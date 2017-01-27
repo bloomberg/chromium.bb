@@ -164,9 +164,12 @@ class PLATFORM_EXPORT ResourceFetcher
                                      const String& charset,
                                      const ResourceFactory&);
   void storePerformanceTimingInitiatorInformation(Resource*);
-  ResourceLoadPriority computeLoadPriority(Resource::Type,
-                                           const FetchRequest&,
-                                           ResourcePriority::VisibilityStatus);
+  ResourceLoadPriority computeLoadPriority(
+      Resource::Type,
+      const ResourceRequest&,
+      ResourcePriority::VisibilityStatus,
+      FetchRequest::DeferOption = FetchRequest::NoDefer,
+      bool forPreload = false);
 
   Resource* resourceForStaticData(const FetchRequest&,
                                   const ResourceFactory&,

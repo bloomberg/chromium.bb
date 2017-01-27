@@ -154,8 +154,10 @@ ResourceLoadPriority typeToPriority(Resource::Type type) {
 
 ResourceLoadPriority ResourceFetcher::computeLoadPriority(
     Resource::Type type,
-    const FetchRequest& request,
-    ResourcePriority::VisibilityStatus visibility) {
+    const ResourceRequest& resourceRequest,
+    ResourcePriority::VisibilityStatus visibility,
+    FetchRequest::DeferOption deferOption,
+    bool forPreload) {
   ResourceLoadPriority priority = typeToPriority(type);
 
   // Visible resources (images in practice) get a boost to High priority.
@@ -170,7 +172,7 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
   if (type == Resource::Image)
     m_imageFetched = true;
 
-  if (FetchRequest::IdleLoad == request.defer()) {
+  if (FetchRequest::IdleLoad == deferOption) {
     priority = ResourceLoadPriorityVeryLow;
   } else if (type == Resource::Script) {
     // Special handling for scripts.
@@ -178,11 +180,11 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
     // typeToPriority)
     // Async/Defer: Low Priority (applies to both preload and parser-inserted)
     // Preload late in document: Medium
-    if (FetchRequest::LazyLoad == request.defer())
+    if (FetchRequest::LazyLoad == deferOption)
       priority = ResourceLoadPriorityLow;
-    else if (request.forPreload() && m_imageFetched)
+    else if (forPreload && m_imageFetched)
       priority = ResourceLoadPriorityMedium;
-  } else if (FetchRequest::LazyLoad == request.defer()) {
+  } else if (FetchRequest::LazyLoad == deferOption) {
     priority = ResourceLoadPriorityVeryLow;
   }
 
@@ -192,7 +194,7 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
   // of the viewport, or is displayed more than once, both in and out of the
   // viewport.
   return std::max(context().modifyPriorityForExperiments(priority),
-                  request.resourceRequest().priority());
+                  resourceRequest.priority());
 }
 
 static void populateTimingInfo(ResourceTimingInfo* info, Resource* resource) {
@@ -477,7 +479,8 @@ Resource* ResourceFetcher::requestResource(
     return nullptr;
 
   resourceRequest.setPriority(computeLoadPriority(
-      factory.type(), request, ResourcePriority::NotVisible));
+      factory.type(), request.resourceRequest(), ResourcePriority::NotVisible,
+      request.defer(), request.forPreload()));
   initializeResourceRequest(resourceRequest, factory.type(), request.defer());
   network_instrumentation::resourcePrioritySet(identifier,
                                                resourceRequest.priority());
@@ -1273,10 +1276,9 @@ void ResourceFetcher::updateAllImageResourcePriorities() {
       continue;
 
     ResourcePriority resourcePriority = resource->priorityFromObservers();
-    ResourceLoadPriority resourceLoadPriority = computeLoadPriority(
-        Resource::Image,
-        FetchRequest(resource->resourceRequest(), FetchInitiatorInfo()),
-        resourcePriority.visibility);
+    ResourceLoadPriority resourceLoadPriority =
+        computeLoadPriority(Resource::Image, resource->resourceRequest(),
+                            resourcePriority.visibility);
     if (resourceLoadPriority == resource->resourceRequest().priority())
       continue;
 
