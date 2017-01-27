@@ -71,10 +71,8 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
 
     // Check default content settings by using an unknown URL.
     GURL example_url("http://www.example.com");
-    EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(
-        example_url, example_url));
-    EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
-        example_url, example_url));
+    EXPECT_TRUE(
+        cookie_settings->IsCookieAccessAllowed(example_url, example_url));
     EXPECT_TRUE(cookie_settings->IsCookieSessionOnly(example_url));
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               map->GetContentSetting(example_url,
@@ -134,7 +132,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
 
     // Check content settings for www.google.com
     GURL url("http://www.google.com");
-    EXPECT_FALSE(cookie_settings->IsReadingCookieAllowed(url, url));
+    EXPECT_FALSE(cookie_settings->IsCookieAccessAllowed(url, url));
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               map->GetContentSetting(
                   url, url, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
@@ -180,8 +178,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
 
     // Check content settings for www.google.com
     GURL url("http://www.google.com");
-    EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(url, url));
-    EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(url, url));
+    EXPECT_TRUE(cookie_settings->IsCookieAccessAllowed(url, url));
     EXPECT_FALSE(cookie_settings->IsCookieSessionOnly(url));
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               map->GetContentSetting(

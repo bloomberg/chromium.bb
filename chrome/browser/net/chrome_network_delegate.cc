@@ -410,7 +410,7 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
   if (!cookie_settings_.get())
     return true;
 
-  bool allow = cookie_settings_->IsReadingCookieAllowed(
+  bool allow = cookie_settings_->IsCookieAccessAllowed(
       request.url(), request.first_party_for_cookies());
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
@@ -433,7 +433,7 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
   if (!cookie_settings_.get())
     return true;
 
-  bool allow = cookie_settings_->IsSettingCookieAllowed(
+  bool allow = cookie_settings_->IsCookieAccessAllowed(
       request.url(), request.first_party_for_cookies());
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
@@ -525,13 +525,7 @@ bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
   if (!cookie_settings_.get())
     return false;
 
-  bool reading_cookie_allowed = false;
-  bool setting_cookie_allowed = false;
-  cookie_settings_->GetReadingAndSettingCookieAllowed(
-      url, first_party_for_cookies, &reading_cookie_allowed,
-      &setting_cookie_allowed);
-  bool privacy_mode = !(reading_cookie_allowed && setting_cookie_allowed);
-  return privacy_mode;
+  return !cookie_settings_->IsCookieAccessAllowed(url, first_party_for_cookies);
 }
 
 bool ChromeNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {

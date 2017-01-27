@@ -56,38 +56,16 @@ ContentSetting CookieSettings::GetDefaultCookieSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, provider_id);
 }
 
-bool CookieSettings::IsReadingCookieAllowed(const GURL& url,
-                                            const GURL& first_party_url) const {
-  ContentSetting reading_setting;
-  GetCookieSetting(url, first_party_url, nullptr, &reading_setting,
-                   nullptr /* setting_cookie */);
-  return IsAllowed(reading_setting);
-}
-
-bool CookieSettings::IsSettingCookieAllowed(const GURL& url,
-                                            const GURL& first_party_url) const {
-  ContentSetting setting_setting;
-  GetCookieSetting(url, first_party_url, nullptr, nullptr /* reading_cookie */,
-                   &setting_setting);
-  return IsAllowed(setting_setting);
-}
-
-void CookieSettings::GetReadingAndSettingCookieAllowed(
-    const GURL& url,
-    const GURL& first_party_url,
-    bool* reading_cookie_allowed,
-    bool* setting_cookie_allowed) const {
-  ContentSetting reading_setting;
-  ContentSetting setting_setting;
-  GetCookieSetting(url, first_party_url, nullptr, &reading_setting,
-                   &setting_setting);
-  *reading_cookie_allowed = IsAllowed(reading_setting);
-  *setting_cookie_allowed = IsAllowed(setting_setting);
+bool CookieSettings::IsCookieAccessAllowed(const GURL& url,
+                                           const GURL& first_party_url) const {
+  ContentSetting setting;
+  GetCookieSetting(url, first_party_url, nullptr, &setting);
+  return IsAllowed(setting);
 }
 
 bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
   ContentSetting setting;
-  GetCookieSetting(origin, origin, nullptr, nullptr, &setting);
+  GetCookieSetting(origin, origin, nullptr, &setting);
   DCHECK(IsValidSetting(setting));
   return (setting == CONTENT_SETTING_SESSION_ONLY);
 }
@@ -143,25 +121,19 @@ void CookieSettings::ShutdownOnUIThread() {
 void CookieSettings::GetCookieSetting(const GURL& url,
                                       const GURL& first_party_url,
                                       content_settings::SettingSource* source,
-                                      ContentSetting* reading_cookie,
-                                      ContentSetting* setting_cookie) const {
+                                      ContentSetting* cookie_setting) const {
+  DCHECK(cookie_setting);
   // Auto-allow in extensions or for WebUI embedded in a secure origin.
   if (first_party_url.SchemeIs(kChromeUIScheme) &&
       url.SchemeIsCryptographic()) {
-    if (reading_cookie)
-      *reading_cookie = CONTENT_SETTING_ALLOW;
-    if (setting_cookie)
-      *setting_cookie = CONTENT_SETTING_ALLOW;
+    *cookie_setting = CONTENT_SETTING_ALLOW;
     return;
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.SchemeIs(extension_scheme_) &&
       first_party_url.SchemeIs(extension_scheme_)) {
-    if (reading_cookie)
-      *reading_cookie = CONTENT_SETTING_ALLOW;
-    if (setting_cookie)
-      *setting_cookie = CONTENT_SETTING_ALLOW;
+    *cookie_setting = CONTENT_SETTING_ALLOW;
     return;
   }
 #endif
@@ -187,16 +159,9 @@ void CookieSettings::GetCookieSetting(const GURL& url,
   // We should always have a value, at least from the default provider.
   DCHECK(value.get());
   ContentSetting setting = ValueToContentSetting(value.get());
-  if (reading_cookie) {
-    bool block =
-        block_third && policy.CanGetCookies(url, first_party_url) != net::OK;
-    *reading_cookie = block ? CONTENT_SETTING_BLOCK : setting;
-  }
-  if (setting_cookie) {
-    bool block =
-        block_third && policy.CanSetCookie(url, first_party_url) != net::OK;
-    *setting_cookie = block ? CONTENT_SETTING_BLOCK : setting;
-  }
+  bool block =
+      block_third && policy.CanAccessCookies(url, first_party_url) != net::OK;
+  *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }
 
 CookieSettings::~CookieSettings() {

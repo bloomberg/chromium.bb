@@ -1871,8 +1871,8 @@ bool ChromeContentBrowserClient::AllowAppCache(
     content::ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  return io_data->GetCookieSettings()->
-      IsSettingCookieAllowed(manifest_url, first_party);
+  return io_data->GetCookieSettings()->IsCookieAccessAllowed(manifest_url,
+                                                             first_party);
 }
 
 bool ChromeContentBrowserClient::AllowServiceWorker(
@@ -1908,8 +1908,8 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
 
   // Check if cookies are allowed.
   bool allow_serviceworker =
-      io_data->GetCookieSettings()->IsSettingCookieAllowed(scope,
-                                                           first_party_url);
+      io_data->GetCookieSettings()->IsCookieAccessAllowed(scope,
+                                                          first_party_url);
   // Record access to database for potential display in UI.
   // Only post the task if this is for a specific tab.
   if (!wc_getter.is_null()) {
@@ -1930,8 +1930,8 @@ bool ChromeContentBrowserClient::AllowGetCookie(
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  bool allow = io_data->GetCookieSettings()->
-      IsReadingCookieAllowed(url, first_party);
+  bool allow =
+      io_data->GetCookieSettings()->IsCookieAccessAllowed(url, first_party);
 
   base::Callback<content::WebContents*(void)> wc_getter =
       base::Bind(&GetWebContents, render_process_id, render_frame_id);
@@ -1954,7 +1954,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
-  bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
+  bool allow = cookie_settings->IsCookieAccessAllowed(url, first_party);
 
   base::Callback<content::WebContents*(void)> wc_getter =
       base::Bind(&GetWebContents, render_process_id, render_frame_id);
@@ -1987,7 +1987,7 @@ void ChromeContentBrowserClient::AllowWorkerFileSystem(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
-  bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
+  bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   GuestPermissionRequestHelper(url, render_frames, callback, allow);
@@ -2081,7 +2081,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
-  bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
+  bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
 
   // Record access to IndexedDB for potential display in UI.
   std::vector<std::pair<int, int> >::const_iterator i;
@@ -2104,8 +2104,7 @@ bool ChromeContentBrowserClient::AllowWebRTCIdentityCache(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
-  return cookie_settings->IsReadingCookieAllowed(url, first_party_url) &&
-         cookie_settings->IsSettingCookieAllowed(url, first_party_url);
+  return cookie_settings->IsCookieAccessAllowed(url, first_party_url);
 }
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 

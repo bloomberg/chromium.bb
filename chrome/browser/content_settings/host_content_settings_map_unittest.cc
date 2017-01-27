@@ -476,18 +476,18 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
 
   GURL host_ending_with_dot("http://example.com./");
 
-  EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
-      host_ending_with_dot, host_ending_with_dot));
+  EXPECT_TRUE(cookie_settings->IsCookieAccessAllowed(host_ending_with_dot,
+                                                     host_ending_with_dot));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(), CONTENT_SETTING_DEFAULT);
-  EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
-      host_ending_with_dot, host_ending_with_dot));
+  EXPECT_TRUE(cookie_settings->IsCookieAccessAllowed(host_ending_with_dot,
+                                                     host_ending_with_dot));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(), CONTENT_SETTING_BLOCK);
-  EXPECT_FALSE(cookie_settings->IsSettingCookieAllowed(
-      host_ending_with_dot, host_ending_with_dot));
+  EXPECT_FALSE(cookie_settings->IsCookieAccessAllowed(host_ending_with_dot,
+                                                      host_ending_with_dot));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(

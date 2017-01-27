@@ -58,67 +58,57 @@ class CookieSettingsTest : public testing::Test {
 
 TEST_F(CookieSettingsTest, TestWhitelistedScheme) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(kHttpSite, kChromeURL));
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kHttpsSite, kChromeURL));
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kChromeURL, kHttpSite));
+  EXPECT_FALSE(cookie_settings_->IsCookieAccessAllowed(kHttpSite, kChromeURL));
+  EXPECT_TRUE(cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kChromeURL));
+  EXPECT_TRUE(cookie_settings_->IsCookieAccessAllowed(kChromeURL, kHttpSite));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));
+      cookie_settings_->IsCookieAccessAllowed(kExtensionURL, kExtensionURL));
 #else
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));
+      cookie_settings_->IsCookieAccessAllowed(kExtensionURL, kExtensionURL));
 #endif
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kHttpSite));
+      cookie_settings_->IsCookieAccessAllowed(kExtensionURL, kHttpSite));
 }
 
 TEST_F(CookieSettingsTest, CookiesBlockSingle) {
   cookie_settings_->SetCookieSetting(kBlockedSite, CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kBlockedSite, kBlockedSite));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kBlockedSite));
 }
 
 TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kBlockedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
-  EXPECT_FALSE(
-      cookie_settings_->IsSettingCookieAllowed(kBlockedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kBlockedSite, kFirstPartySite));
-  EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kBlockedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
 TEST_F(CookieSettingsTest, CookiesExplicitBlockSingleThirdParty) {
   cookie_settings_->SetCookieSetting(kBlockedSite, CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kBlockedSite, kFirstPartySite));
-  EXPECT_FALSE(
-      cookie_settings_->IsSettingCookieAllowed(kBlockedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kAllowedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kAllowedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesExplicitSessionOnly) {
   cookie_settings_->SetCookieSetting(kBlockedSite,
                                      CONTENT_SETTING_SESSION_ONLY);
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kBlockedSite, kFirstPartySite));
-  EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kBlockedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kBlockedSite, kFirstPartySite));
-  EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kBlockedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
@@ -126,16 +116,12 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
   cookie_settings_->SetCookieSetting(kAllowedSite, CONTENT_SETTING_ALLOW);
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kAllowedSite, kFirstPartySite));
-  EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kAllowedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kAllowedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kAllowedSite));
 
   // Extensions should always be allowed to use cookies.
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kAllowedSite, kExtensionURL));
-  EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kAllowedSite, kExtensionURL));
+      cookie_settings_->IsCookieAccessAllowed(kAllowedSite, kExtensionURL));
 }
 
 TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedAllSitesAllowed) {
@@ -150,60 +136,43 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedAllSitesAllowed) {
 
   // |kAllowedSite| should be allowed.
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kAllowedSite, kBlockedSite));
-  EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kAllowedSite, kBlockedSite));
+      cookie_settings_->IsCookieAccessAllowed(kAllowedSite, kBlockedSite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kAllowedSite));
 
   // HTTPS sites should be allowed in a first-party context.
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kHttpsSite, kHttpsSite));
-  EXPECT_TRUE(cookie_settings_->IsSettingCookieAllowed(kHttpsSite, kHttpsSite));
+  EXPECT_TRUE(cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kHttpsSite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kAllowedSite));
 
   // HTTP sites should be allowed, but session-only.
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kFirstPartySite,
-                                                       kFirstPartySite));
-  EXPECT_TRUE(cookie_settings_->IsSettingCookieAllowed(kFirstPartySite,
-                                                       kFirstPartySite));
+  EXPECT_TRUE(cookie_settings_->IsCookieAccessAllowed(kFirstPartySite,
+                                                      kFirstPartySite));
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kFirstPartySite));
 
   // Third-party cookies should be blocked.
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kFirstPartySite, kBlockedSite));
+      cookie_settings_->IsCookieAccessAllowed(kFirstPartySite, kBlockedSite));
   EXPECT_FALSE(
-      cookie_settings_->IsSettingCookieAllowed(kFirstPartySite, kBlockedSite));
-  EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kHttpsSite, kBlockedSite));
-  EXPECT_FALSE(
-      cookie_settings_->IsSettingCookieAllowed(kHttpsSite, kBlockedSite));
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kBlockedSite));
 }
 
 TEST_F(CookieSettingsTest, CookiesBlockEverything) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
-  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(kFirstPartySite,
-                                                        kFirstPartySite));
-  EXPECT_FALSE(cookie_settings_->IsSettingCookieAllowed(kFirstPartySite,
-                                                        kFirstPartySite));
+  EXPECT_FALSE(cookie_settings_->IsCookieAccessAllowed(kFirstPartySite,
+                                                       kFirstPartySite));
   EXPECT_FALSE(
-      cookie_settings_->IsSettingCookieAllowed(kAllowedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kAllowedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesBlockEverythingExceptAllowed) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   cookie_settings_->SetCookieSetting(kAllowedSite, CONTENT_SETTING_ALLOW);
-  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(kFirstPartySite,
-                                                        kFirstPartySite));
-  EXPECT_FALSE(cookie_settings_->IsSettingCookieAllowed(kFirstPartySite,
-                                                        kFirstPartySite));
+  EXPECT_FALSE(cookie_settings_->IsCookieAccessAllowed(kFirstPartySite,
+                                                       kFirstPartySite));
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kAllowedSite, kFirstPartySite));
+      cookie_settings_->IsCookieAccessAllowed(kAllowedSite, kFirstPartySite));
   EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kAllowedSite, kFirstPartySite));
-  EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kAllowedSite, kAllowedSite));
-  EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kAllowedSite, kAllowedSite));
+      cookie_settings_->IsCookieAccessAllowed(kAllowedSite, kAllowedSite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kAllowedSite));
 }
 
@@ -212,7 +181,7 @@ TEST_F(CookieSettingsTest, ExtensionsRegularSettings) {
 
   // Regular cookie settings also apply to extensions.
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kBlockedSite, kExtensionURL));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kExtensionURL));
 }
 
 TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
@@ -221,12 +190,12 @@ TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Extensions can always use cookies (and site data) in their own origin.
   EXPECT_TRUE(
-      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));
+      cookie_settings_->IsCookieAccessAllowed(kExtensionURL, kExtensionURL));
 #else
   // Except if extensions are disabled. Then the extension-specific checks do
   // not exist and the default setting is to block.
   EXPECT_FALSE(
-      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));
+      cookie_settings_->IsCookieAccessAllowed(kExtensionURL, kExtensionURL));
 #endif
 }
 
@@ -236,7 +205,7 @@ TEST_F(CookieSettingsTest, ExtensionsThirdParty) {
   // XHRs stemming from extensions are exempt from third-party cookie blocking
   // rules (as the first party is always the extension's security origin).
   EXPECT_TRUE(
-      cookie_settings_->IsSettingCookieAllowed(kBlockedSite, kExtensionURL));
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kExtensionURL));
 }
 
 }  // namespace

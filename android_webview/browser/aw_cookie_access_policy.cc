@@ -142,15 +142,14 @@ StaticCookiePolicy::Type AwStaticCookiePolicy::GetPolicy(const GURL& url)
 
 bool AwStaticCookiePolicy::AllowSet(const GURL& url,
                                     const GURL& first_party) const {
-
-  return StaticCookiePolicy(GetPolicy(url)).CanSetCookie(url, first_party) ==
-         net::OK;
+  return StaticCookiePolicy(GetPolicy(url))
+             .CanAccessCookies(url, first_party) == net::OK;
 }
 
 bool AwStaticCookiePolicy::AllowGet(const GURL& url,
                                     const GURL& first_party) const {
-  return StaticCookiePolicy(GetPolicy(url)).CanGetCookies(url, first_party) ==
-         net::OK;
+  return StaticCookiePolicy(GetPolicy(url))
+             .CanAccessCookies(url, first_party) == net::OK;
 }
 
 }  // namespace android_webview

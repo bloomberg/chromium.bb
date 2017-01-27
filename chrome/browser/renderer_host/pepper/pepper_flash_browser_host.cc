@@ -159,7 +159,7 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
   PP_FlashLSORestrictions restrictions = PP_FLASHLSORESTRICTIONS_NONE;
   if (cookie_settings_.get() && document_url.is_valid() &&
       plugin_url.is_valid()) {
-    if (!cookie_settings_->IsReadingCookieAllowed(document_url, plugin_url))
+    if (!cookie_settings_->IsCookieAccessAllowed(document_url, plugin_url))
       restrictions = PP_FLASHLSORESTRICTIONS_BLOCK;
     else if (cookie_settings_->IsCookieSessionOnly(plugin_url))
       restrictions = PP_FLASHLSORESTRICTIONS_IN_MEMORY;

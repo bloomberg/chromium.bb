@@ -154,7 +154,7 @@ void ChromeRenderMessageFilter::OnAllowDatabase(
     const base::string16& display_name,
     bool* allowed) {
   *allowed =
-      cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
+      cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::WebDatabaseAccessed,
@@ -168,7 +168,7 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_frame_id,
                                                   bool local,
                                                   bool* allowed) {
   *allowed =
-      cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
+      cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   // Record access to DOM storage for potential display in UI.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -256,7 +256,7 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccess(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   bool allowed =
-      cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
+      cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   bool is_web_view_guest = extensions::WebViewRendererState::GetInstance()
@@ -330,7 +330,7 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
                                                  const base::string16& name,
                                                  bool* allowed) {
   *allowed =
-      cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
+      cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::IndexedDBAccessed,

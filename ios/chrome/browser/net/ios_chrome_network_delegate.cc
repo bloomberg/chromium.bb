@@ -129,7 +129,7 @@ bool IOSChromeNetworkDelegate::OnCanGetCookies(
   if (!cookie_settings_)
     return true;
 
-  return cookie_settings_->IsReadingCookieAllowed(
+  return cookie_settings_->IsCookieAccessAllowed(
       request.url(), request.first_party_for_cookies());
 }
 
@@ -140,7 +140,7 @@ bool IOSChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
   if (!cookie_settings_)
     return true;
 
-  return cookie_settings_->IsSettingCookieAllowed(
+  return cookie_settings_->IsCookieAccessAllowed(
       request.url(), request.first_party_for_cookies());
 }
 
@@ -157,12 +157,7 @@ bool IOSChromeNetworkDelegate::OnCanEnablePrivacyMode(
   if (!cookie_settings_.get())
     return false;
 
-  bool reading_cookie_allowed =
-      cookie_settings_->IsReadingCookieAllowed(url, first_party_for_cookies);
-  bool setting_cookie_allowed =
-      cookie_settings_->IsSettingCookieAllowed(url, first_party_for_cookies);
-  bool privacy_mode = !(reading_cookie_allowed && setting_cookie_allowed);
-  return privacy_mode;
+  return !cookie_settings_->IsCookieAccessAllowed(url, first_party_for_cookies);
 }
 
 bool IOSChromeNetworkDelegate::

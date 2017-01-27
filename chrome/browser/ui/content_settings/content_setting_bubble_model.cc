@@ -345,8 +345,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
     content_settings::CookieSettings* cookie_settings =
         CookieSettingsFactory::GetForProfile(profile()).get();
-    cookie_settings->GetCookieSetting(url, url, &setting_source, nullptr,
-                                      &setting);
+    cookie_settings->GetCookieSetting(url, url, &setting_source, &setting);
   } else {
     SettingInfo info;
     HostContentSettingsMap* map =

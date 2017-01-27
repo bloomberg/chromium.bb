@@ -43,30 +43,14 @@ class CookieSettings : public RefcountedKeyedService {
   ContentSetting GetDefaultCookieSetting(std::string* provider_id) const;
 
   // Returns true if the page identified by (|url|, |first_party_url|) is
-  // allowed to read cookies.
+  // allowed to access (i.e., read or write) cookies.
   //
   // This may be called on any thread.
-  bool IsReadingCookieAllowed(const GURL& url,
-                              const GURL& first_party_url) const;
-
-  // Returns true if the page identified by (|url|, |first_party_url|) is
-  // allowed to set cookies (permanent or session only).
-  //
-  // This may be called on any thread.
-  bool IsSettingCookieAllowed(const GURL& url,
-                              const GURL& first_party_url) const;
-
-  // Gets the results from IsReadingCookieAllowed and IsSettingCookieAllowed in
-  // a performance efficient way.
-  //
-  // This may be called on any thread.
-  void GetReadingAndSettingCookieAllowed(const GURL& url,
-                                         const GURL& first_party_url,
-                                         bool* reading_cookie_allowed,
-                                         bool* setting_cookie_allowed) const;
+  bool IsCookieAccessAllowed(const GURL& url,
+                             const GURL& first_party_url) const;
 
   // Returns true if the cookie set by a page identified by |url| should be
-  // session only. Querying this only makes sense if |IsSettingCookieAllowed|
+  // session only. Querying this only makes sense if |IsCookieAccessAllowed|
   // has returned true.
   //
   // This may be called on any thread.
@@ -106,8 +90,7 @@ class CookieSettings : public RefcountedKeyedService {
   void GetCookieSetting(const GURL& url,
                         const GURL& first_party_url,
                         content_settings::SettingSource* source,
-                        ContentSetting* reading_cookie,
-                        ContentSetting* setting_cookie) const;
+                        ContentSetting* cookie_setting) const;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

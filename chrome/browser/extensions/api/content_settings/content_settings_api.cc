@@ -153,9 +153,8 @@ ContentSettingsContentSettingGetFunction::Run() {
 
   ContentSetting setting;
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    // TODO(jochen): Do we return the value for setting or for reading cookies?
     cookie_settings->GetCookieSetting(primary_url, secondary_url, nullptr,
-                                      nullptr /* reading_setting */, &setting);
+                                      &setting);
   } else {
     setting = map->GetContentSetting(primary_url, secondary_url, content_type,
                                      resource_identifier);
