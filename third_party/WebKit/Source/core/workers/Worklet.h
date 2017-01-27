@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/workers/WorkletScriptLoader.h"
+#include "core/loader/WorkletScriptLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 

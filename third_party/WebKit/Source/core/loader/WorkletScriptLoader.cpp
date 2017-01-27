@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkletScriptLoader.h"
+#include "core/loader/WorkletScriptLoader.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/loader/FrameFetchContext.h"

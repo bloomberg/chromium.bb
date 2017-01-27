@@ -56,6 +56,8 @@ blink_core_sources("loader") {
     "ThreadableLoaderClient.h",
     "WorkerThreadableLoader.cpp",
     "WorkerThreadableLoader.h",
+    "WorkletScriptLoader.cpp",
+    "WorkletScriptLoader.h",
     "appcache/ApplicationCache.cpp",
     "appcache/ApplicationCache.h",
     "appcache/ApplicationCacheHost.cpp",
