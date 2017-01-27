@@ -70,7 +70,6 @@ class InternalSettings final : public InternalSettingsGenerated,
     bool m_langAttributeAwareFormControlUIEnabled;
     bool m_imagesEnabled;
     String m_defaultVideoPosterURL;
-    bool m_originalLayerSquashingEnabled;
     ImageAnimationPolicy m_originalImageAnimationPolicy;
     bool m_originalScrollTopLeftInteropEnabled;
     bool m_originalCompositorWorkerEnabled;

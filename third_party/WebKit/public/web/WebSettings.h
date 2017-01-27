@@ -190,7 +190,6 @@ class WebSettings {
   virtual void setJavaScriptCanAccessClipboard(bool) = 0;
   virtual void setJavaScriptCanOpenWindowsAutomatically(bool) = 0;
   virtual void setJavaScriptEnabled(bool) = 0;
-  void setLayerSquashingEnabled(bool) {}
   virtual void setLoadsImagesAutomatically(bool) = 0;
   virtual void setLoadWithOverviewMode(bool) = 0;
   virtual void setShouldReuseGlobalForUnownedMainFrame(bool) = 0;

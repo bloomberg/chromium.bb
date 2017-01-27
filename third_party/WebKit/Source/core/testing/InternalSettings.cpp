@@ -79,7 +79,6 @@ InternalSettings::Backup::Backup(Settings* settings)
           RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled()),
       m_imagesEnabled(settings->getImagesEnabled()),
       m_defaultVideoPosterURL(settings->getDefaultVideoPosterURL()),
-      m_originalLayerSquashingEnabled(settings->getLayerSquashingEnabled()),
       m_originalImageAnimationPolicy(settings->getImageAnimationPolicy()),
       m_originalScrollTopLeftInteropEnabled(
           RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()),
