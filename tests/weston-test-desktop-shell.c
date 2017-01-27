@@ -204,7 +204,7 @@ wet_shell_init(struct weston_compositor *ec,
 	if (dts->background_view == NULL)
 		goto out_surface;
 
-	weston_surface_set_color(dts->background_surface, 0.0, 0.0, 0.0, 1);
+	weston_surface_set_color(dts->background_surface, 0.16, 0.32, 0.48, 1.);
 	pixman_region32_fini(&dts->background_surface->opaque);
 	pixman_region32_init_rect(&dts->background_surface->opaque, 0, 0, 2000, 2000);
 	pixman_region32_fini(&dts->background_surface->input);
