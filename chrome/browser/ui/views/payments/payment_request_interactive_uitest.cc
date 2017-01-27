@@ -4,7 +4,9 @@
 
 #include <vector>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/payments/payment_request.h"
@@ -36,8 +38,19 @@ class PaymentRequestNoShippingTest : public PaymentRequestInteractiveTestBase {
             "/payment_request_no_shipping_test.html") {}
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenPaymentRequestSheet) {
+IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest,
+                       OpenAndNavigateToOrderSummary) {
   InvokePaymentRequestUI();
+
+  OpenOrderSummaryScreen();
+
+  // Verify the expected amounts are shown.
+  EXPECT_EQ(base::ASCIIToUTF16("USD $5.00"),
+            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
+  EXPECT_EQ(base::ASCIIToUTF16("$4.50"),
+            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
+  EXPECT_EQ(base::ASCIIToUTF16("$0.50"),
+            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateTo404) {

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -261,6 +262,8 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON));
+  section->set_id(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION));
   return section;
 }
 
@@ -290,6 +293,8 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
       widest_name_column_view_width_);
   section->set_tag(
       static_cast<int>(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON));
+  section->set_id(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION));
   return section;
 }
 
@@ -346,6 +351,8 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON));
+  section->set_id(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION));
   return section;
 }
 
@@ -375,6 +382,8 @@ PaymentSheetViewController::CreateContactInfoRow() {
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON));
+  section->set_id(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION));
   return section;
 }
 

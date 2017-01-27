@@ -33,6 +33,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   class ObserverForTest {
    public:
     virtual void OnDialogOpened() = 0;
+
+    virtual void OnOrderSummaryOpened() = 0;
   };
 
   // Build a Dialog around the PaymentRequest object. |observer| is used to

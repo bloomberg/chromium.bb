@@ -102,6 +102,9 @@ void PaymentRequestDialogView::ShowOrderSummary() {
   view_stack_.Push(CreateViewAndInstallController<OrderSummaryViewController>(
                        &controller_map_, request_, this),
                    /* animate = */ true);
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnOrderSummaryOpened();
 }
 
 void PaymentRequestDialogView::ShowPaymentMethodSheet() {

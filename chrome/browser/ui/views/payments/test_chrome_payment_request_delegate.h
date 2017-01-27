@@ -31,6 +31,10 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
 
   void ShowDialog(PaymentRequest* request) override;
 
+  PaymentRequestDialogView* dialog_view() {
+    return static_cast<PaymentRequestDialogView*>(dialog_);
+  }
+
  private:
   PaymentRequestDialogView::ObserverForTest* observer_;
   views::WidgetObserver* widget_observer_;

@@ -9,9 +9,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/payments/test_chrome_payment_request_delegate.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/payments/payment_request.h"
 #include "components/payments/payment_request_web_contents_manager.h"
@@ -22,12 +25,15 @@
 #include "content/public/test/browser_test_utils.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/test/ui_controls.h"
+#include "ui/views/controls/styled_label.h"
 
 namespace payments {
 
 PaymentRequestInteractiveTestBase::PaymentRequestInteractiveTestBase(
     const std::string& test_file_path)
-    : test_file_path_(test_file_path) {}
+    : test_file_path_(test_file_path),
+      delegate_(nullptr) {}
 PaymentRequestInteractiveTestBase::~PaymentRequestInteractiveTestBase() {}
 
 void PaymentRequestInteractiveTestBase::SetUpCommandLine(
@@ -63,6 +69,11 @@ void PaymentRequestInteractiveTestBase::OnDialogOpened() {
     event_observer_->Observe(DialogEvent::DIALOG_OPENED);
 }
 
+void PaymentRequestInteractiveTestBase::OnOrderSummaryOpened() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::ORDER_SUMMARY_OPENED);
+}
+
 void PaymentRequestInteractiveTestBase::OnWidgetDestroyed(
     views::Widget* widget) {
   if (event_observer_)
@@ -70,19 +81,27 @@ void PaymentRequestInteractiveTestBase::OnWidgetDestroyed(
 }
 
 void PaymentRequestInteractiveTestBase::InvokePaymentRequestUI() {
-  event_observer_.reset(new DialogEventObserver(DialogEvent::DIALOG_OPENED));
+  ResetEventObserver(DialogEvent::DIALOG_OPENED);
 
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { document.getElementById('buy').click(); })();";
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_buy_button_js));
 
-  event_observer_->Wait();
+  WaitForObservedEvent();
 
   // The web-modal dialog should be open.
   web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+}
+
+void PaymentRequestInteractiveTestBase::OpenOrderSummaryScreen() {
+  ResetEventObserver(DialogEvent::ORDER_SUMMARY_OPENED);
+
+  ClickOnDialogView(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION);
+
+  WaitForObservedEvent();
 }
 
 content::WebContents*
@@ -108,12 +127,32 @@ void PaymentRequestInteractiveTestBase::CreatePaymentRequestForTest(
     content::WebContents* web_contents,
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
   DCHECK(web_contents);
+  std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
+      base::MakeUnique<TestChromePaymentRequestDelegate>(
+          web_contents, this /* observer */, this /* widget_observer */);
+  delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
-      ->CreatePaymentRequest(
-          web_contents,
-          base::MakeUnique<TestChromePaymentRequestDelegate>(
-              web_contents, this /* observer */, this /* widget_observer */),
-          std::move(request));
+      ->CreatePaymentRequest(web_contents, std::move(delegate),
+                             std::move(request));
+}
+
+void PaymentRequestInteractiveTestBase::ClickOnDialogView(
+    DialogViewID view_id) {
+  views::View* view =
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
+  DCHECK(view);
+  base::RunLoop run_loop;
+  ui_test_utils::MoveMouseToCenterAndPress(
+      view, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+      run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+const base::string16& PaymentRequestInteractiveTestBase::GetStyledLabelText(
+    DialogViewID view_id) {
+  views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
+  DCHECK(view);
+  return static_cast<views::StyledLabel*>(view)->text();
 }
 
 PaymentRequestInteractiveTestBase::DialogEventObserver::DialogEventObserver(
@@ -142,7 +181,7 @@ void PaymentRequestInteractiveTestBase::DialogEventObserver::Observe(
 }
 
 void PaymentRequestInteractiveTestBase::ResetEventObserver(DialogEvent event) {
-  event_observer_.reset(new DialogEventObserver(event));
+  event_observer_ = base::MakeUnique<DialogEventObserver>(event);
 }
 
 void PaymentRequestInteractiveTestBase::WaitForObservedEvent() {

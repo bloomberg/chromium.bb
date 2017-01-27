@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/currency_formatter.h"
@@ -34,10 +35,12 @@ namespace {
 // |label| is the text in the left-aligned label and |amount| is the text of the
 // right-aliged label in the row. The |amount| text is bold if |bold_amount| is
 // true, which is only the case for the last row containing the total of the
-// order.
+// order. |amount_label_id| is specified to recall the view later, e.g. in
+// tests.
 std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
                                                 const base::string16& amount,
-                                                bool bold_amount) {
+                                                bool bold_amount,
+                                                DialogViewID amount_label_id) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
 
   row->SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, SK_ColorLTGRAY));
@@ -63,6 +66,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
 
   std::unique_ptr<views::StyledLabel> amount_label =
       base::MakeUnique<views::StyledLabel>(amount, nullptr);
+  amount_label->set_id(static_cast<int>(amount_label_id));
   amount_label->SetDefaultStyle(style_info);
   amount_label->SizeToFit(0);
   layout->AddView(amount_label.release());
@@ -94,11 +98,21 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
       request()->details()->total->amount->currency_system,
       g_browser_process->GetApplicationLocale());
 
-  for (const auto& item: request()->details()->display_items) {
+  // Set the ID for the first few line items labels, for testing.
+  const std::vector<DialogViewID> line_items{
+      DialogViewID::ORDER_SUMMARY_LINE_ITEM_1,
+      DialogViewID::ORDER_SUMMARY_LINE_ITEM_2,
+      DialogViewID::ORDER_SUMMARY_LINE_ITEM_3};
+  for (size_t i = 0; i < request()->details()->display_items.size(); i++) {
+    DialogViewID view_id =
+        i < line_items.size() ? line_items[i] : DialogViewID::VIEW_ID_NONE;
     content_view->AddChildView(
-        CreateLineItemView(base::UTF8ToUTF16(item->label),
-                           formatter->Format(item->amount->value),
-                           false).release());
+        CreateLineItemView(
+            base::UTF8ToUTF16(request()->details()->display_items[i]->label),
+            formatter->Format(
+                request()->details()->display_items[i]->amount->value),
+            false, view_id)
+            .release());
   }
 
   base::string16 total_label_value = l10n_util::GetStringFUTF16(
@@ -108,8 +122,9 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
 
   content_view->AddChildView(
       CreateLineItemView(base::UTF8ToUTF16(request()->details()->total->label),
-                         total_label_value,
-                         true).release());
+                         total_label_value, true,
+                         DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
+          .release());
 
   return payments::CreatePaymentView(
       CreateSheetHeaderView(

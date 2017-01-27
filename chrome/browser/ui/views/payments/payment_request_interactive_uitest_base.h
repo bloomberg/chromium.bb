@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
+#include "chrome/browser/ui/views/payments/test_chrome_payment_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/payments/payment_request.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -26,6 +27,7 @@ class Widget;
 
 namespace payments {
 
+enum class DialogViewID;
 class PaymentRequest;
 
 // Base class for any interactive PaymentRequest test that will need to open
@@ -45,6 +47,7 @@ class PaymentRequestInteractiveTestBase
 
   // PaymentRequestDialogView::ObserverForTest
   void OnDialogOpened() override;
+  void OnOrderSummaryOpened() override;
 
   // views::WidgetObserver
   // Effective way to be warned of all dialog closures.
@@ -53,6 +56,8 @@ class PaymentRequestInteractiveTestBase
   // Will call JavaScript to invoke the PaymentRequest dialog and verify that
   // it's open.
   void InvokePaymentRequestUI();
+
+  void OpenOrderSummaryScreen();
 
   // Convenience method to get a list of PaymentRequest associated with
   // |web_contents|.
@@ -65,12 +70,22 @@ class PaymentRequestInteractiveTestBase
       content::WebContents* web_contents,
       mojo::InterfaceRequest<payments::mojom::PaymentRequest> request);
 
+  // Click on a view from within the dialog.
+  void ClickOnDialogView(DialogViewID view_id);
+
+  // Returns the text of the StyledLabel with the specific |view_id| that is a
+  // child of the Payment Request dialog view.
+  const base::string16& GetStyledLabelText(DialogViewID view_id);
+
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
+
+  PaymentRequestDialogView* dialog_view() { return delegate_->dialog_view(); }
 
   // Various events that can be waited on by the DialogEventObserver.
   enum DialogEvent {
     DIALOG_OPENED,
     DIALOG_CLOSED,
+    ORDER_SUMMARY_OPENED,
   };
 
   // DialogEventObserver is used to wait on specific events that may have
@@ -113,6 +128,8 @@ class PaymentRequestInteractiveTestBase
   std::unique_ptr<DialogEventObserver> event_observer_;
   const std::string test_file_path_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  // Weak, owned by the PaymentRequest object.
+  TestChromePaymentRequestDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestInteractiveTestBase);
 };
