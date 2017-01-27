@@ -34,7 +34,6 @@ DisplayCompositor::DisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client)
     : manager_(cc::SurfaceManager::LifetimeType::REFERENCES),
-      reference_manager_(&manager_),
       gpu_service_(std::move(gpu_service)),
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),
@@ -147,10 +146,6 @@ std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
       cc::RendererSettings(), frame_sink_id, begin_frame_source,
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
-}
-
-const cc::SurfaceId& DisplayCompositor::GetRootSurfaceId() const {
-  return reference_manager_->GetRootSurfaceId();
 }
 
 void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {

@@ -58,7 +58,6 @@ class SurfaceManagerRefTest : public testing::Test {
     GetFactory(surface_id.frame_sink_id()).EvictSurface();
   }
 
- protected:
   SurfaceFactory& GetFactory(const FrameSinkId& frame_sink_id) {
     auto& factory_ptr = factories_[frame_sink_id];
     if (!factory_ptr)
@@ -67,17 +66,9 @@ class SurfaceManagerRefTest : public testing::Test {
     return *factory_ptr;
   }
 
-  // testing::Test:
-  void SetUp() override {
-    // Start each test with a fresh SurfaceManager instance.
-    manager_ = base::MakeUnique<SurfaceManager>(
-        SurfaceManager::LifetimeType::REFERENCES);
-  }
-  void TearDown() override {
-    for (auto& factory : factories_)
-      factory.second->EvictSurface();
-    factories_.clear();
-    manager_.reset();
+  void RemoveSurfaceReference(const SurfaceId& parent_id,
+                              const SurfaceId& child_id) {
+    manager_->RemoveSurfaceReferences({SurfaceReference(parent_id, child_id)});
   }
 
   // Returns all the references where |surface_id| is the parent.
@@ -113,6 +104,20 @@ class SurfaceManagerRefTest : public testing::Test {
     return temp_references;
   }
 
+ protected:
+  // testing::Test:
+  void SetUp() override {
+    // Start each test with a fresh SurfaceManager instance.
+    manager_ = base::MakeUnique<SurfaceManager>(
+        SurfaceManager::LifetimeType::REFERENCES);
+  }
+  void TearDown() override {
+    for (auto& factory : factories_)
+      factory.second->EvictSurface();
+    factories_.clear();
+    manager_.reset();
+  }
+
   std::unordered_map<FrameSinkId,
                      std::unique_ptr<SurfaceFactory>,
                      FrameSinkIdHash>
@@ -142,7 +147,7 @@ TEST_F(SurfaceManagerRefTest, AddRemoveReference) {
   EXPECT_THAT(GetReferencesFrom(id1), UnorderedElementsAre(id2));
   EXPECT_THAT(GetReferencesFrom(id2), IsEmpty());
 
-  manager().RemoveSurfaceReference(id1, id2);
+  RemoveSurfaceReference(id1, id2);
   EXPECT_THAT(GetReferencesFor(id1), SizeIs(1));
   EXPECT_THAT(GetReferencesFor(id2), IsEmpty());
   EXPECT_THAT(GetReferencesFrom(id1), IsEmpty());
@@ -171,7 +176,7 @@ TEST_F(SurfaceManagerRefTest, NewSurfaceFromFrameSink) {
   EXPECT_THAT(GetReferencesFor(id2_next), UnorderedElementsAre(id1));
   EXPECT_THAT(GetReferencesFor(id3), UnorderedElementsAre(id2, id2_next));
 
-  manager().RemoveSurfaceReference(id1, id2);
+  RemoveSurfaceReference(id1, id2);
   EXPECT_THAT(GetReferencesFor(id2), IsEmpty());
   EXPECT_THAT(GetReferencesFor(id2_next), UnorderedElementsAre(id1));
   EXPECT_THAT(GetReferencesFor(id3), UnorderedElementsAre(id2_next));
@@ -198,7 +203,7 @@ TEST_F(SurfaceManagerRefTest, ReferenceCycleGetsDeleted) {
   DestroySurface(id2);
   DestroySurface(id1);
 
-  manager().RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
+  RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
 
   // Removing the reference from the root to id1 should allow all three surfaces
   // to be deleted during GC even with a cycle between 2 and 3.
@@ -225,11 +230,11 @@ TEST_F(SurfaceManagerRefTest, CheckGC) {
   EXPECT_NE(nullptr, manager().GetSurfaceForId(id2));
 
   // Should delete |id2| when the only reference to it is removed.
-  manager().RemoveSurfaceReference(id1, id2);
+  RemoveSurfaceReference(id1, id2);
   EXPECT_EQ(nullptr, manager().GetSurfaceForId(id2));
 
   // Should delete |id1| when the only reference to it is removed.
-  manager().RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
+  RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
   EXPECT_EQ(nullptr, manager().GetSurfaceForId(id1));
 }
 
@@ -252,7 +257,7 @@ TEST_F(SurfaceManagerRefTest, CheckGCRecusiveFull) {
   EXPECT_NE(nullptr, manager().GetSurfaceForId(id2));
   EXPECT_NE(nullptr, manager().GetSurfaceForId(id1));
 
-  manager().RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
+  RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
 
   // Removing the reference from the root to id1 should allow all three surfaces
   // to be deleted during GC.
@@ -309,7 +314,7 @@ TEST_F(SurfaceManagerRefTest, TryRemoveBadReference) {
 
   // Removing non-existent reference should be ignored.
   manager().AddSurfaceReference(id1, id2);
-  manager().RemoveSurfaceReference(id2, id1);
+  RemoveSurfaceReference(id2, id1);
   EXPECT_THAT(GetReferencesFrom(id1), SizeIs(1));
   EXPECT_THAT(GetReferencesFor(id2), SizeIs(1));
 }

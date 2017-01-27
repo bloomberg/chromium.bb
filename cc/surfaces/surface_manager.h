@@ -13,7 +13,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -22,8 +21,8 @@
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_observer.h"
+#include "cc/surfaces/surface_reference.h"
 #include "cc/surfaces/surface_reference_factory.h"
-#include "cc/surfaces/surface_reference_manager.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -38,8 +37,7 @@ class CompositorFrame;
 class Surface;
 class SurfaceFactoryClient;
 
-class CC_SURFACES_EXPORT SurfaceManager
-    : public NON_EXPORTED_BASE(SurfaceReferenceManager) {
+class CC_SURFACES_EXPORT SurfaceManager {
  public:
   enum class LifetimeType {
     REFERENCES,
@@ -47,7 +45,7 @@ class CC_SURFACES_EXPORT SurfaceManager
   };
 
   explicit SurfaceManager(LifetimeType lifetime_type = LifetimeType::SEQUENCES);
-  ~SurfaceManager() override;
+  ~SurfaceManager();
 
 #if DCHECK_IS_ON()
   // Returns a string representation of all reachable surface references.
@@ -123,18 +121,27 @@ class CC_SURFACES_EXPORT SurfaceManager
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
 
-  // SurfaceReferenceManager:
-  const SurfaceId& GetRootSurfaceId() const override;
+  // Returns the top level root SurfaceId. Surfaces that are not reachable
+  // from the top level root may be garbage collected. It will not be a valid
+  // SurfaceId and will never correspond to a surface.
+  const SurfaceId& GetRootSurfaceId() const;
+
+  // Adds a reference from |parent_id| to |child_id|. If there is a temporary
+  // references for |child_id| then it will be removed.
   void AddSurfaceReference(const SurfaceId& parent_id,
-                           const SurfaceId& child_id) override;
+                           const SurfaceId& child_id);
+
+  // Removes a reference from |parent_id| to |child_id|.
   void RemoveSurfaceReference(const SurfaceId& parent_id,
-                              const SurfaceId& child_id) override;
-  void AddSurfaceReferences(
-      const std::vector<SurfaceReference>& references) override;
-  void RemoveSurfaceReferences(
-      const std::vector<SurfaceReference>& references) override;
-  size_t GetSurfaceReferenceCount(const SurfaceId& surface_id) const override;
-  size_t GetReferencedSurfaceCount(const SurfaceId& surface_id) const override;
+                              const SurfaceId& child_id);
+
+  // Adds all surface references in |references|. This will remove any temporary
+  // references for child surface in a surface reference.
+  void AddSurfaceReferences(const std::vector<SurfaceReference>& references);
+
+  // Removes all surface references in |references| then runs garbage
+  // collection to delete unreachable surfaces.
+  void RemoveSurfaceReferences(const std::vector<SurfaceReference>& references);
 
   scoped_refptr<SurfaceReferenceFactory> reference_factory() {
     return reference_factory_;

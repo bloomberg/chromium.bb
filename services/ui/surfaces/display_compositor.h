@@ -33,7 +33,6 @@ class ImageFactory;
 
 namespace cc {
 class Display;
-class SurfaceManager;
 class SyntheticBeginFrameSource;
 }
 
@@ -100,8 +99,6 @@ class DisplayCompositor
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateRequest display_private_request);
 
-  const cc::SurfaceId& GetRootSurfaceId() const;
-
   // cc::SurfaceObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
@@ -111,10 +108,6 @@ class DisplayCompositor
   // destroyed in order to ensure that all other objects that depend on it have
   // access to a valid pointer for the entirety of their liftimes.
   cc::SurfaceManager manager_;
-
-  // Will normally point to |manager_| as it provides the interface. For tests
-  // it will be swapped out with a mock implementation.
-  cc::SurfaceReferenceManager* reference_manager_;
 
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
