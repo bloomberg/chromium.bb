@@ -1,5 +1,6 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be // found in the LICENSE file.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 module device.mojom;
 
@@ -23,9 +24,6 @@ struct VRPose {
   array<float, 3>? linearVelocity;
   array<float, 3>? angularAcceleration;
   array<float, 3>? linearAcceleration;
-  // The poseIndex is a sequential ID that's incremented on each distinct
-  // getPose result, it may wrap around for long sessions.
-  uint32 poseIndex;
 };
 
 struct VRDisplayCapabilities {
@@ -72,17 +70,19 @@ enum VRDisplayEventReason {
   UNMOUNTED = 3
 };
 
-// TODO(shaobo.yan@intel.com) : Add comments to describe these interfaces about how to use and where they live.
+// TODO(shaobo.yan@intel.com) : Add comments to describe these interfaces about
+// how to use and where they live.
 interface VRService {
-  // TODO(shaobo.yan@intel.com) : Use a factory function which took a VRServiceClient
-  // so we would never have a half-initialized VRService.
+  // TODO(shaobo.yan@intel.com) : Use a factory function which took a
+  // VRServiceClient so we would never have a half-initialized VRService.
   SetClient(VRServiceClient client) => (uint32 numberOfConnectedDevices);
   // Inform the service that the page is listening for vrdisplayactivate events.
   SetListeningForActivate(bool listening);
 };
 
 interface VRServiceClient {
-  OnDisplayConnected(VRDisplay display, VRDisplayClient& request, VRDisplayInfo displayInfo);
+  OnDisplayConnected(VRDisplay display, VRDisplayClient& request,
+                     VRDisplayInfo displayInfo);
 };
 
 interface VRDisplay {
@@ -91,12 +91,16 @@ interface VRDisplay {
   RequestPresent(bool secureOrigin) => (bool success);
   ExitPresent();
   SubmitFrame(VRPose? pose);
-  UpdateLayerBounds(VRLayerBounds leftBounds, VRLayerBounds rightBounds);
+  UpdateLayerBounds(int16 frameId, VRLayerBounds leftBounds,
+                    VRLayerBounds rightBounds);
   GetVRVSyncProvider(VRVSyncProvider& request);
 };
 
 interface VRVSyncProvider {
-  GetVSync() => (VRPose? pose, mojo.common.mojom.TimeDelta time);
+  // The frameId maps a VSync to a frame arriving from the compositor. IDs will
+  // be reused after the frame arrives from the compositor. Negative IDs imply
+  // no mapping.
+  GetVSync() => (VRPose? pose, mojo.common.mojom.TimeDelta time, int16 frameId);
 };
 
 interface VRDisplayClient {

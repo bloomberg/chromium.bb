@@ -67,12 +67,14 @@ void VRDisplayImpl::SubmitFrame(mojom::VRPosePtr pose) {
   device_->SubmitFrame(std::move(pose));
 }
 
-void VRDisplayImpl::UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
+void VRDisplayImpl::UpdateLayerBounds(int16_t frame_index,
+                                      mojom::VRLayerBoundsPtr left_bounds,
                                       mojom::VRLayerBoundsPtr right_bounds) {
   if (!device_->IsAccessAllowed(this))
     return;
 
-  device_->UpdateLayerBounds(std::move(left_bounds), std::move(right_bounds));
+  device_->UpdateLayerBounds(frame_index, std::move(left_bounds),
+                             std::move(right_bounds));
 }
 
 void VRDisplayImpl::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {

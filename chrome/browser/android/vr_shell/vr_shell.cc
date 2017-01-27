@@ -254,11 +254,12 @@ void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
 
 void VrShell::SubmitWebVRFrame() {}
 
-void VrShell::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
+                                       const gvr::Rectf& left_bounds,
                                        const gvr::Rectf& right_bounds) {
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
-                                     gl_thread_->GetVrShellGl(), left_bounds,
-                                     right_bounds));
+                                     gl_thread_->GetVrShellGl(), frame_index,
+                                     left_bounds, right_bounds));
 }
 
 // TODO(mthiesse): Do not expose GVR API outside of GL thread.
@@ -448,13 +449,10 @@ void VrShell::ProcessContentGesture(
   }
 }
 
-device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat,
-                                                       uint32_t pose_index) {
+device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat) {
   device::mojom::VRPosePtr pose = device::mojom::VRPose::New();
 
   pose->timestamp = base::Time::Now().ToJsTime();
-
-  pose->poseIndex = pose_index;
   pose->orientation.emplace(4);
 
   gfx::Transform inv_transform(

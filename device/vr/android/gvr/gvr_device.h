@@ -31,7 +31,8 @@ class GvrDevice : public VRDevice {
   void ExitPresent() override;
 
   void SubmitFrame(mojom::VRPosePtr pose) override;
-  void UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
+  void UpdateLayerBounds(int16_t frame_index,
+                         mojom::VRLayerBoundsPtr left_bounds,
                          mojom::VRLayerBoundsPtr right_bounds) override;
   void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) override;
 

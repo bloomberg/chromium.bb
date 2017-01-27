@@ -131,7 +131,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
   void OnVSync(device::mojom::blink::VRPosePtr,
-               mojo::common::mojom::blink::TimeDeltaPtr);
+               mojo::common::mojom::blink::TimeDeltaPtr,
+               int16_t frameId);
   void ConnectVSyncProvider();
 
   ScriptedAnimationController& ensureScriptedAnimationController(Document*);
@@ -147,6 +148,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   Member<VREyeParameters> m_eyeParametersLeft;
   Member<VREyeParameters> m_eyeParametersRight;
   device::mojom::blink::VRPosePtr m_framePose;
+  int16_t m_frameId;
   VRLayer m_layer;
   double m_depthNear = 0.01;
   double m_depthFar = 10000.0;

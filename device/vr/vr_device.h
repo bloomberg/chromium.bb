@@ -30,7 +30,8 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void SetSecureOrigin(bool secure_origin) = 0;
   virtual void ExitPresent() = 0;
   virtual void SubmitFrame(mojom::VRPosePtr pose) = 0;
-  virtual void UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
+  virtual void UpdateLayerBounds(int16_t frame_index,
+                                 mojom::VRLayerBoundsPtr left_bounds,
                                  mojom::VRLayerBoundsPtr right_bounds) = 0;
   virtual void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) = 0;
 

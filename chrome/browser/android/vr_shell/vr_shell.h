@@ -134,8 +134,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event);
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
-  static device::mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat,
-                                                       uint32_t pose_index);
+  static device::mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat);
 
  private:
   ~VrShell() override;
@@ -150,7 +149,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   // device::GvrDelegate implementation
   void SetWebVRSecureOrigin(bool secure_origin) override;
   void SubmitWebVRFrame() override;
-  void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+  void UpdateWebVRTextureBounds(int16_t frame_index,
+                                const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds) override;
   gvr::GvrApi* gvr_api() override;
   void SetWebVRRenderSurfaceSize(int width, int height) override;

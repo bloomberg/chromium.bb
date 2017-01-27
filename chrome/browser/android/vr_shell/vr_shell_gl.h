@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_GL_H_
 
 #include <memory>
+#include <queue>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -76,7 +77,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void UIPhysicalBoundsChanged(int width, int height);
   base::WeakPtr<VrShellGl> GetWeakPtr();
 
-  void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+  void UpdateWebVRTextureBounds(int16_t frame_index,
+                                const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds);
   gvr::GvrApi* gvr_api();
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num);
@@ -111,7 +113,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   void OnUIFrameAvailable();
   void OnContentFrameAvailable();
-  bool GetPixelEncodedPoseIndexByte(int* pose_index);
+  bool GetPixelEncodedFrameIndex(uint16_t* frame_index);
 
   void OnVSync();
 
@@ -120,7 +122,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   void ForceExitVr();
 
-  device::mojom::VRPosePtr GetPose();
+  void SendVSync(base::TimeDelta time, const GetVSyncCallback& callback);
 
   // samplerExternalOES texture data for UI content image.
   int ui_texture_id_ = 0;
@@ -145,6 +147,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
   std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
+  using BoundsPair = std::pair<gvr::Rectf, gvr::Rectf>;
+  std::queue<std::pair<uint8_t, BoundsPair>> pending_bounds_;
 
   // Current sizes for the render buffers.
   gvr::Sizei render_size_primary_;
@@ -165,10 +169,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   gvr::Sizei content_tex_physical_size_ = {0, 0};
   gvr::Sizei ui_tex_physical_size_ = {0, 0};
 
-  // The pose ring buffer size must be a power of two to avoid glitches when
-  // the pose index wraps around. It should be large enough to handle the
-  // current backlog of poses which is 2-3 frames.
-  static constexpr int kPoseRingBufferSize = 8;
   std::vector<gvr::Mat4f> webvr_head_pose_;
   int webvr_texture_id_ = 0;
   bool web_vr_mode_;
@@ -192,8 +192,9 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   base::WeakPtr<VrShellDelegate> delegate_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
-  uint32_t pose_index_ = 1;
-  int last_pose_ = 0;
+  uint8_t frame_index_ = 0;
+  // larger than frame_index_ so it can be initialized out-of-band.
+  uint16_t last_frame_index_ = -1;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

@@ -500,7 +500,8 @@ void VRDisplay::updateLayerBounds() {
     m_layer.setRightBounds({0.5f, 0.0f, 0.5f, 1.0f});
   }
 
-  m_display->UpdateLayerBounds(std::move(leftBounds), std::move(rightBounds));
+  m_display->UpdateLayerBounds(m_frameId, std::move(leftBounds),
+                               std::move(rightBounds));
 }
 
 HeapVector<VRLayer> VRDisplay::getLayers() {
@@ -542,6 +543,12 @@ void VRDisplay::submitFrame() {
     return;
   }
 
+  // No frame Id to write before submitting the frame.
+  if (m_frameId < 0) {
+    m_display->SubmitFrame(m_framePose.Clone());
+    return;
+  }
+
   // Write the frame number for the pose used into a bottom left pixel block.
   // It is read by chrome/browser/android/vr_shell/vr_shell.cc to associate
   // the correct corresponding pose for submission.
@@ -558,12 +565,12 @@ void VRDisplay::submitFrame() {
   // since the final rendering hides the edges via a vignette effect.
   gl->Scissor(0, 0, 4, 4);
   gl->ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  int idx = m_framePose->poseIndex;
   // Careful with the arithmetic here. Float color 1.f is equivalent to int 255.
   // Use the low byte of the index as the red component, and store an arbitrary
   // magic number in green/blue. This number must match the reading code in
   // vr_shell.cc. Avoid all-black/all-white.
-  gl->ClearColor((idx & 255) / 255.0f, kWebVrPosePixelMagicNumbers[0] / 255.0f,
+  gl->ClearColor((m_frameId & 255) / 255.0f,
+                 kWebVrPosePixelMagicNumbers[0] / 255.0f,
                  kWebVrPosePixelMagicNumbers[1] / 255.0f, 1.0f);
   gl->Clear(GL_COLOR_BUFFER_BIT);
 
@@ -619,7 +626,8 @@ void VRDisplay::OnDeactivate(
 }
 
 void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
-                        mojo::common::mojom::blink::TimeDeltaPtr time) {
+                        mojo::common::mojom::blink::TimeDeltaPtr time,
+                        int16_t frameId) {
   WTF::TimeDelta timeDelta =
       WTF::TimeDelta::FromMicroseconds(time->microseconds);
   // The VSync provider cannot shut down before replying to pending callbacks,
@@ -646,6 +654,7 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
 
   AutoReset<bool> animating(&m_inAnimationFrame, true);
   m_framePose = std::move(pose);
+  m_frameId = frameId;
   m_pendingRaf = false;
   m_scriptedAnimationController->serviceScriptedAnimations(
       m_timebase + timeDelta.InSecondsF());

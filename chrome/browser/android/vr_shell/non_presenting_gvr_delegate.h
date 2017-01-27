@@ -26,7 +26,8 @@ class NonPresentingGvrDelegate : public device::GvrDelegate,
   // GvrDelegate implementation
   void SetWebVRSecureOrigin(bool secure_origin) override {}
   void SubmitWebVRFrame() override {}
-  void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+  void UpdateWebVRTextureBounds(int16_t frame_index,
+                                const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds) override {}
   void SetWebVRRenderSurfaceSize(int width, int height) override {}
   gvr::Sizei GetWebVRCompositorSurfaceSize() override;
@@ -44,9 +45,9 @@ class NonPresentingGvrDelegate : public device::GvrDelegate,
   void StopVSyncLoop();
   void StartVSyncLoop();
   void OnVSync();
-  device::mojom::VRPosePtr GetPose();
+  void SendVSync(base::TimeDelta time, const GetVSyncCallback& callback);
 
-  // VRVSyncProvider
+  // VRVSyncProvider implementation
   void GetVSync(const GetVSyncCallback& callback) override;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
@@ -60,7 +61,6 @@ class NonPresentingGvrDelegate : public device::GvrDelegate,
   base::TimeDelta pending_time_;
   bool pending_vsync_ = false;
   GetVSyncCallback callback_;
-  uint32_t pose_index_ = 1;
   mojo::Binding<device::mojom::VRVSyncProvider> binding_;
   base::WeakPtrFactory<NonPresentingGvrDelegate> weak_ptr_factory_;
 

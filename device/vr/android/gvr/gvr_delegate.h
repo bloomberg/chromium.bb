@@ -22,7 +22,8 @@ class DEVICE_VR_EXPORT GvrDelegate {
  public:
   virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
   virtual void SubmitWebVRFrame() = 0;
-  virtual void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+  virtual void UpdateWebVRTextureBounds(int16_t frame_index,
+                                        const gvr::Rectf& left_bounds,
                                         const gvr::Rectf& right_bounds) = 0;
   virtual gvr::Sizei GetWebVRCompositorSurfaceSize() = 0;
   virtual void SetWebVRRenderSurfaceSize(int width, int height) = 0;

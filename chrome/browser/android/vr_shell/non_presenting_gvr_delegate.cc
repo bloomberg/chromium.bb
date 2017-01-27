@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/non_presenting_gvr_delegate.h"
 
+#include "base/callback_helpers.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 
 namespace vr_shell {
@@ -64,9 +65,9 @@ NonPresentingGvrDelegate::OnSwitchToPresentingDelegate() {
 
 void NonPresentingGvrDelegate::StopVSyncLoop() {
   vsync_task_.Cancel();
-  if (!callback_.is_null())
-    callback_.Run(nullptr, base::TimeDelta());
-  callback_.Reset();
+  if (!callback_.is_null()) {
+    base::ResetAndReturn(&callback_).Run(nullptr, base::TimeDelta(), -1);
+  }
   gvr_api_->PauseTracking();
   // If the loop is stopped, it's not considered to be paused.
   vsync_paused_ = false;
@@ -102,8 +103,7 @@ void NonPresentingGvrDelegate::OnVSync() {
 
   base::TimeDelta time = intervals * vsync_interval_;
   if (!callback_.is_null()) {
-    callback_.Run(GetPose(), time);
-    callback_.Reset();
+    SendVSync(time, base::ResetAndReturn(&callback_));
   } else {
     pending_vsync_ = true;
     pending_time_ = time;
@@ -121,7 +121,7 @@ void NonPresentingGvrDelegate::GetVSync(const GetVSyncCallback& callback) {
     return;
   }
   pending_vsync_ = false;
-  callback.Run(GetPose(), pending_time_);
+  SendVSync(pending_time_, callback);
 }
 
 void NonPresentingGvrDelegate::UpdateVSyncInterval(long timebase_nanos,
@@ -132,17 +132,14 @@ void NonPresentingGvrDelegate::UpdateVSyncInterval(long timebase_nanos,
   StartVSyncLoop();
 }
 
-device::mojom::VRPosePtr NonPresentingGvrDelegate::GetPose() {
+void NonPresentingGvrDelegate::SendVSync(base::TimeDelta time,
+                                         const GetVSyncCallback& callback) {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
 
-  gvr::Mat4f head_mat =
-      gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
-  head_mat = gvr_api_->ApplyNeckModel(head_mat, 1.0f);
-
-  uint32_t pose_index = pose_index_++;
-
-  return VrShell::VRPosePtrFromGvrPose(head_mat, pose_index);
+  gvr::Mat4f head_mat = gvr_api_->ApplyNeckModel(
+      gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
+  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, -1);
 }
 
 }  // namespace vr_shell

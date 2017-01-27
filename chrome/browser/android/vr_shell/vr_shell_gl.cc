@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -85,6 +86,10 @@ static constexpr gvr::Rectf kHeadlockedBufferFov = {20.f, 20.f, 20.f, 20.f};
 // GVR buffer.
 static constexpr int kViewportListPrimaryOffset = 0;
 static constexpr int kViewportListHeadlockedOffset = 2;
+
+// Buffer size large enough to handle the current backlog of poses which is
+// 2-3 frames.
+static constexpr unsigned kPoseRingBufferSize = 8;
 
 // Magic numbers used to mark valid pose index values encoded in frame
 // data. Must match the magic numbers used in blink's VRDisplay.cpp.
@@ -171,8 +176,9 @@ VrShellGl::VrShellGl(
 
 VrShellGl::~VrShellGl() {
   vsync_task_.Cancel();
-  if (!callback_.is_null())
-    callback_.Run(nullptr, base::TimeDelta());
+  if (!callback_.is_null()) {
+    base::ResetAndReturn(&callback_).Run(nullptr, base::TimeDelta(), -1);
+  }
   if (binding_.is_bound()) {
     main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
         &VrShellDelegate::OnVRVsyncProviderRequest, delegate_provider_,
@@ -264,10 +270,12 @@ void VrShellGl::OnContentFrameAvailable() {
   received_frame_ = true;
 }
 
-bool VrShellGl::GetPixelEncodedPoseIndexByte(int* pose_index) {
-  TRACE_EVENT0("gpu", "VrShellGl::GetPixelEncodedPoseIndex");
+bool VrShellGl::GetPixelEncodedFrameIndex(uint16_t* frame_index) {
+  TRACE_EVENT0("gpu", "VrShellGl::GetPixelEncodedFrameIndex");
   if (!received_frame_) {
-    *pose_index = last_pose_;
+    if (last_frame_index_ == (uint16_t) -1)
+      return false;
+    *frame_index = last_frame_index_;
     return true;
   }
   received_frame_ = false;
@@ -290,8 +298,8 @@ bool VrShellGl::GetPixelEncodedPoseIndexByte(int* pose_index) {
   if (pixels[1] == kWebVrPosePixelMagicNumbers[0] &&
       pixels[2] == kWebVrPosePixelMagicNumbers[1]) {
     // Pose is good.
-    *pose_index = pixels[0];
-    last_pose_ = pixels[0];
+    *frame_index = pixels[0];
+    last_frame_index_ = pixels[0];
     return true;
   }
   VLOG(1) << "WebVR: reject decoded pose index " << (int)pixels[0]
@@ -606,7 +614,7 @@ void VrShellGl::DrawFrame() {
     DrawWebVr();
   }
 
-  int pose_index;
+  uint16_t frame_index;
   gvr::Mat4f head_pose;
 
   // When using async reprojection, we need to know which pose was used in
@@ -617,8 +625,38 @@ void VrShellGl::DrawFrame() {
   // pixels is an expensive operation. TODO(klausw,crbug.com/655722): stop
   // doing this once we have working no-compositor rendering for WebVR.
   if (web_vr_mode_ && gvr_api_->GetAsyncReprojectionEnabled() &&
-      GetPixelEncodedPoseIndexByte(&pose_index)) {
-    head_pose = webvr_head_pose_[pose_index % kPoseRingBufferSize];
+      GetPixelEncodedFrameIndex(&frame_index)) {
+    static_assert(!((kPoseRingBufferSize - 1) & kPoseRingBufferSize),
+                  "kPoseRingBufferSize must be a power of 2");
+    head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
+    // Process all pending_bounds_ changes targeted for before this frame, being
+    // careful of wrapping frame indices.
+    static constexpr unsigned max =
+        std::numeric_limits<decltype(frame_index_)>::max();
+    static_assert(max > kPoseRingBufferSize * 2,
+                  "To detect wrapping, kPoseRingBufferSize must be smaller "
+                  "than half of frame_index_ range.");
+    while (!pending_bounds_.empty()) {
+      uint16_t index = pending_bounds_.front().first;
+      // If index is less than the frame_index it's possible we've wrapped, so
+      // we extend the range and 'un-wrap' to account for this.
+      if (index < frame_index) index += max;
+      // If the pending bounds change is for an upcoming frame within our buffer
+      // size, wait to apply it. Otherwise, apply it immediately. This
+      // guarantees that even if we miss many frames, the queue can't fill up
+      // with stale bounds.
+      if (index > frame_index && index <= frame_index + kPoseRingBufferSize)
+        break;
+
+      const BoundsPair& bounds = pending_bounds_.front().second;
+      webvr_left_viewport_->SetSourceUv(bounds.first);
+      webvr_right_viewport_->SetSourceUv(bounds.second);
+      pending_bounds_.pop();
+    }
+    buffer_viewport_list_->SetBufferViewport(GVR_LEFT_EYE,
+                                             *webvr_left_viewport_);
+    buffer_viewport_list_->SetBufferViewport(GVR_RIGHT_EYE,
+                                             *webvr_right_viewport_);
   } else {
     gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
     target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
@@ -865,11 +903,6 @@ void VrShellGl::DrawWebVr() {
 
   glViewport(0, 0, render_size_primary_.width, render_size_primary_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(webvr_texture_id_);
-
-  buffer_viewport_list_->SetBufferViewport(GVR_LEFT_EYE,
-                                           *webvr_left_viewport_);
-  buffer_viewport_list_->SetBufferViewport(GVR_RIGHT_EYE,
-                                           *webvr_right_viewport_);
 }
 
 void VrShellGl::DrawBackground(const gvr::Mat4f& render_matrix) {
@@ -901,10 +934,16 @@ void VrShellGl::SetWebVrMode(bool enabled) {
   web_vr_mode_ = enabled;
 }
 
-void VrShellGl::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,
+                                         const gvr::Rectf& left_bounds,
                                          const gvr::Rectf& right_bounds) {
-  webvr_left_viewport_->SetSourceUv(left_bounds);
-  webvr_right_viewport_->SetSourceUv(right_bounds);
+  if (frame_index < 0) {
+    webvr_left_viewport_->SetSourceUv(left_bounds);
+    webvr_right_viewport_->SetSourceUv(right_bounds);
+  } else {
+    pending_bounds_.emplace(
+        std::make_pair(frame_index, std::make_pair(left_bounds, right_bounds)));
+  }
 }
 
 gvr::GvrApi* VrShellGl::gvr_api() {
@@ -955,8 +994,7 @@ void VrShellGl::OnVSync() {
 
   base::TimeDelta time = intervals * vsync_interval_;
   if (!callback_.is_null()) {
-    callback_.Run(GetPose(), time);
-    callback_.Reset();
+    SendVSync(time, base::ResetAndReturn(&callback_));
   } else {
     pending_vsync_ = true;
     pending_time_ = time;
@@ -980,7 +1018,7 @@ void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
     return;
   }
   pending_vsync_ = false;
-  callback.Run(GetPose(), pending_time_);
+  SendVSync(pending_time_, callback);
 }
 
 void VrShellGl::UpdateVSyncInterval(long timebase_nanos,
@@ -1001,8 +1039,11 @@ void VrShellGl::UpdateScene(std::unique_ptr<base::ListValue> commands) {
   scene_->HandleCommands(std::move(commands), TimeInMicroseconds());
 }
 
-device::mojom::VRPosePtr VrShellGl::GetPose() {
-  TRACE_EVENT0("input", "VrShellGl::GetPose");
+void VrShellGl::SendVSync(base::TimeDelta time,
+                          const GetVSyncCallback& callback) {
+  TRACE_EVENT0("input", "VrShellGl::SendVSync");
+
+  uint8_t frame_index = frame_index_++;
 
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
@@ -1011,10 +1052,9 @@ device::mojom::VRPosePtr VrShellGl::GetPose() {
       gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
   head_mat = gvr_api_->ApplyNeckModel(head_mat, 1.0f);
 
-  uint32_t pose_index = pose_index_++;
-  webvr_head_pose_[pose_index % kPoseRingBufferSize] = head_mat;
+  webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
 
-  return VrShell::VRPosePtrFromGvrPose(head_mat, pose_index);
+  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, frame_index);
 }
 
 }  // namespace vr_shell

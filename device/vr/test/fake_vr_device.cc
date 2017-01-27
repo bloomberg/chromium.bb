@@ -73,7 +73,8 @@ void FakeVRDevice::ExitPresent() {
 
 void FakeVRDevice::SubmitFrame(mojom::VRPosePtr pose) {}
 
-void FakeVRDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
+void FakeVRDevice::UpdateLayerBounds(int16_t frame_index,
+                                     mojom::VRLayerBoundsPtr leftBounds,
                                      mojom::VRLayerBoundsPtr rightBounds) {}
 
 void FakeVRDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {}

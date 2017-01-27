@@ -173,7 +173,8 @@ void GvrDevice::SubmitFrame(mojom::VRPosePtr pose) {
     delegate_->SubmitWebVRFrame();
 }
 
-void GvrDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
+void GvrDevice::UpdateLayerBounds(int16_t frame_index,
+                                  mojom::VRLayerBoundsPtr left_bounds,
                                   mojom::VRLayerBoundsPtr right_bounds) {
   if (!delegate_)
     return;
@@ -190,7 +191,8 @@ void GvrDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
   right_gvr_bounds.right = right_bounds->left + right_bounds->width;
   right_gvr_bounds.bottom = 1.0f - (right_bounds->top + right_bounds->height);
 
-  delegate_->UpdateWebVRTextureBounds(left_gvr_bounds, right_gvr_bounds);
+  delegate_->UpdateWebVRTextureBounds(frame_index, left_gvr_bounds,
+                                      right_gvr_bounds);
 }
 
 void GvrDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
