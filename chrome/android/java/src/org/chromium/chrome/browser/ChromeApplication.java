@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.support.v4.util.ArrayMap;
 import android.util.Log;
 
 import org.chromium.base.ActivityState;
@@ -67,6 +68,8 @@ import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 
+import java.util.Map;
+
 /**
  * Basic application functionality that should be shared among all browser applications that use
  * chrome layer.
@@ -81,6 +84,8 @@ public class ChromeApplication extends ContentApplication {
     private static final long BOOT_TIMESTAMP_MARGIN_MS = 1000;
 
     private static DocumentTabModelSelector sDocumentTabModelSelector;
+
+    protected Map<Class, Class> mImplementationMap;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -111,6 +116,9 @@ public class ChromeApplication extends ContentApplication {
         super.onCreate();
 
         TraceEvent.end("ChromeApplication.onCreate");
+        // It may be wise to update this anticipated capacity from time time as expectations for
+        // the quantity of downsteam-specific implementations increases (or decreases).
+        mImplementationMap = new ArrayMap<Class, Class>(8);
     }
 
     /**
@@ -435,23 +443,32 @@ public class ChromeApplication extends ContentApplication {
      * implementations upstream and downstream.  To use this,
      * - give the upstream class a public parameterless constructor (required!)
      *   e.g., public MyType() {},
-     * - generate the downstream object in createObjectImpl in the ChromeApplication subclass.
-     *   e.g., if (klass.getName().equals(MyType.class.getName()) return (T)new MySubType(), and
+     * - register the downstream object in mImplementationMap,
+     *   e.g., mImplementationMap.put(MyType.class, MySubType.class);
      * - invoke this method on the appropriate class,
      *   e.g., ChromeApplication.createObject(MyType.class).
      * @param klass The class that the Chrome Application should create an instance of.
      */
+    @SuppressWarnings("unchecked")
     public static <T> T createObject(Class<T> klass) {
-        return ((ChromeApplication) ContextUtils.getApplicationContext()).createObjectImpl(klass);
-    }
+        Class newKlass = ((ChromeApplication) ContextUtils.getApplicationContext())
+                .mImplementationMap.get(klass);
+        if (newKlass == null) {
+            newKlass = klass;
+        }
 
-    protected <T> T createObjectImpl(Class<T> klass) {
+        Object obj;
         try {
-            return klass.newInstance();
+            obj = newKlass.newInstance();
         } catch (InstantiationException e) {
             throw new RuntimeException("Asked to create unexpected class: " + klass.getName(), e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Asked to create unexpected class: " + klass.getName(), e);
         }
+        if (!klass.isInstance(obj)) {
+            throw new RuntimeException("Created an instance of type " + obj.getClass().getName()
+                    + " when expected an instance of type " + klass.getName());
+        }
+        return (T) obj;
     }
 }
