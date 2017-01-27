@@ -229,7 +229,7 @@ void ExternalCache::CheckCache() {
     return;
 
   // If request_context_ is missing we can't download anything.
-  if (!downloader_ && request_context_.get()) {
+  if (request_context_.get()) {
     downloader_ = ChromeExtensionDownloaderFactory::CreateForRequestContext(
         request_context_.get(), this);
   }
