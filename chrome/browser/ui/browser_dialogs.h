@@ -137,6 +137,9 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
+// Show the Views "Chrome Update" dialog.
+void ShowUpdateChromeDialogViews(gfx::NativeWindow parent);
+
 #endif  // OS_MACOSX
 
 #if defined(TOOLKIT_VIEWS)
