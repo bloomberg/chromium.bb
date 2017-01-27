@@ -480,7 +480,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (testInterfaceGarbageCollectedSequenceMemberValue.IsEmpty() || testInterfaceGarbageCollectedSequenceMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceMember = (toMemberNativeArray<TestInterfaceGarbageCollected>(testInterfaceGarbageCollectedSequenceMemberValue, 0, isolate, exceptionState));
+    HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceMember = toMemberNativeArray<TestInterfaceGarbageCollected>(testInterfaceGarbageCollectedSequenceMemberValue, 0, isolate, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setTestInterfaceGarbageCollectedSequenceMember(testInterfaceGarbageCollectedSequenceMember);
@@ -528,7 +528,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (testInterfaceSequenceMemberValue.IsEmpty() || testInterfaceSequenceMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<Member<TestInterfaceImplementation>> testInterfaceSequenceMember = (toMemberNativeArray<TestInterface>(testInterfaceSequenceMemberValue, 0, isolate, exceptionState));
+    HeapVector<Member<TestInterfaceImplementation>> testInterfaceSequenceMember = toMemberNativeArray<TestInterface>(testInterfaceSequenceMemberValue, 0, isolate, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setTestInterfaceSequenceMember(testInterfaceSequenceMember);
@@ -542,7 +542,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (testObjectSequenceMemberValue.IsEmpty() || testObjectSequenceMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<Member<TestObject>> testObjectSequenceMember = (toMemberNativeArray<TestObject>(testObjectSequenceMemberValue, 0, isolate, exceptionState));
+    HeapVector<Member<TestObject>> testObjectSequenceMember = toMemberNativeArray<TestObject>(testObjectSequenceMemberValue, 0, isolate, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setTestObjectSequenceMember(testObjectSequenceMember);

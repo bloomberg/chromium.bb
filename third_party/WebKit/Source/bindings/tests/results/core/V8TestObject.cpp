@@ -1128,7 +1128,7 @@ static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value>
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "testInterfaceEmptyArrayAttribute");
 
   // Prepare the value to be set.
-  HeapVector<Member<TestInterfaceEmpty>> cppValue = (toMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
+  HeapVector<Member<TestInterfaceEmpty>> cppValue = toMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -1194,7 +1194,7 @@ static void testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8::Local<v8::
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "testInterfaceEmptyFrozenArrayAttribute");
 
   // Prepare the value to be set.
-  HeapVector<Member<TestInterfaceEmpty>> cppValue = (toMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
+  HeapVector<Member<TestInterfaceEmpty>> cppValue = toMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -4421,7 +4421,7 @@ static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbac
   }
 
   HeapVector<Member<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
-  arrayTestInterfaceEmptyArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+  arrayTestInterfaceEmptyArg = toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -4513,7 +4513,7 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCall
   }
 
   HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptySequenceArg;
-  testInterfaceEmptySequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+  testInterfaceEmptySequenceArg = toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -4593,7 +4593,7 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
   }
 
   HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyFrozenArrayArg;
-  testInterfaceEmptyFrozenArrayArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+  testInterfaceEmptyFrozenArrayArg = toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -8217,7 +8217,7 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::F
   }
 
   HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceArg;
-  testInterfaceGarbageCollectedSequenceArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
+  testInterfaceGarbageCollectedSequenceArg = toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -8235,7 +8235,7 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::Func
   }
 
   HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedArrayArg;
-  testInterfaceGarbageCollectedArrayArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
+  testInterfaceGarbageCollectedArrayArg = toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 
