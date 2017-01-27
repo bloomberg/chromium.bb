@@ -807,9 +807,6 @@ crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure 
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
-crbug.com/685958 [ Win Mac ] http/tests/security/xss-DENIED-window-name-navigator.html [ NeedsRebaseline ]
-crbug.com/685958 [ Win Mac ] virtual/mojo-loading/http/tests/security/xss-DENIED-window-name-navigator.html  [ NeedsRebaseline ]
-
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 crbug.com/359838 virtual/mojo-loading/http/tests/ManualTests/ [ Skip ]
