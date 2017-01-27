@@ -429,8 +429,8 @@ void PeerConnectionTracker::RegisterPeerConnection(
 
   info.lid = GetNextLocalID();
   info.rtc_configuration =
-      "{ servers: " +  SerializeServers(config.servers) + ", " +
-      "iceTransportType: " + SerializeIceTransportType(config.type) + ", " +
+      "{ iceServers: " +  SerializeServers(config.servers) + ", " +
+      "iceTransportPolicy: " + SerializeIceTransportType(config.type) + ", " +
       "bundlePolicy: " + SerializeBundlePolicy(config.bundle_policy) + ", " +
       "rtcpMuxPolicy: " + SerializeRtcpMuxPolicy(config.rtcp_mux_policy) + " }";
 
