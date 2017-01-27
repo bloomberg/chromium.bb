@@ -123,7 +123,7 @@ public class PostMessageHandler extends PostMessageServiceConnection {
                     return;
                 }
                 webContents.postMessageToFrame(
-                        frameName, message, mOrigin.toString(), targetOrigin, sentPortIds);
+                        frameName, message, targetOrigin, sentPortIds);
             }
 
             @Override
