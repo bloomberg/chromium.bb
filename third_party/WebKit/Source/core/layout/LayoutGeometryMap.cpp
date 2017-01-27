@@ -205,8 +205,7 @@ static bool canMapBetweenLayoutObjects(const LayoutObject* layoutObject,
     if (current == ancestor)
       break;
 
-    if (current->isFloating() && current->parent() &&
-        !current->parent()->isLayoutBlock())
+    if (current->isFloatingWithNonContainingBlockParent())
       return false;
   }
 

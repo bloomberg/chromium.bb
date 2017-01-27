@@ -731,21 +731,30 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool isFloating() const { return m_bitfields.floating(); }
 
+  bool isFloatingWithNonContainingBlockParent() const {
+    return isFloating() && parent() && !parent()->isLayoutBlockFlow();
+  }
+
+  // absolute or fixed positioning
   bool isOutOfFlowPositioned() const {
     return m_bitfields.isOutOfFlowPositioned();
-  }  // absolute or fixed positioning
+  }
+  // relative or sticky positioning
   bool isInFlowPositioned() const {
     return m_bitfields.isInFlowPositioned();
-  }  // relative or sticky positioning
+  }
   bool isRelPositioned() const {
     return m_bitfields.isRelPositioned();
-  }  // relative positioning
+  }
   bool isStickyPositioned() const {
     return m_bitfields.isStickyPositioned();
-  }  // sticky positioning
+  }
   bool isFixedPositioned() const {
     return isOutOfFlowPositioned() && style()->position() == FixedPosition;
-  }  // fixed positioning
+  }
+  bool isAbsolutePositioned() const {
+    return isOutOfFlowPositioned() && style()->position() == AbsolutePosition;
+  }
   bool isPositioned() const { return m_bitfields.isPositioned(); }
 
   bool isText() const { return m_bitfields.isText(); }

@@ -801,28 +801,20 @@ void PaintLayer::updateLayerPosition() {
     }
   }
 
-  // Subtract our parent's scroll offset.
-  if (PaintLayer* containingLayer =
-          layoutObject()->isOutOfFlowPositioned()
-              ? containingLayerForOutOfFlowPositioned()
-              : nullptr) {
-    // For positioned layers, we subtract out the enclosing positioned layer's
-    // scroll offset.
+  if (PaintLayer* containingLayer = this->containingLayer()) {
     if (containingLayer->layoutObject()->hasOverflowClip()) {
+      // Subtract our container's scroll offset.
       IntSize offset = containingLayer->layoutBox()->scrolledContentOffset();
       localPoint -= offset;
-    }
-
-    if (containingLayer->layoutObject()->isInFlowPositioned() &&
-        containingLayer->layoutObject()->isLayoutInline()) {
+    } else if (layoutObject()->isAbsolutePositioned() &&
+               containingLayer->layoutObject()->isInFlowPositioned() &&
+               containingLayer->layoutObject()->isLayoutInline()) {
+      // Adjust offset for absolute under in-flow positioned inline.
       LayoutSize offset =
           toLayoutInline(containingLayer->layoutObject())
               ->offsetForInFlowPositionedInline(*toLayoutBox(layoutObject()));
       localPoint += offset;
     }
-  } else if (parent() && parent()->layoutObject()->hasOverflowClip()) {
-    IntSize scrollOffset = parent()->layoutBox()->scrolledContentOffset();
-    localPoint -= scrollOffset;
   }
 
   if (layoutObject()->isInFlowPositioned()) {
@@ -870,33 +862,45 @@ FloatPoint PaintLayer::perspectiveOrigin() const {
                                         borderBox.height().toFloat()));
 }
 
-PaintLayer* PaintLayer::containingLayerForOutOfFlowPositioned(
-    const PaintLayer* ancestor,
-    bool* skippedAncestor) const {
+PaintLayer* PaintLayer::containingLayer(const PaintLayer* ancestor,
+                                        bool* skippedAncestor) const {
   // If we have specified an ancestor, surely the caller needs to know whether
   // we skipped it.
   DCHECK(!ancestor || skippedAncestor);
   if (skippedAncestor)
     *skippedAncestor = false;
-  if (layoutObject()->style()->position() == FixedPosition) {
+
+  LayoutObject* layoutObject = this->layoutObject();
+  if (layoutObject->isColumnSpanAll() ||
+      layoutObject->isFloatingWithNonContainingBlockParent()) {
+    Optional<LayoutObject::AncestorSkipInfo> skipInfo;
+    if (skippedAncestor)
+      skipInfo.emplace(ancestor->layoutObject());
+    if (auto containingBlock = layoutObject->containingBlock(
+            skippedAncestor ? &*skipInfo : nullptr)) {
+      if (skippedAncestor && skipInfo->ancestorSkipped())
+        *skippedAncestor = true;
+      return containingBlock->enclosingLayer();
+    }
+    return nullptr;
+  }
+
+  if (layoutObject->isOutOfFlowPositioned()) {
+    auto canContainThisLayer =
+        layoutObject->isFixedPositioned()
+            ? &LayoutObject::canContainFixedPositionObjects
+            : &LayoutObject::canContainAbsolutePositionObjects;
+
     PaintLayer* curr = parent();
-    while (curr && !curr->layoutObject()->canContainFixedPositionObjects()) {
+    while (curr && !(curr->layoutObject()->*canContainThisLayer)()) {
       if (skippedAncestor && curr == ancestor)
         *skippedAncestor = true;
       curr = curr->parent();
     }
-
     return curr;
   }
 
-  PaintLayer* curr = parent();
-  while (curr && !curr->layoutObject()->canContainAbsolutePositionObjects()) {
-    if (skippedAncestor && curr == ancestor)
-      *skippedAncestor = true;
-    curr = curr->parent();
-  }
-
-  return curr;
+  return parent();
 }
 
 PaintLayer* PaintLayer::enclosingTransformedAncestor() const {
@@ -918,15 +922,8 @@ LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const {
 }
 
 PaintLayer* PaintLayer::compositingContainer() const {
-  if (!stackingNode()->isStacked()) {
-    // Floats have special painting order, which has complicated semantics.
-    // See the comments around FloatObject::setShouldPaint.
-    if (m_layoutObject->isFloating() && m_layoutObject->parent() &&
-        !m_layoutObject->parent()->isLayoutBlockFlow())
-      return m_layoutObject->containingBlock()->enclosingLayer();
-
-    return parent();
-  }
+  if (!stackingNode()->isStacked())
+    return containingLayer();
   if (PaintLayerStackingNode* ancestorStackingNode =
           stackingNode()->ancestorStackingContextNode())
     return ancestorStackingNode->layer();
@@ -1408,9 +1405,8 @@ static inline const PaintLayer* accumulateOffsetTowardsAncestor(
   DCHECK(ancestorLayer != layer);
 
   const LayoutBoxModelObject* layoutObject = layer->layoutObject();
-  EPosition position = layoutObject->style()->position();
 
-  if (position == FixedPosition &&
+  if (layoutObject->isFixedPositioned() &&
       (!ancestorLayer || ancestorLayer == layoutObject->view()->layer())) {
     // If the fixed layer's container is the root, just add in the offset of the
     // view. We can obtain this by calling localToAbsolute() on the LayoutView.
@@ -1419,52 +1415,28 @@ static inline const PaintLayer* accumulateOffsetTowardsAncestor(
     return ancestorLayer;
   }
 
-  PaintLayer* parentLayer = nullptr;
-  if (position == AbsolutePosition || position == FixedPosition ||
-      (layoutObject->isFloating() && layoutObject->parent() &&
-       !layoutObject->parent()->isLayoutBlockFlow())) {
-    bool foundAncestorFirst = false;
-    if (layoutObject->isFloating()) {
-      Optional<LayoutObject::AncestorSkipInfo> skipInfo;
-      if (ancestorLayer)
-        skipInfo.emplace(ancestorLayer->layoutObject());
-      if (auto* containingBlock = layoutObject->containingBlock(
-              ancestorLayer ? &*skipInfo : nullptr)) {
-        parentLayer = containingBlock->enclosingLayer();
-        foundAncestorFirst = ancestorLayer && skipInfo->ancestorSkipped();
-      }
-    } else {
-      parentLayer = layer->containingLayerForOutOfFlowPositioned(
-          ancestorLayer, &foundAncestorFirst);
-    }
+  bool foundAncestorFirst;
+  PaintLayer* containingLayer =
+      layer->containingLayer(ancestorLayer, &foundAncestorFirst);
 
-    if (foundAncestorFirst) {
-      // Found ancestorLayer before the container of the out-of-flow object, so
-      // compute offset of both relative to the container and subtract.
+  if (foundAncestorFirst) {
+    // Found ancestorLayer before the containing layer, so compute offset of
+    // both relative to the container and subtract.
+    LayoutPoint thisCoords;
+    layer->convertToLayerCoords(containingLayer, thisCoords);
 
-      LayoutPoint thisCoords;
-      layer->convertToLayerCoords(parentLayer, thisCoords);
+    LayoutPoint ancestorCoords;
+    ancestorLayer->convertToLayerCoords(containingLayer, ancestorCoords);
 
-      LayoutPoint ancestorCoords;
-      ancestorLayer->convertToLayerCoords(parentLayer, ancestorCoords);
-
-      location += (thisCoords - ancestorCoords);
-      return ancestorLayer;
-    }
-  } else if (layoutObject->isColumnSpanAll()) {
-    LayoutBlock* multicolContainer = layoutObject->containingBlock();
-    DCHECK(toLayoutBlockFlow(multicolContainer)->multiColumnFlowThread());
-    parentLayer = multicolContainer->layer();
-    DCHECK(parentLayer);
-  } else {
-    parentLayer = layer->parent();
+    location += (thisCoords - ancestorCoords);
+    return ancestorLayer;
   }
 
-  if (!parentLayer)
+  if (!containingLayer)
     return nullptr;
 
   location += layer->location();
-  return parentLayer;
+  return containingLayer;
 }
 
 void PaintLayer::convertToLayerCoords(const PaintLayer* ancestorLayer,

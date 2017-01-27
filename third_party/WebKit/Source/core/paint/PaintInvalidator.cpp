@@ -198,7 +198,7 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
       toLayoutBoxModelObject(object).hasSelfPaintingLayer()) {
     context.paintingLayer = toLayoutBoxModelObject(object).layer();
   } else if (object.isColumnSpanAll() ||
-             (object.isFloating() && !object.parent()->isLayoutBlock())) {
+             object.isFloatingWithNonContainingBlockParent()) {
     // See LayoutObject::paintingLayer() for the special-cases of floating under
     // inline and multicolumn.
     context.paintingLayer = object.paintingLayer();
@@ -284,8 +284,7 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
       undoFrameViewContentClipAndScroll.emplace(
           *toLayoutView(object).frameView(), context);
-  } else if (object.isFloating() && !object.parent()->isLayoutBlock()) {
-    // See LayoutObject::paintingLayer() for specialty of floating objects.
+  } else if (object.isFloatingWithNonContainingBlockParent()) {
     context.paintInvalidationContainer =
         &object.containerForPaintInvalidation();
   } else if (object.styleRef().isStacked() &&

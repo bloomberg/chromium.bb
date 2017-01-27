@@ -333,15 +333,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_isAllScrollingContentComposited;
   }
 
-  // Gets the ancestor layer that serves as the containing block of this layer.
-  // This is either another out of flow positioned layer, or one that contains
-  // paint.  If |ancestor| is specified, |*skippedAncestor| will be set to true
-  // if |ancestor| is found in the ancestry chain between this layer and the
+  // Gets the ancestor layer that serves as the containing block (in the sense
+  // of LayoutObject::container() instead of LayoutObject::containingBlock())
+  // of this layer. Normally the parent layer is the containing layer, except
+  // for out of flow positioned, floating and multicol spanner layers whose
+  // containing layer might be an ancestor of the parent layer.
+  // If |ancestor| is specified, |*skippedAncestor| will be set to true if
+  // |ancestor| is found in the ancestry chain between this layer and the
   // containing block layer; if not found, it will be set to false. Either both
   // |ancestor| and |skippedAncestor| should be nullptr, or none of them should.
-  PaintLayer* containingLayerForOutOfFlowPositioned(
-      const PaintLayer* ancestor = nullptr,
-      bool* skippedAncestor = nullptr) const;
+  PaintLayer* containingLayer(const PaintLayer* ancestor = nullptr,
+                              bool* skippedAncestor = nullptr) const;
 
   bool isPaintInvalidationContainer() const;
 
@@ -1214,7 +1216,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* m_first;
   PaintLayer* m_last;
 
-  // Our (x,y) coordinates are in our parent layer's coordinate space.
+  // Our (x,y) coordinates are in our containing layer's coordinate space.
   LayoutPoint m_location;
 
   // The layer's size.

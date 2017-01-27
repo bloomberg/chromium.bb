@@ -54,15 +54,13 @@ class GraphicsLayerUpdater::UpdateContext {
   }
 
   const PaintLayer* compositingContainer(const PaintLayer& layer) const {
-    // TODO(chrishtr) this is not very performant for floats, but they should
-    // be uncommon enough, and SPv2 will remove this code.
-    if (layer.layoutObject()->isFloating() && layer.layoutObject()->parent() &&
-        !layer.stackingNode()->isStacked() &&
-        !layer.layoutObject()->parent()->isLayoutBlockFlow()) {
+    if (layer.stackingNode()->isStacked())
+      return m_compositingStackingContext;
+
+    if (layer.layoutObject()->isFloatingWithNonContainingBlockParent())
       return layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
-    }
-    return layer.stackingNode()->isStacked() ? m_compositingStackingContext
-                                             : m_compositingAncestor;
+
+    return m_compositingAncestor;
   }
 
   const PaintLayer* compositingStackingContext() const {

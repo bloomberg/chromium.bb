@@ -133,9 +133,7 @@ PaintInvalidationState::PaintInvalidationState(
     // paintInvalidationContainer.
     m_paintInvalidationContainerForStackedContents =
         m_paintInvalidationContainer;
-  } else if (currentObject.isFloating() &&
-             !currentObject.parent()->isLayoutBlock()) {
-    // See LayoutObject::paintingLayer() for specialty of floating objects.
+  } else if (currentObject.isFloatingWithNonContainingBlockParent()) {
     m_paintInvalidationContainer =
         &currentObject.containerForPaintInvalidation();
     m_cachedOffsetsEnabled = false;
@@ -230,8 +228,7 @@ PaintLayer& PaintInvalidationState::childPaintingLayer(
     return *toLayoutBoxModelObject(child).layer();
   // See LayoutObject::paintingLayer() for the special-cases of floating under
   // inline and multicolumn.
-  if (child.isColumnSpanAll() ||
-      (child.isFloating() && !m_currentObject.isLayoutBlock()))
+  if (child.isColumnSpanAll() || child.isFloatingWithNonContainingBlockParent())
     return *child.paintingLayer();
   return m_paintingLayer;
 }
