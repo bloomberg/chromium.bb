@@ -5,6 +5,8 @@
 #ifndef CC_SURFACES_SURFACE_REFERENCE_MANAGER_H_
 #define CC_SURFACES_SURFACE_REFERENCE_MANAGER_H_
 
+#include "cc/surfaces/surface_reference.h"
+
 namespace cc {
 
 class SurfaceId;
@@ -26,6 +28,15 @@ class SurfaceReferenceManager {
   // Removes a reference from a parent surface to a child surface.
   virtual void RemoveSurfaceReference(const SurfaceId& parent_id,
                                       const SurfaceId& child_id) = 0;
+
+  // Adds surface references. For each reference added, this will remove the
+  // temporary reference to the child surface if one exists.
+  virtual void AddSurfaceReferences(
+      const std::vector<SurfaceReference>& references) = 0;
+
+  // Removes surface references.
+  virtual void RemoveSurfaceReferences(
+      const std::vector<SurfaceReference>& references) = 0;
 
   // Returns the number of surfaces that have references to |surface_id|. When
   // the count is zero nothing is referencing the surface and it may be garbage

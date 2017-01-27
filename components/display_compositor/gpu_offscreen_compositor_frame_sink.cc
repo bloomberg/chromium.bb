@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/gpu_offscreen_compositor_frame_sink.h"
+#include "components/display_compositor/gpu_offscreen_compositor_frame_sink.h"
 
-namespace ui {
+namespace display_compositor {
 
 GpuOffscreenCompositorFrameSink::GpuOffscreenCompositorFrameSink(
-    DisplayCompositor* display_compositor,
+    GpuCompositorFrameSinkDelegate* delegate,
+    cc::SurfaceManager* surface_manager,
     const cc::FrameSinkId& frame_sink_id,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest
         compositor_frame_sink_private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
-    : GpuCompositorFrameSink(display_compositor,
+    : GpuCompositorFrameSink(delegate,
+                             surface_manager,
                              frame_sink_id,
                              nullptr,
                              nullptr,
@@ -27,4 +29,4 @@ GpuOffscreenCompositorFrameSink::GpuOffscreenCompositorFrameSink(
 
 GpuOffscreenCompositorFrameSink::~GpuOffscreenCompositorFrameSink() = default;
 
-}  // namespace ui
+}  // namespace display_compositor

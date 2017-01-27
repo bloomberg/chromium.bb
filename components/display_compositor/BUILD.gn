@@ -17,6 +17,13 @@ component("display_compositor") {
     "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "gpu_compositor_frame_sink.cc",
+    "gpu_compositor_frame_sink.h",
+    "gpu_compositor_frame_sink_delegate.h",
+    "gpu_display_compositor_frame_sink.cc",
+    "gpu_display_compositor_frame_sink.h",
+    "gpu_offscreen_compositor_frame_sink.cc",
+    "gpu_offscreen_compositor_frame_sink.h",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -26,6 +33,8 @@ component("display_compositor") {
   deps = [
     "//base",
     "//cc",
+    "//cc/ipc:internal_interfaces",
+    "//cc/surfaces",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
