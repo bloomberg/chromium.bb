@@ -13,7 +13,10 @@
 namespace gfx {
 
 // Internal functions, exposted for testing.
+GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id);
 GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id);
+GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v);
+GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v);
 
 ColorSpace::PrimaryID all_primaries[] = {
     ColorSpace::PrimaryID::BT709,        ColorSpace::PrimaryID::BT470M,
@@ -114,7 +117,6 @@ TEST(SimpleColorSpace, GetColorSpace) {
   ICCProfile srgb_icc = ICCProfileForTestingSRGB();
   ColorSpace sRGB = srgb_icc.GetColorSpace();
   ColorSpace sRGB2 = sRGB;
-  const float kEpsilon = 1.5f / 255.f;
 
   // Prevent sRGB2 from using a cached ICC profile.
   sRGB2.icc_profile_id_ = 0;
@@ -124,27 +126,27 @@ TEST(SimpleColorSpace, GetColorSpace) {
 
   ColorTransform::TriStim tmp(1.0f, 1.0f, 1.0f);
   t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 1.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
+  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
+  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
 
   tmp = ColorTransform::TriStim(1.0f, 0.0f, 0.0f);
   t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 0.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
+  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
+  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
 
   tmp = ColorTransform::TriStim(0.0f, 1.0f, 0.0f);
   t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 0.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
+  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
+  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
 
   tmp = ColorTransform::TriStim(0.0f, 0.0f, 1.0f);
   t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 1.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
+  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
+  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
 }
 
 TEST(SimpleColorSpace, UnknownToSRGB) {
@@ -172,6 +174,18 @@ TEST(SimpleColorSpace, UnknownToSRGB) {
   EXPECT_GT(tmp.z(), tmp.y());
 }
 
+class PrimaryTest : public testing::TestWithParam<ColorSpace::PrimaryID> {};
+
+TEST_P(PrimaryTest, checkInvertible) {
+  EXPECT_EQ(GetPrimaryMatrix(GetParam()).matrix().get(3, 3), 1.0f);
+  // Check that all primary matrices are invertable.
+  EXPECT_TRUE(GetPrimaryMatrix(GetParam()).IsInvertible());
+}
+
+INSTANTIATE_TEST_CASE_P(ColorSpace,
+                        PrimaryTest,
+                        testing::ValuesIn(all_primaries));
+
 class MatrixTest : public testing::TestWithParam<ColorSpace::MatrixID> {};
 
 TEST_P(MatrixTest, checkInvertible) {
@@ -188,8 +202,8 @@ class TransferTest : public testing::TestWithParam<ColorSpace::TransferID> {};
 
 TEST_P(TransferTest, basicTest) {
   for (float x = 0.0f; x <= 1.0f; x += 1.0f / 128.0f) {
-    float linear = ColorTransform::ToLinearForTesting(GetParam(), x);
-    float x2 = ColorTransform::FromLinearForTesting(GetParam(), linear);
+    float linear = ToLinear(GetParam(), x);
+    float x2 = FromLinear(GetParam(), linear);
     EXPECT_NEAR(x, x2, 0.001f);
   }
 }

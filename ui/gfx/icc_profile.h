@@ -23,6 +23,10 @@ template <typename, typename> struct StructTraits;
 
 namespace gfx {
 
+namespace mojom {
+class ICCProfileDataView;
+}
+
 // Used to represent a full ICC profile, usually retrieved from a monitor. It
 // can be lossily compressed into a ColorSpace object. This structure should
 // only be sent from higher-privilege processes to lower-privilege processes,
@@ -50,13 +54,14 @@ class GFX_EXPORT ICCProfile {
   // Internally, this will make an effort to create an identical ICCProfile
   // to the one that created |color_space|, but this is not guaranteed.
   static ICCProfile FromColorSpace(const gfx::ColorSpace& color_space);
+  static ICCProfile FromSkColorSpace(sk_sp<SkColorSpace> color_space);
 
   // Create directly from profile data.
-  static ICCProfile FromData(const void* icc_profile, size_t size);
+  static ICCProfile FromData(const char* icc_profile, size_t size);
 
   // This will perform a potentially-lossy conversion to a more compact color
   // space representation.
-  const ColorSpace& GetColorSpace() const;
+  ColorSpace GetColorSpace() const;
 
   const std::vector<char>& GetData() const;
 
@@ -67,25 +72,36 @@ class GFX_EXPORT ICCProfile {
   static bool CachedProfilesNeedUpdate();
 #endif
 
- private:
-  // TODO(ccameron): Remove this function once its callerrs are gone.
-  static ICCProfile FromSkColorSpace(sk_sp<SkColorSpace> color_space);
-  static bool IsValidProfileLength(size_t length);
-  void ComputeColorSpaceAndCache();
+  enum class Type {
+    // This is not a valid profile.
+    INVALID,
+    // This is from a gfx::ColorSpace. This ensures that GetColorSpace returns
+    // the exact same object as was used to create this.
+    FROM_COLOR_SPACE,
+    // This was created from ICC profile data.
+    FROM_DATA,
+    LAST = FROM_DATA
+  };
 
-  // This globally identifies this ICC profile. It is used to look up this ICC
-  // profile from a ColorSpace object created from it. The object is invalid if
-  // |id_| is zero.
-  uint64_t id_ = 0;
+ private:
+  static bool IsValidProfileLength(size_t length);
+
+  Type type_ = Type::INVALID;
+  gfx::ColorSpace color_space_;
   std::vector<char> data_;
 
-  gfx::ColorSpace color_space_;
+  // This globally identifies this ICC profile. It is used to look up this ICC
+  // profile from a ColorSpace object created from it.
+  uint64_t id_ = 0;
 
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
   friend int ::LLVMFuzzerTestOneInput(const uint8_t*, size_t);
   friend class ColorSpace;
   friend struct IPC::ParamTraits<gfx::ICCProfile>;
+  friend struct IPC::ParamTraits<gfx::ICCProfile::Type>;
+  friend struct mojo::StructTraits<gfx::mojom::ICCProfileDataView,
+                                   gfx::ICCProfile>;
 };
 
 }  // namespace gfx
