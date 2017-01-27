@@ -132,6 +132,12 @@ SecurityLevel GetSecurityLevelForRequest(
     return DANGEROUS;
   }
 
+  // data: URLs don't define a secure context, and are a vector for spoofing.
+  // Display a "Not secure" badge for all data URLs, regardless of whether
+  // they show a password or credit card field.
+  if (url.SchemeIs(url::kDataScheme))
+    return SecurityLevel::HTTP_SHOW_WARNING;
+
   // Choose the appropriate security level for HTTP requests.
   if (!is_cryptographic_with_certificate) {
     if (!is_origin_secure_callback.Run(url) && url.IsStandard()) {
