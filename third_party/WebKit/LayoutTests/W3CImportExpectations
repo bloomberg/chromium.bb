@@ -70,6 +70,7 @@ external/csswg-test/css-transitions-2 [ Skip ]
 ## Owners: rego@igalia.com
 # external/csswg-test/css-ui-3 [ Pass ]
 external/csswg-test/css-values-3 [ Skip ]
+external/csswg-test/css-values-4 [ Skip ]
 external/csswg-test/css-variables-1 [ Skip ]
 ## Owners: kojii@chromium.org
 # external/csswg-test/css-writing-modes-3 [ Pass ]
