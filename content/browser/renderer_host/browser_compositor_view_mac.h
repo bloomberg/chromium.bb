@@ -50,7 +50,8 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
       ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
       BrowserCompositorMacClient* client,
       bool render_widget_host_is_hidden,
-      bool ns_view_attached_to_window);
+      bool ns_view_attached_to_window,
+      const cc::FrameSinkId& frame_sink_id);
   ~BrowserCompositorMac() override;
 
   // These will not return nullptr until Destroy is called.

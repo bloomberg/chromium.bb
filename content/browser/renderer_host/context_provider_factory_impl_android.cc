@@ -66,7 +66,7 @@ ContextProviderFactoryImpl::ContextProviderFactoryImpl(
     : gpu_channel_factory_(gpu_channel_factory),
       in_handle_pending_requests_(false),
       in_shutdown_(false),
-      next_client_id_(1u),
+      next_sink_id_(1u),
       weak_factory_(this) {
   DCHECK(gpu_channel_factory_);
 }
@@ -136,7 +136,12 @@ cc::SurfaceManager* ContextProviderFactoryImpl::GetSurfaceManager() {
 }
 
 cc::FrameSinkId ContextProviderFactoryImpl::AllocateFrameSinkId() {
-  return cc::FrameSinkId(++next_client_id_, 0 /* sink_id */);
+  // The FrameSinkId generated here must be unique with
+  // RenderWidgetHostViewAndroid's
+  // FrameSinkId allocation.
+  // TODO(crbug.com/685777): Centralize allocation in one place for easier
+  // maintenance.
+  return cc::FrameSinkId(0 /* client_id */, next_sink_id_++);
 }
 
 gpu::GpuMemoryBufferManager*

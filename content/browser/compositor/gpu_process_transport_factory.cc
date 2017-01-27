@@ -690,6 +690,11 @@ GpuProcessTransportFactory::GetContextFactoryPrivate() {
 }
 
 cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
+  // The FrameSinkId generated here must be unique with
+  // RenderWidgetHostViewAura's
+  // and RenderWidgetHostViewMac's FrameSinkId allocation.
+  // TODO(crbug.com/685777): Centralize allocation in one place for easier
+  // maintenance.
   return cc::FrameSinkId(0, next_sink_id_++);
 }
 

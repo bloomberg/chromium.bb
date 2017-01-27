@@ -168,16 +168,15 @@ BrowserCompositorMac::BrowserCompositorMac(
     ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
     BrowserCompositorMacClient* client,
     bool render_widget_host_is_hidden,
-    bool ns_view_attached_to_window)
+    bool ns_view_attached_to_window,
+    const cc::FrameSinkId& frame_sink_id)
     : client_(client),
       accelerated_widget_mac_ns_view_(accelerated_widget_mac_ns_view),
       weak_factory_(this) {
   g_browser_compositor_count += 1;
 
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  delegated_frame_host_.reset(new DelegatedFrameHost(
-      factory->GetContextFactoryPrivate()->AllocateFrameSinkId(), this));
+  delegated_frame_host_.reset(new DelegatedFrameHost(frame_sink_id, this));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
   SetNSViewAttachedToWindow(ns_view_attached_to_window);

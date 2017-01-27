@@ -104,7 +104,7 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
   base::OneShotTimer establish_gpu_channel_timeout_;
 
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  uint32_t next_client_id_;
+  uint32_t next_sink_id_;
 
   base::WeakPtrFactory<ContextProviderFactoryImpl> weak_factory_;
 

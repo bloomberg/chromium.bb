@@ -1915,6 +1915,10 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
 
   // GuestViews have two RenderWidgetHostViews and so we need to make sure
   // we don't have FrameSinkId collisions.
+  // The FrameSinkId generated here must be unique with FrameSinkId allocated
+  // in ContextFactoryPrivate.
+  // TODO(crbug.com/685777): Centralize allocation in one place for easier
+  // maintenance.
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   cc::FrameSinkId frame_sink_id =
       is_guest_view_hack_

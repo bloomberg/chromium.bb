@@ -41,7 +41,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
                             SkColor background_color,
-                            Client* client);
+                            Client* client,
+                            const cc::FrameSinkId& frame_sink_id);
 
   ~DelegatedFrameHostAndroid() override;
 

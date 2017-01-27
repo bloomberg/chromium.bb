@@ -51,11 +51,12 @@ void CopyOutputRequestCallback(
 
 }  // namespace
 
-DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(ui::ViewAndroid* view,
-                                                     SkColor background_color,
-                                                     Client* client)
-    : frame_sink_id_(
-          ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()),
+DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
+    ui::ViewAndroid* view,
+    SkColor background_color,
+    Client* client,
+    const cc::FrameSinkId& frame_sink_id)
+    : frame_sink_id_(frame_sink_id),
       view_(view),
       client_(client),
       background_layer_(cc::SolidColorLayer::Create()) {

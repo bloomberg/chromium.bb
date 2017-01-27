@@ -127,7 +127,7 @@ struct InProcessContextFactory::PerCompositorData {
 InProcessContextFactory::InProcessContextFactory(
     bool context_factory_for_test,
     cc::SurfaceManager* surface_manager)
-    : next_surface_client_id_(1u),
+    : next_surface_sink_id_(1u),
       use_test_surface_(true),
       context_factory_for_test_(context_factory_for_test),
       surface_manager_(surface_manager) {
@@ -281,7 +281,12 @@ cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
 }
 
 cc::FrameSinkId InProcessContextFactory::AllocateFrameSinkId() {
-  return cc::FrameSinkId(next_surface_client_id_++, 0);
+  // The FrameSinkId generated here must be unique with
+  // RenderWidgetHostViewAura's
+  // and RenderWidgetHostViewMac's FrameSinkId allocation.
+  // TODO(crbug.com/685777): Centralize allocation in one place for easier
+  // maintenance.
+  return cc::FrameSinkId(0, next_surface_sink_id_++);
 }
 
 cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {
