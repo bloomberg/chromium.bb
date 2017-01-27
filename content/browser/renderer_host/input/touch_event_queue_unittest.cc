@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/renderer_host/input/legacy_touch_event_queue.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input/web_touch_event_traits.h"
@@ -326,11 +327,11 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   void ResetQueueWithConfig(const TouchEventQueue::Config& config) {
-    queue_.reset(new TouchEventQueue(this, config));
+    queue_.reset(new LegacyTouchEventQueue(this, config));
     queue_->OnHasTouchEventHandlers(true);
   }
 
-  std::unique_ptr<TouchEventQueue> queue_;
+  std::unique_ptr<LegacyTouchEventQueue> queue_;
   size_t acked_event_count_;
   WebTouchEvent last_acked_event_;
   std::vector<WebTouchEvent> sent_events_;

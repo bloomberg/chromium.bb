@@ -304,11 +304,11 @@ class InputRouterImplTest : public testing::Test {
   }
 
   bool TouchEventQueueEmpty() const {
-    return input_router()->touch_event_queue_.empty();
+    return input_router()->touch_event_queue_->Empty();
   }
 
   bool TouchEventTimeoutEnabled() const {
-    return input_router()->touch_event_queue_.IsAckTimeoutEnabled();
+    return input_router()->touch_event_queue_->IsAckTimeoutEnabled();
   }
 
   void RequestNotificationWhenFlushed() const {

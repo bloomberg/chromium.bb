@@ -252,7 +252,7 @@ class CONTENT_EXPORT InputRouterImpl
   bool touch_scroll_started_sent_;
 
   MouseWheelEventQueue wheel_event_queue_;
-  TouchEventQueue touch_event_queue_;
+  std::unique_ptr<TouchEventQueue> touch_event_queue_;
   GestureEventQueue gesture_event_queue_;
   TouchActionFilter touch_action_filter_;
   InputEventStreamValidator input_stream_validator_;

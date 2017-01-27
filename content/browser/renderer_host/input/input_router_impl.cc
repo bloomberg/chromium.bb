@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
+#include "content/browser/renderer_host/input/legacy_touch_event_queue.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/content_constants_internal.h"
@@ -90,7 +91,7 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       wheel_event_queue_(this,
                          base::FeatureList::IsEnabled(
                              features::kTouchpadAndWheelScrollLatching)),
-      touch_event_queue_(this, config.touch_config),
+      touch_event_queue_(new LegacyTouchEventQueue(this, config.touch_config)),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f) {
   DCHECK(sender);
@@ -174,10 +175,10 @@ void InputRouterImpl::SendGestureEvent(
       // GestureScrollUpdate event.  Eg. if the page consumes all touchmoves
       // then no scrolling really ever occurs (even though we still send
       // GestureScrollBegin).
-      touch_event_queue_.PrependTouchScrollNotification();
+      touch_event_queue_->PrependTouchScrollNotification();
       touch_scroll_started_sent_ = true;
     }
-    touch_event_queue_.OnGestureScrollEvent(gesture_event);
+    touch_event_queue_->OnGestureScrollEvent(gesture_event);
   }
 
   gesture_event_queue_.QueueEvent(gesture_event);
@@ -186,7 +187,7 @@ void InputRouterImpl::SendGestureEvent(
 void InputRouterImpl::SendTouchEvent(
     const TouchEventWithLatencyInfo& touch_event) {
   input_stream_validator_.Validate(touch_event.event);
-  touch_event_queue_.QueueEvent(touch_event);
+  touch_event_queue_->QueueEvent(touch_event);
 }
 
 // Forwards MouseEvent without passing it through
@@ -225,7 +226,7 @@ const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
 }
 
 void InputRouterImpl::NotifySiteIsMobileOptimized(bool is_mobile_optimized) {
-  touch_event_queue_.SetIsMobileOptimizedSite(is_mobile_optimized);
+  touch_event_queue_->SetIsMobileOptimizedSite(is_mobile_optimized);
 }
 
 void InputRouterImpl::RequestNotificationWhenFlushed() {
@@ -234,7 +235,7 @@ void InputRouterImpl::RequestNotificationWhenFlushed() {
 }
 
 bool InputRouterImpl::HasPendingEvents() const {
-  return !touch_event_queue_.empty() || !gesture_event_queue_.empty() ||
+  return !touch_event_queue_->Empty() || !gesture_event_queue_.empty() ||
          !key_queue_.empty() || !mouse_move_queue_.empty() ||
          wheel_event_queue_.has_pending() || select_message_pending_ ||
          move_caret_pending_ || active_renderer_fling_count_ > 0;
@@ -291,7 +292,7 @@ void InputRouterImpl::OnFilteringTouchEvent(
 void InputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
-  touch_event_queue_.OnGestureEventAck(event, ack_result);
+  touch_event_queue_->OnGestureEventAck(event, ack_result);
   ack_handler_->OnGestureEventAck(event, ack_result);
 }
 
@@ -486,13 +487,13 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   if (!has_handlers)
     touch_action_filter_.ResetTouchAction();
 
-  touch_event_queue_.OnHasTouchEventHandlers(has_handlers);
+  touch_event_queue_->OnHasTouchEventHandlers(has_handlers);
   client_->OnHasTouchEventHandlers(has_handlers);
 }
 
 void InputRouterImpl::OnSetTouchAction(TouchAction touch_action) {
   // Synthetic touchstart events should get filtered out in RenderWidget.
-  DCHECK(touch_event_queue_.IsPendingAckTouchStart());
+  DCHECK(touch_event_queue_->IsPendingAckTouchStart());
   TRACE_EVENT1("input", "InputRouterImpl::OnSetTouchAction",
                "action", touch_action);
 
@@ -609,8 +610,8 @@ void InputRouterImpl::ProcessTouchAck(InputEventAckState ack_result,
                                       const ui::LatencyInfo& latency,
                                       uint32_t unique_touch_event_id) {
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
-  touch_event_queue_.ProcessTouchAck(ack_result, latency,
-                                     unique_touch_event_id);
+  touch_event_queue_->ProcessTouchAck(ack_result, latency,
+                                      unique_touch_event_id);
 }
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
@@ -619,7 +620,7 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   // to page functionality, so the timeout could do more harm than good.
   const bool touch_ack_timeout_enabled =
       touch_action_filter_.allowed_touch_action() != TOUCH_ACTION_NONE;
-  touch_event_queue_.SetAckTimeoutEnabled(touch_ack_timeout_enabled);
+  touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled);
 }
 
 void InputRouterImpl::SignalFlushedIfNecessary() {
