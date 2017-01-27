@@ -583,6 +583,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingConfigHelper.java",
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
+    "java/src/org/chromium/android_webview/AwRendererPriorityManager.java",
     "java/src/org/chromium/android_webview/AwRenderProcessGoneDetail.java",
     "java/src/org/chromium/android_webview/AwResource.java",
     "java/src/org/chromium/android_webview/AwScrollOffsetManager.java",
@@ -646,7 +647,10 @@ android_library("android_webview_java") {
     deps += [ "//components/spellcheck/browser/android:java" ]
   }
 
-  srcjar_deps = [ "//android_webview/native:aw_permission_request_resource" ]
+  srcjar_deps = [
+    "//android_webview/native:aw_permission_request_resource",
+    "//android_webview/native:aw_renderer_priority_manager_renderer_priority",
+  ]
 }
 
 java_strings_grd("strings_grd") {

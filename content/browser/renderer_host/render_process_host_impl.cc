@@ -2806,6 +2806,11 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     return;
   }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererPriorityManagement)) {
+    return;
+  }
+
   // We background a process as soon as it hosts no active audio streams and no
   // visible widgets -- the callers must call this function whenever we
   // transition in/out of those states.

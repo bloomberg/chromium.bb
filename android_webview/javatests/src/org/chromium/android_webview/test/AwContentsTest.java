@@ -22,6 +22,7 @@ import android.webkit.JavascriptInterface;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
+import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
@@ -553,8 +554,32 @@ public class AwContentsTest extends AwTestBase {
     private static class MockBindingManager implements BindingManager {
         private boolean mIsChildProcessCreated;
 
+        private Object mForegroundStateLock;
+        private ArrayList<Boolean> mForegroundState;
+
+        public MockBindingManager() {
+            super();
+            mForegroundStateLock = new Object();
+            mForegroundState = new ArrayList<Boolean>();
+        }
+
         boolean isChildProcessCreated() {
             return mIsChildProcessCreated;
+        }
+
+        void assertSetInForegroundCall(boolean inForeground) {
+            synchronized (mForegroundStateLock) {
+                if (mForegroundState.size() == 0) {
+                    try {
+                        mForegroundStateLock.wait(WAIT_TIMEOUT_MS);
+                    } catch (InterruptedException e) {
+                    }
+                }
+                assertTrue(mForegroundState.size() != 0);
+                assertEquals(inForeground, mForegroundState.get(0).booleanValue());
+                mForegroundState.remove(0);
+                return;
+            }
         }
 
         @Override
@@ -563,7 +588,12 @@ public class AwContentsTest extends AwTestBase {
         }
 
         @Override
-        public void setInForeground(int pid, boolean inForeground) {}
+        public void setInForeground(int pid, boolean inForeground) {
+            synchronized (mForegroundStateLock) {
+                mForegroundState.add(inForeground);
+                mForegroundStateLock.notifyAll();
+            }
+        }
 
         @Override
         public void determinedVisibility(int pid) {}
@@ -618,4 +648,94 @@ public class AwContentsTest extends AwTestBase {
                         mContentsClient.getOnEvaluateJavaScriptResultHelper(), "21 + 21"));
     }
 
+    /**
+     * By default the renderer should be considererd to be in the
+     * foreground.
+     */
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @CommandLineFlags
+            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+            @ParameterizedTest.Set
+            public void testRendererPriorityStartsHigh() throws Throwable {
+        MockBindingManager bindingManager = new MockBindingManager();
+        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        assertFalse(bindingManager.isChildProcessCreated());
+
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), "<html></html>",
+                "text/html", false);
+
+        assertTrue(bindingManager.isChildProcessCreated());
+        bindingManager.assertSetInForegroundCall(true);
+    }
+
+    /**
+     * If we specify that the priority is WAIVED, then the renderer
+     * should not be in the foreground.
+     */
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @CommandLineFlags
+            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+            @ParameterizedTest.Set
+            public void testRendererPriorityLow() throws Throwable {
+        MockBindingManager bindingManager = new MockBindingManager();
+        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        assertFalse(bindingManager.isChildProcessCreated());
+
+        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                awContents.setRendererPriorityPolicy(RendererPriority.WAIVED, false);
+            }
+        });
+        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), "<html></html>",
+                "text/html", false);
+
+        assertTrue(awContents.isPageVisible());
+        assertTrue(bindingManager.isChildProcessCreated());
+        bindingManager.assertSetInForegroundCall(false);
+    }
+
+    /**
+     * If we specify that the priority is HIGH, but WAIVED when in the
+     * background, then pausing the view should send the renderer to
+     * the background.
+     */
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @CommandLineFlags
+            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+            @ParameterizedTest.Set
+            public void testRendererPriorityManaged() throws Throwable {
+        MockBindingManager bindingManager = new MockBindingManager();
+        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        assertFalse(bindingManager.isChildProcessCreated());
+
+        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                awContents.setRendererPriorityPolicy(RendererPriority.HIGH, true);
+            }
+        });
+        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), "<html></html>",
+                "text/html", false);
+
+        assertTrue(awContents.isPageVisible());
+        assertTrue(bindingManager.isChildProcessCreated());
+        bindingManager.assertSetInForegroundCall(true);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                awContents.onPause();
+            }
+        });
+        bindingManager.assertSetInForegroundCall(false);
+    }
 }

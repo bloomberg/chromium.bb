@@ -93,7 +93,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     // Variables for functionality provided by this adapter ---------------------------------------
     private ContentSettingsAdapter mWebSettings;
     // The WebView wrapper for ContentViewCore and required browser compontents.
-    private AwContents mAwContents;
+    AwContents mAwContents;
     // Non-null if this webview is using the GL accelerated draw path.
     private DrawGLFunctor mGLfunctor;
 

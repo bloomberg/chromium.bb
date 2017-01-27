@@ -45,6 +45,7 @@ import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
+import org.chromium.android_webview.renderer_priority.RendererPriority.RendererPriorityEnum;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -1175,7 +1176,8 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     @CalledByNative
     private boolean onRenderProcessGoneDetail(int childProcessID, boolean crashed) {
         if (isDestroyed(NO_WARN)) return false;
-        return mContentsClient.onRenderProcessGone(new AwRenderProcessGoneDetail(crashed));
+        return mContentsClient.onRenderProcessGone(new AwRenderProcessGoneDetail(
+                crashed, nativeGetRendererCurrentPriority(mNativeAwContents)));
     }
 
     private boolean isNoOperation() {
@@ -2699,6 +2701,20 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         return mIsPopupWindow;
     }
 
+    @RendererPriorityEnum
+    public int getRendererRequestedPriority() {
+        return nativeGetRendererRequestedPriority(mNativeAwContents);
+    }
+
+    public boolean getRendererPriorityWaivedWhenNotVisible() {
+        return nativeGetRendererPriorityWaivedWhenNotVisible(mNativeAwContents);
+    }
+
+    public void setRendererPriorityPolicy(
+            @RendererPriorityEnum int rendererRequestedPriority, boolean waivedWhenNotVisible) {
+        nativeSetRendererPriorityPolicy(
+                mNativeAwContents, rendererRequestedPriority, waivedWhenNotVisible);
+    }
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
@@ -3435,6 +3451,12 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
     private native void nativeInvokeGeolocationCallback(
             long nativeAwContents, boolean value, String requestingFrame);
+
+    private native int nativeGetRendererRequestedPriority(long nativeAwContents);
+    private native boolean nativeGetRendererPriorityWaivedWhenNotVisible(long nativeAwContents);
+    private native int nativeGetRendererCurrentPriority(long nativeAwContents);
+    private native void nativeSetRendererPriorityPolicy(
+            long nativeAwContents, int rendererRequestedPriority, boolean waivedWhenNotVisible);
 
     private native void nativeSetJsOnlineProperty(long nativeAwContents, boolean networkUp);
 
