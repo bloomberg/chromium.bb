@@ -330,9 +330,9 @@ Tree link: https://github.com/PolymerElements/paper-tabs/tree/v1.6.2
 
 Name: paper-toggle-button
 Repository: https://github.com/PolymerElements/paper-toggle-button.git
-Tree: v1.2.0
-Revision: 6aab07244c07f9598584e6dbce366574f96072a3
-Tree link: https://github.com/PolymerElements/paper-toggle-button/tree/v1.2.0
+Tree: v1.3.0
+Revision: 2f279868a9c8965aba76017c7ee6008ac4879f6a
+Tree link: https://github.com/PolymerElements/paper-toggle-button/tree/v1.3.0
 
 Name: paper-toolbar
 Repository: https://github.com/PolymerElements/paper-toolbar.git
