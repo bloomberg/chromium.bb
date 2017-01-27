@@ -70,6 +70,8 @@ NSArray* whiteListedMultitaskingTests = @[
   @"testUserFeedbackPageOpenPrivacyPolicy",  // UserFeedbackTestCase
   @"testVersion",                            // WebUITestCase
 ];
+
+const CFTimeInterval kDrainTimeout = 5;
 }  // namespace
 
 @interface ChromeTestCase () {
@@ -204,12 +206,14 @@ NSArray* whiteListedMultitaskingTests = @[
   // After programatically removing UI elements, allow Earl Grey's
   // UI synchronization to become idle, so subsequent steps won't start before
   // the UI is in a good state.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [[GREYUIThreadExecutor sharedInstance]
+      drainUntilIdleWithTimeout:kDrainTimeout];
 }
 
 + (void)closeAllTabs {
   chrome_test_util::CloseAllTabs();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [[GREYUIThreadExecutor sharedInstance]
+      drainUntilIdleWithTimeout:kDrainTimeout];
 }
 
 - (void)disableMockAuthentication {
