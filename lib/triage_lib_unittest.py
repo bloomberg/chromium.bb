@@ -300,7 +300,7 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     subsys_by_config = None
 
     self.PatchObject(
-        triage_lib.CalculateSuspects, '_CanIgnoreFailures',
+        triage_lib.CalculateSuspects, 'CanIgnoreFailures',
         return_value=(False, None))
     verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
         self.changes, changes_by_config, subsys_by_config, failing,
@@ -317,7 +317,7 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     subsys_by_config = None
 
     self.PatchObject(
-        triage_lib.CalculateSuspects, '_CanIgnoreFailures',
+        triage_lib.CalculateSuspects, 'CanIgnoreFailures',
         return_value=(True, None))
     verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
         self.changes, changes_by_config, subsys_by_config, failing,
@@ -326,7 +326,7 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     self.assertEquals(verified_changes, set(self.changes))
 
   def testCanIgnoreFailures(self):
-    """Tests _CanIgnoreFailures()."""
+    """Tests CanIgnoreFailures()."""
     # pylint: disable=protected-access
     change = self.changes[0]
     messages = [GetFailedMessage([Exception()], stage='HWTest'),
@@ -335,20 +335,20 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     m = self.PatchObject(triage_lib, 'GetStagesToIgnoreForChange')
 
     m.return_value = ('HWTest',)
-    self.assertEqual(triage_lib.CalculateSuspects._CanIgnoreFailures(
+    self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config), (False, None))
 
     m.return_value = ('HWTest', 'VMTest', 'Foo')
-    self.assertEqual(triage_lib.CalculateSuspects._CanIgnoreFailures(
+    self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config),
                      (True, constants.STRATEGY_CQ_PARTIAL))
 
     m.return_value = None
-    self.assertEqual(triage_lib.CalculateSuspects._CanIgnoreFailures(
+    self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config), (False, None))
 
   def testCanIgnoreFailuresWithSubsystemLogic(self):
-    """Tests _CanIgnoreFailures with subsystem logic."""
+    """Tests CanIgnoreFailures with subsystem logic."""
     # pylint: disable=protected-access
     change = self.changes[0]
     messages = [GetFailedMessage([Exception()], stage='HWTest',
@@ -366,14 +366,14 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     subsys_by_config = {'foo-paladin': {'pass_subsystems': ['A', 'B'],
                                         'fail_subsystems': ['C']},
                         'cub-paladin': {}}
-    self.assertEqual(triage_lib.CalculateSuspects._CanIgnoreFailures(
+    self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config), (False, None))
     # Test all configs failed at HWTest run the subsystem logic.
     subsys_by_config = {'foo-paladin': {'pass_subsystems': ['A', 'B'],
                                         'fail_subsystems': ['C']},
                         'cub-paladin': {'pass_subsystems': ['A'],
                                         'fail_subsystems': ['B']}}
-    result = triage_lib.CalculateSuspects._CanIgnoreFailures(
+    result = triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config)
     self.assertEqual(result, (True, constants.STRATEGY_CQ_PARTIAL_SUBSYSTEM))
 
@@ -381,7 +381,7 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
                                         'fail_subsystems': ['C']},
                         'cub-paladin': {'pass_subsystems': ['D'],
                                         'fail_subsystems': ['A']}}
-    self.assertEqual(triage_lib.CalculateSuspects._CanIgnoreFailures(
+    self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config), (False, None))
 
 

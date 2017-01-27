@@ -8,6 +8,7 @@ from __future__ import print_function
 
 from chromite.lib import clactions
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 
 
 class RelevantChanges(object):
@@ -93,3 +94,31 @@ class RelevantChanges(object):
       changes_by_config[config] = set(changes)
 
     return changes_by_config
+
+  @classmethod
+  def GetSubsysResultForSlaves(cls, master_build_id, db):
+    """Get the pass/fail HWTest subsystems results for each slave.
+
+    Returns:
+      A dictionary mapping a slave config name to a dictionary of the pass/fail
+      subsystems. E.g.
+      {'foo-paladin': {'pass_subsystems':{'A', 'B'},
+                       'fail_subsystems':{'C'}}}
+    """
+    assert db, 'No database connection to use.'
+    slave_msgs = db.GetSlaveBuildMessages(master_build_id)
+    slave_subsys_msgs = ([m for m in slave_msgs
+                          if m['message_type'] == constants.SUBSYSTEMS])
+    subsys_by_config = dict()
+    group_msg_by_config = cros_build_lib.GroupByKey(slave_subsys_msgs,
+                                                    'build_config')
+    for config, dict_list in group_msg_by_config.iteritems():
+      d = subsys_by_config.setdefault(config, {})
+      subsys_groups = cros_build_lib.GroupByKey(dict_list, 'message_subtype')
+      for k, v in subsys_groups.iteritems():
+        if k == constants.SUBSYSTEM_PASS:
+          d['pass_subsystems'] = set([x['message_value'] for x in v])
+        if k == constants.SUBSYSTEM_FAIL:
+          d['fail_subsystems'] = set([x['message_value'] for x in v])
+        # If message_subtype==subsystem_unused, keep d as an empty dict.
+    return subsys_by_config

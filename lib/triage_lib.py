@@ -608,8 +608,8 @@ class CalculateSuspects(object):
     return cls._FindPackageBuildFailureSuspects(changes, messages, sanity)
 
   @classmethod
-  def _CanIgnoreFailures(cls, messages, change, build_root,
-                         subsys_by_config):
+  def CanIgnoreFailures(cls, messages, change, build_root,
+                        subsys_by_config):
     """Examine whether we can ignore the failures for |change|.
 
     First, examine the |messages| to see if we are allowed to ignore
@@ -739,7 +739,7 @@ class CalculateSuspects(object):
         # Examine the failures and see if we can safely ignore them
         # for the change.
         failed_messages = [x for x in messages if x.builder in failed_configs]
-        ignore_result = cls._CanIgnoreFailures(
+        ignore_result = cls.CanIgnoreFailures(
             failed_messages, change, build_root, subsys_by_config)
         if ignore_result[0]:
           logging.info('All failures of relevant configs for change %s are '
