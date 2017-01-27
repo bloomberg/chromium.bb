@@ -61,6 +61,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
@@ -395,26 +396,27 @@ InlineLoginHandlerImpl::InlineLoginHandlerImpl()
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 
 // This method is not called with webview sign in enabled.
-void InlineLoginHandlerImpl::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  if (!web_contents())
+void InlineLoginHandlerImpl::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!web_contents() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsErrorPage()) {
     return;
+  }
 
   // Returns early if this is not a gaia webview navigation.
   content::RenderFrameHost* gaia_frame =
       signin::GetAuthFrame(web_contents(), "signin-frame");
-  if (render_frame_host != gaia_frame)
+  if (navigation_handle->GetRenderFrameHost() != gaia_frame)
     return;
 
   // Loading any untrusted (e.g., HTTP) URLs in the privileged sign-in process
   // will require confirmation before the sign in takes effect.
   const GURL kGaiaExtOrigin(
       GaiaUrls::GetInstance()->signin_completed_continue_url().GetOrigin());
-  if (!url.is_empty()) {
-    GURL origin(url.GetOrigin());
-    if (url.spec() != url::kAboutBlankURL &&
+  if (!navigation_handle->GetURL().is_empty()) {
+    GURL origin(navigation_handle->GetURL().GetOrigin());
+    if (navigation_handle->GetURL().spec() != url::kAboutBlankURL &&
         origin != kGaiaExtOrigin &&
         !gaia::IsGaiaSignonRealm(origin)) {
       confirm_untrusted_signin_ = true;

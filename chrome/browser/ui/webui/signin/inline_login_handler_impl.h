@@ -117,11 +117,9 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
                                   Profile* profile,
                                   Profile::CreateStatus status);
 
-  // Overridden from content::WebContentsObserver overrides.
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
+  // content::WebContentsObserver implementation:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // True if the user has navigated to untrusted domains during the signin
   // process.
