@@ -111,13 +111,13 @@ const DisplayItemClient& FrameSelection::caretDisplayItemClientForTesting()
 }
 
 const Document& FrameSelection::document() const {
-  DCHECK(m_document);
-  return *m_document;
+  DCHECK(lifecycleContext());
+  return *lifecycleContext();
 }
 
 Document& FrameSelection::document() {
-  DCHECK(m_document);
-  return *m_document;
+  DCHECK(lifecycleContext());
+  return *lifecycleContext();
 }
 
 // TODO(yosin): To avoid undefined symbols in clang, we explicitly
@@ -710,8 +710,6 @@ void FrameSelection::clear() {
 
 void FrameSelection::documentAttached(Document* document) {
   DCHECK(document);
-  DCHECK(!m_document) << "FrameSelection is already attached to " << m_document;
-  m_document = document;
   m_useSecureKeyboardEntryWhenActive = false;
   m_selectionEditor->documentAttached(document);
   m_frameCaret->documentAttached(document);
@@ -719,8 +717,6 @@ void FrameSelection::documentAttached(Document* document) {
 }
 
 void FrameSelection::contextDestroyed(Document* document) {
-  DCHECK_EQ(m_document, document);
-  m_document = nullptr;
   m_granularity = CharacterGranularity;
 
   LayoutViewItem view = m_frame->contentLayoutItem();
@@ -1303,7 +1299,6 @@ void FrameSelection::showTreeForThis() const {
 #endif
 
 DEFINE_TRACE(FrameSelection) {
-  visitor->trace(m_document);
   visitor->trace(m_frame);
   visitor->trace(m_pendingSelection);
   visitor->trace(m_selectionEditor);

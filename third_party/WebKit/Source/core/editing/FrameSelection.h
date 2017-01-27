@@ -99,7 +99,7 @@ class CORE_EXPORT FrameSelection final
     return static_cast<EUserTriggered>(options & UserTriggered);
   }
 
-  bool isAvailable() const { return m_document; }
+  bool isAvailable() const { return lifecycleContext(); }
   // You should not call |document()| when |!isAvailable()|.
   const Document& document() const;
   Document& document();
@@ -339,7 +339,6 @@ class CORE_EXPORT FrameSelection final
   bool shouldPaintCaretForTesting() const;
   bool isPreviousCaretDirtyForTesting() const;
 
-  Member<Document> m_document;
   Member<LocalFrame> m_frame;
   const Member<PendingSelection> m_pendingSelection;
   const Member<SelectionEditor> m_selectionEditor;
