@@ -224,13 +224,8 @@ class LocalDeviceInstrumentationTestRun(
     else:
       test_name = instrumentation_test_instance.GetTestName(test)
       test_display_name = self._GetUniqueTestName(test)
-      if test['is_junit4']:
-        target = '%s/%s' % (
-            self._test_instance.test_package,
-            self._test_instance.test_runner_junit4)
-      else:
-        target = '%s/%s' % (
-            self._test_instance.test_package, self._test_instance.test_runner)
+      target = '%s/%s' % (
+          self._test_instance.test_package, self._test_instance.test_runner)
       extras['class'] = test_name
       if 'flags' in test:
         flags = test['flags']

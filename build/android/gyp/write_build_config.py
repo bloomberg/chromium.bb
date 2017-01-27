@@ -50,23 +50,25 @@ class AndroidManifest(object):
     assert len(manifests) == 1
     self.manifest = manifests[0]
 
-  def GetInstrumentationElements(self):
+  def GetInstrumentation(self):
     instrumentation_els = self.manifest.getElementsByTagName('instrumentation')
     if len(instrumentation_els) == 0:
       return None
-    return instrumentation_els
+    if len(instrumentation_els) != 1:
+      raise Exception(
+          'More than one <instrumentation> element found in %s' % self.path)
+    return instrumentation_els[0]
 
-  def CheckInstrumentationElements(self, expected_package):
-    instrs = self.GetInstrumentationElements()
-    if not instrs:
+  def CheckInstrumentation(self, expected_package):
+    instr = self.GetInstrumentation()
+    if not instr:
       raise Exception('No <instrumentation> elements found in %s' % self.path)
-    for instr in instrs:
-      instrumented_package = instr.getAttributeNS(
-          'http://schemas.android.com/apk/res/android', 'targetPackage')
-      if instrumented_package != expected_package:
-        raise Exception(
-            'Wrong instrumented package. Expected %s, got %s'
-            % (expected_package, instrumented_package))
+    instrumented_package = instr.getAttributeNS(
+        'http://schemas.android.com/apk/res/android', 'targetPackage')
+    if instrumented_package != expected_package:
+      raise Exception(
+          'Wrong instrumented package. Expected %s, got %s'
+          % (expected_package, instrumented_package))
 
   def GetPackageName(self):
     return self.manifest.getAttribute('package')
@@ -461,7 +463,6 @@ def main(argv):
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
 
-
   if options.type in ('java_binary', 'java_library'):
     # Only resources might have srcjars (normal srcjar targets are listed in
     # srcjar_deps). A resource's srcjar contains the R.java file for those
@@ -577,7 +578,7 @@ def main(argv):
     tested_apk_config = GetDepConfig(options.tested_apk_config)
 
     expected_tested_package = tested_apk_config['package_name']
-    AndroidManifest(options.android_manifest).CheckInstrumentationElements(
+    AndroidManifest(options.android_manifest).CheckInstrumentation(
         expected_tested_package)
     if options.proguard_enabled:
       # Add all tested classes to the test's classpath to ensure that the test's
@@ -652,9 +653,9 @@ def main(argv):
     dependency_jars = [c['jar_path'] for c in all_library_deps]
     manifest = AndroidManifest(options.android_manifest)
     deps_info['package_name'] = manifest.GetPackageName()
-    if not options.tested_apk_config and manifest.GetInstrumentationElements():
+    if not options.tested_apk_config and manifest.GetInstrumentation():
       # This must then have instrumentation only for itself.
-      manifest.CheckInstrumentationElements(manifest.GetPackageName())
+      manifest.CheckInstrumentation(manifest.GetPackageName())
 
     library_paths = []
     java_libraries_list = None
