@@ -128,6 +128,12 @@ bool WillHandleBrowserAboutURL(GURL* url,
       host = chrome::kChromeUIUberHost;
       path = chrome::kChromeUIHelpHost + url->path();
     }
+  // Redirect chrome://chrome to chrome://settings/help, only for MD settings.
+  } else if (host == chrome::kChromeUIUberHost &&
+             base::FeatureList::IsEnabled(features::kMaterialDesignSettings) &&
+             (url->path().empty() || url->path() == "/")) {
+    host = chrome::kChromeUISettingsHost;
+    path = chrome::kChromeUIHelpHost;
   }
 
   GURL::Replacements replacements;
