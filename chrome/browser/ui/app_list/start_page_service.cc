@@ -40,6 +40,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -557,12 +558,24 @@ void StartPageService::Shutdown() {
   network_change_observer_.reset();
 }
 
-void StartPageService::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& /*details*/,
-    const content::FrameNavigateParams& /*params*/) {
-  // Set the zoom level in DidNavigateMainFrame, as this is the earliest point
+void StartPageService::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
+  if (navigation_handle->IsErrorPage()) {
+    // This avoids displaying a "Webpage Blocked" error or similar (which can
+    // happen if the URL is blacklisted by enterprise policy).
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&StartPageService::UnloadContents,
+                   weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // Set the zoom level in DidFinishNavigation, as this is the earliest point
   // at which it can be done and not be affected by the ZoomController's
-  // DidNavigateMainFrame handler.
+  // DidFinishNavigation handler.
   //
   // Use a temporary zoom level for this web contents (aka isolated zoom
   // mode) so changes to its zoom aren't reflected in any preferences.
@@ -571,19 +584,6 @@ void StartPageService::DidNavigateMainFrame(
   // Set to have a zoom level of 0, which corresponds to 100%, so the
   // contents aren't affected by the browser's default zoom level.
   zoom::ZoomController::FromWebContents(contents_.get())->SetZoomLevel(0);
-}
-
-void StartPageService::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  // This avoids displaying a "Webpage Blocked" error or similar (which can
-  // happen if the URL is blacklisted by enterprise policy).
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(&StartPageService::UnloadContents,
-                                              weak_factory_.GetWeakPtr()));
 }
 
 void StartPageService::WebUILoaded() {

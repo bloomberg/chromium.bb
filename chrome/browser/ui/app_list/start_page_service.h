@@ -28,8 +28,6 @@
 #include "ui/app_list/speech_ui_model_observer.h"
 
 namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
 struct SpeechRecognitionSessionPreamble;
 }
 
@@ -144,14 +142,8 @@ class StartPageService : public KeyedService,
   void Shutdown() override;
 
   // contents::WebContentsObserver overrides;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Change the known microphone availability. |available| should be true if
   // the microphone exists and is available for use.
