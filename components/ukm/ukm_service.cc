@@ -18,11 +18,13 @@
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/proto/ukm/report.pb.h"
+#include "components/metrics/proto/ukm/source.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/metrics_reporting_scheduler.h"
 #include "components/ukm/persisted_logs_metrics_impl.h"
 #include "components/ukm/ukm_pref_names.h"
+#include "components/ukm/ukm_source.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace ukm {
@@ -53,6 +55,10 @@ constexpr int kMinPersistedBytes = 300000;
 // the log to the prefs for transmission during the next chrome session if this
 // limit is exceeded.
 constexpr size_t kMaxLogRetransmitSize = 100 * 1024;
+
+// Maximum number of Sources we'll keep in memory before discarding any
+// new ones being added.
+const size_t kMaxSources = 100;
 
 std::string GetServerUrl() {
   std::string server_url =
@@ -147,7 +153,7 @@ void UkmService::Flush() {
 void UkmService::Purge() {
   DVLOG(1) << "UkmService::Purge";
   persisted_logs_.Purge();
-  // TODO(oystein): Delete any stored sources.
+  sources_.clear();
 }
 
 // static
@@ -187,7 +193,14 @@ void UkmService::BuildAndStoreLog() {
   Report report;
   report.set_client_id(client_id_);
   // TODO(holte): Populate system_profile.
-  // TODO(oystein): Populate sources.
+
+  for (const auto& source : sources_) {
+    Source* proto_source = report.add_sources();
+    source->PopulateProto(proto_source);
+  }
+  UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount", sources_.size());
+  sources_.clear();
+
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
   persisted_logs_.StoreLog(serialized_log);
@@ -242,6 +255,15 @@ void UkmService::OnLogUploadComplete(int response_code) {
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
   scheduler_->UploadFinished(server_is_healthy, !persisted_logs_.empty());
+}
+
+void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {
+  if (sources_.size() >= kMaxSources) {
+    UMA_HISTOGRAM_BOOLEAN("UKM.Sources.MaxSourcesHit", true);
+    return;
+  }
+
+  sources_.push_back(std::move(source));
 }
 
 }  // namespace ukm

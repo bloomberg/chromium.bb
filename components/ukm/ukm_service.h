@@ -26,6 +26,8 @@ class MetricsServiceClient;
 
 namespace ukm {
 
+class UkmSource;
+
 // This feature controls whether UkmService should be created.
 extern const base::Feature kUkmFeature;
 
@@ -48,6 +50,10 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   void EnableReporting();
   void DisableReporting();
 
+  // Adds a new source of UKM metrics, which will be stored
+  // until periodically serialized for upload, and then deleted.
+  void RecordSource(std::unique_ptr<UkmSource> source);
+
   // Record any collected data into logs, and write to disk.
   void Flush();
 
@@ -57,6 +63,11 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // Registers the names of all of the preferences used by UkmService in
   // the provided PrefRegistry.
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+ protected:
+  const std::vector<std::unique_ptr<UkmSource>>& sources_for_testing() const {
+    return sources_;
+  }
 
  private:
   // Start metrics client initialization.
@@ -103,6 +114,10 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   bool initialize_started_;
   bool initialize_complete_;
   bool log_upload_in_progress_;
+
+  // Contains newly added sources of UKM metrics which periodically
+  // get serialized and cleared by BuildAndStoreLog().
+  std::vector<std::unique_ptr<UkmSource>> sources_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as UkmService.
