@@ -5,6 +5,7 @@
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -22,7 +23,7 @@
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
-#include "components/ntp_tiles/icon_cacher.h"
+#include "components/ntp_tiles/icon_cacher_impl.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 
@@ -115,7 +116,7 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
 #else
       nullptr,
 #endif
-      base::MakeUnique<ntp_tiles::IconCacher>(
+      base::MakeUnique<ntp_tiles::IconCacherImpl>(
           FaviconServiceFactory::GetForProfile(
               profile, ServiceAccessType::IMPLICIT_ACCESS),
           base::MakeUnique<image_fetcher::ImageFetcherImpl>(

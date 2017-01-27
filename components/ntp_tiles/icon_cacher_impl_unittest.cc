@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_tiles/icon_cacher.h"
+#include "components/ntp_tiles/icon_cacher_impl.h"
+
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -121,7 +123,7 @@ TEST_F(IconCacherTest, LargeCached) {
   PreloadIcon(site_.url, site_.large_icon_url, favicon_base::TOUCH_ICON, 128,
               128);
 
-  IconCacher cacher(&favicon_service_, std::move(image_fetcher_));
+  IconCacherImpl cacher(&favicon_service_, std::move(image_fetcher_));
   cacher.StartFetch(site_, BindMockFunction(&done));
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::FAVICON));
@@ -142,7 +144,7 @@ TEST_F(IconCacherTest, LargeNotCachedAndFetchSucceeded) {
     EXPECT_CALL(done, Call(true)).WillOnce(Quit(&loop));
   }
 
-  IconCacher cacher(&favicon_service_, std::move(image_fetcher_));
+  IconCacherImpl cacher(&favicon_service_, std::move(image_fetcher_));
   cacher.StartFetch(site_, BindMockFunction(&done));
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::FAVICON));
@@ -165,7 +167,7 @@ TEST_F(IconCacherTest, SmallNotCachedAndFetchSucceeded) {
     EXPECT_CALL(done, Call(true)).WillOnce(Quit(&loop));
   }
 
-  IconCacher cacher(&favicon_service_, std::move(image_fetcher_));
+  IconCacherImpl cacher(&favicon_service_, std::move(image_fetcher_));
   cacher.StartFetch(site_, BindMockFunction(&done));
   loop.Run();
   EXPECT_TRUE(IconIsCachedFor(site_.url, favicon_base::FAVICON));
@@ -186,7 +188,7 @@ TEST_F(IconCacherTest, LargeNotCachedAndFetchFailed) {
     EXPECT_CALL(done, Call(false)).WillOnce(Quit(&loop));
   }
 
-  IconCacher cacher(&favicon_service_, std::move(image_fetcher_));
+  IconCacherImpl cacher(&favicon_service_, std::move(image_fetcher_));
   cacher.StartFetch(site_, BindMockFunction(&done));
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::FAVICON));

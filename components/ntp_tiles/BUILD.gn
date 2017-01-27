@@ -14,8 +14,9 @@ static_library("ntp_tiles") {
     "country_code_ios.mm",
     "field_trial.cc",
     "field_trial.h",
-    "icon_cacher.cc",
     "icon_cacher.h",
+    "icon_cacher_impl.cc",
+    "icon_cacher_impl.h",
     "metrics.cc",
     "metrics.h",
     "most_visited_sites.cc",
@@ -82,7 +83,7 @@ source_set("json_unsafe_parser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "icon_cacher_unittest.cc",
+    "icon_cacher_impl_unittest.cc",
     "metrics_unittest.cc",
     "most_visited_sites_unittest.cc",
     "popular_sites_impl_unittest.cc",

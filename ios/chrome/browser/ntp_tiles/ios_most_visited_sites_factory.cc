@@ -8,7 +8,7 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/ntp_tiles/icon_cacher.h"
+#include "components/ntp_tiles/icon_cacher_impl.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -31,7 +31,7 @@ IOSMostVisitedSitesFactory::NewForBrowserState(
       ios::TopSitesFactory::GetForBrowserState(browser_state),
       suggestions::SuggestionsServiceFactory::GetForBrowserState(browser_state),
       IOSPopularSitesFactory::NewForBrowserState(browser_state),
-      base::MakeUnique<ntp_tiles::IconCacher>(
+      base::MakeUnique<ntp_tiles::IconCacherImpl>(
           ios::FaviconServiceFactory::GetForBrowserState(
               browser_state, ServiceAccessType::IMPLICIT_ACCESS),
           base::MakeUnique<image_fetcher::ImageFetcherImpl>(
