@@ -28,6 +28,13 @@ class SelectionControllerDelegate;
 // TODO(karandeepb): Also make this class handle gesture events.
 class VIEWS_EXPORT SelectionController {
  public:
+  // Describes whether the view managing the delegate was initially focused when
+  // the mouse press was received.
+  enum InitialFocusStateOnMousePress {
+    FOCUSED,
+    UNFOCUSED,
+  };
+
   // |delegate| must be non-null.
   explicit SelectionController(SelectionControllerDelegate* delegate);
 
@@ -35,7 +42,9 @@ class VIEWS_EXPORT SelectionController {
   // the event has already been handled by the |delegate_|. If |handled| is
   // true, the mouse event is just used to update the internal state without
   // updating the state of the associated RenderText instance.
-  bool OnMousePressed(const ui::MouseEvent& event, bool handled);
+  bool OnMousePressed(const ui::MouseEvent& event,
+                      bool handled,
+                      InitialFocusStateOnMousePress initial_focus_state);
   bool OnMouseDragged(const ui::MouseEvent& event);
   void OnMouseReleased(const ui::MouseEvent& event);
   void OnMouseCaptureLost();
@@ -55,6 +64,9 @@ class VIEWS_EXPORT SelectionController {
 
   // Selects the word at the given |point|.
   void SelectWord(const gfx::Point& point);
+
+  // Selects all the text.
+  void SelectAll();
 
   // Returns the associated render text instance via the |delegate_|.
   gfx::RenderText* GetRenderText();

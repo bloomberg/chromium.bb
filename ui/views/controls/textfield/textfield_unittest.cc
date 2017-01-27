@@ -1463,7 +1463,7 @@ TEST_F(TextfieldTest, DoubleAndTripleClickTest) {
 }
 
 // Tests text selection behavior on a right click.
-TEST_F(TextfieldTest, SelectWordOnRightClick) {
+TEST_F(TextfieldTest, SelectionOnRightClick) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
@@ -1478,10 +1478,23 @@ TEST_F(TextfieldTest, SelectWordOnRightClick) {
   // Verify right clicking outside the selection, selects the word under the
   // cursor on platforms where this is expected.
   MoveMouseTo(gfx::Point(GetCursorPositionX(8), cursor_y));
-  const char* expected_right_click =
+  const char* expected_right_click_word =
       PlatformStyle::kSelectWordOnRightClick ? "world" : "ello";
   ClickRightMouseButton();
-  EXPECT_STR_EQ(expected_right_click, textfield_->GetSelectedText());
+  EXPECT_STR_EQ(expected_right_click_word, textfield_->GetSelectedText());
+
+  // Verify right clicking inside an unfocused textfield selects all the text on
+  // platforms where this is expected. Else the older selection is retained.
+  widget_->GetFocusManager()->ClearFocus();
+  EXPECT_FALSE(textfield_->HasFocus());
+  MoveMouseTo(gfx::Point(GetCursorPositionX(0), cursor_y));
+  ClickRightMouseButton();
+  EXPECT_TRUE(textfield_->HasFocus());
+  const char* expected_right_click_unfocused =
+      PlatformStyle::kSelectAllOnRightClickWhenUnfocused
+          ? "hello world"
+          : expected_right_click_word;
+  EXPECT_STR_EQ(expected_right_click_unfocused, textfield_->GetSelectedText());
 }
 
 TEST_F(TextfieldTest, DragToSelect) {

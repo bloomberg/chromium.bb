@@ -513,6 +513,8 @@ bool Label::OnMousePressed(const ui::MouseEvent& event) {
   if (!GetRenderTextForSelectionController())
     return false;
 
+  const bool had_focus = HasFocus();
+
   // RequestFocus() won't work when the label has FocusBehavior::NEVER. Hence
   // explicitly set the focused view.
   // TODO(karandeepb): If a widget with a label having FocusBehavior::NEVER as
@@ -521,16 +523,18 @@ bool Label::OnMousePressed(const ui::MouseEvent& event) {
   // when the widget gets focus again. Fix this.
   // Tracked in https://crbug.com/630365.
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
-      GetFocusManager()) {
+      GetFocusManager() && !had_focus) {
     GetFocusManager()->SetFocusedView(this);
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (event.IsOnlyMiddleMouseButton() && GetFocusManager())
+  if (event.IsOnlyMiddleMouseButton() && GetFocusManager() && !had_focus)
     GetFocusManager()->SetFocusedView(this);
 #endif
 
-  return selection_controller_->OnMousePressed(event, false);
+  return selection_controller_->OnMousePressed(
+      event, false, had_focus ? SelectionController::FOCUSED
+                              : SelectionController::UNFOCUSED);
 }
 
 bool Label::OnMouseDragged(const ui::MouseEvent& event) {

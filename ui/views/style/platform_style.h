@@ -43,6 +43,9 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether right clicking on text, selects the word under cursor.
   static const bool kSelectWordOnRightClick;
 
+  // Whether right clicking inside an unfocused text view selects all the text.
+  static const bool kSelectAllOnRightClickWhenUnfocused;
+
   // The menu button's action to show the menu.
   static const CustomButton::NotifyAction kMenuNotifyActivationAction;
 
