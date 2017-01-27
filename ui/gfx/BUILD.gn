@@ -91,6 +91,8 @@ component("gfx") {
     "gdi_util.h",
     "gfx_paths.cc",
     "gfx_paths.h",
+    "half_float.cc",
+    "half_float.h",
     "icc_profile.cc",
     "icc_profile.h",
     "icc_profile_mac.mm",
@@ -439,6 +441,20 @@ source_set("color_space") {
   ]
 }
 
+# Depend on this to use half_float.h without pulling in all of gfx.
+source_set("half_float") {
+  sources = [
+    "half_float.h",
+  ]
+
+  defines = [ "GFX_IMPLEMENTATION" ]
+
+  public_deps = [
+    ":gfx_export",
+    "//base",
+  ]
+}
+
 # Depend on this to use native_widget_types.h without pulling in all of gfx.
 source_set("native_widget_types") {
   public = [
@@ -630,6 +646,7 @@ test("gfx_unittests") {
       "geometry/size_unittest.cc",
       "geometry/vector2d_unittest.cc",
       "geometry/vector3d_unittest.cc",
+      "half_float_unittest.cc",
       "icc_profile_unittest.cc",
       "image/image_mac_unittest.mm",
       "image/image_util_unittest.cc",

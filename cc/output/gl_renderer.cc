@@ -390,7 +390,10 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
       gl_composited_texture_quad_border_(
           settings->gl_composited_texture_quad_border),
       bound_geometry_(NO_BINDING),
-      color_lut_cache_(gl_),
+      color_lut_cache_(gl_,
+                       output_surface_->context_provider()
+                           ->ContextCapabilities()
+                           .texture_half_float_linear),
       weak_ptr_factory_(this) {
   DCHECK(gl_);
   DCHECK(context_support_);
@@ -2270,13 +2273,12 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     gl_->Uniform1i(program->a_texture_location(), 4);
 
   if (color_conversion_mode == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
-    const int kLUTSize = 17;
-    unsigned int lut_texture = color_lut_cache_.GetLUT(
-        quad->video_color_space, frame->device_color_space, kLUTSize);
+    ColorLUTCache::LUT lut = color_lut_cache_.GetLUT(quad->video_color_space,
+                                                     frame->device_color_space);
     gl_->ActiveTexture(GL_TEXTURE5);
-    gl_->BindTexture(GL_TEXTURE_2D, lut_texture);
+    gl_->BindTexture(GL_TEXTURE_2D, lut.texture);
     gl_->Uniform1i(program->lut_texture_location(), 5);
-    gl_->Uniform1f(program->lut_size_location(), kLUTSize);
+    gl_->Uniform1f(program->lut_size_location(), lut.size);
     gl_->ActiveTexture(GL_TEXTURE0);
     gl_->Uniform1f(program->resource_multiplier_location(),
                    quad->resource_multiplier);

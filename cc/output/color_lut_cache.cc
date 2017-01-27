@@ -9,19 +9,24 @@
 #include <vector>
 
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/color_transform.h"
+#include "ui/gfx/half_float.h"
 
 // After a LUT has not been used for this many frames, we release it.
 const uint32_t kMaxFramesUnused = 10;
 
-ColorLUTCache::ColorLUTCache(gpu::gles2::GLES2Interface* gl)
-    : lut_cache_(0), gl_(gl) {}
+ColorLUTCache::ColorLUTCache(gpu::gles2::GLES2Interface* gl,
+                             bool texture_half_float_linear)
+    : lut_cache_(0),
+      gl_(gl),
+      texture_half_float_linear_(texture_half_float_linear) {}
 
 ColorLUTCache::~ColorLUTCache() {
   GLuint textures[10];
   size_t n = 0;
   for (const auto& cache_entry : lut_cache_) {
-    textures[n++] = cache_entry.second.texture;
+    textures[n++] = cache_entry.second.lut.texture;
     if (n == arraysize(textures)) {
       gl_->DeleteTextures(n, textures);
       n = 0;
@@ -33,11 +38,19 @@ ColorLUTCache::~ColorLUTCache() {
 
 namespace {
 
-unsigned char FloatToLUT(float f) {
-  return std::min<int>(255, std::max<int>(0, floorf(f * 255.0f + 0.5f)));
+void FloatToLUT(const float* f, gfx::HalfFloat* out, size_t num) {
+  gfx::FloatToHalfFloat(f, out, num);
 }
-};
 
+void FloatToLUT(float* f, unsigned char* out, size_t num) {
+  for (size_t i = 0; i < num; i++) {
+    out[i] = std::min<int>(255, std::max<int>(0, floorf(f[i] * 255.0f + 0.5f)));
+  }
+}
+
+}  // namespace
+
+template <typename T>
 unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
                                     gfx::ColorSpace to,
                                     int lut_samples) {
@@ -50,9 +63,12 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
 
   int lut_entries = lut_samples * lut_samples * lut_samples;
   float inverse = 1.0f / (lut_samples - 1);
-  std::vector<unsigned char> lut(lut_entries * 4);
+  std::vector<T> lut(lut_entries * 4);
   std::vector<gfx::ColorTransform::TriStim> samples(lut_samples);
-  unsigned char* lutp = lut.data();
+  T* lutp = lut.data();
+  float one = 1.0f;
+  T alpha;
+  FloatToLUT(&one, &alpha, 1);
   for (int v = 0; v < lut_samples; v++) {
     for (int u = 0; u < lut_samples; u++) {
       for (int y = 0; y < lut_samples; y++) {
@@ -61,11 +77,14 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
         samples[y].set_z(v * inverse);
       }
       transform->transform(samples.data(), samples.size());
-      for (int y = 0; y < lut_samples; y++) {
-        *(lutp++) = FloatToLUT(samples[y].x());
-        *(lutp++) = FloatToLUT(samples[y].y());
-        *(lutp++) = FloatToLUT(samples[y].z());
-        *(lutp++) = 255;  // alpha
+      T* lutp2 = lutp + lut_samples;
+      FloatToLUT(reinterpret_cast<float*>(samples.data()), lutp2,
+                 lut_samples * 3);
+      for (int i = 0; i < lut_samples; i++) {
+        *(lutp++) = *(lutp2++);
+        *(lutp++) = *(lutp2++);
+        *(lutp++) = *(lutp2++);
+        *(lutp++) = alpha;
       }
     }
   }
@@ -78,22 +97,34 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, lut_samples,
-                  lut_samples * lut_samples, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                  lut_samples * lut_samples, 0, GL_RGBA,
+                  sizeof(T) == 1 ? GL_UNSIGNED_BYTE : GL_HALF_FLOAT_OES,
                   lut.data());
   return lut_texture;
 }
 
-unsigned int ColorLUTCache::GetLUT(const gfx::ColorSpace& from,
-                                   const gfx::ColorSpace& to,
-                                   int lut_samples) {
-  CacheKey key(from, std::make_pair(to, lut_samples));
+ColorLUTCache::LUT ColorLUTCache::GetLUT(const gfx::ColorSpace& from,
+                                         const gfx::ColorSpace& to) {
+  CacheKey key(from, to);
   auto iter = lut_cache_.Get(key);
   if (iter != lut_cache_.end()) {
     iter->second.last_used_frame = current_frame_;
-    return iter->second.texture;
+    return iter->second.lut;
   }
 
-  unsigned int lut = MakeLUT(from, to, lut_samples);
+  LUT lut;
+  // If input is HDR, and the output is scRGB, we're going to need
+  // to produce values outside of 0-1, so we'll need to make a half-float
+  // LUT. Also, we'll need to build a larger lut to maintain accuracy.
+  // All LUT sizes should be odd a some transforms hav a knee at 0.5.
+  if (to == gfx::ColorSpace::CreateSCRGBLinear() && from.IsHDR() &&
+      texture_half_float_linear_) {
+    lut.size = 37;
+    lut.texture = MakeLUT<uint16_t>(from, to, lut.size);
+  } else {
+    lut.size = 17;
+    lut.texture = MakeLUT<unsigned char>(from, to, lut.size);
+  }
   lut_cache_.Put(key, CacheVal(lut, current_frame_));
   return lut;
 }
@@ -103,7 +134,7 @@ void ColorLUTCache::Swap() {
   while (!lut_cache_.empty() &&
          current_frame_ - lut_cache_.rbegin()->second.last_used_frame >
              kMaxFramesUnused) {
-    gl_->DeleteTextures(1, &lut_cache_.rbegin()->second.texture);
+    gl_->DeleteTextures(1, &lut_cache_.rbegin()->second.lut.texture);
     lut_cache_.ShrinkToSize(lut_cache_.size() - 1);
   }
 }

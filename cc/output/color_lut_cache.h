@@ -19,34 +19,39 @@ class GLES2Interface;
 
 class ColorLUTCache {
  public:
-  explicit ColorLUTCache(gpu::gles2::GLES2Interface* gl);
+  explicit ColorLUTCache(gpu::gles2::GLES2Interface* gl,
+                         bool texture_half_float_linear);
   ~ColorLUTCache();
 
-  unsigned int GetLUT(const gfx::ColorSpace& from,
-                      const gfx::ColorSpace& to,
-                      int lut_samples);
+  struct LUT {
+    unsigned int texture;
+    int size;
+  };
+
+  LUT GetLUT(const gfx::ColorSpace& from, const gfx::ColorSpace& to);
 
   // End of frame, assume all LUTs handed out are no longer used.
   void Swap();
 
  private:
+  template <typename T>
   unsigned int MakeLUT(const gfx::ColorSpace& from,
                        gfx::ColorSpace to,
                        int lut_samples);
 
-  typedef std::pair<gfx::ColorSpace, std::pair<gfx::ColorSpace, size_t>>
-      CacheKey;
+  typedef std::pair<gfx::ColorSpace, gfx::ColorSpace> CacheKey;
 
   struct CacheVal {
-    CacheVal(unsigned int texture, uint32_t last_used_frame)
-        : texture(texture), last_used_frame(last_used_frame) {}
-    unsigned int texture;
+    CacheVal(LUT lut, uint32_t last_used_frame)
+        : lut(lut), last_used_frame(last_used_frame) {}
+    LUT lut;
     uint32_t last_used_frame;
   };
 
   base::MRUCache<CacheKey, CacheVal> lut_cache_;
   uint32_t current_frame_;
   gpu::gles2::GLES2Interface* gl_;
+  bool texture_half_float_linear_;
   DISALLOW_COPY_AND_ASSIGN(ColorLUTCache);
 };
 
