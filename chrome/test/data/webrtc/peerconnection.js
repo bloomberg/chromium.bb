@@ -376,7 +376,8 @@ function hasSeenCryptoInSdp() {
 }
 
 /**
- * Verifies that |RTCPeerConnection.getStats| returns stats.
+ * Verifies that the legacy |RTCPeerConnection.getStats| returns stats and
+ * verifies that each stats member is a string.
  *
  * Returns ok-got-stats on success.
  */
@@ -397,6 +398,22 @@ function verifyStatsGenerated() {
       if (numStats === 0)
         throw failTest('No stats was returned by getStats.');
       returnToTest('ok-got-stats');
+    });
+}
+
+/**
+ * Measures the performance of the legacy (callback-based)
+ * |RTCPeerConnection.getStats| and returns the time it took in milliseconds as
+ * a double (DOMHighResTimeStamp, accurate to one thousandth of a millisecond).
+ *
+ * Returns "ok-" followed by a double.
+ */
+function measureGetStatsCallbackPerformance() {
+  let t0 = performance.now();
+  peerConnection_().getStats(
+    function(response) {
+      let t1 = performance.now();
+      returnToTest('ok-' + (t1 - t0));
     });
 }
 

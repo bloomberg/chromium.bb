@@ -24,6 +24,11 @@ const char kMainWebrtcTestHtmlPage[] = "/webrtc/webrtc_jsep01_test.html";
 const char kInboundRtp[] = "inbound-rtp";
 const char kOutboundRtp[] = "outbound-rtp";
 
+enum class GetStatsVariation {
+  PROMISE_BASED,
+  CALLBACK_BASED
+};
+
 // Sums up "RTC[In/Out]boundRTPStreamStats.bytes_[received/sent]" values.
 double GetTotalRTPStreamBytes(
     TestStatsReportDictionary* report, const char* type,
@@ -84,36 +89,46 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
                                     "RTCPeerConnectionNewGetStats");
   }
 
-  void RunsAudioAndVideoCall(
-      const std::string& audio_codec, const std::string& video_codec) {
+  void StartCall(const std::string& audio_codec,
+                 const std::string& video_codec) {
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
-    ASSERT_TRUE(audio_codec != kUseDefaultAudioCodec ||
-                video_codec != kUseDefaultVideoCodec);
 
     ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100)
         << "This is a long-running test; you must specify "
            "--ui-test-action-max-timeout to have a value of at least 100000.";
 
-    content::WebContents* left_tab =
-        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-    content::WebContents* right_tab =
-        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+    left_tab_ = OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+    right_tab_ = OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
 
-    SetupPeerconnectionWithLocalStream(left_tab);
-    SetupPeerconnectionWithLocalStream(right_tab);
-    SetDefaultAudioCodec(left_tab, audio_codec);
-    SetDefaultAudioCodec(right_tab, audio_codec);
-    SetDefaultVideoCodec(left_tab, video_codec);
-    SetDefaultVideoCodec(right_tab, video_codec);
-    NegotiateCall(left_tab, right_tab);
-    StartDetectingVideo(left_tab, "remote-view");
-    StartDetectingVideo(right_tab, "remote-view");
-    WaitForVideoToPlay(left_tab);
-    WaitForVideoToPlay(right_tab);
+    SetupPeerconnectionWithLocalStream(left_tab_);
+    SetupPeerconnectionWithLocalStream(right_tab_);
+    SetDefaultAudioCodec(left_tab_, audio_codec);
+    SetDefaultAudioCodec(right_tab_, audio_codec);
+    SetDefaultVideoCodec(left_tab_, video_codec);
+    SetDefaultVideoCodec(right_tab_, video_codec);
+    CreateDataChannel(left_tab_, "data");
+    CreateDataChannel(right_tab_, "data");
+    NegotiateCall(left_tab_, right_tab_);
+    StartDetectingVideo(left_tab_, "remote-view");
+    StartDetectingVideo(right_tab_, "remote-view");
+    WaitForVideoToPlay(left_tab_);
+    WaitForVideoToPlay(right_tab_);
+  }
+
+  void EndCall() {
+    if (left_tab_)
+      HangUp(left_tab_);
+    if (right_tab_)
+      HangUp(right_tab_);
+  }
+
+  void RunsAudioAndVideoCallCollectingMetrics(
+      const std::string& audio_codec, const std::string& video_codec) {
+    StartCall(audio_codec, video_codec);
 
     // Call for 60 seconds so that values may stabilize, bandwidth ramp up, etc.
-    test::SleepInJavascript(left_tab, 60000);
+    test::SleepInJavascript(left_tab_, 60000);
 
     // The ramp-up may vary greatly and impact the resulting total bytes, to get
     // reliable measurements we do two measurements, at 60 and 70 seconds and
@@ -124,7 +139,7 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
     double video_bytes_received_before = 0.0;
 
     scoped_refptr<TestStatsReportDictionary> report =
-        GetStatsReportDictionary(left_tab);
+        GetStatsReportDictionary(left_tab_);
     if (audio_codec != kUseDefaultAudioCodec) {
       audio_bytes_sent_before = GetAudioBytesSent(report.get());
       audio_bytes_received_before = GetAudioBytesReceived(report.get());
@@ -136,10 +151,10 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
     }
 
     double measure_duration_seconds = 10.0;
-    test::SleepInJavascript(left_tab, static_cast<int>(
+    test::SleepInJavascript(left_tab_, static_cast<int>(
         measure_duration_seconds * base::Time::kMillisecondsPerSecond));
 
-    report = GetStatsReportDictionary(left_tab);
+    report = GetStatsReportDictionary(left_tab_);
     if (audio_codec != kUseDefaultAudioCodec) {
       double audio_bytes_sent_after = GetAudioBytesSent(report.get());
       double audio_bytes_received_after = GetAudioBytesReceived(report.get());
@@ -179,61 +194,117 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
           "bytes/second", false);
     }
 
-    HangUp(left_tab);
-    HangUp(right_tab);
+    EndCall();
   }
+
+  void RunsAudioAndVideoCallMeasuringGetStatsPerformance(
+      GetStatsVariation variation) {
+    EXPECT_TRUE(base::TimeTicks::IsHighResolution());
+
+    StartCall(kUseDefaultAudioCodec, kUseDefaultVideoCodec);
+
+    double invocation_time = 0.0;
+    switch (variation) {
+      case GetStatsVariation::PROMISE_BASED:
+        invocation_time = (MeasureGetStatsPerformance(left_tab_) +
+                           MeasureGetStatsPerformance(right_tab_)) / 2.0;
+        break;
+      case GetStatsVariation::CALLBACK_BASED:
+        invocation_time =
+            (MeasureGetStatsCallbackPerformance(left_tab_) +
+             MeasureGetStatsCallbackPerformance(right_tab_)) / 2.0;
+        break;
+    }
+    perf_test::PrintResult(
+        "getStats",
+        (variation == GetStatsVariation::PROMISE_BASED) ?
+            "_promise" : "_callback",
+        "invocation_time",
+        invocation_time,
+        "milliseconds",
+        false);
+
+    EndCall();
+  }
+
+ private:
+  content::WebContents* left_tab_ = nullptr;
+  content::WebContents* right_tab_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_AudioCodec_opus) {
-  RunsAudioAndVideoCall("opus", kUseDefaultVideoCodec);
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_opus) {
+  RunsAudioAndVideoCallCollectingMetrics("opus", kUseDefaultVideoCodec);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_AudioCodec_ISAC) {
-  RunsAudioAndVideoCall("ISAC", kUseDefaultVideoCodec);
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_ISAC) {
+  RunsAudioAndVideoCallCollectingMetrics("ISAC", kUseDefaultVideoCodec);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_AudioCodec_G722) {
-  RunsAudioAndVideoCall("G722", kUseDefaultVideoCodec);
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_G722) {
+  RunsAudioAndVideoCallCollectingMetrics("G722", kUseDefaultVideoCodec);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_AudioCodec_PCMU) {
-  RunsAudioAndVideoCall("PCMU", kUseDefaultVideoCodec);
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_PCMU) {
+  RunsAudioAndVideoCallCollectingMetrics("PCMU", kUseDefaultVideoCodec);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_AudioCodec_PCMA) {
-  RunsAudioAndVideoCall("PCMA", kUseDefaultVideoCodec);
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_PCMA) {
+  RunsAudioAndVideoCallCollectingMetrics("PCMA", kUseDefaultVideoCodec);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_VideoCodec_VP8) {
-  RunsAudioAndVideoCall(kUseDefaultAudioCodec, "VP8");
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP8) {
+  RunsAudioAndVideoCallCollectingMetrics(kUseDefaultAudioCodec, "VP8");
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_VideoCodec_VP9) {
-  RunsAudioAndVideoCall(kUseDefaultAudioCodec, "VP9");
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9) {
+  RunsAudioAndVideoCallCollectingMetrics(kUseDefaultAudioCodec, "VP9");
 }
 
 #if BUILDFLAG(RTC_USE_H264)
 
-IN_PROC_BROWSER_TEST_F(WebRtcStatsPerfBrowserTest,
-                       MANUAL_RunsAudioAndVideoCall_VideoCodec_H264) {
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_H264) {
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
         "Skipping WebRtcPerfBrowserTest."
-        "MANUAL_RunsAudioAndVideoCall_VideoCodec_H264 (test \"OK\")";
+        "MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_H264 (test "
+        "\"OK\")";
     return;
   }
-  RunsAudioAndVideoCall(kUseDefaultAudioCodec, "H264");
+  RunsAudioAndVideoCallCollectingMetrics(kUseDefaultAudioCodec, "H264");
 }
 
 #endif  // BUILDFLAG(RTC_USE_H264)
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallMeasuringGetStatsPerformance_Promise) {
+  RunsAudioAndVideoCallMeasuringGetStatsPerformance(
+      GetStatsVariation::PROMISE_BASED);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallMeasuringGetStatsPerformance_Callback) {
+  RunsAudioAndVideoCallMeasuringGetStatsPerformance(
+      GetStatsVariation::CALLBACK_BASED);
+}
 
 }  // namespace
 

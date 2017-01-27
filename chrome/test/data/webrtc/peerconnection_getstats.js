@@ -301,6 +301,36 @@ function getStatsReportDictionary() {
 }
 
 /**
+ * Measures the performance of the promise-based |RTCPeerConnection.getStats|
+ * and returns the time it took in milliseconds as a double
+ * (DOMHighResTimeStamp, accurate to one thousandth of a millisecond).
+ * Verifies that all stats types of the whitelist were contained in the result.
+ *
+ * Returns "ok-" followed by a double on success.
+ */
+function measureGetStatsPerformance() {
+  let t0 = performance.now();
+  peerConnection_().getStats()
+    .then(function(report) {
+      let t1 = performance.now();
+      let statsTypes = new Set();
+      for (let stats of report.values()) {
+        verifyStatsIsWhitelisted_(stats);
+        statsTypes.add(stats.type);
+      }
+      if (statsTypes.size != gStatsWhitelist.size) {
+        returnToTest('The returned report contains a different number (' +
+            statsTypes.size + ') of stats types than the whitelist. ' +
+            JSON.stringify(Array.from(statsTypes)));
+      }
+      returnToTest('ok-' + (t1 - t0));
+    },
+    function(e) {
+      throw failTest('Promise was rejected: ' + e);
+    });
+}
+
+/**
  * Returns a complete list of whitelisted "RTCStats.type" values as a
  * JSON-stringified array of strings to the test.
  */

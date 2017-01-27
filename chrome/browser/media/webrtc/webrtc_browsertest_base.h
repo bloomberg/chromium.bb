@@ -168,10 +168,12 @@ class WebRtcTestBase : public InProcessBrowserTest {
                                    const std::string& keygen_algorithm) const;
 
   void VerifyStatsGeneratedCallback(content::WebContents* tab) const;
+  double MeasureGetStatsCallbackPerformance(content::WebContents* tab) const;
   std::vector<std::string> VerifyStatsGeneratedPromise(
       content::WebContents* tab) const;
   scoped_refptr<content::TestStatsReportDictionary> GetStatsReportDictionary(
       content::WebContents* tab) const;
+  double MeasureGetStatsPerformance(content::WebContents* tab) const;
   std::vector<std::string> GetWhitelistedStatsTypes(
       content::WebContents* tab) const;
 

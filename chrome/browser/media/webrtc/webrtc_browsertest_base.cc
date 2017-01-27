@@ -6,10 +6,13 @@
 
 #include <stddef.h>
 
+#include <limits>
+
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -497,6 +500,17 @@ std::vector<std::string> WebRtcTestBase::VerifyStatsGeneratedPromise(
   return JsonArrayToVectorOfStrings(result.substr(3));
 }
 
+double WebRtcTestBase::MeasureGetStatsCallbackPerformance(
+    content::WebContents* tab) const {
+  std::string result = ExecuteJavascript(
+      "measureGetStatsCallbackPerformance()", tab);
+  EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
+  double ms;
+  if (!base::StringToDouble(result.substr(3), &ms))
+    return std::numeric_limits<double>::infinity();
+  return ms;
+}
+
 scoped_refptr<content::TestStatsReportDictionary>
 WebRtcTestBase::GetStatsReportDictionary(content::WebContents* tab) const {
   std::string result = ExecuteJavascript("getStatsReportDictionary()", tab);
@@ -510,6 +524,16 @@ WebRtcTestBase::GetStatsReportDictionary(content::WebContents* tab) const {
   return scoped_refptr<content::TestStatsReportDictionary>(
       new content::TestStatsReportDictionary(
           std::unique_ptr<base::DictionaryValue>(dictionary)));
+}
+
+double WebRtcTestBase::MeasureGetStatsPerformance(
+    content::WebContents* tab) const {
+  std::string result = ExecuteJavascript("measureGetStatsPerformance()", tab);
+  EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
+  double ms;
+  if (!base::StringToDouble(result.substr(3), &ms))
+    return std::numeric_limits<double>::infinity();
+  return ms;
 }
 
 std::vector<std::string> WebRtcTestBase::GetWhitelistedStatsTypes(
