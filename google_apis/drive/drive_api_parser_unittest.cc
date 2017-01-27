@@ -107,6 +107,34 @@ TEST(DriveAPIParserTest, AppListParser) {
   EXPECT_EQ("https://www.example.com/createForApp2", app2.create_url().spec());
 }
 
+// Test Team Drive resource parsing.
+TEST(DriveAPIParserTest, TeamDriveResourceParser) {
+  std::unique_ptr<base::Value> document =
+      test_util::LoadJSONFile("drive/team_drive.json");
+  ASSERT_TRUE(document.get());
+
+  ASSERT_EQ(base::Value::Type::DICTIONARY, document->GetType());
+  std::unique_ptr<TeamDriveResource> resource(new TeamDriveResource());
+  EXPECT_TRUE(resource->Parse(*document));
+
+  EXPECT_EQ("TestTeamDriveId", resource->id());
+  EXPECT_EQ("My Team", resource->name());
+  const TeamDriveCapabilities& capabilities = resource->capabilities();
+  EXPECT_TRUE(capabilities.can_add_children());
+  EXPECT_TRUE(capabilities.can_comment());
+  EXPECT_TRUE(capabilities.can_copy());
+  EXPECT_TRUE(capabilities.can_delete_team_drive());
+  EXPECT_TRUE(capabilities.can_download());
+  EXPECT_TRUE(capabilities.can_edit());
+  EXPECT_TRUE(capabilities.can_list_children());
+  EXPECT_TRUE(capabilities.can_manage_members());
+  EXPECT_TRUE(capabilities.can_read_revisions());
+  EXPECT_TRUE(capabilities.can_remove_children());
+  EXPECT_TRUE(capabilities.can_rename());
+  EXPECT_TRUE(capabilities.can_rename_team_drive());
+  EXPECT_TRUE(capabilities.can_share());
+}
+
 // Test file list parsing.
 TEST(DriveAPIParserTest, FileListParser) {
   std::string error;

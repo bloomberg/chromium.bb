@@ -326,6 +326,109 @@ class AppList {
   DISALLOW_COPY_AND_ASSIGN(AppList);
 };
 
+// Capabilities of a Team Drive indicate the permissions granted to the user
+// for the Team Drive and items within the Team Drive.
+class TeamDriveCapabilities {
+ public:
+  TeamDriveCapabilities();
+  ~TeamDriveCapabilities();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<TeamDriveCapabilities>* converter);
+
+  // Creates Team Drive resource from parsed JSON.
+  static std::unique_ptr<TeamDriveCapabilities>
+      CreateFrom(const base::Value& value);
+
+  // Whether the current user can add children to folders in this Team Drive.
+  bool can_add_children() const { return can_add_children_; }
+  // Whether the current user can comment on files in this Team Drive.
+  bool can_comment() const { return can_comment_; }
+  // Whether files in this Team Drive can be copied by the current user.
+  bool can_copy() const { return can_copy_; }
+  // Whether this Team Drive can be deleted by the current user.
+  bool can_delete_team_drive() const { return can_delete_team_drive_; }
+  // Whether files in this Team Drive can be edited by the current user.
+  bool can_download() const { return can_download_; }
+  // Whether files in this Team Drive can be edited by current user.
+  bool can_edit() const { return can_edit_; }
+  // Whether the current user can list the children of folders in this Team
+  // Drive.
+  bool can_list_children() const { return can_list_children_; }
+  // Whether the current user can add members to this Team Drive or remove them
+  // or change their role.
+  bool can_manage_members() const { return can_manage_members_; }
+  // Whether the current user has read access to the Revisions resource of files
+  // in this Team Drive.
+  bool can_read_revisions() const { return can_read_revisions_; }
+  // Whether the current user can remove children from folders in this Team
+  // Drive.
+  bool can_remove_children() const { return can_remove_children_; }
+  // Whether files or folders in this Team Drive can be renamed by the current
+  // user.
+  bool can_rename() const { return can_rename_; }
+  // Whether this Team Drive can be renamed by the current user.
+  bool can_rename_team_drive() const { return can_rename_team_drive_; }
+  // Whether files or folders in this Team Drive can be shared by the current
+  // user.
+  bool can_share() const { return can_share_; }
+
+ private:
+  bool can_add_children_;
+  bool can_comment_;
+  bool can_copy_;
+  bool can_delete_team_drive_;
+  bool can_download_;
+  bool can_edit_;
+  bool can_list_children_;
+  bool can_manage_members_;
+  bool can_read_revisions_;
+  bool can_remove_children_;
+  bool can_rename_;
+  bool can_rename_team_drive_;
+  bool can_share_;
+};
+
+// Team Drive resource represents the metadata about Team Drive itself, such as
+// the name.
+class TeamDriveResource {
+ public:
+  TeamDriveResource();
+  ~TeamDriveResource();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<TeamDriveResource>* converter);
+
+  // Creates Team Drive resource from parsed JSON.
+  static std::unique_ptr<TeamDriveResource>
+      CreateFrom(const base::Value& value);
+
+  // The ID of this Team Drive. The ID is the same as the top-level folder for
+  // this Team Drive.
+  const std::string& id() const { return id_; }
+  // The name of this Team Drive.
+  const std::string& name() const { return name_; }
+  // Capabilities the current user has on this Team Drive.
+  const TeamDriveCapabilities& capabilities() const { return capabilities_; }
+
+ private:
+  friend class DriveAPIParserTest;
+  FRIEND_TEST_ALL_PREFIXES(DriveAPIParserTest, TeamDriveResourceParser);
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+  bool Parse(const base::Value& value);
+
+  std::string id_;
+  std::string name_;
+  TeamDriveCapabilities capabilities_;
+};
+
+
 // ParentReference represents a directory.
 // https://developers.google.com/drive/v2/reference/parents
 class ParentReference {
