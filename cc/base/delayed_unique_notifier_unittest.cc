@@ -73,7 +73,7 @@ TEST_F(DelayedUniqueNotifierTest, ZeroDelay) {
   ASSERT_EQ(1u, tasks.size());
   EXPECT_EQ(base::TimeTicks() + delay, tasks[0].GetTimeToRun());
 
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(1, NotificationCount());
 
   // 5 schedules should result in only one run.
@@ -84,7 +84,7 @@ TEST_F(DelayedUniqueNotifierTest, ZeroDelay) {
   ASSERT_EQ(1u, tasks.size());
   EXPECT_EQ(base::TimeTicks() + delay, tasks[0].GetTimeToRun());
 
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(2, NotificationCount());
 }
 
@@ -110,7 +110,7 @@ TEST_F(DelayedUniqueNotifierTest, SmallDelay) {
   EXPECT_EQ(base::TimeTicks() + delay, tasks[0].GetTimeToRun());
 
   // It's not yet time to run, so we expect no notifications.
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(0, NotificationCount());
 
   tasks = TakePendingTasks();
@@ -127,7 +127,7 @@ TEST_F(DelayedUniqueNotifierTest, SmallDelay) {
   notifier.SetNow(notifier.Now() + base::TimeDelta::FromInternalValue(19));
 
   // It's not yet time to run, so we expect no notifications.
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(0, NotificationCount());
 
   tasks = TakePendingTasks();
@@ -141,7 +141,7 @@ TEST_F(DelayedUniqueNotifierTest, SmallDelay) {
   notifier.SetNow(notifier.Now() + base::TimeDelta::FromInternalValue(1));
 
   // It's time to run!
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(1, NotificationCount());
 
   tasks = TakePendingTasks();
@@ -172,7 +172,7 @@ TEST_F(DelayedUniqueNotifierTest, RescheduleDelay) {
     EXPECT_EQ(base::TimeTicks() + delay, tasks[0].GetTimeToRun());
 
     // It's not yet time to run, so we expect no notifications.
-    tasks[0].task.Run();
+    std::move(tasks[0].task).Run();
     EXPECT_EQ(0, NotificationCount());
   }
 
@@ -186,7 +186,7 @@ TEST_F(DelayedUniqueNotifierTest, RescheduleDelay) {
   EXPECT_EQ(base::TimeTicks() + delay, tasks[0].GetTimeToRun());
 
   // Time to run!
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(1, NotificationCount());
 }
 
@@ -216,7 +216,7 @@ TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
   EXPECT_EQ(base::TimeTicks() + delay, tasks[0].GetTimeToRun());
 
   // Time to run, but a canceled task!
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(0, NotificationCount());
   EXPECT_FALSE(notifier.HasPendingNotification());
 
@@ -234,7 +234,7 @@ TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
   notifier.SetNow(notifier.Now() + delay);
 
   // This should run since it wasn't canceled.
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(1, NotificationCount());
   EXPECT_FALSE(notifier.HasPendingNotification());
 
@@ -252,7 +252,7 @@ TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
 
   // Time to run, but a canceled task!
   notifier.SetNow(notifier.Now() + delay);
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(1, NotificationCount());
 
   tasks = TakePendingTasks();
@@ -284,7 +284,7 @@ TEST_F(DelayedUniqueNotifierTest, ShutdownWithScheduledTask) {
   ASSERT_EQ(1u, tasks.size());
 
   // Running the task after shutdown does nothing since it's cancelled.
-  tasks[0].task.Run();
+  std::move(tasks[0].task).Run();
   EXPECT_EQ(0, NotificationCount());
 
   tasks = TakePendingTasks();

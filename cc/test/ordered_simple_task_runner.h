@@ -32,7 +32,10 @@ class TestOrderablePendingTask : public base::TestPendingTask {
                            base::TimeTicks post_time,
                            base::TimeDelta delay,
                            TestNestability nestability);
+  TestOrderablePendingTask(TestOrderablePendingTask&&);
   ~TestOrderablePendingTask();
+
+  TestOrderablePendingTask& operator=(TestOrderablePendingTask&&);
 
   // operators needed by std::set and comparison
   bool operator==(const TestOrderablePendingTask& other) const;
@@ -42,9 +45,13 @@ class TestOrderablePendingTask : public base::TestPendingTask {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
+  size_t task_id() const { return task_id_; }
+
  private:
   static size_t task_id_counter;
-  const size_t task_id_;
+  size_t task_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOrderablePendingTask);
 };
 
 // This runs pending tasks based on task's post_time + delay.
@@ -135,8 +142,7 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
 
  protected:
   static bool TaskRunCountBelowCallback(size_t max_tasks, size_t* task_run);
-  bool TaskExistedInitiallyCallback(
-      const std::set<TestOrderablePendingTask>& existing_tasks);
+  bool TaskExistedInitiallyCallback(const std::set<size_t>& existing_tasks);
   bool NowBeforeCallback(base::TimeTicks stop_at);
   bool AdvanceNowCallback();
 

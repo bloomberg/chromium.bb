@@ -18,6 +18,10 @@
 
 namespace {
 
+void RunOnceClosure(base::OnceClosure closure) {
+  std::move(closure).Run();
+}
+
 BLUETOOTH_ADDRESS CanonicalStringToBLUETOOTH_ADDRESS(
     std::string device_address) {
   BLUETOOTH_ADDRESS win_addr;
@@ -476,20 +480,24 @@ void BluetoothTestWin::RunPendingTasksUntilCallback() {
   int original_callback_count = callback_count_;
   int original_error_callback_count = error_callback_count_;
   do {
-    base::TestPendingTask task = tasks.front();
+    base::TestPendingTask task = std::move(tasks.front());
     tasks.pop_front();
-    task.task.Run();
+    std::move(task.task).Run();
     base::RunLoop().RunUntilIdle();
   } while (tasks.size() && callback_count_ == original_callback_count &&
            error_callback_count_ == original_error_callback_count);
 
   // Put the rest of pending tasks back to Bluetooth task runner.
-  for (const auto& task : tasks) {
+  for (auto& task : tasks) {
+    // TODO(tzik): Remove RunOnceClosure once TaskRunner migrates from Closure
+    // to OnceClosure.
     if (task.delay.is_zero()) {
-      bluetooth_task_runner_->PostTask(task.location, task.task);
+      bluetooth_task_runner_->PostTask(
+          task.location, base::Bind(&RunOnceClosure, base::Passed(&task.task)));
     } else {
-      bluetooth_task_runner_->PostDelayedTask(task.location, task.task,
-                                              task.delay);
+      bluetooth_task_runner_->PostDelayedTask(
+          task.location, base::Bind(&RunOnceClosure, base::Passed(&task.task)),
+          task.delay);
     }
   }
 }

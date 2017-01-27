@@ -48,8 +48,7 @@ TEST(TestOrderablePendingTask, Ordering) {
   EXPECT_LT(b, c);
   EXPECT_LT(a, c);
 
-  TestOrderablePendingTask a2 = a;
-  EXPECT_EQ(a, a2);
+  TestOrderablePendingTask a2 = std::move(a);
   EXPECT_LT(a2, b);
   EXPECT_LT(b, c);
   EXPECT_LT(a2, c);

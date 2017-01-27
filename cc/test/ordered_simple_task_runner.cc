@@ -43,6 +43,12 @@ TestOrderablePendingTask::TestOrderablePendingTask(
       task_id_(TestOrderablePendingTask::task_id_counter++) {
 }
 
+TestOrderablePendingTask::TestOrderablePendingTask(TestOrderablePendingTask&&) =
+    default;
+
+TestOrderablePendingTask& TestOrderablePendingTask::operator=(
+    TestOrderablePendingTask&&) = default;
+
 size_t TestOrderablePendingTask::task_id_counter = 0;
 
 TestOrderablePendingTask::~TestOrderablePendingTask() {
@@ -106,7 +112,7 @@ bool OrderedSimpleTaskRunner::PostDelayedTask(
                               base::TestPendingTask::NESTABLE);
 
   TRACE_TASK("OrderedSimpleTaskRunner::PostDelayedTask", pt);
-  pending_tasks_.insert(pt);
+  pending_tasks_.insert(std::move(pt));
   return true;
 }
 
@@ -119,7 +125,7 @@ bool OrderedSimpleTaskRunner::PostNonNestableDelayedTask(
                               base::TestPendingTask::NON_NESTABLE);
 
   TRACE_TASK("OrderedSimpleTaskRunner::PostNonNestableDelayedTask", pt);
-  pending_tasks_.insert(pt);
+  pending_tasks_.insert(std::move(pt));
   return true;
 }
 
@@ -230,7 +236,11 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
                    "OrderedSimpleTaskRunner::RunPendingTasks running",
                    "task",
                    task_to_run->AsValue());
-      task_to_run->task.Run();
+      // It's safe to remove const and consume |task| here, since |task| is not
+      // used for ordering the item.
+      base::OnceClosure& task =
+          const_cast<base::OnceClosure&>(task_to_run->task);
+      std::move(task).Run();
     }
 
     pending_tasks_.erase(task_to_run);
@@ -318,15 +328,18 @@ bool OrderedSimpleTaskRunner::TaskRunCountBelowCallback(size_t max_tasks,
 }
 
 base::Callback<bool(void)> OrderedSimpleTaskRunner::TaskExistedInitially() {
-  // base::Bind takes a copy of pending_tasks_
+  std::set<size_t> task_ids;
+  for (const auto& task : pending_tasks_)
+    task_ids.insert(task.task_id());
+
   return base::Bind(&OrderedSimpleTaskRunner::TaskExistedInitiallyCallback,
-                    base::Unretained(this),
-                    pending_tasks_);
+                    base::Unretained(this), std::move(task_ids));
 }
 
 bool OrderedSimpleTaskRunner::TaskExistedInitiallyCallback(
-    const std::set<TestOrderablePendingTask>& existing_tasks) {
-  return existing_tasks.find(*pending_tasks_.begin()) != existing_tasks.end();
+    const std::set<size_t>& existing_tasks) {
+  return existing_tasks.find(pending_tasks_.begin()->task_id()) !=
+         existing_tasks.end();
 }
 
 base::Callback<bool(void)> OrderedSimpleTaskRunner::NowBefore(
