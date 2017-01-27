@@ -38,8 +38,8 @@
             {
                 "domain": "Network",
                 "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookie", "setCookie", "setUserAgentOverride", "canEmulateNetworkConditions"],
-                "include_types": ["CookieSameSite", "Cookie"],
-                "include_events": [],
+                "include_types": ["CookieSameSite", "Cookie", "Response", "Headers", "Request", "ResourceTiming", "SecurityDetails", "SignedCertificateTimestamp", "Initiator", "ResourcePriority", "RequestWillBeSentNotification", "ResponseReceivedNotification", "LoadingFinishedNotification", "LoadingFailedNotification", "RequestWillBeSentNotification"],
+                "include_events": ["requestWillBeSent", "responseReceived", "loadingFinished", "loadingFailed"],
                 "async": ["getCookies", "getAllCookies", "deleteCookie", "setCookie"]
             },
             {
@@ -49,6 +49,10 @@
                     "setControlNavigations", "processNavigation"],
                 "include_events": ["interstitialShown", "interstitialHidden", "navigationRequested", "screencastVisibilityChanged", "screencastFrame", "colorPicked"],
                 "async": ["captureScreenshot"]
+            },
+            {
+                "domain": "Runtime",
+                "include_types": ["StackTrace", "CallFrame", "RemoteObject", "ObjectPreview", "PropertyPreview", "EntryPreview", "CallArgument", "ExceptionDetails", "CustomPreview", "PropertyDescriptor", "InternalPropertyDescriptor", "ExecutionContextDescription", "ExecutionContextDestroyedNotification", "ExecutionContextCreatedNotification", "ExceptionThrownNotification", "ExceptionRevokedNotification", "ConsoleAPICalledNotification", "InspectRequestedNotification"]
             },
             {
                 "domain": "Schema"

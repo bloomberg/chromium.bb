@@ -2078,8 +2078,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, RejectRedirects) {
   // The redirected request must not be sent.
   EXPECT_EQ(0, GetRequestCount(kRedirectedPageUrl));
   EXPECT_EQ(
-      "NetworkError: Service Worker navigation preload doesn't suport "
-      "redirect.",
+      "NetworkError: Service Worker navigation preload doesn't support "
+      "redirects.",
       GetTextContent());
 }
 

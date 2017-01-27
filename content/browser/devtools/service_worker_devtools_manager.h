@@ -18,7 +18,6 @@
 namespace content {
 
 class BrowserContext;
-class DevToolsAgentHostImpl;
 class ServiceWorkerDevToolsAgentHost;
 class ServiceWorkerContextCore;
 
@@ -74,8 +73,9 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   // Returns the ServiceWorkerDevToolsManager singleton.
   static ServiceWorkerDevToolsManager* GetInstance();
 
-  DevToolsAgentHostImpl* GetDevToolsAgentHostForWorker(int worker_process_id,
-                                                       int worker_route_id);
+  ServiceWorkerDevToolsAgentHost* GetDevToolsAgentHostForWorker(
+      int worker_process_id,
+      int worker_route_id);
   void AddAllAgentHosts(
       std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>* result);
   void AddAllAgentHostsForBrowserContext(

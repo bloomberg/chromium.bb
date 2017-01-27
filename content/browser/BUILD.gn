@@ -179,6 +179,8 @@ source_set("browser") {
     "$target_gen_dir/devtools/protocol/page.h",
     "$target_gen_dir/devtools/protocol/protocol.cc",
     "$target_gen_dir/devtools/protocol/protocol.h",
+    "$target_gen_dir/devtools/protocol/runtime.cc",
+    "$target_gen_dir/devtools/protocol/runtime.h",
     "$target_gen_dir/devtools/protocol/schema.cc",
     "$target_gen_dir/devtools/protocol/schema.h",
     "$target_gen_dir/devtools/protocol/security.cc",

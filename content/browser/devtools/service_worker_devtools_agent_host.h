@@ -16,6 +16,10 @@
 
 namespace content {
 
+struct ResourceRequest;
+struct ResourceResponseHead;
+struct ResourceRequestCompletionStatus;
+
 class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  public:
   using List = std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
@@ -43,6 +47,15 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
 
   void WorkerVersionInstalled();
   void WorkerVersionDoomed();
+
+  void NavigationPreloadRequestSent(const std::string& request_id,
+                                    const ResourceRequest& request);
+  void NavigationPreloadResponseReceived(const std::string& request_id,
+                                         const GURL& url,
+                                         const ResourceResponseHead& head);
+  void NavigationPreloadCompleted(
+      const std::string& request_id,
+      const ResourceRequestCompletionStatus& completion_status);
 
   int64_t service_worker_version_id() const;
   GURL scope() const;

@@ -1,0 +1,32 @@
+Tests the navigation request related events are available in the DevTools
+
+
+-----------------
+Loading an iframe.
+onRequestStarted:
+  url: http://127.0.0.1:8000/inspector/service-workers/resources/navigation-preload-scope.php
+onResponseReceived:
+  timing available: true
+  requestHeaders['Service-Worker-Navigation-Preload']: hello
+onRequestFinished:
+The iframe loaded.
+-----------------
+Loading another iframe.
+onRequestStarted:
+  url: http://127.0.0.1:8000/inspector/service-workers/resources/navigation-preload-scope.php?BrokenChunked
+onResponseReceived:
+  timing available: true
+  requestHeaders['Service-Worker-Navigation-Preload']: hello
+onRequestFinished:
+  localizedFailDescription: Navigation Preload Error
+The iframe loaded.
+-----------------
+Loading another iframe.
+onRequestStarted:
+  url: http://127.0.0.1:8000/inspector/service-workers/resources/navigation-preload-scope.php?RedirectError
+onRequestFinished:
+  localizedFailDescription: Navigation Preload Error
+The iframe loaded.
+-----------------
+Done
+

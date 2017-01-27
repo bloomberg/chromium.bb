@@ -74,6 +74,8 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/page.h",
     "protocol/protocol.cc",
     "protocol/protocol.h",
+    "protocol/runtime.cc",
+    "protocol/runtime.h",
     "protocol/schema.cc",
     "protocol/schema.h",
     "protocol/security.cc",

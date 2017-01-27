@@ -286,7 +286,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                          const ResourceResponseHead& response_head) override {
     // This will delete |this|.
     ReportErrorToClient(
-        "Service Worker navigation preload doesn't suport redirect.");
+        "Service Worker navigation preload doesn't support redirects.");
   }
 
   void OnDataDownloaded(int64_t data_length,
@@ -303,7 +303,6 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
-    NOTREACHED();
   }
 
   void OnStartLoadingResponseBody(

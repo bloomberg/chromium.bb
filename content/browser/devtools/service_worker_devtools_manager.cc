@@ -48,7 +48,7 @@ ServiceWorkerDevToolsManager* ServiceWorkerDevToolsManager::GetInstance() {
   return base::Singleton<ServiceWorkerDevToolsManager>::get();
 }
 
-DevToolsAgentHostImpl*
+ServiceWorkerDevToolsAgentHost*
 ServiceWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
     int worker_process_id,
     int worker_route_id) {
