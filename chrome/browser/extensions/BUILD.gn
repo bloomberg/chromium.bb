@@ -236,6 +236,8 @@ static_library("extensions") {
     "api/identity/gaia_web_auth_flow.h",
     "api/identity/identity_api.cc",
     "api/identity/identity_api.h",
+    "api/identity/identity_launch_web_auth_flow_function.cc",
+    "api/identity/identity_launch_web_auth_flow_function.h",
     "api/identity/identity_mint_queue.cc",
     "api/identity/identity_mint_queue.h",
     "api/identity/identity_signin_flow.cc",
