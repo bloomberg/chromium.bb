@@ -159,15 +159,14 @@ void ContentAutofillDriver::PopupHidden() {
 
 gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
     const gfx::RectF& bounding_box) {
-  gfx::Point orig_point(bounding_box.x(), bounding_box.y());
-  gfx::Point transformed_point;
-  transformed_point =
-      render_frame_host_->GetView()->TransformPointToRootCoordSpace(orig_point);
+  if (!RendererIsAvailable())
+    return bounding_box;
 
-  gfx::RectF new_box;
-  new_box.SetRect(transformed_point.x(), transformed_point.y(),
-                  bounding_box.width(), bounding_box.height());
-  return new_box;
+  gfx::Point orig_point(bounding_box.x(), bounding_box.y());
+  gfx::Point transformed_point =
+      render_frame_host_->GetView()->TransformPointToRootCoordSpace(orig_point);
+  return gfx::RectF(transformed_point.x(), transformed_point.y(),
+                    bounding_box.width(), bounding_box.height());
 }
 
 void ContentAutofillDriver::DidInteractWithCreditCardForm() {
