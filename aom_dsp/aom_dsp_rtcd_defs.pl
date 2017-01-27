@@ -750,9 +750,9 @@ if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
   add_proto qw/void aom_convolve8_add_src_horiz/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
   add_proto qw/void aom_convolve8_add_src_vert/,  "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 
-  specialize qw/aom_convolve8_add_src         ssse3/;
-  specialize qw/aom_convolve8_add_src_horiz   ssse3/;
-  specialize qw/aom_convolve8_add_src_vert    ssse3/;
+  specialize qw/aom_convolve8_add_src ssse3/;
+  specialize qw/aom_convolve8_add_src_horiz ssse3/;
+  specialize qw/aom_convolve8_add_src_vert ssse3/;
 }  # CONFIG_LOOP_RESTORATION
 
 # TODO(any): These need to be extended to up to 128x128 block sizes
@@ -797,9 +797,11 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void aom_highbd_convolve8_add_src_horiz/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
     add_proto qw/void aom_highbd_convolve8_add_src_vert/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
 
-    specialize qw/aom_highbd_convolve8_add_src         sse2/;
-    specialize qw/aom_highbd_convolve8_add_src_horiz   sse2/;
-    specialize qw/aom_highbd_convolve8_add_src_vert    sse2/;
+    specialize qw/aom_highbd_convolve8_add_src/, "$sse2_x86_64";
+    # The _horiz/_vert functions are currently unused, so we don't bother
+    # specialising them.
+    specialize qw/aom_highbd_convolve8_add_src_horiz/;
+    specialize qw/aom_highbd_convolve8_add_src_vert/;
   }  # CONFIG_LOOP_RESTORATION
 }  # CONFIG_AOM_HIGHBITDEPTH
 
