@@ -998,18 +998,6 @@
       ]
     },
     {
-      "name": "storm",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "whirlwind",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
       "name": "stout",
       "configs": [
         {
@@ -1231,7 +1219,7 @@
         {
           "builder": "RELEASE",
           "experimental": false,
-          "leader_board": false,
+          "leader_board": true,
           "board_group": "whirlwind",
           "arch": "UNKNOWN"
         }

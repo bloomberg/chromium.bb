@@ -22793,7 +22793,6 @@
     },
     "storm-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "storm"
@@ -27390,7 +27389,6 @@
             "whirlwind"
         ],
         "chrome_sdk": false,
-        "chrome_sdk_build_chrome": false,
         "important": true,
         "sync_chrome": false,
         "vm_tests": [],
