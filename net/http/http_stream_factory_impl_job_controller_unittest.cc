@@ -538,6 +538,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        MainJobSucceedsAfterAltJobFailed) {
+  base::HistogramTester histogram_tester;
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);
   // Use asynchronous proxy resolver.
@@ -578,7 +579,62 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
       .WillOnce(Invoke(DeleteHttpStreamPointer));
   job_controller_->OnStreamReady(job_factory_.main_job(), SSLConfig());
 
+  // Verify that the alternate protocol is marked as broken.
   VerifyBrokenAlternateProtocolMapping(request_info, true);
+  histogram_tester.ExpectUniqueSample("Net.AlternateServiceFailed", -ERR_FAILED,
+                                      1);
+}
+
+// Verifies that if the alternative job fails due to a connection change event,
+// then the alternative service is not marked as broken.
+TEST_F(HttpStreamFactoryImplJobControllerTest,
+       MainJobSucceedsAfterConnectionChanged) {
+  base::HistogramTester histogram_tester;
+  ProxyConfig proxy_config;
+  proxy_config.set_auto_detect(true);
+  // Use asynchronous proxy resolver.
+  MockAsyncProxyResolverFactory* proxy_resolver_factory =
+      new MockAsyncProxyResolverFactory(false);
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.quic_do_not_mark_as_broken_on_network_change = true;
+  Initialize(false);
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  SetAlternativeService(request_info, alternative_service);
+
+  request_.reset(
+      job_controller_->Start(request_info, &request_delegate_, nullptr,
+                             NetLogWithSource(), HttpStreamRequest::HTTP_STREAM,
+                             DEFAULT_PRIORITY, SSLConfig(), SSLConfig()));
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  // |alternative_job| fails but should not report status to Request.
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
+
+  job_controller_->OnStreamFailed(job_factory_.alternative_job(),
+                                  ERR_NETWORK_CHANGED, SSLConfig());
+
+  // |main_job| succeeds and should report status to Request.
+  HttpStream* http_stream =
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false, false);
+  job_factory_.main_job()->SetStream(http_stream);
+
+  EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
+      .WillOnce(Invoke(DeleteHttpStreamPointer));
+  job_controller_->OnStreamReady(job_factory_.main_job(), SSLConfig());
+
+  // Verify that the alternate protocol is not marked as broken.
+  VerifyBrokenAlternateProtocolMapping(request_info, false);
+  histogram_tester.ExpectUniqueSample("Net.AlternateServiceFailed",
+                                      -ERR_NETWORK_CHANGED, 1);
 }
 
 // Regression test for crbug/621069.

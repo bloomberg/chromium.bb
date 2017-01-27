@@ -215,8 +215,9 @@ class HttpStreamFactoryImpl::JobController
                            NextProto negotiated_protocol,
                            bool using_spdy);
 
-  // Must be called when |alternative_job_| fails.
-  void OnAlternativeJobFailed(Job* job);
+  // Must be called when the alternative job fails. |net_error| is the net error
+  // of the failed alternative job.
+  void OnAlternativeJobFailed(int net_error);
 
   // Called to report to http_server_properties to mark alternative service
   // broken.
@@ -287,9 +288,8 @@ class HttpStreamFactoryImpl::JobController
   std::unique_ptr<Job> main_job_;
   std::unique_ptr<Job> alternative_job_;
 
-  // True if |alternative_job_| uses alternative service/proxy server and it
-  // fails.
-  bool alternative_job_failed_;
+  // Net error code of the failed alternative job. Set to OK by default.
+  int alternative_job_net_error_;
 
   // Either and only one of these records failed alternative service/proxy
   // server that |alternative_job_| uses.

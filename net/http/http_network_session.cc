@@ -154,6 +154,7 @@ HttpNetworkSession::Params::Params()
       quic_force_hol_blocking(false),
       quic_race_cert_verification(false),
       quic_do_not_fragment(false),
+      quic_do_not_mark_as_broken_on_network_change(false),
       proxy_delegate(nullptr),
       enable_token_binding(false),
       http_09_on_non_default_ports_enabled(true),
