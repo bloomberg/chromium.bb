@@ -319,6 +319,8 @@ source_set("common") {
     "text_input_client_messages.h",
     "text_input_state.cc",
     "text_input_state.h",
+    "url_request_struct_traits.cc",
+    "url_request_struct_traits.h",
     "url_schemes.cc",
     "url_schemes.h",
     "user_agent.cc",

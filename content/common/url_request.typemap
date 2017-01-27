@@ -4,11 +4,17 @@
 
 mojom = "//content/common/url_loader.mojom"
 public_headers = [ "//content/common/resource_request.h" ]
-traits_headers = [ "//content/common/resource_messages.h" ]
+traits_headers = [
+  "//content/common/resource_messages.h",
+  "//content/common/url_request_struct_traits.h",
+]
 deps = [
   "//content:export",
   "//net:net",
   "//third_party/WebKit/public:blink_minimal",
   "//ui/base",
 ]
-type_mappings = [ "content.mojom.URLRequest=content::ResourceRequest" ]
+type_mappings = [
+  "content.mojom.URLRequest=content::ResourceRequest",
+  "content.mojom.RequestPriority=net::RequestPriority",
+]

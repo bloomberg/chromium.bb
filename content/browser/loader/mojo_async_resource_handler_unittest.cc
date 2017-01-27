@@ -22,6 +22,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader/resource_scheduler.h"
 #include "content/browser/loader/test_url_loader_client.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/url_loader.mojom.h"
@@ -354,8 +355,8 @@ class MojoAsyncResourceHandlerTestBase {
         request_.get(),                          // request
         RESOURCE_TYPE_XHR,                       // resource_type
         browser_context_->GetResourceContext(),  // context
-        2,                                       // render_process_id
-        0,                                       // render_view_id
+        kChildId,                                // render_process_id
+        kRouteId,                                // render_view_id
         0,                                       // render_frame_id
         true,                                    // is_main_frame
         false,                                   // parent_is_main_frame
@@ -372,8 +373,9 @@ class MojoAsyncResourceHandlerTestBase {
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_proxy_,
                           url_loader_factory_.associated_group()),
-        0, 0, request, url_loader_client_.CreateRemoteAssociatedPtrInfo(
-                           url_loader_factory_.associated_group()));
+        kRouteId, kRequestId, request,
+        url_loader_client_.CreateRemoteAssociatedPtrInfo(
+            url_loader_factory_.associated_group()));
 
     url_loader_factory_.FlushForTesting();
     DCHECK(weak_binding);
@@ -442,6 +444,10 @@ class MojoAsyncResourceHandlerTestBase {
   std::unique_ptr<net::URLRequest> request_;
   std::unique_ptr<MojoAsyncResourceHandlerWithStubOperations> handler_;
   std::unique_ptr<MockResourceLoader> mock_loader_;
+
+  static constexpr int kChildId = 25;
+  static constexpr int kRouteId = 12;
+  static constexpr int kRequestId = 41;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAsyncResourceHandlerTestBase);
 };
@@ -943,6 +949,20 @@ TEST_F(MojoAsyncResourceHandlerUploadTest, UploadProgressHandling) {
   EXPECT_TRUE(url_loader_client_.has_received_upload_progress());
   EXPECT_EQ(1000, url_loader_client_.current_upload_position());
   EXPECT_EQ(1000, url_loader_client_.total_upload_size());
+}
+
+TEST_F(MojoAsyncResourceHandlerTest, SetPriority) {
+  constexpr int kIntraPriority = 5;
+  ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
+  std::unique_ptr<ResourceThrottle> throttle =
+      ResourceDispatcherHostImpl::Get()->scheduler()->ScheduleRequest(
+          kChildId, kRouteId, false, request_.get());
+
+  EXPECT_EQ(net::LOWEST, request_->priority());
+
+  handler_->SetPriority(net::RequestPriority::HIGHEST, kIntraPriority);
+
+  EXPECT_EQ(net::HIGHEST, request_->priority());
 }
 
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,

@@ -508,9 +508,14 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
 void ResourceDispatcher::DidChangePriority(int request_id,
                                            net::RequestPriority new_priority,
                                            int intra_priority_value) {
-  DCHECK(base::ContainsKey(pending_requests_, request_id));
-  message_sender_->Send(new ResourceHostMsg_DidChangePriority(
-      request_id, new_priority, intra_priority_value));
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  DCHECK(request_info);
+  if (request_info->url_loader) {
+    request_info->url_loader->SetPriority(new_priority, intra_priority_value);
+  } else {
+    message_sender_->Send(new ResourceHostMsg_DidChangePriority(
+        request_id, new_priority, intra_priority_value));
+  }
 }
 
 void ResourceDispatcher::OnTransferSizeUpdated(int request_id,

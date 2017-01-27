@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/watcher.h"
 #include "net/base/io_buffer.h"
+#include "net/base/request_priority.h"
 
 class GURL;
 
@@ -74,6 +75,8 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
 
   // mojom::URLLoader implementation:
   void FollowRedirect() override;
+  void SetPriority(net::RequestPriority priority,
+                   int32_t intra_priority_value) override;
 
   void OnWritableForTesting();
   static void SetAllocationSizeForTesting(size_t size);

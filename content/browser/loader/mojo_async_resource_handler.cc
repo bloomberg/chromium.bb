@@ -21,6 +21,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader/resource_scheduler.h"
 #include "content/browser/loader/upload_progress_tracker.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/public/browser/global_request_id.h"
@@ -340,6 +341,12 @@ void MojoAsyncResourceHandler::FollowRedirect() {
   did_defer_on_redirect_ = false;
   request()->LogUnblocked();
   controller()->Resume();
+}
+
+void MojoAsyncResourceHandler::SetPriority(net::RequestPriority priority,
+                                           int32_t intra_priority_value) {
+  ResourceDispatcherHostImpl::Get()->scheduler()->ReprioritizeRequest(
+      request(), priority, intra_priority_value);
 }
 
 void MojoAsyncResourceHandler::OnWritableForTesting() {

@@ -29,6 +29,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -48,6 +49,11 @@ class DelegatingURLLoader final : public mojom::URLLoader {
   ~DelegatingURLLoader() override {}
 
   void FollowRedirect() override { loader_->FollowRedirect(); }
+
+  void SetPriority(net::RequestPriority priority,
+                   int intra_priority_value) override {
+    loader_->SetPriority(priority, intra_priority_value);
+  }
 
   mojom::URLLoaderPtr CreateInterfacePtrAndBind() {
     auto p = binding_.CreateInterfacePtrAndBind();
