@@ -220,7 +220,7 @@ Polymer({
    * @private
    */
   onIronActivate_: function(event) {
-    if (event.detail.item.id != 'advancedPage')
+    if (event.detail.item.id != 'advancedSubmenu')
       this.$.drawer.closeDrawer();
   },
 
