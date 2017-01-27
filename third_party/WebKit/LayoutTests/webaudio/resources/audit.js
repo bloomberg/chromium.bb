@@ -198,7 +198,9 @@ window.Audit = (function () {
       this._result = Boolean(condition);
       this._detail = this._result ? passDetail : failDetail;
       this._buildResultText();
-      return this._finalize();
+      this._finalize();
+
+      return this._result;
     }
 
     get result () {

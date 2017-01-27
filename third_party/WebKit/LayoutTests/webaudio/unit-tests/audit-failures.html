@@ -34,6 +34,7 @@
       should(1).beGreaterThanOrEqualTo(2);
       should(2).beLessThan(1);
       should(2).beLessThanOrEqualTo(1);
+      should(should(1).beEqualTo(2), 'should(1).beEqualTo(2)').beTrue();
 
       let oac = new OfflineAudioContext(1, 128, 44100);
       Promise.all([
