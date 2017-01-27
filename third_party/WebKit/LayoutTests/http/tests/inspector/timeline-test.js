@@ -124,7 +124,7 @@ InspectorTest.setTraceEvents = function(timelineModel, tracingModel, events)
 InspectorTest.createTimelineModelWithEvents = function(events)
 {
     var tracingModel = new SDK.TracingModel(new Bindings.TempFileBackingStorage("tracing"));
-    var timelineModel = new TimelineModel.TimelineModel(Timeline.TimelineUIUtils.visibleEventsFilter());
+    var timelineModel = new TimelineModel.TimelineModel();
     InspectorTest.setTraceEvents(timelineModel, tracingModel, events);
     return timelineModel;
 }
