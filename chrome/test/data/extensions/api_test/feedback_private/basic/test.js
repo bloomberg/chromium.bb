@@ -23,8 +23,7 @@ chrome.test.runTests([
   function sendFeedbackTest() {
     var feedbackInfo = {
       description: 'This is a test description',
-      sendHistograms: false,
-      useSystemWindowFrame: false
+      sendHistograms: false
     };
     chrome.feedbackPrivate.sendFeedback(
         feedbackInfo, chrome.test.callbackPass(function(response) {

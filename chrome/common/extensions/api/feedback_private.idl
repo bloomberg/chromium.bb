@@ -73,7 +73,7 @@ namespace feedbackPrivate {
     DOMString? screenshotBlobUuid;
 
     // Whether to use the system-provided window frame or custom frame controls.
-    boolean useSystemWindowFrame;
+    boolean? useSystemWindowFrame;
   };
 
   // Status of the sending of a feedback report.

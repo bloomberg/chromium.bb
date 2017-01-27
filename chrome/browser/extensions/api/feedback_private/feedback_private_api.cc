@@ -135,10 +135,12 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     }
     info.flow = flow;
 #if defined(OS_MACOSX)
-    info.use_system_window_frame = true;
+    const bool use_system_window_frame = true;
 #else
-    info.use_system_window_frame = false;
+    const bool use_system_window_frame = false;
 #endif
+    info.use_system_window_frame =
+        base::MakeUnique<bool>(use_system_window_frame);
 
     std::unique_ptr<base::ListValue> args =
         feedback_private::OnFeedbackRequested::Create(info);
