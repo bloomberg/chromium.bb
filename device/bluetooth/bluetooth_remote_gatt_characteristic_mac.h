@@ -123,9 +123,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   // WriteRemoteCharacteristic request callbacks.
   std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
   // Stores SubscribeToNotifications request callbacks.
-  typedef std::pair<base::Closure, ErrorCallback> PendingNotifyCallback;
-  // Stores SubscribeToNotifications request callback.
-  PendingNotifyCallback subscribe_to_notification_callback_;
+  typedef std::pair<base::Closure, ErrorCallback> PendingNotifyCallbacks;
+  // Stores SubscribeToNotifications request callbacks.
+  PendingNotifyCallbacks subscribe_to_notification_callbacks_;
   // Map of descriptors, keyed by descriptor identifier.
   std::unordered_map<std::string,
                      std::unique_ptr<BluetoothRemoteGattDescriptorMac>>

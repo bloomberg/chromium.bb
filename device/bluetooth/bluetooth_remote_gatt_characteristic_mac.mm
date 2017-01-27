@@ -210,9 +210,9 @@ void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  DCHECK(subscribe_to_notification_callback_.first.is_null());
-  DCHECK(subscribe_to_notification_callback_.second.is_null());
-  subscribe_to_notification_callback_ =
+  DCHECK(subscribe_to_notification_callbacks_.first.is_null());
+  DCHECK(subscribe_to_notification_callbacks_.second.is_null());
+  subscribe_to_notification_callbacks_ =
       std::make_pair(callback, error_callback);
   [GetCBPeripheral() setNotifyValue:YES
                   forCharacteristic:cb_characteristic_.get()];
@@ -294,8 +294,8 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
 
 void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     NSError* error) {
-  PendingNotifyCallback reentrant_safe_callbacks;
-  reentrant_safe_callbacks.swap(subscribe_to_notification_callback_);
+  PendingNotifyCallbacks reentrant_safe_callbacks;
+  reentrant_safe_callbacks.swap(subscribe_to_notification_callbacks_);
   if (error) {
     VLOG(1) << "Bluetooth error while modifying notification state for "
                "characteristic, domain: "
