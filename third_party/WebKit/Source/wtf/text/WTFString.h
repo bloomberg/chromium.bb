@@ -90,8 +90,10 @@ class WTF_EXPORT String {
   String(const char* characters, unsigned length);
 
   // Construct a string with latin1 data, from a null-terminated source.
-  String(const LChar* characters);
-  String(const char* characters);
+  String(const LChar* characters)
+      : String(reinterpret_cast<const char*>(characters)) {}
+  String(const char* characters)
+      : String(characters, characters ? strlen(characters) : 0) {}
 
   // Construct a string referencing an existing StringImpl.
   String(StringImpl* impl) : m_impl(impl) {}
