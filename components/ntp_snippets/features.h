@@ -35,9 +35,10 @@ extern const base::Feature kOfflineBadgeFeature;
 // Feature to allow dismissing sections.
 extern const base::Feature kSectionDismissalFeature;
 
-// Global toggle for the whole content suggestions feature. If this is set to
-// false, all the per-provider features are ignored.
-extern const base::Feature kContentSuggestionsFeature;
+// Feature to allow specification of content suggestions source.
+// TODO(peconn): Figure out how to remove this, it is useful to specify the
+// source, but you shouldn't be able to disable it.
+extern const base::Feature kContentSuggestionsSource;
 
 // Feature to allow UI as specified here: https://crbug.com/660837.
 extern const base::Feature kIncreasedVisibility;

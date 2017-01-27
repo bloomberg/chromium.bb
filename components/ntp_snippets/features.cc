@@ -33,7 +33,7 @@ const base::Feature kIncreasedVisibility{
 const base::Feature kPhysicalWebPageSuggestionsFeature{
     "NTPPhysicalWebPageSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kContentSuggestionsFeature{
+const base::Feature kContentSuggestionsSource{
     "NTPSnippets", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSectionDismissalFeature{

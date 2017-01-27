@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -75,19 +74,9 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public class NewTabPageView extends FrameLayout
         implements MostVisitedURLsObserver, OnLayoutChangeListener {
 
-    private static final int SHADOW_COLOR = 0x11000000;
     private static final long SNAP_SCROLL_DELAY_MS = 30;
     private static final String TAG = "Ntp";
 
-    /**
-     * Indicates which UI mode we are using. Should be checked when manipulating some members, as
-     * they may be unused or {@code null} depending on the mode.
-     */
-    private boolean mUseCardsUi;
-
-    // Note: Only one of these will be valid at a time, depending on if we are using the old NTP
-    // (NewTabPageScrollView) or the new NTP with cards (NewTabPageRecyclerView).
-    private NewTabPageScrollView mScrollView;
     private NewTabPageRecyclerView mRecyclerView;
 
     private NewTabPageLayout mNewTabPageLayout;
@@ -211,45 +200,34 @@ public class NewTabPageView extends FrameLayout
         mActivity = tab.getActivity();
         mManager = manager;
         mUiConfig = new UiConfig(this);
-        ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
 
-        mUseCardsUi = manager.getSuggestionsSource() != null;
-        if (mUseCardsUi) {
-            stub.setLayoutResource(R.layout.new_tab_page_recycler_view);
-            mRecyclerView = (NewTabPageRecyclerView) stub.inflate();
+        assert manager.getSuggestionsSource() != null;
 
-            // Don't attach now, the recyclerView itself will determine when to do it.
-            mNewTabPageLayout =
-                    (NewTabPageLayout) LayoutInflater.from(getContext())
-                            .inflate(R.layout.new_tab_page_layout, mRecyclerView, false);
-            mNewTabPageLayout.setUseCardsUiEnabled(mUseCardsUi);
-            mRecyclerView.setAboveTheFoldView(mNewTabPageLayout);
+        mRecyclerView = (NewTabPageRecyclerView) findViewById(R.id.new_tab_page_recycler_view);
+        // Don't attach now, the recyclerView itself will determine when to do it.
+        mNewTabPageLayout =
+                (NewTabPageLayout) LayoutInflater.from(getContext())
+                        .inflate(R.layout.new_tab_page_layout, mRecyclerView, false);
+        mRecyclerView.setAboveTheFoldView(mNewTabPageLayout);
 
-            // Tailor the LayoutParams for the snippets UI, as the configuration in the XML is
-            // made for the ScrollView UI.
-            ViewGroup.LayoutParams params = mNewTabPageLayout.getLayoutParams();
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        // Tailor the LayoutParams for the snippets UI, as the configuration in the XML is
+        // made for the ScrollView UI.
+        ViewGroup.LayoutParams params = mNewTabPageLayout.getLayoutParams();
+        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
 
-            mRecyclerView.setItemAnimator(new DefaultItemAnimator() {
-                @Override
-                public void onAnimationFinished(ViewHolder viewHolder) {
-                    super.onAnimationFinished(viewHolder);
-                    // When removing sections, because the animations are all translations, the
-                    // scroll events don't fire and we can get in the situation where the toolbar
-                    // buttons disappear.
-                    updateSearchBoxOnScroll();
-                }
-            });
-        } else {
-            stub.setLayoutResource(R.layout.new_tab_page_scroll_view);
-            mScrollView = (NewTabPageScrollView) stub.inflate();
-            mScrollView.setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.ntp_bg));
-            mScrollView.enableBottomShadow(SHADOW_COLOR);
-            mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
-        }
-        mContextMenuManager = new ContextMenuManager(mActivity, mManager.getNavigationDelegate(),
-                mUseCardsUi ? mRecyclerView : mScrollView);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator() {
+            @Override
+            public void onAnimationFinished(ViewHolder viewHolder) {
+                super.onAnimationFinished(viewHolder);
+                // When removing sections, because the animations are all translations, the
+                // scroll events don't fire and we can get in the situation where the toolbar
+                // buttons disappear.
+                updateSearchBoxOnScroll();
+            }
+        });
+
+        mContextMenuManager =
+                new ContextMenuManager(mActivity, mManager.getNavigationDelegate(), mRecyclerView);
         mActivity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         manager.addDestructionObserver(new DestructionObserver() {
             @Override
@@ -270,7 +248,6 @@ public class NewTabPageView extends FrameLayout
 
         initializeSearchBoxTextView();
         initializeVoiceSearchButton();
-        initializeBottomToolbar();
 
         mNewTabPageLayout.addOnLayoutChangeListener(this);
         setSearchProviderHasLogo(searchProviderHasLogo);
@@ -280,57 +257,54 @@ public class NewTabPageView extends FrameLayout
                 this, mMostVisitedDesign.getNumberOfTiles(searchProviderHasLogo));
 
         // Set up snippets
-        if (mUseCardsUi) {
-            NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout,
-                    mUiConfig, OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
-                    mContextMenuManager);
-            mRecyclerView.setAdapter(newTabPageAdapter);
+        NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout,
+                mUiConfig, OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
+                mContextMenuManager);
+        mRecyclerView.setAdapter(newTabPageAdapter);
 
-            int scrollOffset;
-            if (CardsVariationParameters.isScrollBelowTheFoldEnabled()) {
-                scrollPosition = newTabPageAdapter.getFirstHeaderPosition();
-                scrollOffset = getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height);
-            } else {
-                scrollOffset = 0;
-            }
-            mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                    scrollPosition, scrollOffset);
-
-            mRecyclerView.setUpSwipeToDismiss();
-
-            initializeSearchBoxRecyclerViewScrollHandling();
-
-            // When the NewTabPageAdapter's data changes we need to invalidate any previous
-            // screen captures of the NewTabPageView.
-            newTabPageAdapter.registerAdapterDataObserver(new AdapterDataObserver() {
-                @Override
-                public void onChanged() {
-                    mNewTabPageRecyclerViewChanged = true;
-                }
-
-                @Override
-                public void onItemRangeChanged(int positionStart, int itemCount) {
-                    onChanged();
-                }
-
-                @Override
-                public void onItemRangeInserted(int positionStart, int itemCount) {
-                    onChanged();
-                }
-
-                @Override
-                public void onItemRangeRemoved(int positionStart, int itemCount) {
-                    onChanged();
-                }
-
-                @Override
-                public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-                    onChanged();
-                }
-            });
+        int scrollOffset;
+        if (CardsVariationParameters.isScrollBelowTheFoldEnabled()) {
+            scrollPosition = newTabPageAdapter.getFirstHeaderPosition();
+            scrollOffset = getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height);
         } else {
-            initializeSearchBoxScrollHandling();
+            scrollOffset = 0;
         }
+        mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
+                scrollPosition, scrollOffset);
+
+        mRecyclerView.setUpSwipeToDismiss();
+
+        setupScrollHandling();
+
+        // When the NewTabPageAdapter's data changes we need to invalidate any previous
+        // screen captures of the NewTabPageView.
+        newTabPageAdapter.registerAdapterDataObserver(new AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                mNewTabPageRecyclerViewChanged = true;
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                onChanged();
+            }
+        });
+
     }
 
     /**
@@ -380,34 +354,6 @@ public class NewTabPageView extends FrameLayout
         });
     }
 
-    /**
-     * Sets up event listeners for the bottom toolbar if it is enabled. Removes the bottom toolbar
-     * if it is disabled.
-     */
-    private void initializeBottomToolbar() {
-        NewTabPageToolbar toolbar = (NewTabPageToolbar) findViewById(R.id.ntp_toolbar);
-        if (SnippetsConfig.isEnabled()) {
-            ((ViewGroup) toolbar.getParent()).removeView(toolbar);
-            MarginLayoutParams params = (MarginLayoutParams) getWrapperView().getLayoutParams();
-            params.bottomMargin = 0;
-        } else {
-            toolbar.getRecentTabsButton().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
-                    mManager.getNavigationDelegate().navigateToRecentTabs();
-                }
-            });
-            toolbar.getBookmarksButton().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
-                    mManager.getNavigationDelegate().navigateToBookmarks();
-                }
-            });
-        }
-    }
-
     private void updateSearchBoxOnScroll() {
         if (mDisableUrlFocusChangeAnimations) return;
 
@@ -433,9 +379,9 @@ public class NewTabPageView extends FrameLayout
         // During startup the view may not be fully initialized, so we only calculate the current
         // percentage if some basic view properties (height of the containing view, position of the
         // search box) are sane.
-        if (getWrapperView().getHeight() == 0) return 0f;
+        if (getRecyclerView().getHeight() == 0) return 0f;
 
-        if (mUseCardsUi && !mRecyclerView.isFirstItemVisible()) {
+        if (!mRecyclerView.isFirstItemVisible()) {
             // getVerticalScroll is valid only for the RecyclerView if the first item is visible.
             // If the first item is not visible, we must have scrolled quite far and we know the
             // toolbar transition should be 100%. This might be the initial scroll position due to
@@ -450,11 +396,7 @@ public class NewTabPageView extends FrameLayout
         // visible "border" of the search box is.
         searchBoxTop += mSearchBoxView.getPaddingTop();
 
-        if (!mUseCardsUi) {
-            return MathUtils.clamp(getVerticalScroll() / (float) searchBoxTop, 0f, 1f);
-        }
-
-        final int scrollY = getVerticalScroll();
+        final int scrollY = mRecyclerView.computeVerticalScrollOffset();
         final float transitionLength =
                 getResources().getDimension(R.dimen.ntp_search_box_transition_length);
         // Tab strip height is zero on phones, nonzero on tablets.
@@ -467,22 +409,23 @@ public class NewTabPageView extends FrameLayout
     }
 
     @VisibleForTesting
-    public ViewGroup getWrapperView() {
-        return mUseCardsUi ? mRecyclerView : mScrollView;
+    public NewTabPageRecyclerView getRecyclerView() {
+        return mRecyclerView;
     }
 
     /**
-     * Sets up scrolling when snippets are enabled. It adds scroll listeners and touch listeners to
-     * the RecyclerView.
+     * Adds listeners to scrolling to take care of snap scrolling and updating the search box on
+     * scroll.
      */
-    private void initializeSearchBoxRecyclerViewScrollHandling() {
+    private void setupScrollHandling() {
         final Runnable mSnapScrollRunnable = new Runnable() {
             @Override
             public void run() {
                 assert mPendingSnapScroll;
                 mPendingSnapScroll = false;
 
-                mRecyclerView.snapScroll(mSearchBoxView, getVerticalScroll(), getHeight());
+                mRecyclerView.snapScroll(mSearchBoxView,
+                        mRecyclerView.computeVerticalScrollOffset(), getHeight());
             }
         };
 
@@ -508,51 +451,6 @@ public class NewTabPageView extends FrameLayout
                         || event.getActionMasked() == MotionEvent.ACTION_UP) {
                     mPendingSnapScroll = true;
                     mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
-                } else {
-                    mPendingSnapScroll = false;
-                }
-                return false;
-            }
-        });
-    }
-
-    /**
-     * Sets up scrolling when snippets are disabled. It adds scroll and touch listeners to the
-     * scroll view.
-     */
-    private void initializeSearchBoxScrollHandling() {
-        final Runnable mSnapScrollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (!mPendingSnapScroll) return;
-                int scrollY = mScrollView.getScrollY();
-                int dividerTop = mMostVisitedLayout.getTop() - mNewTabPageLayout.getPaddingTop();
-                if (scrollY > 0 && scrollY < dividerTop) {
-                    mScrollView.smoothScrollTo(0, scrollY < (dividerTop / 2) ? 0 : dividerTop);
-                }
-                mPendingSnapScroll = false;
-            }
-        };
-        mScrollView.setOnScrollListener(new NewTabPageScrollView.OnScrollListener() {
-            @Override
-            public void onScrollChanged(int l, int t, int oldl, int oldt) {
-                if (mPendingSnapScroll) {
-                    mScrollView.removeCallbacks(mSnapScrollRunnable);
-                    mScrollView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
-                }
-                updateSearchBoxOnScroll();
-            }
-        });
-        mScrollView.setOnTouchListener(new OnTouchListener() {
-            @Override
-            @SuppressLint("ClickableViewAccessibility")
-            public boolean onTouch(View v, MotionEvent event) {
-                mScrollView.removeCallbacks(mSnapScrollRunnable);
-
-                if (event.getActionMasked() == MotionEvent.ACTION_CANCEL
-                        || event.getActionMasked() == MotionEvent.ACTION_UP) {
-                    mPendingSnapScroll = true;
-                    mScrollView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
                 } else {
                     mPendingSnapScroll = false;
                 }
@@ -678,18 +576,13 @@ public class NewTabPageView extends FrameLayout
     private void onUrlFocusAnimationChanged() {
         if (mDisableUrlFocusChangeAnimations) return;
 
+        // Translate so that the search box is at the top, but only upwards.
         float percent = mSearchProviderHasLogo ? mUrlFocusChangePercent : 0;
-
-        int basePosition = getVerticalScroll() + mNewTabPageLayout.getPaddingTop();
-        int target;
-        if (mUseCardsUi) {
-            // Cards UI: translate so that the search box is at the top, but only upwards.
-            target = Math.max(basePosition,
+        int basePosition = mRecyclerView.computeVerticalScrollOffset()
+                + mNewTabPageLayout.getPaddingTop();
+        int target = Math.max(basePosition,
                     mSearchBoxView.getBottom() - mSearchBoxView.getPaddingBottom());
-        } else {
-            // Otherwise: translate so that Most Visited is right below the omnibox.
-            target = mMostVisitedLayout.getTop();
-        }
+
         mNewTabPageLayout.setTranslationY(percent * (basePosition - target));
     }
 
@@ -807,7 +700,7 @@ public class NewTabPageView extends FrameLayout
 
         return mNewTabPageRecyclerViewChanged || mSnapshotMostVisitedChanged
                 || getWidth() != mSnapshotWidth || getHeight() != mSnapshotHeight
-                || getVerticalScroll() != mSnapshotScrollY;
+                || mRecyclerView.computeVerticalScrollOffset() != mSnapshotScrollY;
     }
 
     /**
@@ -819,7 +712,7 @@ public class NewTabPageView extends FrameLayout
         ViewUtils.captureBitmap(this, canvas);
         mSnapshotWidth = getWidth();
         mSnapshotHeight = getHeight();
-        mSnapshotScrollY = getVerticalScroll();
+        mSnapshotScrollY = mRecyclerView.computeVerticalScrollOffset();
         mSnapshotMostVisitedChanged = false;
         mNewTabPageRecyclerViewChanged = false;
     }
@@ -840,12 +733,11 @@ public class NewTabPageView extends FrameLayout
         onUrlFocusAnimationChanged();
         updateSearchBoxOnScroll();
 
-        if (mUseCardsUi) {
-            mRecyclerView.updatePeekingCardAndHeader();
-            // The positioning of elements may have been changed (since the elements expand to fill
-            // the available vertical space), so adjust the scroll.
-            mRecyclerView.snapScroll(mSearchBoxView, getVerticalScroll(), getHeight());
-        }
+        mRecyclerView.updatePeekingCardAndHeader();
+        // The positioning of elements may have been changed (since the elements expand to fill
+        // the available vertical space), so adjust the scroll.
+        mRecyclerView.snapScroll(mSearchBoxView,
+                mRecyclerView.computeVerticalScrollOffset(), getHeight());
     }
 
     // MostVisitedURLsObserver implementation
@@ -1107,7 +999,7 @@ public class NewTabPageView extends FrameLayout
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if (mUseCardsUi) mRecyclerView.updatePeekingCardAndHeader();
+        mRecyclerView.updatePeekingCardAndHeader();
     }
 
     @Override
@@ -1125,20 +1017,11 @@ public class NewTabPageView extends FrameLayout
         mContextMenuManager.closeContextMenu();
     }
 
-    private int getVerticalScroll() {
-        if (mUseCardsUi) {
-            return mRecyclerView.computeVerticalScrollOffset();
-        } else {
-            return mScrollView.getScrollY();
-        }
-    }
-
     /**
      * @return The adapter position the user has scrolled to.
      */
     public int getScrollPosition() {
-        if (mUseCardsUi) return mRecyclerView.getScrollPosition();
-        return RecyclerView.NO_POSITION;
+        return mRecyclerView.getScrollPosition();
     }
 
     /** @return the context menu manager. */

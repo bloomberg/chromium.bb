@@ -2364,12 +2364,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_TABSTRIP_INCOGNITO_IDENTIFIER_SELECTED" desc="Content description for the tab that is selected in incognito mode">
         Selected Incognito Tab
       </message>
-      <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_BOOKMARKS" desc="Content description for the bookmarks tab of the new tab page.">
-        Bookmarks
-      </message>
-      <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_RECENT_TABS" desc="Content description for the recent tabs section of the new tab page.">
-        Recent tabs
-      </message>
       <message name="IDS_ACCESSIBILITY_OMNIBOX_BTN_REFINE" desc="Content description for the omnibox refine button.">
         Refine
       </message>

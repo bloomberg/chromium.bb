@@ -15131,11 +15131,11 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_DESCRIPTION" desc="Description for the flag to choose a category ranker for content suggestions, e.g. on the New Tab page." translateable="false">
         Set category ranker to order sections of content suggestions (e.g. on the NTP).
       </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME" desc="Name for the flag to enable snippets on the New Tab page." translateable="false">
-        Show content snippets on the New Tab page
+      <message name="IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_NAME" desc="Name for flag to override the NTP snippets source" translateable="false">
+        Override New Tab Page suggestions snippets source
       </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION" desc="Description for the flag to enable snippets on the New Tab page." translateable="false">
-        If enabled, the New Tab page will show a list of content snippets
+      <message name="IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_DESCRIPTION" desc="Description for the flag to override the NTP snippets source." translateable="false">
+        If set to something other than enabled, default or disabled, this will override the source used to retrieve content suggestions on the New Tab Page.
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_NAME" desc="Name for the flag to enable increased visibilty for snippets on the New Tab Page." translateable="false">
         Make New Tab Page Snippets more visible.

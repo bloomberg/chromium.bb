@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -424,9 +423,7 @@ public class NewTabPage
         mTabModelSelector = tabModelSelector;
         Profile profile = tab.getProfile();
 
-        if (SnippetsConfig.isEnabled()) {
-            mSnippetsBridge = new SnippetsBridge(profile);
-        }
+        mSnippetsBridge = new SnippetsBridge(profile);
 
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(activity, profile, tab, tabModelSelector);
@@ -532,11 +529,6 @@ public class NewTabPage
     @VisibleForTesting
     public NewTabPageView getNewTabPageView() {
         return mNewTabPageView;
-    }
-
-    /** @return whether the NTP is using the cards UI. */
-    public boolean isCardsUiEnabled() {
-        return SnippetsConfig.isEnabled();
     }
 
     /**

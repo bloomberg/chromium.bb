@@ -228,7 +228,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     }
 
     private NewTabPageRecyclerView getRecyclerView() {
-        return (NewTabPageRecyclerView) getNtpView().getWrapperView();
+        return getNtpView().getRecyclerView();
     }
 
     private NewTabPageAdapter getAdapter() {

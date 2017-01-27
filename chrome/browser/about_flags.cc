@@ -1867,10 +1867,10 @@ const FeatureEntry kFeatureEntries[] = {
          ntp_snippets::kCategoryRanker,
          kContentSuggestionsCategoryRankerFeatureVariations,
          ntp_snippets::kStudyName)},
-    {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,
-     IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION, kOsAndroid,
+    {"override-ntp-suggestions-source", IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_NAME,
+     IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_DESCRIPTION, kOsAndroid,
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(
-         ntp_snippets::kContentSuggestionsFeature,
+         ntp_snippets::kContentSuggestionsSource,
          kNTPSnippetsFeatureVariations,
          ntp_snippets::kStudyName)},
     {"enable-ntp-snippets-increased-visibility",

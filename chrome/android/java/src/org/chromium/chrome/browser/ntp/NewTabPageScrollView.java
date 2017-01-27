@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.widget.FadingShadow;
 
 /**
  * Simple wrapper on top of a ScrollView that will acquire focus when tapped.  Ensures the
- * New Tab page receives focus when clicked.
+ * New Tab page receives focus when clicked. This is only used in the Incognito NTP.
  */
 public class NewTabPageScrollView extends ScrollView implements TouchDisableableView {
     private static final String TAG = "NewTabPageScrollView";

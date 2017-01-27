@@ -12,10 +12,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 public final class SnippetsConfig {
     private SnippetsConfig() {}
 
-    public static boolean isEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS);
-    }
-
     public static boolean isSaveToOfflineEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_SAVE_TO_OFFLINE);
     }

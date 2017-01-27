@@ -122,8 +122,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         viewRenderer.renderAndCompare(mNtp.getView().getRootView(), "new_tab_page");
 
         // Scroll to search bar
-        final NewTabPageRecyclerView recyclerView =
-                (NewTabPageRecyclerView) mNtp.getNewTabPageView().getWrapperView();
+        final NewTabPageRecyclerView recyclerView = mNtp.getNewTabPageView().getRecyclerView();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -151,8 +150,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         assertFalse(mNtp.shouldCaptureThumbnail());
 
         // Check that we invalidate the thumbnail when the Recycler View is updated.
-        NewTabPageRecyclerView recyclerView =
-                (NewTabPageRecyclerView) mNtp.getNewTabPageView().getWrapperView();
+        NewTabPageRecyclerView recyclerView = mNtp.getNewTabPageView().getRecyclerView();
 
         recyclerView.getAdapter().notifyDataSetChanged();
         assertThumbnailInvalidAndRecapture();

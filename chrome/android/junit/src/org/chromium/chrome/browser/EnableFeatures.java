@@ -26,7 +26,7 @@ import java.util.Set;
  *    &#64;Rule
  *    public EnableFeatures.Processor processor = new EnableFeatures.Processor();
  *
- *    &#64;EnableFeatures(ChromeFeatureList.NTP_SNIPPETS)
+ *    &#64;EnableFeatures(ChromeFeatureList.NTP_SNIPPETS_OFFLINE_BADGE)
  *    public void testFoo() { ... }
  * }
  * </pre>

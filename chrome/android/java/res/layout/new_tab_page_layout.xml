@@ -138,11 +138,4 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:visibility="gone" />
-
-    <!-- Spacer to make the page scrollable when needed. -->
-    <View
-        android:id="@+id/ntp_scroll_spacer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone" />
 </org.chromium.chrome.browser.ntp.NewTabPageLayout>

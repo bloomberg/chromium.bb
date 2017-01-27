@@ -118,10 +118,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   PrefService* prefs = chrome_browser_state->GetPrefs();
 
   // Create the ContentSuggestionsService.
-  State state =
-      base::FeatureList::IsEnabled(ntp_snippets::kContentSuggestionsFeature)
-          ? State::ENABLED
-          : State::DISABLED;
   SigninManager* signin_manager =
       ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state);
   HistoryService* history_service =
@@ -131,11 +127,9 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ntp_snippets::BuildSelectedCategoryRanker(
           prefs, base::MakeUnique<base::DefaultClock>());
   std::unique_ptr<ContentSuggestionsService> service =
-      base::MakeUnique<ContentSuggestionsService>(state, signin_manager,
-                                                  history_service, prefs,
-                                                  std::move(category_ranker));
-  if (state == State::DISABLED)
-    return std::move(service);
+      base::MakeUnique<ContentSuggestionsService>(
+          State::ENABLED, signin_manager, history_service, prefs,
+          std::move(category_ranker));
 
   // Create the BookmarkSuggestionsProvider.
   if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature)) {

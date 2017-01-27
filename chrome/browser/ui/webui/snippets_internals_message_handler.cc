@@ -274,8 +274,6 @@ void SnippetsInternalsMessageHandler::FetchRemoteSuggestionsInTheBackground(
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {
-  SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
-                                   ntp_snippets::kContentSuggestionsFeature));
   SendBoolean(
       "flag-article-suggestions",
       base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature));

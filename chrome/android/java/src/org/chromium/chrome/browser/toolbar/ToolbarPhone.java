@@ -726,18 +726,6 @@ public class ToolbarPhone extends ToolbarLayout
     // NewTabPage.OnSearchBoxScrollListener
     @Override
     public void onNtpScrollChanged(float scrollPercentage) {
-        // TODO(peconn): Clear up the animation transition calculations so that the parts that
-        // depend on the absolute scroll value (such as the Toolbar location) are separate from the
-        // parts that depend on the fakebox transition percentage (such as the omnibox width and
-        // opacity).
-        // At the moment, we disable the check below because these two concepts are not
-        // separate and we want to still update the parts that depend on scroll value when the
-        // transition percentage is not changed.
-        if (scrollPercentage == mNtpSearchBoxScrollPercent
-                && !getToolbarDataProvider().getNewTabPageForCurrentTab().isCardsUiEnabled()) {
-            return;
-        }
-
         mNtpSearchBoxScrollPercent = scrollPercentage;
         updateUrlExpansionPercent();
         updateUrlExpansionAnimation();
@@ -920,15 +908,8 @@ public class ToolbarPhone extends ToolbarLayout
         // Linearly interpolate between the bounds of the search box on the NTP and the omnibox
         // background bounds. |shrinkage| is the scaling factor for the offset -- if it's 1, we are
         // shrinking the omnibox down to the size of the search box.
-        float shrinkage;
-        if (ntp.isCardsUiEnabled()) {
-            shrinkage = 1f
-                    - NTP_SEARCH_BOX_EXPANSION_INTERPOLATOR.getInterpolation(mUrlExpansionPercent);
-        } else {
-            // During the transition from middle of the NTP to the top, keep the omnibox drawing
-            // at the same size of the search box for first 40% of the scroll transition.
-            shrinkage = Math.min(1f, (1f - mUrlExpansionPercent) * 1.66667f);
-        }
+        float shrinkage =
+                1f - NTP_SEARCH_BOX_EXPANSION_INTERPOLATOR.getInterpolation(mUrlExpansionPercent);
 
         int leftBoundDifference = mNtpSearchBoxBounds.left - mLocationBarBackgroundBounds.left;
         int rightBoundDifference = mNtpSearchBoxBounds.right - mLocationBarBackgroundBounds.right;
@@ -953,10 +934,6 @@ public class ToolbarPhone extends ToolbarLayout
 
         // The search box on the NTP is visible if our omnibox is invisible, and vice-versa.
         ntp.setSearchBoxAlpha(1f - relativeAlpha);
-
-        if (!ntp.isCardsUiEnabled()) {
-            ntp.setSearchProviderLogoAlpha(Math.max(1f - mUrlExpansionPercent * 2.5f, 0f));
-        }
     }
 
     /**

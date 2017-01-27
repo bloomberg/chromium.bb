@@ -97,13 +97,6 @@ using translate::LanguageModel;
 
 namespace {
 
-// Clear the tasks that can be scheduled by running services.
-void ClearScheduledTasks() {
-#if defined(OS_ANDROID)
-  NTPSnippetsLauncher::Get()->Unschedule();
-#endif  // OS_ANDROID
-}
-
 #if defined(OS_ANDROID)
 
 bool IsRecentTabProviderEnabled() {
@@ -263,10 +256,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   DCHECK(!profile->IsOffTheRecord());
 
   // Create the ContentSuggestionsService.
-  State state =
-      base::FeatureList::IsEnabled(ntp_snippets::kContentSuggestionsFeature)
-          ? State::ENABLED
-          : State::DISABLED;
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
@@ -276,14 +265,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ntp_snippets::BuildSelectedCategoryRanker(
           pref_service, base::MakeUnique<base::DefaultClock>());
   auto* service =
-      new ContentSuggestionsService(state, signin_manager, history_service,
-                                    pref_service, std::move(category_ranker));
-  if (state == State::DISABLED) {
-    // Since we won't initialise the services, they won't get a chance to
-    // unschedule their tasks. We do it explicitly here instead.
-    ClearScheduledTasks();
-    return service;
-  }
+      new ContentSuggestionsService(State::ENABLED, signin_manager,
+          history_service, pref_service, std::move(category_ranker));
 
 #if defined(OS_ANDROID)
   OfflinePageModel* offline_page_model =
