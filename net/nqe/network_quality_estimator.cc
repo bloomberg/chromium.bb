@@ -1399,17 +1399,6 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 
   const base::TimeTicks now = tick_clock_->NowTicks();
 
-  if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
-    // Read the effective connection type from the cached estimate.
-    last_effective_connection_type_computation_ = now;
-    network_quality_ = cached_network_quality.network_quality();
-    effective_connection_type_ =
-        cached_network_quality.effective_connection_type();
-
-    if (effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
-      NotifyObserversOfEffectiveConnectionTypeChanged();
-  }
-
   if (cached_network_quality.network_quality().downstream_throughput_kbps() !=
       nqe::internal::kInvalidThroughput) {
     ThroughputObservation througphput_observation(
@@ -1439,6 +1428,7 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
     rtt_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
   }
+  ComputeEffectiveConnectionType();
   return true;
 }
 

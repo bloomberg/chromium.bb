@@ -2710,13 +2710,12 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
             rtt_observer.last_rtt(
                 NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE));
-  EXPECT_EQ(0u, throughput_observer.observations().size());
+  EXPECT_EQ(1u, throughput_observer.observations().size());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
             rtt_throughput_observer.http_rtt());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
             rtt_throughput_observer.transport_rtt());
-  EXPECT_EQ(nqe::internal::kInvalidThroughput,
-            rtt_throughput_observer.downstream_throughput_kbps());
+  EXPECT_EQ(75, rtt_throughput_observer.downstream_throughput_kbps());
   EXPECT_LE(
       1u,
       effective_connection_type_observer.effective_connection_types().size());
@@ -2738,13 +2737,12 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(3000),
             rtt_observer.last_rtt(
                 NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE));
-  EXPECT_EQ(0u, throughput_observer.observations().size());
+  EXPECT_EQ(2U, throughput_observer.observations().size());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(3600),
             rtt_throughput_observer.http_rtt());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(3000),
             rtt_throughput_observer.transport_rtt());
-  EXPECT_EQ(nqe::internal::kInvalidThroughput,
-            rtt_throughput_observer.downstream_throughput_kbps());
+  EXPECT_EQ(40, rtt_throughput_observer.downstream_throughput_kbps());
   EXPECT_LE(
       2u,
       effective_connection_type_observer.effective_connection_types().size());
