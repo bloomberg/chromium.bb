@@ -1411,6 +1411,8 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 		bo_gem->name = NULL;
 		bo_gem->validate_index = -1;
 
+		bo_gem->kflags = 0;
+
 		DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 	} else {
 		drm_intel_gem_bo_free(bo);
