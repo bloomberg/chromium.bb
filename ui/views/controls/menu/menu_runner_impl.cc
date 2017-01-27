@@ -62,8 +62,7 @@ void MenuRunnerImpl::Release() {
 
     // Verify that the MenuController is still active. It may have been
     // destroyed out of order.
-    if (MenuController::GetActiveInstance()) {
-      DCHECK(controller_);
+    if (controller_) {
       // Release is invoked when MenuRunner is destroyed. Assume this is
       // happening because the object referencing the menu has been destroyed
       // and the menu button is no longer valid.
@@ -126,8 +125,8 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
   }
   controller->SetAsyncRun(async_);
   controller->set_is_combobox((run_types & MenuRunner::COMBOBOX) != 0);
-  controller_ = controller;
-  menu_->set_controller(controller_);
+  controller_ = controller->AsWeakPtr();
+  menu_->set_controller(controller_.get());
   menu_->PrepareForRun(owns_controller_,
                        has_mnemonics,
                        !for_drop_ && ShouldShowMnemonics(button));
@@ -187,9 +186,9 @@ MenuRunner::RunResult MenuRunnerImpl::MenuDone(NotifyType type,
   menu_->RemoveEmptyMenus();
   menu_->set_controller(nullptr);
 
-  if (owns_controller_) {
+  if (owns_controller_ && controller_) {
     // We created the controller and need to delete it.
-    delete controller_;
+    delete controller_.get();
     owns_controller_ = false;
   }
   controller_ = nullptr;

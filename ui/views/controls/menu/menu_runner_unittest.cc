@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner_impl.h"
@@ -365,7 +366,7 @@ TEST_F(MenuRunnerImplTest, NestedMenuRunnersDestroyedOutOfOrder) {
 
   // Hide the controller so we can test out of order destruction.
   MenuControllerTestApi menu_controller;
-  menu_controller.Hide();
+  menu_controller.SetShowing(false);
 
   // This destroyed MenuController
   menu_runner->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
@@ -374,6 +375,49 @@ TEST_F(MenuRunnerImplTest, NestedMenuRunnersDestroyedOutOfOrder) {
   // This should not access the destroyed MenuController
   menu_runner2->Release();
   menu_runner->Release();
+}
+
+// Tests that when there are two separate MenuControllers, and the active one is
+// deleted first, that shutting down the MenuRunner of the original
+// MenuController properly closes its controller. This should not crash on ASAN
+// bots.
+TEST_F(MenuRunnerImplTest, MenuRunnerDestroyedWithNoActiveController) {
+  internal::MenuRunnerImpl* menu_runner =
+      new internal::MenuRunnerImpl(menu_item_view());
+  EXPECT_EQ(MenuRunner::NORMAL_EXIT,
+            menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                                   MENU_ANCHOR_TOPLEFT, MenuRunner::ASYNC));
+
+  // Hide the menu, and clear its item selection state.
+  MenuControllerTestApi menu_controller;
+  menu_controller.SetShowing(false);
+  menu_controller.ClearState();
+
+  std::unique_ptr<TestMenuDelegate> menu_delegate2(new TestMenuDelegate);
+  MenuItemView* menu_item_view2 = new MenuItemView(menu_delegate2.get());
+  menu_item_view2->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
+
+  internal::MenuRunnerImpl* menu_runner2 =
+      new internal::MenuRunnerImpl(menu_item_view2);
+  EXPECT_EQ(MenuRunner::NORMAL_EXIT,
+            menu_runner2->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                                    MENU_ANCHOR_TOPLEFT,
+                                    MenuRunner::ASYNC | MenuRunner::FOR_DROP));
+
+  EXPECT_NE(menu_controller.controller(), MenuController::GetActiveInstance());
+  menu_controller.SetShowing(true);
+
+  // Close the runner with the active menu first.
+  menu_runner2->Release();
+  // Even though there is no active menu, this should still cleanup the
+  // controller that it created.
+  menu_runner->Release();
+
+  // This is not expected to run, however this is from the origin ASAN stack
+  // traces. So regressions will be caught with the same stack trace.
+  if (menu_controller.controller())
+    menu_controller.controller()->CancelAll();
+  EXPECT_EQ(nullptr, menu_controller.controller());
 }
 
 }  // namespace test

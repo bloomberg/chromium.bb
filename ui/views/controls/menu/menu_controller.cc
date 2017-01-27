@@ -1026,14 +1026,18 @@ void MenuController::OnDragComplete(bool should_close) {
   // Only attempt to close if the MenuHost said to.
   if (should_close) {
     if (showing_) {
-      // Close showing widgets.
+      // During a drag operation there are several ways in which this can be
+      // canceled and deleted. Verify that this is still active before closing
+      // the widgets.
       if (GetActiveInstance() == this) {
+        base::WeakPtr<MenuController> this_ref = AsWeakPtr();
         CloseAllNestedMenus();
         Cancel(EXIT_ALL);
-      }
-      // The above may have deleted us. If not perform a full shutdown.
-      if (GetActiveInstance() == this)
+        // The above may have deleted us. If not perform a full shutdown.
+        if (!this_ref)
+          return;
         ExitAsyncRun();
+      }
     } else if (exit_type_ == EXIT_ALL) {
       // We may have been canceled during the drag. If so we still need to fully
       // shutdown.
@@ -1062,9 +1066,10 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
   event->StopPropagation();
 
   if (event->type() == ui::ET_KEY_PRESSED) {
+    base::WeakPtr<MenuController> this_ref = AsWeakPtr();
     OnKeyDown(event->key_code());
-    // Menu controller might have been deleted.
-    if (!GetActiveInstance())
+    // Key events can lead to this being deleted.
+    if (!this_ref)
       return ui::POST_DISPATCH_NONE;
 
     // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
@@ -1074,8 +1079,8 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     if (exit_type() == EXIT_NONE && (flags & kKeyFlagsMask) == 0) {
       base::char16 c = event->GetCharacter();
       SelectByChar(c);
-      // Menu controller might have been deleted.
-      if (!GetActiveInstance())
+      // SelectByChar can lead to this being deleted.
+      if (!this_ref)
         return ui::POST_DISPATCH_NONE;
     }
   }
@@ -1110,6 +1115,11 @@ void MenuController::OnWidgetDestroying(Widget* widget) {
 
 bool MenuController::IsCancelAllTimerRunningForTest() {
   return cancel_all_timer_.IsRunning();
+}
+
+void MenuController::ClearStateForTest() {
+  state_ = State();
+  pending_state_ = State();
 }
 
 // static
@@ -1249,12 +1259,13 @@ void MenuController::StartDrag(SubmenuView* source,
   StopScrolling();
   int drag_ops = item->GetDelegate()->GetDragOperations(item);
   did_initiate_drag_ = true;
+  base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops,
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-  // MenuController may have been deleted if |async_run_| so check for an active
-  // instance before accessing member variables.
-  if (GetActiveInstance() == this)
+  // MenuController may have been deleted if |async_run_| so check before
+  // accessing member variables.
+  if (this_ref)
     did_initiate_drag_ = false;
 }
 
@@ -1415,10 +1426,11 @@ bool MenuController::SendAcceleratorToHotTrackedView() {
   if (!hot_view)
     return false;
 
+  base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   ui::Accelerator accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   hot_view->AcceleratorPressed(accelerator);
   // An accelerator may have canceled the menu after activation.
-  if (GetActiveInstance()) {
+  if (this_ref) {
     CustomButton* button = static_cast<CustomButton*>(hot_view);
     SetHotTrackedButton(button);
   }
@@ -2384,9 +2396,13 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
 
 #if defined(OS_WIN)
   if (event->IsMouseEvent() || event->IsTouchEvent()) {
+    base::WeakPtr<MenuController> this_ref = AsWeakPtr();
     bool async_run = async_run_;
     if (state_.item) {
       state_.item->GetRootMenuItem()->GetSubmenu()->ReleaseCapture();
+      // We're going to close and we own the event capture. We need to repost
+      // the event, otherwise the window the user clicked on won't get the
+      // event.
       RepostEventImpl(event, screen_loc, native_view, window);
     } else {
       // We some times get an event after closing all the menus. Ignore it. Make
@@ -2395,13 +2411,8 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
       DCHECK(!source->GetWidget()->IsVisible());
     }
 
-    // We're going to close and we own the event capture. We need to repost the
-    // event, otherwise the window the user clicked on won't get the event.
-    //  RepostEvent(source, event, screen_loc, native_view, window);
-    // MenuController may have been deleted if |async_run_| so check for an
-    // active
-    // instance before accessing member variables.
-    if (!GetActiveInstance()) {
+    // Reposting the event may have deleted this, if so exit.
+    if (!this_ref) {
       DCHECK(async_run);
       return;
     }
@@ -2579,22 +2590,25 @@ void MenuController::ExitAsyncRun() {
   // However as |delegate| can outlive this, it must still be notified of the
   // menu closing so that it can perform teardown.
   int accept_event_flags = accept_event_flags_;
+  base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   MenuItemView* result = ExitMenuRun();
   delegate->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
                          result, accept_event_flags);
-  // MenuController may have been deleted by |delegate|.
-  if (GetActiveInstance() && nested && exit_type_ == EXIT_ALL)
+  // |delegate| may have deleted this.
+  if (this_ref && nested && exit_type_ == EXIT_ALL)
     ExitAsyncRun();
 }
 
 MenuItemView* MenuController::ExitMenuRun() {
+  base::WeakPtr<MenuController> this_ref = AsWeakPtr();
+
   // Release the lock which prevents Chrome from shutting down while the menu is
   // showing.
   if (async_run_ && ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->ReleaseRef();
 
   // Releasing the lock can result in Chrome shutting down, deleting this.
-  if (!GetActiveInstance())
+  if (!this_ref)
     return nullptr;
 
   // Close any open menus.

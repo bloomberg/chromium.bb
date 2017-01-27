@@ -47,15 +47,21 @@ void TestMenuDelegate::WriteDragData(MenuItemView* sender,
 
 // MenuControllerTestApi ------------------------------------------------------
 
-MenuControllerTestApi::MenuControllerTestApi() {}
+MenuControllerTestApi::MenuControllerTestApi()
+    : controller_(MenuController::GetActiveInstance()->AsWeakPtr()) {}
 
 MenuControllerTestApi::~MenuControllerTestApi() {}
 
-void MenuControllerTestApi::Hide() {
-  MenuController* controller = MenuController::GetActiveInstance();
-  if (!controller)
+void MenuControllerTestApi::ClearState() {
+  if (!controller_)
     return;
-  controller->showing_ = false;
+  controller_->ClearStateForTest();
+}
+
+void MenuControllerTestApi::SetShowing(bool showing) {
+  if (!controller_)
+    return;
+  controller_->showing_ = showing;
 }
 
 }  // namespace test

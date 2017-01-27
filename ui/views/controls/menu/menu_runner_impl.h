@@ -86,7 +86,7 @@ class VIEWS_EXPORT MenuRunnerImpl
   bool for_drop_;
 
   // The controller.
-  MenuController* controller_;
+  base::WeakPtr<MenuController> controller_;
 
   // Do we own the controller?
   bool owns_controller_;
