@@ -13,9 +13,11 @@ source_set("core") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/app/startup",
     "//ios/showcase/common",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
+    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -27,6 +29,7 @@ source_set("main") {
   ]
   deps = [
     ":core",
+    "//base",
 
     # Needed to disable the tests hooks.
     "//ios/chrome/app:tests_fake_hook",

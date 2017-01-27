@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHOWCASE_SETTINGS_SETTINGS_COORDINATOR_H_
-#define IOS_SHOWCASE_SETTINGS_SETTINGS_COORDINATOR_H_
+#ifndef IOS_SHOWCASE_SETTINGS_SC_SETTINGS_COORDINATOR_H_
+#define IOS_SHOWCASE_SETTINGS_SC_SETTINGS_COORDINATOR_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/showcase/common/coordinator.h"
 
-@interface SettingsCoordinator : NSObject<Coordinator>
+@interface SCSettingsCoordinator : NSObject<Coordinator>
 
 // Redefined to be a UINavigationController.
 @property(nonatomic, weak) UINavigationController* baseViewController;
 
 @end
 
-#endif  // IOS_SHOWCASE_SETTINGS_SETTINGS_COORDINATOR_H_
+#endif  // IOS_SHOWCASE_SETTINGS_SC_SETTINGS_COORDINATOR_H_
