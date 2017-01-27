@@ -290,8 +290,8 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
       auto tmp_popular_sites = popular_sites_factory_.New();
       base::RunLoop loop;
       bool save_success = false;
-      tmp_popular_sites->StartFetch(
-          /*force_download=*/false,
+      tmp_popular_sites->MaybeStartFetch(
+          /*force_download=*/true,
           base::Bind(
               [](bool* save_success, base::RunLoop* loop, bool success) {
                 *save_success = success;
@@ -364,18 +364,7 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
                        &SuggestionsService::ResponseCallbackList::Add));
   EXPECT_CALL(mock_suggestions_service_, GetSuggestionsDataFromCache())
       .WillOnce(Return(SuggestionsProfile()));  // Empty cache.
-  // TODO(crbug.com/662397): PopularSites should be reported here, if enabled.
-  EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
-                  "Site 1", "http://site1/", NTPTileSource::TOP_SITES))));
-  EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
-      .WillOnce(Return(true));
-
-  // If enabled, Popular Sites are retrieved with a small delay, which causes
-  // a second update to the observer.
   if (IsPopularSitesEnabledViaVariations()) {
-    EXPECT_CALL(mock_suggestions_service_, GetSuggestionsDataFromCache())
-        .WillOnce(Return(SuggestionsProfile()));  // Empty cache.
     EXPECT_CALL(
         mock_observer_,
         OnMostVisitedURLsAvailable(ElementsAre(
@@ -384,7 +373,13 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
                         NTPTileSource::POPULAR),
             MatchesTile("PopularSite2", "http://popularsite2/",
                         NTPTileSource::POPULAR))));
+  } else {
+    EXPECT_CALL(mock_observer_,
+                OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
+                    "Site 1", "http://site1/", NTPTileSource::TOP_SITES))));
   }
+  EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
+      .WillOnce(Return(true));
 
   most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
                                                   /*num_sites=*/3);
@@ -413,26 +408,7 @@ class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
             MakeSuggestion("Site 2", "http://site2/"),
             MakeSuggestion("Site 3", "http://site3/"),
         })));
-    EXPECT_CALL(mock_observer_,
-                OnMostVisitedURLsAvailable(ElementsAre(
-                    MatchesTile("Site 1", "http://site1/",
-                                NTPTileSource::SUGGESTIONS_SERVICE),
-                    MatchesTile("Site 2", "http://site2/",
-                                NTPTileSource::SUGGESTIONS_SERVICE),
-                    MatchesTile("Site 3", "http://site3/",
-                                NTPTileSource::SUGGESTIONS_SERVICE))));
-    EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
-        .WillOnce(Return(true));
-
-    // If enabled, Popular Sites are retrieved with a small delay, which causes
-    // a second update to the observer.
     if (IsPopularSitesEnabledViaVariations()) {
-      EXPECT_CALL(mock_suggestions_service_, GetSuggestionsDataFromCache())
-          .WillOnce(Return(MakeProfile({
-              MakeSuggestion("Site 1", "http://site1/"),
-              MakeSuggestion("Site 2", "http://site2/"),
-              MakeSuggestion("Site 3", "http://site3/"),
-          })));
       EXPECT_CALL(mock_observer_,
                   OnMostVisitedURLsAvailable(ElementsAre(
                       MatchesTile("Site 1", "http://site1/",
@@ -443,7 +419,18 @@ class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
                                   NTPTileSource::SUGGESTIONS_SERVICE),
                       MatchesTile("PopularSite1", "http://popularsite1/",
                                   NTPTileSource::POPULAR))));
+    } else {
+      EXPECT_CALL(mock_observer_,
+                  OnMostVisitedURLsAvailable(ElementsAre(
+                      MatchesTile("Site 1", "http://site1/",
+                                  NTPTileSource::SUGGESTIONS_SERVICE),
+                      MatchesTile("Site 2", "http://site2/",
+                                  NTPTileSource::SUGGESTIONS_SERVICE),
+                      MatchesTile("Site 3", "http://site3/",
+                                  NTPTileSource::SUGGESTIONS_SERVICE))));
     }
+    EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
+        .WillOnce(Return(true));
 
     most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
                                                     /*num_sites=*/4);
@@ -553,14 +540,6 @@ class MostVisitedSitesWithEmptyCacheTest : public MostVisitedSitesTest {
         .WillOnce(Invoke(&top_sites_callbacks_, &TopSitesCallbackList::Add));
     EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
         .WillOnce(Return(true));
-
-    // If enabled, Popular Sites are retrieved with a small delay. This callback
-    // is however effectively ignored because there's an ongoing query to
-    // TopSites.
-    if (IsPopularSitesEnabledViaVariations()) {
-      EXPECT_CALL(mock_suggestions_service_, GetSuggestionsDataFromCache())
-          .WillOnce(Return(SuggestionsProfile()));  // Empty cache.
-    }
 
     most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
                                                     /*num_sites=*/3);

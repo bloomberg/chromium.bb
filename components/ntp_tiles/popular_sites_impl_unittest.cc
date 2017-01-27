@@ -4,6 +4,7 @@
 
 #include "components/ntp_tiles/popular_sites_impl.h"
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -108,8 +110,10 @@ class PopularSitesTest : public ::testing::Test {
                                          net::URLRequestStatus::SUCCESS);
   }
 
-  bool FetchPopularSites(bool force_download,
-                         PopularSites::SitesVector* sites) {
+  // Returns an optional bool representing whether the completion callback was
+  // called at all, and if yes which was the returned bool value.
+  base::Optional<bool> FetchPopularSites(bool force_download,
+                                         PopularSites::SitesVector* sites) {
     scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
         new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get()));
@@ -120,16 +124,17 @@ class PopularSitesTest : public ::testing::Test {
                                    base::Bind(JsonUnsafeParser::Parse));
 
     base::RunLoop loop;
-    bool save_success = false;
-    popular_sites.StartFetch(
-        force_download,
-        base::Bind(
-            [](bool* save_success, base::RunLoop* loop, bool success) {
-              *save_success = success;
-              loop->Quit();
-            },
-            &save_success, &loop));
-    loop.Run();
+    base::Optional<bool> save_success;
+    if (popular_sites.MaybeStartFetch(
+            force_download, base::Bind(
+                                [](base::Optional<bool>* save_success,
+                                   base::RunLoop* loop, bool success) {
+                                  save_success->emplace(success);
+                                  loop->Quit();
+                                },
+                                &save_success, &loop))) {
+      loop.Run();
+    }
     *sites = popular_sites.sites();
     return save_success;
   }
@@ -153,7 +158,8 @@ TEST_F(PopularSitesTest, Basic) {
       {kWikipedia});
 
   PopularSites::SitesVector sites;
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
 
   ASSERT_THAT(sites.size(), Eq(1u));
   EXPECT_THAT(sites[0].title, Str16Eq("Wikipedia, fhta Ph'nglui mglw'nafh"));
@@ -172,7 +178,8 @@ TEST_F(PopularSitesTest, Fallback) {
       {kYouTube, kChromium});
 
   PopularSites::SitesVector sites;
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
 
   ASSERT_THAT(sites.size(), Eq(2u));
   EXPECT_THAT(sites[0].title, Str16Eq("YouTube"));
@@ -195,7 +202,8 @@ TEST_F(PopularSitesTest, Failure) {
       "https://www.gstatic.com/chrome/ntp/suggested_sites_DEFAULT_5.json");
 
   PopularSites::SitesVector sites;
-  EXPECT_FALSE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(false)));
   ASSERT_THAT(sites, IsEmpty());
 }
 
@@ -223,12 +231,14 @@ TEST_F(PopularSitesTest, UsesCachedJson) {
 
   // First request succeeds and gets cached.
   PopularSites::SitesVector sites;
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  ASSERT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
 
   // File disappears from server, but we don't need it because it's cached.
   RespondWith404(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json");
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::nullopt));
   EXPECT_THAT(sites[0].url, URLEq("https://zz.m.wikipedia.org/"));
 }
 
@@ -242,14 +252,16 @@ TEST_F(PopularSitesTest, CachesEmptyFile) {
 
   // First request succeeds and caches empty suggestions list (no fallback).
   PopularSites::SitesVector sites;
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
   EXPECT_THAT(sites, IsEmpty());
 
   // File appears on server, but we continue to use our cached empty file.
   RespondWithJSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
       {kWikipedia});
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::nullopt));
   EXPECT_THAT(sites, IsEmpty());
 }
 
@@ -261,14 +273,16 @@ TEST_F(PopularSitesTest, DoesntUseCachedFileIfDownloadForced) {
 
   // First request succeeds and gets cached.
   PopularSites::SitesVector sites;
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/true, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/true, &sites),
+              Eq(base::Optional<bool>(true)));
   EXPECT_THAT(sites[0].url, URLEq("https://zz.m.wikipedia.org/"));
 
   // File disappears from server. Download is forced, so we get the new file.
   RespondWithJSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
       {kChromium});
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/true, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/true, &sites),
+              Eq(base::Optional<bool>(true)));
   EXPECT_THAT(sites[0].url, URLEq("https://www.chromium.org/"));
 }
 
@@ -284,12 +298,14 @@ TEST_F(PopularSitesTest, RefetchesAfterCountryMoved) {
 
   // First request (in ZZ) saves Wikipedia.
   SetCountryAndVersion("ZZ", "9");
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
   EXPECT_THAT(sites[0].url, URLEq("https://zz.m.wikipedia.org/"));
 
   // Second request (now in ZX) saves Chromium.
   SetCountryAndVersion("ZX", "9");
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              base::Optional<bool>(true));
   EXPECT_THAT(sites[0].url, URLEq("https://www.chromium.org/"));
 }
 
@@ -303,13 +319,15 @@ TEST_F(PopularSitesTest, DoesntCacheInvalidFile) {
 
   // First request falls back and gets nothing there either.
   PopularSites::SitesVector sites;
-  EXPECT_FALSE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(false)));
 
   // Second request refetches ZZ_9, which now has data.
   RespondWithJSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
       {kChromium});
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
   ASSERT_THAT(sites.size(), Eq(1u));
   EXPECT_THAT(sites[0].url, URLEq("https://www.chromium.org/"));
 }
@@ -324,7 +342,8 @@ TEST_F(PopularSitesTest, RefetchesAfterFallback) {
 
   // First request falls back.
   PopularSites::SitesVector sites;
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
   ASSERT_THAT(sites.size(), Eq(1u));
   EXPECT_THAT(sites[0].url, URLEq("https://zz.m.wikipedia.org/"));
 
@@ -332,7 +351,8 @@ TEST_F(PopularSitesTest, RefetchesAfterFallback) {
   RespondWithJSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
       {kChromium});
-  EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
   ASSERT_THAT(sites.size(), Eq(1u));
   EXPECT_THAT(sites[0].url, URLEq("https://www.chromium.org/"));
 }

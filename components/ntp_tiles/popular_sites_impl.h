@@ -60,8 +60,8 @@ class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
   ~PopularSitesImpl() override;
 
   // PopularSites implementation.
-  void StartFetch(bool force_download,
-                  const FinishedCallback& callback) override;
+  bool MaybeStartFetch(bool force_download,
+                       const FinishedCallback& callback) override;
   const SitesVector& sites() const override;
   GURL GetLastURLFetched() const override;
   GURL GetURLToFetch() override;
@@ -83,7 +83,6 @@ class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
 
   void OnJsonParsed(std::unique_ptr<base::Value> json);
   void OnJsonParseFailed(const std::string& error_message);
-  void ParseSiteList(std::unique_ptr<base::ListValue> list);
   void OnDownloadFailed();
 
   // Parameters set from constructor.
@@ -94,7 +93,7 @@ class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
   net::URLRequestContextGetter* const download_context_;
   ParseJSONCallback parse_json_;
 
-  // Set by StartFetch() and called after fetch completes.
+  // Set by MaybeStartFetch() and called after fetch completes.
   FinishedCallback callback_;
 
   std::unique_ptr<net::URLFetcher> fetcher_;

@@ -160,7 +160,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Also records impressions UMA if not done already.
   void NotifyMostVisitedURLsObserver();
 
-  void OnPopularSitesAvailable(bool success);
+  void OnPopularSitesDownloaded(bool success);
 
   void OnIconMadeAvailable(const GURL& site_url, bool newly_available);
 

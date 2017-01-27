@@ -5,6 +5,7 @@
 #include "components/ntp_tiles/popular_sites_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,9 +14,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -104,6 +102,29 @@ std::string GetVariationVersion() {
                                             "version");
 }
 
+PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
+  PopularSites::SitesVector sites;
+  for (size_t i = 0; i < list.GetSize(); i++) {
+    const base::DictionaryValue* item;
+    if (!list.GetDictionary(i, &item))
+      continue;
+    base::string16 title;
+    std::string url;
+    if (!item->GetString("title", &title) || !item->GetString("url", &url))
+      continue;
+    std::string favicon_url;
+    item->GetString("favicon_url", &favicon_url);
+    std::string thumbnail_url;
+    item->GetString("thumbnail_url", &thumbnail_url);
+    std::string large_icon_url;
+    item->GetString("large_icon_url", &large_icon_url);
+
+    sites.emplace_back(title, GURL(url), GURL(favicon_url),
+                       GURL(large_icon_url), GURL(thumbnail_url));
+  }
+  return sites;
+}
+
 }  // namespace
 
 PopularSites::Site::Site(const base::string16& title,
@@ -150,8 +171,8 @@ PopularSitesImpl::PopularSitesImpl(
 
 PopularSitesImpl::~PopularSitesImpl() {}
 
-void PopularSitesImpl::StartFetch(bool force_download,
-                                  const FinishedCallback& callback) {
+bool PopularSitesImpl::MaybeStartFetch(bool force_download,
+                                       const FinishedCallback& callback) {
   DCHECK(!callback_);
   callback_ = callback;
 
@@ -171,18 +192,18 @@ void PopularSitesImpl::StartFetch(bool force_download,
   if (force_download || download_time_is_future ||
       (time_since_last_download > redownload_interval) || url_changed) {
     FetchPopularSites();
-    return;
+    return true;
   }
 
   const base::ListValue* json = prefs_->GetList(kPopularSitesJsonPref);
   if (!json) {
     // Cache didn't exist.
     FetchPopularSites();
+    return true;
   } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&PopularSitesImpl::ParseSiteList,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              base::Passed(json->CreateDeepCopy())));
+    // Note that we don't run the callback.
+    sites_ = ParseSiteList(*json);
+    return false;
   }
 }
 
@@ -314,38 +335,13 @@ void PopularSitesImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
                    base::Time::Now().ToInternalValue());
   prefs_->SetString(kPopularSitesURLPref, pending_url_.spec());
 
-  ParseSiteList(std::move(list));
+  sites_ = ParseSiteList(*list);
+  callback_.Run(true);
 }
 
 void PopularSitesImpl::OnJsonParseFailed(const std::string& error_message) {
   DLOG(WARNING) << "JSON parsing failed: " << error_message;
   OnDownloadFailed();
-}
-
-void PopularSitesImpl::ParseSiteList(std::unique_ptr<base::ListValue> list) {
-  SitesVector sites;
-  for (size_t i = 0; i < list->GetSize(); i++) {
-    base::DictionaryValue* item;
-    if (!list->GetDictionary(i, &item))
-      continue;
-    base::string16 title;
-    std::string url;
-    if (!item->GetString("title", &title) || !item->GetString("url", &url))
-      continue;
-    std::string favicon_url;
-    item->GetString("favicon_url", &favicon_url);
-    std::string thumbnail_url;
-    item->GetString("thumbnail_url", &thumbnail_url);
-    std::string large_icon_url;
-    item->GetString("large_icon_url", &large_icon_url);
-
-    sites.push_back(PopularSitesImpl::Site(title, GURL(url), GURL(favicon_url),
-                                           GURL(large_icon_url),
-                                           GURL(thumbnail_url)));
-  }
-
-  sites_.swap(sites);
-  callback_.Run(true);
 }
 
 void PopularSitesImpl::OnDownloadFailed() {

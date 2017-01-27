@@ -88,8 +88,8 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
   // always be called last to keep metrics as relevant as possible.
   if (popular_sites_ && NeedPopularSites(prefs_, num_sites_) &&
       ShouldShowPopularSites()) {
-    popular_sites_->StartFetch(
-        false, base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
+    popular_sites_->MaybeStartFetch(
+        false, base::Bind(&MostVisitedSites::OnPopularSitesDownloaded,
                           base::Unretained(this)));
   }
 
@@ -392,7 +392,7 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
   observer_->OnMostVisitedURLsAvailable(current_tiles_);
 }
 
-void MostVisitedSites::OnPopularSitesAvailable(bool success) {
+void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
   if (!success) {
     LOG(WARNING) << "Download of popular sites failed";
     return;

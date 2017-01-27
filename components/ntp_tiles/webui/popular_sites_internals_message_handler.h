@@ -47,7 +47,7 @@ class PopularSitesInternalsMessageHandler {
   void SendJson(const std::string& json);
 
   // Completion handler for popular_sites_->StartFetch().
-  void OnPopularSitesAvailable(bool explicit_request, bool success);
+  void OnPopularSitesAvailable(bool success);
 
   // Bridge to embedder's API.
   PopularSitesInternalsMessageHandlerClient* web_ui_;

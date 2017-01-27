@@ -54,10 +54,7 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
   SendOverrides();
 
   popular_sites_ = web_ui_->MakePopularSites();
-  popular_sites_->StartFetch(
-      false,
-      base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
-                 base::Unretained(this), false));
+  SendSites();
 }
 
 void PopularSitesInternalsMessageHandler::HandleUpdate(
@@ -89,10 +86,10 @@ void PopularSitesInternalsMessageHandler::HandleUpdate(
     prefs->SetString(ntp_tiles::prefs::kPopularSitesOverrideVersion, version);
 
   popular_sites_ = web_ui_->MakePopularSites();
-  popular_sites_->StartFetch(
+  popular_sites_->MaybeStartFetch(
       true,
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
-                 base::Unretained(this), true));
+                 base::Unretained(this)));
 }
 
 void PopularSitesInternalsMessageHandler::HandleViewJson(
@@ -149,10 +146,8 @@ void PopularSitesInternalsMessageHandler::SendJson(const std::string& json) {
 }
 
 void PopularSitesInternalsMessageHandler::OnPopularSitesAvailable(
-    bool explicit_request,
     bool success) {
-  if (explicit_request)
-    SendDownloadResult(success);
+  SendDownloadResult(success);
   SendSites();
 }
 
