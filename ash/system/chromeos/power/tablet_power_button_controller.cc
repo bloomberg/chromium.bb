@@ -22,8 +22,14 @@ namespace ash {
 namespace {
 
 // Amount of time the power button must be held to start the pre-shutdown
-// animation when in tablet mode.
-constexpr int kShutdownTimeoutMs = 500;
+// animation when in tablet mode. This differs depending on whether the screen
+// is on or off when the power button is initially pressed.
+constexpr int kShutdownWhenScreenOnTimeoutMs = 500;
+// TODO(derat): This is currently set to a high value to work around delays in
+// powerd's reports of button-up events when the preceding button-down event
+// turns the display on. Set it to a lower value once powerd no longer blocks on
+// asking Chrome to turn the display on: http://crbug.com/685734
+constexpr int kShutdownWhenScreenOffTimeoutMs = 2000;
 
 // Amount of time since last SuspendDone() that power button event needs to be
 // ignored.
@@ -221,9 +227,11 @@ void TabletPowerButtonController::OnGotInitialBacklightsForcedOff(
 }
 
 void TabletPowerButtonController::StartShutdownTimer() {
-  shutdown_timer_.Start(FROM_HERE,
-                        base::TimeDelta::FromMilliseconds(kShutdownTimeoutMs),
-                        this, &TabletPowerButtonController::OnShutdownTimeout);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
+      screen_off_when_power_button_down_ ? kShutdownWhenScreenOffTimeoutMs
+                                         : kShutdownWhenScreenOnTimeoutMs);
+  shutdown_timer_.Start(FROM_HERE, timeout, this,
+                        &TabletPowerButtonController::OnShutdownTimeout);
 }
 
 void TabletPowerButtonController::OnShutdownTimeout() {
