@@ -60,6 +60,7 @@ class HashMap {
   typedef const typename KeyTraits::PeekInType& KeyPeekInType;
   typedef typename MappedTraits::TraitType MappedType;
   typedef typename ValueTraits::TraitType ValueType;
+  using value_type = ValueType;
 
  private:
   typedef typename MappedTraits::PeekOutType MappedPeekType;

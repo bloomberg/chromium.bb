@@ -50,6 +50,7 @@ class HashCountedSet {
 
  public:
   typedef Value ValueType;
+  using value_type = ValueType;
   typedef typename ImplType::iterator iterator;
   typedef typename ImplType::const_iterator const_iterator;
   typedef typename ImplType::AddResult AddResult;

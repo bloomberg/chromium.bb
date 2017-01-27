@@ -46,6 +46,7 @@ class HashSet {
 
  public:
   typedef typename ValueTraits::TraitType ValueType;
+  using value_type = ValueType;
 
  private:
   typedef HashTable<ValueType,

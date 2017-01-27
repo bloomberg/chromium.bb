@@ -265,6 +265,7 @@ class HashTableConstIterator final {
                                  Allocator>
       const_iterator;
   typedef Value ValueType;
+  using value_type = ValueType;
   typedef typename Traits::IteratorConstGetType GetType;
   typedef const ValueType* PointerType;
 
