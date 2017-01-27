@@ -776,8 +776,8 @@ message SystemProfileProto {
 
   // Information about the current wireless access point. Collected directly
   // from the wireless access point via standard apis if the device is
-  // connected to the Internet wirelessly. Introduced for Chrome on TV devices
-  // but also can be collected by ChromeOS, Android or other clients.
+  // connected to the Internet wirelessly.
+  // This is only used by Chromecast family.
   message ExternalAccessPoint {
     // The manufacturer name, for example "ASUSTeK Computer Inc.".
     optional string manufacturer = 1;
@@ -790,6 +790,11 @@ message SystemProfileProto {
 
     // The device name (sometime same as model_number), for example "RT-N16".
     optional string device_name = 4;
+
+    // The organizationally unique identifier, for example "08:9E:08".
+    // OUI is the highest three bytes of MAC address
+    // Google's OUI (08:9E:08) is encoded as 0x00089E08
+    optional int32 vendor_prefix = 5;
   }
   optional ExternalAccessPoint external_access_point = 15;
 
