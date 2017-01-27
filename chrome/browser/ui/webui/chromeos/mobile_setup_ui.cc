@@ -40,6 +40,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -628,26 +629,20 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
   content::WebContentsObserver::Observe(web_ui->GetWebContents());
 }
 
-void MobileSetupUI::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  if (render_frame_host->GetFrameName() != "paymentForm")
+void MobileSetupUI::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() ||
+      navigation_handle->GetRenderFrameHost()->GetFrameName() !=
+          "paymentForm") {
     return;
+  }
+
+  if (navigation_handle->IsErrorPage()) {
+    base::FundamentalValue result_value(-navigation_handle->GetNetErrorCode());
+    web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadFailedCallback,
+                                           result_value);
+    return;
+  }
 
   web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadCompletedCallback);
-}
-
-void MobileSetupUI::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  if (render_frame_host->GetFrameName() != "paymentForm")
-    return;
-
-  base::FundamentalValue result_value(-error_code);
-  web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadFailedCallback,
-                                         result_value);
 }
