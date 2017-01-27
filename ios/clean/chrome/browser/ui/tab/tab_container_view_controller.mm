@@ -16,7 +16,7 @@
 #endif
 
 namespace {
-CGFloat kToolbarHeight = 56.0;
+CGFloat kToolbarHeight = 44.0;
 }
 
 @interface TabContainerViewController ()
@@ -275,9 +275,14 @@ CGFloat kToolbarHeight = 56.0;
 }
 
 - (void)updateToolbarConstraints {
+  // HACK: This background is added so the status bar portion of the view is not
+  // transparent. This needs to be implemented properly for the top toolbar
+  // case.
+  self.view.backgroundColor = [UIColor lightGrayColor];
   UIView* toolbarView = self.toolbarViewController.view;
   self.toolbarConstraints = @[
-    [toolbarView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [toolbarView.topAnchor constraintEqualToAnchor:self.view.topAnchor
+                                          constant:20.0],
     [toolbarView.heightAnchor constraintEqualToConstant:kToolbarHeight],
     [toolbarView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [toolbarView.trailingAnchor

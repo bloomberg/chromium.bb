@@ -25,6 +25,9 @@
 // Displays the Tools menu.
 - (void)showToolsMenu:(id)sender;
 
+// Displays the Share menu.
+- (void)showShareMenu:(id)sender;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_ACTIONS_TOOLS_MENU_ACTIONS_H_
