@@ -45,6 +45,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/guest_host.h"
 #include "content/public/browser/guest_mode.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
@@ -651,11 +652,10 @@ void BrowserPluginGuest::SendTextInputTypeChangedToView(
     guest_rwhv->TextInputStateChanged(*last_text_input_state_);
 }
 
-void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
-    RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
+void BrowserPluginGuest::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted())
+    RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 
 void BrowserPluginGuest::RenderViewReady() {

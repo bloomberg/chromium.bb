@@ -167,10 +167,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
   // WebContentsObserver implementation.
-  void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus status) override;
