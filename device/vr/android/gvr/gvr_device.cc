@@ -19,12 +19,6 @@
 
 namespace device {
 
-namespace {
-
-static const uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
-
-}  // namespace
-
 GvrDevice::GvrDevice(GvrDeviceProvider* provider, GvrDelegate* delegate)
     : VRDevice(), delegate_(delegate), gvr_provider_(provider) {}
 
@@ -150,68 +144,6 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   return device;
 }
 
-mojom::VRPosePtr GvrDevice::GetPose() {
-  TRACE_EVENT0("input", "GvrDevice::GetSensorState");
-
-  mojom::VRPosePtr pose = mojom::VRPose::New();
-
-  pose->timestamp = base::Time::Now().ToJsTime();
-
-  // Increment pose frame counter always, even if it's a faked pose.
-  pose->poseIndex = ++pose_index_;
-
-  pose->orientation.emplace(4);
-
-  gvr::GvrApi* gvr_api = GetGvrApi();
-  if (!gvr_api) {
-    // If we don't have a GvrApi instance return a static forward orientation.
-    pose->orientation.value()[0] = 0.0;
-    pose->orientation.value()[1] = 0.0;
-    pose->orientation.value()[2] = 0.0;
-    pose->orientation.value()[3] = 1.0;
-
-    return pose;
-  }
-
-  if (!delegate_)
-    return nullptr;
-
-  gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
-  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
-
-  gvr::Mat4f head_mat =
-      gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time);
-  head_mat = gvr_api->ApplyNeckModel(head_mat, 1.0f);
-
-  gfx::Transform inv_transform(
-      head_mat.m[0][0], head_mat.m[0][1], head_mat.m[0][2], head_mat.m[0][3],
-      head_mat.m[1][0], head_mat.m[1][1], head_mat.m[1][2], head_mat.m[1][3],
-      head_mat.m[2][0], head_mat.m[2][1], head_mat.m[2][2], head_mat.m[2][3],
-      head_mat.m[3][0], head_mat.m[3][1], head_mat.m[3][2], head_mat.m[3][3]);
-
-  gfx::Transform transform;
-  if (inv_transform.GetInverse(&transform)) {
-    gfx::DecomposedTransform decomposed_transform;
-    gfx::DecomposeTransform(&decomposed_transform, transform);
-
-    pose->orientation.value()[0] = decomposed_transform.quaternion[0];
-    pose->orientation.value()[1] = decomposed_transform.quaternion[1];
-    pose->orientation.value()[2] = decomposed_transform.quaternion[2];
-    pose->orientation.value()[3] = decomposed_transform.quaternion[3];
-
-    pose->position.emplace(3);
-    pose->position.value()[0] = decomposed_transform.translate[0];
-    pose->position.value()[1] = decomposed_transform.translate[1];
-    pose->position.value()[2] = decomposed_transform.translate[2];
-  }
-
-  // Save the underlying GVR pose for use by rendering. It can't use a
-  // VRPosePtr since that's a different data type.
-  delegate_->SetGvrPoseForWebVr(head_mat, pose_index_);
-
-  return pose;
-}
-
 void GvrDevice::ResetPose() {
   gvr::GvrApi* gvr_api = GetGvrApi();
 
@@ -259,6 +191,11 @@ void GvrDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
   right_gvr_bounds.bottom = 1.0f - (right_bounds->top + right_bounds->height);
 
   delegate_->UpdateWebVRTextureBounds(left_gvr_bounds, right_gvr_bounds);
+}
+
+void GvrDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
+  if (delegate_)
+    delegate_->OnVRVsyncProviderRequest(std::move(request));
 }
 
 void GvrDevice::SetDelegate(GvrDelegate* delegate) {

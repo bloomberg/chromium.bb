@@ -180,9 +180,6 @@ bool VRFrameData::update(const device::mojom::blink::VRPosePtr& pose,
                          VREyeParameters* rightEye,
                          float depthNear,
                          float depthFar) {
-  if (!pose)
-    return false;
-
   m_timestamp = pose->timestamp;
 
   // Build the projection matrices

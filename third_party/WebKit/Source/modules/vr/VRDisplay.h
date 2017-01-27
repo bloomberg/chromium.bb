@@ -72,7 +72,6 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   int requestAnimationFrame(FrameRequestCallback*);
   void cancelAnimationFrame(int id);
-  void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
   ScriptPromise requestPresent(ScriptState*, const HeapVector<VRLayer>& layers);
   ScriptPromise exitPresent(ScriptState*);
@@ -131,41 +130,46 @@ class VRDisplay final : public EventTargetWithInlineData,
   void OnActivate(device::mojom::blink::VRDisplayEventReason) override;
   void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
+  void OnVSync(device::mojom::blink::VRPosePtr,
+               mojo::common::mojom::blink::TimeDeltaPtr);
+  void ConnectVSyncProvider();
+
   ScriptedAnimationController& ensureScriptedAnimationController(Document*);
 
   Member<NavigatorVR> m_navigatorVR;
-  unsigned m_displayId;
+  unsigned m_displayId = 0;
   String m_displayName;
-  bool m_isConnected;
-  bool m_isPresenting;
-  bool m_isValidDeviceForPresenting;
-  bool m_canUpdateFramePose;
+  bool m_isConnected = false;
+  bool m_isPresenting = false;
+  bool m_isValidDeviceForPresenting = true;
   Member<VRDisplayCapabilities> m_capabilities;
   Member<VRStageParameters> m_stageParameters;
   Member<VREyeParameters> m_eyeParametersLeft;
   Member<VREyeParameters> m_eyeParametersRight;
   device::mojom::blink::VRPosePtr m_framePose;
   VRLayer m_layer;
-  double m_depthNear;
-  double m_depthFar;
+  double m_depthNear = 0.01;
+  double m_depthFar = 10000.0;
 
   void dispose();
 
   TaskRunnerTimer<VRDisplay> m_fullscreenCheckTimer;
   String m_fullscreenOrigWidth;
   String m_fullscreenOrigHeight;
-  gpu::gles2::GLES2Interface* m_contextGL;
+  gpu::gles2::GLES2Interface* m_contextGL = nullptr;
   Member<WebGLRenderingContextBase> m_renderingContext;
 
   Member<ScriptedAnimationController> m_scriptedAnimationController;
-  bool m_animationCallbackRequested;
-  bool m_inAnimationFrame;
-  bool m_displayBlurred;
-  bool m_reenteredFullscreen;
+  bool m_pendingRaf = false;
+  bool m_inAnimationFrame = false;
+  bool m_displayBlurred = false;
+  bool m_reenteredFullscreen = false;
+  double m_timebase = -1;
 
   device::mojom::blink::VRDisplayPtr m_display;
 
-  mojo::Binding<device::mojom::blink::VRDisplayClient> m_binding;
+  mojo::Binding<device::mojom::blink::VRDisplayClient> m_displayClientBinding;
+  device::mojom::blink::VRVSyncProviderPtr m_vrVSyncProvider;
 
   HeapDeque<Member<ScriptPromiseResolver>> m_pendingPresentResolvers;
 };

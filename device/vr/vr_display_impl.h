@@ -29,7 +29,6 @@ class VRDisplayImpl : public mojom::VRDisplay {
   friend class VRDisplayImplTest;
   friend class VRServiceImpl;
 
-  void GetPose(const GetPoseCallback& callback) override;
   void ResetPose() override;
 
   void RequestPresent(bool secure_origin,
@@ -39,6 +38,7 @@ class VRDisplayImpl : public mojom::VRDisplay {
 
   void UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
                          mojom::VRLayerBoundsPtr right_bounds) override;
+  void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) override;
 
   void RequestPresentResult(const RequestPresentCallback& callback,
                             bool secure_origin,

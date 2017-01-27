@@ -7,12 +7,16 @@ package org.chromium.chrome.browser.vr_shell;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.view.Choreographer;
+import android.view.Choreographer.FrameCallback;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -170,6 +174,16 @@ public class VrShellDelegate {
     public void onNativeLibraryReady() {
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
         mNativeVrShellDelegate = nativeInit();
+        Choreographer choreographer = Choreographer.getInstance();
+        choreographer.postFrameCallback(new FrameCallback() {
+            @Override
+            public void doFrame(long frameTimeNanos) {
+                Display display = ((WindowManager) mActivity.getSystemService(
+                        Context.WINDOW_SERVICE)).getDefaultDisplay();
+                nativeUpdateVSyncInterval(mNativeVrShellDelegate, frameTimeNanos,
+                        1.0d / display.getRefreshRate());
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -403,20 +417,16 @@ public class VrShellDelegate {
         // TODO(bshe): Ideally, we do not need two gvr context exist at the same time. We can
         // probably shutdown non presenting gvr when presenting and create a new one after exit
         // presenting. See crbug.com/655242
-        if (mNonPresentingGvrContext != null) {
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-            try {
-                mNonPresentingGvrContext.resume();
-            } catch (IllegalArgumentException e) {
-                Log.e(TAG, "Unable to resume mNonPresentingGvrContext", e);
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        try {
+            nativeOnResume(mNativeVrShellDelegate);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
 
         if (mInVr) {
             setupVrModeWindowFlags();
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+            oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
                 mVrShell.resume();
             } catch (IllegalArgumentException e) {
@@ -448,9 +458,7 @@ public class VrShellDelegate {
             // vrdisplayactivate event should be dispatched in enterVRFromIntent.
             mListeningForWebVrActivateBeforePause = mListeningForWebVrActivate;
         }
-        if (mNonPresentingGvrContext != null) {
-            mNonPresentingGvrContext.pause();
-        }
+        nativeOnPause(mNativeVrShellDelegate);
 
         // TODO(mthiesse): When VR Shell lives in its own activity, and integrates with Daydream
         // home, pause instead of exiting VR here. For now, because VR Apps shouldn't show up in the
@@ -656,4 +664,8 @@ public class VrShellDelegate {
     private native long nativeInit();
     private native void nativeSetPresentResult(long nativeVrShellDelegate, boolean result);
     private native void nativeDisplayActivate(long nativeVrShellDelegate);
+    private native void nativeUpdateVSyncInterval(long nativeVrShellDelegate, long timebaseNanos,
+            double intervalSeconds);
+    private native void nativeOnPause(long nativeVrShellDelegate);
+    private native void nativeOnResume(long nativeVrShellDelegate);
 }

@@ -124,7 +124,11 @@
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
 
+#if defined(ENABLE_WEBVR)
 #include "device/vr/vr_service_impl.h"  // nogncheck
+#else
+#include "device/vr/vr_service.mojom.h"  // nogncheck
+#endif
 
 using base::TimeDelta;
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,10 +16,11 @@
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
+#include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
+#include "device/vr/android/gvr/gvr_device.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
-#include "ui/gfx/vsync_provider.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -28,7 +31,8 @@
 namespace vr_shell {
 
 namespace {
-// Constant taken from treasure_hunt demo.
+// TODO(mthiesse): If gvr::PlatformInfo().GetPosePredictionTime() is ever
+// exposed, use that instead (it defaults to 50ms on most platforms).
 static constexpr long kPredictionTimeWithoutVsyncNanos = 50000000;
 
 static constexpr float kZNear = 0.1f;
@@ -140,46 +144,16 @@ enum class ViewerType {
   VIEWER_TYPE_MAX,
 };
 
-int GetPixelEncodedPoseIndexByte() {
-  TRACE_EVENT0("gpu", "VrShellGl::GetPixelEncodedPoseIndex");
-  // Read the pose index encoded in a bottom left pixel as color values.
-  // See also third_party/WebKit/Source/modules/vr/VRDisplay.cpp which
-  // encodes the pose index, and device/vr/android/gvr/gvr_device.cc
-  // which tracks poses. Returns the low byte (0..255) if valid, or -1
-  // if not valid due to bad magic number.
-  uint8_t pixels[4];
-  // Assume we're reading from the framebuffer we just wrote to.
-  // That's true currently, we may need to use glReadBuffer(GL_BACK)
-  // or equivalent if the rendering setup changes in the future.
-  glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-  // Check for the magic number written by VRDevice.cpp on submit.
-  // This helps avoid glitches from garbage data in the render
-  // buffer that can appear during initialization or resizing. These
-  // often appear as flashes of all-black or all-white pixels.
-  if (pixels[1] == kWebVrPosePixelMagicNumbers[0] &&
-      pixels[2] == kWebVrPosePixelMagicNumbers[1]) {
-    // Pose is good.
-    return pixels[0];
-  }
-  VLOG(1) << "WebVR: reject decoded pose index " << (int)pixels[0] <<
-      ", bad magic number " << (int)pixels[1] << ", " << (int)pixels[2];
-  return -1;
-}
-
 int64_t TimeInMicroseconds() {
   return std::chrono::duration_cast<std::chrono::microseconds>(
       std::chrono::steady_clock::now().time_since_epoch()).count();
-}
-
-void WaitForSwapAck(const base::Closure& callback, gfx::SwapResult result) {
-  callback.Run();
 }
 
 }  // namespace
 
 VrShellGl::VrShellGl(
     const base::WeakPtr<VrShell>& weak_vr_shell,
+    const base::WeakPtr<VrShellDelegate>& delegate_provider,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
@@ -187,22 +161,26 @@ VrShellGl::VrShellGl(
       : web_vr_mode_(initially_web_vr),
         surfaceless_rendering_(reprojected_rendering),
         task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        binding_(this),
         weak_vr_shell_(weak_vr_shell),
+        delegate_provider_(delegate_provider),
         main_thread_task_runner_(std::move(main_thread_task_runner)),
         weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
 
 VrShellGl::~VrShellGl() {
-  draw_task_.Cancel();
+  vsync_task_.Cancel();
+  if (!callback_.is_null())
+    callback_.Run(nullptr, base::TimeDelta());
+  if (binding_.is_bound()) {
+    main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &VrShellDelegate::OnVRVsyncProviderRequest, delegate_provider_,
+        base::Passed(binding_.Unbind())));
+  }
 }
 
 void VrShellGl::Initialize() {
-  gvr::Mat4f identity;
-  SetIdentityM(identity);
-  webvr_head_pose_.resize(kPoseRingBufferSize, identity);
-  webvr_head_pose_valid_.resize(kPoseRingBufferSize, false);
-
   scene_.reset(new UiScene);
 
   if (surfaceless_rendering_) {
@@ -245,16 +223,6 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     return;
   }
 
-  // TODO(mthiesse): We don't appear to have a VSync provider ever here. This is
-  // sort of okay, because the GVR swap chain will block if we render too fast,
-  // but we should address this properly.
-  if (surface_->GetVSyncProvider()) {
-    surface_->GetVSyncProvider()->GetVSyncParameters(base::Bind(
-        &VrShellGl::UpdateVSyncParameters, weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    LOG(ERROR) << "No VSync Provider";
-  }
-
   unsigned int textures[2];
   glGenTextures(2, textures);
   ui_texture_id_ = textures[0];
@@ -281,8 +249,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   InitializeRenderer();
 
-  draw_task_.Reset(base::Bind(&VrShellGl::DrawFrame, base::Unretained(this)));
-  ScheduleNextDrawFrame();
+  vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
+  OnVSync();
 
   ready_to_draw_ = true;
 }
@@ -293,6 +261,43 @@ void VrShellGl::OnUIFrameAvailable() {
 
 void VrShellGl::OnContentFrameAvailable() {
   content_surface_texture_->UpdateTexImage();
+  received_frame_ = true;
+}
+
+bool VrShellGl::GetPixelEncodedPoseIndexByte(int* pose_index) {
+  TRACE_EVENT0("gpu", "VrShellGl::GetPixelEncodedPoseIndex");
+  if (!received_frame_) {
+    *pose_index = last_pose_;
+    return true;
+  }
+  received_frame_ = false;
+
+  // Read the pose index encoded in a bottom left pixel as color values.
+  // See also third_party/WebKit/Source/modules/vr/VRDisplay.cpp which
+  // encodes the pose index, and device/vr/android/gvr/gvr_device.cc
+  // which tracks poses. Returns the low byte (0..255) if valid, or -1
+  // if not valid due to bad magic number.
+  uint8_t pixels[4];
+  // Assume we're reading from the framebuffer we just wrote to.
+  // That's true currently, we may need to use glReadBuffer(GL_BACK)
+  // or equivalent if the rendering setup changes in the future.
+  glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+  // Check for the magic number written by VRDevice.cpp on submit.
+  // This helps avoid glitches from garbage data in the render
+  // buffer that can appear during initialization or resizing. These
+  // often appear as flashes of all-black or all-white pixels.
+  if (pixels[1] == kWebVrPosePixelMagicNumbers[0] &&
+      pixels[2] == kWebVrPosePixelMagicNumbers[1]) {
+    // Pose is good.
+    *pose_index = pixels[0];
+    last_pose_ = pixels[0];
+    return true;
+  }
+  VLOG(1) << "WebVR: reject decoded pose index " << (int)pixels[0]
+          << ", bad magic number " << (int)pixels[1] << ", "
+          << (int)pixels[2];
+  return false;
 }
 
 void VrShellGl::GvrInit(gvr_context* gvr_api) {
@@ -322,12 +327,12 @@ void VrShellGl::InitializeRenderer() {
   // surface, but store it separately to avoid future confusion.
   // TODO(klausw,crbug.com/655722): remove this.
   webvr_texture_id_ = content_texture_id_;
-  // Out of paranoia, explicitly reset the "pose valid" flags to false
-  // from the GL thread. The constructor ran in the UI thread.
-  // TODO(klausw,crbug.com/655722): remove this.
-  webvr_head_pose_valid_.assign(kPoseRingBufferSize, false);
 
   gvr_api_->InitializeGl();
+  webvr_head_pose_.assign(kPoseRingBufferSize,
+                          gvr_api_->GetHeadSpaceFromStartSpaceRotation(
+                              gvr::GvrApi::GetTimePointNow()));
+
   std::vector<gvr::BufferSpec> specs;
   // For kFramePrimaryBuffer (primary VrShell and WebVR content)
   specs.push_back(gvr_api_->CreateBufferSpec());
@@ -584,36 +589,41 @@ void VrShellGl::SendGesture(InputTarget input_target,
       base::Bind(target, weak_vr_shell_, base::Passed(std::move(event))));
 }
 
-void VrShellGl::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
-  webvr_head_pose_[pose_num % kPoseRingBufferSize] = pose;
-  webvr_head_pose_valid_[pose_num % kPoseRingBufferSize] = true;
-}
-
-bool VrShellGl::WebVrPoseByteIsValid(int pose_index_byte) {
-  if (pose_index_byte < 0) {
-    return false;
-  }
-  if (!webvr_head_pose_valid_[pose_index_byte % kPoseRingBufferSize]) {
-    VLOG(1) << "WebVR: reject decoded pose index " << pose_index_byte <<
-        ", not a valid pose";
-    return false;
-  }
-  return true;
-}
-
 void VrShellGl::DrawFrame() {
   TRACE_EVENT0("gpu", "VrShellGl::DrawFrame");
+
   // Reset the viewport list to just the pair of viewports for the
   // primary buffer each frame. Head-locked viewports get added by
   // DrawVrShell if needed.
   buffer_viewport_list_->SetToRecommendedBufferViewports();
 
   gvr::Frame frame = swap_chain_->AcquireFrame();
-  gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
-  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+  if (!frame.is_valid()) {
+    return;
+  }
+  frame.BindBuffer(kFramePrimaryBuffer);
+  if (web_vr_mode_) {
+    DrawWebVr();
+  }
 
-  gvr::Mat4f head_pose =
-      gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
+  int pose_index;
+  gvr::Mat4f head_pose;
+
+  // When using async reprojection, we need to know which pose was used in
+  // the WebVR app for drawing this frame. Due to unknown amounts of
+  // buffering in the compositor and SurfaceTexture, we read the pose number
+  // from a corner pixel. There's no point in doing this for legacy
+  // distortion rendering since that doesn't need a pose, and reading back
+  // pixels is an expensive operation. TODO(klausw,crbug.com/655722): stop
+  // doing this once we have working no-compositor rendering for WebVR.
+  if (web_vr_mode_ && gvr_api_->GetAsyncReprojectionEnabled() &&
+      GetPixelEncodedPoseIndexByte(&pose_index)) {
+    head_pose = webvr_head_pose_[pose_index % kPoseRingBufferSize];
+  } else {
+    gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
+    target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+    head_pose = gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
+  }
 
   gvr::Vec3f position = GetTranslation(head_pose);
   if (position.x == 0.0f && position.y == 0.0f && position.z == 0.0f) {
@@ -625,46 +635,11 @@ void VrShellGl::DrawFrame() {
     gvr_api_->ApplyNeckModel(head_pose, 1.0f);
   }
 
-  frame.BindBuffer(kFramePrimaryBuffer);
-
   // Update the render position of all UI elements (including desktop).
   const float screen_tilt = kDesktopScreenTiltDefault * M_PI / 180.0f;
   scene_->UpdateTransforms(screen_tilt, TimeInMicroseconds());
 
   UpdateController(GetForwardVector(head_pose));
-
-  if (web_vr_mode_) {
-    DrawWebVr();
-
-    // When using async reprojection, we need to know which pose was used in
-    // the WebVR app for drawing this frame. Due to unknown amounts of
-    // buffering in the compositor and SurfaceTexture, we read the pose number
-    // from a corner pixel. There's no point in doing this for legacy
-    // distortion rendering since that doesn't need a pose, and reading back
-    // pixels is an expensive operation. TODO(klausw,crbug.com/655722): stop
-    // doing this once we have working no-compositor rendering for WebVR.
-    if (gvr_api_->GetAsyncReprojectionEnabled()) {
-      int pose_index_byte = GetPixelEncodedPoseIndexByte();
-      if (WebVrPoseByteIsValid(pose_index_byte)) {
-        // We have a valid pose, use it for reprojection.
-        webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
-        webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
-        head_pose = webvr_head_pose_[pose_index_byte % kPoseRingBufferSize];
-        // We can't mark the used pose as invalid since unfortunately
-        // we have to reuse them. The compositor will re-submit stale
-        // frames on vsync, and we can't tell that this has happened
-        // until we've read the pose index from it, and at that point
-        // it's too late to skip rendering.
-      } else {
-        // If we don't get a valid frame ID back we shouldn't attempt
-        // to reproject by an invalid matrix, so turn off reprojection
-        // instead. Invalid poses can permanently break reprojection
-        // for this GVR instance: http://crbug.com/667327
-        webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
-        webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
-      }
-    }
-  }
 
   DrawVrShell(head_pose, frame);
 
@@ -672,17 +647,9 @@ void VrShellGl::DrawFrame() {
   frame.Submit(*buffer_viewport_list_, head_pose);
 
   // No need to swap buffers for surfaceless rendering.
-  if (surfaceless_rendering_) {
-    ScheduleNextDrawFrame();
-    return;
-  }
-
-  if (surface_->SupportsAsyncSwap()) {
-    surface_->SwapBuffersAsync(base::Bind(&WaitForSwapAck, base::Bind(
-        &VrShellGl::ScheduleNextDrawFrame, weak_ptr_factory_.GetWeakPtr())));
-  } else {
+  if (!surfaceless_rendering_) {
+    // TODO(mthiesse): Support asynchronous SwapBuffers.
     surface_->SwapBuffers();
-    ScheduleNextDrawFrame();
   }
 }
 
@@ -915,7 +882,7 @@ void VrShellGl::OnTriggerEvent() {
 }
 
 void VrShellGl::OnPause() {
-  draw_task_.Cancel();
+  vsync_task_.Cancel();
   controller_->OnPause();
   gvr_api_->PauseTracking();
 }
@@ -925,8 +892,8 @@ void VrShellGl::OnResume() {
   gvr_api_->ResumeTracking();
   controller_->OnResume();
   if (ready_to_draw_) {
-    draw_task_.Reset(base::Bind(&VrShellGl::DrawFrame, base::Unretained(this)));
-    ScheduleNextDrawFrame();
+    vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
+    OnVSync();
   }
 }
 
@@ -973,25 +940,56 @@ base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void VrShellGl::UpdateVSyncParameters(const base::TimeTicks timebase,
-                                      const base::TimeDelta interval) {
-  vsync_timebase_ = timebase;
-  vsync_interval_ = interval;
-}
-
-void VrShellGl::ScheduleNextDrawFrame() {
+void VrShellGl::OnVSync() {
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks target;
 
-  if (vsync_interval_.is_zero()) {
-    target = now;
-  } else {
-    target = now + vsync_interval_;
-    int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
-    target = vsync_timebase_ + intervals * vsync_interval_;
-  }
+  // Don't send VSyncs until we have a timebase/interval.
+  if (vsync_interval_.is_zero())
+    return;
+  target = now + vsync_interval_;
+  int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
+  target = vsync_timebase_ + intervals * vsync_interval_;
+  task_runner_->PostDelayedTask(FROM_HERE, vsync_task_.callback(),
+                                target - now);
 
-  task_runner_->PostDelayedTask(FROM_HERE, draw_task_.callback(), target - now);
+  base::TimeDelta time = intervals * vsync_interval_;
+  if (!callback_.is_null()) {
+    callback_.Run(GetPose(), time);
+    callback_.Reset();
+  } else {
+    pending_vsync_ = true;
+    pending_time_ = time;
+  }
+  DrawFrame();
+}
+
+void VrShellGl::OnRequest(device::mojom::VRVSyncProviderRequest request) {
+  binding_.Close();
+  binding_.Bind(std::move(request));
+}
+
+void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
+  if (!pending_vsync_) {
+    if (!callback_.is_null()) {
+      mojo::ReportBadMessage("Requested VSync before waiting for response to "
+          "previous request.");
+      return;
+    }
+    callback_ = callback;
+    return;
+  }
+  pending_vsync_ = false;
+  callback.Run(GetPose(), pending_time_);
+}
+
+void VrShellGl::UpdateVSyncInterval(long timebase_nanos,
+                                    double interval_seconds) {
+  vsync_timebase_ = base::TimeTicks();
+  vsync_timebase_ += base::TimeDelta::FromMicroseconds(timebase_nanos / 1000);
+  vsync_interval_ = base::TimeDelta::FromSecondsD(interval_seconds);
+  vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
+  OnVSync();
 }
 
 void VrShellGl::ForceExitVr() {
@@ -1001,6 +999,22 @@ void VrShellGl::ForceExitVr() {
 
 void VrShellGl::UpdateScene(std::unique_ptr<base::ListValue> commands) {
   scene_->HandleCommands(std::move(commands), TimeInMicroseconds());
+}
+
+device::mojom::VRPosePtr VrShellGl::GetPose() {
+  TRACE_EVENT0("input", "VrShellGl::GetPose");
+
+  gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
+  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+
+  gvr::Mat4f head_mat =
+      gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
+  head_mat = gvr_api_->ApplyNeckModel(head_mat, 1.0f);
+
+  uint32_t pose_index = pose_index_++;
+  webvr_head_pose_[pose_index % kPoseRingBufferSize] = head_mat;
+
+  return VrShell::VRPosePtrFromGvrPose(head_mat, pose_index);
 }
 
 }  // namespace vr_shell

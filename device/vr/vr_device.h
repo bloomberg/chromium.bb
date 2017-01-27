@@ -24,7 +24,6 @@ class DEVICE_VR_EXPORT VRDevice {
   unsigned int id() const { return id_; }
 
   virtual mojom::VRDisplayInfoPtr GetVRDevice() = 0;
-  virtual mojom::VRPosePtr GetPose() = 0;
   virtual void ResetPose() = 0;
 
   virtual void RequestPresent(const base::Callback<void(bool)>& callback) = 0;
@@ -33,6 +32,7 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void SubmitFrame(mojom::VRPosePtr pose) = 0;
   virtual void UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
                                  mojom::VRLayerBoundsPtr right_bounds) = 0;
+  virtual void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) = 0;
 
   virtual void AddDisplay(VRDisplayImpl* display);
   virtual void RemoveDisplay(VRDisplayImpl* display);

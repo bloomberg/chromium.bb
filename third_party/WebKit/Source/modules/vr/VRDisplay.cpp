@@ -29,6 +29,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "wtf/AutoReset.h"
+#include "wtf/Time.h"
 
 #include <array>
 
@@ -48,33 +49,6 @@ VREye stringToVREye(const String& whichEye) {
   return VREyeNone;
 }
 
-class VRDisplayFrameRequestCallback : public FrameRequestCallback {
- public:
-  VRDisplayFrameRequestCallback(VRDisplay* vrDisplay) : m_vrDisplay(vrDisplay) {
-    m_useLegacyTimeBase = true;
-  }
-  ~VRDisplayFrameRequestCallback() override {}
-  void handleEvent(double highResTimeMs) override {
-    Document* doc = m_vrDisplay->document();
-    if (!doc)
-      return;
-
-    // Need to divide by 1000 here because serviceScriptedAnimations expects
-    // time to be given in seconds.
-    m_vrDisplay->serviceScriptedAnimations(
-        doc->loader()->timing().pseudoWallTimeToMonotonicTime(highResTimeMs /
-                                                              1000.0));
-  }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_vrDisplay);
-
-    FrameRequestCallback::trace(visitor);
-  }
-
-  Member<VRDisplay> m_vrDisplay;
-};
-
 }  // namespace
 
 VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
@@ -82,25 +56,16 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
                      device::mojom::blink::VRDisplayClientRequest request)
     : ContextLifecycleObserver(navigatorVR->document()),
       m_navigatorVR(navigatorVR),
-      m_isConnected(false),
-      m_isPresenting(false),
-      m_isValidDeviceForPresenting(true),
-      m_canUpdateFramePose(true),
       m_capabilities(new VRDisplayCapabilities()),
       m_eyeParametersLeft(new VREyeParameters()),
       m_eyeParametersRight(new VREyeParameters()),
-      m_depthNear(0.01),
-      m_depthFar(10000.0),
       m_fullscreenCheckTimer(
           TaskRunnerHelper::get(TaskType::UnspecedTimer,
                                 navigatorVR->document()->frame()),
           this,
           &VRDisplay::onFullscreenCheck),
-      m_contextGL(nullptr),
-      m_animationCallbackRequested(false),
-      m_inAnimationFrame(false),
       m_display(std::move(display)),
-      m_binding(this, std::move(request)) {}
+      m_displayClientBinding(this, std::move(request)) {}
 
 VRDisplay::~VRDisplay() {}
 
@@ -149,9 +114,7 @@ void VRDisplay::disconnected() {
 }
 
 bool VRDisplay::getFrameData(VRFrameData* frameData) {
-  updatePose();
-
-  if (!m_framePose)
+  if (!m_framePose || m_displayBlurred)
     return false;
 
   if (!frameData)
@@ -165,31 +128,12 @@ bool VRDisplay::getFrameData(VRFrameData* frameData) {
 }
 
 VRPose* VRDisplay::getPose() {
-  updatePose();
-
-  if (!m_framePose)
+  if (!m_framePose || m_displayBlurred)
     return nullptr;
 
   VRPose* pose = VRPose::create();
   pose->setPose(m_framePose);
   return pose;
-}
-
-void VRDisplay::updatePose() {
-  if (m_displayBlurred) {
-    // WebVR spec says to return a null pose when the display is blurred.
-    m_framePose = nullptr;
-    return;
-  }
-  if (m_canUpdateFramePose) {
-    if (!m_display)
-      return;
-    device::mojom::blink::VRPosePtr pose;
-    m_display->GetPose(&pose);
-    m_framePose = std::move(pose);
-    if (m_isPresenting)
-      m_canUpdateFramePose = false;
-  }
 }
 
 void VRDisplay::resetPose() {
@@ -214,12 +158,13 @@ int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
   Document* doc = this->document();
   if (!doc)
     return 0;
-
-  if (!m_animationCallbackRequested) {
-    doc->requestAnimationFrame(new VRDisplayFrameRequestCallback(this));
-    m_animationCallbackRequested = true;
+  m_pendingRaf = true;
+  if (!m_vrVSyncProvider.is_bound()) {
+    ConnectVSyncProvider();
+  } else if (!m_displayBlurred) {
+    m_vrVSyncProvider->GetVSync(convertToBaseCallback(
+        WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
   }
-
   callback->m_useLegacyTimeBase = false;
   return ensureScriptedAnimationController(doc).registerCallback(callback);
 }
@@ -232,42 +177,16 @@ void VRDisplay::cancelAnimationFrame(int id) {
 
 void VRDisplay::OnBlur() {
   m_displayBlurred = true;
-
+  m_vrVSyncProvider.reset();
   m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplayblur, true, false, this, ""));
 }
 
 void VRDisplay::OnFocus() {
   m_displayBlurred = false;
-  // Restart our internal doc requestAnimationFrame callback, if it fired while
-  // the display was blurred.
-  // TODO(bajones): Don't use doc->requestAnimationFrame() at all. Animation
-  // frames should be tied to the presenting VR display (e.g. should be serviced
-  // by GVR library callbacks on Android), and not the doc frame rate.
-  if (!m_animationCallbackRequested) {
-    Document* doc = this->document();
-    if (!doc)
-      return;
-    doc->requestAnimationFrame(new VRDisplayFrameRequestCallback(this));
-  }
+  ConnectVSyncProvider();
   m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplayfocus, true, false, this, ""));
-}
-
-void VRDisplay::serviceScriptedAnimations(double monotonicAnimationStartTime) {
-  if (!m_scriptedAnimationController)
-    return;
-  AutoReset<bool> animating(&m_inAnimationFrame, true);
-  m_animationCallbackRequested = false;
-
-  // We use an internal rAF callback to run the animation loop at the display
-  // speed, and run the user's callback after our internal callback fires.
-  // However, when the display is blurred, we want to pause the animation loop,
-  // so we don't fire the user's callback until the display is focused.
-  if (m_displayBlurred)
-    return;
-  m_scriptedAnimationController->serviceScriptedAnimations(
-      monotonicAnimationStartTime);
 }
 
 void ReportPresentationResult(PresentationResult result) {
@@ -655,7 +574,6 @@ void VRDisplay::submitFrame() {
   m_renderingContext->restoreClearColor();
 
   m_display->SubmitFrame(m_framePose.Clone());
-  m_canUpdateFramePose = true;
 }
 
 Document* VRDisplay::document() {
@@ -698,6 +616,47 @@ void VRDisplay::OnDeactivate(
     device::mojom::blink::VRDisplayEventReason reason) {
   m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplaydeactivate, true, false, this, reason));
+}
+
+void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
+                        mojo::common::mojom::blink::TimeDeltaPtr time) {
+  WTF::TimeDelta timeDelta =
+      WTF::TimeDelta::FromMicroseconds(time->microseconds);
+  // The VSync provider cannot shut down before replying to pending callbacks,
+  // so it will send a null pose with no timestamp to be ignored.
+  if (pose.is_null() && timeDelta.is_zero()) {
+    // We need to keep the VSync loop going because we haven't responded to the
+    // previous rAF yet.
+    m_vrVSyncProvider->GetVSync(convertToBaseCallback(
+        WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
+    return;
+  }
+  if (m_displayBlurred)
+    return;
+  if (!m_scriptedAnimationController)
+    return;
+  Document* doc = this->document();
+  if (!doc)
+    return;
+
+  // Ensure a consistent timebase with document rAF.
+  if (m_timebase < 0) {
+    m_timebase = WTF::monotonicallyIncreasingTime() - timeDelta.InSecondsF();
+  }
+
+  AutoReset<bool> animating(&m_inAnimationFrame, true);
+  m_framePose = std::move(pose);
+  m_pendingRaf = false;
+  m_scriptedAnimationController->serviceScriptedAnimations(
+      m_timebase + timeDelta.InSecondsF());
+}
+
+void VRDisplay::ConnectVSyncProvider() {
+  m_display->GetVRVSyncProvider(mojo::MakeRequest(&m_vrVSyncProvider));
+  if (m_pendingRaf && !m_displayBlurred) {
+    m_vrVSyncProvider->GetVSync(convertToBaseCallback(
+        WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
+  }
 }
 
 void VRDisplay::onFullscreenCheck(TimerBase*) {
@@ -745,7 +704,8 @@ ScriptedAnimationController& VRDisplay::ensureScriptedAnimationController(
 }
 
 void VRDisplay::dispose() {
-  m_binding.Close();
+  m_displayClientBinding.Close();
+  m_vrVSyncProvider.reset();
 }
 
 ExecutionContext* VRDisplay::getExecutionContext() const {

@@ -13,6 +13,7 @@ let mockVRService = loadMojoModules(
       this.displayClient_ = new vr_service.VRDisplayClientPtr();
       this.displayInfo_ = displayInfo;
       this.service_ = service;
+      this.vsync_provider_ = new MockVRVSyncProvider();
 
       interfaceProvider.addInterfaceOverrideForTesting(
           vr_service.VRDisplay.name,
@@ -27,6 +28,8 @@ let mockVRService = loadMojoModules(
       return Promise.resolve({success: true});
     }
 
+    getVRVSyncProvider(request) { this.vsync_provider_.bind(request); }
+
     forceActivate(reason) {
       this.displayClient_.onActivate(reason);
     }
@@ -40,6 +43,26 @@ let mockVRService = loadMojoModules(
       let clientRequest = bindings.makeRequest(this.displayClient_);
       this.service_.client_.onDisplayConnected(displayPtr, clientRequest,
           this.displayInfo_);
+    }
+  }
+
+  class MockVRVSyncProvider {
+    constructor() {
+      this.timeDelta_ = 0;
+      this.binding_ = new bindings.Binding(vr_service.VRVSyncProvider, this);
+    }
+    bind(request) {
+      this.binding_.close();
+      this.binding_.bind(request);
+    }
+    getVSync() {
+      this.timeDelta_ += 1000.0 / 60.0;
+      return Promise.resolve({
+        pose: null,
+        time: {
+          microseconds: this.timeDelta_,
+        },
+      });
     }
   }
 

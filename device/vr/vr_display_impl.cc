@@ -27,15 +27,6 @@ VRDisplayImpl::~VRDisplayImpl() {
   device_->RemoveDisplay(this);
 }
 
-void VRDisplayImpl::GetPose(const GetPoseCallback& callback) {
-  if (!device_->IsAccessAllowed(this)) {
-    callback.Run(nullptr);
-    return;
-  }
-
-  callback.Run(device_->GetPose());
-}
-
 void VRDisplayImpl::ResetPose() {
   if (!device_->IsAccessAllowed(this))
     return;
@@ -82,5 +73,12 @@ void VRDisplayImpl::UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
     return;
 
   device_->UpdateLayerBounds(std::move(left_bounds), std::move(right_bounds));
+}
+
+void VRDisplayImpl::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
+  if (!device_->IsAccessAllowed(this)) {
+    return;
+  }
+  device_->GetVRVSyncProvider(std::move(request));
 }
 }

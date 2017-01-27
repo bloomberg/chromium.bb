@@ -6,6 +6,7 @@
 
 #include <android/native_window_jni.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -14,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
+#include "chrome/browser/android/vr_shell/vr_gl_thread.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
@@ -33,6 +35,8 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/transform.h"
+#include "ui/gfx/transform_util.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -43,52 +47,6 @@ namespace {
 vr_shell::VrShell* g_instance;
 
 static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
-
-class GLThread : public base::Thread {
- public:
-  GLThread(const base::WeakPtr<VrShell>& weak_vr_shell,
-           scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-           gvr_context* gvr_api,
-           bool initially_web_vr,
-           bool reprojected_rendering)
-      : base::Thread("VrShellGL"),
-        weak_vr_shell_(weak_vr_shell),
-        main_thread_task_runner_(std::move(main_thread_task_runner)),
-        gvr_api_(gvr_api),
-        initially_web_vr_(initially_web_vr),
-        reprojected_rendering_(reprojected_rendering) {}
-
-  ~GLThread() override {
-    Stop();
-  }
-  base::WeakPtr<VrShellGl> GetVrShellGl() { return weak_vr_shell_gl_; }
-  VrShellGl* GetVrShellGlUnsafe() { return vr_shell_gl_.get(); }
-
- protected:
-  void Init() override {
-    vr_shell_gl_.reset(new VrShellGl(std::move(weak_vr_shell_),
-                                     std::move(main_thread_task_runner_),
-                                     gvr_api_,
-                                     initially_web_vr_,
-                                     reprojected_rendering_));
-    weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
-    vr_shell_gl_->Initialize();
-  }
-  void CleanUp() override {
-    vr_shell_gl_.reset();
-  }
-
- private:
-  // Created on GL thread.
-  std::unique_ptr<VrShellGl> vr_shell_gl_;
-  base::WeakPtr<VrShellGl> weak_vr_shell_gl_;
-
-  base::WeakPtr<VrShell> weak_vr_shell_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  gvr_context* gvr_api_;
-  bool initially_web_vr_;
-  bool reprojected_rendering_;
-};
 
 void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
   if (contents->GetRenderWidgetHostView())
@@ -113,7 +71,7 @@ VrShell::VrShell(JNIEnv* env,
           base::MakeUnique<VrCompositor>(content_window, false)),
       ui_contents_(ui_contents),
       ui_compositor_(base::MakeUnique<VrCompositor>(ui_window, true)),
-      delegate_(delegate),
+      delegate_provider_(delegate),
       metrics_helper_(base::MakeUnique<VrMetricsHelper>(main_contents_)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       reprojected_rendering_(reprojected_rendering),
@@ -128,9 +86,9 @@ VrShell::VrShell(JNIEnv* env,
   content_compositor_->SetLayer(main_contents_);
   ui_compositor_->SetLayer(ui_contents_);
 
-  gl_thread_ = base::MakeUnique<GLThread>(weak_ptr_factory_.GetWeakPtr(),
-                                          main_thread_task_runner_, gvr_api,
-                                          for_web_vr, reprojected_rendering_);
+  gl_thread_ = base::MakeUnique<VrGLThread>(
+      weak_ptr_factory_.GetWeakPtr(), delegate_provider_->GetWeakPtr(),
+      main_thread_task_runner_, gvr_api, for_web_vr, reprojected_rendering_);
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -198,7 +156,7 @@ VrShell::~VrShell() {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     gl_thread_.reset();
   }
-  delegate_->RemoveDelegate();
+  delegate_provider_->RemoveDelegate();
   g_instance = nullptr;
 }
 
@@ -211,16 +169,14 @@ void VrShell::PostToGlThreadWhenReady(const base::Closure& task) {
 
 void VrShell::OnTriggerEvent(JNIEnv* env,
                              const JavaParamRef<jobject>& obj) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  thread->task_runner()->PostTask(FROM_HERE,
-                                  base::Bind(&VrShellGl::OnTriggerEvent,
-                                             thread->GetVrShellGl()));
+  gl_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&VrShellGl::OnTriggerEvent, gl_thread_->GetVrShellGl()));
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::OnPause, thread->GetVrShellGl()));
+  gl_thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VrShellGl::OnPause, gl_thread_->GetVrShellGl()));
 
   // exit vr session
   metrics_helper_->SetVRActive(false);
@@ -228,9 +184,8 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::OnResume, thread->GetVrShellGl()));
+  gl_thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VrShellGl::OnResume, gl_thread_->GetVrShellGl()));
 
   metrics_helper_->SetVRActive(true);
   SetIsInVR(main_contents_, true);
@@ -240,11 +195,10 @@ void VrShell::SetSurface(JNIEnv* env,
                          const JavaParamRef<jobject>& obj,
                          const JavaParamRef<jobject>& surface) {
   CHECK(!reprojected_rendering_);
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   gfx::AcceleratedWidget window =
       ANativeWindow_fromSurface(base::android::AttachCurrentThread(), surface);
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::InitializeGl,
-                                     thread->GetVrShellGl(),
+                                     gl_thread_->GetVrShellGl(),
                                      base::Unretained(window)));
 }
 
@@ -267,9 +221,8 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
   metrics_helper_->SetWebVREnabled(enabled);
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  PostToGlThreadWhenReady(
-      base::Bind(&VrShellGl::SetWebVrMode, thread->GetVrShellGl(), enabled));
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetWebVrMode,
+                                     gl_thread_->GetVrShellGl(), enabled));
   if (enabled) {
     html_interface_->SetMode(UiInterface::Mode::WEB_VR);
   } else {
@@ -282,15 +235,6 @@ void VrShell::OnLoadProgressChanged(
     const base::android::JavaParamRef<jobject>& obj,
     double progress) {
   html_interface_->SetLoadProgress(progress);
-}
-
-void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  if (thread->IsRunning()) {
-    thread->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VrShellGl::SetGvrPoseForWebVr,
-                              thread->GetVrShellGl(), pose, pose_num));
-  }
 }
 
 void VrShell::SetWebVRRenderSurfaceSize(int width, int height) {
@@ -312,18 +256,16 @@ void VrShell::SubmitWebVRFrame() {}
 
 void VrShell::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
                                        const gvr::Rectf& right_bounds) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
-                                     thread->GetVrShellGl(), left_bounds,
+                                     gl_thread_->GetVrShellGl(), left_bounds,
                                      right_bounds));
 }
 
 // TODO(mthiesse): Do not expose GVR API outside of GL thread.
 // It's not thread-safe.
 gvr::GvrApi* VrShell::gvr_api() {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  if (thread->GetVrShellGlUnsafe()) {
-    return thread->GetVrShellGlUnsafe()->gvr_api();
+  if (gl_thread_->GetVrShellGlUnsafe()) {
+    return gl_thread_->GetVrShellGlUnsafe()->gvr_api();
   }
   CHECK(false);
   return nullptr;
@@ -335,7 +277,7 @@ void VrShell::SurfacesChanged(jobject content_surface, jobject ui_surface) {
 }
 
 void VrShell::GvrDelegateReady() {
-  delegate_->SetDelegate(this);
+  delegate_provider_->SetDelegate(this);
 }
 
 void VrShell::AppButtonPressed() {
@@ -345,11 +287,11 @@ void VrShell::AppButtonPressed() {
   // TODO(mthiesse): The page is no longer visible when in menu mode. We
   // should unfocus or otherwise let it know it's hidden.
   if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
-    if (delegate_->device_provider()) {
+    if (delegate_provider_->device_provider()) {
       if (html_interface_->GetMenuMode()) {
-        delegate_->device_provider()->OnDisplayBlur();
+        delegate_provider_->device_provider()->OnDisplayBlur();
       } else {
-        delegate_->device_provider()->OnDisplayFocus();
+        delegate_provider_->device_provider()->OnDisplayFocus();
       }
     }
   }
@@ -361,18 +303,18 @@ void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
                                            jint width, jint height,
                                            jfloat dpr) {
   TRACE_EVENT0("gpu", "VrShell::ContentPhysicalBoundsChanged");
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
-                                     thread->GetVrShellGl(), width, height));
+                                     gl_thread_->GetVrShellGl(), width,
+                                     height));
   content_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
 void VrShell::UIPhysicalBoundsChanged(JNIEnv* env,
                                       const JavaParamRef<jobject>& object,
                                       jint width, jint height, jfloat dpr) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UIPhysicalBoundsChanged,
-                                     thread->GetVrShellGl(), width, height));
+                                     gl_thread_->GetVrShellGl(), width,
+                                     height));
   ui_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
@@ -381,9 +323,8 @@ UiInterface* VrShell::GetUiInterface() {
 }
 
 void VrShell::UpdateScene(const base::ListValue* args) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateScene,
-                                     thread->GetVrShellGl(),
+                                     gl_thread_->GetVrShellGl(),
                                      base::Passed(args->CreateDeepCopy())));
 }
 
@@ -428,18 +369,16 @@ void VrShell::RenderViewHostChanged(content::RenderViewHost* old_host,
 void VrShell::MainFrameWasResized(bool width_changed) {
   display::Display display = display::Screen::GetScreen()
       ->GetDisplayNearestWindow(ui_contents_->GetNativeView());
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(
-      base::Bind(&VrShellGl::UIBoundsChanged, thread->GetVrShellGl(),
+      base::Bind(&VrShellGl::UIBoundsChanged, gl_thread_->GetVrShellGl(),
                  display.size().width(), display.size().height()));
 }
 
 void VrShell::ContentFrameWasResized(bool width_changed) {
   display::Display display = display::Screen::GetScreen()
       ->GetDisplayNearestWindow(main_contents_->GetNativeView());
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(
-      base::Bind(&VrShellGl::ContentBoundsChanged, thread->GetVrShellGl(),
+      base::Bind(&VrShellGl::ContentBoundsChanged, gl_thread_->GetVrShellGl(),
                  display.size().width(), display.size().height()));
 }
 
@@ -467,7 +406,21 @@ void VrShell::ContentWasShown() {
 }
 
 void VrShell::ForceExitVr() {
-  delegate_->ForceExitVr();
+  delegate_provider_->ForceExitVr();
+}
+
+void VrShell::OnVRVsyncProviderRequest(
+    device::mojom::VRVSyncProviderRequest request) {
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::OnRequest,
+                                     gl_thread_->GetVrShellGl(),
+                                     base::Passed(&request)));
+}
+
+void VrShell::UpdateVSyncInterval(long timebase_nanos,
+                                  double interval_seconds) {
+  PostToGlThreadWhenReady(
+      base::Bind(&VrShellGl::UpdateVSyncInterval,
+                 gl_thread_->GetVrShellGl(), timebase_nanos, interval_seconds));
 }
 
 void VrShell::SetContentCssSize(float width, float height, float dpr) {
@@ -495,6 +448,39 @@ void VrShell::ProcessContentGesture(
   }
 }
 
+device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat,
+                                                       uint32_t pose_index) {
+  device::mojom::VRPosePtr pose = device::mojom::VRPose::New();
+
+  pose->timestamp = base::Time::Now().ToJsTime();
+
+  pose->poseIndex = pose_index;
+  pose->orientation.emplace(4);
+
+  gfx::Transform inv_transform(
+      head_mat.m[0][0], head_mat.m[0][1], head_mat.m[0][2], head_mat.m[0][3],
+      head_mat.m[1][0], head_mat.m[1][1], head_mat.m[1][2], head_mat.m[1][3],
+      head_mat.m[2][0], head_mat.m[2][1], head_mat.m[2][2], head_mat.m[2][3],
+      head_mat.m[3][0], head_mat.m[3][1], head_mat.m[3][2], head_mat.m[3][3]);
+
+  gfx::Transform transform;
+  if (inv_transform.GetInverse(&transform)) {
+    gfx::DecomposedTransform decomposed_transform;
+    gfx::DecomposeTransform(&decomposed_transform, transform);
+
+    pose->orientation.value()[0] = decomposed_transform.quaternion[0];
+    pose->orientation.value()[1] = decomposed_transform.quaternion[1];
+    pose->orientation.value()[2] = decomposed_transform.quaternion[2];
+    pose->orientation.value()[3] = decomposed_transform.quaternion[3];
+
+    pose->position.emplace(3);
+    pose->position.value()[0] = decomposed_transform.translate[0];
+    pose->position.value()[1] = decomposed_transform.translate[1];
+    pose->position.value()[2] = decomposed_transform.translate[2];
+  }
+
+  return pose;
+}
 
 // ----------------------------------------------------------------------------
 // Native JNI methods

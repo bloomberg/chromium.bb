@@ -7,6 +7,7 @@
 
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_export.h"
+#include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace gvr {
@@ -23,12 +24,17 @@ class DEVICE_VR_EXPORT GvrDelegate {
   virtual void SubmitWebVRFrame() = 0;
   virtual void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
                                         const gvr::Rectf& right_bounds) = 0;
-
-  virtual void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
-                                  uint32_t pose_index) = 0;
   virtual gvr::Sizei GetWebVRCompositorSurfaceSize() = 0;
   virtual void SetWebVRRenderSurfaceSize(int width, int height) = 0;
+  // TODO(mthiesse): This function is not threadsafe. crbug.com/674594
   virtual gvr::GvrApi* gvr_api() = 0;
+  virtual void OnVRVsyncProviderRequest(
+      mojom::VRVSyncProviderRequest request) = 0;
+  virtual void UpdateVSyncInterval(long timebase_nanos,
+                                   double interval_seconds) = 0;
+
+ protected:
+  virtual ~GvrDelegate() {}
 };
 
 class DEVICE_VR_EXPORT GvrDelegateProvider {
@@ -43,6 +49,9 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual GvrDelegate* GetNonPresentingDelegate() = 0;
   virtual void DestroyNonPresentingDelegate() = 0;
   virtual void SetListeningForActivate(bool listening) = 0;
+
+ protected:
+  virtual ~GvrDelegateProvider() {}
 
  private:
   static GvrDelegateProvider* delegate_provider_;

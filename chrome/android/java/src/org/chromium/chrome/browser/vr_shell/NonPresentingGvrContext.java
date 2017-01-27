@@ -15,16 +15,6 @@ public interface NonPresentingGvrContext {
     long getNativeGvrContext();
 
     /**
-     * Must be called when activity resumes.
-     */
-    void resume();
-
-    /**
-     * Must be called when activity pauses.
-     */
-    void pause();
-
-    /**
      * Shutdown the native gvr context.
      */
     void shutdown();

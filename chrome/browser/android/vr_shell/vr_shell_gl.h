@@ -13,6 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/vr_service.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -37,12 +39,13 @@ namespace vr_shell {
 class UiScene;
 class VrController;
 class VrShell;
+class VrShellDelegate;
 class VrShellRenderer;
 struct ContentRectangle;
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VrShellGl {
+class VrShellGl : public device::mojom::VRVSyncProvider {
  public:
   enum class InputTarget {
     NONE = 0,
@@ -52,16 +55,15 @@ class VrShellGl {
 
   VrShellGl(
       const base::WeakPtr<VrShell>& weak_vr_shell,
+      const base::WeakPtr<VrShellDelegate>& delegate_provider,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
       bool initially_web_vr,
       bool reprojected_rendering);
-  ~VrShellGl();
+  ~VrShellGl() override;
 
   void Initialize();
   void InitializeGl(gfx::AcceleratedWidget window);
-
-  void DrawFrame();
 
   void OnTriggerEvent();
   void OnPause();
@@ -82,9 +84,14 @@ class VrShellGl {
 
   void UpdateScene(std::unique_ptr<base::ListValue> commands);
 
+  void UpdateVSyncInterval(long timebase_nanos, double interval_seconds);
+
+  void OnRequest(device::mojom::VRVSyncProviderRequest request);
+
  private:
   void GvrInit(gvr_context* gvr_api);
   void InitializeRenderer();
+  void DrawFrame();
   void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
   void DrawUiView(const gvr::Mat4f* head_pose,
                   const std::vector<const ContentRectangle*>& elements,
@@ -104,12 +111,16 @@ class VrShellGl {
 
   void OnUIFrameAvailable();
   void OnContentFrameAvailable();
+  bool GetPixelEncodedPoseIndexByte(int* pose_index);
 
-  void UpdateVSyncParameters(const base::TimeTicks timebase,
-                             const base::TimeDelta interval);
-  void ScheduleNextDrawFrame();
+  void OnVSync();
+
+  // VRVSyncProvider
+  void GetVSync(const GetVSyncCallback& callback) override;
 
   void ForceExitVr();
+
+  device::mojom::VRPosePtr GetPose();
 
   // samplerExternalOES texture data for UI content image.
   int ui_texture_id_ = 0;
@@ -159,7 +170,6 @@ class VrShellGl {
   // current backlog of poses which is 2-3 frames.
   static constexpr int kPoseRingBufferSize = 8;
   std::vector<gvr::Mat4f> webvr_head_pose_;
-  std::vector<bool> webvr_head_pose_valid_;
   int webvr_texture_id_ = 0;
   bool web_vr_mode_;
   bool ready_to_draw_ = false;
@@ -168,12 +178,22 @@ class VrShellGl {
   std::unique_ptr<VrController> controller_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::CancelableClosure draw_task_;
+  base::CancelableClosure vsync_task_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
 
+  base::TimeDelta pending_time_;
+  bool pending_vsync_ = false;
+  GetVSyncCallback callback_;
+  bool received_frame_ = false;
+  mojo::Binding<device::mojom::VRVSyncProvider> binding_;
+
   base::WeakPtr<VrShell> weak_vr_shell_;
+  base::WeakPtr<VrShellDelegate> delegate_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  uint32_t pose_index_ = 1;
+  int last_pose_ = 0;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

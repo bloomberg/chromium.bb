@@ -16,12 +16,12 @@
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace base {
 class ListValue;
-class Thread;
 }
 
 namespace blink {
@@ -40,6 +40,7 @@ namespace vr_shell {
 
 class UiInterface;
 class VrCompositor;
+class VrGLThread;
 class VrInputManager;
 class VrMetricsHelper;
 class VrShellDelegate;
@@ -101,21 +102,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   static base::WeakPtr<VrShell> GetWeakPtr(
       const content::WebContents* web_contents);
 
-  // TODO(mthiesse): Clean up threading around UiInterface.
   UiInterface* GetUiInterface();
   void OnDomContentsLoaded();
-
-  // device::GvrDelegate implementation
-  // TODO(mthiesse): Clean up threading around GVR API. These functions are
-  // called on the UI thread, but use GL thread objects in a non-threadsafe way.
-  void SetWebVRSecureOrigin(bool secure_origin) override;
-  void SubmitWebVRFrame() override;
-  void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
-                                const gvr::Rectf& right_bounds) override;
-  gvr::GvrApi* gvr_api() override;
-  void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) override;
-  void SetWebVRRenderSurfaceSize(int width, int height) override;
-  gvr::Sizei GetWebVRCompositorSurfaceSize() override;
 
   void SurfacesChanged(jobject content_surface, jobject ui_surface);
   void GvrDelegateReady();
@@ -146,15 +134,31 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event);
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
+  static device::mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat,
+                                                       uint32_t pose_index);
+
  private:
   ~VrShell() override;
   void PostToGlThreadWhenReady(const base::Closure& task);
 
-  // content::WebContentsObserver implementation. All called on UI thread.
+  // content::WebContentsObserver implementation.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
+
+  // device::GvrDelegate implementation
+  void SetWebVRSecureOrigin(bool secure_origin) override;
+  void SubmitWebVRFrame() override;
+  void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+                                const gvr::Rectf& right_bounds) override;
+  gvr::GvrApi* gvr_api() override;
+  void SetWebVRRenderSurfaceSize(int width, int height) override;
+  gvr::Sizei GetWebVRCompositorSurfaceSize() override;
+  void OnVRVsyncProviderRequest(
+      device::mojom::VRVSyncProviderRequest request) override;
+  void UpdateVSyncInterval(long timebase_nanos,
+                           double interval_seconds) override;
 
   std::unique_ptr<UiInterface> html_interface_;
 
@@ -165,7 +169,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   std::unique_ptr<VrWebContentsObserver> vr_web_contents_observer_;
 
-  VrShellDelegate* delegate_ = nullptr;
+  VrShellDelegate* delegate_provider_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 
   std::unique_ptr<VrInputManager> content_input_manager_;
@@ -173,7 +177,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   std::unique_ptr<VrMetricsHelper> metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  std::unique_ptr<base::Thread> gl_thread_;
+  std::unique_ptr<VrGLThread> gl_thread_;
   bool reprojected_rendering_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
