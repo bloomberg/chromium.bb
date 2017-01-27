@@ -26,9 +26,9 @@
 
 #pragma mark CRIWVTranslateDelegate methods
 
-- (void)translateStepChanged:(ios_web_view::CRIWVTransateStep)step
+- (void)translateStepChanged:(CRIWVTransateStep)step
                      manager:(id<CRIWVTranslateManager>)manager {
-  if (step == ios_web_view::CRIWVTransateStepBeforeTranslate) {
+  if (step == CRIWVTransateStepBeforeTranslate) {
     DCHECK(!_translateManager);
     DCHECK(!_beforeTranslateActionSheet);
     _translateManager.reset([manager retain]);

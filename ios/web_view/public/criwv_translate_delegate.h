@@ -9,8 +9,6 @@
 
 @protocol CRIWVTranslateManager;
 
-namespace ios_web_view {
-
 typedef NS_ENUM(NSInteger, CRIWVTransateStep) {
   CRIWVTransateStepBeforeTranslate,
   CRIWVTransateStepTranslating,
@@ -18,13 +16,11 @@ typedef NS_ENUM(NSInteger, CRIWVTransateStep) {
   CRIWVTransateStepError,
 };
 
-}  // namespace ios_web_view
-
 // Delegate interface for the CRIWVTranslate.  Embedders can implement the
 // functions in order to customize the behavior.
 @protocol CRIWVTranslateDelegate
 
-- (void)translateStepChanged:(ios_web_view::CRIWVTransateStep)step
+- (void)translateStepChanged:(CRIWVTransateStep)step
                      manager:(id<CRIWVTranslateManager>)manager;
 
 @end

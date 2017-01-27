@@ -74,23 +74,23 @@ void CRIWVTranslateClient::ShowTranslateUI(
                     sourceLanguage:source_language
                     targetLanguage:target_language]);
 
-  ios_web_view::CRIWVTransateStep criwv_step;
+  CRIWVTransateStep criwv_step;
   switch (step) {
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:
-      criwv_step = ios_web_view::CRIWVTransateStepBeforeTranslate;
+      criwv_step = CRIWVTransateStepBeforeTranslate;
       break;
     case translate::TRANSLATE_STEP_TRANSLATING:
-      criwv_step = ios_web_view::CRIWVTransateStepTranslating;
+      criwv_step = CRIWVTransateStepTranslating;
       break;
     case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
-      criwv_step = ios_web_view::CRIWVTransateStepAfterTranslate;
+      criwv_step = CRIWVTransateStepAfterTranslate;
       break;
     case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
-      criwv_step = ios_web_view::CRIWVTransateStepError;
+      criwv_step = CRIWVTransateStepError;
       break;
     case translate::TRANSLATE_STEP_NEVER_TRANSLATE:
       NOTREACHED() << "Never translate is not supported yet in web_view.";
-      criwv_step = ios_web_view::CRIWVTransateStepError;
+      criwv_step = CRIWVTransateStepError;
       break;
   }
   [delegate_ translateStepChanged:criwv_step manager:criwv_manager.get()];
