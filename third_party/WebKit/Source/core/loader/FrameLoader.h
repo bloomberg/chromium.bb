@@ -129,9 +129,6 @@ class CORE_EXPORT FrameLoader final {
   bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
   bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 
-  FrameLoadType loadType() const;
-  void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
-
   FrameLoaderClient* client() const;
 
   void setDefersLoading(bool);
@@ -210,7 +207,7 @@ class CORE_EXPORT FrameLoader final {
                                          ContentSecurityPolicyDisposition,
                                          NavigationType,
                                          NavigationPolicy,
-                                         bool shouldReplaceCurrentEntry,
+                                         FrameLoadType,
                                          bool isClientRedirect,
                                          HTMLFormElement*);
 
@@ -240,7 +237,7 @@ class CORE_EXPORT FrameLoader final {
                                        const String& httpMethod,
                                        FrameLoadType,
                                        const KURL&);
-  void processFragment(const KURL&, LoadStartType);
+  void processFragment(const KURL&, FrameLoadType, LoadStartType);
 
   bool checkLoadCanStart(FrameLoadRequest&,
                          FrameLoadType,
@@ -259,6 +256,7 @@ class CORE_EXPORT FrameLoader final {
                           HistoryLoadType,
                           ClientRedirectPolicy,
                           Document*);
+  void restoreScrollPositionAndViewStateForLoadType(FrameLoadType);
 
   void scheduleCheckCompleted();
 
@@ -278,8 +276,6 @@ class CORE_EXPORT FrameLoader final {
   mutable FrameLoaderStateMachine m_stateMachine;
 
   Member<ProgressTracker> m_progressTracker;
-
-  FrameLoadType m_loadType;
 
   // Document loaders for the three phases of frame loading. Note that while a
   // new request is being loaded, the old document loader may still be

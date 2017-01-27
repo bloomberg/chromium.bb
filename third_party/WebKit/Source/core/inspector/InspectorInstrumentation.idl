@@ -244,7 +244,7 @@ class XMLHttpRequest;
     void frameDocumentUpdated([Keep] LocalFrame*);
 
     [Page, Tracing]
-    void frameStartedLoading([Keep] LocalFrame*);
+    void frameStartedLoading([Keep] LocalFrame*, FrameLoadType);
 
     [Page, Tracing]
     void frameStoppedLoading([Keep] LocalFrame*);

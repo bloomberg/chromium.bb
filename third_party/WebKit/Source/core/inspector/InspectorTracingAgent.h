@@ -10,6 +10,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Tracing.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -45,7 +46,7 @@ class CORE_EXPORT InspectorTracingAgent final
   Response disable() override;
 
   // InspectorInstrumentation methods
-  void frameStartedLoading(LocalFrame*);
+  void frameStartedLoading(LocalFrame*, FrameLoadType);
   void frameStoppedLoading(LocalFrame*);
 
   // Protocol method implementations.

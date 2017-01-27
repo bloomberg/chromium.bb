@@ -42,9 +42,9 @@ void InspectorTracingAgent::restore() {
   emitMetadataEvents();
 }
 
-void InspectorTracingAgent::frameStartedLoading(LocalFrame* frame) {
-  if (frame != m_inspectedFrames->root() ||
-      frame->loader().loadType() != FrameLoadTypeReload)
+void InspectorTracingAgent::frameStartedLoading(LocalFrame* frame,
+                                                FrameLoadType type) {
+  if (frame != m_inspectedFrames->root() || type != FrameLoadTypeReload)
     return;
   m_client->showReloadingBlanket();
 }

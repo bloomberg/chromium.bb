@@ -145,7 +145,7 @@ class CORE_EXPORT InspectorPageAgent final
   void didCommitLoad(LocalFrame*, DocumentLoader*);
   void frameAttachedToParent(LocalFrame*);
   void frameDetachedFromParent(LocalFrame*);
-  void frameStartedLoading(LocalFrame*);
+  void frameStartedLoading(LocalFrame*, FrameLoadType);
   void frameStoppedLoading(LocalFrame*);
   void frameScheduledNavigation(LocalFrame*, double delay);
   void frameClearedScheduledNavigation(LocalFrame*);

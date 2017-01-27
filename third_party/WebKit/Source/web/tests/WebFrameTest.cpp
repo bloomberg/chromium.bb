@@ -7155,7 +7155,8 @@ class TestSameDocumentWebFrameClient
       : m_frameLoadTypeReloadMainResourceSeen(false) {}
 
   virtual void willSendRequest(WebLocalFrame* frame, WebURLRequest&) {
-    if (toWebLocalFrameImpl(frame)->frame()->loader().loadType() ==
+    FrameLoader& frameLoader = toWebLocalFrameImpl(frame)->frame()->loader();
+    if (frameLoader.provisionalDocumentLoader()->loadType() ==
         FrameLoadTypeReloadMainResource)
       m_frameLoadTypeReloadMainResourceSeen = true;
   }

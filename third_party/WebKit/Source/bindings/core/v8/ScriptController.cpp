@@ -298,7 +298,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,
       frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() &&
       !frame()->isLoading();
   if (progressNotificationsNeeded)
-    frame()->loader().progress().progressStarted();
+    frame()->loader().progress().progressStarted(FrameLoadTypeStandard);
 
   Document* ownerDocument = frame()->document();
 

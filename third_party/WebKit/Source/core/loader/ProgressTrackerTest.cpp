@@ -52,7 +52,7 @@ class ProgressTrackerTest : public ::testing::Test {
   // to ProgressTracker with identifier 1, but tests are responsible for
   // emulating payload and load completion.
   void emulateMainResourceRequestAndResponse() const {
-    progress().progressStarted();
+    progress().progressStarted(FrameLoadTypeStandard);
     progress().willStartLoading(1ul, ResourceLoadPriorityVeryHigh);
     EXPECT_EQ(0.0, lastProgress());
     progress().incrementProgress(1ul, responseHeaders());
@@ -66,7 +66,7 @@ class ProgressTrackerTest : public ::testing::Test {
 };
 
 TEST_F(ProgressTrackerTest, Static) {
-  progress().progressStarted();
+  progress().progressStarted(FrameLoadTypeStandard);
   EXPECT_EQ(0.0, lastProgress());
   progress().finishedParsing();
   EXPECT_EQ(1.0, lastProgress());

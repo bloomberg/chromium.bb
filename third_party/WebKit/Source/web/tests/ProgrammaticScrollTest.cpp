@@ -50,7 +50,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
 
   WebViewImpl* webViewImpl = toWebViewImpl(webView);
   FrameLoader& loader = webViewImpl->mainFrameImpl()->frame()->loader();
-  loader.setLoadType(FrameLoadTypeBackForward);
+  loader.documentLoader()->setLoadType(FrameLoadTypeBackForward);
 
   webViewImpl->setPageScaleFactor(3.0f);
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 500));
@@ -80,7 +80,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
 
   WebViewImpl* webViewImpl = toWebViewImpl(webView);
   FrameLoader& loader = webViewImpl->mainFrameImpl()->frame()->loader();
-  loader.setLoadType(FrameLoadTypeBackForward);
+  loader.documentLoader()->setLoadType(FrameLoadTypeBackForward);
 
   webViewImpl->setPageScaleFactor(3.0f);
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 500));

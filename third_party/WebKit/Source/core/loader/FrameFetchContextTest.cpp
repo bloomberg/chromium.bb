@@ -497,19 +497,19 @@ TEST_F(FrameFetchContextTest, MainResource) {
                 postRequest, Resource::MainResource, FetchRequest::NoDefer));
 
   // Re-post
-  document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
+  document->loader()->setLoadType(FrameLoadTypeBackForward);
   EXPECT_EQ(WebCachePolicy::ReturnCacheDataDontLoad,
             fetchContext->resourceRequestCachePolicy(
                 postRequest, Resource::MainResource, FetchRequest::NoDefer));
 
   // FrameLoadTypeReloadMainResource
-  document->frame()->loader().setLoadType(FrameLoadTypeReloadMainResource);
+  document->loader()->setLoadType(FrameLoadTypeReloadMainResource);
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
             fetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));
 
   // Conditional request
-  document->frame()->loader().setLoadType(FrameLoadTypeStandard);
+  document->loader()->setLoadType(FrameLoadTypeStandard);
   ResourceRequest conditional("http://www.example.com");
   conditional.setHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
@@ -520,19 +520,19 @@ TEST_F(FrameFetchContextTest, MainResource) {
   FrameFetchContext* childFetchContext = createChildFrame();
 
   // Child frame as part of back/forward
-  document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
+  document->loader()->setLoadType(FrameLoadTypeBackForward);
   EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad,
             childFetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));
 
   // Child frame as part of reload
-  document->frame()->loader().setLoadType(FrameLoadTypeReload);
+  document->loader()->setLoadType(FrameLoadTypeReload);
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
             childFetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));
 
   // Child frame as part of reload bypassing cache
-  document->frame()->loader().setLoadType(FrameLoadTypeReloadBypassingCache);
+  document->loader()->setLoadType(FrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(WebCachePolicy::BypassingCache,
             childFetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));

@@ -167,7 +167,7 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
   // Do not block scripts if it is a page reload. This is to enable pages to
   // recover if blocking of a script is leading to a page break and the user
   // reloads the page.
-  const FrameLoadType loadType = document.frame()->loader().loadType();
+  const FrameLoadType loadType = document.loader()->loadType();
   if (isReloadLoadType(loadType)) {
     // Recording this metric since an increase in number of reloads for pages
     // where a script was blocked could be indicative of a page break.
@@ -260,7 +260,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
   if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
     return;
 
-  if (frame()->loader().loadType() == FrameLoadTypeReload)
+  if (masterDocumentLoader()->loadType() == FrameLoadTypeReload)
     request.clearHTTPHeaderField("Save-Data");
 
   if (frame()->settings() && frame()->settings()->getDataSaverEnabled())
@@ -271,7 +271,7 @@ CachePolicy FrameFetchContext::getCachePolicy() const {
   if (m_document && m_document->loadEventFinished())
     return CachePolicyVerify;
 
-  FrameLoadType loadType = frame()->loader().loadType();
+  FrameLoadType loadType = masterDocumentLoader()->loadType();
   if (loadType == FrameLoadTypeReloadBypassingCache)
     return CachePolicyReload;
 
@@ -313,13 +313,23 @@ static WebCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
   return WebCachePolicy::UseProtocolCachePolicy;
 }
 
+static WebCachePolicy frameLoadTypeToWebCachePolicy(FrameLoadType type) {
+  if (type == FrameLoadTypeBackForward)
+    return WebCachePolicy::ReturnCacheDataElseLoad;
+  if (type == FrameLoadTypeReloadBypassingCache)
+    return WebCachePolicy::BypassingCache;
+  if (type == FrameLoadTypeReload)
+    return WebCachePolicy::ValidatingCacheData;
+  return WebCachePolicy::UseProtocolCachePolicy;
+}
+
 WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
     ResourceRequest& request,
     Resource::Type type,
     FetchRequest::DeferOption defer) const {
   DCHECK(frame());
   if (type == Resource::MainResource) {
-    FrameLoadType frameLoadType = frame()->loader().loadType();
+    FrameLoadType frameLoadType = masterDocumentLoader()->loadType();
     if (request.httpMethod() == "POST" &&
         frameLoadType == FrameLoadTypeBackForward)
       return WebCachePolicy::ReturnCacheDataDontLoad;
@@ -327,16 +337,17 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
         request.isConditional() || request.httpMethod() == "POST")
       return WebCachePolicy::ValidatingCacheData;
 
-    for (Frame* f = frame(); f; f = f->tree().parent()) {
+    WebCachePolicy policy = frameLoadTypeToWebCachePolicy(frameLoadType);
+    if (policy != WebCachePolicy::UseProtocolCachePolicy)
+      return policy;
+
+    for (Frame* f = frame()->tree().parent(); f; f = f->tree().parent()) {
       if (!f->isLocalFrame())
         continue;
-      FrameLoadType parentFrameLoadType = toLocalFrame(f)->loader().loadType();
-      if (parentFrameLoadType == FrameLoadTypeBackForward)
-        return WebCachePolicy::ReturnCacheDataElseLoad;
-      if (parentFrameLoadType == FrameLoadTypeReloadBypassingCache)
-        return WebCachePolicy::BypassingCache;
-      if (parentFrameLoadType == FrameLoadTypeReload)
-        return WebCachePolicy::ValidatingCacheData;
+      policy = frameLoadTypeToWebCachePolicy(
+          toLocalFrame(f)->loader().documentLoader()->loadType());
+      if (policy != WebCachePolicy::UseProtocolCachePolicy)
+        return policy;
     }
     // Returns UseProtocolCachePolicy for other cases, parent frames not having
     // special kinds of FrameLoadType as they are checked inside the for loop
@@ -868,7 +879,7 @@ bool FrameFetchContext::updateTimingInfoForIFrameNavigation(
   frame()->deprecatedLocalOwner()->didLoadNonEmptyDocument();
   // Do not report iframe navigation that restored from history, since its
   // location may have been changed after initial navigation.
-  if (frame()->loader().loadType() == FrameLoadTypeInitialHistoryLoad)
+  if (masterDocumentLoader()->loadType() == FrameLoadTypeInitialHistoryLoad)
     return false;
   info->setInitiatorType(frame()->deprecatedLocalOwner()->localName());
   return true;

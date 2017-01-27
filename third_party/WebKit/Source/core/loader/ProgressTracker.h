@@ -27,6 +27,7 @@
 #define ProgressTracker_h
 
 #include "core/CoreExport.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "wtf/Allocator.h"
@@ -58,7 +59,7 @@ class CORE_EXPORT ProgressTracker final
 
   double estimatedProgress() const;
 
-  void progressStarted();
+  void progressStarted(FrameLoadType);
   void progressCompleted();
 
   void finishedParsing();

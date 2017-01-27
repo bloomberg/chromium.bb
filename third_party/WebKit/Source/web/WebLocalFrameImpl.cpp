@@ -1631,7 +1631,7 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(
   // If we're moving in the back/forward list, we might want to replace the
   // content of this child frame with whatever was there at that point.
   HistoryItem* childItem = nullptr;
-  if (isBackForwardLoadType(frame()->loader().loadType()) &&
+  if (isBackForwardLoadType(frame()->loader().documentLoader()->loadType()) &&
       !frame()->document()->loadEventFinished())
     childItem = webframeChild->client()->historyItemForNewChildFrame();
 

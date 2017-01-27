@@ -529,7 +529,8 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(
       isBackForwardLoadType(toWebLocalFrameImpl(m_webFrame->parent())
                                 ->frame()
                                 ->loader()
-                                .loadType()) &&
+                                .documentLoader()
+                                ->loadType()) &&
       !toWebLocalFrameImpl(m_webFrame->parent())
            ->frame()
            ->document()

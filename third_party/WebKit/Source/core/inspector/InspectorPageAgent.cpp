@@ -678,7 +678,7 @@ bool InspectorPageAgent::screencastEnabled() {
          m_state->booleanProperty(PageAgentState::screencastEnabled, false);
 }
 
-void InspectorPageAgent::frameStartedLoading(LocalFrame* frame) {
+void InspectorPageAgent::frameStartedLoading(LocalFrame* frame, FrameLoadType) {
   frontend()->frameStartedLoading(frameId(frame));
 }
 

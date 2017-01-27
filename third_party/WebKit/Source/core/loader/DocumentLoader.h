@@ -136,6 +136,9 @@ class CORE_EXPORT DocumentLoader
   void setSentDidFinishLoad() { m_state = SentDidFinishLoad; }
   bool sentDidFinishLoad() const { return m_state == SentDidFinishLoad; }
 
+  FrameLoadType loadType() const { return m_loadType; }
+  void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
+
   NavigationType getNavigationType() const { return m_navigationType; }
   void setNavigationType(NavigationType navigationType) {
     m_navigationType = navigationType;
@@ -259,6 +262,8 @@ class CORE_EXPORT DocumentLoader
   ResourceRequest m_request;
 
   ResourceResponse m_response;
+
+  FrameLoadType m_loadType;
 
   bool m_isClientRedirect;
   bool m_replacesCurrentHistoryItem;

@@ -105,6 +105,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame,
       m_originalRequest(req),
       m_substituteData(substituteData),
       m_request(req),
+      m_loadType(FrameLoadTypeStandard),
       m_isClientRedirect(clientRedirectPolicy ==
                          ClientRedirectPolicy::ClientRedirect),
       m_replacesCurrentHistoryItem(false),
@@ -375,8 +376,8 @@ bool DocumentLoader::redirectReceived(
   }
   if (!frameLoader().shouldContinueForNavigationPolicy(
           m_request, SubstituteData(), this, CheckContentSecurityPolicy,
-          m_navigationType, NavigationPolicyCurrentTab,
-          replacesCurrentHistoryItem(), isClientRedirect(), nullptr)) {
+          m_navigationType, NavigationPolicyCurrentTab, m_loadType,
+          isClientRedirect(), nullptr)) {
     m_fetcher->stopFetching();
     return false;
   }

@@ -103,13 +103,13 @@ FrameLoaderClient* ProgressTracker::frameLoaderClient() const {
   return m_frame->client();
 }
 
-void ProgressTracker::progressStarted() {
+void ProgressTracker::progressStarted(FrameLoadType type) {
   if (!m_frame->isLoading())
     frameLoaderClient()->didStartLoading(NavigationToDifferentDocument);
   reset();
   m_progressValue = initialProgressValue;
   m_frame->setIsLoading(true);
-  InspectorInstrumentation::frameStartedLoading(m_frame);
+  InspectorInstrumentation::frameStartedLoading(m_frame, type);
 }
 
 void ProgressTracker::progressCompleted() {
