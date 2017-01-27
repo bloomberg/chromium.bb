@@ -10,6 +10,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/find_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -23,213 +24,7 @@ namespace {
 
 const int kInvalidId = -1;
 
-// The results of a find request.
-struct FindResults {
-  FindResults(int request_id, int number_of_matches, int active_match_ordinal)
-      : request_id(request_id),
-        number_of_matches(number_of_matches),
-        active_match_ordinal(active_match_ordinal) {}
-  FindResults() : FindResults(kInvalidId, 0, 0) {}
-
-  int request_id;
-  int number_of_matches;
-  int active_match_ordinal;
-};
-
 }  // namespace
-
-class TestWebContentsDelegate : public WebContentsDelegate {
- public:
-  TestWebContentsDelegate()
-      : last_request_id_(kInvalidId),
-        last_finished_request_id_(kInvalidId),
-        next_reply_received_(false),
-        record_replies_(false),
-        waiting_for_(NOTHING) {}
-  ~TestWebContentsDelegate() override {}
-
-  // Returns the current find results.
-  const FindResults& GetFindResults() const {
-    return current_results_;
-  }
-
-  // Waits for all pending replies to be received.
-  void WaitForFinalReply() {
-    if (last_finished_request_id_ >= last_request_id_)
-      return;
-
-    WaitFor(FINAL_REPLY);
-  }
-
-  // Waits for the next find reply. This is useful for waiting for a single
-  // match to be activated, or for a new frame to be searched.
-  void WaitForNextReply() {
-    if (next_reply_received_)
-      return;
-
-    WaitFor(NEXT_REPLY);
-  }
-
-  // Indicates that the next find reply from this point will be the one to wait
-  // for when WaitForNextReply() is called. It may be the case that the reply
-  // comes before the call to WaitForNextReply(), in which case it will return
-  // immediately.
-  void MarkNextReply() {
-    next_reply_received_ = false;
-  }
-
-  // Called when a new find request is issued, so the delegate knows the last
-  // request ID.
-  void UpdateLastRequest(int request_id) {
-    last_request_id_ = request_id;
-  }
-
-  // From when this function is called, all replies coming in via FindReply()
-  // will be recorded. These replies can be retrieved via GetReplyRecord().
-  void StartReplyRecord() {
-    reply_record_.clear();
-    record_replies_ = true;
-  }
-
-  // Retreives the results from the find replies recorded since the last call to
-  // StartReplyRecord(). Calling this function also stops the recording new find
-  // replies.
-  const std::vector<FindResults>& GetReplyRecord() {
-    record_replies_ = false;
-    return reply_record_;
-  }
-
-#if defined(OS_ANDROID)
-  // Waits for all of the find match rects to be received.
-  void WaitForMatchRects() {
-    WaitFor(MATCH_RECTS);
-  }
-
-  const std::vector<gfx::RectF>& find_match_rects() const {
-    return find_match_rects_;
-  }
-
-  const gfx::RectF& active_match_rect() const {
-    return active_match_rect_;
-  }
-#endif
-
- private:
-  enum WaitingFor {
-    NOTHING,
-    FINAL_REPLY,
-    NEXT_REPLY,
-#if defined(OS_ANDROID)
-    MATCH_RECTS
-#endif
-  };
-
-  // WebContentsDelegate override.
-  void FindReply(WebContents* web_contents,
-                 int request_id,
-                 int number_of_matches,
-                 const gfx::Rect& selection_rect,
-                 int active_match_ordinal,
-                 bool final_update) override {
-    if (record_replies_) {
-      reply_record_.emplace_back(
-          request_id, number_of_matches, active_match_ordinal);
-    }
-
-    // Update the current results.
-    if (request_id > current_results_.request_id)
-      current_results_.request_id = request_id;
-    if (number_of_matches != -1)
-      current_results_.number_of_matches = number_of_matches;
-    if (active_match_ordinal != -1)
-      current_results_.active_match_ordinal = active_match_ordinal;
-
-    if (!final_update)
-      return;
-
-    if (request_id > last_finished_request_id_)
-      last_finished_request_id_ = request_id;
-    next_reply_received_ = true;
-
-    // If we are waiting for this find reply, stop waiting.
-    if (waiting_for_ == NEXT_REPLY ||
-        (waiting_for_ == FINAL_REPLY &&
-         last_finished_request_id_ >= last_request_id_)) {
-      StopWaiting();
-    }
-  }
-
-  // Uses |message_loop_runner_| to wait for various things.
-  void WaitFor(WaitingFor wait_for) {
-    ASSERT_EQ(NOTHING, waiting_for_);
-    ASSERT_NE(NOTHING, wait_for);
-
-    // Wait for |wait_for|.
-    waiting_for_ = wait_for;
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-
-    // Done waiting.
-    waiting_for_ = NOTHING;
-    message_loop_runner_ = nullptr;
-  }
-
-  // Stop waiting for |waiting_for_|.
-  void StopWaiting() {
-    if (!message_loop_runner_.get())
-      return;
-
-    ASSERT_NE(NOTHING, waiting_for_);
-    message_loop_runner_->Quit();
-  }
-
-#if defined(OS_ANDROID)
-  // WebContentsDelegate override.
-  void FindMatchRectsReply(WebContents* web_contents,
-                           int version,
-                           const std::vector<gfx::RectF>& rects,
-                           const gfx::RectF& active_rect) override {
-    // Update the current rects.
-    find_match_rects_ = rects;
-    active_match_rect_ = active_rect;
-
-    // If we are waiting for match rects, stop waiting.
-    if (waiting_for_ == MATCH_RECTS)
-      StopWaiting();
-  }
-
-  std::vector<gfx::RectF> find_match_rects_;
-
-  gfx::RectF active_match_rect_;
-#endif
-
-  // The latest known results from the current find request.
-  FindResults current_results_;
-
-  // The ID of the last find request issued.
-  int last_request_id_;
-
-  // The ID of the last find request to finish (all replies received).
-  int last_finished_request_id_;
-
-  // Indicates whether the next reply after MarkNextReply() has been received.
-  bool next_reply_received_;
-
-  // Indicates whether the find results from incoming find replies are currently
-  // being recorded.
-  bool record_replies_;
-
-  // A record of all find replies that have come in via FindReply() since
-  // StartReplyRecor() was last called.
-  std::vector<FindResults> reply_record_;
-
-  // Indicates what |message_loop_runner_| is waiting for, if anything.
-  WaitingFor waiting_for_;
-
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebContentsDelegate);
-};
 
 class FindRequestManagerTest : public ContentBrowserTest,
                                public testing::WithParamInterface<bool> {
@@ -264,7 +59,7 @@ class FindRequestManagerTest : public ContentBrowserTest,
   void LoadAndWait(const std::string& url) {
     TestNavigationObserver navigation_observer(contents());
     NavigateToURL(shell(), embedded_test_server()->GetURL("a.com", url));
-    EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+    ASSERT_TRUE(navigation_observer.last_navigation_succeeded());
   }
 
   // Loads a multi-frame page. The page will have a full binary frame tree of
@@ -301,8 +96,8 @@ class FindRequestManagerTest : public ContentBrowserTest,
     return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 
-  TestWebContentsDelegate* delegate() const {
-    return static_cast<TestWebContentsDelegate*>(contents()->GetDelegate());
+  FindTestWebContentsDelegate* delegate() const {
+    return static_cast<FindTestWebContentsDelegate*>(contents()->GetDelegate());
   }
 
   int last_request_id() const {
@@ -337,7 +132,7 @@ class FindRequestManagerTest : public ContentBrowserTest,
     LoadMultiFramePageChildFrames(height - 1, cross_process, child);
   }
 
-  TestWebContentsDelegate test_delegate_;
+  FindTestWebContentsDelegate test_delegate_;
   WebContentsDelegate* normal_delegate_;
 
   // The ID of the last find request requested.

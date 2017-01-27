@@ -52,6 +52,8 @@ static_library("test_support") {
     "../public/test/download_test_observer.h",
     "../public/test/fake_speech_recognition_manager.cc",
     "../public/test/fake_speech_recognition_manager.h",
+    "../public/test/find_test_utils.cc",
+    "../public/test/find_test_utils.h",
     "../public/test/frame_load_waiter.cc",
     "../public/test/frame_load_waiter.h",
     "../public/test/javascript_test_observer.cc",
