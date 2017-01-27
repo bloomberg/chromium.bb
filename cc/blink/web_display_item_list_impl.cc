@@ -12,7 +12,6 @@
 #include "cc/playback/clip_display_item.h"
 #include "cc/playback/clip_path_display_item.h"
 #include "cc/playback/compositing_display_item.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/filter_display_item.h"
 #include "cc/playback/float_clip_display_item.h"
@@ -30,17 +29,10 @@ namespace cc_blink {
 
 namespace {
 
-scoped_refptr<cc::DisplayItemList> CreateUncachedDisplayItemListForBlink() {
-  cc::DisplayItemListSettings settings;
-  settings.use_cached_picture = false;
-  return cc::DisplayItemList::Create(settings);
-}
-
 }  // namespace
 
 WebDisplayItemListImpl::WebDisplayItemListImpl()
-    : display_item_list_(CreateUncachedDisplayItemListForBlink()) {
-}
+    : display_item_list_(new cc::DisplayItemList) {}
 
 WebDisplayItemListImpl::WebDisplayItemListImpl(
     cc::DisplayItemList* display_list)

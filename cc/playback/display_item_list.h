@@ -19,7 +19,6 @@
 #include "cc/base/rtree.h"
 #include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,9 +32,7 @@ class DisplayItem;
 class CC_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
  public:
-  // Creates a display item list.
-  static scoped_refptr<DisplayItemList> Create(
-      const DisplayItemListSettings& settings);
+  DisplayItemList();
 
   // TODO(trchen): Deprecated. Apply clip and scale on the canvas instead.
   void Raster(SkCanvas* canvas,
@@ -172,8 +169,6 @@ class CC_EXPORT DisplayItemList
   }
 
  private:
-  explicit DisplayItemList(
-      const DisplayItemListSettings& display_list_settings);
   ~DisplayItemList();
 
   RTree rtree_;
@@ -198,7 +193,7 @@ class CC_EXPORT DisplayItemList
   DiscardableImageMap image_map_;
 
   struct Inputs {
-    explicit Inputs(const DisplayItemListSettings& settings);
+    Inputs();
     ~Inputs();
 
     ContiguousContainer<DisplayItem> items;
@@ -209,7 +204,6 @@ class CC_EXPORT DisplayItemList
     // because they are not needed while walking the |items| for raster.
     std::vector<gfx::Rect> visual_rects;
     std::vector<size_t> begin_item_indices;
-    const DisplayItemListSettings settings;
     bool all_items_are_suitable_for_gpu_rasterization = true;
     bool implied_color_space_specified = false;
     gfx::ColorSpace implied_color_space;

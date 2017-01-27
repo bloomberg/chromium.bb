@@ -13,7 +13,6 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer.h"

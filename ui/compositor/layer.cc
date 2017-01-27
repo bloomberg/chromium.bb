@@ -22,7 +22,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "ui/compositor/compositor_switches.h"
@@ -865,10 +864,7 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
   gfx::Rect invalidation(
       gfx::IntersectRects(paint_region_.bounds(), local_bounds));
   paint_region_.Clear();
-  cc::DisplayItemListSettings settings;
-  settings.use_cached_picture = false;
-  scoped_refptr<cc::DisplayItemList> display_list =
-      cc::DisplayItemList::Create(settings);
+  auto display_list = make_scoped_refptr(new cc::DisplayItemList);
   if (delegate_) {
     delegate_->OnPaintLayer(
         PaintContext(display_list.get(), device_scale_factor_, invalidation));

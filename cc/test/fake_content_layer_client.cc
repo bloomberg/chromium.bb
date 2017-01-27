@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "cc/playback/clip_display_item.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/transform_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -32,8 +31,7 @@ FakeContentLayerClient::ImageData::ImageData(const ImageData& other) = default;
 FakeContentLayerClient::ImageData::~ImageData() {}
 
 FakeContentLayerClient::FakeContentLayerClient()
-    : display_list_use_cached_picture_(true),
-      fill_with_nonsolid_color_(false),
+    : fill_with_nonsolid_color_(false),
       last_canvas_(nullptr),
       last_painting_control_(PAINTING_BEHAVIOR_NORMAL),
       reported_memory_usage_(0),
@@ -52,10 +50,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   // Cached picture is used because unit tests expect to be able to
   // use GatherPixelRefs.
-  DisplayItemListSettings settings;
-  settings.use_cached_picture = display_list_use_cached_picture_;
-  scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(settings);
+  auto display_list = make_scoped_refptr(new DisplayItemList);
   display_list->SetRetainVisualRectsForTesting(true);
   SkPictureRecorder recorder;
 

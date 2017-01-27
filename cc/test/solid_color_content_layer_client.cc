@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -48,11 +47,7 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
                        clip.height() - 2 * border_size_),
       paint);
 
-  DisplayItemListSettings settings;
-  settings.use_cached_picture = false;
-  scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(settings);
-
+  auto display_list = make_scoped_refptr(new DisplayItemList);
   display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       clip, recorder.finishRecordingAsPicture());
 

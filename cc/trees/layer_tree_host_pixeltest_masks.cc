@@ -9,7 +9,6 @@
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
@@ -59,8 +58,7 @@ class MaskContentLayerClient : public ContentLayerClient {
       inset_rect.Inset(3, 3, 2, 2);
     }
 
-    scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(DisplayItemListSettings());
+    auto display_list = make_scoped_refptr(new DisplayItemList);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
         PaintableRegion(), recorder.finishRecordingAsPicture());
 
@@ -181,8 +179,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
       }
     }
 
-    scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(DisplayItemListSettings());
+    auto display_list = make_scoped_refptr(new DisplayItemList);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
         PaintableRegion(), recorder.finishRecordingAsPicture());
 
@@ -219,8 +216,7 @@ class CircleContentLayerClient : public ContentLayerClient {
                        bounds_.width() / 4,
                        paint);
 
-    scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(DisplayItemListSettings());
+    auto display_list = make_scoped_refptr(new DisplayItemList);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
         PaintableRegion(), recorder.finishRecordingAsPicture());
 

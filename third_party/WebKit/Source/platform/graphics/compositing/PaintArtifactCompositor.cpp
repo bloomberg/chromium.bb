@@ -9,7 +9,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/playback/compositing_display_item.h"
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/filter_display_item.h"
 #include "cc/playback/float_clip_display_item.h"
@@ -419,9 +418,7 @@ scoped_refptr<cc::DisplayItemList> PaintArtifactCompositor::recordPendingLayer(
     const PendingLayer& pendingLayer,
     const gfx::Rect& combinedBounds,
     GeometryMapper& geometryMapper) {
-  cc::DisplayItemListSettings settings;
-  scoped_refptr<cc::DisplayItemList> ccList =
-      cc::DisplayItemList::Create(settings);
+  auto ccList = make_scoped_refptr(new cc::DisplayItemList);
 
   gfx::Transform translation;
   translation.Translate(-combinedBounds.x(), -combinedBounds.y());

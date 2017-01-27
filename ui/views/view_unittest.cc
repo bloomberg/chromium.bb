@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -528,8 +527,7 @@ TEST_F(ViewTest, PaintEmptyView) {
 
   // Paint "everything".
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
 
   // The empty view has nothing to paint so it doesn't try build a cache, nor do
@@ -550,8 +548,7 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCache) {
   // invalidation.
   gfx::Rect pixel_rect = gfx::Rect(1, 1);
   float device_scale_factor = 1.f;
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect));
   EXPECT_TRUE(v1->did_paint_);
@@ -567,14 +564,14 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCache) {
             list->VisualRectForTesting(item_index));
 
   // If invalidation doesn't intersect v1, we paint with the cache.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect));
   EXPECT_FALSE(v1->did_paint_);
   v1->Reset();
 
   // If invalidation does intersect v1, we don't paint with the cache.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, v1->bounds()));
   EXPECT_TRUE(v1->did_paint_);
@@ -582,7 +579,7 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCache) {
 
   // Moving the view should still use the cache when the invalidation doesn't
   // intersect v1.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   v1->SetX(9);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect));
@@ -599,7 +596,7 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCache) {
 
   // Moving the view should not use the cache when painting without
   // invalidation.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   v1->SetX(8);
   root_view->Paint(ui::PaintContext(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect),
@@ -628,8 +625,7 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCacheInRTL) {
   // invalidation.
   gfx::Rect pixel_rect = gfx::Rect(1, 1);
   float device_scale_factor = 1.f;
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect));
   EXPECT_TRUE(v1->did_paint_);
@@ -646,14 +642,14 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCacheInRTL) {
             list->VisualRectForTesting(item_index));
 
   // If invalidation doesn't intersect v1, we paint with the cache.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect));
   EXPECT_FALSE(v1->did_paint_);
   v1->Reset();
 
   // If invalidation does intersect v1, we don't paint with the cache.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, v1->bounds()));
   EXPECT_TRUE(v1->did_paint_);
@@ -661,7 +657,7 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCacheInRTL) {
 
   // Moving the view should still use the cache when the invalidation doesn't
   // intersect v1.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   v1->SetX(9);
   root_view->Paint(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect));
@@ -679,7 +675,7 @@ TEST_F(ViewTest, PaintWithMovedViewUsesCacheInRTL) {
 
   // Moving the view should not use the cache when painting without
   // invalidation.
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
   v1->SetX(8);
   root_view->Paint(ui::PaintContext(
       ui::PaintContext(list.get(), device_scale_factor, pixel_rect),
@@ -712,15 +708,14 @@ TEST_F(ViewTest, PaintWithUnknownInvalidation) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(1, 1);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   // With a known invalidation, v1 and v2 are not painted.
   EXPECT_FALSE(v1->did_paint_);
@@ -752,15 +747,14 @@ TEST_F(ViewTest, PaintContainsChildren) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(25, 26);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -796,15 +790,14 @@ TEST_F(ViewTest, PaintContainsChildrenInRTL) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(25, 26);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -828,15 +821,14 @@ TEST_F(ViewTest, PaintIntersectsChildren) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(9, 10, 5, 6);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -872,15 +864,14 @@ TEST_F(ViewTest, PaintIntersectsChildrenInRTL) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(2, 10, 5, 6);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -904,15 +895,14 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChild) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(9, 10, 2, 3);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -948,15 +938,14 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChildInRTL) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(2, 10, 2, 3);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -980,15 +969,14 @@ TEST_F(ViewTest, PaintIntersectsNoChildren) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(9, 10, 2, 1);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -1024,15 +1012,14 @@ TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
   gfx::Rect paint_area(2, 10, 2, 1);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -1056,8 +1043,7 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
@@ -1065,7 +1051,7 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
   // Intersects with the second child only.
   gfx::Rect paint_area(3, 3, 1, 2);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -1112,8 +1098,7 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
@@ -1121,7 +1106,7 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
   // Intersects with the first child only.
   gfx::Rect paint_area(3, 10, 1, 2);
   gfx::Rect root_area(root_view->size());
-  list = cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  list = make_scoped_refptr(new cc::DisplayItemList);
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
@@ -1157,8 +1142,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
   // Paint everything once, since it has to build its cache. Then we can test
   // invalidation.
   gfx::Rect first_paint(1, 1);
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   v1->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
@@ -1166,8 +1150,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
   {
     gfx::Rect paint_area(25, 26);
     gfx::Rect view_area(root_view->size());
-    scoped_refptr<cc::DisplayItemList> list =
-        cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+    auto list = make_scoped_refptr(new cc::DisplayItemList);
 
     // The promoted views are not painted as they are separate paint roots.
     root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
@@ -1178,8 +1161,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
   {
     gfx::Rect paint_area(1, 1);
     gfx::Rect view_area(v1->size());
-    scoped_refptr<cc::DisplayItemList> list =
-        cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+    auto list = make_scoped_refptr(new cc::DisplayItemList);
 
     // The |v1| view is painted. If it used its offset incorrect, it would think
     // its at (10,11) instead of at (0,0) since it is the paint root.
@@ -1193,8 +1175,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
   {
     gfx::Rect paint_area(3, 3, 1, 2);
     gfx::Rect view_area(v1->size());
-    scoped_refptr<cc::DisplayItemList> list =
-        cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+    auto list = make_scoped_refptr(new cc::DisplayItemList);
 
     // The |v2| view is painted also. If it used its offset incorrect, it would
     // think its at (13,15) instead of at (3,4) since |v1| is the paint root.
@@ -1240,8 +1221,7 @@ TEST_F(ViewTest, PaintLocalBounds) {
   EXPECT_EQ(gfx::Rect(0, 0, 100, 1100), v1->GetLocalBounds());
   EXPECT_EQ(gfx::Rect(0, 1000, 100, 100), v1->GetVisibleBounds());
 
-  scoped_refptr<cc::DisplayItemList> list =
-      cc::DisplayItemList::Create(cc::DisplayItemListSettings());
+  auto list = make_scoped_refptr(new cc::DisplayItemList);
   ui::PaintContext context(list.get(), 1.f, gfx::Rect());
 
   v1->Paint(context);

@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -63,11 +62,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   DCHECK_GT(image_->height(), 0);
   DCHECK(layer_tree_host());
 
-  DisplayItemListSettings settings;
-  settings.use_cached_picture =
-      layer_tree_host()->GetSettings().use_cached_picture_raster;
-  scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(settings);
+  auto display_list = make_scoped_refptr(new DisplayItemList);
 
   SkPictureRecorder recorder;
   SkCanvas* canvas =

@@ -254,8 +254,6 @@ cc_component("cc") {
     "playback/display_item.h",
     "playback/display_item_list.cc",
     "playback/display_item_list.h",
-    "playback/display_item_list_settings.cc",
-    "playback/display_item_list_settings.h",
     "playback/draw_image.cc",
     "playback/draw_image.h",
     "playback/drawing_display_item.cc",

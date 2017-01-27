@@ -5,7 +5,6 @@
 #include "cc/layers/empty_content_layer_client.h"
 
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -31,7 +30,7 @@ gfx::Rect EmptyContentLayerClient::PaintableRegion() {
 scoped_refptr<DisplayItemList>
 EmptyContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_status) {
-  return DisplayItemList::Create(DisplayItemListSettings());
+  return make_scoped_refptr(new DisplayItemList);
 }
 
 bool EmptyContentLayerClient::FillsBoundsCompletely() const {

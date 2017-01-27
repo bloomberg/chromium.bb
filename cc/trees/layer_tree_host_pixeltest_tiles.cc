@@ -8,7 +8,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/test_compositor_frame_sink.h"
@@ -111,10 +110,7 @@ class BlueYellowClient : public ContentLayerClient {
   gfx::Rect PaintableRegion() override { return gfx::Rect(size_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting painting_status) override {
-    DisplayItemListSettings settings;
-    settings.use_cached_picture = false;
-    scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(settings);
+    auto display_list = make_scoped_refptr(new DisplayItemList);
 
     SkPictureRecorder recorder;
     SkCanvas* canvas =

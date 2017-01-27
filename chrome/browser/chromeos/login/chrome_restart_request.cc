@@ -192,7 +192,6 @@ void DeriveCommandLine(const GURL& start_url,
     // here should also be added to
     // content/browser/renderer_host/render_process_host_impl.cc.
     cc::switches::kCheckTilePriorityInversion,
-    cc::switches::kDisableCachedPictureRaster,
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableMainFrameBeforeActivation,
     cc::switches::kDisableThreadedAnimation,

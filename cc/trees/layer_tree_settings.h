@@ -90,9 +90,6 @@ class CC_EXPORT LayerTreeSettings {
   size_t software_decoded_image_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;
 
-  // If set to true, the display item list will internally cache a SkPicture for
-  // raster rather than directly using the display items.
-  bool use_cached_picture_raster = true;
   bool enable_color_correct_rendering = false;
 
   // If set to true, this causes TileManager to verify that all required and NOW

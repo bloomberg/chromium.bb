@@ -19,7 +19,6 @@
 #include "cc/playback/clip_display_item.h"
 #include "cc/playback/clip_path_display_item.h"
 #include "cc/playback/compositing_display_item.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/filter_display_item.h"
 #include "cc/playback/float_clip_display_item.h"
@@ -59,23 +58,15 @@ const int kDefaultNumDisplayItemsToReserve = 100;
 
 }  // namespace
 
-DisplayItemList::Inputs::Inputs(const DisplayItemListSettings& settings)
+DisplayItemList::Inputs::Inputs()
     : items(LargestDisplayItemSize(),
-            LargestDisplayItemSize() * kDefaultNumDisplayItemsToReserve),
-      settings(settings) {}
+            LargestDisplayItemSize() * kDefaultNumDisplayItemsToReserve) {}
 
-DisplayItemList::Inputs::~Inputs() {}
+DisplayItemList::Inputs::~Inputs() = default;
 
-scoped_refptr<DisplayItemList> DisplayItemList::Create(
-    const DisplayItemListSettings& settings) {
-  return make_scoped_refptr(new DisplayItemList(settings));
-}
+DisplayItemList::DisplayItemList() = default;
 
-DisplayItemList::DisplayItemList(const DisplayItemListSettings& settings)
-    : inputs_(settings) {}
-
-DisplayItemList::~DisplayItemList() {
-}
+DisplayItemList::~DisplayItemList() = default;
 
 void DisplayItemList::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback,

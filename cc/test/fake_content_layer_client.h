@@ -47,10 +47,6 @@ class FakeContentLayerClient : public ContentLayerClient {
   bool FillsBoundsCompletely() const override;
   size_t GetApproximateUnsharedMemoryUsage() const override;
 
-  void set_display_list_use_cached_picture(bool use_cached_picture) {
-    display_list_use_cached_picture_ = use_cached_picture;
-  }
-
   void set_fill_with_nonsolid_color(bool nonsolid) {
     fill_with_nonsolid_color_ = nonsolid;
   }
@@ -96,7 +92,6 @@ class FakeContentLayerClient : public ContentLayerClient {
   typedef std::vector<std::pair<gfx::RectF, SkPaint>> RectPaintVector;
   typedef std::vector<ImageData> ImageVector;
 
-  bool display_list_use_cached_picture_;
   bool fill_with_nonsolid_color_;
   RectPaintVector draw_rects_;
   ImageVector draw_images_;

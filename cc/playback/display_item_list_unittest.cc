@@ -14,7 +14,6 @@
 #include "cc/playback/clip_display_item.h"
 #include "cc/playback/clip_path_display_item.h"
 #include "cc/playback/compositing_display_item.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/filter_display_item.h"
 #include "cc/playback/float_clip_display_item.h"
@@ -41,10 +40,6 @@ namespace cc {
 namespace {
 
 const gfx::Rect kVisualRect(0, 0, 42, 42);
-
-scoped_refptr<DisplayItemList> CreateDefaultList() {
-  return DisplayItemList::Create(DisplayItemListSettings());
-}
 
 sk_sp<const SkPicture> CreateRectPicture(const gfx::Rect& bounds) {
   SkPictureRecorder recorder;
@@ -81,9 +76,7 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   gfx::PointF offset(8.f, 9.f);
   gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
@@ -122,9 +115,7 @@ TEST(DisplayItemListTest, ClipItem) {
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
@@ -179,9 +170,7 @@ TEST(DisplayItemListTest, TransformItem) {
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
@@ -232,8 +221,7 @@ TEST(DisplayItemListTest, FilterItem) {
   gfx::Rect layer_rect(100, 100);
   FilterOperations filters;
   unsigned char pixels[4 * 100 * 100] = {0};
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(DisplayItemListSettings());
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   sk_sp<SkSurface> source_surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* source_canvas = source_surface->getCanvas();
@@ -292,49 +280,8 @@ TEST(DisplayItemListTest, FilterItem) {
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
 
-TEST(DisplayItemListTest, CompactingItems) {
-  gfx::Rect layer_rect(100, 100);
-  SkPictureRecorder recorder;
-  SkPaint blue_paint;
-  blue_paint.setColor(SK_ColorBLUE);
-  SkPaint red_paint;
-  red_paint.setColor(SK_ColorRED);
-  unsigned char pixels[4 * 100 * 100] = {0};
-
-  gfx::PointF offset(8.f, 9.f);
-  gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
-
-  DisplayItemListSettings no_caching_settings;
-  scoped_refptr<DisplayItemList> list_without_caching =
-      DisplayItemList::Create(no_caching_settings);
-
-  SkCanvas* canvas =
-      recorder.beginRecording(gfx::RectFToSkRect(recording_rect));
-  canvas->translate(offset.x(), offset.y());
-  canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
-  canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
-  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
-  list_without_caching->CreateAndAppendDrawingItem<DrawingDisplayItem>(
-      kVisualRect, picture);
-  list_without_caching->Finalize();
-  DrawDisplayList(pixels, layer_rect, list_without_caching);
-
-  unsigned char expected_pixels[4 * 100 * 100] = {0};
-  DisplayItemListSettings caching_settings;
-  caching_settings.use_cached_picture = true;
-  scoped_refptr<DisplayItemList> list_with_caching =
-      DisplayItemList::Create(caching_settings);
-  list_with_caching->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect,
-                                                                    picture);
-  list_with_caching->Finalize();
-  DrawDisplayList(expected_pixels, layer_rect, list_with_caching);
-
-  EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
-}
-
 TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   const int kNumCommandsInTestSkPicture = 1000;
-  scoped_refptr<DisplayItemList> list;
   size_t memory_usage;
 
   // Make an SkPicture whose size is known.
@@ -349,20 +296,7 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   size_t picture_size = SkPictureUtils::ApproximateBytesUsed(picture.get());
   ASSERT_GE(picture_size, kNumCommandsInTestSkPicture * sizeof(blue_paint));
 
-  // Using a cached picture, we should get about the right size.
-  DisplayItemListSettings caching_settings;
-  caching_settings.use_cached_picture = true;
-  list = DisplayItemList::Create(caching_settings);
-  list->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect, picture);
-  list->Finalize();
-  memory_usage = list->ApproximateMemoryUsage();
-  EXPECT_GE(memory_usage, picture_size);
-  EXPECT_LE(memory_usage, 2 * picture_size);
-
-  // Using no cached picture, we should still get the right size.
-  DisplayItemListSettings no_caching_settings;
-  no_caching_settings.use_cached_picture = false;
-  list = DisplayItemList::Create(no_caching_settings);
+  auto list = make_scoped_refptr(new DisplayItemList);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect, picture);
   list->Finalize();
   memory_usage = list->ApproximateMemoryUsage();
@@ -371,8 +305,7 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
 }
 
 TEST(DisplayItemListTest, AsValueWithNoItems) {
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(DisplayItemListSettings());
+  auto list = make_scoped_refptr(new DisplayItemList);
   list->SetRetainVisualRectsForTesting(true);
   list->Finalize();
 
@@ -391,8 +324,7 @@ TEST(DisplayItemListTest, AsValueWithNoItems) {
 
 TEST(DisplayItemListTest, AsValueWithItems) {
   gfx::Rect layer_rect = gfx::Rect(1, 2, 8, 9);
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(DisplayItemListSettings());
+  auto list = make_scoped_refptr(new DisplayItemList);
   list->SetRetainVisualRectsForTesting(true);
   gfx::Transform transform;
   transform.Translate(6.f, 7.f);
@@ -417,12 +349,12 @@ TEST(DisplayItemListTest, AsValueWithItems) {
 }
 
 TEST(DisplayItemListTest, SizeEmpty) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
   EXPECT_EQ(0u, list->size());
 }
 
 TEST(DisplayItemListTest, SizeOne) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
   gfx::Rect drawing_bounds(5, 6, 1, 1);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       drawing_bounds, CreateRectPicture(drawing_bounds));
@@ -430,7 +362,7 @@ TEST(DisplayItemListTest, SizeOne) {
 }
 
 TEST(DisplayItemListTest, SizeMultiple) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
   gfx::Rect clip_bounds(5, 6, 7, 8);
   list->CreateAndAppendPairedBeginItem<ClipDisplayItem>(
       clip_bounds, std::vector<SkRRect>(), true);
@@ -439,7 +371,7 @@ TEST(DisplayItemListTest, SizeMultiple) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectSimple) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // One drawing: D.
 
@@ -452,7 +384,7 @@ TEST(DisplayItemListTest, AppendVisualRectSimple) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // One block: B1, E1.
 
@@ -468,7 +400,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // Two nested blocks: B1, B2, E2, E1.
 
@@ -487,7 +419,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // One block with one drawing: B1, Da, E1.
 
@@ -508,7 +440,7 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // One block with one drawing: B1, Da (escapes), E1.
 
@@ -530,7 +462,7 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
 
 TEST(DisplayItemListTest,
      AppendVisualRectDrawingFollowedByBlockContainingEscapedDrawing) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // One drawing followed by one block with one drawing: Da, B1, Db (escapes),
   // E1.
@@ -557,7 +489,7 @@ TEST(DisplayItemListTest,
 }
 
 TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // Multiple nested blocks with drawings amidst: B1, Da, B2, Db, E2, E1.
 
@@ -591,7 +523,7 @@ TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
 
 TEST(DisplayItemListTest,
      AppendVisualRectTwoBlocksTwoDrawingsInnerDrawingEscaped) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // Multiple nested blocks with drawings amidst: B1, Da, B2, Db (escapes), E2,
   // E1.
@@ -626,7 +558,7 @@ TEST(DisplayItemListTest,
 
 TEST(DisplayItemListTest,
      AppendVisualRectTwoBlocksTwoDrawingsOuterDrawingEscaped) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // Multiple nested blocks with drawings amidst: B1, Da (escapes), B2, Db, E2,
   // E1.
@@ -661,7 +593,7 @@ TEST(DisplayItemListTest,
 
 TEST(DisplayItemListTest,
      AppendVisualRectTwoBlocksTwoDrawingsBothDrawingsEscaped) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // Multiple nested blocks with drawings amidst:
   // B1, Da (escapes to the right), B2, Db (escapes to the left), E2, E1.
@@ -695,7 +627,7 @@ TEST(DisplayItemListTest,
 }
 
 TEST(DisplayItemListTest, AppendVisualRectOneFilterNoDrawings) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // One filter containing no drawings: Bf, Ef
 
@@ -712,7 +644,7 @@ TEST(DisplayItemListTest, AppendVisualRectOneFilterNoDrawings) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectBlockContainingFilterNoDrawings) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+  auto list = make_scoped_refptr(new DisplayItemList);
 
   // One block containing one filter and no drawings: B1, Bf, Ef, E1.
 

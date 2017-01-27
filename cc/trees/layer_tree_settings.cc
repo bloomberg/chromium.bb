@@ -79,8 +79,7 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          gpu_memory_policy == other.gpu_memory_policy &&
          software_memory_policy == other.software_memory_policy &&
          LayerTreeDebugState::Equal(initial_debug_state,
-                                    other.initial_debug_state) &&
-         use_cached_picture_raster == other.use_cached_picture_raster;
+                                    other.initial_debug_state);
 }
 
 SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {

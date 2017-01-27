@@ -5,7 +5,6 @@
 #include "ui/compositor/canvas_painter.h"
 
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "ui/gfx/canvas.h"
 
 namespace ui {
@@ -17,7 +16,7 @@ CanvasPainter::CanvasPainter(gfx::Canvas* canvas, float raster_scale_factor)
           gfx::Rect(canvas_->sk_canvas()->getBaseLayerSize().width(),
                     canvas_->sk_canvas()->getBaseLayerSize().height()),
           1.f / raster_scale_factor)),
-      list_(cc::DisplayItemList::Create(cc::DisplayItemListSettings())),
+      list_(new cc::DisplayItemList),
       context_(list_.get(), raster_scale_factor_, rect_) {}
 
 CanvasPainter::~CanvasPainter() {

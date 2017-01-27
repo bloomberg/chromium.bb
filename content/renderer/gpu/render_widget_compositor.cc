@@ -492,9 +492,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.software_memory_policy.num_resources_limit =
       base::SharedMemory::GetHandleLimit() / 3;
 
-  settings.use_cached_picture_raster =
-      !cmd.HasSwitch(cc::switches::kDisableCachedPictureRaster);
-
   return settings;
 }
 

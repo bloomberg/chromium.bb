@@ -51,10 +51,6 @@ class FakeRecordingSource : public RecordingSource {
   scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd) const override;
 
-  void SetDisplayListUsesCachedPicture(bool use_cached_picture) {
-    client_.set_display_list_use_cached_picture(use_cached_picture);
-  }
-
   void SetRecordedViewport(const gfx::Rect& recorded_viewport) {
     recorded_viewport_ = recorded_viewport;
   }
