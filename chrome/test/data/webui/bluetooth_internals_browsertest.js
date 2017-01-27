@@ -290,6 +290,21 @@ BluetoothInternalsTest.prototype = {
       is_primary: true,
     }
   },
+
+  /**
+   * Returns a copy of fake characteristic info object with all properties
+   * and all permissions bits set.
+   * @return {!Object}
+   */
+  fakeCharacteristicInfo1: function() {
+    return {
+      id: 'characteristic1',
+      uuid: '00002a19-0000-1000-8000-00805f9b34fb',
+      properties: Number.MAX_SAFE_INTEGER,
+      permissions: Number.MAX_SAFE_INTEGER,
+      last_known_value: [],
+    };
+  },
 };
 
 TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
@@ -307,6 +322,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
   var fakeDeviceInfo3 = this.fakeDeviceInfo3;
   var fakeServiceInfo1 = this.fakeServiceInfo1;
   var fakeServiceInfo2 = this.fakeServiceInfo2;
+  var fakeCharacteristicInfo1 = this.fakeCharacteristicInfo1;
 
   // Before tests are run, make sure setup completes.
   var setupPromise = this.setupResolver.promise.then(function() {
@@ -799,6 +815,125 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
             detailsPage = $(deviceDetailsPageId);
             expectFalse(!!detailsPage);
           });
+    });
+  });
+
+  suite('BluetoothInternalsUnitTests', function() {
+    var ValueDataType = value_control.ValueDataType;
+
+    /* Value Control Unit Tests */
+    var aCode = 'a'.charCodeAt(0);
+    var bCode = 'b'.charCodeAt(0);
+    var cCode = 'c'.charCodeAt(0);
+
+    var device1 = fakeDeviceInfo1();
+    var service1 = fakeServiceInfo1();
+    var characteristic1 = fakeCharacteristicInfo1();
+    var valueControl = null;
+
+    setup(function() {
+      valueControl = value_control.ValueControl();
+      valueControl.load(device1.address, service1.id, characteristic1);
+      valueControl.typeSelect_.value = ValueDataType.HEXADECIMAL;
+    });
+
+    test('ValueControl_SetValue_Hexadecimal_EmptyArray', function() {
+      valueControl.setValue([]);
+      expectEquals('', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_Hexadecimal_OneValue', function() {
+      valueControl.setValue([aCode]);
+      expectEquals('0x61', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_Hexadecimal_ThreeValues', function() {
+      valueControl.setValue([aCode, bCode, cCode]);
+      expectEquals('0x616263', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_UTF8_EmptyArray', function() {
+      valueControl.typeSelect_.value = ValueDataType.UTF8
+      valueControl.setValue([]);
+      expectEquals('', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_UTF8_OneValue', function() {
+      valueControl.typeSelect_.value = ValueDataType.UTF8
+      valueControl.setValue([aCode]);
+      expectEquals('a', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_UTF8_ThreeValues', function() {
+      valueControl.typeSelect_.value = ValueDataType.UTF8
+      valueControl.setValue([aCode, bCode, cCode]);
+      expectEquals('abc', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_Decimal_EmptyArray', function() {
+      valueControl.typeSelect_.value = ValueDataType.DECIMAL
+      valueControl.setValue([]);
+      expectEquals('', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_Decimal_OneValue', function() {
+      valueControl.typeSelect_.value = ValueDataType.DECIMAL
+      valueControl.setValue([aCode]);
+      expectEquals(String(aCode), valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_SetValue_Decimal_ThreeValues', function() {
+      valueControl.typeSelect_.value = ValueDataType.DECIMAL
+      valueControl.setValue([aCode, bCode, cCode]);
+      expectEquals('97-98-99', valueControl.valueInput_.value);
+    });
+
+    test('ValueControl_ConvertValue_Hexadecimal_EmptyString', function() {
+      valueControl.value_.setAs(ValueDataType.HEXADECIMAL, '');
+      expectEquals(0, valueControl.value_.getArray().length);
+    });
+
+    test('ValueControl_ConvertValue_Hexadecimal_BadHexPrefix', function() {
+      expectThrows(function() {
+        valueControl.value_.setAs(ValueDataType.HEXADECIMAL, 'd0x');
+      }, 'Expected new value to start with "0x"');
+    });
+
+    test('ValueControl_ConvertValue_Hexadecimal_ThreeValues', function() {
+      valueControl.value_.setAs(ValueDataType.HEXADECIMAL, '0x616263');
+      expectDeepEquals([aCode, bCode, cCode], valueControl.value_.getArray());
+    });
+
+    test('ValueControl_ConvertValue_UTF8_EmptyString', function() {
+      valueControl.typeSelect_.value = ValueDataType.UTF8
+      valueControl.value_.setAs(ValueDataType.UTF8, '');
+      expectEquals(0, valueControl.value_.getArray().length);
+    });
+
+    test('ValueControl_ConvertValue_UTF8_ThreeValues', function() {
+      valueControl.typeSelect_.value = ValueDataType.UTF8
+      valueControl.value_.setAs(ValueDataType.UTF8, 'abc');
+      expectDeepEquals([aCode, bCode, cCode], valueControl.value_.getArray());
+    });
+
+    test('ValueControl_ConvertValue_Decimal_EmptyString', function() {
+      valueControl.typeSelect_.value = ValueDataType.DECIMAL
+      valueControl.value_.setAs(ValueDataType.DECIMAL, '');
+      expectEquals(0, valueControl.value_.getArray().length);
+    });
+
+    test('ValueControl_ConvertValue_Decimal_ThreeValues_Fail', function() {
+      valueControl.typeSelect_.value = ValueDataType.DECIMAL
+
+      expectThrows(function() {
+        valueControl.value_.setAs(ValueDataType.DECIMAL, '97-+-99' /* a-+-c */);
+      }, 'New value can only contain numbers and hyphens');
+    });
+
+    test('ValueControl_ConvertValue_Decimal_ThreeValues', function() {
+      valueControl.typeSelect_.value = ValueDataType.DECIMAL
+      valueControl.value_.setAs(ValueDataType.DECIMAL, '97-98-99' /* abc */);
+      expectDeepEquals([aCode, bCode, cCode], valueControl.value_.getArray());
     });
   });
 

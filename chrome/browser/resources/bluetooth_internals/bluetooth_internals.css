@@ -399,3 +399,17 @@ table .removed {
 .info-container fieldset {
   -webkit-margin-start: 1em;
 }
+
+/* Value Control */
+.value-control > div {
+  display: flex;
+  margin: 4px 0;
+}
+
+.value-control > div > input {
+  flex-grow: 1;
+}
+
+.value-control > div:nth-of-type(2) {
+  justify-content: flex-end;
+}

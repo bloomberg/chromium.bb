@@ -50,6 +50,8 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_SIDEBAR_JS);
   html_source->AddResourcePath("snackbar.js",
                                IDR_BLUETOOTH_INTERNALS_SNACKBAR_JS);
+  html_source->AddResourcePath("value_control.js",
+                               IDR_BLUETOOTH_INTERNALS_VALUE_CONTROL_JS);
 
   html_source->AddResourcePath(
       "device/bluetooth/public/interfaces/adapter.mojom",

@@ -111,6 +111,11 @@ cr.define('characteristic_list', function() {
             Property.WRITE_ENCRYPTED_AUTHENTICATED) > 0,
       });
 
+      /** @private {!value_control.ValueControl} */
+      this.valueControl_ = new value_control.ValueControl();
+      this.valueControl_.load(this.deviceAddress_, this.serviceId_, this.info);
+      this.valueControl_.setValue(this.info.last_known_value);
+
       /** @private {!descriptor_list.DescriptorList} */
       this.descriptorList_ = new descriptor_list.DescriptorList();
 
@@ -146,10 +151,16 @@ cr.define('characteristic_list', function() {
 
       var infoDiv = document.createElement('div');
       infoDiv.classList.add('info-container');
+
+      var valueHeader = document.createElement('h4');
+      valueHeader.textContent = 'Value';
+
       infoDiv.appendChild(characteristicInfoHeader);
       infoDiv.appendChild(characteristicDiv);
       infoDiv.appendChild(propertiesHeader);
       infoDiv.appendChild(propertiesDiv);
+      infoDiv.appendChild(valueHeader);
+      infoDiv.appendChild(this.valueControl_);
       infoDiv.appendChild(descriptorsHeader);
       infoDiv.appendChild(this.descriptorList_);
 
@@ -176,6 +187,10 @@ cr.define('characteristic_list', function() {
     decorate: function() {
       ExpandableList.prototype.decorate.call(this);
 
+      /** @private {?string} */
+      this.deviceAddress_ = null;
+      /** @private {?string} */
+      this.serviceId_ = null;
       /** @private {boolean} */
       this.characteristicsRequested_ = false;
 

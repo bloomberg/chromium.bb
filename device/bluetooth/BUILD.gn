@@ -23,6 +23,7 @@ config("bluetooth_config") {
 source_set("mojo") {
   sources = [
     "//device/bluetooth/public/interfaces/connect_result_type_converter.h",
+    "//device/bluetooth/public/interfaces/gatt_result_type_converter.h",
     "adapter.cc",
     "adapter.h",
     "adapter_factory.cc",
