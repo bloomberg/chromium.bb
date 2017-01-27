@@ -368,7 +368,7 @@ class TestImporter(object):
     def get_directory_owners(self):
         """Returns a list of email addresses of owners of changed tests."""
         _log.info('Gathering directory owners emails to CC.')
-        changed_files = self.host.cwd().changed_files()
+        changed_files = self.host.scm().changed_files()
         extractor = DirectoryOwnersExtractor(self.fs)
         extractor.read_owner_map()
         return extractor.list_owners(changed_files)
