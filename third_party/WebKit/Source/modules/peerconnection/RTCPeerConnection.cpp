@@ -86,6 +86,7 @@
 #include "public/platform/WebRTCConfiguration.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelInit.h"
+#include "public/platform/WebRTCError.h"
 #include "public/platform/WebRTCICECandidate.h"
 #include "public/platform/WebRTCKeyParams.h"
 #include "public/platform/WebRTCOfferOptions.h"
@@ -789,10 +790,10 @@ RTCSessionDescription* RTCPeerConnection::remoteDescription() {
   return RTCSessionDescription::create(webSessionDescription);
 }
 
-void RTCPeerConnection::updateIce(ExecutionContext* context,
-                                  const RTCConfiguration& rtcConfiguration,
-                                  const Dictionary&,
-                                  ExceptionState& exceptionState) {
+void RTCPeerConnection::setConfiguration(
+    ExecutionContext* context,
+    const RTCConfiguration& rtcConfiguration,
+    ExceptionState& exceptionState) {
   if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
     return;
 
@@ -808,11 +809,20 @@ void RTCPeerConnection::updateIce(ExecutionContext* context,
     return;
   }
 
-  // TODO(deadbeef): When this changes to setConfiguration, call
-  // m_peerHandler->setConfiguration.
-  exceptionState.throwDOMException(
-      SyntaxError,
-      "Could not update the ICE Agent with the given configuration.");
+  WebRTCErrorType error = m_peerHandler->setConfiguration(configuration);
+  if (error != WebRTCErrorType::kNone) {
+    // All errors besides InvalidModification should have been detected above.
+    if (error == WebRTCErrorType::kInvalidModification) {
+      exceptionState.throwDOMException(
+          InvalidModificationError,
+          "Attempted to modify the PeerConnection's "
+          "configuration in an unsupported way.");
+    } else {
+      exceptionState.throwDOMException(
+          OperationError,
+          "Could not update the PeerConnection with the given configuration.");
+    }
+  }
 }
 
 ScriptPromise RTCPeerConnection::generateCertificate(

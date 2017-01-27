@@ -108,10 +108,9 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
 
   String signalingState() const;
 
-  void updateIce(ExecutionContext*,
-                 const RTCConfiguration&,
-                 const Dictionary&,
-                 ExceptionState&);
+  void setConfiguration(ExecutionContext*,
+                        const RTCConfiguration&,
+                        ExceptionState&);
 
   // Certificate management
   // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt

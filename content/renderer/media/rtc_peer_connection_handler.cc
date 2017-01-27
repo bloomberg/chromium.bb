@@ -40,6 +40,7 @@
 #include "third_party/WebKit/public/platform/WebRTCAnswerOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
+#include "third_party/WebKit/public/platform/WebRTCError.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
 #include "third_party/WebKit/public/platform/WebRTCLegacyStats.h"
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
@@ -158,6 +159,46 @@ CreateWebKitSessionDescription(
   }
 
   return CreateWebKitSessionDescription(sdp, native_desc->type());
+}
+
+void ConvertToWebKitRTCError(const webrtc::RTCError& webrtc_error,
+                             blink::WebRTCError* blink_error) {
+  switch (webrtc_error.type()) {
+    case webrtc::RTCErrorType::NONE:
+      blink_error->setType(blink::WebRTCErrorType::kNone);
+      break;
+    case webrtc::RTCErrorType::UNSUPPORTED_PARAMETER:
+      blink_error->setType(blink::WebRTCErrorType::kUnsupportedParameter);
+      break;
+    case webrtc::RTCErrorType::INVALID_PARAMETER:
+      blink_error->setType(blink::WebRTCErrorType::kInvalidParameter);
+      break;
+    case webrtc::RTCErrorType::INVALID_RANGE:
+      blink_error->setType(blink::WebRTCErrorType::kInvalidRange);
+      break;
+    case webrtc::RTCErrorType::SYNTAX_ERROR:
+      blink_error->setType(blink::WebRTCErrorType::kSyntaxError);
+      break;
+    case webrtc::RTCErrorType::INVALID_STATE:
+      blink_error->setType(blink::WebRTCErrorType::kInvalidState);
+      break;
+    case webrtc::RTCErrorType::INVALID_MODIFICATION:
+      blink_error->setType(blink::WebRTCErrorType::kInvalidModification);
+      break;
+    case webrtc::RTCErrorType::NETWORK_ERROR:
+      blink_error->setType(blink::WebRTCErrorType::kNetworkError);
+      break;
+    case webrtc::RTCErrorType::INTERNAL_ERROR:
+      blink_error->setType(blink::WebRTCErrorType::kInternalError);
+      break;
+    default:
+      // If adding a new error type, need 3 CLs: One to add the enum to webrtc,
+      // one to update this mapping code, and one to start using the enum in
+      // webrtc.
+      NOTREACHED() << "webrtc::RTCErrorType " << webrtc_error.type()
+                   << " not covered by switch statement.";
+      break;
+  }
 }
 
 void RunClosureWithTrace(const base::Closure& closure,
@@ -1393,7 +1434,7 @@ RTCPeerConnectionHandler::remoteDescription() {
   return CreateWebKitSessionDescription(sdp, type);
 }
 
-bool RTCPeerConnectionHandler::setConfiguration(
+blink::WebRTCErrorType RTCPeerConnectionHandler::setConfiguration(
     const blink::WebRTCConfiguration& blink_config) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setConfiguration");
@@ -1402,7 +1443,15 @@ bool RTCPeerConnectionHandler::setConfiguration(
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackSetConfiguration(this, configuration_);
 
-  return native_peer_connection_->SetConfiguration(configuration_);
+  webrtc::RTCError webrtc_error;
+  blink::WebRTCError blink_error;
+  bool ret =
+      native_peer_connection_->SetConfiguration(configuration_, &webrtc_error);
+  // The boolean return value is made redundant by the error output param; just
+  // DCHECK that they're consistent.
+  DCHECK_EQ(ret, webrtc_error.type() == webrtc::RTCErrorType::NONE);
+  ConvertToWebKitRTCError(webrtc_error, &blink_error);
+  return blink_error.type();
 }
 
 bool RTCPeerConnectionHandler::addICECandidate(

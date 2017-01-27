@@ -132,7 +132,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebRTCSessionDescription localDescription() override;
   blink::WebRTCSessionDescription remoteDescription() override;
 
-  bool setConfiguration(
+  blink::WebRTCErrorType setConfiguration(
       const blink::WebRTCConfiguration& configuration) override;
   bool addICECandidate(const blink::WebRTCICECandidate& candidate) override;
   bool addICECandidate(const blink::WebRTCVoidRequest& request,

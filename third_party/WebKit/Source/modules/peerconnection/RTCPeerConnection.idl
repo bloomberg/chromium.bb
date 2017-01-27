@@ -84,7 +84,7 @@ enum RTCIceConnectionState {
     readonly attribute RTCIceConnectionState iceConnectionState;
     // readonly attribute boolean? canTrickleIceCandidates;
     // RTCConfiguration getConfiguration();
-    // void setConfiguration(RTCConfiguration configuration);
+    [CallWith=ExecutionContext, RaisesException] void setConfiguration(RTCConfiguration configuration);
     // TODO(guidou): close() should never throw an exception.
     [RaisesException] void close();
     attribute EventHandler onnegotiationneeded;
@@ -123,7 +123,6 @@ enum RTCIceConnectionState {
     [RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(AlgorithmIdentifier keygenAlgorithm);
 
     // Non-standard or removed from the spec:
-    [Measure, CallWith=ExecutionContext, RaisesException] void updateIce(optional RTCConfiguration configuration, optional Dictionary mediaConstraints);
     [Measure] sequence<MediaStream> getLocalStreams();
     [Measure] sequence<MediaStream> getRemoteStreams();
     [Measure] MediaStream getStreamById(DOMString streamId);

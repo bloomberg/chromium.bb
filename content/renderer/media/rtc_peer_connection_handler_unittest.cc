@@ -43,6 +43,7 @@
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
+#include "third_party/WebKit/public/platform/WebRTCError.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
@@ -584,7 +585,21 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {
   // TODO(perkj): Test that the parameters in |config| can be translated when a
   // WebRTCConfiguration can be constructed. It's WebKit class and can't be
   // initialized from a test.
-  EXPECT_TRUE(pc_handler_->setConfiguration(config));
+  EXPECT_EQ(blink::WebRTCErrorType::kNone,
+            pc_handler_->setConfiguration(config));
+}
+
+// Test that when an error occurs in SetConfiguration, it's converted to a
+// blink error and false is returned.
+TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
+  blink::WebRTCConfiguration config;
+
+  mock_peer_connection_->set_setconfiguration_error_type(
+      webrtc::RTCErrorType::INVALID_MODIFICATION);
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetConfiguration(pc_handler_.get(), _));
+  EXPECT_EQ(blink::WebRTCErrorType::kInvalidModification,
+            pc_handler_->setConfiguration(config));
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {

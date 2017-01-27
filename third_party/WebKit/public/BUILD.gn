@@ -262,6 +262,7 @@ source_set("blink_headers") {
     "platform/WebRTCDataChannelHandler.h",
     "platform/WebRTCDataChannelHandlerClient.h",
     "platform/WebRTCDataChannelInit.h",
+    "platform/WebRTCError.h",
     "platform/WebRTCICECandidate.h",
     "platform/WebRTCKeyParams.h",
     "platform/WebRTCLegacyStats.h",

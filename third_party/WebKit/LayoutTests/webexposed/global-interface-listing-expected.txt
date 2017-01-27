@@ -4935,9 +4935,9 @@ interface RTCPeerConnection : EventTarget
     method getStats
     method getStreamById
     method removeStream
+    method setConfiguration
     method setLocalDescription
     method setRemoteDescription
-    method updateIce
     setter onaddstream
     setter ondatachannel
     setter onicecandidate
@@ -8595,9 +8595,9 @@ interface webkitRTCPeerConnection : EventTarget
     method getStats
     method getStreamById
     method removeStream
+    method setConfiguration
     method setLocalDescription
     method setRemoteDescription
-    method updateIce
     setter onaddstream
     setter ondatachannel
     setter onicecandidate

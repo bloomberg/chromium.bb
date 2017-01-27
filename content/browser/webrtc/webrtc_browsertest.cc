@@ -45,6 +45,12 @@ class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTestBase {
   void MakeTypicalPeerConnectionCall(const std::string& javascript) {
     MakeTypicalCall(javascript, "/media/peerconnection-call.html");
   }
+
+  void SetConfigurationTest(const std::string& javascript) {
+    // This doesn't actually "make a call", it just loads the page, executes
+    // the javascript and waits for "OK".
+    MakeTypicalCall(javascript, "/media/peerconnection-setConfiguration.html");
+  }
 };
 
 // These tests will make a complete PeerConnection-based call and verify that
@@ -200,6 +206,17 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CreateOfferWithOfferOptions) {
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallInsideIframe) {
   MakeTypicalPeerConnectionCall("callInsideIframe({video: true, audio:true});");
+}
+
+// Tests that SetConfiguration succeeds and triggers an ICE restart on the next
+// offer as described by JSEP.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, SetConfiguration) {
+  SetConfigurationTest("testSetConfiguration();");
+}
+
+// Tests the error conditions of SetConfiguration as described by webrtc-pc.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, SetConfigurationErrors) {
+  SetConfigurationTest("testSetConfigurationErrors();");
 }
 
 }  // namespace content

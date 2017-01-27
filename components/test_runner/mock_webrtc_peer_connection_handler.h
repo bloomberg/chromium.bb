@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/WebKit/public/platform/WebRTCError.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
@@ -50,7 +51,7 @@ class MockWebRTCPeerConnectionHandler
       const blink::WebRTCSessionDescription& remote_description) override;
   blink::WebRTCSessionDescription localDescription() override;
   blink::WebRTCSessionDescription remoteDescription() override;
-  bool setConfiguration(
+  blink::WebRTCErrorType setConfiguration(
       const blink::WebRTCConfiguration& configuration) override;
   bool addICECandidate(const blink::WebRTCICECandidate& ice_candidate) override;
   bool addICECandidate(const blink::WebRTCVoidRequest& request,

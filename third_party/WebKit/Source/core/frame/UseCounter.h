@@ -1297,7 +1297,6 @@ class CORE_EXPORT UseCounter {
     V8RTCPeerConnection_GetRemoteStreams_Method = 1644,
     V8RTCPeerConnection_GetStreamById_Method = 1645,
     V8RTCPeerConnection_RemoveStream_Method = 1646,
-    V8RTCPeerConnection_UpdateIce_Method = 1647,
     RTCPeerConnectionCreateDataChannelMaxRetransmitTime = 1648,
     RTCPeerConnectionCreateDataChannelMaxRetransmits = 1649,
     AudioContextCreateConstantSource = 1650,

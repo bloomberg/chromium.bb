@@ -41,6 +41,7 @@ class WebMediaStreamTrack;
 class WebRTCAnswerOptions;
 class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
+enum class WebRTCErrorType;
 class WebRTCICECandidate;
 class WebRTCOfferOptions;
 class WebRTCSessionDescription;
@@ -72,7 +73,7 @@ class WebRTCPeerConnectionHandler {
                                     const WebRTCSessionDescription&) = 0;
   virtual WebRTCSessionDescription localDescription() = 0;
   virtual WebRTCSessionDescription remoteDescription() = 0;
-  virtual bool setConfiguration(const WebRTCConfiguration&) = 0;
+  virtual WebRTCErrorType setConfiguration(const WebRTCConfiguration&) = 0;
 
   // DEPRECATED
   virtual bool addICECandidate(const WebRTCICECandidate&) { return false; }

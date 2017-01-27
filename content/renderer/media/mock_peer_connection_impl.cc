@@ -267,8 +267,13 @@ void MockPeerConnectionImpl::SetRemoteDescriptionWorker(
 }
 
 bool MockPeerConnectionImpl::SetConfiguration(
-    const RTCConfiguration& configuration) {
-  return true;
+    const RTCConfiguration& configuration,
+    webrtc::RTCError* error) {
+  if (setconfiguration_error_type_ == webrtc::RTCErrorType::NONE) {
+    return true;
+  }
+  error->set_type(setconfiguration_error_type_);
+  return false;
 }
 
 bool MockPeerConnectionImpl::AddIceCandidate(
