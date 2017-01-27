@@ -59,13 +59,10 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
   void forward(ScriptState*);
   void go(ScriptState*, int delta);
 
-  void pushState(PassRefPtr<SerializedScriptValue> data,
+  void pushState(PassRefPtr<SerializedScriptValue>,
                  const String& title,
                  const String& url,
-                 ExceptionState& exceptionState) {
-    stateObjectAdded(std::move(data), title, url, scrollRestorationInternal(),
-                     FrameLoadTypeStandard, exceptionState);
-  }
+                 ExceptionState&);
 
   void replaceState(PassRefPtr<SerializedScriptValue> data,
                     const String& title,

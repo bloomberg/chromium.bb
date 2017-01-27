@@ -36,6 +36,7 @@
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringView.h"
@@ -159,6 +160,15 @@ void History::go(ScriptState* scriptState, int delta) {
             : FrameLoadTypeReload;
     frame()->reload(reloadType, ClientRedirectPolicy::ClientRedirect);
   }
+}
+
+void History::pushState(PassRefPtr<SerializedScriptValue> data,
+                        const String& title,
+                        const String& url,
+                        ExceptionState& exceptionState) {
+  TRACE_EVENT0("blink", "History::pushState");
+  stateObjectAdded(std::move(data), title, url, scrollRestorationInternal(),
+                   FrameLoadTypeStandard, exceptionState);
 }
 
 KURL History::urlForState(const String& urlString) {
