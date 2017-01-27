@@ -70,6 +70,7 @@ public class ContentSuggestionsNotificationHelper {
      * Opens the content suggestion when notification is tapped.
      */
     public static final class OpenUrlReceiver extends BroadcastReceiver {
+        @Override
         public void onReceive(Context context, Intent intent) {
             int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
             String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);
@@ -83,6 +84,7 @@ public class ContentSuggestionsNotificationHelper {
      * Records dismissal when notification is swiped away.
      */
     public static final class DeleteReceiver extends BroadcastReceiver {
+        @Override
         public void onReceive(Context context, Intent intent) {
             int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
             String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);
@@ -96,6 +98,7 @@ public class ContentSuggestionsNotificationHelper {
      * Removes the notification after a timeout period.
      */
     public static final class TimeoutReceiver extends BroadcastReceiver {
+        @Override
         public void onReceive(Context context, Intent intent) {
             int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
             String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);

@@ -47,7 +47,7 @@ interface TreeNode {
      * Display the data at {@code position} under this subtree.
      * @param holder The view holder that should be updated.
      * @param position The position of the item under this subtree.
-     * @see android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(ViewHolder, int)
+     * @see android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder
      */
     void onBindViewHolder(NewTabPageViewHolder holder, int position);
 

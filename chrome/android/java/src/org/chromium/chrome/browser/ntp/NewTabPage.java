@@ -408,7 +408,7 @@ public class NewTabPage
             assert !mIsDestroyed;
             return mNewTabPageView.getContextMenuManager();
         }
-    };
+    }
 
     /**
      * Constructs a NewTabPage.
