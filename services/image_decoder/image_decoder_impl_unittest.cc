@@ -81,6 +81,8 @@ class BlinkInitializer : public blink::Platform {
 
   ~BlinkInitializer() override {}
 
+  blink::WebThread* currentThread() override { return main_thread_.get(); }
+
  private:
   std::unique_ptr<blink::scheduler::WebThreadImplForUtilityThread> main_thread_;
 
