@@ -464,8 +464,6 @@ public class UrlBar extends VerticallyFixedEditText {
         if (focused) StartupMetrics.getInstance().recordFocusedOmnibox();
 
         fixupTextDirection();
-        // Always align to the same as the paragraph direction (LTR = left, RTL = right).
-        ApiCompatibilityUtils.setTextAlignment(this, TEXT_ALIGNMENT_TEXT_START);
     }
 
     /**
@@ -504,6 +502,8 @@ public class UrlBar extends VerticallyFixedEditText {
         } else {
             ApiCompatibilityUtils.setTextDirection(this, TEXT_DIRECTION_LTR);
         }
+        // Always align to the same as the paragraph direction (LTR = left, RTL = right).
+        ApiCompatibilityUtils.setTextAlignment(this, TEXT_ALIGNMENT_TEXT_START);
     }
 
     @Override
