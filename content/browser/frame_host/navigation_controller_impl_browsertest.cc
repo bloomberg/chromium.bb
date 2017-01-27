@@ -714,17 +714,17 @@ class LoadCommittedCapturer : public WebContentsObserver {
     frame_tree_node_id_ = frame_tree_node_id;
   }
 
-  void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override {
-    DCHECK_NE(0, frame_tree_node_id_);
-    RenderFrameHostImpl* rfh =
-        static_cast<RenderFrameHostImpl*>(render_frame_host);
-    if (rfh->frame_tree_node()->frame_tree_node_id() != frame_tree_node_id_)
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->HasCommitted())
       return;
 
-    transition_type_ = transition_type;
+    DCHECK_NE(0, frame_tree_node_id_);
+    if (navigation_handle->GetRenderFrameHost()->GetFrameTreeNodeId() !=
+            frame_tree_node_id_) {
+      return;
+    }
+
+    transition_type_ = navigation_handle->GetPageTransition();
     if (!web_contents()->IsLoading())
       message_loop_runner_->Quit();
   }
