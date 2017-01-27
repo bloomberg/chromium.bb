@@ -106,22 +106,11 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   bool WriteBytes(const void* data, uint32_t data_len);
 
   // Update (in-place) the length field in the frame being built to reflect the
-  // current actual length of bytes written to said frame through this builder.
-  // The framer parameter is used to determine version-specific location and
-  // size information of the length field to be written, and must be initialized
-  // with the correct version for the frame being written.
-  bool RewriteLength(const SpdyFramer& framer);
-
-  // Update (in-place) the length field in the frame being built to reflect the
   // given length.
   // The framer parameter is used to determine version-specific location and
   // size information of the length field to be written, and must be initialized
   // with the correct version for the frame being written.
   bool OverwriteLength(const SpdyFramer& framer, size_t length);
-
-  // Update (in-place) the flags field in the frame being built to reflect the
-  // given flags value.
-  bool OverwriteFlags(const SpdyFramer& framer, uint8_t flags);
 
  private:
   // Checks to make sure that there is an appropriate amount of space for a

@@ -120,10 +120,6 @@ bool SpdyFrameBuilder::WriteBytes(const void* data, uint32_t data_len) {
   return true;
 }
 
-bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
-  return OverwriteLength(framer, length_ - framer.GetFrameHeaderSize());
-}
-
 bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
                                        size_t length) {
   DCHECK_GE(framer.GetFrameMaximumSize(), length);
@@ -133,16 +129,6 @@ bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
   length_ = 0;
   success = WriteUInt24(length);
 
-  length_ = old_length;
-  return success;
-}
-
-bool SpdyFrameBuilder::OverwriteFlags(const SpdyFramer& framer, uint8_t flags) {
-  bool success = false;
-  const size_t old_length = length_;
-  // Flags are the fifth octet in the frame prefix.
-  length_ = 4;
-  success = WriteUInt8(flags);
   length_ = old_length;
   return success;
 }

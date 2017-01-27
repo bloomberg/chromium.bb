@@ -721,7 +721,7 @@ TEST_P(SpdyFramerTest, RejectUpperCaseHeaderBlockValue) {
   frame.WriteUInt32(1);
   frame.WriteStringPiece32("Name1");
   frame.WriteStringPiece32("value1");
-  frame.RewriteLength(framer);
+  frame.OverwriteLength(framer, frame.length() - framer.GetFrameHeaderSize());
 
   SpdyFrameBuilder frame2(1024);
   frame2.BeginNewFrame(framer, HEADERS, 0, 1);
@@ -730,7 +730,7 @@ TEST_P(SpdyFramerTest, RejectUpperCaseHeaderBlockValue) {
   frame2.WriteStringPiece32("value1");
   frame2.WriteStringPiece32("nAmE2");
   frame2.WriteStringPiece32("value2");
-  frame2.RewriteLength(framer);
+  frame.OverwriteLength(framer, frame2.length() - framer.GetFrameHeaderSize());
 
   SpdySerializedFrame control_frame(frame.take());
   StringPiece serialized_headers = GetSerializedHeaders(control_frame, framer);
@@ -1152,7 +1152,7 @@ TEST_P(SpdyFramerTest, DuplicateHeader) {
   frame.WriteStringPiece32("name");
   frame.WriteStringPiece32("value2");
   // write the length
-  frame.RewriteLength(framer);
+  frame.OverwriteLength(framer, frame.length() - framer.GetFrameHeaderSize());
 
   SpdyHeaderBlock new_headers;
   SpdySerializedFrame control_frame(frame.take());
@@ -1181,7 +1181,7 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
   encoder.EncodeHeaderSet(header_set, &buffer);
   frame.WriteBytes(&buffer[0], buffer.size());
   // write the length
-  frame.RewriteLength(framer);
+  frame.OverwriteLength(framer, frame.length() - framer.GetFrameHeaderSize());
 
   SpdySerializedFrame control_frame(frame.take());
 
