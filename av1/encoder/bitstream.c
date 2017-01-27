@@ -3255,9 +3255,10 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   int i, p;
   const int ntiles =
       av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
-  const int ntiles_uv = av1_get_rest_ntiles(cm->width >> cm->subsampling_x,
-                                            cm->height >> cm->subsampling_y,
-                                            NULL, NULL, NULL, NULL);
+  const int ntiles_uv =
+      av1_get_rest_ntiles(ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
+                          ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
+                          NULL, NULL, NULL, NULL);
   RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {

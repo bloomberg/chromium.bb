@@ -84,13 +84,7 @@ TEST_F(AV1FrameSizeTests, LargeValidSizes) {
 #endif
 }
 
-#if CONFIG_LOOP_RESTORATION
-// https://bugs.chromium.org/p/aomedia/issues/detail?id=312
-#define ONE_BY_ONE_VIDEO_NAME DISABLED_OneByOneVideo
-#else
-#define ONE_BY_ONE_VIDEO_NAME OneByOneVideo
-#endif
-TEST_F(AV1FrameSizeTests, ONE_BY_ONE_VIDEO_NAME) {
+TEST_F(AV1FrameSizeTests, OneByOneVideo) {
   ::libaom_test::RandomVideoSource video;
 
   video.SetSize(1, 1);

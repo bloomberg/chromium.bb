@@ -1338,7 +1338,8 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   if ((components_pattern >> AOM_PLANE_U) & 1) {
     if (rsi[AOM_PLANE_U].frame_restoration_type != RESTORE_NONE) {
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
-          cm->width >> cm->subsampling_x, cm->height >> cm->subsampling_y,
+          ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
+          ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
           &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_U];
@@ -1365,7 +1366,8 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   if ((components_pattern >> AOM_PLANE_V) & 1) {
     if (rsi[AOM_PLANE_V].frame_restoration_type != RESTORE_NONE) {
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
-          cm->width >> cm->subsampling_x, cm->height >> cm->subsampling_y,
+          ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
+          ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
           &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_V];
