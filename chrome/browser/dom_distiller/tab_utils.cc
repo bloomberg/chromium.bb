@@ -20,6 +20,7 @@
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -49,9 +50,8 @@ class SelfDeletingRequestDelegate : public ViewRequestDelegate,
   void OnArticleUpdated(ArticleDistillationUpdate article_update) override;
 
   // content::WebContentsObserver implementation.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
 
@@ -65,9 +65,11 @@ class SelfDeletingRequestDelegate : public ViewRequestDelegate,
   std::unique_ptr<ViewerHandle> viewer_handle_;
 };
 
-void SelfDeletingRequestDelegate::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void SelfDeletingRequestDelegate::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   Observe(NULL);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
