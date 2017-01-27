@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "chrome/installer/mini_installer/exit_code.h"
+#include "chrome/installer/mini_installer/mini_string.h"
 
 namespace mini_installer {
 
@@ -23,6 +24,17 @@ struct ProcessExitResult {
 
   bool IsSuccess() const { return exit_code == SUCCESS_EXIT_CODE; }
 };
+
+// A stack-based string large enough to hold an executable to run
+// (which is a path), two additional path arguments, plus a few extra
+// arguments. Figure that MAX_PATH (260) is sufficient breathing room for the
+// extra arguments.
+using CommandString = StackString<MAX_PATH * 4>;
+
+// Appends everything following the path to the executable in |command_line|
+// verbatim to |buffer|, including all whitespace, quoted arguments,
+// etc. |buffer| is unchanged in case of error.
+void AppendCommandLineFlags(const wchar_t* command_line, CommandString* buffer);
 
 // Main function for Chrome's mini_installer. First gets a working dir, unpacks
 // the resources, and finally executes setup.exe to do the install/update. Also

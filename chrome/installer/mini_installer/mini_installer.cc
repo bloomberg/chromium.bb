@@ -41,14 +41,12 @@
 #include "chrome/installer/mini_installer/configuration.h"
 #include "chrome/installer/mini_installer/decompress.h"
 #include "chrome/installer/mini_installer/mini_installer_constants.h"
-#include "chrome/installer/mini_installer/mini_string.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
 #include "chrome/installer/mini_installer/regkey.h"
 
 namespace mini_installer {
 
 typedef StackString<MAX_PATH> PathString;
-typedef StackString<MAX_PATH * 4> CommandString;
 
 // This structure passes data back and forth for the processing
 // of resource callbacks.
@@ -219,56 +217,47 @@ ProcessExitResult RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline) {
   return ProcessExitResult(exit_code);
 }
 
-// Appends any command line params passed to mini_installer to the given buffer
-// so that they can be passed on to setup.exe.
-// |buffer| is unchanged in case of error.
-void AppendCommandLineFlags(const Configuration& configuration,
+void AppendCommandLineFlags(const wchar_t* command_line,
                             CommandString* buffer) {
-  PathString full_exe_path;
-  size_t len = ::GetModuleFileName(
-      NULL, full_exe_path.get(), static_cast<DWORD>(full_exe_path.capacity()));
-  if (!len || len >= full_exe_path.capacity())
-    return;
-
-  const wchar_t* exe_name =
-      GetNameFromPathExt(full_exe_path.get(), static_cast<DWORD>(len));
-
-  // - configuration.program() returns the first command line argument
-  //   passed into the program (that the user probably typed in this case).
-  //       "mini_installer.exe"
-  //       "mini_installer"
-  //       "out\Release\mini_installer"
-  // - |exe_name| is the executable file of the current process.
-  //       "mini_installer.exe"
-  //
-  // Note that there are three possibilities to handle here.
-  // Receive a cmdline containing:
-  // 1) executable name WITH extension
-  // 2) executable name with NO extension
-  // 3) NO executable name as part of cmdline
-  const wchar_t* cmd_to_append = L"";
-  const wchar_t* arg0 = configuration.program();
-  if (!arg0)
-    return;
-  const wchar_t* arg0_base_name = GetNameFromPathExt(arg0, ::lstrlen(arg0));
-  if (!StrStartsWith(exe_name, arg0_base_name)) {
-    // State 3: NO executable name as part of cmdline.
-    buffer->append(L" ");
-    cmd_to_append = configuration.command_line();
-  } else if (configuration.argument_count() > 1) {
-    // State 1 or 2: Executable name is in cmdline.
-    // - Append everything AFTER the executable name.
-    //   (Using arg0_base_name here to make sure to match with or without
-    //   extension.  Then move to the space following the token.)
-    const wchar_t* tmp = SearchStringI(configuration.command_line(),
-                                       arg0_base_name);
-    tmp = SearchStringI(tmp, L" ");
-    cmd_to_append = tmp;
+  // The program name (the first argument parsed by CommandLineToArgvW) is
+  // delimited by whitespace or a double quote based on the first character of
+  // the full command line string. Use the same logic here to scan past the
+  // program name in the program's command line (obtained during startup from
+  // GetCommandLine). See
+  // http://www.windowsinspired.com/how-a-windows-programs-splits-its-command-line-into-individual-arguments/
+  // for gory details regarding how CommandLineToArgvW works.
+  wchar_t a_char = 0;
+  if (*command_line == L'"') {
+    // Scan forward past the closing double quote.
+    ++command_line;
+    while (true) {
+      a_char = *command_line;
+      if (!a_char)
+        break;
+      ++command_line;
+      if (a_char == L'"') {
+        a_char = *command_line;
+        break;
+      }
+    }  // postcondition: |a_char| contains the character at *command_line.
+  } else {
+    // Scan forward for the first space or tab character.
+    while (true) {
+      a_char = *command_line;
+      if (!a_char || a_char == L' ' || a_char == L'\t')
+        break;
+      ++command_line;
+    }  // postcondition: |a_char| contains the character at *command_line.
   }
 
-  buffer->append(cmd_to_append);
-}
+  if (!a_char)
+    return;
 
+  // Append a space if |command_line| doesn't begin with one.
+  if (a_char != ' ' && a_char != '\t' && !buffer->append(L" "))
+    return;
+  buffer->append(command_line);
+}
 
 // Windows defined callback used in the EnumResourceNames call. For each
 // matching resource found, the callback is invoked and at this point we write
@@ -394,7 +383,7 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
 
     // Get any command line option specified for mini_installer and pass them
     // on to setup.exe.
-    AppendCommandLineFlags(configuration, &cmd_line);
+    AppendCommandLineFlags(configuration.command_line(), &cmd_line);
 
     if (exit_code.IsSuccess())
       exit_code = RunProcessAndWait(exe_path.get(), cmd_line.get());
@@ -493,7 +482,7 @@ ProcessExitResult RunSetup(const Configuration& configuration,
 
   // Get any command line option specified for mini_installer and pass them
   // on to setup.exe
-  AppendCommandLineFlags(configuration, &cmd_line);
+  AppendCommandLineFlags(configuration.command_line(), &cmd_line);
 
   return RunProcessAndWait(NULL, cmd_line.get());
 }

@@ -63,6 +63,7 @@ source_set("unit_tests") {
   sources = [
     "configuration_test.cc",
     "decompress_test.cc",
+    "mini_installer_unittest.cc",
     "mini_string_test.cc",
   ]
 
