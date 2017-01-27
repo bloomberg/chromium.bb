@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -14,13 +15,19 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/painter.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -42,6 +49,31 @@ base::string16 GetAddressFromProfile(const autofill::AutofillProfile& profile,
   return profile.ConstructInferredLabel(fields, fields.size(), locale);
 }
 
+// Paints the gray horizontal line that doesn't span the entire width of the
+// dialog at the bottom of the view it borders.
+class PaymentRequestRowBorderPainter : public views::Painter {
+ public:
+  PaymentRequestRowBorderPainter() {}
+  ~PaymentRequestRowBorderPainter() override {}
+
+  // views::Painter:
+  gfx::Size GetMinimumSize() const override {
+    return gfx::Size(2 * payments::kPaymentRequestRowHorizontalInsets, 1);
+  }
+
+  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
+    int line_height = size.height() - 1;
+    canvas->DrawLine(
+        gfx::PointF(payments::kPaymentRequestRowHorizontalInsets, line_height),
+        gfx::PointF(size.width() - payments::kPaymentRequestRowHorizontalInsets,
+                    line_height),
+        SK_ColorLTGRAY);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestRowBorderPainter);
+};
+
 }  // namespace
 
 namespace payments {
@@ -53,6 +85,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
   views::GridLayout* layout = new views::GridLayout(container.get());
   container->SetLayoutManager(layout);
+  layout->SetInsets(0, kPaymentRequestRowHorizontalInsets,
+                    0, kPaymentRequestRowHorizontalInsets);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the optional back arrow.
@@ -97,9 +131,7 @@ std::unique_ptr<views::View> CreatePaymentView(
 
   constexpr int kTopInsetSize = 9;
   constexpr int kBottomInsetSize = 18;
-  constexpr int kSideInsetSize = 14;
-  layout->SetInsets(
-      kTopInsetSize, kSideInsetSize, kBottomInsetSize, kSideInsetSize);
+  layout->SetInsets(kTopInsetSize, 0, kBottomInsetSize, 0);
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                      1, views::GridLayout::USE_PREF, 0, 0);
@@ -179,6 +211,14 @@ std::unique_ptr<views::View> GetContactInfoLabel(
 
   return base::MakeUnique<views::StyledLabel>(
       base::JoinString(values, base::ASCIIToUTF16("\n")), nullptr);
+}
+
+// Creates a views::Border object that can paint the gray horizontal ruler used
+// as a separator between items in the Payment Request dialog.
+std::unique_ptr<views::Border> CreatePaymentRequestRowBorder() {
+  return views::CreateBorderPainter(
+      base::MakeUnique<PaymentRequestRowBorderPainter>(),
+      gfx::Insets());
 }
 
 }  // namespace payments

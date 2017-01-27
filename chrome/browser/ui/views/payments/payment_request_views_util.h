@@ -15,11 +15,15 @@ class AutofillProfile;
 }
 
 namespace views {
+class Border;
 class VectorIconButtonDelegate;
 class View;
 }
 
 namespace payments {
+
+constexpr int kPaymentRequestRowHorizontalInsets = 14;
+constexpr int kPaymentRequestRowVerticalInsets = 8;
 
 enum class PaymentRequestCommonTags {
   BACK_BUTTON_TAG = 0,
@@ -80,6 +84,10 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     bool show_payer_name,
     bool show_payer_email,
     bool show_payer_phone);
+
+// Creates a views::Border object that can paint the gray horizontal ruler used
+// as a separator between items in the Payment Request dialog.
+std::unique_ptr<views::Border> CreatePaymentRequestRowBorder();
 
 }  // namespace payments
 

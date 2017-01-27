@@ -617,6 +617,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // be the target of an event.
   virtual bool CanProcessEventsWithinSubtree() const;
 
+  // Sets whether this view or any of its descendants are permitted to be the
+  // target of an event.
+  void set_can_process_events_within_subtree(bool can_process) {
+    can_process_events_within_subtree_ = can_process;
+  }
+
   // Returns true if the mouse cursor is over |view| and mouse events are
   // enabled.
   bool IsMouseHovered() const;
@@ -1490,6 +1496,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |children_| is mutated during iteration.
   mutable bool iterating_;
 #endif
+
+  bool can_process_events_within_subtree_;
 
   // Size and disposition ------------------------------------------------------
 

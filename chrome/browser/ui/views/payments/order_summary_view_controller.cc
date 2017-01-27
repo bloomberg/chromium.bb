@@ -43,12 +43,17 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
                                                 DialogViewID amount_label_id) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
 
-  row->SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, SK_ColorLTGRAY));
+  row->SetBorder(payments::CreatePaymentRequestRowBorder());
 
   views::GridLayout* layout = new views::GridLayout(row.get());
 
+  // The vertical spacing for these rows is slightly different than the spacing
+  // spacing for clickable rows, so don't use kPaymentRequestRowVerticalInsets.
   constexpr int kRowVerticalInset = 12;
-  layout->SetInsets(kRowVerticalInset, 0, kRowVerticalInset, 0);
+  layout->SetInsets(kRowVerticalInset,
+                    payments::kPaymentRequestRowHorizontalInsets,
+                    kRowVerticalInset,
+                    payments::kPaymentRequestRowHorizontalInsets);
 
   row->SetLayoutManager(layout);
   views::ColumnSet* columns = layout->AddColumnSet(0);

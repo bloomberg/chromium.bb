@@ -130,6 +130,7 @@ View::View()
 #if DCHECK_IS_ON()
       iterating_(false),
 #endif
+      can_process_events_within_subtree_(true),
       visible_(true),
       enabled_(true),
       notify_enter_exit_on_child_(false),
@@ -988,7 +989,7 @@ View* View::GetEventHandlerForRect(const gfx::Rect& rect) {
 }
 
 bool View::CanProcessEventsWithinSubtree() const {
-  return true;
+  return can_process_events_within_subtree_;
 }
 
 View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
