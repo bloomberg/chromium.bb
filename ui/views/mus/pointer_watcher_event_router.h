@@ -49,12 +49,12 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
       aura::WindowTreeClient* window_tree_client);
   ~PointerWatcherEventRouter() override;
 
+  void AddPointerWatcher(PointerWatcher* watcher, bool wants_moves);
+  void RemovePointerWatcher(PointerWatcher* watcher);
+
   // Called by WindowTreeClientDelegate to notify PointerWatchers appropriately.
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target);
-
-  void AddPointerWatcher(PointerWatcher* watcher, bool wants_moves);
-  void RemovePointerWatcher(PointerWatcher* watcher);
 
  private:
   friend class PointerWatcherEventRouterTest;
