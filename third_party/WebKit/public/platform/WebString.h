@@ -113,6 +113,9 @@ class WebString {
 
   BLINK_COMMON_EXPORT bool equals(const WebString&) const;
   BLINK_COMMON_EXPORT bool equals(const char* characters, size_t len) const;
+  bool equals(const char* characters) const {
+    return equals(characters, characters ? strlen(characters) : 0);
+  }
 
   BLINK_COMMON_EXPORT size_t length() const;
 
@@ -124,8 +127,6 @@ class WebString {
 
   BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data,
                                                 size_t length);
-  BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data);
-
   static WebString fromUTF8(const std::string& s) {
     return fromUTF8(s.data(), s.length());
   }
@@ -229,7 +230,7 @@ class WebString {
 };
 
 inline bool operator==(const WebString& a, const char* b) {
-  return a.equals(b, b ? strlen(b) : 0);
+  return a.equals(b);
 }
 
 inline bool operator!=(const WebString& a, const char* b) {

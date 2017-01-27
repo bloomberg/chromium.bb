@@ -90,10 +90,6 @@ WebString WebString::fromUTF8(const char* data, size_t length) {
   return String::fromUTF8(data, length);
 }
 
-WebString WebString::fromUTF8(const char* data) {
-  return String::fromUTF8(data);
-}
-
 WebString WebString::fromUTF16(const base::string16& s) {
   WebString string;
   string.assign(s.data(), s.length());
