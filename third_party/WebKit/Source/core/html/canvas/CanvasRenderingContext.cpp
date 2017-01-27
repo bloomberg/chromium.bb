@@ -30,9 +30,11 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-const char* const kLinearRGBCanvasColorSpaceName = "linear-rgb";
-const char* const kSRGBCanvasColorSpaceName = "srgb";
-const char* const kLegacyCanvasColorSpaceName = "legacy-srgb";
+constexpr const char* kLegacyCanvasColorSpaceName = "legacy-srgb";
+constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
+constexpr const char* kLinearRGBCanvasColorSpaceName = "linear-rgb";
+constexpr const char* kRec2020CanvasColorSpaceName = "rec-2020";
+constexpr const char* kP3CanvasColorSpaceName = "p3";
 
 namespace blink {
 
@@ -51,6 +53,10 @@ CanvasRenderingContext::CanvasRenderingContext(
     else if (m_creationAttributes.colorSpace() ==
              kLinearRGBCanvasColorSpaceName)
       m_colorSpace = kLinearRGBCanvasColorSpace;
+    else if (m_creationAttributes.colorSpace() == kRec2020CanvasColorSpaceName)
+      m_colorSpace = kRec2020CanvasColorSpace;
+    else if (m_creationAttributes.colorSpace() == kP3CanvasColorSpaceName)
+      m_colorSpace = kP3CanvasColorSpace;
   }
   // Make m_creationAttributes reflect the effective colorSpace rather than the
   // requested one
@@ -59,31 +65,62 @@ CanvasRenderingContext::CanvasRenderingContext(
 
 WTF::String CanvasRenderingContext::colorSpaceAsString() const {
   switch (m_colorSpace) {
+    case kLegacyCanvasColorSpace:
+      return kLegacyCanvasColorSpaceName;
     case kSRGBCanvasColorSpace:
       return kSRGBCanvasColorSpaceName;
     case kLinearRGBCanvasColorSpace:
       return kLinearRGBCanvasColorSpaceName;
-    case kLegacyCanvasColorSpace:
-      return kLegacyCanvasColorSpaceName;
+    case kRec2020CanvasColorSpace:
+      return kRec2020CanvasColorSpaceName;
+    case kP3CanvasColorSpace:
+      return kP3CanvasColorSpaceName;
   };
   CHECK(false);
   return "";
 }
 
 sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const {
+  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
+      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+    return nullptr;
+  }
   switch (m_colorSpace) {
+    case kLegacyCanvasColorSpace:
+      // Legacy colorspace ensures color matching with CSS is preserved.
+      // So if CSS is color corrected from sRGB to display space, then
+      // canvas must do the same
+      return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
     case kSRGBCanvasColorSpace:
       return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
     case kLinearRGBCanvasColorSpace:
       return SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
-    case kLegacyCanvasColorSpace:
-      if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-        // Legacy colorspace ensures color matching with CSS is preserved.
-        // So if CSS is color corrected from sRGB to display space, then
-        // canvas must do the same
-        return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
-      }
-      return nullptr;
+    case kRec2020CanvasColorSpace: {
+      // TODO(zakerinasab): Replace this with proper constructor from Skia
+      // when it is provided.
+      // https://en.wikipedia.org/wiki/Rec._2020
+      SkColorSpacePrimaries kPrimaries = {0.708, 0.292, 0.170,  0.797,
+                                          0.131, 0.046, 0.3127, 0.3290};
+      SkMatrix44 kToXYZD50;
+      if (!kPrimaries.toXYZD50(&kToXYZD50))
+        return nullptr;
+      return SkColorSpace::MakeRGB(
+          SkColorSpace::RenderTargetGamma::kLinear_RenderTargetGamma,
+          kToXYZD50);
+    }
+    case kP3CanvasColorSpace: {
+      // TODO(zakerinasab): Replace this with proper constructor from Skia
+      // when it is provided.
+      // https://en.wikipedia.org/wiki/DCI-P3
+      SkColorSpacePrimaries kPrimaries = {0.680, 0.320, 0.265,  0.690,
+                                          0.150, 0.060, 0.3127, 0.3290};
+      SkMatrix44 kToXYZD50;
+      if (!kPrimaries.toXYZD50(&kToXYZD50))
+        return nullptr;
+      return SkColorSpace::MakeRGB(
+          SkColorSpace::RenderTargetGamma::kLinear_RenderTargetGamma,
+          kToXYZD50);
+    }
   };
   CHECK(false);
   return nullptr;
@@ -101,6 +138,8 @@ ColorBehavior CanvasRenderingContext::colorBehaviorForMediaDrawnToCanvas()
 SkColorType CanvasRenderingContext::colorType() const {
   switch (m_colorSpace) {
     case kLinearRGBCanvasColorSpace:
+    case kRec2020CanvasColorSpace:
+    case kP3CanvasColorSpace:
       return kRGBA_F16_SkColorType;
     default:
       return kN32_SkColorType;

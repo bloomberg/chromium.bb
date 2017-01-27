@@ -9,8 +9,10 @@ function checkCanvasColorSpace(requestedColorSpace, expectedColorSpace) {
 }
 
 generate_tests(checkCanvasColorSpace, [
-	['Unknown color space falls back to legacy-srgb.', 'bogus', 'legacy-srgb'], 
+	['legacy-srgb is supported', 'legacy-srgb', 'legacy-srgb'],
 	['srgb is supported', 'srgb', 'srgb'],
 	['linear-rgb is supported', 'linear-rgb', 'linear-rgb'],
+	['rec-2020 is supported', 'rec-2020', 'rec-2020'],
+	['p3 is supported', 'p3', 'p3'],
 ]);
 </script>

@@ -52,6 +52,8 @@ enum CanvasColorSpace {
   kLegacyCanvasColorSpace,
   kSRGBCanvasColorSpace,
   kLinearRGBCanvasColorSpace,
+  kRec2020CanvasColorSpace,
+  kP3CanvasColorSpace,
 };
 
 class CORE_EXPORT CanvasRenderingContext
