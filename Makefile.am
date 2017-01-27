@@ -1213,6 +1213,7 @@ weston_tests =					\
 	viewporter.weston			\
 	roles.weston				\
 	subsurface.weston			\
+	subsurface-shot.weston			\
 	devices.weston
 
 ivi_tests =
@@ -1373,6 +1374,10 @@ subsurface_weston_SOURCES = tests/subsurface-test.c
 subsurface_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 subsurface_weston_LDADD = libtest-client.la
 
+subsurface_shot_weston_SOURCES = tests/subsurface-shot-test.c
+subsurface_shot_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+subsurface_shot_weston_LDADD = libtest-client.la
+
 presentation_weston_SOURCES = 			\
 	tests/presentation-test.c		\
 	shared/helpers.h
@@ -1482,10 +1487,15 @@ zuctest_SOURCES =				\
 	tools/zunitc/test/zunitc_test.c
 
 EXTRA_DIST +=							\
-	tests/weston-tests-env					\
 	tests/internal-screenshot.ini				\
 	tests/reference/internal-screenshot-bad-00.png		\
-	tests/reference/internal-screenshot-good-00.png
+	tests/reference/internal-screenshot-good-00.png		\
+	tests/reference/subsurface_z_order-00.png		\
+	tests/reference/subsurface_z_order-01.png		\
+	tests/reference/subsurface_z_order-02.png		\
+	tests/reference/subsurface_z_order-03.png		\
+	tests/reference/subsurface_z_order-04.png		\
+	tests/weston-tests-env
 
 BUILT_SOURCES +=				\
 	protocol/weston-test-protocol.c	\
