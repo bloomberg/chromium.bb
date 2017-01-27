@@ -17,7 +17,7 @@ import time
 import traceback
 import urllib2
 
-from webkitpy.common.net.buildbot import Build
+from webkitpy.common.net.buildbot import Build, current_build_link
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 
@@ -135,21 +135,20 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         return tests, revision, commit, author, bugs, has_any_needs_rebaseline_lines
 
+    def commit_message(self, author, revision, commit, bugs):
+        message = 'Auto-rebaseline for r%s\n\n' % revision
+        build_link = current_build_link(self._tool)
+        if build_link:
+            message += 'Build: %s\n\n' % build_link
+        message += '%s\n\n' % self.link_to_patch(commit)
+        if bugs:
+            message += 'BUG=%s\n' % ','.join(bugs)
+        message += 'TBR=%s\n' % author
+        return message
+
     @staticmethod
     def link_to_patch(commit):
-        return "https://chromium.googlesource.com/chromium/src/+/" + commit
-
-    def commit_message(self, author, revision, commit, bugs):
-        bug_string = ""
-        if bugs:
-            bug_string = "BUG=%s\n" % ",".join(bugs)
-
-        return """Auto-rebaseline for r%s
-
-%s
-
-%sTBR=%s
-""" % (revision, self.link_to_patch(commit), bug_string, author)
+        return 'https://chromium.googlesource.com/chromium/src/+/' + commit
 
     def get_test_prefix_list(self, tests):
         test_prefix_list = {}

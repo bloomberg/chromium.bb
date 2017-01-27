@@ -16,12 +16,11 @@ new failing tests before committing.
 """
 
 import argparse
-import json
 import logging
-import re
 
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.net.buildbot import current_build_link
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME, exportable_commits_since
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
@@ -375,7 +374,7 @@ class TestImporter(object):
 
     def _cl_description(self):
         description = self.check_run(['git', 'log', '-1', '--format=%B'])
-        build_link = self._build_link()
+        build_link = current_build_link(self.host)
         if build_link:
             description += 'Build: %s\n\n' % build_link
         description += 'TBR=qyearsley@chromium.org\n'
@@ -384,15 +383,6 @@ class TestImporter(object):
         description = description.replace('\n\n\n\n', '\n\n')
         description += 'NOEXPORT=true'
         return description
-
-    def _build_link(self):
-        """Returns a link to a job, if running on buildbot."""
-        master_name = self.host.environ.get('BUILDBOT_MASTERNAME')
-        builder_name = self.host.environ.get('BUILDBOT_BUILDERNAME')
-        build_number = self.host.environ.get('BUILDBOT_BUILDNUMBER')
-        if not (master_name and builder_name and build_number):
-            return None
-        return 'https://build.chromium.org/p/%s/builders/%s/builds/%s' % (master_name, builder_name, build_number)
 
     def fetch_new_expectations_and_baselines(self):
         """Adds new expectations and downloads baselines based on try job results, then commits and uploads the change."""

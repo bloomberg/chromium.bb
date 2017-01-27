@@ -120,3 +120,13 @@ class BuildBot(object):
         # urlopen returns a file-like object which sometimes works fine with str()
         # but sometimes is a addinfourl object.  In either case calling read() is correct.
         return result.read()
+
+
+def current_build_link(host):
+    """Returns a link to the current job if running on buildbot, or None."""
+    master_name = host.environ.get('BUILDBOT_MASTERNAME')
+    builder_name = host.environ.get('BUILDBOT_BUILDERNAME')
+    build_number = host.environ.get('BUILDBOT_BUILDNUMBER')
+    if not (master_name and builder_name and build_number):
+        return None
+    return 'https://build.chromium.org/p/%s/builders/%s/builds/%s' % (master_name, builder_name, build_number)

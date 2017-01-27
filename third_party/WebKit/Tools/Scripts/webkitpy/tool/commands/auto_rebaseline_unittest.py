@@ -107,22 +107,26 @@ class TestAutoRebaseline(BaseTestCase):
         commit = "abcd567"
         bugs = set()
         self.assertEqual(self.command.commit_message(author, revision, commit, bugs),
-                         """Auto-rebaseline for r1234
-
-https://chromium.googlesource.com/chromium/src/+/abcd567
-
-TBR=foo@chromium.org
-""")
+                         'Auto-rebaseline for r1234\n\n'
+                         'https://chromium.googlesource.com/chromium/src/+/abcd567\n\n'
+                         'TBR=foo@chromium.org\n')
 
         bugs = set(["234", "345"])
         self.assertEqual(self.command.commit_message(author, revision, commit, bugs),
-                         """Auto-rebaseline for r1234
+                         'Auto-rebaseline for r1234\n\n'
+                         'https://chromium.googlesource.com/chromium/src/+/abcd567\n\n'
+                         'BUG=234,345\n'
+                         'TBR=foo@chromium.org\n')
 
-https://chromium.googlesource.com/chromium/src/+/abcd567
-
-BUG=234,345
-TBR=foo@chromium.org
-""")
+        self.tool.environ['BUILDBOT_MASTERNAME'] = 'my.master'
+        self.tool.environ['BUILDBOT_BUILDERNAME'] = 'b'
+        self.tool.environ['BUILDBOT_BUILDNUMBER'] = '123'
+        self.assertEqual(self.command.commit_message(author, revision, commit, bugs),
+                         'Auto-rebaseline for r1234\n\n'
+                         'Build: https://build.chromium.org/p/my.master/builders/b/builds/123\n\n'
+                         'https://chromium.googlesource.com/chromium/src/+/abcd567\n\n'
+                         'BUG=234,345\n'
+                         'TBR=foo@chromium.org\n')
 
     def test_no_needs_rebaseline_lines(self):
         def blame(_):
