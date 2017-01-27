@@ -414,7 +414,7 @@ const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
        "avatar_alien.png",
        IDS_DEFAULT_AVATAR_LABEL_13},
       {IDR_PROFILE_AVATAR_14,
-       "avatar_smiley.png",
+       "avatar_awesome.png",
        IDS_DEFAULT_AVATAR_LABEL_14},
       {IDR_PROFILE_AVATAR_15,
        "avatar_flower.png",
