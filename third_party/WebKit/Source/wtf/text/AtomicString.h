@@ -84,6 +84,7 @@ class WTF_EXPORT AtomicString {
     return m_string.isHashTableDeletedValue();
   }
 
+  explicit operator bool() const { return !isNull(); }
   operator const String&() const { return m_string; }
   const String& getString() const { return m_string; }
 

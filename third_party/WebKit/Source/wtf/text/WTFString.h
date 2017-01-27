@@ -106,6 +106,7 @@ class WTF_EXPORT String {
     return String(buffer.release());
   }
 
+  explicit operator bool() const { return !isNull(); }
   bool isNull() const { return !m_impl; }
   bool isEmpty() const { return !m_impl || !m_impl->length(); }
 
@@ -431,10 +432,6 @@ class WTF_EXPORT String {
 #endif
 
  private:
-  typedef struct ImplicitConversionFromWTFStringToBoolDisallowed*(
-      String::*UnspecifiedBoolType);
-  operator UnspecifiedBoolType() const;
-
   template <typename CharacterType>
   void appendInternal(CharacterType);
 
@@ -479,10 +476,6 @@ template <size_t inlineCapacity>
 inline bool equalIgnoringNullity(const Vector<UChar, inlineCapacity>& a,
                                  const String& b) {
   return equalIgnoringNullity(a, b.impl());
-}
-
-inline bool operator!(const String& str) {
-  return str.isNull();
 }
 
 inline void swap(String& a, String& b) {
