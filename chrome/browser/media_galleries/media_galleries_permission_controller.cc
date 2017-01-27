@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
 
 #include "base/base_paths.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -81,8 +82,8 @@ MediaGalleriesPermissionController::MediaGalleriesPermissionController(
 }
 
 void MediaGalleriesPermissionController::OnPreferencesInitialized() {
-  if (StorageMonitor::GetInstance())
-    StorageMonitor::GetInstance()->AddObserver(this);
+  DCHECK(StorageMonitor::GetInstance());
+  StorageMonitor::GetInstance()->AddObserver(this);
 
   // |preferences_| may be NULL in tests.
   if (preferences_) {
@@ -107,8 +108,8 @@ MediaGalleriesPermissionController::MediaGalleriesPermissionController(
 }
 
 MediaGalleriesPermissionController::~MediaGalleriesPermissionController() {
-  if (StorageMonitor::GetInstance())
-    StorageMonitor::GetInstance()->RemoveObserver(this);
+  DCHECK(StorageMonitor::GetInstance());
+  StorageMonitor::GetInstance()->RemoveObserver(this);
 
   // |preferences_| may be NULL in tests.
   if (preferences_)

@@ -790,12 +790,21 @@ void MediaFileSystemRegistryTest::TearDown() {
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   EXPECT_EQ(0U, GetExtensionGalleriesHostCount(registry));
-  TestStorageMonitor::Destroy();
+
 #if defined(OS_CHROMEOS)
   test_user_manager_.reset();
 #endif
 
+  // The TestingProfile must be destroyed before the TestingBrowserProcess
+  // because it uses it in its destructor.
   ChromeRenderViewHostTestHarness::TearDown();
+
+  // The MediaFileSystemRegistry owned by the TestingBrowserProcess must be
+  // destroyed before the StorageMonitor because it calls
+  // StorageMonitor::RemoveObserver() in its destructor.
+  TestingBrowserProcess::DeleteInstance();
+
+  TestStorageMonitor::Destroy();
 }
 
 ///////////

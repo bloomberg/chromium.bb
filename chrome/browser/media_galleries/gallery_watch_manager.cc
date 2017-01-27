@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -183,8 +184,8 @@ GalleryWatchManager::GalleryWatchManager()
 GalleryWatchManager::~GalleryWatchManager() {
   weak_factory_.InvalidateWeakPtrs();
 
-  if (storage_monitor_observed_ &&
-      storage_monitor::StorageMonitor::GetInstance()) {
+  if (storage_monitor_observed_) {
+    DCHECK(storage_monitor::StorageMonitor::GetInstance());
     storage_monitor::StorageMonitor::GetInstance()->RemoveObserver(this);
   }
 

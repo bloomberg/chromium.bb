@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -761,11 +762,8 @@ MediaFileSystemRegistry::MediaFileSystemRegistry()
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {
-  // TODO(gbillock): This is needed because the unit test uses the
-  // g_browser_process registry. We should create one in the unit test,
-  // and then can remove this.
-  if (StorageMonitor::GetInstance())
-    StorageMonitor::GetInstance()->RemoveObserver(this);
+  DCHECK(StorageMonitor::GetInstance());
+  StorageMonitor::GetInstance()->RemoveObserver(this);
 }
 
 void MediaFileSystemRegistry::OnPermissionRemoved(

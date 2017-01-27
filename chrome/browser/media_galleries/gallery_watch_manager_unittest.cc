@@ -20,6 +20,7 @@
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -95,6 +96,16 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
       manager_->RemoveObserver(profile_.get());
     }
     manager_.reset();
+
+    // The TestingProfile must be destroyed before the TestingBrowserProcess
+    // because it uses it in its destructor.
+    ShutdownProfile();
+
+    // The MediaFileSystemRegistry owned by the TestingBrowserProcess must be
+    // destroyed before the StorageMonitor because it calls
+    // StorageMonitor::RemoveObserver() in its destructor.
+    TestingBrowserProcess::DeleteInstance();
+
     storage_monitor::TestStorageMonitor::Destroy();
   }
 
