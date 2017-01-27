@@ -277,7 +277,8 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
 
 // Override the CRWNativeContentProvider methods to cancel any prerenders that
 // require native content.
-- (id<CRWNativeContent>)controllerForURL:(const GURL&)url {
+- (id<CRWNativeContent>)controllerForURL:(const GURL&)url
+                                webState:(web::WebState*)webState {
   [self schedulePrerenderCancel];
   return nil;
 }

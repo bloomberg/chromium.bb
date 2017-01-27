@@ -1886,7 +1886,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
   id<CRWNativeContent> nativeContent =
-      [_nativeProvider controllerForURL:targetURL];
+      [_nativeProvider controllerForURL:targetURL webState:self.webState];
   // Unlike the WebView case, always create a new controller and view.
   // TODO(pinkerton): What to do if this does return nil?
   [self setNativeController:nativeContent];

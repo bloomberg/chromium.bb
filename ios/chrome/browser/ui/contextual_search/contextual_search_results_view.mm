@@ -334,7 +334,8 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
 }
 
 // Native pages should never be loaded this way.
-- (id<CRWNativeContent>)controllerForURL:(const GURL&)url {
+- (id<CRWNativeContent>)controllerForURL:(const GURL&)url
+                                webState:(web::WebState*)webState {
   NOTREACHED();
   [self cancelLoad];
   return nil;

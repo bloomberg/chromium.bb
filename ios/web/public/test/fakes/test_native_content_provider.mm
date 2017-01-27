@@ -20,7 +20,8 @@
   return _nativeContent.find(URL) != _nativeContent.end();
 }
 
-- (id<CRWNativeContent>)controllerForURL:(const GURL&)URL {
+- (id<CRWNativeContent>)controllerForURL:(const GURL&)URL
+                                webState:(web::WebState*)webState {
   auto nativeContent = _nativeContent.find(URL);
   if (nativeContent == _nativeContent.end()) {
     return nil;

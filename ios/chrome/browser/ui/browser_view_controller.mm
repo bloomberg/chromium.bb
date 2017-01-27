@@ -2914,7 +2914,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
          host == kChromeUITermsHost || host == kChromeUIOfflineHost;
 }
 
-- (id<CRWNativeContent>)controllerForURL:(const GURL&)url {
+- (id<CRWNativeContent>)controllerForURL:(const GURL&)url
+                                webState:(web::WebState*)webState {
   DCHECK(url.SchemeIs(kChromeUIScheme));
 
   id<CRWNativeContent> nativeController = nil;
@@ -2967,7 +2968,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     StaticHtmlNativeContent* staticNativeController =
         [[[OfflinePageNativeContent alloc] initWithLoader:self
                                              browserState:_browserState
-                                                 webState:[self currentWebState]
+                                                 webState:webState
                                                       URL:url] autorelease];
     [self setOverScrollActionControllerToStaticNativeContent:
               staticNativeController];
