@@ -689,6 +689,29 @@ TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
 }
 
+TEST_F(ProfileResetterTest, ResetExtensionsByReenablingExternalComponents) {
+  service_->Init();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<Extension> ext =
+      CreateExtension(base::ASCIIToUTF16("example"),
+                      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
+                      Manifest::EXTERNAL_COMPONENT,
+                      extensions::Manifest::TYPE_EXTENSION, false);
+  service_->AddExtension(ext.get());
+
+  service_->DisableExtension(ext->id(),
+                             extensions::Extension::DISABLE_USER_ACTION);
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(ext->id()));
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(ext->id()));
+
+  ResetAndWait(ProfileResetter::EXTENSIONS);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(ext->id()));
+  EXPECT_FALSE(registry()->disabled_extensions().Contains(ext->id()));
+}
+
 TEST_F(ProfileResetterTest, ResetStartPageNonOrganic) {
   PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);

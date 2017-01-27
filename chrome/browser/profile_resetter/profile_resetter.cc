@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -37,8 +38,11 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/common/extension_id.h"
+#include "extensions/common/manifest.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths.h"
@@ -270,6 +274,24 @@ void ProfileResetter::ResetExtensions() {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(extension_service);
   extension_service->DisableUserExtensionsExcept(brandcode_extensions);
+
+  // Reenable all disabled external component extensions.
+  // BrandcodedDefaultSettings does not contain information about component
+  // extensions, so fetch them from the existing registry. This may be not very
+  // robust, as the profile resetter may be invoked when the registry is in some
+  // iffy state. However, we can't enable an extension which is not in the
+  // registry anyway.
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(extension_registry);
+  std::vector<extensions::ExtensionId> extension_ids_to_reenable;
+  for (const auto& extension : extension_registry->disabled_extensions()) {
+    if (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT)
+      extension_ids_to_reenable.push_back(extension->id());
+  }
+  for (const auto& extension_id : extension_ids_to_reenable) {
+    extension_service->EnableExtension(extension_id);
+  }
 
   MarkAsDone(EXTENSIONS);
 }

@@ -259,6 +259,19 @@ size_t GetExternalInstallBubbleCount(ExtensionService* service) {
   return bubble_count;
 }
 
+scoped_refptr<Extension> CreateExtension(const base::string16& name,
+                                         const base::FilePath& path,
+                                         Manifest::Location location) {
+  base::DictionaryValue manifest;
+  manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  manifest.SetString(extensions::manifest_keys::kName, name);
+  std::string error;
+  scoped_refptr<Extension> extension =
+      Extension::Create(path, location, manifest, Extension::NO_FLAGS, &error);
+  EXPECT_TRUE(extension.get() != nullptr) << error;
+  return extension;
+}
+
 }  // namespace
 
 class MockExtensionProvider : public extensions::ExternalProviderInterface {
@@ -6407,6 +6420,36 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
   service()->EnableExtension(page_action);
   EXPECT_FALSE(HasExternalInstallErrors(service()));
   EXPECT_TRUE(service()->IsExtensionEnabled(page_action));
+}
+
+// As for components, only external component extensions can be disabled.
+TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
+  InitializeEmptyExtensionService();
+  service_->Init();
+
+  scoped_refptr<Extension> external_component_extension = CreateExtension(
+      base::ASCIIToUTF16("external_component_extension"),
+      base::FilePath(FILE_PATH_LITERAL("//external_component_extension")),
+      Manifest::EXTERNAL_COMPONENT);
+  service_->AddExtension(external_component_extension.get());
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(
+      external_component_extension->id()));
+  service_->DisableExtension(external_component_extension->id(),
+                             extensions::Extension::DISABLE_USER_ACTION);
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(
+      external_component_extension->id()));
+
+  scoped_refptr<Extension> component_extension = CreateExtension(
+      base::ASCIIToUTF16("component_extension"),
+      base::FilePath(FILE_PATH_LITERAL("//component_extension")),
+      Manifest::COMPONENT);
+  service_->AddExtension(component_extension.get());
+  EXPECT_TRUE(
+      registry()->enabled_extensions().Contains(component_extension->id()));
+  service_->DisableExtension(component_extension->id(),
+                             extensions::Extension::DISABLE_USER_ACTION);
+  EXPECT_FALSE(
+      registry()->disabled_extensions().Contains(component_extension->id()));
 }
 
 // Test that installing multiple external extensions works.
