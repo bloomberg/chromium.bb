@@ -1,4 +1,5 @@
 AM_CFLAGS = \
+	-pthread \
 	$(WARN_CFLAGS) \
 	-I$(top_srcdir)/include/drm \
 	-I$(top_srcdir)/nouveau \
@@ -7,7 +8,7 @@ AM_CFLAGS = \
 LDADD = \
 	../../nouveau/libdrm_nouveau.la \
 	../../libdrm.la \
-	-ldl -lpthread
+	-ldl
 
 TESTS = threaded
 

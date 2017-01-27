@@ -1,4 +1,5 @@
 AM_CFLAGS = \
+	-pthread \
 	$(WARN_CFLAGS)\
 	-I $(top_srcdir)/include/drm \
 	-I $(top_srcdir)/libkms/ \
@@ -34,8 +35,7 @@ exynos_fimg2d_perf_LDADD = \
 
 exynos_fimg2d_event_LDADD = \
 	$(top_builddir)/libdrm.la \
-	$(top_builddir)/exynos/libdrm_exynos.la \
-	-lpthread
+	$(top_builddir)/exynos/libdrm_exynos.la
 
 exynos_fimg2d_test_LDADD = \
 	$(top_builddir)/libdrm.la \
