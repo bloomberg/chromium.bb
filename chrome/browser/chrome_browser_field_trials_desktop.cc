@@ -80,6 +80,35 @@ void LogStabilityDebuggingInitStatus(
                             INIT_STATUS_MAX);
 }
 
+// Record information about the chrome module.
+void RecordChromeModuleInfo(
+    base::debug::GlobalActivityTracker* global_tracker) {
+  DCHECK(global_tracker);
+
+  base::debug::GlobalActivityTracker::ModuleInfo module;
+  module.is_loaded = true;
+  module.address = reinterpret_cast<uintptr_t>(&__ImageBase);
+
+  base::win::PEImage pe(&__ImageBase);
+  PIMAGE_NT_HEADERS headers = pe.GetNTHeaders();
+  CHECK(headers);
+  module.size = headers->OptionalHeader.SizeOfImage;
+  module.timestamp = headers->FileHeader.TimeDateStamp;
+
+  GUID guid;
+  DWORD age;
+  pe.GetDebugId(&guid, &age);
+  module.age = age;
+  static_assert(sizeof(module.identifier) >= sizeof(guid),
+                "Identifier field must be able to contain a GUID.");
+  memcpy(module.identifier, &guid, sizeof(guid));
+
+  module.file = "chrome.dll";
+  module.debug_file = "chrome.dll.pdb";
+
+  global_tracker->RecordModuleInfo(module);
+}
+
 void SetupStabilityDebugging() {
   if (!base::FeatureList::IsEnabled(
           browser_watcher::kStabilityDebuggingFeature)) {
@@ -144,17 +173,8 @@ void SetupStabilityDebugging() {
     global_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
 #endif
 
-    // Record information about chrome's module.
-    global_data.SetUint(browser_watcher::kStabilityModuleAddress,
-                        reinterpret_cast<uint64_t>(&__ImageBase));
-
-    base::win::PEImage pe(&__ImageBase);
-    PIMAGE_NT_HEADERS headers = pe.GetNTHeaders();
-    CHECK(headers);
-    global_data.SetUint(browser_watcher::kStabilityModuleTimestamp,
-                        headers->FileHeader.TimeDateStamp);
-    global_data.SetUint(browser_watcher::kStabilityModuleSize,
-                        headers->OptionalHeader.SizeOfImage);
+    // Record information about chrome's module. We want this to be done early.
+    RecordChromeModuleInfo(global_tracker);
   }
 }
 #endif  // defined(OS_WIN)
