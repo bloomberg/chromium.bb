@@ -80,4 +80,16 @@ struct weston_test {
 #define TEST_P(name, data) ARG_TEST(name, 0, data)
 #define FAIL_TEST_P(name, data) ARG_TEST(name, 1, data)
 
+/**
+ * Get the test name string with counter
+ *
+ * \return The test name. For an iterated test, e.g. defined with TEST_P(),
+ * the name has a '[%d]' suffix to indicate the iteration.
+ *
+ * This is only usable from code paths inside TEST(), TEST_P(), etc.
+ * defined functions.
+ */
+const char *
+get_test_name(void);
+
 #endif

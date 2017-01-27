@@ -42,6 +42,14 @@ char __attribute__((weak)) *server_parameters="";
 
 extern const struct weston_test __start_test_section, __stop_test_section;
 
+static const char *test_name_;
+
+const char *
+get_test_name(void)
+{
+	return test_name_;
+}
+
 static const struct weston_test *
 find_test(const char *name)
 {
@@ -55,8 +63,17 @@ find_test(const char *name)
 }
 
 static void
-run_test(const struct weston_test *t, void *data)
+run_test(const struct weston_test *t, void *data, int iteration)
 {
+	char str[512];
+
+	if (data) {
+		snprintf(str, sizeof(str), "%s[%d]", t->name, iteration);
+		test_name_ = str;
+	} else {
+		test_name_ = t->name;
+	}
+
 	t->run(data);
 	exit(EXIT_SUCCESS);
 }
@@ -83,7 +100,7 @@ exec_and_report_test(const struct weston_test *t, void *test_data, int iteration
 	assert(pid >= 0);
 
 	if (pid == 0)
-		run_test(t, test_data); /* never returns */
+		run_test(t, test_data, iteration); /* never returns */
 
 	if (waitid(P_ALL, 0, &info, WEXITED)) {
 		fprintf(stderr, "waitid failed: %m\n");
