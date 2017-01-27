@@ -4803,9 +4803,11 @@ TEST_F(PersonalDataManagerTest, UpdateCardsBillingAddressReference) {
 
   // Add the credit cards to the database.
   personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card1));
-  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card2));
+  personal_data_->server_credit_cards_.push_back(
+      base::WrapUnique(credit_card2));
   personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card3));
-  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card4));
+  personal_data_->server_credit_cards_.push_back(
+      base::WrapUnique(credit_card4));
 
   personal_data_->UpdateCardsBillingAddressReference(guids_merge_map);
 

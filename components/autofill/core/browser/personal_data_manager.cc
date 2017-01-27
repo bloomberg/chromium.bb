@@ -1820,7 +1820,7 @@ void PersonalDataManager::UpdateCardsBillingAddressReference(
       C -> D
   */
 
-  for (auto& credit_card : local_credit_cards_) {
+  for (auto& credit_card : GetCreditCards()) {
     // If the credit card is not associated with a billing address, skip it.
     if (credit_card->billing_address_id().empty())
       break;
@@ -1847,7 +1847,10 @@ void PersonalDataManager::UpdateCardsBillingAddressReference(
 
     // If the card was modified, apply the changes to the database.
     if (was_modified) {
-      database_->UpdateCreditCard(*credit_card);
+      if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+        database_->UpdateCreditCard(*credit_card);
+      else
+        database_->UpdateServerCardMetadata(*credit_card);
     }
   }
 }
