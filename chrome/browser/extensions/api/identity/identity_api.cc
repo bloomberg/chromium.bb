@@ -919,24 +919,4 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
   return RespondNow(OneArgument(profile_user_info.ToValue()));
 }
 
-IdentityRemoveCachedAuthTokenFunction::IdentityRemoveCachedAuthTokenFunction() {
-}
-
-IdentityRemoveCachedAuthTokenFunction::
-    ~IdentityRemoveCachedAuthTokenFunction() {
-}
-
-ExtensionFunction::ResponseAction IdentityRemoveCachedAuthTokenFunction::Run() {
-  if (Profile::FromBrowserContext(browser_context())->IsOffTheRecord())
-    return RespondNow(Error(identity_constants::kOffTheRecord));
-
-  std::unique_ptr<identity::RemoveCachedAuthToken::Params> params(
-      identity::RemoveCachedAuthToken::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-  IdentityAPI::GetFactoryInstance()
-      ->Get(browser_context())
-      ->EraseCachedToken(extension()->id(), params->details.token);
-  return RespondNow(NoArguments());
-}
-
 }  // namespace extensions
