@@ -170,6 +170,11 @@ static LayoutVideo* findFullscreenVideoLayoutObject(Document& document) {
       return nullptr;
     fullscreenElement = Fullscreen::fullscreenElementFrom(*contentDocument);
   }
+  // Get the current fullscreen element from the document.
+  // TODO(foolip): When |currentFullScreenElementFrom| is removed, this will
+  // become a no-op and can be removed. https://crbug.com/402421
+  fullscreenElement =
+      Fullscreen::currentFullScreenElementFrom(*contentDocument);
   if (!isHTMLVideoElement(fullscreenElement))
     return nullptr;
   LayoutObject* layoutObject = fullscreenElement->layoutObject();

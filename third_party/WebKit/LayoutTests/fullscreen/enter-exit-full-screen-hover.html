@@ -23,30 +23,22 @@ function runTest() {
     var enterButtonCenter = elementCenter(enterButton);
 
     waitForEventOnce(document, 'webkitfullscreenchange', function() {
-        shouldBeTrue("document.webkitIsFullScreen");
-        // After entering fullscreen + layout, the button should lose hover.
-        // TODO(foolip): Synchronize hover state changes with animation frames.
-        // https://crbug.com/668758
-        shouldBeOnlyHovered("getHoverActiveState(enterButton)");
-        testRunner.layoutAndPaintAsyncThen(function() {
-            shouldBeDefault("getHoverActiveState(enterButton)");
+        shouldBeTrue("document.webkitIsFullScreen")
+        // After entering fullscreen, the button should lose hover
+        shouldBeDefault("getHoverActiveState(enterButton)")
 
-            waitForEventOnce(document, 'webkitfullscreenchange', function() {
-                shouldBeFalse("document.webkitIsFullScreen");
-                // After exiting fullscreen + layout, the button should lose hover.
-                shouldBeOnlyHovered("getHoverActiveState(exitButton)");
-                testRunner.layoutAndPaintAsyncThen(function() {
-                    shouldBeDefault("getHoverActiveState(exitButton)");
-                    endTest();
-                });
-            });
-
-            var exitButtonCenter = elementCenter(exitButton);
-            // Hover on and click the "Exit fullscreen" button
-            eventSender.mouseMoveTo(exitButtonCenter.x, exitButtonCenter.y);
-            eventSender.mouseDown();
-            eventSender.mouseUp();
+        waitForEventOnce(document, 'webkitfullscreenchange', function() {
+            shouldBeFalse("document.webkitIsFullScreen")
+            // After leaving fullscreen, the button should lose hover
+            shouldBeDefault("getHoverActiveState(exitButton)")
+            endTest();
         });
+
+        var exitButtonCenter = elementCenter(exitButton);
+        // Hover on and click the "Exit fullscreen" button
+        eventSender.mouseMoveTo(exitButtonCenter.x, exitButtonCenter.y);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
     });
 
 

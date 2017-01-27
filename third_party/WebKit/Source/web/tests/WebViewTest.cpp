@@ -1753,7 +1753,6 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
-  webViewImpl->beginFrame(WTF::monotonicallyIncreasingTime());
   webViewImpl->updateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
@@ -1767,12 +1766,10 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   // parameters are reset. The page sets display: none on overflowing elements
   // while in fullscreen so if we try to restore before the style and layout
   // is applied the offsets will be clamped.
-  EXPECT_FALSE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
   webViewImpl->didExitFullscreen();
   EXPECT_TRUE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
-  webViewImpl->beginFrame(WTF::monotonicallyIncreasingTime());
-  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
   webViewImpl->updateAllLifecyclePhases();
+
   EXPECT_EQ(2000, webViewImpl->mainFrame()->getScrollOffset().height);
 }
 
@@ -1797,7 +1794,6 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
-  webViewImpl->beginFrame(WTF::monotonicallyIncreasingTime());
   webViewImpl->updateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
@@ -1813,7 +1809,6 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   webViewImpl->didExitFullscreen();
   Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
-  webViewImpl->beginFrame(WTF::monotonicallyIncreasingTime());
   webViewImpl->updateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
@@ -1825,7 +1820,6 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
 
   // When we exit now, we should restore the original scroll value.
   webViewImpl->didExitFullscreen();
-  webViewImpl->beginFrame(WTF::monotonicallyIncreasingTime());
   webViewImpl->updateAllLifecyclePhases();
 
   EXPECT_EQ(2000, webViewImpl->mainFrame()->getScrollOffset().height);
@@ -1857,8 +1851,6 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
-  webViewImpl->beginFrame(WTF::monotonicallyIncreasingTime());
-  webViewImpl->updateAllLifecyclePhases();
 
   // Page scale factor must be 1.0 during fullscreen for elements to be sized
   // properly.
@@ -1870,7 +1862,6 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
 
   // Confirm that exiting fullscreen restores the parameters.
   webViewImpl->didExitFullscreen();
-  webViewImpl->beginFrame(WTF::monotonicallyIncreasingTime());
   webViewImpl->updateAllLifecyclePhases();
 
   EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());

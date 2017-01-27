@@ -4,14 +4,12 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../trusted-click.js"></script>
 <div id="log"></div>
-<div id="parent"><div><div></div></div></div>
+<div id="parent"><div></div></div>
 <script>
 // Adapted from https://github.com/w3c/web-platform-tests/pull/4250
 // TODO(foolip): Remove this test when the above is imported and passing.
 async_test(t => {
   const parent = document.getElementById("parent");
-  const child = parent.firstChild;
-  const grandChild = child.firstChild;
 
   document.onfullscreenchange = t.step_func(() => {
     // We are now in fullscreen, so exiting requires a resize but requesting
@@ -22,26 +20,23 @@ async_test(t => {
       // Request fullscreen on another element, to avoid any synchronous
       // short-circuiting on document.fullscreenElement.requestFullscreen(),
       // which used to be in the spec. Also request both before and after the
-      // exit. Both requests synchronously enqueue animation frame tasks. They
-      // may run after exiting, but still before the animation frame task for
-      // the exit, and so both will succeed, and there will be 3
-      // fullscreenchange events, but not matching the order of the calls.
+      // exit. Both requests should be silently ignored due to the exit.
 
-      let i = 0;
-      const expected = [child, grandChild, null];
-      document.onfullscreenchange = t.step_func(() => {
-        assert_equals(document.fullscreenElement, expected[i], "fullscreenElement when i=" + i);
-        i++;
-        if (i == 3)
+      let fullscreenchanges = 0;
+      document.onfullscreenchange = t.step_func((event) => {
+        assert_equals(document.fullscreenElement, child);
+        fullscreenchanges++;
+        if (fullscreenchanges == 3)
           t.done();
       });
 
+      const child = parent.firstChild;
       child.requestFullscreen();
-      assert_equals(document.fullscreenElement, parent, "fullscreenElement after first requestFullscreen()");
+      assert_equals(document.fullscreenElement, child, "fullscreenElement after first requestFullscreen()");
       document.exitFullscreen();
       assert_equals(document.fullscreenElement, parent, "fullscreenElement after exitFullscreen()");
-      grandChild.requestFullscreen();
-      assert_equals(document.fullscreenElement, parent, "fullscreenElement after second requestFullscreen()");
+      child.requestFullscreen();
+      assert_equals(document.fullscreenElement, child, "fullscreenElement after second requestFullscreen()");
     }), parent);
   });
   document.onfullscreenerror = t.unreached_func("fullscreenerror event");

@@ -88,9 +88,6 @@ void FullscreenController::didEnterFullscreen() {
         fullscreen->didEnterFullscreen();
     }
   }
-
-  // TODO(foolip): If the top level browsing context (main frame) ends up with
-  // no fullscreen element, exit fullscreen again to recover.
 }
 
 void FullscreenController::didExitFullscreen() {
@@ -103,32 +100,33 @@ void FullscreenController::didExitFullscreen() {
 
   updatePageScaleConstraints(true);
 
-  // We need to wait until style and layout are updated in order to properly
-  // restore scroll offsets since content may not be overflowing in the same way
-  // until they are.
-  m_state = State::NeedsScrollAndScaleRestore;
+  // Set |m_state| so that any |exitFullscreen()| calls from within
+  // |Fullscreen::didExitFullscreen()| do not call
+  // |WebFrameClient::exitFullscreen()| again.
+  // TODO(foolip): Remove this when state changes and events are synchronized
+  // with animation frames. https://crbug.com/402376
+  m_state = State::ExitingFullscreen;
 
-  // Notify the topmost local frames that we have exited fullscreen.
-  // |Fullscreen::didExitFullscreen()| will take care of descendant frames.
-  for (Frame* frame = m_webViewImpl->page()->mainFrame(); frame;) {
-    Frame* nextFrame = frame->tree().traverseNext();
-
-    if (frame->isRemoteFrame()) {
-      frame = nextFrame;
+  // Notify all local frames that we have exited fullscreen.
+  // TODO(foolip): This should only need to notify the topmost local roots. That
+  // doesn't currently work because |Fullscreen::m_currentFullScreenElement|
+  // isn't set for the topmost document when an iframe goes fullscreen, but can
+  // be done once |m_currentFullScreenElement| is gone and all state is in the
+  // fullscreen element stack. https://crbug.com/402421
+  for (Frame* frame = m_webViewImpl->page()->mainFrame(); frame;
+       frame = frame->tree().traverseNext()) {
+    if (!frame->isLocalFrame())
       continue;
-    }
-
-    DCHECK(frame->isLocalRoot());
     if (Document* document = toLocalFrame(frame)->document()) {
       if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*document))
         fullscreen->didExitFullscreen();
     }
-
-    // Skip over all descendant frames.
-    while (nextFrame && nextFrame->tree().isDescendantOf(frame))
-      nextFrame = nextFrame->tree().traverseNext();
-    frame = nextFrame;
   }
+
+  // We need to wait until style and layout are updated in order to properly
+  // restore scroll offsets since content may not be overflowing in the same way
+  // until they are.
+  m_state = State::NeedsScrollAndScaleRestore;
 }
 
 void FullscreenController::enterFullscreen(LocalFrame& frame) {
@@ -185,7 +183,7 @@ void FullscreenController::fullscreenElementChanged(Element* fromElement,
   DCHECK_NE(fromElement, toElement);
 
   if (toElement) {
-    DCHECK(Fullscreen::isFullscreenElement(*toElement));
+    DCHECK(Fullscreen::isCurrentFullScreenElement(*toElement));
 
     if (isHTMLVideoElement(*toElement)) {
       HTMLVideoElement& videoElement = toHTMLVideoElement(*toElement);
@@ -201,7 +199,7 @@ void FullscreenController::fullscreenElementChanged(Element* fromElement,
   }
 
   if (fromElement) {
-    DCHECK(!Fullscreen::isFullscreenElement(*fromElement));
+    DCHECK(!Fullscreen::isCurrentFullScreenElement(*fromElement));
 
     if (isHTMLVideoElement(*fromElement)) {
       // If the video used overlay fullscreen mode, restore the transparency.

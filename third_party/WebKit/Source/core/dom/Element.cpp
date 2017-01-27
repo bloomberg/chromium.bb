@@ -1630,7 +1630,7 @@ void Element::removedFrom(ContainerNode* insertionPoint) {
 
   DCHECK(!hasRareData() || !elementRareData()->hasPseudoElements());
 
-  if (Fullscreen::isFullscreenElement(*this)) {
+  if (Fullscreen::isCurrentFullScreenElement(*this)) {
     setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
     if (insertionPoint->isElementNode()) {
       toElement(insertionPoint)->setContainsFullScreenElement(false);
@@ -4047,7 +4047,7 @@ bool Element::supportsStyleSharing() const {
     return false;
   if (hasAnimations())
     return false;
-  if (Fullscreen::isFullscreenElement(*this))
+  if (Fullscreen::isCurrentFullScreenElement(*this))
     return false;
   return true;
 }

@@ -169,13 +169,13 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
 
     Fullscreen::requestFullscreen(video());
     Fullscreen::from(document()).didEnterFullscreen();
-    document().serviceScriptedAnimations(WTF::monotonicallyIncreasingTime());
+    testing::runPendingTasks();
   }
 
   void simulateExitFullscreen() {
     Fullscreen::exitFullscreen(document());
     Fullscreen::from(document()).didExitFullscreen();
-    document().serviceScriptedAnimations(WTF::monotonicallyIncreasingTime());
+    testing::runPendingTasks();
   }
 
   void simulateOrientationLock() {
