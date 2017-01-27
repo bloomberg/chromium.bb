@@ -92,27 +92,23 @@ class PaintArtifactCompositorTestWithPropertyTrees
 
   const cc::PropertyTrees& propertyTrees() {
     return *m_webLayerTreeView->layerTreeHost()
-                ->GetLayerTree()
                 ->property_trees();
   }
 
   int elementIdToEffectNodeIndex(CompositorElementId elementId) {
     return m_webLayerTreeView->layerTreeHost()
-        ->GetLayerTree()
         ->property_trees()
         ->element_id_to_effect_node_index[elementId];
   }
 
   int elementIdToTransformNodeIndex(CompositorElementId elementId) {
     return m_webLayerTreeView->layerTreeHost()
-        ->GetLayerTree()
         ->property_trees()
         ->element_id_to_transform_node_index[elementId];
   }
 
   int elementIdToScrollNodeIndex(CompositorElementId elementId) {
     return m_webLayerTreeView->layerTreeHost()
-        ->GetLayerTree()
         ->property_trees()
         ->element_id_to_scroll_node_index[elementId];
   }

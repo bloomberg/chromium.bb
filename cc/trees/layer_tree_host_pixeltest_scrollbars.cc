@@ -27,8 +27,7 @@ class LayerTreeHostScrollbarsPixelTest : public LayerTreePixelTest {
   }
 
   void SetupTree() override {
-    layer_tree_host()->GetLayerTree()->SetDeviceScaleFactor(
-        device_scale_factor_);
+    layer_tree_host()->SetDeviceScaleFactor(device_scale_factor_);
     LayerTreePixelTest::SetupTree();
   }
 

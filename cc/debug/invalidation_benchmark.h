@@ -13,7 +13,7 @@
 
 namespace cc {
 
-class LayerTree;
+class LayerTreeHost;
 
 // NOTE: this benchmark will not measure or return any results, it will simply
 // invalidate a certain area of each layer every frame. It is intended to be
@@ -26,7 +26,7 @@ class CC_EXPORT InvalidationBenchmark : public MicroBenchmark {
   ~InvalidationBenchmark() override;
 
   // Implements MicroBenchmark interface.
-  void DidUpdateLayers(LayerTree* layer_tree) override;
+  void DidUpdateLayers(LayerTreeHost* layer_tree_host) override;
   void RunOnLayer(PictureLayer* layer) override;
   bool ProcessMessage(std::unique_ptr<base::Value> value) override;
 

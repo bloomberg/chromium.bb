@@ -30,7 +30,7 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     scoped_refptr<FakePictureLayer> root = FakePictureLayer::Create(&client_);
     root->SetBounds(gfx::Size(10, 10));
 
-    layer_tree()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeHostDamageTest::SetupTree();
     client_.set_bounds(root->bounds());
   }
@@ -44,7 +44,7 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         layer_tree_host()->SetNeedsRedrawRect(
-            gfx::Rect(layer_tree()->device_viewport_size()));
+            gfx::Rect(layer_tree_host()->device_viewport_size()));
         break;
     }
   }
@@ -94,7 +94,7 @@ class LayerTreeHostDamageTestSetViewportSize
     scoped_refptr<FakePictureLayer> root = FakePictureLayer::Create(&client_);
     root->SetBounds(gfx::Size(10, 10));
 
-    layer_tree()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeHostDamageTest::SetupTree();
     client_.set_bounds(root->bounds());
   }
@@ -107,7 +107,7 @@ class LayerTreeHostDamageTestSetViewportSize
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        layer_tree()->SetViewportSize(gfx::Size(15, 15));
+        layer_tree_host()->SetViewportSize(gfx::Size(15, 15));
         break;
     }
   }
@@ -164,7 +164,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
     content_->SetBounds(gfx::Size(2000, 100));
     root->AddChild(content_);
 
-    layer_tree()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeHostDamageTest::SetupTree();
     client_.set_bounds(root->bounds());
   }
@@ -214,7 +214,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
       case 2:
         // Cause visible damage.
         content_->SetNeedsDisplayRect(
-            gfx::Rect(layer_tree()->device_viewport_size()));
+            gfx::Rect(layer_tree_host()->device_viewport_size()));
         break;
       case 3:
         // Cause non-visible damage.
@@ -249,7 +249,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
     child_->SetBounds(gfx::Size(30, 30));
 
     root_->AddChild(child_);
-    layer_tree()->SetRootLayer(root_);
+    layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostDamageTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -336,7 +336,7 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(400, 400));
     root_layer->SetMasksToBounds(true);
-    layer_tree()->SetRootLayer(root_layer);
+    layer_tree_host()->SetRootLayer(root_layer);
 
     scoped_refptr<Layer> scroll_clip_layer = Layer::Create();
     content_layer_ = FakePictureLayer::Create(&client_);
@@ -447,7 +447,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
 
   void ResizeScrollLayer() {
     EXPECT_EQ(3, num_draws_);
-    Layer* root = layer_tree()->root_layer();
+    Layer* root = layer_tree_host()->root_layer();
     content_layer_->SetBounds(
         gfx::Size(root->bounds().width() + 60, root->bounds().height() + 100));
   }

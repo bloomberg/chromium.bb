@@ -46,17 +46,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
   void SetNeedsCommit() override;
   void SetNeedsUpdateLayers() override {}
-
-  void SetRootLayer(scoped_refptr<Layer> root_layer) {
-    layer_tree_->SetRootLayer(root_layer);
-  }
-  Layer* root_layer() const { return layer_tree_->root_layer(); }
-  PropertyTrees* property_trees() const {
-    return layer_tree_->property_trees();
-  }
-  void BuildPropertyTreesForTesting() {
-    layer_tree_->BuildPropertyTreesForTesting();
-  }
+  void SetNeedsFullTreeSync() override {}
 
   LayerImpl* CommitAndCreateLayerImplTree();
   LayerImpl* CommitAndCreatePendingTree();

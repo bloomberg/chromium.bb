@@ -47,40 +47,40 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
   void DidCommit() override {
     ++num_commits_;
 
-    ASSERT_TRUE(layer_tree()->hud_layer());
+    ASSERT_TRUE(layer_tree_host()->hud_layer());
 
     switch (num_commits_) {
       case 1:
         // Change directly to a new root layer.
-        layer_tree()->SetRootLayer(root_layer1_);
+        layer_tree_host()->SetRootLayer(root_layer1_);
         break;
       case 2:
-        EXPECT_EQ(root_layer1_.get(), layer_tree()->hud_layer()->parent());
+        EXPECT_EQ(root_layer1_.get(), layer_tree_host()->hud_layer()->parent());
         // Unset the root layer.
-        layer_tree()->SetRootLayer(nullptr);
+        layer_tree_host()->SetRootLayer(nullptr);
         break;
       case 3:
-        EXPECT_EQ(0, layer_tree()->hud_layer()->parent());
+        EXPECT_EQ(0, layer_tree_host()->hud_layer()->parent());
         // Change back to the previous root layer.
-        layer_tree()->SetRootLayer(root_layer1_);
+        layer_tree_host()->SetRootLayer(root_layer1_);
         break;
       case 4:
-        EXPECT_EQ(root_layer1_.get(), layer_tree()->hud_layer()->parent());
+        EXPECT_EQ(root_layer1_.get(), layer_tree_host()->hud_layer()->parent());
         // Unset the root layer.
-        layer_tree()->SetRootLayer(nullptr);
+        layer_tree_host()->SetRootLayer(nullptr);
         break;
       case 5:
-        EXPECT_EQ(0, layer_tree()->hud_layer()->parent());
+        EXPECT_EQ(0, layer_tree_host()->hud_layer()->parent());
         // Change to a new root layer from a null root.
-        layer_tree()->SetRootLayer(root_layer2_);
+        layer_tree_host()->SetRootLayer(root_layer2_);
         break;
       case 6:
-        EXPECT_EQ(root_layer2_.get(), layer_tree()->hud_layer()->parent());
+        EXPECT_EQ(root_layer2_.get(), layer_tree_host()->hud_layer()->parent());
         // Change directly back to the last root layer/
-        layer_tree()->SetRootLayer(root_layer1_);
+        layer_tree_host()->SetRootLayer(root_layer1_);
         break;
       case 7:
-        EXPECT_EQ(root_layer1_.get(), layer_tree()->hud_layer()->parent());
+        EXPECT_EQ(root_layer1_.get(), layer_tree_host()->hud_layer()->parent());
         EndTest();
         break;
     }

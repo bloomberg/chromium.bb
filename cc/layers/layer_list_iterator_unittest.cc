@@ -68,7 +68,7 @@ TEST(LayerListIteratorTest, VerifyTraversalOrder) {
   host->SetRootLayer(std::move(layer1));
 
   int i = 1;
-  for (auto* layer : *host->GetLayerTree()) {
+  for (auto* layer : *host) {
     EXPECT_EQ(i++, layer_id_to_order[layer->id()]);
   }
   EXPECT_EQ(8, i);
@@ -90,7 +90,7 @@ TEST(LayerListIteratorTest, VerifySingleLayer) {
   host->SetRootLayer(std::move(layer1));
 
   int i = 1;
-  for (auto* layer : *host->GetLayerTree()) {
+  for (auto* layer : *host) {
     EXPECT_EQ(i++, layer_id_to_order[layer->id()]);
   }
   EXPECT_EQ(2, i);
@@ -156,7 +156,7 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrder) {
 
   int i = 7;
 
-  for (auto* layer : base::Reversed(*host->GetLayerTree())) {
+  for (auto* layer : base::Reversed(*host)) {
     EXPECT_EQ(i--, layer_id_to_order[layer->id()]);
   }
 
@@ -179,7 +179,7 @@ TEST(LayerListReverseIteratorTest, VerifySingleLayer) {
   host->SetRootLayer(std::move(layer1));
 
   int i = 1;
-  for (auto* layer : base::Reversed(*host->GetLayerTree())) {
+  for (auto* layer : base::Reversed(*host)) {
     EXPECT_EQ(i--, layer_id_to_order[layer->id()]);
   }
   EXPECT_EQ(0, i);

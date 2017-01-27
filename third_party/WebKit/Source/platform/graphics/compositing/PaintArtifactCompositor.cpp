@@ -13,6 +13,7 @@
 #include "cc/playback/filter_display_item.h"
 #include "cc/playback/float_clip_display_item.h"
 #include "cc/playback/transform_display_item.h"
+#include "cc/trees/layer_tree_host.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
@@ -677,11 +678,11 @@ void PaintArtifactCompositor::update(
 
   DCHECK(m_rootLayer);
 
-  cc::LayerTree* layerTree = m_rootLayer->GetLayerTree();
+  cc::LayerTreeHost* layerTreeHost = m_rootLayer->layer_tree_host();
 
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
-  if (!layerTree)
+  if (!layerTreeHost)
     return;
 
   if (m_extraDataForTestingEnabled)
@@ -691,7 +692,7 @@ void PaintArtifactCompositor::update(
   m_rootLayer->set_property_tree_sequence_number(
       PropertyTreeManager::kPropertyTreeSequenceNumber);
 
-  PropertyTreeManager propertyTreeManager(*layerTree->property_trees(),
+  PropertyTreeManager propertyTreeManager(*layerTreeHost->property_trees(),
                                           m_rootLayer.get());
 
   Vector<PendingLayer, 0> pendingLayers;
@@ -734,10 +735,10 @@ void PaintArtifactCompositor::update(
   m_contentLayerClients.swap(newContentLayerClients);
 
   // Mark the property trees as having been rebuilt.
-  layerTree->property_trees()->sequence_number =
+  layerTreeHost->property_trees()->sequence_number =
       PropertyTreeManager::kPropertyTreeSequenceNumber;
-  layerTree->property_trees()->needs_rebuild = false;
-  layerTree->property_trees()->ResetCachedData();
+  layerTreeHost->property_trees()->needs_rebuild = false;
+  layerTreeHost->property_trees()->ResetCachedData();
 }
 
 #ifndef NDEBUG

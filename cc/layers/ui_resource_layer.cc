@@ -76,7 +76,7 @@ void UIResourceLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
 void UIResourceLayer::SetBitmap(const SkBitmap& bitmap) {
   bitmap_ = bitmap;
-  if (!GetLayerTree())
+  if (!layer_tree_host())
     return;
   SetUIResourceIdInternal(
       layer_tree_host()->GetUIResourceManager()->GetOrCreateUIResource(bitmap));
@@ -103,7 +103,7 @@ void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {
 
   layer_impl->SetUIResourceId(resource_id_);
   if (resource_id_) {
-    DCHECK(GetLayerTree());
+    DCHECK(layer_tree_host());
 
     gfx::Size image_size =
         layer_tree_host()->GetUIResourceManager()->GetUIResourceSize(

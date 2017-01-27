@@ -18,7 +18,7 @@ namespace cc {
 
 class Layer;
 class LayerImpl;
-class LayerTree;
+class LayerTreeHost;
 class RenderSurfaceImpl;
 class EffectTree;
 class TransformTree;
@@ -62,7 +62,7 @@ void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
 void CC_EXPORT UpdatePropertyTrees(PropertyTrees* property_trees,
                                    bool can_render_to_separate_surface);
 
-void CC_EXPORT FindLayersThatNeedUpdates(LayerTree* layer_tree,
+void CC_EXPORT FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
                                          const PropertyTrees* property_trees,
                                          LayerList* update_layer_list);
 

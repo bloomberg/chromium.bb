@@ -26,7 +26,6 @@
 #include "cc/layers/paint_properties.h"
 #include "cc/output/filter_operations.h"
 #include "cc/trees/element_id.h"
-#include "cc/trees/layer_tree.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/target_property.h"
@@ -326,7 +325,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void PushPropertiesTo(LayerImpl* layer);
 
   LayerTreeHost* GetLayerTreeHostForTesting() const { return layer_tree_host_; }
-  LayerTree* GetLayerTree() const;
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 
@@ -441,13 +439,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   const gfx::Rect& update_rect() const { return inputs_.update_rect; }
 
+  LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
   virtual ~Layer();
   Layer();
-
-  LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
 
   // These SetNeeds functions are in order of severity of update:
   //
@@ -488,7 +486,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
  private:
   friend class base::RefCounted<Layer>;
   friend class LayerTreeHostCommon;
-  friend class LayerTree;
+  friend class LayerTreeHost;
   friend class LayerInternalsForTest;
 
   // Interactions with attached animations.
@@ -628,7 +626,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // This pointer value is nil when a Layer is not in a tree and is
   // updated via SetLayerTreeHost() if a layer moves between trees.
   LayerTreeHost* layer_tree_host_;
-  LayerTree* layer_tree_;
 
   Inputs inputs_;
 

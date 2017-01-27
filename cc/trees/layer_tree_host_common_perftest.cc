@@ -48,11 +48,11 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
 
   void SetupTree() override {
     gfx::Size viewport = gfx::Size(720, 1038);
-    layer_tree()->SetViewportSize(viewport);
+    layer_tree_host()->SetViewportSize(viewport);
     scoped_refptr<Layer> root =
         ParseTreeFromJson(json_, &content_layer_client_);
     ASSERT_TRUE(root.get());
-    layer_tree()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
     content_layer_client_.set_bounds(viewport);
   }
 

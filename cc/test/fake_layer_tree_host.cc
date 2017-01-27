@@ -9,30 +9,14 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/layer_tree.h"
 #include "cc/trees/mutator_host.h"
 
 namespace cc {
 
-namespace {
-
-class FakeLayerTree : public LayerTree {
- public:
-  FakeLayerTree(MutatorHost* mutator_host, LayerTreeHost* layer_tree_host)
-      : LayerTree(mutator_host, layer_tree_host) {}
-
-  void SetNeedsFullTreeSync() override {}
-};
-
-}  // namespace
-
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                                      LayerTreeHost::InitParams* params,
                                      CompositorMode mode)
-    : LayerTreeHost(
-          params,
-          mode,
-          base::MakeUnique<FakeLayerTree>(params->mutator_host, this)),
+    : LayerTreeHost(params, mode),
       client_(client),
       host_impl_(*params->settings,
                  &task_runner_provider_,
@@ -87,24 +71,20 @@ void FakeLayerTreeHost::SetNeedsCommit() { needs_commit_ = true; }
 LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   TreeSynchronizer::SynchronizeTrees(root_layer(), active_tree());
   active_tree()->SetPropertyTrees(property_trees());
-  TreeSynchronizer::PushLayerProperties(root_layer()->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(root_layer()->layer_tree_host(),
                                         active_tree());
-  layer_tree_->mutator_host()->PushPropertiesTo(host_impl_.mutator_host());
+  mutator_host()->PushPropertiesTo(host_impl_.mutator_host());
 
   active_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
       property_trees(), active_tree());
 
-  if (layer_tree_->page_scale_layer() &&
-      layer_tree_->inner_viewport_scroll_layer()) {
+  if (page_scale_layer() && inner_viewport_scroll_layer()) {
     active_tree()->SetViewportLayersFromIds(
-        layer_tree_->overscroll_elasticity_layer()
-            ? layer_tree_->overscroll_elasticity_layer()->id()
-            : Layer::INVALID_ID,
-        layer_tree_->page_scale_layer()->id(),
-        layer_tree_->inner_viewport_scroll_layer()->id(),
-        layer_tree_->outer_viewport_scroll_layer()
-            ? layer_tree_->outer_viewport_scroll_layer()->id()
-            : Layer::INVALID_ID);
+        overscroll_elasticity_layer() ? overscroll_elasticity_layer()->id()
+                                      : Layer::INVALID_ID,
+        page_scale_layer()->id(), inner_viewport_scroll_layer()->id(),
+        outer_viewport_scroll_layer() ? outer_viewport_scroll_layer()->id()
+                                      : Layer::INVALID_ID);
   }
 
   active_tree()->UpdatePropertyTreesForBoundsDelta();
@@ -114,9 +94,9 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
 LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
   TreeSynchronizer::SynchronizeTrees(root_layer(), pending_tree());
   pending_tree()->SetPropertyTrees(property_trees());
-  TreeSynchronizer::PushLayerProperties(root_layer()->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(root_layer()->layer_tree_host(),
                                         pending_tree());
-  layer_tree_->mutator_host()->PushPropertiesTo(host_impl_.mutator_host());
+  mutator_host()->PushPropertiesTo(host_impl_.mutator_host());
 
   pending_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
       property_trees(), pending_tree());

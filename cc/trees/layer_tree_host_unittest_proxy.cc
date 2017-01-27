@@ -16,7 +16,7 @@ class LayerTreeHostProxyTest : public LayerTreeTest {
  protected:
   void SetupTree() override {
     update_check_layer_ = FakePictureLayer::Create(&client_);
-    layer_tree()->SetRootLayer(update_check_layer_);
+    layer_tree_host()->SetRootLayer(update_check_layer_);
     LayerTreeTest::SetupTree();
     client_.set_bounds(update_check_layer_->bounds());
   }

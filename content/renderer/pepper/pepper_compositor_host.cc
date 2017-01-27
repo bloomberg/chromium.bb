@@ -410,8 +410,8 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
   // We need to force a commit for each CommitLayers() call, even if no layers
   // changed since the last call to CommitLayers(). This is so
   // WiewInitiatedPaint() will always be called.
-  if (layer_->GetLayerTree())
-    layer_->GetLayerTree()->SetNeedsCommit();
+  if (layer_->layer_tree_host())
+    layer_->layer_tree_host()->SetNeedsCommit();
 
   // If the host is not bound to the instance, return PP_OK immediately.
   if (!bound_instance_)

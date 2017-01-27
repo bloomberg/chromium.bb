@@ -443,11 +443,11 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
-  host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());
+  host_->SetRootLayer(root_window_->GetLayer());
   host_->SetFrameSinkId(frame_sink_id_);
-  host_->GetLayerTree()->SetViewportSize(size_);
+  host_->SetViewportSize(size_);
   SetHasTransparentBackground(false);
-  host_->GetLayerTree()->SetDeviceScaleFactor(1);
+  host_->SetDeviceScaleFactor(1);
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -481,7 +481,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 
   size_ = size;
   if (host_)
-    host_->GetLayerTree()->SetViewportSize(size);
+    host_->SetViewportSize(size);
   if (display_)
     display_->Resize(size);
   root_window_->GetLayer()->SetBounds(size);
@@ -490,7 +490,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 void CompositorImpl::SetHasTransparentBackground(bool transparent) {
   has_transparent_background_ = transparent;
   if (host_) {
-    host_->GetLayerTree()->set_has_transparent_background(transparent);
+    host_->set_has_transparent_background(transparent);
 
     // Give a delay in setting the background color to avoid the color for
     // the normal mode (white) affecting the UI transition.
@@ -504,7 +504,7 @@ void CompositorImpl::SetHasTransparentBackground(bool transparent) {
 }
 
 void CompositorImpl::SetBackgroundColor(int color) {
-  host_->GetLayerTree()->set_background_color(color);
+  host_->set_background_color(color);
 }
 
 void CompositorImpl::SetNeedsComposite() {

@@ -23,7 +23,7 @@ class DictionaryValue;
 
 namespace cc {
 
-class LayerTree;
+class LayerTreeHost;
 
 class RasterizeAndRecordBenchmark : public MicroBenchmark {
  public:
@@ -33,7 +33,7 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
   ~RasterizeAndRecordBenchmark() override;
 
   // Implements MicroBenchmark interface.
-  void DidUpdateLayers(LayerTree* layer_tree) override;
+  void DidUpdateLayers(LayerTreeHost* layer_tree_host) override;
   void RunOnLayer(PictureLayer* layer) override;
 
   std::unique_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
@@ -59,7 +59,7 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
   // The following is used in DCHECKs.
   bool main_thread_benchmark_done_;
 
-  LayerTree* layer_tree_;
+  LayerTreeHost* layer_tree_host_;
 
   base::WeakPtrFactory<RasterizeAndRecordBenchmark> weak_ptr_factory_;
 };

@@ -28,7 +28,7 @@ bool MicroBenchmark::IsDone() const {
   return is_done_;
 }
 
-void MicroBenchmark::DidUpdateLayers(LayerTree* layer_tree) {}
+void MicroBenchmark::DidUpdateLayers(LayerTreeHost* layer_tree_host) {}
 
 void MicroBenchmark::NotifyDone(std::unique_ptr<base::Value> result) {
   callback_.Run(std::move(result));

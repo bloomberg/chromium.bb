@@ -91,9 +91,9 @@ class MockLayer : public Layer {
 void ExpectTreesAreIdentical(Layer* root_layer,
                              LayerImpl* root_layer_impl,
                              LayerTreeImpl* tree_impl) {
-  auto layer_iter = root_layer->GetLayerTree()->begin();
+  auto layer_iter = root_layer->layer_tree_host()->begin();
   auto layer_impl_iter = tree_impl->begin();
-  for (; layer_iter != root_layer->GetLayerTree()->end();
+  for (; layer_iter != root_layer->layer_tree_host()->end();
        ++layer_iter, ++layer_impl_iter) {
     Layer* layer = *layer_iter;
     LayerImpl* layer_impl = *layer_impl_iter;
@@ -194,7 +194,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeReusingLayers) {
                           host_->active_tree());
 
   // We have to push properties to pick up the destruction list pointer.
-  TreeSynchronizer::PushLayerProperties(layer_tree_root->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(layer_tree_root->layer_tree_host(),
                                         host_->active_tree());
 
   // Add a new layer to the Layer side
@@ -243,7 +243,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
                           host_->active_tree());
 
   // We have to push properties to pick up the destruction list pointer.
-  TreeSynchronizer::PushLayerProperties(layer_tree_root->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(layer_tree_root->layer_tree_host(),
                                         host_->active_tree());
 
   host_->active_tree()->ResetAllChangeTracking();
@@ -257,7 +257,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
-  TreeSynchronizer::PushLayerProperties(layer_tree_root->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(layer_tree_root->layer_tree_host(),
                                         host_->active_tree());
 
   // Check that the impl thread properly tracked the change.
@@ -293,7 +293,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
-  TreeSynchronizer::PushLayerProperties(layer_tree_root->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(layer_tree_root->layer_tree_host(),
                                         host_->active_tree());
 
   // Check that the property values we set on the Layer tree are reflected in
@@ -343,7 +343,7 @@ TEST_F(TreeSynchronizerTest, ReuseLayerImplsAfterStructuralChange) {
                           host_->active_tree());
 
   // We have to push properties to pick up the destruction list pointer.
-  TreeSynchronizer::PushLayerProperties(layer_tree_root->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(layer_tree_root->layer_tree_host(),
                                         host_->active_tree());
 
   // Now restructure the tree to look like this:
@@ -399,7 +399,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeThenDestroy) {
                           host_->active_tree());
 
   // We have to push properties to pick up the destruction list pointer.
-  TreeSynchronizer::PushLayerProperties(old_layer_tree_root->GetLayerTree(),
+  TreeSynchronizer::PushLayerProperties(old_layer_tree_root->layer_tree_host(),
                                         host_->active_tree());
 
   // Remove all children on the Layer side.

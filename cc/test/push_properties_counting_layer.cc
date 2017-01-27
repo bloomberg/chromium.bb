@@ -5,6 +5,7 @@
 #include "cc/test/push_properties_counting_layer.h"
 
 #include "cc/test/push_properties_counting_layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 
@@ -38,7 +39,7 @@ void PushPropertiesCountingLayer::MakePushProperties() {
 void PushPropertiesCountingLayer::AddPushPropertiesCount() {
   push_properties_count_++;
   if (persist_needs_push_properties_) {
-    GetLayerTree()->AddLayerShouldPushProperties(this);
+    layer_tree_host()->AddLayerShouldPushProperties(this);
   }
 }
 

@@ -218,9 +218,8 @@ class TextureLayerTest : public testing::Test {
     animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     layer_tree_host_ = MockLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
-    layer_tree_ = layer_tree_host_->GetLayerTree();
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-    layer_tree_->SetViewportSize(gfx::Size(10, 10));
+    layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
 
@@ -229,14 +228,13 @@ class TextureLayerTest : public testing::Test {
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
 
     animation_host_->SetMutatorHostClient(nullptr);
-    layer_tree_->SetRootLayer(nullptr);
+    layer_tree_host_->SetRootLayer(nullptr);
     layer_tree_host_ = nullptr;
     animation_host_ = nullptr;
   }
 
   std::unique_ptr<MockLayerTreeHost> layer_tree_host_;
   std::unique_ptr<AnimationHost> animation_host_;
-  LayerTree* layer_tree_;
   FakeImplTaskRunnerProvider task_runner_provider_;
   FakeLayerTreeHostClient fake_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
@@ -249,7 +247,7 @@ class TextureLayerTest : public testing::Test {
 TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   scoped_refptr<TextureLayer> test_layer =
       TextureLayer::CreateForMailbox(nullptr);
-  EXPECT_SET_NEEDS_COMMIT(1, layer_tree_->SetRootLayer(test_layer));
+  EXPECT_SET_NEEDS_COMMIT(1, layer_tree_host_->SetRootLayer(test_layer));
 
   // Test properties that should call SetNeedsCommit.  All properties need to
   // be set to new values in order for SetNeedsCommit to be called.
@@ -289,7 +287,7 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
   ASSERT_TRUE(test_layer.get());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-  layer_tree_->SetRootLayer(test_layer);
+  layer_tree_host_->SetRootLayer(test_layer);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
@@ -758,8 +756,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     layer_->SetBounds(bounds);
 
     root_->AddChild(layer_);
-    layer_tree()->SetRootLayer(root_);
-    layer_tree()->SetViewportSize(bounds);
+    layer_tree_host()->SetRootLayer(root_);
+    layer_tree_host()->SetViewportSize(bounds);
     SetMailbox('1');
     EXPECT_EQ(0, callback_count_);
 
@@ -817,8 +815,8 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
     layer_->SetBounds(bounds);
 
     root_->AddChild(layer_);
-    layer_tree()->SetRootLayer(root_);
-    layer_tree()->SetViewportSize(bounds);
+    layer_tree_host()->SetRootLayer(root_);
+    layer_tree_host()->SetViewportSize(bounds);
     SetMailbox('1');
 
     PostSetNeedsCommitToMainThread();
@@ -881,7 +879,6 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
     TextureLayerTest::SetUp();
     layer_tree_host_ = MockLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
-    layer_tree_ = layer_tree_host_->GetLayerTree();
     host_impl_.SetVisible(true);
     EXPECT_TRUE(host_impl_.InitializeRenderer(compositor_frame_sink_.get()));
   }
@@ -1111,7 +1108,7 @@ class TextureLayerNoExtraCommitForMailboxTest
     texture_layer_->SetIsDrawable(true);
     root->AddChild(texture_layer_);
 
-    layer_tree()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
   }
 
@@ -1202,7 +1199,7 @@ class TextureLayerChangeInvisibleMailboxTest
     texture_layer_->SetIsDrawable(true);
     parent_layer_->AddChild(texture_layer_);
 
-    layer_tree()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
   }
 
@@ -1299,7 +1296,7 @@ class TextureLayerReleaseResourcesBase
     texture_layer->SetBounds(gfx::Size(10, 10));
     texture_layer->SetIsDrawable(true);
 
-    layer_tree()->root_layer()->AddChild(texture_layer);
+    layer_tree_host()->root_layer()->AddChild(texture_layer);
     texture_layer_id_ = texture_layer->id();
   }
 
@@ -1373,8 +1370,8 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
     layer_->SetBounds(bounds);
 
     root_->AddChild(layer_);
-    layer_tree()->SetRootLayer(root_);
-    layer_tree()->SetViewportSize(bounds);
+    layer_tree_host()->SetRootLayer(root_);
+    layer_tree_host()->SetViewportSize(bounds);
   }
 
   void BeginTest() override {
@@ -1443,8 +1440,8 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
     layer_->SetBounds(bounds);
 
     root_->AddChild(layer_);
-    layer_tree()->SetRootLayer(root_);
-    layer_tree()->SetViewportSize(bounds);
+    layer_tree_host()->SetRootLayer(root_);
+    layer_tree_host()->SetViewportSize(bounds);
   }
 
   void BeginTest() override {

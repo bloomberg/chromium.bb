@@ -14,7 +14,6 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
@@ -765,12 +764,12 @@ bool LayerShouldBeSkipped(Layer* layer,
   return LayerShouldBeSkippedInternal(layer, transform_tree, effect_tree);
 }
 
-void FindLayersThatNeedUpdates(LayerTree* layer_tree,
+void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
                                const PropertyTrees* property_trees,
                                LayerList* update_layer_list) {
   const TransformTree& transform_tree = property_trees->transform_tree;
   const EffectTree& effect_tree = property_trees->effect_tree;
-  for (auto* layer : *layer_tree) {
+  for (auto* layer : *layer_tree_host) {
     if (!IsRootLayer(layer) &&
         LayerShouldBeSkipped(layer, transform_tree, effect_tree))
       continue;

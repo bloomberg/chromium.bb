@@ -20,7 +20,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/recording_source.h"
-#include "cc/trees/layer_tree.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
@@ -75,7 +75,7 @@ RasterizeAndRecordBenchmark::RasterizeAndRecordBenchmark(
       record_repeat_count_(kDefaultRecordRepeatCount),
       settings_(std::move(value)),
       main_thread_benchmark_done_(false),
-      layer_tree_(nullptr),
+      layer_tree_host_(nullptr),
       weak_ptr_factory_(this) {
   base::DictionaryValue* settings = nullptr;
   settings_->GetAsDictionary(&settings);
@@ -90,10 +90,12 @@ RasterizeAndRecordBenchmark::~RasterizeAndRecordBenchmark() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTree* layer_tree) {
-  layer_tree_ = layer_tree;
+void RasterizeAndRecordBenchmark::DidUpdateLayers(
+    LayerTreeHost* layer_tree_host) {
+  layer_tree_host_ = layer_tree_host;
   LayerTreeHostCommon::CallFunctionForEveryLayer(
-      layer_tree, [this](Layer* layer) { layer->RunMicroBenchmark(this); });
+      layer_tree_host_,
+      [this](Layer* layer) { layer->RunMicroBenchmark(this); });
 
   DCHECK(!results_.get());
   results_ = base::WrapUnique(new base::DictionaryValue);
@@ -132,7 +134,7 @@ RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
 }
 
 void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
-  DCHECK(layer_tree_);
+  DCHECK(layer_tree_host_);
 
   if (!layer->DrawsContent())
     return;

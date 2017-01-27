@@ -89,7 +89,7 @@ class LayerTreeHostReadbackPixelTest
   void BeginTest() override {
     if (insert_copy_request_after_frame_count_ == 0) {
       Layer* const target =
-          readback_target_ ? readback_target_ : layer_tree()->root_layer();
+          readback_target_ ? readback_target_ : layer_tree_host()->root_layer();
       target->RequestCopyOfOutput(CreateCopyOutputRequest());
     }
     PostSetNeedsCommitToMainThread();
@@ -99,7 +99,7 @@ class LayerTreeHostReadbackPixelTest
     if (insert_copy_request_after_frame_count_ ==
         layer_tree_host()->SourceFrameNumber()) {
       Layer* const target =
-          readback_target_ ? readback_target_ : layer_tree()->root_layer();
+          readback_target_ ? readback_target_ : layer_tree_host()->root_layer();
       target->RequestCopyOfOutput(CreateCopyOutputRequest());
     }
   }
@@ -468,7 +468,7 @@ class LayerTreeHostReadbackDeviceScalePixelTest
   }
 
   void SetupTree() override {
-    layer_tree()->SetDeviceScaleFactor(device_scale_factor_);
+    layer_tree_host()->SetDeviceScaleFactor(device_scale_factor_);
     LayerTreePixelTest::SetupTree();
   }
 

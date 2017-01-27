@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -136,7 +137,7 @@ class SkPictureSerializer {
   // Each layer in the tree is serialized into a separate skp file
   // in the given directory.
   void Serialize(const cc::Layer* root_layer) {
-    for (auto* layer : *root_layer->GetLayerTree()) {
+    for (auto* layer : *root_layer->layer_tree_host()) {
       sk_sp<SkPicture> picture = layer->GetPicture();
       if (!picture)
         continue;

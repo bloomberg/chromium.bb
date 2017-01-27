@@ -67,9 +67,8 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
-  host->GetLayerTree()->RegisterViewportLayers(
-      overscroll_elasticity_layer, page_scale_layer,
-      inner_viewport_scroll_layer, outer_scroll_layer);
+  host->RegisterViewportLayers(overscroll_elasticity_layer, page_scale_layer,
+                               inner_viewport_scroll_layer, outer_scroll_layer);
 }
 
 void CreateVirtualViewportLayers(Layer* root_layer,
@@ -634,17 +633,17 @@ void LayerTreeTest::DoBeginTest() {
 }
 
 void LayerTreeTest::SetupTree() {
-  if (!layer_tree()->root_layer()) {
+  if (!layer_tree_host()->root_layer()) {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(1, 1));
-    layer_tree()->SetRootLayer(root_layer);
+    layer_tree_host()->SetRootLayer(root_layer);
   }
 
-  gfx::Size root_bounds = layer_tree()->root_layer()->bounds();
-  gfx::Size device_root_bounds =
-      gfx::ScaleToCeiledSize(root_bounds, layer_tree()->device_scale_factor());
-  layer_tree()->SetViewportSize(device_root_bounds);
-  layer_tree()->root_layer()->SetIsDrawable(true);
+  gfx::Size root_bounds = layer_tree_host()->root_layer()->bounds();
+  gfx::Size device_root_bounds = gfx::ScaleToCeiledSize(
+      root_bounds, layer_tree_host()->device_scale_factor());
+  layer_tree_host()->SetViewportSize(device_root_bounds);
+  layer_tree_host()->root_layer()->SetIsDrawable(true);
 }
 
 void LayerTreeTest::Timeout() {
@@ -702,7 +701,7 @@ void LayerTreeTest::DispatchSetNeedsRedraw() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     DispatchSetNeedsRedrawRect(
-        gfx::Rect(layer_tree_host_->GetLayerTree()->device_viewport_size()));
+        gfx::Rect(layer_tree_host_->device_viewport_size()));
 }
 
 void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
@@ -813,8 +812,8 @@ LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
 }
 
 void LayerTreeTest::DestroyLayerTreeHost() {
-  if (layer_tree_host_ && layer_tree_host_->GetLayerTree()->root_layer())
-    layer_tree_host_->GetLayerTree()->root_layer()->SetLayerTreeHost(NULL);
+  if (layer_tree_host_ && layer_tree_host_->root_layer())
+    layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
   layer_tree_host_ = nullptr;
 }
 

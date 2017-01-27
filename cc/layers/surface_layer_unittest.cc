@@ -39,13 +39,12 @@ class SurfaceLayerTest : public testing::Test {
     animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     layer_tree_host_ = FakeLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
-    layer_tree_ = layer_tree_host_->GetLayerTree();
-    layer_tree_->SetViewportSize(gfx::Size(10, 10));
+    layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
   }
 
   void TearDown() override {
     if (layer_tree_host_) {
-      layer_tree_->SetRootLayer(nullptr);
+      layer_tree_host_->SetRootLayer(nullptr);
       layer_tree_host_ = nullptr;
     }
   }
@@ -54,7 +53,6 @@ class SurfaceLayerTest : public testing::Test {
   TestTaskGraphRunner task_graph_runner_;
   std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
-  LayerTree* layer_tree_;
 };
 
 class TestSurfaceReferenceFactory : public SequenceSurfaceReferenceFactory {
@@ -105,7 +103,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   layer->SetSurfaceInfo(info);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(1, 1));
-  layer_tree_->SetRootLayer(layer);
+  layer_tree_host_->SetRootLayer(layer);
 
   auto animation_host2 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host2 =
@@ -140,7 +138,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   EXPECT_TRUE(required_seq.count(expected1));
   EXPECT_TRUE(required_seq.count(expected2));
 
-  layer_tree_->SetRootLayer(nullptr);
+  layer_tree_host_->SetRootLayer(nullptr);
   layer_tree_host_.reset();
 
   // Layer was removed so sequence from first LayerTreeHost should be
@@ -172,7 +170,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());
 
-    layer_tree()->SetRootLayer(layer_);
+    layer_tree_host()->SetRootLayer(layer_);
 
     // Should have SurfaceSequence from first tree.
     SurfaceSequence expected(kArbitraryFrameSinkId, 1u);
@@ -182,7 +180,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     EXPECT_TRUE(required_set_.count(expected));
 
     gfx::Size bounds(100, 100);
-    layer_tree()->SetViewportSize(bounds);
+    layer_tree_host()->SetViewportSize(bounds);
 
     blank_layer_ = SolidColorLayer::Create();
     blank_layer_->SetIsDrawable(true);
@@ -220,7 +218,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
     switch (commit_count_) {
       case 1:
         // Remove SurfaceLayer from tree to cause SwapPromise to be created.
-        layer_tree()->SetRootLayer(blank_layer_);
+        layer_tree_host()->SetRootLayer(blank_layer_);
         break;
       case 2:
         EndTest();
@@ -259,7 +257,7 @@ class SurfaceLayerSwapPromiseWithoutDraw : public SurfaceLayerSwapPromise {
     switch (commit_count_) {
       case 1:
         // Remove SurfaceLayer from tree to cause SwapPromise to be created.
-        layer_tree()->SetRootLayer(blank_layer_);
+        layer_tree_host()->SetRootLayer(blank_layer_);
         break;
       case 2:
         layer_tree_host()->SetNeedsCommit();

@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
@@ -556,7 +555,6 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
     EXPECT_EQ(compositor_dsf, view()
                                   ->compositor()
                                   ->layer_tree_host()
-                                  ->GetLayerTree()
                                   ->device_scale_factor());
   }
 };

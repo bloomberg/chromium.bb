@@ -14,7 +14,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/draw_property_utils.h"
-#include "cc/trees/layer_tree.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -63,9 +63,10 @@ InvalidationBenchmark::InvalidationBenchmark(
 InvalidationBenchmark::~InvalidationBenchmark() {
 }
 
-void InvalidationBenchmark::DidUpdateLayers(LayerTree* layer_tree) {
+void InvalidationBenchmark::DidUpdateLayers(LayerTreeHost* layer_tree_host) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
-      layer_tree, [this](Layer* layer) { layer->RunMicroBenchmark(this); });
+      layer_tree_host,
+      [this](Layer* layer) { layer->RunMicroBenchmark(this); });
 }
 
 void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
@@ -75,7 +76,7 @@ void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
   if (!invertible)
     from_screen = gfx::Transform();
   gfx::Rect viewport_rect = MathUtil::ProjectEnclosingClippedRect(
-      from_screen, gfx::Rect(layer->GetLayerTree()->device_viewport_size()));
+      from_screen, gfx::Rect(layer->layer_tree_host()->device_viewport_size()));
   visible_layer_rect.Intersect(viewport_rect);
   switch (mode_) {
     case FIXED_SIZE: {

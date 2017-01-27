@@ -7,6 +7,7 @@
 #include "cc/layers/layer.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -73,7 +74,8 @@ void PropertyTreeManager::setupRootTransformNode() {
   // TODO(jaydasika): We shouldn't set ToScreen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
   // cc.
-  float deviceScaleFactor = m_rootLayer->GetLayerTree()->device_scale_factor();
+  float deviceScaleFactor =
+      m_rootLayer->layer_tree_host()->device_scale_factor();
   gfx::Transform toScreen;
   toScreen.Scale(deviceScaleFactor, deviceScaleFactor);
   transformTree.SetToScreen(kRealRootNodeId, toScreen);
@@ -100,7 +102,7 @@ void PropertyTreeManager::setupRootClipNode() {
   clipNode.owning_layer_id = m_rootLayer->id();
   clipNode.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   clipNode.clip = gfx::RectF(
-      gfx::SizeF(m_rootLayer->GetLayerTree()->device_viewport_size()));
+      gfx::SizeF(m_rootLayer->layer_tree_host()->device_viewport_size()));
   clipNode.transform_id = kRealRootNodeId;
   clipNode.target_transform_id = kRealRootNodeId;
   clipNode.target_effect_id = kSecondaryRootNodeId;

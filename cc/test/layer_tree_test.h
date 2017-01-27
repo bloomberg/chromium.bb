@@ -122,7 +122,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool TestEnded() const { return ended_; }
 
   LayerTreeHost* layer_tree_host();
-  LayerTree* layer_tree() { return layer_tree_host()->GetLayerTree(); }
   SharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
   }

@@ -106,7 +106,7 @@ static inline bool IsRootLayer(const Layer* layer) {
 }
 
 static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
-  return layer->GetLayerTree()->needs_meta_info_recomputation();
+  return layer->layer_tree_host()->needs_meta_info_recomputation();
 }
 
 // Recursively walks the layer tree(if needed) to compute any information
@@ -140,7 +140,7 @@ static void PreCalculateMetaInformationInternal(
       recursive_data->num_unclipped_descendants);
 
   if (IsRootLayer(layer))
-    layer->GetLayerTree()->SetNeedsMetaInfoRecomputation(false);
+    layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
 }
 
 static void PreCalculateMetaInformationInternalForTesting(
@@ -1509,7 +1509,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     PropertyTrees* property_trees) {
   property_trees->is_main_thread = true;
   property_trees->is_active = false;
-  SkColor color = root_layer->GetLayerTree()->background_color();
+  SkColor color = root_layer->layer_tree_host()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);
   BuildPropertyTreesTopLevelInternal(
@@ -1518,7 +1518,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees, color);
 #if DCHECK_IS_ON()
-  for (auto* layer : *root_layer->GetLayerTree())
+  for (auto* layer : *root_layer->layer_tree_host())
     CheckScrollAndClipPointersForLayer(layer);
 #endif
   property_trees->ResetCachedData();
