@@ -731,11 +731,13 @@ void FrameSelection::contextDestroyed(Document* document) {
   m_selectionEditor->documentDetached(*document);
 }
 
-LayoutBlock* FrameSelection::caretLayoutObject() const {
+bool FrameSelection::hasCaretIn(const LayoutBlock& layoubBlock) const {
   DCHECK(selection().isValidFor(document()));
   if (!isCaret())
-    return nullptr;
-  return CaretBase::caretLayoutObject(selection().start().anchorNode());
+    return false;
+  return CaretBase::caretLayoutObject(selection().start().anchorNode()) ==
+             layoubBlock &&
+         hasEditableStyle();
 }
 
 IntRect FrameSelection::absoluteCaretBounds() {

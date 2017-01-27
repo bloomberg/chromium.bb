@@ -189,9 +189,9 @@ class CORE_EXPORT FrameSelection final
   Position start() const { return selection().start(); }
   Position end() const { return selection().end(); }
 
-  // Return the layoutObject that is responsible for painting the caret (in the
-  // selection start node)
-  LayoutBlock* caretLayoutObject() const;
+  // Returns true if specified layout block has caret. This function is
+  // called during InRecalStyle and InPaint.
+  bool hasCaretIn(const LayoutBlock&) const;
 
   // Bounds of (possibly transformed) caret in absolute coords
   IntRect absoluteCaretBounds();

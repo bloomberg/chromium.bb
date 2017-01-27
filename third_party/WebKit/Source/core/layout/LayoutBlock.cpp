@@ -1842,8 +1842,7 @@ inline bool LayoutBlock::isInlineBoxWrapperActuallyChild() const {
 
 bool LayoutBlock::hasCursorCaret() const {
   LocalFrame* frame = this->frame();
-  return frame->selection().caretLayoutObject() == this &&
-         frame->selection().hasEditableStyle();
+  return frame->selection().hasCaretIn(*this);
 }
 
 bool LayoutBlock::hasDragCaret() const {
