@@ -113,7 +113,6 @@ public class WebViewLayoutTest
         }
     }
 
-    @DisabledTest(message = "crbug.com/683153")
     @MediumTest
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();

@@ -72,7 +72,7 @@ interface MediaDevices : EventTarget
     attribute internals
     attribute accessibilityController
     attribute textInputController
-    attribute mojo
+    attribute gin
     attribute gamepadController
     attribute GCController
     getter speechSynthesis
