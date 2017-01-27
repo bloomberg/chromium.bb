@@ -190,7 +190,7 @@ and
 [/resources/testharnessreport.js](../../third_party/WebKit/LayoutTests/resources/testharnessreport.js).
 This is contrary to the WPT guidelines, which call for absolute paths.
 This limitation does not apply to the tests in `LayoutTests/http`, which rely on
-an HTTP server, or to the tests in `LayoutTests/imported/wpt`, which are
+an HTTP server, or to the tests in `LayoutTests/external/wpt`, which are
 imported from the [WPT repository](https://github.com/w3c/web-platform-tests).
 ***
 
@@ -471,7 +471,7 @@ body {
 ```
 
 *** promo
-Tests outside `LayoutTests/http` and `LayoutTests/imported/wpt` currently need
+Tests outside `LayoutTests/http` and `LayoutTests/external/wpt` currently need
 to use a relative path to
 [/third_party/WebKit/LayoutTests/resources/ahem.js](../../third_party/WebKit/LayoutTests/resources/ahem.js)
 ***

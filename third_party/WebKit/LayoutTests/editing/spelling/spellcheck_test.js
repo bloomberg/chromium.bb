@@ -34,7 +34,7 @@
 const Sample = window.Sample;
 
 // TODO(editing-dev): Once we can import JavaScript file from scripts, we should
-// import "imported/wpt/html/resources/common.js", since |HTML5_VOID_ELEMENTS|
+// import "external/wpt/html/resources/common.js", since |HTML5_VOID_ELEMENTS|
 // is defined in there.
 /**
  * @const @type {!Set<string>}
