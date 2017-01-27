@@ -25,6 +25,8 @@ source_set("lib") {
     "configuration.h",
     "decompress.cc",
     "decompress.h",
+    "mini_installer.cc",
+    "mini_installer.h",
     "mini_installer.ico",
     "mini_installer.rc",
     "mini_installer_constants.cc",
@@ -218,7 +220,7 @@ template("generate_mini_installer") {
   executable(target_name) {
     output_name = "mini_installer"
     sources = [
-      "mini_installer.cc",
+      "mini_installer_exe_main.cc",
       packed_files_rc_file,
     ]
 

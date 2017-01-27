@@ -21,6 +21,8 @@
 // have the linker merge the sections, saving us ~500 bytes.
 #pragma comment(linker, "/MERGE:.rdata=.text")
 
+#include "chrome/installer/mini_installer/mini_installer.h"
+
 #include <windows.h>
 
 // #define needed to link in RtlGenRandom(), a.k.a. SystemFunction036.  See the
@@ -38,7 +40,6 @@
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/configuration.h"
 #include "chrome/installer/mini_installer/decompress.h"
-#include "chrome/installer/mini_installer/exit_code.h"
 #include "chrome/installer/mini_installer/mini_installer_constants.h"
 #include "chrome/installer/mini_installer/mini_string.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
@@ -48,20 +49,6 @@ namespace mini_installer {
 
 typedef StackString<MAX_PATH> PathString;
 typedef StackString<MAX_PATH * 4> CommandString;
-
-struct ProcessExitResult {
-  DWORD exit_code;
-  DWORD windows_error;
-
-  explicit ProcessExitResult(DWORD exit) : exit_code(exit), windows_error(0) {}
-  ProcessExitResult(DWORD exit, DWORD win)
-      : exit_code(exit), windows_error(win) {
-  }
-
-  bool IsSuccess() {
-    return exit_code == SUCCESS_EXIT_CODE;
-  }
-};
 
 // This structure passes data back and forth for the processing
 // of resource callbacks.
@@ -823,8 +810,6 @@ bool ShouldDeleteExtractedFiles() {
   return true;
 }
 
-// Main function. First gets a working dir, unpacks the resources and finally
-// executes setup.exe to do the install/upgrade.
 ProcessExitResult WMain(HMODULE module) {
   // Always start with deleting potential leftovers from previous installations.
   // This can make the difference between success and failure.  We've seen
@@ -887,44 +872,3 @@ ProcessExitResult WMain(HMODULE module) {
 }
 
 }  // namespace mini_installer
-
-int MainEntryPoint() {
-  mini_installer::ProcessExitResult result =
-      mini_installer::WMain(::GetModuleHandle(NULL));
-
-  ::ExitProcess(result.exit_code);
-}
-
-#if defined(ADDRESS_SANITIZER)
-// Executables instrumented with ASAN need CRT functions. We do not use
-// the /ENTRY switch for ASAN instrumented executable and a "main" function
-// is required.
-int WINAPI WinMain(HINSTANCE hInstance,
-                   HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine,
-                   int nCmdShow) {
-  MainEntryPoint();
-  return 0;
-}
-#endif
-
-// VC Express editions don't come with the memset CRT obj file and linking to
-// the obj files between versions becomes a bit problematic. Therefore,
-// simply implement memset.
-//
-// This also avoids having to explicitly set the __sse2_available hack when
-// linking with both the x64 and x86 obj files which is required when not
-// linking with the std C lib in certain instances (including Chromium) with
-// MSVC.  __sse2_available determines whether to use SSE2 intructions with
-// std C lib routines, and is set by MSVC's std C lib implementation normally.
-extern "C" {
-#pragma function(memset)
-void* memset(void* dest, int c, size_t count) {
-  void* start = dest;
-  while (count--) {
-    *reinterpret_cast<char*>(dest) = static_cast<char>(c);
-    dest = reinterpret_cast<char*>(dest) + 1;
-  }
-  return start;
-}
-}  // extern "C"
