@@ -129,7 +129,9 @@ class VrController {
   float last_qx_;
   bool pinch_started_;
   bool zoom_in_progress_ = false;
+  bool touch_position_changed_ = false;
 
+  // Current touch info after the extrapolation.
   std::unique_ptr<TouchInfo> touch_info_;
 
   // A pointer storing the touch point from previous frame.
@@ -144,11 +146,17 @@ class VrController {
   // Overall velocity
   gvr::Vec2f overall_velocity_;
 
+  // Last velocity that is used for fling and direction detection
+  gvr::Vec2f last_velocity_;
+
   // Displacement of the touch point from the previews to the current touch
   gvr::Vec2f displacement_;
 
   int64_t last_touch_timestamp_ = 0;
   int64_t last_timestamp_nanos_ = 0;
+
+  // Number of consecutively extrapolated touch points
+  int extrapolated_touch_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(VrController);
 };
