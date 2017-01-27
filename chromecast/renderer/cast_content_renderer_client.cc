@@ -182,6 +182,10 @@ void CastContentRendererClient::RunScriptsAtDocumentStart(
   }
 }
 
+bool CastContentRendererClient::AllowMediaSuspend() {
+  return false;
+}
+
 void ExecuteJavaScript(content::RenderFrame* render_frame, int resource_id) {
   const std::string& js_string = ui::ResourceBundle::GetSharedInstance()
                                      .GetRawDataResource(resource_id)

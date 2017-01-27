@@ -59,7 +59,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       blink::WebContentDecryptionModule* initial_cdm,
       SurfaceManager* surface_manager,
       base::WeakPtr<MediaObserver> media_observer,
-      base::TimeDelta max_keyframe_distance_to_disable_background_video);
+      base::TimeDelta max_keyframe_distance_to_disable_background_video,
+      bool allow_suspend);
 
   ~WebMediaPlayerParams();
 
@@ -107,6 +108,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return max_keyframe_distance_to_disable_background_video_;
   }
 
+  bool allow_suspend() const { return allow_suspend_; }
+
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -121,6 +124,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   SurfaceManager* surface_manager_;
   base::WeakPtr<MediaObserver> media_observer_;
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;
+  const bool allow_suspend_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

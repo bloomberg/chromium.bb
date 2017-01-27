@@ -43,6 +43,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
                       bool render_frame_has_played_media_before,
                       const base::Closure& closure) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
+  bool AllowMediaSuspend() override;
 
  protected:
   CastContentRendererClient();

@@ -23,7 +23,8 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     blink::WebContentDecryptionModule* initial_cdm,
     SurfaceManager* surface_manager,
     base::WeakPtr<MediaObserver> media_observer,
-    base::TimeDelta max_keyframe_distance_to_disable_background_video)
+    base::TimeDelta max_keyframe_distance_to_disable_background_video,
+    bool allow_suspend)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(media_log),
@@ -36,7 +37,8 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       surface_manager_(surface_manager),
       media_observer_(media_observer),
       max_keyframe_distance_to_disable_background_video_(
-          max_keyframe_distance_to_disable_background_video) {}
+          max_keyframe_distance_to_disable_background_video),
+      allow_suspend_(allow_suspend) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}
 

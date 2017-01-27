@@ -224,4 +224,8 @@ GURL ContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return GURL();
 }
 
+bool ContentRendererClient::AllowMediaSuspend() {
+  return true;
+}
+
 }  // namespace content

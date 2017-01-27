@@ -238,7 +238,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       surface_manager_(params.surface_manager()),
       overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
-      can_suspend_state_(CanSuspendState::UNKNOWN),
+      suspend_enabled_(params.allow_suspend()),
       use_fallback_path_(false),
       is_encrypted_(false),
       underflow_count_(0),
@@ -1867,31 +1867,17 @@ void WebMediaPlayerImpl::SetMemoryReportingState(
 
 void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (!suspend_enabled_) {
+    DCHECK(!pipeline_controller_.IsSuspended());
+    return;
+  }
 
   // Do not change the state after an error has occurred.
   // TODO(sandersd): Update PipelineController to remove the need for this.
   if (IsNetworkStateError(network_state_))
     return;
 
-#if defined(OS_LINUX)
-  // TODO(sandersd): idle suspend is disabled if decoder owns video frame.
-  // Used on Chromecast. Since GetCurrentFrameFromCompositor is a synchronous
-  // cross-thread post, avoid the cost on platforms that always allow suspend.
-  // Need to find a better mechanism for this. See http://crbug.com/602708
-  if (can_suspend_state_ == CanSuspendState::UNKNOWN) {
-    scoped_refptr<VideoFrame> frame = GetCurrentFrameFromCompositor();
-    if (frame) {
-      can_suspend_state_ =
-          frame->metadata()->IsTrue(VideoFrameMetadata::DECODER_OWNS_FRAME)
-              ? CanSuspendState::NO
-              : CanSuspendState::YES;
-    }
-  }
-#else
-  can_suspend_state_ = CanSuspendState::YES;
-#endif
-
-  if (is_suspended && can_suspend_state_ != CanSuspendState::NO) {
+  if (is_suspended) {
     // If we were not resumed for long enough to satisfy the preroll attempt,
     // reset the clock.
     if (!preroll_attempt_pending_ && IsPrerollAttemptNeeded()) {

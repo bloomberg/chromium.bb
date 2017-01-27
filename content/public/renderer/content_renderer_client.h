@@ -362,6 +362,9 @@ class CONTENT_EXPORT ContentRendererClient {
       std::vector<base::SchedulerWorkerPoolParams>* params_vector,
       base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
           index_to_traits_callback) {}
+
+  // Returns true if the media pipeline can be suspended, or false otherwise.
+  virtual bool AllowMediaSuspend();
 };
 
 }  // namespace content
