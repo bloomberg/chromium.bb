@@ -36,6 +36,9 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Set whether this window has pointer focus and should dispatch mouse events.
   void set_pointer_focus(bool focus) { has_pointer_focus_ = focus; }
 
+  // Set whether this window has keyboard focus and should dispatch key events.
+  void set_keyboard_focus(bool focus) { has_keyboard_focus_ = focus; }
+
   // PlatformWindow
   void Show() override;
   void Hide() override;
@@ -78,6 +81,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   gfx::Rect pending_bounds_;
   uint32_t pending_configure_serial_;
   bool has_pointer_focus_ = false;
+  bool has_keyboard_focus_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };

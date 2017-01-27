@@ -5,7 +5,9 @@
 #include "ui/ozone/platform/wayland/ozone_platform_wayland.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/display/fake_display_delegate.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
@@ -15,6 +17,13 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
+
+#if BUILDFLAG(USE_XKBCOMMON)
+#include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
+#include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
+#else
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+#endif
 
 namespace ui {
 
@@ -75,6 +84,15 @@ class OzonePlatformWayland : public OzonePlatform {
     if (!connection_->Initialize())
       LOG(FATAL) << "Failed to initialize Wayland platform";
 
+#if BUILDFLAG(USE_XKBCOMMON)
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        base::MakeUnique<WaylandXkbKeyboardLayoutEngine>(
+            xkb_evdev_code_converter_));
+#else
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        base::MakeUnique<StubKeyboardLayoutEngine>());
+#endif
+
     cursor_factory_.reset(new CursorFactoryOzone);
     overlay_manager_.reset(new StubOverlayManager);
     input_controller_ = CreateStubInputController();
@@ -110,6 +128,10 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<StubOverlayManager> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+
+#if BUILDFLAG(USE_XKBCOMMON)
+  XkbEvdevCodes xkb_evdev_code_converter_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformWayland);
 };

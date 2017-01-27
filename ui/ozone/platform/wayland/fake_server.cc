@@ -137,10 +137,27 @@ void GetPointer(wl_client* client, wl_resource* resource, uint32_t id) {
   seat->pointer.reset(new MockPointer(pointer_resource));
 }
 
+void GetKeyboard(wl_client* client, wl_resource* resource, uint32_t id) {
+  auto seat = static_cast<MockSeat*>(wl_resource_get_user_data(resource));
+  wl_resource* keyboard_resource = wl_resource_create(
+      client, &wl_keyboard_interface, wl_resource_get_version(resource), id);
+  if (!keyboard_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  seat->keyboard.reset(new MockKeyboard(keyboard_resource));
+}
+
 const struct wl_seat_interface seat_impl = {
     &GetPointer,       // get_pointer
-    nullptr,           // get_keyboard
+    &GetKeyboard,      // get_keyboard
     nullptr,           // get_touch,
+    &DestroyResource,  // release
+};
+
+// wl_keyboard
+
+const struct wl_keyboard_interface keyboard_impl = {
     &DestroyResource,  // release
 };
 
@@ -244,6 +261,13 @@ MockPointer::MockPointer(wl_resource* resource) : ServerObject(resource) {
 }
 
 MockPointer::~MockPointer() {}
+
+MockKeyboard::MockKeyboard(wl_resource* resource) : ServerObject(resource) {
+  wl_resource_set_implementation(resource, &keyboard_impl, this,
+                                 &ServerObject::OnResourceDestroyed);
+}
+
+MockKeyboard::~MockKeyboard() {}
 
 void GlobalDeleter::operator()(wl_global* global) {
   wl_global_destroy(global);

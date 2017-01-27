@@ -10,6 +10,13 @@
 namespace wl {
 namespace {
 
+void delete_keyboard(wl_keyboard* keyboard) {
+  if (wl_keyboard_get_version(keyboard) >= WL_KEYBOARD_RELEASE_SINCE_VERSION)
+    wl_keyboard_release(keyboard);
+  else
+    wl_keyboard_destroy(keyboard);
+}
+
 void delete_pointer(wl_pointer* pointer) {
   if (wl_pointer_get_version(pointer) >= WL_POINTER_RELEASE_SINCE_VERSION)
     wl_pointer_release(pointer);
@@ -39,6 +46,10 @@ void (*ObjectTraits<wl_display>::deleter)(wl_display*) = &wl_display_disconnect;
 
 const wl_interface* ObjectTraits<wl_output>::interface = &wl_output_interface;
 void (*ObjectTraits<wl_output>::deleter)(wl_output*) = &wl_output_destroy;
+
+const wl_interface* ObjectTraits<wl_keyboard>::interface =
+    &wl_keyboard_interface;
+void (*ObjectTraits<wl_keyboard>::deleter)(wl_keyboard*) = &delete_keyboard;
 
 const wl_interface* ObjectTraits<wl_pointer>::interface = &wl_pointer_interface;
 void (*ObjectTraits<wl_pointer>::deleter)(wl_pointer*) = &delete_pointer;

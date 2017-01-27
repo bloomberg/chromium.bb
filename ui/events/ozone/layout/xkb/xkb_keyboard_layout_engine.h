@@ -72,8 +72,16 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
                                      xkb_keysym_t xkb_keysym,
                                      base::char16 character) const;
 
+  // Sets a new XKB keymap. This updates xkb_state_ (which takes ownership
+  // of the keymap), and updates xkb_flag_map_ for the new keymap.
+  virtual void SetKeymap(xkb_keymap* keymap);
+
   // Maps DomCode to xkb_keycode_t.
   const XkbKeyCodeConverter& key_code_converter_;
+
+  // libxkbcommon uses explicit reference counting for its structures,
+  // so we need to trigger its cleanup.
+  std::unique_ptr<xkb_state, XkbStateDeleter> xkb_state_;
 
  private:
   struct XkbKeymapEntry {
@@ -81,9 +89,6 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
     xkb_keymap* keymap;
   };
   std::vector<XkbKeymapEntry> xkb_keymaps_;
-  // Sets a new XKB keymap. This updates xkb_state_ (which takes ownership
-  // of the keymap), and updates xkb_flag_map_ for the new keymap.
-  void SetKeymap(xkb_keymap* keymap);
 
   // Returns the XKB modifiers flags corresponding to the given EventFlags.
   xkb_mod_mask_t EventFlagsToXkbFlags(int ui_flags) const;
@@ -107,10 +112,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   void OnKeymapLoaded(const std::string& layout_name,
                       std::unique_ptr<char, base::FreeDeleter> keymap_str);
 
-  // libxkbcommon uses explicit reference counting for its structures,
-  // so we need to trigger its cleanup.
   std::unique_ptr<xkb_context, XkbContextDeleter> xkb_context_;
-  std::unique_ptr<xkb_state, XkbStateDeleter> xkb_state_;
 
   std::string current_layout_name_;
 

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/wayland/wayland_keyboard.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_output.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
@@ -78,6 +79,7 @@ class WaylandConnection : public PlatformEventSource,
   wl::Object<xdg_shell> shell_;
 
   std::unique_ptr<WaylandPointer> pointer_;
+  std::unique_ptr<WaylandKeyboard> keyboard_;
 
   bool scheduled_flush_ = false;
   bool watching_ = false;
