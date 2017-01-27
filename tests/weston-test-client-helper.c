@@ -912,9 +912,10 @@ output_path(void)
 	char *path = getenv("WESTON_TEST_OUTPUT_PATH");
 
 	if (!path)
-		return ".";
+		return "./logs";
+
 	return path;
-	}
+}
 
 char*
 screenshot_output_filename(const char *basename, uint32_t seq)
