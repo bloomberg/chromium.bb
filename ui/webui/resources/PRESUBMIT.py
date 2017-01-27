@@ -75,5 +75,6 @@ translation from the place using the shared code. For an example: see
 def _CommonChecks(input_api, output_api):
   results = []
   results += _CheckForTranslations(input_api, output_api)
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api,
+                                                         check_js=True)
   return results
