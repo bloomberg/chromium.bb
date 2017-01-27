@@ -357,43 +357,29 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
   if (is_theme())
     return false;
 
-  // Don't show component extensions and invisible apps.
-  if (ShouldNotBeVisible())
+  // Hide component extensions because they are only extensions as an
+  // implementation detail of Chrome.
+  if (extensions::Manifest::IsComponentLocation(location()) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowComponentExtensionOptions)) {
     return false;
-
-  // Always show unpacked extensions and apps.
-  if (Manifest::IsUnpackedLocation(location()))
-    return true;
+  }
 
   // Unless they are unpacked, never show hosted apps. Note: We intentionally
   // show packaged apps and platform apps because there are some pieces of
   // functionality that are only available in chrome://extensions/ but which
   // are needed for packaged and platform apps. For example, inspecting
   // background pages. See http://crbug.com/116134.
-  if (is_hosted_app())
+  if (!Manifest::IsUnpackedLocation(location()) && is_hosted_app())
     return false;
 
   return true;
 }
 
-bool Extension::ShouldNotBeVisible() const {
-  // Don't show component extensions because they are only extensions as an
+bool Extension::ShouldExposeViaManagementAPI() const {
+  // Hide component extensions because they are only extensions as an
   // implementation detail of Chrome.
-  if (extensions::Manifest::IsComponentLocation(location()) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowComponentExtensionOptions)) {
-    return true;
-  }
-
-  // Always show unpacked extensions and apps.
-  if (Manifest::IsUnpackedLocation(location()))
-    return false;
-
-  // Don't show apps that aren't visible in either launcher or ntp.
-  if (is_app() && !ShouldDisplayInAppLauncher() && !ShouldDisplayInNewTabPage())
-    return true;
-
-  return false;
+  return !extensions::Manifest::IsComponentLocation(location());
 }
 
 Extension::ManifestData* Extension::GetManifestData(const std::string& key)

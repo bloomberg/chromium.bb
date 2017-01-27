@@ -257,8 +257,8 @@ void AddExtensionInfo(const ExtensionSet& extensions,
        iter != extensions.end(); ++iter) {
     const Extension& extension = **iter;
 
-    if (extension.ShouldNotBeVisible())
-      continue;  // Skip built-in extensions/apps.
+    if (!extension.ShouldExposeViaManagementAPI())
+      continue;
 
     extension_list->push_back(CreateExtensionInfo(extension, context));
   }
@@ -416,7 +416,7 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
 
   const Extension* extension =
       registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  if (!extension || extension->ShouldNotBeVisible())
+  if (!extension || !extension->ShouldExposeViaManagementAPI())
     return RespondNow(Error(keys::kNoExtensionError, extension_id_));
 
   bool enabled = params->enabled;
@@ -507,7 +507,7 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
       extensions::ExtensionRegistry::Get(browser_context())
           ->GetExtensionById(target_extension_id_,
                              ExtensionRegistry::EVERYTHING);
-  if (!target_extension || target_extension->ShouldNotBeVisible()) {
+  if (!target_extension || !target_extension->ShouldExposeViaManagementAPI()) {
     return RespondNow(Error(keys::kNoExtensionError, target_extension_id_));
   }
 
@@ -826,8 +826,8 @@ void ManagementEventRouter::BroadcastEvent(
     const Extension* extension,
     events::HistogramValue histogram_value,
     const char* event_name) {
-  if (extension->ShouldNotBeVisible())
-    return;  // Don't dispatch events for built-in extenions.
+  if (!extension->ShouldExposeViaManagementAPI())
+    return;
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == management::OnUninstalled::kEventName) {
     args->AppendString(extension->id());

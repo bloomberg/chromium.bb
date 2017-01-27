@@ -39,13 +39,6 @@ bool ShouldDisplayInNewTabPage(const Extension* extension,
 bool ShouldDisplayInExtensionSettings(const Extension* extension,
                                       content::BrowserContext* context);
 
-// Returns true if the extension should not be shown anywhere. This is
-// mostly the same as the extension being a component extension, but also
-// includes non-component apps that are hidden from the app launcher and NTP,
-// as well as ephemeral apps.
-bool ShouldNotBeVisible(const Extension* extension,
-                        content::BrowserContext* context);
-
 }  // namespace ui_util
 }  // namespace extensions
 

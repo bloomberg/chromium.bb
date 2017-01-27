@@ -51,10 +51,5 @@ bool ShouldDisplayInExtensionSettings(const Extension* extension,
   return extension->ShouldDisplayInExtensionSettings();
 }
 
-bool ShouldNotBeVisible(const Extension* extension,
-                        content::BrowserContext* context) {
-  return extension->ShouldNotBeVisible();
-}
-
 }  // namespace ui_util
 }  // namespace extensions
