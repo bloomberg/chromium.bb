@@ -15,9 +15,6 @@
 # release modes.  It is not an error to list symbols in this file that will not
 # be present in each output variant.
 
-__ZnwmPv
-__ZdlPvS_
-
 # Provided by build/sanitizers/sanitizer_options.cc in ASan builds.
 ___asan_default_options
 
