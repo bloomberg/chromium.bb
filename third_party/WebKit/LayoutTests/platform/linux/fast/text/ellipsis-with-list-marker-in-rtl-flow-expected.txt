@@ -4,41 +4,26 @@ layer at (0,0) size 800x196
   LayoutBlockFlow {HTML} at (0,0) size 800x196
     LayoutBlockFlow {BODY} at (8,16) size 784x164
       LayoutBlockFlow {P} at (0,0) size 784x20
-        + RootInlineBox {LayoutBlockFlow P} pos=(0.00,0.00) size=(486.84,19.00) baseline=15/10
-          + InlineTextBox {LayoutText #text} pos=(0.00,0.00) size=(486.84,19.00) baseline=15/10 range=(0,82) "crbug.com/645938: Text in an rtl flow with a list marker should truncate properly."
         LayoutText {#text} at (0,0) size 487x19
           text run at (0,0) width 487: "crbug.com/645938: Text in an rtl flow with a list marker should truncate properly."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        + RootInlineBox {LayoutBlockFlow P} pos=(0.00,0.00) size=(337.34,19.00) baseline=15/10
-          + InlineTextBox {LayoutText #text} pos=(0.00,0.00) size=(107.39,19.00) baseline=15/10 range=(0,18) "You should see ..."
-          + InlineTextBox {LayoutText #text} pos=(107.39,0.00) size=(183.00,19.00) baseline=15/10 range=(18,47) "הנקרא לפעמים גם דמי טקסט או ג"
-          + InlineTextBox {LayoutText #text} pos=(290.39,0.00) size=(46.95,19.00) baseline=15/10 range=(47,55) "' below."
         LayoutText {#text} at (0,0) size 338x19
           text run at (0,0) width 108: "You should see ..."
           text run at (107,0) width 184 RTL: "\x{5D4}\x{5E0}\x{5E7}\x{5E8}\x{5D0} \x{5DC}\x{5E4}\x{5E2}\x{5DE}\x{5D9}\x{5DD} \x{5D2}\x{5DD} \x{5D3}\x{5DE}\x{5D9} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D0}\x{5D5} \x{5D2}"
           text run at (290,0) width 48: "' below."
       LayoutBlockFlow {OL} at (0,72) size 784x20
       LayoutBlockFlow {P} at (0,108) size 784x20
-        + RootInlineBox {LayoutBlockFlow P} pos=(0.00,0.00) size=(326.36,19.00) baseline=15/10
-          + InlineTextBox {LayoutText #text} pos=(0.00,0.00) size=(326.36,19.00) baseline=15/10 range=(0,55) "You should see ...ajdklasd jsakldsja dsjjkl dsjk below."
         LayoutText {#text} at (0,0) size 327x19
           text run at (0,0) width 327: "You should see ...ajdklasd jsakldsja dsjjkl dsjk below."
       LayoutBlockFlow {OL} at (0,144) size 784x20
 layer at (48,88) size 200x20 scrollX 147.00 scrollWidth 347
   LayoutListItem {LI} at (40,0) size 200x20
-    + RootInlineBox {LayoutListItem LI class='case'} pos=(-147.00,0.00) size=(347.00,19.00) baseline=15/10
-      + InlineTextBox {LayoutText #text} pos=(-147.00,0.00) size=(124.00,19.00) baseline=15/10 range=(37,56) "עד שיהיה טקסט אמיתי"
-      + InlineTextBox {LayoutText #text} pos=(-23.00,0.00) size=(223.00,19.00) baseline=15/10 range=(0,36) "הנקרא לפעמים גם דמי טקסט או ג'יבריש "
-      + InlineBox {LayoutListMarker (anonymous)} pos=(200.00,0.00) size=(16.00,19.00) baseline=15/10
     LayoutListMarker (anonymous) at (200,0) size 16x19: "1"
     LayoutText {#text} at (-147,0) size 347x19
       text run at (-147,0) width 124 RTL: "\x{5E2}\x{5D3} \x{5E9}\x{5D9}\x{5D4}\x{5D9}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D0}\x{5DE}\x{5D9}\x{5EA}\x{5D9}"
       text run at (-23,0) width 223 RTL: "\x{5D4}\x{5E0}\x{5E7}\x{5E8}\x{5D0} \x{5DC}\x{5E4}\x{5E2}\x{5DE}\x{5D9}\x{5DD} \x{5D2}\x{5DD} \x{5D3}\x{5DE}\x{5D9} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D0}\x{5D5} \x{5D2}'\x{5D9}\x{5D1}\x{5E8}\x{5D9}\x{5E9} "
 layer at (48,160) size 200x20 scrollX 189.00 scrollWidth 389
   LayoutListItem {LI} at (40,0) size 200x20
-    + RootInlineBox {LayoutListItem LI class='case'} pos=(-189.00,0.00) size=(389.00,19.00) baseline=15/10
-      + InlineTextBox {LayoutText #text} pos=(-189.00,0.00) size=(389.00,19.00) baseline=15/10 range=(0,67) "dsajkl dsjakld sajkld asjkld sajklds ajdklasd jsakldsja dsjjkl dsjk"
-      + InlineBox {LayoutListMarker (anonymous)} pos=(200.00,0.00) size=(16.00,19.00) baseline=15/10
     LayoutListMarker (anonymous) at (200,0) size 16x19: "1"
     LayoutText {#text} at (-189,0) size 389x19
       text run at (-189,0) width 389: "dsajkl dsjakld sajkld asjkld sajklds ajdklasd jsakldsja dsjjkl dsjk"
