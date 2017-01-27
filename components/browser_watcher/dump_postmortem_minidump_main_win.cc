@@ -33,14 +33,66 @@ bool ParseCommandLine(const base::CommandLine* cmd,
   return true;
 }
 
-void Indent(FILE* out, size_t indent_level) {
+void Indent(FILE* out, int indent_level) {
   DCHECK(out);
-  for (size_t i = 0; i < indent_level; ++i)
+  for (int i = 0; i < indent_level; ++i)
     fprintf(out, "  ");
 }
 
+void PrintUserData(
+    FILE* out,
+    int indent_level,
+    const google::protobuf::Map<std::string, browser_watcher::TypedValue>&
+        user_data) {
+  DCHECK(out);
+  Indent(out, indent_level);
+  fprintf(out, "User data (%zu)\n", user_data.size());
+  for (const auto& kv : user_data) {
+    Indent(out, indent_level + 1);
+    fprintf(out, "%s : ", kv.first.c_str());
+    const browser_watcher::TypedValue& value = kv.second;
+    switch (kv.second.value_case()) {
+      case browser_watcher::TypedValue::kBytesValue: {
+        const std::string& bytes_value = value.bytes_value();
+        for (size_t i = 0; i < bytes_value.size(); ++i)
+          fprintf(out, "%02X ", bytes_value.at(i));
+        fprintf(out, "\n");
+        break;
+      }
+      case browser_watcher::TypedValue::kBytesReference:
+        fprintf(out, "bytes reference (address: %llX, size: %llX)\n",
+                value.bytes_reference().address(),
+                value.bytes_reference().size());
+        break;
+      case browser_watcher::TypedValue::kStringValue:
+        fprintf(out, "\"%s\"\n", value.string_value().c_str());
+        break;
+      case browser_watcher::TypedValue::kStringReference:
+        fprintf(out, "string reference (address: %llX, size: %llX)\n",
+                value.string_reference().address(),
+                value.string_reference().size());
+        break;
+      case browser_watcher::TypedValue::kCharValue:
+        fprintf(out, "'%s'\n", value.char_value().c_str());
+        break;
+      case browser_watcher::TypedValue::kBoolValue:
+        fprintf(out, "%s\n", value.bool_value() ? "true" : "false");
+        break;
+      case browser_watcher::TypedValue::kSignedValue:
+        fprintf(out, "%lld\n", value.signed_value());
+        break;
+      case browser_watcher::TypedValue::kUnsignedValue:
+        fprintf(out, "%llu\n", value.unsigned_value());
+        break;
+      case browser_watcher::TypedValue::VALUE_NOT_SET:
+        fprintf(out, "<not set>\n");
+        break;
+    }
+  }
+}
+
 void PrintActivity(FILE* out,
-                   size_t indent_level,
+                   int indent_level,
                    const browser_watcher::Activity& activity) {
   DCHECK(out);
   Indent(out, indent_level);
@@ -54,16 +106,16 @@ void PrintActivity(FILE* out,
       break;
     case browser_watcher::Activity::ACT_TASK_RUN:
       Indent(out, indent_level + 1);
-      fprintf(out, "origin_address: %llx\n", activity.origin_address());
+      fprintf(out, "origin_address: %llX\n", activity.origin_address());
       fprintf(out, "task_sequence_id: %lld\n", activity.task_sequence_id());
       break;
     case browser_watcher::Activity::ACT_LOCK_ACQUIRE:
       Indent(out, indent_level + 1);
-      fprintf(out, "lock_address: %llx\n", activity.lock_address());
+      fprintf(out, "lock_address: %llX\n", activity.lock_address());
       break;
     case browser_watcher::Activity::ACT_EVENT_WAIT:
       Indent(out, indent_level + 1);
-      fprintf(out, "event_address: %llx\n", activity.event_address());
+      fprintf(out, "event_address: %llX\n", activity.event_address());
       break;
     case browser_watcher::Activity::ACT_THREAD_JOIN:
       Indent(out, indent_level + 1);
@@ -74,6 +126,8 @@ void PrintActivity(FILE* out,
       fprintf(out, "process_id: %lld\n", activity.process_id());
       break;
   }
+
+  PrintUserData(out, indent_level + 1, activity.user_data());
 }
 
 void PrintProcessState(FILE* out,
@@ -90,6 +144,7 @@ void PrintProcessState(FILE* out,
 
 // TODO(manzagop): flesh out as StabilityReport gets fleshed out.
 void PrintReport(FILE* out, const browser_watcher::StabilityReport& report) {
+  PrintUserData(out, 0, report.global_data());
   for (int i = 0; i < report.process_states_size(); ++i) {
     const browser_watcher::ProcessState process = report.process_states(i);
     PrintProcessState(out, process);
