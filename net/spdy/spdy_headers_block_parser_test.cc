@@ -37,14 +37,10 @@ class MockSpdyHeadersHandler : public SpdyHeadersHandlerInterface {
 
 class SpdyHeadersBlockParserTest : public ::testing::Test {
  public:
+  SpdyHeadersBlockParserTest() : parser_(&handler_) {}
   ~SpdyHeadersBlockParserTest() override {}
 
  protected:
-  void SetUp() override {
-    // Create a parser using the mock handler.
-    parser_.reset(new SpdyHeadersBlockParser(&handler_));
-  }
-
   // Create a header block with a specified number of headers.
   string CreateHeaders(uint32_t num_headers, bool insert_nulls) {
     string headers;
@@ -87,7 +83,7 @@ class SpdyHeadersBlockParserTest : public ::testing::Test {
   }
 
   MockSpdyHeadersHandler handler_;
-  std::unique_ptr<SpdyHeadersBlockParser> parser_;
+  SpdyHeadersBlockParser parser_;
 
   static const char *const kBaseKey;
   static const char *const kBaseValue;
@@ -117,9 +113,9 @@ TEST_F(SpdyHeadersBlockParserTest, BasicTest) {
   } else {
     EXPECT_CALL(handler_, OnHeaderBlockEnd(headers.length())).Times(1);
   }
-  EXPECT_TRUE(parser_->
-      HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
-  EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_->get_error());
+  EXPECT_TRUE(parser_.HandleControlFrameHeadersData(1, headers.c_str(),
+                                                    headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_.get_error());
 }
 
 TEST_F(SpdyHeadersBlockParserTest, NullsSupportedTest) {
@@ -139,9 +135,9 @@ TEST_F(SpdyHeadersBlockParserTest, NullsSupportedTest) {
     EXPECT_CALL(handler_, OnHeaderBlockEnd(headers.length())).Times(1);
   }
 
-  EXPECT_TRUE(parser_->
-      HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
-  EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_->get_error());
+  EXPECT_TRUE(parser_.HandleControlFrameHeadersData(1, headers.c_str(),
+                                                    headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_.get_error());
 }
 
 TEST_F(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
@@ -175,12 +171,11 @@ TEST_F(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
     for (string::iterator it = headers.begin(); it != headers.end(); ++it) {
       if ((it + 1) == headers.end()) {
         // Last byte completes the block.
-        EXPECT_TRUE(parser_->HandleControlFrameHeadersData(i, &(*it), 1));
-        EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR,
-                  parser_->get_error());
+        EXPECT_TRUE(parser_.HandleControlFrameHeadersData(i, &(*it), 1));
+        EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_.get_error());
       } else {
-        EXPECT_FALSE(parser_->HandleControlFrameHeadersData(i, &(*it), 1));
-        EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());
+        EXPECT_FALSE(parser_.HandleControlFrameHeadersData(i, &(*it), 1));
+        EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_.get_error());
       }
     }
   }
@@ -205,35 +200,34 @@ TEST_F(SpdyHeadersBlockParserTest, HandlesEmptyCallsTest) {
   for (string::iterator it = headers.begin(); it != headers.end(); ++it) {
     if ((it + 1) == headers.end()) {
       // Last byte completes the block.
-      EXPECT_TRUE(parser_->HandleControlFrameHeadersData(1, &(*it), 1));
-      EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_->get_error());
+      EXPECT_TRUE(parser_.HandleControlFrameHeadersData(1, &(*it), 1));
+      EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_.get_error());
     } else {
-      EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, &(*it), 1));
-      EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());
-      EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, NULL, 0));
+      EXPECT_FALSE(parser_.HandleControlFrameHeadersData(1, &(*it), 1));
+      EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_.get_error());
+      EXPECT_FALSE(parser_.HandleControlFrameHeadersData(1, NULL, 0));
     }
   }
 }
 
-TEST_F(SpdyHeadersBlockParserTest, LargeBlocksDiscardedTest) {
+TEST_F(SpdyHeadersBlockParserTest, TooManyHeadersTest) {
   // Header block with too many headers.
-  {
-    string headers = EncodeLength(parser_->MaxNumberOfHeaders() + 1);
-    EXPECT_FALSE(parser_->
-        HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
-    EXPECT_EQ(SpdyHeadersBlockParser::HEADER_BLOCK_TOO_LARGE,
-              parser_->get_error());
-  }
-  parser_.reset(new SpdyHeadersBlockParser(&handler_));
+  string headers = EncodeLength(parser_.MaxNumberOfHeaders() + 1);
+  EXPECT_FALSE(parser_.HandleControlFrameHeadersData(1, headers.c_str(),
+                                                     headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::HEADER_BLOCK_TOO_LARGE,
+            parser_.get_error());
+}
+
+TEST_F(SpdyHeadersBlockParserTest, TooLongKeyTest) {
   // Header block with one header, which has a too-long key.
-  {
-    string headers = EncodeLength(1) + EncodeLength(
-        SpdyHeadersBlockParser::kMaximumFieldLength + 1);
-    EXPECT_FALSE(parser_->
-        HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
-    EXPECT_EQ(SpdyHeadersBlockParser::HEADER_FIELD_TOO_LARGE,
-              parser_->get_error());
-  }
+  string headers =
+      EncodeLength(1) +
+      EncodeLength(SpdyHeadersBlockParser::kMaximumFieldLength + 1);
+  EXPECT_FALSE(parser_.HandleControlFrameHeadersData(1, headers.c_str(),
+                                                     headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::HEADER_FIELD_TOO_LARGE,
+            parser_.get_error());
 }
 
 TEST_F(SpdyHeadersBlockParserTest, ExtraDataTest) {
@@ -251,31 +245,31 @@ TEST_F(SpdyHeadersBlockParserTest, ExtraDataTest) {
     EXPECT_CALL(handler_, OnHeaderBlockEnd(headers.length())).Times(1);
   }
 
-  EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, headers.c_str(),
-                                                      headers.length()));
-  EXPECT_EQ(SpdyHeadersBlockParser::TOO_MUCH_DATA, parser_->get_error());
+  EXPECT_FALSE(parser_.HandleControlFrameHeadersData(1, headers.c_str(),
+                                                     headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::TOO_MUCH_DATA, parser_.get_error());
 }
 
 TEST_F(SpdyHeadersBlockParserTest, WrongStreamIdTest) {
   string headers(CreateHeaders(kNumHeadersInBlock, false));
-  EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, headers.data(), 1));
-  EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());
+  EXPECT_FALSE(parser_.HandleControlFrameHeadersData(1, headers.data(), 1));
+  EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_.get_error());
   bool result;
   EXPECT_SPDY_BUG(
-      result = parser_->HandleControlFrameHeadersData(2, headers.data() + 1, 1),
+      result = parser_.HandleControlFrameHeadersData(2, headers.data() + 1, 1),
       "Unexpected stream id: 2 \\(expected 1\\)");
   EXPECT_FALSE(result);
-  EXPECT_EQ(SpdyHeadersBlockParser::UNEXPECTED_STREAM_ID, parser_->get_error());
+  EXPECT_EQ(SpdyHeadersBlockParser::UNEXPECTED_STREAM_ID, parser_.get_error());
 }
 
 TEST_F(SpdyHeadersBlockParserTest, InvalidStreamIdTest) {
   string headers(CreateHeaders(kNumHeadersInBlock, false));
   bool result;
   EXPECT_SPDY_BUG(
-      result = parser_->HandleControlFrameHeadersData(0, headers.data(), 1),
+      result = parser_.HandleControlFrameHeadersData(0, headers.data(), 1),
       "Expected nonzero stream id, saw: 0");
   EXPECT_FALSE(result);
-  EXPECT_EQ(SpdyHeadersBlockParser::UNEXPECTED_STREAM_ID, parser_->get_error());
+  EXPECT_EQ(SpdyHeadersBlockParser::UNEXPECTED_STREAM_ID, parser_.get_error());
 }
 
 }  // namespace net
