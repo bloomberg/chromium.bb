@@ -220,18 +220,18 @@ public abstract class CardViewHolder
             hasCardBelow = isCard(belowViewType) && belowViewType != ItemViewType.PROMO;
         }
 
+        @DrawableRes
+        int selectedBackground = selectBackground(hasCardAbove, hasCardBelow);
+        if (mBackground == selectedBackground) return;
+
+        mBackground = selectedBackground;
+        ViewUtils.setNinePatchBackgroundResource(itemView, selectedBackground);
+
         // By default the apparent distance between two cards is the sum of the bottom and top
         // height of their shadows. We want |mCardGap| instead, so we set the bottom margin to
         // the difference.
         getParams().bottomMargin =
                 hasCardBelow ? (mCardGap - (mCardShadow.top + mCardShadow.bottom)) : 0;
-
-        @DrawableRes
-        int selectedBackground = selectBackground(hasCardAbove, hasCardBelow);
-        if (mBackground != selectedBackground) {
-            mBackground = selectedBackground;
-            ViewUtils.setNinePatchBackgroundResource(itemView, selectedBackground);
-        }
     }
 
     /**

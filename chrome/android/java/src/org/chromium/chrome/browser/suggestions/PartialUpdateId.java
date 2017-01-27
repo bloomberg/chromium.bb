@@ -14,9 +14,16 @@ import java.lang.annotation.RetentionPolicy;
  * holders
  * @see org.chromium.chrome.browser.ntp.cards.InnerNode#notifyItemChanged(int, Object)
  */
-@IntDef({PartialUpdateId.OFFLINE_BADGE})
+@IntDef({PartialUpdateId.OFFLINE_BADGE, PartialUpdateId.CARD_BACKGROUND})
 @Retention(RetentionPolicy.SOURCE)
 public @interface PartialUpdateId {
-    /** Marks a request to update a suggestion's offline badge */
+    /** Marks a request to update a suggestion's offline badge. */
     int OFFLINE_BADGE = 1;
+
+    /**
+     * Marks a request to update a card's background. Will no-op if received by a non card
+     * view holder.
+     * @see org.chromium.chrome.browser.ntp.cards.CardViewHolder#updateLayoutParams()
+     */
+    int CARD_BACKGROUND = 2;
 }

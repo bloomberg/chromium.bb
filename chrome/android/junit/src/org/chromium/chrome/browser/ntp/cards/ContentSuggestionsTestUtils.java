@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Utilities to make testing content suggestions code easier. */
 public final class ContentSuggestionsTestUtils {
@@ -190,5 +191,42 @@ public final class ContentSuggestionsTestUtils {
             default:
                 return mock(NewTabPageViewHolder.class);
         }
+    }
+
+    /** Helper method to print the current state of a node. */
+    public static String stringify(TreeNode root) {
+        return explainFailedExpectation(root, -1, ItemViewType.ALL_DISMISSED);
+    }
+
+    /**
+     * Helper method to print the current state of a node, highlighting something that went wrong.
+     * @param root node to print information about.
+     * @param errorIndex index where an unexpected item was found.
+     * @param expectedType item type that was expected at {@code errorIndex}.
+     */
+    public static String explainFailedExpectation(
+            TreeNode root, int errorIndex, @ItemViewType int expectedType) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("explainFailedExpectation -- START -- \n");
+        for (int i = 0; i < root.getItemCount(); ++i) {
+            if (errorIndex == i) {
+                addLine(stringBuilder, "%d - %s <= expected: %s", i,
+                        viewTypeToString(root.getItemViewType(i)), viewTypeToString(expectedType));
+            } else {
+                addLine(stringBuilder, "%d - %s", i, viewTypeToString(root.getItemViewType(i)));
+            }
+        }
+        if (errorIndex >= root.getItemCount()) {
+            addLine(stringBuilder, "<end of list>");
+            addLine(stringBuilder, "%d - <NONE> <= expected: %s", errorIndex,
+                    viewTypeToString(expectedType));
+        }
+        addLine(stringBuilder, "explainFailedExpectation -- END --");
+        return stringBuilder.toString();
+    }
+
+    private static void addLine(StringBuilder stringBuilder, String template, Object... args) {
+        stringBuilder.append(String.format(Locale.US, template + "\n", args));
     }
 }

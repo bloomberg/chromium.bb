@@ -156,6 +156,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                     assert holder instanceof SnippetArticleViewHolder;
                     ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
                     break;
+                case PartialUpdateId.CARD_BACKGROUND:
+                    holder.updateLayoutParams();
+                    break;
                 default:
                     assert false; // Unknown payload
             }

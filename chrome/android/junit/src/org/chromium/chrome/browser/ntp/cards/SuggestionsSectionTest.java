@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.suggestions.PartialUpdateId;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -185,7 +186,6 @@ public class SuggestionsSectionTest {
 
         section.setStatus(CategoryStatus.AVAILABLE);
         verify(mParent).onItemRangeRemoved(section, 2, 1);
-        verifyNoMoreInteractions(mParent);
     }
 
     @Test
@@ -672,6 +672,59 @@ public class SuggestionsSectionTest {
 
         // All previous snippets should be in place.
         verifySnippets(section, snippets);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testCardIsNotifiedWhenBecomingFirst() {
+        List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
+        SuggestionsSection section = createSectionWithReloadAction(false);
+        section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        reset(mParent);
+
+        // Remove the first card. The second one should get the update.
+        section.removeSuggestionById(suggestions.get(0).mIdWithinCategory);
+        verify(mParent).onItemRangeChanged(section, 1, 1, PartialUpdateId.CARD_BACKGROUND);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testCardIsNotifiedWhenBecomingLast() {
+        List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
+        SuggestionsSection section = createSectionWithReloadAction(false);
+        section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        reset(mParent);
+
+        // Remove the last card. The penultimate one should get the update.
+        section.removeSuggestionById(suggestions.get(4).mIdWithinCategory);
+        verify(mParent).onItemRangeChanged(section, 4, 1, PartialUpdateId.CARD_BACKGROUND);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testCardIsNotifiedWhenBecomingSoleCard() {
+        List<SnippetArticle> suggestions = createDummySuggestions(2, /* categoryId = */ 42);
+        SuggestionsSection section = createSectionWithReloadAction(false);
+        section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        reset(mParent);
+
+        // Remove the last card. The penultimate one should get the update.
+        section.removeSuggestionById(suggestions.get(1).mIdWithinCategory);
+        verify(mParent).onItemRangeChanged(section, 1, 1, PartialUpdateId.CARD_BACKGROUND);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testCardIsNotifiedWhenNotTheLastAnymore() {
+        List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
+        SuggestionsSection section = createSectionWithReloadAction(false);
+
+        section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        reset(mParent);
+
+        section.setSuggestions(createDummySuggestions(2, /* categoryId = */ 42, "new"),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ false);
+        verify(mParent).onItemRangeChanged(section, 5, 1, PartialUpdateId.CARD_BACKGROUND);
     }
 
     private SuggestionsSection createSectionWithSuggestions(List<SnippetArticle> snippets) {

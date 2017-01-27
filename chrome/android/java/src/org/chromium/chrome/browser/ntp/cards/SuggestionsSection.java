@@ -267,6 +267,27 @@ public class SuggestionsSection extends InnerNode {
     }
 
     @Override
+    protected void notifyItemRangeInserted(int index, int count) {
+        super.notifyItemRangeInserted(index, count);
+        notifyNeighboursModified(index - 1, index + count);
+    }
+
+    @Override
+    protected void notifyItemRangeRemoved(int index, int count) {
+        super.notifyItemRangeRemoved(index, count);
+        notifyNeighboursModified(index - 1, index);
+    }
+
+    /** Sends a notification to the items at the provided indices to refresh their background. */
+    private void notifyNeighboursModified(int aboveNeighbour, int belowNeighbour) {
+        assert aboveNeighbour < belowNeighbour;
+        if (aboveNeighbour >= 0) notifyItemChanged(aboveNeighbour, PartialUpdateId.CARD_BACKGROUND);
+        if (belowNeighbour < getItemCount()) {
+            notifyItemChanged(belowNeighbour, PartialUpdateId.CARD_BACKGROUND);
+        }
+    }
+
+    @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         childSeen(position);

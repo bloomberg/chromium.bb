@@ -18,12 +18,12 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.explainFailedExpectation;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.viewTypeToString;
 
@@ -75,7 +75,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Unit tests for {@link NewTabPageAdapter}.
@@ -696,7 +695,6 @@ public class NewTabPageAdapterTest {
         verify(itemDismissedCallback, times(2)).onResult(anyString());
         verify(dataObserver, times(2)).onItemRangeRemoved(3, 1);
         verify(dataObserver).onItemRangeChanged(4, 1, null);
-        verifyNoMoreInteractions(dataObserver);
 
         // Dismiss the last suggestion in the section. We should now show the status card.
         reset(dataObserver);
@@ -708,7 +706,6 @@ public class NewTabPageAdapterTest {
         verify(dataObserver).onItemRangeChanged(4, 1, null); // Spacer refresh
         verify(dataObserver).onItemRangeInserted(3, 1); // Action item added
         verify(dataObserver).onItemRangeChanged(5, 1, null); // Spacer refresh
-        verifyNoMoreInteractions(dataObserver);
 
         // Adapter content:
         // Idx | Item
@@ -740,7 +737,6 @@ public class NewTabPageAdapterTest {
         // 9   | Footer
         // 10  | Spacer
 
-        verifyNoMoreInteractions(dataObserver);
         reset(dataObserver);
         suggestionsSource.setSuggestionsForCategory(
                 KnownCategories.ARTICLES, createDummySuggestions(0, KnownCategories.ARTICLES));
@@ -752,7 +748,6 @@ public class NewTabPageAdapterTest {
         verify(dataObserver).onItemRangeChanged(4, 1, null); // Spacer refresh
         verify(dataObserver).onItemRangeInserted(3, 1); // Action item added
         verify(dataObserver).onItemRangeChanged(5, 1, null); // Spacer refresh
-        verifyNoMoreInteractions(dataObserver);
     }
 
     @Test
@@ -1027,31 +1022,5 @@ public class NewTabPageAdapterTest {
 
     private int getCategory(TreeNode item) {
         return ((SuggestionsSection) item).getCategory();
-    }
-
-    private static String explainFailedExpectation(
-            TreeNode root, int errorIndex, @ItemViewType int expectedType) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder.append("explainFailedExpectation -- START -- \n");
-        for (int i = 0; i < root.getItemCount(); ++i) {
-            if (errorIndex == i) {
-                addLine(stringBuilder, "%d - %s <= expected: %s", i,
-                        viewTypeToString(root.getItemViewType(i)), viewTypeToString(expectedType));
-            } else {
-                addLine(stringBuilder, "%d - %s", i, viewTypeToString(root.getItemViewType(i)));
-            }
-        }
-        if (errorIndex >= root.getItemCount()) {
-            addLine(stringBuilder, "<end of list>");
-            addLine(stringBuilder, "%d - <NONE> <= expected: %s", errorIndex,
-                    viewTypeToString(expectedType));
-        }
-        addLine(stringBuilder, "explainFailedExpectation -- END --");
-        return stringBuilder.toString();
-    }
-
-    private static void addLine(StringBuilder stringBuilder, String template, Object... args) {
-        stringBuilder.append(String.format(Locale.US, template + "\n", args));
     }
 }
