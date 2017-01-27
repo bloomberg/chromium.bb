@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
+#include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -218,6 +219,28 @@ void ClearCountryValue() {
                                  expectation.expected_result])]
         assertWithMatcher:grey_notNil()];
   }
+
+  [self exitSettingsMenu];
+}
+
+// Test that the page for viewing autofill profile details is accessible.
+- (void)testAccessibilityOnAutofillProfileViewPage {
+  [self loadAndSubmitTheForm];
+  [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+
+  [self exitSettingsMenu];
+}
+
+// Test that the page for editing autofill profile details is accessible.
+- (void)testAccessibilityOnAutofillProfileEditPage {
+  [self loadAndSubmitTheForm];
+  [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
+  // Switch on edit mode.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
   [self exitSettingsMenu];
 }
