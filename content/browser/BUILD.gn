@@ -571,6 +571,8 @@ source_set("browser") {
     "download/download_item_impl.h",
     "download/download_item_impl_delegate.cc",
     "download/download_item_impl_delegate.h",
+    "download/download_job.cc",
+    "download/download_job.h",
     "download/download_manager_impl.cc",
     "download/download_manager_impl.h",
     "download/download_net_log_parameters.cc",
