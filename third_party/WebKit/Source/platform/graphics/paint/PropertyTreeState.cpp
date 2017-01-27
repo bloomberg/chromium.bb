@@ -30,19 +30,13 @@ bool isAncestorOf(const PropertyNode* ancestor, const PropertyNode* child) {
 }
 
 const CompositorElementId PropertyTreeState::compositorElementId() const {
-// Zero or more of the scroll, effect or transform nodes could have a
-// compositor element id. The order doesn't matter as the element id should be
-// the same on all that have a non-default CompositorElementId.
+// The effect or transform nodes could have a compositor element id. The order
+// doesn't matter as the element id should be the same on all that have a
+// non-default CompositorElementId.
 #if DCHECK_IS_ON()
   CompositorElementId expectedElementId;
   if (CompositorElementId actualElementId = effect()->compositorElementId()) {
     expectedElementId = actualElementId;
-  }
-  if (CompositorElementId actualElementId = scroll()->compositorElementId()) {
-    if (!expectedElementId)
-      expectedElementId = actualElementId;
-    else
-      DCHECK_EQ(expectedElementId, actualElementId);
   }
   if (CompositorElementId actualElementId =
           transform()->compositorElementId()) {
@@ -52,8 +46,6 @@ const CompositorElementId PropertyTreeState::compositorElementId() const {
 #endif
   if (effect()->compositorElementId())
     return effect()->compositorElementId();
-  if (scroll()->compositorElementId())
-    return scroll()->compositorElementId();
   if (transform()->compositorElementId())
     return transform()->compositorElementId();
   return CompositorElementId();

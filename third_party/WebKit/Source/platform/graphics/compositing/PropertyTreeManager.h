@@ -82,9 +82,6 @@ class PropertyTreeManager {
     return m_effectStack.back().id;
   }
 
-  // Scroll offset has special treatment in the transform and scroll trees.
-  void updateScrollOffset(const ScrollPaintPropertyNode*);
-
  private:
   void buildEffectNodesRecursively(const EffectPaintPropertyNode* nextEffect);
 
@@ -94,6 +91,9 @@ class PropertyTreeManager {
   cc::ScrollTree& scrollTree();
 
   const EffectPaintPropertyNode* currentEffectNode() const;
+
+  // Scroll translation has special treatment in the transform and scroll trees.
+  void updateScrollAndScrollTranslationNodes(const TransformPaintPropertyNode*);
 
   // Property trees which should be updated by the manager.
   cc::PropertyTrees& m_propertyTrees;

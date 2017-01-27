@@ -70,26 +70,32 @@ static bool updateContentClip(
   return true;
 }
 
+static CompositorElementId createDomNodeBasedCompositorElementId(
+    const LayoutObject& object) {
+  return createCompositorElementId(DOMNodeIds::idForNode(object.node()),
+                                   CompositorSubElementId::Primary);
+}
+
 // True if a new property was created, false if an existing one was updated.
 static bool updateScrollTranslation(
     FrameView& frameView,
     PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
-    const FloatPoint3D& origin) {
+    const FloatPoint3D& origin,
+    PassRefPtr<const ScrollPaintPropertyNode> scroll) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+  CompositorElementId compositorElementId =
+      createDomNodeBasedCompositorElementId(*frameView.layoutView());
   if (auto* existingScrollTranslation = frameView.scrollTranslation()) {
-    existingScrollTranslation->update(std::move(parent), matrix, origin);
+    existingScrollTranslation->update(
+        std::move(parent), matrix, origin, std::move(scroll), false, 0,
+        CompositingReasonNone, compositorElementId);
     return false;
   }
-  frameView.setScrollTranslation(
-      TransformPaintPropertyNode::create(std::move(parent), matrix, origin));
+  frameView.setScrollTranslation(TransformPaintPropertyNode::create(
+      std::move(parent), matrix, origin, std::move(scroll), false, 0,
+      CompositingReasonNone, compositorElementId));
   return true;
-}
-
-static CompositorElementId createDomNodeBasedCompositorElementId(
-    const LayoutObject& object) {
-  return createCompositorElementId(DOMNodeIds::idForNode(object.node()),
-                                   CompositorSubElementId::Primary);
 }
 
 // True if a new property was created or a main thread scrolling reason changed
@@ -97,28 +103,22 @@ static CompositorElementId createDomNodeBasedCompositorElementId(
 static bool updateScroll(
     FrameView& frameView,
     PassRefPtr<const ScrollPaintPropertyNode> parent,
-    PassRefPtr<const TransformPaintPropertyNode> scrollOffset,
     const IntSize& clip,
     const IntSize& bounds,
     bool userScrollableHorizontal,
     bool userScrollableVertical,
     MainThreadScrollingReasons mainThreadScrollingReasons) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
-
-  CompositorElementId compositorElementId =
-      createDomNodeBasedCompositorElementId(*frameView.layoutView());
   if (auto* existingScroll = frameView.scroll()) {
     auto existingReasons = existingScroll->mainThreadScrollingReasons();
-    existingScroll->update(std::move(parent), std::move(scrollOffset), clip,
-                           bounds, userScrollableHorizontal,
-                           userScrollableVertical, mainThreadScrollingReasons,
-                           compositorElementId);
+    existingScroll->update(std::move(parent), clip, bounds,
+                           userScrollableHorizontal, userScrollableVertical,
+                           mainThreadScrollingReasons);
     return existingReasons != mainThreadScrollingReasons;
   }
   frameView.setScroll(ScrollPaintPropertyNode::create(
-      std::move(parent), std::move(scrollOffset), clip, bounds,
-      userScrollableHorizontal, userScrollableVertical,
-      mainThreadScrollingReasons, compositorElementId));
+      std::move(parent), clip, bounds, userScrollableHorizontal,
+      userScrollableVertical, mainThreadScrollingReasons));
   return true;
 }
 
@@ -169,11 +169,6 @@ void PaintPropertyTreeBuilder::updateProperties(
 
     ScrollOffset scrollOffset = frameView.getScrollOffset();
     if (frameView.isScrollable() || !scrollOffset.isZero()) {
-      TransformationMatrix frameScroll;
-      frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());
-      context.forceSubtreeUpdate |= updateScrollTranslation(
-          frameView, frameView.preTranslation(), frameScroll, FloatPoint3D());
-
       IntSize scrollClip = frameView.visibleContentSize();
       IntSize scrollBounds = frameView.contentsSize();
       bool userScrollableHorizontal =
@@ -184,11 +179,15 @@ void PaintPropertyTreeBuilder::updateProperties(
       auto ancestorReasons =
           context.current.scroll->mainThreadScrollingReasons();
       auto reasons = mainThreadScrollingReasons(frameView, ancestorReasons);
-
       context.forceSubtreeUpdate |= updateScroll(
-          frameView, context.current.scroll, frameView.scrollTranslation(),
-          scrollClip, scrollBounds, userScrollableHorizontal,
-          userScrollableVertical, reasons);
+          frameView, context.current.scroll, scrollClip, scrollBounds,
+          userScrollableHorizontal, userScrollableVertical, reasons);
+
+      TransformationMatrix frameScroll;
+      frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());
+      context.forceSubtreeUpdate |= updateScrollTranslation(
+          frameView, frameView.preTranslation(), frameScroll, FloatPoint3D(),
+          frameView.scroll());
     } else {
       if (frameView.scrollTranslation() || frameView.scroll()) {
         // Ensure pre-existing properties are cleared if there is no scrolling.
@@ -266,7 +265,8 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
           context.current.transform,
           TransformationMatrix().translate(roundedPaintOffset.x(),
                                            roundedPaintOffset.y()),
-          FloatPoint3D(), context.current.shouldFlattenInheritedTransform,
+          FloatPoint3D(), nullptr,
+          context.current.shouldFlattenInheritedTransform,
           context.current.renderingContextId);
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties())
@@ -390,10 +390,9 @@ void PaintPropertyTreeBuilder::updateTransform(
             ComputedStyle::IncludeIndependentTransformProperties);
 
         // TODO(trchen): transform-style should only be respected if a
-        // PaintLayer
-        // is created.
-        // If a node with transform-style: preserve-3d does not exist in an
-        // existing rendering context, it establishes a new one.
+        // PaintLayer is created. If a node with transform-style: preserve-3d
+        // does not exist in an existing rendering context, it establishes a new
+        // one.
         unsigned renderingContextId = context.current.renderingContextId;
         if (style.preserves3D() && !renderingContextId)
           renderingContextId = PtrHash<const LayoutObject>::hash(&object);
@@ -406,7 +405,7 @@ void PaintPropertyTreeBuilder::updateTransform(
         auto& properties =
             object.getMutableForPainting().ensurePaintProperties();
         context.forceSubtreeUpdate |= properties.updateTransform(
-            context.current.transform, matrix, transformOrigin(box),
+            context.current.transform, matrix, transformOrigin(box), nullptr,
             context.current.shouldFlattenInheritedTransform, renderingContextId,
             compositingReasons, compositorElementId);
         hasTransform = true;
@@ -694,7 +693,7 @@ void PaintPropertyTreeBuilder::updatePerspective(
                             toLayoutSize(context.current.paintOffset);
       auto& properties = object.getMutableForPainting().ensurePaintProperties();
       context.forceSubtreeUpdate |= properties.updatePerspective(
-          context.current.transform, matrix, origin,
+          context.current.transform, matrix, origin, nullptr,
           context.current.shouldFlattenInheritedTransform,
           context.current.renderingContextId);
     } else {
@@ -773,14 +772,6 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
       if (scrollNodeNeededForMainThreadReasons || !scrollOffset.isZero() ||
           scrollableArea->scrollsOverflow()) {
         needsScrollProperties = true;
-        auto& properties =
-            object.getMutableForPainting().ensurePaintProperties();
-        TransformationMatrix matrix = TransformationMatrix().translate(
-            -scrollOffset.width(), -scrollOffset.height());
-        context.forceSubtreeUpdate |= properties.updateScrollTranslation(
-            context.current.transform, matrix, FloatPoint3D(),
-            context.current.shouldFlattenInheritedTransform,
-            context.current.renderingContextId);
 
         IntSize scrollClip = scrollableArea->visibleContentRect().size();
         IntSize scrollBounds = scrollableArea->contentsSize();
@@ -791,18 +782,27 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
 
         // Main thread scrolling reasons depend on their ancestor's reasons
         // so ensure the entire subtree is updated when reasons change.
+        auto& properties =
+            object.getMutableForPainting().ensurePaintProperties();
         if (auto* existingScrollNode = properties.scroll()) {
           if (existingScrollNode->mainThreadScrollingReasons() != reasons)
             context.forceSubtreeUpdate = true;
         }
 
+        context.forceSubtreeUpdate |= properties.updateScroll(
+            context.current.scroll, scrollClip, scrollBounds,
+            userScrollableHorizontal, userScrollableVertical, reasons);
+
         CompositorElementId compositorElementId =
             createDomNodeBasedCompositorElementId(object);
-
-        context.forceSubtreeUpdate |= properties.updateScroll(
-            context.current.scroll, properties.scrollTranslation(), scrollClip,
-            scrollBounds, userScrollableHorizontal, userScrollableVertical,
-            reasons, compositorElementId);
+        TransformationMatrix matrix = TransformationMatrix().translate(
+            -scrollOffset.width(), -scrollOffset.height());
+        context.forceSubtreeUpdate |= properties.updateScrollTranslation(
+            context.current.transform, matrix, FloatPoint3D(),
+            properties.scroll(),
+            context.current.shouldFlattenInheritedTransform,
+            context.current.renderingContextId, CompositingReasonNone,
+            compositorElementId);
       }
     }
 

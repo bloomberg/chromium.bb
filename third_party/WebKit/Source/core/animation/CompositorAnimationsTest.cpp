@@ -1259,8 +1259,8 @@ namespace {
 void updateDummyTransformNode(ObjectPaintProperties& properties,
                               CompositingReasons reasons) {
   properties.updateTransform(TransformPaintPropertyNode::root(),
-                             TransformationMatrix(), FloatPoint3D(), false, 0,
-                             reasons);
+                             TransformationMatrix(), FloatPoint3D(), nullptr,
+                             false, 0, reasons);
 }
 
 void updateDummyEffectNode(ObjectPaintProperties& properties,

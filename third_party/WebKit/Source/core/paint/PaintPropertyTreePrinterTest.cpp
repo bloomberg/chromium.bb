@@ -128,8 +128,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
   const auto* scrollObjectProperties = scrollObject->paintProperties();
   String scrollPathAsString = scrollObjectProperties->scroll()->toTreeString();
   EXPECT_THAT(scrollPathAsString.ascii().data(),
-              testing::MatchesRegex("root .* scroll.*"
-                                    "  .* scroll.*"));
+              testing::MatchesRegex("root .* parent.*"
+                                    "  .* parent.*"));
 }
 
 }  // namespace blink

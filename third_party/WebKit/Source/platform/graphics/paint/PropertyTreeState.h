@@ -127,6 +127,7 @@ class PLATFORM_EXPORT PropertyTreeState {
   RefPtr<const TransformPaintPropertyNode> m_transform;
   RefPtr<const ClipPaintPropertyNode> m_clip;
   RefPtr<const EffectPaintPropertyNode> m_effect;
+  // TODO(pdr): Remove the scroll node from PropertyTreeState.
   RefPtr<const ScrollPaintPropertyNode> m_scroll;
 };
 

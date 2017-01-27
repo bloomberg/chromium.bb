@@ -197,6 +197,10 @@ int PropertyTreeManager::ensureCompositorTransformNode(
   auto result = m_transformNodeMap.set(transformNode, id);
   DCHECK(result.isNewEntry);
   transformTree().set_needs_update(true);
+
+  if (transformNode->scrollNode())
+    updateScrollAndScrollTranslationNodes(transformNode);
+
   return id;
 }
 
@@ -274,15 +278,8 @@ int PropertyTreeManager::ensureCompositorScrollNode(
       scrollNode->userScrollableHorizontal();
   compositorNode.user_scrollable_vertical =
       scrollNode->userScrollableVertical();
-  compositorNode.transform_id =
-      ensureCompositorTransformNode(scrollNode->scrollOffsetTranslation());
   compositorNode.main_thread_scrolling_reasons =
       scrollNode->mainThreadScrollingReasons();
-  CompositorElementId compositorElementId = scrollNode->compositorElementId();
-  if (compositorElementId) {
-    compositorNode.element_id = compositorElementId;
-    m_propertyTrees.element_id_to_scroll_node_index[compositorElementId] = id;
-  }
 
   auto result = m_scrollNodeMap.set(scrollNode, id);
   DCHECK(result.isNewEntry);
@@ -291,19 +288,28 @@ int PropertyTreeManager::ensureCompositorScrollNode(
   return id;
 }
 
-void PropertyTreeManager::updateScrollOffset(
-    const ScrollPaintPropertyNode* scrollNode) {
-  int scrollNodeId = ensureCompositorScrollNode(scrollNode);
-  cc::ScrollNode& compositorScrollNode = *scrollTree().Node(scrollNodeId);
-  cc::TransformNode& compositorTransformNode =
-      *transformTree().Node(compositorScrollNode.transform_id);
+void PropertyTreeManager::updateScrollAndScrollTranslationNodes(
+    const TransformPaintPropertyNode* scrollOffsetNode) {
+  DCHECK(scrollOffsetNode->scrollNode());
+  int scrollNodeId = ensureCompositorScrollNode(scrollOffsetNode->scrollNode());
+  auto& compositorScrollNode = *scrollTree().Node(scrollNodeId);
+  int transformNodeId = ensureCompositorTransformNode(scrollOffsetNode);
+  auto& compositorTransformNode = *transformTree().Node(transformNodeId);
+
+  auto compositorElementId = scrollOffsetNode->compositorElementId();
+  if (compositorElementId) {
+    compositorScrollNode.element_id = compositorElementId;
+    m_propertyTrees.element_id_to_scroll_node_index[compositorElementId] =
+        scrollNodeId;
+  }
+
+  compositorScrollNode.transform_id = transformNodeId;
 
   // Blink creates a 2d transform node just for scroll offset whereas cc's
   // transform node has a special scroll offset field. To handle this we adjust
   // cc's transform node to remove the 2d scroll translation and instead set the
   // scroll_offset field.
-  auto* scrollOffsetTransform = scrollNode->scrollOffsetTranslation();
-  auto scrollOffsetSize = scrollOffsetTransform->matrix().to2DTranslation();
+  auto scrollOffsetSize = scrollOffsetNode->matrix().to2DTranslation();
   auto scrollOffset =
       gfx::ScrollOffset(-scrollOffsetSize.width(), -scrollOffsetSize.height());
   DCHECK(compositorTransformNode.local.IsIdentityOr2DTranslation());

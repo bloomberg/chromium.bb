@@ -11,16 +11,17 @@ namespace blink {
 TransformPaintPropertyNode* TransformPaintPropertyNode::root() {
   DEFINE_STATIC_REF(TransformPaintPropertyNode, root,
                     (TransformPaintPropertyNode::create(
-                        nullptr, TransformationMatrix(), FloatPoint3D())));
+                        nullptr, TransformationMatrix(), FloatPoint3D(),
+                        ScrollPaintPropertyNode::root())));
   return root;
 }
 
+// TODO(pdr): print out scroll node information.
 String TransformPaintPropertyNode::toString() const {
   return String::format(
       "parent=%p transform=%s origin=%s flattensInheritedTransform=%s "
       "renderingContextId=%x directCompositingReasons=%s "
-      "compositorElementId=(%d, "
-      "%d)",
+      "compositorElementId=(%d, %d)",
       m_parent.get(), m_matrix.toString().ascii().data(),
       m_origin.toString().ascii().data(),
       m_flattensInheritedTransform ? "yes" : "no", m_renderingContextId,

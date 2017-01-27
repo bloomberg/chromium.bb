@@ -160,24 +160,13 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdNoElementIdOnAnyNode) {
   EXPECT_EQ(CompositorElementId(), state.compositorElementId());
 }
 
-TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnScrollNode) {
-  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
-  RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
-      ScrollPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      IntSize(), IntSize(), true, false, 0, expectedCompositorElementId);
-  PropertyTreeState state(TransformPaintPropertyNode::root(),
-                          ClipPaintPropertyNode::root(),
-                          EffectPaintPropertyNode::root(), scroll.get());
-  EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
-}
-
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnTransformNode) {
   CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
-                                         TransformationMatrix(), FloatPoint3D(),
-                                         false, 0, CompositingReasonNone,
-                                         expectedCompositorElementId);
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(), TransformationMatrix(),
+          FloatPoint3D(), nullptr, false, 0, CompositingReasonNone,
+          expectedCompositorElementId);
   PropertyTreeState state(transform.get(), ClipPaintPropertyNode::root(),
                           EffectPaintPropertyNode::root(),
                           ScrollPaintPropertyNode::root());
@@ -198,15 +187,14 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
-  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
-      ScrollPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      IntSize(), IntSize(), true, false, 0, expectedCompositorElementId);
+      ScrollPaintPropertyNode::root(), IntSize(), IntSize(), true, false, 0);
+  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
-                                         TransformationMatrix(), FloatPoint3D(),
-                                         false, 0, CompositingReasonNone,
-                                         expectedCompositorElementId);
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(), TransformationMatrix(),
+          FloatPoint3D(), nullptr, false, 0, CompositingReasonNone,
+          expectedCompositorElementId);
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
       ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,

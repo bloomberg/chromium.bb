@@ -7,8 +7,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -21,13 +19,18 @@ namespace blink {
 
 using MainThreadScrollingReasons = uint32_t;
 
-// A scroll node contains auxiliary scrolling information for threaded scrolling
-// which includes how far an area can be scrolled, which transform node contains
-// the scroll offset, etc.
+// A scroll node contains auxiliary scrolling information which includes how far
+// an area can be scrolled, main thread scrolling reasons, etc. Scroll nodes
+// are owned by TransformPaintPropertyNodes that are used for the scroll offset
+// translation.
 //
 // Main thread scrolling reasons force scroll updates to go to the main thread
 // and can have dependencies on other nodes. For example, all parents of a
 // scroll node with background attachment fixed set should also have it set.
+//
+// The scroll tree differs from the other trees because it does not affect
+// geometry directly. We may want to rename this class to reflect that it is
+// more like rare scroll data for TransformPaintPropertyNode.
 class PLATFORM_EXPORT ScrollPaintPropertyNode
     : public RefCounted<ScrollPaintPropertyNode> {
  public:
@@ -36,48 +39,34 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
   static PassRefPtr<ScrollPaintPropertyNode> create(
       PassRefPtr<const ScrollPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation,
       const IntSize& clip,
       const IntSize& bounds,
       bool userScrollableHorizontal,
       bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons,
-      const CompositorElementId& compositorElementId = CompositorElementId()) {
+      MainThreadScrollingReasons mainThreadScrollingReasons) {
     return adoptRef(new ScrollPaintPropertyNode(
-        std::move(parent), std::move(scrollOffsetTranslation), clip, bounds,
-        userScrollableHorizontal, userScrollableVertical,
-        mainThreadScrollingReasons, compositorElementId));
+        std::move(parent), clip, bounds, userScrollableHorizontal,
+        userScrollableVertical, mainThreadScrollingReasons));
   }
 
-  void update(
-      PassRefPtr<const ScrollPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation,
-      const IntSize& clip,
-      const IntSize& bounds,
-      bool userScrollableHorizontal,
-      bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons,
-      CompositorElementId compositorElementId = CompositorElementId()) {
+  void update(PassRefPtr<const ScrollPaintPropertyNode> parent,
+              const IntSize& clip,
+              const IntSize& bounds,
+              bool userScrollableHorizontal,
+              bool userScrollableVertical,
+              MainThreadScrollingReasons mainThreadScrollingReasons) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
-    DCHECK(scrollOffsetTranslation->matrix().isIdentityOr2DTranslation());
-    m_scrollOffsetTranslation = scrollOffsetTranslation;
     m_clip = clip;
     m_bounds = bounds;
     m_userScrollableHorizontal = userScrollableHorizontal;
     m_userScrollableVertical = userScrollableVertical;
     m_mainThreadScrollingReasons = mainThreadScrollingReasons;
-    m_compositorElementId = compositorElementId;
   }
 
   const ScrollPaintPropertyNode* parent() const { return m_parent.get(); }
   bool isRoot() const { return !m_parent; }
-
-  // Transform that the scroll is relative to.
-  const TransformPaintPropertyNode* scrollOffsetTranslation() const {
-    return m_scrollOffsetTranslation.get();
-  }
 
   // The clipped area that contains the scrolled content.
   const IntSize& clip() const { return m_clip; }
@@ -91,10 +80,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // Return reason bitfield with values from cc::MainThreadScrollingReason.
   MainThreadScrollingReasons mainThreadScrollingReasons() const {
     return m_mainThreadScrollingReasons;
-  }
-
-  const CompositorElementId& compositorElementId() const {
-    return m_compositorElementId;
   }
 
   // Main thread scrolling reason for the threaded scrolling disabled setting.
@@ -115,22 +100,19 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   PassRefPtr<ScrollPaintPropertyNode> clone() const {
     RefPtr<ScrollPaintPropertyNode> cloned =
         adoptRef(new ScrollPaintPropertyNode(
-            m_parent, m_scrollOffsetTranslation, m_clip, m_bounds,
-            m_userScrollableHorizontal, m_userScrollableVertical,
-            m_mainThreadScrollingReasons, m_compositorElementId));
+            m_parent, m_clip, m_bounds, m_userScrollableHorizontal,
+            m_userScrollableVertical, m_mainThreadScrollingReasons));
     return cloned;
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a scroll node has changed.
   bool operator==(const ScrollPaintPropertyNode& o) const {
-    return m_parent == o.m_parent &&
-           m_scrollOffsetTranslation == o.m_scrollOffsetTranslation &&
-           m_clip == o.m_clip && m_bounds == o.m_bounds &&
+    return m_parent == o.m_parent && m_clip == o.m_clip &&
+           m_bounds == o.m_bounds &&
            m_userScrollableHorizontal == o.m_userScrollableHorizontal &&
            m_userScrollableVertical == o.m_userScrollableVertical &&
-           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons &&
-           m_compositorElementId == o.m_compositorElementId;
+           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons;
   }
 
   String toTreeString() const;
@@ -139,34 +121,25 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   String toString() const;
 
  private:
-  ScrollPaintPropertyNode(
-      PassRefPtr<const ScrollPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation,
-      IntSize clip,
-      IntSize bounds,
-      bool userScrollableHorizontal,
-      bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons,
-      CompositorElementId compositorElementId)
+  ScrollPaintPropertyNode(PassRefPtr<const ScrollPaintPropertyNode> parent,
+                          IntSize clip,
+                          IntSize bounds,
+                          bool userScrollableHorizontal,
+                          bool userScrollableVertical,
+                          MainThreadScrollingReasons mainThreadScrollingReasons)
       : m_parent(parent),
-        m_scrollOffsetTranslation(scrollOffsetTranslation),
         m_clip(clip),
         m_bounds(bounds),
         m_userScrollableHorizontal(userScrollableHorizontal),
         m_userScrollableVertical(userScrollableVertical),
-        m_mainThreadScrollingReasons(mainThreadScrollingReasons),
-        m_compositorElementId(compositorElementId) {
-    DCHECK(m_scrollOffsetTranslation->matrix().isIdentityOr2DTranslation());
-  }
+        m_mainThreadScrollingReasons(mainThreadScrollingReasons) {}
 
   RefPtr<const ScrollPaintPropertyNode> m_parent;
-  RefPtr<const TransformPaintPropertyNode> m_scrollOffsetTranslation;
   IntSize m_clip;
   IntSize m_bounds;
   bool m_userScrollableHorizontal : 1;
   bool m_userScrollableVertical : 1;
   MainThreadScrollingReasons m_mainThreadScrollingReasons;
-  CompositorElementId m_compositorElementId;
 };
 
 // Redeclared here to avoid ODR issues.
