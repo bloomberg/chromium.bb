@@ -1,13 +1,11 @@
-CONSOLE DEBUG: line 1: Debug
-CONSOLE MESSAGE: line 2: Information
-CONSOLE MESSAGE: line 3: Log
-CONSOLE WARNING: line 4: Warning
+CONSOLE MESSAGE: line 1: Information
+CONSOLE MESSAGE: line 2: Log
+CONSOLE WARNING: line 3: Warning
 Tests console output from PaintWorklet.
 
-Message count: 4
-console-worklet-script.js:1 Debug
-console-worklet-script.js:2 Information
-console-worklet-script.js:3 Log
-console-worklet-script.js:4 Warning
-(anonymous) @ console-worklet-script.js:4
+Message count: 3
+console-worklet-script.js:1 Information
+console-worklet-script.js:2 Log
+console-worklet-script.js:3 Warning
+(anonymous) @ console-worklet-script.js:3
 

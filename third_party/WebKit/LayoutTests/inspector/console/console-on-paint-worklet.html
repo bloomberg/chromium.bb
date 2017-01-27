@@ -10,7 +10,7 @@ function importWorklet()
 
 function test()
 {
-    InspectorTest.waitForConsoleMessages(4, finish);
+    InspectorTest.waitForConsoleMessages(3, finish);
     InspectorTest.evaluateInPage("importWorklet();");
 
     function finish()

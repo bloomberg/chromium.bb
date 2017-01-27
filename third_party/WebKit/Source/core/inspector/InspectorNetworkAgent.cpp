@@ -964,7 +964,7 @@ void InspectorNetworkAgent::didFinishXHRInternal(ExecutionContext* context,
         (success ? "XHR finished loading: " : "XHR failed loading: ") + method +
         " \"" + url + "\".";
     ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
-        NetworkMessageSource, VerboseMessageLevel, message, url, it->value);
+        NetworkMessageSource, InfoMessageLevel, message, url, it->value);
     m_inspectedFrames->root()->console().addMessageToStorage(consoleMessage);
   }
   m_knownRequestIdMap.remove(client);
@@ -992,7 +992,7 @@ void InspectorNetworkAgent::didFinishFetch(ExecutionContext* context,
   if (m_state->booleanProperty(NetworkAgentState::monitoringXHR, false)) {
     String message = "Fetch complete: " + method + " \"" + url + "\".";
     ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
-        NetworkMessageSource, VerboseMessageLevel, message, url, it->value);
+        NetworkMessageSource, InfoMessageLevel, message, url, it->value);
     m_inspectedFrames->root()->console().addMessageToStorage(consoleMessage);
   }
   m_knownRequestIdMap.remove(client);

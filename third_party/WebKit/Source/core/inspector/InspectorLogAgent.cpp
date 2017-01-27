@@ -212,7 +212,7 @@ void InspectorLogAgent::reportLongLayout(double duration) {
       String::format("Forced reflow while executing JavaScript took %ldms",
                      lround(duration * 1000));
   ConsoleMessage* message = ConsoleMessage::create(
-      ViolationMessageSource, WarningMessageLevel, messageText);
+      ViolationMessageSource, VerboseMessageLevel, messageText);
   consoleMessageAdded(message);
 }
 
@@ -221,7 +221,7 @@ void InspectorLogAgent::reportGenericViolation(PerformanceMonitor::Violation,
                                                double time,
                                                SourceLocation* location) {
   ConsoleMessage* message = ConsoleMessage::create(
-      ViolationMessageSource, WarningMessageLevel, text, location->clone());
+      ViolationMessageSource, VerboseMessageLevel, text, location->clone());
   consoleMessageAdded(message);
 };
 
