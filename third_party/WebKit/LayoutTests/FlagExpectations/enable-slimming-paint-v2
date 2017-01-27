@@ -1625,6 +1625,9 @@ crbug.com/589279 css3/blending/background-blend-mode-data-uri-svg-image.html [ F
 crbug.com/157218 compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
 crbug.com/157218 compositing/overflow/siblings-with-border-radius-ancestor.html [ Failure ]
 crbug.com/157218 compositing/overflow/siblings-composited-with-border-radius-ancestor.html [ Failure ]
+crbug.com/157218 compositing/overflow/grandchild-composited-with-border-radius-ancestor.html [ Failure ]
+crbug.com/157218 compositing/overflow/grandchild-with-border-radius-ancestor.html [ Failure ]
+crbug.com/157218 compositing/overflow/siblings-composited-with-border-radius-ancestor-one-clipped.html [ Failure ]
 
 # Notes about rebaselined tests:
 #

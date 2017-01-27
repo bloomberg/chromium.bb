@@ -481,6 +481,30 @@ void CompositedLayerMapping::updateCompositingReasons() {
       m_owningLayer.getSquashingDisallowedReasons());
 }
 
+bool CompositedLayerMapping::ancestorRoundedCornersWontClip(
+    const LayoutObject* child,
+    const LayoutObject* clippingAncestor) {
+  if (!clippingAncestor->isBoxModelObject())
+    return false;
+  const LayoutBoxModelObject* clippingObject =
+      toLayoutBoxModelObject(clippingAncestor);
+  LayoutRect localVisualRect = m_compositedBounds;
+  child->mapToVisualRectInAncestorSpace(clippingObject, localVisualRect);
+  FloatRoundedRect roundedClipRect =
+      clippingObject->style()->getRoundedInnerBorderFor(
+          clippingObject->localVisualRect());
+  FloatRect innerClipRect = roundedClipRect.radiusCenterRect();
+  // The first condition catches cases where the child is certainly inside
+  // the rounded corner portion of the border, and cannot be clipped by
+  // the rounded portion. The second catches cases where the child is
+  // entirely outside the rectangular border (ignoring rounded corners) so
+  // is also unaffected by the rounded corners. In both cases the existing
+  // rectangular clip is adequate and the mask is unnecessary.
+  return innerClipRect.contains(FloatRect(localVisualRect)) ||
+         !localVisualRect.intersects(
+             enclosingLayoutRect(roundedClipRect.rect()));
+}
+
 void CompositedLayerMapping::
     owningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
         const PaintLayer* scrollParent,
@@ -521,8 +545,9 @@ void CompositedLayerMapping::
   ClipRectsContext clipRectsContext(compositingAncestor, UncachedClipRects,
                                     IgnoreOverlayScrollbarSize);
   clipRectsContext.setIgnoreOverflowClip();
-  IntRect parentClipRect = pixelSnappedIntRect(
-      m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
+  LayoutRect unsnappedParentClipRect =
+      m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect();
+  IntRect parentClipRect = pixelSnappedIntRect(unsnappedParentClipRect);
   owningLayerIsClipped = parentClipRect != LayoutRect::infiniteIntRect();
 
   // TODO(schenney): CSS clips are not applied to composited children, and
@@ -530,7 +555,8 @@ void CompositedLayerMapping::
   // https://bugs.chromium.org/p/chromium/issues/detail?id=615870
   DCHECK(clippingContainer->style());
   owningLayerIsMasked =
-      owningLayerIsClipped && clippingContainer->style()->hasBorderRadius();
+      owningLayerIsClipped && clippingContainer->style()->hasBorderRadius() &&
+      !ancestorRoundedCornersWontClip(layoutObject(), clippingContainer);
 }
 
 const PaintLayer* CompositedLayerMapping::scrollParent() {

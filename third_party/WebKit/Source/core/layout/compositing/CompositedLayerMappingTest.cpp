@@ -1169,10 +1169,12 @@ TEST_P(CompositedLayerMappingTest,
 TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
   setBodyInnerHTML(
       "<style>"
-      "#ancestor { width: 100px; height: 100px; overflow: hidden; }"
-      "#child { width: 120px; height: 120px; background-color: green; }"
+      "  #ancestor { width: 100px; height: 100px; overflow: hidden; }"
+      "  #child { width: 120px; height: 120px; background-color: green; }"
       "</style>"
-      "<div id='ancestor'><div id='child'></div></div>");
+      "<div id='ancestor'>"
+      "  <div id='child'></div>"
+      "</div>");
   document().view()->updateAllLifecyclePhases();
 
   Element* ancestor = document().getElementById("ancestor");
@@ -1194,7 +1196,6 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
   // Making the child conposited causes creation of an AncestorClippingLayer.
   child->setAttribute(HTMLNames::styleAttr, "will-change: transform");
   document().view()->updateAllLifecyclePhases();
-
   childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
   ASSERT_TRUE(childPaintLayer);
   CompositedLayerMapping* childMapping =
@@ -1208,7 +1209,6 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
   // ancestorClippingMaskLayer for the child
   ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 40px;");
   document().view()->updateAllLifecyclePhases();
-
   childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
   ASSERT_TRUE(childPaintLayer);
   childMapping = childPaintLayer->compositedLayerMapping();
@@ -1221,7 +1221,6 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
   // for the child
   ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 0px;");
   document().view()->updateAllLifecyclePhases();
-
   childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
   ASSERT_TRUE(childPaintLayer);
   childMapping = childPaintLayer->compositedLayerMapping();
@@ -1238,12 +1237,373 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
   // on the child
   ancestor->setAttribute(HTMLNames::styleAttr, "overflow: visible");
   document().view()->updateAllLifecyclePhases();
-
   childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
   ASSERT_TRUE(childPaintLayer);
   childMapping = childPaintLayer->compositedLayerMapping();
   ASSERT_TRUE(childMapping);
   EXPECT_FALSE(childMapping->ancestorClippingLayer());
+  EXPECT_FALSE(childMapping->ancestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerSiblingUpdates) {
+  setBodyInnerHTML(
+      "<style>"
+      "  #ancestor { width: 200px; height: 200px; overflow: hidden; }"
+      "  #child1 { width: 10px;; height: 260px; position: relative; "
+      "            left: 0px; top: -30px; background-color: green; }"
+      "  #child2 { width: 10px;; height: 260px; position: relative; "
+      "            left: 190px; top: -260px; background-color: green; }"
+      "</style>"
+      "<div id='ancestor'>"
+      "  <div id='child1'></div>"
+      "  <div id='child2'></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* ancestor = document().getElementById("ancestor");
+  ASSERT_TRUE(ancestor);
+  PaintLayer* ancestorPaintLayer =
+      toLayoutBoxModelObject(ancestor->layoutObject())->layer();
+  ASSERT_TRUE(ancestorPaintLayer);
+
+  CompositedLayerMapping* ancestorMapping =
+      ancestorPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(ancestorMapping);
+
+  Element* child1 = document().getElementById("child1");
+  ASSERT_TRUE(child1);
+  PaintLayer* child1PaintLayer =
+      toLayoutBoxModelObject(child1->layoutObject())->layer();
+  ASSERT_TRUE(child1PaintLayer);
+  CompositedLayerMapping* child1Mapping =
+      child1PaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(child1Mapping);
+
+  Element* child2 = document().getElementById("child2");
+  ASSERT_TRUE(child2);
+  PaintLayer* child2PaintLayer =
+      toLayoutBoxModelObject(child2->layoutObject())->layer();
+  ASSERT_TRUE(child2PaintLayer);
+  CompositedLayerMapping* child2Mapping =
+      child2PaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(child2Mapping);
+
+  // Making child1 composited causes creation of an AncestorClippingLayer.
+  child1->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  document().view()->updateAllLifecyclePhases();
+  child1PaintLayer = toLayoutBoxModelObject(child1->layoutObject())->layer();
+  ASSERT_TRUE(child1PaintLayer);
+  child1Mapping = child1PaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(child1Mapping);
+  EXPECT_TRUE(child1Mapping->ancestorClippingLayer());
+  EXPECT_FALSE(child1Mapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_FALSE(child1Mapping->ancestorClippingMaskLayer());
+  child2PaintLayer = toLayoutBoxModelObject(child2->layoutObject())->layer();
+  ASSERT_TRUE(child2PaintLayer);
+  child2Mapping = child2PaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(child2Mapping);
+
+  // Adding border radius to the ancestor requires an
+  // ancestorClippingMaskLayer for child1
+  ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 40px;");
+  document().view()->updateAllLifecyclePhases();
+  child1PaintLayer = toLayoutBoxModelObject(child1->layoutObject())->layer();
+  ASSERT_TRUE(child1PaintLayer);
+  child1Mapping = child1PaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(child1Mapping);
+  EXPECT_TRUE(child1Mapping->ancestorClippingLayer());
+  EXPECT_TRUE(child1Mapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_TRUE(child1Mapping->ancestorClippingMaskLayer());
+  child2PaintLayer = toLayoutBoxModelObject(child2->layoutObject())->layer();
+  ASSERT_TRUE(child2PaintLayer);
+  child2Mapping = child2PaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(child2Mapping);
+
+  // Making child2 composited causes creation of an AncestorClippingLayer
+  // and a mask layer.
+  child2->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  document().view()->updateAllLifecyclePhases();
+  child1PaintLayer = toLayoutBoxModelObject(child1->layoutObject())->layer();
+  ASSERT_TRUE(child1PaintLayer);
+  child1Mapping = child1PaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(child1Mapping);
+  ASSERT_TRUE(child1Mapping->ancestorClippingLayer());
+  EXPECT_TRUE(child1Mapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_TRUE(child1Mapping->ancestorClippingMaskLayer());
+  child2PaintLayer = toLayoutBoxModelObject(child2->layoutObject())->layer();
+  ASSERT_TRUE(child2PaintLayer);
+  child2Mapping = child2PaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(child2Mapping);
+  ASSERT_TRUE(child2Mapping->ancestorClippingLayer());
+  EXPECT_TRUE(child2Mapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_TRUE(child2Mapping->ancestorClippingMaskLayer());
+
+  // Removing will-change: transform on child1 should result in the removal
+  // of all clipping and masking layers
+  child1->setAttribute(HTMLNames::styleAttr, "will-change: none");
+  document().view()->updateAllLifecyclePhases();
+  child1PaintLayer = toLayoutBoxModelObject(child1->layoutObject())->layer();
+  ASSERT_TRUE(child1PaintLayer);
+  child1Mapping = child1PaintLayer->compositedLayerMapping();
+  EXPECT_FALSE(child1Mapping);
+  child2PaintLayer = toLayoutBoxModelObject(child2->layoutObject())->layer();
+  ASSERT_TRUE(child2PaintLayer);
+  child2Mapping = child2PaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(child2Mapping);
+  ASSERT_TRUE(child2Mapping->ancestorClippingLayer());
+  EXPECT_TRUE(child2Mapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_TRUE(child2Mapping->ancestorClippingMaskLayer());
+
+  // Now change the overflow to remove the need for an ancestor clip
+  // on the children
+  ancestor->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+  document().view()->updateAllLifecyclePhases();
+  child1PaintLayer = toLayoutBoxModelObject(child1->layoutObject())->layer();
+  ASSERT_TRUE(child1PaintLayer);
+  child1Mapping = child1PaintLayer->compositedLayerMapping();
+  EXPECT_FALSE(child1Mapping);
+  child2PaintLayer = toLayoutBoxModelObject(child2->layoutObject())->layer();
+  ASSERT_TRUE(child2PaintLayer);
+  child2Mapping = child2PaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(child2Mapping);
+  EXPECT_FALSE(child2Mapping->ancestorClippingLayer());
+  EXPECT_FALSE(child2Mapping->ancestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerGrandchildUpdates) {
+  setBodyInnerHTML(
+      "<style>"
+      "  #ancestor { width: 200px; height: 200px; overflow: hidden; }"
+      "  #child { width: 10px;; height: 260px; position: relative; "
+      "           left: 0px; top: -30px; background-color: green; }"
+      "  #grandchild { width: 10px;; height: 260px; position: relative; "
+      "                left: 190px; top: -30px; background-color: green; }"
+      "</style>"
+      "<div id='ancestor'>"
+      "  <div id='child'>"
+      "    <div id='grandchild'></div>"
+      "  </div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* ancestor = document().getElementById("ancestor");
+  ASSERT_TRUE(ancestor);
+  PaintLayer* ancestorPaintLayer =
+      toLayoutBoxModelObject(ancestor->layoutObject())->layer();
+  ASSERT_TRUE(ancestorPaintLayer);
+
+  CompositedLayerMapping* ancestorMapping =
+      ancestorPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(ancestorMapping);
+
+  Element* child = document().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  CompositedLayerMapping* childMapping =
+      childPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(childMapping);
+
+  Element* grandchild = document().getElementById("grandchild");
+  ASSERT_TRUE(grandchild);
+  PaintLayer* grandchildPaintLayer =
+      toLayoutBoxModelObject(grandchild->layoutObject())->layer();
+  ASSERT_TRUE(grandchildPaintLayer);
+  CompositedLayerMapping* grandchildMapping =
+      grandchildPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(grandchildMapping);
+
+  // Making grandchild composited causes creation of an AncestorClippingLayer.
+  grandchild->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  document().view()->updateAllLifecyclePhases();
+  childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  childMapping = childPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(childMapping);
+  grandchildPaintLayer =
+      toLayoutBoxModelObject(grandchild->layoutObject())->layer();
+  ASSERT_TRUE(grandchildPaintLayer);
+  grandchildMapping = grandchildPaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(grandchildMapping);
+  EXPECT_TRUE(grandchildMapping->ancestorClippingLayer());
+  EXPECT_FALSE(grandchildMapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_FALSE(grandchildMapping->ancestorClippingMaskLayer());
+
+  // Adding border radius to the ancestor requires an
+  // ancestorClippingMaskLayer for grandchild
+  ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 40px;");
+  document().view()->updateAllLifecyclePhases();
+  childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  childMapping = childPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(childMapping);
+  grandchildPaintLayer =
+      toLayoutBoxModelObject(grandchild->layoutObject())->layer();
+  ASSERT_TRUE(grandchildPaintLayer);
+  grandchildMapping = grandchildPaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(grandchildMapping);
+  ASSERT_TRUE(grandchildMapping->ancestorClippingLayer());
+  EXPECT_TRUE(grandchildMapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_TRUE(grandchildMapping->ancestorClippingMaskLayer());
+
+  // Moving the grandchild out of the clip region should result in removal
+  // of the mask layer. It also removes the grandchild from its own mapping
+  // because it is now squashed.
+  grandchild->setAttribute(HTMLNames::styleAttr,
+                           "left: 250px; will-change: transform");
+  document().view()->updateAllLifecyclePhases();
+  childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  childMapping = childPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(childMapping);
+  grandchildPaintLayer =
+      toLayoutBoxModelObject(grandchild->layoutObject())->layer();
+  ASSERT_TRUE(grandchildPaintLayer);
+  grandchildMapping = grandchildPaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(grandchildMapping);
+  ASSERT_TRUE(grandchildMapping->ancestorClippingLayer());
+  EXPECT_FALSE(grandchildMapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_FALSE(grandchildMapping->ancestorClippingMaskLayer());
+
+  // Now change the overflow to remove the need for an ancestor clip
+  // on the children
+  ancestor->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+  document().view()->updateAllLifecyclePhases();
+  childPaintLayer = toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  childMapping = childPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(childMapping);
+  grandchildPaintLayer =
+      toLayoutBoxModelObject(grandchild->layoutObject())->layer();
+  ASSERT_TRUE(grandchildPaintLayer);
+  grandchildMapping = grandchildPaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(grandchildMapping);
+  EXPECT_FALSE(grandchildMapping->ancestorClippingLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, AncestorClipMaskRequiredByBorderRadius) {
+  // Verify that we create the mask layer when the child is contained within
+  // the rectangular clip but not contained within the rounded rect clip.
+  setBodyInnerHTML(
+      "<style>"
+      "  #ancestor {"
+      "    width: 100px; height: 100px; overflow: hidden; border-radius: 20px;"
+      "  }"
+      "  #child { position: relative; left: 2px; top: 2px; width: 96px;"
+      "           height: 96px; background-color: green;"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='ancestor'>"
+      "  <div id='child'></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* ancestor = document().getElementById("ancestor");
+  ASSERT_TRUE(ancestor);
+  PaintLayer* ancestorPaintLayer =
+      toLayoutBoxModelObject(ancestor->layoutObject())->layer();
+  ASSERT_TRUE(ancestorPaintLayer);
+
+  CompositedLayerMapping* ancestorMapping =
+      ancestorPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(ancestorMapping);
+
+  Element* child = document().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  CompositedLayerMapping* childMapping =
+      childPaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(childMapping);
+  EXPECT_TRUE(childMapping->ancestorClippingLayer());
+  EXPECT_TRUE(childMapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_TRUE(childMapping->ancestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskNotRequiredByBorderRadiusInside) {
+  // Verify that we do not create the mask layer when the child is contained
+  // within the rounded rect clip.
+  setBodyInnerHTML(
+      "<style>"
+      "  #ancestor {"
+      "    width: 100px; height: 100px; overflow: hidden; border-radius: 5px;"
+      "  }"
+      "  #child { position: relative; left: 10px; top: 10px; width: 80px;"
+      "           height: 80px; background-color: green;"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='ancestor'>"
+      "  <div id='child'></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* ancestor = document().getElementById("ancestor");
+  ASSERT_TRUE(ancestor);
+  PaintLayer* ancestorPaintLayer =
+      toLayoutBoxModelObject(ancestor->layoutObject())->layer();
+  ASSERT_TRUE(ancestorPaintLayer);
+
+  CompositedLayerMapping* ancestorMapping =
+      ancestorPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(ancestorMapping);
+
+  Element* child = document().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  CompositedLayerMapping* childMapping =
+      childPaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(childMapping);
+  EXPECT_TRUE(childMapping->ancestorClippingLayer());
+  EXPECT_FALSE(childMapping->ancestorClippingLayer()->maskLayer());
+  EXPECT_FALSE(childMapping->ancestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskNotRequiredByBorderRadiusOutside) {
+  // Verify that we do not create the mask layer when the child is outside
+  // the ancestors rectangular clip.
+  setBodyInnerHTML(
+      "<style>"
+      "  #ancestor {"
+      "    width: 100px; height: 100px; overflow: hidden; border-radius: 5px;"
+      "  }"
+      "  #child { position: relative; left: 110px; top: 10px; width: 80px;"
+      "           height: 80px; background-color: green;"
+      "           will-change: transform;"
+      "}"
+      "</style>"
+      "<div id='ancestor'>"
+      "  <div id='child'></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* ancestor = document().getElementById("ancestor");
+  ASSERT_TRUE(ancestor);
+  PaintLayer* ancestorPaintLayer =
+      toLayoutBoxModelObject(ancestor->layoutObject())->layer();
+  ASSERT_TRUE(ancestorPaintLayer);
+
+  CompositedLayerMapping* ancestorMapping =
+      ancestorPaintLayer->compositedLayerMapping();
+  ASSERT_FALSE(ancestorMapping);
+
+  Element* child = document().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  ASSERT_TRUE(childPaintLayer);
+  CompositedLayerMapping* childMapping =
+      childPaintLayer->compositedLayerMapping();
+  ASSERT_TRUE(childMapping);
+  EXPECT_TRUE(childMapping->ancestorClippingLayer());
+  EXPECT_FALSE(childMapping->ancestorClippingLayer()->maskLayer());
   EXPECT_FALSE(childMapping->ancestorClippingMaskLayer());
 }
 
