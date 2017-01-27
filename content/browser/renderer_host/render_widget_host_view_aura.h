@@ -558,6 +558,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool virtual_keyboard_requested_;
 
   std::unique_ptr<ui::OnScreenKeyboardObserver> keyboard_observer_;
+
+  gfx::Point last_mouse_move_location_;
 #endif
 
   bool has_snapped_to_boundary_;

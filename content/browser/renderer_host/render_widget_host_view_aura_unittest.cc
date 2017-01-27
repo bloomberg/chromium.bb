@@ -4177,8 +4177,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   EXPECT_EQ("1 0", delegate.GetMouseButtonCountsAndReset());
 
   // Simulate mouse events, ensure they are forwarded to delegate.
-  mouse_event = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
-                               ui::EventTimeForNow(), 0, 0);
+  mouse_event = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(1, 1),
+                               gfx::Point(), ui::EventTimeForNow(), 0, 0);
   view_->OnMouseEvent(&mouse_event);
   EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
 
