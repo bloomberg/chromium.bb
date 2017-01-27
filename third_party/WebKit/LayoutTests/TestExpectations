@@ -768,13 +768,6 @@ crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
-crbug.com/685851 [ Win7 Mac ] fast/table/backgr_layers-show-collapsed-border.html [ NeedsRebaseline ]
-crbug.com/685851 [ Win7 Mac ] fast/table/backgr_layers-show.html [ NeedsRebaseline ]
-crbug.com/685851 [ Win7 Mac ] fast/table/backgr_position-table-cell.html [ NeedsRebaseline ]
-crbug.com/685851 [ Win7 Mac ] fast/table/backgr_simple-table-cell.html [ NeedsRebaseline ]
-crbug.com/685851 [ Win7 Mac ] fast/table/backgr_simple-table-row-group-collapsed-border.html [ NeedsRebaseline ]
-crbug.com/685851 [ Win7 Mac ] fast/table/backgr_simple-table-row.html [ NeedsRebaseline ]
-
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
