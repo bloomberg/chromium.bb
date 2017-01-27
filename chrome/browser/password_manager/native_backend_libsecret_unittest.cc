@@ -701,6 +701,23 @@ TEST_F(NativeBackendLibsecretTest, FetchFederatedCredential) {
                                           PasswordForm::SCHEME_HTML, nullptr));
 }
 
+TEST_F(NativeBackendLibsecretTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
+  other_auth_.signon_realm = "federation://www.example.com/google.com";
+  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
+                                          GURL("https://www.example.com/"),
+                                          PasswordForm::SCHEME_HTML, nullptr));
+}
+
+TEST_F(NativeBackendLibsecretTest,
+       DontFetchPSLMatchedFederatedCredentialOnHTTP) {
+  other_auth_.signon_realm = "federation://www.example.com/google.com";
+  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
+                                          GURL("http://www.example.com/"),
+                                          PasswordForm::SCHEME_HTML, nullptr));
+}
+
 TEST_F(NativeBackendLibsecretTest, BasicUpdateLogin) {
   NativeBackendLibsecret backend(42);
 

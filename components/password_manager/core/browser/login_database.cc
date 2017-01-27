@@ -1217,26 +1217,26 @@ bool LoginDatabase::StatementToForms(
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
       continue;
     DCHECK_EQ(ENCRYPTION_RESULT_SUCCESS, result);
-    if (matched_form && matched_form->signon_realm != new_form->signon_realm) {
-      if (new_form->scheme != PasswordForm::SCHEME_HTML)
-        continue;  // Ignore non-HTML matches.
 
-      if (IsPublicSuffixDomainMatch(new_form->signon_realm,
-                                    matched_form->signon_realm)) {
-        psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
-        new_form->is_public_suffix_match = true;
-      } else if (!new_form->federation_origin.unique() &&
-                 IsFederatedMatch(new_form->signon_realm,
-                                  matched_form->origin)) {
-      } else if (!new_form->federation_origin.unique() &&
-                 IsFederatedPSLMatch(new_form->signon_realm,
-                                     matched_form->origin)) {
-        psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND_FEDERATED;
-        new_form->is_public_suffix_match = true;
-      } else {
-        continue;
+    if (matched_form) {
+      switch (GetMatchResult(*new_form, *matched_form)) {
+        case MatchResult::NO_MATCH:
+          continue;
+        case MatchResult::EXACT_MATCH:
+          break;
+        case MatchResult::PSL_MATCH:
+          psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
+          new_form->is_public_suffix_match = true;
+          break;
+        case MatchResult::FEDERATED_MATCH:
+          break;
+        case MatchResult::FEDERATED_PSL_MATCH:
+          psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND_FEDERATED;
+          new_form->is_public_suffix_match = true;
+          break;
       }
     }
+
     forms->push_back(std::move(new_form));
   }
 

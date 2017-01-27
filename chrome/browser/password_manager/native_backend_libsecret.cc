@@ -27,6 +27,7 @@
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
+using password_manager::MatchResult;
 using password_manager::PasswordStore;
 
 namespace {
@@ -516,10 +517,6 @@ NativeBackendLibsecret::ConvertFormList(
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
   GError* error = nullptr;
-  const bool allow_psl_match =
-      lookup_form && password_manager::ShouldPSLDomainMatchingApply(
-                         password_manager::GetRegistryControlledDomain(
-                             GURL(lookup_form->signon_realm)));
   for (GList* element = g_list_first(found); element != nullptr;
        element = g_list_next(element)) {
     SecretItem* secretItem = static_cast<SecretItem*>(element->data);
@@ -533,40 +530,47 @@ NativeBackendLibsecret::ConvertFormList(
     GHashTable* attrs = LibsecretLoader::secret_item_get_attributes(secretItem);
     std::unique_ptr<PasswordForm> form(FormOutOfAttributes(attrs));
     g_hash_table_unref(attrs);
-    if (form) {
-      if (lookup_form && form->signon_realm != lookup_form->signon_realm) {
-        if (lookup_form->scheme != PasswordForm::SCHEME_HTML ||
-            form->scheme != PasswordForm::SCHEME_HTML)
+    if (!form) {
+      VLOG(1) << "Could not initialize PasswordForm from attributes!";
+      continue;
+    }
+
+    if (lookup_form) {
+      switch (GetMatchResult(*form, *lookup_form)) {
+        case MatchResult::NO_MATCH:
           continue;
-        // This is not an exact match, we try PSL matching and federated match.
-        if (allow_psl_match &&
-            password_manager::IsPublicSuffixDomainMatch(
-                form->signon_realm, lookup_form->signon_realm)) {
+        case MatchResult::EXACT_MATCH:
+          break;
+        case MatchResult::PSL_MATCH:
           psl_domain_match_metric = password_manager::PSL_DOMAIN_MATCH_FOUND;
           form->is_public_suffix_match = true;
-        } else if (!form->federation_origin.unique() &&
-                   password_manager::IsFederatedMatch(form->signon_realm,
-                                                      lookup_form->origin)) {
-        } else {
-          continue;
-        }
+          break;
+        case MatchResult::FEDERATED_MATCH:
+          break;
+        case MatchResult::FEDERATED_PSL_MATCH:
+          psl_domain_match_metric =
+              password_manager::PSL_DOMAIN_MATCH_FOUND_FEDERATED;
+          form->is_public_suffix_match = true;
+          break;
       }
-      SecretValue* secretValue =
-          LibsecretLoader::secret_item_get_secret(secretItem);
-      if (secretValue) {
-        form->password_value =
-            UTF8ToUTF16(LibsecretLoader::secret_value_get_text(secretValue));
-        LibsecretLoader::secret_value_unref(secretValue);
-      } else {
-        LOG(WARNING) << "Unable to access password from list element!";
-      }
-      forms.push_back(std::move(form));
-    } else {
-      VLOG(1) << "Could not initialize PasswordForm from attributes!";
     }
+
+    SecretValue* secretValue =
+        LibsecretLoader::secret_item_get_secret(secretItem);
+    if (secretValue) {
+      form->password_value =
+          UTF8ToUTF16(LibsecretLoader::secret_value_get_text(secretValue));
+      LibsecretLoader::secret_value_unref(secretValue);
+    } else {
+      LOG(WARNING) << "Unable to access password from list element!";
+    }
+    forms.push_back(std::move(form));
   }
 
   if (lookup_form) {
+    const bool allow_psl_match = password_manager::ShouldPSLDomainMatchingApply(
+        password_manager::GetRegistryControlledDomain(
+            GURL(lookup_form->signon_realm)));
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
                               allow_psl_match
                                   ? psl_domain_match_metric
