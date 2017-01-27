@@ -1174,23 +1174,21 @@ float PictureLayerImpl::MinimumContentsScale() const {
 float PictureLayerImpl::MaximumContentsScale() const {
   // Masks can not have tilings that would become larger than the
   // max_texture_size since they use a single tile for the entire
-  // tiling. Other layers can have tilings of any scale.
-  if (!is_mask_)
-    return std::numeric_limits<float>::max();
-
-  int max_texture_size =
-      layer_tree_impl()->resource_provider()->max_texture_size();
-  float max_scale_width =
-      static_cast<float>(max_texture_size) / bounds().width();
-  float max_scale_height =
-      static_cast<float>(max_texture_size) / bounds().height();
+  // tiling. Other layers can have tilings such that dimension * scale
+  // does not overflow.
+  float max_dimension = static_cast<float>(
+      is_mask_ ? layer_tree_impl()->resource_provider()->max_texture_size()
+               : std::numeric_limits<int>::max());
+  float max_scale_width = max_dimension / bounds().width();
+  float max_scale_height = max_dimension / bounds().height();
   float max_scale = std::min(max_scale_width, max_scale_height);
+
   // We require that multiplying the layer size by the contents scale and
-  // ceiling produces a value <= |max_texture_size|. Because for large layer
+  // ceiling produces a value <= |max_dimension|. Because for large layer
   // sizes floating point ambiguity may crop up, making the result larger or
   // smaller than expected, we use a slightly smaller floating point value for
   // the scale, to help ensure that the resulting content bounds will never end
-  // up larger than |max_texture_size|.
+  // up larger than |max_dimension|.
   return nextafterf(max_scale, 0.f);
 }
 

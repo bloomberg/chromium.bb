@@ -710,6 +710,36 @@ TEST_F(PictureLayerImplTest, ZoomOutCrash) {
   EXPECT_EQ(active_layer()->tilings()->NumHighResTilings(), 1);
 }
 
+TEST_F(PictureLayerImplTest, ScaledBoundsOverflowInt) {
+  // Limit visible size.
+  gfx::Size viewport_size(1, 1);
+  host_impl()->SetViewportSize(viewport_size);
+
+  gfx::Size layer_bounds(600000, 60);
+
+  // Set up the high and low res tilings before pinch zoom.
+  SetupDefaultTrees(layer_bounds);
+  ResetTilingsAndRasterScales();
+  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  float scale = 8000.f;
+
+  // Verify this will overflow an int.
+  EXPECT_GT(static_cast<float>(layer_bounds.width()) * scale,
+            static_cast<float>(std::numeric_limits<int>::max()));
+
+  SetContentsScaleOnBothLayers(scale, 1.0f, scale, 1.0f, 0.f, false);
+  float adjusted_scale = active_layer()->HighResTiling()->contents_scale();
+  EXPECT_LT(adjusted_scale, scale);
+
+  // PopulateSharedQuadState CHECKs for overflows.
+  // See http://crbug.com/679035
+  active_layer()->draw_properties().visible_layer_rect =
+      gfx::Rect(layer_bounds);
+  SharedQuadState state;
+  active_layer()->PopulateScaledSharedQuadState(&state, adjusted_scale,
+                                                adjusted_scale);
+}
+
 TEST_F(PictureLayerImplTest, PinchGestureTilings) {
   gfx::Size layer_bounds(1300, 1900);
 
