@@ -31,8 +31,8 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Keeps tabs on the current state of Chrome, tracking if and when a request should be sent to the
@@ -75,11 +75,10 @@ public class OmahaClient extends IntentService {
             "org.chromium.chrome.browser.omaha.ACTION_POST_REQUEST";
 
     // Delays between events.
-    private static final long MS_PER_HOUR = 3600000;
-    private static final long MS_POST_BASE_DELAY = MS_PER_HOUR;
-    private static final long MS_POST_MAX_DELAY = 5 * MS_PER_HOUR;
-    private static final long MS_BETWEEN_REQUESTS = 5 * MS_PER_HOUR;
-    private static final int MS_CONNECTION_TIMEOUT = 60000;
+    private static final long MS_POST_BASE_DELAY = TimeUnit.HOURS.toMillis(1);
+    private static final long MS_POST_MAX_DELAY = TimeUnit.HOURS.toMillis(5);
+    static final long MS_BETWEEN_REQUESTS = TimeUnit.HOURS.toMillis(5);
+    private static final int MS_CONNECTION_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(1);
 
     // Flags for retrieving the OmahaClient's state after it's written to disk.
     // The PREF_PACKAGE doesn't match the current OmahaClient package for historical reasons.
@@ -102,9 +101,6 @@ public class OmahaClient extends IntentService {
     static final String INSTALL_SOURCE_SYSTEM = "system_image";
     static final String INSTALL_SOURCE_ORGANIC = "organic";
 
-    // Lock object used to synchronize all calls that modify or read sIsFreshInstallOrDataCleared.
-    private static final Object IS_FRESH_INSTALL_LOCK = new Object();
-
     @VisibleForTesting
     static final String PREF_LATEST_VERSION = "latestVersion";
     @VisibleForTesting
@@ -116,7 +112,6 @@ public class OmahaClient extends IntentService {
 
     // Static fields
     private static boolean sEnableCommunication = true;
-    private static Boolean sIsFreshInstallOrDataCleared;
 
     // Member fields not persisted to disk.
     private boolean mStateHasBeenRestored;
@@ -195,9 +190,7 @@ public class OmahaClient extends IntentService {
             return;
         }
 
-        if (!mStateHasBeenRestored) {
-            restoreState();
-        }
+        restoreState(this);
 
         if (ACTION_INITIALIZE.equals(intent.getAction())) {
             handleInitialize();
@@ -208,6 +201,8 @@ public class OmahaClient extends IntentService {
         } else {
             Log.e(TAG, "Got unknown action from intent: " + intent.getAction());
         }
+
+        saveState(this);
     }
 
     /**
@@ -312,8 +307,6 @@ public class OmahaClient extends IntentService {
             result = POST_RESULT_SCHEDULED;
         }
 
-        // Write everything back out again to save our state.
-        saveState();
         return result;
     }
 
@@ -351,8 +344,8 @@ public class OmahaClient extends IntentService {
             mTimestampForNewRequest = getBackoffScheduler().getCurrentTime() + MS_BETWEEN_REQUESTS;
             scheduleActiveUserCheck();
 
-            mTimestampForNextPostAttempt = currentTimestamp + MS_POST_BASE_DELAY;
             scheduler.resetFailedAttempts();
+            mTimestampForNextPostAttempt = scheduler.calculateNextTimestamp();
             Log.i(TAG, "Request to Server Successful. Timestamp for next request:"
                     + String.valueOf(mTimestampForNextPostAttempt));
 
@@ -360,9 +353,9 @@ public class OmahaClient extends IntentService {
         } catch (RequestFailureException e) {
             // Set the alarm to try again later.
             Log.e(TAG, "Failed to contact server: ", e);
-            Intent postIntent = createPostRequestIntent(this);
-            mTimestampForNextPostAttempt = scheduler.createAlarm(postIntent);
             scheduler.increaseFailedAttempts();
+            mTimestampForNextPostAttempt = scheduler.calculateNextTimestamp();
+            scheduler.createAlarm(createPostRequestIntent(this), mTimestampForNextPostAttempt);
             return false;
         }
     }
@@ -434,8 +427,6 @@ public class OmahaClient extends IntentService {
         // is successfully contacted.
         mTimestampForNewRequest = currentTimestamp + MS_BETWEEN_REQUESTS;
         scheduleActiveUserCheck();
-
-        saveState();
     }
 
     private RequestData createRequestData(long currentTimestamp, String persistedID) {
@@ -590,41 +581,28 @@ public class OmahaClient extends IntentService {
      * Sanity checks are performed on the timestamps to guard against clock changing.
      */
     @VisibleForTesting
-    void restoreState() {
-        boolean mustRewriteState = false;
-        SharedPreferences preferences = getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
-        Map<String, ?> items = preferences.getAll();
-
-        // Read out the recorded data.
+    void restoreState(Context context) {
+        if (mStateHasBeenRestored) return;
         long currentTime = getBackoffScheduler().getCurrentTime();
-        mTimestampForNewRequest =
-                getLongFromMap(items, PREF_TIMESTAMP_FOR_NEW_REQUEST, currentTime);
+
+        SharedPreferences preferences = getSharedPreferences(context);
+        mTimestampForNewRequest = preferences.getLong(PREF_TIMESTAMP_FOR_NEW_REQUEST, currentTime);
         mTimestampForNextPostAttempt =
-                getLongFromMap(items, PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, currentTime);
-
-        long requestTimestamp = getLongFromMap(items, PREF_TIMESTAMP_OF_REQUEST, INVALID_TIMESTAMP);
-
-        // If the preference doesn't exist, it's likely that we haven't sent an install event.
-        mSendInstallEvent = getBooleanFromMap(items, PREF_SEND_INSTALL_EVENT, true);
-
-        // Restore the install source.
-        String defaultInstallSource = determineInstallSource();
-        mInstallSource = getStringFromMap(items, PREF_INSTALL_SOURCE, defaultInstallSource);
+                preferences.getLong(PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, currentTime);
+        mTimestampOfInstall = preferences.getLong(PREF_TIMESTAMP_OF_INSTALL, currentTime);
+        mSendInstallEvent = preferences.getBoolean(PREF_SEND_INSTALL_EVENT, true);
+        mInstallSource = preferences.getString(PREF_INSTALL_SOURCE, determineInstallSource());
+        mLatestVersion = preferences.getString(PREF_LATEST_VERSION, "");
+        mMarketURL = preferences.getString(PREF_MARKET_URL, "");
 
         // If we're not sending an install event, don't bother restoring the request ID:
         // the server does not expect to have persisted request IDs for pings or update checks.
         String persistedRequestId = mSendInstallEvent
-                ? getStringFromMap(items, PREF_PERSISTED_REQUEST_ID, INVALID_REQUEST_ID)
+                ? preferences.getString(PREF_PERSISTED_REQUEST_ID, INVALID_REQUEST_ID)
                 : INVALID_REQUEST_ID;
-
+        long requestTimestamp = preferences.getLong(PREF_TIMESTAMP_OF_REQUEST, INVALID_TIMESTAMP);
         mCurrentRequest = requestTimestamp == INVALID_TIMESTAMP
                 ? null : createRequestData(requestTimestamp, persistedRequestId);
-
-        mLatestVersion = getStringFromMap(items, PREF_LATEST_VERSION, "");
-        mMarketURL = getStringFromMap(items, PREF_MARKET_URL, "");
-
-        // If we don't have a timestamp for when we installed Chrome, then set it to now.
-        mTimestampOfInstall = getLongFromMap(items, PREF_TIMESTAMP_OF_INSTALL, currentTime);
 
         // Confirm that the timestamp for the next request is less than the base delay.
         long delayToNewRequest = mTimestampForNewRequest - currentTime;
@@ -632,7 +610,6 @@ public class OmahaClient extends IntentService {
             Log.w(TAG, "Delay to next request (" + delayToNewRequest
                     + ") is longer than expected.  Resetting to now.");
             mTimestampForNewRequest = currentTime;
-            mustRewriteState = true;
         }
 
         // Confirm that the timestamp for the next POST is less than the current delay.
@@ -642,11 +619,6 @@ public class OmahaClient extends IntentService {
                     + ") is greater than expected (" + getBackoffScheduler().getGeneratedDelay()
                     + ").  Resetting to now.");
             mTimestampForNextPostAttempt = currentTime;
-            mustRewriteState = true;
-        }
-
-        if (mustRewriteState) {
-            saveState();
         }
 
         mStateHasBeenRestored = true;
@@ -655,11 +627,10 @@ public class OmahaClient extends IntentService {
     /**
      * Writes out the current state to a file.
      */
-    private void saveState() {
-        SharedPreferences prefs = getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+    private void saveState(Context context) {
+        SharedPreferences prefs = getSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(PREF_SEND_INSTALL_EVENT, mSendInstallEvent);
-        setIsFreshInstallOrDataHasBeenCleared(this);
         editor.putLong(PREF_TIMESTAMP_OF_INSTALL, mTimestampOfInstall);
         editor.putLong(PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, mTimestampForNextPostAttempt);
         editor.putLong(PREF_TIMESTAMP_FOR_NEW_REQUEST, mTimestampForNewRequest);
@@ -669,9 +640,7 @@ public class OmahaClient extends IntentService {
                 hasRequest() ? mCurrentRequest.getRequestID() : INVALID_REQUEST_ID);
         editor.putString(PREF_LATEST_VERSION, mLatestVersion == null ? "" : mLatestVersion);
         editor.putString(PREF_MARKET_URL, mMarketURL == null ? "" : mMarketURL);
-
-        if (mInstallSource != null) editor.putString(PREF_INSTALL_SOURCE, mInstallSource);
-
+        editor.putString(PREF_INSTALL_SOURCE, mInstallSource);
         editor.apply();
     }
 
@@ -684,52 +653,12 @@ public class OmahaClient extends IntentService {
     }
 
     /**
-     * Pulls a long from the shared preferences map.
-     */
-    private static long getLongFromMap(final Map<String, ?> items, String key, long defaultValue) {
-        Long value = (Long) items.get(key);
-        return value != null ? value : defaultValue;
-    }
-
-    /**
-     * Pulls a string from the shared preferences map.
-     */
-    private static String getStringFromMap(final Map<String, ?> items, String key,
-            String defaultValue) {
-        String value = (String) items.get(key);
-        return value != null ? value : defaultValue;
-    }
-
-    /**
-     * Pulls a boolean from the shared preferences map.
-     */
-    private static boolean getBooleanFromMap(final Map<String, ?> items, String key,
-            boolean defaultValue) {
-        Boolean value = (Boolean) items.get(key);
-        return value != null ? value : defaultValue;
-    }
-
-    /**
-     * @return Whether it is either a fresh install or data has been cleared.
-     * PREF_TIMESTAMP_OF_INSTALL is set within the first few seconds after a fresh install.
-     * sIsFreshInstallOrDataCleared will be set to true if PREF_TIMESTAMP_OF_INSTALL has not
-     * been previously set. Else, it will be set to false. sIsFreshInstallOrDataCleared is
-     * guarded by sLock.
+     * Checks whether Chrome has ever tried contacting Omaha before.
      * @param context The current Context.
      */
-    public static boolean isFreshInstallOrDataHasBeenCleared(Context context) {
-        return setIsFreshInstallOrDataHasBeenCleared(context);
-    }
-
-    private static boolean setIsFreshInstallOrDataHasBeenCleared(Context context) {
-        synchronized (IS_FRESH_INSTALL_LOCK) {
-            if (sIsFreshInstallOrDataCleared == null) {
-                SharedPreferences prefs = context.getSharedPreferences(
-                        PREF_PACKAGE, Context.MODE_PRIVATE);
-                sIsFreshInstallOrDataCleared = (prefs.getLong(PREF_TIMESTAMP_OF_INSTALL, -1) == -1);
-            }
-            return sIsFreshInstallOrDataCleared;
-        }
+    public static boolean isProbablyFreshInstall(Context context) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        return prefs.getLong(PREF_TIMESTAMP_OF_INSTALL, -1) == -1;
     }
 
     protected final RequestGenerator getRequestGenerator() {
@@ -743,5 +672,9 @@ public class OmahaClient extends IntentService {
                     PREF_PACKAGE, this, MS_POST_BASE_DELAY, MS_POST_MAX_DELAY);
         }
         return mBackoffScheduler;
+    }
+
+    private static final SharedPreferences getSharedPreferences(Context context) {
+        return context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
     }
 }

@@ -160,22 +160,23 @@ public class OmahaClientTest extends InstrumentationTestCase {
         final long millisecondsPerDay = 86400000;
         long currentTimestamp = millisecondsPerDay * 2;
         mOmahaClient.mMockScheduler.setCurrentTime(currentTimestamp);
-        mOmahaClient.registerNewRequest(currentTimestamp);
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
 
         // Rewind the clock 2 days.
         currentTimestamp -= millisecondsPerDay * 2;
         mOmahaClient.mMockScheduler.setCurrentTime(currentTimestamp);
-        mOmahaClient.restoreState();
 
-        // Confirm that the post timestamp was reset, since it's larger than the exponential
-        // backoff delay.
+        // Restore state and confirm that the post timestamp was reset, since it's larger than the
+        // exponential backoff delay.
+        HookedOmahaClient secondClient = HookedOmahaClient.create(mContext);
         assertEquals("Post timestamp was not cleared.",
-                mOmahaClient.getTimestampForNextPostAttempt(), 0);
+                0, secondClient.getTimestampForNextPostAttempt());
 
         // Confirm that the request timestamp was reset, since the next timestamp is more than
         // a day away.
         assertEquals("Request timestamp was not cleared.",
-                mOmahaClient.getTimestampForNewRequest(), 0);
+                0, secondClient.getTimestampForNewRequest());
     }
 
     /**
@@ -184,13 +185,14 @@ public class OmahaClientTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientFileIO() {
-        // Register a request and save it to disk.
-        mOmahaClient.registerNewRequest(0);
+        // Register and send a request, which saves timestamps to disk.
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
 
-        // The second OmahaCLient should retrieve the request that the first one saved.
+        // The second OmahaClient should know the next timestamp.
         HookedOmahaClient secondClient = HookedOmahaClient.create(mContext);
-        assertTrue("The request from the first OmahaClient wasn't written",
-                secondClient.hasRequest());
+        assertEquals("The next timestamp wasn't correct",
+                OmahaClient.MS_BETWEEN_REQUESTS, secondClient.getTimestampForNewRequest());
     }
 
     @SmallTest
@@ -266,7 +268,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         HookedOmahaClient omahaClient = new HookedOmahaClient(mContext, deviceType, response,
                 connectionStatus, false);
         omahaClient.onCreate();
-        omahaClient.restoreState();
+        omahaClient.restoreState(mContext);
 
         // Set whether or not we're sending the install event.
         assertTrue("Should default to sending install event.", omahaClient.isSendInstallEvent());
@@ -482,7 +484,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
             HookedOmahaClient omahaClient = new HookedOmahaClient(context, DeviceType.TABLET,
                     ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, false);
             omahaClient.onCreate();
-            omahaClient.restoreState();
+            omahaClient.restoreState(context);
             return omahaClient;
         }
 

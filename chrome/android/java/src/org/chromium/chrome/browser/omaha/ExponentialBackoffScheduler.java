@@ -69,14 +69,10 @@ public class ExponentialBackoffScheduler {
     }
 
     /**
-     * Creates an alarm to fire the specified intent after a random delay.
-     * @param intent The intent to fire.
-     * @return the timestamp of the scheduled intent
+     * Calculates when the next event should occur, including delays due to failures.
      */
-    public long createAlarm(Intent intent) {
-        long delay = generateRandomDelay();
-        long timestamp = delay + getCurrentTime();
-        return createAlarm(intent, timestamp);
+    public long calculateNextTimestamp() {
+        return generateRandomDelay() + getCurrentTime();
     }
 
     /**
@@ -175,9 +171,7 @@ public class ExponentialBackoffScheduler {
 
         // Save the delay for sanity checks.
         SharedPreferences preferences = getSharedPreferences();
-        preferences.edit()
-            .putLong(PREFERENCE_DELAY, delay)
-            .apply();
+        preferences.edit().putLong(PREFERENCE_DELAY, delay).apply();
         return delay;
     }
 

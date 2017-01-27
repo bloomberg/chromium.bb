@@ -1034,7 +1034,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
                 && getIntent().getData() != null
                 && (getIntent().getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
-                && OmahaClient.isFreshInstallOrDataHasBeenCleared(getApplicationContext())) {
+                && OmahaClient.isProbablyFreshInstall(this)) {
             getIntent().setData(null);
         }
 

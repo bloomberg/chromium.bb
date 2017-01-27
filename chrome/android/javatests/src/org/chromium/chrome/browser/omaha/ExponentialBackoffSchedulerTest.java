@@ -54,7 +54,7 @@ public class ExponentialBackoffSchedulerTest extends InstrumentationTestCase {
                 new MockExponentialBackoffScheduler(PREFERENCE_NAME, context, BACKOFF_MS, MAX_MS);
 
         Intent intent = new Intent(INTENT_STRING);
-        scheduler.createAlarm(intent);
+        scheduler.createAlarm(intent, scheduler.calculateNextTimestamp());
 
         // With no failures, expect the base backoff delay.
         long delay = scheduler.getAlarmTimestamp() - scheduler.getCurrentTime();
@@ -64,7 +64,7 @@ public class ExponentialBackoffSchedulerTest extends InstrumentationTestCase {
         // With two failures, expect a delay within [BACKOFF_MS, BACKOFF_MS * 2^2].
         scheduler.increaseFailedAttempts();
         scheduler.increaseFailedAttempts();
-        scheduler.createAlarm(intent);
+        scheduler.createAlarm(intent, scheduler.calculateNextTimestamp());
 
         delay = scheduler.getAlarmTimestamp() - scheduler.getCurrentTime();
         final long minDelay = BACKOFF_MS;
@@ -86,7 +86,7 @@ public class ExponentialBackoffSchedulerTest extends InstrumentationTestCase {
                 new MockExponentialBackoffScheduler(PREFERENCE_NAME, context, BACKOFF_MS, MAX_MS);
 
         Intent intent = new Intent(INTENT_STRING);
-        scheduler.createAlarm(intent);
+        scheduler.createAlarm(intent, scheduler.calculateNextTimestamp());
         assertTrue("Never requested the alarm manager.", context.mRequestedAlarmManager);
         assertTrue("Never received a call to set the alarm.", scheduler.getAlarmWasSet());
     }
