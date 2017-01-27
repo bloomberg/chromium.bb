@@ -277,6 +277,11 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
 // Verifies that copying and pasting a URL includes the hidden protocol prefix.
 - (void)testCopyPasteURL {
+  // TODO(crbug.com/686069): Re-enable this test.  It is failing on iOS 9.
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 9.");
+  }
+
   std::map<GURL, std::string> responses;
   const GURL URL = web::test::HttpServer::MakeUrl("http://testPage");
   const GURL secondURL = web::test::HttpServer::MakeUrl("http://pastePage");
