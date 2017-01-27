@@ -38,7 +38,7 @@
     [Replaceable, CrossOrigin] readonly attribute Window self;
     [Unforgeable, CachedAccessor] readonly attribute Document document;
     attribute DOMString name;
-    [PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter)] readonly attribute Location location;
+    [PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
     readonly attribute History history;
     [Replaceable, MeasureAs=BarPropLocationbar] readonly attribute BarProp locationbar;
     [Replaceable, MeasureAs=BarPropMenubar] readonly attribute BarProp menubar;

@@ -162,7 +162,15 @@ static const struct {
   {% for attribute in attributes if attribute.has_cross_origin_getter or attribute.has_cross_origin_setter %}
   {
     "{{attribute.name}}",
-    {%+ if attribute.has_cross_origin_getter %}&{{cpp_class}}V8Internal::{{attribute.name}}AttributeGetter{% else %}nullptr{% endif %},
+    {% if attribute.has_cross_origin_getter %}
+    {% if attribute.has_custom_getter %}
+    {{v8_class}}::{{attribute.name}}AttributeGetterCustom,
+    {% else %}
+    &{{cpp_class}}V8Internal::{{attribute.name}}AttributeGetter,
+    {% endif %}
+    {% else %}
+    nullptr,
+    {% endif %}
     {%+ if attribute.has_cross_origin_setter %}&{{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{% else %}nullptr{% endif %},
   },
   {% endfor %}
@@ -246,11 +254,12 @@ bool {{v8_class_or_partial}}::securityCheck(v8::Local<v8::Context> accessingCont
 
   const DOMWindow* targetWindow = V8Window::toImpl(window);
   return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
-  {% else %}{# if interface_name == 'Window' #}
-  {# Not 'Window' means it\'s Location. #}
+  {% elif interface_name == 'Location' %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
   return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
-  {% endif %}{# if interface_name == 'Window' #}
+  {% else %}
+  #error "Unexpected security check for interface {{interface_name}}"
+  {% endif %}
 }
 
 {% if has_cross_origin_named_getter %}
@@ -309,9 +318,11 @@ void {{v8_class_or_partial}}::crossOriginNamedEnumerator(const v8::PropertyCallb
   for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable)
     names.push_back(attribute.name);
 
-  v8SetReturnValue(
-      info,
-      ToV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+  // Use the current context as the creation context, as a cross-origin access
+  // may involve an object that does not have a creation context.
+  v8SetReturnValue(info,
+                   ToV8(names, info.GetIsolate()->GetCurrentContext()->Global(),
+                        info.GetIsolate()).As<v8::Array>());
 }
 {% endif %}
 

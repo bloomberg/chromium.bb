@@ -198,8 +198,6 @@ def attribute_context(interface, attribute, interfaces):
     # [CrossOrigin] is incompatible with a number of other attributes, so check
     # for them here.
     if is_cross_origin:
-        if context['has_cross_origin_getter'] and context['has_custom_getter']:
-            raise Exception('[CrossOrigin] and [Custom] are incompatible on the same getter: %s.%s', interface.name, attribute.name)
         if context['has_cross_origin_setter'] and context['has_custom_setter']:
             raise Exception('[CrossOrigin] and [Custom] are incompatible on the same setter: %s.%s', interface.name, attribute.name)
         if context['is_per_world_bindings']:

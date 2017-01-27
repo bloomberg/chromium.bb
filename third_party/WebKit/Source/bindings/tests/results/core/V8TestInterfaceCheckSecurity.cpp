@@ -396,8 +396,7 @@ void V8TestInterfaceCheckSecurity::TestInterfaceCheckSecurityOriginSafeMethodSet
 }
 
 bool V8TestInterfaceCheckSecurity::securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data) {
-  TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(accessedObject);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
+  #error "Unexpected security check for interface TestInterfaceCheckSecurity"
 }
 
 void V8TestInterfaceCheckSecurity::crossOriginNamedGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -439,9 +438,11 @@ void V8TestInterfaceCheckSecurity::crossOriginNamedEnumerator(const v8::Property
   for (const auto& attribute : TestInterfaceCheckSecurityV8Internal::kCrossOriginAttributeTable)
     names.push_back(attribute.name);
 
-  v8SetReturnValue(
-      info,
-      ToV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+  // Use the current context as the creation context, as a cross-origin access
+  // may involve an object that does not have a creation context.
+  v8SetReturnValue(info,
+                   ToV8(names, info.GetIsolate()->GetCurrentContext()->Global(),
+                        info.GetIsolate()).As<v8::Array>());
 }
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
