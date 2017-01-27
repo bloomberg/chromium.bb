@@ -779,13 +779,19 @@ String XSSAuditor::nameFromAttribute(const FilterTokenRequest& request,
 String XSSAuditor::snippetFromAttribute(const FilterTokenRequest& request,
                                         const HTMLToken::Attribute& attribute) {
   // The range doesn't include the character which terminates the value. So,
-  // for an input of |name="value"|, the snippet is |name="value|. For an
-  // unquoted input of |name=value |, the snippet is |name=value|.
+  // for an input of |name="value"|, the snippet is |name="value|. For a space
+  // terminated unquoted input of |name=value |, the snippet is |name=value|.
+  // Beware of empty unquoted values at the end of a token, we need to make sure
+  // we don't clip off the equals-sign as there is no trailing space.
   // FIXME: We should grab one character before the name also.
-  int start = attribute.nameRange().start - request.token.startIndex();
-  int end = attribute.valueRange().end - request.token.startIndex();
+  int nameStart = attribute.nameRange().start - request.token.startIndex();
+  int valueStart = attribute.valueRange().start - request.token.startIndex();
+  int valueEnd = attribute.valueRange().end - request.token.startIndex();
+  int length = valueEnd - nameStart;
+  if (valueStart == valueEnd)
+    length += 1;
   return request.sourceTracker.sourceForToken(request.token)
-      .substring(start, end - start);
+      .substring(nameStart, length);
 }
 
 String XSSAuditor::canonicalize(String snippet, TruncationKind treatment) {
