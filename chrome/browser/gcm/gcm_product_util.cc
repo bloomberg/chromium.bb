@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_product_util.h"
+#include "chrome/browser/gcm/gcm_product_util.h"
 
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

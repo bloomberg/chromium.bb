@@ -138,8 +138,8 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/lifetime/keep_alive_registry.h"
-#include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"

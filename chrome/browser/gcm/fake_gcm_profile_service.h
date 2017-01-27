@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_PROFILE_SERVICE_H_
-#define CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_PROFILE_SERVICE_H_
+#ifndef CHROME_BROWSER_GCM_FAKE_GCM_PROFILE_SERVICE_H_
+#define CHROME_BROWSER_GCM_FAKE_GCM_PROFILE_SERVICE_H_
 
 #include <list>
 #include <memory>
@@ -86,4 +86,4 @@ class FakeGCMProfileService : public GCMProfileService {
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_PROFILE_SERVICE_H_
+#endif  // CHROME_BROWSER_GCM_FAKE_GCM_PROFILE_SERVICE_H_

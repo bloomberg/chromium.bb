@@ -469,7 +469,7 @@
       'filepath': 'fuzz|Fuzz',
     },
     'gcm': {
-      'filepath': 'chrome/browser/services/gcm/|'\
+      'filepath': 'chrome/browser/gcm/|'\
                   'components/gcm_driver/|'\
                   'google_apis/gcm/',
     },

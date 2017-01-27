@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/gcm/gcm_profile_service_factory.h"
 
 #include <memory>
 
@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/services/gcm/gcm_product_util.h"
+#include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_client_factory.h"

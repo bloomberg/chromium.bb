@@ -7,8 +7,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
+#include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chromeos/network/network_device_handler.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"

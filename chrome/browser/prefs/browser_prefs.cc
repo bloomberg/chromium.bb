@@ -165,7 +165,7 @@
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
 #else
-#include "chrome/browser/services/gcm/gcm_product_util.h"
+#include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"

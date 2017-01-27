@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/net/wake_on_wifi_connection_observer.h"
-#include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/gcm/fake_gcm_profile_service.h"
+#include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/network/mock_network_device_handler.h"
 #include "content/public/test/test_browser_thread_bundle.h"

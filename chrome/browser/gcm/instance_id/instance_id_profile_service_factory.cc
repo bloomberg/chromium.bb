@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/instance_id/instance_id_profile_service_factory.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 
 #include <memory>
 
+#include "chrome/browser/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/services/gcm/instance_id/instance_id_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace instance_id {
