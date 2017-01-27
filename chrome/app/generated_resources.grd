@@ -6402,6 +6402,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MEMORY_COORDINATOR_DESCRIPTION" desc="Description of an about::flags to enable/disable memory coordinator">
         Enable memory coordinator instead of memory pressure listeners.
       </message>
+      <message name="IDS_FLAGS_SERVICE_WORKER_NAVIGATION_PRELOAD_NAME" desc="Name of the about::flags setting for service worker navigation preload.">
+        Service worker navigation preload.
+      </message>
+      <message name="IDS_FLAGS_SERVICE_WORKER_NAVIGATION_PRELOAD_DESCRIPTION" desc="Description of the about::flags setting for service worker navigation preload.">
+        Enable web pages to use the experimental service worker navigation preload API.
+      </message>
 
       <!-- Data Reduction Proxy -->
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about:flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">
@@ -15529,7 +15535,6 @@ read aloud to screenreader users to announce that a completion is available.">
             Enabled (Flash lowers volume when interrupted by other sound, experimental)
         </message>
     </if>
-    
     <if expr="is_win">
       <message name="IDS_FLAGS_GDI_TEXT_PRINTING" desc="Name for the flag that enables using GDI to print text">
         GDI Text Printing
