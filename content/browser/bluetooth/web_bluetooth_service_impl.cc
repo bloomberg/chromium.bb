@@ -744,6 +744,8 @@ void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
     const std::string& descriptor_instance_id,
     const RemoteDescriptorReadValueCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::DESCRIPTOR_READ_VALUE);
 
   const CacheQueryResult query_result =
       QueryCacheForDescriptor(descriptor_instance_id);
@@ -753,12 +755,14 @@ void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
   }
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordDescriptorReadValueOutcome(query_result.outcome);
     callback.Run(query_result.GetWebResult(), base::nullopt /* value */);
     return;
   }
 
   if (BluetoothBlocklist::Get().IsExcludedFromReads(
           query_result.descriptor->GetUUID())) {
+    RecordDescriptorReadValueOutcome(UMAGATTOperationOutcome::BLOCKLISTED);
     callback.Run(blink::mojom::WebBluetoothResult::BLOCKLISTED_READ,
                  base::nullopt /* value */);
     return;
@@ -976,6 +980,7 @@ void WebBluetoothServiceImpl::OnDescriptorReadValueSuccess(
     const RemoteDescriptorReadValueCallback& callback,
     const std::vector<uint8_t>& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordDescriptorReadValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   callback.Run(blink::mojom::WebBluetoothResult::SUCCESS, value);
 }
 
@@ -983,7 +988,6 @@ void WebBluetoothServiceImpl::OnDescriptorReadValueFailed(
     const RemoteDescriptorReadValueCallback& callback,
     device::BluetoothRemoteGattService::GattErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(667319) We are reporting failures to UMA but not reporting successes.
   callback.Run(TranslateGATTErrorAndRecord(error_code,
                                            UMAGATTOperation::DESCRIPTOR_READ),
                base::nullopt /* value */);

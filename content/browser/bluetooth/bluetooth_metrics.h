@@ -35,6 +35,7 @@ enum class UMAWebBluetoothFunction {
   REMOTE_GATT_SERVER_DISCONNECT = 8,
   SERVICE_GET_CHARACTERISTICS = 9,
   GET_PRIMARY_SERVICES = 10,
+  DESCRIPTOR_READ_VALUE = 11,
   // NOTE: Add new actions immediately above this line. Make sure to update
   // the enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT
@@ -277,6 +278,16 @@ void RecordStartNotificationsOutcome(UMAGATTOperationOutcome outcome);
 // Records the outcome of a cache query for startNotifications. Should only be
 // called if QueryCacheForCharacteristic fails.
 void RecordStartNotificationsOutcome(CacheQueryOutcome outcome);
+
+// Descriptor.readValue() Metrics
+// There should be a call to this function for every call to
+// Send(BluetoothMsg_ReadDescriptorValueSuccess) and
+// Send(BluetoothMsg_ReadDescriptorValueError).
+void RecordDescriptorReadValueOutcome(UMAGATTOperationOutcome error);
+
+// Records the outcome of a cache query for readValue. Should only be called if
+// QueryCacheForDescriptor fails.
+void RecordDescriptorReadValueOutcome(CacheQueryOutcome outcome);
 
 enum class UMARSSISignalStrengthLevel {
   LESS_THAN_OR_EQUAL_TO_MIN_RSSI,

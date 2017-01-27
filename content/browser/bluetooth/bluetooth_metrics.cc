@@ -281,7 +281,7 @@ void RecordGATTOperationOutcome(UMAGATTOperation operation,
       RecordStartNotificationsOutcome(outcome);
       return;
     case UMAGATTOperation::DESCRIPTOR_READ:
-      // TODO(667319) Add reporting to descriptors
+      RecordDescriptorReadValueOutcome(outcome);
       return;
     case UMAGATTOperation::COUNT:
       NOTREACHED();
@@ -313,7 +313,6 @@ static UMAGATTOperationOutcome TranslateCacheQueryOutcomeToGATTOperationOutcome(
 
 // Characteristic.readValue
 
-// static
 void RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Characteristic.ReadValue.Outcome",
                             static_cast<int>(outcome),
@@ -354,6 +353,19 @@ void RecordStartNotificationsOutcome(CacheQueryOutcome outcome) {
 void RecordRSSISignalStrength(int rssi) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.RequestDevice.RSSISignalStrength",
                               rssi);
+}
+
+// Descriptor.readValue
+
+void RecordDescriptorReadValueOutcome(UMAGATTOperationOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Descriptor.ReadValue.Outcome",
+                            static_cast<int>(outcome),
+                            static_cast<int>(UMAGATTOperationOutcome::COUNT));
+}
+
+void RecordDescriptorReadValueOutcome(CacheQueryOutcome outcome) {
+  RecordDescriptorReadValueOutcome(
+      TranslateCacheQueryOutcomeToGATTOperationOutcome(outcome));
 }
 
 void RecordRSSISignalStrengthLevel(UMARSSISignalStrengthLevel level) {
