@@ -20,11 +20,9 @@ class NavigationObserver: public WebContentsObserver {
       : WebContentsObserver(web_contents) {}
   ~NavigationObserver() override {}
 
-  void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override {
-    navigation_url_ = url;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    if (navigation_handle->HasCommitted())
+      navigation_url_ = navigation_handle->GetURL();
   }
 
   void DidRedirectNavigation(NavigationHandle* handle) override {
