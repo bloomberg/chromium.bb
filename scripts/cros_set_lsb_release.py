@@ -49,6 +49,7 @@ LSB_KEY_APPID_RELEASE = 'CHROMEOS_RELEASE_APPID'
 LSB_KEY_APPID_BOARD = 'CHROMEOS_BOARD_APPID'
 LSB_KEY_APPID_CANARY = 'CHROMEOS_CANARY_APPID'
 LSB_KEY_ARC_VERSION = 'CHROMEOS_ARC_VERSION'
+LSB_KEY_ARC_ANDROID_SDK_VERSION = 'CHROMEOS_ARC_ANDROID_SDK_VERSION'
 
 CANARY_APP_ID = "{90F229CE-83E2-4FAF-8479-E368A34938B1}"
 
@@ -85,7 +86,9 @@ def _ParseArguments(argv):
   parser.add_argument('--patch_number', default='0',
                       help='The patch number for the given branch.')
   parser.add_argument('--arc_version', default=None,
-                      help='The ARC version.')
+                      help='Android revision number of ARC.')
+  parser.add_argument('--arc_android_sdk_version', default=None,
+                      help='Android SDK version of ARC.')
 
   opts = parser.parse_args(argv)
 
@@ -131,6 +134,11 @@ def main(argv):
   if opts.arc_version is not None:
     fields.update({
         LSB_KEY_ARC_VERSION: opts.arc_version,
+    })
+
+  if opts.arc_android_sdk_version is not None:
+    fields.update({
+        LSB_KEY_ARC_ANDROID_SDK_VERSION: opts.arc_android_sdk_version,
     })
 
   if opts.builder_path is not None:
