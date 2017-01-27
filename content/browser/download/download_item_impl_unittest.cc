@@ -760,10 +760,12 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
   const char kFirstETag[] = "ABC";
   const char kFirstLastModified[] = "Yesterday";
   const char kFirstURL[] = "http://www.example.com/download";
+  const char kMimeType[] = "text/css";
   create_info()->content_disposition = kContentDisposition;
   create_info()->etag = kFirstETag;
   create_info()->last_modified = kFirstLastModified;
   create_info()->url_chain.push_back(GURL(kFirstURL));
+  create_info()->mime_type = kMimeType;
 
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
@@ -772,6 +774,7 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
   EXPECT_EQ(kFirstETag, item->GetETag());
   EXPECT_EQ(kFirstLastModified, item->GetLastModifiedTime());
   EXPECT_EQ(kFirstURL, item->GetURL().spec());
+  EXPECT_EQ(kMimeType, item->GetMimeType());
 
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _));
   EXPECT_CALL(*mock_delegate(), GetBrowserContext())
@@ -789,11 +792,13 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
   const char kSecondETag[] = "123";
   const char kSecondLastModified[] = "Today";
   const char kSecondURL[] = "http://example.com/another-download";
+  const char kSecondMimeType[] = "text/html";
   create_info()->content_disposition = kSecondContentDisposition;
   create_info()->etag = kSecondETag;
   create_info()->last_modified = kSecondLastModified;
   create_info()->url_chain.clear();
   create_info()->url_chain.push_back(GURL(kSecondURL));
+  create_info()->mime_type = kSecondMimeType;
   create_info()->result = DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED;
 
   // The following ends up calling DownloadItem::Start(), but shouldn't result
@@ -804,8 +809,62 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
   EXPECT_EQ(kFirstETag, item->GetETag());
   EXPECT_EQ(kFirstLastModified, item->GetLastModifiedTime());
   EXPECT_EQ(kFirstURL, item->GetURL().spec());
+  EXPECT_EQ(kMimeType, item->GetMimeType());
   EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, item->GetLastReason());
+}
+
+// If the download resumption request succeeds, the origin state should be
+// updated
+TEST_F(DownloadItemTest, SucceededResumptionUpdatesOriginState) {
+  const char kContentDisposition[] = "attachment; filename=foo";
+  const char kFirstETag[] = "ABC";
+  const char kFirstLastModified[] = "Yesterday";
+  const char kFirstURL[] = "http://www.example.com/download";
+  const char kMimeType[] = "text/css";
+  create_info()->content_disposition = kContentDisposition;
+  create_info()->etag = kFirstETag;
+  create_info()->last_modified = kFirstLastModified;
+  create_info()->url_chain.push_back(GURL(kFirstURL));
+  create_info()->mime_type = kMimeType;
+
+  DownloadItemImpl* item = CreateDownloadItem();
+  MockDownloadFile* download_file =
+      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _));
+  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
+      .WillRepeatedly(Return(browser_context()));
+  EXPECT_CALL(*download_file, Detach());
+  item->DestinationObserverAsWeakPtr()->DestinationError(
+      DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, 0,
+      std::unique_ptr<crypto::SecureHash>());
+  RunAllPendingInMessageLoops();
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+
+  // Now change the create info. The changes should not cause the DownloadItem
+  // to be updated.
+  const char kSecondContentDisposition[] = "attachment; filename=bar";
+  const char kSecondETag[] = "123";
+  const char kSecondLastModified[] = "Today";
+  const char kSecondURL[] = "http://example.com/another-download";
+  const char kSecondMimeType[] = "text/html";
+  create_info()->content_disposition = kSecondContentDisposition;
+  create_info()->etag = kSecondETag;
+  create_info()->last_modified = kSecondLastModified;
+  create_info()->url_chain.clear();
+  create_info()->url_chain.push_back(GURL(kSecondURL));
+  create_info()->mime_type = kSecondMimeType;
+
+  DownloadItemImplDelegate::DownloadTargetCallback target_callback;
+  download_file = CallDownloadItemStart(item, &target_callback);
+
+  EXPECT_EQ(kSecondContentDisposition, item->GetContentDisposition());
+  EXPECT_EQ(kSecondETag, item->GetETag());
+  EXPECT_EQ(kSecondLastModified, item->GetLastModifiedTime());
+  EXPECT_EQ(kSecondURL, item->GetURL().spec());
+  EXPECT_EQ(kSecondMimeType, item->GetMimeType());
+
+  CleanupItem(item, download_file, DownloadItem::IN_PROGRESS);
 }
 
 // Test that resumption uses the final URL in a URL chain when resuming.

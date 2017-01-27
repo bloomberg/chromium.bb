@@ -995,6 +995,9 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   etag_ = new_create_info.etag;
   last_modified_time_ = new_create_info.last_modified;
   content_disposition_ = new_create_info.content_disposition;
+  // It is possible that the previous download attempt failed right before the
+  // response is received. Need to reset the MIME type.
+  mime_type_ = new_create_info.mime_type;
 
   // Don't update observers. This method is expected to be called just before a
   // DownloadFile is created and Start() is called. The observers will be
