@@ -32,17 +32,20 @@ class SettingsResetPromptConfig {
   // with the config parameters.
   static std::unique_ptr<SettingsResetPromptConfig> Create();
 
-  ~SettingsResetPromptConfig();
+  virtual ~SettingsResetPromptConfig();
 
   // Returns a non-negative integer ID if |url| should trigger a
   // settings reset prompt and a negative integer otherwise. The IDs
   // identify the domains or entities that we want to prompt the user
   // for and can be used for metrics reporting.
-  int UrlToResetDomainId(const GURL& url) const;
+  virtual int UrlToResetDomainId(const GURL& url) const;
 
   // TODO(alito): parameterize the set of things that we want to reset
   // for so that we can control it from the finch config. For example,
   // with functions like HomepageResetAllowed() etc.
+ protected:
+  SettingsResetPromptConfig();
+
  private:
   typedef std::vector<uint8_t> SHA256Hash;
   struct SHA256HashHasher {
@@ -50,7 +53,6 @@ class SettingsResetPromptConfig {
   };
   enum ConfigError : int;
 
-  SettingsResetPromptConfig();
   bool Init();
   ConfigError ParseDomainHashes(const std::string& domain_hashes_json);
 
