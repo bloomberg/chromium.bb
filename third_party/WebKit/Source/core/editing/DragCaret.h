@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DragCaretController_h
-#define DragCaretController_h
+#ifndef DragCaret_h
+#define DragCaret_h
 
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CaretBase.h"
@@ -33,16 +33,15 @@
 
 namespace blink {
 
-class DragCaretController final
-    : public GarbageCollectedFinalized<DragCaretController>,
-      public SynchronousMutationObserver {
-  WTF_MAKE_NONCOPYABLE(DragCaretController);
-  USING_GARBAGE_COLLECTED_MIXIN(DragCaretController);
+class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
+                        public SynchronousMutationObserver {
+  WTF_MAKE_NONCOPYABLE(DragCaret);
+  USING_GARBAGE_COLLECTED_MIXIN(DragCaret);
 
  public:
-  static DragCaretController* create();
+  static DragCaret* create();
 
-  virtual ~DragCaretController();
+  virtual ~DragCaret();
 
   void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
 
@@ -57,7 +56,7 @@ class DragCaretController final
   DECLARE_TRACE();
 
  private:
-  DragCaretController();
+  DragCaret();
 
   void invalidateCaretRect(Node*, const LayoutRect&);
 
@@ -74,4 +73,4 @@ class DragCaretController final
 
 }  // namespace blink
 
-#endif  // DragCaretController_h
+#endif  // DragCaret_h

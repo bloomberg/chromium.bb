@@ -4,7 +4,7 @@
 
 #include "core/paint/BlockPainter.h"
 
-#include "core/editing/DragCaretController.h"
+#include "core/editing/DragCaret.h"
 #include "core/editing/FrameSelection.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
@@ -259,9 +259,10 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo,
   if (m_layoutBlock.hasCursorCaret())
     frame->selection().paintCaret(paintInfo.context, paintOffset);
 
-  if (m_layoutBlock.hasDragCaret())
-    frame->page()->dragCaretController().paintDragCaret(
-        frame, paintInfo.context, paintOffset);
+  if (m_layoutBlock.hasDragCaret()) {
+    frame->page()->dragCaret().paintDragCaret(frame, paintInfo.context,
+                                              paintOffset);
+  }
 }
 
 DISABLE_CFI_PERF

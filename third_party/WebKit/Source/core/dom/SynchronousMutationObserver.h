@@ -23,7 +23,7 @@ class Text;
 //
 // TODO(yosin): Following classes should be derived from this class to
 // simplify Document class.
-//  - DragCaretController
+//  - DragCaret
 //  - DocumentMarkerController
 //  - EventHandler
 //  - FrameCaret

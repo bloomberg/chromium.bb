@@ -27,7 +27,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/VisitedLinkState.h"
-#include "core/editing/DragCaretController.h"
+#include "core/editing/DragCaret.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
 #include "core/frame/DOMTimer.h"
@@ -116,7 +116,7 @@ Page::Page(PageClients& pageClients)
       m_animator(PageAnimator::create(*this)),
       m_autoscrollController(AutoscrollController::create(*this)),
       m_chromeClient(pageClients.chromeClient),
-      m_dragCaretController(DragCaretController::create()),
+      m_dragCaret(DragCaret::create()),
       m_dragController(DragController::create(this)),
       m_focusController(FocusController::create(this)),
       m_contextMenuController(
@@ -494,7 +494,7 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_animator);
   visitor->trace(m_autoscrollController);
   visitor->trace(m_chromeClient);
-  visitor->trace(m_dragCaretController);
+  visitor->trace(m_dragCaret);
   visitor->trace(m_dragController);
   visitor->trace(m_focusController);
   visitor->trace(m_contextMenuController);

@@ -39,7 +39,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/DragCaretController.h"
+#include "core/editing/DragCaret.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -199,13 +199,13 @@ bool DragController::dragIsMove(FrameSelection& selection, DragData* dragData) {
 // FIXME: This method is poorly named.  We're just clearing the selection from
 // the document this drag is exiting.
 void DragController::cancelDrag() {
-  m_page->dragCaretController().clear();
+  m_page->dragCaret().clear();
 }
 
 void DragController::dragEnded() {
   m_dragInitiator = nullptr;
   m_didInitiateDrag = false;
-  m_page->dragCaretController().clear();
+  m_page->dragCaret().clear();
 }
 
 void DragController::dragExited(DragData* dragData, LocalFrame& localRoot) {
@@ -374,7 +374,7 @@ bool DragController::tryDocumentDrag(DragData* dragData,
     return false;
 
   if (isHandlingDrag) {
-    m_page->dragCaretController().clear();
+    m_page->dragCaret().clear();
     return true;
   }
 
@@ -393,7 +393,7 @@ bool DragController::tryDocumentDrag(DragData* dragData,
     }
 
     if (!m_fileInputElementUnderMouse) {
-      m_page->dragCaretController().setCaretPosition(
+      m_page->dragCaret().setCaretPosition(
           m_documentUnderMouse->frame()->positionForPoint(point));
     }
 
@@ -430,7 +430,7 @@ bool DragController::tryDocumentDrag(DragData* dragData,
 
   // We are not over an editable region. Make sure we're clearing any prior drag
   // cursor.
-  m_page->dragCaretController().clear();
+  m_page->dragCaret().clear();
   if (m_fileInputElementUnderMouse)
     m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
   m_fileInputElementUnderMouse = nullptr;
@@ -479,12 +479,12 @@ DispatchEventResult DragController::dispatchTextInputEventFor(
     DragData* dragData) {
   // Layout should be clean due to a hit test performed in |elementUnderMouse|.
   DCHECK(!innerFrame->document()->needsLayoutTreeUpdate());
-  DCHECK(m_page->dragCaretController().hasCaret());
-  String text = m_page->dragCaretController().isContentRichlyEditable()
+  DCHECK(m_page->dragCaret().hasCaret());
+  String text = m_page->dragCaret().isContentRichlyEditable()
                     ? ""
                     : dragData->asPlainText();
   const PositionWithAffinity& caretPosition =
-      m_page->dragCaretController().caretPosition();
+      m_page->dragCaret().caretPosition();
   DCHECK(caretPosition.isConnected()) << caretPosition;
   Element* target =
       innerFrame->editor().findEventTargetFrom(createVisibleSelection(
@@ -513,7 +513,7 @@ bool DragController::concludeEditDrag(DragData* dragData) {
   LocalFrame* innerFrame = element->ownerDocument()->frame();
   DCHECK(innerFrame);
 
-  if (m_page->dragCaretController().hasCaret() &&
+  if (m_page->dragCaret().hasCaret() &&
       dispatchTextInputEventFor(innerFrame, dragData) !=
           DispatchEventResult::NotCanceled)
     return true;
@@ -532,14 +532,14 @@ bool DragController::concludeEditDrag(DragData* dragData) {
   // TODO(paulmeyer): Isn't |m_page->dragController()| the same as |this|?
   if (!m_page->dragController().canProcessDrag(dragData,
                                                *innerFrame->localFrameRoot())) {
-    m_page->dragCaretController().clear();
+    m_page->dragCaret().clear();
     return false;
   }
 
-  if (m_page->dragCaretController().hasCaret()) {
+  if (m_page->dragCaret().hasCaret()) {
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    m_page->dragCaretController()
+    m_page->dragCaret()
         .caretPosition()
         .position()
         .document()
@@ -547,16 +547,16 @@ bool DragController::concludeEditDrag(DragData* dragData) {
   }
 
   const PositionWithAffinity& caretPosition =
-      m_page->dragCaretController().caretPosition();
+      m_page->dragCaret().caretPosition();
   if (!caretPosition.isConnected()) {
     // "editing/pasteboard/drop-text-events-sideeffect-crash.html" and
     // "editing/pasteboard/drop-text-events-sideeffect.html" reach here.
-    m_page->dragCaretController().clear();
+    m_page->dragCaret().clear();
     return false;
   }
   VisibleSelection dragCaret = createVisibleSelection(
       SelectionInDOMTree::Builder().collapse(caretPosition).build());
-  m_page->dragCaretController().clear();
+  m_page->dragCaret().clear();
   // |innerFrame| can be removed by event handler called by
   // |dispatchTextInputEventFor()|.
   if (!innerFrame->selection().isAvailable()) {

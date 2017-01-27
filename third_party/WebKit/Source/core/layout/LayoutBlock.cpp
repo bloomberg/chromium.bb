@@ -29,7 +29,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/DragCaretController.h"
+#include "core/editing/DragCaret.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
@@ -1847,9 +1847,8 @@ bool LayoutBlock::hasCursorCaret() const {
 
 bool LayoutBlock::hasDragCaret() const {
   LocalFrame* frame = this->frame();
-  DragCaretController& dragCaretController =
-      frame->page()->dragCaretController();
-  return dragCaretController.hasCaretIn(*this);
+  DragCaret& dragCaret = frame->page()->dragCaret();
+  return dragCaret.hasCaretIn(*this);
 }
 
 LayoutRect LayoutBlock::localCaretRect(InlineBox* inlineBox,

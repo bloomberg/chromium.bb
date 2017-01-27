@@ -52,7 +52,7 @@ class ClientRectList;
 class ContextMenuClient;
 class ContextMenuController;
 class Document;
-class DragCaretController;
+class DragCaret;
 class DragController;
 class EditorClient;
 class FocusController;
@@ -155,9 +155,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   AutoscrollController& autoscrollController() const {
     return *m_autoscrollController;
   }
-  DragCaretController& dragCaretController() const {
-    return *m_dragCaretController;
-  }
+  DragCaret& dragCaret() const { return *m_dragCaret; }
   DragController& dragController() const { return *m_dragController; }
   FocusController& focusController() const { return *m_focusController; }
   ContextMenuController& contextMenuController() const {
@@ -247,7 +245,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<PageAnimator> m_animator;
   const Member<AutoscrollController> m_autoscrollController;
   Member<ChromeClient> m_chromeClient;
-  const Member<DragCaretController> m_dragCaretController;
+  const Member<DragCaret> m_dragCaret;
   const Member<DragController> m_dragController;
   const Member<FocusController> m_focusController;
   const Member<ContextMenuController> m_contextMenuController;
