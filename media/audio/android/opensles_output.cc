@@ -37,13 +37,14 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       started_(false),
       muted_(false),
       volume_(1.0),
-      delay_calculator_(params.sample_rate()) {
+      samples_per_second_(params.sample_rate()),
+      delay_calculator_(samples_per_second_) {
   DVLOG(2) << "OpenSLESOutputStream::OpenSLESOutputStream("
            << "stream_type=" << stream_type << ")";
   format_.formatType = SL_DATAFORMAT_PCM;
   format_.numChannels = static_cast<SLuint32>(params.channels());
-  // Provides sampling rate in milliHertz to OpenSLES.
-  format_.samplesPerSec = static_cast<SLuint32>(params.sample_rate() * 1000);
+  // Despite the name, this field is actually the sampling rate in millihertz :|
+  format_.samplesPerSec = static_cast<SLuint32>(samples_per_second_ * 1000);
   format_.bitsPerSample = params.bits_per_sample();
   format_.containerSize = params.bits_per_sample();
   format_.endianness = SL_BYTEORDER_LITTLEENDIAN;
@@ -355,8 +356,10 @@ void OpenSLESOutputStream::FillBufferQueueNoLock() {
           : 0;
   DCHECK_GE(delay_frames, 0);
 
+  // Note: *DO NOT* use format_.samplesPerSecond in any calculations, it is not
+  // actually the sample rate! See constructor comments. :|
   const base::TimeDelta delay =
-      AudioTimestampHelper::FramesToTime(delay_frames, format_.samplesPerSec);
+      AudioTimestampHelper::FramesToTime(delay_frames, samples_per_second_);
 
   // Read data from the registered client source.
   const int frames_filled =

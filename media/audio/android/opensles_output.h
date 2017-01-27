@@ -121,6 +121,8 @@ class OpenSLESOutputStream : public AudioOutputStream {
   // Volume level from 0 to 1.
   float volume_;
 
+  int samples_per_second_;
+
   // Used to calculate the delay value for each OnMoreData() call.
   AudioTimestampHelper delay_calculator_;
 
