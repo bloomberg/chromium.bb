@@ -14,6 +14,7 @@ source_set("spotlight") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "test_spotlight_provider.h",
