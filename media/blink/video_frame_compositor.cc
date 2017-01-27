@@ -63,6 +63,7 @@ void VideoFrameCompositor::OnRendererStateUpdate(bool new_state) {
   if (rendering_) {
     auto_open_close_->Begin();
   } else {
+    new_processed_frame_cb_.Reset();
     auto_open_close_->End();
   }
 
@@ -139,7 +140,6 @@ void VideoFrameCompositor::Stop() {
   compositor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoFrameCompositor::OnRendererStateUpdate,
                             base::Unretained(this), false));
-  new_processed_frame_cb_.Reset();
 }
 
 void VideoFrameCompositor::PaintSingleFrame(
