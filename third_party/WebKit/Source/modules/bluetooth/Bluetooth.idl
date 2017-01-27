@@ -6,7 +6,7 @@
 
 [
     RuntimeEnabled=WebBluetooth,
-] interface Bluetooth : EventTarget {
+] interface Bluetooth {
     [CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothRequestDevice] Promise<BluetoothDevice> requestDevice (
         RequestDeviceOptions options
         );

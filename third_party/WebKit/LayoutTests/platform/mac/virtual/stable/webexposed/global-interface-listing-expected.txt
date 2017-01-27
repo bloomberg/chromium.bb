@@ -254,7 +254,7 @@ interface BlobEvent : Event
     getter data
     getter timecode
     method constructor
-interface Bluetooth : EventTarget
+interface Bluetooth
     attribute @@toStringTag
     method constructor
     method requestDevice
