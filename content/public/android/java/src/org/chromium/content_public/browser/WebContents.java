@@ -268,8 +268,8 @@ public interface WebContents extends Parcelable {
     /**
      * Dispatches a Message event to the specified frame.
      */
-    void postMessageToFrame(
-            String frameName, String message, String targetOrigin, int[] sentPortIds);
+    void postMessageToFrame(String frameName, String message,
+            String sourceOrigin, String targetOrigin, int[] sentPortIds);
 
     /**
      * Creates a message channel for sending postMessage requests and returns the ports for

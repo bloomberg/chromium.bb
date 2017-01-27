@@ -336,10 +336,10 @@ import java.util.UUID;
     }
 
     @Override
-    public void postMessageToFrame(
-            String frameName, String message, String targetOrigin, int[] sentPortIds) {
-        nativePostMessageToFrame(
-                mNativeWebContentsAndroid, frameName, message, targetOrigin, sentPortIds);
+    public void postMessageToFrame(String frameName, String message,
+            String sourceOrigin, String targetOrigin, int[] sentPortIds) {
+        nativePostMessageToFrame(mNativeWebContentsAndroid, frameName, message,
+                sourceOrigin, targetOrigin, sentPortIds);
     }
 
     @Override
@@ -539,7 +539,7 @@ import java.util.UUID;
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);
     private native void nativePostMessageToFrame(long nativeWebContentsAndroid, String frameName,
-            String message, String targetOrigin, int[] sentPortIds);
+            String message, String sourceOrigin, String targetOrigin, int[] sentPortIds);
     private native void nativeCreateMessageChannel(
             long nativeWebContentsAndroid, AppWebMessagePort[] ports);
     private native boolean nativeHasAccessedInitialDocument(

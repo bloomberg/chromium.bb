@@ -563,9 +563,10 @@ void WebContentsAndroid::PostMessageToFrame(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jframe_name,
     const JavaParamRef<jstring>& jmessage,
+    const JavaParamRef<jstring>& jsource_origin,
     const JavaParamRef<jstring>& jtarget_origin,
     const JavaParamRef<jintArray>& jsent_ports) {
-  base::string16 source_origin;
+  base::string16 source_origin(ConvertJavaStringToUTF16(env, jsource_origin));
   base::string16 target_origin(ConvertJavaStringToUTF16(env, jtarget_origin));
   base::string16 message(ConvertJavaStringToUTF16(env, jmessage));
   std::vector<int> ports;
