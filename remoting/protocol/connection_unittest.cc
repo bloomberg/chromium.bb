@@ -619,7 +619,8 @@ TEST_P(ConnectionTest, VideoStats) {
   EXPECT_LE(stats.client_stats.time_rendered, finish_time);
 }
 
-TEST_P(ConnectionTest, Audio) {
+// Disabling due to failures after WebRTC roll http://crbug.com/685910
+TEST_P(ConnectionTest, DISABLED_Audio) {
   Connect();
 
   std::unique_ptr<AudioStream> audio_stream =
