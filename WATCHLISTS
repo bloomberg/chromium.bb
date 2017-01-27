@@ -1217,7 +1217,7 @@
                   '|third_party/WebKit/Source/platform/.*Event'
     },
     'blink_fetch': {
-      'filepath': 'third_party/WebKit/Source/core/fetch',
+      'filepath': 'third_party/WebKit/Source/platform/loader/fetch'
     },
     'blink_heap': {
       'filepath': 'third_party/WebKit/Source/platform/heap' \
@@ -1227,7 +1227,8 @@
       'filepath': 'third_party/WebKit/Source/core/html/'
     },
     'blink_loader': {
-      'filepath': 'third_party/WebKit/Source/core/loader',
+      'filepath': 'third_party/WebKit/Source/core/loader', \
+      'filepath': 'third_party/WebKit/Source/platform/loader'
     },
     'blink_modules': {
       'filepath': 'third_party/WebKit/Source/modules'
