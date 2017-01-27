@@ -9,10 +9,10 @@ source_set("web") {
   sources = [
     "dom_altering_lock.h",
     "dom_altering_lock.mm",
-    "form_resubmission_tab_helper.h",
-    "form_resubmission_tab_helper.mm",
     "network_activity_indicator_tab_helper.h",
     "network_activity_indicator_tab_helper.mm",
+    "repost_form_tab_helper.h",
+    "repost_form_tab_helper.mm",
   ]
   deps = [
     "//base",
@@ -29,8 +29,8 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "form_resubmission_tab_helper_unittest.mm",
     "network_activity_indicator_tab_helper_unittest.mm",
+    "repost_form_tab_helper_unittest.mm",
   ]
   deps = [
     ":web",

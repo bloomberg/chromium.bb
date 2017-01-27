@@ -43,7 +43,7 @@ NavigationItemImpl::NavigationItemImpl()
       is_created_from_push_state_(false),
       has_state_been_replaced_(false),
       is_created_from_hash_change_(false),
-      should_skip_resubmit_data_confirmation_(false),
+      should_skip_repost_form_confirmation_(false),
       is_renderer_initiated_(false),
       is_unsafe_(false),
       facade_delegate_(nullptr) {}
@@ -69,8 +69,8 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       is_created_from_push_state_(item.is_created_from_push_state_),
       has_state_been_replaced_(item.has_state_been_replaced_),
       is_created_from_hash_change_(item.is_created_from_hash_change_),
-      should_skip_resubmit_data_confirmation_(
-          item.should_skip_resubmit_data_confirmation_),
+      should_skip_repost_form_confirmation_(
+          item.should_skip_repost_form_confirmation_),
       post_data_([item.post_data_ copy]),
       is_renderer_initiated_(item.is_renderer_initiated_),
       is_unsafe_(item.is_unsafe_),
@@ -266,12 +266,12 @@ bool NavigationItemImpl::IsCreatedFromHashChange() const {
   return is_created_from_hash_change_;
 }
 
-void NavigationItemImpl::SetShouldSkipResubmitDataConfirmation(bool skip) {
-  should_skip_resubmit_data_confirmation_ = skip;
+void NavigationItemImpl::SetShouldSkipRepostFormConfirmation(bool skip) {
+  should_skip_repost_form_confirmation_ = skip;
 }
 
-bool NavigationItemImpl::ShouldSkipResubmitDataConfirmation() const {
-  return should_skip_resubmit_data_confirmation_;
+bool NavigationItemImpl::ShouldSkipRepostFormConfirmation() const {
+  return should_skip_repost_form_confirmation_;
 }
 
 void NavigationItemImpl::SetPostData(NSData* post_data) {

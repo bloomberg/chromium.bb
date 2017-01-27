@@ -39,7 +39,7 @@ NSString* const kSessionEntryTimestampKey = @"timestamp";
 NSString* const kSessionEntryTitleKey = @"title";
 NSString* const kSessionEntryPOSTDataKey = @"POSTData";
 NSString* const kSessionEntryHTTPRequestHeadersKey = @"httpHeaders";
-NSString* const kSessionEntrySkipResubmitConfirmationKey =
+NSString* const kSessionEntrySkipRepostFormConfirmationKey =
     @"skipResubmitDataConfirmation";
 NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 }
@@ -121,8 +121,8 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
         pageDisplayStateFromDictionary:
             [aDecoder
                 decodeObjectForKey:web::kSessionEntryPageScrollStateKey]]);
-    _navigationItem->SetShouldSkipResubmitDataConfirmation([aDecoder
-        decodeBoolForKey:web::kSessionEntrySkipResubmitConfirmationKey]);
+    _navigationItem->SetShouldSkipRepostFormConfirmation([aDecoder
+        decodeBoolForKey:web::kSessionEntrySkipRepostFormConfirmationKey]);
     _navigationItem->SetIsOverridingUserAgent(
         [aDecoder decodeBoolForKey:web::kSessionEntryUseDesktopUserAgentKey]);
     _navigationItem->SetPostData(
@@ -150,8 +150,8 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
   [aCoder encodeObject:[[self class] dictionaryFromPageDisplayState:
                                          _navigationItem->GetPageDisplayState()]
                 forKey:web::kSessionEntryPageScrollStateKey];
-  [aCoder encodeBool:_navigationItem->ShouldSkipResubmitDataConfirmation()
-              forKey:web::kSessionEntrySkipResubmitConfirmationKey];
+  [aCoder encodeBool:_navigationItem->ShouldSkipRepostFormConfirmation()
+              forKey:web::kSessionEntrySkipRepostFormConfirmationKey];
   [aCoder encodeBool:_navigationItem->IsOverridingUserAgent()
               forKey:web::kSessionEntryUseDesktopUserAgentKey];
   [aCoder encodeObject:_navigationItem->GetPostData()

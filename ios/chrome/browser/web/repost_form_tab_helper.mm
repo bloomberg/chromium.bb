@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/form_resubmission_tab_helper.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper.h"
 
-#import "ios/chrome/browser/ui/alert_coordinator/form_resubmission_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 
-DEFINE_WEB_STATE_USER_DATA_KEY(FormResubmissionTabHelper);
+DEFINE_WEB_STATE_USER_DATA_KEY(RepostFormTabHelper);
 
-FormResubmissionTabHelper::FormResubmissionTabHelper(web::WebState* web_state)
+RepostFormTabHelper::RepostFormTabHelper(web::WebState* web_state)
     : web::WebStateObserver(web_state) {}
 
-FormResubmissionTabHelper::~FormResubmissionTabHelper() = default;
+RepostFormTabHelper::~RepostFormTabHelper() = default;
 
-void FormResubmissionTabHelper::PresentFormResubmissionDialog(
+void RepostFormTabHelper::PresentDialog(
     CGPoint location,
     const base::Callback<void(bool)>& callback) {
   UIViewController* top_controller =
@@ -22,7 +22,7 @@ void FormResubmissionTabHelper::PresentFormResubmissionDialog(
           [UIApplication sharedApplication].keyWindow.rootViewController);
 
   base::Callback<void(bool)> local_callback(callback);
-  coordinator_.reset([[FormResubmissionCoordinator alloc]
+  coordinator_.reset([[RepostFormCoordinator alloc]
       initWithBaseViewController:top_controller
                   dialogLocation:location
                         webState:web_state()
@@ -32,10 +32,10 @@ void FormResubmissionTabHelper::PresentFormResubmissionDialog(
   [coordinator_ start];
 }
 
-void FormResubmissionTabHelper::ProvisionalNavigationStarted(const GURL&) {
+void RepostFormTabHelper::ProvisionalNavigationStarted(const GURL&) {
   coordinator_.reset();
 }
 
-void FormResubmissionTabHelper::WebStateDestroyed() {
+void RepostFormTabHelper::WebStateDestroyed() {
   coordinator_.reset();
 }

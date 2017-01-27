@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_FORM_RESUBMISSION_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_FORM_RESUBMISSION_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_REPOST_FORM_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_REPOST_FORM_COORDINATOR_H_
 
 #import <UIKit/UIKit.h>
 
@@ -11,13 +11,13 @@
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/web/public/web_state/web_state.h"
 
-// Creates and manages Form Resubmission dialog that has Continue and Cancel
+// Creates and manages a repost form dialog that has Continue and Cancel
 // buttons.
-@interface FormResubmissionCoordinator : ChromeCoordinator
+@interface RepostFormCoordinator : ChromeCoordinator
 
 // Initializes a coordinator for displaying an alert on this |viewController|.
-// |dialogLocation| is a point where resubmission dialog should be presented on
-// iPad. |webState| must not be null and must be owned by the caller.
+// |dialogLocation| is a point where the repost form dialog should be presented
+// on iPad. |webState| must not be null and must be owned by the caller.
 // |completionHandler| will be called with YES when Continue button is tapped
 // and with NO when Cancel button is tapped. |completionHandler| can not be
 // null.
@@ -32,4 +32,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_FORM_RESUBMISSION_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_REPOST_FORM_COORDINATOR_H_

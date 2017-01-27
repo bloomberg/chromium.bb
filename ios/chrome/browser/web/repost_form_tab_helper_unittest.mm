@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/form_resubmission_tab_helper.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper.h"
 
 #import <UIKit/UIKit.h>
 
@@ -22,18 +22,18 @@
 #endif
 
 namespace {
-// Test location passed to PresentFormResubmissionDialog.
+// Test location passed to RepostFormTabHelper.
 const CGFloat kDialogHLocation = 10;
 const CGFloat kDialogVLocation = 20;
 
-// No-op callback for PresentFormResubmissionDialog.
+// No-op callback for RepostFormTabHelper.
 void IgnoreBool(bool) {}
 }  // namespace
 
-// Test fixture for FormResubmissionTabHelper class.
-class FormResubmissionTabHelperTest : public PlatformTest {
+// Test fixture for RepostFormTabHelper class.
+class RepostFormTabHelperTest : public PlatformTest {
  protected:
-  FormResubmissionTabHelperTest()
+  RepostFormTabHelperTest()
       : web_state_(new web::TestWebState()),
         location_(CGPointMake(kDialogHLocation, kDialogVLocation)),
         view_controller_([[UIViewController alloc] init]) {
@@ -44,14 +44,14 @@ class FormResubmissionTabHelperTest : public PlatformTest {
     web_state_->SetView(view);
     web_state_->SetWebUsageEnabled(true);
 
-    FormResubmissionTabHelper::CreateForWebState(web_state_.get());
+    RepostFormTabHelper::CreateForWebState(web_state_.get());
   }
 
-  // Presents form resubmission dialog using FormResubmissionTabHelperTest.
+  // Presents a repost form dialog using RepostFormTabHelperTest.
   void PresentDialog() {
     ASSERT_FALSE(GetAlertController());
-    auto helper = FormResubmissionTabHelper::FromWebState(web_state_.get());
-    helper->PresentFormResubmissionDialog(location_, base::Bind(&IgnoreBool));
+    auto helper = RepostFormTabHelper::FromWebState(web_state_.get());
+    helper->PresentDialog(location_, base::Bind(&IgnoreBool));
     ASSERT_TRUE(GetAlertController());
   }
 
@@ -70,8 +70,8 @@ class FormResubmissionTabHelperTest : public PlatformTest {
   UIViewController* view_controller_;
 };
 
-// Tests presented Form Resubmission dialog.
-TEST_F(FormResubmissionTabHelperTest, Preseting) {
+// Tests presented repost form dialog.
+TEST_F(RepostFormTabHelperTest, Preseting) {
   PresentDialog();
   EXPECT_FALSE(GetAlertController().title);
   EXPECT_TRUE([GetAlertController().message
@@ -88,7 +88,7 @@ TEST_F(FormResubmissionTabHelperTest, Preseting) {
 }
 
 // Tests that dialog is dismissed when WebState is destroyed.
-TEST_F(FormResubmissionTabHelperTest, DismissingOnWebViewDestruction) {
+TEST_F(RepostFormTabHelperTest, DismissingOnWebViewDestruction) {
   PresentDialog();
   web_state_.reset();
   base::test::ios::WaitUntilCondition(^{
@@ -97,7 +97,7 @@ TEST_F(FormResubmissionTabHelperTest, DismissingOnWebViewDestruction) {
 }
 
 // Tests that dialog is dismissed after provisional navigation has started.
-TEST_F(FormResubmissionTabHelperTest, DismissingOnNavigationStart) {
+TEST_F(RepostFormTabHelperTest, DismissingOnNavigationStart) {
   PresentDialog();
   web_state_->OnProvisionalNavigationStarted(GURL());
   base::test::ios::WaitUntilCondition(^{

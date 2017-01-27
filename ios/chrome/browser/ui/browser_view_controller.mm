@@ -148,8 +148,8 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/web/error_page_content.h"
-#import "ios/chrome/browser/web/form_resubmission_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -2576,11 +2576,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       CGPointMake(CGRectGetMidX(view.frame),
                   CGRectGetMinY(view.frame) +
                       [self headerHeightForTab:[self tabForWebState:webState]]);
-  auto helper = FormResubmissionTabHelper::FromWebState(webState);
-  helper->PresentFormResubmissionDialog(dialogLocation,
-                                        base::BindBlock(^(bool shouldContinue) {
-                                          handler(shouldContinue);
-                                        }));
+  auto helper = RepostFormTabHelper::FromWebState(webState);
+  helper->PresentDialog(dialogLocation, base::BindBlock(^(bool shouldContinue) {
+                          handler(shouldContinue);
+                        }));
 }
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:

@@ -49,7 +49,7 @@ extern NSString* const kSessionEntryPOSTDataKey;
 extern NSString* const kSessionEntryHTTPRequestHeadersKey;
 // Whether or not to bypass showing the resubmit data confirmation when loading
 // a POST request (BOOL).
-extern NSString* const kSessionEntrySkipResubmitConfirmationKey;
+extern NSString* const kSessionEntrySkipRepostFormConfirmationKey;
 // Should desktop user agent be used (BOOL)?
 extern NSString* const kSessionEntryUseDesktopUserAgentKey;
 }

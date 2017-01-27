@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/alert_coordinator/form_resubmission_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 
 #import <UIKit/UIKit.h>
 
@@ -21,15 +21,15 @@
 #endif
 
 namespace {
-// Test location passed to FormResubmissionCoordinator.
+// Test location passed to RepostFormCoordinator.
 const CGFloat kDialogHorizontalLocation = 10;
 const CGFloat kDialogVerticalLocation = 20;
 }
 
-// Test fixture to test FormResubmissionCoordinator class.
-class FormResubmissionCoordinatorTest : public PlatformTest {
+// Test fixture to test RepostFormCoordinator class.
+class RepostFormCoordinatorTest : public PlatformTest {
  protected:
-  FormResubmissionCoordinatorTest() {
+  RepostFormCoordinatorTest() {
     view_controller_ = [[UIViewController alloc] init];
     [scoped_key_window_.Get() setRootViewController:view_controller_];
     UIView* view = [[UIView alloc] initWithFrame:view_controller_.view.bounds];
@@ -38,7 +38,7 @@ class FormResubmissionCoordinatorTest : public PlatformTest {
 
     CGPoint dialogLocation =
         CGPointMake(kDialogHorizontalLocation, kDialogVerticalLocation);
-    coordinator_ = [[FormResubmissionCoordinator alloc]
+    coordinator_ = [[RepostFormCoordinator alloc]
         initWithBaseViewController:view_controller_
                     dialogLocation:dialogLocation
                           webState:&web_state_
@@ -56,7 +56,7 @@ class FormResubmissionCoordinatorTest : public PlatformTest {
     [view_controller_.view addSubview:web_state_.GetView()];
   }
 
-  FormResubmissionCoordinator* coordinator_;
+  RepostFormCoordinator* coordinator_;
 
  private:
   ScopedKeyWindow scoped_key_window_;
@@ -65,7 +65,7 @@ class FormResubmissionCoordinatorTest : public PlatformTest {
 };
 
 // Tests that if there is a popover, it uses location passed in init.
-TEST_F(FormResubmissionCoordinatorTest, CGRectUsage) {
+TEST_F(RepostFormCoordinatorTest, CGRectUsage) {
   AddViewToWindow();
   [coordinator_ start];
   UIPopoverPresentationController* popover_presentation_controller =
@@ -77,16 +77,16 @@ TEST_F(FormResubmissionCoordinatorTest, CGRectUsage) {
   }
 }
 
-// Tests the form resubmission dialog has nil title.
-TEST_F(FormResubmissionCoordinatorTest, Title) {
+// Tests the repost form dialog has nil title.
+TEST_F(RepostFormCoordinatorTest, Title) {
   AddViewToWindow();
   [coordinator_ start];
   EXPECT_FALSE(GetAlertController().title);
   [coordinator_ stop];
 }
 
-// Tests the form resubmission dialog has correct message.
-TEST_F(FormResubmissionCoordinatorTest, Message) {
+// Tests the repost form dialog has correct message.
+TEST_F(RepostFormCoordinatorTest, Message) {
   AddViewToWindow();
   [coordinator_ start];
   EXPECT_TRUE([GetAlertController().message
@@ -96,8 +96,8 @@ TEST_F(FormResubmissionCoordinatorTest, Message) {
   [coordinator_ stop];
 }
 
-// Tests the form resubmission dialog actions have correct titles.
-TEST_F(FormResubmissionCoordinatorTest, ActionTitles) {
+// Tests the repost form dialog actions have correct titles.
+TEST_F(RepostFormCoordinatorTest, ActionTitles) {
   AddViewToWindow();
   [coordinator_ start];
   EXPECT_EQ(2U, GetAlertController().actions.count);
@@ -109,9 +109,8 @@ TEST_F(FormResubmissionCoordinatorTest, ActionTitles) {
   [coordinator_ stop];
 }
 
-// Tests that form resubmission dialog is presented once view is added to the
-// window.
-TEST_F(FormResubmissionCoordinatorTest, Retrying) {
+// Tests that repost form dialog is presented once view is added to the window.
+TEST_F(RepostFormCoordinatorTest, Retrying) {
   [coordinator_ start];
   EXPECT_FALSE(GetAlertController());
 

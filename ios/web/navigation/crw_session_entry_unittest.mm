@@ -85,8 +85,8 @@ void CRWSessionEntryTest::expectEqualSessionEntries(
   EXPECT_EQ(navItem1->GetTimestamp(), navItem2->GetTimestamp());
   EXPECT_EQ(navItem1->GetTitle(), navItem2->GetTitle());
   EXPECT_EQ(navItem1->GetPageDisplayState(), navItem2->GetPageDisplayState());
-  EXPECT_EQ(navItem1->ShouldSkipResubmitDataConfirmation(),
-            navItem2->ShouldSkipResubmitDataConfirmation());
+  EXPECT_EQ(navItem1->ShouldSkipRepostFormConfirmation(),
+            navItem2->ShouldSkipRepostFormConfirmation());
   EXPECT_EQ(navItem1->IsOverridingUserAgent(),
             navItem2->IsOverridingUserAgent());
   EXPECT_TRUE((!navItem1->HasPostData() && !navItem2->HasPostData()) ||
@@ -152,10 +152,10 @@ TEST_F(CRWSessionEntryTest, InitWithCoder) {
   [[[decoder expect]
       andReturn:[sessionEntry_ navigationItemImpl]->GetPostData()]
       decodeObjectForKey:web::kSessionEntryPOSTDataKey];
-  BOOL skipResubmitDataConfirmation =
-      [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
-  [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipResubmitDataConfirmation)]
-      decodeBoolForKey:web::kSessionEntrySkipResubmitConfirmationKey];
+  BOOL skipRepostFormConfirmation =
+      [sessionEntry_ navigationItemImpl]->ShouldSkipRepostFormConfirmation();
+  [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipRepostFormConfirmation)]
+      decodeBoolForKey:web::kSessionEntrySkipRepostFormConfirmationKey];
 
   base::scoped_nsobject<CRWSessionEntry> newSessionEntry(
       [[CRWSessionEntry alloc] initWithCoder:decoder]);
@@ -223,10 +223,10 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
   NSData* POSTData = [sessionEntry_ navigationItemImpl]->GetPostData();
   [[[decoder expect] andReturn:POSTData]
       decodeObjectForKey:web::kSessionEntryPOSTDataKey];
-  BOOL skipResubmitDataConfirmation =
-      [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
-  [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipResubmitDataConfirmation)]
-      decodeBoolForKey:web::kSessionEntrySkipResubmitConfirmationKey];
+  BOOL skipRepostFormConfirmation =
+      [sessionEntry_ navigationItemImpl]->ShouldSkipRepostFormConfirmation();
+  [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipRepostFormConfirmation)]
+      decodeBoolForKey:web::kSessionEntrySkipRepostFormConfirmationKey];
 
   base::scoped_nsobject<CRWSessionEntry> newSessionEntry(
       [[CRWSessionEntry alloc] initWithCoder:decoder]);
@@ -291,10 +291,10 @@ TEST_F(CRWSessionEntryTest, EncodeWithCoder) {
                         forKey:web::kSessionEntryHTTPRequestHeadersKey];
   [[coder expect] encodeObject:[sessionEntry_ navigationItemImpl]->GetPostData()
                         forKey:web::kSessionEntryPOSTDataKey];
-  BOOL skipResubmitDataConfirmation =
-      [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
-  [[coder expect] encodeBool:skipResubmitDataConfirmation
-                      forKey:web::kSessionEntrySkipResubmitConfirmationKey];
+  BOOL skipRepostFormConfirmation =
+      [sessionEntry_ navigationItemImpl]->ShouldSkipRepostFormConfirmation();
+  [[coder expect] encodeBool:skipRepostFormConfirmation
+                      forKey:web::kSessionEntrySkipRepostFormConfirmationKey];
   [sessionEntry_ encodeWithCoder:coder];
   EXPECT_OCMOCK_VERIFY(coder);
 }

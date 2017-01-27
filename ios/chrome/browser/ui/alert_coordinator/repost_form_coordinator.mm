@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/alert_coordinator/form_resubmission_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
@@ -12,13 +12,13 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FormResubmissionCoordinator () {
+@interface RepostFormCoordinator () {
   // WebState which requested this dialog.
   web::WebState* _webState;
   // View Controller representing the dialog.
   UIAlertController* _dialogController;
-  // Number of attempts to show the resubmit data action sheet.
-  NSUInteger _resubmissionAttemptCount;
+  // Number of attempts to show the repost form action sheet.
+  NSUInteger _repostAttemptCount;
 }
 
 // Creates a new UIAlertController to use for the dialog.
@@ -29,7 +29,7 @@
 
 @end
 
-@implementation FormResubmissionCoordinator
+@implementation RepostFormCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                             dialogLocation:(CGPoint)dialogLocation
@@ -58,7 +58,7 @@
     [self.baseViewController presentViewController:_dialogController
                                           animated:YES
                                         completion:nil];
-    _resubmissionAttemptCount = 0;
+    _repostAttemptCount = 0;
     return;
   }
 
@@ -73,25 +73,25 @@
   const NSUInteger kMaximumNumberAttempts = 10;
   // 400 milliseconds
   const int64_t kDelayBetweenAttemptsNanoSecs = 0.4 * NSEC_PER_SEC;
-  if (_resubmissionAttemptCount >= kMaximumNumberAttempts) {
+  if (_repostAttemptCount >= kMaximumNumberAttempts) {
     NOTREACHED();
     [self stop];
     return;
   }
-  __weak FormResubmissionCoordinator* weakSelf = self;
+  __weak RepostFormCoordinator* weakSelf = self;
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, kDelayBetweenAttemptsNanoSecs),
       dispatch_get_main_queue(), ^{
         [weakSelf start];
       });
-  _resubmissionAttemptCount++;
+  _repostAttemptCount++;
 }
 
 - (void)stop {
   [_dialogController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:nil];
-  _resubmissionAttemptCount = 0;
+  _repostAttemptCount = 0;
 }
 
 #pragma mark - Private

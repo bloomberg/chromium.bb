@@ -72,7 +72,6 @@
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
-#import "ios/chrome/browser/web/form_resubmission_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
@@ -117,6 +116,7 @@
 #include "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -551,7 +551,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     IOSChromeSyncedTabDelegate::CreateForWebState(self.webState);
     InfoBarManagerImpl::CreateForWebState(self.webState);
     IOSSecurityStateTabHelper::CreateForWebState(self.webState);
-    FormResubmissionTabHelper::CreateForWebState(self.webState);
+    RepostFormTabHelper::CreateForWebState(self.webState);
     BlockedPopupTabHelper::CreateForWebState(self.webState);
 
     if (reading_list::switches::IsReadingListEnabled()) {

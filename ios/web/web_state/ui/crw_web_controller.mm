@@ -1952,7 +1952,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       DCHECK([addedItem->GetHttpRequestHeaders() objectForKey:@"Content-Type"])
           << "Post data should have an associated content type";
       addedItem->SetPostData(params.post_data);
-      addedItem->SetShouldSkipResubmitDataConfirmation(true);
+      addedItem->SetShouldSkipRepostFormConfirmation(true);
     }
   }
 
@@ -5271,7 +5271,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
-  BOOL isFormPOSTResubmission =
+  BOOL repostedForm =
       [holder->http_method() isEqual:@"POST"] &&
       (holder->navigation_type() == WKNavigationTypeFormResubmitted ||
        holder->navigation_type() == WKNavigationTypeFormSubmitted);
@@ -5280,9 +5280,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSData* POSTData = currentItem->GetPostData();
   NSMutableURLRequest* request = [self requestForCurrentNavigationItem];
 
-  // If the request has POST data and is not a form resubmission, configure and
+  // If the request has POST data and is not a repost form, configure and
   // run the POST request.
-  if (POSTData.length && !isFormPOSTResubmission) {
+  if (POSTData.length && !repostedForm) {
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:POSTData];
     [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
@@ -5353,15 +5353,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If the request is not a form submission or resubmission, or the user
   // doesn't need to confirm the load, then continue right away.
 
-  if (!isFormPOSTResubmission ||
-      currentItem->ShouldSkipResubmitDataConfirmation()) {
+  if (!repostedForm || currentItem->ShouldSkipRepostFormConfirmation()) {
     webViewNavigationBlock();
     return;
   }
 
   // If the request is form submission or resubmission, then prompt the
   // user before proceeding.
-  DCHECK(isFormPOSTResubmission);
+  DCHECK(repostedForm);
   _webStateImpl->ShowRepostFormWarningDialog(
       base::BindBlock(^(bool shouldContinue) {
         if (shouldContinue)

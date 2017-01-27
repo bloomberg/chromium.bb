@@ -93,10 +93,10 @@ class NavigationItemImpl : public web::NavigationItem {
   void SetIsCreatedFromHashChange(bool hash_change);
   bool IsCreatedFromHashChange() const;
 
-  // Whether or not to bypass showing the resubmit data confirmation when
-  // loading a POST request. Set to YES for browser-generated POST requests.
-  void SetShouldSkipResubmitDataConfirmation(bool skip);
-  bool ShouldSkipResubmitDataConfirmation() const;
+  // Whether or not to bypass showing the repost form confirmation when loading
+  // a POST request. Set to YES for browser-generated POST requests.
+  void SetShouldSkipRepostFormConfirmation(bool skip);
+  bool ShouldSkipRepostFormConfirmation() const;
 
   // Data submitted with a POST request, persisted for resubmits.
   void SetPostData(NSData* post_data);
@@ -138,7 +138,7 @@ class NavigationItemImpl : public web::NavigationItem {
   bool is_created_from_push_state_;
   bool has_state_been_replaced_;
   bool is_created_from_hash_change_;
-  bool should_skip_resubmit_data_confirmation_;
+  bool should_skip_repost_form_confirmation_;
   base::scoped_nsobject<NSData> post_data_;
 
   // Whether the item, while loading, was created for a renderer-initiated

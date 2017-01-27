@@ -163,7 +163,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
   [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
-// Accepts the warning that the form POST data will be resent.
+// Accepts the warning that the form POST data will be reposted.
 - (void)confirmResendWarning {
   id<GREYMatcher> resendWarning =
       chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -172,8 +172,8 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
       performAction:grey_longPress()];
 }
 
-// Tests whether the request data is resent correctly.
-- (void)testFormsResendPostData {
+// Tests whether the request data is reposted correctly.
+- (void)testRepostForm {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFormUrl)];
 
   [self submitForm];
@@ -187,7 +187,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 
 // Tests that a POST followed by navigating to a new page and then tapping back
 // to the form result page resends data.
-- (void)testFormsResendPostDataAfterTappingBack {
+- (void)testRepostFormAfterTappingBack {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFormUrl)];
 
   [self submitForm];
@@ -195,7 +195,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
   // Go to a new page.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kGenericUrl)];
 
-  // Go back and check that the data is resent.
+  // Go back and check that the data is reposted.
   [self goBack];
   [self confirmResendWarning];
   [self waitForExpectedResponse:kExpectedPostData];
@@ -203,7 +203,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 
 // Tests that a POST followed by tapping back to the form page and then tapping
 // forward to the result page resends data.
-- (void)testFormsResendPostDataAfterTappingBackAndForward {
+- (void)testRepostFormAfterTappingBackAndForward {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFormUrl)];
   [self submitForm];
 
@@ -215,7 +215,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 
 // Tests that a POST followed by a new request and then index navigation to get
 // back to the result page resends data.
-- (void)testFormsResendPostDataAfterIndexNavigation {
+- (void)testRepostFormAfterIndexNavigation {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFormUrl)];
   [self submitForm];
 
@@ -237,7 +237,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 }
 
 // When data is not re-sent, the request is done with a GET method.
-- (void)testFormsDontResendPostData {
+- (void)testRepostFormCancelling {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFormUrl)];
   [self submitForm];
 
@@ -266,7 +266,7 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
 }
 
 // Tests that a POST followed by a redirect does not show the popup.
-- (void)testFormsDontResendPostDataAfterRedirect {
+- (void)testRepostFormCancellingAfterRedirect {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kRedirectFormUrl)];
   // Submit the form, which redirects before printing the data.
   [self submitForm];
