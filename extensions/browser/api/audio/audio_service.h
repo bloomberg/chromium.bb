@@ -80,11 +80,23 @@ class AudioService {
   // before we activate the new devices with the same type(input/output).
   virtual void SetActiveDevices(const DeviceIdList& device_list) = 0;
 
-  // Set the muted and volume/gain properties of a device.
-  virtual bool SetDeviceProperties(const std::string& device_id,
-                                   bool muted,
+  // Set the sound level properties (volume or gain) of a device.
+  virtual bool SetDeviceSoundLevel(const std::string& device_id,
                                    int volume,
                                    int gain) = 0;
+
+  // Sets the mute property of a device.
+  virtual bool SetMuteForDevice(const std::string& device_id, bool value) = 0;
+
+  // Sets mute property for audio input (if |is_input| is true) or output (if
+  // |is_input| is false).
+  virtual bool SetMute(bool is_input, bool value) = 0;
+
+  // Gets mute property for audio input (if |is_input| is true) or output (if
+  // |is_input| is false).
+  // The mute value is returned via |mute| argument.
+  // The method returns whether the value was successfully fetched.
+  virtual bool GetMute(bool is_input, bool* mute) = 0;
 
  protected:
   AudioService() {}

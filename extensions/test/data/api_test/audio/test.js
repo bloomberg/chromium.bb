@@ -167,11 +167,9 @@ chrome.test.runTests([
       var updatedOutput = expectedOutput['30001'];
       chrome.test.assertFalse(updatedOutput.isMuted);
       chrome.test.assertFalse(updatedOutput.volume === 35);
-      updatedOutput.isMuted = true;
       updatedOutput.volume = 35;
 
       chrome.audio.setProperties('30001', {
-        isMuted: true,
         volume: 35
       }, chrome.test.callbackPass(function() {
         chrome.audio.setProperties('40002', {
@@ -188,28 +186,61 @@ chrome.test.runTests([
     });
   },
 
+  function inputMuteTest() {
+    var getMute = function(callback) {
+      chrome.audio.getMute('INPUT', chrome.test.callbackPass(callback));
+    };
+    getMute(function(originalValue) {
+      chrome.audio.setMute(
+          'INPUT', !originalValue, chrome.test.callbackPass(function() {
+            getMute(function(value) {
+              chrome.test.assertEq(!originalValue, value);
+            });
+          }));
+    });
+  },
+
+  function outputMuteTest() {
+    var getMute = function(callback) {
+      chrome.audio.getMute('OUTPUT', chrome.test.callbackPass(callback));
+    };
+    getMute(function(originalValue) {
+      chrome.audio.setMute(
+          'OUTPUT', !originalValue, chrome.test.callbackPass(function() {
+            getMute(function(value) {
+              chrome.test.assertEq(!originalValue, value);
+            });
+          }));
+    });
+  },
+
   function setPropertiesInvalidValuesTest() {
     getDevices(function(originalOutputInfo, originalInputInfo) {
       var expectedInput = deviceListToExpectedDevicesMap(originalInputInfo);
       var expectedOutput = deviceListToExpectedDevicesMap(originalOutputInfo);
+      var expectedError = 'Could not set volume/gain properties';
 
-      chrome.audio.setProperties('30001', {
-        isMuted: true,
-        // Output device - should have volume set.
-        gain: 55
-      }, chrome.test.callbackFail('Could not set properties', function() {
-        chrome.audio.setProperties('40002', {
-          isMuted: true,
-          // Input device - should have gain set.
-          volume:55
-        }, chrome.test.callbackFail('Could not set properties', function() {
-          // Assert that device properties haven't changed.
-          getDevices(function(outputInfo, inputInfo) {
-            assertDevicesMatch(expectedOutput, outputInfo);
-            assertDevicesMatch(expectedInput, inputInfo);
-          });
-        }));
-      }));
+      chrome.audio.setProperties(
+          '30001', {
+            isMuted: true,
+            // Output device - should have volume set.
+            gain: 55
+          },
+          chrome.test.callbackFail(expectedError, function() {
+            chrome.audio.setProperties(
+                '40002', {
+                  isMuted: true,
+                  // Input device - should have gain set.
+                  volume: 55
+                },
+                chrome.test.callbackFail(expectedError, function() {
+                  // Assert that device properties haven't changed.
+                  getDevices(function(outputInfo, inputInfo) {
+                    assertDevicesMatch(expectedOutput, outputInfo);
+                    assertDevicesMatch(expectedInput, inputInfo);
+                  });
+                }));
+          }));
     });
   },
 

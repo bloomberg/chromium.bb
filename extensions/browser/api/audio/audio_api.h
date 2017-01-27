@@ -68,6 +68,24 @@ class AudioSetPropertiesFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AudioSetMuteFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("audio.setMute", AUDIO_SETMUTE);
+
+ protected:
+  ~AudioSetMuteFunction() override {}
+  ResponseAction Run() override;
+};
+
+class AudioGetMuteFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("audio.getMute", AUDIO_GETMUTE);
+
+ protected:
+  ~AudioGetMuteFunction() override {}
+  ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_AUDIO_AUDIO_API_H_

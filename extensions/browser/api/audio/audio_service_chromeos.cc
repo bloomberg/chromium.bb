@@ -39,10 +39,12 @@ class AudioServiceImpl : public AudioService,
   bool SetActiveDeviceLists(
       const std::unique_ptr<DeviceIdList>& input_devices,
       const std::unique_ptr<DeviceIdList>& output_devives) override;
-  bool SetDeviceProperties(const std::string& device_id,
-                           bool muted,
+  bool SetDeviceSoundLevel(const std::string& device_id,
                            int volume,
                            int gain) override;
+  bool SetMuteForDevice(const std::string& device_id, bool value) override;
+  bool SetMute(bool is_input, bool value) override;
+  bool GetMute(bool is_input, bool* value) override;
 
  protected:
   // chromeos::CrasAudioHandler::AudioObserver overrides.
@@ -182,8 +184,7 @@ bool AudioServiceImpl::SetActiveDeviceLists(
   return success;
 }
 
-bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
-                                           bool muted,
+bool AudioServiceImpl::SetDeviceSoundLevel(const std::string& device_id,
                                            int volume,
                                            int gain) {
   DCHECK(cras_audio_handler_);
@@ -195,8 +196,6 @@ bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
   if (!device)
     return false;
 
-  cras_audio_handler_->SetMuteForDevice(device->id, muted);
-
   if (!device->is_input && volume != -1) {
     cras_audio_handler_->SetVolumeGainPercentForDevice(device->id, volume);
     return true;
@@ -206,6 +205,45 @@ bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
   }
 
   return false;
+}
+
+bool AudioServiceImpl::SetMuteForDevice(const std::string& device_id,
+                                        bool value) {
+  DCHECK(cras_audio_handler_);
+  if (!cras_audio_handler_)
+    return false;
+
+  const chromeos::AudioDevice* device =
+      cras_audio_handler_->GetDeviceFromId(GetIdFromStr(device_id));
+  if (!device)
+    return false;
+
+  cras_audio_handler_->SetMuteForDevice(device->id, value);
+  return true;
+}
+
+bool AudioServiceImpl::SetMute(bool is_input, bool value) {
+  DCHECK(cras_audio_handler_);
+  if (!cras_audio_handler_)
+    return false;
+
+  if (is_input)
+    cras_audio_handler_->SetInputMute(value);
+  else
+    cras_audio_handler_->SetOutputMute(value);
+  return true;
+}
+
+bool AudioServiceImpl::GetMute(bool is_input, bool* value) {
+  DCHECK(cras_audio_handler_);
+  if (!cras_audio_handler_)
+    return false;
+
+  if (is_input)
+    *value = cras_audio_handler_->IsInputMuted();
+  else
+    *value = cras_audio_handler_->IsOutputMuted();
+  return true;
 }
 
 uint64_t AudioServiceImpl::GetIdFromStr(const std::string& id_str) {
@@ -293,6 +331,9 @@ void AudioServiceImpl::NotifyDevicesChanged() {
   for (size_t i = 0; i < devices.size(); ++i) {
     AudioDeviceInfo info;
     info.id = base::Uint64ToString(devices[i].id);
+    info.stream_type = devices[i].is_input
+                           ? extensions::api::audio::STREAM_TYPE_INPUT
+                           : extensions::api::audio::STREAM_TYPE_OUTPUT;
     info.is_input = devices[i].is_input;
     info.device_type = chromeos::AudioDevice::GetTypeString(devices[i].type);
     info.display_name = devices[i].display_name;

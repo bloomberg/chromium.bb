@@ -1218,6 +1218,8 @@ enum HistogramValue {
   NETWORKINGPRIVATE_GETGLOBALPOLICY,
   DIAL_FETCHDEVICEDESCRIPTION,
   SYSTEM_DISPLAY_STARTCUSTOMTOUCHCALIBRATION,
+  AUDIO_GETMUTE,
+  AUDIO_SETMUTE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
