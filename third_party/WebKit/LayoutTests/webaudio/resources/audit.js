@@ -887,6 +887,23 @@ window.Audit = (function () {
       return this._assert(passed, passDetail, failDetail);
     }
 
+    /**
+     * A temporary escape hat for printing an in-task message. The description
+     * for the |actual| is required to get the message printed properly.
+     *
+     * TODO(hongchan): remove this method when the transition from the old Audit
+     * to the new Audit is completed.
+     * @example
+     *   should(true, 'The message is').message('truthful!', 'false!');
+     *
+     * @result
+     *   "PASS   The message is truthful!"
+     */
+    message(passDetail, failDetail) {
+      return this._assert(this._actual,
+                          '${actual} ' + passDetail,
+                          '${actual} ' + failDetail);
+    }
   }
 
 

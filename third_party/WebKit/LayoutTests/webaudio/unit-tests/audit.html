@@ -29,6 +29,7 @@
       should(1).beLessThan(2);
       should(1).beLessThanOrEqualTo(1);
       should(should(1).beEqualTo(1), 'should(1).beEqualTo(1)').beTrue();
+      should(true, 'The message is').message('truthful!', 'false!');
 
       let oac = new OfflineAudioContext(1, 128, 44100);
       Promise.all([
