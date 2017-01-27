@@ -13,6 +13,7 @@
 #include "modules/mediasession/MediaMetadataSanitizer.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 #include "wtf/Optional.h"
 #include <memory>
 
@@ -205,8 +206,12 @@ mojom::blink::MediaSessionService* MediaSession::getService() {
     return nullptr;
 
   interfaceProvider->getInterface(mojo::MakeRequest(&m_service));
-  if (m_service.get())
+  if (m_service.get()) {
+    // Record the eTLD+1 of the frame using the API.
+    Platform::current()->recordRapporURL("Media.Session.APIUsage.Origin",
+                                         document->url());
     m_service->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
+  }
 
   return m_service.get();
 }
