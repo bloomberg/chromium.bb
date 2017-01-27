@@ -20,6 +20,7 @@
 #include "components/ui_devtools/devtools_server.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -286,9 +287,8 @@ class DevToolsUIBindingsEnabler
  private:
   // contents::WebContentsObserver overrides.
   void WebContentsDestroyed() override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   DevToolsUIBindings bindings_;
   GURL url_;
@@ -311,10 +311,12 @@ void DevToolsUIBindingsEnabler::WebContentsDestroyed() {
   delete this;
 }
 
-void DevToolsUIBindingsEnabler::DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) {
-  if (url_ != params.url)
+void DevToolsUIBindingsEnabler::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
+  if (url_ != navigation_handle->GetURL())
     delete this;
 }
 
