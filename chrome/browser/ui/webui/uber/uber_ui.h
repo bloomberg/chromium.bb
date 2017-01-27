@@ -29,10 +29,8 @@ class SubframeLogger : public content::WebContentsObserver {
   ~SubframeLogger() override;
 
   // content::WebContentsObserver implementation.
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SubframeLogger);
