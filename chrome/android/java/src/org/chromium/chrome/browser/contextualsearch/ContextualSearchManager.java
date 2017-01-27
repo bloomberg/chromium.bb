@@ -845,7 +845,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      * @param isEnabled Whether the feature is enabled.
      */
     public void onContextualSearchPrefChanged(boolean isEnabled) {
-        mSearchPanel.onContextualSearchPrefChanged(isEnabled);
+        // The pref may be automatically changed during application startup due to enterprise
+        // configuration settings, so we may not have a panel yet.
+        if (mSearchPanel != null) mSearchPanel.onContextualSearchPrefChanged(isEnabled);
     }
 
     @Override
