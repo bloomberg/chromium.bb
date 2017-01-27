@@ -15,7 +15,7 @@ message SystemState {
   // TODO(manzagop): flesh out.
 }
 
-// Next id: 8
+// Next id: 10
 message CodeModule {
   // The base address of this code module as it was loaded by the process.
   optional int64 base_address = 1;
@@ -49,6 +49,11 @@ message CodeModule {
 
   // A human-readable representation of the code module's version.
   optional string version = 7;
+
+  optional int64 shrink_down_delta = 8;
+
+  // Whether the module was still loaded into memory.
+  optional bool is_unloaded = 9;
 }
 
 // A typed value holds values of interest or references to such values.

@@ -585,7 +585,7 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
             collector.Collect(debug_file_path(), &report));
   ASSERT_NE(nullptr, report);
 
-  // Validate the report's log content.
+  // Validate the report's user data.
   const auto& collected_data = report->global_data();
   ASSERT_EQ(8U, collected_data.size());
 
@@ -626,6 +626,54 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
       collected_data.at("sref").string_reference();
   EXPECT_EQ(reinterpret_cast<uintptr_t>(string2), sref.address());
   EXPECT_EQ(strlen(string2), static_cast<uint64_t>(sref.size()));
+}
+
+TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
+       ModuleCollection) {
+  // Record some module information.
+  GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
+                                        "", 3);
+
+  base::debug::GlobalActivityTracker::ModuleInfo module_info = {};
+  module_info.is_loaded = true;
+  module_info.address = 0x123456;
+  module_info.load_time = 1111LL;
+  module_info.size = 0x2d000;
+  module_info.timestamp = 0xCAFECAFE;
+  module_info.age = 1;
+  crashpad::UUID debug_uuid;
+  debug_uuid.InitializeFromString("11223344-5566-7788-abcd-0123456789ab");
+  memcpy(module_info.identifier, &debug_uuid, sizeof(module_info.identifier));
+  module_info.file = "foo";
+  module_info.debug_file = "bar";
+
+  GlobalActivityTracker::Get()->RecordModuleInfo(module_info);
+
+  // Collect the stability report.
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName);
+  std::unique_ptr<StabilityReport> report;
+  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
+            collector.Collect(debug_file_path(), &report));
+  ASSERT_NE(nullptr, report);
+
+  // Validate the report's modules content.
+  ASSERT_EQ(1, report->process_states_size());
+  const ProcessState& process_state = report->process_states(0);
+  ASSERT_EQ(1, process_state.modules_size());
+
+  const CodeModule collected_module = process_state.modules(0);
+  EXPECT_EQ(module_info.address,
+            static_cast<uintptr_t>(collected_module.base_address()));
+  EXPECT_EQ(module_info.size, static_cast<size_t>(collected_module.size()));
+  EXPECT_EQ(module_info.file, collected_module.code_file());
+  EXPECT_EQ("CAFECAFE2d000", collected_module.code_identifier());
+  EXPECT_EQ(module_info.debug_file, collected_module.debug_file());
+  EXPECT_EQ("1122334455667788ABCD0123456789AB1",
+            collected_module.debug_identifier());
+  EXPECT_EQ("", collected_module.version());
+  EXPECT_EQ(0LL, collected_module.shrink_down_delta());
+  EXPECT_EQ(!module_info.is_loaded, collected_module.is_unloaded());
 }
 
 }  // namespace browser_watcher

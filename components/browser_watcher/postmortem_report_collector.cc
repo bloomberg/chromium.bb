@@ -25,6 +25,7 @@ namespace browser_watcher {
 using ActivitySnapshot = base::debug::ThreadActivityAnalyzer::Snapshot;
 using base::debug::ActivityUserData;
 using base::debug::GlobalActivityAnalyzer;
+using base::debug::GlobalActivityTracker;
 using base::debug::ThreadActivityAnalyzer;
 using crashpad::CrashReportDatabase;
 
@@ -86,6 +87,39 @@ void CollectUserData(
     }
 
     (*collected_map)[name_and_value.first].Swap(&collected_value);
+  }
+}
+
+void CollectModuleInformation(
+    const std::vector<GlobalActivityTracker::ModuleInfo>& modules,
+    ProcessState* process_state) {
+  DCHECK(process_state);
+
+  char code_identifier[17];
+  char debug_identifier[41];
+
+  for (const GlobalActivityTracker::ModuleInfo& recorded : modules) {
+    CodeModule* collected = process_state->add_modules();
+    collected->set_base_address(recorded.address);
+    collected->set_size(recorded.size);
+    collected->set_code_file(recorded.file);
+
+    // Compute the code identifier using the required format.
+    snprintf(code_identifier, sizeof(code_identifier), "%08X%zx",
+             recorded.timestamp, recorded.size);
+    collected->set_code_identifier(code_identifier);
+    collected->set_debug_file(recorded.debug_file);
+
+    // Compute the debug identifier using the required format.
+    const crashpad::UUID* uuid =
+        reinterpret_cast<const crashpad::UUID*>(recorded.identifier);
+    snprintf(debug_identifier, sizeof(debug_identifier),
+             "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%x", uuid->data_1,
+             uuid->data_2, uuid->data_3, uuid->data_4[0], uuid->data_4[1],
+             uuid->data_5[0], uuid->data_5[1], uuid->data_5[2], uuid->data_5[3],
+             uuid->data_5[4], uuid->data_5[5], recorded.age);
+    collected->set_debug_identifier(debug_identifier);
+    collected->set_is_unloaded(!recorded.is_loaded);
   }
 }
 
@@ -272,6 +306,9 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
     ThreadState* thread_state = process_state->add_threads();
     CollectThread(thread_analyzer->activity_snapshot(), thread_state);
   }
+
+  // Collect module information.
+  CollectModuleInformation(global_analyzer->GetModules(), process_state);
 
   return SUCCESS;
 }
