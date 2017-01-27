@@ -1534,8 +1534,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
-    speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl(
-        audio_manager_.get(), media_stream_manager_.get()));
+    speech_recognition_manager_.reset(
+        new SpeechRecognitionManagerImpl(media_stream_manager_.get()));
   }
 
   {

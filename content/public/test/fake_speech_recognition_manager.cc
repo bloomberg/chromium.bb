@@ -126,8 +126,6 @@ void FakeSpeechRecognitionManager::AbortAllSessionsForRenderView(
   DCHECK(delegate_);  // We only expect this to be called via |delegate_|.
 }
 
-bool FakeSpeechRecognitionManager::HasAudioInputDevices() { return true; }
-
 int FakeSpeechRecognitionManager::GetSession(int render_process_id,
                                              int render_view_id,
                                              int request_id) const {

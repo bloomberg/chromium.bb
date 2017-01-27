@@ -19,10 +19,6 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.h"
 
-namespace media {
-class AudioManager;
-}
-
 namespace content {
 class BrowserMainLoop;
 class MediaStreamManager;
@@ -72,8 +68,6 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   int GetSession(int render_process_id,
                  int render_view_id,
                  int request_id) const override;
-  bool HasAudioInputDevices() override;
-  void ShowAudioInputSettings() override;
 
   // SpeechRecognitionEventListener methods.
   void OnRecognitionStart(int session_id) override;
@@ -98,8 +92,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   friend class BrowserMainLoop;
   // Needed for dtor.
   friend std::default_delete<SpeechRecognitionManagerImpl>;
-  SpeechRecognitionManagerImpl(media::AudioManager* audio_manager,
-                               MediaStreamManager* media_stream_manager);
+  SpeechRecognitionManagerImpl(MediaStreamManager* media_stream_manager);
   ~SpeechRecognitionManagerImpl() override;
 
  private:
@@ -173,7 +166,6 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   SpeechRecognitionEventListener* GetDelegateListener() const;
   int GetNextSessionID();
 
-  media::AudioManager* audio_manager_;
   MediaStreamManager* media_stream_manager_;
   typedef std::map<int, Session*> SessionsTable;
   SessionsTable sessions_;

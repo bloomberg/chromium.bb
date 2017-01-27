@@ -26,7 +26,6 @@
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_manager.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -43,11 +42,6 @@ SpeechRecognitionManager* SpeechRecognitionManager::manager_for_tests_;
 namespace {
 
 SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
-
-void ShowAudioInputSettingsOnFileThread(media::AudioManager* audio_manager) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  audio_manager->ShowAudioInputSettings();
-}
 
 }  // namespace
 
@@ -67,15 +61,14 @@ SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
 }
 
 SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl(
-      media::AudioManager* audio_manager,
-      MediaStreamManager* media_stream_manager)
-    : audio_manager_(audio_manager),
-      media_stream_manager_(media_stream_manager),
+    MediaStreamManager* media_stream_manager)
+    : media_stream_manager_(media_stream_manager),
       primary_session_id_(kSessionIDInvalid),
       last_session_id_(kSessionIDInvalid),
       is_dispatching_event_(false),
-      delegate_(GetContentClient()->browser()->
-                    CreateSpeechRecognitionManagerDelegate()),
+      delegate_(GetContentClient()
+                    ->browser()
+                    ->CreateSpeechRecognitionManagerDelegate()),
       weak_factory_(this) {
   DCHECK(!g_speech_recognition_manager_impl);
   g_speech_recognition_manager_impl = this;
@@ -647,18 +640,6 @@ SpeechRecognitionManagerImpl::GetDelegateListener() const {
 const SpeechRecognitionSessionConfig&
 SpeechRecognitionManagerImpl::GetSessionConfig(int session_id) const {
   return GetSession(session_id)->config;
-}
-
-bool SpeechRecognitionManagerImpl::HasAudioInputDevices() {
-  return audio_manager_->HasAudioInputDevices();
-}
-
-void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
-  // Since AudioManager::ShowAudioInputSettings can potentially launch external
-  // processes, do that in the FILE thread to not block the calling threads.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&ShowAudioInputSettingsOnFileThread,
-                                     audio_manager_));
 }
 
 SpeechRecognitionManagerImpl::Session::Session()
