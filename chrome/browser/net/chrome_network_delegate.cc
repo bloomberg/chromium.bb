@@ -451,17 +451,27 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
 
 bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
                                             const base::FilePath& path) const {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  return true;
-#else
 #if defined(OS_CHROMEOS)
   // If we're running Chrome for ChromeOS on Linux, we want to allow file
-  // access.
+  // access. This is checked here to make IsAccessAllowed() unit-testable.
   if (!base::SysInfo::IsRunningOnChromeOS() ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     return true;
   }
+#endif
 
+  return IsAccessAllowed(path, profile_path_);
+}
+
+// static
+bool ChromeNetworkDelegate::IsAccessAllowed(
+    const base::FilePath& path,
+    const base::FilePath& profile_path) {
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  return true;
+#else
+
+#if defined(OS_CHROMEOS)
   // Use a whitelist to only allow access to files residing in the list of
   // directories below.
   static const char* const kLocalAccessWhiteList[] = {
@@ -480,11 +490,11 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   // logged in profile.) For the support of multi-profile sessions, we are
   // switching to use explicit "$PROFILE_PATH/Xyz" path and here whitelist such
   // access.
-  if (!profile_path_.empty()) {
-    const base::FilePath downloads = profile_path_.AppendASCII("Downloads");
+  if (!profile_path.empty()) {
+    const base::FilePath downloads = profile_path.AppendASCII("Downloads");
     if (downloads == path.StripTrailingSeparators() || downloads.IsParent(path))
       return true;
-    const base::FilePath webrtc_logs = profile_path_.AppendASCII("WebRTC Logs");
+    const base::FilePath webrtc_logs = profile_path.AppendASCII("WebRTC Logs");
     if (webrtc_logs == path.StripTrailingSeparators() ||
         webrtc_logs.IsParent(path)) {
       return true;

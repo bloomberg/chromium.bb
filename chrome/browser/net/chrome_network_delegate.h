@@ -77,9 +77,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // Also pass through to ChromeExtensionsNetworkDelegate::set_profile().
   void set_profile(void* profile);
 
-  // |profile_path| is used to locate the "Downloads" folder on Chrome OS. If it
-  // is set, the location of the Downloads folder for the profile is added to
-  // the whitelist for accesses via file: scheme.
+  // |profile_path| is used to locate profile specific paths such as the
+  // "Downloads" folder on Chrome OS. If it is set, folders like Downloads
+  // for the profile are added to the whitelist for accesses via file: scheme.
   void set_profile_path(const base::FilePath& profile_path) {
     profile_path_ = profile_path;
   }
@@ -128,6 +128,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
       IntegerPrefMember* force_youtube_restrict,
       StringPrefMember* allowed_domains_for_apps,
       PrefService* pref_service);
+
+  // Returns true if access to |path| is allowed. |profile_path| is used to
+  // locate certain paths on Chrome OS. See set_profile_path() for details.
+  static bool IsAccessAllowed(const base::FilePath& path,
+                              const base::FilePath& profile_path);
 
  private:
   // NetworkDelegate implementation.
