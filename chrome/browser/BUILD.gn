@@ -3673,6 +3673,8 @@ split_static_library("browser") {
       "supervised_user/child_accounts/child_account_service_factory.h",
       "supervised_user/child_accounts/family_info_fetcher.cc",
       "supervised_user/child_accounts/family_info_fetcher.h",
+      "supervised_user/child_accounts/kids_management_api.cc",
+      "supervised_user/child_accounts/kids_management_api.h",
       "supervised_user/child_accounts/permission_request_creator_apiary.cc",
       "supervised_user/child_accounts/permission_request_creator_apiary.h",
       "supervised_user/experimental/safe_search_url_reporter.cc",

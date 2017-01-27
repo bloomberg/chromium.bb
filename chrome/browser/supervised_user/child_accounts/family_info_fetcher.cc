@@ -10,15 +10,15 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/supervised_user/child_accounts/kids_management_api.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-const char kFamilyApiUrl[] = "https://www.googleapis.com/kidsmanagement/v1/";
-const char kGetFamilyProfileApiSuffix[] = "families/mine?alt=json";
-const char kGetFamilyMembersApiSuffix[] = "families/mine/members?alt=json";
+const char kGetFamilyProfileApiPath[] = "families/mine?alt=json";
+const char kGetFamilyMembersApiPath[] = "families/mine/members?alt=json";
 const char kScope[] = "https://www.googleapis.com/auth/kid.family.readonly";
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 const int kNumRetries = 1;
@@ -89,7 +89,6 @@ FamilyInfoFetcher::FamilyInfoFetcher(
       account_id_(account_id),
       token_service_(token_service),
       request_context_(request_context),
-      request_type_(net::URLFetcher::GET),
       access_token_expired_(false) {
 }
 
@@ -118,14 +117,12 @@ bool FamilyInfoFetcher::StringToRole(
 }
 
 void FamilyInfoFetcher::StartGetFamilyProfile() {
-  request_suffix_ = kGetFamilyProfileApiSuffix;
-  request_type_ = net::URLFetcher::GET;
+  request_path_ = kGetFamilyProfileApiPath;
   StartFetching();
 }
 
 void FamilyInfoFetcher::StartGetFamilyMembers() {
-  request_suffix_ = kGetFamilyMembersApiSuffix;
-  request_type_ = net::URLFetcher::GET;
+  request_path_ = kGetFamilyMembersApiPath;
   StartFetching();
 }
 
@@ -141,8 +138,8 @@ void FamilyInfoFetcher::StartFetching() {
 void FamilyInfoFetcher::StartFetchingAccessToken() {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(kScope);
-  access_token_request_ = token_service_->StartRequest(
-    account_id_, scopes, this);
+  access_token_request_ =
+      token_service_->StartRequest(account_id_, scopes, this);
 }
 
 void FamilyInfoFetcher::OnRefreshTokenAvailable(
@@ -172,9 +169,9 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_ = access_token;
 
-  GURL url(kFamilyApiUrl + request_suffix_);
+  GURL url = kids_management_api::GetURL(request_path_);
   const int id = 0;
-  url_fetcher_ = net::URLFetcher::Create(id, url, request_type_, this);
+  url_fetcher_ = net::URLFetcher::Create(id, url, net::URLFetcher::GET, this);
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(),
@@ -226,9 +223,9 @@ void FamilyInfoFetcher::OnURLFetchComplete(
   std::string response_body;
   source->GetResponseAsString(&response_body);
 
-  if (request_suffix_ == kGetFamilyProfileApiSuffix) {
+  if (request_path_ == kGetFamilyProfileApiPath) {
     FamilyProfileFetched(response_body);
-  } else if (request_suffix_ == kGetFamilyMembersApiSuffix) {
+  } else if (request_path_ == kGetFamilyMembersApiPath) {
     FamilyMembersFetched(response_body);
   } else {
     NOTREACHED();

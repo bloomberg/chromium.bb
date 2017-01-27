@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/supervised_user/child_accounts/kids_management_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -30,8 +31,7 @@
 
 using net::URLFetcher;
 
-const char kApiUrl[] =
-    "https://www.googleapis.com/kidsmanagement/v1/people/me/permissionRequests";
+const char kApiPath[] = "people/me/permissionRequests";
 const char kApiScope[] = "https://www.googleapis.com/auth/kid.permission";
 
 const int kNumRetries = 1;
@@ -138,9 +138,9 @@ GURL PermissionRequestCreatorApiary::GetApiUrl() const {
     LOG_IF(WARNING, !url.is_valid())
         << "Got invalid URL for " << switches::kPermissionRequestApiUrl;
     return url;
-  } else {
-    return GURL(kApiUrl);
   }
+
+  return kids_management_api::GetURL(kApiPath);
 }
 
 std::string PermissionRequestCreatorApiary::GetApiScope() const {
