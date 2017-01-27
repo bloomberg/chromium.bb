@@ -163,8 +163,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This also updates |site_for_uma_| when it was Site::OTHER.
   void set_fetch_handler_existence(FetchHandlerExistence existence);
 
-  bool should_exclude_from_uma() const { return should_exclude_from_uma_; }
-
   const std::vector<GURL>& foreign_fetch_scopes() const {
     return foreign_fetch_scopes_;
   }
@@ -834,8 +832,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<base::TickClock> tick_clock_;
 
   std::unique_ptr<PingController> ping_controller_;
-  std::unique_ptr<Metrics> metrics_;
-  const bool should_exclude_from_uma_ = false;
+
+  // Used for recording worker activities (e.g., a ratio of handled events)
+  // while this service worker is running (i.e., after it starts up until it
+  // stops).
+  std::unique_ptr<ServiceWorkerMetrics::ScopedEventRecorder> event_recorder_;
 
   bool stop_when_devtools_detached_ = false;
 

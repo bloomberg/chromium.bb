@@ -553,8 +553,10 @@ void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
       initial_worker_status_ != EmbeddedWorkerStatus::RUNNING) {
     return;
   }
-  if (version->should_exclude_from_uma())
+  if (ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(
+          version->site_for_uma())) {
     return;
+  }
   worker_start_situation_ = version->embedded_worker()->start_situation();
   ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
       worker_ready_time_ - request()->creation_time(), initial_worker_status_,

@@ -211,45 +211,6 @@ base::TimeDelta ServiceWorkerVersion::GetTickDuration(
   return tick_clock_->NowTicks() - time;
 }
 
-class ServiceWorkerVersion::Metrics {
- public:
-  using EventType = ServiceWorkerMetrics::EventType;
-  explicit Metrics(ServiceWorkerVersion* owner, EventType start_worker_purpose)
-      : owner_(owner), start_worker_purpose_(start_worker_purpose) {}
-  ~Metrics() {
-    if (owner_->should_exclude_from_uma_)
-      return;
-    for (const auto& ev : event_stats_) {
-      ServiceWorkerMetrics::RecordEventHandledRatio(
-          ev.first, ev.second.handled_events, ev.second.fired_events);
-    }
-    if (ServiceWorkerMetrics::IsNavigationHintEvent(start_worker_purpose_)) {
-      ServiceWorkerMetrics::RecordNavigationHintPrecision(
-          start_worker_purpose_,
-          event_stats_[EventType::FETCH_MAIN_FRAME].fired_events != 0 ||
-              event_stats_[EventType::FETCH_SUB_FRAME].fired_events != 0);
-    }
-  }
-
-  void RecordEventHandledStatus(EventType event, bool handled) {
-    event_stats_[event].fired_events++;
-    if (handled)
-      event_stats_[event].handled_events++;
-  }
-
- private:
-  struct EventStat {
-    size_t fired_events = 0;
-    size_t handled_events = 0;
-  };
-
-  ServiceWorkerVersion* owner_;
-  std::map<EventType, EventStat> event_stats_;
-  const EventType start_worker_purpose_;
-
-  DISALLOW_COPY_AND_ASSIGN(Metrics);
-};
-
 // A controller for periodically sending a ping to the worker to see
 // if the worker is not stalling.
 class ServiceWorkerVersion::PingController {
@@ -322,8 +283,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       script_cache_map_(this, context),
       tick_clock_(base::WrapUnique(new base::DefaultTickClock)),
       ping_controller_(new PingController(this)),
-      should_exclude_from_uma_(
-          ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)),
       weak_factory_(this) {
   DCHECK_NE(kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
@@ -617,8 +576,8 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
   PendingRequest* request = pending_requests_.Lookup(request_id);
   if (!request)
     return false;
-  // TODO(kinuko): Record other event statuses too.
-  metrics_->RecordEventHandledStatus(request->event_type, was_handled);
+  if (event_recorder_)
+    event_recorder_->RecordEventHandledStatus(request->event_type, was_handled);
   ServiceWorkerMetrics::RecordEventDuration(
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
@@ -1523,10 +1482,14 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
 
 void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
-
-  DCHECK(!metrics_);
   DCHECK(start_worker_first_purpose_);
-  metrics_.reset(new Metrics(this, start_worker_first_purpose_.value()));
+
+  if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)) {
+    DCHECK(!event_recorder_);
+    event_recorder_ =
+        base::MakeUnique<ServiceWorkerMetrics::ScopedEventRecorder>(
+            start_worker_first_purpose_.value());
+  }
 
   // We don't clear |start_worker_first_purpose_| here but clear in
   // FinishStartWorker. This is because StartWorkerInternal may be called
@@ -1856,8 +1819,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   if (!in_dtor_)
     protect = this;
 
-  DCHECK(metrics_);
-  metrics_.reset();
+  event_recorder_.reset();
 
   bool should_restart = !is_redundant() && !start_callbacks_.empty() &&
                         (old_status != EmbeddedWorkerStatus::STARTING) &&
@@ -1908,11 +1870,12 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 }
 
 void ServiceWorkerVersion::OnBeginEvent() {
-  if (should_exclude_from_uma_ ||
-      running_status() != EmbeddedWorkerStatus::RUNNING ||
+  if (running_status() != EmbeddedWorkerStatus::RUNNING ||
       idle_time_.is_null()) {
     return;
   }
+  if (ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_))
+    return;
   ServiceWorkerMetrics::RecordTimeBetweenEvents(tick_clock_->NowTicks() -
                                                 idle_time_);
 }

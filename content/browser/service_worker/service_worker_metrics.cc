@@ -211,6 +211,14 @@ void RecordURLMetricOnUI(const GURL& url) {
       "ServiceWorker.ControlledPageUrl", url);
 }
 
+// Returns true when the event is for a navigation hint.
+bool IsNavigationHintEvent(ServiceWorkerMetrics::EventType event_type) {
+  using EventType = ServiceWorkerMetrics::EventType;
+  return event_type == EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN ||
+         event_type == EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED ||
+         event_type == EventType::NAVIGATION_HINT_LINK_TAP_DOWN;
+}
+
 enum EventHandledRatioType {
   EVENT_HANDLED_NONE,
   EVENT_HANDLED_SOME,
@@ -219,6 +227,93 @@ enum EventHandledRatioType {
 };
 
 }  // namespace
+
+using ScopedEventRecorder = ServiceWorkerMetrics::ScopedEventRecorder;
+
+ScopedEventRecorder::ScopedEventRecorder(
+    ServiceWorkerMetrics::EventType start_worker_purpose)
+    : start_worker_purpose_(start_worker_purpose) {}
+
+ScopedEventRecorder::~ScopedEventRecorder() {
+  for (const auto& ev : event_stats_) {
+    RecordEventHandledRatio(ev.first, ev.second.handled_events,
+                            ev.second.fired_events);
+  }
+  if (IsNavigationHintEvent(start_worker_purpose_)) {
+    RecordNavigationHintPrecision(
+        start_worker_purpose_,
+        event_stats_[EventType::FETCH_MAIN_FRAME].fired_events != 0 ||
+            event_stats_[EventType::FETCH_SUB_FRAME].fired_events != 0);
+  }
+}
+
+void ScopedEventRecorder::RecordEventHandledStatus(
+    ServiceWorkerMetrics::EventType event,
+    bool handled) {
+  event_stats_[event].fired_events++;
+  if (handled)
+    event_stats_[event].handled_events++;
+}
+
+void ScopedEventRecorder::RecordEventHandledRatio(
+    ServiceWorkerMetrics::EventType event,
+    size_t handled_events,
+    size_t fired_events) {
+  if (!fired_events)
+    return;
+  EventHandledRatioType type = EVENT_HANDLED_SOME;
+  if (fired_events == handled_events)
+    type = EVENT_HANDLED_ALL;
+  else if (handled_events == 0)
+    type = EVENT_HANDLED_NONE;
+
+  // For now Fetch and Foreign Fetch are the only types that are recorded.
+  switch (event) {
+    case EventType::FETCH_MAIN_FRAME:
+    case EventType::FETCH_SUB_FRAME:
+    case EventType::FETCH_SHARED_WORKER:
+    case EventType::FETCH_SUB_RESOURCE:
+      UMA_HISTOGRAM_ENUMERATION("ServiceWorker.EventHandledRatioType.Fetch",
+                                type, NUM_EVENT_HANDLED_RATIO_TYPE);
+      break;
+    case EventType::FOREIGN_FETCH:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.EventHandledRatioType.ForeignFetch", type,
+          NUM_EVENT_HANDLED_RATIO_TYPE);
+      break;
+    default:
+      // Do nothing.
+      break;
+  }
+}
+
+void ScopedEventRecorder::RecordNavigationHintPrecision(
+    ServiceWorkerMetrics::EventType start_worker_purpose,
+    bool frame_fetch_event_fired) {
+  DCHECK(IsNavigationHintEvent(start_worker_purpose));
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.NavigationHintPrecision",
+                        frame_fetch_event_fired);
+  switch (start_worker_purpose) {
+    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
+      UMA_HISTOGRAM_BOOLEAN(
+          "ServiceWorker.NavigationHintPrecision.LINK_MOUSE_DOWN",
+          frame_fetch_event_fired);
+      break;
+    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
+      UMA_HISTOGRAM_BOOLEAN(
+          "ServiceWorker.NavigationHintPrecision.LINK_TAP_UNCONFIRMED",
+          frame_fetch_event_fired);
+      break;
+    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
+      UMA_HISTOGRAM_BOOLEAN(
+          "ServiceWorker.NavigationHintPrecision.LINK_TAP_DOWN",
+          frame_fetch_event_fired);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
 
 const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
   switch (event_type) {
@@ -289,12 +384,6 @@ ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
   if ((host == "docs.google.com") || (host == "drive.google.com"))
     return ServiceWorkerMetrics::Site::DOCS;
   return ServiceWorkerMetrics::Site::OTHER;
-}
-
-bool ServiceWorkerMetrics::IsNavigationHintEvent(EventType event_type) {
-  return event_type == EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN ||
-         event_type == EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED ||
-         event_type == EventType::NAVIGATION_HINT_LINK_TAP_DOWN;
 }
 
 bool ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(Site site) {
@@ -517,37 +606,6 @@ void ServiceWorkerMetrics::RecordForeignFetchRegistrationCount(
   }
 }
 
-void ServiceWorkerMetrics::RecordEventHandledRatio(EventType event,
-                                                   size_t handled_events,
-                                                   size_t fired_events) {
-  if (!fired_events)
-    return;
-  EventHandledRatioType type = EVENT_HANDLED_SOME;
-  if (fired_events == handled_events)
-    type = EVENT_HANDLED_ALL;
-  else if (handled_events == 0)
-    type = EVENT_HANDLED_NONE;
-
-  // For now Fetch and Foreign Fetch are the only types that are recorded.
-  switch (event) {
-    case EventType::FETCH_MAIN_FRAME:
-    case EventType::FETCH_SUB_FRAME:
-    case EventType::FETCH_SHARED_WORKER:
-    case EventType::FETCH_SUB_RESOURCE:
-      UMA_HISTOGRAM_ENUMERATION("ServiceWorker.EventHandledRatioType.Fetch",
-                                type, NUM_EVENT_HANDLED_RATIO_TYPE);
-      break;
-    case EventType::FOREIGN_FETCH:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.EventHandledRatioType.ForeignFetch", type,
-          NUM_EVENT_HANDLED_RATIO_TYPE);
-      break;
-    default:
-      // Do nothing.
-      break;
-  }
-}
-
 void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
                                                        base::TimeDelta time,
                                                        Site site_for_metrics) {
@@ -556,34 +614,6 @@ void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
   const std::string event_type_suffix = EventTypeToSuffix(event_type);
   const std::string site_suffix = GetSiteSuffix(site_for_metrics);
   RecordSuffixedTimeHistogram(name, event_type_suffix + site_suffix, time);
-}
-
-void ServiceWorkerMetrics::RecordNavigationHintPrecision(
-    EventType start_worker_purpose,
-    bool frame_fetch_event_fired) {
-  DCHECK(IsNavigationHintEvent(start_worker_purpose));
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.NavigationHintPrecision",
-                        frame_fetch_event_fired);
-  switch (start_worker_purpose) {
-    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
-      UMA_HISTOGRAM_BOOLEAN(
-          "ServiceWorker.NavigationHintPrecision.LINK_MOUSE_DOWN",
-          frame_fetch_event_fired);
-      break;
-    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
-      UMA_HISTOGRAM_BOOLEAN(
-          "ServiceWorker.NavigationHintPrecision.LINK_TAP_UNCONFIRMED",
-          frame_fetch_event_fired);
-      break;
-    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
-      UMA_HISTOGRAM_BOOLEAN(
-          "ServiceWorker.NavigationHintPrecision.LINK_TAP_DOWN",
-          frame_fetch_event_fired);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {
