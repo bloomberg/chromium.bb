@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/strings/string_split.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/chromeos_paths.h"
@@ -23,6 +24,9 @@
 namespace em = enterprise_management;
 
 namespace {
+
+const size_t kMaxMachineNameLength = 15;
+const char kInvalidMachineNameCharacters[] = "\\/:*?\"<>|";
 
 // Drop stub policy file of |policy_type| at |policy_path| containing
 // |serialized_payload|.
@@ -65,6 +69,25 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
                                         const std::string& user_principal_name,
                                         int password_fd,
                                         const JoinCallback& callback) {
+  if (machine_name.size() > kMaxMachineNameLength) {
+    callback.Run(authpolicy::ERROR_MACHINE_NAME_TOO_LONG);
+    return;
+  }
+
+  if (machine_name.empty() ||
+      machine_name.find_first_of(kInvalidMachineNameCharacters) !=
+          std::string::npos) {
+    callback.Run(authpolicy::ERROR_BAD_MACHINE_NAME);
+    return;
+  }
+
+  std::vector<std::string> parts = base::SplitString(
+      user_principal_name, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (parts.size() != 2 || parts[0].empty() || parts[1].empty()) {
+    callback.Run(authpolicy::ERROR_PARSE_UPN_FAILED);
+    return;
+  }
+
   callback.Run(authpolicy::ERROR_NONE);
 }
 

@@ -441,6 +441,7 @@
       'dbus/cras_audio_client_unittest.cc',
       'dbus/cros_disks_client_unittest.cc',
       'dbus/dbus_thread_manager_unittest.cc',
+      'dbus/fake_auth_policy_client_unittest.cc',
       'dbus/fake_cryptohome_client_unittest.cc',
       'dbus/fake_easy_unlock_client_unittest.cc',
       'dbus/fake_power_manager_client_unittest.cc',

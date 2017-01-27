@@ -124,6 +124,8 @@ Polymer({
   onSubmit_: function() {
     if (this.showMachineInput && !this.$.machineNameInput.checkValidity())
       return;
+    if (!this.$.userInput.checkValidity())
+      return;
     if (!this.$.passwordInput.checkValidity())
       return;
     var user = /** @type {string} */ (this.$.userInput.value);
