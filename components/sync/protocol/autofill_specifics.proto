@@ -123,6 +123,9 @@ message WalletMaskedCreditCard {
 
   // Card class: credit, debit, or prepaid.
   optional WalletCardClass card_class = 9;
+
+  // Issuing Bank name which is internationalized (e.g. "Chase", "工商银行")
+  optional string bank_name = 10;
 }
 
 // Different than an AutofillProfile because this represents some known address
