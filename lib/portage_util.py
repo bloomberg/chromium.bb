@@ -1655,6 +1655,15 @@ def GetBinaryPackagePath(c, p, v, sysroot='/', packages_dir=None):
   return path
 
 
+def GetBoardUseFlags(board):
+  """Returns a list of USE flags in effect for a board."""
+  portageq = 'portageq-%s' % board
+  cmd = [portageq, 'envvar', 'USE']
+  return cros_build_lib.RunCommand(
+      cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+      capture_output=True).output.split()
+
+
 def GetPackageDependencies(board, package):
   """Returns the depgraph list of packages for a board and package."""
   emerge = 'emerge-%s' % board

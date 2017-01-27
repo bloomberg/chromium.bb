@@ -802,6 +802,10 @@ class _BuilderRunBase(object):
 
     return calc_version
 
+  def HasUseFlag(self, board, use_flag):
+    """Return the state of a USE flag for a board as a boolean."""
+    return use_flag in portage_util.GetBoardUseFlags(board)
+
   def DetermineAndroidBranch(self, board):
     """Returns the Android branch in use by the active container ebuild."""
     try:

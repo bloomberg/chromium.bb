@@ -82,10 +82,11 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
                            generic_stages.ArchivingStageMixin):
   """Stage that records Android container version in metadata.
 
-  This should attempt to generate three types of metadata:
+  This should attempt to generate four types of metadata:
   - a unique Android version if it exists.
   - a unique Android branch if it exists.
   - a per-board Android version for each board.
+  - a per-board arc USE flag value.
   """
 
   def __init__(self, builder_run, **kwargs):
@@ -136,6 +137,11 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
           logging.info('Board %s has Android branch %s', board, branch)
         except cbuildbot_run.NoAndroidBranchError as ex:
           logging.info('Board %s does not contain Android (%s)', board, ex)
+        arc_use = self._run.HasUseFlag(board, 'arc')
+        logging.info('Board %s %s arc USE flag set.', board,
+                     'has' if arc_use else 'does not have')
+        builder_run.attrs.metadata.UpdateBoardDictWithDict(
+            board, {'arc-use-set': arc_use})
     # If there wasn't a version or branch specified in the manifest but there is
     # a unique one across all the boards, treat it as the version for the
     # entire step.
