@@ -69,9 +69,15 @@ void MenuRunnerImpl::Release() {
       controller_->Cancel(MenuController::EXIT_DESTROYED);
       return;
     }
-  }
 
-  delete this;
+    // TODO(jonross): remove after tracking down the cause of
+    // (crbug.com/683087).
+    // Update for the ASAN stack trace to determine if we are in the running
+    // state during the incorrect destruction order.
+    delete this;
+  } else {
+    delete this;
+  }
 }
 
 MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
@@ -85,6 +91,12 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
     // doesn't handle this very well (meaning it crashes).
     return MenuRunner::NORMAL_EXIT;
   }
+
+  // TODO(jonross): remove after tracking down the cause of (crbug.com/683087).
+  // Verify that this was not a delegate previously used for a run, which was
+  // shutdown, but not deleted. Nesting the same delegate multiple times is
+  // dangerous.
+  CHECK(!controller_);
 
   MenuController* controller = MenuController::GetActiveInstance();
   if (controller) {
@@ -121,6 +133,8 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
   if (!controller) {
     // No menus are showing, show one.
     controller = new MenuController(!for_drop_, this);
+    // TODO(jonross): remove after tracking down the cause of
+    // (crbug.com/683087).
     owns_controller_ = true;
   }
   controller->SetAsyncRun(async_);
@@ -190,8 +204,9 @@ MenuRunner::RunResult MenuRunnerImpl::MenuDone(NotifyType type,
     // We created the controller and need to delete it.
     delete controller_.get();
     owns_controller_ = false;
+    controller_ = nullptr;
   }
-  controller_ = nullptr;
+
   // Make sure all the windows we created to show the menus have been
   // destroyed.
   menu_->DestroyAllMenuHosts();
