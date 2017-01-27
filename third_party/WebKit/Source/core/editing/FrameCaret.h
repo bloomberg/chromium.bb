@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class CaretBase;
+class CaretDisplayItemClient;
 class CharacterData;
 class DisplayItemClient;
 class Document;
@@ -106,7 +106,7 @@ class CORE_EXPORT FrameCaret final
 
   const Member<const SelectionEditor> m_selectionEditor;
   const Member<LocalFrame> m_frame;
-  const std::unique_ptr<CaretBase> m_caretBase;
+  const std::unique_ptr<CaretDisplayItemClient> m_caretBase;
   // The last node which painted the caret. Retained for clearing the old
   // caret when it moves.
   Member<Node> m_previousCaretNode;

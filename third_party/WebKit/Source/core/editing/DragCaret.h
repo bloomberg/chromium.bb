@@ -28,7 +28,7 @@
 #define DragCaret_h
 
 #include "core/dom/SynchronousMutationObserver.h"
-#include "core/editing/CaretBase.h"
+#include "core/editing/CaretDisplayItemClient.h"
 #include <memory>
 
 namespace blink {
@@ -68,7 +68,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   // caret rect in coords local to the layoutObject responsible for painting the
   // caret
   LayoutRect m_caretLocalRect;
-  const std::unique_ptr<CaretBase> m_caretBase;
+  const std::unique_ptr<CaretDisplayItemClient> m_caretBase;
 };
 
 }  // namespace blink

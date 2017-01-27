@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CaretBase_h
-#define CaretBase_h
+#ifndef CaretDisplayItemClient_h
+#define CaretDisplayItemClient_h
 
 #include "core/editing/PositionWithAffinity.h"
 #include "platform/geometry/IntRect.h"
@@ -38,12 +38,12 @@ namespace blink {
 class GraphicsContext;
 class LayoutBlock;
 
-class CaretBase final : public DisplayItemClient {
-  WTF_MAKE_NONCOPYABLE(CaretBase);
+class CaretDisplayItemClient final : public DisplayItemClient {
+  WTF_MAKE_NONCOPYABLE(CaretDisplayItemClient);
 
  public:
-  CaretBase();
-  virtual ~CaretBase();
+  CaretDisplayItemClient();
+  virtual ~CaretDisplayItemClient();
 
   // Creating VisiblePosition causes synchronous layout so we should use the
   // PositionWithAffinity version if possible.
@@ -69,4 +69,4 @@ class CaretBase final : public DisplayItemClient {
 
 }  // namespace blink
 
-#endif  // CaretBase_h
+#endif  // CaretDisplayItemClient_h

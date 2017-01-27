@@ -26,7 +26,7 @@
 #include "core/editing/FrameCaret.h"
 
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/editing/CaretBase.h"
+#include "core/editing/CaretDisplayItemClient.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SelectionEditor.h"
@@ -48,7 +48,7 @@ FrameCaret::FrameCaret(LocalFrame& frame,
                        const SelectionEditor& selectionEditor)
     : m_selectionEditor(&selectionEditor),
       m_frame(frame),
-      m_caretBase(new CaretBase()),
+      m_caretBase(new CaretDisplayItemClient()),
       m_caretVisibility(CaretVisibility::Hidden),
       m_previousCaretVisibility(CaretVisibility::Hidden),
       m_caretBlinkTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
@@ -230,7 +230,7 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
 }
 
 static IntRect absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) {
-  LayoutBlock* caretPainter = CaretBase::caretLayoutObject(node);
+  LayoutBlock* caretPainter = CaretDisplayItemClient::caretLayoutObject(node);
   if (!caretPainter)
     return IntRect();
 
@@ -255,11 +255,11 @@ IntRect FrameCaret::absoluteCaretBounds() const {
   if (enclosingTextControl(caretPosition().position()) &&
       isVisuallyEquivalentCandidate(caretPosition().position())) {
     return absoluteBoundsForLocalRect(
-        caretNode, CaretBase::computeCaretRect(caretPosition()));
+        caretNode, CaretDisplayItemClient::computeCaretRect(caretPosition()));
   }
   return absoluteBoundsForLocalRect(
       caretNode,
-      CaretBase::computeCaretRect(
+      CaretDisplayItemClient::computeCaretRect(
           createVisiblePosition(caretPosition()).toPositionWithAffinity()));
 }
 
@@ -280,7 +280,7 @@ void FrameCaret::paintCaret(GraphicsContext& context,
     return;
 
   const LayoutRect caretLocalRect =
-      CaretBase::computeCaretRect(caretPosition());
+      CaretDisplayItemClient::computeCaretRect(caretPosition());
   m_caretBase->paintCaret(caretPosition().anchorNode(), context, caretLocalRect,
                           paintOffset, DisplayItem::kCaret);
 }

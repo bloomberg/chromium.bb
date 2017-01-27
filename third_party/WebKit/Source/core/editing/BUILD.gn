@@ -7,8 +7,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 blink_core_sources("editing") {
   split_count = 5
   sources = [
-    "CaretBase.cpp",
-    "CaretBase.h",
+    "CaretDisplayItemClient.cpp",
+    "CaretDisplayItemClient.h",
     "CompositionUnderline.cpp",
     "CompositionUnderline.h",
     "DOMSelection.cpp",

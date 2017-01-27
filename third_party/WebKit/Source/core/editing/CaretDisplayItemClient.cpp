@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/CaretBase.h"
+#include "core/editing/CaretDisplayItemClient.h"
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
@@ -42,14 +42,14 @@
 
 namespace blink {
 
-CaretBase::CaretBase() = default;
-CaretBase::~CaretBase() = default;
+CaretDisplayItemClient::CaretDisplayItemClient() = default;
+CaretDisplayItemClient::~CaretDisplayItemClient() = default;
 
 static inline bool caretRendersInsideNode(Node* node) {
   return node && !isDisplayInsideTable(node) && !editingIgnoresContent(*node);
 }
 
-LayoutBlock* CaretBase::caretLayoutObject(Node* node) {
+LayoutBlock* CaretDisplayItemClient::caretLayoutObject(Node* node) {
   if (!node)
     return nullptr;
 
@@ -92,7 +92,7 @@ static LayoutRect mapCaretRectToCaretPainter(
   return caretRect;
 }
 
-LayoutRect CaretBase::computeCaretRect(
+LayoutRect CaretDisplayItemClient::computeCaretRect(
     const PositionWithAffinity& caretPosition) {
   if (caretPosition.isNull())
     return LayoutRect();
@@ -116,7 +116,8 @@ LayoutRect CaretBase::computeCaretRect(
 // TODO(yoichio): |node| is FrameSelection::m_previousCaretNode and this is bad
 // design. We should use only previous layoutObject or Rectangle to invalidate
 // old caret.
-void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect) {
+void CaretDisplayItemClient::invalidateLocalCaretRect(Node* node,
+                                                      const LayoutRect& rect) {
   LayoutBlock* caretLayoutBlock = caretLayoutObject(node);
   if (!caretLayoutBlock)
     return;
@@ -134,11 +135,11 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect) {
       node->layoutObject()->invalidatePaintRectangle(inflatedRect, this);
 }
 
-void CaretBase::paintCaret(Node* node,
-                           GraphicsContext& context,
-                           const LayoutRect& caretLocalRect,
-                           const LayoutPoint& paintOffset,
-                           DisplayItem::Type displayItemType) {
+void CaretDisplayItemClient::paintCaret(Node* node,
+                                        GraphicsContext& context,
+                                        const LayoutRect& caretLocalRect,
+                                        const LayoutPoint& paintOffset,
+                                        DisplayItem::Type displayItemType) {
   if (DrawingRecorder::useCachedDrawingIfPossible(context, *this,
                                                   displayItemType))
     return;
@@ -156,11 +157,11 @@ void CaretBase::paintCaret(Node* node,
   context.fillRect(paintRect, caretColor);
 }
 
-String CaretBase::debugName() const {
+String CaretDisplayItemClient::debugName() const {
   return "Caret";
 }
 
-LayoutRect CaretBase::visualRect() const {
+LayoutRect CaretDisplayItemClient::visualRect() const {
   return m_visualRect;
 }
 

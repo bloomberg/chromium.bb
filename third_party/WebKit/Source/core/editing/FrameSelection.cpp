@@ -37,7 +37,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/Text.h"
-#include "core/editing/CaretBase.h"
+#include "core/editing/CaretDisplayItemClient.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameCaret.h"
@@ -731,8 +731,8 @@ bool FrameSelection::hasCaretIn(const LayoutBlock& layoubBlock) const {
   DCHECK(selection().isValidFor(document()));
   if (!isCaret())
     return false;
-  return CaretBase::caretLayoutObject(selection().start().anchorNode()) ==
-             layoubBlock &&
+  return CaretDisplayItemClient::caretLayoutObject(
+             selection().start().anchorNode()) == layoubBlock &&
          hasEditableStyle();
 }
 

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-DragCaret::DragCaret() : m_caretBase(new CaretBase()) {}
+DragCaret::DragCaret() : m_caretBase(new CaretDisplayItemClient()) {}
 
 DragCaret::~DragCaret() = default;
 
@@ -44,7 +44,7 @@ bool DragCaret::hasCaretIn(const LayoutBlock& layoutBlock) const {
   Node* node = m_position.anchorNode();
   if (!node)
     return false;
-  if (layoutBlock != CaretBase::caretLayoutObject(node))
+  if (layoutBlock != CaretDisplayItemClient::caretLayoutObject(node))
     return false;
   return rootEditableElementOf(m_position.position());
 }
@@ -85,7 +85,7 @@ void DragCaret::setCaretPosition(const PositionWithAffinity& position) {
   } else {
     DCHECK(!m_position.isOrphan());
     document->updateStyleAndLayoutTree();
-    m_caretLocalRect = CaretBase::computeCaretRect(m_position);
+    m_caretLocalRect = CaretDisplayItemClient::computeCaretRect(m_position);
   }
 }
 
