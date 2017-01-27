@@ -349,6 +349,7 @@ component("net") {
     ":net_resources",
     "//base",
     "//net/base/registry_controlled_domains",
+    "//net/data/ssl/wosign:wosign_domains",
     "//third_party/protobuf:protobuf_lite",
     "//url:url_features",
   ]
@@ -4724,6 +4725,7 @@ test("net_unittests") {
   defines = []
 
   deps = [
+    ":cert_verify_proc_whitelist_unittest_data",
     ":net",
     ":simple_quic_tools",
     ":test_support",
@@ -5142,6 +5144,21 @@ if (!is_ios && !is_proto_quic) {
       ldflags = [ "/LINKREPRO:" + linkrepro_root_dir + "/" + target_name ]
     }
   }
+}
+
+action_foreach("cert_verify_proc_whitelist_unittest_data") {
+  script = "//net/tools/dafsa/make_dafsa.py"
+  sources = [
+    "//net/cert/cert_verify_proc_whitelist_unittest1.gperf",
+  ]
+  outputs = [
+    "${target_gen_dir}/cert/{{source_name_part}}-inc.cc",
+  ]
+  args = [
+    "{{source}}",
+    rebase_path("${target_gen_dir}/cert/{{source_name_part}}-inc.cc",
+                root_build_dir),
+  ]
 }
 
 # Fuzzers
