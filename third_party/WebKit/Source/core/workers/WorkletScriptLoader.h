@@ -5,17 +5,20 @@
 #ifndef WorkletScriptLoader_h
 #define WorkletScriptLoader_h
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/CoreExport.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceOwner.h"
 
 namespace blink {
 
-class Worklet;
+class ResourceFetcher;
+class ScriptSourceCode;
 
-// Class that is responsible for processing {@code resource} that is associated
-// with worklet's import promise.
+// This class is responsible for fetching and loading a worklet script as a
+// classic script. You can access this class only on the main thread.
+// A client of this class receives notifications via Client interface.
+// TODO(nhiroki): Switch to module script loading (https://crbug.com/627945)
 class WorkletScriptLoader final
     : public GarbageCollectedFinalized<WorkletScriptLoader>,
       public ResourceOwner<ScriptResource, ScriptResourceClient> {
@@ -23,38 +26,48 @@ class WorkletScriptLoader final
   WTF_MAKE_NONCOPYABLE(WorkletScriptLoader);
 
  public:
-  static WorkletScriptLoader* create(
-      ScriptPromiseResolver* scriptPromiseResolver,
-      Worklet* worklet,
-      ScriptResource* resource) {
-    return new WorkletScriptLoader(scriptPromiseResolver, worklet, resource);
+  class CORE_EXPORT Client : public GarbageCollectedMixin {
+   public:
+    // Called when resource loading is completed. If loading is failed or
+    // canceled, an empty ScriptSourceCode is passed. You can check if loading
+    // is successfully completed by wasScriptLoadSuccessful().
+    virtual void notifyWorkletScriptLoadingFinished(
+        WorkletScriptLoader*,
+        const ScriptSourceCode&) = 0;
+  };
+
+  static WorkletScriptLoader* create(ResourceFetcher* fetcher, Client* client) {
+    return new WorkletScriptLoader(fetcher, client);
   }
 
   ~WorkletScriptLoader() override = default;
 
-  // Cancels loading of {@code m_resource}.
-  //
-  // Typically it gets called when WorkletScriptLoader's host is about to be
-  // disposed off.
+  // Fetches an URL and loads it as a classic script. Synchronously calls
+  // Client::notifyWorkletScriptLoadingFinished() if there is an error.
+  void fetchScript(const String& scriptURL);
+
+  // Cancels resource loading and synchronously calls
+  // Client::notifyWorkletScriptLoadingFinished().
   void cancel();
+
+  // Returns true if a script was successfully loaded. This should be called
+  // after Client::notifyWorkletScriptLoadingFinished() is called.
+  bool wasScriptLoadSuccessful() const;
 
   DECLARE_TRACE();
 
  private:
-  // Default constructor.
-  //
-  // @param resolver Promise resolver that is used to reject/resolve the promise
-  // on ScriptResourceClient::notifyFinished event.
-  // @param host Host that needs be notified when the resource is downloaded.
-  // @param resource that needs to be downloaded.
-  WorkletScriptLoader(ScriptPromiseResolver*, Worklet* host, ScriptResource*);
+  WorkletScriptLoader(ResourceFetcher*, Client*);
 
   // ResourceClient
   void notifyFinished(Resource*) final;
   String debugName() const final { return "WorkletLoader"; }
 
-  Member<ScriptPromiseResolver> m_resolver;
-  Member<Worklet> m_host;
+  Member<ResourceFetcher> m_fetcher;
+  Member<Client> m_client;
+
+  bool m_wasScriptLoadSuccessful = false;
+  bool m_wasScriptLoadComplete = false;
 };
 
 }  // namespace blink

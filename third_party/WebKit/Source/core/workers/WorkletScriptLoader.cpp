@@ -4,39 +4,65 @@
 
 #include "core/workers/WorkletScriptLoader.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/workers/Worklet.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
+#include "core/loader/FrameFetchContext.h"
+#include "platform/loader/fetch/FetchInitiatorTypeNames.h"
+#include "wtf/WTF.h"
 
 namespace blink {
 
-WorkletScriptLoader::WorkletScriptLoader(ScriptPromiseResolver* resolver,
-                                         Worklet* worklet,
-                                         ScriptResource* resource)
-    : m_resolver(resolver), m_host(worklet) {
+WorkletScriptLoader::WorkletScriptLoader(ResourceFetcher* fetcher,
+                                         Client* client)
+    : m_fetcher(fetcher), m_client(client) {}
+
+void WorkletScriptLoader::fetchScript(const String& scriptURL) {
+  DCHECK(isMainThread());
+  DCHECK(!resource());
+  DCHECK(!m_wasScriptLoadComplete);
+
+  ResourceRequest resourceRequest(scriptURL);
+  resourceRequest.setRequestContext(WebURLRequest::RequestContextScript);
+  FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
+  ScriptResource* resource = ScriptResource::fetch(request, m_fetcher);
+  if (!resource) {
+    notifyFinished(nullptr);
+    return;
+  }
   setResource(resource);
+  // notifyFinished() will be called later.
 }
 
 void WorkletScriptLoader::cancel() {
-  clearResource();
+  DCHECK(isMainThread());
+  if (!resource() || m_wasScriptLoadComplete)
+    return;
+  notifyFinished(nullptr);
 }
 
 void WorkletScriptLoader::notifyFinished(Resource* resource) {
-  DCHECK(this->resource() == resource);
-
-  m_host->notifyFinished(this);
-  if (resource->errorOccurred()) {
-    m_resolver->reject(DOMException::create(NetworkError));
-  } else {
-    DCHECK(resource->isLoaded());
-    m_resolver->resolve();
-  }
+  DCHECK(isMainThread());
+  DCHECK(!m_wasScriptLoadComplete);
   clearResource();
+  m_wasScriptLoadComplete = true;
+  if (!resource || resource->errorOccurred()) {
+    m_client->notifyWorkletScriptLoadingFinished(this, ScriptSourceCode());
+  } else {
+    m_wasScriptLoadSuccessful = true;
+    m_client->notifyWorkletScriptLoadingFinished(
+        this, ScriptSourceCode(static_cast<ScriptResource*>(resource)));
+  }
+  m_fetcher = nullptr;
+  m_client = nullptr;
+}
+
+bool WorkletScriptLoader::wasScriptLoadSuccessful() const {
+  DCHECK(m_wasScriptLoadComplete);
+  return m_wasScriptLoadSuccessful;
 }
 
 DEFINE_TRACE(WorkletScriptLoader) {
-  visitor->trace(m_resolver);
-  visitor->trace(m_host);
+  visitor->trace(m_fetcher);
+  visitor->trace(m_client);
   ResourceOwner<ScriptResource, ScriptResourceClient>::trace(visitor);
 }
 
