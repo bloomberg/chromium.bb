@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -117,28 +118,17 @@ int ExtensionViewGuest::GetTaskPrefix() const {
   return IDS_EXTENSION_TASK_MANAGER_EXTENSIONVIEW_TAG_PREFIX;
 }
 
-void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  if (render_frame_host->GetParent())
+void ExtensionViewGuest::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() || !navigation_handle->IsInMainFrame())
     return;
 
-  url_ = url;
+  url_ = navigation_handle->GetURL();
 
   std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, url_.spec());
   DispatchEventToView(base::MakeUnique<GuestViewEvent>(
       extensionview::kEventLoadCommit, std::move(args)));
-}
-
-void ExtensionViewGuest::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (attached() && !url::IsSameOriginWith(params.url, url_)) {
-    bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
-                                    bad_message::EVG_BAD_ORIGIN);
-  }
 }
 
 void ExtensionViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
