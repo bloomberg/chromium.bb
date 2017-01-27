@@ -122,6 +122,10 @@ EventSource::~EventSource() {
   DCHECK(!m_loader);
 }
 
+void EventSource::dispose() {
+  InspectorInstrumentation::detachClientRequest(getExecutionContext(), this);
+}
+
 void EventSource::scheduleInitialConnect() {
   DCHECK_EQ(kConnecting, m_state);
   DCHECK(!m_loader);
@@ -370,6 +374,7 @@ void EventSource::abortConnectionAttempt() {
 }
 
 void EventSource::contextDestroyed(ExecutionContext*) {
+  InspectorInstrumentation::detachClientRequest(getExecutionContext(), this);
   close();
 }
 

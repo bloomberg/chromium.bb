@@ -212,6 +212,10 @@ class XMLHttpRequest;
     [Network]
     void didFinishFetch([Keep] ExecutionContext*, ThreadableLoaderClient*, const AtomicString& method, const String& url);
 
+    // Detach and remove all references to the given client.
+    [Network]
+    void detachClientRequest(ExecutionContext*, ThreadableLoaderClient*);
+
     [Network]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
 

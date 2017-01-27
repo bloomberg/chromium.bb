@@ -152,6 +152,9 @@ class CORE_EXPORT InspectorNetworkAgent final
                                     const String& data);
   void didFinishEventSourceRequest(ThreadableLoaderClient*);
 
+  // Detach and remove all references to the given client.
+  void detachClientRequest(ThreadableLoaderClient*);
+
   void willDestroyResource(Resource*);
 
   void applyUserAgentOverride(String* userAgent);

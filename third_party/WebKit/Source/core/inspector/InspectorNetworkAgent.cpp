@@ -1025,6 +1025,20 @@ void InspectorNetworkAgent::didFinishEventSourceRequest(
   clearPendingRequestData();
 }
 
+void InspectorNetworkAgent::detachClientRequest(
+    ThreadableLoaderClient* client) {
+  // This method is called by loader clients when finalizing
+  // (i.e., from their "prefinalizers".) The client reference must
+  // no longer be held onto upon completion.
+  if (m_pendingRequest == client) {
+    m_pendingRequest = nullptr;
+    if (m_pendingRequestType == InspectorPageAgent::XHRResource) {
+      m_pendingXHRReplayData.clear();
+    }
+  }
+  m_knownRequestIdMap.remove(client);
+}
+
 void InspectorNetworkAgent::applyUserAgentOverride(String* userAgent) {
   String userAgentOverride;
   m_state->getString(NetworkAgentState::userAgentOverride, &userAgentOverride);

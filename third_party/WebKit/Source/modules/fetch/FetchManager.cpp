@@ -676,6 +676,7 @@ void FetchManager::Loader::start() {
 }
 
 void FetchManager::Loader::dispose() {
+  InspectorInstrumentation::detachClientRequest(m_executionContext, this);
   // Prevent notification
   m_fetchManager = nullptr;
   if (m_loader) {

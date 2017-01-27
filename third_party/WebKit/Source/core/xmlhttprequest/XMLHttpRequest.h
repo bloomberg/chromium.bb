@@ -163,9 +163,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 
-  // (Also) eagerly finalized so as to prevent access to the eagerly finalized
-  // progress event throttle.
-  EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
   DECLARE_TRACE_WRAPPERS();
 

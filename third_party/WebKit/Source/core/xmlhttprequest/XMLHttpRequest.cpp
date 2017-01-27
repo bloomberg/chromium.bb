@@ -1094,10 +1094,9 @@ void XMLHttpRequest::abort() {
 }
 
 void XMLHttpRequest::dispose() {
-  if (m_loader) {
-    m_error = true;
-    m_loader->cancel();
-  }
+  InspectorInstrumentation::detachClientRequest(getExecutionContext(), this);
+  m_progressEventThrottle->stop();
+  internalAbort();
 }
 
 void XMLHttpRequest::clearVariablesForLoading() {
@@ -1118,6 +1117,12 @@ void XMLHttpRequest::clearVariablesForLoading() {
 }
 
 bool XMLHttpRequest::internalAbort() {
+  // Fast path for repeated internalAbort()s; this
+  // will happen if an XHR object is notified of context
+  // destruction followed by finalization.
+  if (m_error && !m_loader)
+    return true;
+
   m_error = true;
 
   if (m_responseDocumentParser && !m_responseDocumentParser->isStopped())
@@ -1808,10 +1813,7 @@ void XMLHttpRequest::resume() {
 }
 
 void XMLHttpRequest::contextDestroyed(ExecutionContext*) {
-  InspectorInstrumentation::didFailXHRLoading(getExecutionContext(), this, this,
-                                              m_method, m_url);
-  m_progressEventThrottle->stop();
-  internalAbort();
+  dispose();
 
   // In case we are in the middle of send() function, unset the send flag to
   // stop the operation.
