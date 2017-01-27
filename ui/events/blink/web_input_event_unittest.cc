@@ -451,13 +451,15 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     MouseEvent ui_event(ET_MOUSE_PRESSED, gfx::Point(123, 321),
                         gfx::Point(123, 321), timestamp, EF_LEFT_MOUSE_BUTTON,
                         EF_LEFT_MOUSE_BUTTON);
-    ui_event.set_pointer_details(
-        PointerDetails(EventPointerType::POINTER_TYPE_PEN,
-                       /* radius_x */ 0.0f,
-                       /* radius_y */ 0.0f,
-                       /* force */ 0.8f,
-                       /* tilt_x */ 89.5f,
-                       /* tilt_y */ -89.5f));
+    PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+                                   /* radius_x */ 0.0f,
+                                   /* radius_y */ 0.0f,
+                                   /* force */ 0.8f,
+                                   /* tilt_x */ 89.5f,
+                                   /* tilt_y */ -89.5f,
+                                   /* tangential_pressure */ 0.6f,
+                                   /* twist */ 269);
+    ui_event.set_pointer_details(pointer_details);
     blink::WebMouseEvent webkit_event =
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
 
@@ -466,8 +468,8 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(90, webkit_event.tiltX);
     EXPECT_EQ(-90, webkit_event.tiltY);
     EXPECT_FLOAT_EQ(0.8f, webkit_event.force);
-    EXPECT_EQ(0.0f, webkit_event.tangentialPressure);
-    EXPECT_EQ(0, webkit_event.twist);
+    EXPECT_FLOAT_EQ(0.6f, webkit_event.tangentialPressure);
+    EXPECT_EQ(269, webkit_event.twist);
     EXPECT_EQ(123, webkit_event.x);
     EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);

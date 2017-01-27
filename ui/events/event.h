@@ -417,7 +417,9 @@ struct EVENTS_EXPORT PointerDetails {
                  float radius_y,
                  float force,
                  float tilt_x,
-                 float tilt_y)
+                 float tilt_y,
+                 float tangential_pressure = 0.0f,
+                 int twist = 0)
       : pointer_type(pointer_type),
         // If we aren't provided with a radius on one axis, use the
         // information from the other axis.
@@ -425,7 +427,9 @@ struct EVENTS_EXPORT PointerDetails {
         radius_y(radius_y > 0 ? radius_y : radius_x),
         force(force),
         tilt_x(tilt_x),
-        tilt_y(tilt_y) {}
+        tilt_y(tilt_y),
+        tangential_pressure(tangential_pressure),
+        twist(twist) {}
   PointerDetails(EventPointerType pointer_type, const gfx::Vector2d& offset)
       : pointer_type(pointer_type),
         force(std::numeric_limits<float>::quiet_NaN()),
@@ -437,7 +441,8 @@ struct EVENTS_EXPORT PointerDetails {
            (force == other.force ||
             (std::isnan(force) && std::isnan(other.force))) &&
            tilt_x == other.tilt_x && tilt_y == other.tilt_y &&
-           offset == other.offset;
+           tangential_pressure == other.tangential_pressure &&
+           twist == other.twist && offset == other.offset;
   }
 
   // The type of pointer device.
@@ -458,6 +463,16 @@ struct EVENTS_EXPORT PointerDetails {
   // is towards the user. 0.0 if unknown.
   float tilt_x = 0.0;
   float tilt_y = 0.0;
+
+  // The normalized tangential pressure (or barrel pressure), typically set by
+  // an additional control of the stylus, which has a range of [-1,1], where 0
+  // is the neutral position of the control. Always 0 if the device does not
+  // support it.
+  float tangential_pressure = 0.0;
+
+  // The clockwise rotation of a pen stylus around its own major axis, in
+  // degrees in the range [0,359]. Always 0 if the device does not support it.
+  int twist = 0;
 
   // Only used by mouse wheel events. The amount to scroll. This is in multiples
   // of kWheelDelta.

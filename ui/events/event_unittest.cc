@@ -680,11 +680,13 @@ TEST(EventTest, PointerDetailsStylus) {
   ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                               gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
   ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
-      /* radius_x */ 0.0f,
-      /* radius_y */ 0.0f,
-      /* force */ 21.0f,
-      /* tilt_x */ 45.0f,
-      /* tilt_y */ -45.0f);
+                                     /* radius_x */ 0.0f,
+                                     /* radius_y */ 0.0f,
+                                     /* force */ 21.0f,
+                                     /* tilt_x */ 45.0f,
+                                     /* tilt_y */ -45.0f,
+                                     /* tangential_pressure */ 0.7f,
+                                     /* twist */ 196);
 
   stylus_event.set_pointer_details(pointer_details);
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
@@ -694,6 +696,8 @@ TEST(EventTest, PointerDetailsStylus) {
   EXPECT_EQ(-45.0f, stylus_event.pointer_details().tilt_y);
   EXPECT_EQ(0.0f, stylus_event.pointer_details().radius_x);
   EXPECT_EQ(0.0f, stylus_event.pointer_details().radius_y);
+  EXPECT_EQ(0.7f, stylus_event.pointer_details().tangential_pressure);
+  EXPECT_EQ(196, stylus_event.pointer_details().twist);
 
   ui::MouseEvent stylus_event_copy(stylus_event);
   EXPECT_EQ(stylus_event.pointer_details(),
@@ -717,7 +721,9 @@ TEST(EventTest, PointerDetailsCustomTouch) {
                                      /* radius_y */ 6.0f,
                                      /* force */ 21.0f,
                                      /* tilt_x */ 45.0f,
-                                     /* tilt_y */ -45.0f);
+                                     /* tilt_y */ -45.0f,
+                                     /* tangential_pressure */ 0.7f,
+                                     /* twist */ 196);
   touch_event.set_pointer_details(pointer_details);
 
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
@@ -727,6 +733,8 @@ TEST(EventTest, PointerDetailsCustomTouch) {
   EXPECT_EQ(-45.0f, touch_event.pointer_details().tilt_y);
   EXPECT_EQ(5.0f, touch_event.pointer_details().radius_x);
   EXPECT_EQ(6.0f, touch_event.pointer_details().radius_y);
+  EXPECT_EQ(0.7f, touch_event.pointer_details().tangential_pressure);
+  EXPECT_EQ(196, touch_event.pointer_details().twist);
 
   ui::TouchEvent touch_event_copy(touch_event);
   EXPECT_EQ(touch_event.pointer_details(), touch_event_copy.pointer_details());
