@@ -375,6 +375,14 @@ class PortTest(unittest.TestCase):
         self.assertEqual(port.reference_files('passes/phpreftest.php'),
                          [('!=', port.layout_tests_dir() + '/passes/phpreftest-expected-mismatch.svg')])
 
+    def test_reference_files_from_manifest(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+
+        self.assertEqual(port.reference_files('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'),
+                         [('==', port.layout_tests_dir() +
+                           '/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html')])
+
     def test_operating_system(self):
         self.assertEqual('mac', self.make_port().operating_system())
 

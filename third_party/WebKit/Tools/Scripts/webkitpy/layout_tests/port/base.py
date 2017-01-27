@@ -652,17 +652,34 @@ class Port(object):
     def reference_files(self, test_name):
         """Return a list of expectation (== or !=) and filename pairs"""
 
+        # Try to extract information from reftest.list.
         reftest_list = self._get_reftest_list(test_name)
-        if not reftest_list:
-            reftest_list = []
-            for expectation, prefix in (('==', ''), ('!=', '-mismatch')):
-                for extension in Port._supported_file_extensions:
-                    path = self.expected_filename(test_name, prefix + extension)
-                    if self._filesystem.exists(path):
-                        reftest_list.append((expectation, path))
+        if reftest_list:
+            return reftest_list.get(self._filesystem.join(self.layout_tests_dir(), test_name), [])
+
+        # Try to find -expected.* or -expected-mismatch.* in the same directory.
+        reftest_list = []
+        for expectation, prefix in (('==', ''), ('!=', '-mismatch')):
+            for extension in Port._supported_file_extensions:
+                path = self.expected_filename(test_name, prefix + extension)
+                if self._filesystem.exists(path):
+                    reftest_list.append((expectation, path))
+        if reftest_list:
             return reftest_list
 
-        return reftest_list.get(self._filesystem.join(self.layout_tests_dir(), test_name), [])  # pylint: disable=E1103
+        # Try to extract information from MANIFEST.json.
+        match = re.match(r'external/wpt/(.*)', test_name)
+        if not match:
+            return []
+        path_in_wpt = match.group(1)
+        all_items = self._wpt_manifest()['items']
+        if path_in_wpt not in all_items['reftest']:
+            return []
+        for item in all_items['reftest'][path_in_wpt]:
+            for ref_path_in_wpt, expectation in item[1]:
+                ref_absolute_path = self._filesystem.join(self.layout_tests_dir(), 'external/wpt' + ref_path_in_wpt)
+                reftest_list.append((expectation, ref_absolute_path))
+        return reftest_list
 
     def tests(self, paths):
         """Return the list of tests found matching paths."""
