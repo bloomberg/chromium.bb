@@ -93,7 +93,7 @@ base::TimeDelta SessionStateAnimator::GetDuration(
     case ANIMATION_SPEED_UNDO_MOVE_WINDOWS:
       return base::TimeDelta::FromMilliseconds(350);
     case ANIMATION_SPEED_SHUTDOWN:
-      return IsTouchViewEnabled() ? base::TimeDelta::FromMilliseconds(2500)
+      return IsTouchViewEnabled() ? base::TimeDelta::FromMilliseconds(1500)
                                   : base::TimeDelta::FromMilliseconds(1000);
     case ANIMATION_SPEED_REVERT_SHUTDOWN:
       return base::TimeDelta::FromMilliseconds(500);
