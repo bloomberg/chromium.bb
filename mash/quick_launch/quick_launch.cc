@@ -134,11 +134,8 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   }
 
   void Launch(const std::string& name, bool new_window) {
-    std::unique_ptr<service_manager::Connection> connection =
-        connector_->Connect(name);
     ::mash::mojom::LaunchablePtr launchable;
-    connection->GetInterface(&launchable);
-    connections_.push_back(std::move(connection));
+    connector_->BindInterface(name, &launchable);
     launchable->Launch(mojom::kWindow,
                        new_window ? mojom::LaunchMode::MAKE_NEW
                                   : mojom::LaunchMode::REUSE);
@@ -147,7 +144,6 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   QuickLaunch* quick_launch_;
   service_manager::Connector* connector_;
   views::Textfield* prompt_;
-  std::vector<std::unique_ptr<service_manager::Connection>> connections_;
   catalog::mojom::CatalogPtr catalog_;
   std::set<base::string16> app_names_;
   bool suggestion_rejected_ = false;
