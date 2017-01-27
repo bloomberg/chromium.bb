@@ -45,7 +45,8 @@ enum GattResult {
   NOT_PAIRED,
   NOT_SUPPORTED,
   SERVICE_NOT_FOUND,
-  CHARACTERISTIC_NOT_FOUND
+  CHARACTERISTIC_NOT_FOUND,
+  DESCRIPTOR_NOT_FOUND
 };
 
 // TODO(crbug.com/657632): Remove when numerical values can be optional.
@@ -77,6 +78,7 @@ struct CharacteristicInfo {
 struct DescriptorInfo {
   string id;
   UUID uuid;
+  array<uint8> last_known_value;
 };
 
 interface Device {
@@ -114,4 +116,16 @@ interface Device {
   // means that no descriptors were found.
   GetDescriptors(string service_id, string characteristic_id) =>
       (array<DescriptorInfo>? descriptors);
+
+  // Reads the value for the GATT Descriptor with |descriptor_id| in the GATT
+  // Characteristic with |characteristic_id| in the GATT Service with
+  // |service_id|.
+  ReadValueForDescriptor(string service_id, string characteristic_id,
+      string descriptor_id) => (GattResult result, array<uint8>? value);
+
+  // Writes the |value| for the GATT Descriptor with |descriptor_id| in the GATT
+  // Characteristic with |characteristic_id| in the GATT Service with
+  // |service_id|.
+  WriteValueForDescriptor(string service_id, string characteristic_id,
+      string descriptor_id, array<uint8> value) => (GattResult result);
 };

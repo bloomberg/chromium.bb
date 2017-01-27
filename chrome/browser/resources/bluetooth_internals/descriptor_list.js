@@ -26,13 +26,23 @@ cr.define('descriptor_list', function() {
    * properties, 'id' and 'uuid' within the DescriptorInfo object.
    * @constructor
    * @param {!interfaces.BluetoothDevice.DescriptorInfo} descriptorInfo
+   * @param {string} deviceAddress
+   * @param {string} serviceId
+   * @param {string} characteristicId
    */
-  function DescriptorListItem(descriptorInfo) {
+  function DescriptorListItem(
+      descriptorInfo, deviceAddress, serviceId, characteristicId) {
     var listItem = new ExpandableListItem();
     listItem.__proto__ = DescriptorListItem.prototype;
 
     /** @type {!interfaces.BluetoothDevice.DescriptorInfo} */
     listItem.info = descriptorInfo;
+    /** @private {string} */
+    listItem.deviceAddress_ = deviceAddress;
+    /** @private {string} */
+    listItem.serviceId_ = serviceId;
+    /** @private {string} */
+    listItem.characteristicId_ = characteristicId;
 
     listItem.decorate();
     return listItem;
@@ -57,6 +67,15 @@ cr.define('descriptor_list', function() {
         'uuid.uuid': this.info.uuid.uuid,
       });
 
+      /** @private {!value_control.ValueControl} */
+      this.valueControl_ = new value_control.ValueControl();
+      this.valueControl_.load({
+        deviceAddress: this.deviceAddress_,
+        serviceId: this.serviceId_,
+        characteristicId: this.characteristicId_,
+        descriptorId: this.info.id,
+      });
+
       // Create content for display in brief content container.
       var descriptorHeaderText = document.createElement('div');
       descriptorHeaderText.textContent = 'Descriptor:';
@@ -77,10 +96,15 @@ cr.define('descriptor_list', function() {
       descriptorDiv.classList.add('flex');
       descriptorDiv.appendChild(this.descriptorFieldSet_);
 
+      var valueHeader = document.createElement('h4');
+      valueHeader.textContent = 'Value';
+
       var infoDiv = document.createElement('div');
       infoDiv.classList.add('info-container');
       infoDiv.appendChild(descriptorInfoHeader);
       infoDiv.appendChild(descriptorDiv);
+      infoDiv.appendChild(valueHeader);
+      infoDiv.appendChild(this.valueControl_);
 
       this.expandedContent_.appendChild(infoDiv);
     },
@@ -99,6 +123,12 @@ cr.define('descriptor_list', function() {
     decorate: function() {
       ExpandableList.prototype.decorate.call(this);
 
+      /** @private {?string} */
+      this.deviceAddress_ = null;
+      /** @private {?string} */
+      this.serviceId_ = null;
+      /** @private {?string} */
+      this.characteristicId_ = null;
       /** @private {boolean} */
       this.descriptorsRequested_ = false;
 
@@ -108,7 +138,8 @@ cr.define('descriptor_list', function() {
 
     /** @override */
     createItem: function(data) {
-      return new DescriptorListItem(data);
+      return new DescriptorListItem(
+          data, this.deviceAddress_, this.serviceId_, this.characteristicId_);
     },
 
     /**
@@ -124,6 +155,9 @@ cr.define('descriptor_list', function() {
       if (this.descriptorsRequested_ || !this.isSpinnerShowing())
         return;
 
+      this.deviceAddress_ = deviceAddress;
+      this.serviceId_ = serviceId;
+      this.characteristicId_ = characteristicId;
       this.descriptorsRequested_ = true;
 
       device_broker.connectToDevice(deviceAddress)

@@ -113,7 +113,13 @@ cr.define('characteristic_list', function() {
 
       /** @private {!value_control.ValueControl} */
       this.valueControl_ = new value_control.ValueControl();
-      this.valueControl_.load(this.deviceAddress_, this.serviceId_, this.info);
+
+      this.valueControl_.load({
+        deviceAddress: this.deviceAddress_,
+        serviceId: this.serviceId_,
+        characteristicId: this.info.id,
+        properties: this.info.properties,
+      });
       this.valueControl_.setValue(this.info.last_known_value);
 
       /** @private {!descriptor_list.DescriptorList} */

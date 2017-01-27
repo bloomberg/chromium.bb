@@ -10,6 +10,16 @@ cr.define('value_control', function() {
   /** @const */ var Snackbar = snackbar.Snackbar;
   /** @const */ var SnackbarType = snackbar.SnackbarType;
 
+  /** @typedef {{
+   *    deviceAddress: string,
+   *    serviceId: string,
+   *    characteristicId: string,
+   *    descriptorId: (string|undefined)
+   *    properties: (number|undefined)
+   *  }}
+   */
+  var ValueLoadOptions;
+
   /** @enum {string}  */
   var ValueDataType = {
     HEXADECIMAL: 'Hexadecimal',
@@ -207,8 +217,12 @@ cr.define('value_control', function() {
       this.deviceAddress_ = null;
       /** @private {?string} */
       this.serviceId_ = null;
-      /** @private {?interfaces.BluetoothDevice.CharacteristicInfo} */
-      this.characteristicInfo_ = null;
+      /** @private {?string} */
+      this.characteristicId_ = null;
+      /** @private {?string} */
+      this.descriptorId_ = null;
+      /** @private {number} */
+      this.properties_ = Number.MAX_SAFE_INTEGER;
 
       this.unavailableMessage_ = document.createElement('h3');
       this.unavailableMessage_.textContent = 'Value cannot be read or written.';
@@ -257,17 +271,18 @@ cr.define('value_control', function() {
 
     /**
      * Sets the settings used by the value control and redraws the control to
-     * match the read/write settings provided in
-     * |characteristicInfo.properties|.
-     * @param {string} deviceAddress
-     * @param {string} serviceId
-     * @param {!interfaces.BluetoothDevice.CharacteristicInfo}
-     *     characteristicInfo
+     * match the read/write settings in |options.properties|. If properties
+     * are not provided, no restrictions on reading/writing are applied.
+     * @param {!ValueLoadOptions} options
      */
-    load: function(deviceAddress, serviceId, characteristicInfo) {
-      this.deviceAddress_ = deviceAddress;
-      this.serviceId_ = serviceId;
-      this.characteristicInfo_ = characteristicInfo;
+    load: function(options) {
+      this.deviceAddress_ = options.deviceAddress;
+      this.serviceId_ = options.serviceId;
+      this.characteristicId_ = options.characteristicId;
+      this.descriptorId_ = options.descriptorId;
+
+      if (options.properties)
+        this.properties_ = options.properties;
 
       this.redraw();
     },
@@ -277,10 +292,10 @@ cr.define('value_control', function() {
      * availability of reads and writes and the current cached value.
      */
     redraw: function() {
-      this.readBtn_.hidden = (this.characteristicInfo_.properties &
-                              interfaces.BluetoothDevice.Property.READ) === 0;
-      this.writeBtn_.hidden = (this.characteristicInfo_.properties &
-                               interfaces.BluetoothDevice.Property.WRITE) === 0;
+      this.readBtn_.hidden =
+          (this.properties_ & interfaces.BluetoothDevice.Property.READ) === 0;
+      this.writeBtn_.hidden =
+          (this.properties_ & interfaces.BluetoothDevice.Property.WRITE) === 0;
 
       var isAvailable = !this.readBtn_.hidden || !this.writeBtn_.hidden;
       this.unavailableMessage_.hidden = isAvailable;
@@ -319,15 +334,21 @@ cr.define('value_control', function() {
     /**
      * Called when the read button is pressed. Connects to the device and
      * retrieves the current value of the characteristic in the |service_id|
-     * with id |characteristic_id|
+     * with id |characteristic_id|. If |descriptor_id| is defined,  the
+     * descriptor value with |descriptor_id| is read instead.
      * @private
      */
     readValue_: function() {
       this.readBtn_.disabled = true;
 
       device_broker.connectToDevice(this.deviceAddress_).then(function(device) {
+        if (this.descriptorId_) {
+          return device.readValueForDescriptor(
+              this.serviceId_, this.characteristicId_, this.descriptorId_);
+        }
+
         return device.readValueForCharacteristic(
-            this.serviceId_, this.characteristicInfo_.id);
+            this.serviceId_, this.characteristicId_);
       }.bind(this)).then(function(response) {
         this.readBtn_.disabled = false;
 
@@ -347,17 +368,23 @@ cr.define('value_control', function() {
 
     /**
      * Called when the write button is pressed. Connects to the device and
-     * retrieves the current value of the characteristic in the |service_id|
-     * with id |characteristic_id|
+     * retrieves the current value of the characteristic in the
+     * |service_id| with id |characteristic_id|. If |descriptor_id| is defined,
+     * the descriptor value with |descriptor_id| is written instead.
      * @private
      */
     writeValue_: function() {
       this.writeBtn_.disabled = true;
 
       device_broker.connectToDevice(this.deviceAddress_).then(function(device) {
+        if (this.descriptorId_) {
+          return device.writeValueForDescriptor(
+              this.serviceId_, this.characteristicId_, this.descriptorId_,
+              this.value_.getArray());
+        }
+
         return device.writeValueForCharacteristic(
-            this.serviceId_, this.characteristicInfo_.id,
-            this.value_.getArray());
+            this.serviceId_, this.characteristicId_, this.value_.getArray());
       }.bind(this)).then(function(response) {
         this.writeBtn_.disabled = false;
 

@@ -213,10 +213,88 @@ void Device::GetDescriptors(const std::string& service_id,
 
     descriptor_info->id = descriptor->GetIdentifier();
     descriptor_info->uuid = descriptor->GetUUID();
+    descriptor_info->last_known_value = descriptor->GetValue();
+
     descriptors.push_back(std::move(descriptor_info));
   }
 
   callback.Run(std::move(descriptors));
+}
+
+void Device::ReadValueForDescriptor(
+    const std::string& service_id,
+    const std::string& characteristic_id,
+    const std::string& descriptor_id,
+    const ReadValueForDescriptorCallback& callback) {
+  device::BluetoothDevice* device = adapter_->GetDevice(GetAddress());
+  DCHECK(device);
+
+  device::BluetoothRemoteGattService* service =
+      device->GetGattService(service_id);
+  if (!service) {
+    callback.Run(mojom::GattResult::SERVICE_NOT_FOUND,
+                 base::nullopt /* value */);
+    return;
+  }
+
+  device::BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(characteristic_id);
+  if (!characteristic) {
+    callback.Run(mojom::GattResult::CHARACTERISTIC_NOT_FOUND,
+                 base::nullopt /* value */);
+    return;
+  }
+
+  device::BluetoothRemoteGattDescriptor* descriptor =
+      characteristic->GetDescriptor(descriptor_id);
+  if (!descriptor) {
+    callback.Run(mojom::GattResult::DESCRIPTOR_NOT_FOUND,
+                 base::nullopt /* value */);
+    return;
+  }
+
+  descriptor->ReadRemoteDescriptor(
+      base::Bind(&Device::OnReadRemoteDescriptor,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&Device::OnReadRemoteDescriptorError,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void Device::WriteValueForDescriptor(
+    const std::string& service_id,
+    const std::string& characteristic_id,
+    const std::string& descriptor_id,
+    const std::vector<uint8_t>& value,
+    const WriteValueForDescriptorCallback& callback) {
+  device::BluetoothDevice* device = adapter_->GetDevice(GetAddress());
+  DCHECK(device);
+
+  device::BluetoothRemoteGattService* service =
+      device->GetGattService(service_id);
+  if (!service) {
+    callback.Run(mojom::GattResult::SERVICE_NOT_FOUND);
+    return;
+  }
+
+  device::BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(characteristic_id);
+  if (!characteristic) {
+    callback.Run(mojom::GattResult::CHARACTERISTIC_NOT_FOUND);
+    return;
+  }
+
+  device::BluetoothRemoteGattDescriptor* descriptor =
+      characteristic->GetDescriptor(descriptor_id);
+  if (!descriptor) {
+    callback.Run(mojom::GattResult::DESCRIPTOR_NOT_FOUND);
+    return;
+  }
+
+  descriptor->WriteRemoteDescriptor(
+      value, base::Bind(&Device::OnWriteRemoteDescriptor,
+                        weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&Device::OnWriteRemoteDescriptorError,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 Device::Device(scoped_refptr<device::BluetoothAdapter> adapter,
@@ -272,6 +350,30 @@ void Device::OnWriteRemoteCharacteristic(
 
 void Device::OnWriteRemoteCharacteristicError(
     const WriteValueForCharacteristicCallback& callback,
+    device::BluetoothGattService::GattErrorCode error_code) {
+  callback.Run(mojo::ConvertTo<mojom::GattResult>(error_code));
+}
+
+void Device::OnReadRemoteDescriptor(
+    const ReadValueForDescriptorCallback& callback,
+    const std::vector<uint8_t>& value) {
+  callback.Run(mojom::GattResult::SUCCESS, std::move(value));
+}
+
+void Device::OnReadRemoteDescriptorError(
+    const ReadValueForDescriptorCallback& callback,
+    device::BluetoothGattService::GattErrorCode error_code) {
+  callback.Run(mojo::ConvertTo<mojom::GattResult>(error_code),
+               base::nullopt /* value */);
+}
+
+void Device::OnWriteRemoteDescriptor(
+    const WriteValueForDescriptorCallback& callback) {
+  callback.Run(mojom::GattResult::SUCCESS);
+}
+
+void Device::OnWriteRemoteDescriptorError(
+    const WriteValueForDescriptorCallback& callback,
     device::BluetoothGattService::GattErrorCode error_code) {
   callback.Run(mojo::ConvertTo<mojom::GattResult>(error_code));
 }

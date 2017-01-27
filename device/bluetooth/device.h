@@ -67,6 +67,17 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
   void GetDescriptors(const std::string& service_id,
                       const std::string& characteristic_id,
                       const GetDescriptorsCallback& callback) override;
+  void ReadValueForDescriptor(
+      const std::string& service_id,
+      const std::string& characteristic_id,
+      const std::string& descriptor_id,
+      const ReadValueForDescriptorCallback& callback) override;
+  void WriteValueForDescriptor(
+      const std::string& service_id,
+      const std::string& characteristic_id,
+      const std::string& descriptor_id,
+      const std::vector<uint8_t>& value,
+      const WriteValueForDescriptorCallback& callback) override;
 
  private:
   Device(scoped_refptr<device::BluetoothAdapter> adapter,
@@ -90,6 +101,19 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
 
   void OnWriteRemoteCharacteristicError(
       const WriteValueForCharacteristicCallback& callback,
+      device::BluetoothGattService::GattErrorCode error_code);
+
+  void OnReadRemoteDescriptor(const ReadValueForDescriptorCallback& callback,
+                              const std::vector<uint8_t>& value);
+
+  void OnReadRemoteDescriptorError(
+      const ReadValueForDescriptorCallback& callback,
+      device::BluetoothGattService::GattErrorCode error_code);
+
+  void OnWriteRemoteDescriptor(const WriteValueForDescriptorCallback& callback);
+
+  void OnWriteRemoteDescriptorError(
+      const WriteValueForDescriptorCallback& callback,
       device::BluetoothGattService::GattErrorCode error_code);
 
   const std::string& GetAddress();
