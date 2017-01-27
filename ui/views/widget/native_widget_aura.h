@@ -40,6 +40,9 @@ class VIEWS_EXPORT NativeWidgetAura
       public aura::client::FocusChangeObserver,
       public aura::client::DragDropDelegate {
  public:
+  // |is_parallel_widget_in_window_manager| is true only when this
+  // NativeWidgetAura is created in the window manager to represent a client
+  // window, in all other cases it's false.
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate,
                             bool is_parallel_widget_in_window_manager = false);
 

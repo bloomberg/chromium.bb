@@ -279,6 +279,9 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
     aura::client::GetTransientWindowClient()->AddTransientChild(
         params.parent->GetHost()->window(), window());
   }
+
+  if (!params.accept_events)
+    aura::WindowPortMus::Get(window())->SetCanAcceptEvents(false);
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(

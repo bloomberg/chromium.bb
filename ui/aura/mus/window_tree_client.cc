@@ -605,11 +605,8 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
             window->GetWindow(), key, &transport_name, &transport_value)) {
       continue;
     }
-    if (!transport_value) {
-      transport_properties[transport_name] = std::vector<uint8_t>();
-    } else {
-      transport_properties[transport_name] = std::move(*transport_value);
-    }
+    transport_properties[transport_name] =
+        transport_value ? std::move(*transport_value) : std::vector<uint8_t>();
   }
 
   const uint32_t change_id = ScheduleInFlightChange(
@@ -851,10 +848,10 @@ void WindowTreeClient::SetCanAcceptDrops(Id window_id, bool can_accept_drops) {
   tree_->SetCanAcceptDrops(window_id, can_accept_drops);
 }
 
-void WindowTreeClient::SetCanAcceptEvents(Id window_id,
+void WindowTreeClient::SetCanAcceptEvents(WindowMus* window,
                                           bool can_accept_events) {
   DCHECK(tree_);
-  tree_->SetCanAcceptEvents(window_id, can_accept_events);
+  tree_->SetCanAcceptEvents(window->server_id(), can_accept_events);
 }
 
 void WindowTreeClient::OnEmbed(ClientSpecificId client_id,

@@ -41,7 +41,7 @@ enum class WindowMusType {
   LOCAL,
 
   // Not one of the above. This means the window is visible to the client and
-  // not one of the above values. Practially this means this client is the
+  // not one of the above values. Practically this means this client is the
   // window manager and the window was created by another client.
   OTHER,
 };

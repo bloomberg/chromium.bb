@@ -56,6 +56,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ui::mojom::Cursor predefined_cursor() const { return predefined_cursor_; }
   void SetPredefinedCursor(ui::mojom::Cursor cursor_id);
 
+  // Sets whether the window can receive events. Default value is true.
+  void SetCanAcceptEvents(bool value);
+
   // Embeds a new client in this Window. See WindowTreeClient::Embed() for
   // details on arguments.
   void Embed(ui::mojom::WindowTreeClientPtr client,

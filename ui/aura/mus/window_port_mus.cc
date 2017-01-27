@@ -66,6 +66,10 @@ void WindowPortMus::SetPredefinedCursor(ui::mojom::Cursor cursor_id) {
   predefined_cursor_ = cursor_id;
 }
 
+void WindowPortMus::SetCanAcceptEvents(bool value) {
+  window_tree_client_->SetCanAcceptEvents(this, value);
+}
+
 void WindowPortMus::Embed(
     ui::mojom::WindowTreeClientPtr client,
     uint32_t flags,
@@ -417,12 +421,23 @@ void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
 
 std::unique_ptr<WindowPortPropertyData> WindowPortMus::OnWillChangeProperty(
     const void* key) {
+  // |window_| is null if a property is set on the aura::Window before
+  // Window::Init() is called. It's safe to ignore the change in this case as
+  // once Window::Init() is called the Window is queried for the current set of
+  // properties.
+  if (!window_)
+    return nullptr;
+
   return window_tree_client_->OnWindowMusWillChangeProperty(this, key);
 }
 
 void WindowPortMus::OnPropertyChanged(
     const void* key,
     std::unique_ptr<WindowPortPropertyData> data) {
+  // See comment in OnWillChangeProperty() as to why |window_| may be null.
+  if (!window_)
+    return;
+
   ServerChangeData change_data;
   change_data.property_name =
       GetPropertyConverter()->GetTransportNameForPropertyKey(key);
