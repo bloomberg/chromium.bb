@@ -52,6 +52,10 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
 
   static snd_pcm_format_t BitsToFormat(int bits_per_sample);
 
+  // Checks if |device_id| corresponds to the default device.
+  // Set |is_input| to true for capture devices, false for output.
+  bool IsDefault(const std::string& device_id, bool is_input);
+
  protected:
   ~AudioManagerCras() override;
 
@@ -61,7 +65,8 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
 
  private:
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
-  AudioOutputStream* MakeOutputStream(const AudioParameters& params);
+  AudioOutputStream* MakeOutputStream(const AudioParameters& params,
+                                      const std::string& device_id);
 
   // Called by MakeLinearInputStream and MakeLowLatencyInputStream.
   AudioInputStream* MakeInputStream(const AudioParameters& params,

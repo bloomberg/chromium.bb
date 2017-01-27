@@ -14,6 +14,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/mock_audio_source_callback.h"
@@ -72,7 +73,8 @@ class CrasUnifiedStreamTest : public testing::Test {
                                   int32_t samples_per_packet) {
     AudioParameters params(kTestFormat, layout, kTestSampleRate,
                            kTestBitsPerSample, samples_per_packet);
-    return new CrasUnifiedStream(params, mock_manager_.get());
+    return new CrasUnifiedStream(params, mock_manager_.get(),
+                                 AudioDeviceDescription::kDefaultDeviceId);
   }
 
   MockAudioManagerCras& mock_manager() {
@@ -121,14 +123,16 @@ TEST_F(CrasUnifiedStreamTest, ConstructedState) {
   AudioParameters bad_bps_params(kTestFormat, kTestChannelLayout,
                                  kTestSampleRate, kTestBitsPerSample - 1,
                                  kTestFramesPerPacket);
-  test_stream = new CrasUnifiedStream(bad_bps_params, mock_manager_.get());
+  test_stream = new CrasUnifiedStream(bad_bps_params, mock_manager_.get(),
+                                      AudioDeviceDescription::kDefaultDeviceId);
   EXPECT_FALSE(test_stream->Open());
   test_stream->Close();
 
   // Bad sample rate.
   AudioParameters bad_rate_params(kTestFormat, kTestChannelLayout,
                                   0, kTestBitsPerSample, kTestFramesPerPacket);
-  test_stream = new CrasUnifiedStream(bad_rate_params, mock_manager_.get());
+  test_stream = new CrasUnifiedStream(bad_rate_params, mock_manager_.get(),
+                                      AudioDeviceDescription::kDefaultDeviceId);
   EXPECT_FALSE(test_stream->Open());
   test_stream->Close();
 }

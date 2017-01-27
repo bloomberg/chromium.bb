@@ -159,7 +159,7 @@ void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
   if (is_input && mic_positions_.size() > 1)
     AddBeamformingDevices(device_names);
   else
-    device_names->push_back(media::AudioDeviceName::CreateDefault());
+    device_names->push_back(AudioDeviceName::CreateDefault());
 
   if (base::FeatureList::IsEnabled(features::kEnumerateAudioDevices)) {
     chromeos::AudioDeviceList devices;
@@ -236,17 +236,17 @@ AudioOutputStream* AudioManagerCras::MakeLinearOutputStream(
     const AudioParameters& params,
     const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
-  return MakeOutputStream(params);
+  // Pinning stream is not supported for MakeLinearOutputStream.
+  return MakeOutputStream(params, AudioDeviceDescription::kDefaultDeviceId);
 }
 
 AudioOutputStream* AudioManagerCras::MakeLowLatencyOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const LogCallback& log_callback) {
-  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   // TODO(dgreid): Open the correct input device for unified IO.
-  return MakeOutputStream(params);
+  return MakeOutputStream(params, device_id);
 }
 
 AudioInputStream* AudioManagerCras::MakeLinearInputStream(
@@ -268,8 +268,6 @@ AudioInputStream* AudioManagerCras::MakeLowLatencyInputStream(
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
-  // TODO(tommi): Support |output_device_id|.
-  DLOG_IF(ERROR, !output_device_id.empty()) << "Not implemented!";
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
   int buffer_size = kMinimumOutputBufferSize;
@@ -292,8 +290,9 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
 }
 
 AudioOutputStream* AudioManagerCras::MakeOutputStream(
-    const AudioParameters& params) {
-  return new CrasUnifiedStream(params, this);
+    const AudioParameters& params,
+    const std::string& device_id) {
+  return new CrasUnifiedStream(params, this, device_id);
 }
 
 AudioInputStream* AudioManagerCras::MakeInputStream(
@@ -314,6 +313,14 @@ snd_pcm_format_t AudioManagerCras::BitsToFormat(int bits_per_sample) {
     default:
       return SND_PCM_FORMAT_UNKNOWN;
   }
+}
+
+bool AudioManagerCras::IsDefault(const std::string& device_id, bool is_input) {
+  AudioDeviceNames device_names;
+  GetAudioDeviceNamesImpl(is_input, &device_names);
+  DCHECK(!device_names.empty());
+  const AudioDeviceName& device_name = device_names.front();
+  return device_name.unique_id == device_id;
 }
 
 }  // namespace media

@@ -8,9 +8,23 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/audio/cras/audio_manager_cras.h"
 
 namespace media {
+
+namespace {
+
+int GetDevicePin(AudioManagerCras* manager, const std::string& device_id) {
+  if (!manager->IsDefault(device_id, false)) {
+    uint64_t cras_node_id;
+    base::StringToUint64(device_id, &cras_node_id);
+    return dev_index_of(cras_node_id);
+  }
+  return NO_DEVICE;
+}
+
+}  // namespace
 
 // Overview of operation:
 // 1) An object of CrasUnifiedStream is created by the AudioManager
@@ -52,7 +66,8 @@ namespace media {
 // of audio.
 
 CrasUnifiedStream::CrasUnifiedStream(const AudioParameters& params,
-                                     AudioManagerCras* manager)
+                                     AudioManagerCras* manager,
+                                     const std::string& device_id)
     : client_(NULL),
       stream_id_(0),
       params_(params),
@@ -61,11 +76,11 @@ CrasUnifiedStream::CrasUnifiedStream(const AudioParameters& params,
       volume_(1.0),
       manager_(manager),
       source_callback_(NULL),
-      stream_direction_(CRAS_STREAM_OUTPUT) {
+      output_bus_(AudioBus::Create(params)),
+      stream_direction_(CRAS_STREAM_OUTPUT),
+      pin_device_(GetDevicePin(manager, device_id)) {
   DCHECK(manager_);
   DCHECK_GT(params_.channels(), 0);
-
-  output_bus_ = AudioBus::Create(params);
 }
 
 CrasUnifiedStream::~CrasUnifiedStream() {
@@ -196,8 +211,9 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
   bytes_per_frame_ = cras_client_format_bytes_per_frame(audio_format);
 
   // Adding the stream will start the audio callbacks requesting data.
-  if (cras_client_add_stream(client_, &stream_id_, stream_params) < 0) {
-    LOG(WARNING) << "Failed to add the stream";
+  if (cras_client_add_pinned_stream(client_, pin_device_, &stream_id_,
+                                    stream_params)) {
+    LOG(WARNING) << "Failed to add the stream.";
     callback->OnError(this);
     cras_audio_format_destroy(audio_format);
     cras_client_stream_params_destroy(stream_params);

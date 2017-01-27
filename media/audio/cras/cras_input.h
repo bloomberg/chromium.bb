@@ -49,9 +49,6 @@ class MEDIA_EXPORT CrasInputStream : public AgcAudioStream<AudioInputStream> {
   bool IsMuted() override;
 
  private:
-  // Checks if |device_id| corresponds to 'Default' choice.
-  bool IsDefault(const std::string& device_id) const;
-
   // Handles requests to get samples from the provided buffer.  This will be
   // called by the audio server when it has samples ready.
   static int SamplesReady(cras_client* client,

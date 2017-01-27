@@ -35,7 +35,9 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // audio manager who is creating this object.
-  CrasUnifiedStream(const AudioParameters& params, AudioManagerCras* manager);
+  CrasUnifiedStream(const AudioParameters& params,
+                    AudioManagerCras* manager,
+                    const std::string& device_id);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioUnifiedStream::Close().
@@ -110,6 +112,9 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
 
   // Direciton of the stream.
   CRAS_STREAM_DIRECTION stream_direction_;
+
+  // Index of the CRAS device to stream output to.
+  const int pin_device_;
 
   DISALLOW_COPY_AND_ASSIGN(CrasUnifiedStream);
 };
