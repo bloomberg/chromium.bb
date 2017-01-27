@@ -12,7 +12,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button.h"
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
-#include "ui/views/resources/vector_icons/vector_icons.h"
+#include "ui/views/vector_icons/vector_icons.h"
 
 #import <Cocoa/Cocoa.h>
 
