@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
@@ -42,6 +43,13 @@ public class SectionList
         mUiDelegate.getMetricsReporter().setRanker(mSuggestionsRanker);
         mOfflinePageBridge = offlinePageBridge;
         resetSections(/* alwaysAllowEmptySections = */ false);
+
+        mUiDelegate.addDestructionObserver(new DestructionObserver() {
+            @Override
+            public void onDestroy() {
+                removeAllSections();
+            }
+        });
     }
 
     /**

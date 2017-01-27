@@ -158,6 +158,7 @@ public class InnerNode extends ChildNode implements NodeParent {
         int count = child.getItemCount();
         int childStartingOffset = getStartingOffsetForChildIndex(removedIndex);
 
+        child.detach();
         mChildren.remove(removedIndex);
         if (count > 0) notifyItemRangeRemoved(childStartingOffset, count);
     }
@@ -169,6 +170,7 @@ public class InnerNode extends ChildNode implements NodeParent {
         int itemCount = getItemCount();
         if (itemCount == 0) return;
 
+        for (TreeNode child : mChildren) child.detach();
         mChildren.clear();
         notifyItemRangeRemoved(0, itemCount);
     }

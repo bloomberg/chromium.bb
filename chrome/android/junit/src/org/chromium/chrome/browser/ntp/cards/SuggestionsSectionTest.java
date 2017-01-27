@@ -302,6 +302,36 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
+    public void testOfflineStatusIgnoredIfDetached() {
+        final int suggestionCount = 2;
+        final List<SnippetArticle> suggestions = createDummySuggestions(suggestionCount);
+        assertNull(suggestions.get(0).getOfflinePageOfflineId());
+        assertNull(suggestions.get(1).getOfflinePageOfflineId());
+
+        final OfflinePageItem item0 = createOfflinePageItem(suggestions.get(0).mUrl, 0L);
+        mBridge.setIsOfflinePageModelLoaded(true);
+        mBridge.setItems(Arrays.asList(item0));
+
+        SuggestionsSection section = createSectionWithSuggestions(suggestions);
+
+        // The offline status should propagate before detaching.
+        assertEquals(Long.valueOf(0L), suggestions.get(0).getOfflinePageOfflineId());
+        assertNull(suggestions.get(1).getOfflinePageOfflineId());
+
+        section.detach();
+
+        final OfflinePageItem item1 = createOfflinePageItem(suggestions.get(1).mUrl, 1L);
+        mBridge.setItems(Arrays.asList(item0, item1));
+        // Check that a change in OfflinePageBridge state forces an update.
+        mBridge.fireOfflinePageModelLoaded();
+
+        // The offline status should not change any more.
+        assertEquals(Long.valueOf(0L), suggestions.get(0).getOfflinePageOfflineId());
+        assertNull(suggestions.get(1).getOfflinePageOfflineId());
+    }
+
+    @Test
+    @Feature({"Ntp"})
     public void testViewAllActionPriority() {
         // When all the actions are enabled, ViewAll always has the priority and is shown.
 

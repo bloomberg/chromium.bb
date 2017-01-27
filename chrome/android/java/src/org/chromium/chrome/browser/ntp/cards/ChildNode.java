@@ -22,6 +22,13 @@ public abstract class ChildNode implements TreeNode {
         mParent = parent;
     }
 
+    @Override
+    @CallSuper
+    public void detach() {
+        assert mParent != null;
+        mParent = null;
+    }
+
     protected void notifyItemRangeChanged(int index, int count, Object payload) {
         if (mParent != null) mParent.onItemRangeChanged(this, index, count, payload);
     }

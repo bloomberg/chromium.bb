@@ -135,13 +135,24 @@ public class InnerNodeTest {
 
         // The parent should have been notified about the removed items.
         verify(mParent).onItemRangeRemoved(mInnerNode, 6, 3);
+        verify(child).detach();
 
         reset(mParent); // Prepare for the #verifyNoMoreInteractions() call below.
         TreeNode child2 = mChildren.get(3);
         mInnerNode.removeChild(child2);
+        verify(child2).detach();
 
         // There should be no change notifications about the empty child.
         verifyNoMoreInteractions(mParent);
+    }
+
+    @Test
+    public void testRemoveChildren() {
+        mInnerNode.removeChildren();
+
+        // The parent should have been notified about the removed items.
+        verify(mParent).onItemRangeRemoved(mInnerNode, 0, 12);
+        for (TreeNode child : mChildren) verify(child).detach();
     }
 
     @Test

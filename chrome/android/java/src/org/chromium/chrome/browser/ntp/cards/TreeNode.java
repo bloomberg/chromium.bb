@@ -21,6 +21,12 @@ interface TreeNode {
     void setParent(NodeParent parent);
 
     /**
+     * Detaches the node from the parent so that changes in the node are no longer notified to the
+     * parent. This is needed when the parent removes this node from its children.
+     */
+    void detach();
+
+    /**
      * Returns the number of items under this subtree. This method may be called
      * before initialization.
      *

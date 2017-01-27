@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.CallSuper;
+
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
@@ -46,6 +47,7 @@ public class SuggestionsSection extends InnerNode {
     private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflinePageBridge mOfflinePageBridge;
+    private final OfflinePageBridge.OfflinePageModelObserver mOfflinePageObserver;
 
     // Children
     private final SectionHeader mHeader;
@@ -53,8 +55,6 @@ public class SuggestionsSection extends InnerNode {
     private final StatusItem mStatus;
     private final ActionItem mMoreButton;
     private final ProgressItem mProgressIndicator;
-
-    private boolean mIsNtpDestroyed;
 
     /**
      * Keeps track of how many suggestions have been seen by the user so that we replace only
@@ -91,7 +91,34 @@ public class SuggestionsSection extends InnerNode {
         mProgressIndicator = new ProgressItem();
         addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton, mProgressIndicator);
 
-        setupOfflinePageBridgeObserver(uiDelegate);
+        mOfflinePageObserver =
+                new OfflinePageBridge.OfflinePageModelObserver() {
+                    @Override
+                    public void offlinePageModelLoaded() {
+                        updateAllSnippetOfflineAvailability();
+                    }
+
+                    @Override
+                    public void offlinePageAdded(OfflinePageItem addedPage) {
+                        updateAllSnippetOfflineAvailability();
+                    }
+
+                    @Override
+                    public void offlinePageDeleted(long offlineId, ClientId clientId) {
+                        for (SnippetArticle article : mSuggestionsList) {
+                            if (article.requiresExactOfflinePage()) continue;
+                            Long articleOfflineId = article.getOfflinePageOfflineId();
+                            if (articleOfflineId == null) continue;
+                            if (articleOfflineId.longValue() != offlineId) continue;
+                            // The old value cannot be simply removed without a request to the
+                            // model, because there may be an older offline page for the same
+                            // URL.
+                            updateSnippetOfflineAvailability(article);
+                        }
+                    }
+                };
+        mOfflinePageBridge.addObserver(mOfflinePageObserver);
+
         refreshChildrenVisibility();
     }
 
@@ -210,43 +237,11 @@ public class SuggestionsSection extends InnerNode {
         }
     }
 
-    private void setupOfflinePageBridgeObserver(SuggestionsUiDelegate uiDelegate) {
-        final OfflinePageBridge.OfflinePageModelObserver observer =
-                new OfflinePageBridge.OfflinePageModelObserver() {
-                    @Override
-                    public void offlinePageModelLoaded() {
-                        updateAllSnippetOfflineAvailability();
-                    }
-
-                    @Override
-                    public void offlinePageAdded(OfflinePageItem addedPage) {
-                        updateAllSnippetOfflineAvailability();
-                    }
-
-                    @Override
-                    public void offlinePageDeleted(long offlineId, ClientId clientId) {
-                        for (SnippetArticle article : mSuggestionsList) {
-                            if (article.requiresExactOfflinePage()) continue;
-                            Long articleOfflineId = article.getOfflinePageOfflineId();
-                            if (articleOfflineId == null) continue;
-                            if (articleOfflineId.longValue() != offlineId) continue;
-                            // The old value cannot be simply removed without a request to the
-                            // model, because there may be an older offline page for the same
-                            // URL.
-                            updateSnippetOfflineAvailability(article);
-                        }
-                    }
-                };
-
-        mOfflinePageBridge.addObserver(observer);
-
-        uiDelegate.addDestructionObserver(new DestructionObserver() {
-            @Override
-            public void onDestroy() {
-                mIsNtpDestroyed = true;
-                mOfflinePageBridge.removeObserver(observer);
-            }
-        });
+    @Override
+    @CallSuper
+    public void detach() {
+        mOfflinePageBridge.removeObserver(mOfflinePageObserver);
+        super.detach();
     }
 
     private void refreshChildrenVisibility() {
@@ -406,7 +401,6 @@ public class SuggestionsSection extends InnerNode {
                 article.mUrl, /*tabId=*/0, new Callback<OfflinePageItem>() {
                     @Override
                     public void onResult(OfflinePageItem item) {
-                        if (mIsNtpDestroyed) return;
                         mSuggestionsList.updateSuggestionOfflineId(
                                 article, item == null ? null : item.getOfflineId());
                     }
