@@ -159,7 +159,14 @@ int MainDllLoader::Launch(HINSTANCE instance,
 
   // Initialize the sandbox services.
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  content::InitializeSandboxInfo(&sandbox_info);
+  const bool is_browser = process_type_.empty();
+  const bool is_sandboxed = !cmd_line.HasSwitch(switches::kNoSandbox);
+  if (is_browser || is_sandboxed) {
+    // For child processes that are running as --no-sandbox, don't initialize
+    // the sandbox info, otherwise they'll be treated as brokers (as if they
+    // were the browser).
+    content::InitializeSandboxInfo(&sandbox_info);
+  }
 
   dll_ = Load(&file);
   if (!dll_)
