@@ -568,7 +568,7 @@ class RemoteDevice(object):
 
   def __init__(self, hostname, port=None, username=None,
                base_dir=DEFAULT_BASE_DIR, connect_settings=None,
-               private_key=None, debug_level=logging.DEBUG, ping=True,
+               private_key=None, debug_level=logging.DEBUG, ping=False,
                connect=True):
     """Initializes a RemoteDevice object.
 
