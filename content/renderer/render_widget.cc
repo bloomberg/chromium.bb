@@ -38,10 +38,12 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/drop_data_builder.h"
@@ -1983,12 +1985,6 @@ void RenderWidget::UpdateSelectionBounds() {
   UpdateCompositionInfo(false /* not an immediate request */);
 }
 
-void RenderWidget::SetDeviceColorProfileForTesting(
-    const gfx::ICCProfile& color_profile) {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetDidSetColorProfile(color_profile);
-}
-
 void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
   WebRect new_size_in_window(0, 0, new_size.width(), new_size.height());
   convertViewportToWindow(&new_size_in_window);
@@ -2073,6 +2069,7 @@ bool RenderWidget::CanComposeInline() {
 blink::WebScreenInfo RenderWidget::screenInfo() {
   blink::WebScreenInfo web_screen_info;
   web_screen_info.deviceScaleFactor = screen_info_.device_scale_factor;
+  web_screen_info.iccProfile = screen_info_.icc_profile;
   web_screen_info.depth = screen_info_.depth;
   web_screen_info.depthPerComponent = screen_info_.depth_per_component;
   web_screen_info.isMonochrome = screen_info_.is_monochrome;

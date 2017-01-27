@@ -509,9 +509,8 @@ gfx::ICCProfile GetTestingICCProfile(const std::string& name) {
 
 void SetDeviceColorProfile(
     RenderView* render_view, const gfx::ICCProfile& icc_profile) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->GetWidget()
-      ->SetDeviceColorProfileForTesting(icc_profile);
+  static_cast<RenderViewImpl*>(render_view)->
+      SetDeviceColorProfileForTesting(icc_profile);
 }
 
 void SetTestBluetoothScanDuration() {

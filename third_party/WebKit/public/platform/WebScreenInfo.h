@@ -34,23 +34,27 @@
 #include "WebRect.h"
 #include "public/platform/ShapeProperties.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "ui/gfx/icc_profile.h"
 
 namespace blink {
 
 struct WebScreenInfo {
   // Device scale factor. Specifies the ratio between physical and logical
   // pixels.
-  float deviceScaleFactor;
+  float deviceScaleFactor = 1.f;
+
+  // The ICC profile of the output display.
+  gfx::ICCProfile iccProfile;
 
   // The screen depth in bits per pixel
-  int depth;
+  int depth = 0;
 
   // The bits per colour component. This assumes that the colours are balanced
   // equally.
-  int depthPerComponent;
+  int depthPerComponent = 0;
 
   // This can be true for black and white printers
-  bool isMonochrome;
+  bool isMonochrome = false;
 
   // This is set from the rcMonitor member of MONITORINFOEX, to whit:
   //   "A RECT structure that specifies the display monitor rectangle,
@@ -72,27 +76,20 @@ struct WebScreenInfo {
   // This is the orientation 'type' or 'name', as in landscape-primary or
   // portrait-secondary for examples.
   // See WebScreenOrientationType.h for the full list.
-  WebScreenOrientationType orientationType;
+  WebScreenOrientationType orientationType = WebScreenOrientationUndefined;
 
   // This is the orientation angle of the displayed content in degrees.
   // It is the opposite of the physical rotation.
-  uint16_t orientationAngle;
+  uint16_t orientationAngle = 0;
 
   // This is the shape of display.
-  DisplayShape displayShape;
+  DisplayShape displayShape = DisplayShapeRect;
 
-  WebScreenInfo()
-      : deviceScaleFactor(1),
-        depth(0),
-        depthPerComponent(0),
-        isMonochrome(false),
-        orientationType(WebScreenOrientationUndefined),
-        orientationAngle(0),
-        displayShape(DisplayShapeRect) {}
+  WebScreenInfo() = default;
 
   bool operator==(const WebScreenInfo& other) const {
     return this->deviceScaleFactor == other.deviceScaleFactor &&
-           this->depth == other.depth &&
+           this->iccProfile == other.iccProfile && this->depth == other.depth &&
            this->depthPerComponent == other.depthPerComponent &&
            this->isMonochrome == other.isMonochrome &&
            this->rect == other.rect &&

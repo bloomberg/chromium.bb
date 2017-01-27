@@ -12,7 +12,6 @@ class WebMouseEvent;
 }
 
 namespace gfx {
-class ICCProfile;
 class Point;
 }
 
@@ -26,10 +25,6 @@ namespace content {
 //  are disentangled; see http://crbug.com/583347 and http://crbug.com/478281.
 class CONTENT_EXPORT RenderWidgetOwnerDelegate {
  public:
-  // The RenderWidget set a color profile.
-  virtual void RenderWidgetDidSetColorProfile(
-      const gfx::ICCProfile& color_profile) = 0;
-
   // As in RenderWidgetInputHandlerDelegate.
   virtual void RenderWidgetFocusChangeComplete() = 0;
   virtual bool DoesRenderWidgetHaveTouchEventHandlersAt(
