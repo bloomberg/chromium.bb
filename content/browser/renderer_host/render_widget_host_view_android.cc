@@ -1862,10 +1862,6 @@ void RenderWidgetHostViewAndroid::OnContentViewCoreDestroyed() {
   overscroll_controller_.reset();
 }
 
-void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
-  RunAckCallbacks();
-}
-
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
   TRACE_EVENT1("browser",
                "RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged",

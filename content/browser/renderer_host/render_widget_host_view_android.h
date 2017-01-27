@@ -155,7 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
 
   // ui::WindowAndroidObserver implementation.
-  void OnCompositingDidCommit() override;
+  void OnCompositingDidCommit() override {}
   void OnRootWindowVisibilityChanged(bool visible) override;
   void OnAttachCompositor() override;
   void OnDetachCompositor() override;
