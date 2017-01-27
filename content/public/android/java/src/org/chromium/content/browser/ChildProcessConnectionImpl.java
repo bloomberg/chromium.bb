@@ -175,19 +175,25 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                     mDidOnServiceConnected = true;
                     mService = IChildProcessService.Stub.asInterface(service);
 
+                    StartCallback startCallback = mStartCallback;
+                    mStartCallback = null;
+
                     boolean boundToUs = false;
                     try {
                         boundToUs = mService.bindToCaller();
                     } catch (RemoteException ex) {
+                        // Do not trigger the StartCallback here, since the service is already
+                        // dead and the DeathCallback will run from onServiceDisconnected().
+                        Log.e(TAG, "Failed to bind service to connection.", ex);
+                        return;
                     }
 
-                    if (mStartCallback != null) {
+                    if (startCallback != null) {
                         if (boundToUs) {
-                            mStartCallback.onChildStarted();
+                            startCallback.onChildStarted();
                         } else {
-                            mStartCallback.onChildStartFailed();
+                            startCallback.onChildStartFailed();
                         }
-                        mStartCallback = null;
                     }
 
                     if (!boundToUs) {
