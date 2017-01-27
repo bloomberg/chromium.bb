@@ -93,7 +93,8 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject,
   PaintSize* paintSize = PaintSize::create(specifiedSize);
   StylePropertyMap* styleMap = FilteredComputedStylePropertyMap::create(
       CSSComputedStyleDeclaration::create(layoutObject.node()),
-      m_nativeInvalidationProperties, m_customInvalidationProperties);
+      m_nativeInvalidationProperties, m_customInvalidationProperties,
+      layoutObject.node());
 
   v8::Local<v8::Value> argv[] = {
       ToV8(renderingContext, m_scriptState->context()->Global(), isolate),

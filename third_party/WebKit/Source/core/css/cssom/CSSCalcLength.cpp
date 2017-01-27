@@ -90,6 +90,16 @@ CSSCalcLength* CSSCalcLength::fromCSSValue(const CSSPrimitiveValue& value) {
   return nullptr;
 }
 
+CSSCalcLength* CSSCalcLength::fromLength(const Length& length) {
+  DCHECK(length.isCalculated());
+  PixelsAndPercent values = length.getPixelsAndPercent();
+  UnitData unitData;
+  unitData.set(CSSPrimitiveValue::UnitType::Pixels, values.pixels);
+  unitData.set(CSSPrimitiveValue::UnitType::Percentage, values.percent);
+  CSSCalcLength* result = new CSSCalcLength(unitData);
+  return result;
+}
+
 bool CSSCalcLength::containsPercent() const {
   return m_unitData.has(CSSPrimitiveValue::UnitType::Percentage);
 }

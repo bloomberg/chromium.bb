@@ -1,35 +1,55 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
+<html>
+<head>
 <script src='../../resources/testharness.js'></script>
 <script src='../../resources/testharnessreport.js'></script>
-
 <style>
 #testElement {
   border: 5px solid purple;
+  width: 120px;
+  background-color: green;
 }
-
-#testElement:after {
-  border: 1px solid black;  
+#testElement::after {
+  content: 'after';
+  position: absolute;
+  border: 1px solid black;
+  width: 100px;
+  top: 10px;
+  background-color: red;
 }
 </style>
-
-<div id="testElement"></div>
-
+</head>
+<body>
+<p id='testElement'>test element</p>
 <script>
+var t1 = async_test('get on Computed StyleMap of pseudo element returns correct styles');
+function t1Callback(pseudoComputedStyleMap) {
+  t1.step(function() {
+    var pseudoResult = pseudoComputedStyleMap.get('width');
+    assert_true(pseudoResult instanceof CSSSimpleLength);
+    assert_equals(pseudoResult.cssText, '100px');
+  });
+  t1.done();
+}
 
-var computedStyleMap = getComputedStyleMap(testElement);
-var pseudoComputedStyleMap = getComputedStyleMap(testElement, '::after');
-test(function() {
-  assert_equals(computedStyleMap.get('border-top-width').cssText, '5px');
-  assert_equals(pseudoComputedStyleMap.get('border-top-width').cssText, '1px');
-}, 'get on Computed StyleMap of pseudo element returns correct styles');
+var t2 = async_test('getAll on Computed StyleMap of pseudo element returns list of correct styles');
+function t2Callback(pseudoComputedStyleMap) {
+  t2.step(function() {
+    var styleValueList = pseudoComputedStyleMap.getAll('width');
+    assert_equals(styleValueList.length, 1);
+    assert_equals(styleValueList[0].cssText, '100px');
+  });
+  t2.done();
+}
 
-test(function() {
-  // TODO(meade): When actual multiple valued properties are supported, use one of them.
-
-  var styleValueList = pseudoComputedStyleMap.getAll('border-top-width');
-  assert_equals(styleValueList.length, 1);
-  assert_equals(styleValueList[0].cssText, '1px');
-}, 'getAll on Computed StyleMap of pseudo element returns list of correct styles');
-
+document.onreadystatechange = function() {
+  if(document.readyState == 'complete') {
+    var pseudoComputedStyleMap = getComputedStyleMap(testElement, '::after');
+    t1Callback(pseudoComputedStyleMap);
+    t2Callback(pseudoComputedStyleMap);
+  }
+};
 </script>
+</body>
+</html>

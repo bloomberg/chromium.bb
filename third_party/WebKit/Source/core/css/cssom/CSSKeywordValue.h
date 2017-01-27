@@ -19,6 +19,7 @@ class CORE_EXPORT CSSKeywordValue final : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static CSSKeywordValue* create(const AtomicString& keyword);
   static CSSKeywordValue* create(const AtomicString& keyword, ExceptionState&);
   static CSSKeywordValue* fromCSSValue(const CSSValue&);
 

@@ -66,6 +66,10 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   MutableStylePropertySet* copyPropertiesInSet(
       const Vector<CSSPropertyID>&) const;
 
+  // CSSOM functions.
+  unsigned length() const override;
+  String item(unsigned index) const override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -78,10 +82,8 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   // fix that.
   Node* styledNode() const;
 
-  // CSSOM functions. Don't make these public.
+  // CSSOM functions.
   CSSRule* parentRule() const override;
-  unsigned length() const override;
-  String item(unsigned index) const override;
   const ComputedStyle* computeComputedStyle() const;
   String getPropertyValue(const String& propertyName) override;
   String getPropertyPriority(const String& propertyName) override;

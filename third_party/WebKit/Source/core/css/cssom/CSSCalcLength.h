@@ -55,6 +55,8 @@ class CORE_EXPORT CSSCalcLength final : public CSSLengthValue {
   static CSSCalcLength* create(const CSSLengthValue*);
   static CSSCalcLength* fromCSSValue(const CSSPrimitiveValue&);
 
+  static CSSCalcLength* fromLength(const Length&);
+
 #define GETTER_MACRO(name, type)    \
   double name(bool& isNull) {       \
     isNull = !m_unitData.has(type); \

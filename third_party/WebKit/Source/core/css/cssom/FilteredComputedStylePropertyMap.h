@@ -19,9 +19,10 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
   static FilteredComputedStylePropertyMap* create(
       CSSComputedStyleDeclaration* computedStyleDeclaration,
       const Vector<CSSPropertyID>& nativeProperties,
-      const Vector<AtomicString>& customProperties) {
+      const Vector<AtomicString>& customProperties,
+      Node* node) {
     return new FilteredComputedStylePropertyMap(
-        computedStyleDeclaration, nativeProperties, customProperties);
+        computedStyleDeclaration, nativeProperties, customProperties, node);
   }
 
   CSSStyleValue* get(const String& propertyName, ExceptionState&) override;
@@ -35,7 +36,8 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
   FilteredComputedStylePropertyMap(
       CSSComputedStyleDeclaration*,
       const Vector<CSSPropertyID>& nativeProperties,
-      const Vector<AtomicString>& customProperties);
+      const Vector<AtomicString>& customProperties,
+      Node*);
 
   HashSet<CSSPropertyID> m_nativeProperties;
   HashSet<AtomicString> m_customProperties;

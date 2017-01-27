@@ -9,23 +9,23 @@
 
 <script>
 
-testElement.style.width = '10px';
+testElement.style.left = '10px';
 
-var t1 = async_test("Getting a 10px width results in a CSSSimpleLength");
+var t1 = async_test("Getting a 10px left results in a CSSSimpleLength");
 function t1Callback(computedStyleMap) {
   t1.step(function() {
-    var result = computedStyleMap.get('width');
+    var result = computedStyleMap.get('left');
     assert_true(result instanceof CSSSimpleLength);
     assert_equals(result.cssText, '10px');
   });
   t1.done();
 }
 
-var t2 = async_test("getAll for width returns a single value");
+var t2 = async_test("getAll for left returns a single value");
 function t2Callback(computedStyleMap) {
   t2.step(function() {
-    testElement.style.width = '20px';
-    var result = computedStyleMap.getAll('width');
+    testElement.style.left = '20px';
+    var result = computedStyleMap.getAll('left');
     assert_equals(result.length, 1);
     assert_equals(result[0].cssText, '20px');
   });
@@ -33,7 +33,7 @@ function t2Callback(computedStyleMap) {
 }
 
 document.onreadystatechange = function() {
-  if(document.readyState == 'complete') {
+  if (document.readyState == 'complete') {
     var computedStyleMap = getComputedStyleMap(testElement);
     t1Callback(computedStyleMap);
     t2Callback(computedStyleMap);

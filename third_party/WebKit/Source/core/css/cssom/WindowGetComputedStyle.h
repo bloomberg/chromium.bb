@@ -18,9 +18,7 @@ class WindowGetComputedStyle {
                                                Element* element,
                                                const String& pseudoElement) {
     DCHECK(element);
-    CSSComputedStyleDeclaration* computedStyleDeclaration =
-        CSSComputedStyleDeclaration::create(element, false, pseudoElement);
-    return ComputedStylePropertyMap::create(computedStyleDeclaration);
+    return ComputedStylePropertyMap::create(element, pseudoElement);
   }
 };
 

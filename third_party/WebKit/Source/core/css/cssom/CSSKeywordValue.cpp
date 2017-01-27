@@ -45,6 +45,11 @@ CSSKeywordValue* CSSKeywordValue::fromCSSValue(const CSSValue& value) {
   return nullptr;
 }
 
+CSSKeywordValue* CSSKeywordValue::create(const AtomicString& keyword) {
+  DCHECK(!keyword.isEmpty());
+  return new CSSKeywordValue(keyword);
+}
+
 const AtomicString& CSSKeywordValue::keywordValue() const {
   return m_keywordValue;
 }

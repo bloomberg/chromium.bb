@@ -23,6 +23,7 @@ class FilteredComputedStylePropertyMapTest : public ::testing::Test {
   CSSComputedStyleDeclaration* declaration() const {
     return m_declaration.get();
   }
+  Node* pageNode() { return m_page->document().documentElement(); }
 
  private:
   std::unique_ptr<DummyPageHolder> m_page;
@@ -38,19 +39,19 @@ TEST_F(FilteredComputedStylePropertyMapTest, GetProperties) {
 
   FilteredComputedStylePropertyMap* map =
       FilteredComputedStylePropertyMap::create(declaration(), nativeProperties,
-                                               customProperties);
+                                               customProperties, pageNode());
   EXPECT_TRUE(map->getProperties().contains("color"));
   EXPECT_TRUE(map->getProperties().contains("align-items"));
   EXPECT_TRUE(map->getProperties().contains("--foo"));
   EXPECT_TRUE(map->getProperties().contains("--bar"));
 
   map = FilteredComputedStylePropertyMap::create(
-      declaration(), nativeProperties, emptyCustomProperties);
+      declaration(), nativeProperties, emptyCustomProperties, pageNode());
   EXPECT_TRUE(map->getProperties().contains("color"));
   EXPECT_TRUE(map->getProperties().contains("align-items"));
 
   map = FilteredComputedStylePropertyMap::create(
-      declaration(), emptyNativeProperties, customProperties);
+      declaration(), emptyNativeProperties, customProperties, pageNode());
   EXPECT_TRUE(map->getProperties().contains("--foo"));
   EXPECT_TRUE(map->getProperties().contains("--bar"));
 }
@@ -60,8 +61,8 @@ TEST_F(FilteredComputedStylePropertyMapTest, NativePropertyAccessors) {
       {CSSPropertyColor, CSSPropertyAlignItems});
   Vector<AtomicString> emptyCustomProperties;
   FilteredComputedStylePropertyMap* map =
-      FilteredComputedStylePropertyMap::create(declaration(), nativeProperties,
-                                               emptyCustomProperties);
+      FilteredComputedStylePropertyMap::create(
+          declaration(), nativeProperties, emptyCustomProperties, pageNode());
 
   DummyExceptionStateForTesting exceptionState;
 
@@ -92,7 +93,7 @@ TEST_F(FilteredComputedStylePropertyMapTest, CustomPropertyAccessors) {
   Vector<AtomicString> customProperties({"--foo", "--bar"});
   FilteredComputedStylePropertyMap* map =
       FilteredComputedStylePropertyMap::create(
-          declaration(), emptyNativeProperties, customProperties);
+          declaration(), emptyNativeProperties, customProperties, pageNode());
 
   DummyExceptionStateForTesting exceptionState;
 

@@ -21,19 +21,6 @@ test(function() {
 }, "Computed StyleMap.getProperties returns the same number of properties as ComputedStyle");
 
 test(function() {
-  var properties = computedStyleMap.getProperties();
-  for (var i = 0; i < properties.length; i++) {
-    var property = properties[i];
-    var styleValues = computedStyleMap.getAll(property);
-    if (styleValues.length == 1) {
-      // TODO(meade): Remove this if statement once all properties are supported.
-      // TODO(meade): Handle sequence types.
-      assert_equals(computedStyleMap.get(property).cssText, computedStyle[property]);
-    }
-  }
-}, 'Properties retrieved from ComputedStyleMap reflect the same values as from ComputedStyle');
-
-test(function() {
   testElement.style.border = '1px solid #00ff00';
   var styleValue = computedStyleMap.get('border');
   assert_equals(styleValue.constructor, CSSStyleValue);
