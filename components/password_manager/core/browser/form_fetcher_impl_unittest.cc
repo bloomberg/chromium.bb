@@ -37,6 +37,7 @@ using testing::IsEmpty;
 using testing::Pointee;
 using testing::Return;
 using testing::UnorderedElementsAre;
+using testing::WithArg;
 
 namespace password_manager {
 
@@ -144,7 +145,7 @@ PasswordForm CreateAndroidFederated() {
 }
 
 // Small helper that wraps passed in forms in unique ptrs.
-std::vector<std::unique_ptr<PasswordForm>> make_results(
+std::vector<std::unique_ptr<PasswordForm>> MakeResults(
     const std::vector<PasswordForm>& forms) {
   std::vector<std::unique_ptr<PasswordForm>> results;
   results.reserve(forms.size());
@@ -170,9 +171,8 @@ class MockFormFetcherImpl : public FormFetcherImpl {
   MOCK_METHOD0(ProcessMigratedFormsDummy, void());
 };
 
-ACTION(InvokeMigratorGetResults) {
-  static_cast<HttpPasswordMigrator*>(arg0)->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+ACTION_P(GetAndAssignWeakPtr, ptr) {
+  *ptr = arg0->GetWeakPtr();
 }
 
 }  // namespace
@@ -412,30 +412,40 @@ TEST_F(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
   GURL::Replacements http_rep;
   http_rep.SetSchemeStr(url::kHttpScheme);
   const GURL http_origin = form_digest_.origin.ReplaceComponents(http_rep);
-  const PasswordStore::FormDigest http_form_digest(
+  form_digest_ = PasswordStore::FormDigest(
       PasswordForm::SCHEME_HTML, http_origin.GetOrigin().spec(), http_origin);
 
   // A new form fetcher is created to be able to set the form digest and
   // migration flag.
-  const auto http_form_fetcher = base::MakeUnique<MockFormFetcherImpl>(
-      http_form_digest, &client_, /* should_migrate_http_passwords */ true);
+  form_fetcher_ = base::MakeUnique<MockFormFetcherImpl>(
+      form_digest_, &client_, /* should_migrate_http_passwords */ true);
+  EXPECT_CALL(consumer_, ProcessMatches(IsEmpty(), 0u));
+  form_fetcher_->AddConsumer(&consumer_);
 
   std::vector<PasswordForm> empty_forms;
   const PasswordForm http_form = CreateHTTPNonFederated();
+  const PasswordForm federated_form = CreateFederated();
 
-  // Tests that there is no attempt to migrate credentials on HTTP origins.
-  // FormFetcherImplTest::Fetch() can't be used here due to different
-  // expectations. The repeated calls to MockFormFetcherImpl::Fetch() are
-  // necessary to set the correct state.
-  EXPECT_CALL(*mock_store_, GetLogins(_, _));
-  http_form_fetcher->Fetch();
+  Fetch();
   EXPECT_CALL(*mock_store_, GetLogins(_, _)).Times(0);
-  http_form_fetcher->OnGetPasswordStoreResults(make_results(empty_forms));
+  EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(consumer_, ProcessMatches(IsEmpty(), 0u));
+  form_fetcher_->OnGetPasswordStoreResults(MakeResults(empty_forms));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
 
-  EXPECT_CALL(*mock_store_, GetLogins(_, _));
-  http_form_fetcher->Fetch();
-  EXPECT_CALL(*mock_store_, GetLogins(_, _)).Times(0);
-  http_form_fetcher->OnGetPasswordStoreResults(make_results({http_form}));
+  Fetch();
+  EXPECT_CALL(consumer_,
+              ProcessMatches(UnorderedElementsAre(Pointee(http_form)), 0u));
+  form_fetcher_->OnGetPasswordStoreResults(MakeResults({http_form}));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+
+  Fetch();
+  EXPECT_CALL(consumer_,
+              ProcessMatches(UnorderedElementsAre(Pointee(http_form)), 0u));
+  form_fetcher_->OnGetPasswordStoreResults(
+      MakeResults({http_form, federated_form}));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
+              UnorderedElementsAre(Pointee(federated_form)));
 }
 
 // Test that ensures HTTP passwords are only migrated on HTTPS sites when no
@@ -444,28 +454,73 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   GURL::Replacements https_rep;
   https_rep.SetSchemeStr(url::kHttpsScheme);
   const GURL https_origin = form_digest_.origin.ReplaceComponents(https_rep);
-  const PasswordStore::FormDigest https_form_digest(
+  form_digest_ = PasswordStore::FormDigest(
       PasswordForm::SCHEME_HTML, https_origin.GetOrigin().spec(), https_origin);
 
   // A new form fetcher is created to be able to set the form digest and
   // migration flag.
-  const auto https_form_fetcher = base::MakeUnique<MockFormFetcherImpl>(
-      https_form_digest, &client_, /* should_migrate_http_passwords */ true);
+  form_fetcher_ = base::MakeUnique<MockFormFetcherImpl>(
+      form_digest_, &client_, /* should_migrate_http_passwords */ true);
+  EXPECT_CALL(consumer_, ProcessMatches(IsEmpty(), 0u));
+  form_fetcher_->AddConsumer(&consumer_);
+
+  PasswordForm https_form = CreateNonFederated();
+
+  // Create HTTP form for the same orgin (except scheme), which will be passed
+  // to the migrator.
+  GURL::Replacements http_rep;
+  http_rep.SetSchemeStr(url::kHttpScheme);
+  PasswordForm http_form = https_form;
+  http_form.origin = https_form.origin.ReplaceComponents(http_rep);
+  http_form.signon_realm = http_form.origin.GetOrigin().spec();
 
   std::vector<PasswordForm> empty_forms;
-  const PasswordForm https_form = CreateNonFederated();
 
   // Tests that there is only an attempt to migrate credentials on HTTPS origins
   // when no other credentials are available.
-  // FormFetcherImplTest::Fetch() can't be used here due to different
-  // expectations. The repeated calls to MockFormFetcherImpl::Fetch() are
-  // necessary to set the correct state.
-  EXPECT_CALL(*mock_store_, GetLogins(_, _));
-  https_form_fetcher->Fetch();
-  EXPECT_CALL(*mock_store_, GetLogins(_, _))
-      .WillOnce(testing::WithArg<1>(InvokeMigratorGetResults()));
-  EXPECT_CALL(*https_form_fetcher, ProcessMigratedFormsDummy());
-  https_form_fetcher->OnGetPasswordStoreResults(make_results(empty_forms));
+  const GURL form_digest_http_origin =
+      form_digest_.origin.ReplaceComponents(http_rep);
+  PasswordStore::FormDigest http_form_digest(
+      PasswordForm::SCHEME_HTML, form_digest_http_origin.GetOrigin().spec(),
+      form_digest_http_origin);
+  Fetch();
+  base::WeakPtr<PasswordStoreConsumer> migrator_ptr;
+  EXPECT_CALL(*mock_store_, GetLogins(http_form_digest, _))
+      .WillOnce(WithArg<1>(GetAndAssignWeakPtr(&migrator_ptr)));
+  form_fetcher_->OnGetPasswordStoreResults(MakeResults(empty_forms));
+  ASSERT_TRUE(migrator_ptr);
+
+  // Setting action equal to origin is necessary in order to mirror the behavior
+  // in HttpPasswordMigrator.
+  https_form.action = https_form.origin;
+
+  // Now perform the actual migration.
+  EXPECT_CALL(*mock_store_, AddLogin(https_form));
+  EXPECT_CALL(*static_cast<MockFormFetcherImpl*>(form_fetcher_.get()),
+              ProcessMigratedFormsDummy());
+  EXPECT_CALL(consumer_,
+              ProcessMatches(UnorderedElementsAre(Pointee(https_form)), 0u));
+  static_cast<HttpPasswordMigrator*>(migrator_ptr.get())
+      ->OnGetPasswordStoreResults(MakeResults({http_form}));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+
+  // No migration should happen when results are present.
+  Fetch();
+  EXPECT_CALL(*mock_store_, GetLogins(_, _)).Times(0);
+  EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(consumer_,
+              ProcessMatches(UnorderedElementsAre(Pointee(https_form)), 0u));
+  form_fetcher_->OnGetPasswordStoreResults(MakeResults({https_form}));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+
+  const PasswordForm federated_form = CreateFederated();
+  Fetch();
+  EXPECT_CALL(consumer_,
+              ProcessMatches(UnorderedElementsAre(Pointee(https_form)), 0u));
+  form_fetcher_->OnGetPasswordStoreResults(
+      MakeResults({https_form, federated_form}));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
+              UnorderedElementsAre(Pointee(federated_form)));
 }
 
 }  // namespace password_manager
