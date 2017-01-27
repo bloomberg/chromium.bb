@@ -36,7 +36,7 @@ class MODULES_EXPORT Response final : public Body {
   static Response* create(ScriptState*, ExceptionState&);
   static Response* create(ScriptState*,
                           ScriptValue body,
-                          const Dictionary&,
+                          const ResponseInit&,
                           ExceptionState&);
 
   static Response* create(ScriptState*,

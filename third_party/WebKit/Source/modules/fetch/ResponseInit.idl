@@ -1,0 +1,19 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://fetch.spec.whatwg.org/#responseinit
+
+// The actual typedef in the spec is
+//    (sequence<sequence<ByteString>> or record<ByteString,ByteString>)
+// which also implicitly includes Headers since it is iterable.
+// Blink's WebIDL code does not support record<K,V> yet, so we have to make do
+// with the (Dictionary or Headers) part instead.
+// See http://crbug.com/685754.
+typedef (sequence<sequence<ByteString>> or Dictionary or Headers) HeadersInit;
+
+dictionary ResponseInit {
+    unsigned short status = 200;
+    ByteString statusText = "OK";
+    HeadersInit headers;
+};

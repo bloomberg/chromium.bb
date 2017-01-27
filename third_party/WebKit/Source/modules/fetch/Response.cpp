@@ -14,6 +14,7 @@
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
+#include "bindings/modules/v8/ByteStringSequenceSequenceOrDictionaryOrHeaders.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/URLSearchParams.h"
@@ -127,7 +128,7 @@ Response* Response::create(ScriptState* scriptState,
 
 Response* Response::create(ScriptState* scriptState,
                            ScriptValue bodyValue,
-                           const Dictionary& init,
+                           const ResponseInit& init,
                            ExceptionState& exceptionState) {
   v8::Local<v8::Value> body = bodyValue.v8Value();
   v8::Isolate* isolate = scriptState->isolate();
@@ -180,8 +181,7 @@ Response* Response::create(ScriptState* scriptState,
         new BodyStreamBuffer(scriptState, new FormDataBytesConsumer(string));
     contentType = "text/plain;charset=UTF-8";
   }
-  return create(scriptState, bodyBuffer, contentType,
-                ResponseInit(init, exceptionState), exceptionState);
+  return create(scriptState, bodyBuffer, contentType, init, exceptionState);
 }
 
 Response* Response::create(ScriptState* scriptState,
@@ -189,7 +189,7 @@ Response* Response::create(ScriptState* scriptState,
                            const String& contentType,
                            const ResponseInit& init,
                            ExceptionState& exceptionState) {
-  unsigned short status = init.status;
+  unsigned short status = init.status();
 
   // "1. If |init|'s status member is not in the range 200 to 599, inclusive,
   //     throw a RangeError."
@@ -203,7 +203,7 @@ Response* Response::create(ScriptState* scriptState,
 
   // "2. If |init|'s statusText member does not match the Reason-Phrase
   // token production, throw a TypeError."
-  if (!isValidReasonPhrase(init.statusText)) {
+  if (!isValidReasonPhrase(init.statusText())) {
     exceptionState.throwTypeError("Invalid statusText");
     return nullptr;
   }
@@ -213,26 +213,25 @@ Response* Response::create(ScriptState* scriptState,
   Response* r = new Response(scriptState->getExecutionContext());
 
   // "4. Set |r|'s response's status to |init|'s status member."
-  r->m_response->setStatus(init.status);
+  r->m_response->setStatus(init.status());
 
   // "5. Set |r|'s response's status message to |init|'s statusText member."
-  r->m_response->setStatusMessage(AtomicString(init.statusText));
+  r->m_response->setStatusMessage(AtomicString(init.statusText()));
 
   // "6. If |init|'s headers member is present, run these substeps:"
-  if (init.headers) {
+  if (init.hasHeaders()) {
     // "1. Empty |r|'s response's header list."
     r->m_response->headerList()->clearList();
     // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
     // any exceptions."
-    r->m_headers->fillWith(init.headers.get(), exceptionState);
-    if (exceptionState.hadException())
-      return nullptr;
-  } else if (!init.headersDictionary.isUndefinedOrNull()) {
-    // "1. Empty |r|'s response's header list."
-    r->m_response->headerList()->clearList();
-    // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
-    // any exceptions."
-    r->m_headers->fillWith(init.headersDictionary, exceptionState);
+    if (init.headers().isByteStringSequenceSequence()) {
+      r->m_headers->fillWith(init.headers().getAsByteStringSequenceSequence(),
+                             exceptionState);
+    } else if (init.headers().isDictionary()) {
+      r->m_headers->fillWith(init.headers().getAsDictionary(), exceptionState);
+    } else if (init.headers().isHeaders()) {
+      r->m_headers->fillWith(init.headers().getAsHeaders(), exceptionState);
+    }
     if (exceptionState.hadException())
       return nullptr;
   }

@@ -40,6 +40,5 @@ blink_modules_sources("fetch") {
     "RequestInit.h",
     "Response.cpp",
     "Response.h",
-    "ResponseInit.h",
   ]
 }
