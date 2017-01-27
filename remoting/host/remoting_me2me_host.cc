@@ -133,9 +133,16 @@
 using remoting::protocol::PairingRegistry;
 using remoting::protocol::NetworkSettings;
 
-#if defined(USE_REMOTING_MACOSX_INTERNAL)
-#include "remoting/tools/internal/internal_mac-inl.h"
-#endif
+#if defined(OS_MACOSX)
+
+// The following creates a section that tells Mac OS X that it is OK to let us
+// inject input in the login screen. Just the name of the section is important,
+// not its contents.
+__attribute__((used))
+__attribute__((section ("__CGPreLoginApp,__cgpreloginapp")))
+static const char magic_section[] = "";
+
+#endif  // defined(OS_MACOSX)
 
 namespace {
 

@@ -21,10 +21,6 @@ config("enable_webrtc_remoting_client") {
 config("remoting_me2me_host") {
   defines = []
 
-  if (is_mac && is_official_build) {
-    defines += [ "USE_REMOTING_MACOSX_INTERNAL" ]
-  }
-
   if (is_win && remoting_multi_process != 0 && remoting_rdp_session != 0) {
     defines += [ "REMOTING_RDP_SESSION" ]
   }
