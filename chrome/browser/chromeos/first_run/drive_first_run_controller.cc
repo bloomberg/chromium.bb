@@ -30,6 +30,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -150,11 +151,8 @@ class DriveWebContentsManager : public content::WebContentsObserver,
                              DriveFirstRunController::UMAOutcome outcome);
 
   // content::WebContentsObserver overrides:
-  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
@@ -254,13 +252,9 @@ void DriveWebContentsManager::RunCompletionCallback(
   completion_callback_.Run(success, outcome);
 }
 
-void DriveWebContentsManager::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  if (!render_frame_host->GetParent()) {
+void DriveWebContentsManager::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() && navigation_handle->IsErrorPage()) {
     LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
     OnOfflineInit(false,
                   DriveFirstRunController::OUTCOME_WEB_CONTENTS_LOAD_FAILED);
