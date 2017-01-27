@@ -16,15 +16,24 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace web {
+class WebState;
+}  // namespace web
+
 // NativeAppNavigationController brings up a GAL Infobar if the webpage directs
 // it to do so and there are no other circumstances that would suppress its
 // display.
 @interface NativeAppNavigationController
     : NSObject<CRWWebControllerObserver, NativeAppNavigationControllerProtocol>
 
-// Designated initializer.
-- (id)initWithRequestContextGetter:(net::URLRequestContextGetter*)context
-                               tab:(Tab*)tab;
+// Designated initializer. The use of |tab| will be phased out in the future
+// when all the information needed can be fulfilled by |webState|. Use this
+// instead of -init.
+- (instancetype)initWithWebState:(web::WebState*)webState
+            requestContextGetter:(net::URLRequestContextGetter*)context
+                             tab:(Tab*)tab NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // Copies the list of applications possibly being installed and register to be
 // notified of their installation.

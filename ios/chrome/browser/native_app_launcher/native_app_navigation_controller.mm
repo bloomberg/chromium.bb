@@ -9,16 +9,17 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_infobar_delegate.h"
+#include "ios/chrome/browser/native_app_launcher/native_app_navigation_util.h"
 #import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_types.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
-#import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/navigation_item.h"
+#include "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -36,37 +37,36 @@ using base::UserMetricsAction;
 - (void)recordInfobarDisplayedOfType:(NativeAppControllerType)type
                     onLinkNavigation:(BOOL)isLinkNavigation;
 
-// Returns whether the current state is Link Navigation in the sense of Native
-// App Launcher, i.e. a navigation caused by an explicit user action in the
-// rectangle of the web content area.
-- (BOOL)isLinkNavigation;
-
 @end
 
 @implementation NativeAppNavigationController {
+  // WebState provides access to the *TabHelper objects. This will eventually
+  // replace the need to have |_tab| in this object.
+  web::WebState* _webState;
   // A reference to the URLRequestContextGetter needed to fetch icons.
   scoped_refptr<net::URLRequestContextGetter> _requestContextGetter;
-  // Tab hosting the infobar.
+  // DEPRECATED: Tab hosting the infobar and is also used for accessing Tab
+  // states such as navigation manager and whether it is a pre-rendered tab.
+  // Use |webState| whenever possible.
   __unsafe_unretained Tab* _tab;  // weak
   base::scoped_nsprotocol<id<NativeAppMetadata>> _metadata;
   // A set of appIds encoded as NSStrings.
   base::scoped_nsobject<NSMutableSet> _appsPossiblyBeingInstalled;
 }
 
-// This prevents incorrect initialization of this object.
-- (id)init {
-  NOTREACHED();
-  return nil;
-}
-
 // Designated initializer. Use this instead of -init.
-- (id)initWithRequestContextGetter:(net::URLRequestContextGetter*)context
-                               tab:(Tab*)tab {
+- (instancetype)initWithWebState:(web::WebState*)webState
+            requestContextGetter:(net::URLRequestContextGetter*)context
+                             tab:(Tab*)tab {
   self = [super init];
   if (self) {
     DCHECK(context);
     _requestContextGetter = context;
-    // Allows |tab| to be nil for unit testing.
+    DCHECK(webState);
+    _webState = webState;
+    // Allows |tab| to be nil for unit testing. If not nil, it should have the
+    // same webState.
+    DCHECK(!tab || [tab webState] == webState);
     _tab = tab;
     _appsPossiblyBeingInstalled.reset([[NSMutableSet alloc] init]);
   }
@@ -101,7 +101,7 @@ using base::UserMetricsAction;
 
 - (void)showInfoBarIfNecessary {
   // Find a potential matching native app.
-  GURL pageURL = _tab.webState->GetLastCommittedURL();
+  GURL pageURL = _webState->GetLastCommittedURL();
   _metadata.reset(
       [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
           newNativeAppForURL:pageURL]);
@@ -110,8 +110,9 @@ using base::UserMetricsAction;
 
   // Select the infobar type.
   NativeAppControllerType type;
+  bool isLinkNavigation = native_app_launcher::IsLinkNavigation(_webState);
   if ([_metadata canOpenURL:pageURL]) {  // App is installed.
-    type = [self isLinkNavigation] && ![_metadata shouldAutoOpenLinks]
+    type = isLinkNavigation && ![_metadata shouldAutoOpenLinks]
                ? NATIVE_APP_OPEN_POLICY_CONTROLLER
                : NATIVE_APP_LAUNCHER_CONTROLLER;
   } else {  // App is not installed.
@@ -124,10 +125,10 @@ using base::UserMetricsAction;
   // and ignored behavior can be handled.
   [_metadata willBeShownInInfobarOfType:type];
   // Display the proper infobar.
-  infobars::InfoBarManager* infoBarManager = [_tab infoBarManager];
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(_webState);
   NativeAppInfoBarDelegate::Create(infoBarManager, self, pageURL, type);
-  [self recordInfobarDisplayedOfType:type
-                    onLinkNavigation:[self isLinkNavigation]];
+  [self recordInfobarDisplayedOfType:type onLinkNavigation:isLinkNavigation];
 }
 
 - (void)recordInfobarDisplayedOfType:(NativeAppControllerType)type
@@ -180,6 +181,8 @@ using base::UserMetricsAction;
     return;
   DCHECK(![_appsPossiblyBeingInstalled containsObject:appIdString]);
   [_appsPossiblyBeingInstalled addObject:appIdString];
+  // TODO(crbug.com/684063): Preferred method is to add a helper object to
+  // WebState and use the helper object to launch Store Kit.
   [_tab openAppStore:appIdString];
 }
 
@@ -206,19 +209,6 @@ using base::UserMetricsAction;
 
 - (void)webControllerWillClose:(CRWWebController*)webController {
   [webController removeObserver:self];
-}
-
-- (BOOL)isLinkNavigation {
-  if (![_tab navigationManager])
-    return NO;
-  web::NavigationItem* userItem = [_tab navigationManager]->GetLastUserItem();
-  if (!userItem)
-    return NO;
-  ui::PageTransition currentTransition = userItem->GetTransitionType();
-  return PageTransitionCoreTypeIs(currentTransition,
-                                  ui::PAGE_TRANSITION_LINK) ||
-         PageTransitionCoreTypeIs(currentTransition,
-                                  ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 - (void)appDidInstall:(NSNotification*)notification {

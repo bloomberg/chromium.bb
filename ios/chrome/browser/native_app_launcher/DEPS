@@ -1,6 +1,8 @@
 specific_include_rules = {
-  # TODO(crbug.com/619984): Remove this exception.
-  "^native_app_navigation_controller\.mm$": [
+  # TODO(crbug.com/619984): Remove the following exceptions.
+  "^native_app_navigation_util_unittest\.mm$": [
+    "+ios/web/navigation/crw_session_controller.h",
     "+ios/web/navigation/navigation_manager_impl.h",
+    "+ios/web/web_state/web_state_impl.h",
   ],
 }

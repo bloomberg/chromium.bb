@@ -54,6 +54,8 @@ source_set("native_app_launcher_internal") {
   sources = [
     "native_app_navigation_controller.h",
     "native_app_navigation_controller.mm",
+    "native_app_navigation_util.h",
+    "native_app_navigation_util.mm",
   ]
   deps = [
     ":native_app_launcher",
@@ -79,6 +81,7 @@ source_set("unit_tests_internal") {
   testonly = true
   sources = [
     "native_app_navigation_controller_unittest.mm",
+    "native_app_navigation_util_unittest.mm",
   ]
   deps = [
     ":native_app_launcher",
@@ -87,6 +90,7 @@ source_set("unit_tests_internal") {
     "//base/test:test_support",
     "//components/infobars/core",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",

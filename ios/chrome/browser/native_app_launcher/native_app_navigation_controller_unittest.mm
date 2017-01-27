@@ -7,18 +7,15 @@
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_infobar_delegate.h"
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller.h"
+#import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_whitelist_manager.h"
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
-#include "ios/web/public/test/test_web_thread.h"
-#include "net/url_request/url_request_test_util.h"
-#include "testing/platform_test.h"
 
 @interface NativeAppNavigationController (Testing)
 - (void)recordInfobarDisplayedOfType:(NativeAppControllerType)type
@@ -44,19 +41,14 @@ class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
   base::scoped_nsprotocol<id<NativeAppWhitelistManager>> manager_;
 };
 
-class NativeAppNavigationControllerTest : public PlatformTest {
- public:
-  NativeAppNavigationControllerTest()
-      : loop_(base::MessageLoop::TYPE_IO),
-        ui_thread_(web::WebThread::UI, &loop_) {}
-
+class NativeAppNavigationControllerTest : public ChromeWebTest {
  protected:
   void SetUp() override {
-    request_context_getter_ =
-        new net::TestURLRequestContextGetter(loop_.task_runner());
+    ChromeWebTest::SetUp();
     controller_.reset([[NativeAppNavigationController alloc]
-        initWithRequestContextGetter:request_context_getter_.get()
-                                 tab:nil]);
+            initWithWebState:web_state()
+        requestContextGetter:GetBrowserState()->GetRequestContext()
+                         tab:nil]);
 
     action_callback_ =
         base::Bind(&NativeAppNavigationControllerTest::OnUserAction,
@@ -66,7 +58,10 @@ class NativeAppNavigationControllerTest : public PlatformTest {
     handler_called_counter_ = 0;
   }
 
-  void TearDown() override { base::RemoveActionCallback(action_callback_); }
+  void TearDown() override {
+    base::RemoveActionCallback(action_callback_);
+    ChromeWebTest::TearDown();
+  }
 
   void SetExpectedActionName(const std::string& action_name) {
     expected_action_name_.reset(new std::string(action_name));
@@ -82,9 +77,6 @@ class NativeAppNavigationControllerTest : public PlatformTest {
     handler_called_counter_ = 0;
   }
 
-  base::MessageLoop loop_;
-  web::TestWebThread ui_thread_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   base::scoped_nsobject<NativeAppNavigationController> controller_;
 
   // The callback to invoke when an action is recorded.
