@@ -281,7 +281,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       base::Time(), base::Time(),
       /* secure */ false,
       /* http_only */ false, net::CookieSameSite::NO_RESTRICTION,
-      /* enforce_strict_secure */ false, net::COOKIE_PRIORITY_DEFAULT));
+      net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching secure cookie.
   cookies->push_back(*net::CanonicalCookie::Create(
@@ -289,7 +289,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       base::Time(), base::Time(),
       /* secure */ true,
       /* http_only */ false, net::CookieSameSite::NO_RESTRICTION,
-      /* enforce_strict_secure */ true, net::COOKIE_PRIORITY_DEFAULT));
+      net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching http-only cookie.
   cookies->push_back(*net::CanonicalCookie::Create(
@@ -297,7 +297,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       base::Time(), base::Time(),
       /* secure */ false,
       /* http_only */ true, net::CookieSameSite::NO_RESTRICTION,
-      /* enforce_strict_secure */ false, net::COOKIE_PRIORITY_DEFAULT));
+      net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching cookie with path.
   cookies->push_back(*net::CanonicalCookie::Create(
@@ -305,7 +305,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       "/widgets", base::Time(), base::Time(),
       /* secure */ false,
       /* http_only */ false, net::CookieSameSite::NO_RESTRICTION,
-      /* enforce_strict_secure */ false, net::COOKIE_PRIORITY_DEFAULT));
+      net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching cookie with subdomain.
   cookies->push_back(*net::CanonicalCookie::Create(
@@ -313,7 +313,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       "cdn.example.com", "/", base::Time(), base::Time(),
       /* secure */ false,
       /* http_only */ false, net::CookieSameSite::NO_RESTRICTION,
-      /* enforce_strict_secure */ false, net::COOKIE_PRIORITY_DEFAULT));
+      net::COOKIE_PRIORITY_DEFAULT));
 
   // Non-matching cookie (different site).
   cookies->push_back(*net::CanonicalCookie::Create(
@@ -321,7 +321,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       base::Time(), base::Time(),
       /* secure */ false,
       /* http_only */ false, net::CookieSameSite::NO_RESTRICTION,
-      /* enforce_strict_secure */ false, net::COOKIE_PRIORITY_DEFAULT));
+      net::COOKIE_PRIORITY_DEFAULT));
 
   // Non-matching cookie (different path).
   cookies->push_back(*net::CanonicalCookie::Create(
@@ -329,7 +329,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       "/gadgets", base::Time(), base::Time(),
       /* secure */ false,
       /* http_only */ false, net::CookieSameSite::NO_RESTRICTION,
-      /* enforce_strict_secure */ false, net::COOKIE_PRIORITY_DEFAULT));
+      net::COOKIE_PRIORITY_DEFAULT));
 
   std::string reply =
       "{\"url\":\"https://example.com\","

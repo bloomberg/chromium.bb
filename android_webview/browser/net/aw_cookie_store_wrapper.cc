@@ -121,13 +121,11 @@ void SetCookieWithDetailsAsyncOnCookieThread(
     bool secure,
     bool http_only,
     net::CookieSameSite same_site,
-    bool enforce_strict_secure,
     net::CookiePriority priority,
     const net::CookieStore::SetCookiesCallback& callback) {
   GetCookieStore()->SetCookieWithDetailsAsync(
       url, name, value, domain, path, creation_time, expiration_time,
-      last_access_time, secure, http_only, same_site, enforce_strict_secure,
-      priority, callback);
+      last_access_time, secure, http_only, same_site, priority, callback);
 }
 
 void GetCookiesWithOptionsAsyncOnCookieThread(
@@ -222,14 +220,13 @@ void AwCookieStoreWrapper::SetCookieWithDetailsAsync(
     bool secure,
     bool http_only,
     net::CookieSameSite same_site,
-    bool enforce_strict_secure,
     net::CookiePriority priority,
     const SetCookiesCallback& callback) {
   DCHECK(client_task_runner_->RunsTasksOnCurrentThread());
   PostTaskToCookieStoreTaskRunner(
       base::Bind(&SetCookieWithDetailsAsyncOnCookieThread, url, name, value,
                  domain, path, creation_time, expiration_time, last_access_time,
-                 secure, http_only, same_site, enforce_strict_secure, priority,
+                 secure, http_only, same_site, priority,
                  CreateWrappedCallback<bool>(callback)));
 }
 

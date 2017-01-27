@@ -29,7 +29,7 @@ var TEST_DOMAIN_COOKIE = {
   expirationDate: TEST_EXPIRATION_DATE
 };
 var TEST_SECURE_COOKIE = {
-  url: TEST_URL5,
+  url: TEST_URL4,
   name: 'SECRETCOOKIE',
   value: 'foobar_password',
   secure: true,
@@ -163,9 +163,9 @@ chrome.test.runTests([
   function getSecureCookie() {
     removeTestCookies();
     chrome.cookies.set(TEST_SECURE_COOKIE, pass(function () {
-      // Original URL doesn't work because scheme isn't secure.
+      // URL doesn't work because scheme isn't secure.
       chrome.cookies.get(
-          {url: TEST_SECURE_COOKIE.url, name: TEST_SECURE_COOKIE.name},
+          {url: TEST_URL5, name: TEST_SECURE_COOKIE.name},
           pass(expectNullCookie));
       // Path doesn't match.
       chrome.cookies.get(

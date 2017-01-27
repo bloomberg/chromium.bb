@@ -395,11 +395,6 @@ void CookiesSetFunction::SetCookieOnIOThread() {
     break;
   }
 
-  bool are_experimental_cookie_features_enabled =
-      store_browser_context_->GetURLRequestContext()
-          ->network_delegate()
-          ->AreExperimentalCookieFeaturesEnabled();
-
   // clang-format off
   cookie_store->SetCookieWithDetailsAsync(
       url_, parsed_args_->details.name.get() ? *parsed_args_->details.name
@@ -418,7 +413,6 @@ void CookiesSetFunction::SetCookieOnIOThread() {
       parsed_args_->details.http_only.get() ? *parsed_args_->details.http_only
                                             : false,
       same_site,
-      are_experimental_cookie_features_enabled,
       net::COOKIE_PRIORITY_DEFAULT,
       base::Bind(&CookiesSetFunction::PullCookie, this));
   // clang-format on

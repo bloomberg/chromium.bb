@@ -388,7 +388,6 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
     bool secure,
     bool http_only,
     CookieSameSite same_site,
-    bool enforce_strict_secure,
     CookiePriority priority,
     const SetCookiesCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -397,8 +396,8 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
     case NOT_SYNCHRONIZED:
       cookie_monster_->SetCookieWithDetailsAsync(
           url, name, value, domain, path, creation_time, expiration_time,
-          last_access_time, secure, http_only, same_site, enforce_strict_secure,
-          priority, WrapSetCallback(callback));
+          last_access_time, secure, http_only, same_site, priority,
+          WrapSetCallback(callback));
       break;
     case SYNCHRONIZED:
       // If cookies are not allowed, they are stashed in the CookieMonster, and
@@ -415,7 +414,7 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
       std::unique_ptr<net::CanonicalCookie> canonical_cookie =
           net::CanonicalCookie::Create(
               url, name, value, domain, path, creation_time, expiration_time,
-              secure, http_only, same_site, enforce_strict_secure, priority);
+              secure, http_only, same_site, priority);
 
       if (canonical_cookie) {
         NSHTTPCookie* cookie =

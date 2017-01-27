@@ -125,7 +125,7 @@ static void RestoreToCookieJarInternal(net::URLRequestContextGetter* getter,
   store->SetCookieWithDetailsAsync(
       url, cookie.Name(), cookie.Value(), effective_domain, cookie.Path(),
       base::Time(), cookie.ExpiryDate(), cookie.LastAccessDate(),
-      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(), false,
+      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(),
       cookie.Priority(), cb);
 }
 

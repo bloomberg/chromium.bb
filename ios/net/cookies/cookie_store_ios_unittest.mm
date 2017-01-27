@@ -46,7 +46,6 @@ struct CookieStoreIOSTestTraits {
   static const bool filters_schemes = false;
   static const bool has_path_prefix_bug = true;
   static const int creation_time_granularity_in_ms = 1000;
-  static const bool enforce_strict_secure = false;
 
   base::MessageLoop loop_;
 };
@@ -113,7 +112,7 @@ class TestPersistentCookieStore
                                      base::Time(),  // expires
                                      false,         // secure
                                      false,         // httponly
-                                     net::CookieSameSite::DEFAULT_MODE, false,
+                                     net::CookieSameSite::DEFAULT_MODE,
                                      net::COOKIE_PRIORITY_DEFAULT));
     cookies.push_back(std::move(bad_canonical_cookie));
     loaded_callback_.Run(std::move(cookies));

@@ -99,8 +99,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
                  const base::Time& creation) {
     store_->AddCookie(*net::CanonicalCookie::Create(
         url, name, value, domain, path, creation, creation, false, false,
-        net::CookieSameSite::DEFAULT_MODE, false,
-        net::COOKIE_PRIORITY_DEFAULT));
+        net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
   }
 
   void DestroyStore() {

@@ -230,10 +230,6 @@ void SetCookieOnIO(
   net::URLRequestContext* request_context =
       GetRequestContextOnIO(resource_context, context_getter, url);
 
-  bool are_experimental_cookie_features_enabled =
-      request_context->network_delegate()
-        ->AreExperimentalCookieFeaturesEnabled();
-
   request_context->cookie_store()->SetCookieWithDetailsAsync(
       url, name, value, domain, path,
       base::Time(),
@@ -242,7 +238,6 @@ void SetCookieOnIO(
       secure,
       http_only,
       same_site,
-      are_experimental_cookie_features_enabled,
       net::COOKIE_PRIORITY_DEFAULT,
       base::Bind(&CookieSetOnIO, base::Passed(std::move(callback))));
 }

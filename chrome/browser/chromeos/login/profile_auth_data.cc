@@ -62,11 +62,7 @@ void ImportCookies(const net::CookieList& cookies,
         url, cookie.Name(), cookie.Value(), effective_domain, cookie.Path(),
         cookie.CreationDate(), cookie.ExpiryDate(), cookie.LastAccessDate(),
         cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(),
-        // enforce_strict_secure should have been applied on the original
-        // cookie, prior to import. This allows URL to be treated as an HTTPS
-        // URL, whether the cookie was set by an HTTP or HTTPS domain (Something
-        // that can't be determined by just looking at the CanonicalCookie).
-        false, cookie.Priority(), net::CookieStore::SetCookiesCallback());
+        cookie.Priority(), net::CookieStore::SetCookiesCallback());
   }
 }
 

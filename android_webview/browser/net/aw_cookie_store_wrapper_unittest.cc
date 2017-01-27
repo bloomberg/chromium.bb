@@ -35,7 +35,6 @@ struct AwCookieStoreWrapperTestTraits {
   static const bool filters_schemes = true;
   static const bool has_path_prefix_bug = false;
   static const int creation_time_granularity_in_ms = 0;
-  static const bool enforce_strict_secure = false;
 };
 
 }  // namespace android_webview

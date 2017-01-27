@@ -113,8 +113,4 @@ bool ShellNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
       switches::kEnableExperimentalWebPlatformFeatures);
 }
 
-bool ShellNetworkDelegate::OnAreStrictSecureCookiesEnabled() const {
-  return OnAreExperimentalCookieFeaturesEnabled();
-}
-
 }  // namespace content
