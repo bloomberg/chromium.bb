@@ -308,7 +308,9 @@ bool InlineBox::canAccommodateEllipsis(bool ltr,
                                        int blockEdge,
                                        int ellipsisWidth) const {
   // Non-atomic inline-level elements can always accommodate an ellipsis.
-  if (!getLineLayoutItem().isAtomicInlineLevel())
+  // Skip list markers and try the next box.
+  if (!getLineLayoutItem().isAtomicInlineLevel() ||
+      getLineLayoutItem().isListMarker())
     return true;
 
   IntRect boxRect(x().toInt(), 0, m_logicalWidth.toInt(), 10);

@@ -1446,11 +1446,16 @@ LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr,
     if (currResult != -1 && result == -1)
       result = LayoutUnit(currResult);
 
+    // List markers will sit outside the box so don't let them contribute
+    // width.
+    int boxWidth = box->getLineLayoutItem().isListMarker()
+                       ? 0
+                       : box->logicalWidth().round();
     if (ltr) {
-      visibleLeftEdge += box->logicalWidth().round();
+      visibleLeftEdge += boxWidth;
       box = box->nextOnLine();
     } else {
-      visibleRightEdge -= box->logicalWidth().round();
+      visibleRightEdge -= boxWidth;
       box = box->prevOnLine();
     }
   }
