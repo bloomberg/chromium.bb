@@ -98,14 +98,14 @@ const char kTestContentSuggestionsServerWithAPIKey[] =
     "https://localunittest-chromecontentsuggestions-pa.googleapis.com/v1/"
     "suggestions/fetch?key=fakeAPIkey";
 
-const char kSnippetUrl[] = "http://localhost/foobar";
-const char kSnippetTitle[] = "Title";
-const char kSnippetText[] = "Snippet";
-const char kSnippetSalientImage[] = "http://localhost/salient_image";
-const char kSnippetPublisherName[] = "Foo News";
-const char kSnippetAmpUrl[] = "http://localhost/amp";
+const char kSuggestionUrl[] = "http://localhost/foobar";
+const char kSuggestionTitle[] = "Title";
+const char kSuggestionText[] = "Suggestion";
+const char kSuggestionSalientImage[] = "http://localhost/salient_image";
+const char kSuggestionPublisherName[] = "Foo News";
+const char kSuggestionAmpUrl[] = "http://localhost/amp";
 
-const char kSnippetUrl2[] = "http://foo.com/bar";
+const char kSuggestionUrl2[] = "http://foo.com/bar";
 
 const char kTestJsonDefaultCategoryTitle[] = "Some title";
 
@@ -121,7 +121,7 @@ base::Time GetDefaultExpirationTime() {
   return base::Time::Now() + base::TimeDelta::FromHours(1);
 }
 
-std::string GetCategoryJson(const std::vector<std::string>& snippets,
+std::string GetCategoryJson(const std::vector<std::string>& suggestions,
                             int remote_category_id,
                             const std::string& category_title) {
   return base::StringPrintf(
@@ -131,7 +131,7 @@ std::string GetCategoryJson(const std::vector<std::string>& snippets,
       "    \"suggestions\": [%s]\n"
       "  }\n",
       remote_category_id, category_title.c_str(),
-      base::JoinString(snippets, ", ").c_str());
+      base::JoinString(suggestions, ", ").c_str());
 }
 
 class MultiCategoryJsonBuilder {
@@ -139,19 +139,19 @@ class MultiCategoryJsonBuilder {
   MultiCategoryJsonBuilder() {}
 
   MultiCategoryJsonBuilder& AddCategoryWithCustomTitle(
-      const std::vector<std::string>& snippets,
+      const std::vector<std::string>& suggestions,
       int remote_category_id,
       const std::string& category_title) {
     category_json_.push_back(
-        GetCategoryJson(snippets, remote_category_id, category_title));
+        GetCategoryJson(suggestions, remote_category_id, category_title));
     return *this;
   }
 
   MultiCategoryJsonBuilder& AddCategory(
-      const std::vector<std::string>& snippets,
+      const std::vector<std::string>& suggestions,
       int remote_category_id) {
     return AddCategoryWithCustomTitle(
-        snippets, remote_category_id,
+        suggestions, remote_category_id,
         "Title" + base::IntToString(remote_category_id));
   }
 
@@ -171,16 +171,16 @@ class MultiCategoryJsonBuilder {
 
 // TODO(vitaliii): Remove these convenience functions as they do not provide
 // that much value and add additional redirections obscuring the code.
-std::string GetTestJson(const std::vector<std::string>& snippets,
+std::string GetTestJson(const std::vector<std::string>& suggestions,
                         const std::string& category_title) {
   return MultiCategoryJsonBuilder()
-      .AddCategoryWithCustomTitle(snippets, /*remote_category_id=*/1,
+      .AddCategoryWithCustomTitle(suggestions, /*remote_category_id=*/1,
                                   category_title)
       .Build();
 }
 
-std::string GetTestJson(const std::vector<std::string>& snippets) {
-  return GetTestJson(snippets, kTestJsonDefaultCategoryTitle);
+std::string GetTestJson(const std::vector<std::string>& suggestions) {
+  return GetTestJson(suggestions, kTestJsonDefaultCategoryTitle);
 }
 
 std::string FormatTime(const base::Time& t) {
@@ -190,7 +190,7 @@ std::string FormatTime(const base::Time& t) {
                             x.day_of_month, x.hour, x.minute, x.second);
 }
 
-std::string GetSnippetWithUrlAndTimesAndSource(
+std::string GetSuggestionWithUrlAndTimesAndSource(
     const std::vector<std::string>& ids,
     const std::string& url,
     const base::Time& creation_time,
@@ -212,63 +212,64 @@ std::string GetSnippetWithUrlAndTimesAndSource(
       "      \"imageUrl\": \"%s\",\n"
       "      \"ampUrl\": \"%s\"\n"
       "    }",
-      ids_string.c_str(), kSnippetTitle, kSnippetText, url.c_str(),
+      ids_string.c_str(), kSuggestionTitle, kSuggestionText, url.c_str(),
       FormatTime(creation_time).c_str(), FormatTime(expiry_time).c_str(),
-      publisher.c_str(), kSnippetSalientImage, amp_url.c_str());
+      publisher.c_str(), kSuggestionSalientImage, amp_url.c_str());
 }
 
-std::string GetSnippetWithSources(const std::string& source_url,
-                                  const std::string& publisher,
-                                  const std::string& amp_url) {
-  return GetSnippetWithUrlAndTimesAndSource(
-      {kSnippetUrl}, source_url, GetDefaultCreationTime(),
+std::string GetSuggestionWithSources(const std::string& source_url,
+                                     const std::string& publisher,
+                                     const std::string& amp_url) {
+  return GetSuggestionWithUrlAndTimesAndSource(
+      {kSuggestionUrl}, source_url, GetDefaultCreationTime(),
       GetDefaultExpirationTime(), publisher, amp_url);
 }
 
-std::string GetSnippetWithUrlAndTimes(const std::string& url,
-                                      const base::Time& content_creation_time,
-                                      const base::Time& expiry_time) {
-  return GetSnippetWithUrlAndTimesAndSource({url}, url, content_creation_time,
-                                            expiry_time, kSnippetPublisherName,
-                                            kSnippetAmpUrl);
+std::string GetSuggestionWithUrlAndTimes(
+    const std::string& url,
+    const base::Time& content_creation_time,
+    const base::Time& expiry_time) {
+  return GetSuggestionWithUrlAndTimesAndSource(
+      {url}, url, content_creation_time, expiry_time, kSuggestionPublisherName,
+      kSuggestionAmpUrl);
 }
 
-std::string GetSnippetWithTimes(const base::Time& content_creation_time,
-                                const base::Time& expiry_time) {
-  return GetSnippetWithUrlAndTimes(kSnippetUrl, content_creation_time,
-                                   expiry_time);
+std::string GetSuggestionWithTimes(const base::Time& content_creation_time,
+                                   const base::Time& expiry_time) {
+  return GetSuggestionWithUrlAndTimes(kSuggestionUrl, content_creation_time,
+                                      expiry_time);
 }
 
-std::string GetSnippetWithUrl(const std::string& url) {
-  return GetSnippetWithUrlAndTimes(url, GetDefaultCreationTime(),
-                                   GetDefaultExpirationTime());
+std::string GetSuggestionWithUrl(const std::string& url) {
+  return GetSuggestionWithUrlAndTimes(url, GetDefaultCreationTime(),
+                                      GetDefaultExpirationTime());
 }
 
-std::string GetSnippet() {
-  return GetSnippetWithUrlAndTimes(kSnippetUrl, GetDefaultCreationTime(),
-                                   GetDefaultExpirationTime());
+std::string GetSuggestion() {
+  return GetSuggestionWithUrlAndTimes(kSuggestionUrl, GetDefaultCreationTime(),
+                                      GetDefaultExpirationTime());
 }
 
-std::string GetSnippetN(int n) {
-  return GetSnippetWithUrlAndTimes(base::StringPrintf("%s/%d", kSnippetUrl, n),
-                                   GetDefaultCreationTime(),
-                                   GetDefaultExpirationTime());
+std::string GetSuggestionN(int n) {
+  return GetSuggestionWithUrlAndTimes(
+      base::StringPrintf("%s/%d", kSuggestionUrl, n), GetDefaultCreationTime(),
+      GetDefaultExpirationTime());
 }
 
-std::string GetExpiredSnippet() {
-  return GetSnippetWithTimes(GetDefaultCreationTime(), base::Time::Now());
+std::string GetExpiredSuggestion() {
+  return GetSuggestionWithTimes(GetDefaultCreationTime(), base::Time::Now());
 }
 
-std::string GetInvalidSnippet() {
-  std::string json_str = GetSnippet();
+std::string GetInvalidSuggestion() {
+  std::string json_str = GetSuggestion();
   // Make the json invalid by removing the final closing brace.
   return json_str.substr(0, json_str.size() - 1);
 }
 
-std::string GetIncompleteSnippet() {
-  std::string json_str = GetSnippet();
+std::string GetIncompleteSuggestion() {
+  std::string json_str = GetSuggestion();
   // Rename the "url" entry. The result is syntactically valid json that will
-  // fail to parse as snippets.
+  // fail to parse as suggestions.
   size_t pos = json_str.find("\"fullPageUrl\"");
   if (pos == std::string::npos) {
     NOTREACHED();
@@ -394,15 +395,15 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   // TODO(vitaliii): Rewrite this function to initialize a test class member
   // instead of creating a new service.
-  std::unique_ptr<RemoteSuggestionsProviderImpl> MakeSnippetsService(
+  std::unique_ptr<RemoteSuggestionsProviderImpl> MakeSuggestionsProvider(
       bool set_empty_response = true) {
-    auto service = MakeSnippetsServiceWithoutInitialization();
-    WaitForSnippetsServiceInitialization(service.get(), set_empty_response);
+    auto service = MakeSuggestionsProviderWithoutInitialization();
+    WaitForSuggestionsProviderInitialization(service.get(), set_empty_response);
     return service;
   }
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>
-  MakeSnippetsServiceWithoutInitialization() {
+  MakeSuggestionsProviderWithoutInitialization() {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
@@ -436,7 +437,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
             utils_.fake_signin_manager(), utils_.pref_service()));
   }
 
-  void WaitForSnippetsServiceInitialization(
+  void WaitForSuggestionsProviderInitialization(
       RemoteSuggestionsProviderImpl* service,
       bool set_empty_response) {
     EXPECT_EQ(RemoteSuggestionsProviderImpl::State::NOT_INITED,
@@ -454,12 +455,12 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
               service->state_);
   }
 
-  void ResetSnippetsService(
+  void ResetSuggestionsProvider(
       std::unique_ptr<RemoteSuggestionsProviderImpl>* service,
       bool set_empty_response) {
     service->reset();
     observer_.reset();
-    *service = MakeSnippetsService(set_empty_response);
+    *service = MakeSuggestionsProvider(set_empty_response);
   }
 
   void SetCategoryRanker(std::unique_ptr<CategoryRanker> category_ranker) {
@@ -515,8 +516,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   void LoadFromJSONString(RemoteSuggestionsProviderImpl* service,
                           const std::string& json) {
     SetUpFetchResponse(json);
-    service->FetchSnippets(/*interactive_request=*/true,
-                           /*callback=*/nullptr);
+    service->FetchSuggestions(/*interactive_request=*/true,
+                              /*callback=*/nullptr);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -553,24 +554,25 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 };
 
 TEST_F(RemoteSuggestionsProviderImplTest, Full) {
-  std::string json_str(GetTestJson({GetSnippet()}));
+  std::string json_str(GetTestJson({GetSuggestion()}));
 
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   LoadFromJSONString(service.get(), json_str);
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 
   const ContentSuggestion& suggestion =
       observer().SuggestionsForCategory(articles_category()).front();
 
-  EXPECT_EQ(MakeArticleID(kSnippetUrl), suggestion.id());
-  EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
-  EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
+  EXPECT_EQ(MakeArticleID(kSuggestionUrl), suggestion.id());
+  EXPECT_EQ(kSuggestionTitle, base::UTF16ToUTF8(suggestion.title()));
+  EXPECT_EQ(kSuggestionText, base::UTF16ToUTF8(suggestion.snippet_text()));
   EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
-  EXPECT_EQ(kSnippetPublisherName,
+  EXPECT_EQ(kSuggestionPublisherName,
             base::UTF16ToUTF8(suggestion.publisher_name()));
 }
 
@@ -580,7 +582,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, CategoryTitle) {
 
   // Don't send an initial response -- we want to test what happens without any
   // server status.
-  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
 
   // The articles category should be there by default, and have a title.
   CategoryInfo info_before = service->GetCategoryInfo(articles_category());
@@ -591,12 +593,13 @@ TEST_F(RemoteSuggestionsProviderImplTest, CategoryTitle) {
   EXPECT_THAT(info_before.has_view_all_action(), Eq(false));
   EXPECT_THAT(info_before.show_if_empty(), Eq(true));
 
-  std::string json_str_with_title(GetTestJson({GetSnippet()}));
+  std::string json_str_with_title(GetTestJson({GetSuggestion()}));
   LoadFromJSONString(service.get(), json_str_with_title);
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 
   // The response contained a title, |kTestJsonDefaultCategoryTitle|.
   // Make sure we updated the title in the CategoryInfo.
@@ -610,11 +613,11 @@ TEST_F(RemoteSuggestionsProviderImplTest, CategoryTitle) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, MultipleCategories) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
   std::string json_str =
       MultiCategoryJsonBuilder()
-          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/1)
-          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/2)
+          .AddCategory({GetSuggestionN(0)}, /*remote_category_id=*/1)
+          .AddCategory({GetSuggestionN(1)}, /*remote_category_id=*/2)
           .Build();
   LoadFromJSONString(service.get(), json_str);
 
@@ -624,8 +627,9 @@ TEST_F(RemoteSuggestionsProviderImplTest, MultipleCategories) {
                   {other_category(), CategoryStatus::AVAILABLE},
               }));
 
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  EXPECT_THAT(service->GetSnippetsForTesting(other_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(other_category()), SizeIs(1));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
@@ -635,28 +639,29 @@ TEST_F(RemoteSuggestionsProviderImplTest, MultipleCategories) {
   {
     const ContentSuggestion& suggestion =
         observer().SuggestionsForCategory(articles_category()).front();
-    EXPECT_EQ(MakeArticleID(std::string(kSnippetUrl) + "/0"), suggestion.id());
-    EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
-    EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
+    EXPECT_EQ(MakeArticleID(std::string(kSuggestionUrl) + "/0"),
+              suggestion.id());
+    EXPECT_EQ(kSuggestionTitle, base::UTF16ToUTF8(suggestion.title()));
+    EXPECT_EQ(kSuggestionText, base::UTF16ToUTF8(suggestion.snippet_text()));
     EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
-    EXPECT_EQ(kSnippetPublisherName,
+    EXPECT_EQ(kSuggestionPublisherName,
               base::UTF16ToUTF8(suggestion.publisher_name()));
   }
 
   {
     const ContentSuggestion& suggestion =
         observer().SuggestionsForCategory(other_category()).front();
-    EXPECT_EQ(MakeOtherID(std::string(kSnippetUrl) + "/1"), suggestion.id());
-    EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
-    EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
+    EXPECT_EQ(MakeOtherID(std::string(kSuggestionUrl) + "/1"), suggestion.id());
+    EXPECT_EQ(kSuggestionTitle, base::UTF16ToUTF8(suggestion.title()));
+    EXPECT_EQ(kSuggestionText, base::UTF16ToUTF8(suggestion.snippet_text()));
     EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
-    EXPECT_EQ(kSnippetPublisherName,
+    EXPECT_EQ(kSuggestionPublisherName,
               base::UTF16ToUTF8(suggestion.publisher_name()));
   }
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ArticleCategoryInfo) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
   CategoryInfo article_info = service->GetCategoryInfo(articles_category());
   EXPECT_THAT(article_info.has_more_action(), Eq(true));
   EXPECT_THAT(article_info.has_reload_action(), Eq(true));
@@ -665,11 +670,11 @@ TEST_F(RemoteSuggestionsProviderImplTest, ArticleCategoryInfo) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ExperimentalCategoryInfo) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
   std::string json_str =
       MultiCategoryJsonBuilder()
-          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/1)
-          .AddCategory({GetSnippetN(1)}, kUnknownRemoteCategoryId)
+          .AddCategory({GetSuggestionN(0)}, /*remote_category_id=*/1)
+          .AddCategory({GetSuggestionN(1)}, kUnknownRemoteCategoryId)
           .Build();
   // Load data with multiple categories so that a new experimental category gets
   // registered.
@@ -688,9 +693,9 @@ TEST_F(RemoteSuggestionsProviderImplTest, AddRemoteCategoriesToCategoryRanker) {
   SetCategoryRanker(std::move(mock_ranker));
   std::string json_str =
       MultiCategoryJsonBuilder()
-          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/11)
-          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/13)
-          .AddCategory({GetSnippetN(2)}, /*remote_category_id=*/12)
+          .AddCategory({GetSuggestionN(0)}, /*remote_category_id=*/11)
+          .AddCategory({GetSuggestionN(1)}, /*remote_category_id=*/13)
+          .AddCategory({GetSuggestionN(2)}, /*remote_category_id=*/12)
           .Build();
   SetUpFetchResponse(json_str);
   {
@@ -704,17 +709,17 @@ TEST_F(RemoteSuggestionsProviderImplTest, AddRemoteCategoriesToCategoryRanker) {
     EXPECT_CALL(*raw_mock_ranker,
                 AppendCategoryIfNecessary(Category::FromRemoteCategory(12)));
   }
-  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, PersistCategoryInfos) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
   // TODO(vitaliii): Use |articles_category()| instead of constant ID below.
   std::string json_str =
       MultiCategoryJsonBuilder()
           .AddCategoryWithCustomTitle(
-              {GetSnippetN(0)}, /*remote_category_id=*/1, "Articles for You")
-          .AddCategoryWithCustomTitle({GetSnippetN(1)},
+              {GetSuggestionN(0)}, /*remote_category_id=*/1, "Articles for You")
+          .AddCategoryWithCustomTitle({GetSuggestionN(1)},
                                       kUnknownRemoteCategoryId, "Other Things")
           .Build();
   LoadFromJSONString(service.get(), json_str);
@@ -730,7 +735,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistCategoryInfos) {
       service->GetCategoryInfo(unknown_category());
 
   // Recreate the service to simulate a Chrome restart.
-  ResetSnippetsService(&service, /*set_empty_response=*/true);
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/true);
 
   // The categories should have been restored.
   ASSERT_NE(observer().StatusForCategory(articles_category()),
@@ -756,12 +761,12 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistRemoteCategoryOrder) {
   // We create a service with a normal ranker to store the order.
   std::string json_str =
       MultiCategoryJsonBuilder()
-          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/11)
-          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/13)
-          .AddCategory({GetSnippetN(2)}, /*remote_category_id=*/12)
+          .AddCategory({GetSuggestionN(0)}, /*remote_category_id=*/11)
+          .AddCategory({GetSuggestionN(1)}, /*remote_category_id=*/13)
+          .AddCategory({GetSuggestionN(2)}, /*remote_category_id=*/12)
           .Build();
   SetUpFetchResponse(json_str);
-  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
 
   // We manually recreate the service to simulate Chrome restart and enforce a
   // mock ranker. The response is cleared to ensure that the order is not
@@ -785,15 +790,15 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistRemoteCategoryOrder) {
     EXPECT_CALL(*raw_mock_ranker,
                 AppendCategoryIfNecessary(Category::FromRemoteCategory(12)));
   }
-  ResetSnippetsService(&service, /*set_empty_response=*/false);
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/false);
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, PersistSuggestions) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
   std::string json_str =
       MultiCategoryJsonBuilder()
-          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/1)
-          .AddCategory({GetSnippetN(2)}, /*remote_category_id=*/2)
+          .AddCategory({GetSuggestionN(0)}, /*remote_category_id=*/1)
+          .AddCategory({GetSuggestionN(2)}, /*remote_category_id=*/2)
           .Build();
   LoadFromJSONString(service.get(), json_str);
 
@@ -802,7 +807,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistSuggestions) {
   ASSERT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
 
   // Recreate the service to simulate a Chrome restart.
-  ResetSnippetsService(&service, /*set_empty_response=*/true);
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/true);
 
   // The suggestions in both categories should have been restored.
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
@@ -812,12 +817,12 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistSuggestions) {
 
 TEST_F(RemoteSuggestionsProviderImplTest, DontNotifyIfNotAvailable) {
   // Get some suggestions into the database.
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
   std::string json_str =
       MultiCategoryJsonBuilder()
-          .AddCategory({GetSnippetN(0)},
+          .AddCategory({GetSuggestionN(0)},
                        /*remote_category_id=*/1)
-          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/2)
+          .AddCategory({GetSuggestionN(1)}, /*remote_category_id=*/2)
           .Build();
   LoadFromJSONString(service.get(), json_str);
 
@@ -831,7 +836,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, DontNotifyIfNotAvailable) {
   pref_service()->SetBoolean(prefs::kEnableSnippets, false);
 
   // Recreate the service to simulate a Chrome start.
-  ResetSnippetsService(&service, /*set_empty_response=*/true);
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/true);
 
   ASSERT_THAT(RemoteSuggestionsProviderImpl::State::DISABLED,
               Eq(service->state_));
@@ -843,38 +848,41 @@ TEST_F(RemoteSuggestionsProviderImplTest, DontNotifyIfNotAvailable) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, Clear) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string json_str(GetTestJson({GetSnippet()}));
+  std::string json_str(GetTestJson({GetSuggestion()}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 
   service->ClearCachedSuggestions(articles_category());
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 }
 
-TEST_F(RemoteSuggestionsProviderImplTest, ReplaceSnippets) {
-  auto service = MakeSnippetsService();
+TEST_F(RemoteSuggestionsProviderImplTest, ReplaceSuggestions) {
+  auto service = MakeSuggestionsProvider();
 
   std::string first("http://first");
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippetWithUrl(first)}));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestionWithUrl(first)}));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               ElementsAre(IdEq(first)));
 
   std::string second("http://second");
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippetWithUrl(second)}));
-  // The snippets loaded last replace all that was loaded previously.
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSuggestionWithUrl(second)}));
+  // The suggestions loaded last replace all that was loaded previously.
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               ElementsAre(IdEq(second)));
 }
 
-TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSnippets) {
-  auto service = MakeSnippetsService();
+TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSuggestions) {
+  auto service = MakeSuggestionsProvider();
 
   LoadFromJSONString(service.get(),
-                     GetTestJson({GetSnippetWithUrl("http://first")}));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+                     GetTestJson({GetSuggestionWithUrl("http://first")}));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               ElementsAre(IdEq("http://first")));
 
   auto expect_only_second_suggestion_received = base::Bind([](
@@ -883,11 +891,11 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSnippets) {
     EXPECT_THAT(suggestions[0].id().id_within_category(), Eq("http://second"));
   });
   LoadMoreFromJSONString(service.get(), articles_category(),
-                         GetTestJson({GetSnippetWithUrl("http://second")}),
+                         GetTestJson({GetSuggestionWithUrl("http://second")}),
                          /*known_ids=*/std::set<std::string>(),
                          expect_only_second_suggestion_received);
 
-  // Verify we can resolve the image of the new snippets.
+  // Verify we can resolve the image of the new suggestions.
   ServeImageCallback cb =
       base::Bind(&ServeOneByOneImage, &service->GetImageFetcherForTesting());
   EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
@@ -909,8 +917,9 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSnippets) {
                           IdWithinCategoryEq("http://second")));
 }
 
-// The tests TestMergingFetchedMoreSnippetsFillup and
-// TestMergingFetchedMoreSnippetsReplaceAll simulate the following user story:
+// The tests TestMergingFetchedMoreSuggestionsFillup and
+// TestMergingFetchedMoreSuggestionsReplaceAll simulate the following user
+// story:
 // 1) fetch suggestions in NTP A
 // 2) fetch more suggestions in NTP A.
 // 3) open new NTP B: See the last 10 results visible in step 2).
@@ -918,19 +927,21 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSnippets) {
 //    were superseded in step 2) get merged back in again.
 // TODO(tschumann): Test step 4) on a higher level instead of peeking into the
 // internal 'dismissed' data. The proper check is to make sure we tell the
-// backend to exclude these snippets.
+// backend to exclude these suggestions.
 TEST_F(RemoteSuggestionsProviderImplTest,
-       TestMergingFetchedMoreSnippetsFillup) {
-  auto service = MakeSnippetsService(/*set_empty_response=*/false);
-  LoadFromJSONString(
-      service.get(),
-      GetTestJson(
-          {GetSnippetWithUrl("http://id-1"), GetSnippetWithUrl("http://id-2"),
-           GetSnippetWithUrl("http://id-3"), GetSnippetWithUrl("http://id-4"),
-           GetSnippetWithUrl("http://id-5"), GetSnippetWithUrl("http://id-6"),
-           GetSnippetWithUrl("http://id-7"), GetSnippetWithUrl("http://id-8"),
-           GetSnippetWithUrl("http://id-9"),
-           GetSnippetWithUrl("http://id-10")}));
+       TestMergingFetchedMoreSuggestionsFillup) {
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSuggestionWithUrl("http://id-1"),
+                                  GetSuggestionWithUrl("http://id-2"),
+                                  GetSuggestionWithUrl("http://id-3"),
+                                  GetSuggestionWithUrl("http://id-4"),
+                                  GetSuggestionWithUrl("http://id-5"),
+                                  GetSuggestionWithUrl("http://id-6"),
+                                  GetSuggestionWithUrl("http://id-7"),
+                                  GetSuggestionWithUrl("http://id-8"),
+                                  GetSuggestionWithUrl("http://id-9"),
+                                  GetSuggestionWithUrl("http://id-10")}));
   EXPECT_THAT(
       observer().SuggestionsForCategory(articles_category()),
       ElementsAre(
@@ -941,7 +952,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           IdWithinCategoryEq("http://id-9"),
           IdWithinCategoryEq("http://id-10")));
 
-  auto expect_receiving_two_new_snippets =
+  auto expect_receiving_two_new_suggestions =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(2));
         EXPECT_THAT(suggestions[0], IdWithinCategoryEq("http://more-id-1"));
@@ -949,12 +960,12 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       });
   LoadMoreFromJSONString(
       service.get(), articles_category(),
-      GetTestJson({GetSnippetWithUrl("http://more-id-1"),
-                   GetSnippetWithUrl("http://more-id-2")}),
+      GetTestJson({GetSuggestionWithUrl("http://more-id-1"),
+                   GetSuggestionWithUrl("http://more-id-2")}),
       /*known_ids=*/{"http://id-1", "http://id-2", "http://id-3", "http://id-4",
                      "http://id-5", "http://id-6", "http://id-7", "http://id-8",
                      "http://id-9", "http://id-10"},
-      expect_receiving_two_new_snippets);
+      expect_receiving_two_new_suggestions);
 
   // Verify that the observer received the update as well. We should see the
   // newly-fetched items filled up with existing ones. The merging is done
@@ -969,23 +980,23 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           IdWithinCategoryEq("http://more-id-1"),
           IdWithinCategoryEq("http://more-id-2")));
   // Verify the superseded suggestions got marked as dismissed.
-  EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+  EXPECT_THAT(service->GetDismissedSuggestionsForTesting(articles_category()),
               ElementsAre(IdEq("http://id-1"), IdEq("http://id-2")));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
-       ClearHistoryShouldDeleteArchivedSnippets) {
-  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+       ClearHistoryShouldDeleteArchivedSuggestions) {
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
   // First get suggestions into the archived state which happens through
   // subsequent fetches. Then we verify the entries are gone from the 'archived'
   // state by trying to load their images (and we shouldn't even know the URLs
   // anymore).
   LoadFromJSONString(service.get(),
-                     GetTestJson({GetSnippetWithUrl("http://id-1"),
-                                  GetSnippetWithUrl("http://id-2")}));
+                     GetTestJson({GetSuggestionWithUrl("http://id-1"),
+                                  GetSuggestionWithUrl("http://id-2")}));
   LoadFromJSONString(service.get(),
-                     GetTestJson({GetSnippetWithUrl("http://new-id-1"),
-                                  GetSnippetWithUrl("http://new-id-2")}));
+                     GetTestJson({GetSuggestionWithUrl("http://new-id-1"),
+                                  GetSuggestionWithUrl("http://new-id-2")}));
   // Make sure images of both batches are available. This is to sanity check our
   // assumptions for the test are right.
   ServeImageCallback cb =
@@ -1005,7 +1016,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                         base::Callback<bool(const GURL& url)>());
 
   // Make sure images of both batches are gone.
-  // Verify we cannot resolve the image of the new snippets.
+  // Verify we cannot resolve the image of the new suggestions.
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
   EXPECT_TRUE(
       FetchImage(service.get(), MakeArticleID("http://id-1")).IsEmpty());
@@ -1014,17 +1025,19 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
-       TestMergingFetchedMoreSnippetsReplaceAll) {
-  auto service = MakeSnippetsService(/*set_empty_response=*/false);
-  LoadFromJSONString(
-      service.get(),
-      GetTestJson(
-          {GetSnippetWithUrl("http://id-1"), GetSnippetWithUrl("http://id-2"),
-           GetSnippetWithUrl("http://id-3"), GetSnippetWithUrl("http://id-4"),
-           GetSnippetWithUrl("http://id-5"), GetSnippetWithUrl("http://id-6"),
-           GetSnippetWithUrl("http://id-7"), GetSnippetWithUrl("http://id-8"),
-           GetSnippetWithUrl("http://id-9"),
-           GetSnippetWithUrl("http://id-10")}));
+       TestMergingFetchedMoreSuggestionsReplaceAll) {
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSuggestionWithUrl("http://id-1"),
+                                  GetSuggestionWithUrl("http://id-2"),
+                                  GetSuggestionWithUrl("http://id-3"),
+                                  GetSuggestionWithUrl("http://id-4"),
+                                  GetSuggestionWithUrl("http://id-5"),
+                                  GetSuggestionWithUrl("http://id-6"),
+                                  GetSuggestionWithUrl("http://id-7"),
+                                  GetSuggestionWithUrl("http://id-8"),
+                                  GetSuggestionWithUrl("http://id-9"),
+                                  GetSuggestionWithUrl("http://id-10")}));
   EXPECT_THAT(
       observer().SuggestionsForCategory(articles_category()),
       ElementsAre(
@@ -1035,7 +1048,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           IdWithinCategoryEq("http://id-9"),
           IdWithinCategoryEq("http://id-10")));
 
-  auto expect_receiving_ten_new_snippets =
+  auto expect_receiving_ten_new_suggestions =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
         EXPECT_THAT(suggestions,
                     ElementsAre(IdWithinCategoryEq("http://more-id-1"),
@@ -1051,20 +1064,20 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       });
   LoadMoreFromJSONString(
       service.get(), articles_category(),
-      GetTestJson({GetSnippetWithUrl("http://more-id-1"),
-                   GetSnippetWithUrl("http://more-id-2"),
-                   GetSnippetWithUrl("http://more-id-3"),
-                   GetSnippetWithUrl("http://more-id-4"),
-                   GetSnippetWithUrl("http://more-id-5"),
-                   GetSnippetWithUrl("http://more-id-6"),
-                   GetSnippetWithUrl("http://more-id-7"),
-                   GetSnippetWithUrl("http://more-id-8"),
-                   GetSnippetWithUrl("http://more-id-9"),
-                   GetSnippetWithUrl("http://more-id-10")}),
+      GetTestJson({GetSuggestionWithUrl("http://more-id-1"),
+                   GetSuggestionWithUrl("http://more-id-2"),
+                   GetSuggestionWithUrl("http://more-id-3"),
+                   GetSuggestionWithUrl("http://more-id-4"),
+                   GetSuggestionWithUrl("http://more-id-5"),
+                   GetSuggestionWithUrl("http://more-id-6"),
+                   GetSuggestionWithUrl("http://more-id-7"),
+                   GetSuggestionWithUrl("http://more-id-8"),
+                   GetSuggestionWithUrl("http://more-id-9"),
+                   GetSuggestionWithUrl("http://more-id-10")}),
       /*known_ids=*/{"http://id-1", "http://id-2", "http://id-3", "http://id-4",
                      "http://id-5", "http://id-6", "http://id-7", "http://id-8",
                      "http://id-9", "http://id-10"},
-      expect_receiving_ten_new_snippets);
+      expect_receiving_ten_new_suggestions);
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               ElementsAre(IdWithinCategoryEq("http://more-id-1"),
                           IdWithinCategoryEq("http://more-id-2"),
@@ -1078,7 +1091,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                           IdWithinCategoryEq("http://more-id-10")));
   // Verify the superseded suggestions got marked as dismissed.
   EXPECT_THAT(
-      service->GetDismissedSnippetsForTesting(articles_category()),
+      service->GetDismissedSuggestionsForTesting(articles_category()),
       ElementsAre(IdEq("http://id-1"), IdEq("http://id-2"), IdEq("http://id-3"),
                   IdEq("http://id-4"), IdEq("http://id-5"), IdEq("http://id-6"),
                   IdEq("http://id-7"), IdEq("http://id-8"), IdEq("http://id-9"),
@@ -1103,7 +1116,7 @@ void SuggestionsLoaded(
 }  // namespace
 
 TEST_F(RemoteSuggestionsProviderImplTest, ReturnFetchRequestEmptyBeforeInit) {
-  auto service = MakeSnippetsServiceWithoutInitialization();
+  auto service = MakeSuggestionsProviderWithoutInitialization();
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
   EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
   service->Fetch(articles_category(), std::set<std::string>(),
@@ -1112,7 +1125,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnFetchRequestEmptyBeforeInit) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForInvalidJson) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
   EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
@@ -1125,13 +1138,13 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForInvalidJson) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
-       ReturnTemporaryErrorForInvalidSnippet) {
-  auto service = MakeSnippetsService();
+       ReturnTemporaryErrorForInvalidSuggestion) {
+  auto service = MakeSuggestionsProvider();
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
   EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
   LoadMoreFromJSONString(service.get(), articles_category(),
-                         GetTestJson({GetIncompleteSnippet()}),
+                         GetTestJson({GetIncompleteSuggestion()}),
                          /*known_ids=*/std::set<std::string>(),
                          base::Bind(&SuggestionsLoaded, &loaded));
   EXPECT_THAT(suggestions_fetcher()->last_status(),
@@ -1140,8 +1153,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ReturnTemporaryErrorForRequestFailure) {
-  // Created SnippetsService will fail by default with unsuccessful request.
-  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+  // Created SuggestionsProvider will fail by default with unsuccessful request.
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
   EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
@@ -1152,7 +1165,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForHttpFailure) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
   SetUpHttpError();
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
@@ -1164,106 +1177,120 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForHttpFailure) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, LoadInvalidJson) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
+  LoadFromJSONString(service.get(), GetTestJson({GetInvalidSuggestion()}));
   EXPECT_THAT(suggestions_fetcher()->last_status(),
               StartsWith("Received invalid JSON"));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
-}
-
-TEST_F(RemoteSuggestionsProviderImplTest, LoadInvalidJsonWithExistingSnippets) {
-  auto service = MakeSnippetsService();
-
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  ASSERT_EQ("OK", suggestions_fetcher()->last_status());
-
-  LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
-  EXPECT_THAT(suggestions_fetcher()->last_status(),
-              StartsWith("Received invalid JSON"));
-  // This should not have changed the existing snippets.
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-}
-
-TEST_F(RemoteSuggestionsProviderImplTest, LoadIncompleteJson) {
-  auto service = MakeSnippetsService();
-
-  LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSnippet()}));
-  EXPECT_EQ("Invalid / empty list.", suggestions_fetcher()->last_status());
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
-       LoadIncompleteJsonWithExistingSnippets) {
-  auto service = MakeSnippetsService();
+       LoadInvalidJsonWithExistingSuggestions) {
+  auto service = MakeSuggestionsProvider();
 
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
+  ASSERT_EQ("OK", suggestions_fetcher()->last_status());
 
-  LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSnippet()}));
+  LoadFromJSONString(service.get(), GetTestJson({GetInvalidSuggestion()}));
+  EXPECT_THAT(suggestions_fetcher()->last_status(),
+              StartsWith("Received invalid JSON"));
+  // This should not have changed the existing suggestions.
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest, LoadIncompleteJson) {
+  auto service = MakeSuggestionsProvider();
+
+  LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSuggestion()}));
   EXPECT_EQ("Invalid / empty list.", suggestions_fetcher()->last_status());
-  // This should not have changed the existing snippets.
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       LoadIncompleteJsonWithExistingSuggestions) {
+  auto service = MakeSuggestionsProvider();
+
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
+
+  LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSuggestion()}));
+  EXPECT_EQ("Invalid / empty list.", suggestions_fetcher()->last_status());
+  // This should not have changed the existing suggestions.
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string json_str(
-      GetTestJson({GetSnippetWithSources("http://site.com", "Source 1", "")}));
+  std::string json_str(GetTestJson(
+      {GetSuggestionWithSources("http://site.com", "Source 1", "")}));
 
   LoadFromJSONString(service.get(), json_str);
 
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
   // Load the image to store it in the database.
   ServeImageCallback cb =
       base::Bind(&ServeOneByOneImage, &service->GetImageFetcherForTesting());
   EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
       .WillOnce(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSuggestionUrl));
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
 
-  // Dismissing a non-existent snippet shouldn't do anything.
+  // Dismissing a non-existent suggestion shouldn't do anything.
   service->DismissSuggestion(MakeArticleID("http://othersite.com"));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 
-  // Dismiss the snippet.
-  service->DismissSuggestion(MakeArticleID(kSnippetUrl));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  // Dismiss the suggestion.
+  service->DismissSuggestion(MakeArticleID(kSuggestionUrl));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 
-  // Verify we can still load the image of the discarded snippet (other NTPs
+  // Verify we can still load the image of the discarded suggestion (other NTPs
   // might still reference it). This should come from the database -- no network
   // fetch necessary.
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  image = FetchImage(service.get(), MakeArticleID(kSuggestionUrl));
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
 
-  // Make sure that fetching the same snippet again does not re-add it.
+  // Make sure that fetching the same suggestion again does not re-add it.
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 
-  // The snippet should stay dismissed even after re-creating the service.
-  ResetSnippetsService(&service, /*set_empty_response=*/true);
+  // The suggestion should stay dismissed even after re-creating the service.
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/true);
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 
-  // The snippet can be added again after clearing dismissed snippets.
+  // The suggestion can be added again after clearing dismissed suggestions.
   service->ClearDismissedSuggestionsForDebugging(articles_category());
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, GetDismissed) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
 
-  service->DismissSuggestion(MakeArticleID(kSnippetUrl));
+  service->DismissSuggestion(MakeArticleID(kSuggestionUrl));
 
   service->GetDismissedSuggestionsForDebugging(
       articles_category(),
@@ -1273,13 +1300,13 @@ TEST_F(RemoteSuggestionsProviderImplTest, GetDismissed) {
              std::vector<ContentSuggestion> dismissed_suggestions) {
             EXPECT_EQ(1u, dismissed_suggestions.size());
             for (auto& suggestion : dismissed_suggestions) {
-              EXPECT_EQ(test->MakeArticleID(kSnippetUrl), suggestion.id());
+              EXPECT_EQ(test->MakeArticleID(kSuggestionUrl), suggestion.id());
             }
           },
           service.get(), this));
   base::RunLoop().RunUntilIdle();
 
-  // There should be no dismissed snippet after clearing the list.
+  // There should be no dismissed suggestion after clearing the list.
   service->ClearDismissedSuggestionsForDebugging(articles_category());
   service->GetDismissedSuggestionsForDebugging(
       articles_category(),
@@ -1294,22 +1321,23 @@ TEST_F(RemoteSuggestionsProviderImplTest, GetDismissed) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, CreationTimestampParseFail) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string json =
-      GetSnippetWithTimes(GetDefaultCreationTime(), GetDefaultExpirationTime());
+  std::string json = GetSuggestionWithTimes(GetDefaultCreationTime(),
+                                            GetDefaultExpirationTime());
   base::ReplaceFirstSubstringAfterOffset(
       &json, 0, FormatTime(GetDefaultCreationTime()), "aaa1448459205");
   std::string json_str(GetTestJson({json}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, RemoveExpiredDismissedContent) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string json_str1(GetTestJson({GetExpiredSnippet()}));
+  std::string json_str1(GetTestJson({GetExpiredSuggestion()}));
   // Load it.
   LoadFromJSONString(service.get(), json_str1);
   // Load the image to store it in the database.
@@ -1320,75 +1348,80 @@ TEST_F(RemoteSuggestionsProviderImplTest, RemoveExpiredDismissedContent) {
   EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
       .WillOnce(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSuggestionUrl));
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
 
   // Dismiss the suggestion
   service->DismissSuggestion(
-      ContentSuggestion::ID(articles_category(), kSnippetUrl));
+      ContentSuggestion::ID(articles_category(), kSuggestionUrl));
 
-  // Load a different snippet - this will clear the expired dismissed ones.
-  std::string json_str2(GetTestJson({GetSnippetWithUrl(kSnippetUrl2)}));
+  // Load a different suggestion - this will clear the expired dismissed ones.
+  std::string json_str2(GetTestJson({GetSuggestionWithUrl(kSuggestionUrl2)}));
   LoadFromJSONString(service.get(), json_str2);
 
-  EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+  EXPECT_THAT(service->GetDismissedSuggestionsForTesting(articles_category()),
               IsEmpty());
 
   // Verify the image got removed, too.
-  EXPECT_TRUE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
+  EXPECT_TRUE(
+      FetchImage(service.get(), MakeArticleID(kSuggestionUrl)).IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ExpiredContentNotRemoved) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string json_str(GetTestJson({GetExpiredSnippet()}));
+  std::string json_str(GetTestJson({GetExpiredSuggestion()}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, TestSingleSource) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string json_str(GetTestJson({GetSnippetWithSources(
+  std::string json_str(GetTestJson({GetSuggestionWithSources(
       "http://source1.com", "Source 1", "http://source1.amp.com")}));
 
   LoadFromJSONString(service.get(), json_str);
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  const RemoteSuggestion& snippet =
-      *service->GetSnippetsForTesting(articles_category()).front();
-  EXPECT_EQ(snippet.id(), kSnippetUrl);
-  EXPECT_EQ(snippet.url(), GURL("http://source1.com"));
-  EXPECT_EQ(snippet.publisher_name(), std::string("Source 1"));
-  EXPECT_EQ(snippet.amp_url(), GURL("http://source1.amp.com"));
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
+  const RemoteSuggestion& suggestion =
+      *service->GetSuggestionsForTesting(articles_category()).front();
+  EXPECT_EQ(suggestion.id(), kSuggestionUrl);
+  EXPECT_EQ(suggestion.url(), GURL("http://source1.com"));
+  EXPECT_EQ(suggestion.publisher_name(), std::string("Source 1"));
+  EXPECT_EQ(suggestion.amp_url(), GURL("http://source1.amp.com"));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, TestSingleSourceWithMalformedUrl) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string json_str(GetTestJson({GetSnippetWithSources(
+  std::string json_str(GetTestJson({GetSuggestionWithSources(
       "ceci n'est pas un url", "Source 1", "http://source1.amp.com")}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, TestSingleSourceWithMissingData) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   std::string json_str(
-      GetTestJson({GetSnippetWithSources("http://source1.com", "", "")}));
+      GetTestJson({GetSuggestionWithSources("http://source1.com", "", "")}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   base::HistogramTester tester;
-  LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
+  LoadFromJSONString(service.get(), GetTestJson({GetInvalidSuggestion()}));
 
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
@@ -1404,8 +1437,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
 
-  // Snippet list should be populated with size 1.
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
+  // Suggestion list should be populated with size 1.
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/2),
                           base::Bucket(/*min=*/1, /*count=*/1)));
@@ -1413,8 +1446,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
                           base::Bucket(/*min=*/1, /*count=*/1)));
 
-  // Duplicate snippet shouldn't increase the list size.
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
+  // Duplicate suggestion shouldn't increase the list size.
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/2),
                           base::Bucket(/*min=*/1, /*count=*/2)));
@@ -1425,14 +1458,14 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
       tester.GetAllSamples("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded"),
       IsEmpty());
 
-  // Dismissing a snippet should decrease the list size. This will only be
+  // Dismissing a suggestion should decrease the list size. This will only be
   // logged after the next fetch.
-  service->DismissSuggestion(MakeArticleID(kSnippetUrl));
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
+  service->DismissSuggestion(MakeArticleID(kSuggestionUrl));
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
                           base::Bucket(/*min=*/1, /*count=*/2)));
-  // Dismissed snippets shouldn't influence NumArticlesFetched.
+  // Dismissed suggestions shouldn't influence NumArticlesFetched.
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
                           base::Bucket(/*min=*/1, /*count=*/3)));
@@ -1440,10 +1473,10 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
       tester.GetAllSamples("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded"),
       ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
 
-  // There is only a single, dismissed snippet in the database, so recreating
+  // There is only a single, dismissed suggestion in the database, so recreating
   // the service will require us to re-fetch.
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 4);
-  ResetSnippetsService(&service, /*set_empty_response=*/true);
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/true);
   EXPECT_EQ(observer().StatusForCategory(articles_category()),
             CategoryStatus::AVAILABLE);
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 5);
@@ -1451,18 +1484,18 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
       tester.GetAllSamples("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded"),
       ElementsAre(base::Bucket(/*min=*/1, /*count=*/2)));
 
-  // But if there's a non-dismissed snippet in the database, recreating it
+  // But if there's a non-dismissed suggestion in the database, recreating it
   // shouldn't trigger a fetch.
   LoadFromJSONString(
       service.get(),
-      GetTestJson({GetSnippetWithUrl("http://not-dismissed.com")}));
+      GetTestJson({GetSuggestionWithUrl("http://not-dismissed.com")}));
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 6);
-  ResetSnippetsService(&service, /*set_empty_response=*/true);
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/true);
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 6);
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, DismissShouldRespectAllKnownUrls) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   const base::Time creation = GetDefaultCreationTime();
   const base::Time expiry = GetDefaultExpirationTime();
@@ -1474,29 +1507,32 @@ TEST_F(RemoteSuggestionsProviderImplTest, DismissShouldRespectAllKnownUrls) {
       "http://mashable-amphtml.googleusercontent.com/1",
       "http://t2.gstatic.com/images?q=tbn:3"};
 
-  // Add the snippet from the mashable domain.
+  // Add the suggestion from the mashable domain.
   LoadFromJSONString(service.get(),
-                     GetTestJson({GetSnippetWithUrlAndTimesAndSource(
+                     GetTestJson({GetSuggestionWithUrlAndTimesAndSource(
                          source_urls, source_urls[0], creation, expiry,
                          publishers[0], amp_urls[0])}));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  // Dismiss the snippet via the mashable source corpus ID.
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
+  // Dismiss the suggestion via the mashable source corpus ID.
   service->DismissSuggestion(MakeArticleID(source_urls[0]));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 
   // The same article from the AOL domain should now be detected as dismissed.
   LoadFromJSONString(service.get(),
-                     GetTestJson({GetSnippetWithUrlAndTimesAndSource(
+                     GetTestJson({GetSuggestionWithUrlAndTimesAndSource(
                          source_urls, source_urls[1], creation, expiry,
                          publishers[1], amp_urls[1])}));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, StatusChanges) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   // Simulate user signed out
-  SetUpFetchResponse(GetTestJson({GetSnippet()}));
+  SetUpFetchResponse(GetTestJson({GetSuggestion()}));
   service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
                            RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED);
 
@@ -1505,11 +1541,12 @@ TEST_F(RemoteSuggestionsProviderImplTest, StatusChanges) {
               Eq(CategoryStatus::SIGNED_OUT));
   EXPECT_THAT(RemoteSuggestionsProviderImpl::State::DISABLED,
               Eq(service->state_));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               IsEmpty());  // No fetch should be made.
 
-  // Simulate user sign in. The service should be ready again and load snippets.
-  SetUpFetchResponse(GetTestJson({GetSnippet()}));
+  // Simulate user sign in. The service should be ready again and load
+  // suggestions.
+  SetUpFetchResponse(GetTestJson({GetSuggestion()}));
   service->OnStatusChanged(RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED,
                            RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
@@ -1519,13 +1556,13 @@ TEST_F(RemoteSuggestionsProviderImplTest, StatusChanges) {
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE));
   EXPECT_THAT(RemoteSuggestionsProviderImpl::State::READY, Eq(service->state_));
-  EXPECT_FALSE(service->GetSnippetsForTesting(articles_category()).empty());
+  EXPECT_FALSE(service->GetSuggestionsForTesting(articles_category()).empty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ImageReturnedWithTheSameId) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
 
   gfx::Image image;
   MockFunction<void(const gfx::Image&)> image_fetched;
@@ -1539,7 +1576,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ImageReturnedWithTheSameId) {
   }
 
   service->FetchSuggestionImage(
-      MakeArticleID(kSnippetUrl),
+      MakeArticleID(kSuggestionUrl),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
   base::RunLoop().RunUntilIdle();
@@ -1548,7 +1585,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ImageReturnedWithTheSameId) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, EmptyImageReturnedForNonExistentId) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   // Create a non-empty image so that we can test the image gets updated.
   gfx::Image image = gfx::test::CreateImage(1, 1);
@@ -1556,7 +1593,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, EmptyImageReturnedForNonExistentId) {
   EXPECT_CALL(image_fetched, Call(_)).WillOnce(SaveArg<0>(&image));
 
   service->FetchSuggestionImage(
-      MakeArticleID(kSnippetUrl2),
+      MakeArticleID(kSuggestionUrl2),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
 
@@ -1569,9 +1606,9 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   // Testing that the provider is not accessing the database is tricky.
   // Therefore, we simply put in some data making sure that if the provider asks
   // the database, it will get a wrong answer.
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  ContentSuggestion::ID unknown_id = MakeArticleID(kSnippetUrl2);
+  ContentSuggestion::ID unknown_id = MakeArticleID(kSuggestionUrl2);
   database()->SaveImage(unknown_id.id_within_category(), "some image blob");
   // Set up the image decoder to always return the 1x1 test image.
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
@@ -1582,7 +1619,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   EXPECT_CALL(image_fetched, Call(_)).WillOnce(SaveArg<0>(&image));
 
   service->FetchSuggestionImage(
-      MakeArticleID(kSnippetUrl2),
+      MakeArticleID(kSuggestionUrl2),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
 
@@ -1591,18 +1628,19 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ClearHistoryRemovesAllSuggestions) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  std::string first_snippet = GetSnippetWithUrl("http://url1.com");
-  std::string second_snippet = GetSnippetWithUrl("http://url2.com");
-  std::string json_str = GetTestJson({first_snippet, second_snippet});
+  std::string first_suggestion = GetSuggestionWithUrl("http://url1.com");
+  std::string second_suggestion = GetSuggestionWithUrl("http://url2.com");
+  std::string json_str = GetTestJson({first_suggestion, second_suggestion});
   LoadFromJSONString(service.get(), json_str);
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
+  ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(2));
 
   service->DismissSuggestion(MakeArticleID("http://url1.com"));
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               Not(IsEmpty()));
-  ASSERT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+  ASSERT_THAT(service->GetDismissedSuggestionsForTesting(articles_category()),
               SizeIs(1));
 
   base::Time begin = base::Time::FromTimeT(123),
@@ -1613,7 +1651,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ClearHistoryRemovesAllSuggestions) {
   // Verify that the observer received the update with the empty data as well.
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               IsEmpty());
-  EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+  EXPECT_THAT(service->GetDismissedSuggestionsForTesting(articles_category()),
               IsEmpty());
 }
 
@@ -1621,7 +1659,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldKeepArticlesCategoryAvailableAfterClearHistory) {
   // If the provider marks that category as NOT_PROVIDED, then it won't be shown
   // at all in the UI and the user cannot load new data :-/.
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   ASSERT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE));
@@ -1634,29 +1672,33 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        SuggestionsFetchedOnSignInAndSignOut) {
-  auto service = MakeSnippetsService();
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  auto service = MakeSuggestionsProvider();
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
 
-  // |MakeSnippetsService()| creates a service where user is signed in already,
+  // |MakeSuggestionsProvider()| creates a service where user is signed in
+  // already,
   // so we start by signing out.
-  SetUpFetchResponse(GetTestJson({GetSnippetN(1)}));
+  SetUpFetchResponse(GetTestJson({GetSuggestionN(1)}));
   service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
                            RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT);
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
 
   // Sign in to check a transition from signed out to signed in.
-  SetUpFetchResponse(GetTestJson({GetSnippetN(1), GetSnippetN(2)}));
+  SetUpFetchResponse(GetTestJson({GetSuggestionN(1), GetSuggestionN(2)}));
   service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
                            RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(2));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ShouldClearOrphanedImagesOnRestart) {
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
+  LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
   ServeImageCallback cb =
       base::Bind(&ServeOneByOneImage, &service->GetImageFetcherForTesting());
 
@@ -1664,43 +1706,46 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldClearOrphanedImagesOnRestart) {
       .WillOnce(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
 
-  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSuggestionUrl));
   EXPECT_EQ(1, image.Width());
   EXPECT_FALSE(image.IsEmpty());
 
-  // Send new suggestion which don't include the snippet referencing the image.
+  // Send new suggestion which don't include the suggestion referencing the
+  // image.
   LoadFromJSONString(service.get(),
-                     GetTestJson({GetSnippetWithUrl(
+                     GetTestJson({GetSuggestionWithUrl(
                          "http://something.com/pletely/unrelated")}));
   // The image should still be available until a restart happens.
-  EXPECT_FALSE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
-  ResetSnippetsService(&service, /*set_empty_response=*/true);
+  EXPECT_FALSE(
+      FetchImage(service.get(), MakeArticleID(kSuggestionUrl)).IsEmpty());
+  ResetSuggestionsProvider(&service, /*set_empty_response=*/true);
   // After the restart, the image should be garbage collected.
-  EXPECT_TRUE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
+  EXPECT_TRUE(
+      FetchImage(service.get(), MakeArticleID(kSuggestionUrl)).IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
-       ShouldHandleMoreThanMaxSnippetsInResponse) {
-  auto service = MakeSnippetsService();
+       ShouldHandleMoreThanMaxSuggestionsInResponse) {
+  auto service = MakeSuggestionsProvider();
 
   std::vector<std::string> suggestions;
-  for (int i = 0; i < service->GetMaxSnippetCountForTesting() + 1; ++i) {
-    suggestions.push_back(GetSnippetWithUrl(
-        base::StringPrintf("http://localhost/snippet-id-%d", i)));
+  for (int i = 0; i < service->GetMaxSuggestionCountForTesting() + 1; ++i) {
+    suggestions.push_back(GetSuggestionWithUrl(
+        base::StringPrintf("http://localhost/suggestion-id-%d", i)));
   }
   LoadFromJSONString(service.get(), GetTestJson(suggestions));
   // TODO(tschumann): We should probably trim out any additional results and
-  // only serve the MaxSnippetCount items.
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
-              SizeIs(service->GetMaxSnippetCountForTesting() + 1));
+  // only serve the MaxSuggestionCount items.
+  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+              SizeIs(service->GetMaxSuggestionCountForTesting() + 1));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        StoreLastSuccessfullBackgroundFetchTime) {
   // On initialization of the RemoteSuggestionsProviderImpl a background fetch
-  // is triggered since the snippets DB is empty. Therefore the service must not
-  // be initialized until the test clock is set.
-  auto service = MakeSnippetsServiceWithoutInitialization();
+  // is triggered since the suggestions DB is empty. Therefore the service must
+  // not be initialized until the test clock is set.
+  auto service = MakeSuggestionsProviderWithoutInitialization();
 
   auto simple_test_clock = base::MakeUnique<base::SimpleTestClock>();
   base::SimpleTestClock* simple_test_clock_ptr = simple_test_clock.get();
@@ -1710,8 +1755,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   EXPECT_EQ(
       0, pref_service()->GetInt64(prefs::kLastSuccessfulBackgroundFetchTime));
 
-  WaitForSnippetsServiceInitialization(service.get(),
-                                       /*set_empty_response=*/true);
+  WaitForSuggestionsProviderInitialization(service.get(),
+                                           /*set_empty_response=*/true);
   EXPECT_EQ(
       simple_test_clock_ptr->Now().ToInternalValue(),
       pref_service()->GetInt64(prefs::kLastSuccessfulBackgroundFetchTime));
@@ -1732,7 +1777,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest, CallsProviderStatusCallbackIfReady) {
   // Initiate the service so that it is already READY.
-  auto service = MakeSnippetsService();
+  auto service = MakeSuggestionsProvider();
 
   StrictMock<MockFunction<void(RemoteSuggestionsProvider::ProviderStatus)>>
       status_callback;
@@ -1748,7 +1793,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, CallsProviderStatusCallbackIfReady) {
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        DoesNotCallProviderStatusCallbackIfNotInited) {
-  auto service = MakeSnippetsServiceWithoutInitialization();
+  auto service = MakeSuggestionsProviderWithoutInitialization();
 
   StrictMock<MockFunction<void(RemoteSuggestionsProvider::ProviderStatus)>>
       status_callback;
@@ -1763,7 +1808,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        CallsProviderStatusCallbackWhenReady) {
-  auto service = MakeSnippetsServiceWithoutInitialization();
+  auto service = MakeSuggestionsProviderWithoutInitialization();
   StrictMock<MockFunction<void(RemoteSuggestionsProvider::ProviderStatus)>>
       status_callback;
   service->SetProviderStatusCallback(
@@ -1775,12 +1820,12 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   // Should be called when becoming ready.
   EXPECT_CALL(status_callback,
               Call(RemoteSuggestionsProvider::ProviderStatus::ACTIVE));
-  WaitForSnippetsServiceInitialization(service.get(),
-                                       /*set_empty_response=*/true);
+  WaitForSuggestionsProviderInitialization(service.get(),
+                                           /*set_empty_response=*/true);
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, CallsProviderStatusCallbackOnError) {
-  auto service = MakeSnippetsServiceWithoutInitialization();
+  auto service = MakeSuggestionsProviderWithoutInitialization();
   StrictMock<MockFunction<void(RemoteSuggestionsProvider::ProviderStatus)>>
       status_callback;
   service->SetProviderStatusCallback(
@@ -1797,7 +1842,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, CallsProviderStatusCallbackOnError) {
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        CallsProviderStatusCallbackWhenDisabled) {
-  auto service = MakeSnippetsServiceWithoutInitialization();
+  auto service = MakeSuggestionsProviderWithoutInitialization();
   StrictMock<MockFunction<void(RemoteSuggestionsProvider::ProviderStatus)>>
       status_callback;
   service->SetProviderStatusCallback(

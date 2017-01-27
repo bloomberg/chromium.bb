@@ -38,15 +38,16 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   // The initial change is also notified (switching from an initial undecided
   // status). If the callback is set after the first change, it is called back
   // immediately.
+  // TODO(treib): Get rid of unique_ptrs to callbacks.
   virtual void SetProviderStatusCallback(
       std::unique_ptr<ProviderStatusCallback> callback) = 0;
 
-  // Fetches snippets from the server for all remote categories and replaces old
-  // snippets by the new ones. The request to the server is performed as an
-  // background request. Background requests are used for actions not triggered
-  // by the user and have lower priority on the server. After the fetch
-  // finished, the provided |callback| will be triggered with the status of the
-  // fetch (unless not nullptr).
+  // Fetches suggestions from the server for all remote categories and replaces
+  // old suggestions by the new ones. The request to the server is performed as
+  // an background request. Background requests are used for actions not
+  // triggered by the user and have lower priority on the server. After the
+  // fetch finished, the provided |callback| will be triggered with the status
+  // of the fetch (unless nullptr).
   virtual void RefetchInTheBackground(
       std::unique_ptr<FetchStatusCallback> callback) = 0;
 
