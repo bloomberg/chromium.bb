@@ -4702,25 +4702,11 @@ class FailureWatcher : public WebContentsObserver {
     message_loop_runner_->Quit();
   }
 
-  void DidFailProvisionalLoad(
-      RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) override {
-    RenderFrameHostImpl* rfh =
-        static_cast<RenderFrameHostImpl*>(render_frame_host);
-    if (rfh->frame_tree_node()->frame_tree_node_id() != frame_tree_node_id_)
-      return;
-
-    message_loop_runner_->Quit();
-  }
-
   void DidFinishNavigation(NavigationHandle* handle) override {
-    if (handle->GetFrameTreeNodeId() != frame_tree_node_id_)
+    if (handle->HasCommitted() ||
+        handle->GetFrameTreeNodeId() != frame_tree_node_id_) {
       return;
-    if (handle->HasCommitted())
-      return;
+    }
 
     message_loop_runner_->Quit();
   }
