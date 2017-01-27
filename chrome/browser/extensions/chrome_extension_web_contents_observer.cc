@@ -17,6 +17,7 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -78,13 +79,11 @@ void ChromeExtensionWebContentsObserver::RenderViewCreated(
   }
 }
 
-void ChromeExtensionWebContentsObserver::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  ExtensionWebContentsObserver::DidCommitProvisionalLoadForFrame(
-      render_frame_host, url, transition_type);
-  SetExtensionIsolationTrial(render_frame_host);
+void ChromeExtensionWebContentsObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  ExtensionWebContentsObserver::DidFinishNavigation(navigation_handle);
+  if (navigation_handle->HasCommitted())
+    SetExtensionIsolationTrial(navigation_handle->GetRenderFrameHost());
 }
 
 bool ChromeExtensionWebContentsObserver::OnMessageReceived(

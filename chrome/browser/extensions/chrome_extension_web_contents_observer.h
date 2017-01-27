@@ -39,10 +39,8 @@ class ChromeExtensionWebContentsObserver
 
   // content::WebContentsObserver overrides.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Silence a warning about hiding a virtual function.
   bool OnMessageReceived(const IPC::Message& message,

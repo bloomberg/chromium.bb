@@ -86,10 +86,8 @@ class ExtensionWebContentsObserver
 
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
                            const content::LoadCommittedDetails& details,
                            const content::FrameNavigateParams& params) override;
