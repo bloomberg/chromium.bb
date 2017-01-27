@@ -2387,13 +2387,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return 'unsent'
 
     messages = data.get('messages', [])
-    if messages:
-      owner = data['owner'].get('_account_id')
-      last_message_author = messages[-1].get('author', {}).get('_account_id')
-      if owner != last_message_author:
+    owner = data['owner'].get('_account_id')
+    while messages:
+      last_message_author = messages.pop().get('author', {})
+      if last_message_author.get('email') == COMMIT_BOT_EMAIL:
+        # Ignore replies from CQ.
+        continue
+      if owner != last_message_author.get('_account_id'):
         # Some reply from non-owner.
         return 'reply'
-
     return 'waiting'
 
   def GetMostRecentPatchset(self):
