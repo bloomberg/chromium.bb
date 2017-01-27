@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_NAVIGATION_OBSERVER_MANAGER_H_
 
 #include "base/feature_list.h"
+#include "base/supports_user_data.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -19,6 +21,20 @@ namespace safe_browsing {
 class SafeBrowsingNavigationObserver;
 struct NavigationEvent;
 struct ResolvedIPAddress;
+
+typedef google::protobuf::RepeatedPtrField<safe_browsing::ReferrerChainEntry>
+    ReferrerChain;
+
+// User data stored in DownloadItem for referrer chain information.
+class ReferrerChainData : public base::SupportsUserData::Data {
+ public:
+  explicit ReferrerChainData(std::unique_ptr<ReferrerChain> referrer_chain);
+  ~ReferrerChainData() override;
+  ReferrerChain* GetReferrerChain();
+
+ private:
+  std::unique_ptr<ReferrerChain> referrer_chain_;
+};
 
 // Manager class for SafeBrowsingNavigationObserver, which is in charge of
 // cleaning up stale navigation events, and identifying landing page/landing
@@ -32,7 +48,6 @@ class SafeBrowsingNavigationObserverManager
       public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
  public:
   static const base::Feature kDownloadAttribution;
-  typedef std::vector<std::unique_ptr<ReferrerChainEntry>> ReferrerChain;
 
   // For UMA histogram counting. Do NOT change order.
   enum AttributionResult {

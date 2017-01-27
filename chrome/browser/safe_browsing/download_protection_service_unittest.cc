@@ -1724,6 +1724,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
+  EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(url_chain.back()));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
@@ -1737,8 +1738,8 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
         .WillOnce(Return(true));
     RunLoop run_loop;
     download_service_->CheckDownloadUrl(
-        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                         base::Unretained(this), run_loop.QuitClosure()));
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
     Mock::VerifyAndClearExpectations(sb_service_.get());
@@ -1750,8 +1751,8 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
             DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_SAFE), Return(false)));
     RunLoop run_loop;
     download_service_->CheckDownloadUrl(
-        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                         base::Unretained(this), run_loop.QuitClosure()));
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
     Mock::VerifyAndClearExpectations(sb_service_.get());
@@ -1763,8 +1764,8 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
                         Return(false)));
     RunLoop run_loop;
     download_service_->CheckDownloadUrl(
-        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                         base::Unretained(this), run_loop.QuitClosure()));
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
     Mock::VerifyAndClearExpectations(sb_service_.get());
@@ -1776,8 +1777,8 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
                         Return(false)));
     RunLoop run_loop;
     download_service_->CheckDownloadUrl(
-        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                         base::Unretained(this), run_loop.QuitClosure()));
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   }

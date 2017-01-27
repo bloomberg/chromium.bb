@@ -662,7 +662,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
         service->IsSupportedDownload(*download, suggested_path);
     DVLOG(2) << __func__ << "() Start SB URL check for download = "
              << download->DebugString(false);
-    service->CheckDownloadUrl(*download,
+    service->CheckDownloadUrl(download,
                               base::Bind(&CheckDownloadUrlDone,
                                          callback,
                                          is_content_check_supported));

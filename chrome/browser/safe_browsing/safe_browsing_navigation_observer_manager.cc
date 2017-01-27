@@ -75,6 +75,16 @@ static const double kUserGestureTTLInSecond = 1.0;
 // expired. So we clean up these navigation footprints every 2 minutes.
 static const double kNavigationFootprintTTLInSecond = 120.0;
 
+ReferrerChainData::ReferrerChainData(
+    std::unique_ptr<ReferrerChain> referrer_chain)
+    : referrer_chain_(std::move(referrer_chain)) {}
+
+ReferrerChainData::~ReferrerChainData() {}
+
+ReferrerChain* ReferrerChainData::GetReferrerChain() {
+  return referrer_chain_.get();
+}
+
 // static
 const base::Feature
 SafeBrowsingNavigationObserverManager::kDownloadAttribution {
@@ -433,28 +443,27 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
     ReferrerChain* referrer_chain,
     NavigationEvent* nav_event,
     ReferrerChainEntry::URLType type) {
-  std::unique_ptr<ReferrerChainEntry> referrer_chain_entry =
-      base::MakeUnique<ReferrerChainEntry>();
-  referrer_chain_entry->set_url(nav_event->destination_url.spec());
-  referrer_chain_entry->set_type(type);
+  ReferrerChainEntry referrer_chain_entry;
+  referrer_chain_entry.set_url(nav_event->destination_url.spec());
+  referrer_chain_entry.set_type(type);
   auto ip_it = host_to_ip_map_.find(nav_event->destination_url.host());
   if (ip_it != host_to_ip_map_.end()) {
     for (ResolvedIPAddress entry : ip_it->second) {
-      referrer_chain_entry->add_ip_addresses(entry.ip);
+      referrer_chain_entry.add_ip_addresses(entry.ip);
     }
   }
   // Since we only track navigation to landing referrer, we will not log the
   // referrer of the landing referrer page.
   if (type != ReferrerChainEntry::LANDING_REFERRER) {
-    referrer_chain_entry->set_referrer_url(nav_event->source_url.spec());
-    referrer_chain_entry->set_referrer_main_frame_url(
+    referrer_chain_entry.set_referrer_url(nav_event->source_url.spec());
+    referrer_chain_entry.set_referrer_main_frame_url(
         nav_event->source_main_frame_url.spec());
   }
-  referrer_chain_entry->set_is_retargeting(nav_event->source_tab_id !=
+  referrer_chain_entry.set_is_retargeting(nav_event->source_tab_id !=
                                           nav_event->target_tab_id);
-  referrer_chain_entry->set_navigation_time_msec(
+  referrer_chain_entry.set_navigation_time_msec(
       nav_event->last_updated.ToJavaTime());
-  referrer_chain->push_back(std::move(referrer_chain_entry));
+  referrer_chain->Add()->Swap(&referrer_chain_entry);
 }
 
 void SafeBrowsingNavigationObserverManager::GetRemainingReferrerChain(
