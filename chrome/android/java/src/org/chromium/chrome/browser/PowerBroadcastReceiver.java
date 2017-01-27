@@ -17,7 +17,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.invalidation.DelayedInvalidationsController;
-import org.chromium.chrome.browser.omaha.OmahaClient;
+import org.chromium.chrome.browser.omaha.OmahaBase;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -98,7 +98,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
          */
         public void runActions() {
             Context context = ContextUtils.getApplicationContext();
-            OmahaClient.onForegroundSessionStart(context);
+            OmahaBase.onForegroundSessionStart(context);
             DelayedInvalidationsController.getInstance().notifyPendingInvalidations(context);
         }
 

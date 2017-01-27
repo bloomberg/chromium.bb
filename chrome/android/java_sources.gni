@@ -641,6 +641,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/offlinepages/interfaces/BackgroundSchedulerProcessor.java",
   "java/src/org/chromium/chrome/browser/omaha/ExponentialBackoffScheduler.java",
   "java/src/org/chromium/chrome/browser/omaha/MarketURLGetter.java",
+  "java/src/org/chromium/chrome/browser/omaha/OmahaBase.java",
   "java/src/org/chromium/chrome/browser/omaha/OmahaClient.java",
   "java/src/org/chromium/chrome/browser/omaha/RequestData.java",
   "java/src/org/chromium/chrome/browser/omaha/RequestFailureException.java",

@@ -21,7 +21,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.omaha.OmahaClient;
+import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -56,7 +56,7 @@ public class ApplicationTestUtils {
         sWakeLock.acquire();
 
         // Disable Omaha related activities.
-        OmahaClient.setEnableCommunication(false);
+        OmahaBase.setIsDisabledForTesting(true);
         VersionNumberGetter.setEnableUpdateDetection(false);
     }
 

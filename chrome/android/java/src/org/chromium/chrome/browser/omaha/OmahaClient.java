@@ -17,17 +17,10 @@ import android.os.Looper;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,6 +49,9 @@ import java.util.concurrent.TimeUnit;
  *
  * Implementation notes:
  * http://docs.google.com/a/google.com/document/d/1scTCovqASf5ktkOeVj8wFRkWTCeDYw2LrOBNn05CDB0/edit
+ *
+ * NOTE: This class can never be renamed because the user may have Intents floating around that
+ *       reference this class specifically.
  */
 public class OmahaClient extends IntentService {
     // Results of {@link #handlePostRequest()}.
@@ -80,38 +76,14 @@ public class OmahaClient extends IntentService {
     static final long MS_BETWEEN_REQUESTS = TimeUnit.HOURS.toMillis(5);
     private static final int MS_CONNECTION_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(1);
 
-    // Flags for retrieving the OmahaClient's state after it's written to disk.
-    // The PREF_PACKAGE doesn't match the current OmahaClient package for historical reasons.
-    @VisibleForTesting
-    static final String PREF_PACKAGE = "com.google.android.apps.chrome.omaha";
-    @VisibleForTesting
-    static final String PREF_PERSISTED_REQUEST_ID = "persistedRequestID";
-    @VisibleForTesting
-    static final String PREF_TIMESTAMP_OF_REQUEST = "timestampOfRequest";
-    @VisibleForTesting
-    static final String PREF_INSTALL_SOURCE = "installSource";
-    private static final String PREF_SEND_INSTALL_EVENT = "sendInstallEvent";
-    private static final String PREF_TIMESTAMP_OF_INSTALL = "timestampOfInstall";
-    private static final String PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT =
-            "timestampForNextPostAttempt";
-    private static final String PREF_TIMESTAMP_FOR_NEW_REQUEST = "timestampForNewRequest";
-
     // Strings indicating how the Chrome APK arrived on the user's device. These values MUST NOT
     // be changed without updating the corresponding Omaha server strings.
     static final String INSTALL_SOURCE_SYSTEM = "system_image";
     static final String INSTALL_SOURCE_ORGANIC = "organic";
 
-    @VisibleForTesting
-    static final String PREF_LATEST_VERSION = "latestVersion";
-    @VisibleForTesting
-    static final String PREF_MARKET_URL = "marketURL";
-
     private static final long INVALID_TIMESTAMP = -1;
     @VisibleForTesting
     static final String INVALID_REQUEST_ID = "invalid";
-
-    // Static fields
-    private static boolean sEnableCommunication = true;
 
     // Member fields not persisted to disk.
     private boolean mStateHasBeenRestored;
@@ -131,17 +103,6 @@ public class OmahaClient extends IntentService {
     public OmahaClient() {
         super(TAG);
         setIntentRedelivery(true);
-    }
-
-    /**
-     * Sets whether Chrome should be communicating with the Omaha server.
-     * The alternative to using a static field within OmahaClient is using a member variable in
-     * the ChromeTabbedActivity.  The problem is that it is difficult to set the variable before
-     * ChromeTabbedActivity is started.
-     */
-    @VisibleForTesting
-    public static void setEnableCommunication(boolean state) {
-        sEnableCommunication = state;
     }
 
     @VisibleForTesting
@@ -184,7 +145,7 @@ public class OmahaClient extends IntentService {
     public void onHandleIntent(Intent intent) {
         assert Looper.myLooper() != Looper.getMainLooper();
 
-        if (!sEnableCommunication || Build.VERSION.SDK_INT > Build.VERSION_CODES.N
+        if (OmahaBase.isDisabled() || Build.VERSION.SDK_INT > Build.VERSION_CODES.N
                 || getRequestGenerator() == null) {
             Log.v(TAG, "Disabled.  Ignoring intent.");
             return;
@@ -208,11 +169,7 @@ public class OmahaClient extends IntentService {
     /**
      * Begin communicating with the Omaha Update Server.
      */
-    public static void onForegroundSessionStart(Context context) {
-        if (!ChromeVersionInfo.isOfficialBuild() || Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-            return;
-        }
-
+    static void startService(Context context) {
         Intent omahaIntent = createInitializeIntent(context);
         context.startService(omahaIntent);
     }
@@ -248,7 +205,7 @@ public class OmahaClient extends IntentService {
      */
     private void handleRegisterRequest() {
         if (!isChromeBeingUsed()) {
-            unscheduleActiveUserCheck();
+            getBackoffScheduler().cancelAlarm(createRegisterRequestIntent(this));
             return;
         }
 
@@ -386,23 +343,6 @@ public class OmahaClient extends IntentService {
     }
 
     /**
-     * Cancels the alarm that launches this service.  It will be replaced when Chrome next resumes.
-     */
-    private void unscheduleActiveUserCheck() {
-        Intent requestIntent = createRegisterRequestIntent(this);
-        PendingIntent pendingIntent =
-                PendingIntent.getService(this, 0, requestIntent, PendingIntent.FLAG_NO_CREATE);
-        // Setting FLAG_NO_CREATE forces Android to return an already existing PendingIntent.
-        // Here it would be the one that was used to create the existing alarm (if it exists).
-        // If the pendingIntent is null, it is likely that no alarm was created.
-        if (pendingIntent != null) {
-            AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            am.cancel(pendingIntent);
-            pendingIntent.cancel();
-        }
-    }
-
-    /**
      * Determine whether or not Chrome is currently being used actively.
      */
     @VisibleForTesting
@@ -466,8 +406,7 @@ public class OmahaClient extends IntentService {
                 urlConnection.addRequestProperty("X-RequestAge", age);
             }
 
-            sendRequestToServer(urlConnection, xml);
-            response = readResponseFromServer(urlConnection);
+            response = OmahaBase.sendRequestToServer(urlConnection, xml);
         } catch (IllegalAccessError e) {
             throw new RequestFailureException("Caught an IllegalAccessError:", e);
         } catch (IllegalArgumentException e) {
@@ -502,61 +441,6 @@ public class OmahaClient extends IntentService {
     }
 
     /**
-     * Sends the request to the server.
-     */
-    private static void sendRequestToServer(HttpURLConnection urlConnection, String xml)
-            throws RequestFailureException {
-        try {
-            OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
-            OutputStreamWriter writer = new OutputStreamWriter(out);
-            writer.write(xml, 0, xml.length());
-            StreamUtil.closeQuietly(writer);
-            checkServerResponseCode(urlConnection);
-        } catch (IOException e) {
-            throw new RequestFailureException("Failed to write request to server: ", e);
-        }
-    }
-
-    /**
-     * Reads the response from the Omaha Server.
-     */
-    private static String readResponseFromServer(HttpURLConnection urlConnection)
-            throws RequestFailureException {
-        try {
-            InputStreamReader reader = new InputStreamReader(urlConnection.getInputStream());
-            BufferedReader in = new BufferedReader(reader);
-            try {
-                StringBuilder response = new StringBuilder();
-                for (String line = in.readLine(); line != null; line = in.readLine()) {
-                    response.append(line);
-                }
-                checkServerResponseCode(urlConnection);
-                return response.toString();
-            } finally {
-                StreamUtil.closeQuietly(in);
-            }
-        } catch (IOException e) {
-            throw new RequestFailureException("Failed when reading response from server: ", e);
-        }
-    }
-
-    /**
-     * Confirms that the Omaha server sent back an "OK" code.
-     */
-    private static void checkServerResponseCode(HttpURLConnection urlConnection)
-            throws RequestFailureException {
-        try {
-            if (urlConnection.getResponseCode() != 200) {
-                throw new RequestFailureException(
-                        "Received " + urlConnection.getResponseCode()
-                        + " code instead of 200 (OK) from the server.  Aborting.");
-            }
-        } catch (IOException e) {
-            throw new RequestFailureException("Failed to read response code from server: ", e);
-        }
-    }
-
-    /**
      * Determine how the Chrome APK arrived on the device.
      * @param context Context to pull resources from.
      * @return A String indicating the install source.
@@ -585,22 +469,25 @@ public class OmahaClient extends IntentService {
         if (mStateHasBeenRestored) return;
         long currentTime = getBackoffScheduler().getCurrentTime();
 
-        SharedPreferences preferences = getSharedPreferences(context);
-        mTimestampForNewRequest = preferences.getLong(PREF_TIMESTAMP_FOR_NEW_REQUEST, currentTime);
+        SharedPreferences preferences = OmahaBase.getSharedPreferences(context);
+        mTimestampForNewRequest =
+                preferences.getLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, currentTime);
         mTimestampForNextPostAttempt =
-                preferences.getLong(PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, currentTime);
-        mTimestampOfInstall = preferences.getLong(PREF_TIMESTAMP_OF_INSTALL, currentTime);
-        mSendInstallEvent = preferences.getBoolean(PREF_SEND_INSTALL_EVENT, true);
-        mInstallSource = preferences.getString(PREF_INSTALL_SOURCE, determineInstallSource());
-        mLatestVersion = preferences.getString(PREF_LATEST_VERSION, "");
-        mMarketURL = preferences.getString(PREF_MARKET_URL, "");
+                preferences.getLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, currentTime);
+        mTimestampOfInstall = preferences.getLong(OmahaBase.PREF_TIMESTAMP_OF_INSTALL, currentTime);
+        mSendInstallEvent = preferences.getBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, true);
+        mInstallSource =
+                preferences.getString(OmahaBase.PREF_INSTALL_SOURCE, determineInstallSource());
+        mLatestVersion = preferences.getString(OmahaBase.PREF_LATEST_VERSION, "");
+        mMarketURL = preferences.getString(OmahaBase.PREF_MARKET_URL, "");
 
         // If we're not sending an install event, don't bother restoring the request ID:
         // the server does not expect to have persisted request IDs for pings or update checks.
         String persistedRequestId = mSendInstallEvent
-                ? preferences.getString(PREF_PERSISTED_REQUEST_ID, INVALID_REQUEST_ID)
+                ? preferences.getString(OmahaBase.PREF_PERSISTED_REQUEST_ID, INVALID_REQUEST_ID)
                 : INVALID_REQUEST_ID;
-        long requestTimestamp = preferences.getLong(PREF_TIMESTAMP_OF_REQUEST, INVALID_TIMESTAMP);
+        long requestTimestamp =
+                preferences.getLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST, INVALID_TIMESTAMP);
         mCurrentRequest = requestTimestamp == INVALID_TIMESTAMP
                 ? null : createRequestData(requestTimestamp, persistedRequestId);
 
@@ -628,19 +515,21 @@ public class OmahaClient extends IntentService {
      * Writes out the current state to a file.
      */
     private void saveState(Context context) {
-        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences prefs = OmahaBase.getSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(PREF_SEND_INSTALL_EVENT, mSendInstallEvent);
-        editor.putLong(PREF_TIMESTAMP_OF_INSTALL, mTimestampOfInstall);
-        editor.putLong(PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, mTimestampForNextPostAttempt);
-        editor.putLong(PREF_TIMESTAMP_FOR_NEW_REQUEST, mTimestampForNewRequest);
-        editor.putLong(PREF_TIMESTAMP_OF_REQUEST,
+        editor.putBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, mSendInstallEvent);
+        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_INSTALL, mTimestampOfInstall);
+        editor.putLong(
+                OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, mTimestampForNextPostAttempt);
+        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, mTimestampForNewRequest);
+        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST,
                 hasRequest() ? mCurrentRequest.getCreationTimestamp() : INVALID_TIMESTAMP);
-        editor.putString(PREF_PERSISTED_REQUEST_ID,
+        editor.putString(OmahaBase.PREF_PERSISTED_REQUEST_ID,
                 hasRequest() ? mCurrentRequest.getRequestID() : INVALID_REQUEST_ID);
-        editor.putString(PREF_LATEST_VERSION, mLatestVersion == null ? "" : mLatestVersion);
-        editor.putString(PREF_MARKET_URL, mMarketURL == null ? "" : mMarketURL);
-        editor.putString(PREF_INSTALL_SOURCE, mInstallSource);
+        editor.putString(
+                OmahaBase.PREF_LATEST_VERSION, mLatestVersion == null ? "" : mLatestVersion);
+        editor.putString(OmahaBase.PREF_MARKET_URL, mMarketURL == null ? "" : mMarketURL);
+        editor.putString(OmahaBase.PREF_INSTALL_SOURCE, mInstallSource);
         editor.apply();
     }
 
@@ -652,15 +541,6 @@ public class OmahaClient extends IntentService {
         return UUID.randomUUID().toString();
     }
 
-    /**
-     * Checks whether Chrome has ever tried contacting Omaha before.
-     * @param context The current Context.
-     */
-    public static boolean isProbablyFreshInstall(Context context) {
-        SharedPreferences prefs = getSharedPreferences(context);
-        return prefs.getLong(PREF_TIMESTAMP_OF_INSTALL, -1) == -1;
-    }
-
     protected final RequestGenerator getRequestGenerator() {
         if (mGenerator == null) mGenerator = createRequestGenerator(this);
         return mGenerator;
@@ -669,12 +549,8 @@ public class OmahaClient extends IntentService {
     protected final ExponentialBackoffScheduler getBackoffScheduler() {
         if (mBackoffScheduler == null) {
             mBackoffScheduler = createBackoffScheduler(
-                    PREF_PACKAGE, this, MS_POST_BASE_DELAY, MS_POST_MAX_DELAY);
+                    OmahaBase.PREF_PACKAGE, this, MS_POST_BASE_DELAY, MS_POST_MAX_DELAY);
         }
         return mBackoffScheduler;
-    }
-
-    private static final SharedPreferences getSharedPreferences(Context context) {
-        return context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
     }
 }

@@ -93,8 +93,8 @@ public class ExponentialBackoffScheduler {
      * @return whether or not an alarm was canceled.
      */
     public boolean cancelAlarm(Intent scheduledIntent) {
-        PendingIntent pendingIntent = PendingIntent.getService(mContext, 0, scheduledIntent,
-                PendingIntent.FLAG_NO_CREATE);
+        PendingIntent pendingIntent = PendingIntent.getService(
+                mContext, 0, scheduledIntent, PendingIntent.FLAG_NO_CREATE);
         if (pendingIntent != null) {
             AlarmManager am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
             am.cancel(pendingIntent);

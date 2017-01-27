@@ -77,8 +77,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
         }
 
         @Override
-        public String getMarketUrl(
-                Context applicationContext, String prefPackage, String prefMarketUrl) {
+        protected String getMarketUrlInternal(Context context) {
             return mURL;
         }
     }

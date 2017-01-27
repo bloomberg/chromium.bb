@@ -102,11 +102,10 @@ public class OmahaClientTest extends InstrumentationTestCase {
         // Plant a failed request.
         Context targetContext = getInstrumentation().getTargetContext();
         AdvancedMockContext mockContext = new AdvancedMockContext(targetContext);
-        SharedPreferences prefs = mockContext.getSharedPreferences(OmahaClient.PREF_PACKAGE,
-                Context.MODE_PRIVATE);
+        SharedPreferences prefs = OmahaBase.getSharedPreferences(mockContext);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putLong(OmahaClient.PREF_TIMESTAMP_OF_REQUEST, 0);
-        editor.putString(OmahaClient.PREF_PERSISTED_REQUEST_ID, "persisted_id");
+        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST, 0);
+        editor.putString(OmahaBase.PREF_PERSISTED_REQUEST_ID, "persisted_id");
         editor.apply();
 
         // Send it off and don't crash when the state is restored and the XML is generated.

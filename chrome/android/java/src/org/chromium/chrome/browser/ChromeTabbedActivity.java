@@ -84,7 +84,7 @@ import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.omaha.OmahaClient;
+import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -1031,7 +1031,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
                 && getIntent().getData() != null
                 && (getIntent().getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
-                && OmahaClient.isProbablyFreshInstall(this)) {
+                && OmahaBase.isProbablyFreshInstall(this)) {
             getIntent().setData(null);
         }
 
