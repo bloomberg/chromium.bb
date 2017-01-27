@@ -15,7 +15,6 @@
 class GURL;
 
 namespace content {
-class RenderFrameHost;
 class WebContents;
 }
 
@@ -53,10 +52,8 @@ class InstantTab : public content::WebContentsObserver,
 
  private:
   // Overridden from content::WebContentsObserver:
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Overridden from SearchModelObserver:
   void ModelChanged(const SearchModel::State& old_state,

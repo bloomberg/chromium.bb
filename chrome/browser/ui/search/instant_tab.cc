@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -38,12 +39,12 @@ void InstantTab::Init() {
     InstantSupportDetermined(model->instant_support() == INSTANT_SUPPORT_YES);
 }
 
-void InstantTab::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition /* transition_type */) {
-  if (!render_frame_host->GetParent())
-    delegate_->InstantTabAboutToNavigateMainFrame(web_contents(), url);
+void InstantTab::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame()) {
+    delegate_->InstantTabAboutToNavigateMainFrame(
+        web_contents(), navigation_handle->GetURL());
+  }
 }
 
 void InstantTab::ModelChanged(const SearchModel::State& old_state,
