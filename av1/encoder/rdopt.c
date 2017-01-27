@@ -7726,8 +7726,12 @@ static int64_t build_and_cost_compound_seg(
       mbmi->mv[0].as_int = cur_mv[0].as_int;
       mbmi->mv[1].as_int = cur_mv[1].as_int;
       *out_rate_mv = rate_mv;
-      av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
-                                               preds1, strides);
+      av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0,
+#if CONFIG_SUPERTX
+                                               0, 0,
+#endif  // CONFIG_SUPERTX
+                                               preds0, strides, preds1,
+                                               strides);
     }
     av1_subtract_plane(x, bsize, 0);
     rd = estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
@@ -7737,8 +7741,11 @@ static int64_t build_and_cost_compound_seg(
     best_rd_cur = rd;
 
   } else {
-    av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
-                                             preds1, strides);
+    av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0,
+#if CONFIG_SUPERTX
+                                             0, 0,
+#endif  // CONFIG_SUPERTX
+                                             preds0, strides, preds1, strides);
     av1_subtract_plane(x, bsize, 0);
     rd = estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
                              &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
@@ -7779,8 +7786,12 @@ static int64_t build_and_cost_compound_wedge(
       mbmi->mv[0].as_int = cur_mv[0].as_int;
       mbmi->mv[1].as_int = cur_mv[1].as_int;
       *out_rate_mv = rate_mv;
-      av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
-                                               preds1, strides);
+      av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0,
+#if CONFIG_SUPERTX
+                                               0, 0,
+#endif  // CONFIG_SUPERTX
+                                               preds0, strides, preds1,
+                                               strides);
     }
     av1_subtract_plane(x, bsize, 0);
     rd = estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
@@ -7790,8 +7801,11 @@ static int64_t build_and_cost_compound_wedge(
     best_rd_cur = rd;
 
   } else {
-    av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
-                                             preds1, strides);
+    av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0,
+#if CONFIG_SUPERTX
+                                             0, 0,
+#endif  // CONFIG_SUPERTX
+                                             preds0, strides, preds1, strides);
     av1_subtract_plane(x, bsize, 0);
     rd = estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
                              &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
