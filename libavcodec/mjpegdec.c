@@ -1082,6 +1082,10 @@ static int ljpeg_decode_yuv_scan(MJpegDecodeContext *s, int predictor,
 
     for (mb_y = 0; mb_y < s->mb_height; mb_y++) {
         for (mb_x = 0; mb_x < s->mb_width; mb_x++) {
+            if (get_bits_left(&s->gb) < 1) {
+                av_log(s->avctx, AV_LOG_ERROR, "bitstream end in yuv_scan\n");
+                return AVERROR_INVALIDDATA;
+            }
             if (s->restart_interval && !s->restart_count){
                 s->restart_count = s->restart_interval;
                 resync_mb_x = mb_x;
@@ -1670,6 +1674,8 @@ static int mjpeg_decode_app(MJpegDecodeContext *s)
 
     if (id == AV_RB32("JFIF")) {
         int t_w, t_h, v1, v2;
+        if (len < 8)
+            goto out;
         skip_bits(&s->gb, 8); /* the trailing zero-byte */
         v1 = get_bits(&s->gb, 8);
         v2 = get_bits(&s->gb, 8);
@@ -2386,7 +2392,7 @@ the_end:
             }
         }
     }
-    if (s->flipped) {
+    if (s->flipped && !s->rgb) {
         int j;
         avcodec_get_chroma_sub_sample(s->avctx->pix_fmt, &hshift, &vshift);
         av_assert0(s->nb_components == av_pix_fmt_count_planes(s->picture_ptr->format));
