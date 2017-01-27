@@ -224,12 +224,14 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   InitTranslateEvent(language_code, target_lang, *translate_prefs);
 
   // Don't translate similar languages (ex: en-US to en).
-  if (language_code == target_lang) {
+  // Also do not offer to translate between Simplified and Traditional Chinese.
+  if (language_code == target_lang ||
+      (language_code == "zh-CN" && target_lang == "zh-TW") ||
+      (language_code == "zh-TW" && target_lang == "zh-CN")) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
     return;
   }
-
   // Nothing to do if either the language Chrome is in or the language of the
   // page is not supported by the translation server.
   if (target_lang.empty() ||
