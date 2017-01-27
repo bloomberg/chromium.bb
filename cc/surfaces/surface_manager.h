@@ -257,8 +257,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // aren't GC'd before a real reference is added. This is basically a
   // collection of surface ids, for example:
   //   SurfaceId surface_id(key, value[index]);
-  // The LocalFrameIds are stored in the order the surfaces are created in.
-  std::unordered_map<FrameSinkId, std::vector<LocalFrameId>, FrameSinkIdHash>
+  // The LocalSurfaceIds are stored in the order the surfaces are created in.
+  std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
       temp_references_;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;

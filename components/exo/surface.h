@@ -332,7 +332,7 @@ class Surface : public ui::ContextFactoryObserver,
   BufferAttachment pending_buffer_;
 
   const cc::FrameSinkId frame_sink_id_;
-  cc::LocalFrameId local_frame_id_;
+  cc::LocalSurfaceId local_surface_id_;
 
   scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
 

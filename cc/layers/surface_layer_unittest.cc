@@ -100,7 +100,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
                                       &required_seq);
   auto layer = SurfaceLayer::Create(ref_factory);
   SurfaceInfo info(
-      SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
+      SurfaceId(kArbitraryFrameSinkId, LocalSurfaceId(1, kArbitraryToken)), 1.f,
       gfx::Size(1, 1));
   layer->SetSurfaceInfo(info);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
@@ -135,7 +135,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   // Set of sequences that need to be satisfied should include sequences from
   // both trees.
   EXPECT_TRUE(required_id == SurfaceId(kArbitraryFrameSinkId,
-                                       LocalFrameId(1, kArbitraryToken)));
+                                       LocalSurfaceId(1, kArbitraryToken)));
   EXPECT_EQ(2u, required_seq.size());
   EXPECT_TRUE(required_seq.count(expected1));
   EXPECT_TRUE(required_seq.count(expected2));
@@ -165,8 +165,8 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     layer_ = SurfaceLayer::Create(new TestSurfaceReferenceFactory(
         &satisfied_sequence_, &required_id_, &required_set_));
     SurfaceInfo info(
-        SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
-        gfx::Size(1, 1));
+        SurfaceId(kArbitraryFrameSinkId, LocalSurfaceId(1, kArbitraryToken)),
+        1.f, gfx::Size(1, 1));
     layer_->SetSurfaceInfo(info);
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
@@ -177,7 +177,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     // Should have SurfaceSequence from first tree.
     SurfaceSequence expected(kArbitraryFrameSinkId, 1u);
     EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId,
-                                          LocalFrameId(1, kArbitraryToken)));
+                                          LocalSurfaceId(1, kArbitraryToken)));
     EXPECT_EQ(1u, required_set_.size());
     EXPECT_TRUE(required_set_.count(expected));
 
@@ -233,7 +233,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
 
   void AfterTest() override {
     EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId,
-                                          LocalFrameId(1, kArbitraryToken)));
+                                          LocalSurfaceId(1, kArbitraryToken)));
     EXPECT_EQ(1u, required_set_.size());
     EXPECT_TRUE(satisfied_sequence_ ==
                 SurfaceSequence(kArbitraryFrameSinkId, 1u));
@@ -272,7 +272,7 @@ class SurfaceLayerSwapPromiseWithoutDraw : public SurfaceLayerSwapPromise {
 
   void AfterTest() override {
     EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId,
-                                          LocalFrameId(1, kArbitraryToken)));
+                                          LocalSurfaceId(1, kArbitraryToken)));
     EXPECT_EQ(1u, required_set_.size());
     EXPECT_TRUE(satisfied_sequence_ ==
                 SurfaceSequence(kArbitraryFrameSinkId, 1u));

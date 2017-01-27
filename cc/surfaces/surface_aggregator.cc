@@ -687,8 +687,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
 
   CHECK(debug_weak_this.get());
   if (surface->factory()) {
-    surface->factory()->WillDrawSurface(surface->surface_id().local_frame_id(),
-                                        damage_rect);
+    surface->factory()->WillDrawSurface(
+        surface->surface_id().local_surface_id(), damage_rect);
   }
 
   CHECK(debug_weak_this.get());

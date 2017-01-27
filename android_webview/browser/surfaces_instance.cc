@@ -135,7 +135,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 
   if (!root_id_.is_valid()) {
     root_id_ = surface_id_allocator_->GenerateId();
-    display_->SetLocalFrameId(root_id_, 1.f);
+    display_->SetLocalSurfaceId(root_id_, 1.f);
   }
   surface_factory_->SubmitCompositorFrame(root_id_, std::move(frame),
                                           cc::SurfaceFactory::DrawCallback());

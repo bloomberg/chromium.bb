@@ -54,7 +54,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     aggregator_.reset(new SurfaceAggregator(&manager_, resource_provider_.get(),
                                             optimize_damage));
     for (int i = 0; i < num_surfaces; i++) {
-      LocalFrameId local_frame_id(i + 1, kArbitraryToken);
+      LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
       CompositorFrame frame;
 
@@ -92,12 +92,12 @@ class SurfaceAggregatorPerfTest : public testing::Test {
             pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
         surface_quad->SetNew(
             sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
-            SurfaceId(FrameSinkId(1, i), LocalFrameId(i, kArbitraryToken)));
+            SurfaceId(FrameSinkId(1, i), LocalSurfaceId(i, kArbitraryToken)));
       }
 
       frame.render_pass_list.push_back(std::move(pass));
       child_factories[i]->SubmitCompositorFrame(
-          local_frame_id, std::move(frame), SurfaceFactory::DrawCallback());
+          local_surface_id, std::move(frame), SurfaceFactory::DrawCallback());
     }
 
     SurfaceFactory root_factory(FrameSinkId(1, num_surfaces + 1), &manager_,
@@ -113,7 +113,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       surface_quad->SetNew(
           sqs, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100),
           SurfaceId(FrameSinkId(1, num_surfaces),
-                    LocalFrameId(num_surfaces, kArbitraryToken)));
+                    LocalSurfaceId(num_surfaces, kArbitraryToken)));
 
       if (full_damage)
         pass->damage_rect = gfx::Rect(0, 0, 100, 100);
@@ -123,12 +123,12 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       frame.render_pass_list.push_back(std::move(pass));
 
       root_factory.SubmitCompositorFrame(
-          LocalFrameId(num_surfaces + 1, kArbitraryToken), std::move(frame),
+          LocalSurfaceId(num_surfaces + 1, kArbitraryToken), std::move(frame),
           SurfaceFactory::DrawCallback());
 
       CompositorFrame aggregated = aggregator_->Aggregate(
           SurfaceId(FrameSinkId(1, num_surfaces + 1),
-                    LocalFrameId(num_surfaces + 1, kArbitraryToken)));
+                    LocalSurfaceId(num_surfaces + 1, kArbitraryToken)));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

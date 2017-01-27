@@ -78,7 +78,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
 
-  cc::LocalFrameId root_id_;
+  cc::LocalSurfaceId root_id_;
   std::vector<cc::SurfaceId> child_ids_;
 
   // This is owned by |display_|.

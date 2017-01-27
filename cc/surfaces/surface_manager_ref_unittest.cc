@@ -45,12 +45,12 @@ class SurfaceManagerRefTest : public testing::Test {
   // Creates a new Surface with the provided |frame_sink_id| and |local_id|.
   // Will first create a SurfaceFactory for |frame_sink_id| if necessary.
   SurfaceId CreateSurface(const FrameSinkId& frame_sink_id, uint32_t local_id) {
-    LocalFrameId local_frame_id(local_id,
-                                base::UnguessableToken::Deserialize(0, 1u));
+    LocalSurfaceId local_surface_id(local_id,
+                                    base::UnguessableToken::Deserialize(0, 1u));
     GetFactory(frame_sink_id)
-        .SubmitCompositorFrame(local_frame_id, CompositorFrame(),
+        .SubmitCompositorFrame(local_surface_id, CompositorFrame(),
                                SurfaceFactory::DrawCallback());
-    return SurfaceId(frame_sink_id, local_frame_id);
+    return SurfaceId(frame_sink_id, local_surface_id);
   }
 
   // Destroy Surface with |surface_id|.
@@ -88,7 +88,7 @@ class SurfaceManagerRefTest : public testing::Test {
   }
 
   // Returns all the temporary references for the given frame sink id.
-  std::vector<LocalFrameId> GetTempReferencesFor(
+  std::vector<LocalSurfaceId> GetTempReferencesFor(
       const FrameSinkId& frame_sink_id) {
     return manager().temp_references_[frame_sink_id];
   }
@@ -98,8 +98,8 @@ class SurfaceManagerRefTest : public testing::Test {
   std::vector<SurfaceId> GetAllTempReferences() {
     std::vector<SurfaceId> temp_references;
     for (auto& map_entry : manager().temp_references_) {
-      for (auto local_frame_id : map_entry.second)
-        temp_references.push_back(SurfaceId(map_entry.first, local_frame_id));
+      for (auto local_surface_id : map_entry.second)
+        temp_references.push_back(SurfaceId(map_entry.first, local_surface_id));
     }
     return temp_references;
   }
@@ -269,7 +269,7 @@ TEST_F(SurfaceManagerRefTest, CheckGCRecusiveFull) {
 TEST_F(SurfaceManagerRefTest, TryAddReferenceToBadSurface) {
   // Not creating an accompanying Surface and SurfaceFactory.
   SurfaceId id(FrameSinkId(100u, 200u),
-               LocalFrameId(1u, base::UnguessableToken::Create()));
+               LocalSurfaceId(1u, base::UnguessableToken::Create()));
 
   // Adding reference from root to the Surface should do nothing because
   // SurfaceManager doesn't know Surface for |id| exists.
@@ -391,9 +391,9 @@ TEST_F(SurfaceManagerRefTest, AddSurfacesSkipReference) {
 
   // Temporary references should be added for both surfaces and they should be
   // stored in the order of creation.
-  EXPECT_THAT(
-      GetTempReferencesFor(surface_id1.frame_sink_id()),
-      ElementsAre(surface_id1.local_frame_id(), surface_id2.local_frame_id()));
+  EXPECT_THAT(GetTempReferencesFor(surface_id1.frame_sink_id()),
+              ElementsAre(surface_id1.local_surface_id(),
+                          surface_id2.local_surface_id()));
   EXPECT_THAT(GetReferencesFromRoot(),
               UnorderedElementsAre(surface_id1, surface_id2));
 
@@ -418,9 +418,9 @@ TEST_F(SurfaceManagerRefTest, RemoveFirstTempRefOnly) {
 
   // Temporary references should be added for both surfaces and they should be
   // stored in the order of creation.
-  EXPECT_THAT(
-      GetTempReferencesFor(surface_id1.frame_sink_id()),
-      ElementsAre(surface_id1.local_frame_id(), surface_id2.local_frame_id()));
+  EXPECT_THAT(GetTempReferencesFor(surface_id1.frame_sink_id()),
+              ElementsAre(surface_id1.local_surface_id(),
+                          surface_id2.local_surface_id()));
   EXPECT_THAT(GetReferencesFromRoot(),
               UnorderedElementsAre(surface_id1, surface_id2));
 

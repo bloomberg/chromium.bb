@@ -33,8 +33,8 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
   const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
-  const cc::LocalFrameId& current_local_frame_id() const {
-    return current_local_frame_id_;
+  const cc::LocalSurfaceId& current_local_surface_id() const {
+    return current_local_surface_id_;
   }
 
  private:
@@ -43,7 +43,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
 
   // Surface-related state
   cc::FrameSinkId frame_sink_id_;
-  cc::LocalFrameId current_local_frame_id_;
+  cc::LocalSurfaceId current_local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceImpl);
 };

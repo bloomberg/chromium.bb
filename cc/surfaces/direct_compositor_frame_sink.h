@@ -66,7 +66,7 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   base::ThreadChecker thread_checker_;
 
   const FrameSinkId frame_sink_id_;
-  LocalFrameId delegated_local_frame_id_;
+  LocalSurfaceId delegated_local_surface_id_;
   SurfaceManager* surface_manager_;
   SurfaceIdAllocator surface_id_allocator_;
   Display* display_;

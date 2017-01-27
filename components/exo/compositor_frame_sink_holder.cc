@@ -47,7 +47,7 @@ void CompositorFrameSinkHolder::Satisfy(const cc::SurfaceSequence& sequence) {
 
 void CompositorFrameSinkHolder::Require(const cc::SurfaceId& id,
                                         const cc::SurfaceSequence& sequence) {
-  frame_sink_->Require(id.local_frame_id(), sequence);
+  frame_sink_->Require(id.local_surface_id(), sequence);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

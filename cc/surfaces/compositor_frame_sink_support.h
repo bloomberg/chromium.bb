@@ -39,9 +39,9 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   void EvictFrame();
   void SetNeedsBeginFrame(bool needs_begin_frame);
-  void SubmitCompositorFrame(const LocalFrameId& local_frame_id,
+  void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame);
-  void Require(const LocalFrameId& local_frame_id,
+  void Require(const LocalSurfaceId& local_surface_id,
                const SurfaceSequence& sequence);
   void Satisfy(const SurfaceSequence& sequence);
   void AddChildFrameSink(const FrameSinkId& child_frame_sink_id);
@@ -61,7 +61,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   // SurfaceFactoryClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
-  void WillDrawSurface(const LocalFrameId& local_frame_id,
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
   // BeginFrameObserver implementation.

@@ -113,7 +113,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const cc::LocalFrameId& id,
+  void WillDrawSurface(const cc::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
@@ -172,11 +172,11 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Exposed for tests.
   cc::SurfaceId SurfaceIdForTesting() const {
-    return cc::SurfaceId(frame_sink_id_, local_frame_id_);
+    return cc::SurfaceId(frame_sink_id_, local_surface_id_);
   }
 
-  const cc::LocalFrameId& LocalFrameIdForTesting() const {
-    return local_frame_id_;
+  const cc::LocalSurfaceId& LocalSurfaceIdForTesting() const {
+    return local_surface_id_;
   }
 
   void OnCompositingDidCommitForTesting(ui::Compositor* compositor) {
@@ -251,7 +251,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void AttemptFrameSubscriberCapture(const gfx::Rect& damage_rect);
 
   const cc::FrameSinkId frame_sink_id_;
-  cc::LocalFrameId local_frame_id_;
+  cc::LocalSurfaceId local_surface_id_;
   DelegatedFrameHostClient* const client_;
   ui::Compositor* compositor_;
 

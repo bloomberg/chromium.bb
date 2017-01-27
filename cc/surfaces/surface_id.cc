@@ -11,7 +11,7 @@ namespace cc {
 std::string SurfaceId::ToString() const {
   return base::StringPrintf("SurfaceId(%s, %s)",
                             frame_sink_id_.ToString().c_str(),
-                            local_frame_id_.ToString().c_str());
+                            local_surface_id_.ToString().c_str());
 }
 
 std::ostream& operator<<(std::ostream& out, const SurfaceId& surface_id) {

@@ -47,9 +47,9 @@ void OffscreenCanvasSurfaceImpl::Create(
 void OffscreenCanvasSurfaceImpl::OnSurfaceCreated(
     const cc::SurfaceInfo& surface_info) {
   DCHECK_EQ(surface_info.id().frame_sink_id(), frame_sink_id_);
-  if (!current_local_frame_id_.is_valid() ||
-      surface_info.id().local_frame_id() != current_local_frame_id_) {
-    current_local_frame_id_ = surface_info.id().local_frame_id();
+  if (!current_local_surface_id_.is_valid() ||
+      surface_info.id().local_surface_id() != current_local_surface_id_) {
+    current_local_surface_id_ = surface_info.id().local_surface_id();
     if (client_)
       client_->OnSurfaceCreated(surface_info);
   }

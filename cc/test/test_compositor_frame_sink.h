@@ -100,7 +100,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   // CompositorFrameSink is owned/destroyed on the compositor thread.
   std::unique_ptr<SurfaceManager> surface_manager_;
   std::unique_ptr<SurfaceIdAllocator> surface_id_allocator_;
-  LocalFrameId delegated_local_frame_id_;
+  LocalSurfaceId delegated_local_surface_id_;
 
   // Uses surface_manager_.
   std::unique_ptr<SurfaceFactory> surface_factory_;

@@ -48,7 +48,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
       m_nextResourceId(1u),
       m_binding(this),
       m_placeholderCanvasId(canvasId) {
-  m_currentLocalFrameId = m_surfaceIdAllocator.GenerateId();
+  m_currentLocalSurfaceId = m_surfaceIdAllocator.GenerateId();
   DCHECK(!m_sink.is_bound());
   mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
   Platform::current()->interfaceProvider()->getInterface(
@@ -368,10 +368,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   }
 
   if (m_changeSizeForNextCommit) {
-    m_currentLocalFrameId = m_surfaceIdAllocator.GenerateId();
+    m_currentLocalSurfaceId = m_surfaceIdAllocator.GenerateId();
     m_changeSizeForNextCommit = false;
   }
-  m_sink->SubmitCompositorFrame(m_currentLocalFrameId, std::move(frame));
+  m_sink->SubmitCompositorFrame(m_currentLocalSurfaceId, std::move(frame));
 
   // TODO(crbug.com/674744): Get BeginFrame to fire on its own.
   scheduleSyntheticBeginFrame();

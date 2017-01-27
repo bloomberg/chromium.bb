@@ -90,20 +90,20 @@ void DirectCompositorFrameSink::DetachFromClient() {
 void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_swap_frame_size_) {
-    delegated_local_frame_id_ = surface_id_allocator_.GenerateId();
+    delegated_local_surface_id_ = surface_id_allocator_.GenerateId();
     last_swap_frame_size_ = frame_size;
   }
-  display_->SetLocalFrameId(delegated_local_frame_id_,
-                            frame.metadata.device_scale_factor);
+  display_->SetLocalSurfaceId(delegated_local_surface_id_,
+                              frame.metadata.device_scale_factor);
 
   factory_.SubmitCompositorFrame(
-      delegated_local_frame_id_, std::move(frame),
+      delegated_local_surface_id_, std::move(frame),
       base::Bind(&DirectCompositorFrameSink::DidDrawCallback,
                  base::Unretained(this)));
 }
 
 void DirectCompositorFrameSink::ForceReclaimResources() {
-  if (delegated_local_frame_id_.is_valid())
+  if (delegated_local_surface_id_.is_valid())
     factory_.ClearSurface();
 }
 

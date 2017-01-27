@@ -78,8 +78,8 @@ struct CC_IPC_EXPORT ParamTraits<cc::FrameSinkId> {
 };
 
 template <>
-struct CC_IPC_EXPORT ParamTraits<cc::LocalFrameId> {
-  typedef cc::LocalFrameId param_type;
+struct CC_IPC_EXPORT ParamTraits<cc::LocalSurfaceId> {
+  typedef cc::LocalSurfaceId param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

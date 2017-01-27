@@ -55,15 +55,15 @@ void GpuCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void GpuCompositorFrameSink::SubmitCompositorFrame(
-    const cc::LocalFrameId& local_frame_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   cc::SurfaceId start_surface_id = surface_tracker_.current_surface_id();
-  surface_tracker_.UpdateReferences(local_frame_id,
+  surface_tracker_.UpdateReferences(local_surface_id,
                                     frame.metadata.referenced_surfaces);
   // TODO(kylechar): Move adding top-level root references to
   // GpuDisplayCompositorFrameSink.
 
-  support_.SubmitCompositorFrame(local_frame_id, std::move(frame));
+  support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
 
   // Get the list of surfaces to add/remove from |surface_tracker_| so we can
   // append to them before adding/removing.
@@ -81,7 +81,7 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
 
     // The first frame will not have a valid |start_surface_id| and there will
     // be no surface to remove.
-    if (start_surface_id.local_frame_id().is_valid()) {
+    if (start_surface_id.local_surface_id().is_valid()) {
       references_to_remove.push_back(
           cc::SurfaceReference(top_level_root_surface_id, start_surface_id));
     }
@@ -96,9 +96,9 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
     surface_manager_->RemoveSurfaceReferences(references_to_remove);
 }
 
-void GpuCompositorFrameSink::Require(const cc::LocalFrameId& local_frame_id,
+void GpuCompositorFrameSink::Require(const cc::LocalSurfaceId& local_surface_id,
                                      const cc::SurfaceSequence& sequence) {
-  support_.Require(local_frame_id, sequence);
+  support_.Require(local_surface_id, sequence);
 }
 
 void GpuCompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {

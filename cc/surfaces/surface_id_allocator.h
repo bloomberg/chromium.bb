@@ -21,7 +21,7 @@ class CC_SURFACES_EXPORT SurfaceIdAllocator {
   SurfaceIdAllocator();
   ~SurfaceIdAllocator();
 
-  LocalFrameId GenerateId();
+  LocalSurfaceId GenerateId();
 
  private:
   uint32_t next_id_;

@@ -34,7 +34,7 @@ void InitWindow(ServerWindow* window) {
       window->GetOrCreateCompositorFrameSinkManager();
   compositor_frame_sink_manager->SetLatestSurfaceInfo(cc::SurfaceInfo(
       cc::SurfaceId(cc::FrameSinkId(WindowIdToTransportId(window->id()), 0),
-                    cc::LocalFrameId(1u, kArbitraryToken)),
+                    cc::LocalSurfaceId(1u, kArbitraryToken)),
       1.0f, gfx::Size(100, 100)));
 }
 
@@ -72,7 +72,7 @@ class FrameGeneratorTest : public testing::Test {
 
 void FrameGeneratorTest::DrawWindow(cc::RenderPass* pass) {
   cc::SurfaceId surface_id(cc::FrameSinkId(5, 5),
-                           cc::LocalFrameId(1u, kArbitraryToken));
+                           cc::LocalSurfaceId(1u, kArbitraryToken));
   frame_generator_->window_manager_surface_info_ =
       cc::SurfaceInfo(surface_id, 2, gfx::Size(2, 2));
   frame_generator_->DrawWindow(pass);

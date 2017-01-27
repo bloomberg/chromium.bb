@@ -60,7 +60,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   TaskHandle m_syntheticBeginFrameTask;  // To be removed (crbug.com/674744)
   const cc::FrameSinkId m_frameSinkId;
-  cc::LocalFrameId m_currentLocalFrameId;
+  cc::LocalSurfaceId m_currentLocalSurfaceId;
 
   int m_width;
   int m_height;

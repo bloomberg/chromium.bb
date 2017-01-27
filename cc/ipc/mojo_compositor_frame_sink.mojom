@@ -7,7 +7,7 @@ module cc.mojom;
 import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/frame_sink_id.mojom";
-import "cc/ipc/local_frame_id.mojom";
+import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_reference.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/surface_sequence.mojom";
@@ -26,11 +26,11 @@ interface MojoCompositorFrameSink {
   // to screen the next time frames from all CompositorFrameSinks are aggregated
   // to produce a display CompositorFrame. If a client wishes to allocate a new
   // surface (e.g. during resize), then it can simply allocate a new
-  // |local_frame_id|.
+  // |local_surface_id|.
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
   // processed in order to unthrottle the next frame.
-  SubmitCompositorFrame(cc.mojom.LocalFrameId local_frame_id,
+  SubmitCompositorFrame(cc.mojom.LocalSurfaceId local_surface_id,
                         cc.mojom.CompositorFrame frame);
 
   // Notify that the surface is no longer in use (and is okay to be evicted) so
@@ -40,8 +40,8 @@ interface MojoCompositorFrameSink {
   // TODO(staraz): Delete Require() and Satisfy() once surface references
   // (CL 2541683004) are ready.
   // Add the provided |sequence| as a destruction dependency of the
-  // surface associated with the provided |local_frame_id|.
-  Require(cc.mojom.LocalFrameId local_frame_id,
+  // surface associated with the provided |local_surface_id|.
+  Require(cc.mojom.LocalSurfaceId local_surface_id,
           cc.mojom.SurfaceSequence sequence);
 
   // Mark the sequence as satisfied and garbage collect surfaces.

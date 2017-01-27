@@ -231,7 +231,7 @@ Surface* Surface::AsSurface(const aura::Window* window) {
 }
 
 cc::SurfaceId Surface::GetSurfaceId() const {
-  return cc::SurfaceId(frame_sink_id_, local_frame_id_);
+  return cc::SurfaceId(frame_sink_id_, local_surface_id_);
 }
 
 void Surface::Attach(Buffer* buffer) {
@@ -452,22 +452,22 @@ void Surface::CommitSurfaceHierarchy() {
     UpdateResource(true);
   }
 
-  cc::LocalFrameId old_local_frame_id = local_frame_id_;
-  if (needs_commit_to_new_surface_ || !local_frame_id_.is_valid()) {
+  cc::LocalSurfaceId old_local_surface_id = local_surface_id_;
+  if (needs_commit_to_new_surface_ || !local_surface_id_.is_valid()) {
     needs_commit_to_new_surface_ = false;
-    local_frame_id_ = id_allocator_.GenerateId();
+    local_surface_id_ = id_allocator_.GenerateId();
   }
 
   UpdateSurface(false);
 
-  if (old_local_frame_id != local_frame_id_) {
+  if (old_local_surface_id != local_surface_id_) {
     float contents_surface_to_layer_scale = 1.0;
     // The bounds must be updated before switching to the new surface, because
     // the layer may be mirrored, in which case a surface change causes the
     // mirror layer to update its surface using the latest bounds.
     window_->layer()->SetBounds(
         gfx::Rect(window_->layer()->bounds().origin(), content_size_));
-    cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
+    cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
     window_->layer()->SetShowSurface(
         cc::SurfaceInfo(surface_id, contents_surface_to_layer_scale,
                         content_size_),
@@ -618,7 +618,7 @@ void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
 // ui::ContextFactoryObserver overrides:
 
 void Surface::OnLostResources() {
-  if (!local_frame_id_.is_valid())
+  if (!local_surface_id_.is_valid())
     return;
 
   UpdateResource(false);
@@ -820,7 +820,7 @@ void Surface::UpdateSurface(bool full_damage) {
 
   frame.render_pass_list.push_back(std::move(render_pass));
   compositor_frame_sink_holder_->GetCompositorFrameSink()
-      ->SubmitCompositorFrame(local_frame_id_, std::move(frame));
+      ->SubmitCompositorFrame(local_surface_id_, std::move(frame));
 }
 
 int64_t Surface::SetPropertyInternal(const void* key,

@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_LOCAL_FRAME_ID_H_
-#define CC_SURFACES_LOCAL_FRAME_ID_H_
+#ifndef CC_SURFACES_LOCAL_SURFACE_ID_H_
+#define CC_SURFACES_LOCAL_SURFACE_ID_H_
 
 #include <inttypes.h>
 
@@ -17,17 +17,18 @@
 
 namespace cc {
 namespace mojom {
-class LocalFrameIdDataView;
+class LocalSurfaceIdDataView;
 }
 
-class LocalFrameId {
+class LocalSurfaceId {
  public:
-  constexpr LocalFrameId() : local_id_(0) {}
+  constexpr LocalSurfaceId() : local_id_(0) {}
 
-  constexpr LocalFrameId(const LocalFrameId& other)
+  constexpr LocalSurfaceId(const LocalSurfaceId& other)
       : local_id_(other.local_id_), nonce_(other.nonce_) {}
 
-  constexpr LocalFrameId(uint32_t local_id, const base::UnguessableToken& nonce)
+  constexpr LocalSurfaceId(uint32_t local_id,
+                           const base::UnguessableToken& nonce)
       : local_id_(local_id), nonce_(nonce) {}
 
   constexpr bool is_valid() const {
@@ -38,13 +39,15 @@ class LocalFrameId {
 
   constexpr const base::UnguessableToken& nonce() const { return nonce_; }
 
-  bool operator==(const LocalFrameId& other) const {
+  bool operator==(const LocalSurfaceId& other) const {
     return local_id_ == other.local_id_ && nonce_ == other.nonce_;
   }
 
-  bool operator!=(const LocalFrameId& other) const { return !(*this == other); }
+  bool operator!=(const LocalSurfaceId& other) const {
+    return !(*this == other);
+  }
 
-  bool operator<(const LocalFrameId& other) const {
+  bool operator<(const LocalSurfaceId& other) const {
     return std::tie(local_id_, nonce_) <
            std::tie(other.local_id_, other.nonce_);
   }
@@ -57,18 +60,20 @@ class LocalFrameId {
   std::string ToString() const;
 
  private:
-  friend struct mojo::StructTraits<mojom::LocalFrameIdDataView, LocalFrameId>;
+  friend struct mojo::StructTraits<mojom::LocalSurfaceIdDataView,
+                                   LocalSurfaceId>;
 
   uint32_t local_id_;
   base::UnguessableToken nonce_;
 };
 
-std::ostream& operator<<(std::ostream& out, const LocalFrameId& local_frame_id);
+std::ostream& operator<<(std::ostream& out,
+                         const LocalSurfaceId& local_surface_id);
 
-struct LocalFrameIdHash {
-  size_t operator()(const LocalFrameId& key) const { return key.hash(); }
+struct LocalSurfaceIdHash {
+  size_t operator()(const LocalSurfaceId& key) const { return key.hash(); }
 };
 
 }  // namespace cc
 
-#endif  // CC_SURFACES_LOCAL_FRAME_ID_H_
+#endif  // CC_SURFACES_LOCAL_SURFACE_ID_H_

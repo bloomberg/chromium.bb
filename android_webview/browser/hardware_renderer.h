@@ -83,7 +83,7 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   cc::FrameSinkId frame_sink_id_;
   const std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
-  cc::LocalFrameId child_id_;
+  cc::LocalSurfaceId child_id_;
   CompositorID compositor_id_;
   // HardwareRenderer guarantees resources are returned in the order of
   // compositor_frame_sink_id, and resources for old output surfaces are

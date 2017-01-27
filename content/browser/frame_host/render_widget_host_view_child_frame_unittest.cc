@@ -116,7 +116,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   }
 
   cc::SurfaceId GetSurfaceId() const {
-    return cc::SurfaceId(view_->frame_sink_id_, view_->local_frame_id_);
+    return cc::SurfaceId(view_->frame_sink_id_, view_->local_surface_id_);
   }
 
  protected:

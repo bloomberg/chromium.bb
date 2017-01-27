@@ -85,13 +85,13 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
     if (!frame.render_pass_list.empty())
       frame_size = frame.render_pass_list[0]->output_rect.size();
 
-    if (!local_frame_id_.is_valid() ||
+    if (!local_surface_id_.is_valid() ||
         frame_size != last_submitted_frame_size_) {
-      local_frame_id_ = id_allocator_.GenerateId();
+      local_surface_id_ = id_allocator_.GenerateId();
       display_private_->ResizeDisplay(frame_size);
     }
 
-    compositor_frame_sink_->SubmitCompositorFrame(local_frame_id_,
+    compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
                                                   std::move(frame));
     compositor_frame_sink_->SetNeedsBeginFrame(false);
     last_submitted_frame_size_ = frame_size;

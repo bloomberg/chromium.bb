@@ -15,7 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/local_frame_id.h"
+#include "cc/surfaces/local_surface_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"

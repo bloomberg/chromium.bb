@@ -18,8 +18,8 @@ static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 TEST(SurfaceLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
-  const LocalFrameId kArbitraryLocalFrameId(9,
-                                            base::UnguessableToken::Create());
+  const LocalSurfaceId kArbitraryLocalSurfaceId(
+      9, base::UnguessableToken::Create());
 
   LayerTestCommon::LayerImplTest impl;
 
@@ -27,7 +27,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalFrameId);
+  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   surface_layer_impl->SetSurfaceInfo(SurfaceInfo(surface_id, 1.f, layer_size));
 
   impl.CalcDrawProps(viewport_size);
@@ -69,8 +69,8 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   LayerTestCommon::LayerImplTest impl;
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
-  const LocalFrameId kArbitraryLocalFrameId(9,
-                                            base::UnguessableToken::Create());
+  const LocalSurfaceId kArbitraryLocalSurfaceId(
+      9, base::UnguessableToken::Create());
 
   // Given condition: layer and surface have different size and different
   // aspect ratios.
@@ -85,7 +85,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   // active tree.
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalFrameId);
+  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   surface_layer_impl->SetSurfaceInfo(
       SurfaceInfo(surface_id, surface_scale, surface_size));
   surface_layer_impl->SetStretchContentToFillBounds(true);

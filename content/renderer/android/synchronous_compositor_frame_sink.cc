@@ -245,13 +245,13 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     // the |frame| for the software path below.
     submit_frame.metadata = frame.metadata.Clone();
 
-    if (!root_local_frame_id_.is_valid()) {
-      root_local_frame_id_ = surface_id_allocator_->GenerateId();
-      child_local_frame_id_ = surface_id_allocator_->GenerateId();
+    if (!root_local_surface_id_.is_valid()) {
+      root_local_surface_id_ = surface_id_allocator_->GenerateId();
+      child_local_surface_id_ = surface_id_allocator_->GenerateId();
     }
 
-    display_->SetLocalFrameId(root_local_frame_id_,
-                              frame.metadata.device_scale_factor);
+    display_->SetLocalSurfaceId(root_local_surface_id_,
+                                frame.metadata.device_scale_factor);
 
     // The layer compositor should be giving a frame that covers the
     // |sw_viewport_for_current_draw_| but at 0,0.
@@ -295,11 +295,12 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
         SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
     surface_quad->SetNew(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
-        cc::SurfaceId(kChildFrameSinkId, child_local_frame_id_));
+        cc::SurfaceId(kChildFrameSinkId, child_local_surface_id_));
 
-    child_factory_->SubmitCompositorFrame(
-        child_local_frame_id_, std::move(frame), base::Bind(&NoOpDrawCallback));
-    root_factory_->SubmitCompositorFrame(root_local_frame_id_,
+    child_factory_->SubmitCompositorFrame(child_local_surface_id_,
+                                          std::move(frame),
+                                          base::Bind(&NoOpDrawCallback));
+    root_factory_->SubmitCompositorFrame(root_local_surface_id_,
                                          std::move(embed_frame),
                                          base::Bind(&NoOpDrawCallback));
     display_->DrawAndSwap();

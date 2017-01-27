@@ -146,8 +146,8 @@ class SynchronousCompositorFrameSink
   // is owned/destroyed on the compositor thread.
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
-  cc::LocalFrameId child_local_frame_id_;
-  cc::LocalFrameId root_local_frame_id_;
+  cc::LocalSurfaceId child_local_surface_id_;
+  cc::LocalSurfaceId root_local_surface_id_;
   // Uses surface_manager_.
   std::unique_ptr<cc::SurfaceFactory> root_factory_;
   std::unique_ptr<cc::SurfaceFactory> child_factory_;

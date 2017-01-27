@@ -72,7 +72,8 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
   blink::mojom::OffscreenCanvasSurfaceClientPtr client;
   cc::FrameSinkId frame_sink_id(3, 3);
   cc::SurfaceIdAllocator surface_id_allocator;
-  cc::LocalFrameId current_local_frame_id(surface_id_allocator.GenerateId());
+  cc::LocalSurfaceId current_local_surface_id(
+      surface_id_allocator.GenerateId());
 
   auto surface_impl = base::WrapUnique(
       new OffscreenCanvasSurfaceImpl(frame_sink_id, std::move(client)));
@@ -81,8 +82,9 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
             OffscreenCanvasSurfaceManager::GetInstance()->GetSurfaceInstance(
                 frame_sink_id));
 
-  this->OnSurfaceCreated(cc::SurfaceId(frame_sink_id, current_local_frame_id));
-  EXPECT_EQ(current_local_frame_id, surface_impl->current_local_frame_id());
+  this->OnSurfaceCreated(
+      cc::SurfaceId(frame_sink_id, current_local_surface_id));
+  EXPECT_EQ(current_local_surface_id, surface_impl->current_local_surface_id());
 
   surface_impl = nullptr;
   EXPECT_EQ(0, this->getNumSurfaceImplInstances());

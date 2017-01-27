@@ -378,7 +378,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 
   cc::SurfaceId arbitrary_surface_id(
       kArbitraryFrameSinkId,
-      cc::LocalFrameId(3, base::UnguessableToken::Create()));
+      cc::LocalSurfaceId(3, base::UnguessableToken::Create()));
   SurfaceDrawQuad* surface_in =
       pass_in->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_in->SetAll(shared_state3_in, arbitrary_rect2,

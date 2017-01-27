@@ -1824,7 +1824,7 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
 
   cc::SurfaceId surface_id(
       cc::FrameSinkId(0, 1),
-      cc::LocalFrameId(2, base::UnguessableToken::Create()));
+      cc::LocalSurfaceId(2, base::UnguessableToken::Create()));
   cc::SurfaceInfo surface_info(surface_id, 1.0f, gfx::Size(10, 10));
   layer->SetShowSurface(surface_info, new TestSurfaceReferenceFactory());
 
@@ -1837,7 +1837,7 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
 
   surface_id =
       cc::SurfaceId(cc::FrameSinkId(1, 2),
-                    cc::LocalFrameId(3, base::UnguessableToken::Create()));
+                    cc::LocalSurfaceId(3, base::UnguessableToken::Create()));
   cc::SurfaceInfo surface_info_2(surface_id, 2.0f, gfx::Size(20, 20));
   layer->SetShowSurface(surface_info_2, new TestSurfaceReferenceFactory());
 
@@ -1855,7 +1855,7 @@ TEST_F(LayerWithDelegateTest, FrameSizeInDip) {
 
   cc::SurfaceId surface_id(
       cc::FrameSinkId(0, 1),
-      cc::LocalFrameId(2, base::UnguessableToken::Create()));
+      cc::LocalSurfaceId(2, base::UnguessableToken::Create()));
 
   layer->SetShowSurface(cc::SurfaceInfo(surface_id, 2.0f, gfx::Size(30, 40)),
                         new TestSurfaceReferenceFactory());

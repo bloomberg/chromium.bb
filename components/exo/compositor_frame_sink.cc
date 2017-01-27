@@ -31,18 +31,18 @@ void CompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void CompositorFrameSink::SubmitCompositorFrame(
-    const cc::LocalFrameId& local_frame_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  support_.SubmitCompositorFrame(local_frame_id, std::move(frame));
+  support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
 void CompositorFrameSink::EvictFrame() {
   support_.EvictFrame();
 }
 
-void CompositorFrameSink::Require(const cc::LocalFrameId& local_frame_id,
+void CompositorFrameSink::Require(const cc::LocalSurfaceId& local_surface_id,
                                   const cc::SurfaceSequence& sequence) {
-  support_.Require(local_frame_id, sequence);
+  support_.Require(local_surface_id, sequence);
 }
 
 void CompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {

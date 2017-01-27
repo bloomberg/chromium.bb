@@ -127,11 +127,11 @@ void TestCompositorFrameSink::DetachFromClient() {
 void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   test_client_->DisplayReceivedCompositorFrame(frame);
 
-  if (!delegated_local_frame_id_.is_valid()) {
-    delegated_local_frame_id_ = surface_id_allocator_->GenerateId();
+  if (!delegated_local_surface_id_.is_valid()) {
+    delegated_local_surface_id_ = surface_id_allocator_->GenerateId();
   }
-  display_->SetLocalFrameId(delegated_local_frame_id_,
-                            frame.metadata.device_scale_factor);
+  display_->SetLocalSurfaceId(delegated_local_surface_id_,
+                              frame.metadata.device_scale_factor);
 
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
@@ -148,7 +148,7 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
                                base::Unretained(this));
   }
 
-  surface_factory_->SubmitCompositorFrame(delegated_local_frame_id_,
+  surface_factory_->SubmitCompositorFrame(delegated_local_surface_id_,
                                           std::move(frame), draw_callback);
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_) {
@@ -174,7 +174,7 @@ void TestCompositorFrameSink::DidDrawCallback() {
 
 void TestCompositorFrameSink::ForceReclaimResources() {
   if (capabilities_.can_force_reclaim_resources &&
-      delegated_local_frame_id_.is_valid()) {
+      delegated_local_surface_id_.is_valid()) {
     surface_factory_->ClearSurface();
   }
 }

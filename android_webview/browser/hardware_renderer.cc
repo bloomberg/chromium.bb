@@ -178,7 +178,7 @@ void HardwareRenderer::DestroySurface() {
                                           cc::SurfaceFactory::DrawCallback());
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
   surface_factory_->EvictSurface();
-  child_id_ = cc::LocalFrameId();
+  child_id_ = cc::LocalSurfaceId();
 }
 
 void HardwareRenderer::ReturnResources(

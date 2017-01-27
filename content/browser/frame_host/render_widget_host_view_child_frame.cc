@@ -148,7 +148,7 @@ bool RenderWidgetHostViewChildFrame::HasFocus() const {
 }
 
 bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
-  return local_frame_id_.is_valid();
+  return local_surface_id_.is_valid();
 }
 
 void RenderWidgetHostViewChildFrame::Show() {
@@ -398,10 +398,10 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
     current_surface_scale_factor_ = frame.metadata.device_scale_factor;
   }
 
-  bool allocated_new_local_frame_id = false;
-  if (!local_frame_id_.is_valid()) {
-    local_frame_id_ = id_allocator_->GenerateId();
-    allocated_new_local_frame_id = true;
+  bool allocated_new_local_surface_id = false;
+  if (!local_surface_id_.is_valid()) {
+    local_surface_id_ = id_allocator_->GenerateId();
+    allocated_new_local_surface_id = true;
   }
 
   cc::SurfaceFactory::DrawCallback ack_callback =
@@ -410,9 +410,9 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK_LT(ack_pending_count_, 1000U);
-  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
+  surface_factory_->SubmitCompositorFrame(local_surface_id_, std::move(frame),
                                           ack_callback);
-  if (allocated_new_local_frame_id)
+  if (allocated_new_local_surface_id)
     SendSurfaceInfoToEmbedder();
   ProcessFrameSwappedCallbacks();
 }
@@ -421,7 +421,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   cc::SurfaceSequence sequence =
       cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
   cc::SurfaceManager* manager = GetSurfaceManager();
-  cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
+  cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   // The renderer process will satisfy this dependency when it creates a
   // SurfaceLayer.
   manager->GetSurfaceForId(surface_id)->AddDestructionDependency(sequence);
@@ -538,11 +538,11 @@ void RenderWidgetHostViewChildFrame::ProcessGestureEvent(
 
 gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
     const gfx::Point& point) {
-  if (!frame_connector_ || !local_frame_id_.is_valid())
+  if (!frame_connector_ || !local_surface_id_.is_valid())
     return point;
 
   return frame_connector_->TransformPointToRootCoordSpace(
-      point, cc::SurfaceId(frame_sink_id_, local_frame_id_));
+      point, cc::SurfaceId(frame_sink_id_, local_surface_id_));
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
@@ -550,11 +550,11 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
     const cc::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
-  if (!frame_connector_ || !local_frame_id_.is_valid())
+  if (!frame_connector_ || !local_surface_id_.is_valid())
     return false;
 
   return frame_connector_->TransformPointToLocalCoordSpace(
-      point, original_surface, cc::SurfaceId(frame_sink_id_, local_frame_id_),
+      point, original_surface, cc::SurfaceId(frame_sink_id_, local_surface_id_),
       transformed_point);
 }
 
@@ -562,7 +562,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
     gfx::Point* transformed_point) {
-  if (!frame_connector_ || !local_frame_id_.is_valid())
+  if (!frame_connector_ || !local_surface_id_.is_valid())
     return false;
 
   if (target_view == this) {
@@ -571,7 +571,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
   }
 
   return frame_connector_->TransformPointToCoordSpaceForView(
-      point, target_view, cc::SurfaceId(frame_sink_id_, local_frame_id_),
+      point, target_view, cc::SurfaceId(frame_sink_id_, local_surface_id_),
       transformed_point);
 }
 
@@ -751,7 +751,7 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
 
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
   surface_factory_->EvictSurface();
-  local_frame_id_ = cc::LocalFrameId();
+  local_surface_id_ = cc::LocalSurfaceId();
 }
 
 bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
@@ -759,7 +759,7 @@ bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
 }
 
 cc::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
-  return cc::SurfaceId(frame_sink_id_, local_frame_id_);
+  return cc::SurfaceId(frame_sink_id_, local_surface_id_);
 };
 
 }  // namespace content

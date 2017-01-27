@@ -56,7 +56,7 @@ class WindowCompositorFrameSink
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   gfx::Size last_submitted_frame_size_;
-  cc::LocalFrameId local_frame_id_;
+  cc::LocalSurfaceId local_surface_id_;
   cc::SurfaceIdAllocator id_allocator_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info_;

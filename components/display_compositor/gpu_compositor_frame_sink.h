@@ -45,9 +45,9 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   // cc::mojom::MojoCompositorFrameSink:
   void EvictFrame() override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
-  void Require(const cc::LocalFrameId& local_frame_id,
+  void Require(const cc::LocalSurfaceId& local_surface_id,
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 

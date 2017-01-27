@@ -59,7 +59,7 @@ class CC_SURFACES_EXPORT SurfaceFactory {
   // The frame can contain references to any surface, regardless of which
   // factory owns it. The callback is called the first time this frame is used
   // to draw, or if the frame is discarded.
-  void SubmitCompositorFrame(const LocalFrameId& local_frame_id,
+  void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame,
                              const DrawCallback& callback);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> copy_request);
@@ -68,7 +68,7 @@ class CC_SURFACES_EXPORT SurfaceFactory {
   // will be released and Surface::HasFrame will return false.
   void ClearSurface();
 
-  void WillDrawSurface(const LocalFrameId& id, const gfx::Rect& damage_rect);
+  void WillDrawSurface(const LocalSurfaceId& id, const gfx::Rect& damage_rect);
 
   SurfaceFactoryClient* client() { return client_; }
 
@@ -89,7 +89,7 @@ class CC_SURFACES_EXPORT SurfaceFactory {
   void DidDestroySurfaceManager() { manager_ = nullptr; }
 
  private:
-  std::unique_ptr<Surface> Create(const LocalFrameId& local_frame_id);
+  std::unique_ptr<Surface> Create(const LocalSurfaceId& local_surface_id);
   void Destroy(std::unique_ptr<Surface> surface);
 
   const FrameSinkId frame_sink_id_;

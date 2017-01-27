@@ -16,8 +16,8 @@ SurfaceIdAllocator::SurfaceIdAllocator() : next_id_(1u) {}
 SurfaceIdAllocator::~SurfaceIdAllocator() {
 }
 
-LocalFrameId SurfaceIdAllocator::GenerateId() {
-  LocalFrameId id(next_id_, base::UnguessableToken::Create());
+LocalSurfaceId SurfaceIdAllocator::GenerateId() {
+  LocalSurfaceId id(next_id_, base::UnguessableToken::Create());
   next_id_++;
   return id;
 }

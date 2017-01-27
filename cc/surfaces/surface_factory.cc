@@ -51,19 +51,20 @@ void SurfaceFactory::Reset() {
   holder_.Reset();
 }
 
-void SurfaceFactory::SubmitCompositorFrame(const LocalFrameId& local_frame_id,
-                                           CompositorFrame frame,
-                                           const DrawCallback& callback) {
+void SurfaceFactory::SubmitCompositorFrame(
+    const LocalSurfaceId& local_surface_id,
+    CompositorFrame frame,
+    const DrawCallback& callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
-  DCHECK(local_frame_id.is_valid());
+  DCHECK(local_surface_id.is_valid());
   std::unique_ptr<Surface> surface;
   bool create_new_surface =
       (!current_surface_ ||
-       local_frame_id != current_surface_->surface_id().local_frame_id());
+       local_surface_id != current_surface_->surface_id().local_surface_id());
   if (!create_new_surface) {
     surface = std::move(current_surface_);
   } else {
-    surface = Create(local_frame_id);
+    surface = Create(local_surface_id);
     gfx::Size frame_size;
     // CompositorFrames may not be populated with a RenderPass in unit tests.
     if (!frame.render_pass_list.empty())
@@ -72,7 +73,7 @@ void SurfaceFactory::SubmitCompositorFrame(const LocalFrameId& local_frame_id,
         surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
   }
   surface->QueueFrame(std::move(frame), callback);
-  if (!manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_frame_id))) {
+  if (!manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_surface_id))) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
     surface->RunDrawCallbacks();
   }
@@ -101,7 +102,7 @@ void SurfaceFactory::ClearSurface() {
   manager_->SurfaceModified(current_surface_->surface_id());
 }
 
-void SurfaceFactory::WillDrawSurface(const LocalFrameId& id,
+void SurfaceFactory::WillDrawSurface(const LocalSurfaceId& id,
                                      const gfx::Rect& damage_rect) {
   client_->WillDrawSurface(id, damage_rect);
 }
@@ -120,9 +121,9 @@ void SurfaceFactory::UnrefResources(const ReturnedResourceArray& resources) {
 }
 
 std::unique_ptr<Surface> SurfaceFactory::Create(
-    const LocalFrameId& local_frame_id) {
+    const LocalSurfaceId& local_surface_id) {
   auto surface = base::MakeUnique<Surface>(
-      SurfaceId(frame_sink_id_, local_frame_id), weak_factory_.GetWeakPtr());
+      SurfaceId(frame_sink_id_, local_surface_id), weak_factory_.GetWeakPtr());
   manager_->RegisterSurface(surface.get());
   return surface;
 }

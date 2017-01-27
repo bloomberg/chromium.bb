@@ -12,16 +12,16 @@ namespace cc {
 
 ReferencedSurfaceTracker::ReferencedSurfaceTracker(
     const FrameSinkId& frame_sink_id)
-    : current_surface_id_(frame_sink_id, LocalFrameId()) {
+    : current_surface_id_(frame_sink_id, LocalSurfaceId()) {
   DCHECK(current_surface_id_.frame_sink_id().is_valid());
 }
 
 ReferencedSurfaceTracker::~ReferencedSurfaceTracker() {}
 
 void ReferencedSurfaceTracker::UpdateReferences(
-    const LocalFrameId& local_frame_id,
+    const LocalSurfaceId& local_surface_id,
     const std::vector<SurfaceId>& referenced_surfaces) {
-  DCHECK(local_frame_id.is_valid());
+  DCHECK(local_surface_id.is_valid());
 
   // Clear references to add/remove from the last frame.
   references_to_remove_.clear();
@@ -30,9 +30,9 @@ void ReferencedSurfaceTracker::UpdateReferences(
   // If |current_surface_id_| is changing then update |current_surface_id_|.
   // Also clear |referenced_surfaces_| because we haven't added any references
   // from the new SurfaceId yet.
-  if (current_surface_id_.local_frame_id() != local_frame_id) {
+  if (current_surface_id_.local_surface_id() != local_surface_id) {
     current_surface_id_ =
-        SurfaceId(current_surface_id_.frame_sink_id(), local_frame_id);
+        SurfaceId(current_surface_id_.frame_sink_id(), local_surface_id);
     referenced_surfaces_.clear();
   }
 

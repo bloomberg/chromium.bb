@@ -59,22 +59,22 @@ void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
-    const LocalFrameId& local_frame_id,
+    const LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {
   ++ack_pending_count_;
   surface_factory_.SubmitCompositorFrame(
-      local_frame_id, std::move(frame),
+      local_surface_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()));
   if (display_) {
-    display_->SetLocalFrameId(local_frame_id,
-                              frame.metadata.device_scale_factor);
+    display_->SetLocalSurfaceId(local_surface_id,
+                                frame.metadata.device_scale_factor);
   }
 }
 
-void CompositorFrameSinkSupport::Require(const LocalFrameId& local_frame_id,
+void CompositorFrameSinkSupport::Require(const LocalSurfaceId& local_surface_id,
                                          const SurfaceSequence& sequence) {
-  surface_manager_->RequireSequence(SurfaceId(frame_sink_id_, local_frame_id),
+  surface_manager_->RequireSequence(SurfaceId(frame_sink_id_, local_surface_id),
                                     sequence);
 }
 
@@ -145,7 +145,7 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
 }
 
 void CompositorFrameSinkSupport::WillDrawSurface(
-    const LocalFrameId& local_frame_id,
+    const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {
   if (client_)
     client_->WillDrawSurface();

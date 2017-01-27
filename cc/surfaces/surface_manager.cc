@@ -37,7 +37,7 @@ SurfaceManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {
 SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
     : lifetime_type_(lifetime_type),
       root_surface_id_(FrameSinkId(0u, 0u),
-                       LocalFrameId(1u, base::UnguessableToken::Create())),
+                       LocalSurfaceId(1u, base::UnguessableToken::Create())),
       weak_factory_(this) {
   thread_checker_.DetachFromThread();
   reference_factory_ =
@@ -51,9 +51,9 @@ SurfaceManager::~SurfaceManager() {
     // Remove all temporary references on shutdown.
     for (const auto& map_entry : temp_references_) {
       const FrameSinkId& frame_sink_id = map_entry.first;
-      for (const auto& local_frame_id : map_entry.second) {
+      for (const auto& local_surface_id : map_entry.second) {
         RemoveSurfaceReferenceImpl(GetRootSurfaceId(),
-                                   SurfaceId(frame_sink_id, local_frame_id));
+                                   SurfaceId(frame_sink_id, local_surface_id));
       }
     }
     GarbageCollectSurfaces();
@@ -157,7 +157,8 @@ void SurfaceManager::AddSurfaceReference(const SurfaceId& parent_id,
   // remove because a real reference is being added to it. To find out whether
   // or not a temporary reference exists, we need to first look up the
   // FrameSinkId of |child_id| in |temp_references_|, which returns a vector of
-  // LocalFrameIds, and then search for the LocalFrameId of |child_id| in the
+  // LocalSurfaceIds, and then search for the LocalSurfaceId of |child_id| in
+  // the
   // said vector. If there is no temporary reference, we can immediately add the
   // reference from |parent_id| and return.
   auto refs_iter = temp_references_.find(child_id.frame_sink_id());
@@ -165,9 +166,9 @@ void SurfaceManager::AddSurfaceReference(const SurfaceId& parent_id,
     AddSurfaceReferenceImpl(parent_id, child_id);
     return;
   }
-  std::vector<LocalFrameId>& refs = refs_iter->second;
+  std::vector<LocalSurfaceId>& refs = refs_iter->second;
   auto temp_ref_iter =
-      std::find(refs.begin(), refs.end(), child_id.local_frame_id());
+      std::find(refs.begin(), refs.end(), child_id.local_surface_id());
   if (temp_ref_iter == refs.end()) {
     AddSurfaceReferenceImpl(parent_id, child_id);
     return;
@@ -577,7 +578,7 @@ void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
     // reference is received, is added to prevent this from happening.
     AddSurfaceReferenceImpl(GetRootSurfaceId(), surface_info.id());
     temp_references_[surface_info.id().frame_sink_id()].push_back(
-        surface_info.id().local_frame_id());
+        surface_info.id().local_surface_id());
   }
 
   for (auto& observer : observer_list_)

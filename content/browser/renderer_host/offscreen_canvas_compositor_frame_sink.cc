@@ -38,11 +38,11 @@ void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
 }
 
 void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
-    const cc::LocalFrameId& local_frame_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   // TODO(samans): This will need to do something similar to
   // GpuCompositorFrameSink.
-  support_.SubmitCompositorFrame(local_frame_id, std::move(frame));
+  support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
 void OffscreenCanvasCompositorFrameSink::EvictFrame() {
@@ -50,9 +50,9 @@ void OffscreenCanvasCompositorFrameSink::EvictFrame() {
 }
 
 void OffscreenCanvasCompositorFrameSink::Require(
-    const cc::LocalFrameId& local_frame_id,
+    const cc::LocalSurfaceId& local_surface_id,
     const cc::SurfaceSequence& sequence) {
-  support_.Require(local_frame_id, sequence);
+  support_.Require(local_surface_id, sequence);
 }
 
 void OffscreenCanvasCompositorFrameSink::Satisfy(

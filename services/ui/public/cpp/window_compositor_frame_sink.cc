@@ -71,10 +71,10 @@ void WindowCompositorFrameSink::SubmitCompositorFrame(
   gfx::Size frame_size = last_submitted_frame_size_;
   if (!frame.render_pass_list.empty())
     frame_size = frame.render_pass_list[0]->output_rect.size();
-  if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_)
-    local_frame_id_ = id_allocator_.GenerateId();
+  if (!local_surface_id_.is_valid() || frame_size != last_submitted_frame_size_)
+    local_surface_id_ = id_allocator_.GenerateId();
 
-  compositor_frame_sink_->SubmitCompositorFrame(local_frame_id_,
+  compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
                                                 std::move(frame));
 
   last_submitted_frame_size_ = frame_size;

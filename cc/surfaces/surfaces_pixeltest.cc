@@ -84,9 +84,9 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   CompositorFrame root_frame;
   root_frame.render_pass_list.push_back(std::move(pass));
 
-  LocalFrameId root_local_frame_id = allocator_.GenerateId();
-  SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_frame_id);
-  factory_.SubmitCompositorFrame(root_local_frame_id, std::move(root_frame),
+  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_surface_id);
+  factory_.SubmitCompositorFrame(root_local_surface_id, std::move(root_frame),
                                  SurfaceFactory::DrawCallback());
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
@@ -104,11 +104,11 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
 TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   gfx::Size child_size(200, 100);
   SurfaceFactory child_factory(kArbitraryChildFrameSinkId, &manager_, &client_);
-  LocalFrameId child_local_frame_id = allocator_.GenerateId();
+  LocalSurfaceId child_local_surface_id = allocator_.GenerateId();
   SurfaceId child_surface_id(child_factory.frame_sink_id(),
-                             child_local_frame_id);
-  LocalFrameId root_local_frame_id = allocator_.GenerateId();
-  SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_frame_id);
+                             child_local_surface_id);
+  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_surface_id);
 
   {
     gfx::Rect rect(device_viewport_size_);
@@ -138,7 +138,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     CompositorFrame root_frame;
     root_frame.render_pass_list.push_back(std::move(pass));
 
-    factory_.SubmitCompositorFrame(root_local_frame_id, std::move(root_frame),
+    factory_.SubmitCompositorFrame(root_local_surface_id, std::move(root_frame),
                                    SurfaceFactory::DrawCallback());
   }
 
@@ -163,7 +163,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     CompositorFrame child_frame;
     child_frame.render_pass_list.push_back(std::move(pass));
 
-    child_factory.SubmitCompositorFrame(child_local_frame_id,
+    child_factory.SubmitCompositorFrame(child_local_surface_id,
                                         std::move(child_frame),
                                         SurfaceFactory::DrawCallback());
   }
@@ -194,12 +194,12 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   //                  bottom_green_quad (100x100 @ 0x100)
   SurfaceFactory left_factory(kArbitraryLeftFrameSinkId, &manager_, &client_);
   SurfaceFactory right_factory(kArbitraryRightFrameSinkId, &manager_, &client_);
-  LocalFrameId left_child_local_id = allocator_.GenerateId();
+  LocalSurfaceId left_child_local_id = allocator_.GenerateId();
   SurfaceId left_child_id(left_factory.frame_sink_id(), left_child_local_id);
-  LocalFrameId right_child_local_id = allocator_.GenerateId();
+  LocalSurfaceId right_child_local_id = allocator_.GenerateId();
   SurfaceId right_child_id(right_factory.frame_sink_id(), right_child_local_id);
-  LocalFrameId root_local_frame_id = allocator_.GenerateId();
-  SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_frame_id);
+  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_surface_id);
 
   {
     gfx::Rect rect(device_viewport_size_);
@@ -232,7 +232,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     CompositorFrame root_frame;
     root_frame.render_pass_list.push_back(std::move(pass));
 
-    factory_.SubmitCompositorFrame(root_local_frame_id, std::move(root_frame),
+    factory_.SubmitCompositorFrame(root_local_surface_id, std::move(root_frame),
                                    SurfaceFactory::DrawCallback());
   }
 

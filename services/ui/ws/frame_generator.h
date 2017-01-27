@@ -71,7 +71,7 @@ class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
   float device_scale_factor_ = 1.f;
 
   gfx::Size last_submitted_frame_size_;
-  cc::LocalFrameId local_frame_id_;
+  cc::LocalSurfaceId local_surface_id_;
   cc::SurfaceIdAllocator id_allocator_;
   cc::mojom::MojoCompositorFrameSinkAssociatedPtr compositor_frame_sink_;
   cc::mojom::DisplayPrivateAssociatedPtr display_private_;
