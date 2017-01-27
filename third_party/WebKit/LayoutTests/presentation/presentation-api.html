@@ -22,7 +22,7 @@ test(function() {
 }, "Test that navigator.presentation is not an EventTarget.");
 
 test(function() {
-  const request = new PresentationRequest('http://foo.html');
+  var request = new PresentationRequest('http://foo.html');
   assert_equals(typeof(request.start), "function");
   assert_equals(typeof(request.reconnect), "function");
   assert_equals(typeof(request.getAvailability), "function");
@@ -32,8 +32,7 @@ test(function() {
 }, "Test PresentationRequest API types for a single URL.");
 
 test(function() {
-  const request = new PresentationRequest(
-      ["http://example.com", "cast://google.com/app_id=deadbeef"]);
+  var request = new PresentationRequest(["http://example.com", "cast://google.com/app_id=deadbeef"]);
   assert_equals(typeof(request.start), "function");
   assert_equals(typeof(request.reconnect), "function");
   assert_equals(typeof(request.getAvailability), "function");

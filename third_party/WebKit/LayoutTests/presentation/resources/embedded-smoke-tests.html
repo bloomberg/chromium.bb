@@ -3,8 +3,8 @@
 <body>
 <script>
 
-const FAKE_SESSION_ID = 'fake';
-let gCurrentConnection = null;
+var FAKE_SESSION_ID = 'fake';
+var gCurrentConnection = null;
 
 // Returns the test runner used to run this test..
 // Current possible values are 'blink' and 'manual'.
@@ -24,7 +24,7 @@ function getUserGesture() {
         setTimeout(resolve);
         break;
       case 'manual':
-        const button = document.createElement('button');
+        var button = document.createElement('button');
         button.textContent = 'click me';
         button.onclick = function() {
           document.body.removeChild(button);
@@ -38,18 +38,18 @@ function getUserGesture() {
   });
 }
 
-const results = [];
+var results = [];
 
 // start()
 getUserGesture().then(function() {
   if (getTestRunner() == 'manual') {
-    const description = document.createElement('div');
+    var description = document.createElement('div');
     description.id = 'description';
     description.textContent = 'Pick a device if asked for it';
     document.body.appendChild(description);
   }
 
-  const p = new PresentationRequest('https://example.com');
+  var p = new PresentationRequest('https://example.com');
   return p.start().then(function(connection) {
     gCurrentConnection = connection;
     results.push({ test: 'start', status: 'success' })
@@ -62,10 +62,8 @@ getUserGesture().then(function() {
 }).then(function() {
   // reconnect()
   return getUserGesture().then(function() {
-    const p = new PresentationRequest('https://example.com');
-    return p.reconnect(gCurrentConnection ?
-                       gCurrentConnection.id :
-                       FAKE_SESSION_ID).then(function() {
+    var p = new PresentationRequest('https://example.com');
+    return p.reconnect(gCurrentConnection ? gCurrentConnection.id : FAKE_SESSION_ID).then(function() {
       results.push({ test: 'reconnect', status: 'success' })
     }, function(e) {
       results.push({ test: 'reconnect', status: 'failure', name: e.name });
@@ -74,7 +72,7 @@ getUserGesture().then(function() {
 }).then(function() {
   // getAvailability()
   return getUserGesture().then(function() {
-    const p = new PresentationRequest('https://example.com');
+    var p = new PresentationRequest('https://example.com');
     return p.getAvailability().then(function() {
       results.push({ test: 'getAvailability', status: 'success' })
     }, function(e) {

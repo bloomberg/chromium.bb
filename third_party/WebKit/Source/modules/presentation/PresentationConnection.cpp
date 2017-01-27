@@ -426,8 +426,8 @@ void PresentationConnection::didChangeState(
 
   m_state = state;
   switch (m_state) {
-    // There is no event handler for state changes to Connecting.
     case WebPresentationConnectionState::Connecting:
+      NOTREACHED();
       return;
     case WebPresentationConnectionState::Connected:
       dispatchStateChangeEvent(Event::create(EventTypeNames::connect));

@@ -6,17 +6,16 @@
 <iframe></iframe>
 <script>
 
-const iframe = document.querySelector('iframe');
+var iframe = document.querySelector('iframe');
 
 async_test(t => {
   iframe.onload = t.step_func(() => {
-    const presentation = iframe.contentWindow.navigator.presentation;
+    var presentation = iframe.contentWindow.navigator.presentation;
     if (iframe.src.endsWith('#after-reload')) {
       assert_equals(presentation.defaultRequest, null);
       t.done();
     } else {
-      presentation.defaultRequest =
-          new PresentationRequest("https://example.org");
+      presentation.defaultRequest = new PresentationRequest("https://example.org");
       assert_not_equals(presentation.defaultRequest, null);
 
       iframe.src += '#after-reload';

@@ -10,12 +10,12 @@
 
 async_test(t => {
   presentationServiceMock.then(t.step_func(mockService => {
-    const button = document.querySelector('button');
+    var button = document.querySelector('button');
     // This is receiving the user gesture and runs the callback.
     waitForClick(t.step_func(_ => {
       new PresentationRequest('https://example.com').start().then(
       t.step_func_done(result => {
-        const e = new PresentationConnectionAvailableEvent(
+        var e = new PresentationConnectionAvailableEvent(
             'connectionavailable', { connection: result });
         assert_not_equals(e, null);
         assert_equals(e.connection, result);

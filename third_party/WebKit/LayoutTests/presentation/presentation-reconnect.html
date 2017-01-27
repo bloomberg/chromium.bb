@@ -3,6 +3,7 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/gc.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
 <script src="resources/presentation-service-mock.js"></script>
 <button>click me</button>
@@ -10,9 +11,9 @@
 
 async_test(t => {
   presentationServiceMock.then(mockService => {
-    const button = document.querySelector('button');
-    let connection = null;
-    const request = new PresentationRequest('https://example.com');
+    var button = document.querySelector('button');
+    var connection = null;
+    var request = new PresentationRequest('https://example.com');
 
     waitForClick(_ => {
       request.start().then(conn => {
