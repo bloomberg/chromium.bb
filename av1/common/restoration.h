@@ -86,7 +86,7 @@ extern "C" {
 // Central values for the taps
 #define WIENER_FILT_TAP0_MIDV (3)
 #define WIENER_FILT_TAP1_MIDV (-7)
-#define WIENER_FILT_TAP2_MIDV (16)
+#define WIENER_FILT_TAP2_MIDV (15)
 
 #define WIENER_FILT_TAP0_BITS 4
 #define WIENER_FILT_TAP1_BITS 5
