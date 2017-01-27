@@ -112,7 +112,8 @@ class HidConnectionIoFunction : public UIThreadExtensionFunction {
  protected:
   ~HidConnectionIoFunction() override;
 
-  virtual bool ValidateParameters() = 0;
+  // Returns true if params were successfully read from |args_|.
+  virtual bool ReadParameters() = 0;
   virtual void StartWork(device::HidConnection* connection) = 0;
 
   void set_connection_id(int connection_id) { connection_id_ = connection_id; }
@@ -134,7 +135,7 @@ class HidReceiveFunction : public HidConnectionIoFunction {
   ~HidReceiveFunction() override;
 
   // HidConnectionIoFunction:
-  bool ValidateParameters() override;
+  bool ReadParameters() override;
   void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success,
@@ -156,7 +157,7 @@ class HidSendFunction : public HidConnectionIoFunction {
   ~HidSendFunction() override;
 
   // HidConnectionIoFunction:
-  bool ValidateParameters() override;
+  bool ReadParameters() override;
   void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success);
@@ -177,7 +178,7 @@ class HidReceiveFeatureReportFunction : public HidConnectionIoFunction {
   ~HidReceiveFeatureReportFunction() override;
 
   // HidConnectionIoFunction:
-  bool ValidateParameters() override;
+  bool ReadParameters() override;
   void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success,
@@ -199,7 +200,7 @@ class HidSendFeatureReportFunction : public HidConnectionIoFunction {
   ~HidSendFeatureReportFunction() override;
 
   // HidConnectionIoFunction:
-  bool ValidateParameters() override;
+  bool ReadParameters() override;
   void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success);
