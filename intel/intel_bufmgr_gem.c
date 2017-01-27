@@ -2816,6 +2816,25 @@ drm_intel_gem_bo_disable_implicit_sync(drm_intel_bo *bo)
 }
 
 /**
+ * Enables implicit synchronisation before executing the bo
+ *
+ * This is the default behaviour of the kernel, to wait upon prior writes
+ * completing on the object before rendering with it, or to wait for prior
+ * reads to complete before writing into the object.
+ * drm_intel_gem_bo_disable_implicit_sync() can stop this behaviour, telling
+ * the kernel never to insert a stall before using the object. Then this
+ * function can be used to restore the implicit sync before subsequent
+ * rendering.
+ */
+void
+drm_intel_gem_bo_enable_implicit_sync(drm_intel_bo *bo)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	bo_gem->kflags &= ~EXEC_OBJECT_ASYNC;
+}
+
+/**
  * Query whether the kernel supports disabling of its implicit synchronisation
  * before execbuf. See drm_intel_gem_bo_disable_implicit_sync()
  */
