@@ -31,7 +31,7 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
     return;
   }
   v8::Local<v8::Value> booleanMemberValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -54,7 +54,7 @@ v8::Local<v8::Value> TestPermissiveDictionary::toV8Impl(v8::Local<v8::Object> cr
 
 bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   if (impl.hasBooleanMember()) {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
       return false;
   }
 

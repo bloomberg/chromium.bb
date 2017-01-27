@@ -46,7 +46,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% for member in members %}
   {% filter runtime_enabled(member.runtime_enabled_feature_name) %}
   v8::Local<v8::Value> {{member.name}}Value;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}")).ToLocal(&{{member.name}}Value)) {
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}")).ToLocal(&{{member.name}}Value)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -107,15 +107,15 @@ bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
     {% if member.is_object %}
     DCHECK(impl.{{member.getter_name}}().isObject());
     {% endif %}
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}})))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}})))
       return false;
   {% if member.v8_default_value %}
   } else {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.v8_default_value}})))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}"), {{member.v8_default_value}})))
       return false;
   {% elif member.is_nullable %}
   } else {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), v8::Null(isolate))))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}"), v8::Null(isolate))))
       return false;
   {% elif member.is_required %}
   } else {

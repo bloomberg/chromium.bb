@@ -36,7 +36,7 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     return;
   }
   v8::Local<v8::Value> stringMemberValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -62,7 +62,7 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
     return false;
 
   if (impl.hasStringMember()) {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
       return false;
   }
 
