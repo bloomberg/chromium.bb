@@ -1236,6 +1236,7 @@ export abs_builddir
 
 noinst_LTLIBRARIES +=			\
 	weston-test.la			\
+	weston-test-desktop-shell.la	\
 	$(module_tests)			\
 	libtest-runner.la		\
 	libtest-client.la
@@ -1277,6 +1278,13 @@ weston_test_la_SOURCES = 			\
 nodist_weston_test_la_SOURCES =			\
 	protocol/weston-test-protocol.c	\
 	protocol/weston-test-server-protocol.h
+
+weston_test_desktop_shell_la_LIBADD = libshared.la libweston-desktop-@LIBWESTON_MAJOR@.la $(COMPOSITOR_LIBS)
+weston_test_desktop_shell_la_LDFLAGS = $(test_module_ldflags)
+weston_test_desktop_shell_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
+weston_test_desktop_shell_la_SOURCES = 			\
+	tests/weston-test-desktop-shell.c		\
+	shared/helpers.h
 
 if ENABLE_EGL
 weston_test_la_CFLAGS += $(EGL_TESTS_CFLAGS)
