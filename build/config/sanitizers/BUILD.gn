@@ -200,7 +200,7 @@ config("default_sanitizer_ldflags") {
     ldflags = []
     if (is_asan) {
       ldflags += [ "-fsanitize=address" ]
-      if (!is_mac && !is_chromeos) {
+      if (!is_mac) {
         ldflags += [ "-fsanitize-address-use-after-scope" ]
       }
     }
@@ -312,7 +312,7 @@ config("asan_flags") {
   cflags = []
   if (is_asan) {
     cflags += [ "-fsanitize=address" ]
-    if (!is_mac && !is_chromeos && !is_win) {
+    if (!is_mac && !is_win) {
       cflags += [ "-fsanitize-address-use-after-scope" ]
     }
     if (!asan_globals) {
