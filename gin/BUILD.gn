@@ -204,6 +204,7 @@ test("gin_unittests") {
     "test/run_all_unittests.cc",
     "test/run_js_tests.cc",
     "v8_isolate_memory_dump_provider_unittest.cc",
+    "v8_platform_unittest.cc",
     "wrappable_unittest.cc",
   ]
 
