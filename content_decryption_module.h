@@ -110,8 +110,11 @@ enum Error {
   kOutputError = 101
 };
 
-// Time is defined as the number of seconds since the
-// Epoch (00:00:00 UTC, January 1, 1970).
+// Time is defined as the number of seconds since the Epoch
+// (00:00:00 UTC, January 1, 1970), not including any added leap second.
+// Also see Time definition in spec: https://w3c.github.io/encrypted-media/#time
+// Note that Time is defined in millisecond accuracy in the spec but in second
+// accuracy here.
 typedef double Time;
 
 // An input buffer can be split into several continuous subsamples.
@@ -680,7 +683,7 @@ class CDM_CLASS_API Host_8 {
   // from now with |context|.
   virtual void SetTimer(int64_t delay_ms, void* context) = 0;
 
-  // Returns the current wall time in seconds.
+  // Returns the current wall time.
   virtual Time GetCurrentWallTime() = 0;
 
   // Called by the CDM when a session is created or loaded and the value for the
@@ -738,8 +741,10 @@ class CDM_CLASS_API Host_8 {
   // session |session_id|. This can happen as the result of an Update() call
   // or some other event. If this happens as a result of a call to Update(),
   // it must be called before resolving the Update() promise. |new_expiry_time|
-  // can be 0 to represent "undefined". Size parameter should not include
-  // null termination.
+  // represents the time after which the key(s) in the session will no longer
+  // be usable for decryption. It can be 0 if no such time exists or if the
+  // license explicitly never expires. Size parameter should not include null
+  // termination.
   virtual void OnExpirationChange(const char* session_id,
                                   uint32_t session_id_size,
                                   Time new_expiry_time) = 0;
