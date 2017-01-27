@@ -20,8 +20,8 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
-#include "ui/views/resources/vector_icons/vector_icons.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/vector_icons.h"
 
 namespace views {
 

@@ -43,7 +43,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/resources/vector_icons/vector_icons.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
 
 namespace payments {

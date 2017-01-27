@@ -12,6 +12,54 @@ config("flags") {
   defines = [ "TOOLKIT_VIEWS=1" ]
 }
 
+action("aggregate_vector_icons") {
+  visibility = [ ":*" ]
+
+  script = "//ui/gfx/vector_icons/aggregate_vector_icons.py"
+
+  icons = [
+    "vector_icons/checkbox_active.icon",
+    "vector_icons/checkbox_normal.icon",
+    "vector_icons/menu_check.1x.icon",
+    "vector_icons/menu_check.icon",
+    "vector_icons/menu_radio_empty.icon",
+    "vector_icons/menu_radio_selected.icon",
+    "vector_icons/radio_button_active.icon",
+    "vector_icons/radio_button_normal.icon",
+    "vector_icons/submenu_arrow.1x.icon",
+    "vector_icons/submenu_arrow.icon",
+  ]
+
+  if (is_mac) {
+    icons += [
+      "vector_icons/combobox_arrow_mac_enabled.icon",
+      "vector_icons/combobox_arrow_mac_disabled.icon",
+    ]
+  }
+
+  output_cc = "$target_gen_dir/vector_icons.cc"
+  output_h = "$target_gen_dir/vector_icons.h"
+
+  inputs = icons
+  inputs += [
+    "vector_icons/vector_icons.cc.template",
+    "vector_icons/vector_icons.h.template",
+  ]
+  outputs = [
+    output_cc,
+    output_h,
+  ]
+
+  response_file_contents = rebase_path(icons, root_build_dir)
+
+  args = [
+    "--working_directory=" + rebase_path("./vector_icons"),
+    "--file_list={{response_file_name}}",
+    "--output_cc=" + rebase_path(output_cc, root_build_dir),
+    "--output_h=" + rebase_path(output_h, root_build_dir),
+  ]
+}
+
 component("views") {
   all_dependent_configs = [ ":flags" ]
   sources = [
@@ -386,6 +434,8 @@ component("views") {
     "word_lookup_client.h",
   ]
 
+  sources += get_target_outputs(":aggregate_vector_icons")
+
   configs += [
     "//build/config:precompiled_headers",
 
@@ -396,6 +446,7 @@ component("views") {
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
   deps = [
+    ":aggregate_vector_icons",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//services/ui/public/interfaces",
@@ -408,7 +459,6 @@ component("views") {
     "//ui/resources",
     "//ui/strings",
     "//ui/views/resources",
-    "//ui/views/resources/vector_icons",
     "//url",
   ]
 

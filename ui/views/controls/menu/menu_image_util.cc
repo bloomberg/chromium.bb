@@ -8,7 +8,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/resources/vector_icons/vector_icons.h"
+#include "ui/views/vector_icons.h"
 
 namespace views {
 
