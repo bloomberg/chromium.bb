@@ -6,6 +6,7 @@
 
 #include "apps/ui/views/app_window_frame_view.h"
 #include "ash/common/ash_constants.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm/panels/panel_frame_view.h"
@@ -128,9 +129,14 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
     const AppWindow::CreateParams& create_params) {
   ChromeNativeAppWindowViewsAura::InitializeWindow(app_window, create_params);
   aura::Window* window = widget()->GetNativeWindow();
-  // Restore docked state on ash desktop.
-  if (create_params.state == ui::SHOW_STATE_DOCKED)
+
+  // TODO(afakhry): Remove Docked Windows in M58.
+  // Restore docked state on ash desktop if the docked windows flag is enabled.
+  if (create_params.state == ui::SHOW_STATE_DOCKED &&
+      ash::switches::DockedWindowsEnabled()) {
     window->SetProperty(aura::client::kShowStateKey, create_params.state);
+  }
+
   window->SetProperty(aura::client::kAppIdKey,
                       new std::string(app_window->extension_id()));
 
@@ -224,10 +230,14 @@ ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
       }
       return ui::SHOW_STATE_FULLSCREEN;
     }
-    if (widget()->GetNativeWindow()->GetProperty(aura::client::kShowStateKey) ==
-            ui::SHOW_STATE_DOCKED ||
-        widget()->GetNativeWindow()->GetProperty(
-            aura::client::kPreMinimizedShowStateKey) == ui::SHOW_STATE_DOCKED) {
+
+    // TODO(afakhry): Remove Docked Windows in M58.
+    if (ash::switches::DockedWindowsEnabled() &&
+        (widget()->GetNativeWindow()->GetProperty(
+             aura::client::kShowStateKey) == ui::SHOW_STATE_DOCKED ||
+         widget()->GetNativeWindow()->GetProperty(
+             aura::client::kPreMinimizedShowStateKey) ==
+             ui::SHOW_STATE_DOCKED)) {
       return ui::SHOW_STATE_DOCKED;
     }
   }

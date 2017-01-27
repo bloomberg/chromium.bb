@@ -23,6 +23,7 @@
 #include "ui/display/screen.h"
 
 #if defined(USE_ASH)
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_positioner.h"  // nogncheck
 #include "ash/shell.h"  // nogncheck
 #include "chrome/browser/ui/ash/ash_util.h"  // nogncheck
@@ -80,11 +81,14 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       if (*show_state == ui::SHOW_STATE_DEFAULT && maximized)
         *show_state = ui::SHOW_STATE_MAXIMIZED;
 #if defined(USE_ASH)
-      bool docked = false;
-      wp_pref->GetBoolean("docked", &docked);
-      if (*show_state == ui::SHOW_STATE_DEFAULT && docked &&
-          !browser_->is_type_tabbed()) {
-        *show_state = ui::SHOW_STATE_DOCKED;
+      // TODO(afakhry): Remove Docked Windows in M58.
+      if (ash::switches::DockedWindowsEnabled()) {
+        bool docked = false;
+        wp_pref->GetBoolean("docked", &docked);
+        if (*show_state == ui::SHOW_STATE_DEFAULT && docked &&
+            !browser_->is_type_tabbed()) {
+          *show_state = ui::SHOW_STATE_DOCKED;
+        }
       }
 #endif  // USE_ASH
     }

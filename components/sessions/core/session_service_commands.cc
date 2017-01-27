@@ -113,7 +113,7 @@ enum PersistedWindowShowState {
   // SHOW_STATE_INACTIVE (4) never persisted.
   PERSISTED_SHOW_STATE_FULLSCREEN = 5,
   PERSISTED_SHOW_STATE_DETACHED_DEPRECATED = 6,
-  PERSISTED_SHOW_STATE_DOCKED = 7,
+  PERSISTED_SHOW_STATE_DOCKED_DEPRECATED = 7,
   PERSISTED_SHOW_STATE_END = 7
 };
 
@@ -140,8 +140,10 @@ PersistedWindowShowState ShowStateToPersistedShowState(
       return PERSISTED_SHOW_STATE_MAXIMIZED;
     case ui::SHOW_STATE_FULLSCREEN:
       return PERSISTED_SHOW_STATE_FULLSCREEN;
+
+    // TODO(afakhry): Remove Docked Windows in M58.
     case ui::SHOW_STATE_DOCKED:
-      return PERSISTED_SHOW_STATE_DOCKED;
+      return PERSISTED_SHOW_STATE_DOCKED_DEPRECATED;
 
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_INACTIVE:
@@ -165,7 +167,7 @@ ui::WindowShowState PersistedShowStateToShowState(int state) {
       return ui::SHOW_STATE_MAXIMIZED;
     case PERSISTED_SHOW_STATE_FULLSCREEN:
       return ui::SHOW_STATE_FULLSCREEN;
-    case PERSISTED_SHOW_STATE_DOCKED:
+    case PERSISTED_SHOW_STATE_DOCKED_DEPRECATED:
       return ui::SHOW_STATE_DOCKED;
     case PERSISTED_SHOW_STATE_DETACHED_DEPRECATED:
       return ui::SHOW_STATE_NORMAL;

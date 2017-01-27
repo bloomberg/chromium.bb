@@ -27,6 +27,8 @@ ui::WindowShowState ToWindowShowState(WindowStateType type) {
     case WINDOW_STATE_TYPE_LEFT_SNAPPED:
     case WINDOW_STATE_TYPE_AUTO_POSITIONED:
       return ui::SHOW_STATE_NORMAL;
+
+    // TODO(afakhry): Remove Docked Windows in M58.
     case WINDOW_STATE_TYPE_DOCKED:
       return ui::SHOW_STATE_DOCKED;
     case WINDOW_STATE_TYPE_MINIMIZED:

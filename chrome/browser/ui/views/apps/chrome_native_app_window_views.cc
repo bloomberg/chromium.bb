@@ -216,6 +216,7 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
 
   // When a panel is not docked it will be placed at a default origin in the
   // currently active target root window.
+  // TODO(afakhry): Remove Docked Windows in M58.
   bool use_default_bounds = create_params.state != ui::SHOW_STATE_DOCKED;
   // Sanitize initial origin reseting it in case it was not specified.
   using BoundsSpecification = AppWindow::BoundsSpecification;

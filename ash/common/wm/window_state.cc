@@ -33,6 +33,8 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
       return WM_EVENT_FULLSCREEN;
     case ui::SHOW_STATE_INACTIVE:
       return WM_EVENT_SHOW_INACTIVE;
+
+    // TODO(afakhry): Remove Docked Windows in M58.
     case ui::SHOW_STATE_DOCKED:
       return WM_EVENT_DOCK;
     case ui::SHOW_STATE_END:

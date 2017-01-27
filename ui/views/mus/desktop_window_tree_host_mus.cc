@@ -202,6 +202,7 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
 }
 
+// TODO(afakhry): Remove Docked Windows in M58.
 bool DesktopWindowTreeHostMus::IsDocked() const {
   return window()->GetProperty(aura::client::kShowStateKey) ==
          ui::SHOW_STATE_DOCKED;
@@ -358,6 +359,7 @@ aura::WindowTreeHost* DesktopWindowTreeHostMus::AsWindowTreeHost() {
 }
 
 void DesktopWindowTreeHostMus::ShowWindowWithState(ui::WindowShowState state) {
+  // TODO(afakhry): Remove Docked Windows in M58.
   if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN ||
       state == ui::SHOW_STATE_DOCKED) {
     window()->SetProperty(aura::client::kShowStateKey, state);

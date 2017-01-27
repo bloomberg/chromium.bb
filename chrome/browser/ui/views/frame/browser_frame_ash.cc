@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/shell.h"
@@ -118,7 +119,9 @@ void BrowserFrameAsh::GetWindowPlacement(
     *show_state = ui::SHOW_STATE_NORMAL;
   }
 
-  if (ash::wm::GetWindowState(GetNativeWindow())->IsDocked()) {
+  // TODO(afakhry): Remove Docked Windows in M58.
+  if (ash::switches::DockedWindowsEnabled() &&
+      ash::wm::GetWindowState(GetNativeWindow())->IsDocked()) {
     if (browser_view_->browser()->is_app()) {
       // Only web app windows (not tabbed browser windows) persist docked state.
       *show_state = ui::SHOW_STATE_DOCKED;

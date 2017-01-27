@@ -275,6 +275,8 @@ std::unique_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
   windows::WindowState state = windows::WINDOW_STATE_NONE;
   switch (window.show_state) {
     case ui::SHOW_STATE_NORMAL:
+
+    // TODO(afakhry): Remove Docked Windows in M58.
     case ui::SHOW_STATE_DOCKED:
       state = windows::WINDOW_STATE_NORMAL;
       break;
