@@ -17,6 +17,7 @@ import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_reference.mojom";
 import "cc/ipc/surface_sequence.mojom";
+import "cc/ipc/texture_mailbox.mojom";
 import "cc/ipc/transferable_resource.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
@@ -58,6 +59,10 @@ interface TraitsTestService {
 
   [Sync]
   EchoSurfaceSequence(SurfaceSequence s) => (SurfaceSequence pass);
+
+  [Sync]
+  EchoTextureMailbox(TextureMailbox t) =>
+      (TextureMailbox pass);
 
   [Sync]
   EchoTransferableResource(TransferableResource t) =>

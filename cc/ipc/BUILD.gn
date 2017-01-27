@@ -56,6 +56,7 @@ mojom("interfaces") {
     "surface_info.mojom",
     "surface_reference.mojom",
     "surface_sequence.mojom",
+    "texture_mailbox.mojom",
     "transferable_resource.mojom",
   ]
 

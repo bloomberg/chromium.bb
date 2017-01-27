@@ -13,10 +13,16 @@
 #include "base/memory/shared_memory.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
+
+namespace mojom {
+class TextureMailboxDataView;
+}
+
 class SharedBitmap;
 
 // TODO(skaslev, danakj) Rename this class more apropriately since now it
@@ -93,6 +99,9 @@ class CC_EXPORT TextureMailbox {
 #endif
 
  private:
+  friend struct mojo::StructTraits<mojom::TextureMailboxDataView,
+                                   TextureMailbox>;
+
   gpu::MailboxHolder mailbox_holder_;
   SharedBitmap* shared_bitmap_;
   gfx::Size size_in_pixels_;
