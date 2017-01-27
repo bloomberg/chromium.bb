@@ -33,6 +33,8 @@ SyntheticGestureParams::GestureSourceType ToSyntheticGestureSourceType(
     return SyntheticGestureParams::TOUCH_INPUT;
   else if (source_type == "mouse")
     return SyntheticGestureParams::MOUSE_INPUT;
+  else if (source_type == "pen")
+    return SyntheticGestureParams::PEN_INPUT;
   else
     return SyntheticGestureParams::DEFAULT_INPUT;
 }
@@ -60,7 +62,8 @@ ActionsParser::~ActionsParser() {}
 
 bool ActionsParser::ParsePointerActionSequence() {
   const base::ListValue* pointer_list;
-  if (!pointer_actions_value_->GetAsList(&pointer_list)) {
+  if (!pointer_actions_value_ ||
+      !pointer_actions_value_->GetAsList(&pointer_list)) {
     error_message_ =
         base::StringPrintf("pointer_list is missing or not a list");
     return false;
@@ -106,7 +109,7 @@ bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
         base::StringPrintf("source type is missing or not a string");
     return false;
   } else if (source_type != "touch" && source_type != "mouse" &&
-             source_type != "pointer") {
+             source_type != "pen") {
     error_message_ =
         base::StringPrintf("source type is an unsupported input source");
     return false;

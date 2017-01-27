@@ -295,9 +295,12 @@ function pinchZoomInTarget(targetSelector, scale) {
 // Pen inputs.
 function penMoveToDocument() {
   return new Promise(function(resolve, reject) {
-    if (window.eventSender) {
-      eventSender.mouseMoveTo(0, 0, [], "pen", 0);
-      resolve();
+    if (window.chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {"source": "pen",
+         "actions": [
+            { "name": "pointerMove", "x": 0, "y": 0 }
+        ]}], resolve);
     } else {
       reject();
     }
@@ -315,11 +318,16 @@ function penMoveIntoTarget(targetSelector, targetFrame) {
     frameTop = frameRect.top;
   }
   return new Promise(function(resolve, reject) {
-    if (window.eventSender) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       var target = targetDocument.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      eventSender.mouseMoveTo(frameLeft + targetRect.left + boundaryOffset, frameTop + targetRect.top + boundaryOffset, [], "pen", 0);
-      resolve();
+      var xPosition = frameLeft + targetRect.left + boundaryOffset;
+      var yPosition = frameTop + targetRect.top + boundaryOffset;
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {"source": "pen",
+         "actions": [
+            { "name": "pointerMove", "x": xPosition, "y": yPosition }
+        ]}], resolve);
     } else {
       reject();
     }
@@ -327,16 +335,32 @@ function penMoveIntoTarget(targetSelector, targetFrame) {
 }
 
 function penClickInTarget(targetSelector, targetFrame) {
-  return penMoveIntoTarget(targetSelector, targetFrame).then(function() {
-    return new Promise(function(resolve, reject) {
-      if (window.eventSender) {
-        eventSender.mouseDown(0, [], "pen", 0);
-        eventSender.mouseUp(0, [], "pen", 0);
-        resolve();
-      } else {
-        reject();
-      }
-    });
+  var targetDocument = document;
+  var frameLeft = 0;
+  var frameTop = 0;
+  if (targetFrame !== undefined) {
+    targetDocument = targetFrame.contentDocument;
+    var frameRect = targetFrame.getBoundingClientRect();
+    frameLeft = frameRect.left;
+    frameTop = frameRect.top;
+  }
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      scrollPageIfNeeded(targetSelector, targetDocument);
+      var target = targetDocument.querySelector(targetSelector);
+      var targetRect = target.getBoundingClientRect();
+      var xPosition = frameLeft + targetRect.left + boundaryOffset;
+      var yPosition = frameTop + targetRect.top + boundaryOffset;
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {"source": "pen",
+         "actions": [
+            { "name": "pointerMove", "x": xPosition, "y": yPosition },
+            { "name": "pointerDown", "x": xPosition, "y": yPosition },
+            { "name": "pointerUp" }
+        ]}], resolve);
+    } else {
+      reject();
+    }
   });
 }
 
