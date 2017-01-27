@@ -1793,34 +1793,20 @@ static bool PointIsClippedByAncestorClipNode(
   const ClipTree& clip_tree = property_trees->clip_tree;
   const TransformTree& transform_tree = property_trees->transform_tree;
   const ClipNode* clip_node = clip_tree.Node(1);
-  gfx::Rect combined_clip_in_target_space =
-      gfx::ToEnclosingRect(clip_node->combined_clip_in_target_space);
-  if (!PointHitsRect(screen_space_point, gfx::Transform(),
-                     combined_clip_in_target_space, NULL))
+  gfx::Rect clip = gfx::ToEnclosingRect(clip_node->clip);
+  if (!PointHitsRect(screen_space_point, gfx::Transform(), clip, NULL))
     return true;
 
   for (const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
        clip_node->id > ClipTree::kViewportNodeId;
        clip_node = clip_tree.parent(clip_node)) {
     if (clip_node->clip_type == ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
-      const TransformNode* transform_node =
-          transform_tree.Node(clip_node->target_transform_id);
-      gfx::Rect combined_clip_in_target_space =
-          gfx::ToEnclosingRect(clip_node->combined_clip_in_target_space);
+      gfx::Rect clip = gfx::ToEnclosingRect(clip_node->clip);
 
-      const LayerImpl* target_layer =
-          layer->layer_tree_impl()->LayerById(transform_node->owning_layer_id);
-      DCHECK(transform_node->id == TransformTree::kRootNodeId ||
-             target_layer->render_surface() ||
-             layer->layer_tree_impl()->is_in_resourceless_software_draw_mode());
-      gfx::Transform surface_screen_space_transform =
-          transform_node->id == TransformTree::kRootNodeId ||
-                  (layer->layer_tree_impl()
-                       ->is_in_resourceless_software_draw_mode())
-              ? gfx::Transform()
-              : SurfaceScreenSpaceTransform(target_layer);
-      if (!PointHitsRect(screen_space_point, surface_screen_space_transform,
-                         combined_clip_in_target_space, NULL)) {
+      gfx::Transform screen_space_transform =
+          transform_tree.ToScreen(clip_node->transform_id);
+      if (!PointHitsRect(screen_space_point, screen_space_transform, clip,
+                         NULL)) {
         return true;
       }
     }
