@@ -260,9 +260,11 @@ WebInputEventResult PageWidgetEventHandler::handleTouchEvent(
     LocalFrame& mainFrame,
     const WebTouchEvent& event,
     const std::vector<const WebInputEvent*>& coalescedEvents) {
+  WebTouchEvent transformedEvent =
+      TransformWebTouchEvent(mainFrame.view(), event);
   return mainFrame.eventHandler().handleTouchEvent(
-      PlatformTouchEventBuilder(mainFrame.view(), event),
-      createPlatformTouchEventVector(mainFrame.view(), coalescedEvents));
+      transformedEvent,
+      TransformWebTouchEventVector(mainFrame.view(), coalescedEvents));
 }
 
 }  // namespace blink

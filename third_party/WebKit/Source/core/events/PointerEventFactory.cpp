@@ -76,17 +76,17 @@ unsigned short buttonToButtonsBitfield(WebPointerProperties::Button button) {
 }
 
 const AtomicString& pointerEventNameForTouchPointState(
-    PlatformTouchPoint::TouchState state) {
+    WebTouchPoint::State state) {
   switch (state) {
-    case PlatformTouchPoint::TouchReleased:
+    case WebTouchPoint::StateReleased:
       return EventTypeNames::pointerup;
-    case PlatformTouchPoint::TouchCancelled:
+    case WebTouchPoint::StateCancelled:
       return EventTypeNames::pointercancel;
-    case PlatformTouchPoint::TouchPressed:
+    case WebTouchPoint::StatePressed:
       return EventTypeNames::pointerdown;
-    case PlatformTouchPoint::TouchMoved:
+    case WebTouchPoint::StateMoved:
       return EventTypeNames::pointermove;
-    case PlatformTouchPoint::TouchStationary:
+    case WebTouchPoint::StateStationary:
     // Fall through to default
     default:
       NOTREACHED();
@@ -100,7 +100,7 @@ float getPointerEventPressure(float force, int buttons) {
   return force;
 }
 
-void updateTouchPointerEventInit(const PlatformTouchPoint& touchPoint,
+void updateTouchPointerEventInit(const WebTouchPoint& touchPoint,
                                  LocalFrame* targetFrame,
                                  PointerEventInit* pointerEventInit) {
   // This function should not update attributes like pointerId, isPrimary,
@@ -109,7 +109,7 @@ void updateTouchPointerEventInit(const PlatformTouchPoint& touchPoint,
 
   if (targetFrame) {
     FloatPoint pagePoint =
-        targetFrame->view()->rootFrameToContents(touchPoint.pos());
+        targetFrame->view()->rootFrameToContents(touchPoint.position);
     float scaleFactor = 1.0f / targetFrame->pageZoomFactor();
     FloatPoint scrollPosition(targetFrame->view()->getScrollOffset());
     FloatPoint clientPoint = pagePoint.scaledBy(scaleFactor);
@@ -118,20 +118,20 @@ void updateTouchPointerEventInit(const PlatformTouchPoint& touchPoint,
     pointerEventInit->setClientX(clientPoint.x());
     pointerEventInit->setClientY(clientPoint.y());
 
-    FloatSize pointRadius = touchPoint.radius().scaledBy(scaleFactor);
+    FloatSize pointRadius =
+        FloatSize(touchPoint.radiusX, touchPoint.radiusY).scaledBy(scaleFactor);
     pointerEventInit->setWidth(pointRadius.width());
     pointerEventInit->setHeight(pointRadius.height());
   }
 
-  pointerEventInit->setScreenX(touchPoint.screenPos().x());
-  pointerEventInit->setScreenY(touchPoint.screenPos().y());
+  pointerEventInit->setScreenX(touchPoint.screenPosition.x);
+  pointerEventInit->setScreenY(touchPoint.screenPosition.y);
   pointerEventInit->setPressure(
-      getPointerEventPressure(touchPoint.force(), pointerEventInit->buttons()));
-  pointerEventInit->setTiltX(touchPoint.pointerProperties().tiltX);
-  pointerEventInit->setTiltY(touchPoint.pointerProperties().tiltY);
-  pointerEventInit->setTangentialPressure(
-      touchPoint.pointerProperties().tangentialPressure);
-  pointerEventInit->setTwist(touchPoint.pointerProperties().twist);
+      getPointerEventPressure(touchPoint.force, pointerEventInit->buttons()));
+  pointerEventInit->setTiltX(touchPoint.tiltX);
+  pointerEventInit->setTiltY(touchPoint.tiltY);
+  pointerEventInit->setTangentialPressure(touchPoint.tangentialPressure);
+  pointerEventInit->setTwist(touchPoint.twist);
 }
 
 void updateMousePointerEventInit(const PlatformMouseEvent& mouseEvent,
@@ -286,25 +286,25 @@ PointerEvent* PointerEventFactory::create(
 }
 
 PointerEvent* PointerEventFactory::create(
-    const PlatformTouchPoint& touchPoint,
-    const Vector<PlatformTouchPoint>& coalescedPoints,
-    PlatformEvent::Modifiers modifiers,
+    const WebTouchPoint& touchPoint,
+    const Vector<WebTouchPoint>& coalescedPoints,
+    WebInputEvent::Modifiers modifiers,
     LocalFrame* targetFrame,
     DOMWindow* view) {
-  const PlatformTouchPoint::TouchState pointState = touchPoint.state();
+  const WebTouchPoint::State pointState = touchPoint.state;
   const AtomicString& type =
-      pointerEventNameForTouchPointState(touchPoint.state());
+      pointerEventNameForTouchPointState(touchPoint.state);
 
   bool pointerReleasedOrCancelled =
-      pointState == PlatformTouchPoint::TouchReleased ||
-      pointState == PlatformTouchPoint::TouchCancelled;
+      pointState == WebTouchPoint::State::StateReleased ||
+      pointState == WebTouchPoint::State::StateCancelled;
   bool pointerPressedOrReleased =
-      pointState == PlatformTouchPoint::TouchPressed ||
-      pointState == PlatformTouchPoint::TouchReleased;
+      pointState == WebTouchPoint::State::StatePressed ||
+      pointState == WebTouchPoint::State::StateReleased;
 
   PointerEventInit pointerEventInit;
 
-  setIdTypeButtons(pointerEventInit, touchPoint.pointerProperties(),
+  setIdTypeButtons(pointerEventInit, touchPoint,
                    pointerReleasedOrCancelled ? 0 : 1);
   pointerEventInit.setButton(static_cast<int>(
       pointerPressedOrReleased ? WebPointerProperties::Button::Left
@@ -313,18 +313,17 @@ PointerEvent* PointerEventFactory::create(
   pointerEventInit.setView(view);
   updateTouchPointerEventInit(touchPoint, targetFrame, &pointerEventInit);
 
-  UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, modifiers);
+  UIEventWithKeyState::setFromWebInputEventModifiers(pointerEventInit,
+                                                     modifiers);
 
   setEventSpecificFields(pointerEventInit, type);
 
   if (type == EventTypeNames::pointermove) {
     HeapVector<Member<PointerEvent>> coalescedPointerEvents;
     for (const auto& coalescedTouchPoint : coalescedPoints) {
-      DCHECK_EQ(touchPoint.state(), coalescedTouchPoint.state());
-      DCHECK_EQ(touchPoint.pointerProperties().id,
-                coalescedTouchPoint.pointerProperties().id);
-      DCHECK_EQ(touchPoint.pointerProperties().pointerType,
-                coalescedTouchPoint.pointerProperties().pointerType);
+      DCHECK_EQ(touchPoint.state, coalescedTouchPoint.state);
+      DCHECK_EQ(touchPoint.id, coalescedTouchPoint.id);
+      DCHECK_EQ(touchPoint.pointerType, coalescedTouchPoint.pointerType);
       PointerEventInit coalescedEventInit = pointerEventInit;
       updateTouchPointerEventInit(coalescedTouchPoint, targetFrame,
                                   &coalescedEventInit);

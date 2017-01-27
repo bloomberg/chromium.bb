@@ -48,6 +48,19 @@ class WebTouchEvent : public WebInputEvent {
   WebTouchEvent(Type type, int modifiers, double timeStampSeconds)
       : WebInputEvent(sizeof(WebTouchEvent), type, modifiers, timeStampSeconds),
         dispatchType(Blocking) {}
+
+#if INSIDE_BLINK
+
+  // Sets any scaled values to be their computed values and sets |frameScale|
+  // back to 1 and |translateX|, |translateY| back to 0.
+  BLINK_PLATFORM_EXPORT WebTouchEvent flattenTransform() const;
+
+  // Return a scaled WebTouchPoint in root frame coordinates.
+  BLINK_PLATFORM_EXPORT WebTouchPoint
+  touchPointInRootFrame(unsigned touchPoint) const;
+
+  bool isCancelable() const { return dispatchType == Blocking; }
+#endif
 };
 
 #pragma pack(pop)

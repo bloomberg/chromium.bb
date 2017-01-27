@@ -44,7 +44,7 @@ class PointerEventFactoryTest : public ::testing::Test {
       int rawId,
       int uniqueId,
       bool isPrimary,
-      PlatformTouchPoint::TouchState = PlatformTouchPoint::TouchPressed,
+      WebTouchPoint::State = WebTouchPoint::StatePressed,
       size_t coalescedEventCount = 0);
   PointerEvent* createAndCheckMouseEvent(
       WebPointerProperties::PointerType,
@@ -59,11 +59,11 @@ class PointerEventFactoryTest : public ::testing::Test {
   unsigned m_expectedMouseId;
   unsigned m_mappedIdStart;
 
-  class PlatformTouchPointBuilder : public PlatformTouchPoint {
+  class WebTouchPointBuilder : public WebTouchPoint {
    public:
-    PlatformTouchPointBuilder(WebPointerProperties::PointerType,
-                              int,
-                              PlatformTouchPoint::TouchState);
+    WebTouchPointBuilder(WebPointerProperties::PointerType,
+                         int,
+                         WebTouchPoint::State);
   };
 
   class PlatformMouseEventBuilder : public PlatformMouseEvent {
@@ -79,14 +79,14 @@ void PointerEventFactoryTest::SetUp() {
   m_mappedIdStart = 2;
 }
 
-PointerEventFactoryTest::PlatformTouchPointBuilder::PlatformTouchPointBuilder(
-    WebPointerProperties::PointerType pointerType,
-    int id,
-    PlatformTouchPoint::TouchState state) {
-  m_pointerProperties.id = id;
-  m_pointerProperties.pointerType = pointerType;
-  m_pointerProperties.force = 1.0;
-  m_state = state;
+PointerEventFactoryTest::WebTouchPointBuilder::WebTouchPointBuilder(
+    WebPointerProperties::PointerType pointerTypeParam,
+    int idParam,
+    WebTouchPoint::State stateParam) {
+  id = idParam;
+  pointerType = pointerTypeParam;
+  force = 1.0;
+  state = stateParam;
 }
 
 PointerEventFactoryTest::PlatformMouseEventBuilder::PlatformMouseEventBuilder(
@@ -129,18 +129,16 @@ PointerEvent* PointerEventFactoryTest::createAndCheckTouchEvent(
     int rawId,
     int uniqueId,
     bool isPrimary,
-    PlatformTouchPoint::TouchState state,
+    WebTouchPoint::State state,
     size_t coalescedEventCount) {
-  Vector<PlatformTouchPoint> coalescedEvents;
+  Vector<WebTouchPoint> coalescedEvents;
   for (size_t i = 0; i < coalescedEventCount; i++) {
-    coalescedEvents.push_back(
-        PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId,
-                                                           state));
+    coalescedEvents.push_back(PointerEventFactoryTest::WebTouchPointBuilder(
+        pointerType, rawId, state));
   }
   PointerEvent* pointerEvent = m_pointerEventFactory.create(
-      PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId,
-                                                         state),
-      coalescedEvents, PlatformEvent::NoModifiers, nullptr, nullptr);
+      PointerEventFactoryTest::WebTouchPointBuilder(pointerType, rawId, state),
+      coalescedEvents, WebInputEvent::NoModifiers, nullptr, nullptr);
   EXPECT_EQ(uniqueId, pointerEvent->pointerId());
   EXPECT_EQ(isPrimary, pointerEvent->isPrimary());
   const char* expectedPointerType =
@@ -291,8 +289,7 @@ TEST_F(PointerEventFactoryTest, TouchAndDrag) {
   EXPECT_TRUE(m_pointerEventFactory.isActiveButtonsState(m_mappedIdStart));
 
   createAndCheckTouchEvent(WebPointerProperties::PointerType::Touch, 0,
-                           m_mappedIdStart, true,
-                           PlatformTouchPoint::TouchReleased);
+                           m_mappedIdStart, true, WebTouchPoint::StateReleased);
 
   EXPECT_TRUE(m_pointerEventFactory.isActive(m_mappedIdStart));
   EXPECT_FALSE(m_pointerEventFactory.isActiveButtonsState(m_mappedIdStart));
@@ -451,8 +448,7 @@ TEST_F(PointerEventFactoryTest, CoalescedEvents) {
                            m_expectedMouseId, true, PlatformEvent::NoModifiers,
                            4);
   createAndCheckTouchEvent(WebPointerProperties::PointerType::Touch, 0,
-                           m_mappedIdStart, true,
-                           PlatformTouchPoint::TouchMoved, 3);
+                           m_mappedIdStart, true, WebTouchPoint::StateMoved, 3);
 }
 
 }  // namespace blink

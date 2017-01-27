@@ -18,7 +18,7 @@
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/PlatformTouchEvent.h"
+#include "public/platform/WebTouchEvent.h"
 
 namespace blink {
 
@@ -32,15 +32,15 @@ bool isInDocument(EventTarget* n) {
   return n && n->toNode() && n->toNode()->isConnected();
 }
 
-Vector<PlatformTouchPoint> getCoalescedPoints(
-    const Vector<PlatformTouchEvent>& coalescedEvents,
+Vector<WebTouchPoint> getCoalescedPoints(
+    const Vector<WebTouchEvent>& coalescedEvents,
     int id) {
-  Vector<PlatformTouchPoint> relatedPoints;
+  Vector<WebTouchPoint> relatedPoints;
   for (const auto& touchEvent : coalescedEvents) {
-    for (auto& point : touchEvent.touchPoints()) {
+    for (unsigned i = 0; i < touchEvent.touchesLength; ++i) {
       // TODO(nzolghadr): Need to filter out stationary points
-      if (point.id() == id)
-        relatedPoints.push_back(point);
+      if (touchEvent.touches[i].id == id)
+        relatedPoints.push_back(touchEvent.touchPointInRootFrame(i));
     }
   }
   return relatedPoints;
@@ -270,16 +270,16 @@ void PointerEventManager::unblockTouchPointers() {
 }
 
 WebInputEventResult PointerEventManager::handleTouchEvents(
-    const PlatformTouchEvent& event,
-    const Vector<PlatformTouchEvent>& coalescedEvents) {
-  if (event.type() == PlatformEvent::TouchScrollStarted) {
+    const WebTouchEvent& event,
+    const Vector<WebTouchEvent>& coalescedEvents) {
+  if (event.type() == WebInputEvent::TouchScrollStarted) {
     blockTouchPointers();
     return WebInputEventResult::HandledSystem;
   }
 
   bool newTouchSequence = true;
-  for (const auto& touchPoint : event.touchPoints()) {
-    if (touchPoint.state() != PlatformTouchPoint::TouchPressed) {
+  for (unsigned i = 0; i < event.touchesLength; ++i) {
+    if (event.touches[i].state != WebTouchPoint::StatePressed) {
       newTouchSequence = false;
       break;
     }
@@ -301,7 +301,7 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
   // seems extremely unlikely to matter which document the gesture is
   // associated with so just pick the first finger.
   RefPtr<UserGestureToken> possibleGestureToken;
-  if (event.type() == PlatformEvent::TouchEnd &&
+  if (event.type() == WebInputEvent::TouchEnd &&
       !m_inCanceledStateForPointerTypeTouch && !touchInfos.isEmpty() &&
       touchInfos[0].targetFrame) {
     possibleGestureToken =
@@ -315,26 +315,26 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
 }
 
 void PointerEventManager::computeTouchTargets(
-    const PlatformTouchEvent& event,
+    const WebTouchEvent& event,
     HeapVector<TouchEventManager::TouchInfo>& touchInfos) {
-  for (const auto& touchPoint : event.touchPoints()) {
+  for (unsigned touchPoint = 0; touchPoint < event.touchesLength;
+       ++touchPoint) {
     TouchEventManager::TouchInfo touchInfo;
-    touchInfo.point = touchPoint;
+    touchInfo.point = event.touchPointInRootFrame(touchPoint);
 
-    int pointerId =
-        m_pointerEventFactory.getPointerEventId(touchPoint.pointerProperties());
+    int pointerId = m_pointerEventFactory.getPointerEventId(touchInfo.point);
     // Do the hit test either when the touch first starts or when the touch
     // is not captured. |m_pendingPointerCaptureTarget| indicates the target
     // that will be capturing this event. |m_pointerCaptureTarget| may not
     // have this target yet since the processing of that will be done right
     // before firing the event.
-    if (touchInfo.point.state() == PlatformTouchPoint::TouchPressed ||
+    if (touchInfo.point.state == WebTouchPoint::StatePressed ||
         !m_pendingPointerCaptureTarget.contains(pointerId)) {
       HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent |
                                                    HitTestRequest::ReadOnly |
                                                    HitTestRequest::Active;
       LayoutPoint pagePoint = LayoutPoint(
-          m_frame->view()->rootFrameToContents(touchInfo.point.pos()));
+          m_frame->view()->rootFrameToContents(touchInfo.point.position));
       HitTestResult hitTestTesult =
           m_frame->eventHandler().hitTestResultAtPoint(pagePoint, hitType);
       Node* node = hitTestTesult.innerNode();
@@ -371,20 +371,21 @@ void PointerEventManager::computeTouchTargets(
 }
 
 void PointerEventManager::dispatchTouchPointerEvents(
-    const PlatformTouchEvent& event,
-    const Vector<PlatformTouchEvent>& coalescedEvents,
+    const WebTouchEvent& event,
+    const Vector<WebTouchEvent>& coalescedEvents,
     HeapVector<TouchEventManager::TouchInfo>& touchInfos) {
   // Iterate through the touch points, sending PointerEvents to the targets as
   // required.
   for (auto touchInfo : touchInfos) {
-    const PlatformTouchPoint& touchPoint = touchInfo.point;
+    const WebTouchPoint& touchPoint = touchInfo.point;
     // Do not send pointer events for stationary touches or null targetFrame
     if (touchInfo.touchNode && touchInfo.targetFrame &&
-        touchPoint.state() != PlatformTouchPoint::TouchStationary &&
+        touchPoint.state != WebTouchPoint::StateStationary &&
         !m_inCanceledStateForPointerTypeTouch) {
       PointerEvent* pointerEvent = m_pointerEventFactory.create(
-          touchPoint, getCoalescedPoints(coalescedEvents, touchPoint.id()),
-          event.getModifiers(), touchInfo.targetFrame,
+          touchPoint, getCoalescedPoints(coalescedEvents, touchPoint.id),
+          static_cast<WebInputEvent::Modifiers>(event.modifiers()),
+          touchInfo.targetFrame,
           touchInfo.touchNode ? touchInfo.touchNode->document().domWindow()
                               : nullptr);
 
@@ -400,7 +401,7 @@ void PointerEventManager::dispatchTouchPointerEvents(
       if (result != WebInputEventResult::NotHandled &&
           pointerEvent->type() == EventTypeNames::pointerdown &&
           pointerEvent->isPrimary()) {
-        m_touchIdsForCanceledPointerdowns.append(event.uniqueTouchEventId());
+        m_touchIdsForCanceledPointerdowns.append(event.uniqueTouchEventId);
       }
     }
   }

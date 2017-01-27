@@ -41,8 +41,8 @@ class CORE_EXPORT PointerEventManager
       const Vector<PlatformMouseEvent>& coalescedEvents);
 
   WebInputEventResult handleTouchEvents(
-      const PlatformTouchEvent&,
-      const Vector<PlatformTouchEvent>& coalescedEvents);
+      const WebTouchEvent&,
+      const Vector<WebTouchEvent>& coalescedEvents);
 
   // Sends boundary events pointerout/leave/over/enter and
   // mouseout/leave/over/enter to the corresponding targets.
@@ -136,16 +136,15 @@ class CORE_EXPORT PointerEventManager
   // blockTouchPointers().
   void unblockTouchPointers();
 
-  // Generate the TouchInfos for a PlatformTouchEvent, hit-testing as necessary.
-  void computeTouchTargets(const PlatformTouchEvent&,
+  // Generate the TouchInfos for a WebTouchEvent, hit-testing as necessary.
+  void computeTouchTargets(const WebTouchEvent&,
                            HeapVector<TouchEventManager::TouchInfo>&);
 
   // Sends touch pointer events and sets consumed bits in TouchInfo array
   // based on the return value of pointer event handlers.
-  void dispatchTouchPointerEvents(
-      const PlatformTouchEvent&,
-      const Vector<PlatformTouchEvent>& coalescedEvents,
-      HeapVector<TouchEventManager::TouchInfo>&);
+  void dispatchTouchPointerEvents(const WebTouchEvent&,
+                                  const Vector<WebTouchEvent>& coalescedEvents,
+                                  HeapVector<TouchEventManager::TouchInfo>&);
 
   // Returns whether the event is consumed or not.
   WebInputEventResult sendTouchPointerEvent(EventTarget*, PointerEvent*);

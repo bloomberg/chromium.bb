@@ -39,7 +39,6 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/PlatformMouseEvent.h"
-#include "platform/PlatformTouchPoint.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
@@ -69,13 +68,13 @@ class LayoutObject;
 class LocalFrame;
 class Node;
 class OptionalCursor;
-class PlatformTouchEvent;
 class ScrollableArea;
 class Scrollbar;
 class SelectionController;
 class TextEvent;
 class WebGestureEvent;
 class WebMouseWheelEvent;
+class WebTouchEvent;
 
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {
@@ -225,8 +224,8 @@ class CORE_EXPORT EventHandler final
   void capsLockStateMayHaveChanged();  // Only called by FrameSelection
 
   WebInputEventResult handleTouchEvent(
-      const PlatformTouchEvent&,
-      const Vector<PlatformTouchEvent>& coalescedEvents);
+      const WebTouchEvent&,
+      const Vector<WebTouchEvent>& coalescedEvents);
 
   bool useHandCursor(Node*, bool isOverLink);
 

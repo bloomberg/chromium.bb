@@ -87,7 +87,6 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/CursorData.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include "platform/PlatformTouchEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WindowsKeyboardCodes.h"
 #include "platform/geometry/FloatPoint.h"
@@ -2082,8 +2081,8 @@ void EventHandler::updateLastScrollbarUnderMouse(Scrollbar* scrollbar,
 }
 
 WebInputEventResult EventHandler::handleTouchEvent(
-    const PlatformTouchEvent& event,
-    const Vector<PlatformTouchEvent>& coalescedEvents) {
+    const WebTouchEvent& event,
+    const Vector<WebTouchEvent>& coalescedEvents) {
   TRACE_EVENT0("blink", "EventHandler::handleTouchEvent");
   return m_pointerEventManager->handleTouchEvents(event, coalescedEvents);
 }

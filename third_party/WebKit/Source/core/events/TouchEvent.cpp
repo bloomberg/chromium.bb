@@ -197,43 +197,35 @@ void logTouchTargetHistogram(EventTarget* eventTarget,
 }  // namespace
 
 TouchEvent::TouchEvent()
-    : m_causesScrollingIfUncanceled(false),
-      m_firstTouchMoveOrStart(false),
-      m_defaultPreventedBeforeCurrentTarget(false),
+    : m_defaultPreventedBeforeCurrentTarget(false),
       m_currentTouchAction(TouchActionAuto) {}
 
-TouchEvent::TouchEvent(TouchList* touches,
+TouchEvent::TouchEvent(const WebTouchEvent& event,
+                       TouchList* touches,
                        TouchList* targetTouches,
                        TouchList* changedTouches,
                        const AtomicString& type,
                        AbstractView* view,
-                       PlatformEvent::Modifiers modifiers,
-                       bool cancelable,
-                       bool causesScrollingIfUncanceled,
-                       bool firstTouchMoveOrStart,
-                       TimeTicks platformTimeStamp,
-                       TouchAction currentTouchAction,
-                       WebPointerProperties::PointerType pointerType)
+                       TouchAction currentTouchAction)
     // Pass a sourceCapabilities including the ability to fire touchevents when
     // creating this touchevent, which is always created from input device
     // capabilities from EventHandler.
     : UIEventWithKeyState(
           type,
           true,
-          cancelable,
+          event.isCancelable(),
           view,
           0,
-          modifiers,
-          platformTimeStamp,
+          static_cast<PlatformEvent::Modifiers>(event.modifiers()),
+          TimeTicks::FromSeconds(event.timeStampSeconds()),
           InputDeviceCapabilities::firesTouchEventsSourceCapabilities()),
       m_touches(touches),
       m_targetTouches(targetTouches),
       m_changedTouches(changedTouches),
-      m_causesScrollingIfUncanceled(causesScrollingIfUncanceled),
-      m_firstTouchMoveOrStart(firstTouchMoveOrStart),
       m_defaultPreventedBeforeCurrentTarget(false),
-      m_currentTouchAction(currentTouchAction),
-      m_pointerType(pointerType) {}
+      m_currentTouchAction(currentTouchAction) {
+  m_nativeEvent.reset(new WebTouchEvent(event));
+}
 
 TouchEvent::TouchEvent(const AtomicString& type,
                        const TouchEventInit& initializer)
@@ -241,11 +233,7 @@ TouchEvent::TouchEvent(const AtomicString& type,
       m_touches(TouchList::create(initializer.touches())),
       m_targetTouches(TouchList::create(initializer.targetTouches())),
       m_changedTouches(TouchList::create(initializer.changedTouches())),
-      m_causesScrollingIfUncanceled(false),
-      m_firstTouchMoveOrStart(false),
-      m_defaultPreventedBeforeCurrentTarget(false),
-      m_currentTouchAction(TouchActionAuto),
-      m_pointerType(WebPointerProperties::PointerType::Unknown) {}
+      m_currentTouchAction(TouchActionAuto) {}
 
 TouchEvent::~TouchEvent() {}
 
@@ -315,10 +303,16 @@ void TouchEvent::preventDefault() {
   }
 }
 
+bool TouchEvent::isTouchStartOrFirstTouchMove() const {
+  if (!m_nativeEvent)
+    return false;
+  return m_nativeEvent->touchStartOrFirstTouchMove;
+}
+
 void TouchEvent::doneDispatchingEventAtCurrentTarget() {
   // Do not log for non-cancelable events, events that don't block
   // scrolling, have more than one touch point or aren't on the main frame.
-  if (!cancelable() || !m_firstTouchMoveOrStart ||
+  if (!cancelable() || !isTouchStartOrFirstTouchMove() ||
       !(m_touches && m_touches->length() == 1) ||
       !(view() && view()->frame() && view()->frame()->isMainFrame()))
     return;

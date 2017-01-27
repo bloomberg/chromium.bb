@@ -7,7 +7,6 @@
 
 #include "core/events/MouseEvent.h"
 #include "core/events/PointerEventInit.h"
-#include "platform/PlatformTouchPoint.h"
 
 namespace blink {
 

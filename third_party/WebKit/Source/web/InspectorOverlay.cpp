@@ -95,12 +95,12 @@ Node* hoveredNodeForEvent(LocalFrame* frame,
 }
 
 Node* hoveredNodeForEvent(LocalFrame* frame,
-                          const PlatformTouchEvent& event,
+                          const WebTouchEvent& event,
                           bool ignorePointerEventsNone) {
-  const Vector<PlatformTouchPoint>& points = event.touchPoints();
-  if (!points.size())
+  if (!event.touchesLength)
     return nullptr;
-  return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()),
+  WebTouchPoint transformedPoint = event.touchPointInRootFrame(0);
+  return hoveredNodeForPoint(frame, roundedIntPoint(transformedPoint.position),
                              ignorePointerEventsNone);
 }
 }  // namespace
@@ -277,16 +277,14 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
   }
 
   if (WebInputEvent::isTouchEventType(inputEvent.type())) {
-    PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(
-        m_frameImpl->frameView(),
-        static_cast<const WebTouchEvent&>(inputEvent));
-    handled = handleTouchEvent(touchEvent);
+    WebTouchEvent transformedEvent =
+        TransformWebTouchEvent(m_frameImpl->frameView(),
+                               static_cast<const WebTouchEvent&>(inputEvent));
+    handled = handleTouchEvent(transformedEvent);
     if (handled)
       return true;
     overlayMainFrame()->eventHandler().handleTouchEvent(
-        touchEvent,
-        createPlatformTouchEventVector(m_frameImpl->frameView(),
-                                       std::vector<const WebInputEvent*>()));
+        transformedEvent, Vector<WebTouchEvent>());
   }
   if (WebInputEvent::isKeyboardEventType(inputEvent.type())) {
     overlayMainFrame()->eventHandler().keyEvent(
@@ -770,7 +768,7 @@ bool InspectorOverlay::handleGestureEvent(const WebGestureEvent& event) {
   return false;
 }
 
-bool InspectorOverlay::handleTouchEvent(const PlatformTouchEvent& event) {
+bool InspectorOverlay::handleTouchEvent(const WebTouchEvent& event) {
   if (!shouldSearchForNode())
     return false;
   Node* node = hoveredNodeForEvent(m_frameImpl->frame(), event, false);

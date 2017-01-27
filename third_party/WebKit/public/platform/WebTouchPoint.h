@@ -55,6 +55,7 @@ class WebTouchPoint : public WebPointerProperties {
     StateMoved,
     StateStationary,
     StateCancelled,
+    StateMax = StateCancelled
   };
 
   State state;

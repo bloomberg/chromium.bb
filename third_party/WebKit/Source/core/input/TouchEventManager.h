@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/events/PointerEventFactory.h"
 #include "public/platform/WebInputEventResult.h"
+#include "public/platform/WebTouchPoint.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 
@@ -15,7 +16,7 @@ namespace blink {
 
 class LocalFrame;
 class Document;
-class PlatformTouchEvent;
+class WebTouchEvent;
 
 // This class takes care of dispatching all touch events and
 // maintaining related states.
@@ -33,7 +34,7 @@ class CORE_EXPORT TouchEventManager
       visitor->trace(targetFrame);
     }
 
-    PlatformTouchPoint point;
+    WebTouchPoint point;
     Member<Node> touchNode;
     Member<LocalFrame> targetFrame;
     FloatPoint contentPoint;
@@ -48,13 +49,13 @@ class CORE_EXPORT TouchEventManager
   // Does the hit-testing again if the original hit test result was not inside
   // capturing frame for touch events. Returns true if touch events could be
   // dispatched and otherwise returns false.
-  bool reHitTestTouchPointsIfNeeded(const PlatformTouchEvent&,
+  bool reHitTestTouchPointsIfNeeded(const WebTouchEvent&,
                                     HeapVector<TouchInfo>&);
 
   // The TouchInfo array is reference just to prevent the copy. However, it
   // cannot be const as this function might change some of the properties in
   // TouchInfo objects.
-  WebInputEventResult handleTouchEvent(const PlatformTouchEvent&,
+  WebInputEventResult handleTouchEvent(const WebTouchEvent&,
                                        HeapVector<TouchInfo>&);
 
   // Resets the internal state of this object.
@@ -67,7 +68,7 @@ class CORE_EXPORT TouchEventManager
   void updateTargetAndRegionMapsForTouchStarts(HeapVector<TouchInfo>&);
   void setAllPropertiesOfTouchInfos(HeapVector<TouchInfo>&);
 
-  WebInputEventResult dispatchTouchEvents(const PlatformTouchEvent&,
+  WebInputEventResult dispatchTouchEvents(const WebTouchEvent&,
                                           const HeapVector<TouchInfo>&,
                                           bool allTouchesReleased);
 
@@ -94,8 +95,6 @@ class CORE_EXPORT TouchEventManager
   Member<Document> m_touchSequenceDocument;
 
   bool m_touchPressed;
-  // The touch event currently being handled or NoType if none.
-  PlatformEvent::EventType m_currentEvent;
 
   // The current touch action, computed on each touch start and is
   // a union of all touches. Reset when all touches are released.

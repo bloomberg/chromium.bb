@@ -32,7 +32,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/TouchEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
-#include "public/platform/WebPointerProperties.h"
+#include "public/platform/WebTouchEvent.h"
 
 namespace blink {
 
@@ -45,22 +45,15 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
   // We only initialize sourceCapabilities when we create TouchEvent from
   // EventHandler, null if it is from JavaScript.
   static TouchEvent* create() { return new TouchEvent; }
-  static TouchEvent* create(TouchList* touches,
+  static TouchEvent* create(const WebTouchEvent& event,
+                            TouchList* touches,
                             TouchList* targetTouches,
                             TouchList* changedTouches,
                             const AtomicString& type,
                             AbstractView* view,
-                            PlatformEvent::Modifiers modifiers,
-                            bool cancelable,
-                            bool causesScrollingIfUncanceled,
-                            bool firstTouchMoveOrStart,
-                            TimeTicks platformTimeStamp,
-                            TouchAction currentTouchAction,
-                            WebPointerProperties::PointerType pointerType) {
-    return new TouchEvent(touches, targetTouches, changedTouches, type, view,
-                          modifiers, cancelable, causesScrollingIfUncanceled,
-                          firstTouchMoveOrStart, platformTimeStamp,
-                          currentTouchAction, pointerType);
+                            TouchAction currentTouchAction) {
+    return new TouchEvent(event, touches, targetTouches, changedTouches, type,
+                          view, currentTouchAction);
   }
 
   static TouchEvent* create(const AtomicString& type,
@@ -80,10 +73,6 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
     m_changedTouches = changedTouches;
   }
 
-  bool causesScrollingIfUncanceled() const {
-    return m_causesScrollingIfUncanceled;
-  }
-
   bool isTouchEvent() const override;
 
   const AtomicString& interfaceName() const override;
@@ -94,42 +83,33 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 
   EventDispatchMediator* createMediator() override;
 
-  // Transient property to inform PPAPI of touch pointer types. Will be replaced
-  // when blink transitions to handling end-to-end pointer events.
-  WebPointerProperties::PointerType pointerType() const {
-    return m_pointerType;
-  }
+  const WebTouchEvent* nativeEvent() const { return m_nativeEvent.get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   TouchEvent();
-  TouchEvent(TouchList* touches,
+  TouchEvent(const WebTouchEvent&,
+             TouchList* touches,
              TouchList* targetTouches,
              TouchList* changedTouches,
              const AtomicString& type,
              AbstractView*,
-             PlatformEvent::Modifiers,
-             bool cancelable,
-             bool causesScrollingIfUncanceled,
-             bool firstTouchMoveOrStart,
-             TimeTicks platformTimeStamp,
-             TouchAction currentTouchAction,
-             WebPointerProperties::PointerType);
+             TouchAction currentTouchAction);
   TouchEvent(const AtomicString&, const TouchEventInit&);
+  bool isTouchStartOrFirstTouchMove() const;
 
   Member<TouchList> m_touches;
   Member<TouchList> m_targetTouches;
   Member<TouchList> m_changedTouches;
-  bool m_causesScrollingIfUncanceled;
-  bool m_firstTouchMoveOrStart;
+
   bool m_defaultPreventedBeforeCurrentTarget;
 
   // The current effective touch action computed before each
   // touchstart event is generated. It is used for UMA histograms.
   TouchAction m_currentTouchAction;
 
-  WebPointerProperties::PointerType m_pointerType;
+  std::unique_ptr<WebTouchEvent> m_nativeEvent;
 };
 
 class TouchEventDispatchMediator final : public EventDispatchMediator {

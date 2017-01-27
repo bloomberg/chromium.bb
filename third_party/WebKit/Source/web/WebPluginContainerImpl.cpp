@@ -815,16 +815,26 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event) {
     case TouchEventRequestTypeNone:
       return;
     case TouchEventRequestTypeRaw: {
-      WebTouchEventBuilder webEvent(LayoutItem(m_element->layoutObject()),
-                                    *event);
-      if (webEvent.type() == WebInputEvent::Undefined)
+      if (!event->nativeEvent())
         return;
 
       if (event->type() == EventTypeNames::touchstart)
         focusPlugin();
 
+      WebTouchEvent transformedEvent = event->nativeEvent()->flattenTransform();
+
+      for (unsigned i = 0; i < transformedEvent.touchesLength; ++i) {
+        WebFloatPoint absoluteRootFrameLocation =
+            transformedEvent.touches[i].position;
+        IntPoint localPoint =
+            roundedIntPoint(m_element->layoutObject()->absoluteToLocal(
+                absoluteRootFrameLocation, UseTransforms));
+        transformedEvent.touches[i].position.x = localPoint.x();
+        transformedEvent.touches[i].position.y = localPoint.y();
+      }
+
       WebCursorInfo cursorInfo;
-      if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) !=
+      if (m_webPlugin->handleInputEvent(transformedEvent, cursorInfo) !=
           WebInputEventResult::NotHandled)
         event->setDefaultHandled();
       // FIXME: Can a plugin change the cursor from a touch-event callback?

@@ -28,6 +28,7 @@
 #include "core/events/EventModifierInit.h"
 #include "core/events/UIEvent.h"
 #include "platform/PlatformEvent.h"
+#include "public/platform/WebInputEvent.h"
 
 namespace blink {
 
@@ -56,6 +57,8 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
 
   static void setFromPlatformModifiers(EventModifierInit&,
                                        const PlatformEvent::Modifiers);
+  static void setFromWebInputEventModifiers(EventModifierInit&,
+                                            WebInputEvent::Modifiers);
 
   bool getModifierState(const String& keyIdentifier) const;
 

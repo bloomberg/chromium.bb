@@ -51,9 +51,9 @@ class Node;
 class Page;
 class PageOverlay;
 class PlatformMouseEvent;
-class PlatformTouchEvent;
 class WebGestureEvent;
 class WebLocalFrameImpl;
+class WebTouchEvent;
 
 namespace protocol {
 class Value;
@@ -132,7 +132,7 @@ class InspectorOverlay final
 
   bool handleMousePress();
   bool handleGestureEvent(const WebGestureEvent&);
-  bool handleTouchEvent(const PlatformTouchEvent&);
+  bool handleTouchEvent(const WebTouchEvent&);
   bool handleMouseMove(const PlatformMouseEvent&);
   bool shouldSearchForNode();
   void inspect(Node*);

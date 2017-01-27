@@ -32,7 +32,6 @@
 #define WebInputEventConversion_h
 
 #include "platform/PlatformMouseEvent.h"
-#include "platform/PlatformTouchEvent.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebKeyboardEvent.h"
@@ -61,20 +60,6 @@ class WEB_EXPORT PlatformMouseEventBuilder
     : NON_EXPORTED_BASE(public PlatformMouseEvent) {
  public:
   PlatformMouseEventBuilder(Widget*, const WebMouseEvent&);
-};
-
-// Converts a WebTouchPoint to a PlatformTouchPoint.
-class WEB_EXPORT PlatformTouchPointBuilder
-    : NON_EXPORTED_BASE(public PlatformTouchPoint) {
- public:
-  PlatformTouchPointBuilder(Widget*, const WebTouchPoint&);
-};
-
-// Converts a WebTouchEvent to a PlatformTouchEvent.
-class WEB_EXPORT PlatformTouchEventBuilder
-    : NON_EXPORTED_BASE(public PlatformTouchEvent) {
- public:
-  PlatformTouchEventBuilder(Widget*, const WebTouchEvent&);
 };
 
 class WEB_EXPORT WebMouseEventBuilder
@@ -114,12 +99,13 @@ WEB_EXPORT WebGestureEvent TransformWebGestureEvent(Widget*,
 WEB_EXPORT WebMouseWheelEvent
 TransformWebMouseWheelEvent(Widget*, const WebMouseWheelEvent&);
 
+WEB_EXPORT WebTouchEvent TransformWebTouchEvent(Widget*, const WebTouchEvent&);
+
 Vector<PlatformMouseEvent> WEB_EXPORT
 createPlatformMouseEventVector(Widget*,
                                const std::vector<const WebInputEvent*>&);
-Vector<PlatformTouchEvent> WEB_EXPORT
-createPlatformTouchEventVector(Widget*,
-                               const std::vector<const WebInputEvent*>&);
+Vector<WebTouchEvent> WEB_EXPORT
+TransformWebTouchEventVector(Widget*, const std::vector<const WebInputEvent*>&);
 
 }  // namespace blink
 

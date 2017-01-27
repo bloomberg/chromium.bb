@@ -42,13 +42,6 @@ class PlatformEvent {
     MousePressed,
     MouseReleased,
     MouseScroll,
-
-    // PlatformTouchEvent
-    TouchStart,
-    TouchMove,
-    TouchEnd,
-    TouchCancel,
-    TouchScrollStarted,
   };
 
   // These values are direct mappings of the values in WebInputEvent so the
@@ -91,24 +84,6 @@ class PlatformEvent {
         SymbolKey | FnKey | AltGrKey | MetaKey | AltKey | CtrlKey | ShiftKey,
   };
 
-  enum RailsMode {
-    RailsModeFree = 0,
-    RailsModeHorizontal = 1,
-    RailsModeVertical = 2,
-  };
-
-  // These values are direct mappings of the values in WebInputEvent
-  // so the values can be cast between the enumerations. static_asserts
-  // checking this are in web/WebInputEventConversion.cpp.
-  enum DispatchType {
-    Blocking,
-    EventNonBlocking,
-    // All listeners are passive.
-    ListenersNonBlockingPassive,
-    // This value represents a state which would have normally blocking
-    // but was forced to be non-blocking during fling; not cancelable.
-    ListenersForcedNonBlockingDueToFling,
-  };
 
   EventType type() const { return static_cast<EventType>(m_type); }
 
