@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/cdm_key_information.h"
 
 namespace media {
@@ -35,6 +36,37 @@ CdmKeyInformation::CdmKeyInformation(const uint8_t* key_id_data,
 CdmKeyInformation::CdmKeyInformation(const CdmKeyInformation& other) = default;
 
 CdmKeyInformation::~CdmKeyInformation() {
+}
+
+// static
+std::string CdmKeyInformation::KeyStatusToString(KeyStatus key_status) {
+  switch (key_status) {
+    case USABLE:
+      return "USABLE";
+    case INTERNAL_ERROR:
+      return "INTERNAL_ERROR";
+    case EXPIRED:
+      return "EXPIRED";
+    case OUTPUT_RESTRICTED:
+      return "OUTPUT_RESTRICTED";
+    case OUTPUT_DOWNSCALED:
+      return "OUTPUT_DOWNSCALED";
+    case KEY_STATUS_PENDING:
+      return "KEY_STATUS_PENDING";
+    case RELEASED:
+      return "RELEASED";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
+std::ostream& operator<<(std::ostream& os, const CdmKeyInformation& info) {
+  return os << "key_id = "
+            << base::HexEncode(info.key_id.data(), info.key_id.size())
+            << ", status = "
+            << CdmKeyInformation::KeyStatusToString(info.status)
+            << ", system_code = " << info.system_code;
 }
 
 }  // namespace media
