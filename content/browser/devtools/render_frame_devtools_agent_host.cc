@@ -43,6 +43,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -636,8 +637,23 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   // CommitPending may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
 
-  if (!IsBrowserSideNavigationEnabled())
+  if (!IsBrowserSideNavigationEnabled()) {
+    if (navigation_handle->IsErrorPage()) {
+      if (pending_ &&
+          pending_->host() == navigation_handle->GetRenderFrameHost()) {
+        DiscardPending();
+      }
+    } else if (navigation_handle->HasCommitted()) {
+      if (pending_ &&
+          pending_->host() == navigation_handle->GetRenderFrameHost()) {
+        CommitPending();
+      }
+      if (session())
+        protocol::TargetHandler::FromSession(session())->UpdateServiceWorkers();
+    }
+    DCHECK(CheckConsistency());
     return;
+  }
 
   // If the navigation is not tracked, return;
   if (navigating_handles_.count(navigation_handle) == 0)
@@ -870,35 +886,6 @@ void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
       session() ? protocol::PageHandler::FromSession(session()) : nullptr;
   if (page_handler)
     page_handler->DidDetachInterstitialPage();
-}
-
-void RenderFrameDevToolsAgentHost::DidCommitProvisionalLoadForFrame(
-    RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  // CommitPending may destruct |this|.
-  scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
-
-  if (IsBrowserSideNavigationEnabled())
-    return;
-  if (pending_ && pending_->host() == render_frame_host)
-    CommitPending();
-  DCHECK(CheckConsistency());
-  if (session())
-    protocol::TargetHandler::FromSession(session())->UpdateServiceWorkers();
-}
-
-void RenderFrameDevToolsAgentHost::DidFailProvisionalLoad(
-    RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  if (IsBrowserSideNavigationEnabled())
-    return;
-  if (pending_ && pending_->host() == render_frame_host)
-    DiscardPending();
-  DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::WasShown() {

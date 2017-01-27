@@ -113,16 +113,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
-  void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
-  void DidFailProvisionalLoad(
-      RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) override;
   void WasShown() override;
   void WasHidden() override;
 
