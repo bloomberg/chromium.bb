@@ -17,7 +17,7 @@
         'landscape-secondary'
     ];
 
-    var currentIndex = orientations.indexOf(window.screen.orientation.type);
+    var currentIndex = 0;  // Default orientation for testRunner is 'portrait-primary'.
     var eventsReceived = 0;
 
     function getNextIndex() {

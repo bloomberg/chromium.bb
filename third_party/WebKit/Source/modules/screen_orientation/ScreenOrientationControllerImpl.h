@@ -64,6 +64,8 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
   void dispatchEventTimerFired(TimerBase*);
 
+  bool isActive() const;
+  bool isVisible() const;
   bool isActiveAndVisible() const;
 
   Member<ScreenOrientation> m_orientation;

@@ -101,8 +101,16 @@ void ScreenOrientationControllerImpl::updateOrientation() {
   m_orientation->setAngle(screenInfo.orientationAngle);
 }
 
+bool ScreenOrientationControllerImpl::isActive() const {
+  return m_orientation && m_client;
+}
+
+bool ScreenOrientationControllerImpl::isVisible() const {
+  return page() && page()->isPageVisible();
+}
+
 bool ScreenOrientationControllerImpl::isActiveAndVisible() const {
-  return m_orientation && m_client && page() && page()->isPageVisible();
+  return isActive() && isVisible();
 }
 
 void ScreenOrientationControllerImpl::pageVisibilityChanged() {
@@ -130,10 +138,11 @@ void ScreenOrientationControllerImpl::pageVisibilityChanged() {
 }
 
 void ScreenOrientationControllerImpl::notifyOrientationChanged() {
-  if (!isActiveAndVisible())
+  if (!isVisible())
     return;
 
-  updateOrientation();
+  if (isActive())
+    updateOrientation();
 
   // Keep track of the frames that need to be notified before notifying the
   // current frame as it will prevent side effects from the change event
@@ -146,14 +155,15 @@ void ScreenOrientationControllerImpl::notifyOrientationChanged() {
   }
 
   // Notify current orientation object.
-  if (!m_dispatchEventTimer.isActive())
+  if (isActive() && !m_dispatchEventTimer.isActive())
     m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);
 
   // ... and child frames, if they have a ScreenOrientationControllerImpl.
   for (size_t i = 0; i < childFrames.size(); ++i) {
     if (ScreenOrientationControllerImpl* controller =
-            ScreenOrientationControllerImpl::from(*childFrames[i]))
+            ScreenOrientationControllerImpl::from(*childFrames[i])) {
       controller->notifyOrientationChanged();
+    }
   }
 }
 
