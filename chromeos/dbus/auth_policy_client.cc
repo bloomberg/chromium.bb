@@ -14,9 +14,12 @@ namespace chromeos {
 
 namespace {
 
-// The first device policy fetch after joining Active Directory can be very slow
-// because machine credentials need to propagate through the AD deployment.
-const int kRefreshDevicePolicyTimeoutMilliseconds = 90000;
+// Policy fetch may take up to 300 seconds.  To ensure that a second policy
+// fetch queuing after the first one can succeed (e.g. user policy following
+// device policy), the D-Bus timeout needs to be at least twice that value.
+// JoinADDomain() is an exception since it's always guaranteed to be the first
+// call.
+constexpr int kSlowDbusTimeoutMilliseconds = 630 * 1000;
 
 authpolicy::ErrorType GetErrorFromReader(dbus::MessageReader* reader) {
   int32_t int_error;
@@ -59,7 +62,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(user_principal_name);
     writer.AppendFileDescriptor(password_fd);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kSlowDbusTimeoutMilliseconds,
                        base::Bind(&AuthPolicyClientImpl::HandleAuthCallback,
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -68,7 +71,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
                                  authpolicy::kAuthPolicyRefreshDevicePolicy);
     proxy_->CallMethod(
-        &method_call, kRefreshDevicePolicyTimeoutMilliseconds,
+        &method_call, kSlowDbusTimeoutMilliseconds,
         base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -81,7 +84,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(account_id.GetAccountIdKey());
     proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kSlowDbusTimeoutMilliseconds,
         base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
