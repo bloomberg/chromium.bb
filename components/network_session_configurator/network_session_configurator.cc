@@ -92,6 +92,7 @@ void ConfigureHttp2Params(base::StringPiece http2_trial_group,
 }
 
 bool ShouldEnableQuic(base::StringPiece quic_trial_group,
+                      const VariationParameters& quic_trial_params,
                       bool is_quic_force_disabled,
                       bool is_quic_force_enabled) {
   if (is_quic_force_disabled)
@@ -100,7 +101,10 @@ bool ShouldEnableQuic(base::StringPiece quic_trial_group,
     return true;
 
   return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
-         quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
+         quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName) ||
+         base::LowerCaseEqualsASCII(
+             GetVariationParam(quic_trial_params, "enable_quic"),
+             "true");
 }
 
 bool ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(
@@ -321,7 +325,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
                          const std::string& quic_user_agent_id,
                          net::HttpNetworkSession::Params* params) {
   params->enable_quic = ShouldEnableQuic(
-      quic_trial_group, is_quic_force_disabled, is_quic_force_enabled);
+      quic_trial_group, quic_trial_params, is_quic_force_disabled,
+      is_quic_force_enabled);
   params->disable_quic_on_timeout_with_open_streams =
       ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(quic_trial_params);
 

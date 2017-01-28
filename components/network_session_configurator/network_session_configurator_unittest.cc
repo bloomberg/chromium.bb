@@ -99,6 +99,17 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
             params_.quic_supported_versions);
 }
 
+TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_quic"] = "true";
+  variations::AssociateVariationParams("QUIC", "UseQuic", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "UseQuic");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_quic);
+}
+
 TEST_F(NetworkSessionConfiguratorTest, EnableQuicForDataReductionProxy) {
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   base::FieldTrialList::CreateFieldTrial("DataReductionProxyUseQuic",
