@@ -510,24 +510,6 @@ void URLRequestChromeJob::StartAsync() {
 
 namespace {
 
-// Gets mime type for data that is available from |source| by |path|.
-// After that, notifies |job| that mime type is available. This method
-// should be called on the UI thread, but notification is performed on
-// the IO thread.
-void GetMimeTypeOnUI(URLDataSourceImpl* source,
-                     const std::string& path,
-                     const base::WeakPtr<URLRequestChromeJob>& job) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::string mime_type = source->source()->GetMimeType(path);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestChromeJob::MimeTypeAvailable, job, mime_type));
-}
-
-}  // namespace
-
-namespace {
-
 bool IsValidNetworkErrorCode(int error_code) {
   std::unique_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
   const base::DictionaryValue* net_error_codes_dict = nullptr;
@@ -735,7 +717,8 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
 
   // TODO(dschuyler): improve filtering of which resource to run template
   // replacements upon.
-  if (source->source()->GetMimeType(path) == "text/html")
+  std::string mime_type = source->source()->GetMimeType(path);
+  if (mime_type == "text/html")
     job->SetReplacements(source->GetReplacements());
 
   std::string origin = GetOriginHeaderValue(request);
@@ -747,23 +730,19 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     job->set_access_control_allow_origin(header);
   }
 
+  // Also notifies that the headers are complete.
+  job->MimeTypeAvailable(mime_type);
+
   // Look up additional request info to pass down.
-  int child_id = -1;
   ResourceRequestInfo::WebContentsGetter wc_getter;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info) {
-    child_id = info->GetChildID();
+  if (info)
     wc_getter = info->GetWebContentsGetterForRequest();
-  }
 
   // Forward along the request to the data source.
   scoped_refptr<base::SingleThreadTaskRunner> target_runner =
       source->source()->TaskRunnerForRequestPath(path);
   if (!target_runner) {
-    job->MimeTypeAvailable(source->source()->GetMimeType(path));
-    // Eliminate potentially dangling pointer to avoid future use.
-    job = nullptr;
-
     // The DataSource is agnostic to which thread StartDataRequest is called
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
@@ -771,20 +750,12 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
         path, wc_getter,
         base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
   } else {
-    // URLRequestChromeJob should receive mime type before data. This
-    // is guaranteed because request for mime type is placed in the
-    // message loop before request for data. And correspondingly their
-    // replies are put on the IO thread in the same order.
-    target_runner->PostTask(
-        FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
-                              job->AsWeakPtr()));
-
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
     target_runner->PostTask(
-        FROM_HERE, base::Bind(&URLDataManagerBackend::CallStartRequest,
-                              base::RetainedRef(source), path, child_id,
-                              wc_getter, request_id));
+        FROM_HERE,
+        base::Bind(&URLDataManagerBackend::CallStartRequest,
+                   base::RetainedRef(source), path, wc_getter, request_id));
   }
   return true;
 }
@@ -810,19 +781,8 @@ URLDataSourceImpl* URLDataManagerBackend::GetDataSourceFromURL(
 void URLDataManagerBackend::CallStartRequest(
     scoped_refptr<URLDataSourceImpl> source,
     const std::string& path,
-    int child_id,
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     int request_id) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI) && child_id != -1 &&
-      !RenderProcessHost::FromID(child_id)) {
-    // Make the request fail if its initiating renderer is no longer valid.
-    // This can happen when the IO thread posts this task just before the
-    // renderer shuts down.
-    // Note we check the process id instead of wc_getter because requests from
-    // workers wouldn't have a WebContents.
-    source->SendResponse(request_id, nullptr);
-    return;
-  }
   source->source()->StartDataRequest(
       path,
       wc_getter,

@@ -50,6 +50,9 @@ class CONTENT_EXPORT URLDataSource {
   typedef base::Callback<void(scoped_refptr<base::RefCountedMemory>)>
       GotDataCallback;
 
+  // Must be called on the task runner specified by TaskRunnerForRequestPath,
+  // or the IO thread if TaskRunnerForRequestPath returns nullptr.
+  //
   // Called by URLDataSource to request data at |path|. The string parameter is
   // the path of the request. The child class should run |callback| when the
   // data is available or if the request could not be satisfied. This can be
@@ -62,11 +65,11 @@ class CONTENT_EXPORT URLDataSource {
       const ResourceRequestInfo::WebContentsGetter& wc_getter,
       const GotDataCallback& callback) = 0;
 
+  // The following methods are all called on the IO thread.
+
   // Return the mimetype that should be sent with this response, or empty
   // string to specify no mime type.
   virtual std::string GetMimeType(const std::string& path) const = 0;
-
-  // The following methods are all called on the IO thread.
 
   // Returns the TaskRunner on which the delegate wishes to have
   // StartDataRequest called to handle the request for |path|. The default
