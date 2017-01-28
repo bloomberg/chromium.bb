@@ -238,7 +238,7 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 	if (flags & AMDGPU_VA_RANGE_32_BIT)
 		vamgr = &dev->vamgr_32;
 	else
-		vamgr = dev->vamgr;
+		vamgr = &dev->vamgr;
 
 	va_base_alignment = MAX2(va_base_alignment, vamgr->va_alignment);
 	size = ALIGN(size, vamgr->va_alignment);
