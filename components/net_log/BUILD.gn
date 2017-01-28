@@ -28,7 +28,9 @@ source_set("unit_tests") {
   deps = [
     ":net_log",
     "//base",
+    "//base/test:test_support",
     "//net",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

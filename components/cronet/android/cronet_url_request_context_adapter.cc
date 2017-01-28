@@ -56,6 +56,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/log/file_net_log_observer.h"
+#include "net/log/net_log_util.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
@@ -1036,7 +1037,7 @@ void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
 void CronetURLRequestContextAdapter::StopBoundedFileNetLogOnNetworkThread() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   bounded_file_observer_->StopObserving(
-      context_.get(),
+      net::GetNetInfo(context_.get(), net::NET_INFO_ALL_SOURCES),
       base::Bind(&CronetURLRequestContextAdapter::StopNetLogCompleted,
                  base::Unretained(this)));
   bounded_file_observer_.reset();

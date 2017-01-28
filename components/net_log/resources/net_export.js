@@ -106,19 +106,22 @@ var NetExportView = (function() {
         $('export-view-start-data').disabled = false;
 
         // If there's an existing log, allow sending it.
-        if (exportNetLogInfo.logType != 'NONE') {
+        if (!!exportNetLogInfo.logExists) {
           $('export-view-deletes-log-text').hidden = false;
           $('export-view-send-data').disabled = false;
-          if (exportNetLogInfo.logType == 'UNKNOWN') {
+          if (!exportNetLogInfo.logCaptureModeKnown) {
             $('export-view-send-old-log-text').hidden = false;
-          } else if (exportNetLogInfo.logType == 'NORMAL') {
+          } else if (exportNetLogInfo.captureMode == 'NORMAL') {
             $('export-view-private-data-text').hidden = false;
           }
         }
       } else if (exportNetLogInfo.state == 'LOGGING') {
         // Only possible to stop logging. Radio buttons reflects current state.
-        document.querySelector('input[name="log-mode"][value="' +
-                               exportNetLogInfo.logType + '"]').checked = true;
+        document
+            .querySelector(
+                'input[name="log-mode"][value="' +
+                exportNetLogInfo.captureMode + '"]')
+            .checked = true;
         $('export-view-stop-data').disabled = false;
       } else if (exportNetLogInfo.state == 'UNINITIALIZED') {
         $('export-view-file-path-text').textContent =
