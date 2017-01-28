@@ -449,9 +449,8 @@ class DevToolsUIBindings::FrontendWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   DevToolsUIBindings* devtools_bindings_;
   DISALLOW_COPY_AND_ASSIGN(FrontendWebContentsObserver);
@@ -506,9 +505,8 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 
 void DevToolsUIBindings::FrontendWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
-    return;
-  devtools_bindings_->UpdateFrontendHost(navigation_handle);
+  if (navigation_handle->IsInMainFrame())
+    devtools_bindings_->UpdateFrontendHost(navigation_handle);
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
@@ -521,10 +519,10 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
   devtools_bindings_->DocumentOnLoadCompletedInMainFrame();
 }
 
-void DevToolsUIBindings::FrontendWebContentsObserver::
-    DidNavigateMainFrame(const content::LoadCommittedDetails& details,
-                         const content::FrameNavigateParams& params) {
-  devtools_bindings_->DidNavigateMainFrame();
+void DevToolsUIBindings::FrontendWebContentsObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted())
+    devtools_bindings_->DidNavigateMainFrame();
 }
 
 // DevToolsUIBindings ---------------------------------------------------------
