@@ -13,7 +13,9 @@ promise_test(() => {
       gattServer.disconnect();
       return assert_promise_rejects_with_message(
         gattServer.getPrimaryService('heart_rate'),
-        new DOMException('GATT Server is disconnected. Cannot retrieve services.',
+        new DOMException('GATT Server is disconnected. ' +
+                           'Cannot retrieve services. ' +
+                           '(Re)connect first with `device.gatt.connect`.',
                          'NetworkError'));
     });
 }, 'disconnect() called before getPrimaryService. Reject with NetworkError.');

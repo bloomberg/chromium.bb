@@ -95,8 +95,14 @@ def GetGeneratedTests():
 
         template_name = os.path.splitext(os.path.basename(template))[0]
 
-        result = re.search(r'CALLS\(\[(.*?)\]\)', template_file_data, re.MULTILINE
-            | re.DOTALL)
+        # Find function names in multiline pattern: CALLS( [ function_name,function_name2[UUID] ])
+        result = re.search(
+            r'CALLS\(' + # CALLS(
+            r'[^\[]*' +  # Any characters not [, allowing for new lines.
+            r'\[' +      # [
+            r'(.*?)' +   # group matching: function_name(), function_name2[UUID]
+            r'\]\)',     # adjacent closing characters: ])
+            template_file_data, re.MULTILINE | re.DOTALL)
 
         if result is None:
             raise Exception('Template must contain \'CALLS\' tokens')

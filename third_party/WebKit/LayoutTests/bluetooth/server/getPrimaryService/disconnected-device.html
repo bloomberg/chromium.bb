@@ -10,7 +10,9 @@ promise_test(() => {
       filters: [{services: ['heart_rate']}]}))
     .then(device => assert_promise_rejects_with_message(
       device.gatt.getPrimaryService('heart_rate'),
-      new DOMException('GATT Server is disconnected. Cannot retrieve services.',
+      new DOMException('GATT Server is disconnected. ' +
+                         'Cannot retrieve services. ' +
+                         '(Re)connect first with `device.gatt.connect`.',
                        'NetworkError')));
 }, 'getPrimaryService() called before connecting. Reject with NetworkError.');
 </script>

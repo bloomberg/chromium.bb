@@ -21,10 +21,9 @@ namespace blink {
 
 namespace {
 
-const char kGATTServerDisconnected[] =
-    "GATT Server disconnected while retrieving services.";
 const char kGATTServerNotConnected[] =
-    "GATT Server is disconnected. Cannot retrieve services.";
+    "GATT Server is disconnected. Cannot retrieve services. (Re)connect first "
+    "with `device.gatt.connect`.";
 
 }  // namespace
 
@@ -108,7 +107,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
   // If the device is disconnected, reject.
   if (!RemoveFromActiveAlgorithms(resolver)) {
     resolver->reject(
-        DOMException::create(NetworkError, kGATTServerDisconnected));
+        DOMException::create(NetworkError, kGATTServerNotConnected));
     return;
   }
 
