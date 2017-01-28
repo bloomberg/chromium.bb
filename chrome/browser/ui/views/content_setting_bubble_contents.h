@@ -93,9 +93,8 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   typedef std::map<views::Link*, int> ListItemLinks;
 
   // content::WebContentsObserver:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

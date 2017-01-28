@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/cursor/cursor.h"
@@ -462,9 +463,11 @@ base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
-void ContentSettingBubbleContents::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void ContentSettingBubbleContents::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   // Content settings are based on the main frame, so if it switches then
   // close up shop.
   GetWidget()->Close();
