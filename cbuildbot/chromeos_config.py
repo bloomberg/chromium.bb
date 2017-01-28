@@ -316,8 +316,6 @@ class HWTestList(object):
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict),
-            config_lib.HWTestConfig(constants.HWTEST_TOOLCHAIN_SUITE,
-                                    **default_dict),
             config_lib.HWTestConfig('security',
                                     **default_dict),
             config_lib.HWTestConfig('kernel_daily_regression',
@@ -338,8 +336,6 @@ class HWTestList(object):
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    **default_dict),
-            config_lib.HWTestConfig(constants.HWTEST_TOOLCHAIN_SUITE,
                                     **default_dict),
             config_lib.HWTestConfig('security',
                                     **default_dict)]
