@@ -258,7 +258,7 @@ WebAssemblySerialization status=test
 WebBluetooth status=experimental
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
-WebUSB status=experimental, origin_trial_feature_name=WebUSB
+WebUSB status=experimental, origin_trial_feature_name=WebUSB2
 WebVR status=test, origin_trial_feature_name=WebVR
 WebVTTRegions status=experimental
 V8BasedStructuredClone status=stable
