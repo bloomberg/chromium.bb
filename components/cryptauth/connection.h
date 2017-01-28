@@ -42,8 +42,8 @@ class Connection {
   // either success or failure.
   void SendMessage(std::unique_ptr<WireMessage> message);
 
-  void AddObserver(ConnectionObserver* observer);
-  void RemoveObserver(ConnectionObserver* observer);
+  virtual void AddObserver(ConnectionObserver* observer);
+  virtual void RemoveObserver(ConnectionObserver* observer);
 
   const RemoteDevice& remote_device() const {
     return remote_device_;
