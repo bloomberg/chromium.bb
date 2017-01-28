@@ -2195,6 +2195,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNativeAndroidHistoryManager)},
 #endif  // OS_ANDROID
+
+#if defined(OS_WIN)
+    {"windows10-custom-titlebar", IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_NAME,
+     IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_DESCRIPTION, kOsWin,
+     SINGLE_VALUE_TYPE(switches::kWindows10CustomTitlebar)},
+#endif  // OS_WIN
+
     {"enable-faster-location-reload", IDS_FLAGS_FASTER_LOCATION_RELOAD_NAME,
      IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kFasterLocationReload)},

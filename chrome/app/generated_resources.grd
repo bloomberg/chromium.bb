@@ -15645,6 +15645,16 @@ read aloud to screenreader users to announce that a completion is available.">
       </message>
     </if>
     </if>
+
+    <if expr="is_win">
+      <!-- Custom draw the Windows 10 titlebar. crbug.com/505013 -->
+      <message name="IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_NAME" desc="Name of the flag that enables custom drawing of the Windows 10 titlebar.">
+        Custom-drawn Windows 10 Titlebar
+      </message>
+      <message name="IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_DESCRIPTION" desc="Description for the flag that enables custom drawing of the Windows 10 titlebar.">
+        If enabled, Chrome will draw the titlebar and caption buttons instead of deferring to Windows.
+      </message>
+    </if>
   </messages>
  </release>
 </grit>
