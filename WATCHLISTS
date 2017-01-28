@@ -1429,9 +1429,6 @@
                   '|third_party/WebKit/Source/bindings/v8/custom/V8CustomElementConstructorCustom' \
                   '|third_party/WebKit/Source/bindings/v8/CustomElementHelpers'
     },
-    'blink_tools': {
-      'filepath': 'third_party/WebKit/Tools/'
-    },
     'blink_webp': {
       'filepath': 'third_party/WebKit/Source/platform/image-decoders/webp' \
                   '|third_party/WebKit/Source/platform/image-encoders/skia/WEBP'
@@ -1712,7 +1709,6 @@
                   'pdr+svgwatchlist@chromium.org',
                   'rob.buis@samsung.com',
                   'schenney@chromium.org'],
-    'blink_tools': ['dpranke@chromium.org'],
     'blink_track': ['eric.carlson@apple.com',
                     'fs@opera.com',
                     'glenn@chromium.org',
