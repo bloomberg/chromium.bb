@@ -144,8 +144,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear12DepthVP9) {
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 // Crashes on Mac http://crbug.com/621857
-// Fails on Android http://crbug.com/682387
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX)
 #define MAYBE_VideoBearMp4 DISABLED_VideoBearMp4
 #else
 #define MAYBE_VideoBearMp4 VideoBearMp4

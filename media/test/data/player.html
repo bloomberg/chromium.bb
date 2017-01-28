@@ -84,7 +84,12 @@ function RunTest() {
   player.controls = true;
   document.getElementById('player_container').appendChild(player);
 
-  player.addEventListener('loadedmetadata', function(e) {
+  // We use loadeddata instead of loadedmetadata to ensure the decoder has
+  // completed initialization, even though we don't need to decode anything to
+  // get the size metadata. This is an unfortunate workaround for an Android
+  // framework bug (http://crbug.com/682387) where we have to avoid killing
+  // the GPU process while the decoder is initializing.
+  player.addEventListener('loadeddata', function(e) {
     document.title = '' + player.videoWidth + ' ' + player.videoHeight;
   });
 
