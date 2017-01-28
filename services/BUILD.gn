@@ -14,4 +14,9 @@ test("service_unittests") {
     "//services/image_decoder:tests",
     "//services/test:run_all_unittests",
   ]
+
+  if (is_android) {
+    # Some tests need to initialize V8.
+    deps += [ "//v8:v8_external_startup_data_assets" ]
+  }
 }
