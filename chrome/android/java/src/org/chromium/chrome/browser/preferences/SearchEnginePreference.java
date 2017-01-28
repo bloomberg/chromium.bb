@@ -56,11 +56,14 @@ public class SearchEnginePreference extends PreferenceFragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        /**
-         * Handle UI update when location setting for a search engine is changed.
-         */
-        mSearchEngineAdapter.notifyDataSetChanged();
+    public void onStart() {
+        super.onStart();
+        mSearchEngineAdapter.start();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mSearchEngineAdapter.stop();
     }
 }

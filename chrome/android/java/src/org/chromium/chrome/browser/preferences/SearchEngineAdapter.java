@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.ui.text.SpanApplier;
@@ -48,7 +47,9 @@ import java.util.List;
 /**
 * A custom adapter for listing search engines.
 */
-public class SearchEngineAdapter extends BaseAdapter implements LoadListener, OnClickListener {
+public class SearchEngineAdapter extends BaseAdapter
+        implements TemplateUrlService.LoadListener, TemplateUrlService.TemplateUrlServiceObserver,
+                OnClickListener {
     private static final int VIEW_TYPE_ITEM = 0;
     private static final int VIEW_TYPE_DIVIDER = 1;
     private static final int VIEW_TYPE_COUNT = 2;
@@ -75,6 +76,8 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     /** The position of the default search engine before user's action. */
     private int mInitialEnginePosition = -1;
 
+    private boolean mHasLoadObserver;
+
     /**
      * Construct a SearchEngineAdapter.
      * @param context The current context.
@@ -83,8 +86,25 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         mContext = context;
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
+    }
 
-        initEntries();
+    /**
+     * Start the adapter to gather the available search engines and listen for updates.
+     */
+    public void start() {
+        refreshData();
+        TemplateUrlService.getInstance().addObserver(this);
+    }
+
+    /**
+     * Stop the adapter from listening for future search engine updates.
+     */
+    public void stop() {
+        if (mHasLoadObserver) {
+            TemplateUrlService.getInstance().unregisterLoadListener(this);
+            mHasLoadObserver = false;
+        }
+        TemplateUrlService.getInstance().removeObserver(this);
     }
 
     @VisibleForTesting
@@ -102,19 +122,12 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         return toKeyword(index);
     }
 
-    /**
-     * Initialize the search engine list.
-     */
-    private void initEntries() {
-        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-        if (!templateUrlService.isLoaded()) {
-            templateUrlService.registerLoadListener(this);
-            templateUrlService.load();
-            return;  // Flow continues in onTemplateUrlServiceLoaded below.
-        }
+    private void initializeSearchEngineGroups(List<TemplateUrl> templateUrls) {
+        mPrepopulatedSearchEngines = new ArrayList<>();
+        mRecentSearchEngines = new ArrayList<>();
 
-        int defaultSearchEngineIndex = templateUrlService.getDefaultSearchEngineIndex();
-        for (TemplateUrl templateUrl : templateUrlService.getSearchEngines()) {
+        for (int i = 0; i < templateUrls.size(); i++) {
+            TemplateUrl templateUrl = templateUrls.get(i);
             if (templateUrl.getType() == TemplateUrlService.TYPE_PREPOPULATED
                     || templateUrl.getType() == TemplateUrlService.TYPE_DEFAULT) {
                 mPrepopulatedSearchEngines.add(templateUrl);
@@ -122,6 +135,36 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
                 mRecentSearchEngines.add(templateUrl);
             }
         }
+    }
+
+    /**
+     * Initialize the search engine list.
+     */
+    private void refreshData() {
+        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        if (!templateUrlService.isLoaded()) {
+            mHasLoadObserver = true;
+            templateUrlService.registerLoadListener(this);
+            templateUrlService.load();
+            return;  // Flow continues in onTemplateUrlServiceLoaded below.
+        }
+
+        List<TemplateUrl> templateUrls = templateUrlService.getSearchEngines();
+        boolean searchEnginesChanged = templateUrls.size()
+                != mPrepopulatedSearchEngines.size() + mRecentSearchEngines.size();
+        if (!searchEnginesChanged) {
+            for (int i = 0; i < templateUrls.size(); i++) {
+                TemplateUrl templateUrl = templateUrls.get(i);
+                if (!mPrepopulatedSearchEngines.contains(templateUrl)
+                        && !mRecentSearchEngines.contains(templateUrl)) {
+                    searchEnginesChanged = true;
+                    break;
+                }
+            }
+        }
+        if (searchEnginesChanged) initializeSearchEngineGroups(templateUrls);
+
+        int defaultSearchEngineIndex = templateUrlService.getDefaultSearchEngineIndex();
 
         // Convert the TemplateUrl index into an index of mSearchEngines.
         mSelectedSearchEnginePosition = -1;
@@ -138,9 +181,14 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
             }
         }
 
+        if (mSelectedSearchEnginePosition == -1) {
+            throw new IllegalStateException(
+                    "Default search engine index did not match any available search engines.");
+        }
+
         mInitialEnginePosition = mSelectedSearchEnginePosition;
 
-        TemplateUrlService.getInstance().setSearchEngine(toKeyword(mSelectedSearchEnginePosition));
+        notifyDataSetChanged();
     }
 
     private String toKeyword(int position) {
@@ -295,8 +343,13 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     @Override
     public void onTemplateUrlServiceLoaded() {
         TemplateUrlService.getInstance().unregisterLoadListener(this);
-        initEntries();
-        notifyDataSetChanged();
+        mHasLoadObserver = false;
+        refreshData();
+    }
+
+    @Override
+    public void onTemplateURLServiceChanged() {
+        refreshData();
     }
 
     // OnClickListener:
