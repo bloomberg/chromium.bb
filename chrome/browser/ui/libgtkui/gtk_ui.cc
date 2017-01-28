@@ -169,12 +169,11 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
     g_object_unref(pixbuf);
     g_object_unref(pixmap);
 #else
-    gtk_widget_draw(button, cr);
-
-    // There's probably a better way to do this
+    GtkStyleContext* context = gtk_widget_get_style_context(button);
+    gtk_render_background(context, cr, 0, 0, width, height);
+    gtk_render_frame(context, cr, 0, 0, width, height);
     if (focus_)
-      gtk_render_focus(gtk_widget_get_style_context(button), cr, 0, 0, width,
-                       height);
+      gtk_render_focus(context, cr, 0, 0, width, height);
 #endif
 
     cairo_destroy(cr);
