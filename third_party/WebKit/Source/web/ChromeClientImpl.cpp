@@ -51,6 +51,7 @@
 #include "core/layout/compositing/CompositedSelection.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "modules/accessibility/AXObject.h"
@@ -926,6 +927,11 @@ bool ChromeClientImpl::shouldOpenModalDialogDuringPageDismissal(
       WebConsoleMessage(WebConsoleMessage::LevelError, message));
 
   return false;
+}
+
+WebLayerTreeView* ChromeClientImpl::getWebLayerTreeView(LocalFrame* frame) {
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  return webFrame->localRoot()->frameWidget()->getLayerTreeView();
 }
 
 void ChromeClientImpl::setEventListenerProperties(

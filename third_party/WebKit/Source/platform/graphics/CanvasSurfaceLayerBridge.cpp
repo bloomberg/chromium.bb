@@ -17,6 +17,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
+#include "public/platform/WebLayerTreeView.h"
 #include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 #include "ui/gfx/geometry/size.h"
 #include "wtf/Functional.h"
@@ -55,11 +56,13 @@ class OffscreenCanvasSurfaceReferenceFactory
 }  // namespace
 
 CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
-    CanvasSurfaceLayerBridgeObserver* observer)
+    CanvasSurfaceLayerBridgeObserver* observer,
+    WebLayerTreeView* layerTreeView)
     : m_weakFactory(this),
       m_observer(observer),
       m_binding(this),
-      m_frameSinkId(Platform::current()->generateFrameSinkId()) {
+      m_frameSinkId(Platform::current()->generateFrameSinkId()),
+      m_parentFrameSinkId(layerTreeView->getFrameSinkId()) {
   m_refFactory =
       new OffscreenCanvasSurfaceReferenceFactory(m_weakFactory.GetWeakPtr());
 
@@ -67,8 +70,11 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
   mojom::blink::OffscreenCanvasSurfaceFactoryPtr serviceFactory;
   Platform::current()->interfaceProvider()->getInterface(
       mojo::MakeRequest(&serviceFactory));
+  // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
+  // frame-less HTML canvas's document is reparenting under another frame.
+  // See crbug.com/683172.
   serviceFactory->CreateOffscreenCanvasSurface(
-      m_frameSinkId, m_binding.CreateInterfacePtrAndBind(),
+      m_parentFrameSinkId, m_frameSinkId, m_binding.CreateInterfacePtrAndBind(),
       mojo::MakeRequest(&m_service));
 }
 

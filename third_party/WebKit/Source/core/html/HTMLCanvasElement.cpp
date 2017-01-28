@@ -38,6 +38,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/File.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -56,6 +57,7 @@
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/page/ChromeClient.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintTiming.h"
 #include "platform/Histogram.h"
@@ -1423,9 +1425,18 @@ String HTMLCanvasElement::getIdFromControl(const Element* element) {
 
 void HTMLCanvasElement::createLayer() {
   DCHECK(!m_surfaceLayerBridge);
-  m_surfaceLayerBridge = WTF::wrapUnique(new CanvasSurfaceLayerBridge(this));
-  // Creates a placeholder layer first before Surface is created.
-  m_surfaceLayerBridge->createSolidColorLayer();
+  LocalFrame* frame = document().frame();
+  WebLayerTreeView* layerTreeView = nullptr;
+  // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
+  // frame-less HTML canvas's document is reparenting under another frame.
+  // See crbug.com/683172.
+  if (frame) {
+    layerTreeView = frame->host()->chromeClient().getWebLayerTreeView(frame);
+    m_surfaceLayerBridge =
+        WTF::wrapUnique(new CanvasSurfaceLayerBridge(this, layerTreeView));
+    // Creates a placeholder layer first before Surface is created.
+    m_surfaceLayerBridge->createSolidColorLayer();
+  }
 }
 
 void HTMLCanvasElement::OnWebLayerReplaced() {

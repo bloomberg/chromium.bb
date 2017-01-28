@@ -30,7 +30,9 @@ OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
                  base::Unretained(this)));
 }
 
-OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {}
+OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {
+  provider_->OnCompositorFrameSinkClientDestroyed(support_.frame_sink_id());
+}
 
 void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
     bool needs_begin_frame) {

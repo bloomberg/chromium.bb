@@ -22,7 +22,8 @@ interface OffscreenCanvasSurfaceClient {
 };
 
 interface OffscreenCanvasSurfaceFactory {
-  CreateOffscreenCanvasSurface(cc.mojom.FrameSinkId frame_sink_id,
+  CreateOffscreenCanvasSurface(cc.mojom.FrameSinkId parent_frame_sink_id,
+                               cc.mojom.FrameSinkId frame_sink_id,
                                OffscreenCanvasSurfaceClient client,
                                OffscreenCanvasSurface& service);
 };

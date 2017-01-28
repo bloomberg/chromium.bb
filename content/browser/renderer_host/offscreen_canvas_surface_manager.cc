@@ -27,6 +27,30 @@ OffscreenCanvasSurfaceManager* OffscreenCanvasSurfaceManager::GetInstance() {
   return g_manager.Pointer();
 }
 
+void OffscreenCanvasSurfaceManager::RegisterFrameSinkToParent(
+    const cc::FrameSinkId& child_frame_sink_id) {
+  auto surface_iter = registered_surface_instances_.find(child_frame_sink_id);
+  if (surface_iter == registered_surface_instances_.end())
+    return;
+  OffscreenCanvasSurfaceImpl* surfaceImpl = surface_iter->second;
+  if (surfaceImpl->parent_frame_sink_id().is_valid()) {
+    GetSurfaceManager()->RegisterFrameSinkHierarchy(
+        surfaceImpl->parent_frame_sink_id(), child_frame_sink_id);
+  }
+}
+
+void OffscreenCanvasSurfaceManager::UnregisterFrameSinkFromParent(
+    const cc::FrameSinkId& child_frame_sink_id) {
+  auto surface_iter = registered_surface_instances_.find(child_frame_sink_id);
+  if (surface_iter == registered_surface_instances_.end())
+    return;
+  OffscreenCanvasSurfaceImpl* surfaceImpl = surface_iter->second;
+  if (surfaceImpl->parent_frame_sink_id().is_valid()) {
+    GetSurfaceManager()->UnregisterFrameSinkHierarchy(
+        surfaceImpl->parent_frame_sink_id(), child_frame_sink_id);
+  }
+}
+
 void OffscreenCanvasSurfaceManager::OnSurfaceCreated(
     const cc::SurfaceInfo& surface_info) {
   auto surface_iter =
@@ -38,7 +62,7 @@ void OffscreenCanvasSurfaceManager::OnSurfaceCreated(
 }
 
 void OffscreenCanvasSurfaceManager::RegisterOffscreenCanvasSurfaceInstance(
-    cc::FrameSinkId frame_sink_id,
+    const cc::FrameSinkId& frame_sink_id,
     OffscreenCanvasSurfaceImpl* surface_instance) {
   DCHECK(surface_instance);
   DCHECK_EQ(registered_surface_instances_.count(frame_sink_id), 0u);
@@ -46,13 +70,13 @@ void OffscreenCanvasSurfaceManager::RegisterOffscreenCanvasSurfaceInstance(
 }
 
 void OffscreenCanvasSurfaceManager::UnregisterOffscreenCanvasSurfaceInstance(
-    cc::FrameSinkId frame_sink_id) {
+    const cc::FrameSinkId& frame_sink_id) {
   DCHECK_EQ(registered_surface_instances_.count(frame_sink_id), 1u);
   registered_surface_instances_.erase(frame_sink_id);
 }
 
 OffscreenCanvasSurfaceImpl* OffscreenCanvasSurfaceManager::GetSurfaceInstance(
-    cc::FrameSinkId frame_sink_id) {
+    const cc::FrameSinkId& frame_sink_id) {
   auto search = registered_surface_instances_.find(frame_sink_id);
   if (search != registered_surface_instances_.end()) {
     return search->second;

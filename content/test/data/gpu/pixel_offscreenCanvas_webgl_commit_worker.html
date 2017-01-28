@@ -63,11 +63,21 @@ function drawTriangle()
 
 function drawLoop()
 {
-  if (g_frameNumber < 3) {
-    gl.clearColor(1, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+  if (g_frameNumber < 10) {
     g_frameNumber++;
-    gl.commit().then(drawLoop);
+    // Purposely intersperse overdraw and non-overdraw commit cases to see
+    // if OffscreenCanvas commit() handles both cases well.
+    if (0 == g_frameNumber % 2) {
+      // When promise is used, the next drawLoop() is called after the first
+      // frame is resolved; therefore there is no overdraw in this case.
+      gl.commit().then(drawLoop);
+    } else {
+      // When the next drawLoop() is invoked regardless the promise resolve
+      // status of the previous commit(), the frame committed in the next
+      // drawLoop() is very likely to be overdrawn.
+      gl.commit();
+      drawLoop();
+    }
   } else {
     drawTriangle();
     gl.commit();
@@ -82,7 +92,9 @@ function drawLoop()
 
 self.onmessage = function(e) {
   var transferredOffscreenCanvas = e.data;
-  gl = transferredOffscreenCanvas.getContext("webgl");
+  gl = transferredOffscreenCanvas.getContext("webgl", {preserveDrawingBuffer: true});
+  gl.clearColor(1, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
   drawLoop();
 };
 </script>

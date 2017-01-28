@@ -27,12 +27,6 @@
 
 namespace blink {
 
-// This constant specifies the maximum number of pixel buffer that are allowed
-// to co-exist at a given time. The minimum number is 2 (double buffered).
-// larger numbers can help maintain a steadier frame rates, but they increase
-// latency.
-const int kMaximumOffscreenCanvasBufferCount = 3;
-
 OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     OffscreenCanvasFrameDispatcherClient* client,
     uint32_t clientId,
@@ -45,21 +39,25 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
       m_width(width),
       m_height(height),
       m_changeSizeForNextCommit(false),
+      m_needsBeginFrame(false),
       m_nextResourceId(1u),
       m_binding(this),
       m_placeholderCanvasId(canvasId) {
-  m_currentLocalSurfaceId = m_surfaceIdAllocator.GenerateId();
-  DCHECK(!m_sink.is_bound());
-  mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
-  Platform::current()->interfaceProvider()->getInterface(
-      mojo::MakeRequest(&provider));
-  provider->CreateCompositorFrameSink(m_frameSinkId,
-                                      m_binding.CreateInterfacePtrAndBind(),
-                                      mojo::MakeRequest(&m_sink));
+  if (m_frameSinkId.is_valid()) {
+    // Only frameless canvas pass an invalid frame sink id; we don't create
+    // mojo channel for this special case.
+    m_currentLocalSurfaceId = m_surfaceIdAllocator.GenerateId();
+    DCHECK(!m_sink.is_bound());
+    mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
+    Platform::current()->interfaceProvider()->getInterface(
+        mojo::MakeRequest(&provider));
+    provider->CreateCompositorFrameSink(m_frameSinkId,
+                                        m_binding.CreateInterfacePtrAndBind(),
+                                        mojo::MakeRequest(&m_sink));
+  }
 }
 
 OffscreenCanvasFrameDispatcherImpl::~OffscreenCanvasFrameDispatcherImpl() {
-  m_syntheticBeginFrameTask.cancel();
 }
 
 void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceToSharedBitmap(
@@ -185,6 +183,23 @@ void updatePlaceholderImage(WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
 
 }  // namespace
 
+void OffscreenCanvasFrameDispatcherImpl::postImageToPlaceholder(
+    RefPtr<StaticBitmapImage> image) {
+  // After this point, |image| can only be used on the main thread, until
+  // it is returned.
+  image->transfer();
+  RefPtr<WebTaskRunner> dispatcherTaskRunner =
+      Platform::current()->currentThread()->getWebTaskRunner();
+
+  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE,
+      crossThreadBind(updatePlaceholderImage, this->createWeakPtr(),
+                      WTF::passed(std::move(dispatcherTaskRunner)),
+                      m_placeholderCanvasId, std::move(image),
+                      m_nextResourceId));
+  m_spareResourceLocks.insert(m_nextResourceId);
+}
+
 void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     RefPtr<StaticBitmapImage> image,
     double commitStartTime,
@@ -192,6 +207,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     called on SwiftShader. */) {
   if (!image || !verifyImageSize(image->size()))
     return;
+  if (!m_frameSinkId.is_valid()) {
+    postImageToPlaceholder(std::move(image));
+    return;
+  }
   cc::CompositorFrame frame;
   // TODO(crbug.com/652931): update the device_scale_factor
   frame.metadata.device_scale_factor = 1.0f;
@@ -247,19 +266,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     }
   }
 
-  // After this point, |image| can only be used on the main thread, until
-  // it is returned.
-  image->transfer();
-  RefPtr<WebTaskRunner> dispatcherTaskRunner =
-      Platform::current()->currentThread()->getWebTaskRunner();
-
-  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE,
-      crossThreadBind(updatePlaceholderImage, this->createWeakPtr(),
-                      WTF::passed(std::move(dispatcherTaskRunner)),
-                      m_placeholderCanvasId, std::move(image), resource.id));
-  m_spareResourceLocks.insert(m_nextResourceId);
-
+  postImageToPlaceholder(std::move(image));
   commitTypeHistogram.count(commitType);
 
   m_nextResourceId++;
@@ -371,44 +378,26 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     m_currentLocalSurfaceId = m_surfaceIdAllocator.GenerateId();
     m_changeSizeForNextCommit = false;
   }
+
   m_sink->SubmitCompositorFrame(m_currentLocalSurfaceId, std::move(frame));
-
-  // TODO(crbug.com/674744): Get BeginFrame to fire on its own.
-  scheduleSyntheticBeginFrame();
-}
-
-void OffscreenCanvasFrameDispatcherImpl::scheduleSyntheticBeginFrame() {
-  m_syntheticBeginFrameTask =
-      Platform::current()
-          ->currentThread()
-          ->getWebTaskRunner()
-          ->postDelayedCancellableTask(
-              BLINK_FROM_HERE,
-              WTF::bind(&OffscreenCanvasFrameDispatcherImpl::OnBeginFrame,
-                        WTF::unretained(this), cc::BeginFrameArgs()),
-              16);
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck() {
   // TODO(fsamuel): Implement this.
 }
 
+void OffscreenCanvasFrameDispatcherImpl::setNeedsBeginFrame(
+    bool needsBeginFrame) {
+  if (m_sink && needsBeginFrame != m_needsBeginFrame) {
+    m_needsBeginFrame = needsBeginFrame;
+    m_sink->SetNeedsBeginFrame(needsBeginFrame);
+  }
+}
+
 void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
     const cc::BeginFrameArgs& beginFrameArgs) {
-  if (!client())
-    return;
-  unsigned framesInFlight = m_cachedImages.size() + m_sharedBitmaps.size() +
-                            m_cachedTextureIds.size();
-
-  // Limit the rate of compositor commits.
-  if (framesInFlight < kMaximumOffscreenCanvasBufferCount) {
-    client()->beginFrame();
-  } else {
-    // TODO(crbug.com/674744): Get BeginFrame to fire on its own.
-    // The following call is to reschedule the frame in cases where we encounter
-    // a backlog.
-    scheduleSyntheticBeginFrame();
-  }
+  DCHECK(client());
+  client()->beginFrame();
 }
 
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(

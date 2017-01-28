@@ -20,6 +20,7 @@ class OffscreenCanvasSurfaceFactoryImpl
 
   // blink::mojom::OffscreenCanvasSurfaceFactory implementation.
   void CreateOffscreenCanvasSurface(
+      const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& frame_sink_id,
       blink::mojom::OffscreenCanvasSurfaceClientPtr client,
       blink::mojom::OffscreenCanvasSurfaceRequest request) override;

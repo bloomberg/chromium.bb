@@ -115,6 +115,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetIsForOopif(bool is_for_oopif);
 
   // WebLayerTreeView implementation.
+  cc::FrameSinkId getFrameSinkId() override;
   void setRootLayer(const blink::WebLayer& layer) override;
   void clearRootLayer() override;
   cc::AnimationHost* compositorAnimationHost() override;

@@ -22,6 +22,7 @@ class SurfaceInfo;
 namespace blink {
 
 class WebLayer;
+class WebLayerTreeView;
 
 class PLATFORM_EXPORT CanvasSurfaceLayerBridgeObserver {
  public:
@@ -34,7 +35,8 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridgeObserver {
 class PLATFORM_EXPORT CanvasSurfaceLayerBridge
     : NON_EXPORTED_BASE(public mojom::blink::OffscreenCanvasSurfaceClient) {
  public:
-  explicit CanvasSurfaceLayerBridge(CanvasSurfaceLayerBridgeObserver*);
+  explicit CanvasSurfaceLayerBridge(CanvasSurfaceLayerBridgeObserver*,
+                                    WebLayerTreeView*);
   ~CanvasSurfaceLayerBridge();
   void createSolidColorLayer();
   WebLayer* getWebLayer() const { return m_webLayer.get(); }
@@ -58,8 +60,9 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridge
   mojom::blink::OffscreenCanvasSurfacePtr m_service;
   mojo::Binding<mojom::blink::OffscreenCanvasSurfaceClient> m_binding;
 
-  cc::FrameSinkId m_frameSinkId;
+  const cc::FrameSinkId m_frameSinkId;
   cc::SurfaceId m_currentSurfaceId;
+  const cc::FrameSinkId m_parentFrameSinkId;
 };
 
 }  // namespace blink

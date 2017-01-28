@@ -228,6 +228,8 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void installSupplements(LocalFrame&) override;
 
+  WebLayerTreeView* getWebLayerTreeView(LocalFrame*) override;
+
  private:
   explicit ChromeClientImpl(WebViewImpl*);
 

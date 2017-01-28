@@ -33,6 +33,8 @@ class OffscreenCanvasCompositorFrameSinkProviderImpl
 
   void OnCompositorFrameSinkClientConnectionLost(
       const cc::FrameSinkId& frame_sink_id);
+  void OnCompositorFrameSinkClientDestroyed(
+      const cc::FrameSinkId& frame_sink_id);
 
  private:
   std::unordered_map<cc::FrameSinkId,

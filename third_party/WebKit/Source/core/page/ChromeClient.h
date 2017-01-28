@@ -72,6 +72,7 @@ class WebDragData;
 class WebFrameScheduler;
 class WebImage;
 class WebLayer;
+class WebLayerTreeView;
 
 struct CompositedSelection;
 struct DateTimeChooserParameters;
@@ -342,6 +343,8 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual double lastFrameTimeMonotonic() const { return 0.0; }
 
   virtual void installSupplements(LocalFrame&) {}
+
+  virtual WebLayerTreeView* getWebLayerTreeView(LocalFrame*) { return nullptr; }
 
   DECLARE_TRACE();
 

@@ -17,11 +17,13 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     : public blink::mojom::OffscreenCanvasSurface {
  public:
   OffscreenCanvasSurfaceImpl(
+      const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& frame_sink_id,
       blink::mojom::OffscreenCanvasSurfaceClientPtr client);
   ~OffscreenCanvasSurfaceImpl() override;
 
-  static void Create(const cc::FrameSinkId& frame_sink_id,
+  static void Create(const cc::FrameSinkId& parent_frame_sink_id,
+                     const cc::FrameSinkId& frame_sink_id,
                      blink::mojom::OffscreenCanvasSurfaceClientPtr client,
                      blink::mojom::OffscreenCanvasSurfaceRequest request);
 
@@ -33,6 +35,11 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
   const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+
+  const cc::FrameSinkId& parent_frame_sink_id() const {
+    return parent_frame_sink_id_;
+  }
+
   const cc::LocalSurfaceId& current_local_surface_id() const {
     return current_local_surface_id_;
   }
@@ -42,8 +49,9 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   mojo::StrongBindingPtr<blink::mojom::OffscreenCanvasSurface> binding_;
 
   // Surface-related state
-  cc::FrameSinkId frame_sink_id_;
+  const cc::FrameSinkId frame_sink_id_;
   cc::LocalSurfaceId current_local_surface_id_;
+  const cc::FrameSinkId parent_frame_sink_id_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceImpl);
 };

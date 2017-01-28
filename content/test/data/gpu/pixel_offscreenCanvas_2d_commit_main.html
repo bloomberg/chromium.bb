@@ -33,14 +33,26 @@ var g_animationFrameNumber = 0;
 var canvas = document.getElementById("c");
 var offscreenCanvas = canvas.transferControlToOffscreen();
 var offscreen2d = offscreenCanvas.getContext("2d");
+offscreen2d.fillStyle = "red";
+offscreen2d.fillRect(0, 0, 200, 200);
 
 function drawLoop()
 {
-  if (g_animationFrameNumber < 3) {
-    offscreen2d.fillStyle = "red";
-    offscreen2d.fillRect(0, 0, 200, 200);
+  if (g_animationFrameNumber < 10) {
     g_animationFrameNumber++;
-    offscreen2d.commit().then(drawLoop);
+    // Purposely intersperse overdraw and non-overdraw commit cases to see
+    // if OffscreenCanvas commit() handles both cases well.
+    if (0 == g_animationFrameNumber % 2) {
+      // When promise is used, the next drawLoop() is called after the first
+      // frame is resolved; therefore there is no overdraw in this case.
+      offscreen2d.commit().then(drawLoop);
+    } else {
+      // When the next drawLoop() is invoked regardless the promise resolve
+      // status of the previous commit(), the frame committed in the next
+      // drawLoop() is very likely to be overdrawn.
+      offscreen2d.commit();
+      drawLoop();
+    }
   } else {
     offscreen2d.fillStyle = "red";
     offscreen2d.fillRect(0, 0, 100, 100);

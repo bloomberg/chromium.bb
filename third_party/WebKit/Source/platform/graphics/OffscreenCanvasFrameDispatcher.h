@@ -25,6 +25,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
   virtual void dispatchFrame(RefPtr<StaticBitmapImage>,
                              double commitStartTime,
                              bool isWebGLSoftwareRendering) = 0;
+  virtual void setNeedsBeginFrame(bool) = 0;
   virtual void reclaimResource(unsigned resourceId) = 0;
 
   virtual void reshape(int width, int height) = 0;

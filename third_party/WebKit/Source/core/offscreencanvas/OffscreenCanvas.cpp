@@ -236,6 +236,7 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
 ScriptPromise OffscreenCanvas::commit(RefPtr<StaticBitmapImage> image,
                                       bool isWebGLSoftwareRendering,
                                       ScriptState* scriptState) {
+  getOrCreateFrameDispatcher()->setNeedsBeginFrame(true);
   if (m_commitPromiseResolver) {
     if (image) {
       m_overdrawFrame = std::move(image);
@@ -266,6 +267,11 @@ void OffscreenCanvas::beginFrame() {
   } else if (m_commitPromiseResolver) {
     m_commitPromiseResolver->resolve();
     m_commitPromiseResolver.clear();
+    // We need to tell parent frame to stop sending signals on begin frame to
+    // avoid overhead once we resolve the promise.
+    // In the case of overdraw frame (if block), we still need to wait for one
+    // more frame time to resolve the existing promise.
+    getOrCreateFrameDispatcher()->setNeedsBeginFrame(false);
   }
 }
 
