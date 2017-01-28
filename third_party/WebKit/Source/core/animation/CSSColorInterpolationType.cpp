@@ -265,4 +265,13 @@ void CSSColorInterpolationType::applyStandardPropertyValue(
           cssProperty() == CSSPropertyTextDecorationColor));
 }
 
+const CSSValue* CSSColorInterpolationType::createCSSValue(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue*,
+    const StyleResolverState& state) const {
+  const InterpolableList& colorPair = toInterpolableList(interpolableValue);
+  Color color = resolveInterpolableColor(*colorPair.get(Unvisited), state);
+  return CSSColorValue::create(color.rgb());
+}
+
 }  // namespace blink
