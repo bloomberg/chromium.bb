@@ -1868,25 +1868,3 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
 
   search_terms_data_.set_google_base_url("http://www.google.com/");
 }
-
-// Test that TemplateURL object created with settings for google engine
-// matches its TemplateURLData.
-TEST_F(TemplateURLTest, MatchesData) {
-  TemplateURLData data;
-  data.SetURL("{google:baseURL}search?q={searchTerms}");
-  data.SetShortName(ASCIIToUTF16("Google"));
-  data.SetKeyword(ASCIIToUTF16("google.com"));
-  data.suggestions_url = "{google:baseSuggestURL}search?q={searchTerms}";
-  data.instant_url = "{google:baseURL}webhp";
-  data.image_url = "{google:baseURL}searchbyimage/upload";
-  data.new_tab_url = "{google:baseURL}_/chrome/newtab";
-  data.contextual_search_url = "{google:baseURL}_/contextualsearch";
-  data.image_url_post_params = "encoded_image={google:imageThumbnail}";
-  data.alternate_urls.push_back("{google:baseURL}s#q={searchTerms}");
-  // search_terms_replacement_key with value of
-  // "{google:instantExtendedEnabledKey}" is replaced inside TemplateUrl
-  // constructor so must be handled specially inside MatchesData.
-  data.search_terms_replacement_key = "{google:instantExtendedEnabledKey}";
-  TemplateURL url(data);
-  EXPECT_TRUE(TemplateURL::MatchesData(&url, &data, search_terms_data_));
-}
