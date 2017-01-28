@@ -56,10 +56,33 @@ namespace offline_pages {
 
 using PageQuality = SnapshotController::PageQuality;
 
-bool RecentTabHelper::SnapshotProgressInfo::IsForLastN() {
-  // A last_n snapshot always has an invalid request id.
-  return request_id == OfflinePageModel::kInvalidOfflineId;
-}
+// Keeps client_id/request_id that will be used for the offline snapshot.
+struct RecentTabHelper::SnapshotProgressInfo {
+ public:
+  // For a downloads snapshot request, where the |request_id| is defined.
+  SnapshotProgressInfo(const ClientId& client_id, int64_t request_id)
+      : client_id(client_id), request_id(request_id) {}
+
+  // For a last_n snapshot request.
+  explicit SnapshotProgressInfo(const ClientId& client_id)
+      : client_id(client_id) {}
+
+  bool IsForLastN() { return client_id.name_space == kLastNNamespace; }
+
+  // The ClientID to go with the offline page.
+  ClientId client_id;
+
+  // Id of the suspended request in Background Offliner. Used to un-suspend
+  // the request if the capture of the current page was not possible (e.g.
+  // the user navigated to another page before current one was loaded).
+  // 0 if this is a "last_n" info.
+  int64_t request_id = OfflinePageModel::kInvalidOfflineId;
+
+  // Expected snapshot quality should the saving succeed. This value is only
+  // valid for successfully saved snapshots.
+  SnapshotController::PageQuality expected_page_quality =
+      SnapshotController::PageQuality::POOR;
+};
 
 RecentTabHelper::RecentTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -79,30 +102,47 @@ void RecentTabHelper::SetDelegate(
 
 void RecentTabHelper::ObserveAndDownloadCurrentPage(
     const ClientId& client_id, int64_t request_id) {
+  // Note: as this implementation only supports one client namespace, enforce
+  // that the call is from Downloads.
+  DCHECK_EQ(kDownloadNamespace, client_id.name_space);
   auto new_downloads_snapshot_info =
       base::MakeUnique<SnapshotProgressInfo>(client_id, request_id);
 
   // If this tab helper is not enabled, immediately give the job back to
   // RequestCoordinator.
   if (!EnsureInitialized()) {
-    ReportDownloadStatusToRequestCoordinator(new_downloads_snapshot_info.get());
+    ReportDownloadStatusToRequestCoordinator(new_downloads_snapshot_info.get(),
+                                             false);
     return;
   }
 
-  // TODO(carlosk): This is a good moment check if a snapshot is currently being
-  // generated. This would allow the early cancellation of this request (without
-  // incurring in scheduling a background download).
+  // If there is an ongoing snapshot request, completely ignore this one and
+  // cancel the Background Offliner request.
+  // TODO(carlosk): it might be better to make the decision to schedule or not
+  // the background request here. See https://crbug.com/686165.
+  // TODO(carlosk): there is an edge case that happens when the ongoing request
+  // was automatically and transparently scheduled by a navigation event and
+  // this call happens due to the user pressing the download button. The user's
+  // request to download the page will be immediately dismissed. See
+  // https://crbug.com/686283.
+  if (downloads_ongoing_snapshot_info_) {
+    ReportDownloadStatusToRequestCoordinator(new_downloads_snapshot_info.get(),
+                                             true);
+    return;
+  }
 
   // Stores the new snapshot info.
-  downloads_latest_snapshot_info_ = std::move(new_downloads_snapshot_info);
+  downloads_ongoing_snapshot_info_ = std::move(new_downloads_snapshot_info);
 
   // If the page is not yet ready for a snapshot return now as it will be
   // started later, once page loading advances.
-  if (PageQuality::POOR == snapshot_controller_->current_page_quality())
+  if (PageQuality::POOR == snapshot_controller_->current_page_quality()) {
+    downloads_snapshot_on_hold_ = true;
     return;
+  }
 
   // Otherwise start saving the snapshot now.
-  SaveSnapshotForDownloads();
+  SaveSnapshotForDownloads(false);
 }
 
 // Initialize lazily. It needs TabAndroid for initialization, which is also a
@@ -145,16 +185,16 @@ void RecentTabHelper::DidFinishNavigation(
   if (!EnsureInitialized())
     return;
 
-  // We navigated to a different page, lets report progress to Background
-  // Offliner.
-  if (downloads_latest_snapshot_info_)
+  // If there is an ongoing downloads request, lets allow Background Offliner to
+  // continue downloading this page.
+  if (downloads_ongoing_snapshot_info_) {
     ReportDownloadStatusToRequestCoordinator(
-        downloads_latest_snapshot_info_.get());
+        downloads_ongoing_snapshot_info_.get(), false);
+  }
 
   // Cancel any and all in flight snapshot tasks from the previous page.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  downloads_latest_snapshot_info_.reset();
-  last_n_ongoing_snapshot_info_.reset();
+  CancelInFlightSnapshots();
+  downloads_snapshot_on_hold_ = false;
 
   // New navigation, new snapshot session.
   snapshot_url_ = web_contents()->GetLastCommittedURL();
@@ -187,12 +227,13 @@ void RecentTabHelper::DocumentOnLoadCompletedInMainFrame() {
 }
 
 void RecentTabHelper::WebContentsDestroyed() {
-  // WebContents (and maybe Tab) is destroyed, report status to Offliner.
-  if (downloads_latest_snapshot_info_)
+  // If there is an ongoing downloads request, lets allow Background Offliner to
+  // continue downloading this page.
+  if (downloads_ongoing_snapshot_info_)
     ReportDownloadStatusToRequestCoordinator(
-        downloads_latest_snapshot_info_.get());
+        downloads_ongoing_snapshot_info_.get(), false);
   // And cancel any ongoing snapshots.
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  CancelInFlightSnapshots();
 }
 
 // TODO(carlosk): this method is also called when the tab is being closed, when
@@ -218,6 +259,7 @@ void RecentTabHelper::WasHidden() {
 
   last_n_ongoing_snapshot_info_ =
       base::MakeUnique<SnapshotProgressInfo>(GetRecentPagesClientId());
+  DCHECK(last_n_ongoing_snapshot_info_->IsForLastN());
   DCHECK(snapshots_enabled_);
   // Remove previously captured pages for this tab.
   page_model_->GetOfflineIdsForClientId(
@@ -232,28 +274,49 @@ void RecentTabHelper::WasHidden() {
 void RecentTabHelper::StartSnapshot() {
   DCHECK_NE(PageQuality::POOR, snapshot_controller_->current_page_quality());
 
-  // This is a navigation based snapshot request so check that snapshots are
-  // both enabled and there is a downloads request for one.
-  // TODO(carlosk): This is a good moment to add the check for an ongoing
-  // snapshot that could trigger the early cancellation of this request.
-  if (snapshots_enabled_ && downloads_latest_snapshot_info_)
-    SaveSnapshotForDownloads();
-  else
-    snapshot_controller_->PendingSnapshotCompleted();
+  // As long as snapshots are enabled for this tab, there are two situations
+  // that allow for a navigation event to start a snapshot:
+  // 1) There is a request on hold waiting for the page to be minimally loaded.
+  if (snapshots_enabled_ && downloads_snapshot_on_hold_) {
+    downloads_snapshot_on_hold_ = false;
+    SaveSnapshotForDownloads(false);
+    return;
+  }
+
+  // 2) There's no ongoing snapshot and a previous one was saved with lower
+  // expected quality than what would be possible now.
+  if (snapshots_enabled_ &&
+      (!downloads_ongoing_snapshot_info_ &&
+       downloads_latest_saved_snapshot_info_ &&
+       downloads_latest_saved_snapshot_info_->expected_page_quality <
+           snapshot_controller_->current_page_quality())) {
+    SaveSnapshotForDownloads(true);
+    return;
+  }
+
+  // Notify the controller that a snapshot was not started.
+  snapshot_controller_->PendingSnapshotCompleted();
 }
 
-// TODO(carlosk): There is still the possibility of overlapping snapshots with
-// some combinations of calls to ObserveAndDownloadCurrentPage and
-// StartSnapshot. It won't cause side effects beyond wasted resources and will
-// be dealt with later.
-void RecentTabHelper::SaveSnapshotForDownloads() {
+void RecentTabHelper::SaveSnapshotForDownloads(bool replace_latest) {
   DCHECK_NE(PageQuality::POOR, snapshot_controller_->current_page_quality());
-  DCHECK(downloads_latest_snapshot_info_);
 
-  // Requests the deletion of a potentially existing previous snapshot of this
-  // page.
-  std::vector<int64_t> ids{downloads_latest_snapshot_info_->request_id};
-  ContinueSnapshotWithIdsToPurge(downloads_latest_snapshot_info_.get(), ids);
+  if (replace_latest) {
+    // Start by requesting the deletion of the existing previous snapshot of
+    // this page.
+    DCHECK(downloads_latest_saved_snapshot_info_);
+    DCHECK(!downloads_ongoing_snapshot_info_);
+    downloads_ongoing_snapshot_info_ = base::MakeUnique<SnapshotProgressInfo>(
+        downloads_latest_saved_snapshot_info_->client_id,
+        downloads_latest_saved_snapshot_info_->request_id);
+    std::vector<int64_t> ids{downloads_latest_saved_snapshot_info_->request_id};
+    ContinueSnapshotWithIdsToPurge(downloads_ongoing_snapshot_info_.get(), ids);
+  } else {
+    // Otherwise go straight to saving the page.
+    DCHECK(downloads_ongoing_snapshot_info_);
+    ContinueSnapshotAfterPurge(downloads_ongoing_snapshot_info_.get(),
+                               OfflinePageModel::DeletePageResult::SUCCESS);
+  }
 }
 
 // This is the 1st step of a sequence of async operations chained through
@@ -263,9 +326,9 @@ void RecentTabHelper::SaveSnapshotForDownloads() {
 // 3) Snapshot the current web contents.
 // 4) Notify requesters about the final result of the operation.
 //
-// For last_n requests the sequence is started in 1); for downloads it starts in
-// 2). Step 4) might be called anytime during the chain for early termination in
-// case of errors.
+// For last_n requests the sequence is always started in 1). For downloads it
+// starts in either 2) or 3). Step 4) might be called anytime during the chain
+// for early termination in case of errors.
 void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
     SnapshotProgressInfo* snapshot_info,
     const std::vector<int64_t>& page_ids) {
@@ -281,7 +344,7 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
     OfflinePageModel::DeletePageResult result) {
   DCHECK_EQ(snapshot_url_, web_contents()->GetLastCommittedURL());
   if (result != OfflinePageModel::DeletePageResult::SUCCESS) {
-    ReportSnapshotCompleted(snapshot_info);
+    ReportSnapshotCompleted(snapshot_info, false);
     return;
   }
 
@@ -303,32 +366,40 @@ void RecentTabHelper::SavePageCallback(SnapshotProgressInfo* snapshot_info,
                                        int64_t offline_id) {
   DCHECK(snapshot_info->IsForLastN() ||
          snapshot_info->request_id == offline_id);
-  snapshot_info->page_snapshot_completed = (result == SavePageResult::SUCCESS);
-  ReportSnapshotCompleted(snapshot_info);
+  ReportSnapshotCompleted(snapshot_info, result == SavePageResult::SUCCESS);
 }
 
 // Note: this is the final step in the chain of callbacks and it's where the
 // behavior is different depending on this being a last_n or downloads snapshot.
 void RecentTabHelper::ReportSnapshotCompleted(
-    SnapshotProgressInfo* snapshot_info) {
+    SnapshotProgressInfo* snapshot_info,
+    bool success) {
   if (snapshot_info->IsForLastN()) {
     DCHECK_EQ(snapshot_info, last_n_ongoing_snapshot_info_.get());
-    if (snapshot_info->page_snapshot_completed)
+    if (success)
       last_n_latest_saved_quality_ = snapshot_info->expected_page_quality;
     last_n_ongoing_snapshot_info_.reset();
     return;
   }
 
+  DCHECK_EQ(snapshot_info, downloads_ongoing_snapshot_info_.get());
   snapshot_controller_->PendingSnapshotCompleted();
   // Tell RequestCoordinator how the request should be processed further.
-  ReportDownloadStatusToRequestCoordinator(snapshot_info);
+  ReportDownloadStatusToRequestCoordinator(snapshot_info, success);
+  if (success) {
+    downloads_latest_saved_snapshot_info_ =
+        std::move(downloads_ongoing_snapshot_info_);
+  } else {
+    downloads_ongoing_snapshot_info_.reset();
+  }
 }
 
 // Note: we cannot assume that snapshot_info == downloads_latest_snapshot_info_
 // because further calls made to ObserveAndDownloadCurrentPage will replace
 // downloads_latest_snapshot_info_ with a new instance.
 void RecentTabHelper::ReportDownloadStatusToRequestCoordinator(
-    SnapshotProgressInfo* snapshot_info) {
+    SnapshotProgressInfo* snapshot_info,
+    bool cancel_background_request) {
   DCHECK(snapshot_info);
   DCHECK(!snapshot_info->IsForLastN());
 
@@ -341,7 +412,7 @@ void RecentTabHelper::ReportDownloadStatusToRequestCoordinator(
   // It is OK to call these methods more then once, depending on
   // number of snapshots attempted in this tab helper. If the request_id is not
   // in the list of RequestCoordinator, these calls have no effect.
-  if (snapshot_info->page_snapshot_completed)
+  if (cancel_background_request)
     request_coordinator->MarkRequestCompleted(snapshot_info->request_id);
   else
     request_coordinator->EnableForOffliner(snapshot_info->request_id,
@@ -350,6 +421,13 @@ void RecentTabHelper::ReportDownloadStatusToRequestCoordinator(
 
 ClientId RecentTabHelper::GetRecentPagesClientId() const {
   return ClientId(kLastNNamespace, tab_id_);
+}
+
+void RecentTabHelper::CancelInFlightSnapshots() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  downloads_ongoing_snapshot_info_.reset();
+  downloads_latest_saved_snapshot_info_.reset();
+  last_n_ongoing_snapshot_info_.reset();
 }
 
 }  // namespace offline_pages
