@@ -319,7 +319,7 @@ void FirstLetterPseudoElement::attachFirstLetterTextLayoutObjects() {
   nextLayoutObject->destroy();
 }
 
-void FirstLetterPseudoElement::didRecalcStyle(StyleRecalcChange) {
+void FirstLetterPseudoElement::didRecalcStyle() {
   if (!layoutObject())
     return;
 

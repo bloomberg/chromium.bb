@@ -61,7 +61,7 @@ class FirstLetterPseudoElement final : public PseudoElement {
  private:
   explicit FirstLetterPseudoElement(Element*);
 
-  void didRecalcStyle(StyleRecalcChange) override;
+  void didRecalcStyle() override;
 
   void attachFirstLetterTextLayoutObjects();
   ComputedStyle* styleForFirstLetter(LayoutObject*);

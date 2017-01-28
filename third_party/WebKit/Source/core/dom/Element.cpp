@@ -1934,7 +1934,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling) {
   }
 
   if (hasCustomStyleCallbacks())
-    didRecalcStyle(change);
+    didRecalcStyle();
 }
 
 PassRefPtr<ComputedStyle> Element::propagateInheritedProperties(
@@ -3728,7 +3728,7 @@ void Element::willRecalcStyle(StyleRecalcChange) {
   DCHECK(hasCustomStyleCallbacks());
 }
 
-void Element::didRecalcStyle(StyleRecalcChange) {
+void Element::didRecalcStyle() {
   DCHECK(hasCustomStyleCallbacks());
 }
 

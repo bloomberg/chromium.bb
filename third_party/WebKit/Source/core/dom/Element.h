@@ -769,7 +769,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void childrenChanged(const ChildrenChange&) override;
 
   virtual void willRecalcStyle(StyleRecalcChange);
-  virtual void didRecalcStyle(StyleRecalcChange);
+  virtual void didRecalcStyle();
   virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject();
 
   virtual bool shouldRegisterAsNamedItem() const { return false; }

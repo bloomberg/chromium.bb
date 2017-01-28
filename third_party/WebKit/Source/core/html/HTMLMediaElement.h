@@ -348,7 +348,7 @@ class CORE_EXPORT HTMLMediaElement
   InsertionNotificationRequest insertedInto(ContainerNode*) final;
   void didNotifySubtreeInsertionsToDocument() override;
   void removedFrom(ContainerNode*) final;
-  void didRecalcStyle(StyleRecalcChange) final;
+  void didRecalcStyle() final;
 
   bool canStartSelection() const override { return false; }
 

@@ -200,7 +200,7 @@ class CORE_EXPORT HTMLSelectElement final
   bool isPresentationAttribute(const QualifiedName&) const override;
 
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void didRecalcStyle(StyleRecalcChange) override;
+  void didRecalcStyle() override;
   void detachLayoutTree(const AttachContext& = AttachContext()) override;
   void appendToFormData(FormData&) override;
   void didAddUserAgentShadowRoot(ShadowRoot&) override;
