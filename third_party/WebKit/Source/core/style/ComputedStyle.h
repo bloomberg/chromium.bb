@@ -1479,7 +1479,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Overflow properties.
   // overflow-anchor
   static EOverflowAnchor initialOverflowAnchor() {
-    return EOverflowAnchor::Auto;
+    return EOverflowAnchor::kAuto;
   }
   EOverflowAnchor overflowAnchor() const {
     return static_cast<EOverflowAnchor>(m_nonInheritedData.m_overflowAnchor);

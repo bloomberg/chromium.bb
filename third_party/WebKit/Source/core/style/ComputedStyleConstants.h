@@ -144,7 +144,7 @@ enum class EBoxSizing : unsigned { kContentBox, kBorderBox };
 
 // Random visual rendering model attributes. Not inherited.
 
-enum class EOverflowAnchor : unsigned { Visible, None, Auto };
+enum class EOverflowAnchor : unsigned { kVisible, kNone, kAuto };
 
 enum class EOverflow : unsigned {
   Visible,

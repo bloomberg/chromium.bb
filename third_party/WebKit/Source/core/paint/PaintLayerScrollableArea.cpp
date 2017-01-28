@@ -867,7 +867,7 @@ void PaintLayerScrollableArea::didChangeGlobalRootScroller() {
 bool PaintLayerScrollableArea::shouldPerformScrollAnchoring() const {
   return RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
          m_scrollAnchor.hasScroller() &&
-         layoutBox()->style()->overflowAnchor() != EOverflowAnchor::None &&
+         layoutBox()->style()->overflowAnchor() != EOverflowAnchor::kNone &&
          !box().document().finishingOrIsPrinting();
 }
 
