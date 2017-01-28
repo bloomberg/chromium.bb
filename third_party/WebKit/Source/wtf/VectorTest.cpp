@@ -362,12 +362,12 @@ TEST(VectorTest, SwapWithInlineCapacity) {
 #if defined(ANNOTATE_CONTIGUOUS_CONTAINER)
 TEST(VectorTest, ContainerAnnotations) {
   Vector<int> vectorA;
-  vectorA.append(10);
+  vectorA.push_back(10);
   vectorA.reserveCapacity(32);
 
   volatile int* intPointerA = vectorA.data();
   EXPECT_DEATH(intPointerA[1] = 11, "container-overflow");
-  vectorA.append(11);
+  vectorA.push_back(11);
   intPointerA[1] = 11;
   EXPECT_DEATH(intPointerA[2] = 12, "container-overflow");
   EXPECT_DEATH((void)intPointerA[2], "container-overflow");
@@ -384,7 +384,7 @@ TEST(VectorTest, ContainerAnnotations) {
   Vector<int> vectorC((Vector<int>(vectorA)));
   volatile int* intPointerC = vectorC.data();
   EXPECT_DEATH((void)intPointerC[2], "container-overflow");
-  vectorC.append(13);
+  vectorC.push_back(13);
   vectorC.swap(vectorB);
 
   volatile int* intPointerB2 = vectorB.data();

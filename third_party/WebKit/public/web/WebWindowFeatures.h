@@ -119,7 +119,7 @@ struct WebWindowFeatures {
     result.fullscreen = fullscreen;
     result.dialog = dialog;
     for (size_t i = 0; i < additionalFeatures.size(); ++i)
-      result.additionalFeatures.append(additionalFeatures[i]);
+      result.additionalFeatures.push_back(additionalFeatures[i]);
     return result;
   }
 #endif

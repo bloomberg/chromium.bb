@@ -148,12 +148,12 @@ void LocaleWin::ensureShortMonthLabels() {
   };
   m_shortMonthLabels.reserveCapacity(WTF_ARRAY_LENGTH(types));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(types); ++i) {
-    m_shortMonthLabels.append(getLocaleInfoString(types[i]));
+    m_shortMonthLabels.push_back(getLocaleInfoString(types[i]));
     if (m_shortMonthLabels.back().isEmpty()) {
       m_shortMonthLabels.shrink(0);
       m_shortMonthLabels.reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthName));
       for (unsigned m = 0; m < WTF_ARRAY_LENGTH(WTF::monthName); ++m)
-        m_shortMonthLabels.append(WTF::monthName[m]);
+        m_shortMonthLabels.push_back(WTF::monthName[m]);
       return;
     }
   }
@@ -274,12 +274,12 @@ void LocaleWin::ensureMonthLabels() {
   };
   m_monthLabels.reserveCapacity(WTF_ARRAY_LENGTH(types));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(types); ++i) {
-    m_monthLabels.append(getLocaleInfoString(types[i]));
+    m_monthLabels.push_back(getLocaleInfoString(types[i]));
     if (m_monthLabels.back().isEmpty()) {
       m_monthLabels.shrink(0);
       m_monthLabels.reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthFullName));
       for (unsigned m = 0; m < WTF_ARRAY_LENGTH(WTF::monthFullName); ++m)
-        m_monthLabels.append(WTF::monthFullName[m]);
+        m_monthLabels.push_back(WTF::monthFullName[m]);
       return;
     }
   }
@@ -295,13 +295,13 @@ void LocaleWin::ensureWeekDayShortLabels() {
                            LOCALE_SABBREVDAYNAME6};
   m_weekDayShortLabels.reserveCapacity(WTF_ARRAY_LENGTH(types));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(types); ++i) {
-    m_weekDayShortLabels.append(getLocaleInfoString(types[i]));
+    m_weekDayShortLabels.push_back(getLocaleInfoString(types[i]));
     if (m_weekDayShortLabels.back().isEmpty()) {
       m_weekDayShortLabels.shrink(0);
       m_weekDayShortLabels.reserveCapacity(WTF_ARRAY_LENGTH(WTF::weekdayName));
       for (unsigned w = 0; w < WTF_ARRAY_LENGTH(WTF::weekdayName); ++w) {
         // weekdayName starts with Monday.
-        m_weekDayShortLabels.append(WTF::weekdayName[(w + 6) % 7]);
+        m_weekDayShortLabels.push_back(WTF::weekdayName[(w + 6) % 7]);
       }
       return;
     }
@@ -419,8 +419,8 @@ const Vector<String>& LocaleWin::shortStandAloneMonthLabels() {
 
 const Vector<String>& LocaleWin::timeAMPMLabels() {
   if (m_timeAMPMLabels.isEmpty()) {
-    m_timeAMPMLabels.append(getLocaleInfoString(LOCALE_S1159));
-    m_timeAMPMLabels.append(getLocaleInfoString(LOCALE_S2359));
+    m_timeAMPMLabels.push_back(getLocaleInfoString(LOCALE_S1159));
+    m_timeAMPMLabels.push_back(getLocaleInfoString(LOCALE_S2359));
   }
   return m_timeAMPMLabels;
 }
@@ -438,26 +438,26 @@ void LocaleWin::initializeLocaleData() {
   DWORD digitSubstitution = DigitSubstitution0to9;
   getLocaleInfo(LOCALE_IDIGITSUBSTITUTION, digitSubstitution);
   if (digitSubstitution == DigitSubstitution0to9) {
-    symbols.append("0");
-    symbols.append("1");
-    symbols.append("2");
-    symbols.append("3");
-    symbols.append("4");
-    symbols.append("5");
-    symbols.append("6");
-    symbols.append("7");
-    symbols.append("8");
-    symbols.append("9");
+    symbols.push_back("0");
+    symbols.push_back("1");
+    symbols.push_back("2");
+    symbols.push_back("3");
+    symbols.push_back("4");
+    symbols.push_back("5");
+    symbols.push_back("6");
+    symbols.push_back("7");
+    symbols.push_back("8");
+    symbols.push_back("9");
   } else {
     String digits = getLocaleInfoString(LOCALE_SNATIVEDIGITS);
     ASSERT(digits.length() >= 10);
     for (unsigned i = 0; i < 10; ++i)
-      symbols.append(digits.substring(i, 1));
+      symbols.push_back(digits.substring(i, 1));
   }
   ASSERT(symbols.size() == DecimalSeparatorIndex);
-  symbols.append(getLocaleInfoString(LOCALE_SDECIMAL));
+  symbols.push_back(getLocaleInfoString(LOCALE_SDECIMAL));
   ASSERT(symbols.size() == GroupSeparatorIndex);
-  symbols.append(getLocaleInfoString(LOCALE_STHOUSAND));
+  symbols.push_back(getLocaleInfoString(LOCALE_STHOUSAND));
   ASSERT(symbols.size() == DecimalSymbolsSize);
 
   String negativeSign = getLocaleInfoString(LOCALE_SNEGATIVESIGN);

@@ -124,11 +124,11 @@ const Vector<String>& LocaleMac::monthLabels() {
   NSArray* array = [shortDateFormatter().get() monthSymbols];
   if ([array count] == 12) {
     for (unsigned i = 0; i < 12; ++i)
-      m_monthLabels.append(String([array objectAtIndex:i]));
+      m_monthLabels.push_back(String([array objectAtIndex:i]));
     return m_monthLabels;
   }
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::monthFullName); ++i)
-    m_monthLabels.append(WTF::monthFullName[i]);
+    m_monthLabels.push_back(WTF::monthFullName[i]);
   return m_monthLabels;
 }
 
@@ -139,12 +139,12 @@ const Vector<String>& LocaleMac::weekDayShortLabels() {
   NSArray* array = [shortDateFormatter().get() shortWeekdaySymbols];
   if ([array count] == 7) {
     for (unsigned i = 0; i < 7; ++i)
-      m_weekDayShortLabels.append(String([array objectAtIndex:i]));
+      m_weekDayShortLabels.push_back(String([array objectAtIndex:i]));
     return m_weekDayShortLabels;
   }
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::weekdayName); ++i) {
     // weekdayName starts with Monday.
-    m_weekDayShortLabels.append(WTF::weekdayName[(i + 6) % 7]);
+    m_weekDayShortLabels.push_back(WTF::weekdayName[(i + 6) % 7]);
   }
   return m_weekDayShortLabels;
 }
@@ -251,11 +251,11 @@ const Vector<String>& LocaleMac::shortMonthLabels() {
   NSArray* array = [shortDateFormatter().get() shortMonthSymbols];
   if ([array count] == 12) {
     for (unsigned i = 0; i < 12; ++i)
-      m_shortMonthLabels.append([array objectAtIndex:i]);
+      m_shortMonthLabels.push_back([array objectAtIndex:i]);
     return m_shortMonthLabels;
   }
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::monthName); ++i)
-    m_shortMonthLabels.append(WTF::monthName[i]);
+    m_shortMonthLabels.push_back(WTF::monthName[i]);
   return m_shortMonthLabels;
 }
 
@@ -266,7 +266,7 @@ const Vector<String>& LocaleMac::standAloneMonthLabels() {
   if ([array count] == 12) {
     m_standAloneMonthLabels.reserveCapacity(12);
     for (unsigned i = 0; i < 12; ++i)
-      m_standAloneMonthLabels.append([array objectAtIndex:i]);
+      m_standAloneMonthLabels.push_back([array objectAtIndex:i]);
     return m_standAloneMonthLabels;
   }
   m_standAloneMonthLabels = shortMonthLabels();
@@ -280,7 +280,7 @@ const Vector<String>& LocaleMac::shortStandAloneMonthLabels() {
   if ([array count] == 12) {
     m_shortStandAloneMonthLabels.reserveCapacity(12);
     for (unsigned i = 0; i < 12; ++i)
-      m_shortStandAloneMonthLabels.append([array objectAtIndex:i]);
+      m_shortStandAloneMonthLabels.push_back([array objectAtIndex:i]);
     return m_shortStandAloneMonthLabels;
   }
   m_shortStandAloneMonthLabels = shortMonthLabels();
@@ -292,8 +292,8 @@ const Vector<String>& LocaleMac::timeAMPMLabels() {
     return m_timeAMPMLabels;
   m_timeAMPMLabels.reserveCapacity(2);
   RetainPtr<NSDateFormatter> formatter = shortTimeFormatter();
-  m_timeAMPMLabels.append([formatter.get() AMSymbol]);
-  m_timeAMPMLabels.append([formatter.get() PMSymbol]);
+  m_timeAMPMLabels.push_back([formatter.get() AMSymbol]);
+  m_timeAMPMLabels.push_back([formatter.get() PMSymbol]);
   return m_timeAMPMLabels;
 }
 
@@ -315,11 +315,11 @@ void LocaleMac::initializeLocaleData() {
     return;
   Vector<String, DecimalSymbolsSize> symbols;
   for (unsigned i = 0; i < 10; ++i)
-    symbols.append(nineToZero.substring(9 - i, 1));
+    symbols.push_back(nineToZero.substring(9 - i, 1));
   ASSERT(symbols.size() == DecimalSeparatorIndex);
-  symbols.append([formatter.get() decimalSeparator]);
+  symbols.push_back([formatter.get() decimalSeparator]);
   ASSERT(symbols.size() == GroupSeparatorIndex);
-  symbols.append([formatter.get() groupingSeparator]);
+  symbols.push_back([formatter.get() groupingSeparator]);
   ASSERT(symbols.size() == DecimalSymbolsSize);
 
   String positivePrefix([formatter.get() positivePrefix]);

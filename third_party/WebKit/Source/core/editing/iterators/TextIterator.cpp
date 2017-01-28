@@ -634,7 +634,7 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode() {
     m_sortedTextBoxes.clear();
     for (InlineTextBox* textBox = layoutObject->firstTextBox(); textBox;
          textBox = textBox->nextTextBox()) {
-      m_sortedTextBoxes.append(textBox);
+      m_sortedTextBoxes.push_back(textBox);
     }
     std::sort(m_sortedTextBoxes.begin(), m_sortedTextBoxes.end(),
               InlineTextBox::compareByStart);

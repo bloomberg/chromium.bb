@@ -44,11 +44,11 @@ PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(
     // Each m_offsetsInAnchorNode[offset] should be an index of node in
     // parent, but delay to calculate the index until it is needed for
     // performance.
-    m_offsetsInAnchorNode.append(kInvalidOffset);
+    m_offsetsInAnchorNode.push_back(kInvalidOffset);
     ++m_depthToAnchorNode;
   }
   if (m_nodeAfterPositionInAnchor)
-    m_offsetsInAnchorNode.append(offsetInAnchor);
+    m_offsetsInAnchorNode.push_back(offsetInAnchor);
 }
 template <typename Strategy>
 PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(
@@ -152,7 +152,7 @@ void PositionIteratorAlgorithm<Strategy>::increment() {
     // Increment depth intializing with 0.
     ++m_depthToAnchorNode;
     if (m_depthToAnchorNode == m_offsetsInAnchorNode.size())
-      m_offsetsInAnchorNode.append(0);
+      m_offsetsInAnchorNode.push_back(0);
     else
       m_offsetsInAnchorNode[m_depthToAnchorNode] = 0;
     return;
@@ -233,7 +233,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement() {
       // Increment depth intializing with last offset.
       ++m_depthToAnchorNode;
       if (m_depthToAnchorNode >= m_offsetsInAnchorNode.size())
-        m_offsetsInAnchorNode.append(m_offsetInAnchor);
+        m_offsetsInAnchorNode.push_back(m_offsetInAnchor);
       else
         m_offsetsInAnchorNode[m_depthToAnchorNode] = m_offsetInAnchor;
       return;
@@ -268,7 +268,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement() {
     // Decrement depth initializing with -1 because
     // |m_nodeAfterPositionInAnchor| is null so still unneeded.
     if (m_depthToAnchorNode >= m_offsetsInAnchorNode.size())
-      m_offsetsInAnchorNode.append(kInvalidOffset);
+      m_offsetsInAnchorNode.push_back(kInvalidOffset);
     else
       m_offsetsInAnchorNode[m_depthToAnchorNode] = kInvalidOffset;
     ++m_depthToAnchorNode;

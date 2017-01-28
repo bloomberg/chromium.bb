@@ -120,7 +120,7 @@ CSSStyleValueVector ComputedStylePropertyMap::getAllInternal(
   }
 
   if (styleValue) {
-    styleValueVector.append(styleValue);
+    styleValueVector.push_back(styleValue);
   }
   return styleValueVector;
 }

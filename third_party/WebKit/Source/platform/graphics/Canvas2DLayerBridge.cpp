@@ -987,7 +987,7 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
     if (contextLost) {
       deleteCHROMIUMImage(releasedMailboxInfo->m_imageInfo);
     } else {
-      m_imageInfoCache.append(releasedMailboxInfo->m_imageInfo);
+      m_imageInfoCache.push_back(releasedMailboxInfo->m_imageInfo);
     }
   }
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS

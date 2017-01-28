@@ -113,7 +113,7 @@ Vector<size_t, 8> HyphenationMinikin::hyphenLocations(
   for (size_t i = text.length() - minimumSuffixLength - 1;
        i >= minimumPrefixLength; i--) {
     if (result[i])
-      hyphenLocations.append(i);
+      hyphenLocations.push_back(i);
   }
   return hyphenLocations;
 }

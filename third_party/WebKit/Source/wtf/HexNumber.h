@@ -54,6 +54,14 @@ class HexNumber final {
     destination.push_back(hexDigits[byte & 0xF]);
   }
 
+  static inline void appendByteAsHex(unsigned char byte,
+                                     Vector<char>& destination,
+                                     HexConversionMode mode = Uppercase) {
+    const LChar* hexDigits = hexDigitsForMode(mode);
+    destination.push_back(hexDigits[byte >> 4]);
+    destination.push_back(hexDigits[byte & 0xF]);
+  }
+
   template <typename T>
   static inline void appendUnsignedAsHex(unsigned number,
                                          T& destination,

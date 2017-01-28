@@ -949,8 +949,6 @@ class Vector
   template <typename U>
   void append(const U*, size_t);
   template <typename U>
-  void append(U&&);
-  template <typename U>
   void push_back(U&&);
   template <typename... Args>
   T& emplace_back(Args&&...);
@@ -1199,7 +1197,7 @@ template <typename Iterator>
 void Vector<T, inlineCapacity, Allocator>::appendRange(Iterator start,
                                                        Iterator end) {
   for (Iterator it = start; it != end; ++it)
-    append(*it);
+    push_back(*it);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -1390,12 +1388,6 @@ void Vector<T, inlineCapacity, Allocator>::append(const U* data,
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
-  return append(std::forward<U>(val));
-}
-
-template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename U>
-ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::append(U&& val) {
   DCHECK(Allocator::isAllocationAllowed());
   if (LIKELY(size() != capacity())) {
     ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
@@ -1448,7 +1440,7 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::uncheckedAppend(
     U&& val) {
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
   // Vectors in ASAN builds don't have inlineCapacity.
-  append(std::forward<U>(val));
+  push_back(std::forward<U>(val));
 #else
   DCHECK_LT(size(), capacity());
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
