@@ -236,7 +236,7 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 	struct amdgpu_bo_va_mgr *vamgr;
 
 	if (flags & AMDGPU_VA_RANGE_32_BIT)
-		vamgr = dev->vamgr_32;
+		vamgr = &dev->vamgr_32;
 	else
 		vamgr = dev->vamgr;
 
@@ -249,7 +249,7 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 	if (!(flags & AMDGPU_VA_RANGE_32_BIT) &&
 	    (*va_base_allocated == AMDGPU_INVALID_VA_ADDRESS)) {
 		/* fallback to 32bit address */
-		vamgr = dev->vamgr_32;
+		vamgr = &dev->vamgr_32;
 		*va_base_allocated = amdgpu_vamgr_find_va(vamgr, size,
 					va_base_alignment, va_base_required);
 	}

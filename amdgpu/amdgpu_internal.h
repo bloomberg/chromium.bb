@@ -87,7 +87,7 @@ struct amdgpu_device {
 	/** The global VA manager for the whole virtual address space */
 	struct amdgpu_bo_va_mgr *vamgr;
 	/** The VA manager for the 32bit address space */
-	struct amdgpu_bo_va_mgr *vamgr_32;
+	struct amdgpu_bo_va_mgr vamgr_32;
 };
 
 struct amdgpu_bo {

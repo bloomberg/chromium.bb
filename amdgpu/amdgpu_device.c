@@ -131,8 +131,7 @@ static int amdgpu_get_auth(int fd, int *auth)
 
 static void amdgpu_device_free_internal(amdgpu_device_handle dev)
 {
-	amdgpu_vamgr_deinit(dev->vamgr_32);
-	free(dev->vamgr_32);
+	amdgpu_vamgr_deinit(&dev->vamgr_32);
 	amdgpu_vamgr_deinit(dev->vamgr);
 	free(dev->vamgr);
 	util_hash_table_destroy(dev->bo_flink_names);
@@ -270,10 +269,7 @@ int amdgpu_device_initialize(int fd,
 	if (start > 0xffffffff)
 		goto free_va; /* shouldn't get here */
 
-	dev->vamgr_32 =  calloc(1, sizeof(struct amdgpu_bo_va_mgr));
-	if (dev->vamgr_32 == NULL)
-		goto free_va;
-	amdgpu_vamgr_init(dev->vamgr_32, start, max,
+	amdgpu_vamgr_init(&dev->vamgr_32, start, max,
 			  dev->dev_info.virtual_address_alignment);
 
 	*major_version = dev->major_version;
