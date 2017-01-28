@@ -1414,6 +1414,7 @@ test("content_unittests") {
 
   deps = [
     ":content_test_mojo_bindings",
+    ":content_unittests_catalog_source",
     ":test_support",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
@@ -1505,7 +1506,6 @@ test("content_unittests") {
   ]
 
   data_deps = [
-    ":content_unittests_catalog_copy",
     "//components/filesystem:filesystem",
     "//third_party/mesa:osmesa",
   ]
@@ -1760,14 +1760,9 @@ catalog("content_unittests_catalog") {
   embedded_services = [ ":content_unittests_manifest" ]
 }
 
-copy("content_unittests_catalog_copy") {
-  sources = get_target_outputs(":content_unittests_catalog")
-  outputs = [
-    "${root_out_dir}/content_unittests_catalog.json",
-  ]
-  deps = [
-    ":content_unittests_catalog",
-  ]
+catalog_cpp_source("content_unittests_catalog_source") {
+  catalog = ":content_unittests_catalog"
+  generated_function_name = "content::CreateContentUnittestsCatalog"
 }
 
 test("content_perftests") {

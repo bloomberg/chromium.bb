@@ -727,14 +727,7 @@ class LocalStorageContextMojoTestWithService
   DISALLOW_COPY_AND_ASSIGN(LocalStorageContextMojoTestWithService);
 };
 
-// Enable when http://crbug.com/677194 is fixed and ServiceTest works
-// correctly on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_InMemory DISABLED_InMemory
-#else
-#define MAYBE_InMemory InMemory
-#endif
-TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemory) {
+TEST_F(LocalStorageContextMojoTestWithService, InMemory) {
   auto context = base::MakeUnique<LocalStorageContextMojo>(
       connector(), nullptr, base::FilePath(), base::FilePath());
   auto key = StdStringToUint8Vector("key");
@@ -761,14 +754,7 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemory) {
   EXPECT_FALSE(DoTestGet(context.get(), key, &result));
 }
 
-// Enable when http://crbug.com/677194 is fixed and ServiceTest works
-// correctly on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_InMemoryInvalidPath DISABLED_InMemoryInvalidPath
-#else
-#define MAYBE_InMemoryInvalidPath InMemoryInvalidPath
-#endif
-TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemoryInvalidPath) {
+TEST_F(LocalStorageContextMojoTestWithService, InMemoryInvalidPath) {
   auto context = base::MakeUnique<LocalStorageContextMojo>(
       connector(), nullptr, base::FilePath(),
       base::FilePath(FILE_PATH_LITERAL("../../")));
@@ -791,14 +777,7 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemoryInvalidPath) {
   EXPECT_TRUE(FirstEntryInDir().empty());
 }
 
-// Enable when http://crbug.com/677194 is fixed and ServiceTest works
-// correctly on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_OnDisk DISABLED_OnDisk
-#else
-#define MAYBE_OnDisk OnDisk
-#endif
-TEST_F(LocalStorageContextMojoTestWithService, MAYBE_OnDisk) {
+TEST_F(LocalStorageContextMojoTestWithService, OnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
   auto context = base::MakeUnique<LocalStorageContextMojo>(
       connector(), nullptr, base::FilePath(), test_path);
@@ -823,14 +802,7 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_OnDisk) {
   EXPECT_EQ(value, result);
 }
 
-// Enable when http://crbug.com/677194 is fixed and ServiceTest works
-// correctly on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_InvalidVersionOnDisk DISABLED_InvalidVersionOnDisk
-#else
-#define MAYBE_InvalidVersionOnDisk InvalidVersionOnDisk
-#endif
-TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
+TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
 
   // Create context and add some data to it.
