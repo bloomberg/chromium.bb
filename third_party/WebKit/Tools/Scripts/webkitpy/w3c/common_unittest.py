@@ -20,8 +20,8 @@ def mock_command_exec(vals):
 
 class MockLocalWPT(object):
 
-    def test_patch(self, _):
-        return True
+    def test_patch(self, patch, chromium_commit):  # pylint: disable=unused-argument
+        return 'patch'
 
 
 class CommonTest(unittest.TestCase):
@@ -68,7 +68,8 @@ class CommonTest(unittest.TestCase):
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
-             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt']
+             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
+            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']
         ])
 
     def test_ignores_reverted_commits_with_noexport_true(self):
@@ -87,7 +88,9 @@ class CommonTest(unittest.TestCase):
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
-             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt']])
+             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
+            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']
+        ])
 
     def test_ignores_commits_that_start_with_import(self):
         host = MockHost()
@@ -105,5 +108,7 @@ class CommonTest(unittest.TestCase):
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
-             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt']
+             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
+            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8'],
+            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8'],
         ])

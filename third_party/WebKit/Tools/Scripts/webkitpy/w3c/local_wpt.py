@@ -101,7 +101,7 @@ class LocalWPT(object):
 
         return self.branch_name
 
-    def test_patch(self, patch):
+    def test_patch(self, patch, chromium_commit=None):
         """Returns the expected output of a patch against origin/master.
 
         Args:
@@ -120,7 +120,10 @@ class LocalWPT(object):
             self.run(['git', 'add', '.'])
             output = self.run(['git', 'diff', 'origin/master'])
         except ScriptError:
-            _log.warning('Patch did not apply cleanly, skipping...')
+            _log.warning('Patch did not apply cleanly, skipping.')
+            if chromium_commit:
+                _log.warning('Commit details:\n%s\n%s', chromium_commit.sha,
+                             chromium_commit.subject())
             output = ''
 
         self.clean()
