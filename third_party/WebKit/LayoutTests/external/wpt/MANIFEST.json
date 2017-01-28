@@ -15989,27 +15989,12 @@
      {}
     ]
    ],
-   "streams/piping/close-propagation-backward-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/close-propagation-backward.js": [
     [
      {}
     ]
    ],
    "streams/piping/close-propagation-backward.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/close-propagation-backward.serviceworker.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/close-propagation-forward-expected.txt": [
     [
      {}
     ]
@@ -16024,32 +16009,12 @@
      {}
     ]
    ],
-   "streams/piping/close-propagation-forward.serviceworker.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/error-propagation-backward-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/error-propagation-backward.js": [
     [
      {}
     ]
    ],
    "streams/piping/error-propagation-backward.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/error-propagation-backward.serviceworker.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/error-propagation-forward-expected.txt": [
     [
      {}
     ]
@@ -16064,16 +16029,6 @@
      {}
     ]
    ],
-   "streams/piping/error-propagation-forward.serviceworker.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/flow-control-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/flow-control.js": [
     [
      {}
@@ -16084,27 +16039,12 @@
      {}
     ]
    ],
-   "streams/piping/flow-control.serviceworker.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/general-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/general.js": [
     [
      {}
     ]
    ],
    "streams/piping/general.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/general.serviceworker.https-expected.txt": [
     [
      {}
     ]
@@ -16144,6 +16084,11 @@
      {}
     ]
    ],
+   "streams/piping/pipe-through.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/piping/pipe-through.js": [
     [
      {}
@@ -16155,6 +16100,11 @@
     ]
    ],
    "streams/piping/pipe-through.serviceworker.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/pipe-through.sharedworker-expected.txt": [
     [
      {}
     ]
@@ -16314,11 +16264,6 @@
      {}
     ]
    ],
-   "streams/readable-streams/pipe-through.serviceworker.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/readable-streams/readable-stream-reader.js": [
     [
      {}
@@ -16345,11 +16290,6 @@
     ]
    ],
    "streams/readable-streams/templated.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/readable-streams/templated.serviceworker.https-expected.txt": [
     [
      {}
     ]
@@ -17912,6 +17852,12 @@
      {}
     ]
    ],
+   "IndexedDB/idbcursor-continue-exception-order.htm": [
+    [
+     "/IndexedDB/idbcursor-continue-exception-order.htm",
+     {}
+    ]
+   ],
    "IndexedDB/idbcursor-continue.htm": [
     [
      "/IndexedDB/idbcursor-continue.htm",
@@ -17929,6 +17875,12 @@
    "IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm": [
     [
      "/IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbcursor-delete-exception-order.htm": [
+    [
+     "/IndexedDB/idbcursor-delete-exception-order.htm",
      {}
     ]
    ],
@@ -17983,6 +17935,12 @@
    "IndexedDB/idbcursor-source.htm": [
     [
      "/IndexedDB/idbcursor-source.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbcursor-update-exception-order.htm": [
+    [
+     "/IndexedDB/idbcursor-update-exception-order.htm",
      {}
     ]
    ],
@@ -18343,6 +18301,18 @@
    "IndexedDB/idbcursor_update_objectstore9.htm": [
     [
      "/IndexedDB/idbcursor_update_objectstore9.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbdatabase-createObjectStore-exception-order.htm": [
+    [
+     "/IndexedDB/idbdatabase-createObjectStore-exception-order.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbdatabase-deleteObjectStore-exception-order.htm": [
+    [
+     "/IndexedDB/idbdatabase-deleteObjectStore-exception-order.htm",
      {}
     ]
    ],
@@ -34602,12 +34572,6 @@
    ]
   },
   "visual": {
-   "html/dom/elements/global-attributes/dir_auto-EN-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-EN-L-expected.html",
-     {}
-    ]
-   ],
    "html/dom/elements/global-attributes/dir_auto-EN-R-expected.html": [
     [
      "/html/dom/elements/global-attributes/dir_auto-EN-R-expected.html",
@@ -35279,6 +35243,10 @@
    "7becf54b03320a3b905c4ebfa476476f22409307",
    "testharness"
   ],
+  "IndexedDB/idbcursor-continue-exception-order.htm": [
+   "5c6bd64850880ceb20639325cf3d61127e2b13c8",
+   "testharness"
+  ],
   "IndexedDB/idbcursor-continue.htm": [
    "953ae4b03fcfe2be3652df09577df2e3829dd53a",
    "testharness"
@@ -35289,6 +35257,10 @@
   ],
   "IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm": [
    "7c2ddb95ce4b7c588ddb2907367a365902eba349",
+   "testharness"
+  ],
+  "IndexedDB/idbcursor-delete-exception-order.htm": [
+   "6bb279530dbdedba84a2d45d58e5d0a81a4d95e5",
    "testharness"
   ],
   "IndexedDB/idbcursor-direction-index-keyrange.htm": [
@@ -35325,6 +35297,10 @@
   ],
   "IndexedDB/idbcursor-source.htm": [
    "0677de106509b9b3f4d1e38780f479d9aaace626",
+   "testharness"
+  ],
+  "IndexedDB/idbcursor-update-exception-order.htm": [
+   "748c1764883cc62e58c1ce7929e91e6ee2941fda",
    "testharness"
   ],
   "IndexedDB/idbcursor_advance_index.htm": [
@@ -35565,6 +35541,14 @@
   ],
   "IndexedDB/idbcursor_update_objectstore9.htm": [
    "7534a0868a5861cfd9f2fef0f3eddf452c0d9366",
+   "testharness"
+  ],
+  "IndexedDB/idbdatabase-createObjectStore-exception-order.htm": [
+   "24d86e0a278a52c759f1a220041838bedd59959e",
+   "testharness"
+  ],
+  "IndexedDB/idbdatabase-deleteObjectStore-exception-order.htm": [
+   "0e0ae655c2767b3755490104a28ae26e0d4cd500",
    "testharness"
   ],
   "IndexedDB/idbdatabase_close.htm": [
@@ -36328,7 +36312,7 @@
    "support"
   ],
   "IndexedDB/support.js": [
-   "3f2f3bd905485efe94cf7c406bef4fa20a13ab83",
+   "0dfe81d16dd3f741deb013fda40faa6df9757334",
    "support"
   ],
   "IndexedDB/transaction-abort-generator-revert.html": [
@@ -42410,10 +42394,6 @@
   "html/dom/elements/global-attributes/dataset.html": [
    "3a0bacb8b3d8e66038d12472387dc51304a6052d",
    "testharness"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-EN-L-expected.html": [
-   "bbec57aca4e319e3a4638a2a008c510439582cf1",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-EN-L-ref.html": [
    "bbec57aca4e319e3a4638a2a008c510439582cf1",
@@ -49968,7 +49948,7 @@
    "support"
   ],
   "html/semantics/scripting-1/the-script-element/external-script-windows1250.js": [
-   "43e3b65a18328fa95ba89cb4f075d1ab422580fa",
+   "3ae0d51ae4444e95a21cbe8d9d10822615903859",
    "support"
   ],
   "html/semantics/scripting-1/the-script-element/fetch-src/alpha/base.html": [
@@ -55035,10 +55015,6 @@
    "729d86f589af914bf59f046f40e3d98b5f37efc7",
    "support"
   ],
-  "streams/piping/close-propagation-backward-expected.txt": [
-   "2c78c276cdbf8f7b60303f7cae9323203f08336a",
-   "support"
-  ],
   "streams/piping/close-propagation-backward.dedicatedworker.html": [
    "17e143af0bd875f6097c2314ea9861e4b19ff91a",
    "testharness"
@@ -55055,10 +55031,6 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
-  "streams/piping/close-propagation-backward.serviceworker.https-expected.txt": [
-   "ba6e2b8a2a88f9178fa6e1c1dcffcebc54803040",
-   "support"
-  ],
   "streams/piping/close-propagation-backward.serviceworker.https.html": [
    "29ce859faa5a374d86c4f10e2c638061ce378a01",
    "testharness"
@@ -55066,10 +55038,6 @@
   "streams/piping/close-propagation-backward.sharedworker.html": [
    "7ef2ba0b429b2032e099f62cf2bc17d606ad1c64",
    "testharness"
-  ],
-  "streams/piping/close-propagation-forward-expected.txt": [
-   "4ab6fa412936f3290fec500ed4766d2331e86150",
-   "support"
   ],
   "streams/piping/close-propagation-forward.dedicatedworker.html": [
    "d227631adae0611f7920d33343d148f19c13f833",
@@ -55087,10 +55055,6 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
-  "streams/piping/close-propagation-forward.serviceworker.https-expected.txt": [
-   "e19b7cadf3133b589aea0f812c8a1b9f239fdcd3",
-   "support"
-  ],
   "streams/piping/close-propagation-forward.serviceworker.https.html": [
    "759ca4e212311a001d0abae2b2f21d1dca42736b",
    "testharness"
@@ -55098,10 +55062,6 @@
   "streams/piping/close-propagation-forward.sharedworker.html": [
    "277a94372fc8359b631b46ea79778ce2ec0e928c",
    "testharness"
-  ],
-  "streams/piping/error-propagation-backward-expected.txt": [
-   "bbe079c575b2d825134e679e61566da325745fee",
-   "support"
   ],
   "streams/piping/error-propagation-backward.dedicatedworker.html": [
    "2f7ad2bf616e612f8cae9c61264d1ea012be2561",
@@ -55119,10 +55079,6 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
-  "streams/piping/error-propagation-backward.serviceworker.https-expected.txt": [
-   "945748a9d526697937ab913a7c9b612449aa9604",
-   "support"
-  ],
   "streams/piping/error-propagation-backward.serviceworker.https.html": [
    "3502f6514992dab5662a5088c518d3a775863770",
    "testharness"
@@ -55130,10 +55086,6 @@
   "streams/piping/error-propagation-backward.sharedworker.html": [
    "464dbfc87804e207057de70b2dcbb0aacf03b92e",
    "testharness"
-  ],
-  "streams/piping/error-propagation-forward-expected.txt": [
-   "5244bd0323cc4426671f43de90f3f4e8ca0cf0db",
-   "support"
   ],
   "streams/piping/error-propagation-forward.dedicatedworker.html": [
    "a2520ea68491b9e0987a63c9d5653a19ffff440d",
@@ -55151,10 +55103,6 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
-  "streams/piping/error-propagation-forward.serviceworker.https-expected.txt": [
-   "14492b1c0b191299083792c701971693f981e0a5",
-   "support"
-  ],
   "streams/piping/error-propagation-forward.serviceworker.https.html": [
    "44db4461afd113439e349a05a08410ff58655850",
    "testharness"
@@ -55162,10 +55110,6 @@
   "streams/piping/error-propagation-forward.sharedworker.html": [
    "c19cba806d0c806452464b7ede268458c65556a9",
    "testharness"
-  ],
-  "streams/piping/flow-control-expected.txt": [
-   "f87be7d24d09906c86bc5e7ae4847b5b8fc8122c",
-   "support"
   ],
   "streams/piping/flow-control.dedicatedworker.html": [
    "3936fceee569de910a7e3e4d5e3af9e7c4d1e942",
@@ -55183,10 +55127,6 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
-  "streams/piping/flow-control.serviceworker.https-expected.txt": [
-   "5aabb47c1d495403fa0bac70b75ee617ba8b3214",
-   "support"
-  ],
   "streams/piping/flow-control.serviceworker.https.html": [
    "c6962c1f0358867289e1e9b36dac492059f4f9fe",
    "testharness"
@@ -55194,10 +55134,6 @@
   "streams/piping/flow-control.sharedworker.html": [
    "74e67f2ad62720eb3314a1cdec5b4c28ca3ea5f6",
    "testharness"
-  ],
-  "streams/piping/general-expected.txt": [
-   "9b373b5ed079db8c554da1df08fe91dbdb9e6a4d",
-   "support"
   ],
   "streams/piping/general.dedicatedworker.html": [
    "8583d80450b090c16ed0795170340d040449bbc1",
@@ -55213,10 +55149,6 @@
   ],
   "streams/piping/general.serviceworker-expected.txt": [
    "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
-  "streams/piping/general.serviceworker.https-expected.txt": [
-   "97eafbd7ab102636b641e34862c62d587a221ea4",
    "support"
   ],
   "streams/piping/general.serviceworker.https.html": [
@@ -55252,7 +55184,7 @@
    "support"
   ],
   "streams/piping/multiple-propagation.serviceworker.https-expected.txt": [
-   "46ba0a5a3b8864c2be80fe138bfeda70bc60d726",
+   "943a89576b2c9fe677d61dd3b5b65cde228fa23a",
    "support"
   ],
   "streams/piping/multiple-propagation.serviceworker.https.html": [
@@ -55268,7 +55200,11 @@
    "testharness"
   ],
   "streams/piping/pipe-through-expected.txt": [
-   "7a6f52b7ff44ea026c05f844f0c737e7f91704b0",
+   "99727d10dfd517ff4345ffd7f781f2cef6363980",
+   "support"
+  ],
+  "streams/piping/pipe-through.dedicatedworker-expected.txt": [
+   "99727d10dfd517ff4345ffd7f781f2cef6363980",
    "support"
   ],
   "streams/piping/pipe-through.dedicatedworker.html": [
@@ -55288,12 +55224,16 @@
    "support"
   ],
   "streams/piping/pipe-through.serviceworker.https-expected.txt": [
-   "cff39f6bf90e28753dd1cfa283918f87550450db",
+   "6c5faa30d98d1f34cb6badf7f8e59a2cf2fb9449",
    "support"
   ],
   "streams/piping/pipe-through.serviceworker.https.html": [
    "e6604dc4e7f4404ee9dea5ab237fb4636bf9e85a",
    "testharness"
+  ],
+  "streams/piping/pipe-through.sharedworker-expected.txt": [
+   "85af76050db0eb713c881b422d70e7d9965c2eef",
+   "support"
   ],
   "streams/piping/pipe-through.sharedworker.html": [
    "8ecb019e754fd4239cb35c27787897efc2dacccb",
@@ -55544,7 +55484,7 @@
    "support"
   ],
   "streams/readable-streams/general.serviceworker.https-expected.txt": [
-   "5bf1010b9d29e4ccbe6183ac88f3fa3ab57ad908",
+   "c78457a9f96493462b1849e9dd00f66e52023f54",
    "support"
   ],
   "streams/readable-streams/general.serviceworker.https.html": [
@@ -55573,10 +55513,6 @@
   ],
   "streams/readable-streams/pipe-through.serviceworker-expected.txt": [
    "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
-  "streams/readable-streams/pipe-through.serviceworker.https-expected.txt": [
-   "3d8cf26fa4dc94303e587c86459b1f9942aa4dfb",
    "support"
   ],
   "streams/readable-streams/pipe-through.serviceworker.https.html": [
@@ -55649,10 +55585,6 @@
   ],
   "streams/readable-streams/templated.serviceworker-expected.txt": [
    "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
-  "streams/readable-streams/templated.serviceworker.https-expected.txt": [
-   "22c4a140e5f962f55d8d78441ed3157df488e008",
    "support"
   ],
   "streams/readable-streams/templated.serviceworker.https.html": [
@@ -57356,7 +57288,7 @@
    "testharness"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-idl-expected.txt": [
-   "c43f434595ce174a5e0eb86c638ed64e508ff874",
+   "683342cf65c9907063e1124f98c7c913d3089d83",
    "support"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-idl.html": [

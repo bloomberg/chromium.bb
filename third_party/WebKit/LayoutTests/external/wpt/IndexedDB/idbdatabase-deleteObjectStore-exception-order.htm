@@ -2,15 +2,15 @@
 <title>IndexedDB: IDBDatabase deleteObjectStore() Exception Ordering</title>
 <meta charset=utf-8>
 <link rel="help" href="https://w3c.github.io/IndexedDB/#dom-idbdatabase-deleteobjectstore">
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="resources/testharness-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support.js"></script>
 <script>
 
 indexeddb_test(
-  (t, db, req) => {
+  (t, db, txn) => {
     db.createObjectStore('s');
-    req.transaction.onabort = () => {
+    txn.onabort = () => {
       setTimeout(t.step_func(() => {
         assert_throws(
           'InvalidStateError', () => { db.deleteObjectStore('s'); },
@@ -19,18 +19,17 @@ indexeddb_test(
         t.done();
       }), 0);
     };
-    req.onerror = null;
-    req.transaction.abort();
+    txn.abort();
   },
   (t, db) => { t.assert_unreached('open should fail'); },
   'IDBDatabase.deleteObjectStore exception order: ' +
-  'InvalidStateError vs. TransactionInactiveError'
+  'InvalidStateError vs. TransactionInactiveError',
+  { upgrade_will_abort: true }
 );
 
 indexeddb_test(
-  (t, db, req) => {
-    req.onerror = null;
-    req.transaction.abort();
+  (t, db, txn) => {
+    txn.abort();
     assert_throws(
       'TransactionInactiveError', () => { db.deleteObjectStore('nope'); },
       '"not active" check (TransactionInactiveError) should precede ' +
@@ -39,7 +38,8 @@ indexeddb_test(
   },
   (t, db) => { t.assert_unreached('open should fail'); },
   'IDBDatabase.deleteObjectStore exception order: ' +
-  'TransactionInactiveError vs. NotFoundError'
+  'TransactionInactiveError vs. NotFoundError',
+  { upgrade_will_abort: true }
 );
 
 </script>

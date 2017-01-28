@@ -2,16 +2,16 @@
 <title>IndexedDB: IDBDatabase createObjectStore() Exception Ordering</title>
 <meta charset=utf-8>
 <link rel="help" href="https://w3c.github.io/IndexedDB/#dom-idbdatabase-createobjectstore">
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="resources/testharness-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support.js"></script>
 <script>
 
 indexeddb_test(
-  (t, db, req) => {
+  (t, db, txn) => {
     db.createObjectStore('s');
 
-    req.transaction.onabort = () => {
+    txn.onabort = () => {
       setTimeout(t.step_func(() => {
         assert_throws(
           'InvalidStateError', () => { db.createObjectStore('s2'); },
@@ -21,20 +21,19 @@ indexeddb_test(
         t.done();
       }), 0);
     };
-    req.onerror = null;
-    req.transaction.abort();
+    txn.abort();
   },
   (t, db) => { t.assert_unreached('open should fail'); },
   'IDBDatabase.createObjectStore exception order: ' +
-  'InvalidStateError vs. TransactionInactiveError'
+  'InvalidStateError vs. TransactionInactiveError',
+  { upgrade_will_abort: true }
 );
 
 indexeddb_test(
-  (t, db, req) => {
+  (t, db, txn) => {
     const store = db.createObjectStore('s');
 
-    req.onerror = null;
-    req.transaction.abort();
+    txn.abort();
 
     assert_throws(
       'TransactionInactiveError',
@@ -46,7 +45,8 @@ indexeddb_test(
   },
   (t, db) => { t.assert_unreached('open should fail'); },
   'IDBDatabase.createObjectStore exception order: ' +
-  'TransactionInactiveError vs. SyntaxError'
+  'TransactionInactiveError vs. SyntaxError',
+  { upgrade_will_abort: true }
 );
 
 indexeddb_test(
@@ -67,8 +67,7 @@ indexeddb_test(
   (t, db) => {
     db.createObjectStore('s');
     assert_throws('ConstraintError', () => {
-      db.createObjectStore('s', {autoIncrement: true,
-                                 keyPath: ''});
+      db.createObjectStore('s', {autoIncrement: true, keyPath: ''});
     }, '"already exists" check (ConstraintError) should precede ' +
        '"autoIncrement vs. keyPath" check (InvalidAccessError)');
     t.done();
