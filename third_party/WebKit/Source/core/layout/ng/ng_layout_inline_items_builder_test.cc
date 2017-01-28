@@ -33,6 +33,7 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
     for (int i = 0; i < size; i++)
       builder.Append(inputs[i], style_.get());
     text_ = builder.ToString();
+    ValidateItems();
     return text_;
   }
 
@@ -44,6 +45,24 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
   const String& TestAppend(const String& input1, const String& input2) {
     String inputs[] = {input1, input2};
     return TestAppend(inputs, 2);
+  }
+
+  const String& TestAppend(const String& input1,
+                           const String& input2,
+                           const String& input3) {
+    String inputs[] = {input1, input2, input3};
+    return TestAppend(inputs, 3);
+  }
+
+  void ValidateItems() {
+    unsigned current_offset = 0;
+    for (unsigned i = 0; i < items_.size(); i++) {
+      const NGLayoutInlineItem& item = items_[i];
+      EXPECT_EQ(current_offset, item.StartOffset());
+      EXPECT_LT(item.StartOffset(), item.EndOffset());
+      current_offset = item.EndOffset();
+    }
+    EXPECT_EQ(current_offset, text_.length());
   }
 
   Vector<NGLayoutInlineItem> items_;
@@ -94,6 +113,11 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAcrossElements) {
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseLeadingSpaces) {
   EXPECT_EQ("text", TestAppend("  text")) << "Leading spaces are removed.";
+}
+
+TEST_F(NGLayoutInlineItemsBuilderTest, CollapseBeforeNewlineAcrossElements) {
+  EXPECT_EQ("text text", TestAppend("text ", "\ntext"));
+  EXPECT_EQ("text text", TestAppend("text", " ", "\ntext"));
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseBeforeAndAfterNewline) {
@@ -171,6 +195,11 @@ TEST_F(NGLayoutInlineItemsBuilderTest, AppendAsOpaqueToSpaceCollapsing) {
   builder.AppendAsOpaqueToSpaceCollapsing(firstStrongIsolateCharacter);
   builder.Append(" World", style_.get());
   EXPECT_EQ(String(u"Hello \u2068World"), builder.ToString());
+}
+
+TEST_F(NGLayoutInlineItemsBuilderTest, AppendEmptyString) {
+  EXPECT_EQ("", TestAppend(""));
+  EXPECT_EQ(0u, items_.size());
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, Empty) {
