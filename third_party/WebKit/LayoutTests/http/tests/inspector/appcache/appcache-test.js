@@ -162,7 +162,7 @@ InspectorTest.waitForFrameManifestURLAndStatus = function(frameId, manifestURL, 
     }
 
     var handler = InspectorTest.waitForFrameManifestURLAndStatus.bind(this, frameId, manifestURL, status, callback);
-    InspectorTest.addSniffer(SDK.ApplicationCacheModel.prototype, "_frameManifestUpdated", handler);
+    InspectorTest.addSniffer(Resources.ApplicationCacheModel.prototype, "_frameManifestUpdated", handler);
 }
 
 InspectorTest.startApplicationCacheStatusesRecording = function()
@@ -188,7 +188,7 @@ InspectorTest.startApplicationCacheStatusesRecording = function()
         }
     }
 
-    InspectorTest.addSniffer(SDK.ApplicationCacheModel.prototype, "_frameManifestUpdated", addRecord, true);
+    InspectorTest.addSniffer(Resources.ApplicationCacheModel.prototype, "_frameManifestUpdated", addRecord, true);
 }
 
 InspectorTest.ensureFrameStatusEventsReceived = function(frameId, count, callback)

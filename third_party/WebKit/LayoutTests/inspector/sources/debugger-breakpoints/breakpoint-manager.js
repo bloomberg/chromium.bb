@@ -40,20 +40,28 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabili
 {
     capabilities = capabilities || InspectorTest._pageCapabilities;
     var MockTarget = class extends SDK.Target {
-        constructor(name, connectionFactory, callback) {
-            super(InspectorTest.testTargetManager, name, capabilities, connectionFactory, null, callback);
+        constructor(name, connectionFactory) {
+            super(InspectorTest.testTargetManager, name, capabilities, connectionFactory, null);
             this._inspectedURL = InspectorTest.mainTarget.inspectedURL();
-            this.consoleModel = new SDK.ConsoleModel(this);
-            this.networkManager = new SDK.NetworkManager(this);
-            this.runtimeModel = new SDK.RuntimeModel(this);
-            this.securityOriginManager = SDK.SecurityOriginManager.fromTarget(this);
-            this.resourceTreeModel = new SDK.ResourceTreeModel(this, this.networkManager, this.securityOriginManager);
+            this.consoleModel = this.model(SDK.ConsoleModel);
+            this.model(SDK.NetworkManager);
+            this.resourceTreeModel = this.model(SDK.ResourceTreeModel);
             this.resourceTreeModel._cachedResourcesProcessed = true;
             this.resourceTreeModel._frameAttached("42", 0);
-            this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new SDK.DebuggerModel(this);
-            this._modelByConstructor.set(SDK.DebuggerModel, this.debuggerModel);
-            this.domModel = new SDK.DOMModel(this);
-            this.cssModel = new SDK.CSSModel(this, this.domModel);
+            this.runtimeModel = this.model(SDK.RuntimeModel);
+            if (debuggerModelConstructor) {
+                this.debuggerModel = new debuggerModelConstructor(this);
+                this._modelByConstructor.set(SDK.DebuggerModel, this.debuggerModel);
+            } else {
+                this.debuggerModel = this.model(SDK.DebuggerModel);
+            }
+            this.model(SDK.DOMModel);
+            this.model(SDK.CSSModel);
+            this.subTargetsManager = this.model(SDK.SubTargetsManager);
+            this.cpuProfilerModel = this.model(SDK.CPUProfilerModel);
+            this.heapProfilerModel = this.model(SDK.HeapProfilerModel);
+            this.tracingManager = new SDK.TracingManager(this);
+            this.serviceWorkerManager = this.model(SDK.ServiceWorkerManager);
         }
 
         _loadedWithCapabilities()
@@ -224,7 +232,8 @@ InspectorTest.dumpTarget = function(targetAware)
 InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
     constructor(target)
     {
-        super(SDK.DebuggerModel, target);
+        super(target);
+        this._target = target;
         this._breakpointResolvedEventTarget = new Common.Object();
         this._scripts = {};
         this._breakpoints = {};
