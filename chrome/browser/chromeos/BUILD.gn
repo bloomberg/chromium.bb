@@ -801,8 +801,6 @@ source_set("chromeos") {
     "login/screens/network_error.cc",
     "login/screens/network_error.h",
     "login/screens/network_error_view.h",
-    "login/screens/network_model.cc",
-    "login/screens/network_model.h",
     "login/screens/network_screen.cc",
     "login/screens/network_screen.h",
     "login/screens/network_view.h",

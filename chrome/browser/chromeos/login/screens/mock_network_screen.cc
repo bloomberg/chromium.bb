@@ -23,17 +23,17 @@ MockNetworkView::MockNetworkView() {
 }
 
 MockNetworkView::~MockNetworkView() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
-void MockNetworkView::Bind(NetworkModel& model) {
-  model_ = &model;
-  MockBind(model);
+void MockNetworkView::Bind(NetworkScreen* screen) {
+  screen_ = screen;
+  MockBind(screen);
 }
 
 void MockNetworkView::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   MockUnbind();
 }
 

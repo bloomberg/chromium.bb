@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
-#include "chrome/browser/chromeos/login/screens/network_model.h"
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -55,16 +55,13 @@ namespace chromeos {
 // NetworkScreenHandler, public: -----------------------------------------------
 
 NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
-    : BaseScreenHandler(kJsScreenPath),
-      core_oobe_actor_(core_oobe_actor),
-      model_(nullptr),
-      show_on_init_(false) {
+    : BaseScreenHandler(kJsScreenPath), core_oobe_actor_(core_oobe_actor) {
   DCHECK(core_oobe_actor_);
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
@@ -106,13 +103,13 @@ void NetworkScreenHandler::Show() {
 void NetworkScreenHandler::Hide() {
 }
 
-void NetworkScreenHandler::Bind(NetworkModel& model) {
-  model_ = &model;
-  BaseScreenHandler::SetBaseScreen(model_);
+void NetworkScreenHandler::Bind(NetworkScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
 }
 
 void NetworkScreenHandler::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
@@ -202,12 +199,12 @@ void NetworkScreenHandler::GetAdditionalParameters(
           .id();
 
   std::unique_ptr<base::ListValue> language_list;
-  if (model_) {
-    if (model_->GetLanguageList() &&
-        model_->GetLanguageListLocale() == application_locale) {
-      language_list.reset(model_->GetLanguageList()->DeepCopy());
+  if (screen_) {
+    if (screen_->language_list() &&
+        screen_->language_list_locale() == application_locale) {
+      language_list.reset(screen_->language_list()->DeepCopy());
     } else {
-      model_->UpdateLanguageList();
+      screen_->UpdateLanguageList();
     }
   }
 
@@ -259,7 +256,7 @@ void NetworkScreenHandler::Initialize() {
   }
 
   // Reload localized strings if they are already resolved.
-  if (model_ && model_->GetLanguageList())
+  if (screen_ && screen_->language_list())
     ReloadLocalizedContent();
 }
 

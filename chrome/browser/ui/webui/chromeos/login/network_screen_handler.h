@@ -32,7 +32,7 @@ class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
   // NetworkView implementation:
   void Show() override;
   void Hide() override;
-  void Bind(NetworkModel& model) override;
+  void Bind(NetworkScreen* screen) override;
   void Unbind() override;
   void ShowError(const base::string16& message) override;
   void ClearErrors() override;
@@ -47,15 +47,14 @@ class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 
- private:
   // Returns available timezones. Caller gets the ownership.
   static base::ListValue* GetTimezoneList();
 
-  CoreOobeActor* core_oobe_actor_;
-  NetworkModel* model_;
+  CoreOobeActor* core_oobe_actor_ = nullptr;
+  NetworkScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   // Position of the network control.
   gfx::Point network_control_pos_;

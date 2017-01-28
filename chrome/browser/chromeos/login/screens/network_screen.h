@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/login/screens/network_model.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -34,7 +34,7 @@ namespace login {
 class NetworkStateHelper;
 }
 
-class NetworkScreen : public NetworkModel,
+class NetworkScreen : public BaseScreen,
                       public NetworkStateHandlerObserver,
                       public input_method::InputMethodManager::Observer {
  public:
@@ -61,24 +61,16 @@ class NetworkScreen : public NetworkModel,
 
   static NetworkScreen* Get(ScreenManager* manager);
 
-  // NetworkModel implementation:
-  void Show() override;
-  void Hide() override;
-  void OnViewDestroyed(NetworkView* view) override;
-  void OnUserAction(const std::string& action_id) override;
-  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
-  std::string GetLanguageListLocale() const override;
-  const base::ListValue* GetLanguageList() const override;
-  void UpdateLanguageList() override;
+  // Called when |view| has been destroyed. If this instance is destroyed before
+  // the |view| it should call view->Unbind().
+  void OnViewDestroyed(NetworkView* view);
 
-  // NetworkStateHandlerObserver implementation:
-  void NetworkConnectionStateChanged(const NetworkState* network) override;
-  void DefaultNetworkChanged(const NetworkState* network) override;
+  const std::string& language_list_locale() const {
+    return language_list_locale_;
+  }
+  const base::ListValue* language_list() const { return language_list_.get(); }
 
-  // InputMethodManager::Observer implementation:
-  void InputMethodChanged(input_method::InputMethodManager* manager,
-                          Profile* profile,
-                          bool show_message) override;
+  void UpdateLanguageList();
 
   // Set locale and input method. If |locale| is empty or doesn't change, set
   // the |input_method| directly. If |input_method| is empty or ineligible, we
@@ -106,6 +98,21 @@ class NetworkScreen : public NetworkModel,
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
+
+  // BaseScreen implementation:
+  void Show() override;
+  void Hide() override;
+  void OnUserAction(const std::string& action_id) override;
+  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
+
+  // NetworkStateHandlerObserver implementation:
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* network) override;
+
+  // InputMethodManager::Observer implementation:
+  void InputMethodChanged(input_method::InputMethodManager* manager,
+                          Profile* profile,
+                          bool show_message) override;
 
   void SetApplicationLocale(const std::string& locale);
   void SetInputMethod(const std::string& input_method);
@@ -166,22 +173,22 @@ class NetworkScreen : public NetworkModel,
   void OnSystemTimezoneChanged();
 
   // True if subscribed to network change notification.
-  bool is_network_subscribed_;
+  bool is_network_subscribed_ = false;
 
   // ID of the the network that we are waiting for.
   base::string16 network_id_;
 
   // True if user pressed continue button so we should proceed with OOBE
   // as soon as we are connected.
-  bool continue_pressed_;
+  bool continue_pressed_ = false;
 
   // Timer for connection timeout.
   base::OneShotTimer connection_timer_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 
-  NetworkView* view_;
-  Delegate* delegate_;
+  NetworkView* view_ = nullptr;
+  Delegate* delegate_ = nullptr;
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   std::string input_method_;

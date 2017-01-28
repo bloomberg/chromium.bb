@@ -115,9 +115,7 @@ class LanguageListWaiter : public NetworkScreen::Observer {
   }
 
  private:
-  bool LanguageListReady() const {
-    return network_screen_->GetLanguageList();
-  }
+  bool LanguageListReady() const { return network_screen_->language_list(); }
 
   void CheckLanguageList() {
     if (LanguageListReady())

@@ -37,6 +37,15 @@ namespace {
 // Time in seconds for connection timeout.
 const int kConnectionTimeoutSec = 40;
 
+constexpr const char kUserActionContinueButtonClicked[] = "continue";
+constexpr const char kUserActionConnectDebuggingFeaturesClicked[] =
+    "connect-debugging-features";
+constexpr const char kContextKeyLocale[] = "locale";
+constexpr const char kContextKeyInputMethod[] = "input-method";
+constexpr const char kContextKeyTimezone[] = "timezone";
+constexpr const char kContextKeyContinueButtonEnabled[] =
+    "continue-button-enabled";
+
 }  // namespace
 
 namespace chromeos {
@@ -53,15 +62,13 @@ NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
 NetworkScreen::NetworkScreen(BaseScreenDelegate* base_screen_delegate,
                              Delegate* delegate,
                              NetworkView* view)
-    : NetworkModel(base_screen_delegate),
-      is_network_subscribed_(false),
-      continue_pressed_(false),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_NETWORK),
       view_(view),
       delegate_(delegate),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
   if (view_)
-    view_->Bind(*this);
+    view_->Bind(this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
   InitializeTimezoneObserver();
@@ -79,32 +86,7 @@ NetworkScreen::~NetworkScreen() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, NetworkModel implementation:
-
-void NetworkScreen::Show() {
-  Refresh();
-
-  // Here we should handle default locales, for which we do not have UI
-  // resources. This would load fallback, but properly show "selected" locale
-  // in the UI.
-  if (selected_language_code_.empty()) {
-    const StartupCustomizationDocument* startup_manifest =
-        StartupCustomizationDocument::GetInstance();
-    SetApplicationLocale(startup_manifest->initial_locale_default());
-  }
-
-  if (!timezone_subscription_)
-    InitializeTimezoneObserver();
-
-  if (view_)
-    view_->Show();
-}
-
-void NetworkScreen::Hide() {
-  timezone_subscription_.reset();
-  if (view_)
-    view_->Hide();
-}
+// NetworkScreen, public API, setters and getters for input method and timezone.
 
 void NetworkScreen::OnViewDestroyed(NetworkView* view) {
   if (view_ == view) {
@@ -116,67 +98,11 @@ void NetworkScreen::OnViewDestroyed(NetworkView* view) {
   }
 }
 
-void NetworkScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionContinueButtonClicked) {
-    OnContinueButtonPressed();
-  } else if (action_id == kUserActionConnectDebuggingFeaturesClicked) {
-    if (delegate_)
-      delegate_->OnEnableDebuggingScreenRequested();
-  } else {
-    BaseScreen::OnUserAction(action_id);
-  }
-}
-
-void NetworkScreen::OnContextKeyUpdated(
-    const ::login::ScreenContext::KeyType& key) {
-  if (key == kContextKeyLocale)
-    SetApplicationLocale(context_.GetString(kContextKeyLocale));
-  else if (key == kContextKeyInputMethod)
-    SetInputMethod(context_.GetString(kContextKeyInputMethod));
-  else if (key == kContextKeyTimezone)
-    SetTimezone(context_.GetString(kContextKeyTimezone));
-  else
-    NetworkModel::OnContextKeyUpdated(key);
-}
-
-std::string NetworkScreen::GetLanguageListLocale() const {
-  return language_list_locale_;
-}
-
-const base::ListValue* NetworkScreen::GetLanguageList() const {
-  return language_list_.get();
-}
 
 void NetworkScreen::UpdateLanguageList() {
   ScheduleResolveLanguageList(
       std::unique_ptr<locale_util::LanguageSwitchResult>());
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, NetworkStateHandlerObserver implementation:
-
-void NetworkScreen::NetworkConnectionStateChanged(const NetworkState* network) {
-  UpdateStatus();
-}
-
-void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
-  UpdateStatus();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, InputMethodManager::Observer implementation:
-
-void NetworkScreen::InputMethodChanged(
-    input_method::InputMethodManager* manager,
-    Profile* /* proflie */,
-    bool /* show_message */) {
-  GetContextEditor().SetString(
-      kContextKeyInputMethod,
-      manager->GetActiveIMEState()->GetCurrentInputMethod().id());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, setters and getters for input method and timezone.
 
 void NetworkScreen::SetApplicationLocaleAndInputMethod(
     const std::string& locale,
@@ -242,6 +168,80 @@ void NetworkScreen::AddObserver(Observer* observer) {
 void NetworkScreen::RemoveObserver(Observer* observer) {
   if (observer)
     observers_.RemoveObserver(observer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BaseScreen implementation:
+
+void NetworkScreen::Show() {
+  Refresh();
+
+  // Here we should handle default locales, for which we do not have UI
+  // resources. This would load fallback, but properly show "selected" locale
+  // in the UI.
+  if (selected_language_code_.empty()) {
+    const StartupCustomizationDocument* startup_manifest =
+        StartupCustomizationDocument::GetInstance();
+    SetApplicationLocale(startup_manifest->initial_locale_default());
+  }
+
+  if (!timezone_subscription_)
+    InitializeTimezoneObserver();
+
+  if (view_)
+    view_->Show();
+}
+
+void NetworkScreen::Hide() {
+  timezone_subscription_.reset();
+  if (view_)
+    view_->Hide();
+}
+
+void NetworkScreen::OnUserAction(const std::string& action_id) {
+  if (action_id == kUserActionContinueButtonClicked) {
+    OnContinueButtonPressed();
+  } else if (action_id == kUserActionConnectDebuggingFeaturesClicked) {
+    if (delegate_)
+      delegate_->OnEnableDebuggingScreenRequested();
+  } else {
+    BaseScreen::OnUserAction(action_id);
+  }
+}
+
+void NetworkScreen::OnContextKeyUpdated(
+    const ::login::ScreenContext::KeyType& key) {
+  if (key == kContextKeyLocale)
+    SetApplicationLocale(context_.GetString(kContextKeyLocale));
+  else if (key == kContextKeyInputMethod)
+    SetInputMethod(context_.GetString(kContextKeyInputMethod));
+  else if (key == kContextKeyTimezone)
+    SetTimezone(context_.GetString(kContextKeyTimezone));
+  else
+    BaseScreen::OnContextKeyUpdated(key);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkScreen, NetworkStateHandlerObserver implementation:
+
+void NetworkScreen::NetworkConnectionStateChanged(const NetworkState* network) {
+  UpdateStatus();
+}
+
+void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
+  UpdateStatus();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkScreen, InputMethodManager::Observer implementation:
+
+void NetworkScreen::InputMethodChanged(
+    input_method::InputMethodManager* manager,
+    Profile* /* proflie */,
+    bool /* show_message */) {
+  GetContextEditor().SetString(
+      kContextKeyInputMethod,
+      manager->GetActiveIMEState()->GetCurrentInputMethod().id());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
