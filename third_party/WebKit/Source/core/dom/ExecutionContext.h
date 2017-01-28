@@ -55,6 +55,11 @@ class PublicURLManager;
 class SecurityOrigin;
 enum class TaskType : unsigned;
 
+enum ReasonForCallingCanExecuteScripts {
+  AboutToExecuteScript,
+  NotAboutToExecuteScript
+};
+
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext> {
   WTF_MAKE_NONCOPYABLE(ExecutionContext);
@@ -111,6 +116,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   KURL contextURL() const { return virtualURL(); }
   KURL contextCompleteURL(const String& url) const {
     return virtualCompleteURL(url);
+  }
+
+  virtual bool canExecuteScripts(ReasonForCallingCanExecuteScripts) {
+    return false;
   }
 
   bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);

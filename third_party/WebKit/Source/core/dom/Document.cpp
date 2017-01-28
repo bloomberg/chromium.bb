@@ -5529,6 +5529,43 @@ bool Document::isSecureTransitionTo(const KURL& url) const {
   return getSecurityOrigin()->canAccess(other.get());
 }
 
+bool Document::canExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
+  if (isSandboxed(SandboxScripts)) {
+    // FIXME: This message should be moved off the console once a solution to
+    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+    if (reason == AboutToExecuteScript) {
+      addConsoleMessage(ConsoleMessage::create(
+          SecurityMessageSource, ErrorMessageLevel,
+          "Blocked script execution in '" + url().elidedString() +
+              "' because the document's frame is sandboxed and the "
+              "'allow-scripts' permission is not set."));
+    }
+    return false;
+  }
+
+  if (isViewSource()) {
+    DCHECK(getSecurityOrigin()->isUnique());
+    return true;
+  }
+
+  DCHECK(frame())
+      << "you are querying canExecuteScripts on a non contextDocument.";
+
+  FrameLoaderClient* client = frame()->loader().client();
+  if (!client)
+    return false;
+
+  Settings* settings = frame()->settings();
+  if (!client->allowScript(settings && settings->getScriptEnabled())) {
+    if (reason == AboutToExecuteScript)
+      client->didNotAllowScript();
+
+    return false;
+  }
+
+  return true;
+}
+
 bool Document::allowInlineEventHandler(Node* node,
                                        EventListener* listener,
                                        const String& contextURL,

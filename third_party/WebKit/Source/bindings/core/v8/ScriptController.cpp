@@ -249,34 +249,9 @@ void ScriptController::updateDocument() {
 
 bool ScriptController::canExecuteScripts(
     ReasonForCallingCanExecuteScripts reason) {
-
-  if (frame()->document() && frame()->document()->isSandboxed(SandboxScripts)) {
-    // FIXME: This message should be moved off the console once a solution to
-    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    if (reason == AboutToExecuteScript)
-      frame()->document()->addConsoleMessage(ConsoleMessage::create(
-          SecurityMessageSource, ErrorMessageLevel,
-          "Blocked script execution in '" +
-              frame()->document()->url().elidedString() +
-              "' because the document's frame is sandboxed and the "
-              "'allow-scripts' permission is not set."));
-    return false;
-  }
-
-  if (frame()->document() && frame()->document()->isViewSource()) {
-    ASSERT(frame()->document()->getSecurityOrigin()->isUnique());
-    return true;
-  }
-
-  FrameLoaderClient* client = frame()->loader().client();
-  if (!client)
-    return false;
-  Settings* settings = frame()->settings();
-  const bool allowed =
-      client->allowScript(settings && settings->getScriptEnabled());
-  if (!allowed && reason == AboutToExecuteScript)
-    client->didNotAllowScript();
-  return allowed;
+  Document* document = frame()->document();
+  DCHECK(document);
+  return document->canExecuteScripts(reason);
 }
 
 bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,

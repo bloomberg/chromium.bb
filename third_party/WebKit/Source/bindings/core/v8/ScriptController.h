@@ -34,6 +34,7 @@
 #include "bindings/core/v8/SharedPersistent.h"
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/CoreExport.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
@@ -55,10 +56,6 @@ class Widget;
 
 typedef WTF::Vector<v8::Extension*> V8Extensions;
 
-enum ReasonForCallingCanExecuteScripts {
-  AboutToExecuteScript,
-  NotAboutToExecuteScript
-};
 
 class CORE_EXPORT ScriptController final
     : public GarbageCollected<ScriptController> {

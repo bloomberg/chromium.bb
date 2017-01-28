@@ -446,6 +446,7 @@ class CORE_EXPORT Document : public ContainerNode,
     return m_sawElementsInKnownNamespaces;
   }
 
+  bool canExecuteScripts(ReasonForCallingCanExecuteScripts) override;
   bool isRenderingReady() const {
     return haveImportsLoaded() && haveRenderBlockingStylesheetsLoaded();
   }
