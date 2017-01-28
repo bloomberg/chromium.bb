@@ -110,9 +110,11 @@ class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
   void CheckRemovingPluginDataSupported(
       scoped_refptr<PluginPrefs> plugin_prefs);
 
-  // Parse the developer-provided |origin_types| object into an origin_type_mask
+  // Parse the developer-provided |origin_types| object into |origin_type_mask|
   // that can be used with the BrowsingDataRemover.
-  int ParseOriginTypeMask(const base::DictionaryValue& options);
+  // Returns true if parsing was successful.
+  bool ParseOriginTypeMask(const base::DictionaryValue& options,
+                           int* origin_type_mask);
 
   // Called when we're ready to start removing data.
   void StartRemoving();

@@ -253,7 +253,8 @@ bool BrowsingDataRemoverFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
   DCHECK(options);
 
-  origin_type_mask_ = ParseOriginTypeMask(*options);
+  EXTENSION_FUNCTION_VALIDATE(
+      ParseOriginTypeMask(*options, &origin_type_mask_));
 
   // If |ms_since_epoch| isn't set, default it to 0.
   double ms_since_epoch;
@@ -323,44 +324,55 @@ void BrowsingDataRemoverFunction::StartRemoving() {
       removal_mask_, origin_type_mask_, this);
 }
 
-int BrowsingDataRemoverFunction::ParseOriginTypeMask(
-    const base::DictionaryValue& options) {
+bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
+    const base::DictionaryValue& options,
+    int* origin_type_mask) {
   // Parse the |options| dictionary to generate the origin set mask. Default to
   // UNPROTECTED_WEB if the developer doesn't specify anything.
-  int mask = BrowsingDataHelper::UNPROTECTED_WEB;
+  *origin_type_mask = BrowsingDataHelper::UNPROTECTED_WEB;
 
   const base::DictionaryValue* d = NULL;
   if (options.HasKey(extension_browsing_data_api_constants::kOriginTypesKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options.GetDictionary(
-        extension_browsing_data_api_constants::kOriginTypesKey, &d));
+    if (!options.GetDictionary(
+            extension_browsing_data_api_constants::kOriginTypesKey, &d)) {
+      return false;
+    }
     bool value;
 
     // The developer specified something! Reset to 0 and parse the dictionary.
-    mask = 0;
+    *origin_type_mask = 0;
 
     // Unprotected web.
     if (d->HasKey(extension_browsing_data_api_constants::kUnprotectedWebKey)) {
-      EXTENSION_FUNCTION_VALIDATE(d->GetBoolean(
-          extension_browsing_data_api_constants::kUnprotectedWebKey, &value));
-      mask |= value ? BrowsingDataHelper::UNPROTECTED_WEB : 0;
+      if (!d->GetBoolean(
+              extension_browsing_data_api_constants::kUnprotectedWebKey,
+              &value)) {
+        return false;
+      }
+      *origin_type_mask |= value ? BrowsingDataHelper::UNPROTECTED_WEB : 0;
     }
 
     // Protected web.
     if (d->HasKey(extension_browsing_data_api_constants::kProtectedWebKey)) {
-      EXTENSION_FUNCTION_VALIDATE(d->GetBoolean(
-          extension_browsing_data_api_constants::kProtectedWebKey, &value));
-      mask |= value ? BrowsingDataHelper::PROTECTED_WEB : 0;
+      if (!d->GetBoolean(
+              extension_browsing_data_api_constants::kProtectedWebKey,
+              &value)) {
+        return false;
+      }
+      *origin_type_mask |= value ? BrowsingDataHelper::PROTECTED_WEB : 0;
     }
 
     // Extensions.
     if (d->HasKey(extension_browsing_data_api_constants::kExtensionsKey)) {
-      EXTENSION_FUNCTION_VALIDATE(d->GetBoolean(
-          extension_browsing_data_api_constants::kExtensionsKey, &value));
-      mask |= value ? BrowsingDataHelper::EXTENSION : 0;
+      if (!d->GetBoolean(extension_browsing_data_api_constants::kExtensionsKey,
+                         &value)) {
+        return false;
+      }
+      *origin_type_mask |= value ? BrowsingDataHelper::EXTENSION : 0;
     }
   }
 
-  return mask;
+  return true;
 }
 
 // Parses the |dataToRemove| argument to generate the removal mask.
