@@ -4,6 +4,7 @@
 
 import unittest
 
+from webkitpy.common.checkout.scm.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.w3c.test_importer import TestImporter
@@ -127,3 +128,24 @@ class TestImporterTest(unittest.TestCase):
                     '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/MANIFEST.json'
                 ]
             ])
+
+    def test_get_directory_owners(self):
+        host = MockHost()
+        host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations',
+            '## Owners: someone@chromium.org\n'
+            '# external/wpt/foo [ Pass ]\n')
+        git = MockGit()
+        git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
+        host.scm = lambda: git
+        importer = TestImporter(host)
+        self.assertEqual(importer.get_directory_owners(), {'someone@chromium.org': 'external/wpt/foo'})
+
+    def test_get_directory_owners_no_changed_files(self):
+        host = MockHost()
+        host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations',
+            '## Owners: someone@chromium.org\n'
+            '# external/wpt/foo [ Pass ]\n')
+        importer = TestImporter(host)
+        self.assertEqual(importer.get_directory_owners(), {})

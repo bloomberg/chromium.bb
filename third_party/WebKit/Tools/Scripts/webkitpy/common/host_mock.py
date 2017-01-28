@@ -58,8 +58,9 @@ class MockHost(MockSystemHost):
         self.web = web or MockWeb()
 
         self._scm = scm
-        # FIXME: we should never initialize the SCM by default, since the real
-        # object doesn't either. This has caused at least one bug (see bug 89498).
+        # TODO(qyearsley): we should never initialize the SCM by default, since
+        # the real object doesn't either. This has caused at least one bug
+        # (see bug 89498).
         if initialize_scm_by_default:
             self.initialize_scm()
         self.buildbot = MockBuildBot()
