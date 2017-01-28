@@ -914,7 +914,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests"
       },
