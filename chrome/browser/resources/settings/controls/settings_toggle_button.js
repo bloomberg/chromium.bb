@@ -9,6 +9,13 @@
 Polymer({
   is: 'settings-toggle-button',
 
+  properties: {
+    elideLabel: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+  },
+
   behaviors: [SettingsBooleanControlBehavior],
 
   /** @private */

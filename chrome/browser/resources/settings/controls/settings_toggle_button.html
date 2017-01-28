@@ -6,6 +6,16 @@
 <dom-module id="settings-toggle-button">
   <template>
     <style include="settings-shared">
+      :host([elide-label]),
+      :host([elide-label]) #outerRow,
+      :host([elide-label]) #outerRow > div.flex {
+        min-width: 0;
+      }
+
+      :host([elide-label]) .label {
+        @apply(--settings-text-elide);
+      }
+
       #outerRow {
         align-items: center;
         display: flex;
@@ -29,8 +39,8 @@
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
       <div class="flex" on-tap="onLabelWrapperTap_"
           actionable$="[[!controlDisabled_(disabled, pref)]]">
-        <div>[[label]]</div>
-        <div class="secondary">[[subLabel]]</div>
+        <div class="label">[[label]]</div>
+        <div class="secondary label">[[subLabel]]</div>
       </div>
       <content selector=".more-actions"></content>
       <template is="dom-if" if="[[pref.controlledBy]]">
