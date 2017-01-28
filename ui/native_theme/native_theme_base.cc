@@ -186,6 +186,9 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
     case kMenuPopupBackground:
       PaintMenuPopupBackground(canvas, rect.size(), extra.menu_background);
       break;
+    case kMenuPopupSeparator:
+      PaintMenuSeparator(canvas, state, rect, extra.menu_separator);
+      break;
     case kMenuItemBackground:
       PaintMenuItemBackground(canvas, state, rect, extra.menu_item);
       break;
@@ -774,6 +777,16 @@ void NativeThemeBase::PaintMenuItemBackground(
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
   // By default don't draw anything over the normal background.
+}
+
+void NativeThemeBase::PaintMenuSeparator(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuSeparatorExtraParams& menu_separator) const {
+  SkPaint paint;
+  paint.setColor(GetSystemColor(ui::NativeTheme::kColorId_MenuSeparatorColor));
+  canvas->drawRect(gfx::RectToSkRect(*menu_separator.paint_rect), paint);
 }
 
 void NativeThemeBase::PaintSliderTrack(SkCanvas* canvas,

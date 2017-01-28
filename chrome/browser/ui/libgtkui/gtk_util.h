@@ -139,6 +139,8 @@ typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
 // must g_object_unref() the returned context.
 ScopedStyleContext GetStyleContextFromCss(const char* css_selector);
 
+SkColor SkColorFromStyleContext(GtkStyleContext* context);
+
 // Removes all border-type properties on |context| and all of its parents.
 void RemoveBorders(GtkStyleContext* context);
 

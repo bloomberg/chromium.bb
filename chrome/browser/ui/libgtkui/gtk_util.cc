@@ -347,12 +347,15 @@ SkColor GdkRgbaToSkColor(const GdkRGBA& color) {
                         color.blue * 255);
 }
 
-SkColor GetFgColor(const char* css_selector) {
-  auto context = GetStyleContextFromCss(css_selector);
+SkColor SkColorFromStyleContext(GtkStyleContext* context) {
   GdkRGBA color;
   gtk_style_context_get_color(context, gtk_style_context_get_state(context),
                               &color);
   return GdkRgbaToSkColor(color);
+}
+
+SkColor GetFgColor(const char* css_selector) {
+  return SkColorFromStyleContext(GetStyleContextFromCss(css_selector));
 }
 
 GtkCssProvider* GetCssProvider(const char* css) {

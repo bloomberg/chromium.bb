@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme_export.h"
 
@@ -56,8 +57,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kMenuCheckBackground,
     kMenuPopupArrow,
     kMenuPopupGutter,
-    kMenuPopupSeparator,
 #endif
+    kMenuPopupSeparator,
     kMenuItemBackground,
     kProgressBar,
     kPushButton,
@@ -145,6 +146,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool is_selected;
   };
 
+  struct MenuSeparatorExtraParams {
+    const gfx::Rect* paint_rect;
+    MenuSeparatorType type;
+  };
+
   struct MenuItemExtraParams {
     bool is_selected;
     int corner_radius;
@@ -228,6 +234,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     MenuArrowExtraParams menu_arrow;
     MenuCheckExtraParams menu_check;
     MenuItemExtraParams menu_item;
+    MenuSeparatorExtraParams menu_separator;
     MenuListExtraParams menu_list;
     MenuBackgroundExtraParams menu_background;
     ProgressBarExtraParams progress_bar;

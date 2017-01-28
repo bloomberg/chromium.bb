@@ -20,8 +20,17 @@ namespace libgtkui {
 
 namespace {
 
+enum BackgroundRenderMode {
+  BG_RENDER_NORMAL,
+  BG_RENDER_NONE,
+  BG_RENDER_RECURSIVE,
+};
+
 SkBitmap GetWidgetBitmap(const gfx::Size& size,
-                         GtkStyleContext* context) {
+                         GtkStyleContext* context,
+                         BackgroundRenderMode bg_mode,
+                         bool render_frame) {
+  DCHECK(bg_mode != BG_RENDER_NONE || render_frame);
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size.width(), size.height());
   bitmap.eraseColor(0);
@@ -32,8 +41,18 @@ SkBitmap GetWidgetBitmap(const gfx::Size& size,
       cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, size.width()));
   cairo_t* cr = cairo_create(surface);
 
-  RenderBackground(size, cr, context);
-  gtk_render_frame(context, cr, 0, 0, size.width(), size.height());
+  switch (bg_mode) {
+    case BG_RENDER_NORMAL:
+      gtk_render_background(context, cr, 0, 0, size.width(), size.height());
+      break;
+    case BG_RENDER_RECURSIVE:
+      RenderBackground(size, cr, context);
+      break;
+    case BG_RENDER_NONE:
+      break;
+  }
+  if (render_frame)
+    gtk_render_frame(context, cr, 0, 0, size.width(), size.height());
   cairo_destroy(cr);
   cairo_surface_destroy(surface);
   return bitmap;
@@ -41,8 +60,12 @@ SkBitmap GetWidgetBitmap(const gfx::Size& size,
 
 void PaintWidget(SkCanvas* canvas,
                  const gfx::Rect& rect,
-                 GtkStyleContext* context) {
-  canvas->drawBitmap(GetWidgetBitmap(rect.size(), context), rect.x(), rect.y());
+                 GtkStyleContext* context,
+                 BackgroundRenderMode bg_mode,
+                 bool render_frame) {
+  canvas->drawBitmap(
+      GetWidgetBitmap(rect.size(), context, bg_mode, render_frame), rect.x(),
+      rect.y());
 }
 
 GtkStateFlags StateToStateFlags(NativeThemeGtk3::State state) {
@@ -99,7 +122,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor(
           "GtkMenu#menu GtkMenuItem#menuitem GtkLabel#label.accelerator");
     case ui::NativeTheme::kColorId_MenuSeparatorColor:
-    // MenuButton borders are used the same way as menu separators in Chrome.
+    // MenuButton borders are used as vertical menu separators in Chrome.
     case ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_HoverMenuButtonBorderColor:
@@ -125,7 +148,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_LinkPressed:
       if (GtkVersionCheck(3, 12))
         return GetFgColor("GtkLabel#label.link:link:hover:active");
-      // fallthrough
+    // fallthrough
     case ui::NativeTheme::kColorId_LinkEnabled: {
       if (GtkVersionCheck(3, 12)) {
         return GetFgColor("GtkLabel#label.link:link");
@@ -368,7 +391,8 @@ void NativeThemeGtk3::PaintMenuPopupBackground(
     SkCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
-  PaintWidget(canvas, gfx::Rect(size), GetStyleContextFromCss("GtkMenu#menu"));
+  PaintWidget(canvas, gfx::Rect(size), GetStyleContextFromCss("GtkMenu#menu"),
+              BG_RENDER_RECURSIVE, false);
 }
 
 void NativeThemeGtk3::PaintMenuItemBackground(
@@ -378,7 +402,64 @@ void NativeThemeGtk3::PaintMenuItemBackground(
     const MenuItemExtraParams& menu_item) const {
   auto context = GetStyleContextFromCss("GtkMenu#menu GtkMenuItem#menuitem");
   gtk_style_context_set_state(context, StateToStateFlags(state));
-  PaintWidget(canvas, rect, context);
+  PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
+}
+
+void NativeThemeGtk3::PaintMenuSeparator(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuSeparatorExtraParams& menu_separator) const {
+  auto separator_offset = [&](int separator_thickness) {
+    switch (menu_separator.type) {
+      case ui::LOWER_SEPARATOR:
+        return rect.height() - separator_thickness;
+      case ui::UPPER_SEPARATOR:
+        return 0;
+      default:
+        return rect.height() / 2;
+    }
+  };
+  if (GtkVersionCheck(3, 20)) {
+    auto context =
+        GetStyleContextFromCss("GtkMenu#menu GtkSeparator#separator");
+    GtkBorder margin, border, padding;
+    GtkStateFlags state = gtk_style_context_get_state(context);
+    gtk_style_context_get_margin(context, state, &margin);
+    gtk_style_context_get_border(context, state, &border);
+    gtk_style_context_get_padding(context, state, &padding);
+    int min_height = 0;
+    gtk_style_context_get(context, state, "min-height", &min_height, NULL);
+    int w = rect.width() - margin.left - margin.right;
+    int h =
+        min_height + padding.top + padding.bottom + border.top + border.bottom;
+    int x = margin.left;
+    int y = separator_offset(h);
+    PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NORMAL, true);
+  } else {
+    auto context =
+        GetStyleContextFromCss("GtkMenu#menu GtkMenuItem#menuitem.separator");
+    gboolean wide_separators = false;
+    gint separator_height = 0;
+    gtk_style_context_get_style(context, "wide-separators", &wide_separators,
+                                "separator-height", &separator_height, nullptr);
+    // This code was adapted from gtk/gtkmenuitem.c.  For some reason,
+    // padding is used as the margin.
+    GtkBorder padding;
+    gtk_style_context_get_padding(context, gtk_style_context_get_state(context),
+                                  &padding);
+    int w = rect.width() - padding.left - padding.right;
+    int x = rect.x() + padding.left;
+    int h = wide_separators ? separator_height : 1;
+    int y = rect.y() + separator_offset(h);
+    if (wide_separators) {
+      PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NONE, true);
+    } else {
+      SkPaint paint;
+      paint.setColor(SkColorFromStyleContext(context));
+      canvas->drawLine(x, y, x + w, y, paint);
+    }
+  }
 }
 
 void NativeThemeGtk3::PaintFrameTopArea(
@@ -390,12 +471,12 @@ void NativeThemeGtk3::PaintFrameTopArea(
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar");
   RemoveBorders(context);
-  gtk_style_context_set_state(context,
-                              frame_top_area.is_active
-                                  ? GTK_STATE_FLAG_NORMAL
-                              : GTK_STATE_FLAG_BACKDROP);
+  gtk_style_context_set_state(context, frame_top_area.is_active
+                                           ? GTK_STATE_FLAG_NORMAL
+                                           : GTK_STATE_FLAG_BACKDROP);
 
-  SkBitmap bitmap = GetWidgetBitmap(rect.size(), context);
+  SkBitmap bitmap =
+      GetWidgetBitmap(rect.size(), context, BG_RENDER_RECURSIVE, false);
 
   if (frame_top_area.incognito) {
     bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(

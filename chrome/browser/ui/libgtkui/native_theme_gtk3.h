@@ -25,6 +25,11 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
       SkCanvas* canvas,
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const override;
+  void PaintMenuSeparator(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuSeparatorExtraParams& menu_separator) const override;
   void PaintMenuItemBackground(
       SkCanvas* canvas,
       State state,
