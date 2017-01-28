@@ -90,8 +90,6 @@ class Internals final : public GarbageCollected<Internals>,
 
   String elementLayoutTreeAsText(Element*, ExceptionState&);
 
-  String address(Node*);
-
   GCObservation* observeGC(ScriptValue);
 
   bool isPreloaded(const String& url);

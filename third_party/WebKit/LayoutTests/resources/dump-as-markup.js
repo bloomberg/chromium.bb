@@ -126,8 +126,7 @@ Markup.useHTML5libOutputFormat = function()
 
 Markup.get = function(node)
 {
-    var shadowRootList = {};
-    var markup = Markup._getShadowHostIfPossible(node, 0, shadowRootList);
+    var markup = Markup._getShadowHostIfPossible(node, 0);
     if (markup)
         return markup.substring(1);
 
@@ -136,13 +135,13 @@ Markup.get = function(node)
 
     // Don't print any markup for the root node.
     for (var i = 0, len = node.childNodes.length; i < len; i++)
-        markup += Markup._get(node.childNodes[i], 0, shadowRootList);
+        markup += Markup._get(node.childNodes[i], 0);
     return markup.substring(1);
 }
 
 // Returns the markup for the given node. To be used for cases where a test needs
 // to get the markup but not clobber the whole page.
-Markup._get = function(node, depth, shadowRootList)
+Markup._get = function(node, depth)
 {
     var str = Markup._indent(depth);
 
@@ -217,24 +216,25 @@ Markup._get = function(node, depth, shadowRootList)
 
         break;
     case Node.DOCUMENT_FRAGMENT_NODE:
-        if (shadowRootList && internals.address(node) in shadowRootList)
+        if (node.constructor.name == "ShadowRoot")
           str += "<shadow:root>";
         else
           str += "content";
     }
 
+    // TODO(esprehn): This should definitely be ==.
     if (node.namespaceURI = 'http://www.w3.org/1999/xhtml' && node.tagName == 'TEMPLATE')
-        str += Markup._get(node.content, depth + 1, shadowRootList);
+        str += Markup._get(node.content, depth + 1);
 
     for (var i = 0, len = node.childNodes.length; i < len; i++) {
         var selection = Markup._getSelectionMarker(node, i);
         if (selection)
             str += Markup._indent(depth + 1) + selection;
 
-        str += Markup._get(node.childNodes[i], depth + 1, shadowRootList);
+        str += Markup._get(node.childNodes[i], depth + 1);
     }
     
-    str += Markup._getShadowHostIfPossible(node, depth, shadowRootList);
+    str += Markup._getShadowHostIfPossible(node, depth);
     
     var selection = Markup._getSelectionMarker(node, i);
     if (selection)
@@ -243,13 +243,12 @@ Markup._get = function(node, depth, shadowRootList)
     return str;
 }
 
-Markup._getShadowHostIfPossible = function (node, depth, shadowRootList)
+Markup._getShadowHostIfPossible = function (node, depth)
 {
     if (!Markup._useHTML5libOutputFormat && node.nodeType == Node.ELEMENT_NODE && window.internals) {
         var root = window.internals.shadowRoot(node);
         if (root) {
-            shadowRootList[internals.address(root)] = true;
-            return Markup._get(root, depth + 1, shadowRootList);
+            return Markup._get(root, depth + 1);
         }
     }
     return '';

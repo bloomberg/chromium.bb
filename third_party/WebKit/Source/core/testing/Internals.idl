@@ -27,8 +27,6 @@
 [
     DoNotCheckConstants,
 ] interface Internals {
-    DOMString address(Node node);
-
     GCObservation observeGC(any observed);
 
     [RaisesException] DOMString elementLayoutTreeAsText(Element element);

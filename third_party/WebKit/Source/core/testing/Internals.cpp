@@ -280,13 +280,6 @@ unsigned Internals::workerThreadCount() const {
   return WorkerThread::workerThreadCount();
 }
 
-String Internals::address(Node* node) {
-  char buf[32];
-  sprintf(buf, "%p", node);
-
-  return String(buf);
-}
-
 GCObservation* Internals::observeGC(ScriptValue scriptValue) {
   v8::Local<v8::Value> observedValue = scriptValue.v8Value();
   DCHECK(!observedValue.IsEmpty());
