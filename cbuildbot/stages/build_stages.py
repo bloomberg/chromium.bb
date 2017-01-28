@@ -554,12 +554,41 @@ class BuildImageStage(BuildPackagesStage):
           logging.warning('Missing image file skipped: %s', image_bin)
 
   def _UpdateBuildImageMetadata(self):
+    """Update the new metadata available to the build image stage."""
+    update = {}
+    fingerprints = self._FindFingerprints()
+    if fingerprints:
+      update['fingerprints'] = fingerprints
+    kernel_version = self._FindKernelVersion()
+    if kernel_version:
+      update['kernel-version'] = kernel_version
+    self._run.attrs.metadata.UpdateBoardDictWithDict(self._current_board,
+                                                     update)
+
+  def _FindFingerprints(self):
+    """Returns a list of build fingerprints for this build."""
     fp_file = 'cheets-fingerprint.txt'
     fp_path = os.path.join(self.GetImageDirSymlink('latest'), fp_file)
-    if os.path.isfile(fp_path):
-      self._run.attrs.metadata.UpdateBoardDictWithDict(self._current_board, {
-          'fingerprints': osutils.ReadFile(fp_path).splitlines(),
-      })
+    if not os.path.isfile(fp_path):
+      return None
+    fingerprints = osutils.ReadFile(fp_path).splitlines()
+    logging.info('Found build fingerprint(s): %s', fingerprints)
+    return fingerprints
+
+  def _FindKernelVersion(self):
+    """Returns a string containing the kernel version for this build."""
+    try:
+      packages = portage_util.GetPackageDependencies(self._current_board,
+                                                     'virtual/linux-sources')
+    except cros_build_lib.RunCommandError:
+      logging.warning('Unable to get package list for metadata.')
+      return None
+    for package in packages:
+      if package.startswith('sys-kernel/chromeos-kernel-'):
+        kernel_version = portage_util.SplitCPV(package).version
+        logging.info('Found active kernel version: %s', kernel_version)
+        return kernel_version
+    return None
 
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""
