@@ -2000,27 +2000,6 @@
             ]
         }
     ],
-    "SafeBrowsingReportPhishingErrorLink": [
-        {
-            "platforms": [
-                "android",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                },
-                {
-                    "name": "Control"
-                },
-                {
-                    "name": "Disabled"
-                }
-            ]
-        }
-    ],
     "SafeBrowsingScoutTransitionStudy": [
         {
             "platforms": [
@@ -2056,18 +2035,16 @@
             ]
         }
     ],
-    "SafeBrowsingUpdateFrequency": [
+    "SafeBrowsingUseLocalBlacklist": [
         {
             "platforms": [
-                "linux",
-                "mac",
-                "win"
+                "android"
             ],
             "experiments": [
                 {
-                    "name": "UpdateTime15m",
+                    "name": "Use3PAPI",
                     "params": {
-                        "NextUpdateIntervalInMinutes": "15"
+                        "check_local_blacklist": "false"
                     }
                 }
             ]
