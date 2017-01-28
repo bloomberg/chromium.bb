@@ -66,7 +66,7 @@
 #include "platform/Cursor.h"
 #include "platform/FileMetadata.h"
 #include "platform/FileSystemType.h"
-#include "platform/PlatformMouseEvent.h"
+#include "platform/PlatformEvent.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/mediastream/MediaStreamSource.h"

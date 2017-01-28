@@ -118,12 +118,19 @@ static bool dragTypeIsValid(DragSourceAction action) {
 }
 #endif  // DCHECK_IS_ON()
 
-static PlatformMouseEvent createMouseEvent(DragData* dragData) {
-  return PlatformMouseEvent(
-      dragData->clientPosition(), dragData->globalPosition(),
-      WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 0,
+static WebMouseEvent createMouseEvent(DragData* dragData) {
+  WebMouseEvent result(
+      WebInputEvent::MouseMove, WebFloatPoint(dragData->clientPosition().x(),
+                                              dragData->clientPosition().y()),
+      WebFloatPoint(dragData->globalPosition().x(),
+                    dragData->globalPosition().y()),
+      WebPointerProperties::Button::Left, 0,
       static_cast<PlatformEvent::Modifiers>(dragData->modifiers()),
-      PlatformMouseEvent::RealOrIndistinguishable, TimeTicks::Now());
+      TimeTicks::Now().InSeconds());
+  // TODO(dtapuska): Really we should chnage DragData to store the viewport
+  // coordinates and scale.
+  result.setFrameScale(1);
+  return result;
 }
 
 static DataTransfer* createDraggingDataTransfer(DataTransferAccessPolicy policy,
@@ -719,7 +726,7 @@ bool DragController::tryDHTMLDrag(DragData* dragData,
   DragOperation srcOpMask = dragData->draggingSourceOperationMask();
   dataTransfer->setSourceOperation(srcOpMask);
 
-  PlatformMouseEvent event = createMouseEvent(dragData);
+  WebMouseEvent event = createMouseEvent(dragData);
   if (localRoot.eventHandler().updateDragAndDrop(event, dataTransfer) ==
       WebInputEventResult::NotHandled) {
     dataTransfer->setAccessPolicy(
@@ -1050,7 +1057,7 @@ static std::unique_ptr<DragImage> dragImageForLink(
 
 bool DragController::startDrag(LocalFrame* src,
                                const DragState& state,
-                               const PlatformMouseEvent& dragEvent,
+                               const WebMouseEvent& dragEvent,
                                const IntPoint& dragOrigin) {
 #if DCHECK_IS_ON()
   DCHECK(dragTypeIsValid(state.m_dragType));
@@ -1072,8 +1079,8 @@ bool DragController::startDrag(LocalFrame* src,
   const KURL& linkURL = hitTestResult.absoluteLinkURL();
   const KURL& imageURL = hitTestResult.absoluteImageURL();
 
-  IntPoint mouseDraggedPoint =
-      src->view()->rootFrameToContents(dragEvent.position());
+  IntPoint mouseDraggedPoint = src->view()->rootFrameToContents(
+      flooredIntPoint(dragEvent.positionInRootFrame()));
 
   IntPoint dragLocation;
   IntPoint dragOffset;

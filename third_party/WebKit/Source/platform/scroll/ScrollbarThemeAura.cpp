@@ -31,7 +31,6 @@
 #include "platform/scroll/ScrollbarThemeAura.h"
 
 #include "platform/LayoutTestSupport.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingRecorder.h"

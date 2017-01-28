@@ -37,7 +37,7 @@ namespace blink {
 
 class CullRect;
 class GraphicsContext;
-class PlatformMouseEvent;
+class WebMouseEvent;
 
 class PLATFORM_EXPORT ScrollbarTheme {
   WTF_MAKE_NONCOPYABLE(ScrollbarTheme);
@@ -106,11 +106,11 @@ class PLATFORM_EXPORT ScrollbarTheme {
                               const IntRect&);
 
   virtual bool shouldCenterOnThumb(const ScrollbarThemeClient&,
-                                   const PlatformMouseEvent&);
+                                   const WebMouseEvent&);
   virtual bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient&,
-                                          const PlatformMouseEvent&);
+                                          const WebMouseEvent&);
   virtual bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&,
-                                                const PlatformMouseEvent&) {
+                                                const WebMouseEvent&) {
     return false;
   }
 

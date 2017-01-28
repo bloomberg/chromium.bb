@@ -97,7 +97,6 @@
 #include "platform/Cursor.h"
 #include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -556,10 +555,13 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event) {
 
   m_page->contextMenuController().clearContextMenu();
 
-  PlatformMouseEventBuilder pme(mainFrameImpl()->frameView(), event);
+  WebMouseEvent transformedEvent =
+      TransformWebMouseEvent(mainFrameImpl()->frameView(), event);
+  IntPoint positionInRootFrame =
+      flooredIntPoint(transformedEvent.positionInRootFrame());
 
   // Find the right target frame. See issue 1186900.
-  HitTestResult result = hitTestResultForRootFramePos(pme.position());
+  HitTestResult result = hitTestResultForRootFramePos(positionInRootFrame);
   Frame* targetFrame;
   if (result.innerNodeOrImageMapImage())
     targetFrame = result.innerNodeOrImageMapImage()->document().frame();
@@ -577,7 +579,8 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event) {
 
   {
     ContextMenuAllowedScope scope;
-    targetLocalFrame->eventHandler().sendContextMenuEvent(pme, nullptr);
+    targetLocalFrame->eventHandler().sendContextMenuEvent(transformedEvent,
+                                                          nullptr);
   }
   // Actually showing the context menu is handled by the ContextMenuClient
   // implementation...
@@ -2189,11 +2192,11 @@ WebInputEventResult WebViewImpl::handleInputEvent(
         NOTREACHED();
     }
 
-    node->dispatchMouseEvent(
-        PlatformMouseEventBuilder(
-            mainFrameImpl()->frameView(),
-            static_cast<const WebMouseEvent&>(inputEvent)),
-        eventType, static_cast<const WebMouseEvent&>(inputEvent).clickCount);
+    WebMouseEvent transformedEvent =
+        TransformWebMouseEvent(mainFrameImpl()->frameView(),
+                               static_cast<const WebMouseEvent&>(inputEvent));
+    node->dispatchMouseEvent(transformedEvent, eventType,
+                             transformedEvent.clickCount);
     return WebInputEventResult::HandledSystem;
   }
 
@@ -4125,10 +4128,12 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event) {
 
   const WebMouseEvent& mouseEvent = static_cast<const WebMouseEvent&>(event);
 
-  if (page())
-    page()->pointerLockController().dispatchLockedMouseEvent(
-        PlatformMouseEventBuilder(mainFrameImpl()->frameView(), mouseEvent),
-        eventType);
+  if (page()) {
+    WebMouseEvent transformedEvent =
+        TransformWebMouseEvent(mainFrameImpl()->frameView(), mouseEvent);
+    page()->pointerLockController().dispatchLockedMouseEvent(transformedEvent,
+                                                             eventType);
+  }
 }
 
 void WebViewImpl::forceNextWebGLContextCreationToFail() {

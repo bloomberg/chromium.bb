@@ -78,7 +78,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayerFragment.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"

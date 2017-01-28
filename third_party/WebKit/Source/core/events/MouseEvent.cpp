@@ -32,7 +32,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
-#include "platform/PlatformMouseEvent.h"
 #include "public/platform/WebPointerProperties.h"
 
 namespace blink {
@@ -91,48 +90,16 @@ MouseEvent* MouseEvent::create(ScriptState* scriptState,
 
 MouseEvent* MouseEvent::create(const AtomicString& eventType,
                                AbstractView* view,
-                               const PlatformMouseEvent& event,
+                               const WebMouseEvent& event,
                                int detail,
+                               const String& canvasRegionId,
                                Node* relatedTarget) {
   bool isMouseEnterOrLeave = eventType == EventTypeNames::mouseenter ||
                              eventType == EventTypeNames::mouseleave;
   bool isCancelable = !isMouseEnterOrLeave;
   bool isBubbling = !isMouseEnterOrLeave;
-
-  return MouseEvent::create(
-      eventType, isBubbling, isCancelable, view, detail,
-      event.globalPosition().x(), event.globalPosition().y(),
-      event.position().x(), event.position().y(), event.movementDelta().x(),
-      event.movementDelta().y(), event.getModifiers(),
-      static_cast<short>(event.pointerProperties().button),
-      platformModifiersToButtons(event.getModifiers()), relatedTarget,
-      event.timestamp(), event.getSyntheticEventType(), event.region(), &event);
-}
-
-MouseEvent* MouseEvent::create(
-    const AtomicString& type,
-    bool canBubble,
-    bool cancelable,
-    AbstractView* view,
-    int detail,
-    int screenX,
-    int screenY,
-    int windowX,
-    int windowY,
-    int movementX,
-    int movementY,
-    PlatformEvent::Modifiers modifiers,
-    short button,
-    unsigned short buttons,
-    EventTarget* relatedTarget,
-    TimeTicks platformTimeStamp,
-    PlatformMouseEvent::SyntheticEventType syntheticEventType,
-    const String& region,
-    const PlatformMouseEvent* mouseEvent) {
-  return new MouseEvent(
-      type, canBubble, cancelable, view, detail, screenX, screenY, windowX,
-      windowY, movementX, movementY, modifiers, button, buttons, relatedTarget,
-      platformTimeStamp, syntheticEventType, region, mouseEvent);
+  return new MouseEvent(eventType, isBubbling, isCancelable, view, event,
+                        detail, canvasRegionId, relatedTarget);
 }
 
 MouseEvent* MouseEvent::create(const AtomicString& eventType,
@@ -145,12 +112,11 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType,
     modifiers = keyStateEvent->modifiers();
   }
 
-  PlatformMouseEvent::SyntheticEventType syntheticType =
-      PlatformMouseEvent::Positionless;
+  SyntheticEventType syntheticType = Positionless;
   int screenX = 0;
   int screenY = 0;
   if (underlyingEvent && underlyingEvent->isMouseEvent()) {
-    syntheticType = PlatformMouseEvent::RealOrIndistinguishable;
+    syntheticType = RealOrIndistinguishable;
     MouseEvent* mouseEvent = toMouseEvent(underlyingEvent);
     screenX = mouseEvent->screenX();
     screenY = mouseEvent->screenY();
@@ -158,14 +124,14 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType,
 
   TimeTicks timestamp =
       underlyingEvent ? underlyingEvent->platformTimeStamp() : TimeTicks::Now();
-  MouseEvent* createdEvent = MouseEvent::create(
+  MouseEvent* createdEvent = new MouseEvent(
       eventType, true, true, view, 0, screenX, screenY, 0, 0, 0, 0, modifiers,
-      0, 0, nullptr, timestamp, syntheticType, String(), nullptr);
+      0, 0, nullptr, timestamp, syntheticType, String());
 
   createdEvent->setTrusted(creationScope ==
                            SimulatedClickCreationScope::FromUserAgent);
   createdEvent->setUnderlyingEvent(underlyingEvent);
-  if (syntheticType == PlatformMouseEvent::RealOrIndistinguishable) {
+  if (syntheticType == RealOrIndistinguishable) {
     MouseEvent* mouseEvent = toMouseEvent(createdEvent->underlyingEvent());
     createdEvent->initCoordinates(mouseEvent->clientX(), mouseEvent->clientY());
   }
@@ -179,62 +145,60 @@ MouseEvent::MouseEvent()
       m_button(0),
       m_buttons(0),
       m_relatedTarget(nullptr),
-      m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable) {}
+      m_syntheticEventType(RealOrIndistinguishable) {}
 
-MouseEvent::MouseEvent(
-    const AtomicString& eventType,
-    bool canBubble,
-    bool cancelable,
-    AbstractView* abstractView,
-    PlatformMouseEvent::SyntheticEventType syntheticEventType,
-    const String& region,
-    const WebMouseEvent& event)
+MouseEvent::MouseEvent(const AtomicString& eventType,
+                       bool canBubble,
+                       bool cancelable,
+                       AbstractView* abstractView,
+                       const WebMouseEvent& event,
+                       int detail,
+                       const String& region,
+                       EventTarget* relatedTarget)
     : UIEventWithKeyState(
           eventType,
           canBubble,
           cancelable,
           abstractView,
-          0,
+          detail,
           static_cast<PlatformEvent::Modifiers>(event.modifiers()),
           TimeTicks::FromSeconds(event.timeStampSeconds()),
-          syntheticEventType == PlatformMouseEvent::FromTouch
+          event.fromTouch()
               ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
               : InputDeviceCapabilities::
                     doesntFireTouchEventsSourceCapabilities()),
       m_screenLocation(event.globalX, event.globalY),
       m_movementDelta(flooredIntPoint(event.movementInRootFrame())),
-      m_positionType(syntheticEventType == PlatformMouseEvent::Positionless
-                         ? PositionType::Positionless
-                         : PositionType::Position),
-      m_button(0),
+      m_positionType(PositionType::Position),
+      m_button(static_cast<short>(event.button)),
       m_buttons(platformModifiersToButtons(event.modifiers())),
-      m_syntheticEventType(syntheticEventType),
+      m_relatedTarget(relatedTarget),
+      m_syntheticEventType(event.fromTouch() ? FromTouch
+                                             : RealOrIndistinguishable),
       m_region(region) {
   IntPoint rootFrameCoordinates = flooredIntPoint(event.positionInRootFrame());
   initCoordinatesFromRootFrame(rootFrameCoordinates.x(),
                                rootFrameCoordinates.y());
 }
 
-MouseEvent::MouseEvent(
-    const AtomicString& eventType,
-    bool canBubble,
-    bool cancelable,
-    AbstractView* abstractView,
-    int detail,
-    int screenX,
-    int screenY,
-    int windowX,
-    int windowY,
-    int movementX,
-    int movementY,
-    PlatformEvent::Modifiers modifiers,
-    short button,
-    unsigned short buttons,
-    EventTarget* relatedTarget,
-    TimeTicks platformTimeStamp,
-    PlatformMouseEvent::SyntheticEventType syntheticEventType,
-    const String& region,
-    const PlatformMouseEvent* mouseEvent)
+MouseEvent::MouseEvent(const AtomicString& eventType,
+                       bool canBubble,
+                       bool cancelable,
+                       AbstractView* abstractView,
+                       int detail,
+                       int screenX,
+                       int screenY,
+                       int windowX,
+                       int windowY,
+                       int movementX,
+                       int movementY,
+                       PlatformEvent::Modifiers modifiers,
+                       short button,
+                       unsigned short buttons,
+                       EventTarget* relatedTarget,
+                       TimeTicks platformTimeStamp,
+                       SyntheticEventType syntheticEventType,
+                       const String& region)
     : UIEventWithKeyState(
           eventType,
           canBubble,
@@ -243,13 +207,13 @@ MouseEvent::MouseEvent(
           detail,
           modifiers,
           platformTimeStamp,
-          syntheticEventType == PlatformMouseEvent::FromTouch
+          syntheticEventType == FromTouch
               ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
               : InputDeviceCapabilities::
                     doesntFireTouchEventsSourceCapabilities()),
       m_screenLocation(screenX, screenY),
       m_movementDelta(movementX, movementY),
-      m_positionType(syntheticEventType == PlatformMouseEvent::Positionless
+      m_positionType(syntheticEventType == Positionless
                          ? PositionType::Positionless
                          : PositionType::Position),
       m_button(button),
@@ -257,8 +221,6 @@ MouseEvent::MouseEvent(
       m_relatedTarget(relatedTarget),
       m_syntheticEventType(syntheticEventType),
       m_region(region) {
-  if (mouseEvent)
-    m_mouseEvent.reset(new PlatformMouseEvent(*mouseEvent));
   initCoordinatesFromRootFrame(windowX, windowY);
 }
 
@@ -273,7 +235,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType,
       m_button(initializer.button()),
       m_buttons(initializer.buttons()),
       m_relatedTarget(initializer.relatedTarget()),
-      m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable),
+      m_syntheticEventType(RealOrIndistinguishable),
       m_region(initializer.region()) {
   initCoordinates(initializer.clientX(), initializer.clientY());
 }

@@ -72,7 +72,6 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
 #include "platform/Language.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/MathExtras.h"

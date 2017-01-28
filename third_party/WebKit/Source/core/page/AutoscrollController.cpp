@@ -203,14 +203,13 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode,
 
 void AutoscrollController::handleMouseReleaseForMiddleClickAutoscroll(
     LocalFrame* frame,
-    const PlatformMouseEvent& mouseEvent) {
+    const WebMouseEvent& mouseEvent) {
   DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
   if (!frame->isMainFrame())
     return;
   switch (m_autoscrollType) {
     case AutoscrollForMiddleClick:
-      if (mouseEvent.pointerProperties().button ==
-          WebPointerProperties::Button::Middle)
+      if (mouseEvent.button == WebPointerProperties::Button::Middle)
         m_autoscrollType = AutoscrollForMiddleClickCanStop;
       break;
     case AutoscrollForMiddleClickCanStop:

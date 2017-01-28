@@ -154,6 +154,9 @@ class CORE_EXPORT HitTestResult {
   bool isLiveLink() const;
   bool isContentEditable() const;
 
+  const String& canvasRegionId() const { return m_canvasRegionId; }
+  void setCanvasRegionId(const String& id) { m_canvasRegionId = id; }
+
   bool isOverLink() const;
 
   bool isCacheable() const { return m_cacheable; }
@@ -208,6 +211,7 @@ class CORE_EXPORT HitTestResult {
                         // border/padding area of a LayoutPart for example).
 
   mutable Member<NodeSet> m_listBasedTestResult;
+  String m_canvasRegionId;
 };
 
 }  // namespace blink

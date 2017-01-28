@@ -372,11 +372,11 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
         NOTREACHED();
     }
 
-    node->dispatchMouseEvent(
-        PlatformMouseEventBuilder(
-            m_localRoot->frameView(),
-            static_cast<const WebMouseEvent&>(inputEvent)),
-        eventType, static_cast<const WebMouseEvent&>(inputEvent).clickCount);
+    WebMouseEvent transformedEvent =
+        TransformWebMouseEvent(m_localRoot->frameView(),
+                               static_cast<const WebMouseEvent&>(inputEvent));
+    node->dispatchMouseEvent(transformedEvent, eventType,
+                             transformedEvent.clickCount);
     return WebInputEventResult::HandledSystem;
   }
 
@@ -776,10 +776,13 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame,
 void WebFrameWidgetImpl::mouseContextMenu(const WebMouseEvent& event) {
   page()->contextMenuController().clearContextMenu();
 
-  PlatformMouseEventBuilder pme(m_localRoot->frameView(), event);
+  WebMouseEvent transformedEvent =
+      TransformWebMouseEvent(m_localRoot->frameView(), event);
+  IntPoint positionInRootFrame =
+      flooredIntPoint(transformedEvent.positionInRootFrame());
 
   // Find the right target frame. See issue 1186900.
-  HitTestResult result = hitTestResultForRootFramePos(pme.position());
+  HitTestResult result = hitTestResultForRootFramePos(positionInRootFrame);
   Frame* targetFrame;
   if (result.innerNodeOrImageMapImage())
     targetFrame = result.innerNodeOrImageMapImage()->document().frame();
@@ -801,7 +804,8 @@ void WebFrameWidgetImpl::mouseContextMenu(const WebMouseEvent& event) {
 
   {
     ContextMenuAllowedScope scope;
-    targetLocalFrame->eventHandler().sendContextMenuEvent(pme, nullptr);
+    targetLocalFrame->eventHandler().sendContextMenuEvent(transformedEvent,
+                                                          nullptr);
   }
   // Actually showing the context menu is handled by the ContextMenuClient
   // implementation...

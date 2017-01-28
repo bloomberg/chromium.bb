@@ -36,10 +36,9 @@ ContainerNode* parentForClickEvent(const Node&);
 LayoutPoint contentPointFromRootFrame(LocalFrame*,
                                       const IntPoint& pointInRootFrame);
 
-MouseEventWithHitTestResults performMouseEventHitTest(
-    LocalFrame*,
-    const HitTestRequest&,
-    const PlatformMouseEvent&);
+MouseEventWithHitTestResults performMouseEventHitTest(LocalFrame*,
+                                                      const HitTestRequest&,
+                                                      const WebMouseEvent&);
 
 }  // namespace EventHandlingUtil
 

@@ -180,12 +180,13 @@ EventTarget* PointerEventManager::getEffectiveTargetForPointerEvent(
 
 void PointerEventManager::sendMouseAndPointerBoundaryEvents(
     Node* enteredNode,
-    const PlatformMouseEvent& mouseEvent) {
+    const String& canvasRegionId,
+    const WebMouseEvent& mouseEvent) {
   // Mouse event type does not matter as this pointerevent will only be used
   // to create boundary pointer events and its type will be overridden in
   // |sendBoundaryEvents| function.
   PointerEvent* dummyPointerEvent = m_pointerEventFactory.create(
-      EventTypeNames::mousedown, mouseEvent, Vector<PlatformMouseEvent>(),
+      EventTypeNames::mousedown, mouseEvent, Vector<WebMouseEvent>(),
       m_frame->document()->domWindow());
 
   // TODO(crbug/545647): This state should reset with pointercancel too.
@@ -195,11 +196,11 @@ void PointerEventManager::sendMouseAndPointerBoundaryEvents(
   // behavior regarding preventMouseEvent state in that case.
   if (dummyPointerEvent->buttons() == 0 && dummyPointerEvent->isPrimary()) {
     m_preventMouseEventForPointerType[toPointerTypeIndex(
-        mouseEvent.pointerProperties().pointerType)] = false;
+        mouseEvent.pointerType)] = false;
   }
 
   processCaptureAndPositionOfPointerEvent(dummyPointerEvent, enteredNode,
-                                          mouseEvent, true);
+                                          canvasRegionId, mouseEvent, true);
 }
 
 void PointerEventManager::sendBoundaryEvents(EventTarget* exitedTarget,
@@ -439,9 +440,10 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
 
 WebInputEventResult PointerEventManager::sendMousePointerEvent(
     Node* target,
+    const String& canvasRegionId,
     const AtomicString& mouseEventType,
-    const PlatformMouseEvent& mouseEvent,
-    const Vector<PlatformMouseEvent>& coalescedEvents) {
+    const WebMouseEvent& mouseEvent,
+    const Vector<WebMouseEvent>& coalescedEvents) {
   PointerEvent* pointerEvent =
       m_pointerEventFactory.create(mouseEventType, mouseEvent, coalescedEvents,
                                    m_frame->document()->domWindow());
@@ -455,12 +457,12 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
 
     if (pointerEvent->isPrimary()) {
       m_preventMouseEventForPointerType[toPointerTypeIndex(
-          mouseEvent.pointerProperties().pointerType)] = false;
+          mouseEvent.pointerType)] = false;
     }
   }
 
   EventTarget* pointerEventTarget = processCaptureAndPositionOfPointerEvent(
-      pointerEvent, target, mouseEvent, true);
+      pointerEvent, target, canvasRegionId, mouseEvent, true);
 
   EventTarget* effectiveTarget = getEffectiveTargetForPointerEvent(
       pointerEventTarget, pointerEvent->pointerId());
@@ -472,12 +474,12 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
       pointerEvent->type() == EventTypeNames::pointerdown &&
       pointerEvent->isPrimary()) {
     m_preventMouseEventForPointerType[toPointerTypeIndex(
-        mouseEvent.pointerProperties().pointerType)] = true;
+        mouseEvent.pointerType)] = true;
   }
 
   if (pointerEvent->isPrimary() &&
       !m_preventMouseEventForPointerType[toPointerTypeIndex(
-          mouseEvent.pointerProperties().pointerType)]) {
+          mouseEvent.pointerType)]) {
     EventTarget* mouseTarget = effectiveTarget;
     // Event path could be null if pointer event is not dispatched and
     // that happens for example when pointer event feature is not enabled.
@@ -491,8 +493,9 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
       }
     }
     result = EventHandlingUtil::mergeEventResult(
-        result, m_mouseEventManager->dispatchMouseEvent(
-                    mouseTarget, mouseEventType, mouseEvent, nullptr));
+        result,
+        m_mouseEventManager->dispatchMouseEvent(
+            mouseTarget, mouseEventType, mouseEvent, canvasRegionId, nullptr));
   }
 
   if (pointerEvent->type() == EventTypeNames::pointerup ||
@@ -503,7 +506,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
 
     if (pointerEvent->isPrimary()) {
       m_preventMouseEventForPointerType[toPointerTypeIndex(
-          mouseEvent.pointerProperties().pointerType)] = false;
+          mouseEvent.pointerType)] = false;
     }
   }
 
@@ -534,7 +537,8 @@ bool PointerEventManager::getPointerCaptureState(
 EventTarget* PointerEventManager::processCaptureAndPositionOfPointerEvent(
     PointerEvent* pointerEvent,
     EventTarget* hitTestTarget,
-    const PlatformMouseEvent& mouseEvent,
+    const String& canvasRegionId,
+    const WebMouseEvent& mouseEvent,
     bool sendMouseEvent) {
   processPendingPointerCapture(pointerEvent);
 
@@ -547,7 +551,8 @@ EventTarget* PointerEventManager::processCaptureAndPositionOfPointerEvent(
   setNodeUnderPointer(pointerEvent, hitTestTarget);
   if (sendMouseEvent) {
     m_mouseEventManager->setNodeUnderMouse(
-        hitTestTarget ? hitTestTarget->toNode() : nullptr, mouseEvent);
+        hitTestTarget ? hitTestTarget->toNode() : nullptr, canvasRegionId,
+        mouseEvent);
   }
   return hitTestTarget;
 }

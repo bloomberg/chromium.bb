@@ -36,9 +36,10 @@ class CORE_EXPORT PointerEventManager
   // in this function.
   WebInputEventResult sendMousePointerEvent(
       Node* target,
+      const String& canvasRegionId,
       const AtomicString& type,
-      const PlatformMouseEvent&,
-      const Vector<PlatformMouseEvent>& coalescedEvents);
+      const WebMouseEvent&,
+      const Vector<WebMouseEvent>& coalescedEvents);
 
   WebInputEventResult handleTouchEvents(
       const WebTouchEvent&,
@@ -51,7 +52,8 @@ class CORE_EXPORT PointerEventManager
   // and their corresponding boundary events will be handled altogether by
   // sendMousePointerEvent function.
   void sendMouseAndPointerBoundaryEvents(Node* enteredNode,
-                                         const PlatformMouseEvent&);
+                                         const String& canvasRegionId,
+                                         const WebMouseEvent&);
 
   // Resets the internal state of this object.
   void clear();
@@ -168,7 +170,8 @@ class CORE_EXPORT PointerEventManager
   EventTarget* processCaptureAndPositionOfPointerEvent(
       PointerEvent*,
       EventTarget* hitTestTarget,
-      const PlatformMouseEvent& = PlatformMouseEvent(),
+      const String& canvasRegionId = String(),
+      const WebMouseEvent& = WebMouseEvent(),
       bool sendMouseEvent = false);
 
   void removeTargetFromPointerCapturingMapping(PointerCapturingMap&,

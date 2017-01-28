@@ -304,7 +304,6 @@ component("platform") {
     "PlatformEvent.h",
     "PlatformInstrumentation.cpp",
     "PlatformInstrumentation.h",
-    "PlatformMouseEvent.h",
     "PlatformResourceLoader.cpp",
     "PlatformResourceLoader.h",
     "PluginScriptForbiddenScope.cpp",

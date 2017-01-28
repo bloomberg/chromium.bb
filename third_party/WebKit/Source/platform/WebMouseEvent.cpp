@@ -4,7 +4,27 @@
 
 #include "public/platform/WebMouseEvent.h"
 
+#include "public/platform/WebGestureEvent.h"
+
 namespace blink {
+
+WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
+                             const WebGestureEvent& gestureEvent,
+                             Button buttonParam,
+                             int clickCountParam,
+                             int modifiers,
+                             double timeStampSeconds)
+    : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, timeStampSeconds),
+      WebPointerProperties(buttonParam,
+                           WebPointerProperties::PointerType::Mouse),
+      x(gestureEvent.x),
+      y(gestureEvent.y),
+      globalX(gestureEvent.globalX),
+      globalY(gestureEvent.globalY),
+      clickCount(clickCountParam) {
+  setFrameScale(gestureEvent.frameScale());
+  setFrameTranslate(gestureEvent.frameTranslate());
+}
 
 WebFloatPoint WebMouseEvent::movementInRootFrame() const {
   return WebFloatPoint((movementX / m_frameScale), (movementY / m_frameScale));
@@ -13,6 +33,12 @@ WebFloatPoint WebMouseEvent::movementInRootFrame() const {
 WebFloatPoint WebMouseEvent::positionInRootFrame() const {
   return WebFloatPoint((x / m_frameScale) + m_frameTranslate.x,
                        (y / m_frameScale) + m_frameTranslate.y);
+}
+
+WebMouseEvent WebMouseEvent::flattenTransform() const {
+  WebMouseEvent result = *this;
+  result.flattenTransformSelf();
+  return result;
 }
 
 void WebMouseEvent::flattenTransformSelf() {

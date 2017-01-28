@@ -70,7 +70,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/PopupMenu.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/text/PlatformLocale.h"
@@ -1288,7 +1287,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event) {
       return;
 
     int ignoreModifiers = PlatformEvent::ShiftKey | PlatformEvent::CtrlKey |
-                          PlatformEvent::AltKey | PlatformMouseEvent::MetaKey;
+                          PlatformEvent::AltKey | PlatformEvent::MetaKey;
     if (keyEvent->modifiers() & ignoreModifiers)
       return;
 

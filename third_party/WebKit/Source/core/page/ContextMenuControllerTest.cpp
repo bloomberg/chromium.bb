@@ -76,11 +76,15 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu) {
       "</menu>"
       "</button>");
 
+  MouseEventInit mouseInitializer;
+  mouseInitializer.setView(document().domWindow());
+  mouseInitializer.setScreenX(50);
+  mouseInitializer.setScreenY(50);
+  mouseInitializer.setButton(1);
+
   // Create right button click event and pass it to context menu controller.
-  Event* event = MouseEvent::create(
-      EventTypeNames::click, false, false, document().domWindow(), 50, 50, 0, 0,
-      0, 0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr, TimeTicks(),
-      PlatformMouseEvent::RealOrIndistinguishable, String(), nullptr);
+  Event* event =
+      MouseEvent::create(nullptr, EventTypeNames::click, mouseInitializer);
   document().getElementById("button_id")->focus();
   event->setTarget(document().getElementById("button_id"));
   document().page()->contextMenuController().handleContextMenuEvent(event);

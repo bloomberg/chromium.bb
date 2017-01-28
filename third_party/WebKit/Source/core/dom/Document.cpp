@@ -3542,7 +3542,7 @@ ReferrerPolicy Document::getReferrerPolicy() const {
 MouseEventWithHitTestResults Document::performMouseEventHitTest(
     const HitTestRequest& request,
     const LayoutPoint& documentPoint,
-    const PlatformMouseEvent& event) {
+    const WebMouseEvent& event) {
   DCHECK(layoutViewItem().isNull() || layoutViewItem().isLayoutView());
 
   // LayoutView::hitTest causes a layout, and we don't want to hit that until
@@ -3562,15 +3562,13 @@ MouseEventWithHitTestResults Document::performMouseEventHitTest(
     updateHoverActiveState(request, result.innerElement(), result.scrollbar());
 
   if (isHTMLCanvasElement(result.innerNode())) {
-    PlatformMouseEvent eventWithRegion = event;
     HitTestCanvasResult* hitTestCanvasResult =
         toHTMLCanvasElement(result.innerNode())
             ->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
     if (hitTestCanvasResult->getControl()) {
       result.setInnerNode(hitTestCanvasResult->getControl());
     }
-    eventWithRegion.setRegion(hitTestCanvasResult->getId());
-    return MouseEventWithHitTestResults(eventWithRegion, result);
+    result.setCanvasRegionId(hitTestCanvasResult->getId());
   }
 
   return MouseEventWithHitTestResults(event, result);

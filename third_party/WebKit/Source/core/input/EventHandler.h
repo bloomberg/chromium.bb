@@ -38,7 +38,6 @@
 #include "core/page/EventWithHitTestResults.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
@@ -73,6 +72,7 @@ class Scrollbar;
 class SelectionController;
 class TextEvent;
 class WebGestureEvent;
+class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebTouchEvent;
 
@@ -113,11 +113,9 @@ class CORE_EXPORT EventHandler final
   void setCapturingMouseEventsNode(
       Node*);  // A caller is responsible for resetting capturing node to 0.
 
-  WebInputEventResult updateDragAndDrop(const PlatformMouseEvent&,
-                                        DataTransfer*);
-  void cancelDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
-  WebInputEventResult performDragAndDrop(const PlatformMouseEvent&,
-                                         DataTransfer*);
+  WebInputEventResult updateDragAndDrop(const WebMouseEvent&, DataTransfer*);
+  void cancelDragAndDrop(const WebMouseEvent&, DataTransfer*);
+  WebInputEventResult performDragAndDrop(const WebMouseEvent&, DataTransfer*);
   void updateDragStateAfterEditDragIfNeeded(Element* rootEditableElement);
 
   void scheduleHoverStateUpdate();
@@ -142,12 +140,12 @@ class CORE_EXPORT EventHandler final
                       Node* startingNode = nullptr);
 
   WebInputEventResult handleMouseMoveEvent(
-      const PlatformMouseEvent&,
-      const Vector<PlatformMouseEvent>& coalescedEvents);
-  void handleMouseLeaveEvent(const PlatformMouseEvent&);
+      const WebMouseEvent&,
+      const Vector<WebMouseEvent>& coalescedEvents);
+  void handleMouseLeaveEvent(const WebMouseEvent&);
 
-  WebInputEventResult handleMousePressEvent(const PlatformMouseEvent&);
-  WebInputEventResult handleMouseReleaseEvent(const PlatformMouseEvent&);
+  WebInputEventResult handleMousePressEvent(const WebMouseEvent&);
+  WebInputEventResult handleMouseReleaseEvent(const WebMouseEvent&);
   WebInputEventResult handleWheelEvent(const WebMouseWheelEvent&);
 
   // Called on the local root frame exactly once per gesture event.
@@ -193,7 +191,7 @@ class CORE_EXPORT EventHandler final
                                      IntRect& targetArea,
                                      Node*& targetNode);
 
-  WebInputEventResult sendContextMenuEvent(const PlatformMouseEvent&,
+  WebInputEventResult sendContextMenuEvent(const WebMouseEvent&,
                                            Node* overrideTargetNode = nullptr);
   WebInputEventResult sendContextMenuEventForKey(
       Element* overrideTargetElement = nullptr);
@@ -219,7 +217,7 @@ class CORE_EXPORT EventHandler final
                             TextEventInputType = TextEventInputKeyboard);
   void defaultTextInputEventHandler(TextEvent*);
 
-  void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
+  void dragSourceEndedAt(const WebMouseEvent&, DragOperation);
 
   void capsLockStateMayHaveChanged();  // Only called by FrameSelection
 
@@ -260,8 +258,8 @@ class CORE_EXPORT EventHandler final
 
  private:
   WebInputEventResult handleMouseMoveOrLeaveEvent(
-      const PlatformMouseEvent&,
-      const Vector<PlatformMouseEvent>&,
+      const WebMouseEvent&,
+      const Vector<WebMouseEvent>&,
       HitTestResult* hoveredNode = nullptr,
       bool onlyUpdateScrollbars = false,
       bool forceLeave = false);
@@ -302,13 +300,14 @@ class CORE_EXPORT EventHandler final
   // preventDefaulted pointerdown (i.e., one of
   // {mousedown, mousemove, mouseup}).
   // TODO(mustaq): Can we avoid the clickCount param, instead use
-  // PlatformMouseEvent's count?
+  // WebmMouseEvent's count?
   //     Same applied to dispatchMouseEvent() above.
   WebInputEventResult updatePointerTargetAndDispatchEvents(
       const AtomicString& mouseEventType,
       Node* target,
-      const PlatformMouseEvent&,
-      const Vector<PlatformMouseEvent>& coalescedEvents);
+      const String& canvasRegionId,
+      const WebMouseEvent&,
+      const Vector<WebMouseEvent>& coalescedEvents);
 
   // Clears drag target and related states. It is called when drag is done or
   // canceled.
@@ -319,7 +318,7 @@ class CORE_EXPORT EventHandler final
       LocalFrame* subframe);
   WebInputEventResult passMouseMoveEventToSubframe(
       MouseEventWithHitTestResults&,
-      const Vector<PlatformMouseEvent>&,
+      const Vector<WebMouseEvent>&,
       LocalFrame* subframe,
       HitTestResult* hoveredNode = nullptr);
   WebInputEventResult passMouseReleaseEventToSubframe(

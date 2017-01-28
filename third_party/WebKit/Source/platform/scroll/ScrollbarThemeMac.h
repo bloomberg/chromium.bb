@@ -89,7 +89,7 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   int maxOverlapBetweenPages() override { return 40; }
 
   bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&,
-                                        const PlatformMouseEvent&) override;
+                                        const WebMouseEvent&) override;
   int scrollbarPartToHIPressedState(ScrollbarPart);
 
   virtual void updateButtonPlacement(WebScrollbarButtonsPlacement) {}

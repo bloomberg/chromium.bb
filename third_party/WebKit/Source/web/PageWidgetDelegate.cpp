@@ -119,10 +119,11 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(
   const WebInputEvent& event = coalescedEvent.event();
   if (event.modifiers() & WebInputEvent::IsTouchAccessibility &&
       WebInputEvent::isMouseEventType(event.type())) {
-    PlatformMouseEventBuilder pme(root->view(),
-                                  static_cast<const WebMouseEvent&>(event));
+    WebMouseEvent mouseEvent = TransformWebMouseEvent(
+        root->view(), static_cast<const WebMouseEvent&>(event));
 
-    IntPoint docPoint(root->view()->rootFrameToContents(pme.position()));
+    IntPoint docPoint(root->view()->rootFrameToContents(
+        flooredIntPoint(mouseEvent.positionInRootFrame())));
     HitTestResult result = root->eventHandler().hitTestResultAtPoint(
         docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
     result.setToShadowHostIfInUserAgentShadowRoot();
@@ -225,27 +226,32 @@ void PageWidgetEventHandler::handleMouseMove(
     LocalFrame& mainFrame,
     const WebMouseEvent& event,
     const std::vector<const WebInputEvent*>& coalescedEvents) {
+  WebMouseEvent transformedEvent =
+      TransformWebMouseEvent(mainFrame.view(), event);
   mainFrame.eventHandler().handleMouseMoveEvent(
-      PlatformMouseEventBuilder(mainFrame.view(), event),
-      createPlatformMouseEventVector(mainFrame.view(), coalescedEvents));
+      transformedEvent,
+      TransformWebMouseEventVector(mainFrame.view(), coalescedEvents));
 }
 
 void PageWidgetEventHandler::handleMouseLeave(LocalFrame& mainFrame,
                                               const WebMouseEvent& event) {
-  mainFrame.eventHandler().handleMouseLeaveEvent(
-      PlatformMouseEventBuilder(mainFrame.view(), event));
+  WebMouseEvent transformedEvent =
+      TransformWebMouseEvent(mainFrame.view(), event);
+  mainFrame.eventHandler().handleMouseLeaveEvent(transformedEvent);
 }
 
 void PageWidgetEventHandler::handleMouseDown(LocalFrame& mainFrame,
                                              const WebMouseEvent& event) {
-  mainFrame.eventHandler().handleMousePressEvent(
-      PlatformMouseEventBuilder(mainFrame.view(), event));
+  WebMouseEvent transformedEvent =
+      TransformWebMouseEvent(mainFrame.view(), event);
+  mainFrame.eventHandler().handleMousePressEvent(transformedEvent);
 }
 
 void PageWidgetEventHandler::handleMouseUp(LocalFrame& mainFrame,
                                            const WebMouseEvent& event) {
-  mainFrame.eventHandler().handleMouseReleaseEvent(
-      PlatformMouseEventBuilder(mainFrame.view(), event));
+  WebMouseEvent transformedEvent =
+      TransformWebMouseEvent(mainFrame.view(), event);
+  mainFrame.eventHandler().handleMouseReleaseEvent(transformedEvent);
 }
 
 WebInputEventResult PageWidgetEventHandler::handleMouseWheel(

@@ -150,15 +150,16 @@ WebInputEventResult GestureManager::handleGestureTap(
   const unsigned modifiers = gestureEvent.modifiers();
 
   if (!m_suppressMouseEventsFromGestures) {
-    PlatformMouseEvent fakeMouseMove(
-        gestureEvent, WebPointerProperties::Button::NoButton,
-        PlatformEvent::MouseMoved,
-        /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
-        PlatformMouseEvent::FromTouch,
-        TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
-        WebPointerProperties::PointerType::Mouse);
+    WebMouseEvent fakeMouseMove(
+        WebInputEvent::MouseMove, gestureEvent,
+        WebPointerProperties::Button::NoButton,
+        /* clickCount */ 0,
+        static_cast<PlatformEvent::Modifiers>(
+            modifiers | WebInputEvent::Modifiers::IsCompatibilityEventForTouch),
+        gestureEvent.timeStampSeconds());
     m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
-        currentHitTest.innerNode(), EventTypeNames::mousemove, fakeMouseMove);
+        currentHitTest.innerNode(), currentHitTest.canvasRegionId(),
+        EventTypeNames::mousemove, fakeMouseMove);
   }
 
   // Do a new hit-test in case the mousemove event changed the DOM.
@@ -192,14 +193,13 @@ WebInputEventResult GestureManager::handleGestureTap(
 
   m_mouseEventManager->setClickNode(tappedNonTextNode);
 
-  PlatformMouseEvent fakeMouseDown(
-      gestureEvent, WebPointerProperties::Button::Left,
-      PlatformEvent::MousePressed, gestureEvent.tapCount(),
-      static_cast<PlatformEvent::Modifiers>(modifiers |
-                                            PlatformEvent::LeftButtonDown),
-      PlatformMouseEvent::FromTouch,
-      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
-      WebPointerProperties::PointerType::Mouse);
+  WebMouseEvent fakeMouseDown(
+      WebInputEvent::MouseDown, gestureEvent,
+      WebPointerProperties::Button::Left, gestureEvent.tapCount(),
+      static_cast<PlatformEvent::Modifiers>(
+          modifiers | WebInputEvent::Modifiers::LeftButtonDown |
+          WebInputEvent::Modifiers::IsCompatibilityEventForTouch),
+      gestureEvent.timeStampSeconds());
 
   // TODO(mustaq): We suppress MEs plus all it's side effects. What would that
   // mean for for TEs?  What's the right balance here? crbug.com/617255
@@ -210,8 +210,8 @@ WebInputEventResult GestureManager::handleGestureTap(
 
     mouseDownEventResult =
         m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
-            currentHitTest.innerNode(), EventTypeNames::mousedown,
-            fakeMouseDown);
+            currentHitTest.innerNode(), currentHitTest.canvasRegionId(),
+            EventTypeNames::mousedown, fakeMouseDown);
     m_selectionController->initializeSelectionState();
     if (mouseDownEventResult == WebInputEventResult::NotHandled)
       mouseDownEventResult = m_mouseEventManager->handleMouseFocus(
@@ -240,19 +240,18 @@ WebInputEventResult GestureManager::handleGestureTap(
         m_frame, adjustedPoint, hitType);
   }
 
-  PlatformMouseEvent fakeMouseUp(
-      gestureEvent, WebPointerProperties::Button::Left,
-      PlatformEvent::MouseReleased, gestureEvent.tapCount(),
-      static_cast<PlatformEvent::Modifiers>(modifiers),
-      PlatformMouseEvent::FromTouch,
-      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
-      WebPointerProperties::PointerType::Mouse);
+  WebMouseEvent fakeMouseUp(
+      WebInputEvent::MouseUp, gestureEvent, WebPointerProperties::Button::Left,
+      gestureEvent.tapCount(),
+      static_cast<PlatformEvent::Modifiers>(
+          modifiers | WebInputEvent::Modifiers::IsCompatibilityEventForTouch),
+      gestureEvent.timeStampSeconds());
   WebInputEventResult mouseUpEventResult =
       m_suppressMouseEventsFromGestures
           ? WebInputEventResult::HandledSuppressed
           : m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
-                currentHitTest.innerNode(), EventTypeNames::mouseup,
-                fakeMouseUp);
+                currentHitTest.innerNode(), currentHitTest.canvasRegionId(),
+                EventTypeNames::mouseup, fakeMouseUp);
 
   WebInputEventResult clickEventResult = WebInputEventResult::NotHandled;
   if (tappedNonTextNode) {
@@ -268,7 +267,7 @@ WebInputEventResult GestureManager::handleGestureTap(
           *tappedNonTextNode, EventHandlingUtil::parentForClickEvent);
       clickEventResult =
           m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
-              clickTargetNode, EventTypeNames::click, fakeMouseUp);
+              clickTargetNode, String(), EventTypeNames::click, fakeMouseUp);
     }
     m_mouseEventManager->setClickNode(nullptr);
   }
@@ -361,30 +360,31 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
   unsigned modifiers = gestureEvent.modifiers();
 
   if (!m_suppressMouseEventsFromGestures) {
-    // Send MouseMoved event prior to handling (https://crbug.com/485290).
-    PlatformMouseEvent fakeMouseMove(
-        gestureEvent, WebPointerProperties::Button::NoButton,
-        PlatformEvent::MouseMoved,
-        /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
-        PlatformMouseEvent::FromTouch,
-        TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
-        WebPointerProperties::PointerType::Mouse);
+    // Send MouseMove event prior to handling (https://crbug.com/485290).
+    WebMouseEvent fakeMouseMove(
+        WebInputEvent::MouseMove, gestureEvent,
+        WebPointerProperties::Button::NoButton,
+        /* clickCount */ 0,
+        static_cast<PlatformEvent::Modifiers>(
+            modifiers | WebInputEvent::IsCompatibilityEventForTouch),
+        gestureEvent.timeStampSeconds());
     m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
-        targetedEvent.hitTestResult().innerNode(), EventTypeNames::mousemove,
+        targetedEvent.hitTestResult().innerNode(),
+        targetedEvent.canvasRegionId(), EventTypeNames::mousemove,
         fakeMouseMove);
   }
 
-  PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
+  WebInputEvent::Type eventType = WebInputEvent::MouseDown;
   if (m_frame->settings() && m_frame->settings()->getShowContextMenuOnMouseUp())
-    eventType = PlatformEvent::MouseReleased;
+    eventType = WebInputEvent::MouseUp;
 
-  PlatformMouseEvent mouseEvent(
-      gestureEvent, WebPointerProperties::Button::Right, eventType,
+  WebMouseEvent mouseEvent(
+      eventType, gestureEvent, WebPointerProperties::Button::Right,
       /* clickCount */ 1,
       static_cast<PlatformEvent::Modifiers>(
-          modifiers | PlatformEvent::Modifiers::RightButtonDown),
-      PlatformMouseEvent::FromTouch, TimeTicks::Now(),
-      WebPointerProperties::PointerType::Mouse);
+          modifiers | PlatformEvent::Modifiers::RightButtonDown |
+          WebInputEvent::IsCompatibilityEventForTouch),
+      gestureEvent.timeStampSeconds());
 
   if (!m_suppressMouseEventsFromGestures && m_frame->view()) {
     HitTestRequest request(HitTestRequest::Active);

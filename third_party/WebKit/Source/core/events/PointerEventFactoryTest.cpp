@@ -66,11 +66,11 @@ class PointerEventFactoryTest : public ::testing::Test {
                          WebTouchPoint::State);
   };
 
-  class PlatformMouseEventBuilder : public PlatformMouseEvent {
+  class WebMouseEventBuilder : public WebMouseEvent {
    public:
-    PlatformMouseEventBuilder(WebPointerProperties::PointerType,
-                              int,
-                              PlatformEvent::Modifiers);
+    WebMouseEventBuilder(WebPointerProperties::PointerType,
+                         int,
+                         PlatformEvent::Modifiers);
   };
 };
 
@@ -89,13 +89,13 @@ PointerEventFactoryTest::WebTouchPointBuilder::WebTouchPointBuilder(
   state = stateParam;
 }
 
-PointerEventFactoryTest::PlatformMouseEventBuilder::PlatformMouseEventBuilder(
-    WebPointerProperties::PointerType pointerType,
-    int id,
-    PlatformEvent::Modifiers modifiers) {
-  m_pointerProperties.pointerType = pointerType;
-  m_pointerProperties.id = id;
-  m_modifiers = modifiers;
+PointerEventFactoryTest::WebMouseEventBuilder::WebMouseEventBuilder(
+    WebPointerProperties::PointerType pointerTypeParam,
+    int idParam,
+    PlatformEvent::Modifiers modifiersParam) {
+  pointerType = pointerTypeParam;
+  id = idParam;
+  m_modifiers = modifiersParam;
 }
 
 PointerEvent* PointerEventFactoryTest::createAndCheckTouchCancel(
@@ -160,17 +160,16 @@ PointerEvent* PointerEventFactoryTest::createAndCheckMouseEvent(
     bool isPrimary,
     PlatformEvent::Modifiers modifiers,
     size_t coalescedEventCount) {
-  Vector<PlatformMouseEvent> coalescedEvents;
+  Vector<WebMouseEvent> coalescedEvents;
   for (size_t i = 0; i < coalescedEventCount; i++) {
-    coalescedEvents.push_back(
-        PointerEventFactoryTest::PlatformMouseEventBuilder(pointerType, rawId,
-                                                           modifiers));
+    coalescedEvents.push_back(PointerEventFactoryTest::WebMouseEventBuilder(
+        pointerType, rawId, modifiers));
   }
   PointerEvent* pointerEvent = m_pointerEventFactory.create(
       coalescedEventCount ? EventTypeNames::mousemove
                           : EventTypeNames::mousedown,
-      PointerEventFactoryTest::PlatformMouseEventBuilder(pointerType, rawId,
-                                                         modifiers),
+      PointerEventFactoryTest::WebMouseEventBuilder(pointerType, rawId,
+                                                    modifiers),
       coalescedEvents, nullptr);
   EXPECT_EQ(uniqueId, pointerEvent->pointerId());
   EXPECT_EQ(isPrimary, pointerEvent->isPrimary());

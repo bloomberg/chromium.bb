@@ -27,7 +27,6 @@
 #include "platform/scroll/ScrollbarThemeMac.h"
 
 #include <Carbon/Carbon.h>
-#include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -36,6 +35,7 @@
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/mac/ScrollAnimatorMac.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
+#include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
@@ -172,8 +172,8 @@ double ScrollbarThemeMac::autoscrollTimerDelay() {
 
 bool ScrollbarThemeMac::shouldDragDocumentInsteadOfThumb(
     const ScrollbarThemeClient&,
-    const PlatformMouseEvent& event) {
-  return event.altKey();
+    const WebMouseEvent& event) {
+  return (event.modifiers() & WebInputEvent::Modifiers::AltKey) != 0;
 }
 
 int ScrollbarThemeMac::scrollbarPartToHIPressedState(ScrollbarPart part) {

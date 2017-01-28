@@ -141,7 +141,6 @@ class NodeIterator;
 class NthIndexCache;
 class OriginAccessEntry;
 class Page;
-class PlatformMouseEvent;
 class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
@@ -172,12 +171,12 @@ class TouchList;
 class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
+class WebMouseEvent;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
 
-using MouseEventWithHitTestResults =
-    EventWithHitTestResults<PlatformMouseEvent>;
+using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;
 using ExceptionCode = int;
 
 enum NodeListInvalidationType {
@@ -687,10 +686,9 @@ class CORE_EXPORT Document : public ContainerNode,
   TextLinkColors& textLinkColors() { return m_textLinkColors; }
   VisitedLinkState& visitedLinkState() const { return *m_visitedLinkState; }
 
-  MouseEventWithHitTestResults performMouseEventHitTest(
-      const HitTestRequest&,
-      const LayoutPoint&,
-      const PlatformMouseEvent&);
+  MouseEventWithHitTestResults performMouseEventHitTest(const HitTestRequest&,
+                                                        const LayoutPoint&,
+                                                        const WebMouseEvent&);
 
   /* Newly proposed CSS3 mechanism for selecting alternate
        stylesheets using the DOM. May be subject to change as

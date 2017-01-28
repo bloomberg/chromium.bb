@@ -10,25 +10,24 @@
 
 namespace blink {
 
-DragEvent* DragEvent::create(
-    const AtomicString& type,
-    bool canBubble,
-    bool cancelable,
-    AbstractView* view,
-    int detail,
-    int screenX,
-    int screenY,
-    int windowX,
-    int windowY,
-    int movementX,
-    int movementY,
-    PlatformEvent::Modifiers modifiers,
-    short button,
-    unsigned short buttons,
-    EventTarget* relatedTarget,
-    TimeTicks platformTimeStamp,
-    DataTransfer* dataTransfer,
-    PlatformMouseEvent::SyntheticEventType syntheticEventType) {
+DragEvent* DragEvent::create(const AtomicString& type,
+                             bool canBubble,
+                             bool cancelable,
+                             AbstractView* view,
+                             int detail,
+                             int screenX,
+                             int screenY,
+                             int windowX,
+                             int windowY,
+                             int movementX,
+                             int movementY,
+                             PlatformEvent::Modifiers modifiers,
+                             short button,
+                             unsigned short buttons,
+                             EventTarget* relatedTarget,
+                             TimeTicks platformTimeStamp,
+                             DataTransfer* dataTransfer,
+                             SyntheticEventType syntheticEventType) {
   return new DragEvent(type, canBubble, cancelable, view, detail, screenX,
                        screenY, windowX, windowY, movementX, movementY,
                        modifiers, button, buttons, relatedTarget,
@@ -57,7 +56,7 @@ DragEvent::DragEvent(const AtomicString& eventType,
                      EventTarget* relatedTarget,
                      TimeTicks platformTimeStamp,
                      DataTransfer* dataTransfer,
-                     PlatformMouseEvent::SyntheticEventType syntheticEventType)
+                     SyntheticEventType syntheticEventType)
     : MouseEvent(
           eventType,
           canBubble,
@@ -78,8 +77,7 @@ DragEvent::DragEvent(const AtomicString& eventType,
           syntheticEventType,
           // TODO(zino): Should support canvas hit region because the drag event
           // is a kind of mouse event. Please see http://crbug.com/594073
-          String(),
-          nullptr),
+          String()),
       m_dataTransfer(dataTransfer)
 
 {}

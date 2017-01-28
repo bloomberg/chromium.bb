@@ -75,7 +75,6 @@
 #include "core/page/Page.h"
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
-#include "platform/PlatformMouseEvent.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"

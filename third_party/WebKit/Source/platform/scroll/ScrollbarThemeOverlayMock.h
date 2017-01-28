@@ -59,7 +59,7 @@ class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
   }
 
   bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar,
-                                  const PlatformMouseEvent& evt) override {
+                                  const WebMouseEvent& evt) override {
     return false;
   }
 

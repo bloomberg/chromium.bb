@@ -92,7 +92,8 @@ HitTestResult::HitTestResult(const HitTestResult& other)
       m_localPoint(other.localPoint()),
       m_innerURLElement(other.URLElement()),
       m_scrollbar(other.scrollbar()),
-      m_isOverWidget(other.isOverWidget()) {
+      m_isOverWidget(other.isOverWidget()),
+      m_canvasRegionId(other.canvasRegionId()) {
   // Only copy the NodeSet in case of list hit test.
   m_listBasedTestResult = other.m_listBasedTestResult
                               ? new NodeSet(*other.m_listBasedTestResult)
@@ -135,6 +136,7 @@ void HitTestResult::populateFromCachedResult(const HitTestResult& other) {
   m_scrollbar = other.scrollbar();
   m_isOverWidget = other.isOverWidget();
   m_cacheable = other.m_cacheable;
+  m_canvasRegionId = other.canvasRegionId();
 
   // Only copy the NodeSet in case of list hit test.
   m_listBasedTestResult = other.m_listBasedTestResult
@@ -438,6 +440,7 @@ void HitTestResult::append(const HitTestResult& other) {
     m_pointInInnerNodeFrame = other.m_pointInInnerNodeFrame;
     m_innerURLElement = other.URLElement();
     m_isOverWidget = other.isOverWidget();
+    m_canvasRegionId = other.canvasRegionId();
   }
 
   if (other.m_listBasedTestResult) {

@@ -9,6 +9,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "public/platform/WebMouseEvent.h"
 
 namespace blink {
 namespace EventHandlingUtil {
@@ -110,12 +111,14 @@ LayoutPoint contentPointFromRootFrame(LocalFrame* frame,
 MouseEventWithHitTestResults performMouseEventHitTest(
     LocalFrame* frame,
     const HitTestRequest& request,
-    const PlatformMouseEvent& mev) {
+    const WebMouseEvent& mev) {
   DCHECK(frame);
   DCHECK(frame->document());
 
   return frame->document()->performMouseEventHitTest(
-      request, contentPointFromRootFrame(frame, mev.position()), mev);
+      request, contentPointFromRootFrame(
+                   frame, flooredIntPoint(mev.positionInRootFrame())),
+      mev);
 }
 
 }  // namespace EventHandlingUtil

@@ -60,7 +60,6 @@ class EventDispatchHandlingState;
 class NodeList;
 class NodeListsNodeData;
 class NodeRareData;
-class PlatformMouseEvent;
 class QualifiedName;
 class RegisteredEventListener;
 class LayoutBox;
@@ -74,6 +73,7 @@ class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 class StyleChangeReasonForTracing;
 class Text;
+class WebMouseEvent;
 
 const int nodeStyleChangeShift = 18;
 const int nodeCustomElementShift = 20;
@@ -717,9 +717,10 @@ class CORE_EXPORT Node : public EventTarget {
   DispatchEventResult dispatchDOMActivateEvent(int detail,
                                                Event& underlyingEvent);
 
-  void dispatchMouseEvent(const PlatformMouseEvent&,
+  void dispatchMouseEvent(const WebMouseEvent&,
                           const AtomicString& eventType,
                           int clickCount = 0,
+                          const String& canvasNodeId = String(),
                           Node* relatedTarget = nullptr);
 
   void dispatchSimulatedClick(
@@ -842,10 +843,10 @@ class CORE_EXPORT Node : public EventTarget {
   void clearFlag(NodeFlags mask) { m_nodeFlags &= ~mask; }
 
   // TODO(mustaq): This is a hack to fix sites with flash objects. We should
-  // instead route all PlatformMouseEvents through EventHandler. See
+  // instead route all WebMouseEvents through EventHandler. See
   // crbug.com/665924.
   void createAndDispatchPointerEvent(const AtomicString& mouseEventName,
-                                     const PlatformMouseEvent&,
+                                     const WebMouseEvent&,
                                      LocalDOMWindow* view);
 
  protected:

@@ -47,7 +47,7 @@ class FrameSelection;
 class HTMLInputElement;
 class Node;
 class Page;
-class PlatformMouseEvent;
+class WebMouseEvent;
 
 class CORE_EXPORT DragController final
     : public GarbageCollected<DragController> {
@@ -76,7 +76,7 @@ class CORE_EXPORT DragController final
                                 const IntPoint& dragOrigin);
   bool startDrag(LocalFrame* src,
                  const DragState&,
-                 const PlatformMouseEvent& dragEvent,
+                 const WebMouseEvent& dragEvent,
                  const IntPoint& dragOrigin);
 
   DECLARE_TRACE();

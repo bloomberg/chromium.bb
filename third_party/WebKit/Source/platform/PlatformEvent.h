@@ -36,12 +36,6 @@ class PlatformEvent {
  public:
   enum EventType {
     NoType = 0,
-
-    // PlatformMouseEvent
-    MouseMoved,
-    MousePressed,
-    MouseReleased,
-    MouseScroll,
   };
 
   // These values are direct mappings of the values in WebInputEvent so the

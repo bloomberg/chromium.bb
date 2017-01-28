@@ -25,7 +25,6 @@
 
 #include "platform/scroll/ScrollbarThemeOverlay.h"
 
-#include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/Scrollbar.h"

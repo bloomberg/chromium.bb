@@ -89,9 +89,11 @@ Node* hoveredNodeForEvent(LocalFrame* frame,
 }
 
 Node* hoveredNodeForEvent(LocalFrame* frame,
-                          const PlatformMouseEvent& event,
+                          const WebMouseEvent& event,
                           bool ignorePointerEventsNone) {
-  return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
+  return hoveredNodeForPoint(frame,
+                             roundedIntPoint(event.positionInRootFrame()),
+                             ignorePointerEventsNone);
 }
 
 Node* hoveredNodeForEvent(LocalFrame* frame,
@@ -245,33 +247,30 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
 
     overlayMainFrame()->eventHandler().handleGestureEvent(transformedEvent);
   }
-  if (WebInputEvent::isMouseEventType(inputEvent.type()) &&
-      inputEvent.type() != WebInputEvent::MouseEnter) {
-    // PlatformMouseEventBuilder does not work with MouseEnter type, so we
-    // filter it out manually.
-    PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(
-        m_frameImpl->frameView(),
-        static_cast<const WebMouseEvent&>(inputEvent));
+  if (WebInputEvent::isMouseEventType(inputEvent.type())) {
+    WebMouseEvent mouseEvent =
+        TransformWebMouseEvent(m_frameImpl->frameView(),
+                               static_cast<const WebMouseEvent&>(inputEvent));
 
-    if (mouseEvent.type() == PlatformEvent::MouseMoved)
+    if (mouseEvent.type() == WebInputEvent::MouseMove)
       handled = handleMouseMove(mouseEvent);
-    else if (mouseEvent.type() == PlatformEvent::MousePressed)
+    else if (mouseEvent.type() == WebInputEvent::MouseDown)
       handled = handleMousePress();
 
     if (handled)
       return true;
 
-    if (mouseEvent.type() == PlatformEvent::MouseMoved) {
+    if (mouseEvent.type() == WebInputEvent::MouseMove) {
       handled = overlayMainFrame()->eventHandler().handleMouseMoveEvent(
-                    mouseEvent, createPlatformMouseEventVector(
+                    mouseEvent, TransformWebMouseEventVector(
                                     m_frameImpl->frameView(),
                                     std::vector<const WebInputEvent*>())) !=
                 WebInputEventResult::NotHandled;
     }
-    if (mouseEvent.type() == PlatformEvent::MousePressed)
+    if (mouseEvent.type() == WebInputEvent::MouseDown)
       handled = overlayMainFrame()->eventHandler().handleMousePressEvent(
                     mouseEvent) != WebInputEventResult::NotHandled;
-    if (mouseEvent.type() == PlatformEvent::MouseReleased)
+    if (mouseEvent.type() == WebInputEvent::MouseUp)
       handled = overlayMainFrame()->eventHandler().handleMouseReleaseEvent(
                     mouseEvent) != WebInputEventResult::NotHandled;
   }
@@ -706,14 +705,15 @@ void InspectorOverlay::setShowViewportSizeOnResize(bool show) {
   m_drawViewSize = show;
 }
 
-bool InspectorOverlay::handleMouseMove(const PlatformMouseEvent& event) {
+bool InspectorOverlay::handleMouseMove(const WebMouseEvent& event) {
   if (!shouldSearchForNode())
     return false;
 
   LocalFrame* frame = m_frameImpl->frame();
   if (!frame || !frame->view() || frame->contentLayoutItem().isNull())
     return false;
-  Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
+  Node* node = hoveredNodeForEvent(frame, event,
+                                   event.modifiers() & WebInputEvent::ShiftKey);
 
   // Do not highlight within user agent shadow root unless requested.
   if (m_inspectMode != InspectorDOMAgent::SearchingForUAShadow) {
@@ -729,8 +729,9 @@ bool InspectorOverlay::handleMouseMove(const PlatformMouseEvent& event) {
   if (!node)
     return true;
 
-  Node* eventTarget =
-      event.shiftKey() ? hoveredNodeForEvent(frame, event, false) : nullptr;
+  Node* eventTarget = (event.modifiers() & WebInputEvent::ShiftKey)
+                          ? hoveredNodeForEvent(frame, event, false)
+                          : nullptr;
   if (eventTarget == node)
     eventTarget = nullptr;
 
@@ -739,7 +740,8 @@ bool InspectorOverlay::handleMouseMove(const PlatformMouseEvent& event) {
     if (m_domAgent)
       m_domAgent->nodeHighlightedInOverlay(node);
     highlightNode(node, eventTarget, *m_inspectModeHighlightConfig,
-                  event.ctrlKey() || event.metaKey());
+                  (event.modifiers() &
+                   (WebInputEvent::ControlKey | WebInputEvent::MetaKey)));
   }
   return true;
 }

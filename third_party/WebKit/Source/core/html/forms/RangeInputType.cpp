@@ -50,7 +50,6 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
 #include "core/layout/LayoutSlider.h"
-#include "platform/PlatformMouseEvent.h"
 #include "wtf/MathExtras.h"
 #include "wtf/NonCopyingSort.h"
 #include <limits>

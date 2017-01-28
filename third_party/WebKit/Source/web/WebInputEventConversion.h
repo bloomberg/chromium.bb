@@ -31,7 +31,6 @@
 #ifndef WebInputEventConversion_h
 #define WebInputEventConversion_h
 
-#include "platform/PlatformMouseEvent.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebKeyboardEvent.h"
@@ -48,19 +47,12 @@ class MouseEvent;
 class LayoutItem;
 class TouchEvent;
 class WebGestureEvent;
-class WebMouseEvent;
 class WebKeyboardEvent;
-class WebTouchEvent;
 class Widget;
 
 // These classes are used to convert from WebInputEvent subclasses to
 // corresponding WebCore events.
 
-class WEB_EXPORT PlatformMouseEventBuilder
-    : NON_EXPORTED_BASE(public PlatformMouseEvent) {
- public:
-  PlatformMouseEventBuilder(Widget*, const WebMouseEvent&);
-};
 
 class WEB_EXPORT WebMouseEventBuilder
     : NON_EXPORTED_BASE(public WebMouseEvent) {
@@ -96,14 +88,15 @@ class WEB_EXPORT WebTouchEventBuilder
 // and translation.
 WEB_EXPORT WebGestureEvent TransformWebGestureEvent(Widget*,
                                                     const WebGestureEvent&);
+WEB_EXPORT WebMouseEvent TransformWebMouseEvent(Widget*, const WebMouseEvent&);
+
 WEB_EXPORT WebMouseWheelEvent
 TransformWebMouseWheelEvent(Widget*, const WebMouseWheelEvent&);
 
 WEB_EXPORT WebTouchEvent TransformWebTouchEvent(Widget*, const WebTouchEvent&);
 
-Vector<PlatformMouseEvent> WEB_EXPORT
-createPlatformMouseEventVector(Widget*,
-                               const std::vector<const WebInputEvent*>&);
+Vector<WebMouseEvent> WEB_EXPORT
+TransformWebMouseEventVector(Widget*, const std::vector<const WebInputEvent*>&);
 Vector<WebTouchEvent> WEB_EXPORT
 TransformWebTouchEventVector(Widget*, const std::vector<const WebInputEvent*>&);
 

@@ -79,7 +79,6 @@
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/Cursor.h"
 #include "platform/DragImage.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -6873,10 +6872,12 @@ TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick) {
   KURL destination = document->url();
   destination.setFragmentIdentifier("test");
 
-  Event* event = MouseEvent::create(
-      EventTypeNames::click, false, false, document->domWindow(), 0, 0, 0, 0, 0,
-      0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr, TimeTicks(),
-      PlatformMouseEvent::RealOrIndistinguishable, String(), nullptr);
+  MouseEventInit mouseInitializer;
+  mouseInitializer.setView(document->domWindow());
+  mouseInitializer.setButton(1);
+
+  Event* event =
+      MouseEvent::create(nullptr, EventTypeNames::click, mouseInitializer);
   FrameLoadRequest frameRequest(document, ResourceRequest(destination));
   frameRequest.setTriggeringEvent(event);
   toLocalFrame(webViewHelper.webView()->page()->mainFrame())
@@ -6928,10 +6929,13 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow) {
   KURL destination = toKURL(m_baseURL + "hello_world.html");
 
   // ctrl+click event
-  Event* event = MouseEvent::create(
-      EventTypeNames::click, false, false, document->domWindow(), 0, 0, 0, 0, 0,
-      0, 0, PlatformEvent::CtrlKey, 0, 0, nullptr, TimeTicks(),
-      PlatformMouseEvent::RealOrIndistinguishable, String(), nullptr);
+  MouseEventInit mouseInitializer;
+  mouseInitializer.setView(document->domWindow());
+  mouseInitializer.setButton(1);
+  mouseInitializer.setCtrlKey(true);
+
+  Event* event =
+      MouseEvent::create(nullptr, EventTypeNames::click, mouseInitializer);
   FrameLoadRequest frameRequest(document, ResourceRequest(destination));
   frameRequest.setTriggeringEvent(event);
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
@@ -10795,13 +10799,15 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
   EXPECT_TRUE(hitTestResult.innerElement());
 
   // Mouse over link. Mouse cursor should be hand.
-  PlatformMouseEvent mouseMoveOverLinkEvent(
-      IntPoint(div1Tag->offsetLeft() + 5, div1Tag->offsetTop() + 5),
-      IntPoint(div1Tag->offsetLeft() + 5, div1Tag->offsetTop() + 5),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, TimeTicks::Now());
+  WebMouseEvent mouseMoveOverLinkEvent(
+      WebInputEvent::MouseMove,
+      WebFloatPoint(div1Tag->offsetLeft() + 5, div1Tag->offsetTop() + 5),
+      WebFloatPoint(div1Tag->offsetLeft() + 5, div1Tag->offsetTop() + 5),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverLinkEvent.setFrameScale(1);
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverLinkEvent, Vector<PlatformMouseEvent>());
+      mouseMoveOverLinkEvent, Vector<WebMouseEvent>());
 
   EXPECT_EQ(document->hoverNode(),
             document->frame()->chromeClient().lastSetTooltipNodeForTesting());
@@ -10810,13 +10816,15 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
 
   Element* div2Tag = document->getElementById("div2");
 
-  PlatformMouseEvent mouseMoveEvent(
-      IntPoint(div2Tag->offsetLeft() + 5, div2Tag->offsetTop() + 5),
-      IntPoint(div2Tag->offsetLeft() + 5, div2Tag->offsetTop() + 5),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, TimeTicks::Now());
+  WebMouseEvent mouseMoveEvent(
+      WebInputEvent::MouseMove,
+      WebFloatPoint(div2Tag->offsetLeft() + 5, div2Tag->offsetTop() + 5),
+      WebFloatPoint(div2Tag->offsetLeft() + 5, div2Tag->offsetTop() + 5),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveEvent.setFrameScale(1);
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<PlatformMouseEvent>());
+      mouseMoveEvent, Vector<WebMouseEvent>());
 
   EXPECT_EQ(document->hoverNode(),
             document->frame()->chromeClient().lastSetTooltipNodeForTesting());
@@ -10857,13 +10865,15 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   EXPECT_FALSE(hitTestResult.scrollbar()->isCustomScrollbar());
 
   // Mouse over link. Mouse cursor should be hand.
-  PlatformMouseEvent mouseMoveOverLinkEvent(
-      IntPoint(aTag->offsetLeft(), aTag->offsetTop()),
-      IntPoint(aTag->offsetLeft(), aTag->offsetTop()),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, TimeTicks::Now());
+  WebMouseEvent mouseMoveOverLinkEvent(
+      WebInputEvent::MouseMove,
+      WebFloatPoint(aTag->offsetLeft(), aTag->offsetTop()),
+      WebFloatPoint(aTag->offsetLeft(), aTag->offsetTop()),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverLinkEvent.setFrameScale(1);
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverLinkEvent, Vector<PlatformMouseEvent>());
+      mouseMoveOverLinkEvent, Vector<WebMouseEvent>());
 
   EXPECT_EQ(
       Cursor::Type::Hand,
@@ -10871,31 +10881,37 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
 
   // Mouse over enabled overlay scrollbar. Mouse cursor should be pointer and no
   // active hover element.
-  PlatformMouseEvent mouseMoveEvent(
-      IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, TimeTicks::Now());
+  WebMouseEvent mouseMoveEvent(
+      WebInputEvent::MouseMove, WebFloatPoint(18, aTag->offsetTop()),
+      WebFloatPoint(18, aTag->offsetTop()),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveEvent.setFrameScale(1);
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<PlatformMouseEvent>());
+      mouseMoveEvent, Vector<WebMouseEvent>());
 
   EXPECT_EQ(
       Cursor::Type::Pointer,
       document->frame()->chromeClient().lastSetCursorForTesting().getType());
 
-  PlatformMouseEvent mousePressEvent(
-      IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
-      WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 0,
-      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
+  WebMouseEvent mousePressEvent(
+      WebInputEvent::MouseDown, WebFloatPoint(18, aTag->offsetTop()),
+      WebFloatPoint(18, aTag->offsetTop()), WebPointerProperties::Button::Left,
+      0, WebInputEvent::Modifiers::LeftButtonDown,
+      TimeTicks::Now().InSeconds());
+  mousePressEvent.setFrameScale(1);
   document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
 
   EXPECT_FALSE(document->activeHoverElement());
   EXPECT_FALSE(document->hoverNode());
 
-  PlatformMouseEvent MouseReleaseEvent(
-      IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
-      WebPointerProperties::Button::Left, PlatformEvent::MouseReleased, 0,
-      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
-  document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
+  WebMouseEvent mouseReleaseEvent(
+      WebInputEvent::MouseUp, WebFloatPoint(18, aTag->offsetTop()),
+      WebFloatPoint(18, aTag->offsetTop()), WebPointerProperties::Button::Left,
+      0, WebInputEvent::Modifiers::LeftButtonDown,
+      TimeTicks::Now().InSeconds());
+  mouseReleaseEvent.setFrameScale(1);
+  document->frame()->eventHandler().handleMouseReleaseEvent(mouseReleaseEvent);
 
   // Mouse over disabled overlay scrollbar. Mouse cursor should be hand and has
   // active hover element.
@@ -10909,7 +10925,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   EXPECT_FALSE(hitTestResult.scrollbar());
 
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<PlatformMouseEvent>());
+      mouseMoveEvent, Vector<WebMouseEvent>());
 
   EXPECT_EQ(
       Cursor::Type::Hand,
@@ -10920,7 +10936,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   EXPECT_TRUE(document->activeHoverElement());
   EXPECT_TRUE(document->hoverNode());
 
-  document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
+  document->frame()->eventHandler().handleMouseReleaseEvent(mouseReleaseEvent);
 }
 
 // Makes sure that mouse hover over an custom scrollbar doesn't change the
@@ -10947,12 +10963,13 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
   EXPECT_FALSE(hitTestResult.scrollbar());
 
   // Mouse over DIV
-  PlatformMouseEvent mouseMoveOverDiv(
-      IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::NoButton,
-      PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
-      TimeTicks::Now());
+  WebMouseEvent mouseMoveOverDiv(
+      WebInputEvent::MouseMove, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverDiv.setFrameScale(1);
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverDiv, Vector<PlatformMouseEvent>());
+      mouseMoveOverDiv, Vector<WebMouseEvent>());
 
   // DIV :hover
   EXPECT_EQ(document->hoverNode(), scrollbarDiv);
@@ -10965,12 +10982,13 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
   EXPECT_TRUE(hitTestResult.scrollbar()->isCustomScrollbar());
 
   // Mouse over scrollbar
-  PlatformMouseEvent mouseMoveOverDivAndScrollbar(
-      IntPoint(175, 1), IntPoint(175, 1),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, TimeTicks::Now());
+  WebMouseEvent mouseMoveOverDivAndScrollbar(
+      WebInputEvent::MouseMove, WebFloatPoint(175, 1), WebFloatPoint(175, 1),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverDivAndScrollbar.setFrameScale(1);
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverDivAndScrollbar, Vector<PlatformMouseEvent>());
+      mouseMoveOverDivAndScrollbar, Vector<WebMouseEvent>());
 
   // Custom not change the DIV :hover
   EXPECT_EQ(document->hoverNode(), scrollbarDiv);
@@ -11001,41 +11019,45 @@ TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
   EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::NoPart);
 
   // Mouse moved over the scrollbar.
-  PlatformMouseEvent mouseMoveOverScrollbar(
-      IntPoint(175, 1), IntPoint(175, 1),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, TimeTicks::Now());
+  WebMouseEvent mouseMoveOverScrollbar(
+      WebInputEvent::MouseMove, WebFloatPoint(175, 1), WebFloatPoint(175, 1),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverScrollbar.setFrameScale(1);
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverScrollbar, Vector<PlatformMouseEvent>());
+      mouseMoveOverScrollbar, Vector<WebMouseEvent>());
   HitTestResult hitTestResult = webView->coreHitTestResultAt(WebPoint(175, 1));
   EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::NoPart);
   EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::ThumbPart);
 
   // Mouse pressed.
-  PlatformMouseEvent mousePressEvent(
-      IntPoint(175, 1), IntPoint(175, 1), WebPointerProperties::Button::Left,
-      PlatformEvent::MousePressed, 0, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mousePressEvent(
+      WebInputEvent::MouseDown, WebFloatPoint(175, 1), WebFloatPoint(175, 1),
+      WebPointerProperties::Button::Left, 0,
+      WebInputEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
+  mousePressEvent.setFrameScale(1);
   document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
   EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::ThumbPart);
   EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::ThumbPart);
 
   // Mouse moved off the scrollbar while still pressed.
-  PlatformMouseEvent mouseMoveOffScrollbar(
-      IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::Left,
-      PlatformEvent::MouseMoved, 0, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mouseMoveOffScrollbar(
+      WebInputEvent::MouseMove, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
+      WebPointerProperties::Button::Left, 0,
+      WebInputEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
+  mouseMoveOffScrollbar.setFrameScale(1);
   document->frame()->eventHandler().handleMouseLeaveEvent(
       mouseMoveOffScrollbar);
   EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::ThumbPart);
   EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::ThumbPart);
 
   // Mouse released.
-  PlatformMouseEvent MouseReleaseEvent(
-      IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::Left,
-      PlatformEvent::MouseReleased, 0, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
-  document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
+  WebMouseEvent mouseReleaseEvent(
+      WebInputEvent::MouseUp, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
+      WebPointerProperties::Button::Left, 0,
+      WebInputEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
+  mouseReleaseEvent.setFrameScale(1);
+  document->frame()->eventHandler().handleMouseReleaseEvent(mouseReleaseEvent);
   EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::NoPart);
   EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::NoPart);
 }

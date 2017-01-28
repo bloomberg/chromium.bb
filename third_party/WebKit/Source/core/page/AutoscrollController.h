@@ -38,9 +38,9 @@ class LocalFrame;
 class FrameView;
 class Node;
 class Page;
-class PlatformMouseEvent;
 class LayoutBox;
 class LayoutObject;
+class WebMouseEvent;
 
 enum AutoscrollType {
   NoAutoscroll,
@@ -72,7 +72,7 @@ class CORE_EXPORT AutoscrollController final
                          const IntPoint& eventPosition,
                          TimeTicks eventTime);
   void handleMouseReleaseForMiddleClickAutoscroll(LocalFrame*,
-                                                  const PlatformMouseEvent&);
+                                                  const WebMouseEvent&);
   void startMiddleClickAutoscroll(LayoutBox*, const IntPoint&);
 
  private:

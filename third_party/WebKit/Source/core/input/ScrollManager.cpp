@@ -506,11 +506,12 @@ bool ScrollManager::inResizeMode() const {
   return m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode();
 }
 
-void ScrollManager::resize(const PlatformMouseEvent& evt) {
-  if (evt.type() == PlatformEvent::MouseMoved) {
+void ScrollManager::resize(const WebMouseEvent& evt) {
+  if (evt.type() == WebInputEvent::MouseMove) {
     if (!m_frame->eventHandler().mousePressed())
       return;
-    m_resizeScrollableArea->resize(evt.position(), m_offsetFromResizeCorner);
+    m_resizeScrollableArea->resize(flooredIntPoint(evt.positionInRootFrame()),
+                                   m_offsetFromResizeCorner);
   }
 }
 

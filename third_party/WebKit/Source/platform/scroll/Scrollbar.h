@@ -39,10 +39,10 @@ namespace blink {
 class GraphicsContext;
 class HostWindow;
 class IntRect;
-class PlatformMouseEvent;
 class ScrollableArea;
 class ScrollbarTheme;
 class WebGestureEvent;
+class WebMouseEvent;
 
 class PLATFORM_EXPORT Scrollbar : public Widget,
                                   public ScrollbarThemeClient,
@@ -145,14 +145,14 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   // They will not get called when the mouse went down in a scrollbar, since it
   // is assumed the scrollbar will start
   // grabbing all events in that case anyway.
-  void mouseMoved(const PlatformMouseEvent&);
+  void mouseMoved(const WebMouseEvent&);
   void mouseEntered();
   void mouseExited();
 
   // Used by some platform scrollbars to know when they've been released from
   // capture.
-  void mouseUp(const PlatformMouseEvent&);
-  void mouseDown(const PlatformMouseEvent&);
+  void mouseUp(const WebMouseEvent&);
+  void mouseDown(const WebMouseEvent&);
 
   ScrollbarTheme& theme() const { return m_theme; }
 

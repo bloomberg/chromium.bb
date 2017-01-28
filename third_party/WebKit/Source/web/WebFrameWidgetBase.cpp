@@ -131,16 +131,19 @@ void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
     cancelDrag();
     return;
   }
-  WebPoint pointInRootFrame(
+  WebFloatPoint pointInRootFrame(
       page()->frameHost().visualViewport().viewportToRootFrame(
           pointInViewport));
-  PlatformMouseEvent pme(
-      pointInRootFrame, screenPoint, WebPointerProperties::Button::Left,
-      PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
-      PlatformMouseEvent::RealOrIndistinguishable, TimeTicks::Now());
+
+  WebMouseEvent fakeMouseMove(WebInputEvent::MouseMove, pointInRootFrame,
+                              WebFloatPoint(screenPoint.x, screenPoint.y),
+                              WebPointerProperties::Button::Left, 0,
+                              PlatformEvent::NoModifiers,
+                              TimeTicks::Now().InSeconds());
+  fakeMouseMove.setFrameScale(1);
   toCoreFrame(localRoot())
       ->eventHandler()
-      .dragSourceEndedAt(pme, static_cast<DragOperation>(operation));
+      .dragSourceEndedAt(fakeMouseMove, static_cast<DragOperation>(operation));
 }
 
 void WebFrameWidgetBase::dragSourceSystemDragEnded() {

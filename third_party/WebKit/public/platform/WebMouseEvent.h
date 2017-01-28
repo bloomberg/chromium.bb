@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class WebGestureEvent;
+
 // See WebInputEvent.h for details why this pack is here.
 #pragma pack(push, 4)
 
@@ -34,16 +36,69 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   int movementY;
   int clickCount;
 
-  WebMouseEvent(Type type, int modifiers, double timeStampSeconds)
-      : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, timeStampSeconds),
-        WebPointerProperties() {}
+  WebMouseEvent(Type typeParam,
+                int xParam,
+                int yParam,
+                int globalXParam,
+                int globalYParam,
+                int modifiersParam,
+                double timeStampSecondsParam)
+      : WebInputEvent(sizeof(WebMouseEvent),
+                      typeParam,
+                      modifiersParam,
+                      timeStampSecondsParam),
+        WebPointerProperties(),
+        x(xParam),
+        y(yParam),
+        globalX(globalXParam),
+        globalY(globalYParam) {}
 
-  WebMouseEvent()
-      : WebInputEvent(sizeof(WebMouseEvent)), WebPointerProperties() {}
+  WebMouseEvent(Type typeParam,
+                WebFloatPoint position,
+                WebFloatPoint globalPosition,
+                Button buttonParam,
+                int clickCountParam,
+                int modifiersParam,
+                double timeStampSecondsParam)
+      : WebInputEvent(sizeof(WebMouseEvent),
+                      typeParam,
+                      modifiersParam,
+                      timeStampSecondsParam),
+        WebPointerProperties(buttonParam, PointerType::Mouse),
+        x(position.x),
+        y(position.y),
+        globalX(globalPosition.x),
+        globalY(globalPosition.y),
+        clickCount(clickCountParam) {}
+
+  WebMouseEvent(Type typeParam,
+                int modifiersParam,
+                double timeStampSecondsParam)
+      : WebMouseEvent(sizeof(WebMouseEvent),
+                      typeParam,
+                      modifiersParam,
+                      timeStampSecondsParam) {}
+
+  WebMouseEvent() : WebMouseEvent(sizeof(WebMouseEvent)) {}
+
+  bool fromTouch() const {
+    return (modifiers() & IsCompatibilityEventForTouch) != 0;
+  }
 
 #if INSIDE_BLINK
+  BLINK_PLATFORM_EXPORT WebMouseEvent(Type typeParam,
+                                      const WebGestureEvent&,
+                                      Button buttonParam,
+                                      int clickCountParam,
+                                      int modifiersParam,
+                                      double timeStampSecondsParam);
+
   BLINK_PLATFORM_EXPORT WebFloatPoint movementInRootFrame() const;
   BLINK_PLATFORM_EXPORT WebFloatPoint positionInRootFrame() const;
+
+  // Sets any scaled values to be their computed values and sets |frameScale|
+  // back to 1 and |translateX|, |translateY| back to 0.
+  BLINK_PLATFORM_EXPORT WebMouseEvent flattenTransform() const;
 #endif
 
  protected:

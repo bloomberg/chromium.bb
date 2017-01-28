@@ -24,7 +24,6 @@
 #include "core/events/WheelEvent.h"
 
 #include "core/clipboard/DataTransfer.h"
-#include "platform/PlatformMouseEvent.h"
 
 namespace blink {
 
@@ -73,12 +72,13 @@ WheelEvent::WheelEvent(const WebMouseWheelEvent& event, AbstractView* view)
                  true,
                  event.isCancelable(),
                  view,
-                 PlatformMouseEvent::RealOrIndistinguishable,
+                 event,
+                 event.clickCount,
                  // TODO(zino): Should support canvas hit region because the
                  // wheel event is a kind of mouse event. Please see
                  // http://crbug.com/594075
                  String(),
-                 event),
+                 nullptr),
       m_wheelDelta(event.wheelTicksX * TickMultiplier,
                    event.wheelTicksY * TickMultiplier),
       m_deltaX(-event.deltaXInRootFrame()),

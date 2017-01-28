@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class PlatformMouseEvent;
+class WebMouseEvent;
 
 class LayoutScrollbarTheme final : public ScrollbarTheme {
  public:
@@ -49,11 +49,11 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
                          const IntRect& cornerRect) override;
 
   bool shouldCenterOnThumb(const ScrollbarThemeClient& scrollbar,
-                           const PlatformMouseEvent& event) override {
+                           const WebMouseEvent& event) override {
     return ScrollbarTheme::theme().shouldCenterOnThumb(scrollbar, event);
   }
   bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar,
-                                  const PlatformMouseEvent& event) override {
+                                  const WebMouseEvent& event) override {
     return ScrollbarTheme::theme().shouldSnapBackToDragOrigin(scrollbar, event);
   }
 

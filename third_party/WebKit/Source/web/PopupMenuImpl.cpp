@@ -446,7 +446,9 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue,
   // We dispatch events on the owner element to match the legacy behavior.
   // Other browsers dispatch click events before and after showing the popup.
   if (m_ownerElement) {
-    PlatformMouseEvent event;
+    // TODO(dtapuska): Why is this event positionless?
+    WebMouseEvent event;
+    event.setFrameScale(1);
     Element* owner = &ownerElement();
     owner->dispatchMouseEvent(event, EventTypeNames::mouseup);
     owner->dispatchMouseEvent(event, EventTypeNames::click);

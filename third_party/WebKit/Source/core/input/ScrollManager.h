@@ -86,7 +86,7 @@ class CORE_EXPORT ScrollManager
 
   // These functions are related to |m_resizeScrollableArea|.
   bool inResizeMode() const;
-  void resize(const PlatformMouseEvent&);
+  void resize(const WebMouseEvent&);
   // Clears |m_resizeScrollableArea|. if |shouldNotBeNull| is true this
   // function DCHECKs to make sure that variable is indeed not null.
   void clearResizeScrollableArea(bool shouldNotBeNull);

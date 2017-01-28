@@ -187,6 +187,11 @@ class WebInputEvent {
 
     ScrollLockOn = 1 << 18,
 
+    // Whether this is a compatibility event generated due to a
+    // native touch event. Mouse events generated from touch
+    // events will set this.
+    IsCompatibilityEventForTouch = 1 << 19,
+
     // The set of non-stateful modifiers that specifically change the
     // interpretation of the key being pressed. For example; IsLeft,
     // IsRight, IsComposing don't change the meaning of the key

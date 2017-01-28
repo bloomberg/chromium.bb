@@ -28,7 +28,6 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
-#include "platform/PlatformMouseEvent.h"
 #include "public/platform/WebMouseEvent.h"
 
 namespace blink {
@@ -39,34 +38,24 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MouseEvent* create() { return new MouseEvent; }
+  enum SyntheticEventType {
+    // Real mouse input events or synthetic events that behave just like real
+    // events
+    RealOrIndistinguishable,
+    // Synthetic mouse events derived from touch input
+    FromTouch,
+    // Synthetic mouse events generated without a position, for example those
+    // generated from keyboard input.
+    Positionless,
+  };
 
-  // TODO(mustaq): Should replace most/all of these params with a
-  // MouseEventInit.
-  static MouseEvent* create(const AtomicString& type,
-                            bool canBubble,
-                            bool cancelable,
-                            AbstractView*,
-                            int detail,
-                            int screenX,
-                            int screenY,
-                            int windowX,
-                            int windowY,
-                            int movementX,
-                            int movementY,
-                            PlatformEvent::Modifiers,
-                            short button,
-                            unsigned short buttons,
-                            EventTarget* relatedTarget,
-                            TimeTicks platformTimeStamp,
-                            PlatformMouseEvent::SyntheticEventType,
-                            const String& region,
-                            const PlatformMouseEvent*);
+  static MouseEvent* create() { return new MouseEvent; }
 
   static MouseEvent* create(const AtomicString& eventType,
                             AbstractView*,
-                            const PlatformMouseEvent&,
+                            const WebMouseEvent&,
                             int detail,
+                            const String& canvasRegionId,
                             Node* relatedTarget);
 
   static MouseEvent* create(ScriptState*,
@@ -109,20 +98,17 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   void setRelatedTarget(EventTarget* relatedTarget) {
     m_relatedTarget = relatedTarget;
   }
-  PlatformMouseEvent::SyntheticEventType getSyntheticEventType() const {
+  SyntheticEventType getSyntheticEventType() const {
     return m_syntheticEventType;
   }
   const String& region() const { return m_region; }
-  void setRegion(const String& region) { m_region = region; }
 
   Node* toElement() const;
   Node* fromElement() const;
 
   virtual DataTransfer* getDataTransfer() const { return nullptr; }
 
-  bool fromTouch() const {
-    return m_syntheticEventType == PlatformMouseEvent::FromTouch;
-  }
+  bool fromTouch() const { return m_syntheticEventType == FromTouch; }
 
   const AtomicString& interfaceName() const override;
 
@@ -133,7 +119,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   int clickCount() { return detail(); }
 
-  const PlatformMouseEvent* mouseEvent() const { return m_mouseEvent.get(); }
+  const WebMouseEvent* nativeEvent() const { return m_nativeEvent.get(); }
 
   enum class PositionType {
     Position,
@@ -200,9 +186,10 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              bool canBubble,
              bool cancelable,
              AbstractView*,
-             PlatformMouseEvent::SyntheticEventType,
+             const WebMouseEvent&,
+             int detail,
              const String& region,
-             const WebMouseEvent&);
+             EventTarget* relatedTarget);
 
   MouseEvent(const AtomicString& type,
              bool canBubble,
@@ -220,9 +207,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              unsigned short buttons,
              EventTarget* relatedTarget,
              TimeTicks platformTimeStamp,
-             PlatformMouseEvent::SyntheticEventType,
-             const String& region,
-             const PlatformMouseEvent*);
+             SyntheticEventType,
+             const String& region);
 
   MouseEvent(const AtomicString& type, const MouseEventInit&);
 
@@ -267,9 +253,9 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   short m_button;
   unsigned short m_buttons;
   Member<EventTarget> m_relatedTarget;
-  PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
+  SyntheticEventType m_syntheticEventType;
   String m_region;
-  std::unique_ptr<PlatformMouseEvent> m_mouseEvent;
+  std::unique_ptr<WebMouseEvent> m_nativeEvent;
 };
 
 class MouseEventDispatchMediator final : public EventDispatchMediator {

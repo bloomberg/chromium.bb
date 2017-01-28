@@ -31,7 +31,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/PlatformMouseEvent.h"
+#include "public/platform/WebMouseEvent.h"
 
 namespace blink {
 
@@ -132,17 +132,18 @@ void PointerLockController::didLosePointerLock() {
 }
 
 void PointerLockController::dispatchLockedMouseEvent(
-    const PlatformMouseEvent& event,
+    const WebMouseEvent& event,
     const AtomicString& eventType) {
   if (!m_element || !m_element->document().frame())
     return;
 
-  m_element->dispatchMouseEvent(event, eventType, event.clickCount());
+  m_element->dispatchMouseEvent(event, eventType, event.clickCount);
 
   // Create click events
-  if (eventType == EventTypeNames::mouseup)
+  if (eventType == EventTypeNames::mouseup) {
     m_element->dispatchMouseEvent(event, EventTypeNames::click,
-                                  event.clickCount());
+                                  event.clickCount);
+  }
 }
 
 void PointerLockController::clearElement() {

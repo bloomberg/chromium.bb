@@ -36,7 +36,7 @@ namespace blink {
 class Element;
 class Document;
 class Page;
-class PlatformMouseEvent;
+class WebMouseEvent;
 
 class CORE_EXPORT PointerLockController final
     : public GarbageCollected<PointerLockController> {
@@ -55,7 +55,7 @@ class CORE_EXPORT PointerLockController final
   void didAcquirePointerLock();
   void didNotAcquirePointerLock();
   void didLosePointerLock();
-  void dispatchLockedMouseEvent(const PlatformMouseEvent&,
+  void dispatchLockedMouseEvent(const WebMouseEvent&,
                                 const AtomicString& eventType);
 
   DECLARE_TRACE();

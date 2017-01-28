@@ -14,7 +14,6 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/PlatformMouseEvent.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 
@@ -63,18 +62,20 @@ class LongPressEventBuilder : public WebGestureEvent {
   }
 };
 
-class MousePressEventBuilder : public PlatformMouseEvent {
+class MousePressEventBuilder : public WebMouseEvent {
  public:
   MousePressEventBuilder(IntPoint position,
-                         int clickCount,
-                         WebMouseEvent::Button button)
-      : PlatformMouseEvent(position,
-                           position,
-                           button,
-                           PlatformEvent::MousePressed,
-                           clickCount,
-                           static_cast<PlatformEvent::Modifiers>(0),
-                           TimeTicks::Now()) {}
+                         int clickCountParam,
+                         WebMouseEvent::Button buttonParam)
+      : WebMouseEvent(WebInputEvent::MouseDown,
+                      WebInputEvent::NoModifiers,
+                      TimeTicks::Now().InSeconds()) {
+    clickCount = clickCountParam;
+    button = buttonParam;
+    x = globalX = position.x();
+    y = globalY = position.y();
+    m_frameScale = 1;
+  }
 };
 
 void EventHandlerTest::SetUp() {
@@ -105,27 +106,32 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   frameView->layoutViewportScrollableArea()->setScrollOffset(
       ScrollOffset(0, 400), ProgrammaticScroll);
 
-  PlatformMouseEvent mouseDownEvent(
-      IntPoint(0, 0), IntPoint(100, 200), WebPointerProperties::Button::Left,
-      PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mouseDownEvent(WebInputEvent::MouseDown, WebFloatPoint(0, 0),
+                               WebFloatPoint(100, 200),
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseDownEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
-  PlatformMouseEvent mouseMoveEvent(
-      IntPoint(100, 50), IntPoint(200, 250), WebPointerProperties::Button::Left,
-      PlatformEvent::MouseMoved, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mouseMoveEvent(WebInputEvent::MouseMove, WebFloatPoint(100, 50),
+                               WebFloatPoint(200, 250),
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseMoveEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<PlatformMouseEvent>());
+      mouseMoveEvent, Vector<WebMouseEvent>());
 
   page().autoscrollController().animate(WTF::monotonicallyIncreasingTime());
   page().animator().serviceScriptedAnimations(
       WTF::monotonicallyIncreasingTime());
 
-  PlatformMouseEvent mouseUpEvent(
-      IntPoint(100, 50), IntPoint(200, 250), WebPointerProperties::Button::Left,
-      PlatformEvent::MouseReleased, 1, static_cast<PlatformEvent::Modifiers>(0),
-      TimeTicks::Now());
+  WebMouseEvent mouseUpEvent(
+      WebMouseEvent::MouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),
+      WebPointerProperties::Button::Left, 1, WebInputEvent::NoModifiers,
+      WebInputEvent::TimeStampForTesting);
+  mouseUpEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
 
   ASSERT_TRUE(selection().isRange());
@@ -206,18 +212,22 @@ TEST_F(EventHandlerTest, draggedInlinePositionTest) {
       "<div style='width: 300px; height: 100px;'>"
       "<span class='line' draggable='true'>abcd</span>"
       "</div>");
-  PlatformMouseEvent mouseDownEvent(
-      IntPoint(262, 29), IntPoint(329, 67), WebPointerProperties::Button::Left,
-      PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mouseDownEvent(WebMouseEvent::MouseDown, WebFloatPoint(262, 29),
+                               WebFloatPoint(329, 67),
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseDownEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
-  PlatformMouseEvent mouseMoveEvent(
-      IntPoint(618, 298), IntPoint(685, 436),
-      WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1,
-      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
+  WebMouseEvent mouseMoveEvent(WebMouseEvent::MouseMove,
+                               WebFloatPoint(618, 298), WebFloatPoint(685, 436),
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseMoveEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<PlatformMouseEvent>());
+      mouseMoveEvent, Vector<WebMouseEvent>());
 
   EXPECT_EQ(
       IntPoint(12, 29),
@@ -238,18 +248,22 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
       "draggable='true'/>"
       "</svg>"
       "</div>");
-  PlatformMouseEvent mouseDownEvent(
-      IntPoint(145, 144), IntPoint(212, 282),
-      WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 1,
-      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
+  WebMouseEvent mouseDownEvent(WebMouseEvent::MouseDown,
+                               WebFloatPoint(145, 144), WebFloatPoint(212, 282),
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseDownEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
-  PlatformMouseEvent mouseMoveEvent(
-      IntPoint(618, 298), IntPoint(685, 436),
-      WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1,
-      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
+  WebMouseEvent mouseMoveEvent(WebMouseEvent::MouseMove,
+                               WebFloatPoint(618, 298), WebFloatPoint(685, 436),
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseMoveEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<PlatformMouseEvent>());
+      mouseMoveEvent, Vector<WebMouseEvent>());
 
   EXPECT_EQ(
       IntPoint(45, 44),
@@ -273,10 +287,11 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
       SelectionInDOMTree::Builder()
           .collapse(Position(document().body(), 0))
           .build());
-  PlatformMouseEvent mouseDownEvent(
-      IntPoint(0, 0), IntPoint(100, 200), WebPointerProperties::Button::Right,
-      PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::RightButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mouseDownEvent(
+      WebMouseEvent::MouseDown, WebFloatPoint(0, 0), WebFloatPoint(100, 200),
+      WebPointerProperties::Button::Right, 1,
+      PlatformEvent::Modifiers::RightButtonDown, TimeTicks::Now().InSeconds());
+  mouseDownEvent.setFrameScale(1);
   EXPECT_EQ(
       WebInputEventResult::HandledApplication,
       document().frame()->eventHandler().sendContextMenuEvent(mouseDownEvent));
@@ -387,18 +402,20 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
       "<style>.box { width: 100px; height: 100px; display: block; }</style>"
       "<a class='box' href=''>Drag me</a>");
 
-  PlatformMouseEvent mouseDownEvent(
-      IntPoint(50, 50), IntPoint(50, 50), WebPointerProperties::Button::Left,
-      PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mouseDownEvent(
+      WebInputEvent::MouseDown, WebFloatPoint(50, 50), WebFloatPoint(50, 50),
+      WebPointerProperties::Button::Left, 1,
+      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
+  mouseDownEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
-  PlatformMouseEvent mouseMoveEvent(
-      IntPoint(51, 50), IntPoint(51, 50), WebPointerProperties::Button::Left,
-      PlatformEvent::MouseMoved, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      TimeTicks::Now());
+  WebMouseEvent mouseMoveEvent(
+      WebInputEvent::MouseMove, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::Left, 1,
+      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
+  mouseMoveEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<PlatformMouseEvent>());
+      mouseMoveEvent, Vector<WebMouseEvent>());
 
   // This reproduces what might be the conditions of http://crbug.com/677916
   //
@@ -406,10 +423,11 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
   // this contrived test. Given the current code, it is unclear how the
   // dragSourceEndedAt() call could occur before a drag operation is started.
 
-  PlatformMouseEvent mouseUpEvent(
-      IntPoint(100, 50), IntPoint(200, 250), WebPointerProperties::Button::Left,
-      PlatformEvent::MouseReleased, 1, static_cast<PlatformEvent::Modifiers>(0),
-      TimeTicks::Now());
+  WebMouseEvent mouseUpEvent(
+      WebInputEvent::MouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),
+      WebPointerProperties::Button::Left, 1,
+      static_cast<PlatformEvent::Modifiers>(0), TimeTicks::Now().InSeconds());
+  mouseUpEvent.setFrameScale(1);
   document().frame()->eventHandler().dragSourceEndedAt(mouseUpEvent,
                                                        DragOperationNone);
 

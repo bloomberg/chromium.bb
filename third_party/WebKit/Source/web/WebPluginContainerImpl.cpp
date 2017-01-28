@@ -706,16 +706,16 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event) {
   // in the call to HandleEvent. See http://b/issue?id=1362948
   FrameView* parentView = toFrameView(parent());
 
-  WebMouseEventBuilder webEvent(this, LayoutItem(m_element->layoutObject()),
-                                *event);
-  if (webEvent.type() == WebInputEvent::Undefined)
+  WebMouseEventBuilder transformedEvent(
+      this, LayoutItem(m_element->layoutObject()), *event);
+  if (transformedEvent.type() == WebInputEvent::Undefined)
     return;
 
   if (event->type() == EventTypeNames::mousedown)
     focusPlugin();
 
   WebCursorInfo cursorInfo;
-  if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) !=
+  if (m_webPlugin->handleInputEvent(transformedEvent, cursorInfo) !=
       WebInputEventResult::NotHandled)
     event->setDefaultHandled();
 

@@ -180,8 +180,8 @@ bool SelectionController::handleMousePressEventSingleClick(
   // Don't restart the selection when the mouse is pressed on an
   // existing selection so we can allow for text dragging.
   if (FrameView* view = m_frame->view()) {
-    const LayoutPoint vPoint =
-        view->rootFrameToContents(event.event().position());
+    const LayoutPoint vPoint = view->rootFrameToContents(
+        flooredIntPoint(event.event().positionInRootFrame()));
     if (!extendSelection && this->selection().contains(vPoint)) {
       m_mouseDownWasSingleClickInSelection = true;
       if (!event.event().fromTouch())
@@ -245,8 +245,8 @@ bool SelectionController::handleMousePressEventSingleClick(
                                    .selectAllChildren(*innerNode)
                                    .build())
             .isCaret();
-    const bool notLeftClick = event.event().pointerProperties().button !=
-                              WebPointerProperties::Button::Left;
+    const bool notLeftClick =
+        event.event().button != WebPointerProperties::Button::Left;
     if (!isTextBoxEmpty || notLeftClick)
       isHandleVisible = event.event().fromTouch();
   }
@@ -538,7 +538,7 @@ void SelectionController::selectClosestWordFromMouseEvent(
     return;
 
   AppendTrailingWhitespace appendTrailingWhitespace =
-      (result.event().clickCount() == 2 &&
+      (result.event().clickCount == 2 &&
        m_frame->editor().isSelectTrailingWhitespaceEnabled())
           ? AppendTrailingWhitespace::ShouldAppend
           : AppendTrailingWhitespace::DontAppend;
@@ -558,7 +558,7 @@ void SelectionController::selectClosestMisspellingFromMouseEvent(
 
   selectClosestMisspellingFromHitTestResult(
       result.hitTestResult(),
-      (result.event().clickCount() == 2 &&
+      (result.event().clickCount == 2 &&
        m_frame->editor().isSelectTrailingWhitespaceEnabled())
           ? AppendTrailingWhitespace::ShouldAppend
           : AppendTrailingWhitespace::DontAppend);
@@ -733,8 +733,7 @@ bool SelectionController::handleMousePressEventDoubleClick(
   if (!m_mouseDownAllowsMultiClick)
     return handleMousePressEventSingleClick(event);
 
-  if (event.event().pointerProperties().button !=
-      WebPointerProperties::Button::Left)
+  if (event.event().button != WebPointerProperties::Button::Left)
     return false;
 
   if (selection().isRange()) {
@@ -763,8 +762,7 @@ bool SelectionController::handleMousePressEventTripleClick(
   if (!m_mouseDownAllowsMultiClick)
     return handleMousePressEventSingleClick(event);
 
-  if (event.event().pointerProperties().button !=
-      WebPointerProperties::Button::Left)
+  if (event.event().button != WebPointerProperties::Button::Left)
     return false;
 
   Node* innerNode = event.innerNode();
@@ -865,9 +863,9 @@ bool SelectionController::handleMouseReleaseEvent(
   // editing, place the caret.
   if (m_mouseDownWasSingleClickInSelection &&
       m_selectionState != SelectionState::ExtendedSelection &&
-      dragStartPos == event.event().position() && selection().isRange() &&
-      event.event().pointerProperties().button !=
-          WebPointerProperties::Button::Right) {
+      dragStartPos == flooredIntPoint(event.event().positionInRootFrame()) &&
+      selection().isRange() &&
+      event.event().button != WebPointerProperties::Button::Right) {
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
     m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
@@ -893,8 +891,7 @@ bool SelectionController::handleMouseReleaseEvent(
 
   selection().selectFrameElementInParentIfFullySelected();
 
-  if (event.event().pointerProperties().button ==
-          WebPointerProperties::Button::Middle &&
+  if (event.event().button == WebPointerProperties::Button::Middle &&
       !event.isOverLink()) {
     // Ignore handled, since we want to paste to where the caret was placed
     // anyway.
@@ -905,7 +902,7 @@ bool SelectionController::handleMouseReleaseEvent(
 }
 
 bool SelectionController::handlePasteGlobalSelection(
-    const PlatformMouseEvent& mouseEvent) {
+    const WebMouseEvent& mouseEvent) {
   // If the event was a middle click, attempt to copy global selection in after
   // the newly set caret position.
   //
@@ -922,7 +919,7 @@ bool SelectionController::handlePasteGlobalSelection(
   // down then the text is pasted just before the onclick handler runs and
   // clears the text box. So it's important this happens after the event
   // handlers have been fired.
-  if (mouseEvent.type() != PlatformEvent::MouseReleased)
+  if (mouseEvent.type() != WebInputEvent::MouseUp)
     return false;
 
   if (!m_frame->page())
@@ -1022,7 +1019,8 @@ void SelectionController::passMousePressEventToSubframe(
   // greyed out even though we're clicking on the selection.  This looks
   // really strange (having the whole frame be greyed out), so we deselect the
   // selection.
-  IntPoint p = m_frame->view()->rootFrameToContents(mev.event().position());
+  IntPoint p = m_frame->view()->rootFrameToContents(
+      flooredIntPoint(mev.event().positionInRootFrame()));
   if (!selection().contains(p))
     return;
 
@@ -1071,13 +1069,16 @@ FrameSelection& SelectionController::selection() const {
 }
 
 bool isLinkSelection(const MouseEventWithHitTestResults& event) {
-  return event.event().altKey() && event.isOverLink();
+  return (event.event().modifiers() & WebInputEvent::Modifiers::AltKey) != 0 &&
+         event.isOverLink();
 }
 
 bool isExtendingSelection(const MouseEventWithHitTestResults& event) {
   bool isMouseDownOnLinkOrImage =
       event.isOverLink() || event.hitTestResult().image();
-  return event.event().shiftKey() && !isMouseDownOnLinkOrImage;
+  return (event.event().modifiers() & WebInputEvent::Modifiers::ShiftKey) !=
+             0 &&
+         !isMouseDownOnLinkOrImage;
 }
 
 }  // namespace blink

@@ -25,7 +25,6 @@
 
 #include "platform/scroll/ScrollbarTheme.h"
 
-#include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -39,6 +38,7 @@
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarBehavior.h"
@@ -219,9 +219,10 @@ void ScrollbarTheme::paintScrollCorner(
 }
 
 bool ScrollbarTheme::shouldCenterOnThumb(const ScrollbarThemeClient& scrollbar,
-                                         const PlatformMouseEvent& evt) {
+                                         const WebMouseEvent& evt) {
   return Platform::current()->scrollbarBehavior()->shouldCenterOnThumb(
-      evt.pointerProperties().button, evt.shiftKey(), evt.altKey());
+      evt.button, evt.modifiers() & WebInputEvent::ShiftKey,
+      evt.modifiers() & WebInputEvent::AltKey);
 }
 
 void ScrollbarTheme::paintTickmarks(GraphicsContext& context,
@@ -270,8 +271,9 @@ void ScrollbarTheme::paintTickmarks(GraphicsContext& context,
 
 bool ScrollbarTheme::shouldSnapBackToDragOrigin(
     const ScrollbarThemeClient& scrollbar,
-    const PlatformMouseEvent& evt) {
-  IntPoint mousePosition = scrollbar.convertFromRootFrame(evt.position());
+    const WebMouseEvent& evt) {
+  IntPoint mousePosition = scrollbar.convertFromRootFrame(
+      flooredIntPoint(evt.positionInRootFrame()));
   mousePosition.move(scrollbar.x(), scrollbar.y());
   return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(
       mousePosition, trackRect(scrollbar),

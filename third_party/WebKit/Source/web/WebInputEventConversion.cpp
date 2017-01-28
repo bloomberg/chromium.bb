@@ -85,54 +85,6 @@ FloatPoint frameTranslation(const Widget* widget) {
           overscrollOffset.height());
 }
 
-float scaleDeltaToWindow(const Widget* widget, float delta) {
-  return delta / frameScale(widget);
-}
-
-// This method converts from the renderer's coordinate space into Blink's root
-// frame coordinate space.  It's somewhat unique in that it takes into account
-// DevTools emulation, which applies a scale and offset in the root layer (see
-// updateRootLayerTransform in WebViewImpl) as well as the overscroll effect on
-// OSX.  This is in addition to the visual viewport "pinch-zoom" transformation
-// and is one of the few cases where the visual viewport is not equal to the
-// renderer's coordinate-space.
-FloatPoint convertHitPointToRootFrame(const Widget* widget,
-                                      FloatPoint pointInRendererViewport) {
-  float scale = 1;
-  IntSize offset;
-  IntPoint visualViewport;
-  FloatSize overscrollOffset;
-  if (widget) {
-    FrameView* rootView = toFrameView(widget->root());
-    if (rootView) {
-      scale = rootView->inputEventsScaleFactor();
-      offset = rootView->inputEventsOffsetForEmulation();
-      visualViewport = flooredIntPoint(rootView->page()
-                                           ->frameHost()
-                                           .visualViewport()
-                                           .visibleRect()
-                                           .location());
-      overscrollOffset =
-          rootView->page()->frameHost().chromeClient().elasticOverscroll();
-    }
-  }
-  return FloatPoint((pointInRendererViewport.x() - offset.width()) / scale +
-                        visualViewport.x() + overscrollOffset.width(),
-                    (pointInRendererViewport.y() - offset.height()) / scale +
-                        visualViewport.y() + overscrollOffset.height());
-}
-
-unsigned toPlatformModifierFrom(WebMouseEvent::Button button) {
-  if (button == WebMouseEvent::Button::NoButton)
-    return 0;
-
-  unsigned webMouseButtonToPlatformModifier[] = {
-      PlatformEvent::LeftButtonDown, PlatformEvent::MiddleButtonDown,
-      PlatformEvent::RightButtonDown};
-
-  return webMouseButtonToPlatformModifier[static_cast<int>(button)];
-}
-
 FloatPoint convertAbsoluteLocationForLayoutObjectFloat(
     const DoublePoint& location,
     const LayoutItem layoutItem) {
@@ -172,51 +124,40 @@ void updateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
   webEvent.y = localPoint.y();
 }
 
+unsigned toWebInputEventModifierFrom(WebMouseEvent::Button button) {
+  if (button == WebMouseEvent::Button::NoButton)
+    return 0;
+
+  unsigned webMouseButtonToPlatformModifier[] = {
+      WebInputEvent::LeftButtonDown, WebInputEvent::MiddleButtonDown,
+      WebInputEvent::RightButtonDown};
+
+  return webMouseButtonToPlatformModifier[static_cast<int>(button)];
+}
+
 }  // namespace
 
-// MakePlatformMouseEvent -----------------------------------------------------
+WebMouseEvent TransformWebMouseEvent(Widget* widget,
+                                     const WebMouseEvent& event) {
+  WebMouseEvent result = event;
 
-// TODO(mustaq): Add tests for this.
-PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget,
-                                                     const WebMouseEvent& e) {
-  // FIXME: Widget is always toplevel, unless it's a popup. We may be able
-  // to get rid of this once we abstract popups into a WebKit API.
-  m_position = widget->convertFromRootFrame(
-      flooredIntPoint(convertHitPointToRootFrame(widget, IntPoint(e.x, e.y))));
-  m_globalPosition = IntPoint(e.globalX, e.globalY);
-  m_movementDelta = IntPoint(scaleDeltaToWindow(widget, e.movementX),
-                             scaleDeltaToWindow(widget, e.movementY));
-  m_modifiers = e.modifiers();
-
-  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds());
-  m_clickCount = e.clickCount;
-
-  m_pointerProperties = static_cast<WebPointerProperties>(e);
-
-  switch (e.type()) {
-    case WebInputEvent::MouseMove:
-    case WebInputEvent::MouseEnter:  // synthesize a move event
-    case WebInputEvent::MouseLeave:  // synthesize a move event
-      m_type = PlatformEvent::MouseMoved;
-      break;
-
-    case WebInputEvent::MouseDown:
-      m_type = PlatformEvent::MousePressed;
-      break;
-
-    case WebInputEvent::MouseUp:
-      m_type = PlatformEvent::MouseReleased;
-
-      // The MouseEvent spec requires that buttons indicates the state
-      // immediately after the event takes place. To ensure consistency
-      // between platforms here, we explicitly clear the button that is
-      // in the process of being released.
-      m_modifiers &= ~toPlatformModifierFrom(e.button);
-      break;
-
-    default:
-      NOTREACHED();
+  // TODO(dtapuska): Remove this translation. In the past blink has
+  // converted leaves into moves and not known about leaves. It should
+  // be educated about them. crbug.com/686196
+  if (event.type() == WebInputEvent::MouseEnter ||
+      event.type() == WebInputEvent::MouseLeave) {
+    result.setType(WebInputEvent::MouseMove);
   }
+
+  // TODO(dtapuska): Perhaps the event should be constructed correctly?
+  // crbug.com/686200
+  if (event.type() == WebInputEvent::MouseUp) {
+    result.setModifiers(event.modifiers() &
+                        ~toWebInputEventModifierFrom(event.button));
+  }
+  result.setFrameScale(frameScale(widget));
+  result.setFrameTranslate(frameTranslation(widget));
+  return result;
 }
 
 WebMouseWheelEvent TransformWebMouseWheelEvent(
@@ -258,6 +199,21 @@ WebTouchEvent TransformWebTouchEvent(Widget* widget,
 WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
                                            const LayoutItem layoutItem,
                                            const MouseEvent& event) {
+  if (event.nativeEvent()) {
+    *static_cast<WebMouseEvent*>(this) =
+        event.nativeEvent()->flattenTransform();
+    WebFloatPoint absoluteRootFrameLocation = positionInRootFrame();
+    IntPoint localPoint = roundedIntPoint(
+        layoutItem.absoluteToLocal(absoluteRootFrameLocation, UseTransforms));
+    x = localPoint.x();
+    y = localPoint.y();
+    return;
+  }
+
+  // Code below here can be removed once OOPIF ships.
+  // OOPIF will prevent synthetic events being dispatched into
+  // other frames; but for now we allow the fallback to generate
+  // WebMouseEvents from synthetic events.
   if (event.type() == EventTypeNames::mousemove)
     m_type = WebInputEvent::MouseMove;
   else if (event.type() == EventTypeNames::mouseout)
@@ -308,8 +264,6 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
   clickCount = event.detail();
 
   pointerType = WebPointerProperties::PointerType::Mouse;
-  if (event.mouseEvent())
-    pointerType = event.mouseEvent()->pointerProperties().pointerType;
 }
 
 // Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a
@@ -396,13 +350,13 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
   windowsKeyCode = event.keyCode();
 }
 
-Vector<PlatformMouseEvent> createPlatformMouseEventVector(
+Vector<WebMouseEvent> TransformWebMouseEventVector(
     Widget* widget,
     const std::vector<const WebInputEvent*>& coalescedEvents) {
-  Vector<PlatformMouseEvent> result;
+  Vector<WebMouseEvent> result;
   for (const auto& event : coalescedEvents) {
     DCHECK(WebInputEvent::isMouseEventType(event->type()));
-    result.push_back(PlatformMouseEventBuilder(
+    result.push_back(TransformWebMouseEvent(
         widget, static_cast<const WebMouseEvent&>(*event)));
   }
   return result;

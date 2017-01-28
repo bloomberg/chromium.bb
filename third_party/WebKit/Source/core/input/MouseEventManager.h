@@ -10,9 +10,9 @@
 #include "core/input/BoundaryEventDispatcher.h"
 #include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/Timer.h"
 #include "public/platform/WebInputEventResult.h"
+#include "public/platform/WebMouseEvent.h"
 #include "wtf/Allocator.h"
 #include "wtf/Time.h"
 
@@ -45,23 +45,25 @@ class CORE_EXPORT MouseEventManager final
 
   WebInputEventResult dispatchMouseEvent(EventTarget*,
                                          const AtomicString&,
-                                         const PlatformMouseEvent&,
+                                         const WebMouseEvent&,
+                                         const String& canvasRegionId,
                                          EventTarget* relatedTarget,
                                          bool checkForListener = false);
 
   WebInputEventResult setMousePositionAndDispatchMouseEvent(
       Node* targetNode,
+      const String& canvasRegionId,
       const AtomicString& eventType,
-      const PlatformMouseEvent&);
+      const WebMouseEvent&);
 
   WebInputEventResult dispatchMouseClickIfNeeded(
       const MouseEventWithHitTestResults&);
 
   WebInputEventResult dispatchDragSrcEvent(const AtomicString& eventType,
-                                           const PlatformMouseEvent&);
+                                           const WebMouseEvent&);
   WebInputEventResult dispatchDragEvent(const AtomicString& eventType,
                                         Node* target,
-                                        const PlatformMouseEvent&,
+                                        const WebMouseEvent&,
                                         DataTransfer*);
 
   // Resets the internal state of this object.
@@ -69,9 +71,12 @@ class CORE_EXPORT MouseEventManager final
 
   void sendBoundaryEvents(EventTarget* exitedTarget,
                           EventTarget* enteredTarget,
-                          const PlatformMouseEvent& mousePlatformEvent);
+                          const String& canvasRegionId,
+                          const WebMouseEvent&);
 
-  void setNodeUnderMouse(Node*, const PlatformMouseEvent&);
+  void setNodeUnderMouse(Node*,
+                         const String& canvasRegionId,
+                         const WebMouseEvent&);
 
   WebInputEventResult handleMouseFocus(
       const HitTestResult&,
@@ -83,7 +88,7 @@ class CORE_EXPORT MouseEventManager final
   void dispatchFakeMouseMoveEventSoon();
   void dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
 
-  void setLastKnownMousePosition(const PlatformMouseEvent&);
+  void setLastKnownMousePosition(const WebMouseEvent&);
 
   bool handleDragDropIfPossible(const GestureEventWithHitTestResults&);
 
@@ -103,11 +108,11 @@ class CORE_EXPORT MouseEventManager final
   // drag heuristics.
   void clearDragHeuristicState();
 
-  void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
+  void dragSourceEndedAt(const WebMouseEvent&, DragOperation);
 
   void updateSelectionForMouseDrag();
 
-  void handleMousePressEventUpdateStates(const PlatformMouseEvent&);
+  void handleMousePressEventUpdateStates(const WebMouseEvent&);
 
   // Returns whether pan is handled and resets the state on release.
   bool handleSvgPanIfNeeded(bool isReleaseEvent);
@@ -144,8 +149,9 @@ class CORE_EXPORT MouseEventManager final
 
    public:
     MouseEventBoundaryEventDispatcher(MouseEventManager*,
-                                      const PlatformMouseEvent*,
-                                      EventTarget* exitedTarget);
+                                      const WebMouseEvent*,
+                                      EventTarget* exitedTarget,
+                                      const String& canvasRegionId);
 
    protected:
     void dispatchOut(EventTarget*, EventTarget* relatedTarget) override;
@@ -163,11 +169,13 @@ class CORE_EXPORT MouseEventManager final
     void dispatch(EventTarget*,
                   EventTarget* relatedTarget,
                   const AtomicString&,
-                  const PlatformMouseEvent&,
+                  const String& canvasRegionId,
+                  const WebMouseEvent&,
                   bool checkForListener);
     Member<MouseEventManager> m_mouseEventManager;
-    const PlatformMouseEvent* m_platformMouseEvent;
+    const WebMouseEvent* m_webMouseEvent;
     Member<EventTarget> m_exitedTarget;
+    String m_canvasRegionId;
   };
 
   // If the given element is a shadow host and its root has delegatesFocus=false
@@ -218,7 +226,7 @@ class CORE_EXPORT MouseEventManager final
 
   IntPoint m_mouseDownPos;  // In our view's coords.
   TimeTicks m_mouseDownTimestamp;
-  PlatformMouseEvent m_mouseDown;
+  WebMouseEvent m_mouseDown;
 
   LayoutPoint m_dragStartPos;
 
