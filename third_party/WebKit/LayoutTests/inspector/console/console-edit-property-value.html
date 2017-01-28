@@ -49,7 +49,7 @@ var test = function()
     function getValueElements()
     {
         var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
-        return messageElement.querySelectorAll("::shadow .value");
+        return messageElement.querySelector(".console-message-text *").shadowRoot.querySelectorAll(".value");
     }
 
     function doubleClickTypeAndEnter(node, text)
@@ -61,7 +61,7 @@ var test = function()
         InspectorTest.addResult("Node was hidden after dblclick: " + node.classList.contains("hidden"));
 
         var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
-        var editPrompt = messageElement.querySelector("::shadow .text-prompt");
+        var editPrompt = messageElement.querySelector(".console-message-text *").shadowRoot.querySelector(".text-prompt");
         editPrompt.textContent = text;
         editPrompt.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
     }

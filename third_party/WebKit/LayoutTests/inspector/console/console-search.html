@@ -43,7 +43,7 @@ function test()
 
     function dumpMatches()
     {
-        var matches = document.querySelectorAll("html /deep/ .highlighted-search-result");
+        var matches = consoleView.element.childTextNodes().filter(node => node.parentElement.classList.contains("highlighted-search-result")).map(node => node.parentElement);
         addResult("number of visible matches: " + matches.length);
         for (var i = 0; i < matches.length; ++i)
             addResult("  match " + i + ": " + matches[i].className);
@@ -164,8 +164,8 @@ function test()
             function dumpElements(callback)
             {
                 consoleView._searchableView.handleFindNextShortcut();
-                var currentResultElem = document.querySelector("html /deep/ .current-search-result");
-                addResult("matched tree element: " + currentResultElem.innerHTML);
+                var currentResultElem = consoleView.element.childTextNodes().filter(node => node.parentElement.classList.contains("current-search-result"))[0];
+                addResult("matched tree element: " + currentResultElem.textContent);
                 callback();
             }
 

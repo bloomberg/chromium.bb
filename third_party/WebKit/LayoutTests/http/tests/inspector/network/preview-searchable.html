@@ -14,10 +14,10 @@ function test()
             view.showSearchField();
             InspectorTest.addResult("Should have found and highlighted all: " + search);
 
-            var foundItems = view.element.querySelectorAll("* /deep/ .highlighted-search-result");
+            var foundItems = view.element.childTextNodes().filter(node => node.parentElement.classList.contains("highlighted-search-result")).map(node => node.parentElement);
             InspectorTest.addResult("Normal search found " + foundItems.length + " results in dom.");
 
-            foundItems = view.element.querySelectorAll("* /deep/ .cm-search-highlight-start");
+            foundItems = view.element.childTextNodes().filter(node => node.parentElement.classList.contains("cm-search-highlight-start")).map(node => node.parentElement);
             InspectorTest.addResult("CodeMirror search found " + foundItems.length + " results in dom.");
             InspectorTest.addResult("");
         }
