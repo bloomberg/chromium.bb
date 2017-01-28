@@ -113,6 +113,7 @@
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEventResult.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -2710,6 +2711,7 @@ void RenderViewImpl::OnDiscardInputEvent(
 
   if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
     NotifyInputEventHandled(input_event->type(),
+                            blink::WebInputEventResult::NotHandled,
                             INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   }
 

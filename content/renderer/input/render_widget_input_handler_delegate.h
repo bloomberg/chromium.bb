@@ -9,6 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack.h"
+#include "third_party/WebKit/public/platform/WebInputEventResult.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -56,6 +57,7 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   // (DISPATCH_TYPE_*_NOTIFY_MAIN) of |handled_type| has been processed
   // by the main thread.
   virtual void NotifyInputEventHandled(blink::WebInputEvent::Type handled_type,
+                                       blink::WebInputEventResult result,
                                        InputEventAckState ack_result) = 0;
 
   // Notifies the delegate of the |input_handler| managing it.

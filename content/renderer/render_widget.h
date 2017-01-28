@@ -263,6 +263,7 @@ class CONTENT_EXPORT RenderWidget
   void OnDidOverscroll(const ui::DidOverscrollParams& params) override;
   void OnInputEventAck(std::unique_ptr<InputEventAck> input_event_ack) override;
   void NotifyInputEventHandled(blink::WebInputEvent::Type handled_type,
+                               blink::WebInputEventResult result,
                                InputEventAckState ack_result) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
   void ShowVirtualKeyboard() override;

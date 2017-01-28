@@ -191,8 +191,9 @@ void InputHandlerManager::ObserveGestureEventAndResultOnCompositorThread(
 void InputHandlerManager::NotifyInputEventHandledOnMainThread(
     int routing_id,
     blink::WebInputEvent::Type type,
+    blink::WebInputEventResult result,
     InputEventAckState ack_result) {
-  client_->NotifyInputEventHandled(routing_id, type, ack_result);
+  client_->NotifyInputEventHandled(routing_id, type, result, ack_result);
 }
 
 void InputHandlerManager::ProcessRafAlignedInputOnMainThread(int routing_id) {

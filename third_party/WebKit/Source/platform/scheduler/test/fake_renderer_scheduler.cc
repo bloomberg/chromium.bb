@@ -69,7 +69,8 @@ void FakeRendererScheduler::DidHandleInputEventOnCompositorThread(
     InputEventState event_state) {}
 
 void FakeRendererScheduler::DidHandleInputEventOnMainThread(
-    const blink::WebInputEvent& web_input_event) {}
+    const blink::WebInputEvent& web_input_event,
+    WebInputEventResult result) {}
 
 void FakeRendererScheduler::DidAnimateForInputOnCompositorThread() {}
 

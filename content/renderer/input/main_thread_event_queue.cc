@@ -231,13 +231,14 @@ void MainThreadEventQueue::DispatchSingleEvent() {
 }
 
 void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
+                                        blink::WebInputEventResult result,
                                         InputEventAckState ack_result) {
   if (in_flight_event_) {
     for (const auto id : in_flight_event_->blockingCoalescedEventIds()) {
       client_->SendInputEventAck(routing_id_, type, ack_result, id);
       if (renderer_scheduler_) {
         renderer_scheduler_->DidHandleInputEventOnMainThread(
-            in_flight_event_->event());
+            in_flight_event_->event(), result);
       }
     }
   }

@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEventResult.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {
@@ -30,6 +31,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void SetInputHandlerManager(InputHandlerManager*) = 0;
   virtual void NotifyInputEventHandled(int routing_id,
                                        blink::WebInputEvent::Type type,
+                                       blink::WebInputEventResult result,
                                        InputEventAckState ack_result) = 0;
   virtual void ProcessRafAlignedInput(int routing_id) = 0;
 

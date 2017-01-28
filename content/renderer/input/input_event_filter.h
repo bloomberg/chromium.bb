@@ -73,6 +73,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
 
   void NotifyInputEventHandled(int routing_id,
                                blink::WebInputEvent::Type type,
+                               blink::WebInputEventResult result,
                                InputEventAckState ack_result) override;
   void ProcessRafAlignedInput(int routing_id) override;
 

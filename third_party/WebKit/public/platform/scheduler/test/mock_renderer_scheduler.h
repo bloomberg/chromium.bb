@@ -37,7 +37,8 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD0(DidCommitFrameToCompositor, void());
   MOCK_METHOD2(DidHandleInputEventOnCompositorThread,
                void(const WebInputEvent&, InputEventState));
-  MOCK_METHOD1(DidHandleInputEventOnMainThread, void(const WebInputEvent&));
+  MOCK_METHOD2(DidHandleInputEventOnMainThread,
+               void(const WebInputEvent&, WebInputEventResult));
   MOCK_METHOD0(DidAnimateForInputOnCompositorThread, void());
   MOCK_METHOD0(OnRendererBackgrounded, void());
   MOCK_METHOD0(OnRendererForegrounded, void());
