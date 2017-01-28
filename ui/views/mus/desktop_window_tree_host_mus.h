@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/mus/mus_client_observer.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -27,6 +28,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
     : public DesktopWindowTreeHost,
       public MusClientObserver,
       public WidgetObserver,
+      public aura::WindowObserver,
       public aura::WindowTreeHostMus,
       public aura::EnvObserver {
  public:
@@ -129,7 +131,12 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // WidgetObserver:
   void OnWidgetActivationChanged(Widget* widget, bool active) override;
 
-  // WindowTreeHostMus:
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+
+  // aura::WindowTreeHostMus:
   void ShowImpl() override;
   void HideImpl() override;
   void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) override;

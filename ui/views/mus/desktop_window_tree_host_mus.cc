@@ -22,6 +22,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/mus_property_mirror.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -192,6 +193,7 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
   aura::Env::GetInstance()->AddObserver(this);
   MusClient::Get()->AddObserver(this);
   native_widget_delegate_->AsWidget()->AddObserver(this);
+  desktop_native_widget_aura_->content_window()->AddObserver(this);
   // DesktopNativeWidgetAura registers the association between |content_window_|
   // and Widget, but code may also want to go from the root (window()) to the
   // Widget. This call enables that.
@@ -206,6 +208,7 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
   // the cursor-client needs to be unset on the root-window before
   // |cursor_manager_| is destroyed.
   aura::client::SetCursorClient(window(), nullptr);
+  desktop_native_widget_aura_->content_window()->RemoveObserver(this);
   native_widget_delegate_->AsWidget()->RemoveObserver(this);
   MusClient::Get()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
@@ -723,6 +726,22 @@ void DesktopWindowTreeHostMus::OnWidgetActivationChanged(Widget* widget,
   // instead of asking the Widget to change the activation and have the widget
   // then tell us the activation has changed. But if we do that, focus breaks.
   is_active_ = active;
+}
+
+void DesktopWindowTreeHostMus::OnWindowPropertyChanged(aura::Window* window,
+                                                       const void* key,
+                                                       intptr_t old) {
+  DCHECK_EQ(window, desktop_native_widget_aura_->content_window());
+  DCHECK(!window->GetRootWindow() || this->window() == window->GetRootWindow());
+  if (!this->window())
+    return;
+
+  // Allow mus clients to mirror widget window properties to their root windows.
+  MusPropertyMirror* property_mirror = MusClient::Get()->mus_property_mirror();
+  if (property_mirror) {
+    property_mirror->MirrorPropertyFromWidgetWindowToRootWindow(
+        window, this->window(), key);
+  }
 }
 
 void DesktopWindowTreeHostMus::ShowImpl() {

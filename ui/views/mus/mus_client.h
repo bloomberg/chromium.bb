@@ -45,6 +45,7 @@ class WMState;
 namespace views {
 
 class MusClientObserver;
+class MusPropertyMirror;
 class PointerWatcherEventRouter;
 class ScreenMus;
 
@@ -58,8 +59,7 @@ class MusClientTestApi;
 
 // MusClient establishes a connection to mus and sets up necessary state so that
 // aura and views target mus. This class is useful for typical clients, not the
-// WindowManager. Most clients don't create this directly, rather use
-// AuraInit.
+// WindowManager. Most clients don't create this directly, rather use AuraInit.
 class VIEWS_MUS_EXPORT MusClient
     : public aura::WindowTreeClientDelegate,
       public ScreenMusDelegate,
@@ -104,6 +104,11 @@ class VIEWS_MUS_EXPORT MusClient
   void AddObserver(MusClientObserver* observer);
   void RemoveObserver(MusClientObserver* observer);
 
+  void SetMusPropertyMirror(std::unique_ptr<MusPropertyMirror> mirror);
+  MusPropertyMirror* mus_property_mirror() {
+    return mus_property_mirror_.get();
+  }
+
  private:
   friend class AuraInit;
   friend class test::MusClientTestApi;
@@ -140,6 +145,7 @@ class VIEWS_MUS_EXPORT MusClient
   std::unique_ptr<ScreenMus> screen_;
 
   std::unique_ptr<aura::PropertyConverter> property_converter_;
+  std::unique_ptr<MusPropertyMirror> mus_property_mirror_;
 
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 

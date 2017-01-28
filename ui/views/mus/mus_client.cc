@@ -26,6 +26,7 @@
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
+#include "ui/views/mus/mus_property_mirror.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
@@ -227,6 +228,10 @@ void MusClient::AddObserver(MusClientObserver* observer) {
 
 void MusClient::RemoveObserver(MusClientObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+void MusClient::SetMusPropertyMirror(
+    std::unique_ptr<MusPropertyMirror> mirror) {
+  mus_property_mirror_ = std::move(mirror);
 }
 
 void MusClient::OnEmbed(
