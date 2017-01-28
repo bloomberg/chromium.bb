@@ -105,6 +105,8 @@
          force_discrete_gpu)                                 \
   GPU_OP(FORCE_INTEGRATED_GPU,                               \
          force_integrated_gpu)                               \
+  GPU_OP(FORCE_UPDATE_SCISSOR_STATE_WHEN_BINDING_FBO0,       \
+         force_update_scissor_state_when_binding_fbo0)       \
   GPU_OP(GET_FRAG_DATA_INFO_BUG,                             \
          get_frag_data_info_bug)                             \
   GPU_OP(GL_CLEAR_BROKEN,                                    \

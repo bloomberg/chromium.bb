@@ -839,7 +839,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Get the service side ID for the bound draw framebuffer.
   // If it's back buffer, 0 is returned.
-  GLuint GetBoundDrawFramebufferServiceId();
+  GLuint GetBoundDrawFramebufferServiceId() const;
 
   // Get the format/type of the currently bound frame buffer (either FBO or
   // regular back buffer).
@@ -4457,7 +4457,7 @@ GLuint GLES2DecoderImpl::GetBoundReadFramebufferServiceId() {
   return 0;
 }
 
-GLuint GLES2DecoderImpl::GetBoundDrawFramebufferServiceId() {
+GLuint GLES2DecoderImpl::GetBoundDrawFramebufferServiceId() const {
   Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (framebuffer) {
     return framebuffer->service_id();
@@ -5613,14 +5613,16 @@ uint32_t GLES2DecoderImpl::GetAndClearBackbufferClearBitsForTest() {
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {
-  if (workarounds().restore_scissor_on_fbo_change)
-    state_.fbo_binding_for_scissor_workaround_dirty = true;
+  state_.fbo_binding_for_scissor_workaround_dirty = true;
 }
 
 // Called after the FBO is checked for completeness.
 void GLES2DecoderImpl::OnUseFramebuffer() const {
-  if (state_.fbo_binding_for_scissor_workaround_dirty) {
-    state_.fbo_binding_for_scissor_workaround_dirty = false;
+  if (!state_.fbo_binding_for_scissor_workaround_dirty)
+    return;
+  state_.fbo_binding_for_scissor_workaround_dirty = false;
+
+  if (workarounds().restore_scissor_on_fbo_change) {
     // The driver forgets the correct scissor when modifying the FBO binding.
     glScissor(state_.scissor_x,
               state_.scissor_y,
@@ -5630,6 +5632,26 @@ void GLES2DecoderImpl::OnUseFramebuffer() const {
     // crbug.com/222018 - Also on QualComm, the flush here avoids flicker,
     // it's unclear how this bug works.
     glFlush();
+  }
+
+  if (workarounds().force_update_scissor_state_when_binding_fbo0 &&
+      GetBoundDrawFramebufferServiceId() == 0) {
+    // The theory is that FBO0 keeps some internal (in HW regs maybe?) scissor
+    // test state, but the driver forgets to update it with GL_SCISSOR_TEST
+    // when FBO0 gets bound. (So it stuck with whatever state we last switched
+    // from it.)
+    // If the internal scissor test state was enabled, it does update its
+    // internal scissor rect with GL_SCISSOR_BOX though.
+    if (state_.enable_flags.cached_scissor_test) {
+      // The driver early outs if the new state matches previous state so some
+      // shake up is needed.
+      glDisable(GL_SCISSOR_TEST);
+      glEnable(GL_SCISSOR_TEST);
+    } else {
+      // Ditto.
+      glEnable(GL_SCISSOR_TEST);
+      glDisable(GL_SCISSOR_TEST);
+    }
   }
 }
 

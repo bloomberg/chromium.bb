@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.28",
+  "version": "9.29",
   "entries": [
     {
       "id": 1,
@@ -2322,6 +2322,16 @@ LONG_STRING_CONST(
       "gl_renderer": "Mali-G.*",
       "features": [
         "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 214,
+      "description": "Certain versions of Qualcomm driver don't setup scissor state correctly when FBO0 is bound.",
+      "cr_bugs": [670607],
+      "gl_vendor": "Qualcomm.*",
+      "machine_model_name": ["Nexus 7"],
+      "features": [
+        "force_update_scissor_state_when_binding_fbo0"
       ]
     }
   ]
