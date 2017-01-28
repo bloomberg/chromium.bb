@@ -129,6 +129,9 @@ class FileNetLogObserver::FileWriter {
   // Deletes all netlog files. It is not valid to call any method of
   // FileNetLogObserver after DeleteAllFiles().
   virtual void DeleteAllFiles() = 0;
+
+  void FlushThenStop(scoped_refptr<WriteQueue> write_queue,
+                     std::unique_ptr<base::Value> polled_data);
 };
 
 // This implementation of FileWriter is used when the observer is in bounded
@@ -299,14 +302,10 @@ void FileNetLogObserver::StartObservingHelper(
 
 void FileNetLogObserver::StopObserving(std::unique_ptr<base::Value> polled_data,
                                        const base::Closure& callback) {
-  file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FileNetLogObserver::FileWriter::Flush,
-                            base::Unretained(file_writer_), write_queue_));
-
   file_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&FileNetLogObserver::FileWriter::Stop,
-                 base::Unretained(file_writer_), base::Passed(&polled_data)),
+      FROM_HERE, base::Bind(&FileNetLogObserver::FileWriter::FlushThenStop,
+                            base::Unretained(file_writer_), write_queue_,
+                            base::Passed(&polled_data)),
       callback);
 
   net_log()->DeprecatedRemoveObserver(this);
@@ -362,6 +361,13 @@ void FileNetLogObserver::WriteQueue::SwapQueue(EventQueue* local_queue) {
 FileNetLogObserver::WriteQueue::~WriteQueue() {}
 
 FileNetLogObserver::FileWriter::~FileWriter() {}
+
+void FileNetLogObserver::FileWriter::FlushThenStop(
+    scoped_refptr<FileNetLogObserver::WriteQueue> write_queue,
+    std::unique_ptr<base::Value> polled_data) {
+  Flush(write_queue);
+  Stop(std::move(polled_data));
+}
 
 FileNetLogObserver::BoundedFileWriter::BoundedFileWriter(
     const base::FilePath& directory,
