@@ -45,4 +45,25 @@ TEST(ICCProfile, SRGB) {
                                    sk_color_space_from_color_space.get()));
 }
 
+TEST(ICCProfile, Equality) {
+  ICCProfile spin_profile = ICCProfileForTestingColorSpin();
+  ICCProfile adobe_profile = ICCProfileForTestingAdobeRGB();
+  EXPECT_TRUE(spin_profile == spin_profile);
+  EXPECT_FALSE(spin_profile != spin_profile);
+  EXPECT_FALSE(spin_profile == adobe_profile);
+  EXPECT_TRUE(spin_profile != adobe_profile);
+
+  gfx::ColorSpace spin_space = spin_profile.GetColorSpace();
+  gfx::ColorSpace adobe_space = adobe_profile.GetColorSpace();
+  EXPECT_TRUE(spin_space == spin_space);
+  EXPECT_FALSE(spin_space != spin_space);
+  EXPECT_FALSE(spin_space == adobe_space);
+  EXPECT_TRUE(spin_space != adobe_space);
+
+  EXPECT_TRUE(spin_profile == ICCProfile::FromColorSpace(spin_space));
+  EXPECT_FALSE(spin_profile != ICCProfile::FromColorSpace(spin_space));
+  EXPECT_FALSE(spin_profile == ICCProfile::FromColorSpace(adobe_space));
+  EXPECT_TRUE(spin_profile != ICCProfile::FromColorSpace(adobe_space));
+}
+
 }  // namespace gfx
