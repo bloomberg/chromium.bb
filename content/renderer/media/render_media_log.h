@@ -69,8 +69,9 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   // For enforcing max 1 pending send.
   bool ipc_send_pending_;
 
-  // Limits the number buffered extents changed events we send over IPC to one.
+  // Limits the number of events we send over IPC to one.
   std::unique_ptr<media::MediaLogEvent> last_buffered_extents_changed_event_;
+  std::unique_ptr<media::MediaLogEvent> last_duration_changed_event_;
 
   // Holds a copy of the most recent MEDIA_ERROR_LOG_ENTRY, if any.
   std::unique_ptr<media::MediaLogEvent> last_media_error_log_entry_;

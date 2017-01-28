@@ -566,6 +566,10 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   last_packet_timestamp_ = buffer->timestamp();
   last_packet_duration_ = buffer->duration();
 
+  const base::TimeDelta new_duration = last_packet_timestamp_;
+  if (new_duration > duration_ || duration_ == kNoTimestamp)
+    duration_ = new_duration;
+
   buffer_queue_.Push(buffer);
   SatisfyPendingRead();
 }
@@ -751,10 +755,6 @@ void FFmpegDemuxerStream::SetLiveness(Liveness liveness) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(liveness_, LIVENESS_UNKNOWN);
   liveness_ = liveness;
-}
-
-base::TimeDelta FFmpegDemuxerStream::GetElapsedTime() const {
-  return ConvertStreamTimestamp(stream_->time_base, stream_->cur_dts);
 }
 
 Ranges<base::TimeDelta> FFmpegDemuxerStream::GetBufferedRanges() const {
@@ -1445,6 +1445,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   // Good to go: set the duration and bitrate and notify we're done
   // initializing.
   host_->SetDuration(max_duration);
+  duration_ = max_duration;
   duration_known_ = (max_duration != kInfiniteDuration);
 
   int64_t filesize_in_bytes = 0;
@@ -1706,25 +1707,23 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   if (result < 0 || IsMaxMemoryUsageReached()) {
     DVLOG(1) << __func__ << " result=" << result
              << " IsMaxMemoryUsageReached=" << IsMaxMemoryUsageReached();
-    // Update the duration based on the highest elapsed time across all streams
-    // if it was previously unknown.
-    if (!duration_known_) {
-      base::TimeDelta max_duration;
+    // Update the duration based on the highest elapsed time across all streams.
+    base::TimeDelta max_duration;
+    for (const auto& stream : streams_) {
+      if (!stream)
+        continue;
 
-      for (const auto& stream : streams_) {
-        if (!stream)
-          continue;
-
-        base::TimeDelta duration = stream->GetElapsedTime();
-        if (duration != kNoTimestamp && duration > max_duration)
-          max_duration = duration;
-      }
-
-      if (max_duration > base::TimeDelta()) {
-        host_->SetDuration(max_duration);
-        duration_known_ = true;
-      }
+      base::TimeDelta duration = stream->duration();
+      if (duration != kNoTimestamp && duration > max_duration)
+        max_duration = duration;
     }
+
+    if (duration_ == kInfiniteDuration || max_duration > duration_) {
+      host_->SetDuration(max_duration);
+      duration_known_ = true;
+      duration_ = max_duration;
+    }
+
     // If we have reached the end of stream, tell the downstream filters about
     // the event.
     StreamHasEnded();
@@ -1753,6 +1752,15 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     FFmpegDemuxerStream* demuxer_stream = streams_[packet->stream_index].get();
     if (demuxer_stream->enabled())
       demuxer_stream->EnqueuePacket(std::move(packet));
+
+    // If duration estimate was incorrect, update it and tell higher layers.
+    if (duration_known_) {
+      const base::TimeDelta duration = demuxer_stream->duration();
+      if (duration != kNoTimestamp && duration > duration_) {
+        duration_ = duration;
+        host_->SetDuration(duration_);
+      }
+    }
   }
 
   // Keep reading until we've reached capacity.

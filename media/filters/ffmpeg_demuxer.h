@@ -123,10 +123,6 @@ class FFmpegDemuxerStream : public DemuxerStream {
   // Returns the range of buffered data in this stream.
   Ranges<base::TimeDelta> GetBufferedRanges() const;
 
-  // Returns elapsed time based on the already queued packets.
-  // Used to determine stream duration when it's not known ahead of time.
-  base::TimeDelta GetElapsedTime() const;
-
   // Returns true if this stream has capacity for additional data.
   bool HasAvailableCapacity();
 
@@ -354,6 +350,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Set if we know duration of the audio stream. Used when processing end of
   // stream -- at this moment we definitely know duration.
   bool duration_known_;
+  base::TimeDelta duration_;
 
   // FFmpegURLProtocol implementation and corresponding glue bits.
   std::unique_ptr<BlockingUrlProtocol> url_protocol_;

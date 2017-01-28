@@ -16,6 +16,6 @@ async_test(function(t) {
     var mediaFile = findMediaFile("video", "content/test");
     var mimeType = mimeTypeForFile(mediaFile);
 
-    video.src = "http://127.0.0.1:8000/resources/load-and-stall.cgi?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000";
+    video.src = "http://127.0.0.1:8000/resources/load-and-stall.php?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000";
 });
 </script>

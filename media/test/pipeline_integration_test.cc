@@ -834,7 +834,8 @@ class BasicMSEPlaybackTest
 TEST_P(BasicPlaybackTest, PlayToEnd) {
   PlaybackTestData data = GetParam();
 
-  ASSERT_EQ(PIPELINE_OK, Start(data.filename, kClockless));
+  ASSERT_EQ(PIPELINE_OK,
+            Start(data.filename, kClockless | kUnreliableDuration));
   EXPECT_EQ(data.start_time_ms, demuxer_->GetStartTime().InMilliseconds());
   EXPECT_EQ(data.duration_ms, pipeline_->GetMediaDuration().InMilliseconds());
 
@@ -875,7 +876,7 @@ const PlaybackTestData kADTSTests[] = {
 };
 
 // TODO(chcunningham): Migrate other basic playback tests to TEST_P.
-INSTANTIATE_TEST_CASE_P(PropritaryCodecs,
+INSTANTIATE_TEST_CASE_P(ProprietaryCodecs,
                         BasicPlaybackTest,
                         testing::ValuesIn(kADTSTests));
 
@@ -887,7 +888,7 @@ const MSEPlaybackTestData kMediaSourceADTSTests[] = {
 };
 
 // TODO(chcunningham): Migrate other basic MSE playback tests to TEST_P.
-INSTANTIATE_TEST_CASE_P(PropritaryCodecs,
+INSTANTIATE_TEST_CASE_P(ProprietaryCodecs,
                         BasicMSEPlaybackTest,
                         testing::ValuesIn(kMediaSourceADTSTests));
 
@@ -2546,7 +2547,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus441kHz) {
 // Ensures audio-only playback with missing or negative timestamps works.  Tests
 // the common live-streaming case for chained ogg.  See http://crbug.com/396864.
 TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
-  ASSERT_EQ(PIPELINE_OK, Start("double-sfx.ogg"));
+  ASSERT_EQ(PIPELINE_OK, Start("double-sfx.ogg", kUnreliableDuration));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
@@ -2555,7 +2556,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
 // Ensures audio-video playback with missing or negative timestamps fails softly
 // instead of crashing.  See http://crbug.com/396864.
 TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
-  ASSERT_EQ(PIPELINE_OK, Start("double-bear.ogv"));
+  ASSERT_EQ(PIPELINE_OK, Start("double-bear.ogv", kUnreliableDuration));
   Play();
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
   ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());

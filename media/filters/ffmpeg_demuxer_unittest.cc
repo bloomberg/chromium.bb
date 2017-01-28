@@ -111,7 +111,7 @@ class FFmpegDemuxerTest : public testing::Test {
                                  media::PipelineStatus expected_pipeline_status,
                                  base::Time timeline_offset) {
     if (expected_pipeline_status == PIPELINE_OK)
-      EXPECT_CALL(host_, SetDuration(_));
+      EXPECT_CALL(host_, SetDuration(_)).Times(AnyNumber());
     WaitableMessageLoopEvent event;
     demuxer_->Initialize(&host_, event.GetPipelineStatusCB(), enable_text);
     demuxer_->timeline_offset_ = timeline_offset;
@@ -223,8 +223,10 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
   // Accessor to demuxer internals.
-  void set_duration_known(bool duration_known) {
+  void SetDurationKnown(bool duration_known) {
     demuxer_->duration_known_ = duration_known;
+    if (!duration_known)
+      demuxer_->duration_ = kInfiniteDuration;
   }
 
   bool IsStreamStopped(DemuxerStream::Type type) {
@@ -815,8 +817,8 @@ TEST_F(FFmpegDemuxerTest, Read_EndOfStream_NoDuration) {
   // Verify that end of stream buffers are created.
   CreateDemuxer("bear-320x240.webm");
   InitializeDemuxer();
-  set_duration_known(false);
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2767)));
+  SetDurationKnown(false);
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2744)));
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::VIDEO));
 }
@@ -825,8 +827,8 @@ TEST_F(FFmpegDemuxerTest, Read_EndOfStream_NoDuration_VideoOnly) {
   // Verify that end of stream buffers are created.
   CreateDemuxer("bear-320x240-video-only.webm");
   InitializeDemuxer();
-  set_duration_known(false);
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2736)));
+  SetDurationKnown(false);
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2703)));
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::VIDEO));
 }
 
@@ -834,8 +836,8 @@ TEST_F(FFmpegDemuxerTest, Read_EndOfStream_NoDuration_AudioOnly) {
   // Verify that end of stream buffers are created.
   CreateDemuxer("bear-320x240-audio-only.webm");
   InitializeDemuxer();
-  set_duration_known(false);
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2767)));
+  SetDurationKnown(false);
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2744)));
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
 
@@ -844,8 +846,8 @@ TEST_F(FFmpegDemuxerTest, Read_EndOfStream_NoDuration_UnsupportedStream) {
   // if there are streams in the file that we don't support.
   CreateDemuxer("vorbis_audio_wmv_video.mkv");
   InitializeDemuxer();
-  set_duration_known(false);
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(1014)));
+  SetDurationKnown(false);
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(991)));
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
 

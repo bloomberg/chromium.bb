@@ -68,7 +68,8 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     kNormal = 0,
     kHashed = 1,
     kClockless = 2,
-    kExpectDemuxerFailure = 4
+    kExpectDemuxerFailure = 4,
+    kUnreliableDuration = 8,
   };
 
   // Starts the pipeline with a file specified by |filename|, optionally with a

@@ -17,7 +17,7 @@
         });
         var mediaFile = findMediaFile("video", "content/test");
         var mimeType = mimeTypeForFile(mediaFile);
-        video.src = "/security/resources/redir.php?url=" + encodeURIComponent("http://localhost:8000/resources/load-and-stall.cgi?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000");
+        video.src = "/security/resources/redir.php?url=" + encodeURIComponent("http://localhost:8000/resources/load-and-stall.php?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000");
         video.load();
     </script>
 </body>

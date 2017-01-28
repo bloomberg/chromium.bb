@@ -131,7 +131,7 @@ async_test(t => {
     // URL will load part of the file, pause for 8 seconds, then load the rest.
     // The delay of 8 seconds is chosen to reduce flakiness in waiting for the
     // stalled event, which should arrive after roughly 3 seconds of inactivity.
-    video.src = "http://127.0.0.1:8000/resources/load-and-stall.cgi?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000&stallFor=8";
+    video.src = "http://127.0.0.1:8000/resources/load-and-stall.php?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000&stallFor=8";
 
 }, "Stalled download pauses playback. When download resumes playback continues. Verify events and readyStates.");
 </script>
