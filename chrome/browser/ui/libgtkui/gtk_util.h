@@ -83,6 +83,31 @@ void ClearAuraTransientParent(GtkWidget* dialog);
 #define GTK_STATE_FLAG_VISITED static_cast<GtkStateFlags>(1 << 10)
 #define GTK_STATE_FLAG_CHECKED static_cast<GtkStateFlags>(1 << 11)
 
+class CairoSurface {
+ public:
+  // Attaches a cairo surface to an SkBitmap so that GTK can render
+  // into it.  |bitmap| must outlive this CairoSurface.
+  explicit CairoSurface(SkBitmap& bitmap);
+
+  // Creates a new cairo surface with the given size.  The memory for
+  // this surface is deallocated when this CairoSurface is destroyed.
+  explicit CairoSurface(const gfx::Size& size);
+
+  ~CairoSurface();
+
+  // Get the drawing context for GTK to use.
+  cairo_t* cairo() { return cairo_; }
+
+  // If |only_frame_pixels| is false, returns the average of all
+  // pixels in the surface, otherwise returns the average of only the
+  // edge pixels.
+  SkColor GetAveragePixelValue(bool only_frame_pixels);
+
+ private:
+  cairo_surface_t* surface_;
+  cairo_t* cairo_;
+};
+
 // Returns true iff the runtime version of Gtk used meets
 // |major|.|minor|.|micro|.
 bool GtkVersionCheck(int major, int minor = 0, int micro = 0);

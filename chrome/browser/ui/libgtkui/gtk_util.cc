@@ -207,6 +207,60 @@ void ClearAuraTransientParent(GtkWidget* dialog) {
 }
 
 #if GTK_MAJOR_VERSION > 2
+CairoSurface::CairoSurface(SkBitmap& bitmap)
+    : surface_(cairo_image_surface_create_for_data(
+          static_cast<unsigned char*>(bitmap.getAddr(0, 0)),
+          CAIRO_FORMAT_ARGB32,
+          bitmap.width(),
+          bitmap.height(),
+          cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, bitmap.width()))),
+      cairo_(cairo_create(surface_)) {}
+
+CairoSurface::CairoSurface(const gfx::Size& size)
+    : surface_(cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                          size.width(),
+                                          size.height())),
+      cairo_(cairo_create(surface_)) {}
+
+CairoSurface::~CairoSurface() {
+  cairo_destroy(cairo_);
+  cairo_surface_destroy(surface_);
+}
+
+SkColor CairoSurface::GetAveragePixelValue(bool only_frame_pixels) {
+  int num_samples = 0;
+  long a = 0, r = 0, g = 0, b = 0;
+  SkColor* data =
+      reinterpret_cast<SkColor*>(cairo_image_surface_get_data(surface_));
+  int width = cairo_image_surface_get_width(surface_);
+  int height = cairo_image_surface_get_height(surface_);
+  auto accumulate = [&](int x, int y) mutable {
+    SkColor color = data[x * width + y];
+    int alpha = SkColorGetA(color);
+    a += alpha;
+    r += alpha * SkColorGetR(color);
+    g += alpha * SkColorGetG(color);
+    b += alpha * SkColorGetB(color);
+    num_samples++;
+  };
+  if (width == 1 || height == 1 || !only_frame_pixels) {
+    // Count every pixel in the surface.
+    for (int x = 0; x < width; x++)
+      for (int y = 0; y < height; y++)
+        accumulate(x, y);
+  } else {
+    // Count the pixels in the top and bottom rows.
+    for (int x = 0; x < width; x++)
+      for (int y : {0, height - 1})
+        accumulate(x, y);
+    // Count the pixels in the left and right columns.
+    for (int x : {0, width - 1})
+      for (int y = 1; y < height - 1; y++)
+        accumulate(x, y);
+  }
+  return SkColorSetARGB(a / num_samples, r / a, g / a, b / a);
+}
+
 bool GtkVersionCheck(int major, int minor, int micro) {
   static int actual_major = gtk_get_major_version();
   if (actual_major > major)
@@ -405,31 +459,6 @@ void AddBorders(GtkStyleContext* context) {
   ApplyCssToContext(context, provider);
 }
 
-// A 1x1 cairo surface that GTK can render into.
-class PixelSurface {
- public:
-  PixelSurface()
-      : surface_(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1)),
-        cairo_(cairo_create(surface_)) {}
-
-  ~PixelSurface() {
-    cairo_destroy(cairo_);
-    cairo_surface_destroy(surface_);
-  }
-
-  // Get the drawing context for GTK to use.
-  cairo_t* cairo() { return cairo_; }
-
-  // Get the color value of the single pixel.
-  SkColor GetPixelValue() {
-    return *reinterpret_cast<SkColor*>(cairo_image_surface_get_data(surface_));
-  }
-
- private:
-  cairo_surface_t* surface_;
-  cairo_t* cairo_;
-};
-
 void RenderBackground(const gfx::Size& size,
                       cairo_t* cr,
                       GtkStyleContext* context) {
@@ -437,6 +466,16 @@ void RenderBackground(const gfx::Size& size,
     return;
   RenderBackground(size, cr, gtk_style_context_get_parent(context));
   gtk_render_background(context, cr, 0, 0, size.width(), size.height());
+}
+
+gfx::Size GetMinimumWidgetSize(GtkStyleContext* context) {
+  if (!GtkVersionCheck(3, 20))
+    return gfx::Size(1, 1);
+  int w = 1, h = 1;
+  gtk_style_context_get(context, gtk_style_context_get_state(context),
+                        "min-width", &w, "min-height", &h, NULL);
+  DCHECK(w >= 0 && h >= 0);
+  return gfx::Size(w ? w : 1, h ? h : 1);
 }
 
 SkColor GetBgColor(const char* css_selector) {
@@ -448,9 +487,10 @@ SkColor GetBgColor(const char* css_selector) {
   // removing any borders, and hope that we get a good color.
   auto context = GetStyleContextFromCss(css_selector);
   RemoveBorders(context);
-  PixelSurface surface;
-  RenderBackground(gfx::Size(1, 1), surface.cairo(), context);
-  return surface.GetPixelValue();
+  gfx::Size size = GetMinimumWidgetSize(context);
+  CairoSurface surface(size);
+  RenderBackground(size, surface.cairo(), context);
+  return surface.GetAveragePixelValue(false);
 }
 
 SkColor GetBorderColor(const char* css_selector) {
@@ -470,10 +510,11 @@ SkColor GetBorderColor(const char* css_selector) {
   }
 
   AddBorders(context);
-  PixelSurface surface;
-  RenderBackground(gfx::Size(1, 1), surface.cairo(), context);
+  gfx::Size size = GetMinimumWidgetSize(context);
+  CairoSurface surface(size);
+  RenderBackground(size, surface.cairo(), context);
   gtk_render_frame(context, surface.cairo(), 0, 0, 1, 1);
-  return surface.GetPixelValue();
+  return surface.GetAveragePixelValue(true);
 }
 
 SkColor GetSeparatorColor(const char* css_selector) {

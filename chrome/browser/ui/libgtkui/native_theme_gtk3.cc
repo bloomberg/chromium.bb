@@ -35,11 +35,8 @@ SkBitmap GetWidgetBitmap(const gfx::Size& size,
   bitmap.allocN32Pixels(size.width(), size.height());
   bitmap.eraseColor(0);
 
-  cairo_surface_t* surface = cairo_image_surface_create_for_data(
-      static_cast<unsigned char*>(bitmap.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
-      size.width(), size.height(),
-      cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, size.width()));
-  cairo_t* cr = cairo_create(surface);
+  CairoSurface surface(bitmap);
+  cairo_t* cr = surface.cairo();
 
   switch (bg_mode) {
     case BG_RENDER_NORMAL:
@@ -53,8 +50,6 @@ SkBitmap GetWidgetBitmap(const gfx::Size& size,
   }
   if (render_frame)
     gtk_render_frame(context, cr, 0, 0, size.width(), size.height());
-  cairo_destroy(cr);
-  cairo_surface_destroy(surface);
   return bitmap;
 }
 
@@ -425,11 +420,7 @@ void NativeThemeGtk3::PaintArrowButton(SkCanvas* canvas,
       NOTREACHED();
   }
 
-  cairo_surface_t* surface = cairo_image_surface_create_for_data(
-      static_cast<unsigned char*>(bitmap.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
-      rect.width(), rect.height(),
-      cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, rect.width()));
-  cairo_t* cr = cairo_create(surface);
+  CairoSurface surface(bitmap);
 
   auto arrow_context = AppendCssNodeToStyleContext(context, "GtkArrow#arrow");
   gfloat arrow_scaling = 0.7;  // Default scaling for a GtkArrow
@@ -438,12 +429,9 @@ void NativeThemeGtk3::PaintArrowButton(SkCanvas* canvas,
   const double w = rect.width();
   const double h = rect.height();
   const double arrow_size = std::min(w, h) * arrow_scaling;
-  gtk_render_arrow(arrow_context, cr, angle, (w - arrow_size) / 2,
+  gtk_render_arrow(arrow_context, surface.cairo(), angle, (w - arrow_size) / 2,
                    (h - arrow_size) / 2, arrow_size);
   canvas->drawBitmap(bitmap, rect.x(), rect.y());
-
-  cairo_destroy(cr);
-  cairo_surface_destroy(surface);
 }
 
 void NativeThemeGtk3::PaintScrollbarTrack(
