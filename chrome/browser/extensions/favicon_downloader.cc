@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -100,7 +101,7 @@ void FaviconDownloader::DidDownloadFavicon(
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
-  // Request may have been canceled by DidNavigateMainFrame().
+  // Request may have been canceled by DidFinishNavigation().
   if (in_progress_requests_.erase(id) == 0)
     return;
 
@@ -112,9 +113,11 @@ void FaviconDownloader::DidDownloadFavicon(
 }
 
 // content::WebContentsObserver overrides:
-void FaviconDownloader::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void FaviconDownloader::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   // Clear all pending requests.
   in_progress_requests_.clear();
   favicon_map_.clear();

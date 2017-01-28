@@ -71,9 +71,8 @@ class FaviconDownloader : public content::WebContentsObserver {
                           const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // content::WebContentsObserver overrides:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
 
