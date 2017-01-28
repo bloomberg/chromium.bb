@@ -66,6 +66,34 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'draw-with-integer-texture-base-level.html',
         ['win', 'nvidia'], bug=679639)
 
+    # Win10 / NVIDIA Quadro M2000 failures
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_lines.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_triangles.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_separate_lines.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_separate_triangles.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'random_interleaved_lines.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'random_interleaved_triangles.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'random_separate_lines.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'random_separate_triangles.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/interpolation_flat.html',
+        ['win10', ('nvidia', 0x1430)], bug=680754)
+
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
         ['win', 'amd'], bug=483282) # owner:jmadill

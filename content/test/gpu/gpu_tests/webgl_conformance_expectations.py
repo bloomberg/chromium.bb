@@ -143,6 +143,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/ext-sRGB.html',
         ['win', 'nvidia', 'no_passthrough'], bug=679696)
 
+    # Win10 / NVIDIA Quadro M2000 / D3D9 failures
+    self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
+        ['win10', ('nvidia', 0x1430), 'd3d9'], bug=680754)
+    self.Fail('conformance/canvas/' +
+        'framebuffer-bindings-affected-by-to-data-url.html',
+        ['win10', ('nvidia', 0x1430), 'd3d9'], bug=680754)
+    self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
+        ['win10', ('nvidia', 0x1430), 'd3d9'], bug=680754)
+
+
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
