@@ -270,7 +270,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
       const MediaSink::Id& sink_id,
       MediaCastMode cast_mode,
       MediaSource::Id* source_id,
-      GURL* origin,
+      url::Origin* origin,
       std::vector<MediaRouteResponseCallback>* route_response_callbacks,
       base::TimeDelta* timeout,
       bool* incognito);

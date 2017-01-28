@@ -12,7 +12,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media_router {
 
@@ -23,7 +23,7 @@ class QueryResultManager::MediaSourceMediaSinksObserver
  public:
   MediaSourceMediaSinksObserver(MediaCastMode cast_mode,
                                 const MediaSource& source,
-                                const GURL& origin,
+                                const url::Origin& origin,
                                 MediaRouter* router,
                                 QueryResultManager* result_manager)
       : MediaSinksObserver(router, source, origin),
@@ -83,7 +83,7 @@ void QueryResultManager::RemoveObserver(Observer* observer) {
 void QueryResultManager::SetSourcesForCastMode(
     MediaCastMode cast_mode,
     const std::vector<MediaSource>& sources,
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (sources.empty()) {
     LOG(WARNING) << "SetSourcesForCastMode called with empty sources for "
@@ -157,7 +157,7 @@ void QueryResultManager::RemoveOldSourcesForCastMode(
 void QueryResultManager::AddObserversForCastMode(
     MediaCastMode cast_mode,
     const std::vector<MediaSource>& sources,
-    const GURL& origin) {
+    const url::Origin& origin) {
   for (const MediaSource& source : sources) {
     if (!base::ContainsKey(sinks_observers_, source)) {
       std::unique_ptr<MediaSourceMediaSinksObserver> observer(

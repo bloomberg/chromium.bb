@@ -44,7 +44,7 @@ class MediaRouterE2EBrowserTest : public MediaRouterIntegrationBrowserTest {
   // requesting JoinRoute() must have the same origin as the page that
   // requested CreateRoute()).
   void CreateMediaRoute(const MediaSource& source,
-                        const GURL& origin,
+                        const url::Origin& origin,
                         content::WebContents* web_contents);
 
   // Stops the established media route and unregisters |observer_|.

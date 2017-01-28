@@ -20,6 +20,10 @@ using testing::Return;
 
 namespace media_router {
 
+namespace {
+constexpr char kOrigin[] = "https://google.com";
+}  // namespace
+
 class PresentationMediaSinksObserverTest : public ::testing::Test {
  public:
   PresentationMediaSinksObserverTest()
@@ -31,7 +35,7 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
     observer_.reset(new PresentationMediaSinksObserver(
         &router_, &listener_, MediaSourceForPresentationUrl(
                                   GURL("http://example.com/presentation.html")),
-        GURL("https://google.com")));
+        url::Origin(GURL(kOrigin))));
     EXPECT_TRUE(observer_->Init());
   }
 

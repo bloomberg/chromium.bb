@@ -70,7 +70,7 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
         new CreatePresentationConnectionRequest(
             RenderFrameHostId(1, 2),
             {GURL("http://example.com"), GURL("http://example2.com")},
-            GURL("http://google.com"),
+            url::Origin(GURL("http://google.com")),
             base::Bind(&MediaRouterDialogControllerTest::RequestSuccess,
                        base::Unretained(this)),
             base::Bind(&MediaRouterDialogControllerTest::RequestError,

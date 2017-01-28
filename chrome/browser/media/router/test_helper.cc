@@ -14,7 +14,7 @@ MockIssuesObserver::~MockIssuesObserver() {}
 
 MockMediaSinksObserver::MockMediaSinksObserver(MediaRouter* router,
                                                const MediaSource& source,
-                                               const GURL& origin)
+                                               const url::Origin& origin)
     : MediaSinksObserver(router, source, origin) {}
 MockMediaSinksObserver::~MockMediaSinksObserver() {
 }

@@ -60,14 +60,12 @@ RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_frame_host) {
 
 // Gets the last committed URL for the render frame specified by
 // |render_frame_host_id|.
-GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id) {
+url::Origin GetLastCommittedURLForFrame(
+    RenderFrameHostId render_frame_host_id) {
   RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
       render_frame_host_id.first, render_frame_host_id.second);
-  if (!render_frame_host)
-    return GURL();
-
-  // TODO(crbug.com/632623): Use url::Origin in place of GURL for origins
-  return render_frame_host->GetLastCommittedOrigin().GetURL();
+  DCHECK(render_frame_host);
+  return render_frame_host->GetLastCommittedOrigin();
 }
 
 // Observes messages originating from the MediaSink connected to a MediaRoute
@@ -233,7 +231,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 
   sinks_observer.reset(new PresentationMediaSinksObserver(
       router_, listener, source,
-      GetLastCommittedURLForFrame(render_frame_host_id_).GetOrigin()));
+      GetLastCommittedURLForFrame(render_frame_host_id_)));
 
   if (!sinks_observer->Init()) {
     url_to_sinks_observer_.erase(source.id());
@@ -554,9 +552,10 @@ void PresentationFrameManager::SetDefaultPresentationUrls(
     ClearDefaultPresentationRequest();
   } else {
     DCHECK(!callback.is_null());
-    GURL frame_url(GetLastCommittedURLForFrame(render_frame_host_id));
+    const auto& frame_origin =
+        GetLastCommittedURLForFrame(render_frame_host_id);
     PresentationRequest request(render_frame_host_id, default_presentation_urls,
-                                frame_url);
+                                frame_origin);
     default_presentation_started_callback_ = callback;
     SetDefaultPresentationRequest(request);
   }
@@ -807,8 +806,8 @@ void PresentationServiceDelegateImpl::JoinSession(
     return;
   }
 
-  const url::Origin& origin = url::Origin(GetLastCommittedURLForFrame(
-      RenderFrameHostId(render_process_id, render_frame_id)));
+  const url::Origin& origin = GetLastCommittedURLForFrame(
+      RenderFrameHostId(render_process_id, render_frame_id));
 
 #if !defined(OS_ANDROID)
   if (IsAutoJoinPresentationId(presentation_id) &&
@@ -829,7 +828,7 @@ void PresentationServiceDelegateImpl::JoinSession(
                  weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
                  presentation_url, presentation_id, success_cb, error_cb));
   router_->JoinRoute(MediaSourceForPresentationUrl(presentation_url).id(),
-                     presentation_id, origin.GetURL(), web_contents_,
+                     presentation_id, origin, web_contents_,
                      route_response_callbacks, base::TimeDelta(), incognito);
 }
 

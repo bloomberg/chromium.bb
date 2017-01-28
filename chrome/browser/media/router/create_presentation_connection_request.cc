@@ -6,7 +6,7 @@
 
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/route_request_result.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 using content::PresentationSessionInfo;
 using content::PresentationError;
@@ -16,10 +16,12 @@ namespace media_router {
 CreatePresentationConnectionRequest::CreatePresentationConnectionRequest(
     const RenderFrameHostId& render_frame_host_id,
     const std::vector<GURL>& presentation_urls,
-    const GURL& frame_url,
+    const url::Origin& frame_origin,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb)
-    : presentation_request_(render_frame_host_id, presentation_urls, frame_url),
+    : presentation_request_(render_frame_host_id,
+                            presentation_urls,
+                            frame_origin),
       success_cb_(success_cb),
       error_cb_(error_cb),
       cb_invoked_(false) {

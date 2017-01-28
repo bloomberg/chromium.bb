@@ -35,14 +35,14 @@ class MediaRouterAndroid : public MediaRouterBase {
   // MediaRouter implementation.
   void CreateRoute(const MediaSource::Id& source_id,
                    const MediaSink::Id& sink_id,
-                   const GURL& origin,
+                   const url::Origin& origin,
                    content::WebContents* web_contents,
                    const std::vector<MediaRouteResponseCallback>& callbacks,
                    base::TimeDelta timeout,
                    bool incognito) override;
   void JoinRoute(const MediaSource::Id& source,
                  const std::string& presentation_id,
-                 const GURL& origin,
+                 const url::Origin& origin,
                  content::WebContents* web_contents,
                  const std::vector<MediaRouteResponseCallback>& callbacks,
                  base::TimeDelta timeout,
@@ -50,7 +50,7 @@ class MediaRouterAndroid : public MediaRouterBase {
   void ConnectRouteByRouteId(
       const MediaSource::Id& source,
       const MediaRoute::Id& route_id,
-      const GURL& origin,
+      const url::Origin& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
