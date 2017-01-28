@@ -247,10 +247,11 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   if (!isScriptForEventSupported())
     return false;
 
+  String encoding;
   if (!client->charsetAttributeValue().isEmpty())
-    m_characterEncoding = client->charsetAttributeValue();
+    encoding = client->charsetAttributeValue();
   else
-    m_characterEncoding = elementDocument.characterSet();
+    encoding = elementDocument.characterSet();
 
   if (client->hasSourceAttribute()) {
     FetchRequest::DeferOption defer = FetchRequest::NoDefer;
@@ -260,7 +261,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     if (m_documentWriteIntervention ==
         DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle)
       defer = FetchRequest::IdleLoad;
-    if (!fetchScript(client->sourceAttributeValue(), defer))
+    if (!fetchScript(client->sourceAttributeValue(), encoding, defer))
       return false;
   }
 
@@ -327,6 +328,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
 }
 
 bool ScriptLoader::fetchScript(const String& sourceUrl,
+                               const String& encoding,
                                FetchRequest::DeferOption defer) {
   DCHECK(m_element);
 
@@ -345,7 +347,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
     if (crossOrigin != CrossOriginAttributeNotSet)
       request.setCrossOriginAccessControl(elementDocument->getSecurityOrigin(),
                                           crossOrigin);
-    request.setCharset(scriptCharset());
+    request.setCharset(encoding);
 
     if (ContentSecurityPolicy::isNonceableElement(m_element.get()))
       request.setContentSecurityPolicyNonce(client()->nonce());

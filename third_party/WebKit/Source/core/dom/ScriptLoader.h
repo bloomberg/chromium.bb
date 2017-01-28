@@ -68,7 +68,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
       const TextPosition& scriptStartPosition = TextPosition::minimumPosition(),
       LegacyTypeSupport = DisallowLegacyTypeInTypeAttribute);
 
-  String scriptCharset() const { return m_characterEncoding; }
   String scriptContent() const;
   // Returns false if and only if execution was blocked.
   bool executeScript(const ScriptSourceCode&);
@@ -129,7 +128,9 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool isScriptForEventSupported() const;
   void logScriptMIMEType(LocalFrame*, ScriptResource*, const String&);
 
-  bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
+  bool fetchScript(const String& sourceUrl,
+                   const String& encoding,
+                   FetchRequest::DeferOption);
   bool doExecuteScript(const ScriptSourceCode&);
 
   ScriptLoaderClient* client() const;
@@ -140,8 +141,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   Member<Element> m_element;
   Member<ScriptResource> m_resource;
   WTF::OrdinalNumber m_startLineNumber;
-  String m_characterEncoding;
-  String m_fallbackCharacterEncoding;
 
   bool m_parserInserted : 1;
   bool m_isExternalScript : 1;
