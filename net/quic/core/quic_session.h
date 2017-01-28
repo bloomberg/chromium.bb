@@ -12,12 +12,10 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/core/quic_connection.h"
@@ -26,6 +24,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_write_blocked_list.h"
+#include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_export.h"
 
 namespace net {
@@ -250,12 +249,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool flow_control_invariant() { return flow_control_invariant_; }
 
  protected:
-  using StaticStreamMap =
-      base::SmallMap<std::unordered_map<QuicStreamId, QuicStream*>, 2>;
+  using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
 
-  using DynamicStreamMap = base::SmallMap<
-      std::unordered_map<QuicStreamId, std::unique_ptr<QuicStream>>,
-      10>;
+  using DynamicStreamMap =
+      QuicSmallMap<QuicStreamId, std::unique_ptr<QuicStream>, 10>;
 
   using ClosedStreams = std::vector<std::unique_ptr<QuicStream>>;
 

@@ -49,8 +49,8 @@
 //   EXPECT_EQ(1, intervals.Size());
 //   EXPECT_TRUE(intervals.Contains(Interval<int>(20, 40)));
 
-#ifndef NET_QUIC_CORE_INTERVAL_SET_H_
-#define NET_QUIC_CORE_INTERVAL_SET_H_
+#ifndef NET_BASE_INTERVAL_SET_H_
+#define NET_BASE_INTERVAL_SET_H_
 
 #include <stddef.h>
 
@@ -62,7 +62,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "net/quic/core/interval.h"
+#include "net/base/interval.h"
 
 namespace net {
 
@@ -855,4 +855,4 @@ inline bool IntervalSet<T>::IntervalComparator::operator()(
 
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_INTERVAL_SET_H_
+#endif  // NET_BASE_INTERVAL_SET_H_

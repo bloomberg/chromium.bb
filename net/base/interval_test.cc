@@ -9,7 +9,7 @@
 // Author: Will Neveitt (wneveitt@google.com)
 // ----------------------------------------------------------------------
 
-#include "net/quic/core/interval.h"
+#include "net/base/interval.h"
 
 #include "base/logging.h"
 #include "net/test/gtest_util.h"
