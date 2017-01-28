@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VERSION_UI_VERSION_UI_CONSTANTS_H_
 #define COMPONENTS_VERSION_UI_VERSION_UI_CONSTANTS_H_
 
+#include "build/build_config.h"
+
 namespace version_ui {
 
 // Resource paths.
@@ -22,29 +24,47 @@ extern const char kReturnVariationInfo[];
 // Strings.
 // Must match the constants used in the resource files.
 extern const char kApplicationLabel[];
+#if defined(OS_CHROMEOS)
 extern const char kARC[];
-extern const char kBlinkVersion[];
+#endif
 extern const char kCL[];
 extern const char kCommandLine[];
 extern const char kCommandLineName[];
 extern const char kCompany[];
+#if defined(OS_WIN)
+extern const char kCompiler[];
+#endif
 extern const char kCopyright[];
 #if defined(OS_CHROMEOS)
 extern const char kCustomizationId[];
 #endif
+#if !defined(OS_IOS)
 extern const char kExecutablePath[];
 extern const char kExecutablePathName[];
+#endif
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kFlashPlugin[];
 extern const char kFlashVersion[];
+#endif
+#if !defined(OS_IOS)
 extern const char kJSEngine[];
 extern const char kJSVersion[];
+#endif
 extern const char kOfficial[];
+#if !defined(OS_CHROMEOS)
 extern const char kOSName[];
 extern const char kOSType[];
+#endif
+#if defined(OS_ANDROID)
 extern const char kOSVersion[];
+#endif
+#if defined(OS_CHROMEOS)
 extern const char kPlatform[];
+#endif
+#if !defined(OS_IOS)
 extern const char kProfilePath[];
 extern const char kProfilePathName[];
+#endif
 extern const char kRevision[];
 extern const char kTitle[];
 extern const char kUserAgent[];

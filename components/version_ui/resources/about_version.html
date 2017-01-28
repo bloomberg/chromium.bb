@@ -63,7 +63,9 @@ about:version template page
           <td class="label" i18n-content="os_name"></td>
           <td class="version" id="os_type">
             <span i18n-content="os_type"></span>
-            <span id="os_version" i18n-content="os_version"></span>
+<if expr="is_android">
+            <span i18n-content="os_version"></span>
+</if>
           </td>
         </tr>
 </if>
@@ -71,7 +73,7 @@ about:version template page
         <tr>
           <td class="label" i18n-content="platform"></td>
           <td class="version" id="os_type">
-            <span id="os_version" i18n-content="os_version"></span>
+            <span id="os_version"></span>
           </td>
         </tr>
         <tr id="customization_id_holder" hidden>
@@ -79,13 +81,13 @@ about:version template page
           <td class="version">
             <span id="customization_id"></span>
           </td>
-</if>
         </tr>
         <tr id="arc_holder"><td class="label" i18n-content="arc_label"></td>
           <td class="version">
             <span id="arc_version"></span>
           </td>
         </tr>
+</if>
 <if expr="not is_ios">
         <tr><td class="label">JavaScript</td>
           <td class="version" id="js_engine">
@@ -117,12 +119,6 @@ about:version template page
           <td class="label" i18n-content="variations_name"></td>
           <td class="version" id="variations-list"></td>
         </tr>
-<if expr="is_android">
-        <tr id="build-id-section">
-          <td class="label" i18n-content="build_id_name"></td>
-          <td class="version" i18n-content="build_id"></td>
-        </tr>
-</if>
 <if expr="is_win">
         <tr id="compiler-section">
           <td class="label">Compiler</td>

@@ -9347,14 +9347,13 @@ I don't think this site should be blocked!
         <message name="IDS_ARC_VERSION_LABEL" desc="Label for ARC version">
           ARC Version
         </message>
+        <message name="IDS_ARC_LABEL" desc="Label for ARC">
+          ARC
+        </message>
+        <message name="IDS_PLATFORM_LABEL" desc="Label for Platform">
+          Platform
+        </message>
       </if> <!-- chromeos -->
-
-      <message name="IDS_ARC_LABEL" desc="Label for ARC">
-        ARC
-      </message>
-      <message name="IDS_PLATFORM_LABEL" desc="Label for Platform">
-        Platform
-      </message>
 
       <!-- chrome://settings. Android uses native UI for settings -->
       <if expr="not is_android">

@@ -993,9 +993,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PLACEHOLDER_FIND_IN_PAGE" desc="The iOS placeholder for searching in the current page [Length: 30em] [iOS only]">
         Find in page...
       </message>
-      <message name="IDS_IOS_PLATFORM_LABEL" desc="Label for Platform. [Length: unlimited] [iOS only]">
-        Platform
-      </message>
       <message name="IDS_IOS_POPUPS_ALLOWED" desc="Label for the list of sites that the user has allowed to show pop-ups. [Length: 20em] [iOS only]">
         Pop-ups Allowed
       </message>
