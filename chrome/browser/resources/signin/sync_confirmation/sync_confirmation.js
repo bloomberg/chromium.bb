@@ -28,7 +28,11 @@ cr.define('sync.confirmation', function() {
     } else {
       $('syncConfirmationDetails').hidden = true;
     }
-    chrome.send('initializedWithSize', [document.body.scrollHeight]);
+
+    // Prefer using |document.body.offsetHeight| instead of
+    // |document.body.scrollHeight| as it returns the correct height of the
+    // even when the page zoom in Chrome is different than 100%.
+    chrome.send('initializedWithSize', [document.body.offsetHeight]);
   }
 
   function clearFocus() {
