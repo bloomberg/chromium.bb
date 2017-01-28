@@ -135,49 +135,6 @@ cr.define('category_default_setting', function() {
         return testCategoryEnabled(testElement, false);
       });
 
-      test('basic category tests', function() {
-        for (var key in settings.ContentSettingsTypes) {
-          var category = settings.ContentSettingsTypes[key];
-
-          // A quick testing note on a few special categories...
-
-          // The USB Devices category has no global toggle -- and therefore no
-          // Category Desc (and has a special way of storing its data).
-
-          // The Protocol Handlers is a special category in that is does not
-          // store its data like the rest, but it has a global default toggle
-          // and therefore can be tested like the rest below.
-
-          // Test category text ids and descriptions for those categories that
-          // have those.
-          if (category != settings.ContentSettingsTypes.USB_DEVICES &&
-              category != settings.ContentSettingsTypes.ZOOM_LEVELS) {
-            assertNotEquals('', testElement.computeCategoryDesc(
-                category, settings.PermissionValues.ALLOW, true));
-            assertNotEquals('', testElement.computeCategoryDesc(
-                category, settings.PermissionValues.ALLOW, false));
-            assertNotEquals('', testElement.computeCategoryDesc(
-                category, settings.PermissionValues.BLOCK, true));
-            assertNotEquals('', testElement.computeCategoryDesc(
-                category, settings.PermissionValues.BLOCK, false));
-
-            // Test additional tri-state values:
-            if (category == settings.ContentSettingsTypes.PLUGINS) {
-              assertNotEquals('', testElement.computeCategoryDesc(
-                  category, settings.PermissionValues.IMPORTANT_CONTENT, true));
-              assertNotEquals('', testElement.computeCategoryDesc(
-                  category, settings.PermissionValues.IMPORTANT_CONTENT,
-                  false));
-            } else if (category == settings.ContentSettingsTypes.COOKIES) {
-              assertNotEquals('', testElement.computeCategoryDesc(
-                  category, settings.PermissionValues.SESSION_ONLY, true));
-              assertNotEquals('', testElement.computeCategoryDesc(
-                  category, settings.PermissionValues.SESSION_ONLY, false));
-            }
-          }
-        }
-      });
-
       function testTristateCategory(prefs, category, thirdState,
                                     secondaryToggleId) {
         browserProxy.setPrefs(prefs);

@@ -27,7 +27,13 @@
       <iron-icon icon="settings:cookie"></iron-icon>
       <div class="middle">
         <div>$i18n{siteSettingsCookies}</div>
-        <div class="secondary">[[default_.cookies]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.cookies,
+              '$i18n{siteSettingsCookiesAllowed}',
+              '$i18n{siteSettingsBlocked}',
+              '$i18n{deleteDataPostSession}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -37,7 +43,12 @@
       <iron-icon icon="settings:location-on"></iron-icon>
       <div class="middle">
         <div>$i18n{siteSettingsLocation}</div>
-        <div class="secondary">[[default_.location]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.location,
+              '$i18n{siteSettingsAskBeforeAccessing}',
+              '$i18n{siteSettingsBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -48,7 +59,12 @@
       <iron-icon icon="settings:videocam"></iron-icon>
       <div class="middle">
         <div>$i18n{siteSettingsCamera}</div>
-        <div class="secondary">[[default_.mediaStreamCamera]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.mediaStreamCamera,
+              '$i18n{siteSettingsAskBeforeAccessing}',
+              '$i18n{siteSettingsBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -58,7 +74,12 @@
       <iron-icon icon="settings:mic"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsMic}
-        <div class="secondary">[[default_.mediaStreamMic]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.mediaStreamMic,
+              '$i18n{siteSettingsAskBeforeAccessing}',
+              '$i18n{siteSettingsBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -69,7 +90,12 @@
       <iron-icon icon="settings:notifications"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsNotifications}
-        <div class="secondary">[[default_.notifications]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.notifications,
+              '$i18n{siteSettingsAskBeforeSending}',
+              '$i18n{siteSettingsBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -80,7 +106,12 @@
       <iron-icon icon="settings:input"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsJavascript}
-        <div class="secondary">[[default_.javascript]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.javascript,
+              '$i18n{siteSettingsAllowed}',
+              '$i18n{siteSettingsBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -90,7 +121,13 @@
       <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsFlash}
-        <div class="secondary">[[default_.plugins]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.plugins,
+              '$i18n{siteSettingsFlashAllow}',
+              '$i18n{siteSettingsFlashBlock}',
+              '$i18n{siteSettingsFlashAskBefore}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -100,7 +137,12 @@
       <iron-icon icon="settings:photo"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsImages}
-        <div class="secondary">[[default_.images]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.images,
+              '$i18n{siteSettingsShowAll}',
+              '$i18n{siteSettingsDontShowImages}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -110,7 +152,12 @@
       <iron-icon icon="cr:open-in-new"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsPopups}
-        <div class="secondary">[[default_.popups]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.popups,
+              '$i18n{siteSettingsAllowed}',
+              '$i18n{siteSettingsBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -121,7 +168,12 @@
       <iron-icon icon="settings:sync"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsBackgroundSync}
-        <div class="secondary">[[default_.backgroundSync]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.backgroundSync,
+              '$i18n{siteSettingsAllowRecentlyClosedSites}',
+              '$i18n{siteSettingsBackgroundSyncBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -132,7 +184,12 @@
       <iron-icon icon="cr:file-download"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsAutomaticDownloads}
-        <div class="secondary">[[default_.multipleAutomaticDownloads]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.multipleAutomaticDownloads,
+              '$i18n{siteSettingsAutoDownloadAsk}',
+              '$i18n{siteSettingsAutoDownloadBlock}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -143,7 +200,12 @@
       <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsUnsandboxedPlugins}
-        <div class="secondary">[[default_.ppapiBroker]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.ppapiBroker,
+              '$i18n{siteSettingsUnsandboxedPluginsAsk}',
+              '$i18n{siteSettingsUnsandboxedPluginsBlock}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -154,7 +216,12 @@
       <iron-icon icon="settings:protocol-handler"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsHandlers}
-        <div class="secondary">[[default_.registerProtocolHandler]]</div>
+        <div class="secondary">
+          [[defaultSettingLabel_(
+              default_.registerProtocolHandler,
+              '$i18n{siteSettingsHandlersAsk}',
+              '$i18n{siteSettingsHandlersBlocked}')]]
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>

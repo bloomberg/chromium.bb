@@ -7,6 +7,7 @@
  * 'settings-site-settings-page' is the settings page containing privacy and
  * security site settings.
  */
+
 Polymer({
   is: 'settings-site-settings-page',
 
@@ -14,7 +15,7 @@ Polymer({
 
   properties: {
     /**
-     * An object to bind default value labels to (so they are not in the |this|
+     * An object to bind default values to (so they are not in the |this|
      * scope). The keys of this object are the values of the
      * settings.ContentSettingsTypes enum.
      * @private
@@ -60,6 +61,23 @@ Polymer({
   },
 
   /**
+   * @param {string} setting Value from settings.PermissionValues.
+   * @param {string} enabled Non-block label ('feature X not allowed').
+   * @param {string} disabled Block label (likely just, 'Blocked').
+   * @param {?string} other Tristate value (maybe, 'session only').
+   * @private
+   */
+  defaultSettingLabel_: function(setting, enabled, disabled, other) {
+    if (setting == settings.PermissionValues.BLOCK)
+      return disabled;
+    if (setting == settings.PermissionValues.ALLOW)
+      return enabled;
+    if (other)
+      return other;
+    return enabled;
+  },
+
+  /**
    * @param {string} category The category to update.
    * @private
    */
@@ -68,10 +86,7 @@ Polymer({
         category).then(function(defaultValue) {
           this.set(
               'default_.' + Polymer.CaseMap.dashToCamelCase(category),
-              this.computeCategoryDesc(
-                  category,
-                  defaultValue.setting,
-                  /*showRecommendation=*/false));
+              defaultValue.setting);
         }.bind(this));
   },
 
@@ -84,12 +99,9 @@ Polymer({
     var category = settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
     this.set(
         'default_.' + Polymer.CaseMap.dashToCamelCase(category),
-        this.computeCategoryDesc(
-            category,
-            enabled ?
-                settings.PermissionValues.ALLOW :
-                settings.PermissionValues.BLOCK,
-            /*showRecommendation=*/false));
+        enabled ?
+            settings.PermissionValues.ALLOW :
+            settings.PermissionValues.BLOCK);
   },
 
   /**
