@@ -43,7 +43,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
  private:
   // IPC message handlers.
-  void OnUnpackWebResource(const std::string& resource_data);
 #if defined(OS_CHROMEOS)
   void OnCreateZipFile(const base::FilePath& src_dir,
                        const std::vector<base::FilePath>& src_relative_paths,
