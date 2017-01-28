@@ -16,11 +16,14 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
@@ -76,6 +79,27 @@ void LogUma(bool success,
   }
 }
 
+void LogBadMessage(extensions::functions::HistogramValue histogram_value) {
+  content::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
+  // Track the specific function's |histogram_value|, as this may indicate a
+  // bug in that API's implementation.
+  UMA_HISTOGRAM_ENUMERATION("Extensions.BadMessageFunctionName",
+                            histogram_value,
+                            extensions::functions::ENUM_BOUNDARY);
+}
+
+template <class T>
+void ReceivedBadMessage(T* bad_message_sender,
+                        extensions::bad_message::BadMessageReason reason,
+                        extensions::functions::HistogramValue histogram_value) {
+  LogBadMessage(histogram_value);
+  // The renderer has done validation before sending extension api requests.
+  // Therefore, we should never receive a request that is invalid in a way
+  // that JSON validation in the renderer should have caught. It could be an
+  // attacker trying to exploit the browser, so we crash the renderer instead.
+  extensions::bad_message::ReceivedBadMessage(bad_message_sender, reason);
+}
+
 class ArgumentListResponseValue
     : public ExtensionFunction::ResponseValueObject {
  public:
@@ -122,7 +146,7 @@ class ErrorResponseValue : public ExtensionFunction::ResponseValueObject {
 class BadMessageResponseValue : public ExtensionFunction::ResponseValueObject {
  public:
   explicit BadMessageResponseValue(ExtensionFunction* function) {
-    function->set_bad_message(true);
+    function->SetBadMessage();
     NOTREACHED() << function->name() << ": bad message";
   }
 
@@ -319,6 +343,10 @@ const std::string& ExtensionFunction::GetError() const {
   return error_;
 }
 
+void ExtensionFunction::SetBadMessage() {
+  bad_message_ = true;
+}
+
 bool ExtensionFunction::user_gesture() const {
   return user_gesture_ || UserGestureForTests::GetInstance()->HaveGesture();
 }
@@ -508,6 +536,18 @@ bool UIThreadExtensionFunction::PreRunValidation(std::string* error) {
   return true;
 }
 
+void UIThreadExtensionFunction::SetBadMessage() {
+  ExtensionFunction::SetBadMessage();
+
+  if (render_frame_host()) {
+    ReceivedBadMessage(render_frame_host()->GetProcess(),
+                       is_from_service_worker()
+                           ? extensions::bad_message::EFD_BAD_MESSAGE_WORKER
+                           : extensions::bad_message::EFD_BAD_MESSAGE,
+                       histogram_value());
+  }
+}
+
 bool UIThreadExtensionFunction::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
@@ -575,6 +615,15 @@ IOThreadExtensionFunction::~IOThreadExtensionFunction() {
 IOThreadExtensionFunction*
 IOThreadExtensionFunction::AsIOThreadExtensionFunction() {
   return this;
+}
+
+void IOThreadExtensionFunction::SetBadMessage() {
+  ExtensionFunction::SetBadMessage();
+  if (ipc_sender_) {
+    ReceivedBadMessage(
+        static_cast<content::BrowserMessageFilter*>(ipc_sender_.get()),
+        extensions::bad_message::EFD_BAD_MESSAGE, histogram_value());
+  }
 }
 
 void IOThreadExtensionFunction::Destruct() const {

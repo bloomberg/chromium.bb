@@ -26,12 +26,10 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/service_worker_context.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api_activity_monitor.h"
-#include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -80,40 +78,16 @@ struct Static {
 };
 base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 
-void LogBadMessage(functions::HistogramValue histogram_value) {
-  content::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
-  // Track the specific function's |histogram_value|, as this may indicate a
-  // bug in that API's implementation.
-  UMA_HISTOGRAM_ENUMERATION("Extensions.BadMessageFunctionName",
-                            histogram_value, functions::ENUM_BOUNDARY);
-}
-
-template <class T>
-void ReceivedBadMessage(T* bad_message_sender,
-                        bad_message::BadMessageReason reason,
-                        functions::HistogramValue histogram_value) {
-  LogBadMessage(histogram_value);
-  // The renderer has done validation before sending extension api requests.
-  // Therefore, we should never receive a request that is invalid in a way
-  // that JSON validation in the renderer should have caught. It could be an
-  // attacker trying to exploit the browser, so we crash the renderer instead.
-  bad_message::ReceivedBadMessage(bad_message_sender, reason);
-}
-
-template <class T>
 void CommonResponseCallback(IPC::Sender* ipc_sender,
                             int routing_id,
-                            T* bad_message_sender,
                             int request_id,
                             ExtensionFunction::ResponseType type,
                             const base::ListValue& results,
-                            const std::string& error,
-                            functions::HistogramValue histogram_value) {
+                            const std::string& error) {
   DCHECK(ipc_sender);
 
   if (type == ExtensionFunction::BAD_MESSAGE) {
-    ReceivedBadMessage(bad_message_sender, bad_message::EFD_BAD_MESSAGE,
-                       histogram_value);
+    // The renderer will be shut down from ExtensionFunction::SetBadMessage().
     return;
   }
 
@@ -133,8 +107,8 @@ void IOThreadResponseCallback(
   if (!ipc_sender.get())
     return;
 
-  CommonResponseCallback(ipc_sender.get(), routing_id, ipc_sender.get(),
-                         request_id, type, results, error, histogram_value);
+  CommonResponseCallback(ipc_sender.get(), routing_id, request_id, type,
+                         results, error);
 }
 
 }  // namespace
@@ -183,9 +157,8 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
                                     const std::string& error,
                                     functions::HistogramValue histogram_value) {
     CommonResponseCallback(render_frame_host_,
-                           render_frame_host_->GetRoutingID(),
-                           render_frame_host_->GetProcess(), request_id, type,
-                           results, error, histogram_value);
+                           render_frame_host_->GetRoutingID(), request_id, type,
+                           results, error);
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
@@ -248,8 +221,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
     content::RenderProcessHost* sender =
         content::RenderProcessHost::FromID(render_process_id_);
     if (type == ExtensionFunction::BAD_MESSAGE) {
-      ReceivedBadMessage(sender, bad_message::EFD_BAD_MESSAGE_WORKER,
-                         histogram_value);
+      // The renderer will be shut down from ExtensionFunction::SetBadMessage().
       return;
     }
     DCHECK(sender);
