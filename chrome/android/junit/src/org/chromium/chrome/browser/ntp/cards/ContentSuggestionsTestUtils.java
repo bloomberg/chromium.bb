@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
-import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
@@ -38,15 +37,6 @@ public final class ContentSuggestionsTestUtils {
     public static List<SnippetArticle> createDummySuggestions(
             int count, @CategoryInt int category) {
         return createDummySuggestions(count, category, "");
-    }
-
-    /**
-     * @deprecated The hardcoded category is a common source of bugs. Prefer
-     * {@link #createDummySuggestions(int, int)}
-     */
-    @Deprecated
-    public static List<SnippetArticle> createDummySuggestions(int count) {
-        return createDummySuggestions(count, KnownCategories.BOOKMARKS);
     }
 
     /**

@@ -91,8 +91,8 @@ public class MediaImageManagerTest {
         mMediaImageManager.onFinishDownloadImage(
                 REQUEST_ID_1, 200, IMAGE_URL_1, mBitmaps, mOriginalImageSizes);
 
-        verify(mCallback).onImageDownloaded(isNotNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNull(Bitmap.class));
+        verify(mCallback).onImageDownloaded((Bitmap) isNotNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNull());
     }
 
     @Test
@@ -115,8 +115,8 @@ public class MediaImageManagerTest {
                 .downloadImage(eq(IMAGE_URL_1), eq(false),
                         eq(MediaImageManager.MAX_BITMAP_SIZE_FOR_DOWNLOAD), eq(false),
                         eq(mMediaImageManager));
-        verify(mCallback, times(1)).onImageDownloaded(isNotNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNull(Bitmap.class));
+        verify(mCallback, times(1)).onImageDownloaded((Bitmap) isNotNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNull());
     }
 
     @Test
@@ -140,7 +140,7 @@ public class MediaImageManagerTest {
                 .downloadImage(eq(IMAGE_URL_1), eq(false),
                         eq(MediaImageManager.MAX_BITMAP_SIZE_FOR_DOWNLOAD), eq(false),
                         eq(mMediaImageManager));
-        verify(mCallback, times(1)).onImageDownloaded(isNull(Bitmap.class));
+        verify(mCallback, times(1)).onImageDownloaded((Bitmap) isNull());
     }
 
     @Test
@@ -170,8 +170,8 @@ public class MediaImageManagerTest {
                 .downloadImage(eq(IMAGE_URL_2), eq(false),
                         eq(MediaImageManager.MAX_BITMAP_SIZE_FOR_DOWNLOAD), eq(false),
                         eq(mMediaImageManager));
-        verify(mCallback, times(2)).onImageDownloaded(isNotNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNull(Bitmap.class));
+        verify(mCallback, times(2)).onImageDownloaded((Bitmap) isNotNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNull());
     }
 
     @Test
@@ -205,8 +205,8 @@ public class MediaImageManagerTest {
                         eq(MediaImageManager.MAX_BITMAP_SIZE_FOR_DOWNLOAD), eq(false),
                         eq(mMediaImageManager));
 
-        verify(mCallback, times(1)).onImageDownloaded(isNotNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNull(Bitmap.class));
+        verify(mCallback, times(1)).onImageDownloaded((Bitmap) isNotNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNull());
     }
 
     @Test
@@ -217,8 +217,8 @@ public class MediaImageManagerTest {
         mMediaImageManager.onFinishDownloadImage(
                 REQUEST_ID_1, 200, IMAGE_URL_1, mBitmaps, mOriginalImageSizes);
 
-        verify(mCallback, times(1)).onImageDownloaded(isNotNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNull(Bitmap.class));
+        verify(mCallback, times(1)).onImageDownloaded((Bitmap) isNotNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNull());
     }
 
     @Test
@@ -227,8 +227,8 @@ public class MediaImageManagerTest {
         mMediaImageManager.onFinishDownloadImage(
                 REQUEST_ID_2, 200, IMAGE_URL_1, mBitmaps, mOriginalImageSizes);
 
-        verify(mCallback, times(0)).onImageDownloaded(isNotNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNull(Bitmap.class));
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNotNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNull());
     }
 
     @Test
@@ -242,8 +242,8 @@ public class MediaImageManagerTest {
         verify(mWebContents, times(0))
                 .downloadImage(anyString(), anyBoolean(), anyInt(), anyBoolean(),
                         any(MediaImageManager.class));
-        verify(mCallback).onImageDownloaded(isNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNotNull(Bitmap.class));
+        verify(mCallback).onImageDownloaded((Bitmap) isNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNotNull());
     }
 
     @Test
@@ -260,8 +260,8 @@ public class MediaImageManagerTest {
         mMediaImageManager.onFinishDownloadImage(
                 REQUEST_ID_1, 200, IMAGE_URL_1, mBitmaps, mOriginalImageSizes);
 
-        verify(mCallback).onImageDownloaded(isNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNotNull(Bitmap.class));
+        verify(mCallback).onImageDownloaded((Bitmap) isNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNotNull());
     }
 
     @Test
@@ -270,8 +270,8 @@ public class MediaImageManagerTest {
         mMediaImageManager.onFinishDownloadImage(
                 REQUEST_ID_1, 404, IMAGE_URL_1, new ArrayList<Bitmap>(), new ArrayList<Rect>());
 
-        verify(mCallback).onImageDownloaded(isNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNotNull(Bitmap.class));
+        verify(mCallback).onImageDownloaded((Bitmap) isNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNotNull());
     }
 
     @Test
@@ -282,8 +282,8 @@ public class MediaImageManagerTest {
         verify(mWebContents, times(0))
                 .downloadImage(anyString(), anyBoolean(), anyInt(), anyBoolean(),
                         any(MediaImageManager.class));
-        verify(mCallback).onImageDownloaded(isNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNotNull(Bitmap.class));
+        verify(mCallback).onImageDownloaded((Bitmap) isNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNotNull());
     }
 
     @Test
@@ -293,7 +293,7 @@ public class MediaImageManagerTest {
         verify(mWebContents, times(0))
                 .downloadImage(anyString(), anyBoolean(), anyInt(), anyBoolean(),
                         any(MediaImageManager.class));
-        verify(mCallback).onImageDownloaded(isNull(Bitmap.class));
-        verify(mCallback, times(0)).onImageDownloaded(isNotNull(Bitmap.class));
+        verify(mCallback).onImageDownloaded((Bitmap) isNull());
+        verify(mCallback, times(0)).onImageDownloaded((Bitmap) isNotNull());
     }
 }

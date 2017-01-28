@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.offlinepages;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyListOf;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -126,9 +125,10 @@ public class OfflinePageBridgeUnitTest {
 
         answerNativeGetAllPages(itemCount);
         Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
-
         mBridge.getAllPages(callback);
-        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        verify(callback, times(1)).onResult(itemList);
     }
 
     /**
@@ -141,9 +141,12 @@ public class OfflinePageBridgeUnitTest {
 
         answerNativeGetAllPages(itemCount);
         Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
-
         mBridge.getAllPages(callback);
-        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        verify(callback, times(1)).onResult(itemList);
     }
 
     /**
@@ -153,14 +156,15 @@ public class OfflinePageBridgeUnitTest {
     @Feature({"OfflinePages"})
     public void testGetPagesByClientIds_listOfClientIdsEmpty() {
         final int itemCount = 0;
-        answerGetPagesByClientIds(itemCount);
 
+        answerGetPagesByClientIds(itemCount);
         Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
         ClientId secondClientId = new ClientId(TEST_NAMESPACE, "id number two");
         List<ClientId> list = new ArrayList<>();
         mBridge.getPagesByClientIds(list, callback);
 
-        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        verify(callback, times(1)).onResult(itemList);
     }
 
     /**
@@ -170,8 +174,8 @@ public class OfflinePageBridgeUnitTest {
     @Feature({"OfflinePages"})
     public void testGetPagesByClientIds() {
         final int itemCount = 2;
-        answerGetPagesByClientIds(itemCount);
 
+        answerGetPagesByClientIds(itemCount);
         Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
         ClientId secondClientId = new ClientId(TEST_NAMESPACE, "id number two");
         List<ClientId> list = new ArrayList<>();
@@ -179,7 +183,10 @@ public class OfflinePageBridgeUnitTest {
         list.add(secondClientId);
         mBridge.getPagesByClientIds(list, callback);
 
-        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        verify(callback, times(1)).onResult(itemList);
     }
 
     /**
@@ -189,8 +196,8 @@ public class OfflinePageBridgeUnitTest {
     @Feature({"OfflinePages"})
     public void testDeletePagesByClientIds_listOfClientIdsEmpty() {
         final int itemCount = 0;
-        answerDeletePagesByClientIds(itemCount);
 
+        answerDeletePagesByClientIds(itemCount);
         Callback<Integer> callback = createDeletePageCallback();
         ClientId secondClientId = new ClientId(TEST_NAMESPACE, "id number two");
         List<ClientId> list = new ArrayList<>();
@@ -206,8 +213,8 @@ public class OfflinePageBridgeUnitTest {
     @Feature({"OfflinePages"})
     public void testDeletePagesByClientIds() {
         final int itemCount = 2;
-        answerDeletePagesByClientIds(itemCount);
 
+        answerDeletePagesByClientIds(itemCount);
         Callback<Integer> callback = createDeletePageCallback();
         ClientId secondClientId = new ClientId(TEST_NAMESPACE, "id number two");
         List<ClientId> list = new ArrayList<>();

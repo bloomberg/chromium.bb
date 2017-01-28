@@ -333,6 +333,6 @@ public class WebappDataStorageTest {
     }
 
     private static Bitmap createBitmap() {
-        return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_4444);
+        return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
     }
 }

@@ -91,7 +91,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testDismissSibling() {
-        List<SnippetArticle> snippets = createDummySuggestions(3);
+        List<SnippetArticle> snippets = createDummySuggestions(3, TEST_CATEGORY_ID);
         SuggestionsSection section = createSectionWithReloadAction(true);
 
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -117,7 +117,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     @EnableFeatures({})
     public void testDismissSiblingWithSectionDismissalDisabled() {
-        List<SnippetArticle> snippets = createDummySuggestions(3);
+        List<SnippetArticle> snippets = createDummySuggestions(3, TEST_CATEGORY_ID);
         SuggestionsSection section = createSectionWithReloadAction(true);
 
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -143,7 +143,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testAddSuggestionsNotification() {
         final int suggestionCount = 5;
-        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
+        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
+                TEST_CATEGORY_ID);
 
         SuggestionsSection section = createSectionWithReloadAction(false);
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
@@ -163,7 +164,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testSetStatusNotification() {
         final int suggestionCount = 5;
-        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
+        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
+                TEST_CATEGORY_ID);
         SuggestionsSection section = createSectionWithReloadAction(false);
 
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
@@ -200,7 +202,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testRemoveSuggestionNotification() {
         final int suggestionCount = 2;
-        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
+        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
+                TEST_CATEGORY_ID);
 
         SuggestionsSection section = createSectionWithReloadAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -223,7 +226,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testRemoveSuggestionNotificationWithButton() {
         final int suggestionCount = 2;
-        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
+        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
+                TEST_CATEGORY_ID);
 
         SuggestionsCategoryInfo info =
                 new CategoryInfoBuilder(TEST_CATEGORY_ID)
@@ -270,7 +274,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testOfflineStatus() {
         final int suggestionCount = 3;
-        final List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
+        final List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
+                TEST_CATEGORY_ID);
         assertNull(snippets.get(0).getOfflinePageOfflineId());
         assertNull(snippets.get(1).getOfflinePageOfflineId());
         assertNull(snippets.get(2).getOfflinePageOfflineId());
@@ -304,7 +309,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testOfflineStatusIgnoredIfDetached() {
         final int suggestionCount = 2;
-        final List<SnippetArticle> suggestions = createDummySuggestions(suggestionCount);
+        final List<SnippetArticle> suggestions = createDummySuggestions(suggestionCount,
+                TEST_CATEGORY_ID);
         assertNull(suggestions.get(0).getOfflinePageOfflineId());
         assertNull(suggestions.get(1).getOfflinePageOfflineId());
 
@@ -348,8 +354,8 @@ public class SuggestionsSectionTest {
         assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_VIEW_ALL);
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_VIEW_ALL);
@@ -373,8 +379,8 @@ public class SuggestionsSectionTest {
         assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_RELOAD);
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_FETCH_MORE);
@@ -393,8 +399,8 @@ public class SuggestionsSectionTest {
         assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_RELOAD);
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
@@ -413,8 +419,8 @@ public class SuggestionsSectionTest {
         assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_FETCH_MORE);
@@ -433,8 +439,8 @@ public class SuggestionsSectionTest {
         assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
 
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
@@ -447,8 +453,8 @@ public class SuggestionsSectionTest {
         SuggestionsCategoryInfo info = spy(
                 new CategoryInfoBuilder(TEST_CATEGORY_ID).withMoreAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
-        section.setSuggestions(createDummySuggestions(suggestionCount), CategoryStatus.AVAILABLE,
-                /* replaceExisting = */ true);
+        section.setSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         assertFalse(section.getProgressItemForTesting().isVisible());
 
         // Tap the button
@@ -456,8 +462,8 @@ public class SuggestionsSectionTest {
         assertTrue(section.getProgressItemForTesting().isVisible());
 
         // Simulate receiving suggestions.
-        section.setSuggestions(createDummySuggestions(suggestionCount), CategoryStatus.AVAILABLE,
-                /* replaceExisting = */ false);
+        section.setSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID),
+                CategoryStatus.AVAILABLE, /* replaceExisting = */ false);
         assertFalse(section.getProgressItemForTesting().isVisible());
     }
 
