@@ -17,6 +17,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -31,7 +32,7 @@ constexpr int kFadeDurationInMs = 150;
 constexpr int kPointMoveDurationInMs = 400;
 constexpr int kPointMoveDurationLongInMs = 500;
 
-const SkColor kExitLabelColor = SkColorSetARGBInline(255, 96, 96, 96);
+const SkColor kExitLabelColor = SkColorSetARGBInline(255, 138, 138, 138);
 constexpr int kExitLabelWidth = 300;
 constexpr int kExitLabelHeight = 20;
 
@@ -70,7 +71,7 @@ constexpr float kBackgroundFinalOpacity = 0.75f;
 constexpr int kTouchTargetWidth = 64;
 constexpr int kTouchTargetHeight = kTouchTargetWidth + kTouchTargetWidth / 2;
 
-constexpr float kTouchTargetVerticalOffsetFactor = 5.f / 12.f;
+constexpr float kTouchTargetVerticalOffsetFactor = 11.f / 24.f;
 
 const SkColor kTouchTargetInnerCircleColor =
     SkColorSetARGBInline(255, 66, 133, 244);
@@ -278,6 +279,8 @@ class HintBox : public views::View {
   void SetSubLabel(const base::string16& text, const SkColor& color);
 
  private:
+  void UpdateWidth(int updated_width);
+
   base::string16 label_text_;
   base::string16 sublabel_text_;
 
@@ -286,7 +289,13 @@ class HintBox : public views::View {
 
   const int border_radius_;
 
+  int base_border_;
+
+  int arrow_width_;
+
   int horizontal_offset_;
+
+  gfx::Rect rounded_rect_bounds_;
 
   gfx::FontList label_font_list_;
   gfx::FontList sublabel_font_list_;
@@ -301,16 +310,34 @@ class HintBox : public views::View {
 
 HintBox::HintBox(const gfx::Rect& bounds, int border_radius)
     : border_radius_(border_radius) {
-  SetBoundsRect(bounds);
+  SetBorder(base::MakeUnique<views::BubbleBorder>(
+      base::i18n::IsRTL() ? views::BubbleBorder::RIGHT_CENTER
+                          : views::BubbleBorder::LEFT_CENTER,
+      views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER, SK_ColorWHITE));
+
+  arrow_width_ = (GetInsets().right() - GetInsets().left()) *
+                 (base::i18n::IsRTL() ? 1 : -1);
+
+  // Border on all sides are the same except on the side of the arrow, in which
+  // case the width of the arrow is additional.
+  base_border_ = base::i18n::IsRTL() ? GetInsets().left() : GetInsets().right();
+
+  SetBounds(bounds.x(), bounds.y() - base_border_,
+            bounds.width() + 2 * base_border_ + arrow_width_,
+            bounds.height() + 2 * base_border_);
+
+  rounded_rect_bounds_ = GetLocalBounds();
+  rounded_rect_bounds_.Inset(GetInsets());
 
   paint_.setColor(SK_ColorWHITE);
   paint_.setStyle(SkPaint::kFill_Style);
   paint_.setFlags(SkPaint::kAntiAlias_Flag);
 
-  horizontal_offset_ = width() * 0.08f;
+  horizontal_offset_ =
+      arrow_width_ + base_border_ + rounded_rect_bounds_.width() * 0.08f;
   int top_offset = horizontal_offset_;
-  int line_gap = height() * 0.018f;
-  int label_height = height() * 0.11f;
+  int line_gap = rounded_rect_bounds_.height() * 0.018f;
+  int label_height = rounded_rect_bounds_.height() * 0.11f;
 
   label_text_bounds_.SetRect(horizontal_offset_, top_offset, 0, label_height);
 
@@ -321,6 +348,12 @@ HintBox::HintBox(const gfx::Rect& bounds, int border_radius)
 }
 
 HintBox::~HintBox() {}
+
+void HintBox::UpdateWidth(int updated_width) {
+  SetSize(gfx::Size(updated_width + 2 * base_border_ + arrow_width_, height()));
+  rounded_rect_bounds_ = GetLocalBounds();
+  rounded_rect_bounds_.Inset(GetInsets());
+}
 
 void HintBox::SetLabel(const base::string16& text, const SkColor& color) {
   label_text_ = text;
@@ -337,9 +370,10 @@ void HintBox::SetLabel(const base::string16& text, const SkColor& color) {
       gfx::Size(size.width(), label_text_bounds_.height()));
 
   // Check if the width of hint box needs to be updated.
-  int minimum_expected_width = size.width() + 2 * horizontal_offset_;
-  if (minimum_expected_width > width())
-    SetSize(gfx::Size(minimum_expected_width, height()));
+  int minimum_expected_width =
+      size.width() + 2 * horizontal_offset_ - arrow_width_;
+  if (minimum_expected_width > rounded_rect_bounds_.width())
+    UpdateWidth(minimum_expected_width);
 }
 
 void HintBox::SetSubLabel(const base::string16& text, const SkColor& color) {
@@ -357,13 +391,15 @@ void HintBox::SetSubLabel(const base::string16& text, const SkColor& color) {
       gfx::Size(size.width(), sublabel_text_bounds_.height()));
 
   // Check if the width of hint box needs to be updated.
-  int minimum_expected_width = size.width() + 2 * horizontal_offset_;
-  if (minimum_expected_width > width())
-    SetSize(gfx::Size(minimum_expected_width, height()));
+  int minimum_expected_width =
+      size.width() + 2 * horizontal_offset_ - arrow_width_;
+  if (minimum_expected_width > rounded_rect_bounds_.width())
+    UpdateWidth(minimum_expected_width);
 }
 
 void HintBox::OnPaint(gfx::Canvas* canvas) {
-  canvas->DrawRoundRect(GetLocalBounds(), border_radius_, paint_);
+  views::View::OnPaint(canvas);
+  canvas->DrawRoundRect(rounded_rect_bounds_, border_radius_, paint_);
   canvas->DrawStringRectWithFlags(label_text_, label_font_list_, label_color_,
                                   label_text_bounds_, gfx::Canvas::NO_ELLIPSIS);
   canvas->DrawStringRectWithFlags(sublabel_text_, sublabel_font_list_,
@@ -536,9 +572,10 @@ void TouchCalibratorView::InitViewContents() {
 
   gfx::Size size(kHintBoxWidth, kHintBoxHeight);
 
-  gfx::Point position(
-      touch_point_view_->x() + tpv_width * 1.2f,
-      touch_point_view_->y() + (tpv_width / 2.f) - (size.height() / 2.f));
+  gfx::Point position(touch_point_view_->x() + tpv_width * 1.2f,
+                      touch_point_view_->y() +
+                          (kThrobberCircleViewWidth / 2.f) -
+                          (size.height() / 2.f));
 
   HintBox* hint_box =
       new HintBox(gfx::Rect(position, size), kHintRectBorderRadius);
@@ -551,8 +588,8 @@ void TouchCalibratorView::InitViewContents() {
 
   // Initialize the animated hint box throbber view.
   TouchTargetThrobberView* target_view = new TouchTargetThrobberView(
-      gfx::Rect((size.width() - kTouchTargetWidth) / 2,
-                size.height() * kTouchTargetVerticalOffsetFactor,
+      gfx::Rect((hint_box->width() - kTouchTargetWidth) / 2,
+                hint_box->height() * kTouchTargetVerticalOffsetFactor,
                 kTouchTargetWidth, kTouchTargetHeight),
       kTouchTargetInnerCircleColor, kTouchTargetOuterCircleColor,
       kHandIconColor, kCircleAnimationDurationMs);
