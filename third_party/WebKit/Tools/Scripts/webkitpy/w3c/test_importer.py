@@ -388,8 +388,8 @@ class TestImporter(object):
     def fetch_new_expectations_and_baselines(self):
         """Adds new expectations and downloads baselines based on try job results, then commits and uploads the change."""
         _log.info('Adding test expectations lines to LayoutTests/TestExpectations.')
-        line_adder = WPTExpectationsUpdater(self.host)
-        line_adder.run()
+        expectation_updater = WPTExpectationsUpdater(self.host)
+        expectation_updater.run(args=[])
         message = 'Update test expectations and baselines.'
         self.check_run(['git', 'commit', '-a', '-m', message])
         self.git_cl.run(['upload', '-m', message, '--rietveld'])
