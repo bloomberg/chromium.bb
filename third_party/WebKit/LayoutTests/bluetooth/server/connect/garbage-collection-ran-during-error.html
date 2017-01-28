@@ -4,12 +4,12 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+promise_test(t => {
   return setBluetoothFakeAdapter('FailingConnectionsAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: [errorUUID(0x1) /* in progress error */]}]}))
     .then(device => {
-      device.gatt.connect();
+      promise_rejects(t, 'NetworkError', device.gatt.connect());
     })
     .then(runGarbageCollection);
 }, 'Garbage collection ran during a connect call that fails. ' +
