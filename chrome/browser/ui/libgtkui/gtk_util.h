@@ -131,6 +131,12 @@ class ScopedGObject {
 
 typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
 
+// If |context| is NULL, creates a new top-level style context
+// specified by parsing |css_node|.  Otherwise, creates the child
+// context with |context| as the parent.
+ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
+                                               const std::string& css_node);
+
 // Parses |css_selector| into a GtkStyleContext.  The format is a
 // sequence of whitespace-separated objects.  Each object may have at
 // most one object name at the beginning of the string, and any number

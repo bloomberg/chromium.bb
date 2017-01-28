@@ -227,8 +227,8 @@ bool GtkVersionCheck(int major, int minor, int micro) {
     return false;
 }
 
-ScopedStyleContext AppendNode(GtkStyleContext* context,
-                              const std::string& css_node) {
+ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
+                                               const std::string& css_node) {
   GtkWidgetPath* path =
       context ? gtk_widget_path_copy(gtk_style_context_get_path(context))
               : gtk_widget_path_new();
@@ -332,12 +332,12 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
 ScopedStyleContext GetStyleContextFromCss(const char* css_selector) {
   // Prepend "GtkWindow.background" to the selector since all widgets must live
   // in a window, but we don't want to specify that every time.
-  auto context = AppendNode(nullptr, "GtkWindow.background");
+  auto context = AppendCssNodeToStyleContext(nullptr, "GtkWindow.background");
 
   for (const auto& widget_type :
        base::SplitString(css_selector, base::kWhitespaceASCII,
                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    context = AppendNode(context, widget_type);
+    context = AppendCssNodeToStyleContext(context, widget_type);
   }
   return context;
 }

@@ -21,6 +21,24 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
 
   // Overridden from ui::NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
+  void PaintArrowButton(SkCanvas* canvas,
+                        const gfx::Rect& rect,
+                        Part direction,
+                        State state) const override;
+  void PaintScrollbarTrack(SkCanvas* canvas,
+                           Part part,
+                           State state,
+                           const ScrollbarTrackExtraParams& extra_params,
+                           const gfx::Rect& rect) const override;
+  void PaintScrollbarThumb(
+      SkCanvas* canvas,
+      Part part,
+      State state,
+      const gfx::Rect& rect,
+      NativeTheme::ScrollbarOverlayColorTheme theme) const override;
+  void PaintScrollbarCorner(SkCanvas* canvas,
+                            State state,
+                            const gfx::Rect& rect) const override;
   void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,
