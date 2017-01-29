@@ -70,10 +70,6 @@
 #include <android/log.h>
 #endif
 
-// TODO(tkent): These function should be in anonymous namespace.
-void WTFGetBacktrace(void** stack, int* size);
-void WTFPrintBacktrace(void** stack, int size);
-
 PRINTF_FORMAT(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args) {
 #if OS(MACOSX) && USE(APPLE_SYSTEM_LOG)
@@ -131,75 +127,6 @@ static void vprintf_stderr_with_trailing_newline(const char* format,
 #if COMPILER(CLANG) || (COMPILER(GCC) && GCC_VERSION_AT_LEAST(4, 6, 0))
 #pragma GCC diagnostic pop
 #endif
-
-PRINTF_FORMAT(1, 2)
-static void printf_stderr_common(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  vprintf_stderr_common(format, args);
-  va_end(args);
-}
-
-static void printCallSite(const char* file, int line, const char* function) {
-#if OS(WIN) && defined(_DEBUG)
-  _CrtDbgReport(_CRT_WARN, file, line, nullptr, "%s\n", function);
-#else
-  // By using this format, which matches the format used by MSVC for compiler
-  // errors, developers using Visual Studio can double-click the file/line
-  // number in the Output Window to have the editor navigate to that line of
-  // code. It seems fine for other developers, too.
-  printf_stderr_common("%s(%d) : %s\n", file, line, function);
-#endif
-}
-
-void WTFReportAssertionFailure(const char* file,
-                               int line,
-                               const char* function,
-                               const char* assertion) {
-  if (assertion)
-    printf_stderr_common("ASSERTION FAILED: %s\n", assertion);
-  else
-    printf_stderr_common("SHOULD NEVER BE REACHED\n");
-  printCallSite(file, line, function);
-}
-
-void WTFGetBacktrace(void** stack, int* size) {
-#if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
-  *size = backtrace(stack, *size);
-#elif OS(WIN)
-  // The CaptureStackBackTrace function is available in XP, but it is not
-  // defined in the Windows Server 2003 R2 Platform SDK. So, we'll grab the
-  // function through GetProcAddress.
-  typedef WORD(NTAPI * RtlCaptureStackBackTraceFunc)(DWORD, DWORD, PVOID*,
-                                                     PDWORD);
-  HMODULE kernel32 = ::GetModuleHandleW(L"Kernel32.dll");
-  if (!kernel32) {
-    *size = 0;
-    return;
-  }
-  RtlCaptureStackBackTraceFunc captureStackBackTraceFunc =
-      reinterpret_cast<RtlCaptureStackBackTraceFunc>(
-          ::GetProcAddress(kernel32, "RtlCaptureStackBackTrace"));
-  if (captureStackBackTraceFunc)
-    *size = captureStackBackTraceFunc(0, *size, stack, 0);
-  else
-    *size = 0;
-#else
-  *size = 0;
-#endif
-}
-
-void WTFReportBacktrace(int framesToShow) {
-  static const int framesToSkip = 2;
-  // Use alloca to allocate on the stack since this function is used in OOM
-  // situations.
-  void** samples = static_cast<void**>(
-      alloca((framesToShow + framesToSkip) * sizeof(void*)));
-  int frames = framesToShow + framesToSkip;
-
-  WTFGetBacktrace(samples, &frames);
-  WTFPrintBacktrace(samples + framesToSkip, frames - framesToSkip);
-}
 
 namespace {
 
@@ -321,18 +248,6 @@ ScopedLogger::PrintFunctionPtr ScopedLogger::m_printFunc =
 
 }  // namespace WTF
 #endif  // !LOG_DISABLED
-
-void WTFPrintBacktrace(void** stack, int size) {
-  for (int i = 0; i < size; ++i) {
-    FrameToNameScope frameToName(stack[i]);
-    const int frameNumber = i + 1;
-    if (frameToName.nullableName())
-      printf_stderr_common("%-3d %p %s\n", frameNumber, stack[i],
-                           frameToName.nullableName());
-    else
-      printf_stderr_common("%-3d %p\n", frameNumber, stack[i]);
-  }
-}
 
 void WTFLogAlways(const char* format, ...) {
   va_list args;
