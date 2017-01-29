@@ -47,15 +47,21 @@ class TestNetworkQualityEstimatorProvider
 
 }  // namespace
 
-// Verifies that the effective connection type is correctly set.
-TEST(NetworkMetricsProviderTest, EffectiveConnectionType) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
-
+class NetworkMetricsProviderTest : public testing::Test {
+ protected:
+  NetworkMetricsProviderTest() : loop_(base::MessageLoop::TYPE_IO) {
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Initialize();
-  chromeos::NetworkHandler::Initialize();
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::NetworkHandler::Initialize();
 #endif  // OS_CHROMEOS
+  }
 
+ private:
+  base::MessageLoop loop_;
+};
+
+// Verifies that the effective connection type is correctly set.
+TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
   net::TestNetworkQualityEstimator estimator;
   std::unique_ptr<NetworkMetricsProvider::NetworkQualityEstimatorProvider>
       estimator_provider(base::WrapUnique(
@@ -108,6 +114,30 @@ TEST(NetworkMetricsProviderTest, EffectiveConnectionType) {
   // the lifetime of the log.
   network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+            system_profile.network().effective_connection_type());
+}
+
+// Verifies that the effective connection type is set to AMBIGUOUS when there is
+// a change in the connection type.
+TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
+  net::TestNetworkQualityEstimator estimator;
+  std::unique_ptr<NetworkMetricsProvider::NetworkQualityEstimatorProvider>
+      estimator_provider(base::WrapUnique(
+          new TestNetworkQualityEstimatorProvider(&estimator)));
+  SystemProfileProto system_profile;
+  NetworkMetricsProvider network_metrics_provider(
+      std::move(estimator_provider), base::ThreadTaskRunnerHandle::Get().get());
+
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            network_metrics_provider.effective_connection_type_);
+  EXPECT_FALSE(
+      network_metrics_provider.effective_connection_type_is_ambiguous_);
+
+  network_metrics_provider.OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::CONNECTION_2G);
+  EXPECT_TRUE(network_metrics_provider.effective_connection_type_is_ambiguous_);
+  network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
+  EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_AMBIGUOUS,
             system_profile.network().effective_connection_type());
 }
 

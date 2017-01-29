@@ -225,6 +225,7 @@ void NetworkMetricsProvider::OnConnectionTypeChanged(
   if (type != connection_type_ &&
       connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE) {
     connection_type_is_ambiguous_ = true;
+    effective_connection_type_is_ambiguous_ = true;
   }
   connection_type_ = type;
 
