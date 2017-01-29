@@ -16,18 +16,31 @@ ScrollPaintPropertyNode* ScrollPaintPropertyNode::root() {
 }
 
 String ScrollPaintPropertyNode::toString() const {
-  std::string mainThreadScrollingReasonsAsText =
-      MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-          m_mainThreadScrollingReasons);
-  return String::format(
-      "parent=%p clip=%s bounds=%s "
-      "userScrollableHorizontal=%s"
-      " userScrollableVertical=%s mainThreadScrollingReasons=%s",
-      m_parent.get(), m_clip.toString().ascii().data(),
-      m_bounds.toString().ascii().data(),
-      m_userScrollableHorizontal ? "yes" : "no",
-      m_userScrollableVertical ? "yes" : "no",
-      mainThreadScrollingReasonsAsText.c_str());
+  StringBuilder text;
+  text.append("parent=");
+  text.append(String::format("%p", m_parent.get()));
+  text.append(" clip=");
+  text.append(m_clip.toString());
+  text.append(" bounds=");
+  text.append(m_bounds.toString());
+
+  text.append(" userScrollable=");
+  if (m_userScrollableHorizontal && m_userScrollableVertical)
+    text.append("both");
+  else if (!m_userScrollableHorizontal && !m_userScrollableHorizontal)
+    text.append("none");
+  else
+    text.append(m_userScrollableHorizontal ? "horizontal" : "vertical");
+
+  text.append(" mainThreadReasons=");
+  if (m_mainThreadScrollingReasons) {
+    text.append(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
+                    m_mainThreadScrollingReasons)
+                    .c_str());
+  } else {
+    text.append("none");
+  }
+  return text.toString();
 }
 
 #if DCHECK_IS_ON()
