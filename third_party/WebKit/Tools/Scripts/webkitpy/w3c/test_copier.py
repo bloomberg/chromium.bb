@@ -149,23 +149,21 @@ class TestCopier(object):
                     # See http://crbug.com/584660 and http://crbug.com/582838.
                     continue
 
-                fullpath = self.filesystem.join(root, filename)
-
-                mimetype = mimetypes.guess_type(fullpath)
+                mimetype = mimetypes.guess_type(path_full)
                 if ('html' not in str(mimetype[0]) and
                         'application/xhtml+xml' not in str(mimetype[0]) and
                         'application/xml' not in str(mimetype[0])):
-                    copy_list.append({'src': fullpath, 'dest': filename})
+                    copy_list.append({'src': path_full, 'dest': filename})
                     continue
 
                 if self.filesystem.basename(root) in dirs_to_include:
-                    copy_list.append({'src': fullpath, 'dest': filename})
+                    copy_list.append({'src': path_full, 'dest': filename})
                     continue
 
-                test_parser = TestParser(fullpath, self.host)
+                test_parser = TestParser(path_full, self.host)
                 test_info = test_parser.analyze_test()
                 if test_info is None:
-                    copy_list.append({'src': fullpath, 'dest': filename})
+                    copy_list.append({'src': path_full, 'dest': filename})
                     continue
 
                 if self.path_too_long(path_full):
@@ -207,7 +205,7 @@ class TestCopier(object):
                 elif 'jstest' in test_info.keys():
                     jstests += 1
                     total_tests += 1
-                    copy_list.append({'src': fullpath, 'dest': filename, 'is_jstest': True})
+                    copy_list.append({'src': path_full, 'dest': filename, 'is_jstest': True})
 
             if copy_list:
                 # Only add this directory to the list if there's something to import
