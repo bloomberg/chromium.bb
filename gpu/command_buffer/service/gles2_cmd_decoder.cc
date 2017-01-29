@@ -16434,13 +16434,16 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   // then copy from the fbo to dest texture level with glCopyTexImage2D.
   // For WebGL 1.0 or OpenGL ES 2.0, DIRECT_DRAW path isn't available for
   // dest_level > 0 due to level > 0 isn't supported by glFramebufferTexture2D
-  // in ES2 context. Go to DRAW_AND_COPY path in this case.
+  // in ES2 context. DIRECT_DRAW path isn't available for cube map dest texture
+  // either due to it may be cube map incomplete. Go to DRAW_AND_COPY path in
+  // these cases.
   // TODO(qiankun.miao@intel.com): for WebGL 2.0 or OpenGL ES 3.0, both
   // DIRECT_DRAW path for dest_level > 0 and DIRECT_COPY path for source_level >
   // 0 are not available due to a framebuffer completeness bug:
   // crbug.com/678526. Once the bug is fixed, the limitation for WebGL 2.0 and
   // OpenGL ES 3.0 can be lifted.
-  if ((dest_level > 0 && method == DIRECT_DRAW) ||
+  if (((dest_level > 0 || dest_binding_target == GL_TEXTURE_CUBE_MAP) &&
+       method == DIRECT_DRAW) ||
       (source_level > 0 && method == DIRECT_COPY)) {
     method = DRAW_AND_COPY;
   }
@@ -16698,13 +16701,16 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   // then copy from the fbo to dest texture level with glCopyTexImage2D.
   // For WebGL 1.0 or OpenGL ES 2.0, DIRECT_DRAW path isn't available for
   // dest_level > 0 due to level > 0 isn't supported by glFramebufferTexture2D
-  // in ES2 context. Go to DRAW_AND_COPY path in this case.
+  // in ES2 context. DIRECT_DRAW path isn't available for cube map dest texture
+  // either due to it may be cube map incomplete. Go to DRAW_AND_COPY path in
+  // these cases.
   // TODO(qiankun.miao@intel.com): for WebGL 2.0 or OpenGL ES 3.0, both
   // DIRECT_DRAW path for dest_level > 0 and DIRECT_COPY path for source_level >
   // 0 are not available due to a framebuffer completeness bug:
   // crbug.com/678526. Once the bug is fixed, the limitation for WebGL 2.0 and
   // OpenGL ES 3.0 can be lifted.
-  if ((dest_level > 0 && method == DIRECT_DRAW) ||
+  if (((dest_level > 0 || dest_binding_target == GL_TEXTURE_CUBE_MAP) &&
+       method == DIRECT_DRAW) ||
       (source_level > 0 && method == DIRECT_COPY)) {
     method = DRAW_AND_COPY;
   }

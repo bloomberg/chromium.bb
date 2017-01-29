@@ -68,10 +68,12 @@ class GLTestHelper {
   // Uses ReadPixels to save an area of the current FBO/Backbuffer.
   static bool SaveBackbufferAsBMP(const char* filename, int width, int height);
 
-  static void DrawTextureQuad(const char* vertex_src,
+  static void DrawTextureQuad(const GLenum texture_target,
+                              const char* vertex_src,
                               const char* fragment_src,
                               const char* position_name,
-                              const char* sampler_name);
+                              const char* sampler_name,
+                              const char* face_name);
 };
 
 #endif  // GPU_COMMAND_BUFFER_TESTS_GL_TEST_UTILS_H_

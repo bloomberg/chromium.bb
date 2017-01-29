@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -277,10 +278,12 @@ bool GLTestHelper::SaveBackbufferAsBMP(
   return true;
 }
 
-void GLTestHelper::DrawTextureQuad(const char* vertex_src,
+void GLTestHelper::DrawTextureQuad(const GLenum texture_target,
+                                   const char* vertex_src,
                                    const char* fragment_src,
                                    const char* position_name,
-                                   const char* sampler_name) {
+                                   const char* sampler_name,
+                                   const char* face_name) {
   GLuint program = GLTestHelper::LoadProgram(vertex_src, fragment_src);
   EXPECT_NE(program, 0u);
   glUseProgram(program);
@@ -289,6 +292,14 @@ void GLTestHelper::DrawTextureQuad(const char* vertex_src,
   GLint sampler_location = glGetUniformLocation(program, sampler_name);
   ASSERT_NE(position_loc, -1);
   ASSERT_NE(sampler_location, -1);
+  GLint face_loc = -1;
+  if (gpu::gles2::GLES2Util::GLFaceTargetToTextureTarget(texture_target) ==
+      GL_TEXTURE_CUBE_MAP) {
+    ASSERT_NE(face_name, nullptr);
+    face_loc = glGetUniformLocation(program, face_name);
+    ASSERT_NE(face_loc, -1);
+    glUniform1i(face_loc, texture_target);
+  }
 
   GLuint vertex_buffer = GLTestHelper::SetupUnitQuad(position_loc);
   ASSERT_NE(vertex_buffer, 0u);

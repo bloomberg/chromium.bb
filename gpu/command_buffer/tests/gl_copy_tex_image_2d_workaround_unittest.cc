@@ -168,9 +168,9 @@ TEST_P(GLCopyTexImage2DWorkaroundTest, UseIntermediaryTexture) {
     glViewport(0, 0, width, height);
     std::string fragment_shader_source =
         GetFragmentShaderSource(dest_target, gfx::Size(width, height));
-    GLTestHelper::DrawTextureQuad(kSimpleVertexShader,
+    GLTestHelper::DrawTextureQuad(dest_target, kSimpleVertexShader,
                                   fragment_shader_source.c_str(), "a_position",
-                                  "u_texture");
+                                  "u_texture", nullptr);
 
     // Verify.
     const uint8_t* expected = expectations[i];
