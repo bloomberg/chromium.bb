@@ -305,6 +305,8 @@ GURL GetTriggeredResetSettingsURL() {
 }
 
 GURL GetWelcomePageURL() {
+  // Record that the Welcome page was added to the startup url list.
+  UMA_HISTOGRAM_BOOLEAN("Welcome.Win10.OriginalPromoPageAdded", true);
   return GURL(l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL));
 }
 

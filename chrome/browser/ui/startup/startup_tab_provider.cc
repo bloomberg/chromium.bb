@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
@@ -230,6 +231,8 @@ StartupTabs StartupTabProviderImpl::CheckNewTabPageTabPolicy(
 
 // static
 GURL StartupTabProviderImpl::GetWelcomePageUrl(bool use_later_run_variant) {
+  // Record that the Welcome page was added to the startup url list.
+  UMA_HISTOGRAM_BOOLEAN("Welcome.Win10.NewPromoPageAdded", true);
   GURL url(chrome::kChromeUIWelcomeURL);
   return use_later_run_variant
              ? net::AppendQueryParameter(url, "variant", "everywhere")
