@@ -1422,6 +1422,9 @@ void RTCPeerConnection::closeInternal() {
   changeIceConnectionState(ICEConnectionStateClosed);
   changeIceGatheringState(ICEGatheringStateComplete);
   changeSignalingState(SignalingStateClosed);
+  Document* document = toDocument(getExecutionContext());
+  HostsUsingFeatures::countAnyWorld(
+      *document, HostsUsingFeatures::Feature::RTCPeerConnectionUsed);
 }
 
 void RTCPeerConnection::scheduleDispatchEvent(Event* event) {

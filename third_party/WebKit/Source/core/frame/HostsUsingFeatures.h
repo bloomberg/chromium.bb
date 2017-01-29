@@ -42,6 +42,7 @@ class CORE_EXPORT HostsUsingFeatures {
     RTCPeerConnectionAudio,
     RTCPeerConnectionVideo,
     RTCPeerConnectionDataChannel,
+    RTCPeerConnectionUsed,  // Used to compute the "unconnected PCs" feature
 
     NumberOfFeatures  // This must be the last item.
   };
