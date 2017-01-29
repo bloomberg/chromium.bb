@@ -65,6 +65,12 @@ static inline bool featureWithValidIdent(const String& mediaFeature,
     if (mediaFeature == shapeMediaFeature)
       return ident == CSSValueRect || ident == CSSValueRound;
   }
+
+  if (mediaFeature == colorGamutMediaFeature) {
+    return ident == CSSValueSRGB || ident == CSSValueP3 ||
+           ident == CSSValueRec2020;
+  }
+
   return false;
 }
 
@@ -168,7 +174,9 @@ static inline bool featureWithoutValue(const String& mediaFeature) {
          mediaFeature == devicePixelRatioMediaFeature ||
          mediaFeature == resolutionMediaFeature ||
          mediaFeature == displayModeMediaFeature ||
-         mediaFeature == scanMediaFeature || mediaFeature == shapeMediaFeature;
+         mediaFeature == scanMediaFeature ||
+         mediaFeature == shapeMediaFeature ||
+         mediaFeature == colorGamutMediaFeature;
 }
 
 bool MediaQueryExp::isViewportDependent() const {

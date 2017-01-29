@@ -17,6 +17,7 @@ namespace blink {
 class Document;
 class CSSPrimitiveValue;
 class LocalFrame;
+enum class ColorSpaceGamut;
 
 class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
  public:
@@ -73,6 +74,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
 
   virtual void overrideViewportDimensions(double width, double height) = 0;
   virtual DisplayShape displayShape() const = 0;
+  virtual ColorSpaceGamut colorGamut() const = 0;
 
  protected:
   static double calculateViewportWidth(LocalFrame*);
@@ -92,6 +94,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   static HoverType calculatePrimaryHoverType(LocalFrame*);
   static int calculateAvailableHoverTypes(LocalFrame*);
   static DisplayShape calculateDisplayShape(LocalFrame*);
+  static ColorSpaceGamut calculateColorGamut(LocalFrame*);
   static LocalFrame* frameFrom(Document&);
 };
 

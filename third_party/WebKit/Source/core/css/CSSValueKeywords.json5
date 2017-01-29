@@ -1122,5 +1122,9 @@
     // rect
     // round
 
+    // color-gamut
+    // srgb
+    "p3",
+    "rec2020",
   ],
 }

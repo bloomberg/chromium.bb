@@ -20,6 +20,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/graphics/ColorSpace.h"
 #include "public/platform/WebScreenInfo.h"
 
 namespace blink {
@@ -143,6 +144,12 @@ int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) {
 DisplayShape MediaValues::calculateDisplayShape(LocalFrame* frame) {
   DCHECK(frame && frame->host());
   return frame->host()->chromeClient().screenInfo().displayShape;
+}
+
+ColorSpaceGamut MediaValues::calculateColorGamut(LocalFrame* frame) {
+  DCHECK(frame && frame->host());
+  return ColorSpaceUtilities::getColorSpaceGamut(
+      frame->host()->chromeClient().screenInfo());
 }
 
 bool MediaValues::computeLengthImpl(double value,

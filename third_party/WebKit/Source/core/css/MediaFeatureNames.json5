@@ -9,6 +9,7 @@
     "any-pointer",
     "color",
     "color-index",
+    "color-gamut",
     "grid",
     "monochrome",
     "height",

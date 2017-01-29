@@ -33,6 +33,8 @@
 #include "platform/graphics/ColorSpace.h"
 
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "public/platform/WebScreenInfo.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -114,6 +116,59 @@ sk_sp<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace,
     return nullptr;
 
   return SkTableColorFilter::MakeARGB(0, lookupTable, lookupTable, lookupTable);
+}
+
+ColorSpaceGamut getColorSpaceGamut(const WebScreenInfo& screenInfo) {
+  const gfx::ICCProfile& profile = screenInfo.iccProfile;
+  if (profile == gfx::ICCProfile())
+    return ColorSpaceGamut::Unknown;
+
+  return ColorSpaceUtilities::getColorSpaceGamut(
+      profile.GetColorSpace().ToSkColorSpace().get());
+}
+
+ColorSpaceGamut getColorSpaceGamut(SkColorSpace* colorSpace) {
+  sk_sp<SkColorSpace> scRGB(
+      SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named));
+  std::unique_ptr<SkColorSpaceXform> transform(
+      SkColorSpaceXform::New(colorSpace, scRGB.get()));
+
+  if (!transform)
+    return ColorSpaceGamut::Unknown;
+
+  unsigned char in[3][4];
+  float out[3][4];
+  memset(in, 0, sizeof(in));
+  in[0][0] = 255;
+  in[1][1] = 255;
+  in[2][2] = 255;
+  in[0][3] = 255;
+  in[1][3] = 255;
+  in[2][3] = 255;
+  transform->apply(SkColorSpaceXform::kRGBA_F32_ColorFormat, out,
+                   SkColorSpaceXform::kRGBA_8888_ColorFormat, in, 3,
+                   kOpaque_SkAlphaType);
+  float score = out[0][0] * out[1][1] * out[2][2];
+
+  if (score < 0.9)
+    return ColorSpaceGamut::LessThanNTSC;
+  if (score < 0.95)
+    return ColorSpaceGamut::NTSC;  // actual score 0.912839
+  if (score < 1.1)
+    return ColorSpaceGamut::SRGB;  // actual score 1.0
+  if (score < 1.3)
+    return ColorSpaceGamut::AlmostP3;
+  if (score < 1.425)
+    return ColorSpaceGamut::P3;  // actual score 1.401899
+  if (score < 1.5)
+    return ColorSpaceGamut::AdobeRGB;  // actual score 1.458385
+  if (score < 2.0)
+    return ColorSpaceGamut::Wide;
+  if (score < 2.2)
+    return ColorSpaceGamut::BT2020;  // actual score 2.104520
+  if (score < 2.7)
+    return ColorSpaceGamut::ProPhoto;  // actual score 2.913247
+  return ColorSpaceGamut::UltraWide;
 }
 
 }  // namespace ColorSpaceUtilities

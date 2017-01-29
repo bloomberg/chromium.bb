@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<title>Tests for color-gamut media query with picture</title>
+<script>
+testRunner.setColorProfile('adobeRGB', () => {});
+</script>
+<picture>
+  <source media="(color-gamut: p3)" srcset="resources/apple_logo_big.jpg">
+  <img src="resources/apple_logo_half_size.jpg">
+</picture>

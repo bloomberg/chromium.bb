@@ -31,10 +31,29 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkColorFilter;
+class SkColorSpace;
 
 namespace blink {
 
+struct WebScreenInfo;
+
 enum ColorSpace { ColorSpaceDeviceRGB, ColorSpaceSRGB, ColorSpaceLinearRGB };
+
+enum class ColorSpaceGamut {
+  // Values synced with 'Gamut' in src/tools/metrics/histograms/histograms.xml
+  Unknown = 0,
+  LessThanNTSC = 1,
+  NTSC = 2,
+  SRGB = 3,
+  AlmostP3 = 4,
+  P3 = 5,
+  AdobeRGB = 6,
+  Wide = 7,
+  BT2020 = 8,
+  ProPhoto = 9,
+  UltraWide = 10,
+  End
+};
 
 namespace ColorSpaceUtilities {
 
@@ -56,6 +75,9 @@ Color convertColor(const Color& srcColor,
 // |dstColorSpace|.
 sk_sp<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace,
                                             ColorSpace dstColorSpace);
+
+PLATFORM_EXPORT ColorSpaceGamut getColorSpaceGamut(const WebScreenInfo&);
+ColorSpaceGamut getColorSpaceGamut(SkColorSpace*);
 
 }  // namespace ColorSpaceUtilities
 

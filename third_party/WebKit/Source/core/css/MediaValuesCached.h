@@ -13,7 +13,7 @@ namespace blink {
 
 class CORE_EXPORT MediaValuesCached final : public MediaValues {
  public:
-  struct MediaValuesCachedData final {
+  struct CORE_EXPORT MediaValuesCachedData final {
     DISALLOW_NEW();
     // Members variables must be thread safe, since they're copied to the parser
     // thread
@@ -34,25 +34,9 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     String mediaType;
     WebDisplayMode displayMode;
     DisplayShape displayShape;
+    ColorSpaceGamut colorGamut;
 
-    MediaValuesCachedData()
-        : viewportWidth(0),
-          viewportHeight(0),
-          deviceWidth(0),
-          deviceHeight(0),
-          devicePixelRatio(1.0),
-          colorBitsPerComponent(24),
-          monochromeBitsPerComponent(0),
-          primaryPointerType(PointerTypeNone),
-          availablePointerTypes(PointerTypeNone),
-          primaryHoverType(HoverTypeNone),
-          availableHoverTypes(HoverTypeNone),
-          defaultFontSize(16),
-          threeDEnabled(false),
-          strictMode(true),
-          displayMode(WebDisplayModeBrowser),
-          displayShape(DisplayShapeRect) {}
-
+    MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
 
     MediaValuesCachedData deepCopy() const {
@@ -74,6 +58,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.mediaType = mediaType.isolatedCopy();
       data.displayMode = displayMode;
       data.displayShape = displayShape;
+      data.colorGamut = colorGamut;
       return data;
     }
   };
@@ -106,6 +91,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   const String mediaType() const override;
   WebDisplayMode displayMode() const override;
   DisplayShape displayShape() const override;
+  ColorSpaceGamut colorGamut() const override;
 
   void overrideViewportDimensions(double width, double height) override;
 
