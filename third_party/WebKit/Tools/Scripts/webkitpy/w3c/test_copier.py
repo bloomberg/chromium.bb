@@ -55,7 +55,12 @@ class TestCopier(object):
         """Initializes variables to prepare for copying and converting files.
 
         Args:
-            source_repo_path: Path to the local checkout of a WPT
+            host: An instance of Host.
+            source_repo_path: Path to the local checkout of a
+            web-platform-tests or csswg-test repository.
+            dest_dir_name: The name of the directory under the layout tests
+                directory where imported tests should be copied to.
+                TODO(qyearsley): This can be made into a constant.
         """
         self.host = host
 
@@ -96,7 +101,7 @@ class TestCopier(object):
 
         for root, dirs, files in self.filesystem.walk(self.source_repo_path):
             cur_dir = root.replace(self.dir_above_repo + '/', '') + '/'
-            _log.debug('  scanning ' + cur_dir + '...')
+            _log.debug('Scanning %s...', cur_dir)
             total_tests = 0
             reftests = 0
             jstests = 0
@@ -119,12 +124,10 @@ class TestCopier(object):
                     path_base = path_base.replace(cur_dir, '')
                     path_full = self.filesystem.join(root, path_base)
                     if path_base in dirs:
+                        _log.info('Skipping: %s', path_full)
                         dirs.remove(path_base)
                         if self.import_in_place:
-                            _log.debug('  pruning %s', path_base)
                             self.filesystem.rmtree(path_full)
-                        else:
-                            _log.debug('  skipping %s', path_base)
 
             copy_list = []
 
@@ -134,7 +137,7 @@ class TestCopier(object):
                 path_base = self.destination_directory.replace(self.layout_tests_dir + '/', '') + '/' + path_base
                 if path_base in paths_to_skip:
                     if self.import_in_place:
-                        _log.debug('  pruning %s', path_base)
+                        _log.debug('Pruning: %s', path_base)
                         self.filesystem.remove(path_full)
                         continue
                     else:
@@ -142,11 +145,17 @@ class TestCopier(object):
                 # FIXME: This block should really be a separate function, but the early-continues make that difficult.
 
                 if filename.startswith('.') or filename.endswith('.pl'):
-                    # The w3cs repos may contain perl scripts, which we don't care about.
+                    _log.info('Skipping: %s', path_full)
+                    _log.info('  Reason: Hidden files and perl scripts are not necessary.')
                     continue
                 if filename == 'OWNERS' or filename == 'reftest.list':
-                    # These files fail our presubmits.
                     # See http://crbug.com/584660 and http://crbug.com/582838.
+                    _log.info('Skipping: %s', path_full)
+                    _log.info('  Reason: This file may cause Chromium presubmit to fail.')
+                    continue
+                if self.path_too_long(path_full):
+                    _log.warning('Skipping: %s', path_full)
+                    _log.warning('  Reason: Long path. Max length %d; see http://crbug.com/609871.', MAX_PATH_LENGTH)
                     continue
 
                 mimetype = mimetypes.guess_type(path_full)
@@ -166,12 +175,6 @@ class TestCopier(object):
                     copy_list.append({'src': path_full, 'dest': filename})
                     continue
 
-                if self.path_too_long(path_full):
-                    _log.warning('%s skipped due to long path. '
-                                 'Max length from repo base %d chars; see http://crbug.com/609871.',
-                                 path_full, MAX_PATH_LENGTH)
-                    continue
-
                 if 'reference' in test_info.keys():
                     test_basename = self.filesystem.basename(test_info['test'])
                     # Add the ref file, following WebKit style.
@@ -186,14 +189,14 @@ class TestCopier(object):
                     ref_file += self.filesystem.splitext(test_info['reference'])[1]
 
                     if not self.filesystem.exists(test_info['reference']):
-                        _log.warning('%s skipped because ref file %s was not found.',
-                                     path_full, ref_file)
+                        _log.warning('Skipping: %s', path_full)
+                        _log.warning('  Reason: Ref file "%s" was not found.', ref_file)
                         continue
 
                     if self.path_too_long(path_full.replace(filename, ref_file)):
-                        _log.warning('%s skipped because path of ref file %s would be too long. '
-                                     'Max length from repo base %d chars; see http://crbug.com/609871.',
-                                     path_full, ref_file, MAX_PATH_LENGTH)
+                        _log.warning('Skipping: %s', path_full)
+                        _log.warning('  Reason: Ref file path length would be too long: %s.', ref_file)
+                        _log.warning('  Max length %d; see http://crbug.com/609871.', MAX_PATH_LENGTH)
                         continue
 
                     reftests += 1

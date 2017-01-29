@@ -25,12 +25,11 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-import unittest
-
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive, ScriptError
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.w3c.test_copier import TestCopier
+from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 FAKE_SOURCE_REPO_DIR = '/blink'
@@ -41,14 +40,12 @@ FAKE_FILES = {
     '/blink/w3c/dir/README.txt': '',
     '/blink/w3c/dir/OWNERS': '',
     '/blink/w3c/dir/reftest.list': '',
-    '/blink/w3c/dir1/OWNERS': '',
-    '/blink/w3c/dir1/reftest.list': '',
     '/mock-checkout/third_party/WebKit/LayoutTests/external/README.txt': '',
     '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
 }
 
 
-class TestCopierTest(unittest.TestCase):
+class TestCopierTest(LoggingTestCase):
 
     def test_import_dir_with_no_tests(self):
         host = MockHost()
@@ -56,18 +53,6 @@ class TestCopierTest(unittest.TestCase):
         host.filesystem = MockFileSystem(files=FAKE_FILES)
         copier = TestCopier(host, FAKE_SOURCE_REPO_DIR, 'destination')
         copier.do_import()  # No exception raised.
-
-    def test_path_too_long_true(self):
-        host = MockHost()
-        host.filesystem = MockFileSystem(files=FAKE_FILES)
-        copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
-        self.assertTrue(copier.path_too_long(FAKE_SOURCE_REPO_DIR + '/' + ('x' * 150) + '.html'))
-
-    def test_path_too_long_false(self):
-        host = MockHost()
-        host.filesystem = MockFileSystem(files=FAKE_FILES)
-        copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
-        self.assertFalse(copier.path_too_long(FAKE_SOURCE_REPO_DIR + '/x.html'))
 
     def test_does_not_import_owner_files(self):
         host = MockHost()
@@ -152,6 +137,28 @@ class TestCopierTest(unittest.TestCase):
         copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
         copier.find_importable_tests()
         self.assertEqual(copier.import_list, [])
+        self.assertLog([
+            'WARNING: Skipping: /blink/w3c/dir1/my-ref-test.html\n',
+            'WARNING:   Reason: Ref file "my-ref-test-expected.html" was not found.\n'
+        ])
+
+    def test_files_with_long_path_are_skipped(self):
+        host = MockHost()
+        host.filesystem = MockFileSystem(files=FAKE_FILES)
+        long_file_path = '%s/%s.html' % (FAKE_SOURCE_REPO_DIR, 'x' * 150)
+        short_file_path = '%s/x.html' % FAKE_SOURCE_REPO_DIR
+        host.filesystem.write_text_file(long_file_path, '<html></html>')
+        host.filesystem.write_text_file(short_file_path, '<html></html>')
+        copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
+        copier.find_importable_tests()
+        self.assertLog([
+            'WARNING: Skipping: %s\n' % long_file_path,
+            'WARNING:   Reason: Long path. Max length 140; see http://crbug.com/609871.\n',
+            'INFO: Skipping: /blink/w3c/dir/reftest.list\n',
+            'INFO:   Reason: This file may cause Chromium presubmit to fail.\n',
+            'INFO: Skipping: /blink/w3c/dir/OWNERS\n',
+            'INFO:   Reason: This file may cause Chromium presubmit to fail.\n',
+        ])
 
     def test_should_try_to_convert_positive_cases(self):
         self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.css', 'LayoutTests/external/csswg-test/x'))
