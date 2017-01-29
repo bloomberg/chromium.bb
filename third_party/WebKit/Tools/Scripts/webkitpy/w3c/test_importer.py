@@ -82,14 +82,12 @@ class TestImporter(object):
                 for commit in commits:
                     _log.error('  https://chromium.googlesource.com/chromium/src/+/%s', commit.sha)
                 _log.error('Aborting import to prevent clobbering these commits.')
-                if not options.keep_w3c_repos_around:
-                    self.clean_up_temp_repo(temp_repo_path)
+                self.clean_up_temp_repo(temp_repo_path)
                 return 1
 
-        import_commit = self.update(dest_dir_name, temp_repo_path, options.keep_w3c_repos_around, options.revision)
+        import_commit = self.update(dest_dir_name, temp_repo_path, options.revision)
 
-        if not options.keep_w3c_repos_around:
-            self.clean_up_temp_repo(temp_repo_path)
+        self.clean_up_temp_repo(temp_repo_path)
 
         if options.target == 'wpt':
             self._copy_resources()
@@ -116,8 +114,6 @@ class TestImporter(object):
                             help='log what we are doing')
         parser.add_argument('--allow-local-commits', action='store_true',
                             help='allow script to run even if we have local commits')
-        parser.add_argument('--keep-w3c-repos-around', action='store_true',
-                            help='leave the w3c repos around that were imported previously.')
         parser.add_argument('-r', dest='revision', action='store',
                             help='Target revision.')
         parser.add_argument('target', choices=['css', 'wpt'],
@@ -204,13 +200,12 @@ class TestImporter(object):
         self.run([manifest_command, '--work', '--tests-root', dest_path])
         self.run(['git', 'add', self.fs.join(dest_path, 'MANIFEST.json')])
 
-    def update(self, dest_dir_name, temp_repo_path, keep_w3c_repos_around, revision):
+    def update(self, dest_dir_name, temp_repo_path, revision):
         """Updates an imported repository.
 
         Args:
             dest_dir_name: The destination directory name.
             temp_repo_path: Path to local checkout of W3C test repo.
-            keep_w3c_repos_around: If True, the temp directory won't be cleaned up.
             revision: A W3C test repo commit hash, or None.
 
         Returns:
