@@ -24,12 +24,12 @@ class TestImporterTest(LoggingTestCase):
         return_code = importer.main(['wpt'])
         self.assertEqual(return_code, 1)
         self.assertLog([
-            'INFO: Noting the current Chromium commit.\n',
-            ('INFO: Cloning https://chromium.googlesource.com/external/w3c/web-platform-tests.git '
-             'into /mock-checkout/third_party/WebKit/wpt.\n'),
+            'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
+            'INFO: Local path: /mock-checkout/third_party/WebKit/wpt\n',
             'ERROR: There were exportable but not-yet-exported commits:\n',
             'ERROR:   https://chromium.googlesource.com/chromium/src/+/deadbeef\n',
-            'ERROR: Aborting import to prevent clobbering these commits.\n'
+            'ERROR: Aborting import to prevent clobbering these commits.\n',
+            'INFO: Deleting temp repo directory /mock-checkout/third_party/WebKit/wpt.\n',
         ])
 
     def test_update_test_expectations(self):

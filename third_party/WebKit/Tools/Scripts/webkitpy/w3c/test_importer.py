@@ -82,9 +82,14 @@ class TestImporter(object):
                 for commit in commits:
                     _log.error('  https://chromium.googlesource.com/chromium/src/+/%s', commit.sha)
                 _log.error('Aborting import to prevent clobbering these commits.')
+                if not options.keep_w3c_repos_around:
+                    self.clean_up_temp_repo(temp_repo_path)
                 return 1
 
         import_commit = self.update(dest_dir_name, temp_repo_path, options.keep_w3c_repos_around, options.revision)
+
+        if not options.keep_w3c_repos_around:
+            self.clean_up_temp_repo(temp_repo_path)
 
         if options.target == 'wpt':
             self._copy_resources()
@@ -158,6 +163,10 @@ class TestImporter(object):
         assert self.host.filesystem.exists(wpt_path)
         _, chromium_commit = local_wpt.most_recent_chromium_commit()
         return exportable_commits_since(chromium_commit.sha, self.host, local_wpt)
+
+    def clean_up_temp_repo(self, temp_repo_path):
+        _log.info('Deleting temp repo directory %s.', temp_repo_path)
+        self.rmtree(temp_repo_path)
 
     def _copy_resources(self):
         """Copies resources from wpt to LayoutTests/resources.
@@ -241,10 +250,6 @@ class TestImporter(object):
                 self.fs.remove(full_path)
 
         self._generate_manifest(dest_path)
-
-        if not keep_w3c_repos_around:
-            _log.info('Deleting temp repo directory %s.', temp_repo_path)
-            self.rmtree(temp_repo_path)
 
         _log.info('Updating TestExpectations for any removed or renamed tests.')
         self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
