@@ -3931,7 +3931,7 @@ static void build_token_cdfs(const aom_prob *pdf_model,
 void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
   TX_SIZE t;
   int i, j, k, l;
-  for (t = TX_4X4; t < TX_SIZES; ++t)
+  for (t = 0; t < TX_SIZES; ++t)
     for (i = 0; i < PLANE_TYPES; ++i)
       for (j = 0; j < REF_TYPES; ++j)
         for (k = 0; k < COEF_BANDS; ++k)
