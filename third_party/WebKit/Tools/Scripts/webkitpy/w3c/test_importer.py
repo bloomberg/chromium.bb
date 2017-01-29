@@ -57,7 +57,7 @@ class TestImporter(object):
 
         self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
 
-        _log.info('Noting the current Chromium commit.')
+        _log.debug('Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
         chromium_commit = show_ref_output.split()[0]
 
@@ -71,7 +71,8 @@ class TestImporter(object):
         # TODO(qyearsley): Simplify this to use LocalWPT.fetch when csswg-test
         # is merged into web-platform-tests.
         temp_repo_path = self.path_from_webkit_base(dest_dir_name)
-        _log.info('Cloning %s into %s.', repo_url, temp_repo_path)
+        _log.info('Cloning repo: %s', repo_url)
+        _log.info('Local path: %s', temp_repo_path)
         self.run(['git', 'clone', repo_url, temp_repo_path])
 
         if options.target == 'wpt':
