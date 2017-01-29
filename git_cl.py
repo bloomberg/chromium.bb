@@ -2393,7 +2393,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if last_message_author.get('email') == COMMIT_BOT_EMAIL:
         # Ignore replies from CQ.
         continue
-      if owner != last_message_author.get('_account_id'):
+      if last_message_author.get('_account_id') != owner:
         # Some reply from non-owner.
         return 'reply'
     return 'waiting'
