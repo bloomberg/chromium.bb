@@ -77,7 +77,9 @@ class TestImporter(object):
         if options.target == 'wpt':
             commits = self.exportable_but_not_exported_commits(temp_repo_path)
             if commits:
-                _log.error('There were exportable but not-yet-exported commits: %r', commits)
+                _log.error('There were exportable but not-yet-exported commits:')
+                for commit in commits:
+                    _log.error('  https://chromium.googlesource.com/chromium/src/+/%s', commit.sha)
                 _log.error('Aborting import to prevent clobbering these commits.')
                 return 1
 

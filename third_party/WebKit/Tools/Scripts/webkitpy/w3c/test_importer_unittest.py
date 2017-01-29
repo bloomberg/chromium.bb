@@ -2,21 +2,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import unittest
+import collections
 
 from webkitpy.common.checkout.scm.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.w3c.test_importer import TestImporter
 
 
-class TestImporterTest(unittest.TestCase):
+MockChromiumCommit = collections.namedtuple('ChromiumCommit', ('sha', 'position'))
+
+
+class TestImporterTest(LoggingTestCase):
 
     def test_abort_on_exportable_commits(self):
         importer = TestImporter(MockHost())
-        importer.exportable_but_not_exported_commits = lambda _: ['aaaa']
+        importer.exportable_but_not_exported_commits = lambda _: [
+            MockChromiumCommit(sha='deadbeef', position=123)]
+        importer.checkout_is_okay = lambda _: True
         return_code = importer.main(['wpt'])
         self.assertEqual(return_code, 1)
+        self.assertLog([
+            'INFO: Noting the current Chromium commit.\n',
+            ('INFO: Cloning https://chromium.googlesource.com/external/w3c/web-platform-tests.git '
+             'into /mock-checkout/third_party/WebKit/wpt.\n'),
+            'ERROR: There were exportable but not-yet-exported commits:\n',
+            'ERROR:   https://chromium.googlesource.com/chromium/src/+/deadbeef\n',
+            'ERROR: Aborting import to prevent clobbering these commits.\n'
+        ])
 
     def test_update_test_expectations(self):
         host = MockHost()
