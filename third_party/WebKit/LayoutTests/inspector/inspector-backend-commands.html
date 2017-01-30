@@ -5,6 +5,7 @@
 <script>
 function test()
 {
+    Protocol.InspectorBackend.Options.suppressRequestErrors = false;
     function dumpArgument(name, value)
     {
         InspectorTest.addResult(name + " result: " + (typeof value === "string" ? value : JSON.stringify(value)));

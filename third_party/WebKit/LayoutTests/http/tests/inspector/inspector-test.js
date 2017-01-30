@@ -1,7 +1,8 @@
 if (window.GCController)
     GCController.collectAll();
-var initialize_InspectorTest = function() {
 
+var initialize_InspectorTest = function() {
+Protocol.InspectorBackend.Options.suppressRequestErrors = true;
 var results = [];
 
 function consoleOutputHook(messageType)
@@ -1159,7 +1160,7 @@ function runTest(pixelTest, enableWatchDogWhileDebugging)
     testRunner.evaluateInWebInspector(initializeCallId, toEvaluate);
 
     if (window.debugTest)
-        test = "function() { window.test = " + test.toString() + "; InspectorTest.addResult = window._originalConsoleLog; InspectorTest.completeTest = function() {}; }";
+        test = "function() { Protocol.InspectorBackend.Options.suppressRequestErrors = false; window.test = " + test.toString() + "; InspectorTest.addResult = window._originalConsoleLog; InspectorTest.completeTest = function() {}; }";
     toEvaluate = "(" + runTestInFrontend + ")(" + test + ");";
     testRunner.evaluateInWebInspector(runTestCallId, toEvaluate);
 

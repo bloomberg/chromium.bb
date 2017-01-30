@@ -28,6 +28,7 @@ function maybeLog()
 
 function test()
 {
+    Protocol.InspectorBackend.Options.suppressRequestErrors = false;
     function addDumpResult(next)
     {
         InspectorTest.evaluateInPage("dump()", dumpCallback);
