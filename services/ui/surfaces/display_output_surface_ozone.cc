@@ -28,16 +28,9 @@ DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     uint32_t target,
     uint32_t internalformat)
-    : cc::OutputSurface(context_provider),
+    : DisplayOutputSurface(context_provider, synthetic_begin_frame_source),
       gl_helper_(context_provider->ContextGL(),
-                 context_provider->ContextSupport()),
-      synthetic_begin_frame_source_(synthetic_begin_frame_source),
-      weak_ptr_factory_(this) {
-  buffer_queue_.reset(
-      new BufferQueue(context_provider->ContextGL(), target, internalformat,
-                      display::DisplaySnapshot::PrimaryFormat(), &gl_helper_,
-                      gpu_memory_buffer_manager, widget));
-
+                 context_provider->ContextSupport()) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   capabilities_.supports_stencil = true;
@@ -50,30 +43,15 @@ DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
   // implementation.
   capabilities_.max_frames_pending = 2;
 
+  buffer_queue_.reset(
+      new BufferQueue(context_provider->ContextGL(), target, internalformat,
+                      display::DisplaySnapshot::PrimaryFormat(), &gl_helper_,
+                      gpu_memory_buffer_manager, widget));
   buffer_queue_->Initialize();
-
-  context_provider->SetSwapBuffersCompletionCallback(
-      base::Bind(&DisplayOutputSurfaceOzone::OnGpuSwapBuffersCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
-  context_provider->SetUpdateVSyncParametersCallback(
-      base::Bind(&DisplayOutputSurfaceOzone::OnVSyncParametersUpdated,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 DisplayOutputSurfaceOzone::~DisplayOutputSurfaceOzone() {
   // TODO(rjkroege): Support cleanup.
-}
-
-void DisplayOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
-  DCHECK(client);
-  DCHECK(!client_);
-  client_ = client;
-}
-
-void DisplayOutputSurfaceOzone::EnsureBackbuffer() {}
-
-void DisplayOutputSurfaceOzone::DiscardBackbuffer() {
-  context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
 }
 
 void DisplayOutputSurfaceOzone::BindFramebuffer() {
@@ -93,37 +71,25 @@ void DisplayOutputSurfaceOzone::Reshape(const gfx::Size& size,
                                         bool has_alpha,
                                         bool use_stencil) {
   reshape_size_ = size;
-  context_provider()->ContextGL()->ResizeCHROMIUM(
-      size.width(), size.height(), device_scale_factor, has_alpha);
+  DisplayOutputSurface::Reshape(size, device_scale_factor, color_space,
+                                has_alpha, use_stencil);
   buffer_queue_->Reshape(size, device_scale_factor, color_space, use_stencil);
 }
 
 void DisplayOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
 
-  // TODO(rjkroege): What if swap happens again before OnGpuSwapBuffersCompleted
+  // TODO(rjkroege): What if swap happens again before DidReceiveSwapBuffersAck
   // then it would see the wrong size?
   DCHECK(reshape_size_ == frame.size);
   swap_size_ = reshape_size_;
 
   buffer_queue_->SwapBuffers(frame.sub_buffer_rect);
-
-  // Code combining GpuBrowserCompositorOutputSurface + DisplayOutputSurface
-  if (frame.sub_buffer_rect == gfx::Rect(frame.size)) {
-    context_provider_->ContextSupport()->Swap();
-  } else {
-    context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame.sub_buffer_rect);
-  }
+  DisplayOutputSurface::SwapBuffers(std::move(frame));
 }
 
 uint32_t DisplayOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
-}
-
-cc::OverlayCandidateValidator*
-DisplayOutputSurfaceOzone::GetOverlayCandidateValidator() const {
-  return nullptr;
 }
 
 bool DisplayOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
@@ -135,20 +101,8 @@ unsigned DisplayOutputSurfaceOzone::GetOverlayTextureId() const {
   return buffer_queue_->current_texture_id();
 }
 
-bool DisplayOutputSurfaceOzone::SurfaceIsSuspendForRecycle() const {
-  return false;
-}
-
-bool DisplayOutputSurfaceOzone::HasExternalStencilTest() const {
-  return false;
-}
-
-void DisplayOutputSurfaceOzone::ApplyExternalStencil() {}
-
-void DisplayOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result,
-    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+void DisplayOutputSurfaceOzone::DidReceiveSwapBuffersAck(
+    gfx::SwapResult result) {
   bool force_swap = false;
   if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
@@ -159,19 +113,10 @@ void DisplayOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
   }
 
   buffer_queue_->PageFlipComplete();
-  client_->DidReceiveSwapBuffersAck();
+  client()->DidReceiveSwapBuffersAck();
 
   if (force_swap)
-    client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
-}
-
-void DisplayOutputSurfaceOzone::OnVSyncParametersUpdated(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  // TODO(brianderson): We should not be receiving 0 intervals.
-  synthetic_begin_frame_source_->OnUpdateVSyncParameters(
-      timebase,
-      interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
+    client()->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }
 
 }  // namespace ui

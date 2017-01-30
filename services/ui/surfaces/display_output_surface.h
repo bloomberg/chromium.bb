@@ -44,6 +44,12 @@ class DisplayOutputSurface : public cc::OutputSurface {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
 
+ protected:
+  cc::OutputSurfaceClient* client() const { return client_; }
+
+  // Called when a swap completion is signaled from ImageTransportSurface.
+  virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result);
+
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
   void OnGpuSwapBuffersCompleted(

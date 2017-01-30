@@ -101,11 +101,15 @@ bool DisplayOutputSurface::HasExternalStencilTest() const {
 
 void DisplayOutputSurface::ApplyExternalStencil() {}
 
+void DisplayOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
+  client_->DidReceiveSwapBuffersAck();
+}
+
 void DisplayOutputSurface::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  client_->DidReceiveSwapBuffersAck();
+  DidReceiveSwapBuffersAck(result);
 }
 
 void DisplayOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,

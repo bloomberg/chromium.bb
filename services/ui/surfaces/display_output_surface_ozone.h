@@ -12,6 +12,7 @@
 #include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
 #include "components/display_compositor/gl_helper.h"
+#include "services/ui/surfaces/display_output_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -35,7 +36,7 @@ namespace ui {
 // "surfaceless" surface (aka one backed by a buffer managed explicitly in
 // mus/ozone. This class is adapted from
 // GpuSurfacelessBrowserCompositorOutputSurface.
-class DisplayOutputSurfaceOzone : public cc::OutputSurface {
+class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
  public:
   DisplayOutputSurfaceOzone(
       scoped_refptr<cc::InProcessContextProvider> context_provider,
@@ -51,9 +52,6 @@ class DisplayOutputSurfaceOzone : public cc::OutputSurface {
 
  private:
   // cc::OutputSurface implementation.
-  void BindToClient(cc::OutputSurfaceClient* client) override;
-  void EnsureBackbuffer() override;
-  void DiscardBackbuffer() override;
   void BindFramebuffer() override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
@@ -62,31 +60,19 @@ class DisplayOutputSurfaceOzone : public cc::OutputSurface {
                bool use_stencil) override;
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
-  bool SurfaceIsSuspendForRecycle() const override;
-  bool HasExternalStencilTest() const override;
-  void ApplyExternalStencil() override;
 
-  // Called when a swap completion is signaled from ImageTransportSurface.
-  void OnGpuSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
-  void OnVSyncParametersUpdated(base::TimeTicks timebase,
-                                base::TimeDelta interval);
-
-  cc::OutputSurfaceClient* client_ = nullptr;
+  // DisplayOutputSurface:
+  void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
 
   display_compositor::GLHelper gl_helper_;
   std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
-  cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
 
   gfx::Size reshape_size_;
   gfx::Size swap_size_;
 
-  base::WeakPtrFactory<DisplayOutputSurfaceOzone> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DisplayOutputSurfaceOzone);
 };
 
 }  // namespace ui
