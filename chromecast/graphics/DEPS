@@ -1,6 +1,9 @@
 include_rules = [
   "+ui/aura",
+  "+ui/base",
   "+ui/base/ime",
   "+ui/display",
+  "+ui/events/test",
   "+ui/gfx",
+  "+ui/gl/test",
 ]

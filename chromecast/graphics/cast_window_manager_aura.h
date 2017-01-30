@@ -8,12 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "chromecast/graphics/cast_vsync_settings.h"
 #include "chromecast/graphics/cast_window_manager.h"
 
 namespace aura {
-class Window;
 namespace client {
 class DefaultCaptureClient;
 }  // namespace client
@@ -21,6 +19,7 @@ class DefaultCaptureClient;
 
 namespace chromecast {
 
+class CastFocusClientAura;
 class CastWindowTreeHost;
 
 class CastWindowManagerAura : public CastWindowManager,
@@ -46,6 +45,7 @@ class CastWindowManagerAura : public CastWindowManager,
   const bool enable_input_;
   std::unique_ptr<CastWindowTreeHost> window_tree_host_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<CastFocusClientAura> focus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWindowManagerAura);
 };
