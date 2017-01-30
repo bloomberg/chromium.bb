@@ -47,4 +47,11 @@ TEST(FontCache, firstAvailableOrFirst) {
             FontCache::firstAvailableOrFirst(", not exist, not exist"));
 }
 
+#if !OS(MACOSX)
+TEST(FontCache, systemFont) {
+  FontCache::systemFontFamily();
+  // Test the function does not crash. Return value varies by system and config.
+}
+#endif
+
 }  // namespace blink
