@@ -483,7 +483,8 @@ class ChromeSDKCommand(command.CliCommand):
              'running with --clang if not running from a Chrome checkout.')
     parser.add_argument(
         '--clang', action='store_true', default=False,
-        help='Sets up the environment for building with clang.')
+        help='Sets up the environment for building with clang. For all '
+             'boards, except X86-32, clang is the default.')
     parser.add_argument(
         '--cwd', type='path',
         help='Specifies a directory to switch to after setting up the SDK '
@@ -600,7 +601,7 @@ class ChromeSDKCommand(command.CliCommand):
     gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
     return '%s -B%s' % (cmd, gold_path)
 
-  def _SetupTCEnvironment(self, sdk_ctx, options, env):
+  def _SetupTCEnvironment(self, sdk_ctx, options, env, gn_is_clang):
     """Sets up toolchain-related environment variables."""
     target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
     tc_bin_path = os.path.join(target_tc_path, 'bin')
@@ -611,12 +612,19 @@ class ChromeSDKCommand(command.CliCommand):
 
     chrome_clang_path = os.path.join(options.chrome_src, self._CHROME_CLANG_DIR)
 
-    if options.clang:
-      clang_flags = ['-Wno-unknown-warning-option']
+    # Either we are forcing the use of clang through options or GN
+    # args say we should be using clang.
+    if options.clang or gn_is_clang:
+      clang_prepend_flags = ['-Wno-unknown-warning-option']
+      # crbug.com/686903
+      clang_append_flags = ['-Wno-inline-asm']
+
       env['CC'] = ' '.join([sdk_ctx.target_tc + '-clang'] +
-                           env['CC'].split()[1:] + clang_flags)
+                           env['CC'].split()[1:] + clang_prepend_flags)
       env['CXX'] = ' '.join([sdk_ctx.target_tc + '-clang++'] +
-                            env['CXX'].split()[1:] + clang_flags)
+                            env['CXX'].split()[1:] + clang_prepend_flags)
+      env['CFLAGS'] = ' '.join(env['CFLAGS'].split() + clang_append_flags)
+      env['CXXFLAGS'] = ' '.join(env['CXXFLAGS'].split() + clang_append_flags)
       env['LD'] = env['CXX']
 
     # For host compiler, we use the compiler that comes with Chrome
@@ -667,7 +675,8 @@ class ChromeSDKCommand(command.CliCommand):
           cros_build_lib.UncompressFile(chroot_env_file, environment)
 
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
-    self._SetupTCEnvironment(sdk_ctx, options, env)
+    gn_args = gn_helpers.FromGNArgs(env['GN_ARGS'])
+    self._SetupTCEnvironment(sdk_ctx, options, env, gn_args['is_clang'])
 
     # Add managed components to the PATH.
     env['PATH'] = '%s:%s' % (constants.CHROMITE_BIN_DIR, env['PATH'])
@@ -694,7 +703,7 @@ class ChromeSDKCommand(command.CliCommand):
 
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
-    gn_args = gn_helpers.FromGNArgs(env['GN_ARGS'])
+
     gn_args['target_sysroot'] = sysroot
     gn_args.pop('pkg_config', None)
     if options.clang:

@@ -170,10 +170,12 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
                  constants.CHROME_SYSROOT_TAR)
 
   FAKE_ENV = {
-      'GN_ARGS': 'target_sysroot="/path/to/sysroot"',
-      'CXX': 'x86_64-cros-linux-gnu-g++ -B /path/to/gold',
-      'CC': 'x86_64-cros-linux-gnu-gcc -B /path/to/gold',
-      'LD': 'x86_64-cros-linux-gnu-g++ -B /path/to/gold',
+      'GN_ARGS': 'target_sysroot="/path/to/sysroot" is_clang=false',
+      'CXX': 'x86_64-cros-linux-gnu-clang++ -B /path/to/gold',
+      'CC': 'x86_64-cros-linux-gnu-clang -B /path/to/gold',
+      'LD': 'x86_64-cros-linux-gnu-clang++ -B /path/to/gold',
+      'CFLAGS': '-O2',
+      'CXXFLAGS': '-O2',
   }
 
   def SetupCommandMock(self, extra_args=None):
