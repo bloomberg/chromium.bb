@@ -125,8 +125,6 @@ class MostVisitedSites : public history::TopSitesObserver,
                                    NTPTilesVector popular_tiles);
 
  private:
-  void BuildCurrentTiles();
-
   // Initialize the query to Top Sites. Called if the SuggestionsService
   // returned no data.
   void InitiateTopSitesQuery();
@@ -138,8 +136,16 @@ class MostVisitedSites : public history::TopSitesObserver,
   void OnMostVisitedURLsAvailable(
       const history::MostVisitedURLList& visited_list);
 
-  // Callback for when data is available from the SuggestionsService.
-  void OnSuggestionsProfileAvailable(
+  // Callback for when an update is reported by the SuggestionsService.
+  void OnSuggestionsProfileChanged(
+      const suggestions::SuggestionsProfile& suggestions_profile);
+
+  // Builds the current tileset based on available caches and notifies the
+  // observer.
+  void BuildCurrentTiles();
+
+  // Same as above the SuggestionsProfile is provided, no need to read cache.
+  void BuildCurrentTilesGivenSuggestionsProfile(
       const suggestions::SuggestionsProfile& suggestions_profile);
 
   // Takes the personal suggestions and creates whitelist entry point

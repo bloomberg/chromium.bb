@@ -103,9 +103,8 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
     top_sites_observer_.Add(top_sites_.get());
   }
 
-  suggestions_subscription_ = suggestions_service_->AddCallback(
-      base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
-                 base::Unretained(this)));
+  suggestions_subscription_ = suggestions_service_->AddCallback(base::Bind(
+      &MostVisitedSites::OnSuggestionsProfileChanged, base::Unretained(this)));
 
   // Immediately build the current set of tiles, getting suggestions from the
   // SuggestionsService's cache or, if that is empty, sites from TopSites.
@@ -157,14 +156,6 @@ void MostVisitedSites::OnBlockedSitesChanged() {
 void MostVisitedSites::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kNumPersonalTiles, 0);
-}
-
-void MostVisitedSites::BuildCurrentTiles() {
-  // Get the current suggestions from cache. If the cache is empty, this will
-  // fall back to TopSites.
-  OnSuggestionsProfileAvailable(
-      suggestions_service_->GetSuggestionsDataFromCache().value_or(
-          SuggestionsProfile()));
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {
@@ -222,8 +213,24 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   NotifyMostVisitedURLsObserver();
 }
 
-void MostVisitedSites::OnSuggestionsProfileAvailable(
+void MostVisitedSites::OnSuggestionsProfileChanged(
     const SuggestionsProfile& suggestions_profile) {
+  if (suggestions_profile.suggestions_size() == 0 &&
+      mv_source_ != NTPTileSource::SUGGESTIONS_SERVICE) {
+    return;
+  }
+
+  BuildCurrentTilesGivenSuggestionsProfile(suggestions_profile);
+}
+
+void MostVisitedSites::BuildCurrentTiles() {
+  BuildCurrentTilesGivenSuggestionsProfile(
+      suggestions_service_->GetSuggestionsDataFromCache().value_or(
+          SuggestionsProfile()));
+}
+
+void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
+    const suggestions::SuggestionsProfile& suggestions_profile) {
   int num_tiles = suggestions_profile.suggestions_size();
   // With no server suggestions, fall back to local TopSites.
   if (num_tiles == 0 ||
