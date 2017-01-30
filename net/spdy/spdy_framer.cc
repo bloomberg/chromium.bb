@@ -351,8 +351,6 @@ const char* SpdyFramer::StateToString(int state) {
       return "SPDY_CONTROL_FRAME_HEADER_BLOCK";
     case SPDY_GOAWAY_FRAME_PAYLOAD:
       return "SPDY_GOAWAY_FRAME_PAYLOAD";
-    case SPDY_RST_STREAM_FRAME_PAYLOAD:
-      return "SPDY_RST_STREAM_FRAME_PAYLOAD";
     case SPDY_SETTINGS_FRAME_HEADER:
       return "SPDY_SETTINGS_FRAME_HEADER";
     case SPDY_SETTINGS_FRAME_PAYLOAD:
@@ -541,13 +539,6 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
 
       case SPDY_CONTROL_FRAME_HEADER_BLOCK: {
         int bytes_read = ProcessControlFrameHeaderBlock(data, len);
-        len -= bytes_read;
-        data += bytes_read;
-        break;
-      }
-
-      case SPDY_RST_STREAM_FRAME_PAYLOAD: {
-        size_t bytes_read = ProcessRstStreamFramePayload(data, len);
         len -= bytes_read;
         data += bytes_read;
         break;
@@ -957,11 +948,6 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
 
   if (current_frame_type_ == GOAWAY) {
     CHANGE_STATE(SPDY_GOAWAY_FRAME_PAYLOAD);
-    return;
-  }
-
-  if (current_frame_type_ == RST_STREAM) {
-    CHANGE_STATE(SPDY_RST_STREAM_FRAME_PAYLOAD);
     return;
   }
 
@@ -1380,6 +1366,21 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
 
     // Use frame-specific handlers.
     switch (current_frame_type_) {
+      case RST_STREAM: {
+        SpdyRstStreamStatus status = RST_STREAM_NO_ERROR;
+        uint32_t status_raw = status;
+        bool successful_read = reader.ReadUInt32(&status_raw);
+        DCHECK(successful_read);
+        DCHECK(reader.IsDoneReading());
+        if (IsValidRstStreamStatus(status_raw)) {
+          status = ParseRstStreamStatus(status_raw);
+        } else {
+          // Treat unrecognized status codes as INTERNAL_ERROR as
+          // recommended by the HTTP/2 spec.
+          status = RST_STREAM_INTERNAL_ERROR;
+        }
+        visitor_->OnRstStream(current_frame_stream_id_, status);
+      } break;
       case PING: {
           SpdyPingId id = 0;
           bool is_ack = current_frame_flags_ & PING_FLAG_ACK;
@@ -1490,65 +1491,6 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
   } else if (remaining_data_length_ == 0) {
     // Signal that there is not more opaque data.
     visitor_->OnGoAwayFrameData(nullptr, 0);
-    CHANGE_STATE(SPDY_FRAME_COMPLETE);
-  }
-  return original_len;
-}
-
-size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
-  if (len == 0) {
-    return 0;
-  }
-  // Clamp to the actual remaining payload.
-  if (len > remaining_data_length_) {
-    len = remaining_data_length_;
-  }
-  size_t original_len = len;
-
-  // Check if we had already read enough bytes to parse the fixed-length portion
-  // of the RST_STREAM frame.
-  const size_t header_size = GetRstStreamSize();
-  size_t unread_header_bytes = header_size - current_frame_buffer_.len();
-  bool already_parsed_header = (unread_header_bytes == 0);
-  if (!already_parsed_header) {
-    // Buffer the new RST_STREAM header bytes we got.
-    UpdateCurrentFrameBuffer(&data, &len, unread_header_bytes);
-
-    // Do we have enough to parse the constant size RST_STREAM header?
-    if (current_frame_buffer_.len() == header_size) {
-      // Parse out the last good stream id.
-      SpdyFrameReader reader(current_frame_buffer_.data(),
-                             current_frame_buffer_.len());
-      reader.Seek(GetFrameHeaderSize());  // Seek past frame header.
-
-      SpdyRstStreamStatus status = RST_STREAM_NO_ERROR;
-      uint32_t status_raw = status;
-      bool successful_read = reader.ReadUInt32(&status_raw);
-      DCHECK(successful_read);
-      if (IsValidRstStreamStatus(status_raw)) {
-        status = ParseRstStreamStatus(status_raw);
-      } else {
-        // Treat unrecognized status codes as INTERNAL_ERROR as
-        // recommended by the HTTP/2 spec.
-        status = RST_STREAM_INTERNAL_ERROR;
-      }
-      // Finished parsing the RST_STREAM header, call frame handler.
-      visitor_->OnRstStream(current_frame_stream_id_, status);
-    }
-  }
-
-  // Handle remaining data as opaque.
-  // TODO(jamessynge): Remove support for variable length/opaque trailer.
-  bool processed_successfully = true;
-  if (len > 0) {
-    processed_successfully = visitor_->OnRstStreamFrameData(data, len);
-  }
-  remaining_data_length_ -= original_len;
-  if (!processed_successfully) {
-    set_error(SPDY_RST_STREAM_FRAME_CORRUPT);
-  } else if (remaining_data_length_ == 0) {
-    // Signal that there is not more opaque data.
-    visitor_->OnRstStreamFrameData(NULL, 0);
     CHANGE_STATE(SPDY_FRAME_COMPLETE);
   }
   return original_len;
