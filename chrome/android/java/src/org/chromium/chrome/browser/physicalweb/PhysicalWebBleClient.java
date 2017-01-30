@@ -14,7 +14,6 @@ import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageFilter;
 import com.google.android.gms.nearby.messages.MessageListener;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 
@@ -70,8 +69,7 @@ public class PhysicalWebBleClient {
      */
     public static PhysicalWebBleClient getInstance() {
         if (sInstance == null) {
-            sInstance = ((ChromeApplication) ContextUtils.getApplicationContext())
-                    .createPhysicalWebBleClient();
+            sInstance = ChromeApplication.createObject(PhysicalWebBleClient.class);
         }
         return sInstance;
     }

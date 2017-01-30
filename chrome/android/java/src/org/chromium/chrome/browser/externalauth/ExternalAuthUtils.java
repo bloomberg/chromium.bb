@@ -17,7 +17,6 @@ import android.text.TextUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -51,9 +50,7 @@ public class ExternalAuthUtils {
      */
     public static ExternalAuthUtils getInstance() {
         if (sInstance.get() == null) {
-            ChromeApplication application =
-                    (ChromeApplication) ContextUtils.getApplicationContext();
-            sInstance.compareAndSet(null, application.createExternalAuthUtils());
+            sInstance.compareAndSet(null, ChromeApplication.createObject(ExternalAuthUtils.class));
         }
         return sInstance.get();
     }

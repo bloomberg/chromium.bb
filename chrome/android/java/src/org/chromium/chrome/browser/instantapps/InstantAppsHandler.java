@@ -105,8 +105,7 @@ public class InstantAppsHandler {
     public static InstantAppsHandler getInstance() {
         synchronized (INSTANCE_LOCK) {
             if (sInstance == null) {
-                Context appContext = ContextUtils.getApplicationContext();
-                sInstance = ((ChromeApplication) appContext).createInstantAppsHandler();
+                sInstance = ChromeApplication.createObject(InstantAppsHandler.class);
             }
         }
         return sInstance;

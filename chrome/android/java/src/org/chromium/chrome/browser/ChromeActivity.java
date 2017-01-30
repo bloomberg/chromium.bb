@@ -77,6 +77,7 @@ import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
+import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
@@ -735,8 +736,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (syncController != null && syncController.isSyncingUrlsWithKeystorePassphrase()) {
             assert syncService != null;
-            mContextReporter = ((ChromeApplication) getApplicationContext()).createGsaHelper()
-                    .getContextReporter(this);
+            mContextReporter =
+                    ChromeApplication.createObject(GSAHelper.class).getContextReporter(this);
 
             if (mSyncStateChangedListener != null) {
                 syncService.removeSyncStateChangedListener(mSyncStateChangedListener);
