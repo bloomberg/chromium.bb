@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
@@ -187,11 +186,13 @@ class MockConnectionManager : public ServerConnectionManager {
   const std::vector<syncable::Id>& committed_ids() const {
     return committed_ids_;
   }
-  const std::vector<sync_pb::CommitMessage*>& commit_messages() const {
-    return commit_messages_.get();
+  const std::vector<std::unique_ptr<sync_pb::CommitMessage>>& commit_messages()
+      const {
+    return commit_messages_;
   }
-  const std::vector<sync_pb::CommitResponse*>& commit_responses() const {
-    return commit_responses_.get();
+  const std::vector<std::unique_ptr<sync_pb::CommitResponse>>&
+  commit_responses() const {
+    return commit_responses_;
   }
   // Retrieve the last sent commit message.
   const sync_pb::CommitMessage& last_sent_commit() const;
@@ -346,8 +347,8 @@ class MockConnectionManager : public ServerConnectionManager {
   int conflict_n_commits_;
 
   // Commit messages we've sent, and responses we've returned.
-  ScopedVector<sync_pb::CommitMessage> commit_messages_;
-  ScopedVector<sync_pb::CommitResponse> commit_responses_;
+  std::vector<std::unique_ptr<sync_pb::CommitMessage>> commit_messages_;
+  std::vector<std::unique_ptr<sync_pb::CommitResponse>> commit_responses_;
 
   // The next id the mock will return to a commit.
   int next_new_id_;

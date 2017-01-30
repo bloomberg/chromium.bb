@@ -77,8 +77,7 @@ void DataTypeTracker::RecordRemoteInvalidation(
   // Overlaps should be extremely rare for most invalidations.  They can happen
   // for unknown version invalidations, though.
 
-  ScopedVector<InvalidationInterface>::iterator it =
-      pending_invalidations_.begin();
+  auto it = pending_invalidations_.begin();
 
   // Find the lower bound.
   while (it != pending_invalidations_.end() &&
@@ -94,8 +93,7 @@ void DataTypeTracker::RecordRemoteInvalidation(
     // Acknowledge and overwrite existing.
 
     // Insert before the existing and get iterator to inserted.
-    ScopedVector<InvalidationInterface>::iterator it2 =
-        pending_invalidations_.insert(it, incoming.release());
+    auto it2 = pending_invalidations_.insert(it, std::move(incoming));
 
     // Increment that iterator to the old one, then acknowledge and remove it.
     ++it2;
@@ -104,15 +102,15 @@ void DataTypeTracker::RecordRemoteInvalidation(
   } else {
     // The incoming has a version not in the pending_invalidations_ list.
     // Add it to the list at the proper position.
-    pending_invalidations_.insert(it, incoming.release());
+    pending_invalidations_.insert(it, std::move(incoming));
   }
 
   // The incoming invalidation may have caused us to exceed our buffer size.
   // Trim some items from our list, if necessary.
   while (pending_invalidations_.size() > payload_buffer_size_) {
-    last_dropped_invalidation_.reset(pending_invalidations_.front());
+    last_dropped_invalidation_.reset(pending_invalidations_.front().release());
     last_dropped_invalidation_->Drop();
-    pending_invalidations_.weak_erase(pending_invalidations_.begin());
+    pending_invalidations_.erase(pending_invalidations_.begin());
   }
 }
 
@@ -141,8 +139,7 @@ void DataTypeTracker::RecordSuccessfulSyncCycle() {
   // crash before writing all our state, we should wait until the results of
   // this sync cycle have been written to disk before updating the invalidations
   // state.  See crbug.com/324996.
-  for (ScopedVector<InvalidationInterface>::const_iterator it =
-           pending_invalidations_.begin();
+  for (auto it = pending_invalidations_.begin();
        it != pending_invalidations_.end(); ++it) {
     (*it)->Acknowledge();
   }
@@ -216,8 +213,7 @@ void DataTypeTracker::FillGetUpdatesTriggersMessage(
   // Fill the list of payloads, if applicable.  The payloads must be ordered
   // oldest to newest, so we insert them in the same order as we've been storing
   // them internally.
-  for (ScopedVector<InvalidationInterface>::const_iterator it =
-           pending_invalidations_.begin();
+  for (auto it = pending_invalidations_.begin();
        it != pending_invalidations_.end(); ++it) {
     if (!(*it)->IsUnknownVersion()) {
       msg->add_notification_hint((*it)->GetPayload());

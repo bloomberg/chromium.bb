@@ -9,9 +9,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
@@ -161,7 +161,7 @@ class DataTypeTracker {
   // drop_tracker_.IsRecoveringFromDropEvent() and server_payload_overflow_.
   //
   // This list takes ownership of its contents.
-  ScopedVector<InvalidationInterface> pending_invalidations_;
+  std::vector<std::unique_ptr<InvalidationInterface>> pending_invalidations_;
 
   size_t payload_buffer_size_;
 
