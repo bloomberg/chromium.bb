@@ -4,32 +4,34 @@
 
 #import "ios/web_view/shell/shell_app_delegate.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web_view/public/criwv.h"
 #import "ios/web_view/shell/shell_delegate.h"
 #import "ios/web_view/shell/shell_view_controller.h"
 
-@interface ShellAppDelegate () {
-  base::scoped_nsobject<ShellDelegate> _delegate;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface ShellAppDelegate ()
+@property (nonatomic, strong) ShellDelegate* delegate;
 @end
 
 @implementation ShellAppDelegate
 
+@synthesize delegate = _delegate;
 @synthesize window = _window;
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-  _window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   self.window.backgroundColor = [UIColor whiteColor];
 
-  _delegate.reset([[ShellDelegate alloc] init]);
+  self.delegate = [[ShellDelegate alloc] init];
   [CRIWV configureWithDelegate:_delegate];
 
   [self.window makeKeyAndVisible];
 
-  base::scoped_nsobject<ShellViewController> controller(
-      [[ShellViewController alloc] init]);
+  ShellViewController* controller = [[ShellViewController alloc] init];
   self.window.rootViewController = controller;
 
   return YES;
@@ -49,11 +51,6 @@
 
 - (void)applicationWillTerminate:(UIApplication*)application {
   [CRIWV shutDown];
-}
-
-- (void)dealloc {
-  [_window release];
-  [super dealloc];
 }
 
 @end

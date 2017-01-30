@@ -4,23 +4,30 @@
 
 #import "ios/web_view/shell/shell_view_controller.h"
 
-#import "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
 #import "ios/web_view/public/criwv.h"
 #import "ios/web_view/public/criwv_web_view.h"
 #import "ios/web_view/shell/translate_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kButtonSize = 44;
 }
 
-@interface ShellViewController () {
-  base::scoped_nsobject<UIView> _containerView;
-  base::scoped_nsobject<UITextField> _field;
-  base::scoped_nsobject<UIToolbar> _toolbar;
-  base::scoped_nsprotocol<id<CRIWVWebView>> _webView;
-  base::scoped_nsobject<TranslateController> _translateController;
-}
+@interface ShellViewController ()
+// Container for |webView|.
+@property (nonatomic, strong) UIView* containerView;
+// Text field used for navigating to URLs.
+@property (nonatomic, strong) UITextField* field;
+// Toolbar containing navigation buttons and |field|.
+@property (nonatomic, strong) UIToolbar* toolbar;
+// CRIWV view which renders the web page.
+@property (nonatomic, strong) id<CRIWVWebView> webView;
+// Handles the translation of the content displayed in |webView|.
+@property (nonatomic, strong) TranslateController* translateController;
+
 - (void)back;
 - (void)forward;
 - (void)stopLoading;
@@ -28,13 +35,19 @@ const CGFloat kButtonSize = 44;
 
 @implementation ShellViewController
 
+@synthesize containerView = _containerView;
+@synthesize field = _field;
+@synthesize toolbar = _toolbar;
+@synthesize webView = _webView;
+@synthesize translateController = _translateController;
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
   CGRect bounds = self.view.bounds;
 
   // Set up the toolbar.
-  _toolbar.reset([[UIToolbar alloc] init]);
+  self.toolbar = [[UIToolbar alloc] init];
   [_toolbar setBarTintColor:[UIColor colorWithRed:0.337
                                             green:0.467
                                              blue:0.988
@@ -45,7 +58,7 @@ const CGFloat kButtonSize = 44;
   [self.view addSubview:_toolbar];
 
   // Set up the container view.
-  _containerView.reset([[UIView alloc] init]);
+  self.containerView = [[UIView alloc] init];
   [_containerView setFrame:CGRectMake(0, 64, CGRectGetWidth(bounds),
                                       CGRectGetHeight(bounds) - 64)];
   [_containerView setBackgroundColor:[UIColor lightGrayColor]];
@@ -55,11 +68,11 @@ const CGFloat kButtonSize = 44;
 
   // Text field.
   const int kButtonCount = 3;
-  _field.reset([[UITextField alloc]
+  self.field = [[UITextField alloc]
       initWithFrame:CGRectMake(kButtonCount * kButtonSize, 6,
                                CGRectGetWidth([_toolbar frame]) -
                                    kButtonCount * kButtonSize - 10,
-                               31)]);
+                               31)];
   [_field setDelegate:self];
   [_field setBackground:[[UIImage imageNamed:@"textfield_background"]
                             resizableImageWithCapInsets:UIEdgeInsetsMake(
@@ -109,7 +122,7 @@ const CGFloat kButtonSize = 44;
   [_toolbar addSubview:stop];
   [_toolbar addSubview:_field];
 
-  _webView.reset([[CRIWV webView] retain]);
+  self.webView = [CRIWV webView];
   [_webView setDelegate:self];
   UIView* view = [_webView view];
   [_containerView addSubview:view];
@@ -121,7 +134,7 @@ const CGFloat kButtonSize = 44;
 }
 
 - (UIBarPosition)positionForBar:(id<UIBarPositioning>)bar {
-  if (bar == _toolbar.get()) {
+  if (bar == _toolbar) {
     return UIBarPositionTopAttached;
   }
   return UIBarPositionAny;
@@ -186,7 +199,7 @@ const CGFloat kButtonSize = 44;
 
 - (id<CRIWVTranslateDelegate>)translateDelegate {
   if (!_translateController)
-    _translateController.reset([[TranslateController alloc] init]);
+    self.translateController = [[TranslateController alloc] init];
   return _translateController;
 }
 

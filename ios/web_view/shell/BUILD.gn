@@ -6,6 +6,7 @@ import("//tools/grit/repack.gni")
 import("//build/config/ios/rules.gni")
 
 ios_app_bundle("ios_web_view_shell") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     "//base",
     "//ios/web_view",

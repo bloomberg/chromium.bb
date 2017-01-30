@@ -7,21 +7,27 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web_view/public/criwv_translate_manager.h"
 
-@interface TranslateController () {
-  base::scoped_nsobject<UIAlertController> _beforeTranslateActionSheet;
-  base::scoped_nsprotocol<id<CRIWVTranslateManager>> _translateManager;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface TranslateController ()
+// Action Sheet to prompt user whether or not the page should be translated.
+@property (nonatomic, strong) UIAlertController* beforeTranslateActionSheet;
+// Manager which performs the translation of the content.
+@property (nonatomic, strong) id<CRIWVTranslateManager> translateManager;
 @end
 
 @implementation TranslateController
 
+@synthesize beforeTranslateActionSheet = _beforeTranslateActionSheet;
+@synthesize translateManager = _translateManager;
+
 - (void)dealloc {
   [_beforeTranslateActionSheet dismissViewControllerAnimated:YES
                                                   completion:nil];
-  [super dealloc];
 }
 
 #pragma mark CRIWVTranslateDelegate methods
@@ -31,19 +37,19 @@
   if (step == CRIWVTransateStepBeforeTranslate) {
     DCHECK(!_translateManager);
     DCHECK(!_beforeTranslateActionSheet);
-    _translateManager.reset([manager retain]);
-    _beforeTranslateActionSheet.reset([[UIAlertController
+    self.translateManager = manager;
+    self.beforeTranslateActionSheet = [UIAlertController
         alertControllerWithTitle:nil
                          message:@"Translate?"
-                  preferredStyle:UIAlertControllerStyleActionSheet] retain]);
+                  preferredStyle:UIAlertControllerStyleActionSheet];
     UIAlertAction* cancelAction =
         [UIAlertAction actionWithTitle:@"Nope."
                                  style:UIAlertActionStyleCancel
                                handler:^(UIAlertAction* action) {
                                  DCHECK(_beforeTranslateActionSheet);
-                                 _beforeTranslateActionSheet.reset();
+                                 self.beforeTranslateActionSheet = nil;
                                  DCHECK(_translateManager);
-                                 _translateManager.reset();
+                                 self.translateManager = nil;
                                }];
     [_beforeTranslateActionSheet addAction:cancelAction];
 
@@ -52,10 +58,10 @@
                                  style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction* action) {
                                  DCHECK(_beforeTranslateActionSheet);
-                                 _beforeTranslateActionSheet.reset();
+                                 self.beforeTranslateActionSheet = nil;
                                  DCHECK(_translateManager);
                                  [_translateManager translate];
-                                 _translateManager.reset();
+                                 self.translateManager = nil;
                                }];
     [_beforeTranslateActionSheet addAction:translateAction];
 

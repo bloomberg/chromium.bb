@@ -10,7 +10,7 @@
 @interface ShellAppDelegate : UIResponder<UIApplicationDelegate>
 
 // The main window for the application.
-@property(nonatomic, retain) UIWindow* window;
+@property(nonatomic, strong) UIWindow* window;
 
 @end
 
