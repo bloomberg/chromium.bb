@@ -16,8 +16,14 @@ import java.util.Set;
  * implementation that will take care of hiding or showing the item.
  */
 public abstract class Leaf extends ChildNode {
+    protected Leaf() {
+        // Initialize the item count to 1 (at this point the parent is null, so no notification will
+        // be sent).
+        notifyItemInserted(0);
+    }
+
     @Override
-    public int getItemCount() {
+    protected final int getItemCountForDebugging() {
         return 1;
     }
 

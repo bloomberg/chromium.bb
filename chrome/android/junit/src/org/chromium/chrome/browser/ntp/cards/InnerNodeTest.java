@@ -8,7 +8,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -157,15 +156,19 @@ public class InnerNodeTest {
 
     @Test
     public void testNotifications() {
-        mInnerNode.onItemRangeInserted(mChildren.get(0), 0, 23);
-        mInnerNode.onItemRangeChanged(mChildren.get(2), 2, 9000, null);
-        mInnerNode.onItemRangeChanged(mChildren.get(4), 0, 6502, null);
-        mInnerNode.onItemRangeRemoved(mChildren.get(6), 0, 8086);
+        mInnerNode.onItemRangeChanged(mChildren.get(0), 0, 1, null);
+        when(mChildren.get(2).getItemCount()).thenReturn(5);
+        mInnerNode.onItemRangeInserted(mChildren.get(2), 2, 2);
+        when(mChildren.get(4).getItemCount()).thenReturn(0);
+        mInnerNode.onItemRangeRemoved(mChildren.get(4), 0, 3);
+        mInnerNode.onItemRangeChanged(mChildren.get(6), 0, 1, null);
 
-        verify(mParent).onItemRangeInserted(mInnerNode, 0, 23);
-        verify(mParent).onItemRangeChanged(mInnerNode, 5, 9000, null);
-        verify(mParent).onItemRangeChanged(mInnerNode, 6, 6502, null);
-        verify(mParent).onItemRangeRemoved(mInnerNode, 11, 8086);
+        verify(mParent).onItemRangeChanged(mInnerNode, 0, 1, null);
+        verify(mParent).onItemRangeInserted(mInnerNode, 5, 2);
+        verify(mParent).onItemRangeRemoved(mInnerNode, 8, 3);
+        verify(mParent).onItemRangeChanged(mInnerNode, 10, 1, null);
+
+        assertThat(mInnerNode.getItemCount(), is(11));
     }
 
     /**
@@ -237,8 +240,7 @@ public class InnerNodeTest {
 
     private static TreeNode makeDummyNode(int itemCount) {
         TreeNode node = mock(TreeNode.class);
-        doReturn(itemCount).when(node).getItemCount();
+        when(node.getItemCount()).thenReturn(itemCount);
         return node;
     }
 }
-

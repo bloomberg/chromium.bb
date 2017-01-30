@@ -13,10 +13,10 @@ import android.support.annotation.CallSuper;
  */
 public abstract class ChildNode implements TreeNode {
     private NodeParent mParent;
+    private int mNumItems = 0;
 
     @Override
-    @CallSuper
-    public void setParent(NodeParent parent) {
+    public final void setParent(NodeParent parent) {
         assert mParent == null;
         assert parent != null;
         mParent = parent;
@@ -29,6 +29,12 @@ public abstract class ChildNode implements TreeNode {
         mParent = null;
     }
 
+    @Override
+    public final int getItemCount() {
+        assert mNumItems == getItemCountForDebugging();
+        return mNumItems;
+    }
+
     protected void notifyItemRangeChanged(int index, int count, Object payload) {
         if (mParent != null) mParent.onItemRangeChanged(this, index, count, payload);
     }
@@ -38,10 +44,14 @@ public abstract class ChildNode implements TreeNode {
     }
 
     protected void notifyItemRangeInserted(int index, int count) {
+        mNumItems += count;
+        assert mNumItems == getItemCountForDebugging();
         if (mParent != null) mParent.onItemRangeInserted(this, index, count);
     }
 
     protected void notifyItemRangeRemoved(int index, int count) {
+        mNumItems -= count;
+        assert mNumItems == getItemCountForDebugging();
         if (mParent != null) mParent.onItemRangeRemoved(this, index, count);
     }
 
@@ -66,4 +76,12 @@ public abstract class ChildNode implements TreeNode {
             throw new IndexOutOfBoundsException(position + "/" + getItemCount());
         }
     }
+
+    /**
+     * @return The actual (non-cached) number of items under this node. The implementation of this
+     * method should not rely on {@link #getItemCount}, but instead derive the number of items
+     * directly from the underlying data model. Any time this value changes, an appropriate
+     * notification should be sent.
+     */
+    protected abstract int getItemCountForDebugging();
 }

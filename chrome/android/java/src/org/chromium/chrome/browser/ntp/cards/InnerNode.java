@@ -57,7 +57,7 @@ public class InnerNode extends ChildNode implements NodeParent {
     }
 
     @Override
-    public int getItemCount() {
+    protected int getItemCountForDebugging() {
         int numItems = 0;
         for (TreeNode child : mChildren) {
             numItems += child.getItemCount();
@@ -137,12 +137,13 @@ public class InnerNode extends ChildNode implements NodeParent {
      */
     protected void addChildren(TreeNode... children) {
         int initialCount = getItemCount();
+        int addedCount = 0;
         for (TreeNode child : children) {
             mChildren.add(child);
             child.setParent(this);
+            addedCount += child.getItemCount();
         }
 
-        int addedCount = getItemCount() - initialCount;
         if (addedCount > 0) notifyItemRangeInserted(initialCount, addedCount);
     }
 

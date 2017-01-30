@@ -138,7 +138,7 @@ public class SuggestionsSection extends InnerNode {
         }
 
         @Override
-        public int getItemCount() {
+        protected int getItemCountForDebugging() {
             return mSuggestions.size();
         }
 

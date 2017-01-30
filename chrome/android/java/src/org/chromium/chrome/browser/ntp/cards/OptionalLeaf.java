@@ -24,7 +24,7 @@ public abstract class OptionalLeaf extends ChildNode {
     private boolean mVisible;
 
     @Override
-    public int getItemCount() {
+    protected int getItemCountForDebugging() {
         return isVisible() ? 1 : 0;
     }
 
