@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
@@ -312,11 +313,10 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
                       : base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::ARTICLES: {
-      dom_distiller::DomDistillerService* service =
-          dom_distiller::DomDistillerServiceFactory::GetForBrowserState(
-              browser_state_);
-      if (service)
-        return service->GetSyncableService()->AsWeakPtr();
+      // DomDistillerService is used in iOS ReadingList. The distilled articles
+      // are saved separately and must not be synced.
+      // Add a not reached to avoid having ARTICLES sync be enabled silently.
+      NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::SESSIONS: {
