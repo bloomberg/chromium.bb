@@ -140,9 +140,8 @@ class ManagePasswordsUIController
   }
 
   // content::WebContentsObserver:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void WasHidden() override;
 
  private:

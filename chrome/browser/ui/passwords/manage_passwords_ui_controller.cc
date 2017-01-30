@@ -28,7 +28,7 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 
 using password_manager::PasswordFormManager;
 
@@ -409,12 +409,14 @@ bool ManagePasswordsUIController::HasBrowserWindow() const {
   return chrome::FindBrowserWithWebContents(web_contents()) != nullptr;
 }
 
-void ManagePasswordsUIController::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  // Don't react to in-page (fragment) navigations.
-  if (details.is_in_page)
+void ManagePasswordsUIController::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      // Don't react to in-page (fragment) navigations.
+      navigation_handle->IsSamePage()) {
     return;
+  }
 
   // It is possible that the user was not able to interact with the password
   // bubble.

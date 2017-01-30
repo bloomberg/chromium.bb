@@ -34,7 +34,7 @@
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,7 +98,7 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
                AutoSigninFirstRunPrompt*(PasswordDialogController*));
   MOCK_CONST_METHOD0(HasBrowserWindow, bool());
   MOCK_METHOD0(OnUpdateBubbleAndIconVisibility, void());
-  using ManagePasswordsUIController::DidNavigateMainFrame;
+  using ManagePasswordsUIController::DidFinishNavigation;
 
  private:
   void UpdateBubbleAndIconVisibility() override;
@@ -432,8 +432,10 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigations) {
   // Fake-navigate. We expect the bubble's state to persist so a user reasonably
   // has been able to interact with the bubble. This happens on
   // `accounts.google.com`, for instance.
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
+  std::unique_ptr<content::NavigationHandle> navigation_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL(), main_rfh(), true);
+  navigation_handle.reset();  // Calls DidFinishNavigation.
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
             controller()->GetState());
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
@@ -451,8 +453,10 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigationsClosedBubble) {
 
   // Fake-navigate. There is no bubble, reset the state.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
+  std::unique_ptr<content::NavigationHandle> navigation_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL(), main_rfh(), true);
+  navigation_handle.reset();  // Calls DidFinishNavigation.
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 }
@@ -703,10 +707,11 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterNavigation) {
 
   // The dialog should survive any navigation.
   EXPECT_CALL(dialog_prompt(), ControllerGone()).Times(0);
-  content::FrameNavigateParams params;
-  params.transition = ui::PAGE_TRANSITION_LINK;
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(), params);
+  std::unique_ptr<content::NavigationHandle> navigation_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL(), main_rfh(), true);
+  navigation_handle.reset();  // Calls DidFinishNavigation.
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&dialog_prompt()));
   EXPECT_CALL(dialog_prompt(), ControllerGone());
 }
