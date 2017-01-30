@@ -23,17 +23,21 @@ int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int b) {
 
 void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
                       int dstride, int x0, int y0, int sizex, int sizey,
-                      int width, int height, unsigned int strength) {
+                      unsigned int strength, BOUNDARY_TYPE bt) {
   int x, y;
+  int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
+  int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY);
+  int xmax = x0 + sizex + !(bt & TILE_RIGHT_BOUNDARY) * 2 - 1;
+  int ymax = y0 + sizey + !(bt & TILE_BOTTOM_BOUNDARY) - 1;
   for (y = y0; y < y0 + sizey; y++) {
     for (x = x0; x < x0 + sizex; x++) {
       int X = src[y * sstride + x];
-      int A = src[AOMMAX(0, y - 1) * sstride + x];
-      int B = src[y * sstride + AOMMAX(0, x - 2)];
-      int C = src[y * sstride + AOMMAX(0, x - 1)];
-      int D = src[y * sstride + AOMMIN(width - 1, x + 1)];
-      int E = src[y * sstride + AOMMIN(width - 1, x + 2)];
-      int F = src[AOMMIN(height - 1, y + 1) * sstride + x];
+      int A = src[AOMMAX(ymin, y - 1) * sstride + x];
+      int B = src[y * sstride + AOMMAX(xmin, x - 2)];
+      int C = src[y * sstride + AOMMAX(xmin, x - 1)];
+      int D = src[y * sstride + AOMMIN(xmax, x + 1)];
+      int E = src[y * sstride + AOMMIN(xmax, x + 2)];
+      int F = src[AOMMIN(ymax, y + 1) * sstride + x];
       int delta;
       delta = av1_clpf_sample(X, A, B, C, D, E, F, strength);
       dst[y * dstride + x] = X + delta;
@@ -45,17 +49,22 @@ void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
 // Identical to aom_clpf_block_c() apart from "src" and "dst".
 void aom_clpf_block_hbd_c(const uint16_t *src, uint16_t *dst, int sstride,
                           int dstride, int x0, int y0, int sizex, int sizey,
-                          int width, int height, unsigned int strength) {
+                          unsigned int strength, BOUNDARY_TYPE bt) {
   int x, y;
+  int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
+  int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY);
+  int xmax = x0 + sizex + !(bt & TILE_RIGHT_BOUNDARY) * 2 - 1;
+  int ymax = y0 + sizey + !(bt & TILE_BOTTOM_BOUNDARY) - 1;
+
   for (y = y0; y < y0 + sizey; y++) {
     for (x = x0; x < x0 + sizex; x++) {
       int X = src[y * sstride + x];
-      int A = src[AOMMAX(0, y - 1) * sstride + x];
-      int B = src[y * sstride + AOMMAX(0, x - 2)];
-      int C = src[y * sstride + AOMMAX(0, x - 1)];
-      int D = src[y * sstride + AOMMIN(width - 1, x + 1)];
-      int E = src[y * sstride + AOMMIN(width - 1, x + 2)];
-      int F = src[AOMMIN(height - 1, y + 1) * sstride + x];
+      int A = src[AOMMAX(ymin, y - 1) * sstride + x];
+      int B = src[y * sstride + AOMMAX(xmin, x - 2)];
+      int C = src[y * sstride + AOMMAX(xmin, x - 1)];
+      int D = src[y * sstride + AOMMIN(xmax, x + 1)];
+      int E = src[y * sstride + AOMMIN(xmax, x + 2)];
+      int F = src[AOMMIN(ymax, y + 1) * sstride + x];
       int delta;
       delta = av1_clpf_sample(X, A, B, C, D, E, F, strength);
       dst[y * dstride + x] = X + delta;
@@ -156,6 +165,11 @@ void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
                                      (xpos << subx) / MI_SIZE]
                      ->mbmi.skip ||
                 (enable_fb_flag && fb_size_log2 == MAX_FB_SIZE_LOG2)) {
+              BOUNDARY_TYPE boundary_type =
+                  cm->mi[(ypos << suby) / MI_SIZE * cm->mi_stride +
+                         (xpos << subx) / MI_SIZE]
+                      .mbmi.boundary_info;
+
               // Temporary buffering needed for in-place filtering
               if (cache_ptr[cache_idx]) {
 // Copy filtered block back into the frame
@@ -228,15 +242,15 @@ void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
               if (cm->use_highbitdepth) {
                 aom_clpf_block_hbd(CONVERT_TO_SHORTPTR(src_buffer),
                                    CONVERT_TO_SHORTPTR(dst_buffer), sstride,
-                                   dstride, xpos, ypos, sizex, sizey, width,
-                                   height, strength);
+                                   dstride, xpos, ypos, sizex, sizey, strength,
+                                   boundary_type);
               } else {
                 aom_clpf_block(src_buffer, dst_buffer, sstride, dstride, xpos,
-                               ypos, sizex, sizey, width, height, strength);
+                               ypos, sizex, sizey, strength, boundary_type);
               }
 #else
               aom_clpf_block(src_buffer, dst_buffer, sstride, dstride, xpos,
-                             ypos, sizex, sizey, width, height, strength);
+                             ypos, sizex, sizey, strength, boundary_type);
 #endif
             }
           }

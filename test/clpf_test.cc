@@ -28,7 +28,7 @@ namespace {
 
 typedef void (*clpf_block_t)(const uint8_t *src, uint8_t *dst, int sstride,
                              int dstride, int x0, int y0, int sizex, int sizey,
-                             int width, int height, unsigned int strength);
+                             unsigned int strength, BOUNDARY_TYPE bt);
 
 typedef std::tr1::tuple<clpf_block_t, clpf_block_t, int, int>
     clpf_block_param_t;
@@ -57,8 +57,8 @@ typedef ClpfBlockTest ClpfSpeedTest;
 #if CONFIG_AOM_HIGHBITDEPTH
 typedef void (*clpf_block_hbd_t)(const uint16_t *src, uint16_t *dst,
                                  int sstride, int dstride, int x0, int y0,
-                                 int sizex, int sizey, int width, int height,
-                                 unsigned int strength);
+                                 int sizex, int sizey, unsigned int strength,
+                                 BOUNDARY_TYPE bt);
 
 typedef std::tr1::tuple<clpf_block_hbd_t, clpf_block_hbd_t, int, int>
     clpf_block_hbd_param_t;
@@ -90,11 +90,11 @@ template <typename pixel>
 void test_clpf(int w, int h, int depth, int iterations,
                void (*clpf)(const pixel *src, pixel *dst, int sstride,
                             int dstride, int x0, int y0, int sizex, int sizey,
-                            int width, int height, unsigned int strength),
+                            unsigned int strength, BOUNDARY_TYPE bt),
                void (*ref_clpf)(const pixel *src, pixel *dst, int sstride,
                                 int dstride, int x0, int y0, int sizex,
-                                int sizey, int width, int height,
-                                unsigned int strength)) {
+                                int sizey, unsigned int strength,
+                                BOUNDARY_TYPE bt)) {
   const int size = 24;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   DECLARE_ALIGNED(16, pixel, s[size * size]);
@@ -123,11 +123,16 @@ void test_clpf(int w, int h, int depth, int iterations,
           for (xpos = 0; xpos < size && !error; xpos += w * !error) {
             for (strength = depth - 8; strength < depth - 5 && !error;
                  strength += !error) {
-              ref_clpf(s, ref_d, size, size, xpos, ypos, w, h, size, size,
-                       1 << strength);
+              BOUNDARY_TYPE bt =
+                  BOUNDARY_TYPE((TILE_LEFT_BOUNDARY & -(!xpos)) |
+                                (TILE_ABOVE_BOUNDARY & -(!ypos)) |
+                                (TILE_RIGHT_BOUNDARY & -(xpos + w == size)) |
+                                (TILE_BOTTOM_BOUNDARY & -(ypos + h == size)));
+              ref_clpf(s, ref_d, size, size, xpos, ypos, w, h, 1 << strength,
+                       bt);
               if (clpf != ref_clpf)
                 ASM_REGISTER_STATE_CHECK(clpf(s, d, size, size, xpos, ypos, w,
-                                              h, size, size, 1 << strength));
+                                              h, 1 << strength, bt));
               if (ref_clpf != clpf)
                 for (pos = 0; pos < size * size && !error; pos++) {
                   error = ref_d[pos] != d[pos];
@@ -163,12 +168,12 @@ template <typename pixel>
 void test_clpf_speed(int w, int h, int depth, int iterations,
                      void (*clpf)(const pixel *src, pixel *dst, int sstride,
                                   int dstride, int x0, int y0, int sizex,
-                                  int sizey, int width, int height,
-                                  unsigned int strength),
+                                  int sizey, unsigned int strength,
+                                  BOUNDARY_TYPE bt),
                      void (*ref_clpf)(const pixel *src, pixel *dst, int sstride,
                                       int dstride, int x0, int y0, int sizex,
-                                      int sizey, int width, int height,
-                                      unsigned int strength)) {
+                                      int sizey, unsigned int strength,
+                                      BOUNDARY_TYPE bt)) {
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
 

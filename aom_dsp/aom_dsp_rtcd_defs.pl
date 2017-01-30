@@ -6,6 +6,7 @@ print <<EOF
 
 #include "aom/aom_integer.h"
 #include "aom_dsp/aom_dsp_common.h"
+#include "av1/common/enums.h"
 
 EOF
 }
@@ -852,7 +853,7 @@ specialize qw/aom_lpf_horizontal_4_dual sse2 neon dspr2 msa/;
 
 if (aom_config("CONFIG_CLPF") eq "yes") {
   if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
-    add_proto qw/void aom_clpf_block_hbd/, "const uint16_t *src, uint16_t *dst, int sstride, int dstride, int x0, int y0, int sizex, int sizey, int width, int height, unsigned int strength";
+    add_proto qw/void aom_clpf_block_hbd/, "const uint16_t *src, uint16_t *dst, int sstride, int dstride, int x0, int y0, int sizex, int sizey, unsigned int strength, BOUNDARY_TYPE bt";
     add_proto qw/void aom_clpf_detect_hbd/, "const uint16_t *rec, const uint16_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum0, int *sum1, unsigned int strength, int shift, int size";
     add_proto qw/void aom_clpf_detect_multi_hbd/, "const uint16_t *rec, const uint16_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum, int shift, int size";
     # VS compiling for 32 bit targets does not support vector types in
@@ -864,7 +865,7 @@ if (aom_config("CONFIG_CLPF") eq "yes") {
       specialize qw/aom_clpf_detect_multi_hbd sse2 ssse3 sse4_1 neon/;
     }
   }
-  add_proto qw/void aom_clpf_block/, "const uint8_t *src, uint8_t *dst, int sstride, int dstride, int x0, int y0, int sizex, int sizey, int width, int height, unsigned int strength";
+  add_proto qw/void aom_clpf_block/, "const uint8_t *src, uint8_t *dst, int sstride, int dstride, int x0, int y0, int sizex, int sizey, unsigned int strength, BOUNDARY_TYPE bt";
   add_proto qw/void aom_clpf_detect/, "const uint8_t *rec, const uint8_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum0, int *sum1, unsigned int strength, int size";
   add_proto qw/void aom_clpf_detect_multi/, "const uint8_t *rec, const uint8_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum, int size";
   # VS compiling for 32 bit targets does not support vector types in
