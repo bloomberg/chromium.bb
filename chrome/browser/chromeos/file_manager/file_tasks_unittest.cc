@@ -313,13 +313,13 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
   EXPECT_TRUE(tasks[1].is_default());
 }
 
-// Test that Files.app's internal file browser handler is chosen as default
-// even if nothing is set in the preferences.
+// Test that internal file browser handler of the Files app is chosen as
+// default even if nothing is set in the preferences.
 TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackFileBrowser) {
   TestingPrefServiceSimple pref_service;
   RegisterDefaultTaskPreferences(&pref_service);
 
-  // Files.app's internal file browser handler was found for "foo.txt".
+  // The internal file browser handler of the Files app was found for "foo.txt".
   TaskDescriptor files_app_task(kFileManagerAppId,
                                 TASK_TYPE_FILE_BROWSER_HANDLER,
                                 "view-in-browser");
@@ -821,9 +821,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
-  // Files.app can handle ".gdoc" files.
+  // The Files app can handle ".gdoc" files.
   // The ID "kFileManagerAppId" used here is precisely the one that identifies
-  // the Chrome OS Files.app application.
+  // the Chrome OS Files app application.
   extensions::ExtensionBuilder files_app;
   files_app.SetManifest(
       extensions::DictionaryBuilder()
@@ -847,7 +847,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   files_app.SetID(kFileManagerAppId);
   extension_service_->AddExtension(files_app.Build().get());
 
-  // Find apps for a ".gdoc file". Only the built-in handler of Files.apps
+  // Find apps for a ".gdoc file". Only the built-in handler of the Files apps
   // should be found.
   std::vector<extensions::EntryInfo> entries;
   std::vector<GURL> file_urls;

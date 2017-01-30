@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 /**
-* @fileoverview Partial definitions for ECMAScript 6. To compile Files.app, some
-*     definitions are defined in this file. They should be removed once they are
-*     ready in closure compiler by default.
+* @fileoverview Partial definitions for ECMAScript 6. To compile the Files app,
+*     some definitions are defined in this file. They should be removed once
+*     they are ready in closure compiler by default.
 * @externs
 */
 

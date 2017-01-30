@@ -793,9 +793,9 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.initVolumeManager_ = function() {
     var allowedPaths = this.launchParams_.allowedPaths;
-    // Files.app native implementation create snapshot files for non-native
-    // files. But it does not work for folders (e.g., dialog for loading
-    // unpacked extensions).
+    // The native implementation of the Files app creates snapshot files for
+    // non-native files. But it does not work for folders (e.g., dialog for
+    // loading unpacked extensions).
     if (allowedPaths === AllowedPaths.NATIVE_PATH &&
         !DialogType.isFolderDialog(this.launchParams_.type)) {
       if (this.launchParams_.type == DialogType.SELECT_SAVEAS_FILE) {
@@ -810,7 +810,7 @@ FileManager.prototype = /** @struct */ {
     // even depends on the value of |supportVirtualPath|. If it is
     // VirtualPathSupport.NO_VIRTUAL_PATH, it hides Drive even if Drive is
     // enabled on preference.
-    // In other words, even if Drive is disabled on preference but Files.app
+    // In other words, even if Drive is disabled on preference but the Files app
     // should show Drive when it is re-enabled, then the value should be set to
     // true.
     // Note that the Drive enabling preference change is listened by
@@ -820,9 +820,9 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
-   * One time initialization of the Files.app's essential UI elements. These
-   * elements will be shown to the user. Only visible elements should be
-   * initialized here. Any heavy operation should be avoided. Files.app's
+   * One time initialization of the essential UI elements in the Files app.
+   * These elements will be shown to the user. Only visible elements should be
+   * initialized here. Any heavy operation should be avoided. The Files app's
    * window is shown at the end of this routine.
    * @private
    */

@@ -968,8 +968,9 @@ CommandHandler.COMMANDS_['volume-help'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     // Hides the help menu in modal dialog mode. It does not make much sense
     // because after all, users cannot view the help without closing, and
-    // besides that the help page is about Files.app as an app, not about the
-    // dialog mode itself. It can also lead to hard-to-fix bug crbug.com/339089.
+    // besides that the help page is about the Files app as an app, not about
+    // the dialog mode itself. It can also lead to hard-to-fix bug
+    // crbug.com/339089.
     var hideHelp = DialogType.isModal(fileManager.dialogType);
     event.canExecute = !hideHelp;
     event.command.setHidden(hideHelp);
@@ -1317,7 +1318,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = /** @type {Command} */ ({
 });
 
 /**
- * Zoom in to the Files.app.
+ * Zoom in to the Files app.
  * @type {Command}
  */
 CommandHandler.COMMANDS_['zoom-in'] = /** @type {Command} */ ({
@@ -1332,7 +1333,7 @@ CommandHandler.COMMANDS_['zoom-in'] = /** @type {Command} */ ({
 });
 
 /**
- * Zoom out from the Files.app.
+ * Zoom out from the Files app.
  * @type {Command}
  */
 CommandHandler.COMMANDS_['zoom-out'] = /** @type {Command} */ ({

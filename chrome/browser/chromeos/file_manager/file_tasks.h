@@ -7,7 +7,7 @@
 // WHAT ARE FILE TASKS?
 //
 // File tasks are representation of actions that can be performed over the
-// currently selected files from Files.app. A task can be either of:
+// currently selected files from the Files app. A task can be either of:
 //
 // 1) Chrome extension or app, registered via "file_handlers" or
 // "file_browser_handlers" in manifest.json (ex. Text.app). This information
@@ -17,10 +17,10 @@
 // https://developer.chrome.com/extensions/manifest.html#file_handlers
 // https://developer.chrome.com/extensions/fileBrowserHandler.html
 //
-// 2) Built-in handlers provided from Files.app. Files.app provides lots of
-// file_browser_handlers, such as "play", "mount-archive".  These built-in
-// handlers are often handled in special manners inside Files.app.
-// This information also comes from FileBrowserHandler::GetHandlers().
+// 2) Built-in handlers provided from the Files app. The Files app provides
+// lots of file_browser_handlers, such as "play", "mount-archive".  These
+// built-in handlers are often handled in special manners inside the Files
+// app. This information also comes from FileBrowserHandler::GetHandlers().
 //
 // See also:
 // ui/file_manager/file_manager/manifest.json
@@ -32,7 +32,7 @@
 // See also:
 // https://chrome.google.com/webstore/category/collection/drive_apps
 //
-// For example, if the user is now selecting a JPEG file, Files.app will
+// For example, if the user is now selecting a JPEG file, the Files app will
 // receive file tasks represented as a JSON object via
 // chrome.fileManagerPrivate.getFileTasks() API, which look like:
 //
@@ -54,7 +54,7 @@
 // ]
 //
 // The first file task is a Drive app. The second file task is a built-in
-// handler from Files.app.
+// handler from the Files app.
 //
 // WHAT ARE TASK IDS?
 //
@@ -77,7 +77,7 @@
 // <app-id> is either of Chrome Extension/App ID or Drive App ID. For some
 // reason, Chrome Extension/App IDs and Drive App IDs look differently. As of
 // writing, the former looks like "hhaomjibdihmijegdhdafkllkbggdgoj"
-// (Files.app) and the latter looks like "419782477519" (Pixlr Editor).
+// (the Files app) and the latter looks like "419782477519" (Pixlr Editor).
 //
 // <task-type> is either of
 // - "file" - File browser handler - app/extension declaring
@@ -100,9 +100,9 @@
 // chrome.fileManagerPrivate.executeTasks() is used to open a file with a
 // handler (Chrome Extension/App or Drive App).
 //
-// Some built-in handlers such as "play" are handled internally in Files.app.
-// "mount-archive" is handled very differently. The task execution business
-// should be simplified: crbug.com/267313
+// Some built-in handlers such as "play" are handled internally in the Files
+// app. "mount-archive" is handled very differently. The task execution
+// business should be simplified: crbug.com/267313
 //
 // See also:
 // ui/file_manager/file_manager/foreground/js/file_tasks.js
@@ -310,11 +310,11 @@ typedef base::Callback<void(
 // |drive_app_registry| can be NULL if the drive app registry is not
 // present.
 //
-// If |entries| contains a Google document, only the internal tasks of
-// Files.app (i.e., tasks having the app ID of Files.app) are listed.
+// If |entries| contains a Google document, only the internal tasks of the
+// Files app (i.e., tasks having the app ID of the Files app) are listed.
 // This is to avoid dups between Drive app tasks and an internal handler that
-// Files.app provides, and to avoid listing normal file handler and file browser
-// handler tasks, which can handle only normal files.
+// the Files app provides, and to avoid listing normal file handler and file
+// browser handler tasks, which can handle only normal files.
 void FindAllTypesOfTasks(Profile* profile,
                          const drive::DriveAppRegistry* drive_app_registry,
                          const std::vector<extensions::EntryInfo>& entries,

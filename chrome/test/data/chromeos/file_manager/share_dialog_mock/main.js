@@ -6,7 +6,7 @@
 var shareDialog = {};
 
 /**
- * Origin of Files.app.
+ * Origin of the Files app.
  * @type {string}
  * @const
  */
@@ -28,8 +28,8 @@ shareDialog.TARGET_WIDTH = 350;
 shareDialog.TARGET_HEIGHT = 250;
 
 /**
- * Target window of Files.app. Used to communicate over messages. Filled out
- * once the first message from the embedder arrives.
+ * Target window of the Files app. Used to communicate over messages. Filled
+ * out once the first message from the embedder arrives.
  * @type {Window}
  */
 shareDialog.embedderTarget = null;

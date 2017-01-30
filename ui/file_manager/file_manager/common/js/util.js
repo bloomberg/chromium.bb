@@ -361,8 +361,8 @@ function strf(id, var_args) {
 }
 
 /**
- * @return {boolean} True if Files.app is running as an open files or a select
- *     folder dialog. False otherwise.
+ * @return {boolean} True if the Files app is running as an open files or a
+ *     select folder dialog. False otherwise.
  */
 util.runningInBrowser = function() {
   return !window.appID;
@@ -554,7 +554,7 @@ util.addIsFocusedMethod = function() {
 };
 
 /**
- * Checks, if the Files.app's window is in a full screen mode.
+ * Checks, if the Files app's window is in a full screen mode.
  *
  * @param {chrome.app.window.AppWindow} appWindow App window to be maximized.
  * @return {boolean} True if the full screen mode is enabled.

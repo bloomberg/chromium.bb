@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Type of a Files.app's instance launch.
+ * Type of a Files app's instance launch.
  * @enum {number}
  */
 var LaunchType = {
@@ -364,7 +364,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
           continue;
 
         // The isFocused() method should always be available, but in case
-        // Files.app's failed on some error, wrap it with try catch.
+        // the Files app has failed on some error, wrap it with try catch.
         try {
           if (window.background.appWindows[key].contentWindow.isFocused()) {
             if (opt_callback)
@@ -453,7 +453,7 @@ FileBrowserBackground.prototype.onExecute_ = function(action, details) {
   };
 
   // Every other action opens a Files app window.
-  // For mounted devices just focus any Files.app window. The mounted
+  // For mounted devices just focus any Files app window. The mounted
   // volume will appear on the navigation list.
   launchFileManager(
       appState,
@@ -581,7 +581,7 @@ FileBrowserBackground.prototype.findFocusedWindow_ = function() {
 };
 
 /**
- * Handles mounted FSP volumes and fires Files app. This is a quick fix for
+ * Handles mounted FSP volumes and fires the Files app. This is a quick fix for
  * crbug.com/456648.
  * @param {!Object} event Event details.
  * @private

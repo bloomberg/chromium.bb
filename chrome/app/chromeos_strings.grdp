@@ -178,19 +178,19 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_STATUS_COLUMN_LABEL" desc="Status column label.  This column reflects the cloud import status of files.  The status is an icon depicting whether a file has been imported, and if so, where to - for example, a Drive icon if a file has been imported to Google Drive.  For unimported files, this column is blank. ">
     Status
   </message>
-  <message name="IDS_FILE_BROWSER_TOTAL_FILE_COUNT_LABEL" desc="Total count of files that user selects in Files app">
+  <message name="IDS_FILE_BROWSER_TOTAL_FILE_COUNT_LABEL" desc="Total count of files that user selects in the Files app">
     Total file count
   </message>
-  <message name="IDS_FILE_BROWSER_TOTAL_FILE_SIZE_LABEL" desc="Total size of files that user selects in Files app">
+  <message name="IDS_FILE_BROWSER_TOTAL_FILE_SIZE_LABEL" desc="Total size of files that user selects in the Files app">
     Total file size
   </message>
-  <message name="IDS_FILE_BROWSER_IMAGE_RESOLUTION_COLUMN_LABEL" desc="Image resolution of a file that user selects in Files app">
+  <message name="IDS_FILE_BROWSER_IMAGE_RESOLUTION_COLUMN_LABEL" desc="Image resolution of a file that user selects in the Files app">
     Image resolution
   </message>
-  <message name="IDS_FILE_BROWSER_MEDIA_TITLE_COLUMN_LABEL" desc="Artist of a music file that user selects in Files app">
+  <message name="IDS_FILE_BROWSER_MEDIA_TITLE_COLUMN_LABEL" desc="Artist of a music file that user selects in the Files app">
     Title
   </message>
-  <message name="IDS_FILE_BROWSER_MEDIA_ARTIST_COLUMN_LABEL" desc="Title of a music file that user selects in Files app">
+  <message name="IDS_FILE_BROWSER_MEDIA_ARTIST_COLUMN_LABEL" desc="Title of a music file that user selects in the Files app">
     Artist
   </message>
   <message name="IDS_FILE_BROWSER_TYPE_COLUMN_LABEL" desc="Type column label.">
@@ -268,7 +268,7 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_CLOSE_VOLUME_BUTTON_LABEL" desc="Title of the action for closing either an archive volume or a volume provided by an extension.">
     Close
   </message>
-  <message name="IDS_FILE_BROWSER_ADD_NEW_SERVICES_BUTTON_LABEL" desc="Title of the button in the left nav to add new services (file systems) to Files app.">
+  <message name="IDS_FILE_BROWSER_ADD_NEW_SERVICES_BUTTON_LABEL" desc="Title of the button in the left nav to add new services (file systems) to the Files app.">
     Add new services
   </message>
   <message name="IDS_FILE_BROWSER_INSTALL_NEW_EXTENSION_LABEL" desc="Title of the menu item for installing new extensions from the web store.">
@@ -741,7 +741,7 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
     Select an app to open this file
   </message>
-  <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_FOR_PROVIDERS_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps that can be added to the left nav of Files app.">
+  <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_FOR_PROVIDERS_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps that can be added to the left nav of the Files app.">
     Available services
   </message>
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_LINK_TO_WEBSTORE" desc="Text of the link to the app list on Chrome Webstore, which shows the more apps than in the suggest app dialog.">
@@ -1003,10 +1003,10 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_DMG" desc="Message shown when user tries to open a windows executable file, which we can't handle.">
     This file is designed for a computer using Macintosh software. This is not compatible with your device which runs Chrome OS. Please search the <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;<ex>&lt;a target='_blank' href='$1'&gt;</ex></ph>Chrome Web Store<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> for a suitable replacement app.<ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$2'&gt;<ex>&lt;a target='_blank' href='$2'&gt;</ex></ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX_TITLE" desc="Message shown when a user tries to open a *.crx file, which we don't handle in Files.app.">
+  <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX_TITLE" desc="Message shown when a user tries to open a *.crx file, which we don't handle in the Files app.">
     Wait just a sec
   </message>
-  <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX" desc="Message shown when a user tries to open a *.crx file, which we don't handle in Files.app.">
+  <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX" desc="Message shown when a user tries to open a *.crx file, which we don't handle in the Files app.">
     We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK">&lt;a target='_blank' href='https://support.google.com/chrome_webstore/answer/2664769?p=crx_warning&amp;rd=1'&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
 
@@ -1160,10 +1160,10 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_THUMBNAIL_VIEW_TOOLTIP" desc="Tooltip for the Thumbnail View button.">
     Thumbnail view
   </message>
-  <message name="IDS_FILE_BROWSER_SORT_BUTTON_TOOLTIP" desc="Tooltip for the button which provides sort options in Files.app.">
+  <message name="IDS_FILE_BROWSER_SORT_BUTTON_TOOLTIP" desc="Tooltip for the button which provides sort options in the Files app.">
     Sort options
   </message>
-  <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in Files.app.">
+  <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in the Files app.">
     Settings
   </message>
 
@@ -4188,13 +4188,13 @@ Battery full
   <message name="IDS_REMOVABLE_DEVICE_DETECTION_TITLE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
     Removable device detected
   </message>
-  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to Files.app. If user clicks a button in the notification, Files.app opens.">
+  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to the Files app. If user clicks a button in the notification, the Files app opens.">
     Explore the device's content in the Files app.
   </message>
-  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY" desc="Text of notification message to navigate users to Files.app when attaching a removable media, but the administrator's poilcy forbids writing data to them. If user clicks a button in the notification, Files.app opens.">
+  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY" desc="Text of notification message to navigate users to the Files app when attaching a removable media, but the administrator's poilcy forbids writing data to them. If user clicks a button in the notification, the Files app opens.">
     Explore the device's content in the Files app. The content is restricted by an admin and can’t be modified.
   </message>
-  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to Files.app. If user clicks the button, Files.app opens.">
+  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to the Files app. If user clicks the button, the Files app opens.">
     Open Files app
   </message>
   <message name="IDS_REMOVABLE_DEVICE_IMPORT_MESSAGE" desc="Text of notification message to start the media import flow. If user clicks a button in the notification, the import flow begins.">
@@ -4215,7 +4215,7 @@ Battery full
   <message name="IDS_DEVICE_UNKNOWN_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
    Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> could not be recognized.
   </message>
-  <message name="IDS_DEVICE_UNKNOWN_BUTTON_LABEL" desc="Text of a button label in a notification to format the device. If user clicks the button, Files.app opens and focus on unknown the device.">
+  <message name="IDS_DEVICE_UNKNOWN_BUTTON_LABEL" desc="Text of a button label in a notification to format the device. If user clicks the button, the Files app opens and focus on unknown the device.">
     Format this device
   </message>
   <message name="IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">

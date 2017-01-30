@@ -256,7 +256,7 @@ bool ShouldSendProgressEvent(bool always, base::Time* last_time) {
   }
 }
 
-// Obtains whether the Files.app should handle the volume or not.
+// Obtains whether the Files app should handle the volume or not.
 bool ShouldShowNotificationForVolume(
     Profile* profile,
     const DeviceEventRouter& device_event_router,
@@ -283,7 +283,7 @@ bool ShouldShowNotificationForVolume(
   if (IsRecoveryToolRunning(profile))
     return false;
 
-  // If the disable-default-apps flag is on, Files.app is not opened
+  // If the disable-default-apps flag is on, the Files app is not opened
   // automatically on device mount not to obstruct the manual test.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDefaultApps)) {
@@ -421,7 +421,7 @@ void EventRouter::Shutdown() {
 
   DLOG_IF(WARNING, !file_watchers_.empty())
       << "Not all file watchers are "
-      << "removed. This can happen when Files.app is open during shutdown.";
+      << "removed. This can happen when the Files app is open during shutdown.";
   file_watchers_.clear();
   if (!profile_) {
     NOTREACHED();
@@ -721,7 +721,7 @@ void EventRouter::OnFileChanged(const drive::FileChange& changed_files) {
     // 1. /a/b DELETE:DIRECTORY
     // 2. /a DELETE:DIRECTORY
     //
-    // /a/b is watched, and /a is deleted from Files.app.
+    // /a/b is watched, and /a is deleted from the Files app.
     // 1. /a DELETE:DIRECTORY
     if (contains_directory_deletion) {
       // Expand the deleted directory path with watched paths.
@@ -808,7 +808,7 @@ void EventRouter::HandleFileWatchNotification(const drive::FileChange* list,
     // Removes the detailed information, if the list size is more than
     // kDirectoryChangeEventMaxDetailInfoSize, since passing large list
     // and processing it may cause more itme.
-    // This will be invoked full-refresh in Files.app.
+    // This will be invoked full-refresh in the Files app.
     list = NULL;
   }
 

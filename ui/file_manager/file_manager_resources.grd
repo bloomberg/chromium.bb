@@ -12,7 +12,7 @@
   <release seq="1">
     <includes>
       <include name="IDR_FILEMANAGER_MANIFEST" file="file_manager/manifest.json" type="BINDATA" />
-      <!-- Files.app pages and scripts. -->
+      <!-- The Files app pages and scripts. -->
       <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/foreground/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_IMPORTER_JS" file="file_manager/foreground/js/elements_importer.js" type="BINDATA" />

@@ -139,14 +139,14 @@
     },
     // The following handlers are used only internally, therefore they do not
     // have any file filter.
-    // Selects the passed file after launching Files.app.
+    // Selects the passed file after launching the Files app.
     {
       "id": "select",
       "default_title": "__MSG_OPEN_ACTION__",
       "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": []
     },
-    // Opens the passed directory after launching Files.app.
+    // Opens the passed directory after launching the Files app.
     {
       "id": "open",
       "default_title": "__MSG_OPEN_ACTION__",

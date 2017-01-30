@@ -54,9 +54,9 @@ const char kRootPath[] = "/";
 // Registers |path| as the "Downloads" folder to the FileSystem API backend.
 // If another folder is already mounted. It revokes and overrides the old one.
 bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
-  // Although we show only profile's own "Downloads" folder in Files.app,
+  // Although we show only profile's own "Downloads" folder in the Files app,
   // in the backend we need to mount all profile's download directory globally.
-  // Otherwise, Files.app cannot support cross-profile file copies, etc.
+  // Otherwise, the Files app cannot support cross-profile file copies, etc.
   // For this reason, we need to register to the global GetSystemInstance().
   const std::string mount_point_name =
       file_manager::util::GetDownloadsMountPointName(profile);

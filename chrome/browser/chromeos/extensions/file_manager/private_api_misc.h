@@ -40,7 +40,7 @@ class FileManagerPrivateLogoutUserForReauthenticationFunction
 };
 
 // Implements the chrome.fileManagerPrivate.getPreferences method.
-// Gets settings for Files.app.
+// Gets settings for the Files app.
 class FileManagerPrivateGetPreferencesFunction
     : public UIThreadExtensionFunction {
  public:
@@ -54,7 +54,7 @@ class FileManagerPrivateGetPreferencesFunction
 };
 
 // Implements the chrome.fileManagerPrivate.setPreferences method.
-// Sets settings for Files.app.
+// Sets settings for the Files app.
 class FileManagerPrivateSetPreferencesFunction
     : public UIThreadExtensionFunction {
  public:
