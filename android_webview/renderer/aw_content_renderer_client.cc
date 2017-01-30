@@ -224,7 +224,8 @@ void AwContentRendererClient::GetNavigationErrorStrings(
       render_frame->GetRemoteInterfaces()->GetInterface(
           &web_restrictions_service_);
       web_restrictions::mojom::ClientResultPtr result;
-      if (web_restrictions_service_->GetResult(url, &result)) {
+      if (web_restrictions_service_->GetResult(gurl.possibly_invalid_spec(),
+                                               &result)) {
         std::string detailed_error_html =
             supervised_user_error_page::BuildHtmlFromWebRestrictionsResult(
                 result, RenderThread::Get()->GetLocale());
