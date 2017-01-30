@@ -4320,6 +4320,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           [_certVerificationController allowCert:leafCert
                                          forHost:host
                                           status:info.cert_status];
+          [self.sessionController.sessionCertificatePolicyManager
+              registerAllowedCertificate:leafCert
+                                 forHost:base::SysNSStringToUTF8(host)
+                                  status:info.cert_status];
           [self loadCurrentURL];
         }
       }));
