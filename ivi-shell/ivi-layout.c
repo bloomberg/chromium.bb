@@ -612,17 +612,13 @@ calc_surface_to_global_matrix_and_mask_to_weston_surface(
 }
 
 static void
-update_prop(struct ivi_layout_screen  *iviscrn,
-	    struct ivi_layout_layer *ivilayer,
-	    struct ivi_layout_view *ivi_view)
+update_prop(struct ivi_layout_view *ivi_view)
 {
-	struct ivi_layout_surface *ivisurf;
+	struct ivi_layout_surface *ivisurf = ivi_view->ivisurf;
+	struct ivi_layout_layer *ivilayer = ivi_view->on_layer;
+	struct ivi_layout_screen *iviscrn = ivilayer->on_screen;
 	struct ivi_rectangle r;
 	bool can_calc = true;
-
-	assert(ivi_view->on_layer == ivilayer);
-
-	ivisurf = ivi_view->ivisurf;
 
 	/*In case of no prop change, this just returns*/
 	if (!ivilayer->prop.event_mask && !ivisurf->prop.event_mask)
@@ -685,7 +681,7 @@ commit_changes(struct ivi_layout *layout)
 				if (ivi_view->ivisurf->prop.visibility == false)
 					continue;
 
-				update_prop(iviscrn, ivilayer, ivi_view);
+				update_prop(ivi_view);
 			}
 		}
 	}
