@@ -173,26 +173,6 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   return !(keyboard_controller && keyboard_controller->keyboard_visible());
 }
 
-// We must avoid showing the Deprecated NEXT_IME notification erronously.
-bool ShouldShowDeprecatedNextImeNotification(
-    const ui::Accelerator& previous_accelerator) {
-  // We only show the deprecation notification if the previous accelerator key
-  // is ONLY either Shift, or Alt.
-  const ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
-  switch (previous_key_code) {
-    case ui::VKEY_SHIFT:
-    case ui::VKEY_LSHIFT:
-    case ui::VKEY_RSHIFT:
-    case ui::VKEY_MENU:
-    case ui::VKEY_LMENU:
-    case ui::VKEY_RMENU:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
 void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
   base::RecordAction(UserMetricsAction("Accel_Next_Ime"));
   ime_control_delegate->HandleNextIme();
@@ -635,45 +615,18 @@ bool AcceleratorController::AcceleratorPressed(
       accelerators_.find(accelerator);
   DCHECK(it != accelerators_.end());
   AcceleratorAction action = it->second;
-  if (CanPerformAction(action, accelerator)) {
-    // Handling the deprecated accelerators (if any) only if action can be
-    // performed.
-    auto itr = actions_with_deprecations_.find(action);
-    if (itr != actions_with_deprecations_.end()) {
-      const DeprecatedAcceleratorData* data = itr->second;
-      if (deprecated_accelerators_.count(accelerator)) {
-        // This accelerator has been deprecated and should be treated according
-        // to its |DeprecatedAcceleratorData|.
+  if (!CanPerformAction(action, accelerator))
+    return false;
 
-        // Record UMA stats.
-        RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
-
-        // We always display the notification as long as this entry exists,
-        // except for NEXT_IME, we must check to avoid showing it for the wrong
-        // shortcut, as Alt+Shift is tricky and trigger the action on release.
-        if (delegate_ &&
-            (action != NEXT_IME ||
-             (action == NEXT_IME &&
-              ShouldShowDeprecatedNextImeNotification(
-                  accelerator_history_->previous_accelerator())))) {
-          delegate_->ShowDeprecatedAcceleratorNotification(
-              data->uma_histogram_name, data->notification_message_id,
-              data->old_shortcut_id, data->new_shortcut_id);
-        }
-
-        if (!data->deprecated_enabled)
-          return false;
-      } else {
-        // This is a new accelerator replacing the old deprecated one.
-        // Record UMA stats and proceed normally.
-        RecordUmaHistogram(data->uma_histogram_name, NEW_USED);
-      }
-    }
-
-    PerformAction(action, accelerator);
-    return ShouldActionConsumeKeyEvent(action);
+  // Handling the deprecated accelerators (if any) only if action can be
+  // performed.
+  if (MaybeDeprecatedAcceleratorPressed(action, accelerator) ==
+      AcceleratorProcessingStatus::STOP) {
+    return false;
   }
-  return false;
+
+  PerformAction(action, accelerator);
+  return ShouldActionConsumeKeyEvent(action);
 }
 
 bool AcceleratorController::CanHandleAccelerators() const {
@@ -1171,6 +1124,46 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   return RESTRICTION_NONE;
+}
+
+AcceleratorController::AcceleratorProcessingStatus
+AcceleratorController::MaybeDeprecatedAcceleratorPressed(
+    AcceleratorAction action,
+    const ui::Accelerator& accelerator) const {
+  auto itr = actions_with_deprecations_.find(action);
+  if (itr == actions_with_deprecations_.end()) {
+    // The action is not associated with any deprecated accelerators, and hence
+    // should be performed normally.
+    return AcceleratorProcessingStatus::PROCEED;
+  }
+
+  // This action is associated with new and deprecated accelerators, find which
+  // one is |accelerator|.
+  const DeprecatedAcceleratorData* data = itr->second;
+  if (!deprecated_accelerators_.count(accelerator)) {
+    // This is a new accelerator replacing the old deprecated one.
+    // Record UMA stats and proceed normally to perform it.
+    RecordUmaHistogram(data->uma_histogram_name, NEW_USED);
+    return AcceleratorProcessingStatus::PROCEED;
+  }
+
+  // This accelerator has been deprecated and should be treated according
+  // to its |DeprecatedAcceleratorData|.
+
+  // Record UMA stats.
+  RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
+
+  if (delegate_) {
+    // We always display the notification as long as this |data| entry exists.
+    delegate_->ShowDeprecatedAcceleratorNotification(
+        data->uma_histogram_name, data->notification_message_id,
+        data->old_shortcut_id, data->new_shortcut_id);
+  }
+
+  if (!data->deprecated_enabled)
+    return AcceleratorProcessingStatus::STOP;
+
+  return AcceleratorProcessingStatus::PROCEED;
 }
 
 }  // namespace ash

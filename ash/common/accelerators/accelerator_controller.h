@@ -165,6 +165,17 @@ class ASH_EXPORT AcceleratorController
   AcceleratorProcessingRestriction GetAcceleratorProcessingRestriction(
       int action);
 
+  // If |accelerator| is a deprecated accelerator, it performs the appropriate
+  // deprecated accelerator pre-handling.
+  // Returns PROCEED if the accelerator's action should be performed (i.e. if
+  // |accelerator| is not a deprecated accelerator, or it's an enabled
+  // deprecated accelerator), and STOP otherwise (if the accelerator is a
+  // disabled deprecated accelerator).
+  enum class AcceleratorProcessingStatus { PROCEED, STOP };
+  AcceleratorProcessingStatus MaybeDeprecatedAcceleratorPressed(
+      AcceleratorAction action,
+      const ui::Accelerator& accelerator) const;
+
   AcceleratorControllerDelegate* delegate_;
 
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;

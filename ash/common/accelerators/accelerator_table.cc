@@ -202,14 +202,7 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
 const AcceleratorData kDeprecatedAccelerators[] = {
     {true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN},
-    {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER},
-    {false, ui::VKEY_LMENU, ui::EF_SHIFT_DOWN, NEXT_IME},
-    {false, ui::VKEY_MENU, ui::EF_SHIFT_DOWN, NEXT_IME},
-    {false, ui::VKEY_RMENU, ui::EF_SHIFT_DOWN, NEXT_IME},
-    {false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME},
-    {false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME},
-    {false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME},
-};
+    {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER}};
 
 const size_t kDeprecatedAcceleratorsLength = arraysize(kDeprecatedAccelerators);
 
@@ -222,13 +215,7 @@ const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
     },
     {SHOW_TASK_MANAGER, "Ash.Accelerators.Deprecated.ShowTaskManager",
      IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG, IDS_SHORTCUT_TASK_MANAGER_OLD,
-     IDS_SHORTCUT_TASK_MANAGER_NEW, true},
-    {
-        NEXT_IME, "Ash.Accelerators.Deprecated.NextIME",
-        IDS_DEPRECATED_NEXT_IME_MSG, IDS_SHORTCUT_NEXT_IME_OLD,
-        IDS_SHORTCUT_NEXT_IME_NEW,
-        false  // Old accelerator has been disabled.
-    }};
+     IDS_SHORTCUT_TASK_MANAGER_NEW, true}};
 
 const size_t kDeprecatedAcceleratorsDataLength =
     arraysize(kDeprecatedAcceleratorsData);
