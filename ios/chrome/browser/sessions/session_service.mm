@@ -188,7 +188,7 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self performSaveToDirectoryInBackground:stashPath];
   } else if (!pendingSession) {
-    // If there wasn't previously a delayed save pending for |stashPath}|,
+    // If there wasn't previously a delayed save pending for |stashPath|,
     // enqueue one now.
     [self performSelector:@selector(performSaveToDirectoryInBackground:)
                withObject:stashPath

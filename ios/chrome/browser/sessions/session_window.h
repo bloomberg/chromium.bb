@@ -21,9 +21,9 @@
 // initialized "empty" (without any sessions) and sessions are added one at a
 // time.  For example:
 //  SessionWindowIOS* window = [[SessionWindow alloc] init];
-//  [window addSession:session_storage];
+//  [window addSerializedSession:session_storage];
 //  ...
-//  [window setSelectedInex:mySelectedIndex];
+//  [window setSelectedIndex:mySelectedIndex];
 - (void)addSerializedSession:(CRWNavigationManagerStorage*)session;
 
 // Clears all added sessions.

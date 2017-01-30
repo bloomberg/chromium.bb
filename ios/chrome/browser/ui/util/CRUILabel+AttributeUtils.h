@@ -10,7 +10,7 @@
 @interface UILabel (CRUILabelAttributeUtils)
 @property(nonatomic, assign, setter=cr_setLineHeight:) CGFloat cr_lineHeight;
 
-// Adjusts the line height of the reciever so that the lines will evenly f
+// Adjusts the line height of the receiver so that the lines will evenly f
 - (void)cr_adjustLineHeightForMaximimumLines:(NSUInteger)maximumLines;
 
 @end

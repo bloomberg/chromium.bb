@@ -97,7 +97,7 @@ enum StateChangeReason {
                                          delegate;
 
 // Set the Tab to be used as the opener for the search results tab. |opener|'s
-// lifetime should be greater than the reciever's. |opener| can be nil.
+// lifetime should be greater than the receiver's. |opener| can be nil.
 - (void)setTab:(Tab*)tab;
 
 // Enable or disable contextual search for the current WebState. If

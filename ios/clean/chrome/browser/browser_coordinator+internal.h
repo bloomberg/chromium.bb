@@ -59,7 +59,7 @@
 
 // Returns YES if the receiver will take |overlayCoordinator| as a child.
 // The default is to return YES only if the receiver has no children, if
-// the reciever has a nil -overlayCoordinator, and if |overlayCoordinator|
+// the receiver has a nil -overlayCoordinator, and if |overlayCoordinator|
 // is not already overlaying.
 - (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator;
 
@@ -67,7 +67,7 @@
 // added, recursively add it to the receiver's child. If a receiver has
 // multiple children and returns YES from -canAddOverlayCoordinator:, it
 // must override this method to determines how the overlay is added.
-// If neither the reciever or any child can add |overlayCoordinator|, then
+// If neither the receiver or any child can add |overlayCoordinator|, then
 // nothing happens.
 - (void)addOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator;
 

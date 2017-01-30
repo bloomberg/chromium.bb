@@ -120,7 +120,7 @@ TEST_F(LogRouterTest, RegisterManager_OneReceiverBeforeManager) {
   EXPECT_EQ(std::string(), router.RegisterReceiver(&receiver_));
   // The manager should be told the LogRouter has some receivers.
   EXPECT_TRUE(router.RegisterManager(&manager_));
-  // Now unregister the reciever. The manager should be told the LogRouter has
+  // Now unregister the receiver. The manager should be told the LogRouter has
   // no receivers.
   EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(false));
   router.UnregisterReceiver(&receiver_);
@@ -137,7 +137,7 @@ TEST_F(LogRouterTest, RegisterManager_OneManagerBeforeReceiver) {
   EXPECT_EQ(std::string(), router.RegisterReceiver(&receiver_));
   // Now unregister the manager.
   router.UnregisterManager(&manager_);
-  // Now unregister the reciever. The manager should not hear about it.
+  // Now unregister the receiver. The manager should not hear about it.
   EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(_)).Times(0);
   router.UnregisterReceiver(&receiver_);
 }
@@ -153,10 +153,10 @@ TEST_F(LogRouterTest, RegisterManager_OneManagerTwoReceivers) {
   // Now register the 2nd receiver. The manager should not be notified.
   EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(true)).Times(0);
   EXPECT_EQ(std::string(), router.RegisterReceiver(&receiver2_));
-  // Now unregister the 1st reciever. The manager should not hear about it.
+  // Now unregister the 1st receiver. The manager should not hear about it.
   EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(false)).Times(0);
   router.UnregisterReceiver(&receiver_);
-  // Now unregister the 2nd reciever. The manager should hear about it.
+  // Now unregister the 2nd receiver. The manager should hear about it.
   EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(false));
   router.UnregisterReceiver(&receiver2_);
   // Now unregister the manager.

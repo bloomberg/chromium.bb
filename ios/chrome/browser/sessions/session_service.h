@@ -23,7 +23,7 @@ class ChromeBrowserState;
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 
 // Inits exactly as initForReadingWithData: does, additionally setting
-// |browserState| on the reciever.
+// |browserState| on the receiver.
 - (instancetype)initForReadingWithData:(NSData*)data
                           browserState:(ios::ChromeBrowserState*)browserState;
 
