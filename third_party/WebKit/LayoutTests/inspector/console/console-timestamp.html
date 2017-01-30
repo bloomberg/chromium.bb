@@ -37,15 +37,19 @@ function test()
     InspectorTest.dumpConsoleMessages();
 
     InspectorTest.addResult("Console messages with timestamps enabled:");
-    Common.settingForTest("consoleTimestampsEnabled").set(true);
+    Common.settingForTest("consoleTimestampFormat").set(Console.ConsoleViewMessage.TimestampFormat.Full);
 
     addMessageWithFixedTimestamp("<After>", baseTimestamp + 1000);
     addMessageWithFixedTimestamp("<After>", baseTimestamp + 1000);
     addMessageWithFixedTimestamp("<After>", baseTimestamp + 1456);
 
-    Common.settingForTest("consoleTimestampsEnabled").set(false);
-    Common.settingForTest("consoleTimestampsEnabled").set(true);
+    Common.settingForTest("consoleTimestampFormat").set(Console.ConsoleViewMessage.TimestampFormat.None);
+    Common.settingForTest("consoleTimestampFormat").set(Console.ConsoleViewMessage.TimestampFormat.Full);
 
+    InspectorTest.dumpConsoleMessages();
+
+    InspectorTest.addResult("Console messages with short timestamps:");
+    Common.settingForTest("consoleTimestampFormat").set(Console.ConsoleViewMessage.TimestampFormat.Short);
     InspectorTest.dumpConsoleMessages();
     InspectorTest.completeTest();
 }
