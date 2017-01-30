@@ -389,6 +389,9 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   // As part of improving pref metrics on other platforms we may want to find
   // ways to defer preference loading until the device ID can be used.
   rlz_lib::GetMachineId(&legacy_device_id);
+
+  UMA_HISTOGRAM_BOOLEAN("Settings.LegacyMachineIdGenerationSuccess",
+                        !legacy_device_id.empty());
 #endif
   std::string seed;
 #if defined(GOOGLE_CHROME_BUILD)
