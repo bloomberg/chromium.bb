@@ -329,7 +329,7 @@ void BaseUIManager::RemoveFromPendingWhitelistUrlSet(
   // remove the main-frame URL from the pending whitelist, so the
   // main-frame URL will have already been removed when the subsequent
   // blocking pages are dismissed.
-  if (site_list->ContainsPending(whitelist_url, nullptr))
+  if (site_list && site_list->ContainsPending(whitelist_url, nullptr))
     site_list->RemovePending(whitelist_url);
 
   // Notify security UI that security state has changed.
