@@ -165,8 +165,8 @@ URLRequestContextFactory::URLRequestContextFactory()
       system_network_delegate_(CastNetworkDelegate::Create()),
       system_dependencies_initialized_(false),
       main_dependencies_initialized_(false),
-      media_dependencies_initialized_(false) {
-}
+      media_dependencies_initialized_(false),
+      enable_quic_(true) {}
 
 URLRequestContextFactory::~URLRequestContextFactory() {
 }
@@ -307,6 +307,7 @@ void URLRequestContextFactory::InitializeMediaContextDependencies(
 void URLRequestContextFactory::PopulateNetworkSessionParams(
     bool ignore_certificate_errors,
     net::HttpNetworkSession::Params* params) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   params->host_resolver = host_resolver_.get();
   params->cert_verifier = cert_verifier_.get();
   params->channel_id_service = channel_id_service_.get();
@@ -318,6 +319,9 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   params->http_server_properties = http_server_properties_.get();
   params->ignore_certificate_errors = ignore_certificate_errors;
   params->proxy_service = proxy_service_.get();
+
+  LOG(INFO) << "Set HttpNetworkSessionParams.enable_quic = " << enable_quic_;
+  params->enable_quic = enable_quic_;
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
@@ -425,6 +429,44 @@ void URLRequestContextFactory::InitializeNetworkDelegates() {
   LOG(INFO) << "Initialized app network delegate.";
   system_network_delegate_->Initialize(false);
   LOG(INFO) << "Initialized system network delegate.";
+}
+
+void URLRequestContextFactory::DisableQuic() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&URLRequestContextFactory::DisableQuicOnBrowserIOThread,
+                 base::Unretained(this)));
+}
+
+void URLRequestContextFactory::DisableQuicOnBrowserIOThread() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (!enable_quic_)
+    return;
+
+  LOG(INFO) << "Disabled QUIC.";
+
+  enable_quic_ = false;
+
+  if (main_getter_) {
+    main_getter_->GetURLRequestContext()
+        ->http_transaction_factory()
+        ->GetSession()
+        ->DisableQuic();
+  }
+
+  if (system_getter_) {
+    system_getter_->GetURLRequestContext()
+        ->http_transaction_factory()
+        ->GetSession()
+        ->DisableQuic();
+  }
+
+  if (media_getter_) {
+    media_getter_->GetURLRequestContext()
+        ->http_transaction_factory()
+        ->GetSession()
+        ->DisableQuic();
+  }
 }
 
 }  // namespace shell
