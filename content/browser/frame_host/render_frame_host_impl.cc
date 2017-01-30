@@ -82,6 +82,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -359,6 +360,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
     // this RenderFrameHost is on the pending deletion list and the parent
     // FrameTreeNode has changed its current RenderFrameHost.
     parent_ = frame_tree_node_->parent()->current_frame_host();
+
+    // All frames in a page are expected to have the same bindings.
+    if (parent_->GetEnabledBindings())
+      enabled_bindings_ = parent_->GetEnabledBindings();
 
     // New child frames should inherit the nav_entry_id of their parent.
     set_nav_entry_id(
@@ -961,6 +966,12 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
 
   if (created && render_widget_host_)
     render_widget_host_->InitForFrame();
+
+  if (enabled_bindings_ && created) {
+    if (!frame_bindings_control_)
+      GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
+    frame_bindings_control_->AllowBindings(enabled_bindings_);
+  }
 }
 
 void RenderFrameHostImpl::Init() {
@@ -1026,9 +1037,9 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   if (!is_active() || frame_tree_node_->current_frame_host() != this)
     return;
 
-  frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
-                        scope, frame_name, frame_unique_name, sandbox_flags,
-                        frame_owner_properties);
+  frame_tree_->AddFrame(
+      frame_tree_node_, GetProcess()->GetID(), new_routing_id, scope,
+      frame_name, frame_unique_name, sandbox_flags, frame_owner_properties);
 }
 
 void RenderFrameHostImpl::OnCreateNewWindow(
@@ -1348,10 +1359,6 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
 
 GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
   return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
-}
-
-int RenderFrameHostImpl::GetEnabledBindings() {
-  return render_view_host_->GetEnabledBindings();
 }
 
 void RenderFrameHostImpl::SetNavigationHandle(
@@ -1736,6 +1743,48 @@ void RenderFrameHostImpl::RequestFocusedFormFieldData(
   int request_id = ++next_id;
   form_field_data_callbacks_[request_id] = callback;
   Send(new FrameMsg_FocusedFormFieldDataRequest(GetRoutingID(), request_id));
+}
+
+void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
+  // Never grant any bindings to browser plugin guests.
+  if (GetProcess()->IsForGuestsOnly()) {
+    NOTREACHED() << "Never grant bindings to a guest process.";
+    return;
+  }
+
+  // Ensure we aren't granting WebUI bindings to a process that has already
+  // been used for non-privileged views.
+  if (bindings_flags & BINDINGS_POLICY_WEB_UI &&
+      GetProcess()->HasConnection() &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+          GetProcess()->GetID())) {
+    // This process has no bindings yet. Make sure it does not have more
+    // than this single active view.
+    // --single-process only has one renderer.
+    if (GetProcess()->GetActiveViewCount() > 1 &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSingleProcess))
+      return;
+  }
+
+  if (bindings_flags & BINDINGS_POLICY_WEB_UI) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
+        GetProcess()->GetID());
+  }
+
+  enabled_bindings_ |= bindings_flags;
+  if (GetParent())
+    DCHECK_EQ(GetParent()->GetEnabledBindings(), GetEnabledBindings());
+
+  if (render_frame_created_) {
+    if (!frame_bindings_control_)
+      GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
+    frame_bindings_control_->AllowBindings(enabled_bindings_);
+  }
+}
+
+int RenderFrameHostImpl::GetEnabledBindings() const {
+  return enabled_bindings_;
 }
 
 void RenderFrameHostImpl::OnFocusedFormFieldDataResponse(
@@ -2742,6 +2791,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 
   frame_.reset();
   frame_host_binding_.Close();
+  frame_bindings_control_.reset();
 
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
   mojo_image_downloader_.reset();
@@ -2800,11 +2850,10 @@ bool RenderFrameHostImpl::UpdatePendingWebUI(const GURL& dest_url,
   // Either grant or check the RenderViewHost with/for proper bindings.
   if (pending_web_ui_ && !render_view_host_->GetProcess()->IsForGuestsOnly()) {
     // If a WebUI was created for the URL and the RenderView is not in a guest
-    // process, then enable missing bindings with the RenderViewHost.
+    // process, then enable missing bindings.
     int new_bindings = pending_web_ui_->GetBindings();
-    if ((render_view_host_->GetEnabledBindings() & new_bindings) !=
-        new_bindings) {
-      render_view_host_->AllowBindings(new_bindings);
+    if ((GetEnabledBindings() & new_bindings) != new_bindings) {
+      AllowBindings(new_bindings);
     }
   } else if (render_view_host_->is_active()) {
     // If the ongoing navigation is not to a WebUI or the RenderView is in a

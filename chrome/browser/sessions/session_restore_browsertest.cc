@@ -52,6 +52,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -946,35 +947,35 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MemoryPressureLoadsNotAllTabs) {
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
   const GURL webui_url("chrome://omnibox");
   ui_test_utils::NavigateToURL(browser(), webui_url);
-  const content::WebContents* old_tab =
+  content::WebContents* old_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
-            old_tab->GetRenderViewHost()->GetEnabledBindings());
+            old_tab->GetMainFrame()->GetEnabledBindings());
 
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, active_browser_list_->size());
-  const content::WebContents* new_tab =
+  content::WebContents* new_tab =
       new_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(webui_url, new_tab->GetURL());
   EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
-            new_tab->GetRenderViewHost()->GetEnabledBindings());
+            new_tab->GetMainFrame()->GetEnabledBindings());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUISettings) {
   const GURL webui_url("chrome://settings");
   ui_test_utils::NavigateToURL(browser(), webui_url);
-  const content::WebContents* old_tab =
+  content::WebContents* old_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
-            old_tab->GetRenderViewHost()->GetEnabledBindings());
+            old_tab->GetMainFrame()->GetEnabledBindings());
 
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, active_browser_list_->size());
-  const content::WebContents* new_tab =
+  content::WebContents* new_tab =
       new_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(webui_url, new_tab->GetURL());
   EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
-            new_tab->GetRenderViewHost()->GetEnabledBindings());
+            new_tab->GetMainFrame()->GetEnabledBindings());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {

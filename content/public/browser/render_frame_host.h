@@ -222,6 +222,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Retrieves the text input info associated with the current form field.
   virtual void RequestFocusedFormFieldData(FormFieldDataCallback& callback) = 0;
 
+  // Tell the render frame to enable a set of javascript bindings. The argument
+  // should be a combination of values from BindingsPolicy.
+  virtual void AllowBindings(int binding_flags) = 0;
+
+  // Returns a bitwise OR of bindings types that have been enabled for this
+  // RenderFrame. See BindingsPolicy for details.
+  virtual int GetEnabledBindings() const = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

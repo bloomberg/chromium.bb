@@ -34,7 +34,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "grit/components_strings.h"
@@ -144,9 +143,7 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
     if (expected_main_view_request) {
       content::RenderFrameHost* render_frame_host =
           navigation_handle->GetRenderFrameHost();
-      content::RenderViewHost* render_view_host =
-          render_frame_host->GetRenderViewHost();
-      CHECK_EQ(0, render_view_host->GetEnabledBindings());
+      CHECK_EQ(0, render_frame_host->GetEnabledBindings());
 
       // Add mojo service for JavaScript functionality. This is the receiving
       // end of this particular service.

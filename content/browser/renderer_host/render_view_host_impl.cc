@@ -200,7 +200,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       frames_ref_count_(0),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
-      enabled_bindings_(0),
       is_active_(!swapped_out),
       is_swapped_out_(swapped_out),
       main_frame_routing_id_(main_frame_routing_id),
@@ -318,11 +317,6 @@ bool RenderViewHostImpl::CreateRenderView(
 
   GetProcess()->GetRendererInterface()->CreateView(std::move(params));
 
-  // If it's enabled, tell the renderer to set up the Javascript bindings for
-  // sending messages back to the browser.
-  if (GetProcess()->IsForGuestsOnly())
-    DCHECK_EQ(0, enabled_bindings_);
-  Send(new ViewMsg_AllowBindings(GetRoutingID(), enabled_bindings_));
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
 
@@ -646,49 +640,13 @@ RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
   return RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_routing_id_);
 }
 
-void RenderViewHostImpl::AllowBindings(int bindings_flags) {
-  // Never grant any bindings to browser plugin guests.
-  if (GetProcess()->IsForGuestsOnly()) {
-    NOTREACHED() << "Never grant bindings to a guest process.";
-    return;
-  }
-
-  // Ensure we aren't granting WebUI bindings to a process that has already
-  // been used for non-privileged views.
-  if (bindings_flags & BINDINGS_POLICY_WEB_UI &&
-      GetProcess()->HasConnection() &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          GetProcess()->GetID())) {
-    // This process has no bindings yet. Make sure it does not have more
-    // than this single active view.
-    // --single-process only has one renderer.
-    if (GetProcess()->GetActiveViewCount() > 1 &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcess))
-      return;
-  }
-
-  if (bindings_flags & BINDINGS_POLICY_WEB_UI) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
-        GetProcess()->GetID());
-  }
-
-  enabled_bindings_ |= bindings_flags;
-  if (GetWidget()->renderer_initialized())
-    Send(new ViewMsg_AllowBindings(GetRoutingID(), enabled_bindings_));
-}
-
-int RenderViewHostImpl::GetEnabledBindings() const {
-  return enabled_bindings_;
-}
-
 void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
                                           const std::string& value) {
   // This is a sanity check before telling the renderer to enable the property.
   // It could lie and send the corresponding IPC messages anyway, but we will
   // not act on them if enabled_bindings_ doesn't agree. If we get here without
   // WebUI bindings, kill the renderer process.
-  if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI) {
+  if (GetMainFrame()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) {
     Send(new ViewMsg_SetWebUIProperty(GetRoutingID(), name, value));
   } else {
     RecordAction(

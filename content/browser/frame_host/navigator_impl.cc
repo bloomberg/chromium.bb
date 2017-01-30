@@ -111,8 +111,7 @@ NavigatorImpl::~NavigatorImpl() {}
 void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url) {
-  int enabled_bindings =
-      render_frame_host->render_view_host()->GetEnabledBindings();
+  int enabled_bindings = render_frame_host->GetEnabledBindings();
   bool is_allowed_in_web_ui_renderer =
       WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
           render_frame_host->frame_tree_node()

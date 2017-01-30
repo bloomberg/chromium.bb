@@ -713,11 +713,6 @@ void RenderViewImpl::Initialize(
 
   new IdleUserDetector(this);
 
-  if (command_line.HasSwitch(switches::kDomAutomationController))
-    enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
-  if (command_line.HasSwitch(switches::kStatsCollectionController))
-    enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
-
   GetContentClient()->renderer()->RenderViewCreated(this);
 
   // Ensure that sandbox flags are inherited from an opener in a different
@@ -1206,7 +1201,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageScale, OnSetPageScale)
-    IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
@@ -2008,10 +2002,6 @@ bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {
            disable_scrollbars_size_limit_.height() <= height));
 }
 
-int RenderViewImpl::GetEnabledBindings() const {
-  return enabled_bindings_;
-}
-
 bool RenderViewImpl::GetContentStateImmediately() const {
   return send_content_state_immediately_;
 }
@@ -2042,22 +2032,6 @@ void RenderViewImpl::OnSetZoomLevel(
   }
   webview()->hidePopups();
   SetZoomLevel(zoom_level);
-}
-
-void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
-  if ((enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
-      !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    // WebUIExtensionData deletes itself when we're destroyed.
-    new WebUIExtensionData(this);
-  }
-
-  enabled_bindings_ |= enabled_bindings_flags;
-
-  // Keep track of the total bindings accumulated in this process.
-  RenderProcess::current()->AddBindings(enabled_bindings_flags);
-
-  if (main_render_frame_)
-    main_render_frame_->MaybeEnableMojoBindings();
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {

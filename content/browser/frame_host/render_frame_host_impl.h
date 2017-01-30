@@ -177,6 +177,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const TextSurroundingSelectionCallback& callback,
       int max_length) override;
   void RequestFocusedFormFieldData(FormFieldDataCallback& callback) override;
+  void AllowBindings(int binding_flags) override;
+  int GetEnabledBindings() const override;
 
   // mojom::FrameHost
   void GetInterfaceProvider(
@@ -327,11 +329,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void set_render_frame_proxy_host(RenderFrameProxyHost* proxy) {
     render_frame_proxy_host_ = proxy;
   }
-
-  // Returns a bitwise OR of bindings types that have been enabled for this
-  // RenderFrameHostImpl's RenderView. See BindingsPolicy for details.
-  // TODO(creis): Make bindings frame-specific, to support cases like <webview>.
-  int GetEnabledBindings();
 
   // The unique ID of the latest NavigationEntry that this RenderFrameHost is
   // showing. This may change even when this frame hasn't committed a page,
@@ -1112,6 +1109,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   mojo::Binding<mojom::FrameHost> frame_host_binding_;
   mojom::FramePtr frame_;
+  mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
 
   // If this is true then this object was created in response to a renderer
   // initiated request. Init() will be called, and until then navigation
@@ -1138,6 +1136,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<AssociatedInterfaceProviderImpl>
       remote_associated_interfaces_;
+
+  // A bitwise OR of bindings types that have been enabled for this RenderFrame.
+  // See BindingsPolicy for details.
+  int enabled_bindings_ = 0;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

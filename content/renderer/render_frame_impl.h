@@ -177,6 +177,7 @@ class CONTENT_EXPORT RenderFrameImpl
       NON_EXPORTED_BASE(blink::mojom::EngagementClient),
       NON_EXPORTED_BASE(mojom::Frame),
       NON_EXPORTED_BASE(mojom::HostZoom),
+      NON_EXPORTED_BASE(mojom::FrameBindingsControl),
       NON_EXPORTED_BASE(public blink::WebFrameClient),
       NON_EXPORTED_BASE(public blink::WebFrameSerializerClient) {
  public:
@@ -460,6 +461,7 @@ class CONTENT_EXPORT RenderFrameImpl
   base::SingleThreadTaskRunner* GetTimerTaskRunner() override;
   base::SingleThreadTaskRunner* GetLoadingTaskRunner() override;
   base::SingleThreadTaskRunner* GetUnthrottledTaskRunner() override;
+  int GetEnabledBindings() const override;
 
   // blink::mojom::EngagementClient implementation:
   void SetEngagementLevel(const url::Origin& origin,
@@ -468,6 +470,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // mojom::Frame implementation:
   void GetInterfaceProvider(
       service_manager::mojom::InterfaceProviderRequest request) override;
+
+  // mojom::FrameBindingsControl implementation:
+  void AllowBindings(int32_t enabled_bindings_flags) override;
 
   // mojom::HostZoom implementation:
   void SetHostZoomLevel(const GURL& url, double zoom_level) override;
@@ -675,6 +680,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Binds to the FrameHost in the browser.
   void BindFrame(mojom::FrameRequest request, mojom::FrameHostPtr frame_host);
+
+  void BindFrameBindingsControl(
+      mojom::FrameBindingsControlAssociatedRequest request);
 
   ManifestManager* manifest_manager();
 
@@ -1361,6 +1369,8 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::AssociatedBinding<blink::mojom::EngagementClient> engagement_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;
   mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
+  mojo::AssociatedBinding<mojom::FrameBindingsControl>
+      frame_bindings_control_binding_;
   mojom::FrameHostPtr frame_host_;
 
   // Indicates whether |didAccessInitialDocument| was called.
@@ -1375,6 +1385,10 @@ class CONTENT_EXPORT RenderFrameImpl
   bool name_changed_before_first_commit_ = false;
 
   bool browser_side_navigation_pending_ = false;
+
+  // A bitwise OR of bindings types that have been enabled for this RenderFrame.
+  // See BindingsPolicy for details.
+  int enabled_bindings_ = 0;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

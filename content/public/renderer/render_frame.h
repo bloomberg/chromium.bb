@@ -254,6 +254,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual base::SingleThreadTaskRunner* GetLoadingTaskRunner() = 0;
   virtual base::SingleThreadTaskRunner* GetUnthrottledTaskRunner() = 0;
 
+  // Bitwise-ORed set of extra bindings that have been enabled.  See
+  // BindingsPolicy for details.
+  virtual int GetEnabledBindings() const = 0;
+
  protected:
   ~RenderFrame() override {}
 

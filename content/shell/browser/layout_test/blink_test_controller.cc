@@ -583,10 +583,9 @@ void BlinkTestController::DiscardMainWindow() {
 }
 
 void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
-  // All RenderViewHosts in layout tests should get Mojo bindings.
-  RenderViewHost* rvh = frame->GetRenderViewHost();
-  if (!(rvh->GetEnabledBindings() & BINDINGS_POLICY_MOJO))
-    rvh->AllowBindings(BINDINGS_POLICY_MOJO);
+  // All RenderFrameHosts in layout tests should get Mojo bindings.
+  if (!(frame->GetEnabledBindings() & BINDINGS_POLICY_MOJO))
+    frame->AllowBindings(BINDINGS_POLICY_MOJO);
 
   RenderProcessHost* process = frame->GetProcess();
   bool main_window =

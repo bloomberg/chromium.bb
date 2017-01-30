@@ -1150,8 +1150,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(url1, entry1->GetURL());
   EXPECT_EQ(instance1,
             NavigationEntryImpl::FromNavigationEntry(entry1)->site_instance());
-  EXPECT_TRUE(webui_rfh->GetRenderViewHost()->GetEnabledBindings() &
-              BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(webui_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Navigate to new site.
   const GURL url2("http://www.google.com");
@@ -1178,8 +1177,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(url2, entry2->GetURL());
   EXPECT_EQ(instance2,
             NavigationEntryImpl::FromNavigationEntry(entry2)->site_instance());
-  EXPECT_FALSE(google_rfh->GetRenderViewHost()->GetEnabledBindings() &
-               BINDINGS_POLICY_WEB_UI);
+  EXPECT_FALSE(google_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Navigate to third page on same site.
   const GURL url3("http://news.google.com");
@@ -1261,8 +1259,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   EXPECT_EQ(url1, entry1->GetURL());
   EXPECT_EQ(instance1,
             NavigationEntryImpl::FromNavigationEntry(entry1)->site_instance());
-  EXPECT_TRUE(webui_rfh->GetRenderViewHost()->GetEnabledBindings() &
-              BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(webui_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Navigate to new site.
   const GURL url2("http://www.google.com");
@@ -1289,8 +1286,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   EXPECT_EQ(url2, entry2->GetURL());
   EXPECT_EQ(instance2,
             NavigationEntryImpl::FromNavigationEntry(entry2)->site_instance());
-  EXPECT_FALSE(google_rfh->GetRenderViewHost()->GetEnabledBindings() &
-               BINDINGS_POLICY_WEB_UI);
+  EXPECT_FALSE(google_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Navigate to third page on same site.
   const GURL url3("http://news.google.com");

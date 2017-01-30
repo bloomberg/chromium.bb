@@ -19,6 +19,7 @@ function createCraftedFrame()
     frame.id = "crafted-iframe";
     document.body.appendChild(frame);
     frame.contentDocument.write("<div>crafted</div>");
+    frame.contentDocument.close();
 }
 
 function test()

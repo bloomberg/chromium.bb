@@ -14,6 +14,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/web_ui_extension_data.h"
@@ -44,8 +45,12 @@ bool ShouldRespondToRequest(
 
   GURL frame_url = frame->document().url();
 
+  RenderFrame* render_frame = RenderFrame::FromWebFrame(frame);
+  if (!render_frame)
+    return false;
+
   bool webui_enabled =
-      (render_view->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) &&
+      (render_frame->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) &&
       (frame_url.SchemeIs(kChromeUIScheme) ||
        frame_url.SchemeIs(url::kDataScheme));
 

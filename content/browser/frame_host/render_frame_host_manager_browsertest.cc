@@ -1830,8 +1830,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   RenderViewHost* initial_rvh = new_web_contents->
       GetRenderManagerForTesting()->GetSwappedOutRenderViewHost(site_instance1);
   ASSERT_TRUE(initial_rvh);
-  // The following condition is what was causing the bug.
-  EXPECT_EQ(0, initial_rvh->GetEnabledBindings());
 
   // Navigate to url1 and check bindings.
   NavigateToURL(new_shell, url1);
@@ -1839,7 +1837,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   // |initial_rvh| did not have a chance to be used.
   EXPECT_EQ(new_web_contents->GetSiteInstance(), site_instance1);
   EXPECT_EQ(BINDINGS_POLICY_WEB_UI,
-      new_web_contents->GetRenderViewHost()->GetEnabledBindings());
+            new_web_contents->GetMainFrame()->GetEnabledBindings());
 }
 
 // crbug.com/424526

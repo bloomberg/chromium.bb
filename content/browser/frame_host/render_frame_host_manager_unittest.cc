@@ -504,7 +504,8 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
   // Navigate our first tab to the chrome url and then to the destination,
   // ensuring we grant bindings to the chrome URL.
   NavigateActiveAndCommit(kChromeUrl);
-  EXPECT_TRUE(active_rvh()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(main_rfh()->GetEnabledBindings() &
+              BINDINGS_POLICY_WEB_UI);
   NavigateActiveAndCommit(kDestUrl);
 
   EXPECT_FALSE(contents()->GetPendingMainFrame());
@@ -1033,8 +1034,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   // Commit.
   manager->DidNavigateFrame(host, true);
-  EXPECT_TRUE(
-      host->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(host->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
 
 // Tests that we can open a WebUI link in a new tab from a WebUI page and still
@@ -1068,15 +1068,13 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // It should already have bindings.
   EXPECT_EQ(host1, GetPendingFrameHost(manager1));
   EXPECT_NE(host1, manager1->current_frame_host());
-  EXPECT_TRUE(
-      host1->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(host1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Commit and ensure we still have bindings.
   manager1->DidNavigateFrame(host1, true);
   SiteInstance* webui_instance = host1->GetSiteInstance();
   EXPECT_EQ(host1, manager1->current_frame_host());
-  EXPECT_TRUE(
-      host1->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(host1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Now simulate clicking a link that opens in a new tab.
   std::unique_ptr<TestWebContents> web_contents2(
@@ -1101,8 +1099,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   EXPECT_EQ(host2, manager2->current_frame_host());
   EXPECT_TRUE(manager2->GetNavigatingWebUI());
   EXPECT_FALSE(host2->web_ui());
-  EXPECT_TRUE(
-      host2->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(host2->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   manager2->DidNavigateFrame(host2, true);
 }
@@ -1557,7 +1554,8 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
 
   // Ensure the RVH has WebUI bindings.
   TestRenderViewHost* rvh1 = test_rvh();
-  EXPECT_TRUE(rvh1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(rvh1->GetMainFrame()->GetEnabledBindings() &
+              BINDINGS_POLICY_WEB_UI);
 
   // Create a new tab and simulate it being the opener for the main
   // tab.  It should be in the same SiteInstance.
@@ -1583,7 +1581,8 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   EXPECT_FALSE(opener1_rvh->is_active());
 
   // Ensure the new RVH has WebUI bindings.
-  EXPECT_TRUE(rvh2->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(rvh2->GetMainFrame()->GetEnabledBindings() &
+              BINDINGS_POLICY_WEB_UI);
 }
 
 // Test that we reuse the same guest SiteInstance if we navigate across sites.
@@ -2143,8 +2142,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   RenderFrameHostManager* main_rfhm = contents()->GetRenderManagerForTesting();
   RenderFrameHostImpl* webui_rfh = NavigateToEntry(main_rfhm, webui_entry);
   EXPECT_EQ(webui_rfh, GetPendingFrameHost(main_rfhm));
-  EXPECT_TRUE(webui_rfh->render_view_host()->GetEnabledBindings() &
-              BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(webui_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Before it commits, do a cross-process navigation in a subframe.  This
   // should not grant WebUI bindings to the subframe's RVH.
@@ -2154,8 +2152,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */);
   RenderFrameHostImpl* bar_rfh = NavigateToEntry(subframe_rfhm, subframe_entry);
-  EXPECT_FALSE(bar_rfh->render_view_host()->GetEnabledBindings() &
-               BINDINGS_POLICY_WEB_UI);
+  EXPECT_FALSE(bar_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
 
 // Test that opener proxies are created properly with a cycle on the opener

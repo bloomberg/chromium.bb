@@ -165,7 +165,9 @@ void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
     blink::WebLocalFrame* frame,
     bool is_new_navigation) {
-  if ((render_view()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
+  auto* render_frame = content::RenderFrame::FromWebFrame(frame);
+  if (render_frame->IsMainFrame() &&
+      (render_frame->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
       !webui_javascript_.empty()) {
     for (const auto& script : webui_javascript_)
       render_view()->GetMainRenderFrame()->ExecuteJavaScript(script);

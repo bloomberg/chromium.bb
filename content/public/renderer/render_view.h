@@ -87,10 +87,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // false if the scrollbars should be hidden.
   virtual bool ShouldDisplayScrollbars(int width, int height) const = 0;
 
-  // Bitwise-ORed set of extra bindings that have been enabled.  See
-  // BindingsPolicy for details.
-  virtual int GetEnabledBindings() const = 0;
-
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.

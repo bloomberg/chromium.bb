@@ -85,7 +85,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   RenderProcessHost* GetProcess() const override;
   int GetRoutingID() const override;
   RenderFrameHost* GetMainFrame() override;
-  void AllowBindings(int binding_flags) override;
   void DirectoryEnumerationFinished(
       int request_id,
       const std::vector<base::FilePath>& files) override;
@@ -101,7 +100,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       const gfx::Point& location,
       const blink::WebPluginAction& action) override;
   RenderViewHostDelegate* GetDelegate() const override;
-  int GetEnabledBindings() const override;
   SiteInstanceImpl* GetSiteInstance() const override;
   bool IsRenderViewLive() const override;
   void NotifyMoveOrResizeStarted() override;
@@ -283,10 +281,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // in this RenderViewHost are part of this SiteInstance.  Cannot change
   // over time.
   scoped_refptr<SiteInstanceImpl> instance_;
-
-  // A bitwise OR of bindings types that have been enabled for this RenderView.
-  // See BindingsPolicy for details.
-  int enabled_bindings_;
 
   // Tracks whether this RenderViewHost is in an active state.  False if the
   // main frame is pending swap out, pending deletion, or swapped out, because

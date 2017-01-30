@@ -369,7 +369,6 @@ class CONTENT_EXPORT RenderViewImpl
   blink::WebView* GetWebView() override;
   blink::WebFrameWidget* GetWebFrameWidget() override;
   bool ShouldDisplayScrollbars(int width, int height) const override;
-  int GetEnabledBindings() const override;
   bool GetContentStateImmediately() const override;
   void Repaint(const gfx::Size& size) override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
@@ -524,7 +523,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnMoveCaret(const gfx::Point& point);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
-  void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
   void OnClosePage();

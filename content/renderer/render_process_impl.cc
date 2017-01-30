@@ -29,6 +29,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "content/child/site_isolation_stats_gatherer.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -193,6 +194,11 @@ RenderProcessImpl::RenderProcessImpl()
 
   SiteIsolationStatsGatherer::SetEnabled(
       GetContentClient()->renderer()->ShouldGatherSiteIsolationStats());
+
+  if (command_line.HasSwitch(switches::kDomAutomationController))
+    enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
+  if (command_line.HasSwitch(switches::kStatsCollectionController))
+    enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
 }
 
 RenderProcessImpl::~RenderProcessImpl() {

@@ -749,7 +749,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   // Enable bindings to simulate a WebUI view.
-  view()->OnAllowBindings(BINDINGS_POLICY_WEB_UI);
+  view()->GetMainRenderFrame()->AllowBindings(BINDINGS_POLICY_WEB_UI);
 
   DocumentState state;
   state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());

@@ -140,6 +140,7 @@
 #include "content/renderer/stats_collection_controller.h"
 #include "content/renderer/web_frame_utils.h"
 #include "content/renderer/web_ui_extension.h"
+#include "content/renderer/web_ui_extension_data.h"
 #include "crypto/sha2.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
@@ -1129,6 +1130,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       engagement_binding_(this),
       frame_binding_(this),
       host_zoom_binding_(this),
+      frame_bindings_control_binding_(this),
       has_accessed_initial_document_(false),
       weak_factory_(this) {
   // We don't have a service_manager::Connection at this point, so use empty
@@ -1249,8 +1251,6 @@ void RenderFrameImpl::Initialize() {
                  "parent", parent_id);
   }
 
-  MaybeEnableMojoBindings();
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
@@ -1282,6 +1282,13 @@ void RenderFrameImpl::Initialize() {
     DCHECK(render_view_->HasAddedInputHandler());
     input_handler_manager->RegisterRoutingID(GetRoutingID());
   }
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDomAutomationController))
+    enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
+  if (command_line.HasSwitch(switches::kStatsCollectionController))
+    enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
 }
 
 void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
@@ -1647,6 +1654,11 @@ void RenderFrameImpl::BindFrame(mojom::FrameRequest request,
   frame_host_ = std::move(host);
   frame_host_->GetInterfaceProvider(
       std::move(pending_remote_interface_provider_request_));
+}
+
+void RenderFrameImpl::BindFrameBindingsControl(
+    mojom::FrameBindingsControlAssociatedRequest request) {
+  frame_bindings_control_binding_.Bind(std::move(request));
 }
 
 ManifestManager* RenderFrameImpl::manifest_manager() {
@@ -2707,6 +2719,22 @@ void RenderFrameImpl::GetInterfaceProvider(
                             browser_info.identity, browser_spec);
 }
 
+void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
+  if (IsMainFrame() && (enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
+      !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
+    // TODO(sammc): Move WebUIExtensionData to be a RenderFrameObserver.
+    // WebUIExtensionData deletes itself when |render_view_| is destroyed.
+    new WebUIExtensionData(render_view_);
+  }
+
+  enabled_bindings_ |= enabled_bindings_flags;
+
+  // Keep track of the total bindings accumulated in this process.
+  RenderProcess::current()->AddBindings(enabled_bindings_flags);
+
+  MaybeEnableMojoBindings();
+}
+
 // mojom::HostZoom implementation ----------------------------------------------
 
 void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
@@ -3691,15 +3719,13 @@ void RenderFrameImpl::didCreateNewDocument(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
   DCHECK_EQ(frame_, frame);
 
-  int enabled_bindings = render_view_->GetEnabledBindings();
-
-  if (enabled_bindings & BINDINGS_POLICY_WEB_UI)
+  if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
     WebUIExtension::Install(frame);
 
-  if (enabled_bindings & BINDINGS_POLICY_DOM_AUTOMATION)
+  if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION)
     DomAutomationController::Install(this, frame);
 
-  if (enabled_bindings & BINDINGS_POLICY_STATS_COLLECTION)
+  if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
     StatsCollectionController::Install(frame);
 
   const base::CommandLine& command_line =
@@ -6293,7 +6319,6 @@ void RenderFrameImpl::SendUpdateState() {
 }
 
 void RenderFrameImpl::MaybeEnableMojoBindings() {
-  int enabled_bindings = RenderProcess::current()->GetEnabledBindings();
   // BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO and BINDINGS_POLICY_HEADLESS
   // are mutually exclusive. They provide access to Mojo bindings, but do so in
   // incompatible ways.
@@ -6303,9 +6328,11 @@ void RenderFrameImpl::MaybeEnableMojoBindings() {
   // Make sure that at most one of BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO
   // and BINDINGS_POLICY_HEADLESS have been set.
   // NOTE x & (x - 1) == 0 is true iff x is zero or a power of two.
-  DCHECK_EQ((enabled_bindings & kAllBindingsTypes) &
-                ((enabled_bindings & kAllBindingsTypes) - 1),
+  DCHECK_EQ((enabled_bindings_ & kAllBindingsTypes) &
+                ((enabled_bindings_ & kAllBindingsTypes) - 1),
             0);
+
+  DCHECK_EQ(RenderProcess::current()->GetEnabledBindings(), enabled_bindings_);
 
   // If an MojoBindingsController already exists for this RenderFrameImpl, avoid
   // creating another one. It is not kept as a member, as it deletes itself when
@@ -6313,12 +6340,11 @@ void RenderFrameImpl::MaybeEnableMojoBindings() {
   if (RenderFrameObserverTracker<MojoBindingsController>::Get(this))
     return;
 
-  if (IsMainFrame() &&
-      enabled_bindings & BINDINGS_POLICY_WEB_UI) {
+  if (IsMainFrame() && enabled_bindings_ & BINDINGS_POLICY_WEB_UI) {
     new MojoBindingsController(this, MojoBindingsType::FOR_WEB_UI);
-  } else if (enabled_bindings & BINDINGS_POLICY_MOJO) {
+  } else if (enabled_bindings_ & BINDINGS_POLICY_MOJO) {
     new MojoBindingsController(this, MojoBindingsType::FOR_LAYOUT_TESTS);
-  } else if (enabled_bindings & BINDINGS_POLICY_HEADLESS) {
+  } else if (enabled_bindings_ & BINDINGS_POLICY_HEADLESS) {
     new MojoBindingsController(this, MojoBindingsType::FOR_HEADLESS);
   }
 }
@@ -6593,6 +6619,9 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&RenderFrameImpl::BindEngagement, weak_factory_.GetWeakPtr()));
 
+  GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
+      &RenderFrameImpl::BindFrameBindingsControl, weak_factory_.GetWeakPtr()));
+
   if (!frame_->parent()) {
     // Only main frame have ImageDownloader service.
     GetInterfaceRegistry()->AddInterface(base::Bind(
@@ -6664,6 +6693,10 @@ base::SingleThreadTaskRunner* RenderFrameImpl::GetLoadingTaskRunner() {
 
 base::SingleThreadTaskRunner* RenderFrameImpl::GetUnthrottledTaskRunner() {
   return GetWebFrame()->unthrottledTaskRunner();
+}
+
+int RenderFrameImpl::GetEnabledBindings() const {
+  return enabled_bindings_;
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

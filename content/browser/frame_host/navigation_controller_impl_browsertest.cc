@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                    std::string(kChromeUIGpuHost));
   EXPECT_TRUE(NavigateToURL(shell(), web_ui_page));
   EXPECT_EQ(BINDINGS_POLICY_WEB_UI,
-      shell()->web_contents()->GetRenderViewHost()->GetEnabledBindings());
+            shell()->web_contents()->GetMainFrame()->GetEnabledBindings());
 
   ShellAddedObserver observer;
   std::string page_url = embedded_test_server()->GetURL(

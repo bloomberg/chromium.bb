@@ -13,10 +13,6 @@ crbug.com/669083 virtual/mojo-loading/http/tests/security/frameNavigation/xss-DE
 crbug.com/661725 http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Failure Timeout ]
 crbug.com/661725 virtual/mojo-loading/http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Failure Timeout ]
 
-# https://crbug.com/611838 - regression when geolocation tests use JS mock.
-crbug.com/611838 http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Timeout ]
-crbug.com/611838 virtual/mojo-loading/http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Timeout ]
-
 # https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
 crbug.com/582245 http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
 crbug.com/582245 http/tests/security/xss-DENIED-getSVGDocument-object.html [ Failure ]

@@ -173,8 +173,7 @@ HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
 void HeadlessWebContentsImpl::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   if (!mojo_services_.empty()) {
-    render_frame_host->GetRenderViewHost()->AllowBindings(
-        content::BINDINGS_POLICY_HEADLESS);
+    render_frame_host->AllowBindings(content::BINDINGS_POLICY_HEADLESS);
   }
 
   service_manager::InterfaceRegistry* interface_registry =
