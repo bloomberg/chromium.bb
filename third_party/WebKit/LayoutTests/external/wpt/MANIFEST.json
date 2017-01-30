@@ -17816,6 +17816,12 @@
      {}
     ]
    ],
+   "IndexedDB/error-attributes.html": [
+    [
+     "/IndexedDB/error-attributes.html",
+     {}
+    ]
+   ],
    "IndexedDB/historical.html": [
     [
      "/IndexedDB/historical.html",
@@ -17837,6 +17843,12 @@
    "IndexedDB/idbcursor-advance-continue-async.htm": [
     [
      "/IndexedDB/idbcursor-advance-continue-async.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbcursor-advance-exception-order.html": [
+    [
+     "/IndexedDB/idbcursor-advance-exception-order.html",
      {}
     ]
    ],
@@ -18584,6 +18596,18 @@
      {}
     ]
    ],
+   "IndexedDB/idbindex-getAll-enforcerange.html": [
+    [
+     "/IndexedDB/idbindex-getAll-enforcerange.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbindex-getAllKeys-enforcerange.html": [
+    [
+     "/IndexedDB/idbindex-getAllKeys-enforcerange.html",
+     {}
+    ]
+   ],
    "IndexedDB/idbindex-multientry-arraykeypath.htm": [
     [
      "/IndexedDB/idbindex-multientry-arraykeypath.htm",
@@ -18817,6 +18841,18 @@
    "IndexedDB/idbkeyrange_incorrect.htm": [
     [
      "/IndexedDB/idbkeyrange_incorrect.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbobjectstore-getAll-enforcerange.html": [
+    [
+     "/IndexedDB/idbobjectstore-getAll-enforcerange.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbobjectstore-getAllKeys-enforcerange.html": [
+    [
+     "/IndexedDB/idbobjectstore-getAllKeys-enforcerange.html",
      {}
     ]
    ],
@@ -19433,6 +19469,12 @@
    "IndexedDB/objectstore_keyorder.htm": [
     [
      "/IndexedDB/objectstore_keyorder.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/open-request-queue.html": [
+    [
+     "/IndexedDB/open-request-queue.html",
      {}
     ]
    ],
@@ -35219,6 +35261,10 @@
    "c12f2d91554335699409b338fa266bae845ab7d8",
    "testharness"
   ],
+  "IndexedDB/error-attributes.html": [
+   "3e69684b6dc5e23508ced8c7a033a389f6e135b6",
+   "testharness"
+  ],
   "IndexedDB/historical.html": [
    "0c4584e1b021a286445a2a9d3388ff011a1b933e",
    "testharness"
@@ -35233,6 +35279,10 @@
   ],
   "IndexedDB/idbcursor-advance-continue-async.htm": [
    "6dbb08d166c7c8c2cd5c918b83bb1b15fad50dce",
+   "testharness"
+  ],
+  "IndexedDB/idbcursor-advance-exception-order.html": [
+   "365472cd405c8fae1383540675f0b078c0bd4df9",
    "testharness"
   ],
   "IndexedDB/idbcursor-advance-invalid.htm": [
@@ -35727,6 +35777,14 @@
    "25ff4fea8efa519a4aef0a2f157b55dacc63f9c4",
    "testharness"
   ],
+  "IndexedDB/idbindex-getAll-enforcerange.html": [
+   "b6e8d22ea40aec5a96a8fe748129016fcbe31b54",
+   "testharness"
+  ],
+  "IndexedDB/idbindex-getAllKeys-enforcerange.html": [
+   "b65396d5a29c5480e17ec3de9cf9710ab2d4160d",
+   "testharness"
+  ],
   "IndexedDB/idbindex-multientry-arraykeypath.htm": [
    "963cfc67685270be71b03ad978268c540a99b526",
    "testharness"
@@ -35881,6 +35939,14 @@
   ],
   "IndexedDB/idbkeyrange_incorrect.htm": [
    "ecdfe47233f46edb270f7e57fe2ddf2c56377254",
+   "testharness"
+  ],
+  "IndexedDB/idbobjectstore-getAll-enforcerange.html": [
+   "64de20d7ada146b69df90377faef6e4837b5a5e9",
+   "testharness"
+  ],
+  "IndexedDB/idbobjectstore-getAllKeys-enforcerange.html": [
+   "6c2fe5ac83765f679fd2572d4ad0d7d30466480d",
    "testharness"
   ],
   "IndexedDB/idbobjectstore-rename-abort.html": [
@@ -36299,6 +36365,10 @@
    "dda6c0ad4832b2a48980efdcb0efdae995c43fdd",
    "testharness"
   ],
+  "IndexedDB/open-request-queue.html": [
+   "cc9a2dbc7a7e8fcbbf2cb42d3049b561997eb353",
+   "testharness"
+  ],
   "IndexedDB/request_bubble-and-capture.htm": [
    "9c486babd57c2d14bb251d5bba202b3dbd6c802d",
    "testharness"
@@ -36312,7 +36382,7 @@
    "support"
   ],
   "IndexedDB/support.js": [
-   "0dfe81d16dd3f741deb013fda40faa6df9757334",
+   "d419c2daaafebb732e83c0810be816393fdb14f7",
    "support"
   ],
   "IndexedDB/transaction-abort-generator-revert.html": [
