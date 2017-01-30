@@ -76,6 +76,9 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
         if (daydreamApi == null) return false;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        // If this is the first time any app reads the daydream config file, daydream may create its
+        // config directory... crbug.com/686104
+        StrictMode.allowThreadDiskWrites();
         int type = GvrApi.ViewerType.CARDBOARD;
         try {
             type = daydreamApi.getCurrentViewerType();
