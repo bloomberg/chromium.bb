@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -61,13 +62,16 @@ base::string16 ExternalProtocolDialogDelegate::GetTitleText() const {
 
 void ExternalProtocolDialogDelegate::DoAccept(const GURL& url,
                                               bool dont_block) const {
-  if (dont_block) {
-    ExternalProtocolHandler::SetBlockState(url.scheme(),
-                                           ExternalProtocolHandler::DONT_BLOCK);
-  }
-
   content::WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id_, render_view_routing_id_);
+
+  if (dont_block) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+    ExternalProtocolHandler::SetBlockState(
+        url.scheme(), ExternalProtocolHandler::DONT_BLOCK, profile);
+  }
 
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
 }
@@ -75,7 +79,12 @@ void ExternalProtocolDialogDelegate::DoAccept(const GURL& url,
 void ExternalProtocolDialogDelegate::DoCancel(const GURL& url,
                                               bool dont_block) const {
   if (dont_block) {
-    ExternalProtocolHandler::SetBlockState(url.scheme(),
-                                           ExternalProtocolHandler::BLOCK);
+    content::WebContents* web_contents = tab_util::GetWebContentsByID(
+        render_process_host_id_, render_view_routing_id_);
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+    ExternalProtocolHandler::SetBlockState(
+        url.scheme(), ExternalProtocolHandler::BLOCK, profile);
   }
 }
