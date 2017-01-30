@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_manager_setting_migrator_service_factory.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -213,6 +214,7 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
   ios::AccountFetcherServiceFactory::GetForBrowserState(browser_state)
       ->SetupInvalidationsOnProfileLoad(invalidation_service);
   ios::AccountReconcilorFactory::GetForBrowserState(browser_state);
+  DesktopPromotionSyncServiceFactory::GetForBrowserState(browser_state);
 
   // This service is responsible for migration of the legacy password manager
   // preference which controls behaviour of Chrome to the new preference which

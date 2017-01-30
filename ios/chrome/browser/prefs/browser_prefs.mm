@@ -39,6 +39,7 @@
 #include "components/variations/service/variations_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
+#include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
@@ -114,6 +115,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
+  DesktopPromotionSyncService::RegisterDesktopPromotionUserPrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
 
   [BookmarkInteractionController registerBrowserStatePrefs:registry];

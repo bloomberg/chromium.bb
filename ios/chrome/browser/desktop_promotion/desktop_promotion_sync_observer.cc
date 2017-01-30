@@ -1,0 +1,92 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_observer.h"
+
+#include <algorithm>
+#include <memory>
+
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "components/browser_sync/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
+#include "ios/chrome/browser/pref_names.h"
+
+namespace {
+
+// These values are written to logs.  New values can be added, but existing
+// values must never be reordered or deleted and reused.
+const char* kDesktopIOSPromotionEntrypointHistogramPrefix[] = {
+    "SavePasswordsNewBubble", "BookmarksNewBubble", "BookmarksExistingBubble",
+    "HistoryPage",
+};
+
+}  // namespace
+
+DesktopPromotionSyncObserver::DesktopPromotionSyncObserver(
+    PrefService* pref_service,
+    browser_sync::ProfileSyncService* sync_service)
+    : pref_service_(pref_service), sync_service_(sync_service) {
+  DCHECK(pref_service_);
+  DCHECK(sync_service_);
+  sync_service_->AddObserver(this);
+}
+
+DesktopPromotionSyncObserver::~DesktopPromotionSyncObserver() {
+  sync_service_->RemoveObserver(this);
+}
+
+void DesktopPromotionSyncObserver::OnStateChanged() {
+  if (desktop_metrics_logger_initiated_ ||
+      !sync_service_->GetActiveDataTypes().Has(syncer::PRIORITY_PREFERENCES)) {
+    return;
+  }
+
+  desktop_metrics_logger_initiated_ = true;
+  bool done_logging =
+      pref_service_->GetBoolean(prefs::kDesktopIOSPromotionDone);
+  double last_impression =
+      pref_service_->GetDouble(prefs::kDesktopIOSPromotionLastImpression);
+  base::TimeDelta delta =
+      base::Time::Now() - base::Time::FromDoubleT(last_impression);
+  if (done_logging || delta.InDays() >= 7) {
+    sync_service_->RemoveObserver(this);
+    return;
+  }
+
+  // This user have seen the promotion in the last 7 days so it may be a
+  // reason of the installation.
+  int sms_entrypoint =
+      pref_service_->GetInteger(prefs::kDesktopIOSPromotionSMSEntryPoint);
+  int shown_entrypoints =
+      pref_service_->GetInteger(prefs::kDesktopIOSPromotionShownEntryPoints);
+
+  // Entry points are represented on the preference by integers [1..4].
+  // TODO(crbug.com/681885): Add reference to the Entry point Constants defined
+  // in the desktop code side.
+  int entrypoint_prefixes_count =
+      arraysize(kDesktopIOSPromotionEntrypointHistogramPrefix);
+  for (int i = 1; i < entrypoint_prefixes_count + 1; i++) {
+    if (sms_entrypoint == i) {
+      UMA_HISTOGRAM_ENUMERATION("DesktopIOSPromotion.SMSSent.IOSSigninReason",
+                                i, entrypoint_prefixes_count + 1);
+      // If the time delta is negative due to client bad clock we log 0 instead.
+      base::Histogram::FactoryGet(
+          base::StringPrintf(
+              "DesktopIOSPromotion.%s.SMSToSigninTime",
+              kDesktopIOSPromotionEntrypointHistogramPrefix[i - 1]),
+          1, 168, 24, base::Histogram::kUmaTargetedHistogramFlag)
+          ->Add(std::max(0, delta.InHours()));
+    } else {
+      // If the user saw this promotion type, log that it could be a reason
+      // for the signin.
+      if ((1 << i) & shown_entrypoints)
+        UMA_HISTOGRAM_ENUMERATION("DesktopIOSPromotion.NoSMS.IOSSigninReason",
+                                  i, entrypoint_prefixes_count + 1);
+    }
+  }
+  pref_service_->SetBoolean(prefs::kDesktopIOSPromotionDone, true);
+  sync_service_->RemoveObserver(this);
+}

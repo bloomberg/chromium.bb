@@ -139,4 +139,25 @@ const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
 const char kRateThisAppDialogLastShownTime[] =
     "ios.ratethisapp.dialog_last_shown_time";
 
+// Index of the entry point that initiated sending the SMS to the user for the
+// "desktop to iOS" promotion (see DesktopIOSPromotion.IOSSigninReason histogram
+// for details).
+const char kDesktopIOSPromotionSMSEntryPoint[] =
+    "ios.desktop_ios_promo_sms_entrypoint";
+
+// Indexes of the entry points presented to the user for "desktop to iOS"
+// promotion
+const char kDesktopIOSPromotionShownEntryPoints[] =
+    "ios.desktop_ios_promo_shown_entrypoints";
+
+// Timestamp of the last "desktop to iOS" promotion SMS dispatch or of the last
+// impression (if no SMS was sent).
+const char kDesktopIOSPromotionLastImpression[] =
+    "ios.desktop_ios_promo_last_impression";
+
+// True if the "desktop to iOS" promotion was successful, i.e. user installed
+// the application and signed in after seeing the promotion and receiving the
+// SMS.
+const char kDesktopIOSPromotionDone[] = "ios.desktop_ios_promo_done";
+
 }  // namespace prefs

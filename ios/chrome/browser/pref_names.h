@@ -47,6 +47,11 @@ extern const char kOmniboxGeolocationLastAuthorizationAlertVersion[];
 
 extern const char kRateThisAppDialogLastShownTime[];
 
+extern const char kDesktopIOSPromotionSMSEntryPoint[];
+extern const char kDesktopIOSPromotionShownEntryPoints[];
+extern const char kDesktopIOSPromotionLastImpression[];
+extern const char kDesktopIOSPromotionDone[];
+
 }  // namespace prefs
 
 #endif  // IOS_CHROME_BROWSER_PREF_NAMES_H_
