@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.physicalweb;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.nearby.Nearby;
@@ -37,17 +39,27 @@ public class PhysicalWebBleClient {
     protected static class BackgroundMessageListener extends MessageListener {
         @Override
         public void onFound(Message message) {
-            String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
+            final String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
             if (url != null) {
-                UrlManager.getInstance().addUrl(new UrlInfo(url));
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        UrlManager.getInstance().addUrl(new UrlInfo(url));
+                    }
+                });
             }
         }
 
         @Override
         public void onLost(Message message) {
-            String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
+            final String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
             if (url != null) {
-                UrlManager.getInstance().removeUrl(new UrlInfo(url));
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        UrlManager.getInstance().removeUrl(new UrlInfo(url));
+                    }
+                });
             }
         }
     };
