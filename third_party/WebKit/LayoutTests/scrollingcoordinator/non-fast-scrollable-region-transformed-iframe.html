@@ -4,16 +4,36 @@
     position: absolute;
     left: 200px;
     top: 200px;
-    height: 120px;
-    width: 120px;
+    height: 200px;
+    width: 200px;
     padding: 10px;
     border: none;
     transform: scale(2);
   }
+  .spacer {
+    height: 2000px;
+  }
 </style>
 
-<iframe src="data:text/html;charset=utf-8,<html><body style='width:1000px; height:1000px;'><p style='font-size: 6px'>Should be covered by a green overlay.</p></body></html>"></iframe>
+<iframe srcdoc="
+  <!DOCTYPE html>
+  <style>
+    iframe {
+      height: 120px;
+      width:120px;
+      padding:10px;
+      border:none;
+    }
+  </style>
+  <iframe srcdoc=&quot;
+    <!DOCTYPE html>
+    <body style='width:1000px; height:1000px;'>
+      <p style='font-size: 6px'>Should be covered by a green overlay.</p>
+    </body>&quot;>
+  </iframe>"></iframe>
+
 <div id="console"></div>
+<div class="spacer"></div>
 
 <script src="../resources/js-test.js"></script>
 <script src="../resources/run-after-layout-and-paint.js"></script>
@@ -27,7 +47,7 @@
     runAfterLayoutAndPaint(function(){
       nonFastScrollableRects = window.internals.nonFastScrollableRects(document);
       shouldBe('nonFastScrollableRects.length', '1');
-      shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', '[150, 150, 240, 240]');
+      shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', '[146, 146, 240, 240]');
 
       drawNonFastScrollableRegionOverlays();
 

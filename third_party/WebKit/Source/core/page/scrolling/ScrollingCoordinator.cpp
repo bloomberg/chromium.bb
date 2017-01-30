@@ -192,7 +192,7 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() {
     // 3. Plugin areas.
     Region shouldHandleScrollGestureOnMainThreadRegion =
         computeShouldHandleScrollGestureOnMainThreadRegion(
-            m_page->deprecatedLocalMainFrame(), IntPoint());
+            m_page->deprecatedLocalMainFrame());
     setShouldHandleScrollGestureOnMainThreadRegion(
         shouldHandleScrollGestureOnMainThreadRegion);
     m_scrollGestureRegionIsDirty = false;
@@ -923,16 +923,12 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(
 }
 
 Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
-    const LocalFrame* frame,
-    const IntPoint& frameLocation) const {
+    const LocalFrame* frame) const {
   Region shouldHandleScrollGestureOnMainThreadRegion;
   FrameView* frameView = frame->view();
   if (!frameView || frameView->shouldThrottleRendering() ||
       !frameView->isVisible())
     return shouldHandleScrollGestureOnMainThreadRegion;
-
-  IntPoint offset = frameLocation;
-  offset.moveBy(frameView->frameRect().location());
 
   if (const FrameView::ScrollableAreaSet* scrollableAreas =
           frameView->scrollableAreas()) {
@@ -944,7 +940,6 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
       if (scrollableArea->usesCompositedScrolling())
         continue;
       IntRect box = scrollableArea->scrollableAreaBoundingBox();
-      box.moveBy(offset);
       shouldHandleScrollGestureOnMainThreadRegion.unite(box);
     }
   }
@@ -956,10 +951,17 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
   if (const FrameView::ResizerAreaSet* resizerAreas =
           frameView->resizerAreas()) {
     for (const LayoutBox* box : *resizerAreas) {
+      PaintLayerScrollableArea* scrollableArea =
+          box->layer()->getScrollableArea();
       IntRect bounds = box->absoluteBoundingBoxRect();
+      // Get the corner in local coords.
       IntRect corner =
-          box->layer()->getScrollableArea()->touchResizerCornerRect(bounds);
-      corner.moveBy(offset);
+          scrollableArea->resizerCornerRect(bounds, ResizerForTouch);
+      // Map corner to top-frame coords.
+      corner = scrollableArea->box()
+                   .localToAbsoluteQuad(FloatRect(corner),
+                                        TraverseDocumentBoundaries)
+                   .enclosingBoundingBox();
       shouldHandleScrollGestureOnMainThreadRegion.unite(corner);
     }
   }
@@ -971,8 +973,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
 
       PluginView* pluginView = toPluginView(child.get());
       if (pluginView->wantsWheelEvents()) {
-        IntRect box = pluginView->frameRect();
-        box.moveBy(offset);
+        IntRect box = frameView->convertToRootFrame(pluginView->frameRect());
         shouldHandleScrollGestureOnMainThreadRegion.unite(box);
       }
     }
@@ -981,10 +982,11 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
   const FrameTree& tree = frame->tree();
   for (Frame* subFrame = tree.firstChild(); subFrame;
        subFrame = subFrame->tree().nextSibling()) {
-    if (subFrame->isLocalFrame())
+    if (subFrame->isLocalFrame()) {
       shouldHandleScrollGestureOnMainThreadRegion.unite(
           computeShouldHandleScrollGestureOnMainThreadRegion(
-              toLocalFrame(subFrame), offset));
+              toLocalFrame(subFrame)));
+    }
   }
 
   return shouldHandleScrollGestureOnMainThreadRegion;

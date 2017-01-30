@@ -2589,7 +2589,8 @@ IntRect FrameView::scrollableAreaBoundingBox() const {
   if (ownerLayoutItem.isNull())
     return frameRect();
 
-  return ownerLayoutItem.absoluteContentQuad().enclosingBoundingBox();
+  return ownerLayoutItem.absoluteContentQuad(TraverseDocumentBoundaries)
+      .enclosingBoundingBox();
 }
 
 bool FrameView::isScrollable() {

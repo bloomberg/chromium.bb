@@ -122,8 +122,7 @@ class CORE_EXPORT ScrollingCoordinator final
   void updateClipParentForGraphicsLayer(GraphicsLayer* child,
                                         const PaintLayer* parent);
   Region computeShouldHandleScrollGestureOnMainThreadRegion(
-      const LocalFrame*,
-      const IntPoint& frameLocation) const;
+      const LocalFrame*) const;
 
   void updateTouchEventTargetRectsIfNeeded();
 

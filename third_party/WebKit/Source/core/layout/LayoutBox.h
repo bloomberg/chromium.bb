@@ -389,7 +389,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   IntSize absoluteContentBoxOffset() const;
   // The content box converted to absolute coords (taking transforms into
   // account).
-  FloatQuad absoluteContentQuad() const;
+  FloatQuad absoluteContentQuad(MapCoordinatesFlags = 0) const;
   // The enclosing rectangle of the background with given opacity requirement.
   LayoutRect backgroundRect(BackgroundRectType) const;
 

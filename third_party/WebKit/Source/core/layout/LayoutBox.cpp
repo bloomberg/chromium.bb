@@ -839,9 +839,9 @@ IntSize LayoutBox::absoluteContentBoxOffset() const {
   return toIntSize(offset);
 }
 
-FloatQuad LayoutBox::absoluteContentQuad() const {
+FloatQuad LayoutBox::absoluteContentQuad(MapCoordinatesFlags flags) const {
   LayoutRect rect = contentBoxRect();
-  return localToAbsoluteQuad(FloatRect(rect));
+  return localToAbsoluteQuad(FloatRect(rect), flags);
 }
 
 LayoutRect LayoutBox::backgroundRect(BackgroundRectType rectType) const {

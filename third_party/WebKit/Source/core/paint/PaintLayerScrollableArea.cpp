@@ -598,7 +598,7 @@ bool PaintLayerScrollableArea::scrollbarsCanBeActive() const {
 }
 
 IntRect PaintLayerScrollableArea::scrollableAreaBoundingBox() const {
-  return box().absoluteBoundingBoxRect();
+  return box().absoluteBoundingBoxRect(TraverseDocumentBoundaries);
 }
 
 void PaintLayerScrollableArea::registerForAnimation() {

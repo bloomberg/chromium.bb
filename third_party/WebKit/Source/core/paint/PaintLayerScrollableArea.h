@@ -345,10 +345,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool inResizeMode() const { return m_inResizeMode; }
   void setInResizeMode(bool inResizeMode) { m_inResizeMode = inResizeMode; }
 
-  IntRect touchResizerCornerRect(const IntRect& bounds) const {
-    return resizerCornerRect(bounds, ResizerForTouch);
-  }
-
   LayoutUnit scrollWidth() const;
   LayoutUnit scrollHeight() const;
   int pixelSnappedScrollWidth() const;

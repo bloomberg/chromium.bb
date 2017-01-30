@@ -593,10 +593,10 @@ float VisualViewport::browserControlsAdjustment() const {
 }
 
 IntRect VisualViewport::scrollableAreaBoundingBox() const {
-  // This method should return the bounding box in the parent view's coordinate
-  // space; however, VisualViewport technically isn't a child of any Frames.
-  // Nonetheless, the VisualViewport always occupies the entire main frame so
-  // just return that.
+  // This method should return the bounding box in the top-level FrameView's
+  // coordinate space; however, VisualViewport technically isn't a child of any
+  // Frames.  Nonetheless, the VisualViewport always occupies the entire main
+  // frame so just return that.
   LocalFrame* frame = mainFrame();
 
   if (!frame || !frame->view())

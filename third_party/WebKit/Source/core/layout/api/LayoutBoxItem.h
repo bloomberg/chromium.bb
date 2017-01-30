@@ -62,8 +62,8 @@ class LayoutBoxItem : public LayoutBoxModel {
     toBox()->mapLocalToAncestor(ancestor, state, flags);
   }
 
-  FloatQuad absoluteContentQuad() const {
-    return toBox()->absoluteContentQuad();
+  FloatQuad absoluteContentQuad(MapCoordinatesFlags flags = 0) const {
+    return toBox()->absoluteContentQuad(flags);
   }
 
  private:

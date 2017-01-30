@@ -958,9 +958,9 @@ FloatRect LayoutObject::absoluteBoundingBoxFloatRect() const {
   return result;
 }
 
-IntRect LayoutObject::absoluteBoundingBoxRect() const {
+IntRect LayoutObject::absoluteBoundingBoxRect(MapCoordinatesFlags flags) const {
   Vector<FloatQuad> quads;
-  absoluteQuads(quads);
+  absoluteQuads(quads, flags);
 
   size_t n = quads.size();
   if (!n)
