@@ -139,7 +139,7 @@ class TestCopierTest(LoggingTestCase):
         self.assertEqual(copier.import_list, [])
         self.assertLog([
             'WARNING: Skipping: /blink/w3c/dir1/my-ref-test.html\n',
-            'WARNING:   Reason: Ref file "my-ref-test-expected.html" was not found.\n'
+            'WARNING:   Reason: Ref file "/blink/w3c/dir1/not-here.html" was not found.\n'
         ])
 
     def test_files_with_long_path_are_skipped(self):

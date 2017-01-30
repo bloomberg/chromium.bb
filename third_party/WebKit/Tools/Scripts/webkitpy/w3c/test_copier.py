@@ -79,6 +79,7 @@ class TestCopier(object):
                 self.filesystem.basename(self.source_repo_path)))
         self.import_in_place = (self.source_repo_path == self.destination_directory)
         self.dir_above_repo = self.filesystem.dirname(self.source_repo_path)
+        self.is_wpt = self.filesystem.basename(self.source_repo_path) == 'wpt'
 
         self.import_list = []
 
@@ -176,33 +177,46 @@ class TestCopier(object):
                     continue
 
                 if 'reference' in test_info.keys():
-                    test_basename = self.filesystem.basename(test_info['test'])
-                    # Add the ref file, following WebKit style.
-                    # FIXME: Ideally we'd support reading the metadata
-                    # directly rather than relying on a naming convention.
-                    # Using a naming convention creates duplicate copies of the
-                    # reference files (http://crrev.com/268729).
-                    ref_file = self.filesystem.splitext(test_basename)[0] + '-expected'
-                    # Make sure to use the extension from the *reference*, not
-                    # from the test, because at least flexbox tests use XHTML
-                    # references but HTML tests.
-                    ref_file += self.filesystem.splitext(test_info['reference'])[1]
-
-                    if not self.filesystem.exists(test_info['reference']):
+                    ref_path_full = test_info['reference']
+                    if not self.filesystem.exists(ref_path_full):
                         _log.warning('Skipping: %s', path_full)
-                        _log.warning('  Reason: Ref file "%s" was not found.', ref_file)
+                        _log.warning('  Reason: Ref file "%s" was not found.', ref_path_full)
                         continue
 
-                    if self.path_too_long(path_full.replace(filename, ref_file)):
-                        _log.warning('Skipping: %s', path_full)
-                        _log.warning('  Reason: Ref file path length would be too long: %s.', ref_file)
-                        _log.warning('  Max length %d; see http://crbug.com/609871.', MAX_PATH_LENGTH)
-                        continue
+                    if self.is_wpt:
+                        if self.path_too_long(ref_path_full):
+                            _log.warning('Skipping: %s', path_full)
+                            _log.warning('  Reason: Ref file path length would be too long: %s.', ref_path_full)
+                            _log.warning('  Max length %d; see http://crbug.com/609871.', MAX_PATH_LENGTH)
+                            continue
+                        # For WPT, we don't need to rename the reference file to
+                        # WebKit style name.
+                        # We don't ask to copy ref_path_full here because this
+                        # filesystem walk will find the reference file, and copy
+                        # it as a non-test file.
+                    else:
+                        test_basename = self.filesystem.basename(test_info['test'])
+                        # Add the ref file, following WebKit style.
+                        # FIXME: Ideally we'd support reading the metadata
+                        # directly rather than relying on a naming convention.
+                        # Using a naming convention creates duplicate copies of the
+                        # reference files (http://crrev.com/268729).
+                        ref_file = self.filesystem.splitext(test_basename)[0] + '-expected'
+                        # Make sure to use the extension from the *reference*, not
+                        # from the test, because at least flexbox tests use XHTML
+                        # references but HTML tests.
+                        ref_file += self.filesystem.splitext(ref_path_full)[1]
+
+                        if self.path_too_long(path_full.replace(filename, ref_file)):
+                            _log.warning('Skipping: %s', path_full)
+                            _log.warning('  Reason: Ref file path length would be too long: %s.', ref_file)
+                            _log.warning('  Max length %d; see http://crbug.com/609871.', MAX_PATH_LENGTH)
+                            continue
+                        copy_list.append({'src': test_info['reference'], 'dest': ref_file,
+                                          'reference_support_info': test_info['reference_support_info']})
 
                     reftests += 1
                     total_tests += 1
-                    copy_list.append({'src': test_info['reference'], 'dest': ref_file,
-                                      'reference_support_info': test_info['reference_support_info']})
                     copy_list.append({'src': test_info['test'], 'dest': filename})
 
                 elif 'jstest' in test_info.keys():
