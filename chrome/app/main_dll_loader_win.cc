@@ -69,8 +69,6 @@ void ClearDidRun(const base::FilePath& dll_path) {
   GoogleUpdateSettings::UpdateDidRunState(false);
 }
 
-typedef int (*InitMetro)();
-
 bool ProcessTypeUsesMainDll(const std::string& process_type) {
   return process_type.empty() || process_type == switches::kServiceProcess;
 }
