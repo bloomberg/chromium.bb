@@ -343,7 +343,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private Animator mSheetAnimator;
     private FocusAnimator mSectionAnimator;
     private int mAnimatorTranslation;
-    private boolean mIsInitialLayoutComplete;
 
     /**
      * Builds the UI for PaymentRequest.
@@ -905,11 +904,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void showProcessingMessage() {
         assert mIsProcessingPayClicked;
-        mIsProcessingPayClicked = false;
-
-        // The payment cannot be cancelled at that point, do not show a close button.
-        mCloseButton.setClickable(false);
-        mCloseButton.setVisibility(View.INVISIBLE);
 
         changeSpinnerVisibility(true);
         mDialog.show();
@@ -922,6 +916,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         if (showSpinner) {
             mPaymentContainer.setVisibility(View.GONE);
             mButtonBar.setVisibility(View.GONE);
+            mCloseButton.setVisibility(View.GONE);
             mSpinnyLayout.setVisibility(View.VISIBLE);
 
             // Turn the bottom sheet back into a collapsed bottom sheet showing only the spinner.
@@ -932,6 +927,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else {
             mPaymentContainer.setVisibility(View.VISIBLE);
             mButtonBar.setVisibility(View.VISIBLE);
+            mCloseButton.setVisibility(View.VISIBLE);
             mSpinnyLayout.setVisibility(View.GONE);
 
             if (mIsShowingEditDialog) {
@@ -962,8 +958,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /** @return Whether or not the dialog can be closed via the X close button. */
     private boolean isAcceptingCloseButton() {
-        return mSheetAnimator == null && mSectionAnimator == null && mIsInitialLayoutComplete
-                && !mIsProcessingPayClicked && !mIsEditingPaymentItem && !mIsClosing;
+        return mSheetAnimator == null && mSectionAnimator == null && !mIsProcessingPayClicked
+                && !mIsEditingPaymentItem && !mIsClosing;
     }
 
     /** @return Whether or not the dialog is accepting user input. */
@@ -1244,7 +1240,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * Animates the bottom sheet UI translating upwards from the bottom of the screen.
      * Can be canceled when a {@link SheetEnlargingAnimator} starts and expands the dialog.
      */
-    private class PeekingAnimator implements OnLayoutChangeListener {
+    private class PeekingAnimator
+            extends AnimatorListenerAdapter implements OnLayoutChangeListener {
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom,
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -1254,7 +1251,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     mRequestView, View.TRANSLATION_Y, mAnimatorTranslation, 0);
             mSheetAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
             mSheetAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+            mSheetAnimator.addListener(this);
             mSheetAnimator.start();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            mSheetAnimator = null;
         }
     }
 
@@ -1327,7 +1330,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
             // Indicate that the dialog is ready to use.
             mSheetAnimator = null;
-            mIsInitialLayoutComplete = true;
             notifyReadyForInput();
             mReadyToPayNotifierForTest.run();
         }

@@ -1075,6 +1075,8 @@ public class PaymentRequestImpl
     public void onInstrumentDetailsLoadingWithoutUI() {
         if (mClient == null || mUI == null || mPaymentResponseHelper == null) return;
 
+        assert mPaymentMethodsSection.getSelectedItem() instanceof AutofillPaymentInstrument;
+
         mUI.showProcessingMessage();
         mPaymentResponseHelper.onInstrumentsDetailsLoading();
     }
