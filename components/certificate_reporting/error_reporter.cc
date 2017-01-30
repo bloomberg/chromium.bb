@@ -13,10 +13,10 @@
 #include "base/memory/ptr_util.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 #include "crypto/aead.h"
-#include "crypto/curve25519.h"
 #include "crypto/hkdf.h"
 #include "crypto/random.h"
 #include "net/url_request/report_sender.h"
+#include "third_party/boringssl/src/include/openssl/curve25519.h"
 
 namespace certificate_reporting {
 
@@ -36,8 +36,8 @@ bool GetHkdfSubkeySecret(size_t subkey_length,
                          const uint8_t* private_key,
                          const uint8_t* public_key,
                          std::string* secret) {
-  uint8_t shared_secret[crypto::curve25519::kBytes];
-  if (!crypto::curve25519::ScalarMult(private_key, public_key, shared_secret))
+  uint8_t shared_secret[X25519_SHARED_KEY_LEN];
+  if (!X25519(shared_secret, private_key, public_key))
     return false;
 
   // By mistake, the HKDF label here ends up with an extra null byte on
@@ -64,11 +64,11 @@ bool EncryptSerializedReport(const uint8_t* server_public_key,
                              const std::string& report,
                              EncryptedCertLoggerRequest* encrypted_report) {
   // Generate an ephemeral key pair to generate a shared secret.
-  uint8_t public_key[crypto::curve25519::kBytes];
-  uint8_t private_key[crypto::curve25519::kScalarBytes];
+  uint8_t public_key[X25519_PUBLIC_VALUE_LEN];
+  uint8_t private_key[X25519_PRIVATE_KEY_LEN];
 
   crypto::RandBytes(private_key, sizeof(private_key));
-  crypto::curve25519::ScalarBaseMult(private_key, public_key);
+  X25519_public_from_private(public_key, private_key);
 
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
   std::string key;

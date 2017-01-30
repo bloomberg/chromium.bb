@@ -17,12 +17,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
-#include "crypto/curve25519.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/curve25519.h"
 
 namespace certificate_reporting {
 
@@ -103,7 +103,7 @@ class ErrorReporterTest : public ::testing::Test {
  public:
   ErrorReporterTest() {
     memset(server_private_key_, 1, sizeof(server_private_key_));
-    crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
+    X25519_public_from_private(server_public_key_, server_private_key_);
   }
 
   ~ErrorReporterTest() override {}

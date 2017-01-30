@@ -9,11 +9,11 @@
 #include "components/certificate_reporting/error_report.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "crypto/curve25519.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/curve25519.h"
 
 namespace {
 
@@ -376,7 +376,7 @@ void CertificateReportingServiceObserver::OnServiceReset() {
 
 CertificateReportingServiceTestHelper::CertificateReportingServiceTestHelper() {
   memset(server_private_key_, 1, sizeof(server_private_key_));
-  crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
+  X25519_public_from_private(server_public_key_, server_private_key_);
 }
 
 CertificateReportingServiceTestHelper::
