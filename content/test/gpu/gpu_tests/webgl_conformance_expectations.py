@@ -353,6 +353,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=671217) # angle bug ID
     self.Fail('WebglExtension_OES_texture_half_float_linear',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('WebglExtension_WEBGL_draw_buffers',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
 
     # Win / Intel / Passthrough command decoder
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
