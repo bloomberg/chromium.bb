@@ -117,6 +117,9 @@ class ASH_EXPORT TabletPowerButtonController
   // updated in SuspendDone().
   base::TimeTicks last_resume_time_;
 
+  // Saves the most recent timestamp that power button is released.
+  base::TimeTicks last_button_up_time_;
+
   // True if power button released should force off display.
   bool force_off_on_button_up_;
 

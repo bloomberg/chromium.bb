@@ -439,5 +439,40 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_FALSE(GetBacklightsForcedOff());
 }
 
+// Tests that repeated power button releases are ignored (crbug.com/675291).
+TEST_F(TabletPowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
+  // Advance a long duration from initialized last resume time in
+  // |tablet_controller_| to avoid cross interference.
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2000));
+
+  // Set backlights forced off for starting point.
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_TRUE(GetBacklightsForcedOff());
+
+  // Test that a pressing-releasing operation after a short duration, backlights
+  // forced off is stopped since we don't drop request for power button pressed.
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+
+  // Test that after another short duration, backlights will not be forced off
+  // since this immediately following forcing off request needs to be dropped.
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+
+  // Test that after another long duration, backlights should be forced off.
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(800));
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_TRUE(GetBacklightsForcedOff());
+}
+
 }  // namespace test
 }  // namespace ash

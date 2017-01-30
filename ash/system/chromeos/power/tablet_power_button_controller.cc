@@ -35,6 +35,11 @@ constexpr int kShutdownWhenScreenOffTimeoutMs = 2000;
 // ignored.
 constexpr int kIgnorePowerButtonAfterResumeMs = 2000;
 
+// Ignore button-up events occurring within this many milliseconds of the
+// previous button-up event. This prevents us from falling behind if the power
+// button is pressed repeatedly.
+constexpr int kIgnoreRepeatedButtonUpMs = 500;
+
 // Returns true if device is a convertible/tablet device, otherwise false.
 bool IsTabletModeSupported() {
   MaximizeModeController* maximize_mode_controller =
@@ -72,7 +77,6 @@ void TabletPowerButtonController::TestApi::TriggerShutdownTimeout() {
 TabletPowerButtonController::TabletPowerButtonController(
     LockStateController* controller)
     : tick_clock_(new base::DefaultTickClock()),
-      last_resume_time_(base::TimeTicks()),
       force_off_on_button_up_(true),
       controller_(controller),
       weak_ptr_factory_(this) {
@@ -119,6 +123,20 @@ void TabletPowerButtonController::OnPowerButtonEvent(
     SetDisplayForcedOff(false);
     StartShutdownTimer();
   } else {
+    // When power button is released, cancel shutdown animation whenever it is
+    // still cancellable.
+    if (controller_->CanCancelShutdownAnimation())
+      controller_->CancelShutdownAnimation();
+
+    const base::TimeTicks previous_up_time = last_button_up_time_;
+    last_button_up_time_ = tick_clock_->NowTicks();
+    // Ignore the event if it comes too soon after the last one.
+    if (timestamp - previous_up_time <=
+        base::TimeDelta::FromMilliseconds(kIgnoreRepeatedButtonUpMs)) {
+      shutdown_timer_.Stop();
+      return;
+    }
+
     if (shutdown_timer_.IsRunning()) {
       shutdown_timer_.Stop();
       if (!screen_off_when_power_button_down_ && force_off_on_button_up_) {
@@ -126,11 +144,6 @@ void TabletPowerButtonController::OnPowerButtonEvent(
         LockScreenIfRequired();
       }
     }
-
-    // When power button is released, cancel shutdown animation whenever it is
-    // still cancellable.
-    if (controller_->CanCancelShutdownAnimation())
-      controller_->CancelShutdownAnimation();
   }
 }
 
