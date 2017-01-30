@@ -110,79 +110,38 @@ VariationID GetGoogleVariationID(IDCollectionKey key,
 VariationID GetGoogleVariationIDFromHashes(IDCollectionKey key,
                                            const ActiveGroupId& active_group);
 
-// Associates the specified set of key-value |params| with the variation
-// specified by |trial_name| and |group_name|. Fails and returns false if the
-// specified variation already has params associated with it or the field trial
-// is already active (group() has been called on it). Thread safe.
+// Deprecated. Use base::AssociateFieldTrialParams() instead.
 bool AssociateVariationParams(const std::string& trial_name,
                               const std::string& group_name,
                               const std::map<std::string, std::string>& params);
 
-// Retrieves the set of key-value |params| for the variation associated with
-// the specified field trial, based on its selected group. If the field trial
-// does not exist or its selected group does not have any parameters associated
-// with it, returns false and does not modify |params|. Calling this function
-// will result in the field trial being marked as active if found (i.e. group()
-// will be called on it), if it wasn't already. Currently, this information is
-// only available from the browser process. Thread safe.
+// Deprecated. Use base::GetFieldTrialParams() instead.
 bool GetVariationParams(const std::string& trial_name,
                         std::map<std::string, std::string>* params);
 
-// Retrieves the set of key-value |params| for the variation associated with the
-// specified |feature|. A feature is associated with at most one variation,
-// through the variation's associated field trial, and selected group. See
-// base/feature_list.h for more information on features. If the feature is not
-// enabled, or if there's no associated variation params, returns false and does
-// not modify |params|. Calling this function will result in the associated
-// field trial being marked as active if found (i.e. group() will be called on
-// it), if it wasn't already. Currently, this information is only available from
-// the browser process. Thread safe.
+// Deprecated. Use base::GetFieldTrialParamsByFeature() instead.
 bool GetVariationParamsByFeature(const base::Feature& feature,
                                  std::map<std::string, std::string>* params);
 
-// Retrieves a specific parameter value corresponding to |param_name| for the
-// variation associated with the specified field trial, based on its selected
-// group. If the field trial does not exist or the specified parameter does not
-// exist, returns an empty string. Calling this function will result in the
-// field trial being marked as active if found (i.e. group() will be called on
-// it), if it wasn't already. Currently, this information is only available from
-// the browser process. Thread safe.
+// Deprecated. Use base::GetFieldTrialParamValue() instead.
 std::string GetVariationParamValue(const std::string& trial_name,
                                    const std::string& param_name);
 
-// Retrieves a specific parameter value corresponding to |param_name| for the
-// variation associated with the specified |feature|. A feature is associated
-// with at most one variation, through the variation's associated field trial,
-// and selected group. See base/feature_list.h for more information on
-// features. If the feature is not enabled, or the specified parameter does not
-// exist, returns an empty string. Calling this function will result in the
-// associated field trial being marked as active if found (i.e. group() will be
-// called on it), if it wasn't already. Currently, this information is only
-// available from the browser process. Thread safe.
+// Deprecated. Use base::GetFieldTrialParamValueByFeature() instead.
 std::string GetVariationParamValueByFeature(const base::Feature& feature,
                                             const std::string& param_name);
 
-// Same as GetVariationParamValueByFeature(). On top of that, it converts the
-// string value into an int using base::StringToInt() and returns it, if
-// successful. Otherwise, it returns |default_value|. If the string value is not
-// empty and the conversion does not succeed, it produces a warning to LOG.
+// Deprecated. Use base::GetFieldTrialParamByFeatureAsInt() instead.
 int GetVariationParamByFeatureAsInt(const base::Feature& feature,
                                     const std::string& param_name,
                                     int default_value);
 
-// Same as GetVariationParamValueByFeature(). On top of that, it converts the
-// string value into a double using base::StringToDouble() and returns it, if
-// successful. Otherwise, it returns |default_value|. If the string value is not
-// empty and the conversion does not succeed, it produces a warning to LOG.
+// Deprecated. Use base::GetFieldTrialParamByFeatureAsDouble() instead.
 double GetVariationParamByFeatureAsDouble(const base::Feature& feature,
                                           const std::string& param_name,
                                           double default_value);
 
-// Same as GetVariationParamValueByFeature(). On top of that, it converts the
-// string value into a boolean and returns it, if successful. Otherwise, it
-// returns |default_value|. The only string representations accepted here are
-// "true" and "false". If the string value is not empty and the conversion does
-// not succeed, it produces a warning to LOG.
+// Deprecated. Use base::GetFieldTrialParamByFeatureAsBool() instead.
 bool GetVariationParamByFeatureAsBool(const base::Feature& feature,
                                       const std::string& param_name,
                                       bool default_value);
