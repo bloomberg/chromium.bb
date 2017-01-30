@@ -1318,7 +1318,6 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
   dict->SetInteger("packets_received", stats.packets_received);
   dict->SetInteger("packets_lost", stats.packets_lost);
   SSLInfo ssl_info;
-  dict->SetBoolean("secure", GetSSLInfo(&ssl_info) && ssl_info.cert.get());
 
   std::unique_ptr<base::ListValue> alias_list(new base::ListValue());
   for (std::set<HostPortPair>::const_iterator it = aliases.begin();

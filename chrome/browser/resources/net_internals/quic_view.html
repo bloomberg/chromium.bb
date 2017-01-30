@@ -28,7 +28,6 @@
           <thead>
             <tr>
               <th>Host</th>
-              <th>Secure</th>
               <th>Version</th>
               <th>Peer address</th>
               <th>Connection UID</th>
@@ -44,7 +43,6 @@
           <tbody>
             <tr jsselect="sessions">
               <td jscontent="$this.aliases ? $this.aliases.join(' ') : ''"></td>
-              <td jscontent="!!secure"></td>
               <td jscontent="version"></td>
               <td jscontent="peer_address"></td>
               <td><a jsvalues=".href: '#events&q=type:QUIC_SESSION%20' + connection_id" jscontent="connection_id"></a></td>
