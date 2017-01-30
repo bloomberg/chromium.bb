@@ -494,6 +494,7 @@ class QuicNetworkTransactionTest
     params_.http_auth_handler_factory = auth_handler_factory_.get();
     params_.http_server_properties = &http_server_properties_;
     params_.quic_supported_versions = SupportedVersions(version_);
+    params_.net_log = net_log_.bound().net_log();
     for (const char* host :
          {kDefaultServerHostName, "www.example.org", "news.example.org",
           "bar.example.org", "foo.example.org", "invalid.example.org",

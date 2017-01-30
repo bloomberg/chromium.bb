@@ -1089,6 +1089,23 @@ EVENT_TYPE(HTTP_STREAM_JOB_ORPHANED)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_DELAYED)
 
+// Marks the start/end of a HttpStreamFactoryImpl::JobController.
+// The following parameters are attached:
+//   {
+//      "url": <String of request URL>,
+//      "is_preconnect": <True if controller is created for a preconnect.>,
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER)
+
+// Links a JobController with its user (a URL_REQUEST).
+// The event parameters are:
+//   {
+//      "source_dependency": <The source identifier for JobController if the
+//          event is logged in URL_REQUEST or the source identifier for the
+//          URL_REQUEST if the event is logged in HTTP_STREAM_JOB_CONTROLLER>,
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_BOUND)
+
 // ------------------------------------------------------------------------
 // HttpNetworkTransaction
 // ------------------------------------------------------------------------

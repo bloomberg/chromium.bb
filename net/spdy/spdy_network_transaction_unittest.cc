@@ -110,9 +110,11 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
           session_deps_(session_deps.get() == nullptr
                             ? base::MakeUnique<SpdySessionDependencies>()
                             : std::move(session_deps)),
-          session_(
-              SpdySessionDependencies::SpdyCreateSession(session_deps_.get())),
-          log_(log) {}
+          log_(log) {
+      session_deps_->net_log = log.net_log();
+      session_ =
+          SpdySessionDependencies::SpdyCreateSession(session_deps_.get());
+    }
 
     ~NormalSpdyTransactionHelper() {
       // Any test which doesn't close the socket by sending it an EOF will

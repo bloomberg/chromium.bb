@@ -81,6 +81,7 @@ var SourceEntry = (function() {
         // TODO(ricea): Remove SOCKET_STREAM after M41 is released.
         case EventSourceType.SOCKET_STREAM:
         case EventSourceType.HTTP_STREAM_JOB:
+        case EventSourceType.HTTP_STREAM_JOB_CONTROLLER:
           this.description_ = e.params.url;
           break;
         // TODO(davidben): Remove CONNECT_JOB after M57 is released.

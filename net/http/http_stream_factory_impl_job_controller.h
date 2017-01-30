@@ -22,7 +22,9 @@ class HttpStreamFactoryImpl::JobController
   JobController(HttpStreamFactoryImpl* factory,
                 HttpStreamRequest::Delegate* delegate,
                 HttpNetworkSession* session,
-                JobFactory* job_factory);
+                JobFactory* job_factory,
+                const HttpRequestInfo& request_info,
+                bool is_preconnect);
 
   ~JobController() override;
 
@@ -41,7 +43,7 @@ class HttpStreamFactoryImpl::JobController
                  HttpStreamRequest::Delegate* delegate,
                  WebSocketHandshakeStreamBase::CreateHelper*
                      websocket_handshake_stream_create_helper,
-                 const NetLogWithSource& net_log,
+                 const NetLogWithSource& source_net_log,
                  HttpStreamRequest::StreamType stream_type,
                  RequestPriority priority,
                  const SSLConfig& server_ssl_config,
@@ -161,6 +163,7 @@ class HttpStreamFactoryImpl::JobController
 
   // Remove session from the SpdySessionRequestMap.
   void RemoveRequestFromSpdySessionRequestMapForJob(Job* job) override;
+
   const NetLogWithSource* GetNetLog(Job* job) const override;
 
   void MaybeSetWaitTimeForMainJob(const base::TimeDelta& delay) override;
@@ -188,8 +191,7 @@ class HttpStreamFactoryImpl::JobController
                   const SSLConfig& server_ssl_config,
                   const SSLConfig& proxy_ssl_config,
                   HttpStreamRequest::Delegate* delegate,
-                  HttpStreamRequest::StreamType stream_type,
-                  const NetLogWithSource& net_log);
+                  HttpStreamRequest::StreamType stream_type);
 
   // Attaches |job| to |request_|. Does not mean that |request_| will use |job|.
   void AttachJob(Job* job);
@@ -280,7 +282,7 @@ class HttpStreamFactoryImpl::JobController
   HttpStreamRequest::Delegate* const delegate_;
 
   // True if this JobController is used to preconnect streams.
-  bool is_preconnect_;
+  const bool is_preconnect_;
 
   // |main_job_| is a job waiting to see if |alternative_job_| can reuse a
   // connection. If |alternative_job_| is unable to do so, |this| will notify
@@ -314,6 +316,8 @@ class HttpStreamFactoryImpl::JobController
 
   // Privacy mode that should be used for fetching the resource.
   PrivacyMode privacy_mode_;
+
+  const NetLogWithSource net_log_;
 
   base::WeakPtrFactory<JobController> ptr_factory_;
 };
