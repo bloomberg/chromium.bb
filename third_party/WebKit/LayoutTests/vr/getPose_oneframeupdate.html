@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<script src="resources/test-constants.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t, mock_service) => {
+  return navigator.getVRDisplays().then( (displays) => {
+    var display = displays[0];
+    var expected_pose = VALID_POSE;
+    var counter = 0;
+
+    function onFrame() {
+      display.requestAnimationFrame(onFrame);
+      if (counter == 0) {
+        t.step( () => {
+          assert_equals(display.getPose(), null);
+        }, "Pose is initially null");
+        mock_service.mockVRDisplays_[0].setPose(expected_pose);
+        t.step( () => {
+          assert_equals(display.getPose(), null);
+        }, "Does not update in the same frame");
+      } else {
+        t.step( () => {
+          let pose = display.getPose();
+          assert_not_equals(pose, null);
+          for (let field in expected_pose) {
+            assert_equals(pose[field].length, expected_pose[field].length);
+            for (let i = 0; i < expected_pose[field].length; i++) {
+              assert_approx_equals(pose[field][i], expected_pose[field][i],
+                  FLOAT_EPSILON);
+            }
+          }
+        }, "Pose was updated in the next frame");
+        t.done();
+      }
+      counter++;
+    }
+
+    display.requestAnimationFrame(onFrame);
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getVRDisplays rejected");
+    });
+  });
+}, [fakeDisplays["Pixel"]],
+"getPose updates on the next frame");
+
+</script>

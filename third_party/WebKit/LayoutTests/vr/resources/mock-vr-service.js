@@ -28,6 +28,15 @@ let mockVRService = loadMojoModules(
       return Promise.resolve({success: true});
     }
 
+    setPose(pose) {
+      if (pose == null) {
+        this.vsync_provider_.pose_ = null;
+      } else {
+        this.vsync_provider_.initPose();
+        this.vsync_provider_.fillPose(pose);
+      }
+    }
+
     getVRVSyncProvider(request) { this.vsync_provider_.bind(request); }
 
     forceActivate(reason) {
@@ -50,19 +59,46 @@ let mockVRService = loadMojoModules(
     constructor() {
       this.timeDelta_ = 0;
       this.binding_ = new bindings.Binding(vr_service.VRVSyncProvider, this);
+      this.pose_ = null;
     }
     bind(request) {
       this.binding_.close();
       this.binding_.bind(request);
     }
     getVSync() {
-      this.timeDelta_ += 1000.0 / 60.0;
-      return Promise.resolve({
-        pose: null,
+      if (this.pose_) {
+        this.pose_.timestamp = this.timeDelta_;
+        this.pose_.poseIndex++;
+      }
+
+      let retval = Promise.resolve({
+        pose: this.pose_,
         time: {
           microseconds: this.timeDelta_,
         },
       });
+
+      this.timeDelta_ += 1000.0 / 60.0;
+      return retval;
+    }
+    initPose() {
+      this.pose_ = {
+        timestamp: 0,
+        orientation: null,
+        position: null,
+        angularVelocity: null,
+        linearVelocity: null,
+        angularAcceleration: null,
+        linearAcceleration: null,
+        poseIndex: 0
+      };
+    }
+    fillPose(pose) {
+      for (var field in pose) {
+        if (this.pose_.hasOwnProperty(field)) {
+          this.pose_[field] = pose[field];
+        }
+      }
     }
   }
 

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<script src="resources/test-constants.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t, mock_service) => {
+  return navigator.getVRDisplays().then( (displays) => {
+    var display = displays[0];
+    mock_service.mockVRDisplays_[0].setPose(VALID_POSE);
+    var pose = display.getPose();
+    t.step( () => {
+      assert_equals(pose, null);
+    }, "getPose did not return data initially");
+
+    function checkLater() {
+      pose = display.getPose();
+      t.step( () => {
+        assert_equals(pose, null);
+      }, "getPose did not return data after a delay");
+      t.done();
+    }
+
+    window.setTimeout(checkLater, 500);
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getVRDisplays rejected");
+    });
+    t.done();
+  });
+}, [fakeDisplays["Pixel"]],
+"getPose does not provide data until it is available after a rAF call");
+
+</script>

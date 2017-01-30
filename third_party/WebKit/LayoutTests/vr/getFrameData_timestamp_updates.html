@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<script src="resources/test-constants.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t, mock_service) => {
+  return navigator.getVRDisplays().then( (displays) => {
+    var display = displays[0];
+    var expected_pose = VALID_POSE;
+    var fd = new VRFrameData();
+    var old_fd = null;
+    mock_service.mockVRDisplays_[0].setPose(expected_pose);
+    var counter = 0;
+
+    function onFrame() {
+      display.requestAnimationFrame(onFrame);
+      t.step( () => {
+        assert_true(display.getFrameData(fd));
+      }, "getFrameData successfully updated object");
+      t.step( () => {
+        for (let field in expected_pose) {
+          assert_equals(fd.pose[field].length, expected_pose[field].length);
+          for (let i = 0; i < expected_pose[field].length; i++) {
+            assert_approx_equals(fd.pose[field][i], expected_pose[field][i],
+                FLOAT_EPSILON);
+          }
+        }
+      }, "pose matches expectation");
+      if (counter == 0) {
+        old_fd = fd;
+        t.step( () => {
+          // Timestamp should start at 0 for first frame
+          assert_approx_equals(fd.timestamp, 0.0, FLOAT_EPSILON);
+        }, "First framedata matches expectation");
+      } else {
+        // Only the timestamp should change since everything else is static
+        t.step( () => {
+          assert_approx_equals(fd.timestamp, 1000.0 / 60.0, FLOAT_EPSILON);
+          for (let i = 0; i < 16; i++) {
+            assert_approx_equals(fd.leftProjectionMatrix[i],
+                old_fd.leftProjectionMatrix[i], FLOAT_EPSILON);
+            assert_approx_equals(fd.leftViewMatrix[i],
+                old_fd.leftViewMatrix[i], FLOAT_EPSILON);
+            assert_approx_equals(fd.rightProjectionMatrix[i],
+                old_fd.rightProjectionMatrix[i], FLOAT_EPSILON);
+            assert_approx_equals(fd.rightViewMatrix[i],
+                old_fd.rightViewMatrix[i], FLOAT_EPSILON);
+          }
+        }, "Second framedata matches expectation");
+        t.done();
+      }
+      counter++;
+    }
+
+    display.requestAnimationFrame(onFrame);
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getVRDisplays rejected");
+    });
+  });
+}, [fakeDisplays["Pixel"]],
+"getFrameData only updates expected fields on rAF");
+
+</script>
