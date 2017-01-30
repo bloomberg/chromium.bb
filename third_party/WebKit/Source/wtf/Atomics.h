@@ -267,16 +267,6 @@ ALWAYS_INLINE float noBarrierLoad(volatile const float* ptr) {
 #else
 #define MEMORY_BARRIER() __asm__ __volatile__("" : : : "memory")
 #endif
-#elif CPU(ARM) && OS(ANDROID)
-// On ARM __sync_synchronize generates dmb which is very expensive on single
-// core devices which don't actually need it. Avoid the cost by calling into
-// kuser_memory_barrier helper.
-inline void memoryBarrier() {
-  // Note: This is a function call, which is also an implicit compiler barrier.
-  typedef void (*KernelMemoryBarrierFunc)();
-  ((KernelMemoryBarrierFunc)0xffff0fa0)();
-}
-#define MEMORY_BARRIER() memoryBarrier()
 #else
 // Fallback to the compiler intrinsic on all other platforms.
 #define MEMORY_BARRIER() __sync_synchronize()
