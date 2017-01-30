@@ -57,6 +57,11 @@ bool RenderFrameHostDelegate::CheckMediaAccessPermission(
   return false;
 }
 
+std::string RenderFrameHostDelegate::GetDefaultMediaDeviceID(
+    MediaStreamType type) {
+  return std::string();
+}
+
 AccessibilityMode RenderFrameHostDelegate::GetAccessibilityMode() const {
   return AccessibilityModeOff;
 }

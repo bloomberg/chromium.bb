@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.mojom.h"
+#include "media/capture/video/video_capture_device_descriptor.h"
 
 using ::mojom::MediaDeviceType;
 
@@ -48,6 +49,9 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       bool request_audio_output,
       const url::Origin& security_origin,
       const EnumerateDevicesCallback& client_callback) override;
+  void GetVideoInputCapabilities(
+      const url::Origin& security_origin,
+      const GetVideoInputCapabilitiesCallback& client_callback) override;
   void SubscribeDeviceChangeNotifications(
       MediaDeviceType type,
       uint32_t subscription_id,
@@ -78,6 +82,20 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       const EnumerateDevicesCallback& client_callback,
       const MediaDevicesManager::BoolDeviceTypes& has_permissions,
       const MediaDeviceEnumeration& enumeration);
+
+  void GotDefaultVideoInputDeviceID(
+      const url::Origin& security_origin,
+      const GetVideoInputCapabilitiesCallback& client_callback,
+      const std::string& default_device_id);
+
+  void FinalizeGetVideoInputCapabilities(
+      const url::Origin& security_origin,
+      const GetVideoInputCapabilitiesCallback& client_callback,
+      const std::string& default_device_id,
+      const media::VideoCaptureDeviceDescriptors& device_descriptors);
+
+  // Returns the currently supported video formats for the given |device_id|.
+  media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id);
 
   struct SubscriptionInfo;
   void NotifyDeviceChangeOnUIThread(

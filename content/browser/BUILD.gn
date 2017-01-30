@@ -892,6 +892,8 @@ source_set("browser") {
     "media/cdm_registry_impl.h",
     "media/media_devices_permission_checker.cc",
     "media/media_devices_permission_checker.h",
+    "media/media_devices_util.cc",
+    "media/media_devices_util.h",
     "media/media_interface_proxy.cc",
     "media/media_interface_proxy.h",
     "media/media_internals.cc",

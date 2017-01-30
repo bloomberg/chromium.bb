@@ -122,12 +122,25 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   bool GetDeviceSupportedFormats(
       media::VideoCaptureSessionId capture_session_id,
       media::VideoCaptureFormats* supported_formats);
+  // Retrieves all capture supported formats for a particular device. Returns
+  // false if the  |device_id| is not found. The supported formats are cached
+  // during device(s) enumeration, and depending on the underlying
+  // implementation, could be an empty list.
+  bool GetDeviceSupportedFormats(const std::string& device_id,
+                                 media::VideoCaptureFormats* supported_formats);
 
   // Retrieves the format(s) currently in use.  Returns false if the
   // |capture_session_id| is not found. Returns true and |formats_in_use|
   // otherwise. |formats_in_use| is empty if the device is not in use.
   bool GetDeviceFormatsInUse(media::VideoCaptureSessionId capture_session_id,
                              media::VideoCaptureFormats* formats_in_use);
+  // Retrieves the format(s) currently in use.  Returns false if the
+  // |stream_type|, |device_id| pair is not found. Returns true and
+  // |formats_in_use| otherwise. |formats_in_use| is empty if the device is not
+  // in use.
+  bool GetDeviceFormatsInUse(MediaStreamType stream_type,
+                             const std::string& device_id,
+                             media::VideoCaptureFormats* supported_formats);
 
   // Sets the platform-dependent window ID for the desktop capture notification
   // UI for the given session.

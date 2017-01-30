@@ -12,13 +12,16 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_devices.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/media_stream_request.h"
+#include "media/base/video_facing.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/origin.h"
@@ -55,6 +58,20 @@ MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
                                          device_info));
   }
   return result;
+}
+
+::mojom::FacingMode ToFacingMode(media::VideoFacingMode facing_mode) {
+  switch (facing_mode) {
+    case media::MEDIA_VIDEO_FACING_NONE:
+      return ::mojom::FacingMode::NONE;
+    case media::MEDIA_VIDEO_FACING_USER:
+      return ::mojom::FacingMode::USER;
+    case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
+      return ::mojom::FacingMode::ENVIRONMENT;
+    default:
+      NOTREACHED();
+      return ::mojom::FacingMode::NONE;
+  }
 }
 
 }  // namespace
@@ -145,6 +162,23 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
       base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
                  weak_factory_.GetWeakPtr(), devices_to_enumerate,
                  security_origin, client_callback));
+}
+
+void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
+    const url::Origin& security_origin,
+    const GetVideoInputCapabilitiesCallback& client_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
+                                           security_origin)) {
+    bad_message::ReceivedBadMessage(render_process_id_,
+                                    bad_message::MDDH_UNAUTHORIZED_ORIGIN);
+    return;
+  }
+
+  GetDefaultMediaDeviceID(
+      MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_, render_frame_id_,
+      base::Bind(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
+                 weak_factory_.GetWeakPtr(), security_origin, client_callback));
 }
 
 void MediaDevicesDispatcherHost::SubscribeDeviceChangeNotifications(
@@ -296,6 +330,69 @@ void MediaDevicesDispatcherHost::DevicesEnumerated(
     }
   }
   client_callback.Run(result);
+}
+
+void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
+    const url::Origin& security_origin,
+    const GetVideoInputCapabilitiesCallback& client_callback,
+    const std::string& default_device_id) {
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  media_stream_manager_->video_capture_manager()->EnumerateDevices(
+      base::Bind(&MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities,
+                 weak_factory_.GetWeakPtr(), security_origin, client_callback,
+                 default_device_id));
+}
+
+void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
+    const url::Origin& security_origin,
+    const GetVideoInputCapabilitiesCallback& client_callback,
+    const std::string& default_device_id,
+    const media::VideoCaptureDeviceDescriptors& device_descriptors) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
+      video_input_capabilities;
+  for (const auto& descriptor : device_descriptors) {
+    std::string hmac_device_id = GetHMACForMediaDeviceID(
+        device_id_salt_, security_origin, descriptor.device_id);
+    ::mojom::VideoInputDeviceCapabilitiesPtr capabilities =
+        ::mojom::VideoInputDeviceCapabilities::New();
+    capabilities->device_id = std::move(hmac_device_id);
+    capabilities->formats = GetVideoInputFormats(descriptor.device_id);
+    capabilities->facing_mode = ToFacingMode(descriptor.facing);
+#if defined(OS_ANDROID)
+    // On Android, the facing mode is not available in the |facing| field,
+    // but is available as part of the label.
+    // TODO(guidou): Remove this code once the |facing| field is supported
+    // on Android. See http://crbug.com/672856.
+    if (descriptor.GetNameAndModel().find("front") != std::string::npos)
+      capabilities->facing_mode = ::mojom::FacingMode::USER;
+    else if (descriptor.GetNameAndModel().find("back") != std::string::npos)
+      capabilities->facing_mode = ::mojom::FacingMode::ENVIRONMENT;
+#endif
+    if (descriptor.device_id == default_device_id) {
+      video_input_capabilities.insert(video_input_capabilities.begin(),
+                                      std::move(capabilities));
+    } else {
+      video_input_capabilities.push_back(std::move(capabilities));
+    }
+  }
+
+  client_callback.Run(std::move(video_input_capabilities));
+}
+
+media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(
+    const std::string& device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  media::VideoCaptureFormats formats;
+  media_stream_manager_->video_capture_manager()->GetDeviceFormatsInUse(
+      MEDIA_DEVICE_VIDEO_CAPTURE, device_id, &formats);
+  if (!formats.empty())
+    return formats;
+
+  media_stream_manager_->video_capture_manager()->GetDeviceSupportedFormats(
+      device_id, &formats);
+  return formats;
 }
 
 }  // namespace content

@@ -547,6 +547,7 @@ class CONTENT_EXPORT WebContentsImpl
       const MediaResponseCallback& callback) override;
   bool CheckMediaAccessPermission(const GURL& security_origin,
                                   MediaStreamType type) override;
+  std::string GetDefaultMediaDeviceID(MediaStreamType type) override;
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
   SessionStorageNamespaceMap GetSessionStorageNamespaceMap() override;

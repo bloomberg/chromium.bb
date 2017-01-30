@@ -889,8 +889,17 @@ bool VideoCaptureManager::GetDeviceSupportedFormats(
     return false;
   DVLOG(1) << "GetDeviceSupportedFormats for device: " << it->second.name;
 
+  return GetDeviceSupportedFormats(it->second.id, supported_formats);
+}
+
+bool VideoCaptureManager::GetDeviceSupportedFormats(
+    const std::string& device_id,
+    media::VideoCaptureFormats* supported_formats) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(supported_formats->empty());
+
   // Return all available formats of the device, regardless its started state.
-  DeviceInfo* existing_device = GetDeviceInfoById(it->second.id);
+  DeviceInfo* existing_device = GetDeviceInfoById(device_id);
   if (existing_device)
     *supported_formats = existing_device->supported_formats;
   return true;
@@ -907,9 +916,18 @@ bool VideoCaptureManager::GetDeviceFormatsInUse(
     return false;
   DVLOG(1) << "GetDeviceFormatsInUse for device: " << it->second.name;
 
+  return GetDeviceFormatsInUse(it->second.type, it->second.id, formats_in_use);
+}
+
+bool VideoCaptureManager::GetDeviceFormatsInUse(
+    MediaStreamType stream_type,
+    const std::string& device_id,
+    media::VideoCaptureFormats* formats_in_use) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(formats_in_use->empty());
   // Return the currently in-use format(s) of the device, if it's started.
   DeviceEntry* device_in_use =
-      GetDeviceEntryByTypeAndId(it->second.type, it->second.id);
+      GetDeviceEntryByTypeAndId(stream_type, device_id);
   if (device_in_use) {
     // Currently only one format-in-use is supported at the VCC level.
     formats_in_use->push_back(

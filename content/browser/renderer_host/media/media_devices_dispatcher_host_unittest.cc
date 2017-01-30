@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -41,6 +42,8 @@ namespace {
 
 const int kProcessId = 5;
 const int kRenderId = 6;
+const size_t kNumFakeVideoDevices = 3;
+const char kDefaultVideoDeviceID[] = "/dev/video2";
 
 void PhysicalDevicesEnumerated(base::Closure quit_closure,
                                MediaDeviceEnumeration* out,
@@ -72,8 +75,10 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         origin_(GURL("https://test.com")) {
     // Make sure we use fake devices to avoid long delays.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseFakeDeviceForMediaStream);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUseFakeDeviceForMediaStream,
+        base::StringPrintf("device-count=%zu, video-input-default-id=%s",
+                           kNumFakeVideoDevices, kDefaultVideoDeviceID));
     audio_manager_.reset(
         new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
@@ -108,6 +113,26 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
                void(const std::vector<std::vector<MediaDeviceInfo>>&));
   MOCK_METHOD1(ValidOriginCallback,
                void(const std::vector<std::vector<MediaDeviceInfo>>&));
+  MOCK_METHOD0(MockVideoInputCapabilitiesCallback, void());
+
+  void VideoInputCapabilitiesCallback(
+      std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
+    MockVideoInputCapabilitiesCallback();
+    std::string expected_first_device_id = GetHMACForMediaDeviceID(
+        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
+        kDefaultVideoDeviceID);
+    EXPECT_EQ(kNumFakeVideoDevices, capabilities.size());
+    EXPECT_EQ(expected_first_device_id, capabilities[0]->device_id);
+    for (const auto& capability : capabilities) {
+      EXPECT_GT(capability->formats.size(), 1u);
+      EXPECT_GT(capability->formats[0].frame_size.width(), 1);
+      EXPECT_GT(capability->formats[0].frame_size.height(), 1);
+      EXPECT_GT(capability->formats[0].frame_rate, 1);
+      EXPECT_GT(capability->formats[1].frame_size.width(), 1);
+      EXPECT_GT(capability->formats[1].frame_size.height(), 1);
+      EXPECT_GT(capability->formats[1].frame_rate, 1);
+    }
+  }
 
  protected:
   void DevicesEnumerated(
@@ -335,6 +360,25 @@ TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesUniqueOrigin) {
   // On Windows, the underlying MediaStreamManager uses a separate thread for
   // video capture which must be flushed to guarantee that the callback bound to
   // EnumerateDevices above is invoked before the end of this test's body.
+  media_stream_manager_->FlushVideoCaptureThreadForTesting();
+  base::RunLoop().RunUntilIdle();
+#endif
+}
+
+TEST_F(MediaDevicesDispatcherHostTest, GetVideoInputCapabilities) {
+  EXPECT_CALL(*this, MockVideoInputCapabilitiesCallback());
+  host_->GetVideoInputCapabilities(
+      origin_,
+      base::Bind(
+          &MediaDevicesDispatcherHostTest::VideoInputCapabilitiesCallback,
+          base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+#if defined(OS_WIN)
+  // On Windows, the underlying MediaStreamManager uses a separate thread for
+  // video capture which must be flushed to guarantee that the callback bound to
+  // GetVIdeoInputCapabilities above is invoked before the end of this test's
+  // body.
   media_stream_manager_->FlushVideoCaptureThreadForTesting();
   base::RunLoop().RunUntilIdle();
 #endif

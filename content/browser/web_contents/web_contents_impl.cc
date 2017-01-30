@@ -2358,6 +2358,12 @@ bool WebContentsImpl::CheckMediaAccessPermission(const GURL& security_origin,
          delegate_->CheckMediaAccessPermission(this, security_origin, type);
 }
 
+std::string WebContentsImpl::GetDefaultMediaDeviceID(MediaStreamType type) {
+  if (!delegate_)
+    return std::string();
+  return delegate_->GetDefaultMediaDeviceID(this, type);
+}
+
 SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace(
     SiteInstance* instance) {
   return controller_.GetSessionStorageNamespace(instance);

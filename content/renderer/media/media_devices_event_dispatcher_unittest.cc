@@ -47,6 +47,9 @@ class MockMediaDevicesDispatcherHost
                     const url::Origin& security_origin));
   MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
                void(MediaDeviceType type, uint32_t subscription_id));
+  MOCK_METHOD2(GetVideoInputCapabilities,
+               void(const url::Origin& security_origin,
+                    const GetVideoInputCapabilitiesCallback& client_callback));
 
   ::mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     return binding_.CreateInterfacePtrAndBind();
