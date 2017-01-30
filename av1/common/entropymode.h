@@ -32,10 +32,32 @@ extern "C" {
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_PALETTE
-#define PALETTE_COLOR_CONTEXTS 5
+// Number of possible contexts for a color index.
+// As can be seen from av1_get_palette_color_index_context(), the possible
+// contexts are (2,0,0), (2,2,1), (3,2,0), (4,1,0), (5,0,0). These are mapped to
+// a value from 0 to 4 using 'palette_color_index_context_lookup' table.
+#define PALETTE_COLOR_INDEX_CONTEXTS 5
+
+// Maximum number of colors in a palette.
 #define PALETTE_MAX_SIZE 8
+
+// Palette mode is available for block sizes >= 8x8.
 #define PALETTE_BLOCK_SIZES (BLOCK_LARGEST - BLOCK_8X8 + 1)
+
+// Palette Y mode context for a block is determined by number of neighboring
+// blocks (top and/or left) using a palette for Y plane. So, possible Y mode'
+// context values are:
+// 0 if neither left nor top block uses palette for Y plane,
+// 1 if exactly one of left or top block uses palette for Y plane, and
+// 2 if both left and top blocks use palette for Y plane.
 #define PALETTE_Y_MODE_CONTEXTS 3
+
+// Palette UV mode context for a block is determined by whether this block uses
+// palette for the Y plane. So, possible values are:
+// 0 if this block doesn't use palette for Y plane.
+// 1 if this block uses palette for Y plane (i.e. Y palette size > 0).
+#define PALETTE_UV_MODE_CONTEXTS 2
+
 #define PALETTE_MAX_BLOCK_SIZE (64 * 64)
 #endif  // CONFIG_PALETTE
 
@@ -344,17 +366,20 @@ extern aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
 #if CONFIG_PALETTE
 extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
                                                      [PALETTE_Y_MODE_CONTEXTS];
-extern const aom_prob av1_default_palette_uv_mode_prob[2];
+extern const aom_prob
+    av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS];
 extern const aom_prob av1_default_palette_y_size_prob[PALETTE_BLOCK_SIZES]
                                                      [PALETTE_SIZES - 1];
 extern const aom_prob av1_default_palette_uv_size_prob[PALETTE_BLOCK_SIZES]
                                                       [PALETTE_SIZES - 1];
-extern const aom_prob av1_default_palette_y_color_prob[PALETTE_MAX_SIZE - 1]
-                                                      [PALETTE_COLOR_CONTEXTS]
-                                                      [PALETTE_COLORS - 1];
-extern const aom_prob av1_default_palette_uv_color_prob[PALETTE_MAX_SIZE - 1]
-                                                       [PALETTE_COLOR_CONTEXTS]
-                                                       [PALETTE_COLORS - 1];
+extern const aom_prob
+    av1_default_palette_y_color_index_prob[PALETTE_MAX_SIZE - 1]
+                                          [PALETTE_COLOR_INDEX_CONTEXTS]
+                                          [PALETTE_COLORS - 1];
+extern const aom_prob
+    av1_default_palette_uv_color_index_prob[PALETTE_MAX_SIZE - 1]
+                                           [PALETTE_COLOR_INDEX_CONTEXTS]
+                                           [PALETTE_COLORS - 1];
 #endif  // CONFIG_PALETTE
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
@@ -381,8 +406,9 @@ extern const aom_tree_index
     av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
 #if CONFIG_PALETTE
 extern const aom_tree_index av1_palette_size_tree[TREE_SIZE(PALETTE_SIZES)];
-extern const aom_tree_index av1_palette_color_tree[PALETTE_MAX_SIZE - 1]
-                                                  [TREE_SIZE(PALETTE_COLORS)];
+extern const aom_tree_index
+    av1_palette_color_index_tree[PALETTE_MAX_SIZE - 1]
+                                [TREE_SIZE(PALETTE_COLORS)];
 #endif  // CONFIG_PALETTE
 extern const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)];
 #if CONFIG_EXT_INTRA
@@ -439,9 +465,9 @@ static INLINE int av1_ceil_log2(int n) {
 // Returns the context for palette color index at row 'r' and column 'c',
 // along with the 'color_order' of neighbors and the 'color_idx'.
 // The 'color_map' is a 2D array with the given 'stride'.
-int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
-                                  int c, int palette_size, uint8_t *color_order,
-                                  int *color_idx);
+int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
+                                        int r, int c, int palette_size,
+                                        uint8_t *color_order, int *color_idx);
 #endif  // CONFIG_PALETTE
 
 #ifdef __cplusplus

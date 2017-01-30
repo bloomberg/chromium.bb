@@ -77,8 +77,8 @@ static const struct av1_token
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_PALETTE
 static struct av1_token palette_size_encodings[PALETTE_MAX_SIZE - 1];
-static struct av1_token palette_color_encodings[PALETTE_MAX_SIZE - 1]
-                                               [PALETTE_MAX_SIZE];
+static struct av1_token palette_color_index_encodings[PALETTE_MAX_SIZE - 1]
+                                                     [PALETTE_MAX_SIZE];
 #endif  // CONFIG_PALETTE
 static const struct av1_token tx_size_encodings[MAX_TX_DEPTH][TX_SIZES] = {
   { { 0, 1 }, { 1, 1 } },                      // Max tx_size is 8X8
@@ -160,7 +160,8 @@ void av1_encode_token_init(void) {
 #if CONFIG_PALETTE
   av1_tokens_from_tree(palette_size_encodings, av1_palette_size_tree);
   for (s = 0; s < PALETTE_MAX_SIZE - 1; ++s) {
-    av1_tokens_from_tree(palette_color_encodings[s], av1_palette_color_tree[s]);
+    av1_tokens_from_tree(palette_color_index_encodings[s],
+                         av1_palette_color_index_tree[s]);
   }
 #endif  // CONFIG_PALETTE
 
@@ -726,8 +727,8 @@ static void pack_palette_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   const TOKENEXTRA *p = *tp;
 
   for (i = 0; i < num; ++i) {
-    av1_write_token(w, av1_palette_color_tree[n - 2], p->context_tree,
-                    &palette_color_encodings[n - 2][p->token]);
+    av1_write_token(w, av1_palette_color_index_tree[n - 2], p->context_tree,
+                    &palette_color_index_encodings[n - 2][p->token]);
     ++p;
   }
 
@@ -1137,17 +1138,19 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const MODE_INFO *const left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  int palette_ctx = 0;
-  int n, i;
+  int i;
 
   if (mbmi->mode == DC_PRED) {
-    n = pmi->palette_size[0];
+    const int n = pmi->palette_size[0];
+    int palette_y_mode_ctx = 0;
     if (above_mi)
-      palette_ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+      palette_y_mode_ctx +=
+          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     if (left_mi)
-      palette_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    aom_write(w, n > 0,
-              av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx]);
+      palette_y_mode_ctx +=
+          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    aom_write(w, n > 0, av1_default_palette_y_mode_prob[bsize - BLOCK_8X8]
+                                                       [palette_y_mode_ctx]);
     if (n > 0) {
       av1_write_token(w, av1_palette_size_tree,
                       av1_default_palette_y_size_prob[bsize - BLOCK_8X8],
@@ -1159,9 +1162,9 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   if (mbmi->uv_mode == DC_PRED) {
-    n = pmi->palette_size[1];
-    aom_write(w, n > 0,
-              av1_default_palette_uv_mode_prob[pmi->palette_size[0] > 0]);
+    const int n = pmi->palette_size[1];
+    const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
+    aom_write(w, n > 0, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx]);
     if (n > 0) {
       av1_write_token(w, av1_palette_size_tree,
                       av1_default_palette_uv_size_prob[bsize - BLOCK_8X8],

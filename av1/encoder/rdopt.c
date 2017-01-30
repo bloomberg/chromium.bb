@@ -2428,7 +2428,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       for (i = 0; i < rows; ++i) {
         for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
           int color_idx;
-          const int color_ctx = av1_get_palette_color_context(
+          const int color_ctx = av1_get_palette_color_index_context(
               color_map, block_width, i, j, k, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < k);
           palette_mode_cost +=
@@ -3511,7 +3511,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       cpi->common.allow_screen_content_tools
           ? x->palette_buffer->best_palette_color_map
           : NULL;
-  int palette_ctx = 0;
+  int palette_y_mode_ctx = 0;
 #endif  // CONFIG_PALETTE
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
@@ -3544,9 +3544,10 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_PALETTE
   pmi->palette_size[0] = 0;
   if (above_mi)
-    palette_ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    palette_y_mode_ctx +=
+        (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
   if (left_mi)
-    palette_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    palette_y_mode_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
 #endif  // CONFIG_PALETTE
 
   if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
@@ -3608,8 +3609,10 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
 #if CONFIG_PALETTE
     if (cpi->common.allow_screen_content_tools && mbmi->mode == DC_PRED)
-      this_rate += av1_cost_bit(
-          av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx], 0);
+      this_rate +=
+          av1_cost_bit(av1_default_palette_y_mode_prob[bsize - BLOCK_8X8]
+                                                      [palette_y_mode_ctx],
+                       0);
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
     if (mbmi->mode == DC_PRED)
@@ -3658,10 +3661,10 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 #if CONFIG_PALETTE
   if (cpi->common.allow_screen_content_tools) {
-    rd_pick_palette_intra_sby(cpi, x, bsize, palette_ctx, bmode_costs[DC_PRED],
-                              &best_mbmi, best_palette_color_map, &best_rd,
-                              &best_model_rd, rate, rate_tokenonly, distortion,
-                              skippable);
+    rd_pick_palette_intra_sby(cpi, x, bsize, palette_y_mode_ctx,
+                              bmode_costs[DC_PRED], &best_mbmi,
+                              best_palette_color_map, &best_rd, &best_model_rd,
+                              rate, rate_tokenonly, distortion, skippable);
   }
 #endif  // CONFIG_PALETTE
 
@@ -4510,7 +4513,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
       for (i = 0; i < rows; ++i) {
         for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
           int color_idx;
-          const int color_ctx = av1_get_palette_color_context(
+          const int color_ctx = av1_get_palette_color_index_context(
               color_map, plane_block_width, i, j, n, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < n);
           this_rate += cpi->palette_uv_color_cost[n - 2][color_ctx][color_idx];

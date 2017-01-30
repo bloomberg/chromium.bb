@@ -574,17 +574,20 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  int i, n, palette_ctx = 0;
+  int i, n;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 
   if (mbmi->mode == DC_PRED) {
+    int palette_y_mode_ctx = 0;
     if (above_mi)
-      palette_ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+      palette_y_mode_ctx +=
+          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     if (left_mi)
-      palette_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    if (aom_read(
-            r, av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx],
-            ACCT_STR)) {
+      palette_y_mode_ctx +=
+          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    if (aom_read(r, av1_default_palette_y_mode_prob[bsize - BLOCK_8X8]
+                                                   [palette_y_mode_ctx],
+                 ACCT_STR)) {
       pmi->palette_size[0] =
           aom_read_tree(r, av1_palette_size_tree,
                         av1_default_palette_y_size_prob[bsize - BLOCK_8X8],
@@ -600,7 +603,8 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 
   if (mbmi->uv_mode == DC_PRED) {
-    if (aom_read(r, av1_default_palette_uv_mode_prob[pmi->palette_size[0] > 0],
+    const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
+    if (aom_read(r, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx],
                  ACCT_STR)) {
       pmi->palette_size[1] =
           aom_read_tree(r, av1_palette_size_tree,

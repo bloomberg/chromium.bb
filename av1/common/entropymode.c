@@ -776,6 +776,9 @@ static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
 };
 
 #if CONFIG_PALETTE
+
+// Tree to code palette size (number of colors in a palette) and the
+// corresponding probabilities for Y and UV planes.
 const aom_tree_index av1_palette_size_tree[TREE_SIZE(PALETTE_SIZES)] = {
   -TWO_COLORS,  2, -THREE_COLORS, 4,  -FOUR_COLORS,  6,
   -FIVE_COLORS, 8, -SIX_COLORS,   10, -SEVEN_COLORS, -EIGHT_COLORS,
@@ -808,6 +811,9 @@ const aom_prob
 #endif  // CONFIG_EXT_PARTITION
     };
 
+// When palette mode is enabled, following probability tables indicate the
+// probabilities to code the "is_palette" bit (i.e. the bit that indicates
+// if this block uses palette mode or DC_PRED mode).
 const aom_prob
     av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
                                    [PALETTE_Y_MODE_CONTEXTS] = {
@@ -822,10 +828,15 @@ const aom_prob
 #endif  // CONFIG_EXT_PARTITION
                                    };
 
-const aom_prob av1_default_palette_uv_mode_prob[2] = { 253, 229 };
+const aom_prob av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS] = {
+  253, 229
+};
 
+// Trees to code palette color indices (for various palette sizes), and the
+// corresponding probability tables for Y and UV planes.
 const aom_tree_index
-    av1_palette_color_tree[PALETTE_MAX_SIZE - 1][TREE_SIZE(PALETTE_COLORS)] = {
+    av1_palette_color_index_tree[PALETTE_MAX_SIZE -
+                                 1][TREE_SIZE(PALETTE_COLORS)] = {
       { // 2 colors
         -PALETTE_COLOR_ONE, -PALETTE_COLOR_TWO },
       { // 3 colors
@@ -852,8 +863,8 @@ const aom_tree_index
 // Note: Has to be non-zero to avoid any asserts triggering.
 #define UNUSED_PROB 128
 
-const aom_prob av1_default_palette_y_color_prob
-    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] = {
+const aom_prob av1_default_palette_y_color_index_prob
+    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
       {
           // 2 colors
           { 231, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
@@ -922,8 +933,8 @@ const aom_prob av1_default_palette_y_color_prob
       },
     };
 
-const aom_prob av1_default_palette_uv_color_prob
-    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] = {
+const aom_prob av1_default_palette_uv_color_index_prob
+    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
       {
           // 2 colors
           { 233, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
@@ -996,9 +1007,9 @@ const aom_prob av1_default_palette_uv_color_prob
 
 #define MAX_COLOR_CONTEXT_HASH 8
 // Negative values are invalid
-static const int palette_color_context_lookup[MAX_COLOR_CONTEXT_HASH + 1] = {
-  -1, -1, 0, -1, -1, 4, 3, 2, 1
-};
+static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
+                                                    1] = { -1, -1, 0, -1, -1,
+                                                           4,  3,  2, 1 };
 
 #endif  // CONFIG_PALETTE
 
@@ -1064,10 +1075,10 @@ static const aom_prob
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_PALETTE
-#define NUM_PALETTE_NEIGHBORS 3
-int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
-                                  int c, int palette_size, uint8_t *color_order,
-                                  int *color_idx) {
+#define NUM_PALETTE_NEIGHBORS 3  // left, top-left and top.
+int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
+                                        int r, int c, int palette_size,
+                                        uint8_t *color_order, int *color_idx) {
   int i;
   // The +10 below should not be needed. But we get a warning "array subscript
   // is above array bounds [-Werror=array-bounds]" without it, possibly due to
@@ -1075,8 +1086,8 @@ int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
   int scores[PALETTE_MAX_SIZE + 10];
   const int weights[NUM_PALETTE_NEIGHBORS] = { 2, 1, 2 };
   const int hash_multipliers[NUM_PALETTE_NEIGHBORS] = { 1, 2, 2 };
-  int color_ctx_hash;
-  int color_ctx;
+  int color_index_ctx_hash;
+  int color_index_ctx;
   int color_neighbors[NUM_PALETTE_NEIGHBORS];
   int inverse_color_order[PALETTE_MAX_SIZE];
   assert(palette_size <= PALETTE_MAX_SIZE);
@@ -1128,22 +1139,22 @@ int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
   }
 
   // Get hash value of context.
-  color_ctx_hash = 0;
+  color_index_ctx_hash = 0;
   for (i = 0; i < NUM_PALETTE_NEIGHBORS; ++i) {
-    color_ctx_hash += scores[i] * hash_multipliers[i];
+    color_index_ctx_hash += scores[i] * hash_multipliers[i];
   }
-  assert(color_ctx_hash > 0);
-  assert(color_ctx_hash <= MAX_COLOR_CONTEXT_HASH);
+  assert(color_index_ctx_hash > 0);
+  assert(color_index_ctx_hash <= MAX_COLOR_CONTEXT_HASH);
 
   // Lookup context from hash.
-  color_ctx = palette_color_context_lookup[color_ctx_hash];
-  assert(color_ctx >= 0);
-  assert(color_ctx < PALETTE_COLOR_CONTEXTS);
+  color_index_ctx = palette_color_index_context_lookup[color_index_ctx_hash];
+  assert(color_index_ctx >= 0);
+  assert(color_index_ctx < PALETTE_COLOR_INDEX_CONTEXTS);
 
   if (color_idx != NULL) {
     *color_idx = inverse_color_order[color_map[r * stride + c]];
   }
-  return color_ctx;
+  return color_index_ctx;
 }
 #undef NUM_PALETTE_NEIGHBORS
 #undef MAX_COLOR_CONTEXT_HASH
