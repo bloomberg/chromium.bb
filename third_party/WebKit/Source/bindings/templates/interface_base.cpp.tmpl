@@ -528,6 +528,17 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endfilter %}
   {% endif %}
 
+  {% if interface_name == 'Location' %}
+  // Symbol.toPrimitive
+  // Prevent author scripts to inject Symbol.toPrimitive property into location
+  // objects, also prevent the look-up of Symbol.toPrimitive through the
+  // prototype chain.
+  instanceTemplate->Set(v8::Symbol::GetToPrimitive(isolate),
+                        v8::Undefined(isolate),
+                        static_cast<v8::PropertyAttribute>(
+                            v8::ReadOnly | v8::DontEnum | v8::DontDelete));
+  {% endif %}
+
   {% if legacy_caller and not is_partial %}
   instanceTemplate->SetCallAsFunctionHandler({{cpp_class_or_partial}}V8Internal::{{legacy_caller.name}}MethodCallback);
   {% elif has_custom_legacy_call_as_function and not is_partial %}
