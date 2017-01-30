@@ -150,6 +150,7 @@ public class PostMessageHandler extends PostMessageServiceConnection {
     }
 
     private void disconnectChannel() {
+        if (mChannel == null) return;
         mChannel[0].close();
         mChannel = null;
         mSenderDelegate = null;
