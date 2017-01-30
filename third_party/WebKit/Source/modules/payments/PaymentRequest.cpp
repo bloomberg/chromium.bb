@@ -14,12 +14,15 @@
 #include "bindings/modules/v8/V8PaymentDetails.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/EventQueue.h"
 #include "core/frame/FrameOwner.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleTypes.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/payments/AndroidPayMethodData.h"
 #include "modules/payments/AndroidPayTokenization.h"
@@ -313,6 +316,7 @@ void setAndroidPayMethodData(const ScriptValue& input,
 
 // Parses basic-card data to avoid parsing JSON in the browser.
 void setBasicCardMethodData(const ScriptValue& input,
+                            Document& document,
                             PaymentMethodDataPtr& output,
                             ExceptionState& exceptionState) {
   BasicCardRequest basicCard;
@@ -364,11 +368,18 @@ void setBasicCardMethodData(const ScriptValue& input,
         }
       }
     }
+
+    if (output->supported_types.size() != arraysize(basicCardTypes)) {
+      document.addConsoleMessage(ConsoleMessage::create(
+          JSMessageSource, WarningMessageLevel,
+          "Cannot yet distinguish credit, debit, and prepaid cards."));
+    }
   }
 }
 
 void stringifyAndParseMethodSpecificData(const Vector<String>& supportedMethods,
                                          const ScriptValue& input,
+                                         Document& document,
                                          PaymentMethodDataPtr& output,
                                          ExceptionState& exceptionState) {
   DCHECK(!input.isEmpty());
@@ -398,7 +409,7 @@ void stringifyAndParseMethodSpecificData(const Vector<String>& supportedMethods,
   }
   if (RuntimeEnabledFeatures::paymentRequestBasicCardEnabled() &&
       supportedMethods.contains("basic-card")) {
-    setBasicCardMethodData(input, output, exceptionState);
+    setBasicCardMethodData(input, document, output, exceptionState);
     if (exceptionState.hadException())
       exceptionState.clearException();
   }
@@ -406,6 +417,7 @@ void stringifyAndParseMethodSpecificData(const Vector<String>& supportedMethods,
 
 void validateAndConvertPaymentDetailsModifiers(
     const HeapVector<PaymentDetailsModifier>& input,
+    Document& document,
     Vector<PaymentDetailsModifierPtr>& output,
     ExceptionState& exceptionState) {
   if (input.isEmpty()) {
@@ -443,7 +455,7 @@ void validateAndConvertPaymentDetailsModifiers(
 
     if (modifier.hasData() && !modifier.data().isEmpty()) {
       stringifyAndParseMethodSpecificData(
-          modifier.supportedMethods(), modifier.data(),
+          modifier.supportedMethods(), modifier.data(), document,
           output.back()->method_data, exceptionState);
     } else {
       output.back()->method_data->stringified_data = "";
@@ -463,6 +475,7 @@ String getSelectedShippingOption(
 
 void validateAndConvertPaymentDetails(const PaymentDetails& input,
                                       bool requestShipping,
+                                      Document& document,
                                       PaymentDetailsPtr& output,
                                       String& shippingOptionOutput,
                                       ExceptionState& exceptionState) {
@@ -493,7 +506,7 @@ void validateAndConvertPaymentDetails(const PaymentDetails& input,
 
   if (input.hasModifiers()) {
     validateAndConvertPaymentDetailsModifiers(
-        input.modifiers(), output->modifiers, exceptionState);
+        input.modifiers(), document, output->modifiers, exceptionState);
     if (exceptionState.hadException())
       return;
   }
@@ -513,6 +526,7 @@ void validateAndConvertPaymentDetails(const PaymentDetails& input,
 
 void validateAndConvertPaymentMethodData(
     const HeapVector<PaymentMethodData>& input,
+    Document& document,
     Vector<payments::mojom::blink::PaymentMethodDataPtr>& output,
     ExceptionState& exceptionState) {
   if (input.isEmpty()) {
@@ -533,7 +547,7 @@ void validateAndConvertPaymentMethodData(
 
     if (paymentMethodData.hasData() && !paymentMethodData.data().isEmpty()) {
       stringifyAndParseMethodSpecificData(paymentMethodData.supportedMethods(),
-                                          paymentMethodData.data(),
+                                          paymentMethodData.data(), document,
                                           output.back(), exceptionState);
     } else {
       output.back()->stringified_data = "";
@@ -746,9 +760,10 @@ void PaymentRequest::onUpdatePaymentDetails(
 
   PaymentDetailsPtr validatedDetails =
       payments::mojom::blink::PaymentDetails::New();
-  validateAndConvertPaymentDetails(details, m_options.requestShipping(),
-                                   validatedDetails, m_shippingOption,
-                                   exceptionState);
+  validateAndConvertPaymentDetails(
+      details, m_options.requestShipping(),
+      *detailsScriptValue.getScriptState()->domWindow()->document(),
+      validatedDetails, m_shippingOption, exceptionState);
   if (exceptionState.hadException()) {
     m_showResolver->reject(
         DOMException::create(SyntaxError, exceptionState.message()));
@@ -796,7 +811,7 @@ PaymentRequest::PaymentRequest(Document& document,
           this,
           &PaymentRequest::onCompleteTimeout) {
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validatedMethodData;
-  validateAndConvertPaymentMethodData(methodData, validatedMethodData,
+  validateAndConvertPaymentMethodData(methodData, document, validatedMethodData,
                                       exceptionState);
   if (exceptionState.hadException())
     return;
@@ -816,7 +831,7 @@ PaymentRequest::PaymentRequest(Document& document,
   PaymentDetailsPtr validatedDetails =
       payments::mojom::blink::PaymentDetails::New();
   validateAndConvertPaymentDetails(details, m_options.requestShipping(),
-                                   validatedDetails, m_shippingOption,
+                                   document, validatedDetails, m_shippingOption,
                                    exceptionState);
   if (exceptionState.hadException())
     return;

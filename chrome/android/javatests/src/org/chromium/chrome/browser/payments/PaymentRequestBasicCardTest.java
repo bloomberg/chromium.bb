@@ -41,13 +41,22 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
 
     @MediumTest
     @Feature({"Payments"})
-    public void testCannotMakeActivePaymentWithBasicDebitCard() throws InterruptedException,
+    public void testCanPayWithBasicCard() throws InterruptedException,
+            ExecutionException, TimeoutException {
+        openPageAndClickNodeAndWait("checkBasicCard", mCanMakePaymentQueryResponded);
+        expectResultContains(new String[]{"true"});
+
+        clickNodeAndWait("buyBasicCard", mReadyForInput);
+    }
+
+    @MediumTest
+    @Feature({"Payments"})
+    public void testIgnoreCardType() throws InterruptedException,
             ExecutionException, TimeoutException {
         openPageAndClickNodeAndWait("checkBasicDebit", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"false"});
+        expectResultContains(new String[]{"true"});
 
-        clickNodeAndWait("buyBasicDebit", mShowFailed);
-        expectResultContains(new String[] {"The payment method is not supported"});
+        clickNodeAndWait("buyBasicDebit", mReadyForInput);
     }
 
     @MediumTest
@@ -80,8 +89,7 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
         clickNodeAndWait("checkBasicMasterCard", mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
 
-        // Cached result for "basic-card" is "true", even though Chrome cannot distinguish debit
-        // cards from credit cards.
+        // Cached result for "basic-card" is "true".
         clickNodeAndWait("checkBasicDebit", mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
 

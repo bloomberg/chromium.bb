@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
-import org.chromium.payments.mojom.BasicCardType;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
@@ -91,36 +90,16 @@ public class AutofillPaymentApp implements PaymentApp {
 
     /** @return A set of card networks (e.g., "visa", "amex") accepted by "basic-card" method. */
     public static Set<String> convertBasicCardToNetworks(PaymentMethodData data) {
-        // No basic card support.
+        // Merchant website does not support any issuer networks.
         if (data == null) return null;
 
-        boolean supportedTypesEmpty =
-                data.supportedTypes == null || data.supportedTypes.length == 0;
-        boolean supportedNetworksEmpty =
-                data.supportedNetworks == null || data.supportedNetworks.length == 0;
-
-        // All basic cards are supported.
+        // Merchant website supports all issuer networks.
         Map<Integer, String> networks = getNetworks();
-        if (supportedTypesEmpty && supportedNetworksEmpty) return new HashSet<>(networks.values());
-
-        // https://w3c.github.io/webpayments-methods-card/#basiccardrequest defines 3 types of
-        // cards: "credit", "debit", and "prepaid". Specifying a non-empty subset of these types
-        // requires filtering by type, which Chrome cannot yet do.
-        // TODO(rouslan): Distinguish card types. http://crbug.com/602665
-        if (!supportedTypesEmpty) {
-            if (data.supportedTypes.length != 3) return null;
-            Set<Integer> supportedTypes = new HashSet<>();
-            for (int i = 0; i < data.supportedTypes.length; i++) {
-                supportedTypes.add(data.supportedTypes[i]);
-            }
-            if (!supportedTypes.contains(BasicCardType.CREDIT)) return null;
-            if (!supportedTypes.contains(BasicCardType.DEBIT)) return null;
-            if (!supportedTypes.contains(BasicCardType.PREPAID)) return null;
+        if (data.supportedNetworks == null || data.supportedNetworks.length == 0) {
+            return new HashSet<>(networks.values());
         }
 
-        // All basic cards are supported.
-        if (supportedNetworksEmpty) return new HashSet<>(networks.values());
-
+        // Merchant website supports some issuer networks.
         Set<String> result = new HashSet<>();
         for (int i = 0; i < data.supportedNetworks.length; i++) {
             String network = networks.get(data.supportedNetworks[i]);
