@@ -332,7 +332,7 @@ WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
   base::FilePath path = base::FilePath::FromUTF8Unsafe(utf8_path);
   if (!path.IsAbsolute()) {
     GURL base_url =
-        net::FilePathToFileURL(test_config_.current_working_directory.Append(
+        net::FilePathToFileURL(test_config_->current_working_directory.Append(
             FILE_PATH_LITERAL("foo")));
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
@@ -563,7 +563,7 @@ std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
 #if defined(OS_WIN)
   if (base::StartsWith(resource, "/tmp/", base::CompareCase::SENSITIVE)) {
     // We want a temp file.
-    GURL base_url = net::FilePathToFileURL(test_config_.temp_path);
+    GURL base_url = net::FilePathToFileURL(test_config_->temp_path);
     return base_url.Resolve(resource.substr(sizeof("/tmp/") - 1)).spec();
   }
 #endif
@@ -643,7 +643,7 @@ void BlinkTestRunner::LoadURLForFrame(const WebURL& url,
 }
 
 bool BlinkTestRunner::AllowExternalPages() {
-  return test_config_.allow_external_pages;
+  return test_config_->allow_external_pages;
 }
 
 std::string BlinkTestRunner::DumpHistoryForWindow(blink::WebView* web_view) {
@@ -896,7 +896,7 @@ void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
 void BlinkTestRunner::CaptureDumpContinued() {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  if (test_config_.enable_pixel_dumping &&
+  if (test_config_->enable_pixel_dumping &&
       interfaces->TestRunner()->ShouldGeneratePixelResults() &&
       !interfaces->TestRunner()->ShouldDumpAsAudio()) {
     CHECK(render_view()->GetWebView()->isAcceleratedCompositingActive());
@@ -923,7 +923,7 @@ void BlinkTestRunner::OnPixelsDumpCompleted(const SkBitmap& snapshot) {
   base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
   std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
 
-  if (actual_pixel_hash == test_config_.expected_pixel_hash) {
+  if (actual_pixel_hash == test_config_->expected_pixel_hash) {
     SkBitmap empty_image;
     Send(new ShellViewHostMsg_ImageDump(
         routing_id(), actual_pixel_hash, empty_image));
@@ -961,27 +961,28 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
 }
 
 void BlinkTestRunner::OnReplicateTestConfiguration(
-    const ShellTestConfiguration& params) {
+    mojom::ShellTestConfigurationPtr params) {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
 
-  test_config_ = params;
+  test_config_ = params.Clone();
 
   is_main_window_ = true;
   interfaces->SetMainView(render_view()->GetWebView());
 
   interfaces->SetTestIsRunning(true);
-  interfaces->ConfigureForTestWithURL(params.test_url,
-                                      params.enable_pixel_dumping);
+  interfaces->ConfigureForTestWithURL(params->test_url,
+                                      params->enable_pixel_dumping);
 }
 
 void BlinkTestRunner::OnSetTestConfiguration(
-    const ShellTestConfiguration& params) {
-  OnReplicateTestConfiguration(params);
+    mojom::ShellTestConfigurationPtr params) {
+  mojom::ShellTestConfigurationPtr local_params = params.Clone();
+  OnReplicateTestConfiguration(std::move(params));
 
-  ForceResizeRenderView(
-      render_view(),
-      WebSize(params.initial_size.width(), params.initial_size.height()));
+  ForceResizeRenderView(render_view(),
+                        WebSize(local_params->initial_size.width(),
+                                local_params->initial_size.height()));
   LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->TestRunner()

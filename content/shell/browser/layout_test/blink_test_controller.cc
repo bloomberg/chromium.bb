@@ -38,6 +38,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -280,6 +281,7 @@ bool BlinkTestController::PrepareForLayoutTest(
   all_observed_render_process_hosts_.clear();
   main_window_render_process_hosts_.clear();
   accumulated_layout_test_runtime_flags_changes_.Clear();
+  layout_test_control_map_.clear();
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   is_compositing_test_ =
@@ -605,24 +607,26 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
 
     // Make sure the new renderer process has a test configuration shared with
     // other renderers.
-    ShellTestConfiguration params;
-    params.current_working_directory = current_working_directory_;
-    params.temp_path = temp_path_;
-    params.test_url = test_url_;
-    params.enable_pixel_dumping = enable_pixel_dumping_;
-    params.allow_external_pages =
+    mojom::ShellTestConfigurationPtr params =
+        mojom::ShellTestConfiguration::New();
+    params->enable_pixel_dumping = true;
+    params->allow_external_pages = false;
+    params->current_working_directory = current_working_directory_;
+    params->temp_path = temp_path_;
+    params->test_url = test_url_;
+    params->enable_pixel_dumping = enable_pixel_dumping_;
+    params->allow_external_pages =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAllowExternalPages);
-    params.expected_pixel_hash = expected_pixel_hash_;
-    params.initial_size = initial_size_;
+    params->expected_pixel_hash = expected_pixel_hash_;
+    params->initial_size = initial_size_;
 
     if (did_send_initial_test_configuration_) {
-      frame->Send(new ShellViewMsg_ReplicateTestConfiguration(
-          frame->GetRoutingID(), params));
+      GetLayoutTestControlPtr(frame)->ReplicateTestConfiguration(
+          std::move(params));
     } else {
       did_send_initial_test_configuration_ = true;
-      frame->Send(
-          new ShellViewMsg_SetTestConfiguration(frame->GetRoutingID(), params));
+      GetLayoutTestControlPtr(frame)->SetTestConfiguration(std::move(params));
     }
   }
 
@@ -632,8 +636,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     all_observed_render_process_hosts_.insert(process);
 
     if (!main_window) {
-      frame->Send(
-          new ShellViewMsg_SetupSecondaryRenderer(frame->GetRoutingID()));
+      GetLayoutTestControlPtr(frame)->SetupSecondaryRenderer();
     }
 
     process->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
@@ -704,8 +707,16 @@ void BlinkTestController::OnTextDump(const std::string& dump) {
 }
 
 void BlinkTestController::OnInitiateLayoutDump() {
-  pending_layout_dumps_ = main_window_->web_contents()->SendToAllFrames(
-      new ShellViewMsg_LayoutDumpRequest(MSG_ROUTING_NONE));
+  int number_of_messages = 0;
+  for (RenderFrameHost* rfh : main_window_->web_contents()->GetAllFrames()) {
+    if (!rfh->IsRenderFrameLive())
+      continue;
+
+    ++number_of_messages;
+    GetLayoutTestControlPtr(rfh)->LayoutDumpRequest();
+  }
+
+  pending_layout_dumps_ = number_of_messages;
 }
 
 void BlinkTestController::OnLayoutTestRuntimeFlagsChanged(
@@ -951,6 +962,16 @@ void BlinkTestController::OnSendBluetoothManualChooserEvent(
     return;
   }
   bluetooth_chooser_factory_->SendEvent(event, argument);
+}
+
+mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
+    RenderFrameHost* frame) {
+  if (layout_test_control_map_.find(frame) == layout_test_control_map_.end()) {
+    frame->GetRemoteAssociatedInterfaces()->GetInterface(
+        &layout_test_control_map_[frame]);
+  }
+  DCHECK(layout_test_control_map_[frame].get());
+  return layout_test_control_map_[frame].get();
 }
 
 }  // namespace content
