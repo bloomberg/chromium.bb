@@ -12,6 +12,10 @@
 
 void SkDebugf_FileLine(const char* file, int line, bool fatal,
                        const char* format, ...) {
+  int severity = fatal ? logging::LOG_FATAL : logging::LOG_INFO;
+  if (severity < logging::GetMinLogLevel())
+    return;
+
   va_list ap;
   va_start(ap, format);
 
@@ -19,7 +23,5 @@ void SkDebugf_FileLine(const char* file, int line, bool fatal,
   base::StringAppendV(&msg, format, ap);
   va_end(ap);
 
-  logging::LogMessage(file, line,
-                      fatal ? logging::LOG_FATAL : logging::LOG_INFO).stream()
-      << msg;
+  logging::LogMessage(file, line, severity).stream() << msg;
 }
