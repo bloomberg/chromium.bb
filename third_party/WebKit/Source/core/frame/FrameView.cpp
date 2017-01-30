@@ -1084,7 +1084,8 @@ void FrameView::performLayout(bool inSubtreeLayout) {
     }
     m_layoutSubtreeRootList.clear();
   } else {
-    if (hasOrthogonalWritingModeRoots())
+    if (hasOrthogonalWritingModeRoots() &&
+        !RuntimeEnabledFeatures::layoutNGEnabled())
       layoutOrthogonalWritingModeRoots();
     layoutFromRootObject(*layoutView());
   }
