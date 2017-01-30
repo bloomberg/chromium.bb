@@ -316,7 +316,10 @@
                         "enable_quick_answers": "true",
                         "enable_translation": "true",
                         "recent_scroll_duration_ms": "300"
-                    }
+                    },
+                    "enable_features": [
+                        "ContextualSearchSingleActions"
+                    ]
                 }
             ]
         }
