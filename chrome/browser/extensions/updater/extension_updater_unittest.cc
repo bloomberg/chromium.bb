@@ -1505,7 +1505,6 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionService* extension_service =
         ExtensionSystem::Get(&profile)->extension_service();
     extension_service->set_extensions_enabled(true);
-    extension_service->set_show_extensions_prompts(false);
 
     scoped_refptr<CrxInstaller> fake_crx1(
         CrxInstaller::CreateSilent(extension_service));

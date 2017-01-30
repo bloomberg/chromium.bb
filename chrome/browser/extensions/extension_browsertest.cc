@@ -407,7 +407,6 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  service->set_show_extensions_prompts(false);
   size_t num_before = registry->enabled_extensions().size();
 
   {

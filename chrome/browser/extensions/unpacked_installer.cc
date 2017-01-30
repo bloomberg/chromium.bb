@@ -191,7 +191,7 @@ void UnpackedInstaller::ShowInstallPrompt() {
 
   const ExtensionSet& disabled_extensions =
       ExtensionRegistry::Get(service_weak_->profile())->disabled_extensions();
-  if (service_weak_->show_extensions_prompts() && prompt_for_plugins_ &&
+  if (prompt_for_plugins_ &&
       PluginInfo::HasPlugins(extension()) &&
       !disabled_extensions.Contains(extension()->id())) {
     SimpleExtensionLoadPrompt* prompt = new SimpleExtensionLoadPrompt(

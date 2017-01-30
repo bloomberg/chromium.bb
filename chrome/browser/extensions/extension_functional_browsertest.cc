@@ -24,7 +24,6 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
  public:
   void InstallExtensionSilently(ExtensionService* service,
                                 const char* filename) {
-    service->set_show_extensions_prompts(false);
     ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
     size_t num_before = registry->enabled_extensions().size();
 

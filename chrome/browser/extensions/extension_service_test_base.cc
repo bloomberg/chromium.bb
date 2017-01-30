@@ -323,7 +323,6 @@ void ExtensionServiceTestBase::CreateExtensionService(
   service_->SetFileTaskRunnerForTesting(
       base::ThreadTaskRunnerHandle::Get().get());
   service_->set_extensions_enabled(true);
-  service_->set_show_extensions_prompts(false);
   service_->component_loader()->set_ignore_whitelist_for_testing(true);
 
   // When we start up, we want to make sure there is no external provider,

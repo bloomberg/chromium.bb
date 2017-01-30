@@ -391,11 +391,6 @@ class ExtensionService
     return &delayed_installs_;
   }
 
-  bool show_extensions_prompts() const { return show_extensions_prompts_; }
-  void set_show_extensions_prompts(bool show_extensions_prompts) {
-    show_extensions_prompts_ = show_extensions_prompts;
-  }
-
   Profile* profile() { return profile_; }
 
   // Note that this may return NULL if autoupdate is not turned on.
@@ -637,9 +632,6 @@ class ExtensionService
 
   // Whether or not extensions are enabled.
   bool extensions_enabled_ = true;
-
-  // Whether to notify users when they attempt to install an extension.
-  bool show_extensions_prompts_ = true;
 
   // Signaled when all extensions are loaded.
   extensions::OneShotEvent* const ready_;

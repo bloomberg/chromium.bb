@@ -2681,7 +2681,6 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
 
   InitPluginService();
   InitializeEmptyExtensionService();
-  service()->set_show_extensions_prompts(true);
 
   // Start by canceling any install prompts.
   std::unique_ptr<extensions::ScopedTestDialogAutoConfirm> auto_confirm(
