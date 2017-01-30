@@ -34,6 +34,8 @@ class CastContentWindowLinux : public CastContentWindow,
       content::BrowserContext* browser_context) override;
 
   // content::WebContentsObserver implementation:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFirstVisuallyNonEmptyPaint() override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                            const MediaPlayerId& id) override;

@@ -52,15 +52,20 @@ std::unique_ptr<content::WebContents> CastContentWindowLinux::CreateWebContents(
   content::WebContents* web_contents =
       content::WebContents::Create(create_params);
 
+  content::WebContentsObserver::Observe(web_contents);
+  return base::WrapUnique(web_contents);
+}
+
+void CastContentWindowLinux::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
 #if defined(USE_AURA)
   // Resize window
-  aura::Window* content_window = web_contents->GetNativeView();
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+  aura::Window* content_window = web_contents()->GetNativeView();
   content_window->SetBounds(
       gfx::Rect(display_size.width(), display_size.height()));
 #endif
-
-  content::WebContentsObserver::Observe(web_contents);
-  return base::WrapUnique(web_contents);
 }
 
 void CastContentWindowLinux::ShowWebContents(

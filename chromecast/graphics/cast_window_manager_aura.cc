@@ -226,7 +226,6 @@ void CastWindowManagerAura::AddWindow(gfx::NativeView child) {
   } else {
     parent->StackChildAtBottom(child);
   }
-  child->SetBounds(window_tree_host_->window()->bounds());
 }
 
 void CastWindowManagerAura::OnVSyncIntervalChanged(base::TimeDelta interval) {
