@@ -1,7 +1,7 @@
 main frame - didStartProvisionalLoadForFrame
 main frame - didCommitLoadForFrame
-CONSOLE WARNING: line 19: A Parser-blocking, cross-origin script, http://localhost:8000/loading/resources/js-loaded.js?conn-type, is invoked via document.write. This may be blocked by the browser if the device has poor network connectivity. See https://www.chromestatus.com/feature/5718547946799104 for more details.
-CONSOLE WARNING: line 19: A Parser-blocking, cross-origin script, http://localhost:8000/loading/resources/js-loaded.js?conn-type, is invoked via document.write. This may be blocked by the browser if the device has poor network connectivity. See https://www.chromestatus.com/feature/5718547946799104 for more details.
+CONSOLE WARNING: line 19: A Parser-blocking, cross site (i.e. different eTLD+1) script, http://localhost:8000/loading/resources/js-loaded.js?conn-type, is invoked via document.write. This may be blocked by the browser if the device has poor network connectivity. See https://www.chromestatus.com/feature/5718547946799104 for more details.
+CONSOLE WARNING: line 19: A Parser-blocking, cross site (i.e. different eTLD+1) script, http://localhost:8000/loading/resources/js-loaded.js?conn-type, is invoked via document.write. This may be blocked by the browser if the device has poor network connectivity. See https://www.chromestatus.com/feature/5718547946799104 for more details.
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame

@@ -89,11 +89,12 @@ namespace blink {
 namespace {
 
 void emitWarningForDocWriteScripts(const String& url, Document& document) {
-  String message = "A Parser-blocking, cross-origin script, " + url +
-                   ", is invoked via document.write. This may be blocked by "
-                   "the browser if the device has poor network connectivity. "
-                   "See https://www.chromestatus.com/feature/5718547946799104 "
-                   "for more details.";
+  String message =
+      "A Parser-blocking, cross site (i.e. different eTLD+1) script, " + url +
+      ", is invoked via document.write. This may be blocked by "
+      "the browser if the device has poor network connectivity. "
+      "See https://www.chromestatus.com/feature/5718547946799104 "
+      "for more details.";
   document.addConsoleMessage(
       ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
   WTFLogAlways("%s", message.utf8().data());
@@ -142,8 +143,10 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
   // are likely to be third party content.
   String requestHost = request.url().host();
   String documentHost = document.getSecurityOrigin()->domain();
+
+  bool sameSite = false;
   if (requestHost == documentHost)
-    return false;
+    sameSite = true;
 
   // If the hosts didn't match, then see if the domains match. For example, if
   // a script is served from static.example.com for a document served from
@@ -157,7 +160,20 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
   // get non-empty results back from getDomainAndRegistry.
   if (!requestDomain.isEmpty() && !documentDomain.isEmpty() &&
       requestDomain == documentDomain)
+    sameSite = true;
+
+  if (sameSite) {
+    // This histogram is introduced to help decide whether we should also check
+    // same scheme while deciding whether or not to block the script as is done
+    // in other cases of "same site" usage. On the other hand we do not want to
+    // block more scripts than necessary.
+    if (request.url().protocol() != document.getSecurityOrigin()->protocol()) {
+      document.loader()->didObserveLoadingBehavior(
+          WebLoadingBehaviorFlag::
+              WebLoadingBehaviorDocumentWriteBlockDifferentScheme);
+    }
     return false;
+  }
 
   emitWarningForDocWriteScripts(request.url().getString(), document);
   request.setHTTPHeaderField("Intervention",

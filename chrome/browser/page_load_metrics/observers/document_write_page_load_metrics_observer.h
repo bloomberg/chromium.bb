@@ -39,6 +39,13 @@ class DocumentWritePageLoadMetricsObserver
   void OnLoadingBehaviorObserved(
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
+  enum DocumentWriteLoadingBehavior {
+    LOADING_BEHAVIOR_BLOCK,
+    LOADING_BEHAVIOR_RELOAD,
+    LOADING_BEHAVIOR_SAME_SITE_DIFF_SCHEME,
+    LOADING_BEHAVIOR_MAX
+  };
+
  private:
   void LogDocumentWriteEvaluatorFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
@@ -64,6 +71,7 @@ class DocumentWritePageLoadMetricsObserver
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);
 
+  bool doc_write_same_site_diff_scheme_ = false;
   bool doc_write_block_observed_ = false;
   bool doc_write_block_reload_observed_ = false;
 
