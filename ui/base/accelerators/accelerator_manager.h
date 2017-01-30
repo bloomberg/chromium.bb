@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -30,10 +31,10 @@ class UI_BASE_EXPORT AcceleratorManager {
   explicit AcceleratorManager(AcceleratorManagerDelegate* = nullptr);
   ~AcceleratorManager();
 
-  // Register a keyboard accelerator for the specified target. If multiple
+  // Register keyboard accelerators for the specified target. If multiple
   // targets are registered for an accelerator, a target registered later has
   // higher priority.
-  // |accelerator| is the accelerator to register.
+  // |accelerators| contains accelerators to register.
   // |priority| denotes the priority of the handler.
   // NOTE: In almost all cases, you should specify kNormalPriority for this
   // parameter. Setting it to kHighPriority prevents Chrome from sending the
@@ -47,9 +48,17 @@ class UI_BASE_EXPORT AcceleratorManager {
   // - the enter key
   // - any F key (F1, F2, F3 ...)
   // - any browser specific keys (as available on special keyboards)
-  void Register(const Accelerator& accelerator,
+  void Register(const std::vector<ui::Accelerator>& accelerators,
                 HandlerPriority priority,
                 AcceleratorTarget* target);
+
+  // Registers a keyboard accelerator for the specified target. This function
+  // calls the function Register() with vector argument above.
+  inline void RegisterAccelerator(const Accelerator& accelerator,
+                                  HandlerPriority priority,
+                                  AcceleratorTarget* target) {
+    Register({accelerator}, priority, target);
+  }
 
   // Unregister the specified keyboard accelerator for the specified target.
   void Unregister(const Accelerator& accelerator, AcceleratorTarget* target);

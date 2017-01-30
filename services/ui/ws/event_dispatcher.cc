@@ -234,8 +234,17 @@ bool EventDispatcher::AddAccelerator(uint32_t id,
   std::unique_ptr<Accelerator> accelerator(new Accelerator(id, *event_matcher));
   // If an accelerator with the same id or matcher already exists, then abort.
   for (const auto& pair : accelerators_) {
-    if (pair.first == id || accelerator->EqualEventMatcher(pair.second.get()))
+    if (pair.first == id) {
+      DVLOG(1) << "duplicate accelerator. Accelerator id=" << accelerator->id()
+               << " type=" << event_matcher->type_matcher->type
+               << " flags=" << event_matcher->flags_matcher->flags;
       return false;
+    } else if (accelerator->EqualEventMatcher(pair.second.get())) {
+      DVLOG(1) << "duplicate matcher. Accelerator id=" << accelerator->id()
+               << " type=" << event_matcher->type_matcher->type
+               << " flags=" << event_matcher->flags_matcher->flags;
+      return false;
+    }
   }
   accelerators_.insert(Entry(id, std::move(accelerator)));
   return true;

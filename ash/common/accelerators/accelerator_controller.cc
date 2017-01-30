@@ -529,10 +529,11 @@ AcceleratorController::AcceleratorController(
 
 AcceleratorController::~AcceleratorController() {}
 
-void AcceleratorController::Register(const ui::Accelerator& accelerator,
-                                     ui::AcceleratorTarget* target) {
+void AcceleratorController::Register(
+    const std::vector<ui::Accelerator>& accelerators,
+    ui::AcceleratorTarget* target) {
   accelerator_manager_->Register(
-      accelerator, ui::AcceleratorManager::kNormalPriority, target);
+      accelerators, ui::AcceleratorManager::kNormalPriority, target);
 }
 
 void AcceleratorController::Unregister(const ui::Accelerator& accelerator,
@@ -699,13 +700,15 @@ void AcceleratorController::Init() {
 void AcceleratorController::RegisterAccelerators(
     const AcceleratorData accelerators[],
     size_t accelerators_length) {
+  std::vector<ui::Accelerator> ui_accelerators;
   for (size_t i = 0; i < accelerators_length; ++i) {
     ui::Accelerator accelerator =
         CreateAccelerator(accelerators[i].keycode, accelerators[i].modifiers,
                           accelerators[i].trigger_on_press);
-    Register(accelerator, this);
+    ui_accelerators.push_back(accelerator);
     accelerators_.insert(std::make_pair(accelerator, accelerators[i].action));
   }
+  Register(ui_accelerators, this);
 }
 
 void AcceleratorController::RegisterDeprecatedAccelerators() {
@@ -715,16 +718,18 @@ void AcceleratorController::RegisterDeprecatedAccelerators() {
     actions_with_deprecations_[data->action] = data;
   }
 
+  std::vector<ui::Accelerator> ui_accelerators;
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
     const AcceleratorData& accelerator_data = kDeprecatedAccelerators[i];
     const ui::Accelerator deprecated_accelerator =
         CreateAccelerator(accelerator_data.keycode, accelerator_data.modifiers,
                           accelerator_data.trigger_on_press);
 
-    Register(deprecated_accelerator, this);
+    ui_accelerators.push_back(deprecated_accelerator);
     accelerators_[deprecated_accelerator] = accelerator_data.action;
     deprecated_accelerators_.insert(deprecated_accelerator);
   }
+  Register(ui_accelerators, this);
 #endif  // defined(OS_CHROMEOS)
 }
 

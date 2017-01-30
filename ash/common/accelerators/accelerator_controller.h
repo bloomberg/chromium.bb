@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/common/accelerators/accelerator_table.h"
@@ -60,10 +61,10 @@ class ASH_EXPORT AcceleratorController
     RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION
   };
 
-  // Registers a global keyboard accelerator for the specified target. If
-  // multiple targets are registered for an accelerator, a target registered
-  // later has higher priority.
-  void Register(const ui::Accelerator& accelerator,
+  // Registers global keyboard accelerators for the specified target. If
+  // multiple targets are registered for any given accelerator, a target
+  // registered later has higher priority.
+  void Register(const std::vector<ui::Accelerator>& accelerators,
                 ui::AcceleratorTarget* target);
 
   // Unregisters the specified keyboard accelerator for the specified target.

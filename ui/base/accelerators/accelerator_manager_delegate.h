@@ -13,11 +13,14 @@ class Accelerator;
 
 class UI_BASE_EXPORT AcceleratorManagerDelegate {
  public:
-  // Called the first time a target is registered for |accelerator|. This is
-  // only called the first time a target is registered for a unique accelerator.
-  // For example, if Register() is called twice with the same accelerator
-  // this is called only for the first call.
-  virtual void OnAcceleratorRegistered(const Accelerator& accelerator) = 0;
+  // Called when new accelerators are registered. This is only called with
+  // newly registered accelerators. For example, if Register() is
+  // called with A and B, then OnAcceleratorsRegistered() is called with A and
+  // B. If Register() is subsequently called with A and C, then
+  // OnAcceleratorsRegistered() is only called with C, as A was already
+  // registered.
+  virtual void OnAcceleratorsRegistered(
+      const std::vector<ui::Accelerator>& accelerators) = 0;
 
   // Called when there no more targets are registered for |accelerator|.
   virtual void OnAcceleratorUnregistered(const Accelerator& accelerator) = 0;

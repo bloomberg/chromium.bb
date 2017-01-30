@@ -497,7 +497,7 @@ void FocusManager::RegisterAccelerator(
     const ui::Accelerator& accelerator,
     ui::AcceleratorManager::HandlerPriority priority,
     ui::AcceleratorTarget* target) {
-  accelerator_manager_->Register(accelerator, priority, target);
+  accelerator_manager_->Register({accelerator}, priority, target);
 }
 
 void FocusManager::UnregisterAccelerator(const ui::Accelerator& accelerator,

@@ -71,8 +71,9 @@ int BuildAcceleratorModifier(int id) {
 
 // AcceleratorManagerDelegate implementation that records calls to interface
 // using the following format.
-// . OnAcceleratorRegistered() -> 'Register ' + id
-// . OnAcceleratorRegistered() -> 'Unregister' + id
+// . OnAcceleratorsRegistered() -> A list of "'Register ' + <id>" separated by
+// whitespaces.
+// . OnAcceleratorUnregistered() -> 'Unregister' + id
 // where the id is specified using SetIdForAccelerator().
 class TestAcceleratorManagerDelegate : public AcceleratorManagerDelegate {
  public:
@@ -91,10 +92,13 @@ class TestAcceleratorManagerDelegate : public AcceleratorManagerDelegate {
   }
 
   // AcceleratorManagerDelegate:
-  void OnAcceleratorRegistered(const Accelerator& accelerator) override {
-    if (!commands_.empty())
-      commands_ += " ";
-    commands_ += "Register " + accelerator_to_id_[accelerator];
+  void OnAcceleratorsRegistered(
+      const std::vector<Accelerator>& accelerators) override {
+    for (const Accelerator& accelerator : accelerators) {
+      if (!commands_.empty())
+        commands_ += " ";
+      commands_ += "Register " + accelerator_to_id_[accelerator];
+    }
   }
   void OnAcceleratorUnregistered(const Accelerator& accelerator) override {
     if (!commands_.empty())
@@ -122,27 +126,42 @@ class AcceleratorManagerTest : public testing::Test {
 };
 
 TEST_F(AcceleratorManagerTest, Register) {
-  const Accelerator accelerator_a(VKEY_A, EF_NONE);
   TestTarget target;
+  const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
-  manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
-                    &target);
-  EXPECT_EQ("Register a", delegate_.GetAndClearCommands());
 
-  // The registered accelerator is processed.
+  const Accelerator accelerator_b(VKEY_B, EF_NONE);
+  delegate_.SetIdForAccelerator(accelerator_b, "b");
+
+  const Accelerator accelerator_c(VKEY_C, EF_NONE);
+  delegate_.SetIdForAccelerator(accelerator_c, "c");
+
+  const Accelerator accelerator_d(VKEY_D, EF_NONE);
+  delegate_.SetIdForAccelerator(accelerator_d, "d");
+
+  manager_.Register(
+      {accelerator_a, accelerator_b, accelerator_c, accelerator_d},
+      AcceleratorManager::kNormalPriority, &target);
+  EXPECT_EQ("Register a Register b Register c Register d",
+            delegate_.GetAndClearCommands());
+
+  // The registered accelerators are processed.
   EXPECT_TRUE(manager_.Process(accelerator_a));
-  EXPECT_EQ(1, target.accelerator_pressed_count());
+  EXPECT_TRUE(manager_.Process(accelerator_b));
+  EXPECT_TRUE(manager_.Process(accelerator_c));
+  EXPECT_TRUE(manager_.Process(accelerator_d));
+  EXPECT_EQ(4, target.accelerator_pressed_count());
 }
 
 TEST_F(AcceleratorManagerTest, RegisterMultipleTarget) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
   TestTarget target1;
-  manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
+  manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target1);
   EXPECT_EQ("Register a", delegate_.GetAndClearCommands());
   TestTarget target2;
-  manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
+  manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target2);
   // Registering the same command shouldn't notify the delegate.
   EXPECT_TRUE(delegate_.GetAndClearCommands().empty());
@@ -158,14 +177,11 @@ TEST_F(AcceleratorManagerTest, Unregister) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
   TestTarget target;
-  manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
-                    &target);
-  EXPECT_EQ("Register a", delegate_.GetAndClearCommands());
   const Accelerator accelerator_b(VKEY_B, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_b, "b");
-  manager_.Register(accelerator_b, AcceleratorManager::kNormalPriority,
-                    &target);
-  EXPECT_EQ("Register b", delegate_.GetAndClearCommands());
+  manager_.Register({accelerator_a, accelerator_b},
+                    AcceleratorManager::kNormalPriority, &target);
+  EXPECT_EQ("Register a Register b", delegate_.GetAndClearCommands());
 
   // Unregistering a different accelerator does not affect the other
   // accelerator.
@@ -186,16 +202,14 @@ TEST_F(AcceleratorManagerTest, UnregisterAll) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
   TestTarget target1;
-  manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
-                    &target1);
   const Accelerator accelerator_b(VKEY_B, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_b, "b");
-  manager_.Register(accelerator_b, AcceleratorManager::kNormalPriority,
-                    &target1);
+  manager_.Register({accelerator_a, accelerator_b},
+                    AcceleratorManager::kNormalPriority, &target1);
   const Accelerator accelerator_c(VKEY_C, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_c, "c");
   TestTarget target2;
-  manager_.Register(accelerator_c, AcceleratorManager::kNormalPriority,
+  manager_.Register({accelerator_c}, AcceleratorManager::kNormalPriority,
                     &target2);
   EXPECT_EQ("Register a Register b Register c",
             delegate_.GetAndClearCommands());
@@ -224,7 +238,7 @@ TEST_F(AcceleratorManagerTest, Process) {
   for (size_t i = 0; i < (1 << arraysize(kAcceleratorModifiers)); ++i) {
     const int modifiers = BuildAcceleratorModifier(i);
     Accelerator accelerator(GetAccelerator(VKEY_A, modifiers));
-    manager_.Register(accelerator, AcceleratorManager::kNormalPriority,
+    manager_.Register({accelerator}, AcceleratorManager::kNormalPriority,
                       &target);
 
     // The registered accelerator is processed.
@@ -267,12 +281,12 @@ TEST_F(AcceleratorManagerTest, Reregister) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   TestTarget target;
   delegate_.SetIdForAccelerator(accelerator_a, "a");
-  manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
+  manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target);
   EXPECT_EQ("Register a", delegate_.GetAndClearCommands());
   manager_.UnregisterAll(&target);
   EXPECT_EQ("Unregister a", delegate_.GetAndClearCommands());
-  manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
+  manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target);
   EXPECT_EQ("Register a", delegate_.GetAndClearCommands());
 }

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "base/macros.h"
@@ -38,12 +39,20 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
   ui::mojom::EventResult OnAccelerator(uint32_t id,
                                        const ui::Event& event) override;
 
-  // ui::AcceleratorManagerDelegate:
-  void OnAcceleratorRegistered(const ui::Accelerator& accelerator) override;
-  void OnAcceleratorUnregistered(const ui::Accelerator& accelerator) override;
-
  private:
   friend class AcceleratorControllerRegistrarTestApi;
+
+  // ui::AcceleratorManagerDelegate:
+  void OnAcceleratorsRegistered(
+      const std::vector<ui::Accelerator>& accelerators) override;
+  void OnAcceleratorUnregistered(const ui::Accelerator& accelerator) override;
+
+  // Generate id and add the corresponding accelerator to accelerator vector.
+  // Creates a PRE_TARGET and POST_TARGET mojom accelerators for the provided
+  // |accelerator| and adds them to the provided |accelerator_vector|.
+  void AddAcceleratorToVector(
+      const ui::Accelerator& accelerator,
+      std::vector<ui::mojom::AcceleratorPtr>& accelerator_vector);
 
   // The flow of accelerators in ash is:
   // . wm::AcceleratorFilter() sees events first as it's a pre-target handler.

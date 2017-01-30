@@ -48,7 +48,7 @@ bool GlobalShortcutListenerChromeOS::RegisterAcceleratorImpl(
     return false;
 
   // TODO(dtseng): Support search key mapping.
-  controller->Register(accelerator, this);
+  controller->Register({accelerator}, this);
   return controller->IsRegistered(accelerator);
 }
 
