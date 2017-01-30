@@ -5179,6 +5179,8 @@ source_set("net_fuzzer_test_support") {
     "filter/fuzzed_source_stream.h",
     "socket/fuzzed_datagram_client_socket.cc",
     "socket/fuzzed_datagram_client_socket.h",
+    "socket/fuzzed_server_socket.cc",
+    "socket/fuzzed_server_socket.h",
     "socket/fuzzed_socket.cc",
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
@@ -5649,6 +5651,21 @@ fuzzer_test("net_http_transport_security_state_static_fuzzer") {
   ]
   dict =
       "data/fuzzer_dictionaries/net_http_transport_security_state_fuzzer.dict"
+}
+
+fuzzer_test("net_http_server_fuzzer") {
+  sources = [
+    "server/http_server_fuzzer.cc",
+  ]
+  deps = [
+    ":http_server",
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_server_fuzzer.dict"
+  seed_corpus = "data/fuzzer_data/http_server_requests/"
 }
 
 if (host_toolchain == current_toolchain && !is_proto_quic) {
