@@ -225,7 +225,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool allow_server_migration,
       bool force_hol_blocking,
       bool race_cert_verification,
-      bool quic_do_not_fragment,
+      bool do_not_fragment,
+      bool estimate_initial_rtt,
       const QuicTagVector& connection_options,
       bool enable_token_binding);
   ~QuicStreamFactory() override;
@@ -456,10 +457,19 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void ActivateSession(const QuicSessionKey& key,
                        QuicChromiumClientSession* session);
 
+  void ConfigureInitialRttEstimate(const QuicServerId& server_id,
+                                   QuicConfig* config);
+
   // Returns |srtt| in micro seconds from ServerNetworkStats. Returns 0 if there
   // is no |http_server_properties_| or if |http_server_properties_| doesn't
   // have ServerNetworkStats for the given |server_id|.
   int64_t GetServerNetworkStatsSmoothedRttInMicroseconds(
+      const QuicServerId& server_id) const;
+
+  // Returns |srtt| from ServerNetworkStats. Returns null if there
+  // is no |http_server_properties_| or if |http_server_properties_| doesn't
+  // have ServerNetworkStats for the given |server_id|.
+  const base::TimeDelta* GetServerNetworkStatsSmoothedRtt(
       const QuicServerId& server_id) const;
 
   // Helper methods.
@@ -635,7 +645,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool race_cert_verification_;
 
   // If set, configure QUIC sockets to not fragment packets.
-  bool quic_do_not_fragment_;
+  bool do_not_fragment_;
+
+  // If true, estimate the initial RTT based on network type.
+  bool estimate_initial_rtt;
 
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;

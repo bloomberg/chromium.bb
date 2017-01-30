@@ -76,6 +76,14 @@ enum CreateSessionFailure {
   CREATION_ERROR_MAX
 };
 
+enum InitialRttEstimateSource {
+  INITIAL_RTT_DEFAULT,
+  INITIAL_RTT_CACHED,
+  INITIAL_RTT_2G,
+  INITIAL_RTT_3G,
+  INITIAL_RTT_SOURCE_MAX,
+};
+
 // The maximum receive window sizes for QUIC sessions and streams.
 const int32_t kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
 const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
@@ -153,6 +161,15 @@ void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
 void HistogramMigrationStatus(enum QuicConnectionMigrationStatus status) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration", status,
                             MIGRATION_STATUS_MAX);
+}
+
+void SetInitialRttEstimate(base::TimeDelta estimate,
+                           enum InitialRttEstimateSource source,
+                           QuicConfig* config) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.InitialRttEsitmateSource", source,
+                            INITIAL_RTT_SOURCE_MAX);
+  if (estimate != base::TimeDelta())
+    config->SetInitialRoundTripTimeUsToSend(estimate.InMicroseconds());
 }
 
 QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
@@ -746,7 +763,8 @@ QuicStreamFactory::QuicStreamFactory(
     bool allow_server_migration,
     bool force_hol_blocking,
     bool race_cert_verification,
-    bool quic_do_not_fragment,
+    bool do_not_fragment,
+    bool estimate_initial_rtt,
     const QuicTagVector& connection_options,
     bool enable_token_binding)
     : require_confirmation_(true),
@@ -802,7 +820,8 @@ QuicStreamFactory::QuicStreamFactory(
       allow_server_migration_(allow_server_migration),
       force_hol_blocking_(force_hol_blocking),
       race_cert_verification_(race_cert_verification),
-      quic_do_not_fragment_(quic_do_not_fragment),
+      do_not_fragment_(do_not_fragment),
+      estimate_initial_rtt(estimate_initial_rtt),
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
       num_push_streams_created_(0),
@@ -1596,7 +1615,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
     return rv;
   }
 
-  if (quic_do_not_fragment_) {
+  if (do_not_fragment_) {
     rv = socket->SetDoNotFragment();
     // SetDoNotFragment is not implemented on all platforms, so ignore errors.
     if (rv != OK && rv != ERR_NOT_IMPLEMENTED) {
@@ -1685,10 +1704,8 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialSessionFlowControlWindowToSend(
       kQuicSessionMaxRecvWindowSize);
   config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
-  int64_t srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
-  if (srtt > 0)
-    config.SetInitialRoundTripTimeUsToSend(static_cast<uint32_t>(srtt));
   config.SetBytesForConnectionIdToSend(0);
+  ConfigureInitialRttEstimate(server_id, &config);
 
   if (force_hol_blocking_)
     config.SetForceHolBlocking();
@@ -1714,7 +1731,7 @@ int QuicStreamFactory::CreateSession(
       connection, std::move(socket), this, quic_crypto_client_stream_factory_,
       clock_.get(), transport_security_state_, std::move(server_info),
       server_id, yield_after_packets_, yield_after_duration_, cert_verify_flags,
-      config, &crypto_config_, network_connection_.GetDescription(),
+      config, &crypto_config_, network_connection_.connection_description(),
       dns_resolution_start_time, dns_resolution_end_time, &push_promise_index_,
       push_delegate_, task_runner_, std::move(socket_performance_watcher),
       net_log.net_log());
@@ -1750,15 +1767,47 @@ void QuicStreamFactory::ActivateSession(const QuicSessionKey& key,
   session_peer_ip_[session] = peer_address;
 }
 
-int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
+void QuicStreamFactory::ConfigureInitialRttEstimate(
+    const QuicServerId& server_id,
+    QuicConfig* config) {
+  const base::TimeDelta* srtt = GetServerNetworkStatsSmoothedRtt(server_id);
+  if (srtt != nullptr) {
+    SetInitialRttEstimate(*srtt, INITIAL_RTT_CACHED, config);
+    return;
+  }
+
+  NetworkChangeNotifier::ConnectionType type =
+      network_connection_.connection_type();
+  if (type == NetworkChangeNotifier::CONNECTION_2G) {
+    SetInitialRttEstimate(base::TimeDelta::FromMilliseconds(1200),
+                          INITIAL_RTT_CACHED, config);
+    return;
+  }
+
+  if (type == NetworkChangeNotifier::CONNECTION_3G) {
+    SetInitialRttEstimate(base::TimeDelta::FromMilliseconds(400),
+                          INITIAL_RTT_CACHED, config);
+    return;
+  }
+
+  SetInitialRttEstimate(base::TimeDelta(), INITIAL_RTT_DEFAULT, config);
+}
+
+const base::TimeDelta* QuicStreamFactory::GetServerNetworkStatsSmoothedRtt(
     const QuicServerId& server_id) const {
   url::SchemeHostPort server("https", server_id.host_port_pair().host(),
                              server_id.host_port_pair().port());
   const ServerNetworkStats* stats =
       http_server_properties_->GetServerNetworkStats(server);
   if (stats == nullptr)
-    return 0;
-  return stats->srtt.InMicroseconds();
+    return nullptr;
+  return &(stats->srtt);
+}
+
+int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
+    const QuicServerId& server_id) const {
+  const base::TimeDelta* srtt = GetServerNetworkStatsSmoothedRtt(server_id);
+  return srtt == nullptr ? 0 : srtt->InMicroseconds();
 }
 
 bool QuicStreamFactory::WasQuicRecentlyBroken(
