@@ -17,6 +17,92 @@ is 2.31b. If you're stuck on an earlier release, it's strongly advisable
 to get on with the times.
 
 --------------
+Version 2.38b:
+--------------
+
+  - Added -mllvm -sanitizer-coverage-block-threshold=0 to trace-pc-guard
+    mode, as suggested by Kostya Serebryany.
+
+--------------
+Version 2.37b:
+--------------
+
+  - Fixed a typo. Spotted by Jakub Wilk.
+
+  - Fixed support for make install when using trace-pc. Spotted by
+    Kurt Roeckx.
+
+  - Switched trace-pc to trace-pc-guard, which should be considerably
+    faster and is less quirky. Kudos to Konstantin Serebryany (and sorry
+    for dragging my feet).
+
+    Note that for some reason, this mode doesn't perform as well as
+    "vanilla" afl-clang-fast / afl-clang.
+
+--------------
+Version 2.36b:
+--------------
+
+  - Fixed a cosmetic bad free() bug when aborting -S sessions. Spotted
+    by Johannes S.
+
+  - Made a small change to afl-whatsup to sort fuzzers by name.
+
+  - Fixed a minor issue with malloc(0) in libdislocator. Spotted by
+    Rene Freingruber.
+
+  - Changed the clobber pattern in libdislocator to a slightly more
+    reliable one. Suggested by Rene Freingruber.
+
+  - Added a note about THP performance. Suggested by Sergey Davidoff.
+
+  - Added a somewhat unofficial support for running afl-tmin with a
+    baseline "mask" that causes it to minimize only for edges that
+    are unique to the input file, but not to the "boring" baseline.
+    Suggested by Sami Liedes.
+
+  - "Fixed" a getPassName() problem with never versions of clang.
+    Reported by Craig Young and several other folks.
+
+  Yep, I know I have a backlog on several other feature requests.
+  Stay tuned!
+
+--------------
+Version 2.35b:
+--------------
+
+  - Fixed a minor cmdline reporting glitch, spotted by Leo Barnes.
+
+  - Fixed a silly bug in libdislocator. Spotted by Johannes Schultz.
+
+--------------
+Version 2.34b:
+--------------
+
+  - Added a note about afl-tmin to technical_details.txt.
+
+  - Added support for AFL_NO_UI, as suggested by Leo Barnes.
+
+--------------
+Version 2.33b:
+--------------
+
+  - Added code to strip -Wl,-z,defs and -Wl,--no-undefined for afl-clang-fast,
+    since they interfere with -shared. Spotted and diagnosed by Toby Hutton.
+
+  - Added some fuzzing tips for Android.
+
+--------------
+Version 2.32b:
+--------------
+
+  - Added a check for AFL_HARDEN combined with AFL_USE_*SAN. Suggested by
+    Hanno Boeck.
+
+  - Made several other cosmetic adjustments to cycle timing in the wake of the
+    big tweak made in 2.31b.
+
+--------------
 Version 2.31b:
 --------------
 
