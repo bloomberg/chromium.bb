@@ -35,9 +35,8 @@ media_router::MediaRoute MakeRoute(const std::string& route_id,
                                    const std::string& sink_id,
                                    bool is_local) {
   return media_router::MediaRoute(
-      route_id, media_router::MediaSourceForDesktop(), sink_id,
-      std::string() /*description*/, is_local,
-      std::string() /*custom_controller_path*/, true /*for_display*/);
+      route_id, media_router::MediaSourceForDesktop(), sink_id, "description",
+      is_local, std::string() /*custom_controller_path*/, true /*for_display*/);
 }
 
 // Returns the cast tray instance.
@@ -153,22 +152,28 @@ IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastMediaRouterChromeOSTest,
   EXPECT_TRUE(test_api.IsTrayInitialized());
 
   // Setup the sinks.
-  std::vector<media_router::MediaSink> sinks;
-  sinks.push_back(MakeSink("remote_sink", "name"));
-  sinks.push_back(MakeSink("local_sink", "name"));
+  const std::vector<media_router::MediaSink> sinks = {
+      MakeSink("remote_sink", "name"), MakeSink("local_sink", "name")};
   media_sinks_observer()->OnSinksUpdated(sinks, std::vector<url::Origin>());
   content::RunAllPendingInMessageLoop();
 
   // Create route combinations. More details below.
-  media_router::MediaRoute non_local_route =
+  const media_router::MediaRoute non_local_route =
       MakeRoute("remote_route", "remote_sink", false /*is_local*/);
-  media_router::MediaRoute local_route =
+  const media_router::MediaRoute local_route =
       MakeRoute("local_route", "local_sink", true /*is_local*/);
-  std::vector<media_router::MediaRoute> no_routes;
-  std::vector<media_router::MediaRoute> multiple_routes;
+  const std::vector<media_router::MediaRoute> no_routes;
+  const std::vector<media_router::MediaRoute> non_local_routes{non_local_route};
   // We put the non-local route first to make sure that we prefer the local one.
-  multiple_routes.push_back(non_local_route);
-  multiple_routes.push_back(local_route);
+  const std::vector<media_router::MediaRoute> multiple_routes{non_local_route,
+                                                              local_route};
+
+  // We do not show the cast view for non-local routes.
+  test_api.OnCastingSessionStartedOrStopped(true /*is_casting*/);
+  media_routes_observer()->OnRoutesUpdated(
+      non_local_routes, std::vector<media_router::MediaRoute::Id>());
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(test_api.IsTrayCastViewVisible());
 
   // If there are multiple routes active at the same time, then we need to
   // display the local route over a non-local route. This also verifies that we

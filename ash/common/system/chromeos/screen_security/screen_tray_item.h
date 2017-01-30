@@ -55,6 +55,7 @@ class ScreenStatusView : public views::View, public views::ButtonListener {
  protected:
   views::ImageView* icon() { return icon_; }
   views::Label* label() { return label_; }
+  views::Button* stop_button() { return stop_button_; }
 
   // Overridden from views::View:
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
@@ -64,7 +65,7 @@ class ScreenStatusView : public views::View, public views::ButtonListener {
   ScreenTrayItem* screen_tray_item_;
   views::ImageView* icon_;
   views::Label* label_;
-  views::View* stop_button_;
+  views::Button* stop_button_;
   base::string16 label_text_;
   base::string16 stop_button_text_;
 
