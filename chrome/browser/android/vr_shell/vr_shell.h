@@ -52,7 +52,9 @@ enum UiAction {
   RELOAD,
   ZOOM_OUT,
   ZOOM_IN,
-  RELOAD_UI
+  RELOAD_UI,
+  LOAD_URL,
+  OMNIBOX_CONTENT,
 };
 
 class VrMetricsHelper;
@@ -122,7 +124,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void UpdateScene(const base::ListValue* args);
 
   // Perform a UI action triggered by the javascript API.
-  void DoUiAction(const UiAction action);
+  void DoUiAction(const UiAction action,
+                  const base::DictionaryValue* arguments);
 
   void SetContentCssSize(float width, float height, float dpr);
   void SetUiCssSize(float width, float height, float dpr);

@@ -66,6 +66,8 @@ api.Action = {
   'ZOOM_OUT': 3,
   'ZOOM_IN': 4,
   'RELOAD_UI': 5,
+  'LOAD_URL': 6,
+  'OMNIBOX_CONTENT': 7,
 };
 
 /**
@@ -82,9 +84,10 @@ api.Mode = {
 /**
  * Triggers an Action.
  * @param {api.Action} action
+ * @param {Object} parameters
  */
-api.doAction = function(action) {
-  chrome.send('doAction', [action]);
+api.doAction = function(action, parameters) {
+  chrome.send('doAction', [action, parameters]);
 };
 
 /**

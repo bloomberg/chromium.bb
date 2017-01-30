@@ -47,6 +47,12 @@ var vrShellUi = (function() {
       ui.updateElement(this.elementId, update);
     }
 
+    setOpacity(opacity) {
+      let update = new api.UiElementUpdate();
+      update.setOpacity(opacity);
+      ui.updateElement(this.elementId, update);
+    }
+
     setFullscreen(enabled) {
       let anim = new api.Animation(this.elementId, ANIM_DURATION);
       if (enabled) {
@@ -129,26 +135,25 @@ var vrShellUi = (function() {
   class Controls {
     constructor(contentQuadId) {
       this.enabled = false;
-      this.reloadUiEnabled = false;
 
       this.buttons = [];
       let descriptors = [
         [
           '#back',
           function() {
-            api.doAction(api.Action.HISTORY_BACK);
+            api.doAction(api.Action.HISTORY_BACK, {});
           }
         ],
         [
           '#reload',
           function() {
-            api.doAction(api.Action.RELOAD);
+            api.doAction(api.Action.RELOAD, {});
           }
         ],
         [
           '#forward',
           function() {
-            api.doAction(api.Action.HISTORY_FORWARD);
+            api.doAction(api.Action.HISTORY_FORWARD, {});
           }
         ],
       ];
@@ -173,29 +178,10 @@ var vrShellUi = (function() {
         update.setVisible(false);
         ui.updateElement(element.uiElementId, update);
       }
-
-      this.reloadUiButton = new DomUiElement('#reload-ui-button');
-      this.reloadUiButton.domElement.addEventListener('click', function() {
-        ui.purge();
-        api.doAction(api.Action.RELOAD_UI);
-      });
-
-      let update = new api.UiElementUpdate();
-      update.setParentId(contentQuadId);
-      update.setVisible(false);
-      update.setScale(2.2, 2.2, 1);
-      update.setTranslation(0, -0.6, 0.3);
-      update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
-      ui.updateElement(this.reloadUiButton.uiElementId, update);
     }
 
     setEnabled(enabled) {
       this.enabled = enabled;
-      this.configure();
-    }
-
-    setReloadUiEnabled(enabled) {
-      this.reloadUiEnabled = enabled;
       this.configure();
     }
 
@@ -205,9 +191,42 @@ var vrShellUi = (function() {
         update.setVisible(this.enabled);
         ui.updateElement(this.buttons[i].uiElementId, update);
       }
+    }
+  };
+
+  /**
+   * A button to trigger a reload of the HTML UI for development purposes.
+   */
+  class ReloadUiButton {
+    constructor() {
+      this.enabled = false;
+      this.devMode = false;
+
+      this.uiElement = new DomUiElement('#reload-ui-button');
+      this.uiElement.domElement.addEventListener('click', function() {
+        ui.purge();
+        api.doAction(api.Action.RELOAD_UI, {});
+      });
+
       let update = new api.UiElementUpdate();
-      update.setVisible(this.enabled && this.reloadUiEnabled);
-      ui.updateElement(this.reloadUiButton.uiElementId, update);
+      update.setVisible(false);
+      ui.updateElement(this.uiElement.uiElementId, update);
+    }
+
+    setEnabled(enabled) {
+      this.enabled = enabled;
+      this.updateState();
+    }
+
+    setDevMode(enabled) {
+      this.devMode = enabled;
+      this.updateState();
+    }
+
+    updateState() {
+      let update = new api.UiElementUpdate();
+      update.setVisible(this.enabled && this.devMode);
+      ui.updateElement(this.uiElement.uiElementId, update);
     }
   };
 
@@ -355,8 +374,8 @@ var vrShellUi = (function() {
 
     setURL(host, path) {
       let indicator = this.domUiElement.domElement;
-      indicator.querySelector('#domain').innerHTML = host;
-      indicator.querySelector('#path').innerHTML = path;
+      indicator.querySelector('#domain').textContent = host;
+      indicator.querySelector('#path').textContent = path;
       this.resetVisibilityTimer();
       this.updateState();
     }
@@ -454,6 +473,80 @@ var vrShellUi = (function() {
     }
   };
 
+  class Omnibox {
+    constructor() {
+      this.enabled = false;
+
+      this.domUiElement = new DomUiElement('#omnibox-ui-element');
+      let root = this.domUiElement.domElement;
+      this.inputField = root.querySelector('#omnibox-input-field');
+
+      // Initially invisible.
+      let update = new api.UiElementUpdate();
+      update.setVisible(true);
+      ui.updateElement(this.domUiElement.uiElementId, update);
+
+      // Field-clearing button.
+      let clearButton = root.querySelector('#omnibox-clear-button');
+      clearButton.addEventListener('click', function() {
+        this.inputField.value = '';
+        api.doAction(api.Action.OMNIBOX_CONTENT, {'text': ''});
+      }.bind(this));
+
+      // Watch for the enter key to trigger navigation.
+      this.inputField.addEventListener('keypress', function(e) {
+        if (e.keyCode == 13) {
+          api.doAction(
+              // TODO(crbug.com/683344): Properly choose prefix.
+              api.Action.LOAD_URL, {'url': 'http://' + e.target.value});
+        }
+      });
+
+      // Watch for field input to generate suggestions.
+      this.inputField.addEventListener('input', function(e) {
+        api.doAction(api.Action.OMNIBOX_CONTENT, {'text': e.target.value});
+      });
+
+      // Clicking on suggestions triggers navigation.
+      let elements = root.querySelectorAll('.omnibox-suggestion');
+      this.maxSuggestions = elements.length;
+      for (var i = 0; i < elements.length; i++) {
+        elements[i].addEventListener('click', function(index, e) {
+          if (e.target.url) {
+            api.doAction(api.Action.LOAD_URL, {'url': e.target.url});
+          }
+        }.bind(this, i));
+      }
+    }
+
+    setEnabled(enabled) {
+      this.enabled = enabled;
+
+      let update = new api.UiElementUpdate();
+      update.setVisible(enabled);
+      ui.updateElement(this.domUiElement.uiElementId, update);
+    }
+
+    setURL(url) {
+      this.inputField.value = url;
+    }
+
+    setSuggestions(suggestions) {
+      for (var i = 0; i < this.maxSuggestions; i++) {
+        let element = document.querySelector('#suggestion-' + i);
+        if (i >= suggestions.length) {
+          element.textContent = '';
+          element.style.visibility = 'hidden';
+          element.url = null;
+        } else {
+          element.textContent = suggestions[i].description;
+          element.style.visibility = 'visible';
+          element.url = suggestions[i].url;
+        }
+      }
+    }
+  };
+
   class UiManager {
     constructor() {
       this.mode = api.Mode.UNKNOWN;
@@ -466,6 +559,8 @@ var vrShellUi = (function() {
       this.controls = new Controls(contentId);
       this.secureOriginWarnings = new SecureOriginWarnings();
       this.urlIndicator = new UrlIndicator();
+      this.omnibox = new Omnibox();
+      this.reloadUiButton = new ReloadUiButton();
     }
 
     setMode(mode, menuMode, fullscreen) {
@@ -475,6 +570,7 @@ var vrShellUi = (function() {
       this.menuMode = menuMode;
       this.fullscreen = fullscreen;
 
+      this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
       this.contentQuad.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.contentQuad.setFullscreen(fullscreen);
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
@@ -486,6 +582,7 @@ var vrShellUi = (function() {
           mode == api.Mode.STANDARD && !menuMode ?
               0 :
               URL_INDICATOR_VISIBILITY_TIMEOUT_MS);
+      this.omnibox.setEnabled(false);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
 
       api.setUiCssSize(
@@ -498,10 +595,6 @@ var vrShellUi = (function() {
 
     setWebVRSecureOrigin(secure) {
       this.secureOriginWarnings.setSecure(secure);
-    }
-
-    setReloadUiEnabled(enabled) {
-      this.controls.setReloadUiEnabled(enabled);
     }
   };
 
@@ -523,17 +616,21 @@ var vrShellUi = (function() {
       uiManager.setWebVRSecureOrigin(dict['webVRSecureOrigin']);
     }
     if ('enableReloadUi' in dict) {
-      uiManager.setReloadUiEnabled(dict['enableReloadUi']);
+      uiManager.reloadUiButton.setDevMode(dict['enableReloadUi']);
     }
     if ('url' in dict) {
       let url = dict['url'];
       uiManager.urlIndicator.setURL(url['host'], url['path']);
+      uiManager.omnibox.setURL(url['host'] + url['path']);
     }
     if ('loading' in dict) {
       uiManager.urlIndicator.setLoading(dict['loading']);
     }
     if ('loadProgress' in dict) {
       uiManager.urlIndicator.setLoadProgress(dict['loadProgress']);
+    }
+    if ('suggestions' in dict) {
+      uiManager.omnibox.setSuggestions(dict['suggestions']);
     }
     ui.flush();
   }

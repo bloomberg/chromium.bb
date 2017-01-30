@@ -6,6 +6,9 @@
 
 #include <android/native_window_jni.h>
 
+#include <string>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/platform_thread.h"
@@ -329,7 +332,8 @@ void VrShell::UpdateScene(const base::ListValue* args) {
                                      base::Passed(args->CreateDeepCopy())));
 }
 
-void VrShell::DoUiAction(const UiAction action) {
+void VrShell::DoUiAction(const UiAction action,
+                         const base::DictionaryValue* arguments) {
   content::NavigationController& controller = main_contents_->GetController();
   switch (action) {
     case HISTORY_BACK:
@@ -345,6 +349,20 @@ void VrShell::DoUiAction(const UiAction action) {
       break;
     case RELOAD:
       controller.Reload(content::ReloadType::NORMAL, false);
+      break;
+    case LOAD_URL: {
+      std::string url_string;
+      CHECK(arguments->GetString("url", &url_string));
+      GURL url(url_string);
+      // TODO(crbug.com/683344): Sanitize the URL and prefix, and pass the
+      // proper transition type down from the UI.
+      controller.LoadURL(url, content::Referrer(),
+                         ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                         std::string(""));
+      break;
+    }
+    case OMNIBOX_CONTENT:
+      html_interface_->HandleOmniboxInput(*arguments);
       break;
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:

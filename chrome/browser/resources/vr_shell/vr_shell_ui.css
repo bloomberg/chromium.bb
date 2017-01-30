@@ -113,7 +113,9 @@ html {
 }
 
 #reload-ui-button {
-  background-color: #555;
+  --tranX: 0;
+  --tranY: -1.2;
+  --tranZ: -1.2;
   color: white;
   font-size: 24px;
   padding: 12px;
@@ -189,3 +191,46 @@ html {
   color: #868686;
 }
 
+#omnibox-ui-element {
+  --tranX: 0;
+  --tranY: -0.2;
+  --tranZ: -1.0;
+  font-family: arial;
+}
+
+#omnibox-url-divider {
+  background-color: black;
+  height: 1px;
+}
+
+#omnibox-url-element {
+  background-color: white;
+  display: flex;
+  padding: 5px;
+  width: 100%;
+}
+
+.omnibox-suggestion {
+  background-color: white;
+  height: 22px;
+  overflow: hidden;
+  padding-left: 5px;
+  padding-right: 5px;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#omnibox-input-field {
+  border: none;
+  font-size: 16px;
+  margin: 3px;
+  overflow: hidden;
+  padding: 0;
+  white-space: nowrap;
+  width: 280px;
+}
+
+#omnibox-clear-button {
+  background: url(../../../../ui/webui/resources/images/x-hover.png) no-repeat center center;
+  width: 15px;
+}

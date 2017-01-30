@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_INTERFACE_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_UI_INTERFACE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/values.h"
 
 class GURL;
 
 namespace vr_shell {
+
+class VrOmnibox;
 
 class UiCommandHandler {
  public:
@@ -41,6 +45,10 @@ class UiInterface {
   void SetLoadProgress(double progress);
   void SetURL(const GURL& url);
 
+  // Omnibox input and output handling.
+  void HandleOmniboxInput(const base::DictionaryValue& input);
+  void SetOmniboxSuggestions(std::unique_ptr<base::Value> suggestions);
+
   // Called by WebUI when starting VR.
   void OnDomContentsLoaded();
   void SetUiCommandHandler(UiCommandHandler* handler);
@@ -55,6 +63,8 @@ class UiInterface {
   UiCommandHandler* handler_;
   bool loaded_ = false;
   base::DictionaryValue updates_;
+
+  std::unique_ptr<VrOmnibox> omnibox_;
 
   DISALLOW_COPY_AND_ASSIGN(UiInterface);
 };

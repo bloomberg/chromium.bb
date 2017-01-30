@@ -4,12 +4,18 @@
 
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/android/vr_shell/vr_omnibox.h"
 #include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_message_handler.h"
 #include "url/gurl.h"
 
 namespace vr_shell {
 
-UiInterface::UiInterface(Mode initial_mode, bool fullscreen) {
+UiInterface::UiInterface(Mode initial_mode, bool fullscreen)
+    : omnibox_(base::MakeUnique<VrOmnibox>(this)) {
   SetMode(initial_mode);
   SetFullscreen(fullscreen);
 }
@@ -29,6 +35,16 @@ void UiInterface::SetMenuMode(bool enabled) {
 void UiInterface::SetFullscreen(bool enabled) {
   fullscreen_ = enabled;
   FlushModeState();
+}
+
+void UiInterface::HandleOmniboxInput(const base::DictionaryValue& input) {
+  omnibox_->HandleInput(input);
+}
+
+void UiInterface::SetOmniboxSuggestions(
+    std::unique_ptr<base::Value> suggestions) {
+  updates_.Set("suggestions", std::move(suggestions));
+  FlushUpdates();
 }
 
 void UiInterface::FlushModeState() {
