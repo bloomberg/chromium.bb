@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -56,6 +58,12 @@ namespace {
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/ggbflgnkafappblpkiflbgpmkfdpnhhe
 const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
+
+// This is a simple test that only sends an extension message when app launch is
+// requested. Webstore data json is in
+//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//       detail/mogpelihofihkjnkkfkcchbkchggmcld
+const char kTestNonKioskEnabledApp[] = "mogpelihofihkjnkkfkcchbkchggmcld";
 
 const char kTestAccountId[] = "enterprise-kiosk-app@localhost";
 
@@ -264,6 +272,8 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
 
   ~AutoLaunchedKioskTest() override = default;
 
+  virtual std::string GetTestAppId() const { return kTestKioskApp; }
+
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     AppLaunchController::SkipSplashWaitForTesting();
@@ -273,8 +283,7 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     fake_cws_->Init(embedded_test_server());
-    fake_cws_->SetUpdateCrx(kTestKioskApp, std::string(kTestKioskApp) + ".crx",
-                            "1.0.0");
+    fake_cws_->SetUpdateCrx(GetTestAppId(), GetTestAppId() + ".crx", "1.0.0");
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
@@ -344,7 +353,7 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
         device_local_accounts->add_account();
     account->set_account_id(kTestAccountId);
     account->set_type(em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_KIOSK_APP);
-    account->mutable_kiosk_app()->set_app_id(kTestKioskApp);
+    account->mutable_kiosk_app()->set_app_id(GetTestAppId());
 
     device_local_accounts->set_auto_login_id(kTestAccountId);
 
@@ -477,6 +486,44 @@ IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, CrashRestore) {
   EXPECT_TRUE(IsKioskAppAutoLaunched(kTestKioskApp));
 
   ASSERT_TRUE(CloseAppWindow(kTestKioskApp));
+}
+
+// Used to test app auto-launch flow when the launched app is not kiosk enabled.
+class AutoLaunchedNonKioskEnabledAppTest : public AutoLaunchedKioskTest {
+ public:
+  AutoLaunchedNonKioskEnabledAppTest() {}
+  ~AutoLaunchedNonKioskEnabledAppTest() override = default;
+
+  std::string GetTestAppId() const override { return kTestNonKioskEnabledApp; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutoLaunchedNonKioskEnabledAppTest);
+};
+
+IN_PROC_BROWSER_TEST_F(AutoLaunchedNonKioskEnabledAppTest, NotLaunched) {
+  // Verify that Chrome hasn't already exited, e.g. in order to apply user
+  // session flags.
+  ASSERT_FALSE(termination_observer_->terminated());
+
+  EXPECT_TRUE(IsKioskAppAutoLaunched(kTestNonKioskEnabledApp));
+
+  ExtensionTestMessageListener listener("launchRequested", false);
+
+  content::WindowedNotificationObserver termination_waiter(
+      chrome::NOTIFICATION_APP_TERMINATING,
+      content::NotificationService::AllSources());
+
+  // Set up default network connections, so tests think the device is online.
+  DBusThreadManager::Get()
+      ->GetShillManagerClient()
+      ->GetTestInterface()
+      ->SetupDefaultEnvironment();
+
+  // App launch should be canceled, and user session stopped.
+  termination_waiter.Wait();
+
+  EXPECT_FALSE(listener.was_satisfied());
+  EXPECT_EQ(KioskAppLaunchError::NOT_KIOSK_ENABLED, KioskAppLaunchError::Get());
 }
 
 }  // namespace chromeos

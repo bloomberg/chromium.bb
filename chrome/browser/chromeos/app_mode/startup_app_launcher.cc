@@ -339,12 +339,18 @@ void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
     return;
   }
 
+  const extensions::Extension* primary_app = GetPrimaryAppExtension();
+  if (primary_app && !extensions::KioskModeInfo::IsKioskEnabled(primary_app)) {
+    OnLaunchFailure(KioskAppLaunchError::NOT_KIOSK_ENABLED);
+    return;
+  }
+
   if (DidPrimaryOrSecondaryAppFailedToInstall(success, extension_id)) {
     OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
     return;
   }
 
-  if (GetPrimaryAppExtension()) {
+  if (primary_app) {
     if (!secondary_apps_installed_)
       MaybeInstallSecondaryApps();
     else
@@ -508,13 +514,21 @@ void StartupAppLauncher::BeginInstall() {
     return;
   }
 
-  if (GetPrimaryAppExtension()) {
-    // Install secondary apps.
-    MaybeInstallSecondaryApps();
-  } else {
+  const extensions::Extension* primary_app = GetPrimaryAppExtension();
+  if (!primary_app) {
     // The extension is skipped for installation due to some error.
     OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
+    return;
   }
+
+  if (!extensions::KioskModeInfo::IsKioskEnabled(primary_app)) {
+    // The installed primary app is not kiosk enabled.
+    OnLaunchFailure(KioskAppLaunchError::NOT_KIOSK_ENABLED);
+    return;
+  }
+
+  // Install secondary apps.
+  MaybeInstallSecondaryApps();
 }
 
 void StartupAppLauncher::MaybeInstallSecondaryApps() {
