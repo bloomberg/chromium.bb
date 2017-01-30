@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window.h"
@@ -37,9 +38,12 @@ class BrowserStatusMonitor::LocalWebContentsObserver
   ~LocalWebContentsObserver() override {}
 
   // content::WebContentsObserver
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override {
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->IsInMainFrame() ||
+        !navigation_handle->HasCommitted())
+      return;
+
     ChromeLauncherController::AppState state =
         ChromeLauncherController::APP_STATE_INACTIVE;
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
