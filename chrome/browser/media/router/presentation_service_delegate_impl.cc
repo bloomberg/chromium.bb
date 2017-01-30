@@ -120,9 +120,13 @@ class PresentationSessionMessagesObserver : public RouteMessageObserver {
 // Used by PresentationServiceDelegateImpl to manage
 // listeners and default presentation info in a render frame.
 // Its lifetime:
-//  * PresentationFrameManager AddDelegateObserver
-//  * Reset 0+ times.
-//  * PresentationFrameManager.RemoveDelegateObserver.
+//  * Create an instance with |render_frame_host_id_| if no instance with the
+//    same |render_frame_host_id_| exists in:
+//      PresentationFrameManager::OnPresentationSessionStarted
+//      PresentationFrameManager::OnDefaultPresentationSessionStarted
+//      PresentationFrameManager::SetScreenAvailabilityListener
+//  * Destroy the instance in:
+//      PresentationFrameManager::Reset
 class PresentationFrame {
  public:
   PresentationFrame(const RenderFrameHostId& render_frame_host_id,
@@ -158,10 +162,6 @@ class PresentationFrame {
       const MediaRoute& route);
   void OnPresentationServiceDelegateDestroyed() const;
 
-  void set_delegate_observer(DelegateObserver* observer) {
-    delegate_observer_ = observer;
-  }
-
  private:
   MediaSource GetMediaSourceFromListener(
       content::PresentationScreenAvailabilityListener* listener) const;
@@ -184,8 +184,6 @@ class PresentationFrame {
   // References to the owning WebContents, and the corresponding MediaRouter.
   content::WebContents* web_contents_;
   MediaRouter* router_;
-
-  DelegateObserver* delegate_observer_;
 };
 
 PresentationFrame::PresentationFrame(
@@ -467,9 +465,7 @@ void PresentationFrameManager::OnDefaultPresentationSessionStarted(
     const PresentationRequest& request,
     const content::PresentationSessionInfo& session,
     const MediaRoute& route) {
-  const auto it = presentation_frames_.find(request.render_frame_host_id());
-  if (it != presentation_frames_.end())
-    it->second->OnPresentationSessionStarted(session, route);
+  OnPresentationSessionStarted(request.render_frame_host_id(), session, route);
 
   if (default_presentation_request_ &&
       default_presentation_request_->Equals(request)) {
@@ -576,8 +572,10 @@ void PresentationFrameManager::RemoveDefaultPresentationRequestObserver(
 void PresentationFrameManager::Reset(
     const RenderFrameHostId& render_frame_host_id) {
   const auto it = presentation_frames_.find(render_frame_host_id);
-  if (it != presentation_frames_.end())
+  if (it != presentation_frames_.end()) {
     it->second->Reset();
+    presentation_frames_.erase(it);
+  }
 
   if (default_presentation_request_ &&
       render_frame_host_id ==
