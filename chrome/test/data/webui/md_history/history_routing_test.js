@@ -12,13 +12,16 @@ cr.define('md_history.history_routing_test', function() {
       function navigateTo(route) {
         window.history.replaceState({}, '', route);
         window.dispatchEvent(new CustomEvent('location-changed'));
+        // Update from the URL synchronously.
+        app.$$('history-router').flushDebouncer('parseUrl');
       }
 
       setup(function() {
-        assertEquals('chrome://history/', window.location.href);
         app = replaceApp();
+        assertEquals('chrome://history/', window.location.href);
         sidebar = app.$['content-side-bar']
         toolbar = app.$['toolbar'];
+        return PolymerTest.flushTasks();
       });
 
       test('changing route changes active view', function() {
@@ -78,9 +81,32 @@ cr.define('md_history.history_routing_test', function() {
         assertEquals('chrome://history/?q=' + searchTerm, window.location.href);
       });
 
-      teardown(function() {
-        // Reset back to initial navigation state.
+      test('changing route changes grouped range and offset', function() {
+        app.grouped_ = true;
+        navigateTo('/history/week?offset=1');
+        assertEquals(HistoryRange.WEEK, app.queryState_.range);
+        assertEquals(1, app.queryState_.groupedOffset);
+
+        navigateTo('/history/month');
+        assertEquals(HistoryRange.MONTH, app.queryState_.range);
+        assertEquals(0, app.queryState_.groupedOffset);
+
         navigateTo('/');
+        assertEquals(HistoryRange.ALL_TIME, app.queryState_.range);
+      });
+
+      test('route updates from grouped range and offset', function() {
+        app.grouped_ = true;
+
+        app.fire('change-query', {range: HistoryRange.WEEK});
+        assertEquals('chrome://history/history/week', window.location.href);
+
+        app.fire('change-query', {range: HistoryRange.MONTH, offset: 5});
+        assertEquals(
+            'chrome://history/history/month?offset=5', window.location.href);
+
+        app.fire('change-query', {range: HistoryRange.ALL_TIME});
+        assertEquals('chrome://history/', window.location.href);
       });
     });
   }
@@ -105,6 +131,8 @@ cr.define('md_history.history_routing_test_with_query_param', function() {
       test('search initiated on load', function(done) {
         var verifyFunction = function(info) {
           assertEquals(expectedQuery, info[0]);
+          assertEquals(5, info[1]);
+          assertEquals(HistoryRange.WEEK, info[2]);
           PolymerTest.flushTasks().then(function() {
             assertEquals(
                 expectedQuery,

@@ -2433,13 +2433,13 @@ paper-tab {
           <span id="grouped-date">
             [[getHistoryInterval_(queryInfo)]]
           </span>
-          <button is="paper-icon-button-light" id="today-button" class="icon-button" title="$i18n{rangeToday}" on-tap="onTodayTap_" disabled="[[isToday_(groupedOffset)]]">
+          <button is="paper-icon-button-light" id="today-button" class="icon-button" title="$i18n{rangeToday}" on-click="onTodayTap_" disabled="[[isToday_(groupedOffset)]]">
             <iron-icon icon="history:today"></iron-icon>
           </button>
-          <button is="paper-icon-button-light" id="prev-button" title="$i18n{rangePrevious}" class="icon-button rtl-reversible" on-tap="onPrevTap_" disabled="[[!hasMoreResults]]">
+          <button is="paper-icon-button-light" id="prev-button" title="$i18n{rangePrevious}" class="icon-button rtl-reversible" on-click="onPrevTap_" disabled="[[!hasMoreResults]]">
             <iron-icon icon="history:chevron-left"></iron-icon>
           </button>
-          <button is="paper-icon-button-light" id="next-button" title="$i18n{rangeNext}" class="icon-button rtl-reversible" on-tap="onNextTap_" disabled="[[isToday_(groupedOffset)]]">
+          <button is="paper-icon-button-light" id="next-button" title="$i18n{rangeNext}" class="icon-button rtl-reversible" on-click="onNextTap_" disabled="[[isToday_(groupedOffset)]]">
             <iron-icon icon="cr:chevron-right"></iron-icon>
           </button>
         </div>
@@ -3281,7 +3281,7 @@ dialog .body {
 }
 
 </style>
-    <iron-pages id="content" attr-for-selected="id" selected="[[selectedPage_]]" fallback-selection="infinite-list">
+    <iron-pages id="content" attr-for-selected="id" selected="[[selectedPage_]]">
       <history-list id="infinite-list" querying="[[queryState.querying]]" searched-term="[[queryResult.info.term]]">
       </history-list>
       <template is="dom-if" if="[[grouped]]">
@@ -3556,7 +3556,7 @@ iron-selector > a.iron-selected {
 
 </style>
 
-    <iron-selector id="menu" selected="{{selectedPage}}" selectable=".page-item" attr-for-selected="path" fallback-selection="history" on-iron-activate="onSelectorActivate_">
+    <iron-selector id="menu" selected="{{selectedPage}}" selectable=".page-item" attr-for-selected="path" on-iron-activate="onSelectorActivate_">
       <a href="/" class="page-item" path="history" on-click="onItemClick_">
         $i18n{historyMenuItem}
         <paper-ripple></paper-ripple>
@@ -3722,9 +3722,9 @@ history-toolbar {
 }
 
 </style>
-    <history-query-manager query-state="{{queryState_}}" query-result="[[queryResult_]]">
+    <history-query-manager query-state="{{queryState_}}" query-result="[[queryResult_]]" router="[[$$('#router')]]">
     </history-query-manager>
-    <history-router selected-page="{{selectedPage_}}" query-state="[[queryState_]]">
+    <history-router id="router" selected-page="{{selectedPage_}}" grouped="[[grouped_]]" query-state="[[queryState_]]">
     </history-router>
     <history-toolbar id="toolbar" grouped-offset="[[queryState_.groupedOffset]]" grouped-range="[[queryState_.range]]" has-drawer="[[hasDrawer_]]" has-more-results="[[!queryResult_.info.finished]]" is-grouped-mode="[[grouped_]]" query-info="[[queryResult_.info]]" querying="[[queryState_.querying]]" search-term="[[queryState_.searchTerm]]" show-menu-promo="[[showMenuPromo_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]" spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,

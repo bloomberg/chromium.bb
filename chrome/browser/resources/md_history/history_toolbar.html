@@ -234,7 +234,7 @@
               id="today-button"
               class="icon-button"
               title="$i18n{rangeToday}"
-              on-tap="onTodayTap_"
+              on-click="onTodayTap_"
               disabled="[[isToday_(groupedOffset)]]">
             <iron-icon icon="history:today"></iron-icon>
           </button>
@@ -242,7 +242,7 @@
               id="prev-button"
               title="$i18n{rangePrevious}"
               class="icon-button rtl-reversible"
-              on-tap="onPrevTap_"
+              on-click="onPrevTap_"
               disabled="[[!hasMoreResults]]">
             <iron-icon icon="history:chevron-left"></iron-icon>
           </button>
@@ -250,7 +250,7 @@
               id="next-button"
               title="$i18n{rangeNext}"
               class="icon-button rtl-reversible"
-              on-tap="onNextTap_"
+              on-click="onNextTap_"
               disabled="[[isToday_(groupedOffset)]]">
             <iron-icon icon="cr:chevron-right"></iron-icon>
           </button>

@@ -32,10 +32,6 @@ Polymer({
     actionMenuModel_: Object,
   },
 
-  observers: [
-    'groupedRangeChanged_(queryState.range)',
-  ],
-
   listeners: {
     'open-menu': 'openMenu_',
   },
@@ -58,7 +54,14 @@ Polymer({
     }
 
     var list = /** @type {HistoryListBehavior} */ this.getSelectedList_();
-    list.addNewResults(results, this.queryState.incremental, info.finished);
+    // It is possible for results to arrive for the grouped list before the lazy
+    // load has finished and the <history-grouped-list> element exists. In this
+    // case, add the items to a property on the unresolved element which can be
+    // read when it upgrades and is attached.
+    if (Polymer.isInstance(list))
+      list.addNewResults(results, this.queryState.incremental, info.finished);
+    else
+      list.initialData = results;
   },
 
   historyDeleted: function() {
@@ -111,19 +114,6 @@ Polymer({
    */
   computeSelectedPage_: function(range) {
     return range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
-  },
-
-  /**
-   * @param {HistoryRange} range
-   * @private
-   */
-  groupedRangeChanged_: function(range) {
-    // Reset the results on range change to prevent stale results from being
-    // processed into the incoming range's UI.
-    if (range != HistoryRange.ALL_TIME && this.queryResult.info) {
-      this.set('queryResult.results', []);
-      this.historyResult(this.queryResult.info, []);
-    }
   },
 
   /**

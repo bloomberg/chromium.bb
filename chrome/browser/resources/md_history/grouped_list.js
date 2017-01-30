@@ -40,7 +40,7 @@ Polymer({
     range: Number,
   },
 
-  observers: ['updateGroupedHistoryData_(range, historyData)'],
+  observers: ['updateGroupedHistoryData_(historyData)'],
 
   /**
    * @param {!Array<!HistoryEntry>} results

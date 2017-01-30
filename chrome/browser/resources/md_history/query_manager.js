@@ -33,6 +33,9 @@ Polymer({
 
     /** @type {QueryResult} */
     queryResult: Object,
+
+    /** @type {?HistoryRouterElement} */
+    router: Object,
   },
 
   observers: [
@@ -63,14 +66,9 @@ Polymer({
    */
   queryHistory_: function(incremental) {
     var queryState = this.queryState;
-    // Disable querying until the first set of results have been returned. If
-    // there is a search, query immediately to support search query params from
-    // the URL.
-    var noResults = !this.queryResult || this.queryResult.results == null;
-    if (queryState.queryingDisabled ||
-        (!this.queryState.searchTerm && noResults)) {
+
+    if (queryState.queryingDisabled)
       return;
-    }
 
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
@@ -127,8 +125,11 @@ Polymer({
       needsUpdate = true;
     }
 
-    if (needsUpdate)
+    if (needsUpdate) {
       this.queryHistory_(false);
+      if (this.router)
+        this.router.serializeUrl();
+    }
   },
 
   /**

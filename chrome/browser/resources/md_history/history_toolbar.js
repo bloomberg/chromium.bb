@@ -208,6 +208,9 @@ Polymer({
   /** @private */
   getHistoryInterval_: function() {
     var info = this.queryInfo;
+    if (!info)
+      return;
+
     if (this.groupedRange == HistoryRange.WEEK)
       return info.queryInterval;
 

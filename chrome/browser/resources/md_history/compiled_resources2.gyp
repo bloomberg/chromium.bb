@@ -128,6 +128,7 @@
       'dependencies': [
         'browser_service',
         'externs',
+        'router',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

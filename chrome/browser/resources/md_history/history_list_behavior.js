@@ -30,6 +30,12 @@ SelectionTreeNode.prototype.addChild = function(index, path) {
 var HistoryListBehavior = {
   properties: {
     /**
+     * Allows data to be imported into the list as soon as it is upgraded.
+     * @type {!Array<!HistoryEntry>}
+     */
+    initialData: Array,
+
+    /**
      * Polymer paths to the history items contained in this list.
      * @type {!Set<string>} selectedPaths
      */
@@ -45,6 +51,12 @@ var HistoryListBehavior = {
 
   listeners: {
     'history-checkbox-select': 'itemSelected_',
+  },
+
+  /** @override */
+  attached: function() {
+    if (this.initialData)
+      this.addNewResults(this.initialData, false, false);
   },
 
   /**

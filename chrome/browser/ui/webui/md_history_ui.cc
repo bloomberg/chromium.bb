@@ -243,8 +243,6 @@ MdHistoryUI::~MdHistoryUI() {}
 // static
 bool MdHistoryUI::IsEnabled(Profile* profile) {
   return base::FeatureList::IsEnabled(features::kMaterialDesignHistory) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kHistoryEnableGroupByDomain) &&
          !profile->IsSupervised();
 }
 

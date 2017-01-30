@@ -92,7 +92,6 @@
 
     <iron-selector id="menu" selected="{{selectedPage}}"
         selectable=".page-item" attr-for-selected="path"
-        fallback-selection="history"
         on-iron-activate="onSelectorActivate_">
       <a href="/" class="page-item" path="history" on-click="onItemClick_">
         $i18n{historyMenuItem}

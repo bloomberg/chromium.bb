@@ -173,7 +173,12 @@ function MaterialHistoryRoutingWithQueryParamTest() {}
 MaterialHistoryRoutingWithQueryParamTest.prototype = {
   __proto__: MaterialHistoryRoutingTest.prototype,
 
-  browsePreload: 'chrome://history?q=query',
+  browsePreload: 'chrome://history/history/week?q=query&offset=5',
+
+  commandLineSwitches:
+      MaterialHistoryBrowserTest.prototype.commandLineSwitches.concat([
+        {switchName: 'enable-grouped-history'}
+      ]),
 
   /** @override */
   setUp: function() {

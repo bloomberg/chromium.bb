@@ -69,9 +69,12 @@
       }
     </style>
     <history-query-manager query-state="{{queryState_}}"
-        query-result="[[queryResult_]]">
+        query-result="[[queryResult_]]"
+        router="[[$$('#router')]]">
     </history-query-manager>
-    <history-router selected-page="{{selectedPage_}}"
+    <history-router id="router"
+        selected-page="{{selectedPage_}}"
+        grouped="[[grouped_]]"
         query-state="[[queryState_]]">
     </history-router>
     <history-toolbar id="toolbar"
