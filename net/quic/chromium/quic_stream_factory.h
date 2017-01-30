@@ -43,6 +43,9 @@
 
 namespace base {
 class Value;
+namespace trace_event {
+class ProcessMemoryDump;
+}
 }
 
 namespace net {
@@ -174,6 +177,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
     const HostPortPair& destination() const { return destination_; }
     const QuicServerId& server_id() const { return server_id_; }
+
+    // Returns the estimate of dynamically allocated memory in bytes.
+    size_t EstimateMemoryUsage() const;
 
    private:
     HostPortPair destination_;
@@ -391,6 +397,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool migrate_sessions_on_network_change() const {
     return migrate_sessions_on_network_change_;
   }
+
+  // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
+  // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
+  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
+                       const std::string& parent_absolute_name) const;
 
  private:
   class Job;

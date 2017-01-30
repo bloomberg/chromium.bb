@@ -19,6 +19,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"
@@ -184,6 +187,11 @@ class ServerIdOriginFilter : public QuicCryptoClientConfig::ServerIdFilter {
  private:
   const base::Callback<bool(const GURL&)> origin_filter_;
 };
+
+// Returns the estimate of dynamically allocated memory of |server_id|.
+size_t EstimateServerIdMemoryUsage(const QuicServerId& server_id) {
+  return HostPortPair::EstimateMemoryUsage(server_id.host_port_pair());
+}
 
 }  // namespace
 
@@ -897,6 +905,24 @@ void QuicStreamFactory::set_quic_server_info_factory(
   quic_server_info_factory_.reset(quic_server_info_factory);
 }
 
+void QuicStreamFactory::DumpMemoryStats(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& parent_absolute_name) const {
+  if (all_sessions_.empty())
+    return;
+  base::trace_event::MemoryAllocatorDump* factory_dump =
+      pmd->CreateAllocatorDump(parent_absolute_name + "/quic_stream_factory");
+  size_t memory_estimate =
+      base::trace_event::EstimateMemoryUsage(all_sessions_);
+  factory_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          memory_estimate);
+  factory_dump->AddScalar(
+      base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+      base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+      all_sessions_.size());
+}
+
 bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,
                                               const HostPortPair& destination) {
   // TODO(zhongyi): delete active_sessions_.empty() checks once the
@@ -1045,6 +1071,11 @@ bool QuicStreamFactory::QuicSessionKey::operator==(
     const QuicSessionKey& other) const {
   return destination_.Equals(other.destination_) &&
          server_id_ == other.server_id_;
+}
+
+size_t QuicStreamFactory::QuicSessionKey::EstimateMemoryUsage() const {
+  return HostPortPair::EstimateMemoryUsage(destination_) +
+         EstimateServerIdMemoryUsage(server_id_);
 }
 
 void QuicStreamFactory::CreateAuxilaryJob(const QuicSessionKey& key,

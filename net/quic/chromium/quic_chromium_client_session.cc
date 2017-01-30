@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -1517,6 +1518,13 @@ QuicChromiumClientSession::GetConnectTiming() {
 
 QuicVersion QuicChromiumClientSession::GetQuicVersion() const {
   return connection()->version();
+}
+
+size_t QuicChromiumClientSession::EstimateMemoryUsage() const {
+  // TODO(xunjieli): Estimate |crypto_stream_|, QuicSpdySession's
+  // QuicHeaderList, QuicSession's QuiCWriteBlockedList, open streams and
+  // unacked packet map.
+  return base::trace_event::EstimateMemoryUsage(packet_readers_);
 }
 
 }  // namespace net
