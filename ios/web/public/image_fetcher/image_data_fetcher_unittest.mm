@@ -158,11 +158,6 @@ TEST_F(ImageDataFetcherTest, TestPng) {
 }
 
 TEST_F(ImageDataFetcherTest, TestGoodWebP) {
-// TODO(droger): This test fails on iOS 9 x64 devices. http://crbug.com/523235
-#if defined(OS_IOS) && defined(ARCH_CPU_ARM64) && !TARGET_IPHONE_SIMULATOR
-  if (base::ios::IsRunningOnIOS9OrLater())
-    return;
-#endif
   net::TestURLFetcher* fetcher = SetupFetcher();
   fetcher->set_response_code(200);
   fetcher->SetResponseString(
