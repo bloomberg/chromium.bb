@@ -27,9 +27,9 @@ callback MediaSessionActionHandler = void ();
     Custom=VisitDOMWrapper,
     RuntimeEnabled=MediaSession,
 ] interface MediaSession {
-    attribute MediaMetadata? metadata;
-    attribute MediaSessionPlaybackState playbackState;
+    [Measure] attribute MediaMetadata? metadata;
+    [Measure] attribute MediaSessionPlaybackState playbackState;
 
-    void setActionHandler(MediaSessionAction action,
-                          MediaSessionActionHandler? handler);
+    [Measure] void setActionHandler(MediaSessionAction action,
+                                    MediaSessionActionHandler? handler);
 };
