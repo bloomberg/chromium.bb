@@ -31,6 +31,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -61,8 +62,8 @@ class ArcSessionManagerTestBase : public testing::Test {
 
     chromeos::DBusThreadManager::Initialize();
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableArc);
+    SetArcAvailableCommandLineForTesting(
+        base::CommandLine::ForCurrentProcess());
     ArcSessionManager::DisableUIForTesting();
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());

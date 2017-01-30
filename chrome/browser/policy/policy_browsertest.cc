@@ -206,10 +206,8 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_session_runner.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
@@ -4048,7 +4046,8 @@ class ArcPolicyTest : public PolicyTest {
   ~ArcPolicyTest() override {}
 
  protected:
-  void SetUpTest() {
+  void SetUpOnMainThread() override {
+    PolicyTest::SetUpOnMainThread();
     arc::ArcSessionManager::DisableUIForTesting();
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         base::MakeUnique<arc::ArcSessionRunner>(
@@ -4059,21 +4058,14 @@ class ArcPolicyTest : public PolicyTest {
                                                  true);
   }
 
-  void TearDownTest() { arc::ArcSessionManager::Get()->Shutdown(); }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    fake_session_manager_client_ = new chromeos::FakeSessionManagerClient;
-    fake_session_manager_client_->set_arc_available(true);
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::unique_ptr<chromeos::SessionManagerClient>(
-            fake_session_manager_client_));
+  void TearDownOnMainThread() override {
+    arc::ArcSessionManager::Get()->Shutdown();
+    PolicyTest::TearDownOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // ArcSessionManager functionality is available only when Arc is enabled.
-    // Use kEnableArc switch that activates it.
-    command_line->AppendSwitch(chromeos::switches::kEnableArc);
+    PolicyTest::SetUpCommandLine(command_line);
+    arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetArcEnabledByPolicy(bool enabled) {
@@ -4090,15 +4082,11 @@ class ArcPolicyTest : public PolicyTest {
   }
 
  private:
-  chromeos::FakeSessionManagerClient *fake_session_manager_client_;
-
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
 };
 
 // Test ArcEnabled policy.
 IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
-  SetUpTest();
-
   const PrefService* const pref = browser()->profile()->GetPrefs();
   const auto* const arc_session_manager = arc::ArcSessionManager::Get();
 
@@ -4113,14 +4101,10 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   // Disable ARC.
   SetArcEnabledByPolicy(false);
   EXPECT_TRUE(arc_session_manager->IsSessionStopped());
-
-  TearDownTest();
 }
 
 // Test ArcBackupRestoreEnabled policy.
 IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
-  SetUpTest();
-
   const PrefService* const pref = browser()->profile()->GetPrefs();
 
   // ARC Backup & Restore is switched on by default.
@@ -4143,14 +4127,10 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_TRUE(pref->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-
-  TearDownTest();
 }
 
 // Test ArcLocationServiceEnabled policy.
 IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
-  SetUpTest();
-
   const PrefService* const pref = browser()->profile()->GetPrefs();
 
   // ARC Location Service is switched on by default.
@@ -4182,8 +4162,6 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
   EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
-
-  TearDownTest();
 }
 
 namespace {

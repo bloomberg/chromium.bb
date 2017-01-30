@@ -14,7 +14,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
-#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_util.h"
 #endif
 
 using extensions::ExtensionPrefs;
@@ -34,13 +34,13 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       source(source),
       play_store_status(PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN) {
 #if defined(OS_CHROMEOS)
+  // TODO(b/34478891): Remove this from app launch.
   if (set_playstore_status) {
-    if (arc::ArcSessionManager::IsAllowedForProfile(profile)) {
+    if (arc::ArcSessionManager::IsAllowedForProfile(profile))
       play_store_status = PlayStoreStatus::PLAY_STORE_STATUS_ENABLED;
-    } else if (arc::ArcBridgeService::GetAvailable(
-                   base::CommandLine::ForCurrentProcess())) {
+    else if (arc::IsArcAvailable())
       play_store_status = PlayStoreStatus::PLAY_STORE_STATUS_AVAILABLE;
-    }  // else, default to PLAY_STORE_STATUS_UNKNOWN.
+    // else, default to PLAY_STORE_STATUS_UNKNOWN.
   }
 #endif
 }

@@ -69,8 +69,6 @@ void SyncArcPackageHelper::SetupTest(SyncTest* test) {
 
   user_manager_enabler_ = base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
       new chromeos::FakeChromeUserManager());
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableArc);
   ArcAppListPrefsFactory::SetFactoryForSyncTest();
   size_t id = 0;
   for (auto* profile : test_->GetAllProfiles())
@@ -145,8 +143,6 @@ bool SyncArcPackageHelper::AllProfilesHaveSamePackageDetails() {
 
 void SyncArcPackageHelper::SetupArcService(Profile* profile, size_t id) {
   DCHECK(profile);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableArc);
   const user_manager::User* user = CreateUserAndLogin(profile, id);
   // Have the user-to-profile mapping ready to avoid using the real profile
   // manager (which is null).

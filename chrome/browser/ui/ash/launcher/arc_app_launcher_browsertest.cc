@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
-#include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/events/event_constants.h"
 
@@ -157,7 +157,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   // content::BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableArc);
+    arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetUpInProcessBrowserTestFixture() override {

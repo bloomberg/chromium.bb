@@ -1,0 +1,38 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_ARC_ARC_UTIL_H_
+#define COMPONENTS_ARC_ARC_UTIL_H_
+
+// This file contains utility to see ARC functionality status controlled by
+// outside of ARC, e.g. CommandLine flag, attribute of global data/state,
+// users' preferences, and FeatureList.
+
+namespace base {
+class CommandLine;
+}  // namespace base
+
+namespace arc {
+
+// Returns true if ARC is installed and the current device is officially
+// supported to run ARC.
+// Note that, to run ARC practically, it is necessary to meet more conditions,
+// e.g., ARC supports only on Primary User Profile. To see if ARC can actually
+// run for the profile etc., arc::ArcSessionManager::IsAllowedForProfile() is
+// the function for that purpose. Please see also its comment, too.
+// Also note that, ARC singleton classes (e.g. ArcSessionManager,
+// ArcServiceManager, ArcServiceLauncher) are instantiated regardless of this
+// check, so it is ok to access them directly.
+bool IsArcAvailable();
+
+// For testing ARC in browser tests, this function should be called in
+// SetUpCommandLine(), and its argument should be passed to this function.
+// Also, in unittests, this can be called in SetUp() with
+// base::CommandLine::ForCurrentProcess().
+// |command_line| must not be nullptr.
+void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line);
+
+}  // namespace arc
+
+#endif  // COMPONENTS_ARC_ARC_UTIL_H_

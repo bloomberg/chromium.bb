@@ -43,6 +43,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_session_runner.h"
+#include "components/arc/arc_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -66,6 +67,9 @@ ash::ShelfDelegate* g_shelf_delegate_for_testing = nullptr;
 // The Android management check is disabled by default, it's used only for
 // testing.
 bool g_enable_check_android_management_for_testing = false;
+
+// Let IsAllowedForProfile() return "false" for any profile.
+bool g_disallow_for_testing = false;
 
 // Maximum amount of time we'll wait for ARC to finish booting up. Once this
 // timeout expires, keep ARC running in case the user wants to file feedback,
@@ -148,8 +152,13 @@ void ArcSessionManager::EnableCheckAndroidManagementForTesting() {
 
 // static
 bool ArcSessionManager::IsAllowedForProfile(const Profile* profile) {
-  if (!ArcBridgeService::GetEnabled(base::CommandLine::ForCurrentProcess())) {
-    VLOG(1) << "Arc is not enabled.";
+  if (g_disallow_for_testing) {
+    VLOG(1) << "ARC is disallowed for testing.";
+    return false;
+  }
+
+  if (!IsArcAvailable()) {
+    VLOG(1) << "ARC is not available.";
     return false;
   }
 
@@ -191,11 +200,16 @@ bool ArcSessionManager::IsAllowedForProfile(const Profile* profile) {
 
   if (user_manager::UserManager::Get()
           ->IsCurrentUserCryptohomeDataEphemeral()) {
-    VLOG(2) << "Users with ephemeral data are not supported in Arc.";
+    VLOG(2) << "Users with ephemeral data are not supported in ARC.";
     return false;
   }
 
   return true;
+}
+
+// static
+void ArcSessionManager::DisallowForTesting() {
+  g_disallow_for_testing = true;
 }
 
 // static

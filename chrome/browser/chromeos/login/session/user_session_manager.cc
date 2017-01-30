@@ -92,7 +92,6 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -1191,10 +1190,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCRLSetFetcher(user);
     InitializeCertificateTransparencyComponents(user);
 
-    if (arc::ArcBridgeService::GetEnabled(
-            base::CommandLine::ForCurrentProcess())) {
-      arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
-    }
+    arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
   }
 
   UpdateEasyUnlockKeys(user_context_);

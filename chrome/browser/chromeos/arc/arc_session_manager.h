@@ -135,6 +135,9 @@ class ArcSessionManager : public ArcSessionObserver,
   // Returns true if Arc is allowed to run for the given profile.
   static bool IsAllowedForProfile(const Profile* profile);
 
+  // Disallows ARC for all profiles for testing.
+  static void DisallowForTesting();
+
   // Returns true if ARC should run under Kiosk mode.
   static bool IsArcKioskMode();
 

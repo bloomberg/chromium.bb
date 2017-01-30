@@ -5,15 +5,8 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 
-#include <memory>
-
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "components/arc/instance_holder.h"
-
-namespace base {
-class CommandLine;
-}  // namespace base
 
 namespace arc {
 
@@ -55,12 +48,6 @@ class ArcBridgeService {
  public:
   ArcBridgeService();
   ~ArcBridgeService();
-
-  // Returns true if ARC has been enabled through a commandline switch.
-  static bool GetEnabled(const base::CommandLine* command_line);
-
-  // Returns true if ARC is available on the current board.
-  static bool GetAvailable(const base::CommandLine* command_line);
 
   InstanceHolder<mojom::AccessibilityHelperInstance>* accessibility_helper() {
     return &accessibility_helper_;

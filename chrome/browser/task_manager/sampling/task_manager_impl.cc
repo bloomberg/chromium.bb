@@ -10,7 +10,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/browser_process_task_provider.h"
@@ -25,7 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/task_manager/providers/arc/arc_process_task_provider.h"
-#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace task_manager {
@@ -57,10 +56,8 @@ TaskManagerImpl::TaskManagerImpl()
   task_providers_.emplace_back(new ChildProcessTaskProvider());
   task_providers_.emplace_back(new WebContentsTaskProvider());
 #if defined(OS_CHROMEOS)
-  if (arc::ArcBridgeService::GetEnabled(
-          base::CommandLine::ForCurrentProcess())) {
+  if (arc::IsArcAvailable())
     task_providers_.emplace_back(new ArcProcessTaskProvider());
-  }
 #endif  // defined(OS_CHROMEOS)
 
   content::GpuDataManager::GetInstance()->AddObserver(this);

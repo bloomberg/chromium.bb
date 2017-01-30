@@ -29,12 +29,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -135,6 +132,11 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   ~ArcSessionManagerTest() override {}
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    arc::SetArcAvailableCommandLineForTesting(command_line);
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     // Start test device management server.
     test_server_.reset(new policy::LocalPolicyTestServer());
@@ -146,15 +148,6 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
         base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     url);
-
-    // Enable ARC.
-    command_line->AppendSwitch(chromeos::switches::kEnableArc);
-    chromeos::FakeSessionManagerClient* const fake_session_manager_client =
-        new chromeos::FakeSessionManagerClient;
-    fake_session_manager_client->set_arc_available(true);
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::unique_ptr<chromeos::SessionManagerClient>(
-            fake_session_manager_client));
   }
 
   void SetUpOnMainThread() override {

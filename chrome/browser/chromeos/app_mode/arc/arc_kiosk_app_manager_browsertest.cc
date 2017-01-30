@@ -17,8 +17,8 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/arc/arc_util.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -83,7 +83,7 @@ class ArcKioskAppManagerTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableArc);
+    arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetUpOnMainThread() override {

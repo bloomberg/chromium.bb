@@ -15,11 +15,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,8 +60,8 @@ void ArcAppTest::SetUp(Profile* profile) {
     chromeos::DBusThreadManager::Initialize();
     dbus_thread_manager_initialized_ = true;
   }
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableArc);
+  arc::SetArcAvailableCommandLineForTesting(
+      base::CommandLine::ForCurrentProcess());
   DCHECK(!profile_);
   profile_ = profile;
   const user_manager::User* user = CreateUserAndLogin();

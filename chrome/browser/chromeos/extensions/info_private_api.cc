@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -25,7 +24,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -266,10 +265,8 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
             Profile::FromBrowserContext(context_))) {
       return new base::StringValue(kPlayStoreStatusEnabled);
     }
-    if (arc::ArcBridgeService::GetAvailable(
-            base::CommandLine::ForCurrentProcess())) {
+    if (arc::IsArcAvailable())
       return new base::StringValue(kPlayStoreStatusAvailable);
-    }
     return new base::StringValue(kPlayStoreStatusNotAvailable);
   }
 

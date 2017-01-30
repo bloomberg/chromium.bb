@@ -89,6 +89,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #endif
 
 using browser_sync::ProfileSyncService;
@@ -297,6 +298,7 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
 
 #if defined(OS_CHROMEOS)
   cl->AppendSwitch(chromeos::switches::kIgnoreUserProfileMappingForTests);
+  arc::SetArcAvailableCommandLineForTesting(cl);
 #endif
 }
 

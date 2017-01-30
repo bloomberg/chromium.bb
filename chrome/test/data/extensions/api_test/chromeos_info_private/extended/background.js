@@ -13,6 +13,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
         function (values) {
       if (testName == 'kiosk') {
         chrome.test.assertEq('kiosk', values['sessionType']);
+      } else if (testName == 'arc not-available') {
+        chrome.test.assertEq('not available', values['playStoreStatus']);
       } else if (testName == 'arc available') {
         chrome.test.assertEq('available', values['playStoreStatus']);
       } else if (testName == 'arc enabled') {

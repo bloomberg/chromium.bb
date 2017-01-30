@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -70,15 +70,13 @@ net::URLRequestJob* ResponseJob(net::URLRequest* request,
 class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
  protected:
   ArcRobotAuthCodeFetcherBrowserTest() = default;
-
-  // InProcessBrowserTest:
   ~ArcRobotAuthCodeFetcherBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     "http://localhost");
-    command_line->AppendSwitch(chromeos::switches::kEnableArc);
+    arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetUpOnMainThread() override {

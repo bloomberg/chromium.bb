@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
@@ -133,7 +134,14 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
 bool ArcIntentHelperBridge::IsIntentHelperAvailable(GetResult* out_error_code) {
   auto* arc_service_manager = ArcServiceManager::Get();
   if (!arc_service_manager) {
-    if (!ArcBridgeService::GetEnabled(base::CommandLine::ForCurrentProcess())) {
+    // TODO(hidehiko): IsArcAvailable() looks not the condition to be checked
+    // here, because ArcServiceManager instance is created regardless of ARC
+    // availability. This happens only before MessageLoop starts or after
+    // MessageLoop stops, practically.
+    // Also, returning FAILED_ARC_NOT_READY looks problematic at the moment,
+    // because ArcProcessTask::StartIconLoading accesses to
+    // ArcServiceManager::Get() return value, which can be nullptr.
+    if (!IsArcAvailable()) {
       VLOG(2) << "ARC bridge is not supported.";
       if (out_error_code)
         *out_error_code = GetResult::FAILED_ARC_NOT_SUPPORTED;
