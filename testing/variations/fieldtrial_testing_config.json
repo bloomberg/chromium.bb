@@ -1643,9 +1643,9 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledGlobalRankingNoVersioned",
+                    "name": "EnabledCGUV20",
                     "params": {
-                        "config_url": "https://www.gstatic.com/chrome/wifiprefetch/precache_config_gm"
+                        "config_url": "https://www.gstatic.com/chrome/wifiprefetch/precache_config_g20"
                     }
                 }
             ]
