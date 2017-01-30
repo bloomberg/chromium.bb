@@ -695,7 +695,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   std::unique_ptr<net::HttpNetworkSession> http_network_session(
       new net::HttpNetworkSession(network_params));
   std::unique_ptr<net::HttpCache> app_http_cache =
-      CreateHttpFactory(http_network_session.get(), std::move(app_backend));
+      CreateMainHttpFactory(http_network_session.get(), std::move(app_backend));
 
   // Transfer ownership of the ChannelIDStore and the HttpNetworkSession to the
   // AppRequestContext.

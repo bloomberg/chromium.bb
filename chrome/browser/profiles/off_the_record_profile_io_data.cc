@@ -339,7 +339,7 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
       new net::HttpNetworkSession(network_params));
 
   // Use a separate in-memory cache for the app.
-  std::unique_ptr<net::HttpCache> app_http_cache = CreateHttpFactory(
+  std::unique_ptr<net::HttpCache> app_http_cache = CreateMainHttpFactory(
       http_network_session.get(), net::HttpCache::DefaultBackend::InMemory(0));
 
   context->SetChannelIDService(std::move(channel_id_service));
