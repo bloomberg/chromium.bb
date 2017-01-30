@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 

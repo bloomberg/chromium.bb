@@ -156,6 +156,8 @@ class USBDeviceImplTest : public testing::Test {
 
   ~USBDeviceImplTest() override {}
 
+  void TearDown() override { base::RunLoop().RunUntilIdle(); }
+
  protected:
   MockPermissionProvider& permission_provider() { return permission_provider_; }
   MockUsbDevice& mock_device() { return *mock_device_.get(); }

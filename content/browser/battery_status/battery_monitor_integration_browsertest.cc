@@ -39,7 +39,7 @@ typedef BatteryUpdateCallbackList::Subscription BatteryUpdateSubscription;
 device::BatteryStatus g_battery_status;
 // Global list of test battery monitors to notify when |g_battery_status|
 // changes.
-base::LazyInstance<BatteryUpdateCallbackList> g_callback_list =
+base::LazyInstance<BatteryUpdateCallbackList>::Leaky g_callback_list =
     LAZY_INSTANCE_INITIALIZER;
 
 // Updates the global battery state and notifies existing test monitors.

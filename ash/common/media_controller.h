@@ -7,6 +7,7 @@
 
 #include "ash/public/interfaces/media.mojom.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 

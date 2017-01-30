@@ -14,6 +14,10 @@
 #include "services/video_capture/test/mock_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+class MessageLoop;
+}
+
 namespace video_capture {
 
 class MockDevice : public media::VideoCaptureDevice {

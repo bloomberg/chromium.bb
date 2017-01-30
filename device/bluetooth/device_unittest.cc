@@ -141,6 +141,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
     EXPECT_EQ(expected_success_callback_calls_, actual_success_callback_calls_);
     EXPECT_EQ(message_pipe_closed_, expect_device_service_deleted_);
     proxy_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:

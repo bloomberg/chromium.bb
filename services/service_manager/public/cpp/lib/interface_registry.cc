@@ -4,6 +4,7 @@
 
 #include "services/service_manager/public/cpp/interface_registry.h"
 
+#include <iterator>
 #include <sstream>
 
 #include "base/memory/ptr_util.h"

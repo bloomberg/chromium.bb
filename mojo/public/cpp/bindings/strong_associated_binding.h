@@ -29,7 +29,10 @@ using StrongAssociatedBindingPtr =
     base::WeakPtr<StrongAssociatedBinding<Interface>>;
 
 // This connects an interface implementation strongly to an associated pipe.
-// When a connection error is detected the implementation is deleted.
+// When a connection error is detected the implementation is deleted. If the
+// task runner that a StrongAssociatedBinding is bound on is stopped, the
+// connection error handler will not be invoked and the implementation will not
+// be deleted.
 //
 // To use, call StrongAssociatedBinding<T>::Create() (see below) or the helper
 // MakeStrongAssociatedBinding function:

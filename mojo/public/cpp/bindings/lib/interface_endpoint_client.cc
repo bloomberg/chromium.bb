@@ -159,14 +159,10 @@ InterfaceEndpointClient::InterfaceEndpointClient(
       handle_, this, task_runner_);
   if (expect_sync_requests)
     controller_->AllowWokenUpBySyncWatchOnSameThread();
-
-  base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
 InterfaceEndpointClient::~InterfaceEndpointClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  StopObservingIfNecessary();
 
   if (handle_.is_valid())
     handle_.group_controller()->DetachEndpointClient(handle_);
@@ -349,19 +345,6 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
 
     return incoming_receiver_->Accept(message);
   }
-}
-
-void InterfaceEndpointClient::StopObservingIfNecessary() {
-  if (!observing_message_loop_destruction_)
-    return;
-
-  observing_message_loop_destruction_ = false;
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
-}
-
-void InterfaceEndpointClient::WillDestroyCurrentMessageLoop() {
-  StopObservingIfNecessary();
-  NotifyError(base::nullopt);
 }
 
 }  // namespace mojo

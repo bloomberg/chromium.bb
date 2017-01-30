@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_manager.h"

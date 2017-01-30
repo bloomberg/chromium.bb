@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

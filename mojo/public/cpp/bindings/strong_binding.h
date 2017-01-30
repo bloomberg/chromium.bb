@@ -31,7 +31,9 @@ template <typename Interface>
 using StrongBindingPtr = base::WeakPtr<StrongBinding<Interface>>;
 
 // This connects an interface implementation strongly to a pipe. When a
-// connection error is detected the implementation is deleted.
+// connection error is detected the implementation is deleted. If the task
+// runner that a StrongBinding is bound on is stopped, the connection error
+// handler will not be invoked and the implementation will not be deleted.
 //
 // To use, call StrongBinding<T>::Create() (see below) or the helper
 // MakeStrongBinding function:
