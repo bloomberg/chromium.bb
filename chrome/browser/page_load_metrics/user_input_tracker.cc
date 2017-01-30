@@ -24,8 +24,8 @@ const int kOldestAllowedEventAgeSeconds = kMaxEventAgeSeconds * 2;
 // In order to limit to at most kMaxTrackedEvents, we rate limit the recorded
 // events,
 // allowing one per rate limit period.
-const int kRateLimitClampMillis = (kOldestAllowedEventAgeSeconds * 1000) /
-                                  UserInputTracker::kMaxTrackedEvents;
+constexpr int kRateLimitClampMillis = (kOldestAllowedEventAgeSeconds * 1000) /
+                                      UserInputTracker::kMaxTrackedEvents;
 
 bool IsInterestingInputEvent(const blink::WebInputEvent& event) {
   // Ignore synthesized auto repeat events.
@@ -57,13 +57,13 @@ base::TimeTicks GetTimeTicksFromSeconds(double seconds) {
 
 }  // namespace
 
+constexpr size_t UserInputTracker::kMaxTrackedEvents;
+
 UserInputTracker::UserInputTracker() {
   sorted_event_times_.reserve(kMaxTrackedEvents);
 }
 
 UserInputTracker::~UserInputTracker() {}
-
-const size_t UserInputTracker::kMaxTrackedEvents = 100;
 
 // static
 base::TimeTicks UserInputTracker::GetEventTime(

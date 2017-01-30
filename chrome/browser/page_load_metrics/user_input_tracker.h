@@ -37,7 +37,7 @@ namespace page_load_metrics {
 class UserInputTracker {
  public:
   // Only public for tests.
-  static const size_t kMaxTrackedEvents;
+  static constexpr size_t kMaxTrackedEvents = 100;
   static base::TimeTicks GetEventTime(const blink::WebInputEvent& event);
 
   // Given a time, round to the nearest rate-limited offset. UserInputTracker
