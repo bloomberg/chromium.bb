@@ -32,7 +32,7 @@ class TestMakeUploadRequest(unittest.TestCase):
             'multipart/form-data; '
             'boundary=-J-S-O-N-R-E-S-U-L-T-S---B-O-U-N-D-A-R-Y-')
 
-        self.assertEqual(url, 'http://localhost/testfile/upload')
+        self.assertEqual(url, 'https://localhost/testfile/upload')
         self.assertMultiLineEqual(
             data,
             ('---J-S-O-N-R-E-S-U-L-T-S---B-O-U-N-D-A-R-Y-\r\n'

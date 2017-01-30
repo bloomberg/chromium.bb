@@ -105,7 +105,7 @@ def make_full_results(metadata, seconds_since_epoch, all_test_names, results):
 
 def make_upload_request(test_results_server, builder, master, testtype,
                         full_results):
-    url = 'http://%s/testfile/upload' % test_results_server
+    url = 'https://%s/testfile/upload' % test_results_server
     attrs = [('builder', builder),
              ('master', master),
              ('testtype', testtype)]

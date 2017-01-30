@@ -25,7 +25,7 @@ class TestResultServerFakeTest(unittest.TestCase):
         posts = []
         try:
             server = test_result_server_fake.start()
-            url = 'http://%s:%d/testfile/upload' % server.server_address
+            url = 'https://%s:%d/testfile/upload' % server.server_address
             if server:
                 resp = host.fetch(url, 'foo=bar')
         finally:
