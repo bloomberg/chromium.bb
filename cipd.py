@@ -202,7 +202,23 @@ class CipdClient(object):
             exit_code, '\n'.join(output)))
       with open(json_file_path) as jfile:
         result_json = json.load(jfile)
-      return [(x['package'], x['instance_id']) for x in result_json['result']]
+      # TEMPORARY(iannucci): this code handles cipd <1.4 and cipd >=1.5
+      # formatted ensure result formats. Cipd 1.5 added support for subdirs, and
+      # as part of the transition, the result of the ensure command needed to
+      # change. To ease the transition, we always return data as-if we're using
+      # the new format. Once cipd 1.5+ is deployed everywhere, this type switch
+      # can be removed.
+      if isinstance(result_json['result'], dict):
+        # cipd 1.5
+        return {
+          subdir: [(x['package'], x['instance_id']) for x in pins]
+          for subdir, pins in result_json['result'].iteritems()
+        }
+      else:
+        # cipd 1.4
+        return {
+          "": [(x['package'], x['instance_id']) for x in result_json['result']],
+        }
     finally:
       fs.remove(list_file_path)
       fs.remove(json_file_path)

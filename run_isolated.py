@@ -763,7 +763,7 @@ def install_packages(
           site_root, [(name, vers) for name, vers, _ in pkgs],
           cache_dir=cipd_cache_dir,
           timeout=timeoutfn())
-      for i, pin in enumerate(pins):
+      for i, pin in enumerate(pins[""]):
         insert_pin(path, pin[0], pin[1], pkgs[i][2])
       file_path.make_tree_files_read_only(site_root)
 
