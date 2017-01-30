@@ -2221,7 +2221,6 @@ crbug.com/663874 virtual/mojo-loading/http/tests/fetch/window/thorough/redirect-
 crbug.com/663874 virtual/mojo-loading/http/tests/fetch/window/thorough/redirect-password-other-https.html [ Pass Failure ]
 crbug.com/663874 virtual/mojo-loading/http/tests/fetch/window/thorough/scheme-blob.html [ Pass Failure ]
 crbug.com/663874 virtual/mojo-loading/http/tests/fetch/window/thorough/scheme-data-other-https.html [ Pass Failure ]
-crbug.com/671477 virtual/mojo-loading/http/tests/inspector/debugger/fetch-breakpoints.html [ Pass Failure ]
 crbug.com/663876 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-block-effectively-2g.html [ Pass Failure ]
 crbug.com/663877 virtual/mojo-loading/http/tests/media/video-load-suspend.html [ Pass Failure ]
 crbug.com/663879 virtual/mojo-loading/http/tests/misc/script-no-store.html [ Pass Failure ]
