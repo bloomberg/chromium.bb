@@ -2189,8 +2189,9 @@ const uint8_t* MinidumpModule::GetCVRecord(uint32_t* size) {
     }
 
     if (signature == MD_CVINFOPDB70_SIGNATURE) {
-      // Now that the structure type is known, recheck the size.
-      if (MDCVInfoPDB70_minsize > module_.cv_record.data_size) {
+      // Now that the structure type is known, recheck the size,
+      // ensuring at least one byte for the null terminator.
+      if (MDCVInfoPDB70_minsize + 1 > module_.cv_record.data_size) {
         BPLOG(ERROR) << "MinidumpModule CodeView7 record size mismatch, " <<
                         MDCVInfoPDB70_minsize << " > " <<
                         module_.cv_record.data_size;
@@ -2215,8 +2216,9 @@ const uint8_t* MinidumpModule::GetCVRecord(uint32_t* size) {
         return NULL;
       }
     } else if (signature == MD_CVINFOPDB20_SIGNATURE) {
-      // Now that the structure type is known, recheck the size.
-      if (MDCVInfoPDB20_minsize > module_.cv_record.data_size) {
+      // Now that the structure type is known, recheck the size,
+      // ensuring at least one byte for the null terminator.
+      if (MDCVInfoPDB20_minsize + 1 > module_.cv_record.data_size) {
         BPLOG(ERROR) << "MinidumpModule CodeView2 record size mismatch, " <<
                         MDCVInfoPDB20_minsize << " > " <<
                         module_.cv_record.data_size;
