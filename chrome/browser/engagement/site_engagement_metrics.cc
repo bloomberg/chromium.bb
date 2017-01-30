@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 
 namespace {
 
@@ -41,6 +42,9 @@ const char SiteEngagementMetrics::kEngagementScoreHistogramHTTP[] =
 
 const char SiteEngagementMetrics::kEngagementScoreHistogramHTTPS[] =
     "SiteEngagementService.EngagementScore.HTTPS";
+
+const char SiteEngagementMetrics::kEngagementScoreHistogramIsZero[] =
+    "SiteEngagementService.EngagementScore.IsZero";
 
 const char SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram[] =
     "SiteEngagementService.OriginsWithMaxEngagement";
@@ -95,9 +99,11 @@ void SiteEngagementMetrics::RecordEngagementScores(
   for (size_t i = 0; i < arraysize(kEngagementBucketHistogramBuckets); ++i)
     score_buckets[kEngagementBucketHistogramBuckets[i]] = 0;
 
+  const double threshold_0 = std::numeric_limits<double>::epsilon();;
   for (const auto& value : score_map) {
     double score = value.second;
     UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogram, score);
+    UMA_HISTOGRAM_BOOLEAN(kEngagementScoreHistogramIsZero, score < threshold_0);
     if (value.first.SchemeIs(url::kHttpsScheme)) {
       UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTPS, score);
       https_engagement += score;

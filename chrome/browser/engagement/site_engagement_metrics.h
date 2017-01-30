@@ -58,6 +58,7 @@ class SiteEngagementMetrics {
   static const char kEngagementScoreHistogram[];
   static const char kEngagementScoreHistogramHTTP[];
   static const char kEngagementScoreHistogramHTTPS[];
+  static const char kEngagementScoreHistogramIsZero[];
   static const char kOriginsWithMaxEngagementHistogram[];
   static const char kOriginsWithMaxDailyEngagementHistogram[];
   static const char kPercentOriginsWithMaxEngagementHistogram[];
