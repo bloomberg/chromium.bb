@@ -183,8 +183,6 @@ class ValidationPool(object):
   THROTTLED_OK = True
   GLOBAL_DRYRUN = False
   DEFAULT_TIMEOUT = 60 * 60 * 4
-  # How long to wait when the tree is throttled before checking for CR+1 CL's.
-  CQ_THROTTLED_TIMEOUT = 60 * 10
   SLEEP_TIMEOUT = 30
   # Buffer time to leave when using the global build deadline as the sync stage
   # timeout. We need some time to possibly extend the global build deadline
@@ -353,8 +351,6 @@ class ValidationPool(object):
     # Dictionary that maps CQ Queries to msg's to display.
     if query == constants.CQ_READY_QUERY:
       return 'new CLs'
-    elif query == constants.THROTTLED_CQ_READY_QUERY:
-      return 'new CQ+2 CLs or the tree to open'
     else:
       return 'waiting for tree to open'
 
@@ -448,9 +444,6 @@ class ValidationPool(object):
           timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
 
     end_time = time.time() + timeout
-    # How long to wait until if the tree is throttled and we want to be more
-    # accepting of changes. We leave it as end_time whenever the tree is open.
-    tree_throttled_time = end_time
     status = constants.TREE_OPEN
 
     while True:
@@ -462,14 +455,6 @@ class ValidationPool(object):
           status = tree_status.WaitForTreeStatus(
               period=cls.SLEEP_TIMEOUT, timeout=time_left,
               throttled_ok=cls.THROTTLED_OK)
-          # Manages the timer for accepting CL's >= CR+1 based on tree status.
-          # If the tree is not open.
-          if status == constants.TREE_OPEN:
-            # Reset the timer in case it was changed.
-            tree_throttled_time = end_time
-          elif tree_throttled_time == end_time:
-            # Tree not open and tree_throttled_time not set.
-            tree_throttled_time = current_time + cls.CQ_THROTTLED_TIMEOUT
         except timeout_util.TimeoutError:
           raise TreeIsClosedException(
               closed_or_throttled=not cls.THROTTLED_OK)
@@ -477,18 +462,8 @@ class ValidationPool(object):
       # Sync so that we are up-to-date on what is committed.
       repo.Sync()
 
-      # Determine the query to use.
       gerrit_query, ready_fn = query
-      tree_was_open = True
-      if (status == constants.TREE_THROTTLED and
-          query == constants.CQ_READY_QUERY):
-        if current_time < tree_throttled_time:
-          gerrit_query, ready_fn = constants.THROTTLED_CQ_READY_QUERY
-        else:
-          # Note we only apply the tree not open logic after a given
-          # window.
-          tree_was_open = False
-          gerrit_query, ready_fn = constants.CQ_READY_QUERY
+      tree_was_open = (status == constants.TREE_OPEN)
 
       pool = ValidationPool(overlays, repo.directory, build_number,
                             builder_name, True, dryrun, builder_run=builder_run,

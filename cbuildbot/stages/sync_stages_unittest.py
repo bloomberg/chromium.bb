@@ -728,15 +728,6 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
                       self._testCommitNonManifestChange,
                       tree_open=False)
 
-  def testTreeThrottleUsesAlternateGerritQuery(self):
-    """Test that if the tree is throttled, we use an alternate gerrit query."""
-    changes = self.PerformSync(tree_throttled=True)
-    gerrit.GerritHelper.Query.assert_called_with(
-        mock.ANY, constants.THROTTLED_CQ_READY_QUERY[0],
-        sort='lastUpdated')
-    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
-
 
 class PreCQLauncherStageTest(MasterCQSyncTestCase):
   """Tests for the PreCQLauncherStage."""

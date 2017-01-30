@@ -718,16 +718,9 @@ _QUERIES = {
 
 
 # Default gerrit query used to find changes for CQ.
-# Permits CQ+1 or CQ+2 changes.
 CQ_READY_QUERY = (
     '%(open)s AND %(approved)s AND label:Commit-Queue>=1' % _QUERIES,
     lambda change: change.IsMergeable())
-
-# Gerrit query used to find changes for CQ when tree is throttled.
-# Permits only CQ+2 changes.
-THROTTLED_CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=2' % _QUERIES,
-    lambda change: change.IsMergeable() and change.HasApproval('COMR', '2'))
 
 # The PreCQ does not require the CQ bit to be set if it's a recent CL, or if
 # the Trybot-Ready flag has been set.

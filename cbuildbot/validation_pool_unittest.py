@@ -775,28 +775,7 @@ class TestCoreLogic(MoxBase):
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
-    # 3) Test, tree throttled -> get changes and finish.
-    tree_status.WaitForTreeStatus(
-        period=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg(),
-        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_THROTTLED)
-    repo.Sync()
-    validation_pool.ValidationPool.AcquireChanges(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-
-    self.mox.ReplayAll()
-    query = constants.CQ_READY_QUERY
-    pool = validation_pool.ValidationPool.AcquirePool(
-        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
-        check_tree_open=True)
-
-    self.assertTrue(pool.tree_was_open)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
-
-    # 4) Test, tree throttled -> use exponential fallback logic.
-    # We force this case to be different than 3 by setting the exponential
-    # fallback timeout from 10 minutes to 0 seconds.
+    # 3) Test, tree throttled -> use exponential fallback logic.
     tree_status.WaitForTreeStatus(
         period=mox.IgnoreArg(),
         throttled_ok=mox.IgnoreArg(),
@@ -807,7 +786,6 @@ class TestCoreLogic(MoxBase):
 
     self.mox.ReplayAll()
 
-    validation_pool.ValidationPool.CQ_THROTTLED_TIMEOUT = 0
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
         constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
