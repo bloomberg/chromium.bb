@@ -530,8 +530,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormData& form,
                                                const FormFieldData& field,
                                                const gfx::RectF& bounding_box) {
-  if (!IsValidFormData(form) || !IsValidFormFieldData(field) ||
-      !driver_->RendererIsAvailable())
+  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
   gfx::RectF transformed_box =
@@ -570,6 +569,10 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         !form_structure->target_url().SchemeIs("http")));
   const bool is_http_warning_enabled =
       security_state::IsHttpWarningInFormEnabled();
+
+  // TODO(rogerm): Early exit here on !driver_->RendererIsAvailable()?
+  // We skip populating autofill data, but might generate warnings and or
+  // signin promo to show over the unavailable renderer. That seems a mistake.
 
   if (is_autofill_possible &&
       driver_->RendererIsAvailable() &&
