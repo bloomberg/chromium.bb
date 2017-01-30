@@ -3,7 +3,6 @@
 <translationbundle lang="fr">
 <translation id="1012876632442809908">Appareil USB de type C (port situé sur l'avant de l'appareil)</translation>
 <translation id="1013923882670373915">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code suivant sur l'appareil : <ph name="PINCODE" />.</translation>
-<translation id="1021311941847921177">Le raccourci permettant de passer au mode de saisie suivant a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1127238861555034875">Mode loupe</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
@@ -38,7 +37,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
-<translation id="1938872420421548906">Maj+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
@@ -141,7 +139,6 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="4957722034734105353">En savoir plus…</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Maj+Espace</translation>
 <translation id="5045002648206642691">Paramètres Google Drive…</translation>
 <translation id="510924152490034944">La connexion peut faire l'objet d'une surveillance</translation>
 <translation id="5168181903108465623">Appareils Cast disponibles</translation>

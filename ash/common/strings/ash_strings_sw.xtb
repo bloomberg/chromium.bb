@@ -3,7 +3,6 @@
 <translationbundle lang="sw">
 <translation id="1012876632442809908">Kifaa cha USB-C (mlango wa mbele)</translation>
 <translation id="1013923882670373915">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka msimbo huu wa PIN kwenye kifaa hicho: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Njia ya mkato ya kutumia mbinu ya kuingiza data inayofuata imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
 <translation id="1127238861555034875">Hali ya lenzi</translation>
 <translation id="1195412055398077112">angalia kwa ujumla:</translation>
@@ -38,7 +37,6 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="1882897271359938046">Inaakisi kwenye <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Njia ya mkato ya kufungua kidhibiti cha shughuli kwenye Chrome imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mibofyo ya kiotomatiki</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Chaja ya nguvu ya chini</translation>
@@ -141,7 +139,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="4957722034734105353">Pata maelezo zaidi...</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Mipangilio ya Hifadhi ya Google...</translation>
 <translation id="510924152490034944">Huenda muunganisho utafuatiliwa</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha midia vinapatikana</translation>

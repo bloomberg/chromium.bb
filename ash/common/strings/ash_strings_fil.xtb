@@ -3,7 +3,6 @@
 <translationbundle lang="fil">
 <translation id="1012876632442809908">USB-C device (port sa harap)</translation>
 <translation id="1013923882670373915">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Napalitan na ang shortcut para sa paglipat sa susunod na pamamaraan ng pag-input. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
 <translation id="1127238861555034875">Magnifying glass mode</translation>
 <translation id="1195412055398077112">overscan</translation>
@@ -38,7 +37,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mga awtomatikong pag-click</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -141,7 +139,6 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="4957722034734105353">Matuto nang higit pa...</translation>
 <translation id="4961318399572185831">I-cast ang screen</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Mga setting ng Google Drive ...</translation>
 <translation id="510924152490034944">Maaaring sinusubaybayan ang koneksyon</translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>

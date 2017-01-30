@@ -3,7 +3,6 @@
 <translationbundle lang="ja">
 <translation id="1012876632442809908">USB-C デバイス（前面のポート）</translation>
 <translation id="1013923882670373915">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次の PIN コードを入力してください: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">次の入力方法に切り替えるショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="1127238861555034875">虫メガネモード</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="1923539912171292317">自動クリック</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
@@ -141,7 +139,6 @@
 <translation id="4957722034734105353">詳細...</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ドライブの設定...</translation>
 <translation id="510924152490034944">接続は監視される可能性があります</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>

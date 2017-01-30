@@ -3,7 +3,6 @@
 <translationbundle lang="uk">
 <translation id="1012876632442809908">Пристрій із портом USB типу C (на передній панелі)</translation>
 <translation id="1013923882670373915">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей PIN-код: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Комбінація клавіш для вибору наступного методу введення змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1127238861555034875">Режим лупи</translation>
 <translation id="1195412055398077112">облямівка екрана</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Комбінація клавіш для запуску Диспетчера завдань змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматичні кліки</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
@@ -141,7 +139,6 @@
 <translation id="4957722034734105353">Докладніше...</translation>
 <translation id="4961318399572185831">Трансляція екрана</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+пробіл</translation>
 <translation id="5045002648206642691">Налаштування Google Диска...</translation>
 <translation id="510924152490034944">Зв’язок може відстежуватися</translation>
 <translation id="5168181903108465623">Доступні пристрої для трансляції</translation>

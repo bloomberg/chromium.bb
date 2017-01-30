@@ -1870,7 +1870,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3341703758641437857">Zezwalaj na dostęp do adresów URL plików</translation>
 <translation id="3344786168130157628">Nazwa punktu dostępu:</translation>
 <translation id="3345886924813989455">Nie znaleziono obsługiwanej przeglądarki</translation>
-<translation id="3346734205185115290">Zezwól na przeglądanie przy użyciu zestawu do rzeczywistości wirtualnej, jeśli jest to możliwe na tym urządzeniu.</translation>
+<translation id="3346734205185115290">Zezwól na przeglądanie przy użyciu zestawu VR, jeśli jest to możliwe na tym urządzeniu.</translation>
 <translation id="3347086966102161372">K&amp;opiuj adres obrazu</translation>
 <translation id="3348038390189153836">Wykryto urządzenie wymienne</translation>
 <translation id="3348459612390503954">Gratulacje</translation>
@@ -3317,7 +3317,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="529175790091471945">Sformatuj urządzenie</translation>
 <translation id="5292890015345653304">Włóż kartę SD lub pamięć USB</translation>
 <translation id="5294529402252479912">Aktualizuj program Adobe Reader teraz</translation>
-<translation id="5297526204711817721">Połączenie z tą stroną nie jest prywatne. Aby w dowolnym momencie zamknąć tryb rzeczywistości wirtualnej, zdejmij gogle i naciśnij Wstecz.</translation>
+<translation id="5297526204711817721">Połączenie z tą stroną nie jest prywatne. Aby w dowolnym momencie zamknąć tryb VR, zdejmij gogle i naciśnij Wstecz.</translation>
 <translation id="5298219193514155779">Motyw utworzony przez</translation>
 <translation id="5298363578196989456">Nie można zaimportować rozszerzenia „<ph name="IMPORT_NAME" />”, ponieważ nie jest to moduł udostępniany.</translation>
 <translation id="5299109548848736476">Bez śledzenia</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="cs">
 <translation id="1012876632442809908">Zařízení USB Type-C (přední port)</translation>
 <translation id="1013923882670373915">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Zadejte prosím v zařízení tento kód PIN: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Zkratka přepnutí na další metodu zadávání se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automaticky skrývat poličku</translation>
 <translation id="1127238861555034875">Režim lupy</translation>
 <translation id="1195412055398077112">přesah obrazu</translation>
@@ -37,7 +36,6 @@
 <translation id="1882897271359938046">Zrcadlení na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Zkratka k otevření správce úloh se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatická kliknutí</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
@@ -139,7 +137,6 @@
 <translation id="4957722034734105353">Další informace...</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Mezerník</translation>
 <translation id="5045002648206642691">Nastavení Disku Google...</translation>
 <translation id="510924152490034944">Připojení může být sledováno</translation>
 <translation id="5168181903108465623">Dostupná zařízení Cast</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="pt-BR">
 <translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite este código PIN no dispositivo: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">O atalho para alternar para o próximo método de entrada foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar estante automaticamente</translation>
 <translation id="1127238861555034875">Modo de lupa</translation>
 <translation id="1195412055398077112">overscan</translation>
@@ -38,7 +37,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">O atalho para abrir o gerenciador de tarefas foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
@@ -140,7 +138,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4957722034734105353">Saiba mais...</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Barra de espaço</translation>
 <translation id="5045002648206642691">Configurações do Google Drive...</translation>
 <translation id="510924152490034944">A conexão pode ser monitorada</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="ta">
 <translation id="1012876632442809908">USB-C சாதனம் (முன்பக்கப் போர்ட்)</translation>
 <translation id="1013923882670373915">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்த PIN குறியீட்டை உள்ளிடவும்: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">அடுத்த உள்ளீட்டு முறைக்கு மாறுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="1127238861555034875">உருப்பெருக்கிப் பயன்முறை</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ஐப் பிரதிபலிக்கிறது</translation>
 <translation id="1919743966458266018">காரிய நிர்வாகியைத் திறப்பதற்கான குறுக்குவழி மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">குறைந்த சக்திகொண்ட சார்ஜர்</translation>
@@ -141,7 +139,6 @@
 <translation id="4957722034734105353">மேலும் அறிக...</translation>
 <translation id="4961318399572185831">அனுப்புதல் திரை</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google இயக்கக அமைப்புகள்...</translation>
 <translation id="510924152490034944">இணைப்பு கண்காணிக்கப்படலாம்</translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>

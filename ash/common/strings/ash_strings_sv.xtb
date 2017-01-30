@@ -3,7 +3,6 @@
 <translationbundle lang="sv">
 <translation id="1012876632442809908">USB-C-enhet (främre port)</translation>
 <translation id="1013923882670373915">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange den här pinkoden på den enheten: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Kortkommandot för att byta till nästa inmatningsmetod har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Dölj hyllan automatiskt</translation>
 <translation id="1127238861555034875">Läge för förstoringsglas</translation>
 <translation id="1195412055398077112">överskanning</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046">Spegling av <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Kortkommandot för att öppna aktivitetshanteraren har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiska klick</translation>
-<translation id="1938872420421548906">Skift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">Läs mer ...</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Skift+blanksteg</translation>
 <translation id="5045002648206642691">Inställningar för Google Drive ...</translation>
 <translation id="510924152490034944">Anslutningen kan vara övervakad</translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>

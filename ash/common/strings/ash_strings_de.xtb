@@ -3,7 +3,6 @@
 <translationbundle lang="de">
 <translation id="1012876632442809908">USB-C-Gerät (Port vorne)</translation>
 <translation id="1013923882670373915">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE" />.</translation>
-<translation id="1021311941847921177">Die Tastenkombination für den Wechsel zur nächsten Eingabemethode hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
 <translation id="1127238861555034875">Lupenmodus</translation>
 <translation id="1195412055398077112">Overscan</translation>
@@ -38,7 +37,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
 <translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
-<translation id="1938872420421548906">Shift + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
@@ -141,7 +139,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4957722034734105353">Weitere Informationen...</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Strg + Shift + Leer</translation>
 <translation id="5045002648206642691">Google Drive-Einstellungen...</translation>
 <translation id="510924152490034944">Die Verbindung wird möglicherweise kontrolliert</translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>

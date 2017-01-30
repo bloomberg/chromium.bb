@@ -3,7 +3,6 @@
 <translationbundle lang="vi">
 <translation id="1012876632442809908">Thiết bị USB-C (cổng phía trước)</translation>
 <translation id="1013923882670373915">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã PIN này trên thiết bị đó: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Phím tắt để chuyển sang phương thức nhập tiếp theo đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
 <translation id="1127238861555034875">Chế độ kính lúp</translation>
 <translation id="1195412055398077112">quét quá mức</translation>
@@ -38,7 +37,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Phím tắt để mở trình quản lý tác vụ đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
@@ -141,7 +139,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4957722034734105353">Tìm hiểu thêm...</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Cài đặt Google Drive...</translation>
 <translation id="510924152490034944">Kết nối có thể bị theo dõi</translation>
 <translation id="5168181903108465623">Có thiết bị truyền</translation>

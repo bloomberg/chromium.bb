@@ -3,7 +3,6 @@
 <translationbundle lang="fa">
 <translation id="1012876632442809908">‏دستگاه USB-C (درگاه جلو)</translation>
 <translation id="1013923882670373915">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کد پین را در آن دستگاه وارد کنید: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">کلیدهای میان‌بر جابه‌جایی به روش ورودی بعدی تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
 <translation id="1127238861555034875">حالت ذره‌بین</translation>
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
@@ -37,7 +36,6 @@
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">کلیدهای میان‌بر باز کردن مدیر فعالیت‌ها تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">اطلاعات بیشتر...</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">‏تنظیمات Google Drive...</translation>
 <translation id="510924152490034944">اتصال ممکن است پایش شود</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>

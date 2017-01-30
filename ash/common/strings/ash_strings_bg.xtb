@@ -3,7 +3,6 @@
 <translationbundle lang="bg">
 <translation id="1012876632442809908">USB-C устройство (предният порт)</translation>
 <translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Комбинацията за превключване към следващия метод на въвеждане е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
 <translation id="1127238861555034875">Режим на лупа</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="1919743966458266018">Комбинацията за отваряне на диспечера на задачите е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
-<translation id="1938872420421548906">Shift + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
@@ -141,7 +139,6 @@
 <translation id="4957722034734105353">Научете повече...</translation>
 <translation id="4961318399572185831">Предаване на екрана</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl + Shift + Space</translation>
 <translation id="5045002648206642691">Настройки за Google Диск...</translation>
 <translation id="510924152490034944">Възможно е връзката да се наблюдава</translation>
 <translation id="5168181903108465623">Налице са устройства Cast</translation>

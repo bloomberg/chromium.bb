@@ -3,7 +3,6 @@
 <translationbundle lang="id">
 <translation id="1012876632442809908">Perangkat USB-C (port depan)</translation>
 <translation id="1013923882670373915">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukan kode PIN ini pada perangkat tersebut: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Pintasan untuk beralih ke metode masukan berikutnya telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1127238861555034875">Mode kaca pembesar</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
@@ -38,7 +37,6 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengelola tugas telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik otomatis</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
@@ -141,7 +139,6 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="4957722034734105353">Pelajari selengkapnya...</translation>
 <translation id="4961318399572185831">Transmisikan layar</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Spasi</translation>
 <translation id="5045002648206642691">Setelan Google Drive...</translation>
 <translation id="510924152490034944">Sambungan mungkin dipantau</translation>
 <translation id="5168181903108465623">Perangkat transmisi tersedia</translation>

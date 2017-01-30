@@ -3,7 +3,6 @@
 <translationbundle lang="es">
 <translation id="1012876632442809908">Dispositivo USB-C (puerto frontal)</translation>
 <translation id="1013923882670373915">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce el código PIN <ph name="PINCODE" /> en el dispositivo</translation>
-<translation id="1021311941847921177">La combinación de teclas para cambiar al siguiente método de introducción ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar automáticamente estantería</translation>
 <translation id="1127238861555034875">Modo de lupa</translation>
 <translation id="1195412055398077112">reajustar</translation>
@@ -38,7 +37,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La combinación de teclas para abrir el Administrador de tareas ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
-<translation id="1938872420421548906">Mayús+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Cargador de baja potencia</translation>
@@ -141,7 +139,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="4957722034734105353">Más información...</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Mayús+Espacio</translation>
 <translation id="5045002648206642691">Configuración de Google Drive...</translation>
 <translation id="510924152490034944">Puede que la conexión esté supervisada</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>

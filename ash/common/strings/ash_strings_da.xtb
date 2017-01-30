@@ -3,7 +3,6 @@
 <translationbundle lang="da">
 <translation id="1012876632442809908">USB-C-enhed (port foran)</translation>
 <translation id="1013923882670373915">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Genvejen til at skifte til den næste indtastningsmetode er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
 <translation id="1127238861555034875">Forstørrelsesglastilstand</translation>
 <translation id="1195412055398077112">overscan</translation>
@@ -38,7 +37,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Genvejen til at åbne Jobliste er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
@@ -141,7 +139,6 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="4957722034734105353">Flere oplysninger...</translation>
 <translation id="4961318399572185831">Cast skærm</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+mellemrum</translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
 <translation id="510924152490034944">Forbindelsen kan være overvåget</translation>
 <translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>

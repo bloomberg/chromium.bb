@@ -3,7 +3,6 @@
 <translationbundle lang="it">
 <translation id="1012876632442809908">Dispositivo USB-C (porta anteriore)</translation>
 <translation id="1013923882670373915">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questo codice PIN sul dispositivo: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">La scorciatoia per passare al metodo di immissione successivo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Nascondi automaticamente shelf</translation>
 <translation id="1127238861555034875">Modalità lente d'ingrandimento</translation>
 <translation id="1195412055398077112">overscan</translation>
@@ -38,7 +37,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La scorciatoia per aprire Task Manager è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clic automatici</translation>
-<translation id="1938872420421548906">MAIUSC+ALT</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
@@ -141,7 +139,6 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="4957722034734105353">Ulteriori informazioni...</translation>
 <translation id="4961318399572185831">Trasmetti schermo</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">CTRL+MAIUSC+Barra spaziatrice</translation>
 <translation id="5045002648206642691">Impostazioni Google Drive...</translation>
 <translation id="510924152490034944">La connessione potrebbe essere monitorata</translation>
 <translation id="5168181903108465623">Dispositivi di trasmissione disponibili</translation>

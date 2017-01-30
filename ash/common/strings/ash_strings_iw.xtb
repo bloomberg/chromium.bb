@@ -3,7 +3,6 @@
 <translationbundle lang="iw">
 <translation id="1012876632442809908">‏מכשיר עם יציאת USB-C (יציאה קדמית)</translation>
 <translation id="1013923882670373915">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. הזן את קוד ה-PIN הבא במכשיר הזה: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">מקש הקיצור המשמש למעבר לשיטת הקלט הבאה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1127238861555034875">מצב זכוכית מגדלת</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">מקש הקיצור לפתיחת מנהל המשימות השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">לחיצות אוטומטיות</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">‎0°‎</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
@@ -141,7 +139,6 @@
 <translation id="4957722034734105353">למידע נוסף...</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">‏Ctrl‏+Shift+רווח</translation>
 <translation id="5045002648206642691">‏הגדרות Google Drive...</translation>
 <translation id="510924152490034944">ייתכן שהחיבור מנוטר</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>

@@ -606,7 +606,7 @@
 <translation id="1747687775439512873">停用 WiMAX</translation>
 <translation id="174773101815569257">滑鼠游標鎖定</translation>
 <translation id="174937106936716857">檔案總數</translation>
-<translation id="1749854530031883739">在無法最大化的視窗背後的 TouchView (最大化模式) 中顯示灰色視窗背景幕。</translation>
+<translation id="1749854530031883739">顯示 TouchView (最大化模式) 中無法最大化的視窗使用的灰色視窗背景幕。</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="1753682364559456262">管理封鎖圖片設定...</translation>
 <translation id="1753905327828125965">最常造訪</translation>
@@ -2834,7 +2834,7 @@
 <translation id="4669109953235344059">重試</translation>
 <translation id="4672073213100265975">已啟用：3G</translation>
 <translation id="4672657274720418656">提取頁面</translation>
-<translation id="4673442866648850031">移除觸控筆時開啟觸控筆工具</translation>
+<translation id="4673442866648850031">移除觸控筆時取出觸控筆工具</translation>
 <translation id="4677772697204437347">GPU 記憶體</translation>
 <translation id="4681930562518940301">在新分頁中開啟原始圖片(&amp;I)</translation>
 <translation id="4682551433947286597">登入畫面上顯示的桌布。</translation>

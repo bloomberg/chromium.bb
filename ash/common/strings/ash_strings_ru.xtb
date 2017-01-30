@@ -3,7 +3,6 @@
 <translationbundle lang="ru">
 <translation id="1012876632442809908">Устройство USB-C (порт спереди)</translation>
 <translation id="1013923882670373915">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем PIN-код: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Изменились быстрые клавиши для перехода к другому способу ввода. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Автоматически скрывать панель запуска</translation>
 <translation id="1127238861555034875">Режим лупы</translation>
 <translation id="1195412055398077112">Каемка экрана</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Изменились быстрые клавиши для запуска диспетчера задач. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматическое нажатие</translation>
-<translation id="1938872420421548906">Shift + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
@@ -141,7 +139,6 @@
 <translation id="4957722034734105353">Подробнее…</translation>
 <translation id="4961318399572185831">Трансляция экрана</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl + Shift + пробел</translation>
 <translation id="5045002648206642691">Настройки Диска Google…</translation>
 <translation id="510924152490034944">Соединение может отслеживаться</translation>
 <translation id="5168181903108465623">Доступны устройства для трансляции</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="zh-CN">
 <translation id="1012876632442809908">USB-C 设备（前方端口）</translation>
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">用于切换到下一种输入法的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="112308213915226829">自动隐藏任务栏</translation>
 <translation id="1127238861555034875">放大镜模式</translation>
 <translation id="1195412055398077112">过扫描</translation>
@@ -38,7 +37,6 @@
 <translation id="1882897271359938046">正在镜像到<ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">用于打开任务管理器的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="1923539912171292317">自动点击</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
@@ -141,7 +139,6 @@
 <translation id="4957722034734105353">了解详情...</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google 云端硬盘设置...</translation>
 <translation id="510924152490034944">连接可能会受到监控</translation>
 <translation id="5168181903108465623">有可用的投射设备</translation>

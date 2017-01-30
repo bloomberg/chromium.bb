@@ -1867,7 +1867,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3341703758641437857">Да се разреши достъп до URL адресите на файловете</translation>
 <translation id="3344786168130157628">Име на точката за достъп:</translation>
 <translation id="3345886924813989455">Не е открит поддържан браузър</translation>
-<translation id="3346734205185115290">Разрешаване на сърфирането с очила за виртуална реалност, ако се поддържа от това устройство.</translation>
+<translation id="3346734205185115290">Разрешаване на сърфирането с очила за VR, ако се поддържа от това устройство.</translation>
 <translation id="3347086966102161372">К&amp;опиране на адреса на изображението</translation>
 <translation id="3348038390189153836">Установено бе изваждащо се устройство</translation>
 <translation id="3348459612390503954">Поздравления</translation>
@@ -6219,7 +6219,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> от <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Налага приемателите на събитията „touchstart“ и първото „touchmove“ при превъртане да се третират като пасивни при бързо прекарване с пръст.</translation>
 <translation id="9186729806195986201">Също така връщане към предишната инсталирана версия на <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="9187651461283037651">Активиране на режима за виртуална реалност в Chrome.</translation>
+<translation id="9187651461283037651">Активиране на режима за VR в Chrome.</translation>
 <translation id="9188441292293901223">Моля, актуализирайте телефона си до по-нова версия на Android, за да отключите този <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9189690067274055051">Отключете телефона си и го приближете до своя <ph name="DEVICE_TYPE" />, за да влезете.</translation>
 <translation id="9190063653747922532">L2TP/IPSec с предварително споделен ключ</translation>

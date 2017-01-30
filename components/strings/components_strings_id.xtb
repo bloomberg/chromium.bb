@@ -263,7 +263,7 @@
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" /> lainnya...</translation>
 <translation id="3555561725129903880">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya berasal dari <ph name="DOMAIN2" />. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau ada penyerang yang mencegat sambungan Anda. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="3556433843310711081">Pengelola dapat membuka blokirnya untuk Anda</translation>
-<translation id="3566021033012934673">Sambungan Anda tidak pribadi</translation>
+<translation id="3566021033012934673">Koneksi Anda tidak pribadi</translation>
 <translation id="3583757800736429874">&amp;Ulangi Pemindahan</translation>
 <translation id="3586931643579894722">Sembunyikan detail</translation>
 <translation id="3587482841069643663">Semua</translation>

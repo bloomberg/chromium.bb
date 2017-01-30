@@ -3,7 +3,6 @@
 <translationbundle lang="tr">
 <translation id="1012876632442809908">USB-C cihaz (ön bağlantı noktası)</translation>
 <translation id="1013923882670373915">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda şu PIN kodunu girin: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Sonraki giriş yöntemine geçme kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="112308213915226829">Rafı otomatik gizle</translation>
 <translation id="1127238861555034875">Büyüteç modu</translation>
 <translation id="1195412055398077112">fazla tarama</translation>
@@ -38,7 +37,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="1882897271359938046">Şuraya yansıtılıyor: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Görev yöneticisini açma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="1923539912171292317">Otomatik tıklamalar</translation>
-<translation id="1938872420421548906">Üst Karakter+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
@@ -141,7 +139,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="4957722034734105353">Daha fazla bilgi edinin...</translation>
 <translation id="4961318399572185831">Ekranı yayınla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Üst Karakter+Boşluk</translation>
 <translation id="5045002648206642691">Google Drive ayarları...</translation>
 <translation id="510924152490034944">Bağlantı izlenebilir</translation>
 <translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>

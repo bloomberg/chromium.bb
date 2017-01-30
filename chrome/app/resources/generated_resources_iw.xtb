@@ -1864,7 +1864,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3341703758641437857">אפשר גישה לכתובות אתרים של קבצים</translation>
 <translation id="3344786168130157628">שם נקודת הגישה:</translation>
 <translation id="3345886924813989455">לא נמצא דפדפן נתמך</translation>
-<translation id="3346734205185115290">התר גלישה עם התקן מציאות מדומה, אם האפשרות זמינה למכשיר הזה.</translation>
+<translation id="3346734205185115290">‏התר גלישה עם משקפי VR, אם האפשרות זמינה למכשיר הזה.</translation>
 <translation id="3347086966102161372">העתק כתובת &amp;תמונה</translation>
 <translation id="3348038390189153836">זוהה התקן נשלף</translation>
 <translation id="3348459612390503954">ברכותינו</translation>
@@ -6205,7 +6205,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> מ-<ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">‏כופה התייחסות אל touchstart, ואל touchmove ראשון בכל מעבד אירוע גלילה במהלך הנפה, כאל פסיביים.</translation>
 <translation id="9186729806195986201">כמו כן, חזור לגרסה המותקנת הקודמת של <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="9187651461283037651">‏הפעל את Chrome VR.</translation>
+<translation id="9187651461283037651">‏הפעל את מצב VR של Chrome.</translation>
 <translation id="9188441292293901223">‏עדכן את הטלפון לגרסה חדשה יותר של Android כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" /> זה.</translation>
 <translation id="9189690067274055051">בטל את נעילת הטלפון וקרב אותו אל ה-<ph name="DEVICE_TYPE" /> כדי להיכנס.</translation>
 <translation id="9190063653747922532">‏L2TP/‏IPSec + מפתח משותף מראש</translation>

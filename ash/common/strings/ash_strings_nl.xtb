@@ -3,7 +3,6 @@
 <translationbundle lang="nl">
 <translation id="1012876632442809908">USB-C-apparaat (poort aan voorkant)</translation>
 <translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">De sneltoets om naar de volgende invoermethode te schakelen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
 <translation id="1127238861555034875">Vergrootglasmodus</translation>
 <translation id="1195412055398077112">overscan</translation>
@@ -38,7 +37,6 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
@@ -141,7 +139,6 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="4957722034734105353">Meer informatie...</translation>
 <translation id="4961318399572185831">Scherm casten</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+spatie</translation>
 <translation id="5045002648206642691">Instellingen voor Google Drive...</translation>
 <translation id="510924152490034944">Verbinding wordt mogelijk gecontroleerd</translation>
 <translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>

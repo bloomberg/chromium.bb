@@ -3,7 +3,6 @@
 <translationbundle lang="fi">
 <translation id="1012876632442809908">C-tyypin USB-laite (etuportti)</translation>
 <translation id="1013923882670373915">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä PIN-koodi kyseisellä laitteella: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Seuraavaan syöttötapaan vaihtamisen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
 <translation id="1127238861555034875">Suurennuslasitila</translation>
 <translation id="1195412055398077112">kuvasta rajataan pois osa</translation>
@@ -38,7 +37,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1882897271359938046">Peilataan: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tehtävänhallinnan avaamisen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="1923539912171292317">Automaattiset klikkaukset</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Pienitehoinen laturi</translation>
@@ -140,7 +138,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4957722034734105353">Lisätietoja...</translation>
 <translation id="4961318399572185831">Suoratoista näyttö</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+välilyönti</translation>
 <translation id="5045002648206642691">Google Driven asetukset...</translation>
 <translation id="510924152490034944">Yhteyttä saatetaan valvoa</translation>
 <translation id="5168181903108465623">Cast-laitteita käytettävissä</translation>

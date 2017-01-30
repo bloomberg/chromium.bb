@@ -3,7 +3,6 @@
 <translationbundle lang="pt-PT">
 <translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza este código PIN nesse dispositivo: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">O atalho para mudar para o método de introdução seguinte foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1127238861555034875">Modo de lupa</translation>
 <translation id="1195412055398077112">overscan</translation>
@@ -38,7 +37,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">O atalho para abrir o Gestor de tarefas foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
-<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
@@ -141,7 +139,6 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="4957722034734105353">Saiba mais...</translation>
 <translation id="4961318399572185831">Transmitir ecrã</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5012744545445585468">Ctrl+Shift+Espaço</translation>
 <translation id="5045002648206642691">Definições do Google Drive...</translation>
 <translation id="510924152490034944">A ligação pode ser monitorizada</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
