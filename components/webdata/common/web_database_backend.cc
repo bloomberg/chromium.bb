@@ -31,7 +31,7 @@ WebDatabaseBackend::WebDatabaseBackend(
 
 void WebDatabaseBackend::AddTable(std::unique_ptr<WebDatabaseTable> table) {
   DCHECK(!db_.get());
-  tables_.push_back(table.release());
+  tables_.push_back(std::move(table));
 }
 
 void WebDatabaseBackend::InitDatabase() {
@@ -100,7 +100,7 @@ void WebDatabaseBackend::LoadDatabaseIfNecessary() {
   db_.reset(new WebDatabase());
 
   for (const auto& table : tables_)
-    db_->AddTable(table);
+    db_->AddTable(table.get());
 
   // Unretained to avoid a ref loop since we own |db_|.
   db_->set_error_callback(base::Bind(&WebDatabaseBackend::DatabaseErrorCallback,

@@ -6,6 +6,7 @@
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -13,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
-#include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_export.h"
@@ -106,7 +106,7 @@ class WEBDATA_EXPORT WebDatabaseBackend
   // object, or they themselves would need to be refcounted. Owning
   // them here rather than having WebDatabase own them makes for
   // easier unit testing of WebDatabase.
-  ScopedVector<WebDatabaseTable> tables_;
+  std::vector<std::unique_ptr<WebDatabaseTable>> tables_;
 
   std::unique_ptr<WebDatabase> db_;
 
