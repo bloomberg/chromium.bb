@@ -19,7 +19,8 @@ namespace leveldb {
 // existence.
 class MojoEnv : public leveldb_env::ChromiumEnv {
  public:
-  MojoEnv(scoped_refptr<LevelDBMojoProxy> file_thread,
+  MojoEnv(const std::string& name,
+          scoped_refptr<LevelDBMojoProxy> file_thread,
           LevelDBMojoProxy::OpaqueDir* dir);
   ~MojoEnv() override;
 

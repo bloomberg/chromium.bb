@@ -358,6 +358,7 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
   file_service_connection_->GetInterface(&leveldb_service_);
+  leveldb_service_->SetEnvironmentName("LevelDBEnv.LocalStorage");
 
   // We might still need to use the directory, so create a clone.
   filesystem::mojom::DirectoryPtr directory_clone;

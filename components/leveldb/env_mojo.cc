@@ -217,9 +217,10 @@ class MojoWritableFile : public leveldb::WritableFile {
 
 }  // namespace
 
-MojoEnv::MojoEnv(scoped_refptr<LevelDBMojoProxy> file_thread,
+MojoEnv::MojoEnv(const std::string& name,
+                 scoped_refptr<LevelDBMojoProxy> file_thread,
                  LevelDBMojoProxy::OpaqueDir* dir)
-    : thread_(file_thread), dir_(dir) {}
+    : ChromiumEnv(name), thread_(file_thread), dir_(dir) {}
 
 MojoEnv::~MojoEnv() {
   thread_->UnregisterDirectory(dir_);
