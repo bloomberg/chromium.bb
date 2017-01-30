@@ -248,23 +248,6 @@ class WASAPIAudioOutputStreamTest : public ::testing::Test {
   ScopedAudioManagerPtr audio_manager_;
 };
 
-// Verify that we can retrieve the current hardware/mixing sample rate
-// for the default audio device.
-// TODO(henrika): modify this test when we support full device enumeration.
-TEST_F(WASAPIAudioOutputStreamTest, HardwareSampleRate) {
-  // Skip this test in exclusive mode since the resulting rate is only utilized
-  // for shared mode streams.
-  if (ExclusiveModeIsEnabled())
-    return;
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager_.get()));
-
-  // Default device intended for games, system notification sounds,
-  // and voice commands.
-  int fs = static_cast<int>(
-      WASAPIAudioOutputStream::HardwareSampleRate(std::string()));
-  EXPECT_GE(fs, 0);
-}
-
 // Test Create(), Close() calling sequence.
 TEST_F(WASAPIAudioOutputStreamTest, CreateAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager_.get()));

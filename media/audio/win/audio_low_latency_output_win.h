@@ -33,9 +33,8 @@
 //    o Construction and destruction must take place from the same thread.
 //    o All APIs must be called from the creating thread as well.
 // - It is required to first acquire the native audio parameters of the default
-//   output device and then use the same rate when creating this object. Use
-//   e.g. WASAPIAudioOutputStream::HardwareSampleRate() to retrieve the sample
-//   rate. Open() will fail unless "perfect" audio parameters are utilized.
+//   output device and then use the same rate when creating this object.
+//   Open() will fail unless "perfect" audio parameters are utilized.
 // - Calling Close() also leads to self destruction.
 // - Support for 8-bit audio has not yet been verified and tested.
 //
@@ -87,7 +86,8 @@
 //   the lowest possible latencies we can achieve on this machine are:
 //     o ~3.3333ms @ 48kHz <=> 160 audio frames per buffer.
 //     o ~3.6281ms @ 44.1kHz <=> 160 audio frames per buffer.
-// - See http://msdn.microsoft.com/en-us/library/windows/desktop/dd370844(v=vs.85).aspx
+// - See
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd370844(v=vs.85).aspx
 //   for more details.
 
 #ifndef MEDIA_AUDIO_WIN_AUDIO_LOW_LATENCY_OUTPUT_WIN_H_
@@ -140,11 +140,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   void Close() override;
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
-
-  // Retrieves the sample rate the audio engine uses for its internal
-  // processing/mixing of shared-mode streams.  To fetch the settings for the
-  // default device, pass an empty string as the |device_id|.
-  static int HardwareSampleRate(const std::string& device_id);
 
   // Returns AUDCLNT_SHAREMODE_EXCLUSIVE if --enable-exclusive-mode is used
   // as command-line flag and AUDCLNT_SHAREMODE_SHARED otherwise (default).
