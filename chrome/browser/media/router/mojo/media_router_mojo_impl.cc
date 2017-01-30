@@ -176,13 +176,25 @@ void MediaRouterMojoImpl::OnIssue(const IssueInfo& issue) {
 void MediaRouterMojoImpl::OnSinksReceived(
     const std::string& media_source,
     std::vector<mojom::MediaSinkPtr> sinks,
-    const std::vector<url::Origin>& origins) {
+    const std::vector<std::string>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
   auto it = sinks_queries_.find(media_source);
   if (it == sinks_queries_.end()) {
     DVLOG_WITH_INSTANCE(1) << "Received sink list without MediaSinksQuery.";
     return;
+  }
+
+  std::vector<GURL> origin_list;
+  origin_list.reserve(origins.size());
+  for (size_t i = 0; i < origins.size(); ++i) {
+    GURL origin(origins[i]);
+    if (!origin.is_valid()) {
+      LOG(WARNING) << "Received invalid origin: " << origin
+                   << ". Dropping result.";
+      return;
+    }
+    origin_list.push_back(origin);
   }
 
   std::vector<MediaSink> sink_list;
@@ -192,7 +204,7 @@ void MediaRouterMojoImpl::OnSinksReceived(
 
   auto* sinks_query = it->second.get();
   sinks_query->has_cached_result = true;
-  sinks_query->origins = origins;
+  sinks_query->origins.swap(origin_list);
   sinks_query->cached_sink_list.swap(sink_list);
 
   if (!sinks_query->observers.might_have_observers()) {
@@ -267,36 +279,55 @@ void MediaRouterMojoImpl::RouteResponseReceived(
 void MediaRouterMojoImpl::CreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
-    const url::Origin& origin,
+    const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (!origin.is_valid()) {
+    DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+    MediaRouterMojoMetrics::RecordCreateRouteResultCode(result->result_code());
+    RunRouteRequestCallbacks(std::move(result), callbacks);
+    return;
+  }
+
   SetWakeReason(MediaRouteProviderWakeReason::CREATE_ROUTE);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoCreateRoute,
-                        base::Unretained(this), source_id, sink_id, origin,
-                        tab_id, callbacks, timeout, incognito));
+                        base::Unretained(this), source_id, sink_id,
+                        origin.is_empty() ? "" : origin.spec(), tab_id,
+                        callbacks, timeout, incognito));
 }
 
 void MediaRouterMojoImpl::JoinRoute(
     const MediaSource::Id& source_id,
     const std::string& presentation_id,
-    const url::Origin& origin,
+    const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!HasJoinableRoute()) {
+  std::unique_ptr<RouteRequestResult> error_result;
+  if (!origin.is_valid()) {
+    DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
+    error_result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+  } else if (!HasJoinableRoute()) {
     DVLOG_WITH_INSTANCE(1) << "No joinable routes";
-    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    error_result = RouteRequestResult::FromError(
         "Route not found", RouteRequestResult::ROUTE_NOT_FOUND);
-    MediaRouterMojoMetrics::RecordJoinRouteResultCode(result->result_code());
-    RunRouteRequestCallbacks(std::move(result), callbacks);
+  }
+
+  if (error_result) {
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(
+        error_result->result_code());
+    RunRouteRequestCallbacks(std::move(error_result), callbacks);
     return;
   }
 
@@ -304,24 +335,35 @@ void MediaRouterMojoImpl::JoinRoute(
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoJoinRoute,
                         base::Unretained(this), source_id, presentation_id,
-                        origin, tab_id, callbacks, timeout, incognito));
+                        origin.is_empty() ? "" : origin.spec(), tab_id,
+                        callbacks, timeout, incognito));
 }
 
 void MediaRouterMojoImpl::ConnectRouteByRouteId(
     const MediaSource::Id& source_id,
     const MediaRoute::Id& route_id,
-    const url::Origin& origin,
+    const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (!origin.is_valid()) {
+    DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(result->result_code());
+    RunRouteRequestCallbacks(std::move(result), callbacks);
+    return;
+  }
+
   SetWakeReason(MediaRouteProviderWakeReason::CONNECT_ROUTE_BY_ROUTE_ID);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoConnectRouteByRouteId,
-                        base::Unretained(this), source_id, route_id, origin,
-                        tab_id, callbacks, timeout, incognito));
+                        base::Unretained(this), source_id, route_id,
+                        origin.is_empty() ? "" : origin.spec(), tab_id,
+                        callbacks, timeout, incognito));
 }
 
 void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
@@ -417,8 +459,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // |observer| can be immediately notified with an empty list.
   sinks_query->observers.AddObserver(observer);
   if (availability_ == mojom::MediaRouter::SinkAvailability::UNAVAILABLE) {
-    observer->OnSinksUpdated(std::vector<MediaSink>(),
-                             std::vector<url::Origin>());
+    observer->OnSinksUpdated(std::vector<MediaSink>(), std::vector<GURL>());
   } else {
     // Need to call MRPM to start observing sinks if the query is new.
     if (new_query) {
@@ -561,7 +602,7 @@ void MediaRouterMojoImpl::UnregisterRouteMessageObserver(
 void MediaRouterMojoImpl::DoCreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
-    const url::Origin& origin,
+    const std::string& origin,
     int tab_id,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
@@ -569,6 +610,7 @@ void MediaRouterMojoImpl::DoCreateRoute(
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   DVLOG_WITH_INSTANCE(1) << "DoCreateRoute " << source_id << "=>" << sink_id
                          << ", presentation ID: " << presentation_id;
+
   media_route_provider_->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
@@ -579,7 +621,7 @@ void MediaRouterMojoImpl::DoCreateRoute(
 void MediaRouterMojoImpl::DoJoinRoute(
     const MediaSource::Id& source_id,
     const std::string& presentation_id,
-    const url::Origin& origin,
+    const std::string& origin,
     int tab_id,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
@@ -597,7 +639,7 @@ void MediaRouterMojoImpl::DoJoinRoute(
 void MediaRouterMojoImpl::DoConnectRouteByRouteId(
     const MediaSource::Id& source_id,
     const MediaRoute::Id& route_id,
-    const url::Origin& origin,
+    const std::string& origin,
     int tab_id,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,

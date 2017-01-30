@@ -20,7 +20,8 @@
 #include "content/public/test/test_utils.h"
 #include "media/base/test_data_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
+#include "url/gurl.h"
+
 
 // Use the following command to run e2e browser tests:
 // ./out/Debug/browser_tests --user-data-dir=<empty user data dir>
@@ -41,7 +42,7 @@ const char kCastAppPresentationUrl[] =
 const char kVideo[] = "video";
 const char kBearVP9Video[] = "bear-vp9.webm";
 const char kPlayer[] = "player.html";
-const char kOrigin[] = "http://origin/";
+const char kOriginUrl[] = "http://origin/";
 }  // namespace
 
 
@@ -76,7 +77,7 @@ void MediaRouterE2EBrowserTest::OnRouteResponseReceived(
 
 void MediaRouterE2EBrowserTest::CreateMediaRoute(
     const MediaSource& source,
-    const url::Origin& origin,
+    const GURL& origin,
     content::WebContents* web_contents) {
   DCHECK(media_router_);
   observer_.reset(new TestMediaSinksObserver(media_router_, source, origin));
@@ -145,8 +146,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
   int tab_id = SessionTabHelper::IdForTab(web_contents);
 
   // Wait for 30 seconds to make sure the route is stable.
-  CreateMediaRoute(MediaSourceForTab(tab_id), url::Origin(GURL(kOrigin)),
-                   web_contents);
+  CreateMediaRoute(
+      MediaSourceForTab(tab_id), GURL(kOriginUrl), web_contents);
   Wait(base::TimeDelta::FromSeconds(30));
 
   // Wait for 10 seconds to make sure route has been stopped.
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_CastApp) {
   // Wait for 30 seconds to make sure the route is stable.
   CreateMediaRoute(MediaSourceForPresentationUrl(GURL(kCastAppPresentationUrl)),
-                   url::Origin(GURL(kOrigin)), nullptr);
+                   GURL(kOriginUrl), nullptr);
   Wait(base::TimeDelta::FromSeconds(30));
 
   // Wait for 10 seconds to make sure route has been stopped.

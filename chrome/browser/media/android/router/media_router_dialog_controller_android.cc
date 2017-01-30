@@ -53,7 +53,7 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
   // TODO(crbug.com/627655): Support multiple URLs.
   const MediaSource::Id source_id =
       presentation_request.GetMediaSources()[0].id();
-  const auto& origin = presentation_request.frame_origin();
+  const GURL origin = presentation_request.frame_url().GetOrigin();
 
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(

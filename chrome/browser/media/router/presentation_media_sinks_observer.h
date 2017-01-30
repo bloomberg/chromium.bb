@@ -35,7 +35,7 @@ class PresentationMediaSinksObserver : public MediaSinksObserver {
       MediaRouter* router,
       content::PresentationScreenAvailabilityListener* listener,
       const MediaSource& source,
-      const url::Origin& origin);
+      const GURL& origin);
   ~PresentationMediaSinksObserver() override;
 
   // MediaSinksObserver implementation.

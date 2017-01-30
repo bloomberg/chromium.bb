@@ -8,17 +8,17 @@
 namespace media_router {
 
 TEST(PresentationRequestTest, Equals) {
-  url::Origin frame_origin(GURL("http://www.site.com/"));
+  GURL frame_url("http://www.site.com/");
   std::vector<GURL> presentation_urls = {
       GURL("http://www.example.com/presentation.html"),
       GURL("http://www.example.net/alternate.html")};
 
   PresentationRequest request1(RenderFrameHostId(1, 2), presentation_urls,
-                               frame_origin);
+                               frame_url);
 
   // Frame IDs are different.
   PresentationRequest request2(RenderFrameHostId(3, 4), presentation_urls,
-                               frame_origin);
+                               frame_url);
   EXPECT_FALSE(request1.Equals(request2));
 
   // Presentation URLs are different.
@@ -26,19 +26,19 @@ TEST(PresentationRequestTest, Equals) {
       RenderFrameHostId(1, 2),
       {GURL("http://www.example.net/presentation.html"),
        GURL("http://www.example.com/presentation.html")},
-      frame_origin);
+      frame_url);
   EXPECT_FALSE(request1.Equals(request3));
 
   // Frame URLs are different.
   PresentationRequest request4(RenderFrameHostId(1, 2), presentation_urls,
-                               url::Origin(GURL("http://www.site.net/")));
+                               GURL("http://www.site.net/"));
   EXPECT_FALSE(request1.Equals(request4));
 
   PresentationRequest request5(
       RenderFrameHostId(1, 2),
       {GURL("http://www.example.com/presentation.html"),
        GURL("http://www.example.net/alternate.html")},
-      url::Origin(GURL("http://www.site.com/")));
+      GURL("http://www.site.com/"));
   EXPECT_TRUE(request1.Equals(request5));
 }
 

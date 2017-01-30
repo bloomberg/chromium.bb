@@ -14,8 +14,9 @@ TEST(MediaSinksObserverTest, OriginMatching) {
   MockMediaRouter router;
   MediaSource source(
       MediaSourceForPresentationUrl(GURL("https://presentation.com")));
-  url::Origin origin{GURL("https://origin.com")};
-  std::vector<url::Origin> origin_list({origin});
+  GURL origin("https://origin.com");
+  std::vector<GURL> origin_list;
+  origin_list.push_back(origin);
   std::vector<MediaSink> sink_list;
   sink_list.push_back(MediaSink("sinkId", "Sink", MediaSink::IconType::CAST));
   MockMediaSinksObserver observer(&router, source, origin);
@@ -24,9 +25,9 @@ TEST(MediaSinksObserverTest, OriginMatching) {
   observer.OnSinksUpdated(sink_list, origin_list);
 
   EXPECT_CALL(observer, OnSinksReceived(SequenceEquals(sink_list)));
-  observer.OnSinksUpdated(sink_list, std::vector<url::Origin>());
+  observer.OnSinksUpdated(sink_list, std::vector<GURL>());
 
-  url::Origin origin2{GURL("https://differentOrigin.com")};
+  GURL origin2("https://differentOrigin.com");
   origin_list.clear();
   origin_list.push_back(origin2);
   EXPECT_CALL(observer, OnSinksReceived(testing::IsEmpty()));

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
-#include "url/origin.h"
+#include "url/gurl.h"
 
 namespace media_router {
 
@@ -28,7 +28,7 @@ class MediaSinksObserver {
   // with |source|.
   MediaSinksObserver(MediaRouter* router,
                      const MediaSource& source,
-                     const url::Origin& origin);
+                     const GURL& origin);
   virtual ~MediaSinksObserver();
 
   // Registers with MediaRouter to start observing. Must be called before the
@@ -42,7 +42,7 @@ class MediaSinksObserver {
   // will be invoked with |sinks|. Otherwise, it will be invoked with an empty
   // list.
   void OnSinksUpdated(const std::vector<MediaSink>& sinks,
-                      const std::vector<url::Origin>& origins);
+                      const std::vector<GURL>& origins);
 
   const MediaSource& source() const { return source_; }
 
@@ -55,7 +55,7 @@ class MediaSinksObserver {
 
  private:
   const MediaSource source_;
-  const url::Origin origin_;
+  const GURL origin_;
   MediaRouter* const router_;
   bool initialized_;
 

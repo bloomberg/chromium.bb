@@ -95,7 +95,7 @@ CastDeviceCache::CastDeviceCache(
     : MediaRoutesObserver(GetMediaRouter()),
       MediaSinksObserver(GetMediaRouter(),
                          media_router::MediaSourceForDesktop(),
-                         url::Origin(GURL(chrome::kChromeUIMediaRouterURL))),
+                         GURL(chrome::kChromeUIMediaRouterURL)),
       cast_config_client_(cast_config_client) {}
 
 CastDeviceCache::~CastDeviceCache() {}
@@ -226,7 +226,7 @@ void CastConfigClientMediaRouter::CastToSink(ash::mojom::CastSinkPtr sink) {
   // TODO(imcheng): Pass in tab casting timeout.
   GetMediaRouter()->CreateRoute(
       media_router::MediaSourceForDesktop().id(), sink->id,
-      url::Origin(GURL("http://cros-cast-origin/")), nullptr,
+      GURL("http://cros-cast-origin/"), nullptr,
       std::vector<media_router::MediaRouteResponseCallback>(),
       base::TimeDelta(), false);
 }
