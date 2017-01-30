@@ -51,7 +51,7 @@
   [super setBrowserState:browserState];
   // PLACEHOLDER: Generate a tab group with four empty tabs.
   self.tabGroup =
-      [TabGroup tabGroupWithEmptyTabCount:4 forBrowserState:self.browserState];
+      [TabGroup tabGroupWithEmptyTabCount:7 forBrowserState:self.browserState];
 }
 
 #pragma mark - BrowserCoordinator
@@ -81,7 +81,7 @@
   WebMediator* tab = [self.tabGroup tabAtIndex:index];
   GURL url = tab.webState->GetVisibleURL();
   NSString* urlText = @"<New Tab>";
-  if (!url.is_valid()) {
+  if (url.is_valid()) {
     urlText = base::SysUTF8ToNSString(url.spec());
   }
   return urlText;

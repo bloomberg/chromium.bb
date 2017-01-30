@@ -39,6 +39,7 @@ source_set("tab_grid_ui") {
 
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/tab_switcher",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",

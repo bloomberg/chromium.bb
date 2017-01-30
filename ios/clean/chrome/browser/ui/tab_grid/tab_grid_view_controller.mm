@@ -9,19 +9,19 @@
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_collection_view_layout.h"
 #import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
-#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_tab_cell.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-NSString* const kTabGridCellIdentifier = @"tabGridCell";
 const CGFloat kSpace = 20;
 const CGFloat kTabSize = 150;
 }
@@ -29,7 +29,8 @@ const CGFloat kTabSize = 150;
 @interface TabGridViewController ()<SettingsActions,
                                     TabGridActions,
                                     UICollectionViewDataSource,
-                                    UICollectionViewDelegate>
+                                    UICollectionViewDelegate,
+                                    SessionCellDelegate>
 @property(nonatomic, weak) UICollectionView* grid;
 @end
 
@@ -68,8 +69,8 @@ const CGFloat kTabSize = 150;
     [settings.centerYAnchor constraintEqualToAnchor:stripe.centerYAnchor]
   ]];
 
-  UICollectionViewFlowLayout* layout =
-      [[UICollectionViewFlowLayout alloc] init];
+  TabSwitcherPanelCollectionViewLayout* layout =
+      [[TabSwitcherPanelCollectionViewLayout alloc] init];
   layout.minimumLineSpacing = kSpace;
   layout.minimumInteritemSpacing = kSpace;
   layout.sectionInset = UIEdgeInsetsMake(kSpace, kSpace, kSpace, kSpace);
@@ -84,8 +85,8 @@ const CGFloat kTabSize = 150;
   self.grid = grid;
   self.grid.dataSource = self;
   self.grid.delegate = self;
-  [self.grid registerClass:[TabGridTabCell class]
-      forCellWithReuseIdentifier:kTabGridCellIdentifier];
+  [self.grid registerClass:[TabSwitcherLocalSessionCell class]
+      forCellWithReuseIdentifier:[TabSwitcherLocalSessionCell identifier]];
 
   [NSLayoutConstraint activateConstraints:@[
     [self.grid.topAnchor constraintEqualToAnchor:stripe.bottomAnchor],
@@ -113,21 +114,17 @@ const CGFloat kTabSize = 150;
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(nonnull NSIndexPath*)indexPath {
-  TabGridTabCell* cell =
-      base::mac::ObjCCastStrict<TabGridTabCell>([collectionView
-          dequeueReusableCellWithReuseIdentifier:kTabGridCellIdentifier
+  TabSwitcherLocalSessionCell* cell =
+      base::mac::ObjCCastStrict<TabSwitcherLocalSessionCell>([collectionView
+          dequeueReusableCellWithReuseIdentifier:
+                              [TabSwitcherLocalSessionCell identifier]
                                     forIndexPath:indexPath]);
-  cell.contentView.backgroundColor = [UIColor purpleColor];
-  cell.selected = YES;
-  cell.label.text = [self.dataSource titleAtIndex:indexPath.item];
+  cell.delegate = self;
+  [cell setSessionType:TabSwitcherSessionType::REGULAR_SESSION];
+  [cell setAppearanceForTabTitle:[self.dataSource titleAtIndex:indexPath.item]
+                         favicon:nil
+                        cellSize:CGSizeZero];
   return cell;
-}
-
-#pragma mark - UICollectionViewDelegate methods
-
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [self.tabCommandHandler showTabAtIndexPath:indexPath];
 }
 
 #pragma mark - ZoomTransitionDelegate methods
@@ -150,6 +147,21 @@ const CGFloat kTabSize = 150;
 
 - (void)showTabGrid:(id)sender {
   [self.tabGridCommandHandler showTabGrid];
+}
+
+#pragma mark - SessionCellDelegate
+
+- (TabSwitcherCache*)tabSwitcherCache {
+  // PLACEHOLDER: return image cache.
+  return nil;
+}
+
+- (void)cellPressed:(UICollectionViewCell*)cell {
+  [self.tabCommandHandler showTabAtIndexPath:[self.grid indexPathForCell:cell]];
+}
+
+- (void)deleteButtonPressedForCell:(UICollectionViewCell*)cell {
+  // PLACEHOLDER: handle close tab button.
 }
 
 @end
