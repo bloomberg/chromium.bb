@@ -40,7 +40,7 @@
 <translation id="6840444547062817500">या विस्ताराने स्वतःस वारंवार रीलोड केले आहे.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_ID" /> अज्ञात उत्पादन</translation>
 <translation id="7217838517480956708">या मशीनच्या प्रशासकास <ph name="EXTENSION_NAME" /> स्थापन करणे आवश्यक आहे. हे काढले किंवा सुधारित केले जाऊ शकत नाही.</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (विस्तार ID "<ph name="EXTENSION_ID" />") प्रशासकाद्वारे अवरोधित करण्यात आला आहे.</translation>
+<translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (विस्तार आयडी "<ph name="EXTENSION_ID" />") प्रशासकाद्वारे अवरोधित करण्यात आला आहे.</translation>
 <translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">दुसर्‍या विस्ताराने (<ph name="EXTENSION_NAME" />) एक वेगळे फाईलनाव "<ph name="ACTUAL_FILENAME" />" निर्धारित केल्यामुळे डाउनलोड "<ph name="ATTEMPTED_FILENAME" />" ला नाव देण्यात हा विस्तार अयशस्वी झाला.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_NAME" /></translation>

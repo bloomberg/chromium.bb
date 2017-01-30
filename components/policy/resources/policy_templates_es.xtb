@@ -1399,12 +1399,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
-<translation id="5209594095390052164">Permite elegir si el usuario quiere habilitar o inhabilitar la limitación del ancho de banda.
-      Esto se aplica a todos los usuarios y a todas las interfaces del dispositivo. Cuando se haya establecido
-      la limitación, esta se mantendrá hasta que se cambie la política para inhabilitarla.
-
-      Si se asigna el valor false, no se habilitará la limitación.
-      Si se asigna el valor true, se establece una limitación en el sistema para alcanzar una determinada velocidad de subida y de bajada (en kbit/s).</translation>
 <translation id="5219844027738217407">En el caso de las aplicaciones para Android, esta política afecta solo al micrófono. Si se asigna el valor true a esta política, el micrófono se silenciará en todas las aplicaciones para Android, sin excepciones.</translation>
 <translation id="5226033722357981948">Especificar si se debe inhabilitar el buscador de complementos</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>

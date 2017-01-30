@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">Cung cấp khả năng đăng nhập tự động vào các trang của Google bằng tài khoản này</translation>
 <translation id="1596174774107741586">Sử dụng máy chủ hộp cát Google Payments</translation>
 <translation id="1598233202702788831">Quản trị viên của bạn đã tắt bản cập nhật.</translation>
-<translation id="1598604884989842103">Bật UI phóng to TouchView để kiểm tra</translation>
 <translation id="1600857548979126453">Truy cập chương trình phụ trợ trình gỡ lỗi trang</translation>
 <translation id="1601560923496285236">Áp dụng</translation>
 <translation id="1603914832182249871">(Ẩn danh)</translation>
@@ -1762,7 +1761,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để b
 <translation id="3206175707080061730">Tệp có tên là "$1" đã tồn tại. Bạn có muốn thay thế tệp đó không?</translation>
 <translation id="320825648481311438">Khi được bật, trình duyệt sẽ quản lý quá trình đăng nhập và đăng xuất các tài khoản Google.</translation>
 <translation id="3208703785962634733">Không được xác nhận</translation>
-<translation id="3209459032754159027">Bật hiển thị quảng cáo đăng nhập thẻ tín dụng bên trong menu thả xuống Tự động điền.</translation>
 <translation id="3211904643589960506">Cho phép quét tìm URL từ đối tượng Web trong cuộc sống.</translation>
 <translation id="3216508313927987948">Để thực hiện việc này, bạn cần huấn luyện <ph name="DEVICE_TYPE" /> của mình theo bước sau.</translation>
 <translation id="3220586366024592812">Quy trình của trình kết nối <ph name="CLOUD_PRINT_NAME" /> đã xảy ra lỗi. Khởi động lại?</translation>
@@ -4624,7 +4622,6 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="7042418530779813870">Dán &amp;và tìm kiếm</translation>
 <translation id="7045480833981818310">Chỉnh sửa Office cho Tài liệu, Trang tính và Trang trình bày</translation>
 <translation id="7047998246166230966">Con trỏ</translation>
-<translation id="7048141481140415714">Bật Ctrl+Alt+Shift+8 để chuyển đối chế độ phóng to TouchView.</translation>
 <translation id="7049293980323620022">Giữ tệp?</translation>
 <translation id="7051943809462976355">Đang tìm kiếm chuột...</translation>
 <translation id="7052237160939977163">Gửi dữ liệu theo dõi hoạt động</translation>
@@ -5792,7 +5789,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8632275030377321303">Người dùng không thể sửa đổi proxy.</translation>
 <translation id="8636038761987659075">Cài đặt trang web với Tất cả các trang web và Chi tiết trang web</translation>
 <translation id="8637688295594795546">Cập nhật hệ thống có sẵn. Đang chuẩn bị tải xuống…</translation>
-<translation id="8638602948366220068">Bật quảng cáo tính năng tự động điền thông tin đăng nhập thẻ tín dụng</translation>
 <translation id="8639504893694748827">Bộ quét không bản sao</translation>
 <translation id="8639963783467694461">Cài đặt tự động điền</translation>
 <translation id="8642171459927087831">Mã thông báo truy cập</translation>
@@ -6228,7 +6224,6 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> từ <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Buộc xử lý thụ động trình xử lý sự kiện di chuyển bằng thao tác chạm đầu tiên mỗi lần cuộn và khởi động bằng thao tác chạm trong khi truyền.</translation>
-<translation id="9184473426683023988">Nhập và liên kết với thiết bị</translation>
 <translation id="9186729806195986201">Đồng thời, quay lại phiên bản được cài đặt trước của <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Bật VR trên Chrome.</translation>
 <translation id="9188441292293901223">Hãy cập nhật điện thoại của bạn lên phiên bản Android mới hơn để mở khóa <ph name="DEVICE_TYPE" /> này.</translation>

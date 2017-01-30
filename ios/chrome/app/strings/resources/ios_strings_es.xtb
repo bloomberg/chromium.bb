@@ -51,6 +51,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="1809939268435598390">Eliminar carpeta</translation>
 <translation id="1813414402673211292">Borrar datos de navegación</translation>
 <translation id="1820259098641718022">Añadida a Lista de lectura</translation>
+<translation id="1826516787628120939">Comprobando</translation>
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
 <translation id="1886928167269928266">El origen de los tiempos</translation>
@@ -151,6 +152,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3638472932233958418">Precargar páginas web</translation>
 <translation id="3691593122358196899">Marcador añadido a <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Si se habilita, el omnibox incluirá sugerencias de las páginas web que envíen dispositivos cercanos.</translation>
+<translation id="3706658020782046159">Selecciona una dirección de envío para consultar los métodos de envío y los requisitos.</translation>
 <translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3771033907050503522">Pestañas incógnito</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
@@ -188,6 +190,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 Tus datos se han cifrado con tu frase de contraseña de sincronización. Introdúcela para iniciar la sincronización.</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="473775607612524610">Actualizar</translation>
+<translation id="4750394297954878236">Sugerencias</translation>
 <translation id="4773461607542755386">¿Abrir esta página en la aplicación <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Cookies y datos de sitios web</translation>
 <translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio web?</translation>

@@ -288,7 +288,7 @@
 <translation id="1377600615067678409">Ignorați deocamdată</translation>
 <translation id="1378613616312864539"><ph name="NAME" /> controlează această setare</translation>
 <translation id="1378727793141957596">Bun venit la Disc Google!</translation>
-<translation id="1383170267963800969">Face lente toate animațiile din IU.</translation>
+<translation id="1383170267963800969">Încetinește toate animațiile din IU.</translation>
 <translation id="1383861834909034572">Se va deschide după finalizare</translation>
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1384211230590313258">Handler de descoperire a serviciului</translation>
@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Se oferă automat conectarea la site-urile Google pentru acest cont</translation>
 <translation id="1596174774107741586">Folosește serverele mediului de testare securizat Google Payments</translation>
 <translation id="1598233202702788831">Actualizările sunt dezactivate de administrator.</translation>
-<translation id="1598604884989842103">Activați interfața de utilizare de maximizare TouchView pentru testare</translation>
 <translation id="1600857548979126453">Accesează procesul de fundal al depanatorului de pagină</translation>
 <translation id="1601560923496285236">Aplicați</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
@@ -1760,7 +1759,6 @@ Pentru instrucțiuni suplimentare, verifică e-mailurile la adresa <ph name="ACC
 <translation id="3206175707080061730">Un fișier numit „$1” există deja. Vrei să-l înlocuiești?</translation>
 <translation id="320825648481311438">Dacă este activat, browserul gestionează conectarea și deconectarea de la Conturile Google.</translation>
 <translation id="3208703785962634733">Neconfirmat</translation>
-<translation id="3209459032754159027">Activează afișarea mesajului promoțional de conectare cu cardul de credit în meniul drop-down al completării automate.</translation>
 <translation id="3211904643589960506">Activează scanarea adreselor URL de la obiectele din Webul material.</translation>
 <translation id="3216508313927987948">Pentru acesta, va trebui să configurezi dispozitivul <ph name="DEVICE_TYPE" /> la pasul următor.</translation>
 <translation id="3220586366024592812">Procesul conectorului <ph name="CLOUD_PRINT_NAME" /> s-a blocat. Repornești?</translation>
@@ -4619,7 +4617,6 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7042418530779813870">In&amp;serează și caută</translation>
 <translation id="7045480833981818310">Office Editing pentru Documente, Foi de calcul și Prezentări</translation>
 <translation id="7047998246166230966">Cursor</translation>
-<translation id="7048141481140415714">Activează combinația Ctrl+Alt+Shift+8 pentru a activa/dezactiva modul de maximizare TouchView.</translation>
 <translation id="7049293980323620022">Păstrezi fișierul?</translation>
 <translation id="7051943809462976355">Se caută mouse-ul...</translation>
 <translation id="7052237160939977163">Trimiteți datele privind urmărirea performanței</translation>
@@ -5787,7 +5784,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8632275030377321303">Setările de proxy nu pot fi modificate de utilizator.</translation>
 <translation id="8636038761987659075">Setările pentru site-uri cu Toate site-urile și Detaliile site-ului</translation>
 <translation id="8637688295594795546">Este disponibilă o actualizare de sistem. Se pregătește descărcarea...</translation>
-<translation id="8638602948366220068">Activează mesajul promoțional de conectare cu cardul de credit în completarea automată</translation>
 <translation id="8639504893694748827">Rasterizerul copie zero</translation>
 <translation id="8639963783467694461">Setări pentru Completare automată</translation>
 <translation id="8642171459927087831">Indicativ de acces</translation>
@@ -6222,7 +6218,6 @@ Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împăr�
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de la <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Forțează instrumentele de monitorizare a evenimentelor privind pornirea prin atingere și prima mutare prin atingere per derulare în timpul glisării rapide să fie considerate pasive.</translation>
-<translation id="9184473426683023988">Importă și asociază la dispozitiv</translation>
 <translation id="9186729806195986201">Revino la versiunea <ph name="IDS_SHORT_PRODUCT_NAME" /> instalată anterior.</translation>
 <translation id="9187651461283037651">Activează Chrome VR.</translation>
 <translation id="9188441292293901223">Pentru a debloca acest dispozitiv <ph name="DEVICE_TYPE" />, actualizează-ți telefonul la o versiune Android mai nouă.</translation>

@@ -10,7 +10,7 @@
 <translation id="1121094540300013208">የአጠቃቀም እና የብልሽት ሪፖርቶች</translation>
 <translation id="1137305377394488060">ያለፈው ሰዓት</translation>
 <translation id="1145536944570833626">ነባሩን ውሂብ ይሰርዙ።</translation>
-<translation id="1146678959555564648">ቪአር አስገባ</translation>
+<translation id="1146678959555564648">ምናባዊ ዕውነታ አስገባ</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1197267115302279827">ዕልባቶችን ውሰድ</translation>
@@ -73,6 +73,7 @@
 <translation id="1647391597548383849">ካሜራዎን ይድረሱ</translation>
 <translation id="1656489000284462475">መውሰጃ</translation>
 <translation id="1661474178782861119">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ምሽት ይዝናኑበት።</translation>
+<translation id="1670399744444387456">መሠረታዊ</translation>
 <translation id="1671236975893690980">ውርድ በመጠባበቅ ላይ...</translation>
 <translation id="169033420419426091">በጎደለ ኤስዲ ካርድ ምክንያት <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
 <translation id="1709438864123551175">የውሂብ አስቀማጭ</translation>
@@ -577,7 +578,7 @@
 <translation id="6937422995269576720">የካርድ ቁጥሩ ልክ ያልሆነ ነው</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6963766334940102469">ዕልባቶችን ሰርዝ</translation>
-<translation id="6965382102122355670">ይሁን</translation>
+<translation id="6965382102122355670">እሺ</translation>
 <translation id="6973630695168034713">አቃፊዎች</translation>
 <translation id="6978479750597523876">የትርጉም ቅንብሮችን ዳግም ይጀመሩ</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>

@@ -484,7 +484,6 @@
 <translation id="1594234040488055839">Ofrecer acceso automático en los sitios de Google con esta cuenta</translation>
 <translation id="1596174774107741586">Usar los servidores de zona de pruebas de Google Payments</translation>
 <translation id="1598233202702788831">Tu administrador inhabilitó las actualizaciones.</translation>
-<translation id="1598604884989842103">Habilitar la interfaz de usuario de ampliación de TouchView para realizar pruebas</translation>
 <translation id="1600857548979126453">Acceder al servidor del depurador de páginas</translation>
 <translation id="1601560923496285236">Aplicar</translation>
 <translation id="1603914832182249871">(Incógnito)</translation>
@@ -1213,7 +1212,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2565670301826831948">Velocidad del panel táctil:</translation>
 <translation id="2566124945717127842">Usa la función Powerwash para restablecer el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> y que quede como nuevo.</translation>
 <translation id="2568774940984945469">Contenedor de la barra de información</translation>
-<translation id="2570000010887652771">Datos guardados.</translation>
+<translation id="2570000010887652771">Consumo de datos reducido</translation>
 <translation id="2570648609346224037">Se produjo un error durante la descarga de la imagen de recuperación.</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2572032849266859634">Se concedió acceso de solo lectura a <ph name="VOLUME_NAME" />.</translation>
@@ -1757,7 +1756,6 @@ Revisa tu correo electrónico <ph name="ACCOUNT_EMAIL" /> para consultar estas y
 <translation id="3206175707080061730">Ya existe un archivo llamado "$1". ¿Deseas reemplazarlo?</translation>
 <translation id="320825648481311438">Si se habilita esta opción, el navegador administrará el proceso para acceder a las cuentas de Google y salir de ellas.</translation>
 <translation id="3208703785962634733">Sin confirmar</translation>
-<translation id="3209459032754159027">Permite mostrar la promoción de acceso de la tarjeta de crédito en la lista desplegable de Autocompletar.</translation>
 <translation id="3211904643589960506">Habilitar el escaneo de URL de los objetos de la Web física</translation>
 <translation id="3216508313927987948">Para que esto suceda, debes enseñarle a tu <ph name="DEVICE_TYPE" /> en el siguiente paso.</translation>
 <translation id="3220586366024592812">Se ha producido un bloqueo en el proceso del conector de <ph name="CLOUD_PRINT_NAME" />. ¿Deseas reiniciarlo?</translation>
@@ -2310,7 +2308,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3899879303189199559">Sin conexión durante más de un año</translation>
 <translation id="3899968422636198696"><ph name="ORGNAME" /> <ph name="HOSTNAME" /></translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
-<translation id="3902365939851986963">Definir los límites de la pantalla táctil</translation>
+<translation id="3902365939851986963">Definir los límites de la pantalla táctil en Pantallas</translation>
 <translation id="3902799646152133632">Omite el marco principal sin almacenamiento.</translation>
 <translation id="3904196543277238487">Versión de TLS máxima habilitada</translation>
 <translation id="3904709815599435085">Habilita la app Fondos de pantalla para Android como la app de fondos de pantalla predeterminada en el Sistema operativo Chrome.</translation>
@@ -4540,7 +4538,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="695755122858488207">Botón de radio no seleccionado</translation>
 <translation id="696203921837389374">Habilitar la sincronización mediante datos móviles</translation>
 <translation id="6964390816189577014">Héroe</translation>
-<translation id="6965382102122355670">Aceptar</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Puerto</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6969104364835835175">Forzar Subzero de PNaCl</translation>
@@ -4617,7 +4615,6 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7042418530779813870">Pe&amp;gar y buscar</translation>
 <translation id="7045480833981818310">Edición de Office para Documentos, Hojas de cálculo y Presentaciones de Google</translation>
 <translation id="7047998246166230966">Puntero</translation>
-<translation id="7048141481140415714">Habilita Ctrl + Alt + Mayús + 8 para activar el modo de ampliación de TouchView.</translation>
 <translation id="7049293980323620022">¿Deseas conservar el archivo?</translation>
 <translation id="7051943809462976355">Buscando mouse…</translation>
 <translation id="7052237160939977163">Enviar datos de seguimiento de rendimiento</translation>
@@ -5785,7 +5782,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8632275030377321303">El usuario no puede modificar el proxy.</translation>
 <translation id="8636038761987659075">Configuración del sitio con Todos los sitios y Detalles del sitio</translation>
 <translation id="8637688295594795546">Actualización del sistema disponible. Preparando para descargar...</translation>
-<translation id="8638602948366220068">Habilitar función de promoción de acceso de la tarjeta de crédito con Autocompletar</translation>
 <translation id="8639504893694748827">Rasterizador de copia cero</translation>
 <translation id="8639963783467694461">Configuración de Autocompletar</translation>
 <translation id="8642171459927087831">Token de acceso</translation>
@@ -6220,7 +6216,6 @@ Es posible que las notificaciones, las ventanas y los diálogos posteriores se d
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Fuerza los objetos de escucha de eventos touchstart y primer touchmove por desplazamiento en la navegación para que se consideren pasivos.</translation>
-<translation id="9184473426683023988">Importar y vincular con el dispositivo</translation>
 <translation id="9186729806195986201">Volver también a la versión de <ph name="IDS_SHORT_PRODUCT_NAME" /> instalada previamente</translation>
 <translation id="9187651461283037651">Habilitar Chrome VR</translation>
 <translation id="9188441292293901223">Actualiza el teléfono a una nueva versión de Android para desbloquear el dispositivo <ph name="DEVICE_TYPE" />.</translation>

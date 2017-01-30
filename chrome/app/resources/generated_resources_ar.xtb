@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">‏عرض تسجيل الدخول إلى مواقع Google تلقائيًا باستخدام هذا الحساب</translation>
 <translation id="1596174774107741586">‏استخدام خوادم وضع الحماية لـ Google Payments</translation>
 <translation id="1598233202702788831">عطّل المشرف التحديثات.</translation>
-<translation id="1598604884989842103">‏تمكين واجهة مستخدم الحد الأقصى في TouchView للاختبار</translation>
 <translation id="1600857548979126453">الدخول إلى الواجهة الخلفية لبرنامج تصحيح خلل الصفحة</translation>
 <translation id="1601560923496285236">تطبيق</translation>
 <translation id="1603914832182249871">(التصفح المتخفي)</translation>
@@ -1760,7 +1759,6 @@
 <translation id="3206175707080061730">هناك ملف بالاسم "$1" موجود فعلاً. هل تريد استبداله؟</translation>
 <translation id="320825648481311438">‏عند تمكينه، يدير المتصفح تسجيل الدخول والخروج من حسابات Google.</translation>
 <translation id="3208703785962634733">لم يتم تأكيده</translation>
-<translation id="3209459032754159027">تمكين عرض ترويج تسجيل الدخول لبطاقة الائتمان داخل قائمة الملء التلقائي المُنسدلة.</translation>
 <translation id="3211904643589960506">‏تمكين البحث عن عناوين URL من كائنات الشبكة المادية.</translation>
 <translation id="3216508313927987948">لتحقيق ذلك، ستحتاج إلى اختبار <ph name="DEVICE_TYPE" /> في الخطوة التالية.</translation>
 <translation id="3220586366024592812">تعطلت عملية موصل <ph name="CLOUD_PRINT_NAME" /> . هل تريد إعادة التشغيل؟</translation>
@@ -2154,7 +2152,7 @@
 <translation id="3704162925118123524">قد تتطلب الشبكة التي تستخدمها زيارة صفحة تسجيل الدخول.</translation>
 <translation id="3704331259350077894">إيقاف العملية</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">تحميل...</translation>
+<translation id="370665806235115550">جارٍ التحميل...</translation>
 <translation id="3706919628594312718">إعدادات الماوس</translation>
 <translation id="3707020109030358290">ليست مرجعًا مصدقًا.</translation>
 <translation id="3709244229496787112">تم إيقاف تشغيل المتصفح قبل انتهاء التنزيل.</translation>
@@ -4616,7 +4614,6 @@
 <translation id="7042418530779813870">ل&amp;صق وبحث</translation>
 <translation id="7045480833981818310">‏تعديل Office للمستندات، وجداول البيانات، والعروض التقديمية</translation>
 <translation id="7047998246166230966">المؤشر</translation>
-<translation id="7048141481140415714">‏تمكين Ctrl+Alt+Shift+8 للتبديل إلى وضع التكبير في TouchView.</translation>
 <translation id="7049293980323620022">هل تريد الاحتفاظ بالملف؟</translation>
 <translation id="7051943809462976355">جارٍ البحث عن الماوس...</translation>
 <translation id="7052237160939977163">إرسال بيانات تتبع مستوى الأداء</translation>
@@ -5785,7 +5782,6 @@
 <translation id="8632275030377321303">لا يمكن تعديل الخادم الوكيل من قِبل المستخدم.</translation>
 <translation id="8636038761987659075">إعدادات الموقع مع كل المواقع وتفاصيل الموقع</translation>
 <translation id="8637688295594795546">يتوفر تحديث النظام الآن. جارٍ التحضير للتنزيل...</translation>
-<translation id="8638602948366220068">تمكين ترويج تسجيل الدخول لبطاقة الائتمان للملء التلقائي</translation>
 <translation id="8639504893694748827">بدون نسخة من أداة التحويل</translation>
 <translation id="8639963783467694461">إعدادات الملء التلقائي</translation>
 <translation id="8642171459927087831">رمز الدخول المميز</translation>
@@ -6221,7 +6217,6 @@
 <translation id="9181716872983600413">يونيكود</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> من <ph name="DOWNLOAD_DOMAIN" />، <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">تفرض أدوات معالجة الأحداث حسب التمرير للبدء باللمس، والحركة باللمس الأولية أثناء الانتقال لتتم معالجتها كعناصر سلبية.</translation>
-<translation id="9184473426683023988">استيراد شهادات وربط الجهاز بها</translation>
 <translation id="9186729806195986201">بالإضافة إلى العودة إلى الإصدار المثبت مسبقًا من <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">‏تمكين الواقع الافتراضي لـ Chrome.</translation>
 <translation id="9188441292293901223">‏يُرجى تحديث هاتفك إلى الإصدار الأحدث من Android لإلغاء قفل <ph name="DEVICE_TYPE" />.</translation>

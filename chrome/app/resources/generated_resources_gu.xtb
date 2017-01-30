@@ -483,7 +483,6 @@
 <translation id="1594234040488055839">આ એકાઉન્ટથી આપમેળે Google Sites પર સાઇન ઇન થવાની ઓફર</translation>
 <translation id="1596174774107741586">Google Payments સેન્ડબોક્સ સર્વર્સનો ઉપયોગ કરો</translation>
 <translation id="1598233202702788831">તમારા વ્યવસ્થાપક દ્વારા અપડેટ્સ અક્ષમ કરાયા છે.</translation>
-<translation id="1598604884989842103">પરીક્ષણ માટે TouchView મોટું કરોને સક્ષમ કરો</translation>
 <translation id="1600857548979126453">પૃષ્ઠ ડીબગર બૅકએંડ ઍક્સેસ કરો</translation>
 <translation id="1601560923496285236">લાગુ કરો</translation>
 <translation id="1603914832182249871">(છૂપી)</translation>
@@ -819,7 +818,7 @@
 <translation id="2077129598763517140">હાર્ડવેર ઍક્સિલરેશન ઉપલબ્ધ હોવા પર ઉપયોગ કરો</translation>
 <translation id="2078019350989722914">(<ph name="KEY_EQUIVALENT" />) ને છોડતા પહેલા ચેતવો</translation>
 <translation id="2079053412993822885">જો તમે તમારા પોતાના પ્રમાણપત્રમાંથી કોઈ એક કાઢી નાખો છો, તો તમે તેનો ઉપયોગ તમને ઓળખવા માટે કરી શકશો નહીં.</translation>
-<translation id="2079545284768500474">પૂર્વવત્ કરો</translation>
+<translation id="2079545284768500474">પૂર્વવત કરો</translation>
 <translation id="2080010875307505892">સર્બિયન કીબોર્ડ</translation>
 <translation id="2080070583977670716">વધુ સેટિંગ્સ</translation>
 <translation id="2081322486940989439">આ સાઇટ Visa ને સ્વીકારતી નથી.</translation>
@@ -1756,7 +1755,6 @@
 <translation id="3206175707080061730">"$1" નામવાળી એક ફાઇલ પહેલાથી અસ્તિત્વમાં છે. શું તમે તેને બદલવા માગો છો?</translation>
 <translation id="320825648481311438">જ્યારે સક્ષમ હોય, ત્યારે બ્રાઉઝર Google એકાઉન્ટ્સના સાઇન ઇન અને આઉટનું સંચાલન કરે છે.</translation>
 <translation id="3208703785962634733">પુષ્ટિ થયેલ નથી</translation>
-<translation id="3209459032754159027">સ્વતઃભરણ ડ્રોપડાઉનની અંદર ક્રેડિટ કાર્ડ સાઇનઇન પ્રોમો બતાવવાનું સક્ષમ કરો.</translation>
 <translation id="3211904643589960506">વાસ્તવિક વેબ પદાર્થોમાંથી URLs માટે સ્કેનીંગને સક્ષમ કરો.</translation>
 <translation id="3216508313927987948">આવું કરવા માટે, તમારે આ પછીના પગલાંમાં તમારા <ph name="DEVICE_TYPE" /> ને તાલીમ આપવી જરૂરી બનશે.</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> કનેક્ટર પ્રક્રિયા ક્રેશ થઈ ગઈ. ફરીથી શરૂ કરીએ?</translation>
@@ -3892,7 +3890,7 @@
 <translation id="6062697480277116433">તમે સેલ્યુલર ડેટાનો ઉપયોગ કરી રહ્યાં છો</translation>
 <translation id="6064217302520318294">સ્ક્રીન લૉક</translation>
 <translation id="6065289257230303064">પ્રમાણપત્ર વિષય નિર્દેશિકાના લક્ષણો </translation>
-<translation id="6067080187494608396">ધીમ UI એનિમેશનો</translation>
+<translation id="6067080187494608396">ધીમા UI એનિમેશનો</translation>
 <translation id="6071181508177083058">પાસવર્ડની પુષ્ટિ કરો</translation>
 <translation id="6073903501322152803">ઍક્સેસિબિલિટી સુવિધાઓ ઉમેરો</translation>
 <translation id="6074825444536523002">Google ફોર્મ</translation>
@@ -4617,7 +4615,6 @@
 <translation id="7042418530779813870">પેસ્ટ&amp; કરો અને શોધો</translation>
 <translation id="7045480833981818310">દસ્તાવેજો, શીટ્સ અને સ્લાઇડ્સ માટે Office સંપાદન</translation>
 <translation id="7047998246166230966">પોઇન્ટર</translation>
-<translation id="7048141481140415714">TouchView મોટું કરો મોડને ટોગલ કરવા માટે Ctrl+Alt+Shift+8 ને સક્ષમ કરો.</translation>
 <translation id="7049293980323620022">ફાઇલ રાખીએ?</translation>
 <translation id="7051943809462976355">માઉસ માટે શોધી રહ્યું છે...</translation>
 <translation id="7052237160939977163">પ્રદર્શન ટ્રેસ ડેટા મોકલો</translation>
@@ -5782,7 +5779,6 @@
 <translation id="8632275030377321303">પ્રોક્સીને વપરાશકર્તા દ્વારા સંશોધિત કરી શકાતી નથી.</translation>
 <translation id="8636038761987659075">તમામ સાઇટ્સ અને સાઇટ વિગતો સાથેની સાઇટ સેટિંગ્સ</translation>
 <translation id="8637688295594795546">સિસ્ટમ અપડેટ ઉપલબ્ધ છે. ડાઉનલોડ કરવા માટે તૈયાર થઈ રહ્યું છે...</translation>
-<translation id="8638602948366220068">સ્વતઃભરણ ક્રેડિટ કાર્ડ સાઇનઇન પ્રોમો સક્ષમ કરો</translation>
 <translation id="8639504893694748827">શૂન્ય-કૉપિ રાસ્ટરાઇઝર</translation>
 <translation id="8639963783467694461">સ્વતઃભરો સેટિંગ્સ</translation>
 <translation id="8642171459927087831">ઍક્સેસ ટોકન</translation>
@@ -6218,7 +6214,6 @@
 <translation id="9181716872983600413">યુનિકોડ</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" /> માંથી <ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">ફ્લિંગ દરમિયાન ટચસ્ટાર્ટ અને સ્ક્રોલ દીઠ પ્રથમ ટચમૂવ ઇવેન્ટ શ્રોતાઓને નિષ્ક્રિય તરીકે ગણવા માટેની ફરજ પાડે છે.</translation>
-<translation id="9184473426683023988">આયાત કરો અને ઉપકરણમાં જોડો</translation>
 <translation id="9186729806195986201">સાથે જ <ph name="IDS_SHORT_PRODUCT_NAME" /> ના પાછલા ઇન્સ્ટોલ કરેલ સંસ્કરણ પર પરત ફરો.</translation>
 <translation id="9187651461283037651">Chrome VR સક્ષમ કરો.</translation>
 <translation id="9188441292293901223">આ <ph name="DEVICE_TYPE" /> ને અનલૉક કરવા માટે, કૃપા કરીને તમારા ફોનને Android ના નવા સંસ્કરણ પર અપડેટ કરો.</translation>

@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Zaoferuj automatyczne logowanie do witryn Google za pomocą tego konta</translation>
 <translation id="1596174774107741586">Użyj serwerów piaskownicy Google Payments</translation>
 <translation id="1598233202702788831">Aktualizacje zostały wyłączone przez administratora.</translation>
-<translation id="1598604884989842103">Włącz interfejs maksymalizacji TouchView do testowania</translation>
 <translation id="1600857548979126453">Uzyskiwać dostęp do programu debugera stron</translation>
 <translation id="1601560923496285236">Zastosuj</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
@@ -1013,7 +1012,7 @@ Po utworzeniu nadzorowanego użytkownika możesz w dowolnym czasie i z dowolnego
 <translation id="2286950485307333924">Jesteś teraz zalogowany w Chrome</translation>
 <translation id="2287590536030307392">Wyłącz wszystkie połączenia bezprzewodowe.</translation>
 <translation id="2291643155573394834">Następna karta</translation>
-<translation id="2292848386125228270">Uruchom <ph name="PRODUCT_NAME" /> jako normalny użytkownik. Jeśli jesteś programistą i chcesz skorzystać z konta użytkownika root, uruchom program jeszcze raz z flagą --no-sandbox.</translation>
+<translation id="2292848386125228270">Uruchom <ph name="PRODUCT_NAME" /> jako normalny użytkownik. Jeśli jesteś programistą i chcesz skorzystać z konta roota, uruchom program jeszcze raz z flagą --no-sandbox.</translation>
 <translation id="2294358108254308676">Czy chcesz zainstalować aplikację <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Metoda EAP:</translation>
 <translation id="2301382460326681002">Główny katalog rozszerzenia jest nieprawidłowy.</translation>
@@ -1760,7 +1759,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3206175707080061730">Plik o nazwie „$1” już istnieje. Czy chcesz go zastąpić?</translation>
 <translation id="320825648481311438">Po włączeniu tej opcji przeglądarka zarządza logowaniem się na konta Google i wylogowywaniem się z nich.</translation>
 <translation id="3208703785962634733">Niepotwierdzony</translation>
-<translation id="3209459032754159027">Pokazuj  w menu Autouzupełniania opcję logowania się w Chrome przy wypełnianiu danych karty kredytowej.</translation>
 <translation id="3211904643589960506">Włącz skanowanie obiektów internetu rzeczy w poszukiwaniu adresów URL.</translation>
 <translation id="3216508313927987948">Aby to było możliwe, musisz przeszkolić swoje urządzenie <ph name="DEVICE_TYPE" /> w następnym kroku.</translation>
 <translation id="3220586366024592812">Proces oprogramowania sprzęgającego usługi <ph name="CLOUD_PRINT_NAME" /> uległ awarii. Uruchomić go ponownie?</translation>
@@ -4617,7 +4615,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7042418530779813870">Wk&amp;lej i wyszukaj</translation>
 <translation id="7045480833981818310">Edytuj pliki Office w Dokumentach, Arkuszach i Prezentacjach</translation>
 <translation id="7047998246166230966">Wskaźnik</translation>
-<translation id="7048141481140415714">Włącz skrót Ctrl+Alt+Shift+8, by przełączyć tryb maksymalizacji TouchView.</translation>
 <translation id="7049293980323620022">Zachować plik?</translation>
 <translation id="7051943809462976355">Szukam myszy...</translation>
 <translation id="7052237160939977163">Wyślij dane śledzenia wydajności</translation>
@@ -5778,7 +5775,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8632275030377321303">Użytkownik nie może zmodyfikować serwera proxy.</translation>
 <translation id="8636038761987659075">Ustawienia witryny z elementami „Wszystkie witryny” i „Szczegóły witryny”</translation>
 <translation id="8637688295594795546">Jest dostępna aktualizacja systemu. Trwa przygotowanie do pobrania…</translation>
-<translation id="8638602948366220068">Włącz autouzupełnianie danych karty kredytowej</translation>
 <translation id="8639504893694748827">Mechanizm rastrowania bez żadnej kopii</translation>
 <translation id="8639963783467694461">Ustawienia autouzupełniania</translation>
 <translation id="8642171459927087831">Token dostępu</translation>
@@ -6213,7 +6209,6 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> z <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Wymusza traktowanie detektorów zdarzeń uruchamiania dotknięciem i przewijania przez przesuwanie po pierwszym dotknięciu jako pasywnych podczas przesunięcia.</translation>
-<translation id="9184473426683023988">Zaimportuj i powiąż z urządzeniem</translation>
 <translation id="9186729806195986201">Przywróć też poprzednio zainstalowaną wersję <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Włącz Chrome VR.</translation>
 <translation id="9188441292293901223">Aby odblokować to urządzenie <ph name="DEVICE_TYPE" />, zaktualizuj Androida na telefonie do nowszej wersji.</translation>

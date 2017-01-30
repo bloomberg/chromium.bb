@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Tarjoa automaattista kirjautumista Google-sivustoihin tällä tilillä</translation>
 <translation id="1596174774107741586">Käytä Google Paymentsin hiekkalaatikkopalvelimia</translation>
 <translation id="1598233202702788831">Järjestelmänvalvoja on estänyt päivitykset.</translation>
-<translation id="1598604884989842103">Ota TouchView-zoomauskäyttöliittymä koekäyttöön</translation>
 <translation id="1600857548979126453">Käyttää sivun viankorjausta</translation>
 <translation id="1601560923496285236">Käytä</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
@@ -1761,7 +1760,6 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi (<ph name="ACCOUNT_EMAI
 <translation id="3206175707080061730">Tiedosto nimeltä $1 on jo olemassa. Haluatko korvata sen?</translation>
 <translation id="320825648481311438">Kun ominaisuus on käytössä, selain huolehtii Google-tilien sisään- ja uloskirjautumisista.</translation>
 <translation id="3208703785962634733">Vahvistamaton</translation>
-<translation id="3209459032754159027">Salli luottokortin lisäämismainoksen näyttäminen automaattisen täytön avattavassa valikossa.</translation>
 <translation id="3211904643589960506">Ota käyttöön URL-osoitteiden skannaus Fyysisen webin esineistä.</translation>
 <translation id="3216508313927987948">Voit tehdä tämän opettamalla laitetta <ph name="DEVICE_TYPE" /> seuraavassa vaiheessa.</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" />-yhteysohjelman prosessi keskeytyi. Käynnistetäänkö uudelleen?</translation>
@@ -3312,7 +3310,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="529175790091471945">Alusta tämä laite</translation>
 <translation id="5292890015345653304">Aseta SD-kortti tai USB-muistitikku</translation>
 <translation id="5294529402252479912">Päivitä Adobe Reader nyt</translation>
-<translation id="5297526204711817721">Yhteytesi tähän sivustoon ei ole yksityinen. Voit poistua virtuaalitilasta milloin tahansa ottamalla headsetin pois ja valitsemalla Takaisin.</translation>
+<translation id="5297526204711817721">Yhteytesi tähän sivustoon ei ole yksityinen. Voit poistua VR-tilasta milloin tahansa ottamalla headsetin pois ja valitsemalla Takaisin.</translation>
 <translation id="5298219193514155779">Teeman loi</translation>
 <translation id="5298363578196989456">Laajennusta <ph name="IMPORT_NAME" /> ei voi tuoda, koska se ei ole jaettu moduuli.</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
@@ -4612,7 +4610,6 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7042418530779813870">&amp;Liitä ja tee haku</translation>
 <translation id="7045480833981818310">Office Editing for Docs, Sheets &amp; Slides</translation>
 <translation id="7047998246166230966">Osoitin</translation>
-<translation id="7048141481140415714">Ota käyttöön TouchView-zoomaustilan valinta pikanäppäimellä Ctrl+Alt+Shift+8.</translation>
 <translation id="7049293980323620022">Pidetäänkö tiedosto?</translation>
 <translation id="7051943809462976355">Hiirtä etsitään…</translation>
 <translation id="7052237160939977163">Lähetä tehokkuuden tarkkailutietoja</translation>
@@ -5778,7 +5775,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8632275030377321303">Käyttäjä ei voi muokata välityspalvelinta.</translation>
 <translation id="8636038761987659075">Sivustoasetukset: Kaikki sivustot ja Sivuston tiedot</translation>
 <translation id="8637688295594795546">Järjestelmäpäivitys saatavilla. Valmistellaan latausta...</translation>
-<translation id="8638602948366220068">Salli luottokortin automaattiseen täyttöön lisäämisen mainos</translation>
 <translation id="8639504893694748827">Kopioimaton rasteroija</translation>
 <translation id="8639963783467694461">Automaattisen täytön asetukset</translation>
 <translation id="8642171459927087831">Käyttötunnus</translation>
@@ -6155,7 +6151,7 @@ Myöhemmät ilmoitukset, ikkunat ja valintaikkunat voidaan jakaa työpöytien v�
 <translation id="9109122242323516435">Vapauta tilaa poistamalla laitteeseen tallennettuja tiedostoja.</translation>
 <translation id="9110990317705400362">Pyrimme jatkuvasti tekemään selaamisesta turvallisempaa. Aiemmin mikä tahansa sivusto pystyi pyytämään laajennuksen lisäämistä selaimeen. Uusimmissa Google Chrome -versioissa sinun on erikseen ilmoitettava Chromelle, että haluat asentaa nämä laajennukset, lisäämällä ne Laajennukset-sivulla. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Poista lukitus</translation>
-<translation id="9111296877637560526">Kun tämä asetus on käytössä, verkkosovellukset voivat käyttää kokeellisia virtuaalisen todellisuuden sovellusliittymiä.</translation>
+<translation id="9111296877637560526">Kun tämä asetus on käytössä, verkkosovellukset voivat käyttää kokeellisia virtuaalitodellisuuden sovellusliittymiä.</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE" />: <ph name="STATUS" /></translation>
 <translation id="9112614144067920641">Valitse uusi PIN-koodi.</translation>
 <translation id="9112748030372401671">Vaihda taustakuva</translation>
@@ -6213,7 +6209,6 @@ Myöhemmät ilmoitukset, ikkunat ja valintaikkunat voidaan jakaa työpöytien v�
 <translation id="9181716872983600413">unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Touchstart-tapahtumaseuraimia ja kunkin vierityskerran ensimmäistä touchmove-tapahtumaseurainta kohdellaan oletuksena passiivisina pyyhkäisyn aikana.</translation>
-<translation id="9184473426683023988">Tuo ja sido laitteeseen</translation>
 <translation id="9186729806195986201">Palaa myön tuotteen <ph name="IDS_SHORT_PRODUCT_NAME" /> aiemmin asennettuun versioon.</translation>
 <translation id="9187651461283037651">Ota käyttöön Chrome VR.</translation>
 <translation id="9188441292293901223">Päivitä puhelimesi uudempaan Android-versioon, jotta voit avata laitteen <ph name="DEVICE_TYPE" />.</translation>

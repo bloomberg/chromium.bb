@@ -10,7 +10,7 @@
 <translation id="1121094540300013208">Звіти про використання й аварійне завершення роботи</translation>
 <translation id="1137305377394488060">останню годину</translation>
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
-<translation id="1146678959555564648">Віртуальна реальність</translation>
+<translation id="1146678959555564648">Увійти у VR-режим</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
 <translation id="1197267115302279827">Перемістити закладки</translation>
@@ -73,6 +73,7 @@
 <translation id="1647391597548383849">Доступ до камери</translation>
 <translation id="1656489000284462475">Отримання</translation>
 <translation id="1661474178782861119">Згодом тут з’являться інші статті. Гарного вечора.</translation>
+<translation id="1670399744444387456">Основні параметри</translation>
 <translation id="1671236975893690980">Очікується завантаження…</translation>
 <translation id="169033420419426091">Файл <ph name="FILE_NAME" /> не завантажено. Немає карти SD.</translation>
 <translation id="1709438864123551175">Заощадження трафіку</translation>
@@ -107,7 +108,7 @@
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> Гб використовується іншими додатками</translation>
 <translation id="2073235970478114994">Завантажити зображення</translation>
-<translation id="2079545284768500474">Скасувати</translation>
+<translation id="2079545284768500474">Відмінити</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">Якщо ввімкнути цю функцію, Chrome використовуватиме сервери Google, щоб стискати сторінки перед завантаженням. Однак це не стосується сторінок, відкритих під час конфіденційного з’єднання (HTTPS) або в режимі анонімного перегляду.</translation>
 <translation id="2096396629993765042">Ви не вийдете з облікового запису Google. У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
@@ -577,7 +578,7 @@
 <translation id="6937422995269576720">Номер картки недійсний</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
-<translation id="6965382102122355670">ОК</translation>
+<translation id="6965382102122355670">ТАК</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6978479750597523876">Скинути налаштування перекладу</translation>
 <translation id="6981982820502123353">Доступність</translation>

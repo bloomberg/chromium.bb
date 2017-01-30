@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Tawaran untuk melog masuk ke tapak Google secara automatik dengan akaun ini</translation>
 <translation id="1596174774107741586">Gunakan pelayan kotak pasir Google Payments</translation>
 <translation id="1598233202702788831">Kemas kini dilumpuhkan oleh pentadbir anda</translation>
-<translation id="1598604884989842103">Dayakan Touchview memaksimumkan UI untuk ujian</translation>
 <translation id="1600857548979126453">Akses bahagian belakang penyahpepijat halaman</translation>
 <translation id="1601560923496285236">Gunakan</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
@@ -1761,7 +1760,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk mendapatkannya dan me
 <translation id="3206175707080061730">Fail bernama "$1" sudah wujud. Adakah anda mahu menggantikannya?</translation>
 <translation id="320825648481311438">Apabila didayakan, penyemak imbas menguruskan mendaftar masuk dan keluar dari akaun Google.</translation>
 <translation id="3208703785962634733">Tidak disahkan</translation>
-<translation id="3209459032754159027">Dayakan paparan promosi log masuk kad kredit dalam menu lungsur Autolengkap.</translation>
 <translation id="3211904643589960506">Dayakan pengimbasan untuk URL daripada objek Web Fizikal.</translation>
 <translation id="3216508313927987948">Untuk merealisasikannya, anda perlu melatih <ph name="DEVICE_TYPE" /> anda dalam langkah berikut.</translation>
 <translation id="3220586366024592812">Proses penyambung <ph name="CLOUD_PRINT_NAME" /> telah mengalami nahas. Mulakan semula?</translation>
@@ -4622,7 +4620,6 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7042418530779813870">Ta&amp;mpal dan cari</translation>
 <translation id="7045480833981818310">Pengeditan Fail Office untuk Dokumen, Helaian &amp; Slaid</translation>
 <translation id="7047998246166230966">Penunjuk</translation>
-<translation id="7048141481140415714">Dayakan Ctrl+Alt+Shift+8 untuk menogol mod memaksimumkan TouchView.</translation>
 <translation id="7049293980323620022">Simpan fail?</translation>
 <translation id="7051943809462976355">Mencari tetikus...</translation>
 <translation id="7052237160939977163">Hantar data surih prestasi</translation>
@@ -5791,7 +5788,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8632275030377321303">Proksi tidak boleh diubah suai oleh pengguna.</translation>
 <translation id="8636038761987659075">Tetapan tapak dengan Semua tapak dan Butiran tapak</translation>
 <translation id="8637688295594795546">Kemas kini sistem tersedia. Bersedia untuk  muat turun…</translation>
-<translation id="8638602948366220068">Dayakan Promosi Log Masuk Butiran Kad Kredit Autolengkap</translation>
 <translation id="8639504893694748827">Rasterizer salinan sifar</translation>
 <translation id="8639963783467694461">Tetapan auto isi</translation>
 <translation id="8642171459927087831">Token Akses</translation>
@@ -6226,7 +6222,6 @@ Pemberitahuan, tetingkap dan dialog seterusnya mungkin dipisahkan antara desktop
 <translation id="9181716872983600413">Unikod</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> daripada <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Memaksa sentuhan mula dan sentuhan gerak pertama bagi setiap tindakan tatal pendengar acara semasa menguis untuk dianggap sebagai pasif.</translation>
-<translation id="9184473426683023988">Import dan Ikat kepada Peranti</translation>
 <translation id="9186729806195986201">Kembali kepada versi <ph name="IDS_SHORT_PRODUCT_NAME" /> yang dipasang sebelum ini juga.</translation>
 <translation id="9187651461283037651">Dayakan VR Chrome.</translation>
 <translation id="9188441292293901223">Sila kemas kini telefon anda kepada versi Android yang lebih baharu untuk membuka kunci <ph name="DEVICE_TYPE" /> ini.</translation>

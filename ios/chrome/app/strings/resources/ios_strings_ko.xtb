@@ -51,6 +51,7 @@
 <translation id="1809939268435598390">폴더 삭제</translation>
 <translation id="1813414402673211292">인터넷 사용 기록 삭제</translation>
 <translation id="1820259098641718022">읽기 목록에 추가됨</translation>
+<translation id="1826516787628120939">확인 중</translation>
 <translation id="1842969606798536927">결제하기</translation>
 <translation id="1876721852596493031">사용 데이터 보내기</translation>
 <translation id="1886928167269928266">전체</translation>
@@ -62,7 +63,7 @@
 <translation id="1989112275319619282">찾아보기</translation>
 <translation id="2054511809411770085">QR 코드 또는 바코드</translation>
 <translation id="2068952045031577364">지난주</translation>
-<translation id="2079545284768500474">실행 취소</translation>
+<translation id="2079545284768500474">실행취소</translation>
 <translation id="209018056901015185">데스크톱 버전으로 보기</translation>
 <translation id="2100215774115172756">오프라인에서 읽기 목록을 사용할 수 있습니다.</translation>
 <translation id="2103075008456228677">history.google.com 열기</translation>
@@ -151,6 +152,7 @@
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
 <translation id="3692781555820666866">이 기능을 사용하도록 설정한 경우 내 주변에 있는 기기에서 브로드캐스트하는 웹페이지가 검색주소창에 추천 항목으로 표시됩니다.</translation>
+<translation id="3706658020782046159">배송 방법과 요건을 확인할 수 있도록 배송지 주소를 선택하세요.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
@@ -188,6 +190,7 @@
 동기화 암호로 데이터가 암호화되어 있습니다. 동기화를 시작하려면 입력하세요.</translation>
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="473775607612524610">업데이트</translation>
+<translation id="4750394297954878236">추천</translation>
 <translation id="4773461607542755386"><ph name="APP_NAME" /> 앱에서 이 페이지를 여시겠습니까?</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" />에서 이 사이트의 비밀번호를 업데이트하도록 하시겠습니까?</translation>

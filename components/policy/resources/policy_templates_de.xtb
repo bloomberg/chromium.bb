@@ -1294,12 +1294,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Wird für diese Richtlinie "False" oder gar nichts festgelegt, bleibt der Entwicklermodus für das Gerät verfügbar.</translation>
 <translation id="5208240613060747912">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen es nicht gestattet ist, Benachrichtigungen anzuzeigen. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
-<translation id="5209594095390052164">Die Aktivierung oder Deaktivierung der Netzwerkbegrenzung wird festgelegt.
-      Diese Richtlinie gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Nachdem die Richtlinie festgelegt wurde,
-      kann die Begrenzung nur durch Deaktivierung der Richtlinie aufgehoben werden.
-
-      Wird die Richtlinie auf "false" gesetzt, wird keine Begrenzung festgelegt.
-      Wenn Sie auf "true" gesetzt wird, wird das System begrenzt, damit die angegeben Upload- und Downloadwerte in kbit/s eingehalten werden.</translation>
 <translation id="5219844027738217407">Bei Android-Apps betrifft diese Richtlinie nur das Mikrofon. Wenn diese Richtlinie auf "true" gesetzt ist, wird das Mikrofon ohne Ausnahme für alle Android-Apps stummgeschaltet.</translation>
 <translation id="5226033722357981948">Angeben, ob Plug-in-Suchfunktion deaktiviert werden soll</translation>
 <translation id="523505283826916779">Zugänglichkeitseinstellungen</translation>

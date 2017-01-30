@@ -484,7 +484,6 @@
 <translation id="1594234040488055839">Tilby automatisk pålogging til Google-nettsteder med denne kontoen</translation>
 <translation id="1596174774107741586">Bruk testmiljøtjenerne til Google Payments</translation>
 <translation id="1598233202702788831">Administratoren din har slått av oppdateringer.</translation>
-<translation id="1598604884989842103">Aktiver TouchView-maksimeringsgrensesnittet for testing</translation>
 <translation id="1600857548979126453">få tilgang til bakdata for sidefeilsøkingsprogrammet</translation>
 <translation id="1601560923496285236">Bruk</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
@@ -1756,7 +1755,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL" /> for instruksjoner om dette og
 <translation id="3206175707080061730">En fil med navnet $1 finnes allerede. Vil du erstatte den?</translation>
 <translation id="320825648481311438">Når funksjonen er aktivert, kan nettleseren logge av og på Google-kontoer.</translation>
 <translation id="3208703785962634733">Ikke bekreftet</translation>
-<translation id="3209459032754159027">Slå på visning av kampanjen for kredittkortpålogging i autofyll-nedtrekksmenyen.</translation>
 <translation id="3211904643589960506">Slå på søk etter nettadresser fra objekter på det fysiske nettet.</translation>
 <translation id="3216508313927987948">For å få til dette må du lære opp din <ph name="DEVICE_TYPE" /> på neste trinn.</translation>
 <translation id="3220586366024592812">Programstopp for kontaktprosessen for <ph name="CLOUD_PRINT_NAME" />. Vil du starte på nytt?</translation>
@@ -2151,7 +2149,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3704162925118123524">Det kan hende at det er et krav for nettverket du bruker, at du besøker påloggingssiden for nettverket.</translation>
 <translation id="3704331259350077894">Handlingsstopp</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">Laster inn...</translation>
+<translation id="370665806235115550">Laster inn ...</translation>
 <translation id="3706919628594312718">Innstillinger for mus</translation>
 <translation id="3707020109030358290">Ikke en sertifiseringsinstans.</translation>
 <translation id="3709244229496787112">Nettleseren ble lukket før nedlastingen var ferdig.</translation>
@@ -4608,7 +4606,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7042418530779813870">Lim inn og &amp;søk</translation>
 <translation id="7045480833981818310">Office-redigering for Dokumenter, Regneark og Presentasjoner</translation>
 <translation id="7047998246166230966">Peker</translation>
-<translation id="7048141481140415714">Aktiver Ctrl+Alt+Shift+8 for å slå TouchView-maksimeringsmodusen av eller på.</translation>
 <translation id="7049293980323620022">Vil du beholde filen?</translation>
 <translation id="7051943809462976355">Søker etter musen …</translation>
 <translation id="7052237160939977163">Send ytelsessporingsdata</translation>
@@ -5768,7 +5765,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8632275030377321303">Mellomtjenerinnstillingene kan ikke endres av brukeren.</translation>
 <translation id="8636038761987659075">Nettstedsinnstillinger med Alle nettsteder og Nettstedsdetaljer</translation>
 <translation id="8637688295594795546">Systemoppdatering er tilgjengelig. Forbereder nedlasting ...</translation>
-<translation id="8638602948366220068">Slå på kampanjen for autofyll av kredittkortpålogging</translation>
 <translation id="8639504893694748827">Rasterisering med null kopier</translation>
 <translation id="8639963783467694461">Innstillinger for autofyll</translation>
 <translation id="8642171459927087831">Tilgangstoken</translation>
@@ -6204,7 +6200,6 @@ Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</t
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> fra <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Tvinger aktivitetslytterne for touchstart og touchmove for rulling ved «fling» (raskt sveip) til å bli behandlet som passive.</translation>
-<translation id="9184473426683023988">Importér og bind til enheten</translation>
 <translation id="9186729806195986201">Gå tilbake til den forrige installerte versjonen av <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Slå på Chrome VR.</translation>
 <translation id="9188441292293901223">Du må oppdatere telefonen til en nyere versjon av Android for å låse opp <ph name="DEVICE_TYPE" />.</translation>

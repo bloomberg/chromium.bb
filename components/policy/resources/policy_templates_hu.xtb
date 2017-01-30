@@ -1306,12 +1306,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a szabály nincs beállítva, illetve értéke Hamis, a fejlesztői mód elérhető marad az eszköz számára.</translation>
 <translation id="5208240613060747912">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultNotificationsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
-<translation id="5209594095390052164">Lehetővé teszi annak kiválasztását, hogy engedélyezve van-e a hálózatszabályozás.
-      Minden felhasználóra és az eszköz minden felületére vonatkozik. A beállítást követően
-      a szabályozás a házirend kikapcsolásáig érvényben marad.
-
-      Ha a házirend értéke hamis, akkor nincs szabályozás.
-      Ha a házirend értéke igaz, akkor szabályozza a rendszert a megadott feltöltési és letöltési sebességének eléréséhez (kbit/s értékben megadva).</translation>
 <translation id="5219844027738217407">Az Android-alkalmazások esetében ez a házirend csak a mikrofonra vonatkozik. Ha a házirend beállítása igaz, a rendszer kivétel nélkül valamennyi Android-alkalmazásra vonatkozóan némítja a mikrofont.</translation>
 <translation id="5226033722357981948">Adja meg, hogy a bővítménykereső le legyen-e tiltva</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>

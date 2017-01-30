@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">በራስ-ሰር በዚህ መለያ ወደ Google ጣቢያዎች ለማስገባት አቅርብ</translation>
 <translation id="1596174774107741586">የGoogle ክፍያዎች ማጠሪያ አገልጋዮችን ይጠቀሙ</translation>
 <translation id="1598233202702788831">ዝማኔዎች በእርስዎ አስተዳዳሪ ተሰናክሏል።</translation>
-<translation id="1598604884989842103">የTouchView ከፍተኛ ማድረጊያ በይነገጽ ለሙከራ ያንቁ</translation>
 <translation id="1600857548979126453">የገጽ አራሚ ደጀኑን ይደርስበታል</translation>
 <translation id="1601560923496285236">ተግብር</translation>
 <translation id="1603914832182249871">(ስውር)</translation>
@@ -1761,7 +1760,6 @@
 <translation id="3206175707080061730">«$1» የሚል ፋይል አስቀድሞ አለ። ሊተኩት ይፈልጋሉ?</translation>
 <translation id="320825648481311438">የነቃ ሲሆን አሳሹ ወደ Google መለያዎች በመለያ መግባትና ዘግቶ መውጣትን ያስተዳድራል።</translation>
 <translation id="3208703785962634733">ያልተረጋገጠ</translation>
-<translation id="3209459032754159027">በራስ-ሙላ ተቆልቋይ ውስጥ የክሬዲት ካርድ መግቢያ ማስተዋወቂያን ማሳየትን ያንቁ</translation>
 <translation id="3211904643589960506">ዩአርኤሎችን ከአካላዊ ድር ነገሮች መቃኘትን ያንቁ።</translation>
 <translation id="3216508313927987948">ይህ እንዲሆን፣ የእርስዎን <ph name="DEVICE_TYPE" /> በሚከተለው ደረጃ መሰረት ማሰልጠን ያስፈልገዎታል።</translation>
 <translation id="3220586366024592812">የ<ph name="CLOUD_PRINT_NAME" /> አገናኙ ተሰናክሏል። ዳግም ይጀመር?</translation>
@@ -1873,7 +1871,7 @@
 <translation id="3341703758641437857">ለፋይል ዩአርኤልዎች መዳረሻ ፍቀድ</translation>
 <translation id="3344786168130157628">የመዳረሻ ነጥብ ስም፦</translation>
 <translation id="3345886924813989455">ምንም የሚደገፍ አሳሽ አልተገኘም።</translation>
-<translation id="3346734205185115290">ለዚህ መሣሪያ የሚገኝ ከሆነ በቪአር መመልከቻ ማሰስን ይፍቀዱ።</translation>
+<translation id="3346734205185115290">ለዚህ መሣሪያ የሚገኝ ከሆነ በምናባዊ ዕውነታ መመልከቻ ማሰስን ይፍቀዱ።</translation>
 <translation id="3347086966102161372">የምስል አድራሻ &amp;ቅዳ</translation>
 <translation id="3348038390189153836">ተነቃይ መሣሪያ ተገኝቷል</translation>
 <translation id="3348459612390503954">እንኳን ደስ አለዎት</translation>
@@ -2157,7 +2155,7 @@
 <translation id="3704162925118123524">እየተጠቀሙ ያሉት አውታረ መረብ በመለያ መግቢያ ገጹን እንዲጎበኙ ሊጠይቅዎት ይችላል።</translation>
 <translation id="3704331259350077894">የክንውን መቋረጥ</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">በመጫን ላይ...</translation>
+<translation id="370665806235115550">በመጫን ላይ…</translation>
 <translation id="3706919628594312718">የመዳፊት ቅንብሮች</translation>
 <translation id="3707020109030358290">የእውቅና ማረጋገጫ ባለስልጣን አይደለም።</translation>
 <translation id="3709244229496787112">አሳሹ ውርዱ ከመጠናቀቁ በፊት ተዘግቷል።</translation>
@@ -3320,7 +3318,7 @@
 <translation id="529175790091471945">ይህን መሣሪያ ቅርጸት ይስሩለት</translation>
 <translation id="5292890015345653304">የSD ካርድ ወይም የUSB ማህደረ ትውስታ መሰኪያ ያስገቡ</translation>
 <translation id="5294529402252479912">Adobe Readerን አሁን ያዘምኑት</translation>
-<translation id="5297526204711817721">ከዚህ ጣቢያ ጋር ያለዎት ግንኙነት ግላዊ አይደለም። ከቪአር ሁነታ በማናቸውም ጊዜ ለመውጣት፣ የጆሮ ማዳመጫን ያስወግዱ እና ተመለስ የሚለውን ይጫኑ።</translation>
+<translation id="5297526204711817721">ከዚህ ጣቢያ ጋር ያለዎት ግንኙነት ግላዊ አይደለም። ከምናባዊ ዕውነታ ሁነታ በማናቸውም ጊዜ ለመውጣት፣ የጆሮ ማዳመጫን ያስወግዱ እና ተመለስ የሚለውን ይጫኑ።</translation>
 <translation id="5298219193514155779">ገጽታ የተፈጠረው በ</translation>
 <translation id="5298363578196989456">የተጋራ ሞጂዩል ስላልሆነ «<ph name="IMPORT_NAME" />» ቅጥያን ማስመጣት አልተቻለም።</translation>
 <translation id="5299109548848736476">አትከታተል</translation>
@@ -4541,7 +4539,7 @@
 <translation id="695755122858488207">ያልተመረጠ የሬዲዮ አዝራር</translation>
 <translation id="696203921837389374">በሞባይል ውሂብ ላይ ማመሳሰልን አንቃ</translation>
 <translation id="6964390816189577014">ጀግና</translation>
-<translation id="6965382102122355670">ይሁን</translation>
+<translation id="6965382102122355670">እሺ</translation>
 <translation id="6965648386495488594">ወደብ</translation>
 <translation id="6965978654500191972">መሣሪያ</translation>
 <translation id="6969104364835835175">PNaCl Subzeroን አስገድድ</translation>
@@ -4619,7 +4617,6 @@
 <translation id="7042418530779813870">ለ&amp;ጥፍ እና ፈልግ</translation>
 <translation id="7045480833981818310">ለሰነዶች፣ ሉሆች እና ተንሸራታቾች የOffice አርትዖት</translation>
 <translation id="7047998246166230966">ጠቋሚ</translation>
-<translation id="7048141481140415714">የTouchView ከፍተኛ ማድረጊያ ሁነታን ለመቀያየር Ctrl+Alt+Shift+8ን ያንቁ።</translation>
 <translation id="7049293980323620022">ፋይል ይቀመጥ?</translation>
 <translation id="7051943809462976355">መዳፊትን በመፈለግ ላይ...</translation>
 <translation id="7052237160939977163">አፈጻጸም መከታተያ ውሂብ ይላኩ</translation>
@@ -5794,7 +5791,6 @@ nil</translation>
 <translation id="8632275030377321303">ተኪው በተጠቃሚው ሊቀየር አይችልም።</translation>
 <translation id="8636038761987659075">ሁሉም ጣቢያዎች እና የጣቢያ ዝርዝሮች ያላቸው የጣቢያ ቅንብሮች</translation>
 <translation id="8637688295594795546">የስርዓት ዝማኔ አለ። ለማውረድ በመዘጋጀት ላይ…</translation>
-<translation id="8638602948366220068">የራስ-ሙላ ክሬዲት ካርድ መግቢያ ማስተዋወቂያን አንቃ</translation>
 <translation id="8639504893694748827">ዜሮ-ቅጂ ራስቴሳይዘር</translation>
 <translation id="8639963783467694461">የራስ-ሙላ ቅንብሮች</translation>
 <translation id="8642171459927087831">የመዳረሻ ማስመሰያ</translation>
@@ -6172,7 +6168,7 @@ nil</translation>
 <translation id="9109122242323516435">ባዶ ቦታ ለማስለቀቅ ከመሣሪያ ማከማቻ ፋይሎችን ይሰርዙ።</translation>
 <translation id="9110990317705400362">የእርስዎን አሰሳ ይበልጥ ደህንነቱ የተጠበቀ የሚሆንባቸው መንገዶችን በቋሚነት እየፈለግን ነው። ከዚህ ቀደም ማንኛውም ድር ጣቢያ ቅጥያ በአሳሽዎ ላይ እንዲያክሉ ሊጠይቅዎ ይችል ነበር። በቅርቦቹ የGoogle Chrome ስሪቶች ላይ እነዚህን ቅጥያዎች በቅጥያዎች ገጹ በኩል በማከል እንደሚፈልጓቸው በግልጽ ለChrome መንገር አለብዎት። <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">ክፈት</translation>
-<translation id="9111296877637560526">ይህን አማራጭ ማንቃት የድር መተግበሪያዎች የሙከራ Virtual Reality ኤፒአይዎችን እንዲደርሱባቸው ይፈቅዳል።</translation>
+<translation id="9111296877637560526">ይህን አማራጭ ማንቃት የድር መተግበሪያዎች የሙከራ ምናባዊ ዕውነታ ኤፒአይዎችን እንዲደርሱባቸው ይፈቅዳል።</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE" />: <ph name="STATUS" /></translation>
 <translation id="9112614144067920641">እባክዎ አዲስ ፒን ይምረጡ።</translation>
 <translation id="9112748030372401671">የእርስዎን ግድግዳ ወረቀት ይቀይራል</translation>
@@ -6230,9 +6226,8 @@ nil</translation>
 <translation id="9181716872983600413">ዩኒኮድ</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> ከ<ph name="DOWNLOAD_DOMAIN" />፣ <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">ዳግም ንክኪን እና በማፈናጠር ጊዜ የሚኖረው በአንድ የሽብለላ ክስተት አዳማጮች ጊዜ የሚኖረው የመጀመሪያው ንክኪ እንቅስቃሴ እንደ ተቀማጭ እንዲታይ ያስገድደዋል።</translation>
-<translation id="9184473426683023988">ያስመጡ እና ከመሣሪያ ጋር ይሰሩ</translation>
 <translation id="9186729806195986201">እንዲሁም ወደ ቀዳሚው የተጫነው የ<ph name="IDS_SHORT_PRODUCT_NAME" /> ስሪት ይመለሱ።</translation>
-<translation id="9187651461283037651">Chrome ቪአርን አንቃ።</translation>
+<translation id="9187651461283037651">Chrome ምናባዊ ዕውነታን አንቃ።</translation>
 <translation id="9188441292293901223">ይህን <ph name="DEVICE_TYPE" /> ለማስከፈት እባክዎ ስልክዎን ወደ አዲስ የAndroid ስሪት ያዘምኑት።</translation>
 <translation id="9189690067274055051">ለመግባት ስልክዎን ያስከፍቱት እና ከእርስዎ <ph name="DEVICE_TYPE" /> አጠገብ ያምጡት።</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ቅድሚያ የተጋራ ቁልፍ</translation>

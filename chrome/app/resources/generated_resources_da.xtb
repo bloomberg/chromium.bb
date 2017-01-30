@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Få tilbudt at logge automatisk ind på Google-websites med denne konto</translation>
 <translation id="1596174774107741586">Brug sandbox-serverne for Google Payments</translation>
 <translation id="1598233202702788831">Opdateringer er deaktiveret af din administrator.</translation>
-<translation id="1598604884989842103">Aktivér grænsefladen for TouchView-maksimering til testformål</translation>
 <translation id="1600857548979126453">Få adgang til administration af fejlfinding på siden</translation>
 <translation id="1601560923496285236">Anvend</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
@@ -1760,7 +1759,6 @@ Gå til din e-mail, <ph name="ACCOUNT_EMAIL" />, for at se denne og flere vejled
 <translation id="3206175707080061730">Der findes allerede en fil med navnet "$1". Vil du erstatte den?</translation>
 <translation id="320825648481311438">Når denne funktion er aktiveret, håndterer browseren det at logge ind og ud af Google-konti.</translation>
 <translation id="3208703785962634733">Ikke bekræftet</translation>
-<translation id="3209459032754159027">Aktivér visning af promoveringen for udfyldning af kreditkortoplysninger i rullemenuen for AutoFyld.</translation>
 <translation id="3211904643589960506">Aktivér scanning efter webadresser fra Fysisk web-objekter.</translation>
 <translation id="3216508313927987948">For at gøre det skal du oplære din <ph name="DEVICE_TYPE" /> via de følgende trin.</translation>
 <translation id="3220586366024592812">Behandlingen af forbindelsen til <ph name="CLOUD_PRINT_NAME" /> er gået ned. Vil du genstarte?</translation>
@@ -4619,7 +4617,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7042418530779813870">Indsæt og søg</translation>
 <translation id="7045480833981818310">Office-redigering til Docs, Sheets og Slides</translation>
 <translation id="7047998246166230966">Markør</translation>
-<translation id="7048141481140415714">Aktivér Ctrl+Alt+Shift+8 for at skifte til tilstanden TouchView-maksimering.</translation>
 <translation id="7049293980323620022">Vil du beholde filen?</translation>
 <translation id="7051943809462976355">Søger efter mus...</translation>
 <translation id="7052237160939977163">Send data om ydeevne</translation>
@@ -5787,7 +5784,6 @@ Beregner resterende tid</translation>
 <translation id="8632275030377321303">Proxyen kan ikke ændres af brugeren.</translation>
 <translation id="8636038761987659075">Indstillinger for website med Alle websites og Websiteoplysninger</translation>
 <translation id="8637688295594795546">Der findes en tilgængelig opdatering til systemet. Forbereder download...</translation>
-<translation id="8638602948366220068">Aktivér promoveringen af AutoFyld til udfyldning af kreditkortoplysninger</translation>
 <translation id="8639504893694748827">Rasterisering med nul kopier</translation>
 <translation id="8639963783467694461">Indstillinger for AutoFyld</translation>
 <translation id="8642171459927087831">Adgangstoken</translation>
@@ -6224,7 +6220,6 @@ Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skri
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> fra <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Gennemtvinger trykstart, og lyttefunktionerne for første trykbevægelse pr. rulning ved hurtigt fingerstrøg behandles som passive.</translation>
-<translation id="9184473426683023988">Importér og knyt til enhed</translation>
 <translation id="9186729806195986201">Vend også tilbage til den tidligere version af <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Aktivér Chrome VR.</translation>
 <translation id="9188441292293901223">Opdater din telefon til en nyere version af Android for at låse denne <ph name="DEVICE_TYPE" /> op.</translation>

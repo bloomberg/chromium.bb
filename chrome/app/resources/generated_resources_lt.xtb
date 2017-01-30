@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Pasiūlymas automatiškai prisijungti prie „Google“ svetainių naudojant šią paskyrą</translation>
 <translation id="1596174774107741586">„Google Payments“ „sandbox“ (smėlio dėžės) serverių naudojimas</translation>
 <translation id="1598233202702788831">Administratorius išjungė naujinius</translation>
-<translation id="1598604884989842103">Įgalinti „TouchView“ padidinimo NS bandymo tikslais</translation>
 <translation id="1600857548979126453">Pasiekti puslapio derintuvės vidinę pusę</translation>
 <translation id="1601560923496285236">Taikyti</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
@@ -1761,7 +1760,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos 
 <translation id="3206175707080061730">Failas pavadinimu „$1“ jau yra. Ar norite jį pakeisti?</translation>
 <translation id="320825648481311438">Kai įgalinta, naršyklė tvarko prisijungimą prie ir atsijungimą nuo „Google“ paskyrų.</translation>
 <translation id="3208703785962634733">Nepatvirtinta</translation>
-<translation id="3209459032754159027">Įgalinti kredito kortelės prisijungimo reklaminį tekstą automatinio pildymo išskleidžiamajame meniu.</translation>
 <translation id="3211904643589960506">Įgalinti URL nuskaitymą iš fizinio žiniatinklio objektų.</translation>
 <translation id="3216508313927987948">Kad tai būtų vykdoma, reikės išmokyti „<ph name="DEVICE_TYPE" />“ atliekant kitą veiksmą.</translation>
 <translation id="3220586366024592812">Užstrigo „<ph name="CLOUD_PRINT_NAME" />“ jungties procesas. Paleisti iš naujo?</translation>
@@ -4624,7 +4622,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="7042418530779813870">Įkl&amp;ijuoti ir ieškoti</translation>
 <translation id="7045480833981818310">„Office Editing“ programa, skirta Dokumentams, Skaičiuoklėms ir Skaidrėms</translation>
 <translation id="7047998246166230966">Žymeklis</translation>
-<translation id="7048141481140415714">Įgalinkite „Ctrl“ + „Alt“ + „Shift“ + 8, kad perjungtumėte „TouchView“ didinimo režimą.</translation>
 <translation id="7049293980323620022">Palikti failą?</translation>
 <translation id="7051943809462976355">Ieškoma pelės...</translation>
 <translation id="7052237160939977163">Siųsti našumo stebėjimo duomenis</translation>
@@ -5794,7 +5791,6 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="8632275030377321303">Naudotojas negali keisti įgaliotojo serverio.</translation>
 <translation id="8636038761987659075">Svetainės nustatymai su visomis svetainėmis ir išsamia svetainės informacija</translation>
 <translation id="8637688295594795546">Galimas sistemos naujinys. Ruošiamasi atsisiųsti...</translation>
-<translation id="8638602948366220068">Įgalinti automatinį kredito kortelės prisijungimo reklaminio teksto pildymą</translation>
 <translation id="8639504893694748827">Rastrinio vaizdo keitimo priemonė be kopijų</translation>
 <translation id="8639963783467694461">Automatinio pildymo nustatymai</translation>
 <translation id="8642171459927087831">Prieigos raktas</translation>
@@ -6230,7 +6226,6 @@ Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose dar
 <translation id="9181716872983600413">Unikodas</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> iš <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Pradžios palietus ir judėjimo palietus pirmą kartą slinkimo įvykių apdorojimo vertės siunčiant priverstinai laikomos pasyviomis.</translation>
-<translation id="9184473426683023988">Importuoti ir susaistyti su įrenginiu</translation>
 <translation id="9186729806195986201">Taip pat grąžinti anksčiau įdiegtą „<ph name="IDS_SHORT_PRODUCT_NAME" />“ versiją.</translation>
 <translation id="9187651461283037651">Įgalinti „Chrome“ virtualiąją realybę.</translation>
 <translation id="9188441292293901223">Atnaujinkite telefoną į naujesnę „Android“ versiją, kad atrakintumėte šį „<ph name="DEVICE_TYPE" />“.</translation>

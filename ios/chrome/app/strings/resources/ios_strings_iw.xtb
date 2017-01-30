@@ -51,6 +51,7 @@
 <translation id="1809939268435598390">מחק תיקיה</translation>
 <translation id="1813414402673211292">נקה נתוני גלישה</translation>
 <translation id="1820259098641718022">נוסף לרשימת הקריאה</translation>
+<translation id="1826516787628120939">מתבצעת בדיקה</translation>
 <translation id="1842969606798536927">שלם</translation>
 <translation id="1876721852596493031">שלח נתוני שימוש</translation>
 <translation id="1886928167269928266">משחר ההיסטוריה</translation>
@@ -62,7 +63,7 @@
 <translation id="1989112275319619282">דפדף</translation>
 <translation id="2054511809411770085">‏קוד QR או ברקוד</translation>
 <translation id="2068952045031577364">מהשבוע האחרון</translation>
-<translation id="2079545284768500474">בטל</translation>
+<translation id="2079545284768500474">בטל פעולה</translation>
 <translation id="209018056901015185">טען גירסת מחשב שולחני</translation>
 <translation id="2100215774115172756">רשימת הקריאה שלך זמינה במצב לא מקוון.</translation>
 <translation id="2103075008456228677">‏פתח את history.google.com</translation>
@@ -151,6 +152,7 @@
 <translation id="3638472932233958418">טעינה מראש של דפי אינטרנט</translation>
 <translation id="3691593122358196899">התווסף לסימניות ב-<ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">כשאפשרות זו מופעלת, סרגל הכתובות יכלול הצעות לדפי אינטרנט המשודרים ממכשירים בסביבתך הקרובה.</translation>
+<translation id="3706658020782046159">בחר כתובת למשלוח כדי לבדוק את אמצעי המשלוח ואת הדרישות למשלוח.</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="3771033907050503522">כרטיסיות גלישה בסתר</translation>
 <translation id="3783017676699494206">שמור תמונה</translation>
@@ -188,6 +190,7 @@
 הנתונים שלך מוצפנים באמצעות ביטוי הסיסמה לסינכרון. הזן אותו כדי להתחיל בסינכרון.</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="473775607612524610">עדכן</translation>
+<translation id="4750394297954878236">הצעות</translation>
 <translation id="4773461607542755386">האם לפתוח את הדף הזה ב-<ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">‏קובצי cookie, נתוני אתרים</translation>
 <translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>

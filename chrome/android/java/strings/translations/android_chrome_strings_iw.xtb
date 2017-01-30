@@ -73,6 +73,7 @@
 <translation id="1647391597548383849">גישה אל המצלמה שלך</translation>
 <translation id="1656489000284462475">איסוף</translation>
 <translation id="1661474178782861119">בקרוב יופיעו מאמרים נוספים. תיהנה מהערב שלך.</translation>
+<translation id="1670399744444387456">בסיסי</translation>
 <translation id="1671236975893690980">המערכת ממתינה לתחילת ההורדה...</translation>
 <translation id="169033420419426091">‏הורדת <ph name="FILE_NAME" /> נכשלה מאחר שחסר כרטיס SD.</translation>
 <translation id="1709438864123551175">‏חוסך הנתונים (Data Saver)</translation>
@@ -107,7 +108,7 @@
 <translation id="2038563949887743358">הפעל את 'בקש אתר עבור מחשב שולחני'</translation>
 <translation id="2045104531052923016">‏‎<ph name="GIGABYTES" /> GB ליישומים אחרים</translation>
 <translation id="2073235970478114994">טען תמונות</translation>
-<translation id="2079545284768500474">בטל</translation>
+<translation id="2079545284768500474">בטל פעולה</translation>
 <translation id="2082238445998314030">תוצאה <ph name="RESULT_NUMBER" /> מתוך <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">‏כשהתכונה הזו פועלת, Chrome ישתמש בשרתי Google כדי לדחוס דפים שבהם אתה מבקר לפני הורדתם. Google לא תראה דפים שהגישה אליהם בוצעה בחיבור פרטי (HTTPS) או בכרטיסיות גלישה בסתר', וגם לא תבצע אופטימיזציה שלהם.</translation>
 <translation id="2096396629993765042">‏לא תבוצע יציאה מחשבון Google שלך. ייתכן שתוכל לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>

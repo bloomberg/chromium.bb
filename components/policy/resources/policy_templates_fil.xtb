@@ -1387,12 +1387,6 @@
 <translation id="5208240613060747912">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
-<translation id="5209594095390052164">Pinapayagan ang pagpili kung naka-enable o hindi ang pag-throttle ng network.
-      Naaangkop ito sa lahat ng user, at sa lahat ng interface sa device. Kapag naitakda na,
-      magpapatuloy ang pag-throttle hanggang sa mabago ang patakaran para i-disable na ito.
-
-      Kung nakatakda sa false, walang pag-throttle.
-      Kung nakatakda sa true, naka-throttle ang system upang makamit ang mga partikular na rate ng pag-upload at pag-download (sa kbits/s).</translation>
 <translation id="5219844027738217407">Para sa mga Android app, nakakaapekto lang sa mikropono ang patakarang ito. Kapag nakatakda sa true ang patakarang ito, imu-mute ang mikropono para sa lahat ng Android app, nang walang exception.</translation>
 <translation id="5226033722357981948">Tukuyin kung dapat na hindi paganahin ang tagahanap ng plugin</translation>
 <translation id="523505283826916779">Mga setting ng accessibility</translation>

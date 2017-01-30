@@ -195,7 +195,7 @@ Desktopi host</translation>
 <translation id="5885438903806970186">Veebis.</translation>
 <translation id="6001953797859482435">Chrome Remote Desktopi hosti eelistused</translation>
 <translation id="6011539954251327702">Rakendus Chromoting võimaldab teil arvutit turvaliselt veebi kaudu jagada. Mõlemad kasutajad peavad käitama rakendust Chromoting, mille leiate aadressilt <ph name="URL" />.</translation>
-<translation id="6040143037577758943">Sule</translation>
+<translation id="6040143037577758943">Sulge</translation>
 <translation id="6062854958530969723">Hosti lähtestamine ebaõnnestus.</translation>
 <translation id="6091564239975589852">Klahvide saatmine</translation>
 <translation id="6099500228377758828">Chrome Remote Desktopi teenus</translation>
@@ -232,7 +232,7 @@ Desktopi host</translation>
 <translation id="6939719207673461467">Kuva/peida klaviatuur.</translation>
 <translation id="6944854424004126054">Akna taastamine</translation>
 <translation id="6963936880795878952">Ühendused kaugarvutiga on ajutiselt blokeeritud, sest keegi püüdis luua ühendust vale PIN-koodiga. Proovige hiljem uuesti.</translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">Ok</translation>
 <translation id="6985691951107243942">Kas olete kindel, et soovite keelata kaugühenduse hostiga <ph name="HOSTNAME" />? Kui mõtlete ümber, peate selles arvutis ühendused uuesti lubama.</translation>
 <translation id="6998989275928107238">Kellele</translation>
 <translation id="7019153418965365059">Tundmatu hostiviga: <ph name="HOST_OFFLINE_REASON" />.</translation>

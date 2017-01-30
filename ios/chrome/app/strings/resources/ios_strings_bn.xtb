@@ -51,6 +51,7 @@
 <translation id="1809939268435598390">ফোল্ডার মুছুন</translation>
 <translation id="1813414402673211292">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="1820259098641718022">পড়ার তালিকায় যোগ করা হয়েছে</translation>
+<translation id="1826516787628120939">চেক করা হচ্ছে</translation>
 <translation id="1842969606798536927">অর্থ প্রদান করুন</translation>
 <translation id="1876721852596493031">ব্যবহারের ডেটা পাঠান</translation>
 <translation id="1886928167269928266">শুরুর সময়</translation>
@@ -151,6 +152,7 @@
 <translation id="3638472932233958418">পূর্বলোড ওয়েবপৃষ্ঠা</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> এ বুকমার্ক করা হয়েছে</translation>
 <translation id="3692781555820666866">সক্ষম করা হলে, বহুউপযোগী ক্ষেত্র আপনার আশেপাশের ডিভাইসের জন্য ওয়েব পৃষ্ঠা সমপ্রচারগুলির পরামর্শ অন্তর্ভুক্ত করা হবে।</translation>
+<translation id="3706658020782046159">শিপিংয়ের পদ্ধতি ও প্রয়োজনীয়তাগুলি দেখার জন্য পাঠানোর একটি ঠিকানা নির্বাচন করুন।</translation>
 <translation id="3738139272394829648">স্পর্শের মাধ্যমে অনুসন্ধান</translation>
 <translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
 <translation id="3783017676699494206">চিত্র সংরক্ষণ করুন</translation>
@@ -188,6 +190,7 @@
 আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে আপনার ডেটা এনক্রিপটেড হয়েছে। সিঙ্ক শুরু করতে এটি লিখুন।</translation>
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
 <translation id="473775607612524610">আপডেট</translation>
+<translation id="4750394297954878236">প্রস্তাবনা</translation>
 <translation id="4773461607542755386">এই পৃষ্ঠাটি <ph name="APP_NAME" /> অ্যাপ্লিকেশানে খুলবেন?</translation>
 <translation id="481968316161811770">কুকিজ, সাইট ডেটা</translation>
 <translation id="4875622588773761625">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>

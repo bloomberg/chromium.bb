@@ -1417,14 +1417,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 <translation id="5208240613060747912">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
-<translation id="5209594095390052164">Permet d'activer ou de désactiver la limitation du débit réseau.
-      Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de
-      l'appareil. Une fois la règle définie, la limitation reste active jusqu'à ce que la
-      règle soit modifiée.
-
-      Si cette règle est définie sur "False", aucune limitation n'est définie.
-      Si cette règle est définie sur "True", la bande passante est limitée
-      aux taux de téléchargement et de transfert fournis (en Kbits/s).</translation>
 <translation id="5219844027738217407">Cette règle ne s'applique qu'au micro pour les applications Android. Lorsqu'elle est définie sur "True", le son du micro est coupé pour toutes les applications Android sans exception.</translation>
 <translation id="5226033722357981948">Indiquer si l'outil de recherche de plug-ins doit être désactivé</translation>
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>

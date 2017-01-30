@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Proposer la connexion automatique aux sites Google avec ce compte</translation>
 <translation id="1596174774107741586">Utiliser les serveurs de bac à sable Google Payments</translation>
 <translation id="1598233202702788831">L'administrateur a désactivé les mises à jour.</translation>
-<translation id="1598604884989842103">Activer l'interface utilisateur d'agrandissement TouchView pour le test</translation>
 <translation id="1600857548979126453">Accéder au système du débogueur de pages</translation>
 <translation id="1601560923496285236">Appliquer</translation>
 <translation id="1603914832182249871">(Navigation privée)</translation>
@@ -1760,7 +1759,6 @@ Pour vérifier ce point et en savoir plus, veuillez consulter votre compte de me
 <translation id="3206175707080061730">Un fichier nommé "$1" existe déjà. Voulez-vous le remplacer ?</translation>
 <translation id="320825648481311438">Lorsque cette option est activée, le navigateur gère les connexions aux comptes Google, ainsi que les déconnexions.</translation>
 <translation id="3208703785962634733">Non confirmé</translation>
-<translation id="3209459032754159027">Activer l'invite à se connecter pour remplir le champ de carte de paiement dans le menu déroulant de saisie automatique.</translation>
 <translation id="3211904643589960506">Activer l'analyse des URL provenant d'objets Web physique</translation>
 <translation id="3216508313927987948">Pour ce faire, vous devez apprendre à votre appareil <ph name="DEVICE_TYPE" /> à reconnaître votre modèle de voix à l'étape suivante.</translation>
 <translation id="3220586366024592812">Le processus du connecteur <ph name="CLOUD_PRINT_NAME" /> est bloqué. Voulez-vous le redémarrer ?</translation>
@@ -2156,7 +2154,7 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3704162925118123524">Pour utiliser ce réseau, il est possible que vous deviez vous rendre sur la page de connexion correspondante.</translation>
 <translation id="3704331259350077894">Arrêt du fonctionnement</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">Chargement...</translation>
+<translation id="370665806235115550">Chargement en cours...</translation>
 <translation id="3706919628594312718">Paramètres de la souris</translation>
 <translation id="3707020109030358290">N'est pas une autorité de certification.</translation>
 <translation id="3709244229496787112">Le navigateur s'est fermé avant la fin du téléchargement.</translation>
@@ -4620,7 +4618,6 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7042418530779813870">Co&amp;ller et rechercher</translation>
 <translation id="7045480833981818310">Éditeur Office pour Docs, Sheets et Slides</translation>
 <translation id="7047998246166230966">Curseur</translation>
-<translation id="7048141481140415714">Activer Ctrl + Alt + Maj + 8 pour activer ou désactiver le mode d'agrandissement TouchView</translation>
 <translation id="7049293980323620022">Conserver le fichier ?</translation>
 <translation id="7051943809462976355">Recherche de la souris en cours…</translation>
 <translation id="7052237160939977163">Envoyer des informations relatives au suivi des performances</translation>
@@ -5789,7 +5786,6 @@ Calcul de la durée restante</translation>
 <translation id="8632275030377321303">L'utilisateur ne peut pas modifier le proxy.</translation>
 <translation id="8636038761987659075">Paramètres de site avec tous les sites et les détails de site</translation>
 <translation id="8637688295594795546">Mise à jour du système disponible. Préparation du téléchargement…</translation>
-<translation id="8638602948366220068">Activer l'invite de connexion pour la saisie automatique de la carte de paiement</translation>
 <translation id="8639504893694748827">Rastériseur sans copie</translation>
 <translation id="8639963783467694461">Paramètres de saisie automatique</translation>
 <translation id="8642171459927087831">Jeton d'accès</translation>
@@ -6225,7 +6221,6 @@ Suite à cette opération, les notifications, les fenêtres et les boîtes de di
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> depuis <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Force le traitement en tant qu'écouteurs passifs des écouteurs des événements "touchstart" et du premier événement "touchmove" par défilement lors des balayages rapides de l'écran.</translation>
-<translation id="9184473426683023988">Importer et associer à l'appareil</translation>
 <translation id="9186729806195986201">Retournez également à la version précédemment installée de <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Activer Chrome VR.</translation>
 <translation id="9188441292293901223">Installer une version plus récente d'Android sur votre téléphone pour déverrouiller votre <ph name="DEVICE_TYPE" /></translation>

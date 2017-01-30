@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">A Google-webhelyekre történő automatikus bejelentkezés felajánlása ezzel a fiókkal</translation>
 <translation id="1596174774107741586">Google Payments tesztkörnyezeti szerverek használata</translation>
 <translation id="1598233202702788831">A frissítéseket a rendszergazda letiltotta.</translation>
-<translation id="1598604884989842103">A TouchView maximális méret felhasználói felületének engedélyezése tesztelés céljából</translation>
 <translation id="1600857548979126453">Hozzáférés az oldal háttérben történő hibakereséséhez</translation>
 <translation id="1601560923496285236">Alkalmaz</translation>
 <translation id="1603914832182249871">(Inkognitómód)</translation>
@@ -1761,7 +1760,6 @@ Ha további információt szeretne, látogasson el a <ph name="BEGIN_LINK" />Sú
 <translation id="3206175707080061730">A(z) "$1" nevű fájl már létezik. Szeretné lecserélni?</translation>
 <translation id="320825648481311438">Ha engedélyezi, a böngésző kezeli a Google-fiókokba való be- és kijelentkezéseket.</translation>
 <translation id="3208703785962634733">Nincs megerősítve</translation>
-<translation id="3209459032754159027">A hitelkártyás bejelentkezés promóció megjelenítésének engedélyezése az Automatikus kitöltés legördülő listában.</translation>
 <translation id="3211904643589960506">URL-ek keresésének engedélyezése a Fizikai webhez tartozó objektumoknál.</translation>
 <translation id="3216508313927987948">Ennek eléréséhez a következő lépésben be kell tanítania <ph name="DEVICE_TYPE" /> eszközét.</translation>
 <translation id="3220586366024592812">A <ph name="CLOUD_PRINT_NAME" /> csatlakozó folyamat összeomlott. Újraindítja?</translation>
@@ -2157,7 +2155,7 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3704162925118123524">Előfordulhat, hogy az Ön által használt hálózat megköveteli a bejelentkezési oldalán történő bejelentkezést.</translation>
 <translation id="3704331259350077894">Működés megszüntetése</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">Betöltés…</translation>
+<translation id="370665806235115550">Betöltés...</translation>
 <translation id="3706919628594312718">Egérbeállítások</translation>
 <translation id="3707020109030358290">Nem tanúsítványkibocsátó.</translation>
 <translation id="3709244229496787112">A böngészőt leállították, mielőtt a letöltés befejeződött volna.</translation>
@@ -4620,7 +4618,6 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="7042418530779813870">Beille&amp;sztés és keresés</translation>
 <translation id="7045480833981818310">Office-szerkesztés a Dokumentumok, Táblázatok és Diák alkalmazáshoz</translation>
 <translation id="7047998246166230966">Mutató</translation>
-<translation id="7048141481140415714">A Ctrl+Alt+Shift+8 billentyűkód engedélyezése a TouchView maximális méret módjának be- és kikapcsolásához.</translation>
 <translation id="7049293980323620022">Megtartja a fájlt?</translation>
 <translation id="7051943809462976355">Egér keresése…</translation>
 <translation id="7052237160939977163">Teljesítménykövetési adatok elküldése</translation>
@@ -5789,7 +5786,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="8632275030377321303">A felhasználó nem módosíthatja a proxyt.</translation>
 <translation id="8636038761987659075">Webhelybeállítások „Az összes webhely” és a „Webhely adatai” elemekkel</translation>
 <translation id="8637688295594795546">Megjelent egy rendszerfrissítés. Felkészülés a letöltésre...</translation>
-<translation id="8638602948366220068">Az automatikus kitöltésű hitelkártyás bejelentkezés promóció engedélyezése</translation>
 <translation id="8639504893694748827">Nulla példányos raszterizáló</translation>
 <translation id="8639963783467694461">Automatikus kitöltési beállítások</translation>
 <translation id="8642171459927087831">Hozzáférési token</translation>
@@ -6224,7 +6220,6 @@ Az ezt követő értesítéseket, ablakokat és párbeszédpaneleket a rendszer 
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> a(z) <ph name="DOWNLOAD_DOMAIN" /> webhelyről, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Kényszeríti a touchstart és az első touchmove per scroll eseményfigyelők passzívként történő kezelését húzás közben.</translation>
-<translation id="9184473426683023988">Importálás és az eszközhöz kapcsolás</translation>
 <translation id="9186729806195986201">Továbbá visszatérés a(z) <ph name="IDS_SHORT_PRODUCT_NAME" /> korábban telepített verziójához.</translation>
 <translation id="9187651461283037651">A Chrome VR engedélyezése.</translation>
 <translation id="9188441292293901223">Kérjük, frissítse telefonja operációs rendszerét az Android egy újabb verziójára, hogy feloldhassa <ph name="DEVICE_TYPE" /> eszközét.</translation>

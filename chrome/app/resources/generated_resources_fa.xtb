@@ -485,7 +485,6 @@
 <translation id="1594234040488055839">‏پیشنهاد ورود به سیستم خودکار به سایت‌های Google با این حساب</translation>
 <translation id="1596174774107741586">‏استفاده از سرورهای جعبه ایمنی Google Payments</translation>
 <translation id="1598233202702788831">سرپرست سیستم شما به‌روزرسانی‌ها را غیرفعال کرده است.</translation>
-<translation id="1598604884989842103">‏فعال کردن واسط کاربر بزرگ کردن TouchView برای آزمایش</translation>
 <translation id="1600857548979126453">دسترسی به مرحله پایانی اشکال‌زدای صفحه</translation>
 <translation id="1601560923496285236">اعمال</translation>
 <translation id="1603914832182249871">(ناشناس)</translation>
@@ -1758,7 +1757,6 @@
 <translation id="3206175707080061730">فایلی به نام «$1» از قبل وجود دارد. آیا می‌خواهید آن را جایگزین کنید؟</translation>
 <translation id="320825648481311438">‏وقتی فعال باشد، مرورگر ورود و خروج از حساب‌های Google را مدیریت می‌کند.</translation>
 <translation id="3208703785962634733">تأیید نشده</translation>
-<translation id="3209459032754159027">نمایش تبلیغ ورود به سیستم کارت‌ اعتباری در فهرست کشویی «تکمیل خودکار» فعال شود.</translation>
 <translation id="3211904643589960506">فعال کردن جستجوی نشانی‌های وب از اشیای وب فیزیکی.</translation>
 <translation id="3216508313927987948">برای تنظیم این مورد، باید به روش زیر به <ph name="DEVICE_TYPE" /> آموزش دهید.</translation>
 <translation id="3220586366024592812">فرآیند رابط <ph name="CLOUD_PRINT_NAME" /> متوقف شد. مجدداً راه‌اندازی شود؟</translation>
@@ -4540,7 +4538,7 @@
 <translation id="695755122858488207">دکمه رادیویی انتخاب نشده</translation>
 <translation id="696203921837389374">فعال کردن همگام‌سازی از طریق داده تلفن همراه</translation>
 <translation id="6964390816189577014">قهرمان</translation>
-<translation id="6965382102122355670">تأیید</translation>
+<translation id="6965382102122355670">قبول</translation>
 <translation id="6965648386495488594">درگاه</translation>
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="6969104364835835175">‏اجبار کردن PNaCl Subzero</translation>
@@ -4617,7 +4615,6 @@
 <translation id="7042418530779813870">جا&amp;گذاری و جستجو</translation>
 <translation id="7045480833981818310">‏ویرایش Office برای سندنگار، کاربرگ‌نگار و اسلایدنگار</translation>
 <translation id="7047998246166230966">اشاره‌گر</translation>
-<translation id="7048141481140415714">‏فعال کردن Ctrl+Alt+Shift+8 برای روشن/خاموش کردن حالت بزرگ کردن TouchView.</translation>
 <translation id="7049293980323620022">فایل حفظ شود؟</translation>
 <translation id="7051943809462976355">در حال جستجو برای موشواره...</translation>
 <translation id="7052237160939977163">ارسال داده‌های ردیابی عملکرد</translation>
@@ -5786,7 +5783,6 @@
 <translation id="8632275030377321303">کاربر نمی‌تواند تنظیمات پروکسی را تغییر بدهد.</translation>
 <translation id="8636038761987659075">تنظیمات سایت با همه سایت‌ها و جزئیات سایت</translation>
 <translation id="8637688295594795546">به‌روزرسانی سیستم موجود است. در حال آماده سازی برای بارگیری...</translation>
-<translation id="8638602948366220068">فعال کردن تبلیغ تکمیل خودکار ورود به سیستم کارت‌ اعتباری</translation>
 <translation id="8639504893694748827">شطرنجی‌ساز کپی صفر</translation>
 <translation id="8639963783467694461">تنظیمات تکمیل خودکار</translation>
 <translation id="8642171459927087831">کد دسترسی</translation>
@@ -6222,7 +6218,6 @@
 <translation id="9181716872983600413">یونیکد</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> از <ph name="DOWNLOAD_DOMAIN" />، <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">باعث می‌شود گوش‌دهنده‌های شروع لمسی و حرکت لمسی به‌ازای رویداد پیمایش درطول روانه شدن به اجبار به‌عنوان منفعل مورد عمل قرار بگیرند.</translation>
-<translation id="9184473426683023988">وارد کردن و اتصال به دستگاه</translation>
 <translation id="9186729806195986201">همچنین به نسخه نصب‌شده قبلی <ph name="IDS_SHORT_PRODUCT_NAME" /> بازگردد.</translation>
 <translation id="9187651461283037651">‏Chrome VR را فعال کنید.</translation>
 <translation id="9188441292293901223">‏لطفاً تلفنتان را به نسخه جدیدتر Android به‌روزرسانی کنید تا قفل <ph name="DEVICE_TYPE" /> را باز کنید.</translation>

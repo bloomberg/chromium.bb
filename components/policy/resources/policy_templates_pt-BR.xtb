@@ -1295,12 +1295,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta não política não é definida ou é definida como "False", o modo de desenvolvedor permanece disponível para o dispositivo.</translation>
 <translation id="5208240613060747912">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
-<translation id="5209594095390052164">Permite escolher se o acelerador de rede deve ser ativado ou não.
-      Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo. Depois de definido,
-      o acelerador permanece ativado até que a política seja alterada para desativá-lo.
-
-      Se a política for definida como false, não haverá nenhum acelerador.
-      Se definida como true, o sistema é suspenso para arquivar as taxas de upload e download (em kbits/s) fornecidas.</translation>
 <translation id="5219844027738217407">Em apps Android, esta política afeta somente o microfone. Quando esta política é definida como true, o microfone é silenciado para todos os apps Android, sem exceções.</translation>
 <translation id="5226033722357981948">Especificar se o localizador de plug-ins deve ser desativado</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>

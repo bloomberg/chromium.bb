@@ -51,6 +51,7 @@
 <translation id="1809939268435598390">फ़ोल्‍डर हटाएं</translation>
 <translation id="1813414402673211292">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="1820259098641718022">पठन सूची में जोड़ा गया</translation>
+<translation id="1826516787628120939">जांच की जा रही है</translation>
 <translation id="1842969606798536927">भुगतान करें</translation>
 <translation id="1876721852596493031">उपयोग डेटा भेजें</translation>
 <translation id="1886928167269928266">शुरुआत से</translation>
@@ -62,7 +63,7 @@
 <translation id="1989112275319619282">ब्राउज़ करें</translation>
 <translation id="2054511809411770085">QR कोड या बारकोड</translation>
 <translation id="2068952045031577364">पिछला सप्ताह</translation>
-<translation id="2079545284768500474">पूर्ववत् करें</translation>
+<translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="209018056901015185">डेस्कटॉप साइट का अनुरोध करें</translation>
 <translation id="2100215774115172756">आपकी पठन सूची ऑफ़लाइन उपलब्ध है.</translation>
 <translation id="2103075008456228677">history.google.com खोलें</translation>
@@ -151,6 +152,7 @@
 <translation id="3638472932233958418">पहले से लोड वेबपेज</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> में बुकमार्क किया गया</translation>
 <translation id="3692781555820666866">सक्षम होने पर खोज वाली पट्टी में आपके नज़दीकी डिवाइस द्वारा प्रसारित किए गए वेबपृष्ठों को लिए सुझाव शामिल होंगे.</translation>
+<translation id="3706658020782046159">शिपिंग की विधियां और आवश्यकताएं देखने के लिए शिपिंग पता चुनें.</translation>
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3771033907050503522">गुप्त टैब</translation>
 <translation id="3783017676699494206">चित्र सहेजें</translation>
@@ -188,6 +190,7 @@
 आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ एन्क्रिप्ट किया गया है. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
+<translation id="4750394297954878236">सुझाव</translation>
 <translation id="4773461607542755386">इस पेज को <ph name="APP_NAME" /> में खोलें?</translation>
 <translation id="481968316161811770">कुकी, साइट डेटा</translation>
 <translation id="4875622588773761625">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए आपके पासवर्ड को अपडेट करे?</translation>

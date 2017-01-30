@@ -51,6 +51,7 @@
 <translation id="1809939268435598390">Изтриване на папката</translation>
 <translation id="1813414402673211292">Изчистване на данните за сърфирането</translation>
 <translation id="1820259098641718022">Добавихте към списъка за четене</translation>
+<translation id="1826516787628120939">Извършва се проверка</translation>
 <translation id="1842969606798536927">Плащане</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1886928167269928266">Самото начало</translation>
@@ -151,6 +152,7 @@
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
 <translation id="3692781555820666866">Когато флагът е активиран, полето за всичко ще включва предложения за уеб страници, излъчвани от устройства близо до вас.</translation>
+<translation id="3706658020782046159">Изберете адрес за доставка, за да проверите начините и изискванията за доставяне.</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
@@ -188,6 +190,7 @@
 Данните ви са шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Актуализиране</translation>
+<translation id="4750394297954878236">Предложения</translation>
 <translation id="4773461607542755386">Да се отвори ли стр. в приложението <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">„Бисквитки“ и данни за сайтове</translation>
 <translation id="4875622588773761625">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>

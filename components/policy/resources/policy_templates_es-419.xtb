@@ -1304,13 +1304,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si la política se establece en False o no se establece, el modo de programador seguirá disponible para el dispositivo.</translation>
 <translation id="5208240613060747912">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
-<translation id="5209594095390052164">Permite elegir si se habilita la velocidad moderada de la red.
-      Esta acción se aplica a todos los usuarios y todas las interfaces en 
-      el dispositivo. Si se establece, la velocidad moderada persiste hasta 
-      que la política se cambia para inhabilitarla.
-
-      Si se establece como falsa, no se aplica la velocidad moderada.
-      Si se establece como verdadera, el sistema se acelera para alcanzar las velocidades de carga y descarga (en kbits/s).</translation>
 <translation id="5219844027738217407">Para las apps de Android, esta política solo afecta al micrófono. Cuando esta política se establece como falsa, se silencia el micrófono para todas las apps de Android, sin excepciones.</translation>
 <translation id="5226033722357981948">Indicar si el buscador de complemento se debe inhabilitar.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>

@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">このアカウントによる Google サイトへの自動ログインを申し込む</translation>
 <translation id="1596174774107741586">Google ペイメントのサンドボックス サーバーを使用する</translation>
 <translation id="1598233202702788831">更新は管理者によって無効になっています。</translation>
-<translation id="1598604884989842103">テスト用に TouchView 最大化のユーザー インターフェースを有効にする</translation>
 <translation id="1600857548979126453">ページ デバッガ バックエンドにアクセスする</translation>
 <translation id="1601560923496285236">適用</translation>
 <translation id="1603914832182249871">（シークレット モード）</translation>
@@ -825,7 +824,7 @@
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2078019350989722914">終了する前に警告メッセージを表示する（<ph name="KEY_EQUIVALENT" />）</translation>
 <translation id="2079053412993822885">ユーザーの証明書のいずれかを削除すると、それを使って身元を証明することはできなくなります。</translation>
-<translation id="2079545284768500474">取り消す</translation>
+<translation id="2079545284768500474">元に戻す</translation>
 <translation id="2080010875307505892">セルビア語のキーボード</translation>
 <translation id="2080070583977670716">詳細設定</translation>
 <translation id="2081322486940989439">このサイトでは Visa は使用できません。</translation>
@@ -1761,7 +1760,6 @@
 <translation id="3206175707080061730">「$1」という名前のファイルは既に存在します。置き換えますか？</translation>
 <translation id="320825648481311438">有効にした場合、ブラウザで Google アカウントのログインとログアウトが管理されます。</translation>
 <translation id="3208703785962634733">未確認</translation>
-<translation id="3209459032754159027">自動入力のプルダウンにクレジット カードのログイン プロモーションを表示します。</translation>
 <translation id="3211904643589960506">フィジカル ウェブ オブジェクトの URL のスキャンを有効にします。</translation>
 <translation id="3216508313927987948">これには、次の手順で <ph name="DEVICE_TYPE" /> に音声を認識させる必要があります。</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> コネクタのプロセスで問題が発生しました。再起動しますか？</translation>
@@ -2157,7 +2155,7 @@
 <translation id="3704162925118123524">ご利用のネットワークでは、ログインページへのアクセスが必要な可能性があります。</translation>
 <translation id="3704331259350077894">処理が停止した</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">読み込み中...</translation>
+<translation id="370665806235115550">読み込んでいます...</translation>
 <translation id="3706919628594312718">マウスの設定</translation>
 <translation id="3707020109030358290">認証局ではありません。</translation>
 <translation id="3709244229496787112">ダウンロードの完了前に、ブラウザがシャットダウンされました。</translation>
@@ -4622,7 +4620,6 @@
 <translation id="7042418530779813870">貼り付けて検索(&amp;S)</translation>
 <translation id="7045480833981818310">ドキュメント、スプレッドシート、スライドでの Office 編集</translation>
 <translation id="7047998246166230966">ポインタ</translation>
-<translation id="7048141481140415714">Ctrl+Alt+Shift+8 で TouchView 最大化モードを切り替えられるようにします。</translation>
 <translation id="7049293980323620022">ファイルを保存しますか？</translation>
 <translation id="7051943809462976355">マウスを探しています...</translation>
 <translation id="7052237160939977163">パフォーマンス追跡データを送信する</translation>
@@ -5792,7 +5789,6 @@
 <translation id="8632275030377321303">このユーザーはプロキシを変更できません。</translation>
 <translation id="8636038761987659075">サイト設定にすべてのサイトとサイトの詳細を表示する</translation>
 <translation id="8637688295594795546">システムのアップデートが見つかりました。ダウンロードの準備をしています...</translation>
-<translation id="8638602948366220068">自動入力でクレジット カードのログイン プロモーションを有効にする</translation>
 <translation id="8639504893694748827">ゼロコピー ラスタライザ</translation>
 <translation id="8639963783467694461">自動入力の設定</translation>
 <translation id="8642171459927087831">アクセス トークン</translation>
@@ -6227,7 +6223,6 @@
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> を <ph name="DOWNLOAD_DOMAIN" /> からダウンロード（<ph name="TIME_LEFT" />）</translation>
 <translation id="9184146175870444618">フリング（指で軽く払う操作）時の touchstart イベント リスナーとスクロールごとの最初の touchmove イベント リスナーを、強制的に受動的リスナーとして扱います。</translation>
-<translation id="9184473426683023988">インポートしてデバイスにバインド</translation>
 <translation id="9186729806195986201"><ph name="IDS_SHORT_PRODUCT_NAME" /> の以前のインストール バージョンに戻す。</translation>
 <translation id="9187651461283037651">Chrome VR を有効にする。</translation>
 <translation id="9188441292293901223">この <ph name="DEVICE_TYPE" /> のロックを解除するには、スマートフォンを新しいバージョンの Android に更新してください。</translation>

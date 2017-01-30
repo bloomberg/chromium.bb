@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Ponudi automatsku prijavu na Googleove web-lokacije ovim računom</translation>
 <translation id="1596174774107741586">Upotrijebi poslužitelje testnog okruženja Google Paymentsa</translation>
 <translation id="1598233202702788831">Administrator je onemogućio ažuriranja.</translation>
-<translation id="1598604884989842103">Omogući testiranje korisničkog sučelja za maksimiziranje TouchView</translation>
 <translation id="1600857548979126453">pristupiti pozadini programa za ispravljanje pogrešaka na stranici</translation>
 <translation id="1601560923496285236">Primijeni</translation>
 <translation id="1603914832182249871">(Anonimno)</translation>
@@ -1760,7 +1759,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3206175707080061730">Datoteka pod nazivom "$1" već postoji. Želite li je zamijeniti?</translation>
 <translation id="320825648481311438">Kada je omogućeno, preglednik upravlja prijavljivanjem na Google račune i odjavljivanjem s njih.</translation>
 <translation id="3208703785962634733">Nepotvrđeno</translation>
-<translation id="3209459032754159027">Omogućuje da se na padajućem izborniku Automatskog popunjavanja prikazuje promotivna poruka o unosu podataka o kreditnoj kartici uz prijavu.</translation>
 <translation id="3211904643589960506">Omogućuje traženje URL-ova u objektima fizičkog weba.</translation>
 <translation id="3216508313927987948">Da biste to postigli, morat ćete obučiti uređaj <ph name="DEVICE_TYPE" /> na sljedeći način.</translation>
 <translation id="3220586366024592812">Pao je proces konektora <ph name="CLOUD_PRINT_NAME" />. Pokrenuti ponovo?</translation>
@@ -4619,7 +4617,6 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7042418530779813870">Za&amp;lijepi i pretraži</translation>
 <translation id="7045480833981818310">Office Editing za Dokumente, Tablice i Prezentacije</translation>
 <translation id="7047998246166230966">Pokazivač</translation>
-<translation id="7048141481140415714">Omogući Ctrl + Alt + Shift + 8 za naizmjenično prikazivanje i skrivanje načina maksimiziranja TouchView.</translation>
 <translation id="7049293980323620022">Želite li zadržati datoteku?</translation>
 <translation id="7051943809462976355">Traženje miša...</translation>
 <translation id="7052237160939977163">Šalji podatke o praćenju izvedbe</translation>
@@ -5786,7 +5783,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8632275030377321303">Korisnik ne može mijenjati proxy.</translation>
 <translation id="8636038761987659075">Postavke web-lokacije s popisom svih web-lokacija i pojedinostima web-lokacije</translation>
 <translation id="8637688295594795546">Dostupno ažuriranje sustava. Priprema za preuzimanje…</translation>
-<translation id="8638602948366220068">Omogući promotivnu poruku o automatskom popunjavanju podataka o kreditnoj kartici uz prijavu</translation>
 <translation id="8639504893694748827">Rasterizator bez kopija</translation>
 <translation id="8639963783467694461">Postavke automatske ispune</translation>
 <translation id="8642171459927087831">Token pristupa</translation>
@@ -6221,7 +6217,6 @@ Naknadne obavijesti, prozori i dijaloški okviri mogu biti podijeljeni između r
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> s domene <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Nameće da se kao pasivni tretiraju slušatelji događaja pokretanja dodirom i prvog pomicanja dodirom po pomicanju tijekom zamahivanja.</translation>
-<translation id="9184473426683023988">Uvezi i veži za uređaj</translation>
 <translation id="9186729806195986201">Također će vratiti prethodnu verziju proizvoda <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Omogući Chrome VR.</translation>
 <translation id="9188441292293901223">Ažurirajte svoj telefon na najnoviju verziju Androida kako biste otključali ovaj <ph name="DEVICE_TYPE" />.</translation>

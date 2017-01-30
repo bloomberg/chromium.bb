@@ -688,7 +688,7 @@
 
       Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, wszystkie strony uwierzytelniania portalu przechwytującego będą wyświetlać się w nowej karcie przeglądarki, używając ustawień serwera proxy dla bieżącego użytkownika.</translation>
 <translation id="3021409116652377124">Wyłącz znajdowanie wtyczek</translation>
-<translation id="3030000825273123558">Włącz raportowanie statystyk</translation>
+<translation id="3030000825273123558">Włącz raportowanie danych</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="3038323923255997294">Kontynuuj działanie aplikacji w tle po zamknięciu <ph name="PRODUCT_NAME" /></translation>
 <translation id="3046192273793919231">Wysyłaj pakiety sieciowe na serwer zarządzania w celu monitorowania stanu online</translation>
@@ -1312,12 +1312,6 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać z
 
       Kiedy ta zasada jest wyłączona, tryb programisty jest normalnie dostępny na urządzeniu.</translation>
 <translation id="5208240613060747912">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
-<translation id="5209594095390052164">Umożliwia włączenie lub wyłączenie ograniczania przepustowości sieci.
-      Ta zasada wpływa na wszystkich użytkowników i wszystkie interfejsy urządzenia.
-      Po włączeniu ograniczanie przepustowości jest stosowane dopóki zasada nie zostanie zmieniona.
-
-      Wyłączenie zasady powoduje brak ograniczania przepustowości.
-      Włączenie zasady powoduje, że przepustowość wysyłania i pobierania jest ograniczana do podanych wartości (w kb/s).</translation>
 <translation id="5219844027738217407">W przypadku aplikacji na Androida ta zasada wpływa tylko na mikrofon. Gdy jest ona włączona, mikrofon jest wyłączony dla wszystkich aplikacji na Androida bez żadnych wyjątków.</translation>
 <translation id="5226033722357981948">Określ, czy funkcja znajdowania wtyczek ma być wyłączona</translation>
 <translation id="523505283826916779">Ustawienia ułatwień dostępu</translation>

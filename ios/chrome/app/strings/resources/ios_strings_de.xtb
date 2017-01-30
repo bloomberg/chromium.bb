@@ -51,6 +51,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="1809939268435598390">Ordner löschen</translation>
 <translation id="1813414402673211292">Browserdaten löschen</translation>
 <translation id="1820259098641718022">Zur Leseliste hinzugefügt</translation>
+<translation id="1826516787628120939">Überprüfung läuft</translation>
 <translation id="1842969606798536927">Bezahlen</translation>
 <translation id="1876721852596493031">Nutzungsdaten senden</translation>
 <translation id="1886928167269928266">Für gesamten Zeitraum</translation>
@@ -62,7 +63,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="1989112275319619282">Durchsuchen</translation>
 <translation id="2054511809411770085">QR-Code oder Barcode</translation>
 <translation id="2068952045031577364">Für die letzte Woche</translation>
-<translation id="2079545284768500474">Rückgängig</translation>
+<translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
 <translation id="2100215774115172756">Ihre Leseliste ist offline verfügbar.</translation>
 <translation id="2103075008456228677">history.google.com öffnen</translation>
@@ -151,6 +152,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
 <translation id="3692781555820666866">Wenn Physical Web aktiviert ist, enthält die Omnibox Vorschläge für Webseiten, die von Geräten in Ihrer Nähe übertragen werden.</translation>
+<translation id="3706658020782046159">Wählen Sie eine Versandadresse aus, um die Versandmethoden und -anforderungen zu sehen.</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
 <translation id="3783017676699494206">Bild speichern</translation>
@@ -188,6 +190,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
+<translation id="4750394297954878236">Vorschläge</translation>
 <translation id="4773461607542755386">Diese Seite in <ph name="APP_NAME" /> öffnen?</translation>
 <translation id="481968316161811770">Cookies, Websitedaten</translation>
 <translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>

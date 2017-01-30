@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Ofrecer inicio de sesión en sitios de Google automáticamente con esta cuenta</translation>
 <translation id="1596174774107741586">Utilizar servidores de zona de pruebas de Google Payments</translation>
 <translation id="1598233202702788831">El administrador ha inhabilitado las actualizaciones.</translation>
-<translation id="1598604884989842103">Habilitar la interfaz de usuario de ampliación de TouchView para realizar pruebas</translation>
 <translation id="1600857548979126453">Acceder al servidor de depuración de página</translation>
 <translation id="1601560923496285236">Aplicar</translation>
 <translation id="1603914832182249871">(Incógnito)</translation>
@@ -1763,7 +1762,6 @@ Accede a tu dirección de correo electrónico <ph name="ACCOUNT_EMAIL" /> para c
 <translation id="3206175707080061730">Ya existe un archivo "$1". ¿Quieres sustituirlo?</translation>
 <translation id="320825648481311438">Cuando esta opción está habilitada, el navegador administra el inicio y el cierre de sesión de las cuentas de Google.</translation>
 <translation id="3208703785962634733">Sin confirmar</translation>
-<translation id="3209459032754159027">Habilitar mensaje de inicio de sesión para tarjetas de crédito en el menú desplegable de Autocompletar.</translation>
 <translation id="3211904643589960506">Habilitar la detección de URLs desde objetos de la Web física.</translation>
 <translation id="3216508313927987948">Para que esto sea posible, debes entrenar tu <ph name="DEVICE_TYPE" /> en el paso siguiente.</translation>
 <translation id="3220586366024592812">Se ha producido un error en el proceso de conector de <ph name="CLOUD_PRINT_NAME" />. ¿Reiniciar?</translation>
@@ -2737,7 +2735,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4530494379350999373">Origen</translation>
 <translation id="4532499992208253975">emcargando</translation>
 <translation id="4533259260976001693">Reducir/ampliar</translation>
-<translation id="4533985347672295764">Tiempo de CPU</translation>
+<translation id="4533985347672295764">Tiempo de uso de la CPU</translation>
 <translation id="4534166495582787863">Habilita el clic con tres de dedos del panel táctil como botón central.</translation>
 <translation id="4534799089889278411">Di "Ok Google" en una nueva pestaña, en google.es y en el menú de aplicaciones</translation>
 <translation id="4535127706710932914">Perfil predeterminado</translation>
@@ -4180,7 +4178,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6442697326824312960">No fijar pestaña</translation>
 <translation id="6443783728907198276">Si se habilita, los mensajes Stun generados por WebRTC incluirán el encabezado de origen.</translation>
 <translation id="6444070574980481588">Establecer fecha y hora</translation>
-<translation id="6444688254019178081">Habilitar ventanas acopladas.</translation>
+<translation id="6444688254019178081">Habilitar acoplamiento de ventanas.</translation>
 <translation id="6445450263907939268">Si no querías realizar estos cambios, puedes restaurar la configuración anterior.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6449285849137521213">Se ha añadido la aplicación <ph name="EXTENSION_NAME" />.</translation>
@@ -4615,7 +4613,6 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7042418530779813870">Pe&amp;gar y buscar</translation>
 <translation id="7045480833981818310">Edición de Office para Documentos, Hojas de Cálculo y Presentaciones de Google</translation>
 <translation id="7047998246166230966">Puntero</translation>
-<translation id="7048141481140415714">Habilita Ctrl+Alt+Mayús+8 para activar el modo de ampliación de TouchView.</translation>
 <translation id="7049293980323620022">¿Quieres conservar el archivo?</translation>
 <translation id="7051943809462976355">Buscando el ratón...</translation>
 <translation id="7052237160939977163">Enviar datos de seguimiento de rendimiento</translation>
@@ -5784,7 +5781,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="8632275030377321303">El usuario no puede modificar el proxy.</translation>
 <translation id="8636038761987659075">Configuración de sitios web con los detalles del sitio web y todos los sitios</translation>
 <translation id="8637688295594795546">Hay disponible una actualización del sistema. Preparando para descargar…</translation>
-<translation id="8638602948366220068">Habilitar función de iniciar sesión para tarjetas de crédito de Autocompletar</translation>
 <translation id="8639504893694748827">Rasterizador de copia cero</translation>
 <translation id="8639963783467694461">Configuración de Autocompletar</translation>
 <translation id="8642171459927087831">Token de acceso</translation>
@@ -6220,7 +6216,6 @@ Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezc
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Fuerza los procesadores de eventos touchstart y el primer procesador de eventos touchmove por desplazamiento durante el deslizamiento para que se consideren pasivos.</translation>
-<translation id="9184473426683023988">Importar y vincular al dispositivo</translation>
 <translation id="9186729806195986201">Volver también a la versión de <ph name="IDS_SHORT_PRODUCT_NAME" /> instalada previamente.</translation>
 <translation id="9187651461283037651">Habilitar Chrome VR.</translation>
 <translation id="9188441292293901223">Instala una versión más reciente de Android en el teléfono para desbloquear este <ph name="DEVICE_TYPE" />.</translation>

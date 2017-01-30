@@ -1403,12 +1403,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
-<translation id="5209594095390052164">Allows choosing whether network throttling is enabled or not.
-      This applies to all users, and to all interfaces on the device. Once set,
-      the throttling persists until the policy is changed to disable it.
-
-      If set to false, there is no throttling.
-      If set to true, the system is throttled to achieve the provided upload and download rates (in kbits/s).</translation>
 <translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
 <translation id="5226033722357981948"> finder should be disabled</translation>
 <translation id="523505283826916779">Accessibility settings</translation>

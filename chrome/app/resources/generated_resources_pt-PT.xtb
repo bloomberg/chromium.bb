@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">Propor iniciar sessão automaticamente nos sites do Google com esta conta</translation>
 <translation id="1596174774107741586">Utilizar servidores de isolamento de processos do Google Payments</translation>
 <translation id="1598233202702788831">As atualizações estão desativadas pelo seu administrador.</translation>
-<translation id="1598604884989842103">Ativar TouchView maximizando IU para testes</translation>
 <translation id="1600857548979126453">Aceder ao back-end do depurador da página</translation>
 <translation id="1601560923496285236">Aplicar</translation>
 <translation id="1603914832182249871">(Navegação anónima)</translation>
@@ -1762,7 +1761,6 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL" /> para obter estas e outras i
 <translation id="3206175707080061730">Já existe um ficheiro "$1". Pretende substituí-lo?</translation>
 <translation id="320825648481311438">Quando ativado, o navegador consegue iniciar e terminar sessão em Contas Google.</translation>
 <translation id="3208703785962634733">Não confirmado</translation>
-<translation id="3209459032754159027">Ativar a apresentação da promoção de início de sessão do cartão de crédito no menu pendente do Preenchimento automático.</translation>
 <translation id="3211904643589960506">Ativar a procura de URLs a partir de objetos da Web física.</translation>
 <translation id="3216508313927987948">Para que tal ocorra, é necessário configurar o <ph name="DEVICE_TYPE" /> no passo seguinte.</translation>
 <translation id="3220586366024592812">O processo do conector <ph name="CLOUD_PRINT_NAME" /> falhou. Reiniciar?</translation>
@@ -2315,7 +2313,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3899879303189199559">Offline durante mais de um ano</translation>
 <translation id="3899968422636198696"><ph name="ORGNAME" /> <ph name="HOSTNAME" /></translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
-<translation id="3902365939851986963">Defina os limites do seu ecrã tátil na visualização</translation>
+<translation id="3902365939851986963">Defina os limites da visualização no seu ecrã tátil</translation>
 <translation id="3902799646152133632">Ignora o frame principal no-store.</translation>
 <translation id="3904196543277238487">Versão TLS máxima ativada.</translation>
 <translation id="3904709815599435085">Ativa a aplicação Imagens de fundo Android como a aplicação de imagens de fundo predefinida no SO Chrome.</translation>
@@ -4622,7 +4620,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7042418530779813870">Colar e pesqui&amp;sar</translation>
 <translation id="7045480833981818310">Edição do Office para Documentos, Folhas de cálculo e Apresentações</translation>
 <translation id="7047998246166230966">Ponteiro</translation>
-<translation id="7048141481140415714">Ative Ctrl+Alt+Shift+8 para alternar para o modo de maximização TouchView.</translation>
 <translation id="7049293980323620022">Pretende manter este ficheiro?</translation>
 <translation id="7051943809462976355">A pesquisar rato...</translation>
 <translation id="7052237160939977163">Enviar dados de rastreio do desempenho</translation>
@@ -5790,7 +5787,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8632275030377321303">O proxy não pode ser modificado pelo utilizador.</translation>
 <translation id="8636038761987659075">Definições do site com Todos os sites e Detalhes do site</translation>
 <translation id="8637688295594795546">Actualização do sistema disponível. A preparar para transferir…</translation>
-<translation id="8638602948366220068">Ativar promoção de início de sessão do cartão de crédito do Preenchimento automático</translation>
 <translation id="8639504893694748827">Rasterizador de cópia zero</translation>
 <translation id="8639963783467694461">Definições de Preenchimento automático</translation>
 <translation id="8642171459927087831">Chave de Acesso</translation>
@@ -6225,7 +6221,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Força os event listeners de touchstart e do primeiro touchmove durante a movimentação a serem tratados como passivos.</translation>
-<translation id="9184473426683023988">Importar e vincular ao dispositivo</translation>
 <translation id="9186729806195986201">Regressar também à versão anteriormente instalada do <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Ativar RV do Chrome.</translation>
 <translation id="9188441292293901223">Atualize o telemóvel para uma versão mais recente do Android para desbloquear este <ph name="DEVICE_TYPE" />.</translation>

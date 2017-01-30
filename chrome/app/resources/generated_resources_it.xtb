@@ -487,7 +487,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1594234040488055839">Offerta di accesso automatico ai siti di Google con questo account</translation>
 <translation id="1596174774107741586">Utilizza i server sandbox di Google Payments</translation>
 <translation id="1598233202702788831">Gli aggiornamenti sono stati disattivati dall'amministratore.</translation>
-<translation id="1598604884989842103">Attiva interfaccia utente di espansione TouchView per eseguire i test</translation>
 <translation id="1600857548979126453">Accesso al backend del debugger delle pagine</translation>
 <translation id="1601560923496285236">Applica</translation>
 <translation id="1603914832182249871">(In incognito)</translation>
@@ -1759,7 +1758,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3206175707080061730">Esiste già un file denominato "$1". Sostituirlo?</translation>
 <translation id="320825648481311438">Quando è attivato, il bowser riesce ad accedere e uscire dagli account Google.</translation>
 <translation id="3208703785962634733">Non confermato</translation>
-<translation id="3209459032754159027">Attiva visualizzazione della funzione di accesso mediante carta di credito nell'elenco a discesa Compilazione automatica.</translation>
 <translation id="3211904643589960506">Abilita scansione degli URL dagli oggetti Physical Web.</translation>
 <translation id="3216508313927987948">A tale scopo, dovrai impostare il tuo dispositivo <ph name="DEVICE_TYPE" /> procedendo come descritto di seguito.</translation>
 <translation id="3220586366024592812">Il processo del connettore <ph name="CLOUD_PRINT_NAME" /> si è bloccato. Riavviarlo?</translation>
@@ -2226,7 +2224,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3790909017043401679">Inserisci il PIN della scheda SIM</translation>
 <translation id="3792890930871100565">Scollega stampanti</translation>
 <translation id="3796648294839530037">Reti preferite:</translation>
-<translation id="3797900183766075808">&amp;Cerca <ph name="SEARCH_ENGINE" /> con "<ph name="SEARCH_TERMS" />"</translation>
+<translation id="3797900183766075808">&amp;Cerca "<ph name="SEARCH_TERMS" />" su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3798325802885154040">Consente di attivare/disattivare il tocco per fare clic</translation>
 <translation id="3798449238516105146">Versione</translation>
 <translation id="3798935682015223249">Supporto MTP in Gestione file</translation>
@@ -4614,7 +4612,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7042418530779813870">In&amp;colla e cerca</translation>
 <translation id="7045480833981818310">Estensione Editor Office per Documenti, Fogli e Presentazioni</translation>
 <translation id="7047998246166230966">Puntatore</translation>
-<translation id="7048141481140415714">Abilita Ctrl+Alt+Maiusc+8 per attivare/disattivare la modalità di espansione TouchView.</translation>
 <translation id="7049293980323620022">Conservare il file?</translation>
 <translation id="7051943809462976355">Ricerca mouse in corso...</translation>
 <translation id="7052237160939977163">Invia dati di rilevamento del rendimento</translation>
@@ -5773,7 +5770,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8632275030377321303">Il proxy non può essere modificato dall'utente.</translation>
 <translation id="8636038761987659075">Impostazioni sito con Tutti i siti e Dettagli del sito</translation>
 <translation id="8637688295594795546">Aggiornamento del sistema disponibile. Preparazione per il download in corso…</translation>
-<translation id="8638602948366220068">Attiva funzione di accesso mediante carta di credito in Compilazione automatica</translation>
 <translation id="8639504893694748827">Unità di rasterizzazione zero-copy</translation>
 <translation id="8639963783467694461">Impostazioni di Compilazione automatica</translation>
 <translation id="8642171459927087831">Token di accesso</translation>
@@ -6208,7 +6204,6 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> da <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Consente di imporre i listener di eventi touchstart e first touchmove per scroll come passivi durante lo scorrimento.</translation>
-<translation id="9184473426683023988">Importa e associa a dispositivo</translation>
 <translation id="9186729806195986201">Ripristina anche la versione precedente installata di <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Attiva la realtà virtuale di Chrome.</translation>
 <translation id="9188441292293901223">Aggiorna il telefono a una versione più recente di Android per sbloccare questo dispositivo <ph name="DEVICE_TYPE" />.</translation>

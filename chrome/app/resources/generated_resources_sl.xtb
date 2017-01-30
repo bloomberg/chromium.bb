@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">Ponudi samodejno prijavo v Googlova spletna mesta s tem računom</translation>
 <translation id="1596174774107741586">Uporabi strežnike za Google Payments v peskovniku</translation>
 <translation id="1598233202702788831">Skrbnik je onemogočil posodobitve.</translation>
-<translation id="1598604884989842103">Omogočanje uporabniškega vmesnika načina maksimiranja TouchView za preskušanje</translation>
 <translation id="1600857548979126453">Dostopajte do podsistema iskalnika napak na strani</translation>
 <translation id="1601560923496285236">Uporabi</translation>
 <translation id="1603914832182249871">(Način brez beleženja zgodovine)</translation>
@@ -1762,7 +1761,6 @@ Za ta in dodatna navodila preverite e-pošto za račun <ph name="ACCOUNT_EMAIL" 
 <translation id="3206175707080061730">Datoteka z imenom »$1« že obstaja. Ali jo želite zamenjati?</translation>
 <translation id="320825648481311438">Če je omogočeno, brskalnik upravlja prijave v Google Račune in odjave iz njih.</translation>
 <translation id="3208703785962634733">Nepotrjeno</translation>
-<translation id="3209459032754159027">Omogočanje oglaševalnega besedila za prijavo s kreditno kartico v spustnem oknu samodejnega izpolnjevanja.</translation>
 <translation id="3211904643589960506">Omogočanje iskanja URL-jev pri predmetih Fizičnega spleta.</translation>
 <translation id="3216508313927987948">Če želite to izvesti, morate usposobiti napravo <ph name="DEVICE_TYPE" /> s tem postopkom.</translation>
 <translation id="3220586366024592812">Proces priključka <ph name="CLOUD_PRINT_NAME" /> se je zrušil. Ga želite znova zagnati?</translation>
@@ -2158,7 +2156,7 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3704162925118123524">Omrežje, ki ga uporabljate, morda zahteva, da obiščete stran za prijavo.</translation>
 <translation id="3704331259350077894">Prenehanje operacije</translation>
 <translation id="3705722231355495246">–</translation>
-<translation id="370665806235115550">Nalagam ...</translation>
+<translation id="370665806235115550">Nalaganje ...</translation>
 <translation id="3706919628594312718">Nastavitve miške</translation>
 <translation id="3707020109030358290">Ni overitelj potrdil.</translation>
 <translation id="3709244229496787112">Brskalnik se je zaprl pred dokončanjem prenosa.</translation>
@@ -4622,7 +4620,6 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7042418530779813870">Pri&amp;lepi in išči</translation>
 <translation id="7045480833981818310">Urejanje dokumentov zbirke Office za Google Dokumente, Google Preglednice in Google Predstavitve</translation>
 <translation id="7047998246166230966">Kazalec</translation>
-<translation id="7048141481140415714">Omogoči kombinacijo tipk Ctrl + Alt + Shift + 8 za preklop v način maksimiranja TouchView.</translation>
 <translation id="7049293980323620022">Želite obdržati datoteko?</translation>
 <translation id="7051943809462976355">Iskanje miške ...</translation>
 <translation id="7052237160939977163">Pošlji podatke za sledenje učinkovitosti delovanja</translation>
@@ -5792,7 +5789,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="8632275030377321303">Strežnika proxy ne more spreminjati uporabnik.</translation>
 <translation id="8636038761987659075">Nastavitve spletnih mest z »Vsemi spletnimi mesti« in »Podrobnostmi spletnega mesta«</translation>
 <translation id="8637688295594795546">Na voljo je sistemska posodobitev. Priprava za prenos ...</translation>
-<translation id="8638602948366220068">Omogočanje oglaševalnega besedila za prijavo s kreditno kartico pri samodejnem izpolnjevanju</translation>
 <translation id="8639504893694748827">Rasterizator »zero-copy«</translation>
 <translation id="8639963783467694461">Nastavitve samodejnega izpolnjevanja</translation>
 <translation id="8642171459927087831">Žeton za dostop</translation>
@@ -6228,7 +6224,6 @@ Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</tr
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> iz domene <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Vsili, da se poslušalniki dogodkov »touchstart« in prvi poslušalniki dogodkov »touchmove« na posamezni pomik med dejanjem »fling« obravnavajo kot pasivni.</translation>
-<translation id="9184473426683023988">Uvozi in poveži z napravo</translation>
 <translation id="9186729806195986201">Tudi povrnitev prej nameščene različice izdelka <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Omogočanje navidezne resničnosti za Chrome.</translation>
 <translation id="9188441292293901223">Posodobite telefon na novejšo različico Androida, če želite odkleniti to napravo <ph name="DEVICE_TYPE" />.</translation>

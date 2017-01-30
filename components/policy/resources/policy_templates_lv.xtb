@@ -1392,12 +1392,6 @@ Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru sistēmā insta
 <translation id="5208240613060747912">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts attēlot paziņojumus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultNotificationsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
-<translation id="5209594095390052164">Ļauj izvēlēties, vai iespējot tīkla ierobežošanu.
-      Tas attiecas uz visiem lietotājiem un uz visām saskarnēm ierīcē. Esot iestatītai šai politikai,
-      ierobežošana ir spēkā, līdz tiek mainīta politika, lai to atspējotu.
-
-      Ja ir iestatīta vērtība “Nepatiesa”, sistēma netiek ierobežota.
-      Ja ir iestatīta vērtība “Patiesa”, sistēma tiek ierobežota, lai sasniegtu nodrošināto augšupielāžu un lejupielāžu ātrumu (Kb/s).</translation>
 <translation id="5219844027738217407">Android lietotnēs šī politika ietekmē tikai mikrofonu. Kad šī politika ir iestatīta kā patiesa, mikrofons tiek izslēgts visās Android lietotnēs bez izņēmuma.</translation>
 <translation id="5226033722357981948">Norāda, vai ir jāatspējo spraudņu meklētājs</translation>
 <translation id="523505283826916779">Pieejamības iestatījumi</translation>

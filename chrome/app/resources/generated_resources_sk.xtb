@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Ponúkať možnosť automatického prihlásenia na stránky Google pomocou tohto účtu</translation>
 <translation id="1596174774107741586">Použiť servery karantény služby Google Payments</translation>
 <translation id="1598233202702788831">Aktualizácie zakázal váš správca.</translation>
-<translation id="1598604884989842103">Povolí testovanie používateľského rozhrania na maximalizáciu aplikácie TouchView</translation>
 <translation id="1600857548979126453">Pristupovať k ladiacemu nástroju stránok na strane servera</translation>
 <translation id="1601560923496285236">Použiť</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
@@ -1762,7 +1761,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3206175707080061730">Súbor s názvom $1 už existuje. Chcete ho nahradiť?</translation>
 <translation id="320825648481311438">V prípade povolenia bude prehliadač spravovať prihlasovanie a odhlasovanie z účtov Google.</translation>
 <translation id="3208703785962634733">Nepotvrdené</translation>
-<translation id="3209459032754159027">Aktivovať zobrazovanie možnosti dopĺňania údajov kreditnej karty v rámci rozbaľovacej ponuky Automatického dopĺňania.</translation>
 <translation id="3211904643589960506">Povolenie hľadania webových adries z objektov fyzického webu.</translation>
 <translation id="3216508313927987948">Ak chcete používať túto funkciu, musíte svoje zariadenie <ph name="DEVICE_TYPE" /> natrénovať v nasledujúcom kroku.</translation>
 <translation id="3220586366024592812">Proces konektora <ph name="CLOUD_PRINT_NAME" /> zlyhal. Spustiť znova?</translation>
@@ -1874,7 +1872,7 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3341703758641437857">Povoliť prístup k webovým adresám súboru</translation>
 <translation id="3344786168130157628">Názov prístupového bodu:</translation>
 <translation id="3345886924813989455">Nenašiel sa žiadny podporovaný prehliadač</translation>
-<translation id="3346734205185115290">Povoliť prechádzanie s náhlavnou súpravou pre virtuálnu realitu (ak je na tomto zariadení k dispozícii).</translation>
+<translation id="3346734205185115290">Povoliť prechádzanie s náhlavnou súpravou pre VR (ak je na tomto zariadení k dispozícii).</translation>
 <translation id="3347086966102161372">K&amp;opírovať adresu obrázka</translation>
 <translation id="3348038390189153836">Bolo zistené odnímateľné zariadenie</translation>
 <translation id="3348459612390503954">Blahoželáme</translation>
@@ -3879,7 +3877,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="60357267506638014">Česká klávesnica QWERTY</translation>
 <translation id="6039651071822577588">Slovník sieťového vlastníctva je v nesprávnom tvare</translation>
 <translation id="604001903249547235">Záloha v cloude</translation>
-<translation id="6040143037577758943">Zatvoriť</translation>
+<translation id="6040143037577758943">Zavrieť</translation>
 <translation id="604124094241169006">Automatické</translation>
 <translation id="6042308850641462728">Viac</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> zdieľa kartu Chromu s kartou <ph name="TAB_NAME" />.</translation>
@@ -4622,7 +4620,6 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7042418530779813870">Vl&amp;ožiť a hľadať</translation>
 <translation id="7045480833981818310">Úpravy súborov balíka Office v Dokumentoch, Tabuľkách a Prezentáciách</translation>
 <translation id="7047998246166230966">Kurzor</translation>
-<translation id="7048141481140415714">Povolí prepínanie režimu maximalizácie aplikácie TouchView pomocou kombinácie klávesov Ctrl+Alt+Shift+D.</translation>
 <translation id="7049293980323620022">Ponechať súbor?</translation>
 <translation id="7051943809462976355">Prebieha hľadanie myši...</translation>
 <translation id="7052237160939977163">Odosielať údaje sledovania výkonnosti</translation>
@@ -5791,7 +5788,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8632275030377321303">Používateľ nemôže meniť server proxy.</translation>
 <translation id="8636038761987659075">Nastavenia webov so zoznamom všetkých webov a podrobnosťami o weboch</translation>
 <translation id="8637688295594795546">K dispozícii je systémová aktualizácia. Pripravuje sa stiahnutie...</translation>
-<translation id="8638602948366220068">Povoliť možnosť dopĺňania údajov kreditnej karty</translation>
 <translation id="8639504893694748827">Rasterizátor bez kópie</translation>
 <translation id="8639963783467694461">Nastavenia automatického dopĺňania</translation>
 <translation id="8642171459927087831">Prístupový token</translation>
@@ -6226,7 +6222,6 @@ Nasledujúce upozornenia, okná a dialógové okná sa môžu zobraziť rozdele
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117">Prijaté údaje z domény <ph name="DOWNLOAD_DOMAIN" />: <ph name="DOWNLOAD_RECEIVED" />. Zvyšný čas: <ph name="TIME_LEFT" />.</translation>
 <translation id="9184146175870444618">Vynútenie, aby prijímače udalostí spustenia klepnutím a pohybu klepnutím pri posunutí počas rýchleho pohybu prstom boli spracované ako pasívne.</translation>
-<translation id="9184473426683023988">Importovať a spojiť so zariadením</translation>
 <translation id="9186729806195986201">Vrátiť sa späť na predchádzajúcu nainštalovanú verziu produktu <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="9187651461283037651">Povolenie prostredia Chrome VR</translation>
 <translation id="9188441292293901223">Ak chcete odomknúť toto zariadenie <ph name="DEVICE_TYPE" />, aktualizujte svoj telefón na novšiu verziu Androidu.</translation>

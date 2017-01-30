@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Пропонувати автоматичний вхід на сайти Google, використовуючи дані цього облікового запису</translation>
 <translation id="1596174774107741586">Використовувати сервери ізольованого програмного середовища Google Payments</translation>
 <translation id="1598233202702788831">Адміністратор вимкнув оновлення.</translation>
-<translation id="1598604884989842103">Активувати тестовий режим TouchView для відображення вікон у розгорнутому вигляді</translation>
 <translation id="1600857548979126453">Отримувати доступ до серверної частини налагоджувача сторінки</translation>
 <translation id="1601560923496285236">Застосувати</translation>
 <translation id="1603914832182249871">(Анонімний перегляд)</translation>
@@ -824,7 +823,7 @@
 <translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
 <translation id="2078019350989722914">Попереджати перед виходом (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Якщо видалити один зі своїх власних сертифікатів, ви більше не зможете використовувати його для власної ідентифікації.</translation>
-<translation id="2079545284768500474">Скасувати</translation>
+<translation id="2079545284768500474">Відмінити</translation>
 <translation id="2080010875307505892">Сербська розкладка</translation>
 <translation id="2080070583977670716">Більше налаштувань</translation>
 <translation id="2081322486940989439">Цей сайт не приймає картки Visa.</translation>
@@ -1760,7 +1759,6 @@
 <translation id="3206175707080061730">Файл із назвою "$1" уже існує. Замінити його?</translation>
 <translation id="320825648481311438">Якщо ввімкнено, веб-переглядач керуватиме входами в облікові записи Google і виходами з них.</translation>
 <translation id="3208703785962634733">Не підтверджено</translation>
-<translation id="3209459032754159027">Показувати заклик до входу в спадному меню "Автозаповнення" для даних кредитної картки.</translation>
 <translation id="3211904643589960506">Увімкнути пошук URL-адрес з об’єктів, сумісних із функцією "Інтернет навколо нас".</translation>
 <translation id="3216508313927987948">Для цього потрібно навчити пристрій <ph name="DEVICE_TYPE" />, як описано нижче.</translation>
 <translation id="3220586366024592812">Відбулося аварійне завершення процесу для функції підключення  <ph name="CLOUD_PRINT_NAME" />. Перезапустити?</translation>
@@ -4544,7 +4542,7 @@
 <translation id="695755122858488207">Невибраний перемикач</translation>
 <translation id="696203921837389374">Увімкнути синхронізацію через мобільний Інтернет</translation>
 <translation id="6964390816189577014">Герой</translation>
-<translation id="6965382102122355670">ОК</translation>
+<translation id="6965382102122355670">ТАК</translation>
 <translation id="6965648386495488594">Порт</translation>
 <translation id="6965978654500191972">Пристрій</translation>
 <translation id="6969104364835835175">Примусове використання Subzero від PNaCl</translation>
@@ -4621,7 +4619,6 @@
 <translation id="7042418530779813870">Вста&amp;вити та здійснити пошук</translation>
 <translation id="7045480833981818310">Редагування файлів Документів, Таблиць і Презентацій в Office</translation>
 <translation id="7047998246166230966">Курсор</translation>
-<translation id="7048141481140415714">Вмикати й вимикати режим TouchView комбінацією клавіш Ctrl+Alt+Shift+8.</translation>
 <translation id="7049293980323620022">Завантажити файл?</translation>
 <translation id="7051943809462976355">Пошук миші…</translation>
 <translation id="7052237160939977163">Надсилати дані відстеження ефективності</translation>
@@ -5789,7 +5786,6 @@
 <translation id="8632275030377321303">Користувач не може змінювати налаштування проксі.</translation>
 <translation id="8636038761987659075">Увімкнути розділи "Усі сайти" та "Деталі сайту" в налаштуваннях сайту</translation>
 <translation id="8637688295594795546">Доступне оновлення системи. Підготовка до завантаження…</translation>
-<translation id="8638602948366220068">Увімкнути заклик до входу в меню автозаповнення даних кредитної картки</translation>
 <translation id="8639504893694748827">Перетворення в растровий формат ("нуль-копія")</translation>
 <translation id="8639963783467694461">Налаштування автозаповнення</translation>
 <translation id="8642171459927087831">Маркер доступу</translation>
@@ -6224,9 +6220,8 @@
 <translation id="9181716872983600413">Юнікод</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> з домену <ph name="DOWNLOAD_DOMAIN" />, залишилось: <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Під час гортання примусово робити пасивними такі обробники подій: запуск дотиком і переміщення дотиком.</translation>
-<translation id="9184473426683023988">Імпортувати та зв’язати з пристроєм</translation>
 <translation id="9186729806195986201">Також повернутися до попередньої встановленої версії <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="9187651461283037651">Увімкнути віртуальну реальність у Chrome.</translation>
+<translation id="9187651461283037651">Увімкнути Chrome VR.</translation>
 <translation id="9188441292293901223">Щоб розблоковувати цей <ph name="DEVICE_TYPE" />, оновіть свій телефон до останньої версії ОС Android.</translation>
 <translation id="9189690067274055051">Щоб отримати доступ, розблокуйте телефон і розташуйте його ближче до <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + Спільний ключ</translation>

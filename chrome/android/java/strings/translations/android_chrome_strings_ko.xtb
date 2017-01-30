@@ -73,6 +73,7 @@
 <translation id="1647391597548383849">카메라에 액세스</translation>
 <translation id="1656489000284462475">수령</translation>
 <translation id="1661474178782861119">더 많은 콘텐츠가 표시될 예정이니 기대해주세요. 즐거운 저녁 시간 보내세요.</translation>
+<translation id="1670399744444387456">기본</translation>
 <translation id="1671236975893690980">다운로드 대기 중...</translation>
 <translation id="169033420419426091">SD 카드가 없어서 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="1709438864123551175">데이터 절약 모드</translation>
@@ -107,7 +108,7 @@
 <translation id="2038563949887743358">데스크톱 버전으로 보기 사용 설정</translation>
 <translation id="2045104531052923016">기타 앱 <ph name="GIGABYTES" />GB</translation>
 <translation id="2073235970478114994">이미지 로드</translation>
-<translation id="2079545284768500474">실행 취소</translation>
+<translation id="2079545284768500474">실행취소</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
 <translation id="2095887075102408547">이 기능을 사용 설정하면 Chrome은 Google 서버를 이용해 방문한 페이지를 압축한 후 다운로드합니다. 비공개 연결(HTTPS)이나 시크릿 탭을 통해 액세스한 페이지는 Google에서 최적화하거나 볼 수 없습니다.</translation>
 <translation id="2096396629993765042">Google 계정에서 로그아웃되지 않습니다. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에서 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>

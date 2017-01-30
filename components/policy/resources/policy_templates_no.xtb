@@ -1357,12 +1357,6 @@
 <translation id="5208240613060747912">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som ikke får vise varsler.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
-<translation id="5209594095390052164">Brukes til å velge om reduksjon av nettverkshastighet skal slås på eller ikke.
-      Dette gjelder alle brukere og alle grensesnitt på enheten. Når regelen er angitt,
-      varer reduksjonen helt til den slås av.
-
-      Hvis den er angitt som «false» (usann), reduseres ikke hastigheten.
-      Hvis den er angitt som «true» (sann), reduseres systemet til de angitte opplastings- og nedlastingshastighetene (i kbit/s).</translation>
 <translation id="5219844027738217407">For Android-apper har denne regelen bare innvirkning på mikrofonen. Når denne regelen er angitt som «true» (sann), slås mikrofonen av for alle Android-apper – uten unntak.</translation>
 <translation id="5226033722357981948">Angir hvorvidt programtilleggssøket skal deaktiveres</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>

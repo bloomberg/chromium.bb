@@ -486,7 +486,6 @@
 <translation id="1594234040488055839">Предлагать автоматически входить в службы Google с этим аккаунтом</translation>
 <translation id="1596174774107741586">Использовать тестовую среду для Google Payments</translation>
 <translation id="1598233202702788831">Функция обновления отключена администратором.</translation>
-<translation id="1598604884989842103">Разрешить тестовый режим TouchView для отображения окон в развернутом виде</translation>
 <translation id="1600857548979126453">Доступ к работе отладчика страниц</translation>
 <translation id="1601560923496285236">Применить</translation>
 <translation id="1603914832182249871">(инкогнито)</translation>
@@ -1762,7 +1761,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3206175707080061730">Файл "$1" уже существует. Заменить его?</translation>
 <translation id="320825648481311438">Если этот флажок установлен, входом и выходом из аккаунтов Google управляет браузер.</translation>
 <translation id="3208703785962634733">Не подтвержден</translation>
-<translation id="3209459032754159027">Показывать возможность ввода данных кредитной карты в меню автозаполнения</translation>
 <translation id="3211904643589960506">Включает поиск URL по объектам Интернета вокруг нас.</translation>
 <translation id="3216508313927987948">Чтобы продолжить, настройте устройство <ph name="DEVICE_TYPE" />, следуя инструкциям.</translation>
 <translation id="3220586366024592812">Процесс коннектора <ph name="CLOUD_PRINT_NAME" /> завершился с ошибкой. Перезапустить?</translation>
@@ -4545,7 +4543,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="695755122858488207">Отключенное положение переключателя</translation>
 <translation id="696203921837389374">Синхронизировать по мобильной сети</translation>
 <translation id="6964390816189577014">Герой</translation>
-<translation id="6965382102122355670">ОК</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Порт</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="6969104364835835175">Принудительно использовать Subzero из PNaCl</translation>
@@ -4623,7 +4621,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7042418530779813870">Вст&amp;авить из буфера и найти</translation>
 <translation id="7045480833981818310">Редактирование файлов Office в Документах, Таблицах и Презентациях</translation>
 <translation id="7047998246166230966">Указатель</translation>
-<translation id="7048141481140415714">Включать и выключать режим TouchView нажатием клавиш Ctrl + Alt + Shift + 8</translation>
 <translation id="7049293980323620022">Сохранить файл?</translation>
 <translation id="7051943809462976355">Поиск мыши…</translation>
 <translation id="7052237160939977163">Отправлять данные отслеживания производительности</translation>
@@ -5791,7 +5788,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8632275030377321303">Пользователь не может изменять настройки прокси-сервера.</translation>
 <translation id="8636038761987659075">Настройки сайта, все сайты и сведения о сайте</translation>
 <translation id="8637688295594795546">Доступно обновление системы. Подготовка к скачиванию…</translation>
-<translation id="8638602948366220068">Предлагать автозаполнение данных кредитной карты</translation>
 <translation id="8639504893694748827">Растеризация без копирования</translation>
 <translation id="8639963783467694461">Настройки автозаполнения</translation>
 <translation id="8642171459927087831">Токен доступа</translation>
@@ -6226,7 +6222,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9181716872983600413">Юникод</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> с <ph name="DOWNLOAD_DOMAIN" />, ещё <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Принудительно делает блоки прослушивания событий touchstart и touchmove per scroll пассивными, когда пользователь проводит по экрану.</translation>
-<translation id="9184473426683023988">Импортировать и привязать к устройству</translation>
 <translation id="9186729806195986201">Вернуться к предыдущей версии <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Включить Chrome VR</translation>
 <translation id="9188441292293901223">Чтобы разблокировать <ph name="DEVICE_TYPE" />, установите последнюю версию Android на телефоне.</translation>

@@ -51,6 +51,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1809939268435598390">Ta bort mapp</translation>
 <translation id="1813414402673211292">Rensa webbinformation</translation>
 <translation id="1820259098641718022">Har lagts till i läslistan</translation>
+<translation id="1826516787628120939">Kontrollerar</translation>
 <translation id="1842969606798536927">Betala</translation>
 <translation id="1876721852596493031">Skicka statistik</translation>
 <translation id="1886928167269928266">Tidens början</translation>
@@ -151,6 +152,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3638472932233958418">Läs in webbsidor i förväg</translation>
 <translation id="3691593122358196899">Bokmärkt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">När det här alternativet är aktiverat visas förslag på utsändningar av webbsidor från enheter i närheten.</translation>
+<translation id="3706658020782046159">Välj en leveransadress om du vill visa leveranssätt och krav.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3771033907050503522">Inkognitoflikar</translation>
 <translation id="3783017676699494206">Spara bild</translation>
@@ -188,6 +190,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="473775607612524610">Uppdatera</translation>
+<translation id="4750394297954878236">Förslag</translation>
 <translation id="4773461607542755386">Vill du öppna sidan i appen <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Cookies, webbplatsdata</translation>
 <translation id="4875622588773761625">Vill du att lösenordet för den här webbplatsen ska uppdateras med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>

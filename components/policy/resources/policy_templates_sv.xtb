@@ -1408,13 +1408,6 @@
 <translation id="5208240613060747912">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
-<translation id="5209594095390052164">Ger möjlighet att välja om överföringshastigheten i nätverket ska begränsas eller inte.
-      Detta gäller alla användare och alla gränssnitt på enheten. När principen
-      har ställts in används begränsningen tills den inaktiveras via principen.
-      
-
-      Med värdet falskt görs ingen begränsning av överföringshastigheten.
-      Med värdet sant begränsas upp- och nedladdningshastigheten till de angivna värdena (i kbit/s).</translation>
 <translation id="5219844027738217407">För Android-appar påverkar den här principen endast mikrofonen. När principen är inställd på sant är mikrofonen avstängd i alla Android-appar utan undantag.</translation>
 <translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>

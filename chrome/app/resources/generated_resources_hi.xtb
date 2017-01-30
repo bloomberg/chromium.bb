@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">इस खाते से Google साइटों में स्अपने आप प्रवेश करना ऑफ़र करें</translation>
 <translation id="1596174774107741586">Google पेमेंट्स सैंडबॉक्स सर्वर का उपयोग करना</translation>
 <translation id="1598233202702788831">आपके व्‍यवस्‍थापक के द्वारा अपडेट अक्षम किए गए हैं</translation>
-<translation id="1598604884989842103">परीक्षण के लिए TouchView विस्तारण UI सक्षम करें</translation>
 <translation id="1600857548979126453">पेज डीबगर बैकएंड तक पहुंचें</translation>
 <translation id="1601560923496285236">लागू करें</translation>
 <translation id="1603914832182249871">(गुप्त)</translation>
@@ -824,7 +823,7 @@
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2078019350989722914">छोड़ने के पहले चेतावनी दें (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">यदि आप अपने प्रमाणपत्रों में से किसी एक को हटाते हैं, तो आप आगे इसका उपयोग स्वयं की पहचान करने के लिए नहीं कर सकते हैं.</translation>
-<translation id="2079545284768500474">पूर्ववत् करें</translation>
+<translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="2080010875307505892">सर्बियाई कीबोर्ड</translation>
 <translation id="2080070583977670716">अधिक सेटिंग</translation>
 <translation id="2081322486940989439">यह साइट Visa स्वीकार नहीं करती.</translation>
@@ -1013,7 +1012,7 @@
 <translation id="2286950485307333924">अब आपने Chrome में प्रवेश कर लिया है</translation>
 <translation id="2287590536030307392">सभी वायरलेस कनेक्‍शन बंद करें.</translation>
 <translation id="2291643155573394834">अगला टैब</translation>
-<translation id="2292848386125228270">कृपया <ph name="PRODUCT_NAME" /> को सामान्‍य उपयोगकर्ता के रूप में शुरू करें. अगर आपको डेवलपमेंट के लिए रूट के रूप में चलाने की आवश्यकता है, तो --no-sandbox फ़्लैग के साथ फिर से चलाएं.</translation>
+<translation id="2292848386125228270">कृपया <ph name="PRODUCT_NAME" /> को सामान्‍य उपयोगकर्ता की तरह शुरू करें. अगर आपको डेवलपमेंट के लिए रूट के रूप में चलाने की आवश्यकता है, तो --no-sandbox फ़्लैग के साथ फिर से चलाएं.</translation>
 <translation id="2294358108254308676">क्या आप <ph name="PRODUCT_NAME" /> को इंस्‍टॉल करना चाहते हैं?</translation>
 <translation id="2296019197782308739">EAP विधि:</translation>
 <translation id="2301382460326681002">एक्‍सटेंशन मूल निर्देशिका अमान्य है.</translation>
@@ -1715,7 +1714,7 @@
 <translation id="3150927491400159470">कठिन पुन: लोड</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="315141861755603168">"<ph name="BUNDLE_NAME" />" इन ऐप्‍स को जोड़ता है:</translation>
-<translation id="3151539355209957474">प्रारंभ समय</translation>
+<translation id="3151539355209957474">शुरू होने का समय</translation>
 <translation id="3151786313568798007">अभिविन्‍यास</translation>
 <translation id="3153177132960373163">सभी साइटों को आपका कंप्यूटर एक्सेस करने के लिए प्लग इन का उपयोग करने दें</translation>
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
@@ -1760,7 +1759,6 @@
 <translation id="3206175707080061730">"$1" नामक एक फ़ाइल पहले से ही मौजूद है. क्‍या आप इसे प्रतिस्थापित करना चाहते हैं?</translation>
 <translation id="320825648481311438">जब सक्षम हो, तो ब्राउज़र Google खाते में प्रवेश और प्रस्थान करना प्रबंधित करता है.</translation>
 <translation id="3208703785962634733">पुष्टि न की गई</translation>
-<translation id="3209459032754159027">ऑटोमैटिक भरने वाले ड्रॉपडाउन में क्रेडिट कार्ड प्रवेश प्रोमो दिखाना सक्षम करें.</translation>
 <translation id="3211904643589960506">जीते-जागते वेब ऑब्जेक्ट के लिए URL की स्कैनिंग सक्षम करें.</translation>
 <translation id="3216508313927987948">ऐसा करने के लिए, आपको अपने <ph name="DEVICE_TYPE" /> को निम्न चरण में सिखाना होगा.</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> कनेक्‍टर प्रक्रिया क्रैश हो गई है. पुन: प्रारंभ करें?</translation>
@@ -2156,7 +2154,7 @@
 <translation id="3704162925118123524">आप जिस नेटवर्क का उपयोग कर रहे हैं उसके लिए आपको प्रवेश पृष्‍ठ पर जाने की आवश्‍यकता हो सकती है.</translation>
 <translation id="3704331259350077894">कार्रवाई का अंत</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">लोड हो रहा है...</translation>
+<translation id="370665806235115550">लोड हो रही हैं...</translation>
 <translation id="3706919628594312718">माउस सेटिंग</translation>
 <translation id="3707020109030358290">कोई प्रमाणन प्राधिकरण नहीं.</translation>
 <translation id="3709244229496787112">डाउनलोड पूर्ण होने से पहले ही ब्राउज़र बंद हो गया था.</translation>
@@ -4620,7 +4618,6 @@
 <translation id="7042418530779813870">चिप&amp;काएं और खोजें</translation>
 <translation id="7045480833981818310">दस्तावेज़, पत्रक और स्लाइड के लिए Office संपादन</translation>
 <translation id="7047998246166230966">सूचक</translation>
-<translation id="7048141481140415714">TouchView विस्तारण मोड टॉगल करने के लिए Ctrl+Alt+Shift+8 सक्षम करें.</translation>
 <translation id="7049293980323620022">फ़ाइल रखें?</translation>
 <translation id="7051943809462976355">माउस खोजा जा रहा है...</translation>
 <translation id="7052237160939977163">निष्पादन ट्रेस डेटा भेजें</translation>
@@ -5788,7 +5785,6 @@
 <translation id="8632275030377321303">उपयोगकर्ता द्वारा प्रॉक्सी में बदलाव नहीं किया जा सकता.</translation>
 <translation id="8636038761987659075">साइट की सेटिंग, सभी साइट और साइट के विवरण के साथ</translation>
 <translation id="8637688295594795546">सिस्टम अपडेट उपलब्ध है. डाउनलोड करने के लिए तैयार हो रहा है...</translation>
-<translation id="8638602948366220068">ऑटोमैटिक भरने वाला क्रेडिट कार्ड प्रवेश प्रोमो सक्षम करें</translation>
 <translation id="8639504893694748827">शून्य-कॉपी वाला रास्टराइज़र</translation>
 <translation id="8639963783467694461">ऑटोमैटिक भरना की सेटिंग...</translation>
 <translation id="8642171459927087831">पहुंच टोकन</translation>
@@ -6223,7 +6219,6 @@
 <translation id="9181716872983600413">यूनिकोड</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" /> से प्राप्‍त <ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">touchstart और प्रति स्क्रॉल पहले touchmove घटना श्रोताओं को फ़्लिंग के दौरान निष्क्रिय माने जाने के लिए बाध्य करता है.</translation>
-<translation id="9184473426683023988">आयात करें और डिवाइस से आबद्ध करें</translation>
 <translation id="9186729806195986201">साथ ही <ph name="IDS_SHORT_PRODUCT_NAME" /> के पूर्व में इंस्‍टॉल किए गए संस्‍करण पर वापस लौटें.</translation>
 <translation id="9187651461283037651">Chrome VR सक्षम करें.</translation>
 <translation id="9188441292293901223">इस <ph name="DEVICE_TYPE" /> को अनलाॅक करने के लिए कृपया अपने फ़ोन को Android के नए वर्शन में अपडेट करें.</translation>

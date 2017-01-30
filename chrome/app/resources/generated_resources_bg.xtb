@@ -484,7 +484,6 @@
 <translation id="1594234040488055839">Да се показва предложение за автоматично влизане в сайтове на Google с този профил</translation>
 <translation id="1596174774107741586">Използване на тестовите сървъри на Google Payments</translation>
 <translation id="1598233202702788831">Актуализациите са деактивирани от администратора ви.</translation>
-<translation id="1598604884989842103">Активиране на потребителския интерфейс за увеличаване TouchView с цел тестване</translation>
 <translation id="1600857548979126453">Достъп до задния слой на инструмента за откриване и отстраняване на грешки в страниците</translation>
 <translation id="1601560923496285236">Прилагане</translation>
 <translation id="1603914832182249871">(„Инкогнито“)</translation>
@@ -1757,7 +1756,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3206175707080061730">Файлът с име „$1“ вече съществува. Искате ли да го замените?</translation>
 <translation id="320825648481311438">Когато функцията е активирана, браузърът управлява влизането в профили в Google и излизането от тях.</translation>
 <translation id="3208703785962634733">Непотвърдено</translation>
-<translation id="3209459032754159027">Активиране на показването на текст в падащото меню за автоматично попълване, който подканва потребителите да влязат в профила си, за да използват кредитна карта.</translation>
 <translation id="3211904643589960506">Активирайте сканирането за URL адреси от обекти във физическата мрежа.</translation>
 <translation id="3216508313927987948">За целта трябва да обучите своя <ph name="DEVICE_TYPE" /> в следващата стъпка.</translation>
 <translation id="3220586366024592812">Процесът за връзка с <ph name="CLOUD_PRINT_NAME" /> претърпя срив. Да се рестартира ли?</translation>
@@ -4617,7 +4615,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7042418530779813870">Поставяне и търсе&amp;не</translation>
 <translation id="7045480833981818310">Редактиране на файлове от Office в Документи, Таблици и Презентации</translation>
 <translation id="7047998246166230966">Курсор</translation>
-<translation id="7048141481140415714">Активирайте „Ctrl+Alt+Shift+8“ за превключване на режима TouchView за максимално увеличаване.</translation>
 <translation id="7049293980323620022">Да се запази ли файлът?</translation>
 <translation id="7051943809462976355">Търси се мишка...</translation>
 <translation id="7052237160939977163">Да се изпратят данните от проследяването на ефективността</translation>
@@ -5786,7 +5783,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8632275030377321303">Прокси сървърът не може да бъде променен от потребителя.</translation>
 <translation id="8636038761987659075">Активиране на опциите „Всички сайтове“ и „Подробности за сайта“ в настройките за сайтове</translation>
 <translation id="8637688295594795546">Налице е системна актуализация. Подготвя се за изтегляне...</translation>
-<translation id="8638602948366220068">Активиране на текст, подканващ към влизане в профил с цел автоматично попълване на данни за кредитна карта</translation>
 <translation id="8639504893694748827">Растеризатор без копиране</translation>
 <translation id="8639963783467694461">Настройки за автоматично попълване</translation>
 <translation id="8642171459927087831">Означение за достъп</translation>
@@ -6222,7 +6218,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> от <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Налага приемателите на събитията „touchstart“ и първото „touchmove“ при превъртане да се третират като пасивни при бързо прекарване с пръст.</translation>
-<translation id="9184473426683023988">Импортиране и свързване с устройство</translation>
 <translation id="9186729806195986201">Също така връщане към предишната инсталирана версия на <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Активиране на режима за виртуална реалност в Chrome.</translation>
 <translation id="9188441292293901223">Моля, актуализирайте телефона си до по-нова версия на Android, за да отключите този <ph name="DEVICE_TYPE" />.</translation>

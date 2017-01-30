@@ -101,7 +101,7 @@
 <translation id="2053553514270667976">郵便番号</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 件の候補}other{# 件の候補}}</translation>
 <translation id="2065985942032347596">認証が必要</translation>
-<translation id="2079545284768500474">取り消す</translation>
+<translation id="2079545284768500474">元に戻す</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
 <translation id="2086652334978798447">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、Chrome にログインします。</translation>
 <translation id="2089090684895656482">一部表示</translation>
@@ -284,7 +284,7 @@
 <translation id="3693415264595406141">パスワード:</translation>
 <translation id="3696411085566228381">なし</translation>
 <translation id="3704609568417268905"><ph name="TIME" />、<ph name="TITLE" />（<ph name="DOMAIN" />）を<ph name="BOOKMARKED" /></translation>
-<translation id="370665806235115550">読み込み中...</translation>
+<translation id="370665806235115550">読み込んでいます...</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
 <translation id="3714780639079136834">モバイルデータまたは Wi-Fi を有効にする</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />プロキシ、ファイアウォール、DNS の設定を確認する<ph name="END_LINK" /></translation>

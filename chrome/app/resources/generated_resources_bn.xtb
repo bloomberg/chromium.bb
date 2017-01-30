@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">এই অ্যাকাউন্টের সাথে Google এর সাইটগুলিতে স্বয়ংক্রিয়ভাবে প্রবেশ করুন করার প্রস্তাব দেয়</translation>
 <translation id="1596174774107741586">Google Payments স্যান্ডবক্স সার্ভার ব্যবহার করুন</translation>
 <translation id="1598233202702788831">আপনার প্রশাসক দ্বারা আপডেট অক্ষম করা হয়েছে।</translation>
-<translation id="1598604884989842103">পরীক্ষার জন্য টাচভিউ পূর্ণবিস্তার UI সক্ষম করুন</translation>
 <translation id="1600857548979126453">পৃষ্ঠা ডিবাগার ব্যাকএন্ড অ্যাক্সেস করুন</translation>
 <translation id="1601560923496285236">প্রয়োগ করুন</translation>
 <translation id="1603914832182249871">(ছদ্মবেশী)</translation>
@@ -1013,7 +1012,7 @@
 <translation id="2286950485307333924">আপনি এখন Chrome এ প্রবেশ করুন করেছেন</translation>
 <translation id="2287590536030307392">সব বেতার সংযোগ বন্ধ করুন৷</translation>
 <translation id="2291643155573394834">পরবর্তী ট্যাব</translation>
-<translation id="2292848386125228270">দয়া করে একজন সাধারন ব্যবহারকারী হিসেবে <ph name="PRODUCT_NAME" /> আরম্ভ করুন। আপনার যদি বিকাশ করার জন্য রুট হিসাবে চালানোর প্রয়োজন হয়, তাহলে --নো-স্যান্ডবক্স ফ্ল্যাগটি আবার চালান।</translation>
+<translation id="2292848386125228270">অনুগ্রহ করে একজন সাধারন ব্যবহারকারী হিসেবে <ph name="PRODUCT_NAME" /> আরম্ভ করুন। আপনার যদি বিকাশ করার জন্য রুট হিসাবে চালানোর প্রয়োজন হয়, তাহলে --নো-স্যান্ডবক্স ফ্ল্যাগটি আবার চালান।</translation>
 <translation id="2294358108254308676">আপনি কি <ph name="PRODUCT_NAME" /> ইনস্টল করতে চান?</translation>
 <translation id="2296019197782308739">EAP পদ্ধতি:</translation>
 <translation id="2301382460326681002">এক্সটেনশন রুট ডিরেক্টরিটি অবৈধ৷</translation>
@@ -1760,7 +1759,6 @@
 <translation id="3206175707080061730">"$1" নামের একটি ফাইল ইতিমধ্যেই বিদ্যমান৷ আপনি কি এটি প্রতিস্থাপন করতে চান?</translation>
 <translation id="320825648481311438">যখন সক্ষম করা থাকে, তখন ব্রাউজার Google অ্যাকাউন্টগুলির প্রবেশ করুন হওয়া বা আউট  হওয়া পরিচালনা করে।</translation>
 <translation id="3208703785962634733">অনিশ্চিত</translation>
-<translation id="3209459032754159027">স্বতঃপূর্ণ ড্রপডাউনের ভিতরে ক্রেডিট কার্ড সাইনইন প্রচার দেখানো সক্ষম করে।</translation>
 <translation id="3211904643589960506">বাস্তবিক ওয়েব বস্তুগুলি থেকে URL স্ক্যানিং সক্ষম করুন।</translation>
 <translation id="3216508313927987948">এটি করতে হলে, আপনার <ph name="DEVICE_TYPE" /> কে নিম্নোল্লিখিত ধাপে প্রশিক্ষিত করতে হবে।</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> সংযোগকারী প্রক্রিয়া ক্র্যাশ হয়েছে৷ পুর্নসূচনা করবেন?</translation>
@@ -4614,7 +4612,6 @@
 <translation id="7042418530779813870">প্রতি&amp;লেপন এবং অনুসন্ধান করুন</translation>
 <translation id="7045480833981818310">দস্তাবেজ, পত্রক, এবং স্লাইডসের জন্য Office সম্পাদনা</translation>
 <translation id="7047998246166230966">পয়েন্টার</translation>
-<translation id="7048141481140415714">TouchView পূর্ণবিস্তার মোডে টগল করার জন্য Ctrl+Alt+Shift+8 সক্ষম করুন৷</translation>
 <translation id="7049293980323620022">ফাইল রাখবেন?</translation>
 <translation id="7051943809462976355">মাউসের জন্য অনুসন্ধান করা হচ্ছে...</translation>
 <translation id="7052237160939977163">কার্য-সম্পাদনা ট্রেস ডেটা পাঠান</translation>
@@ -5782,7 +5779,6 @@
 <translation id="8632275030377321303">প্রক্সি ব্যবহারকারীর দ্বারা পরিবর্তন করা যায় না৷</translation>
 <translation id="8636038761987659075">সমস্ত সাইট এবং সাইট বিবরণ দিয়ে সাইট সেটিংস</translation>
 <translation id="8637688295594795546">সিস্টেম আপডেট উপলব্ধ৷ ডাউনলোড করতে প্রস্তুত হচ্ছে...</translation>
-<translation id="8638602948366220068">স্বতঃপূর্ণ ক্রেডিট কার্ড সাইনইন প্রচার সক্ষম করুন</translation>
 <translation id="8639504893694748827">শূন্য-অনুলিপি রাস্টারাইজার</translation>
 <translation id="8639963783467694461">স্বতঃপূর্ণ সেটিংস</translation>
 <translation id="8642171459927087831">অ্যাক্সেস টোকেন</translation>
@@ -6218,7 +6214,6 @@
 <translation id="9181716872983600413">ইউনিকোড</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" />, থেকে <ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">স্পর্শের-মাধ্যমে-শুরু বলবৎ করে, এবং নিক্ষেপের সময় স্ক্রোল প্রতি ইভেন্ট শ্রোতাদের প্রথম স্পর্শের-মাধ্যমে-নড়ানোকে অক্রিয় হিসাবে গণ্য করা হয়।</translation>
-<translation id="9184473426683023988">ডিভাইসে আমদানি করুন এবং বাইন্ড করুন</translation>
 <translation id="9186729806195986201">এছাড়াও <ph name="IDS_SHORT_PRODUCT_NAME" /> এর পূর্বে ইনস্টল করা সংস্করণ ফিরিয়ে আনুন৷</translation>
 <translation id="9187651461283037651">Chrome ভইআর ((ভিআর)VR) সক্ষম করুন।</translation>
 <translation id="9188441292293901223">এই <ph name="DEVICE_TYPE" /> আনলক করতে দয়া করে আপনার ফোনকে একটি আরো নতুন সংস্করণের Android এ আপডেট করুন৷</translation>

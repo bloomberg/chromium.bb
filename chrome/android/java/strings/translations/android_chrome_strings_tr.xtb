@@ -73,6 +73,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1647391597548383849">Kameranıza erişim</translation>
 <translation id="1656489000284462475">Alma</translation>
 <translation id="1661474178782861119">Yakında daha fazla seçenek gösterilecek. Akşamınızın keyfini çıkarın.</translation>
+<translation id="1670399744444387456">Temel</translation>
 <translation id="1671236975893690980">İndirme işlemi beklemede…</translation>
 <translation id="169033420419426091">Eksik SD Kart nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="1709438864123551175">Veri Tasarrufu</translation>
@@ -107,7 +108,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2038563949887743358">Masaüstü sitesi iste işlevini etkinleştir</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB diğer uygulamalar</translation>
 <translation id="2073235970478114994">Resimleri yükle</translation>
-<translation id="2079545284768500474">Geri Al</translation>
+<translation id="2079545284768500474">Geri al</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
 <translation id="2095887075102408547">Bu özellik açık olduğunda, Chrome, ziyaret ettiğiniz sayfaları indirmeden önce sıkıştırmak için Google sunucularını kullanır. Gizli bağlantılar (HTTPS) veya Gizli sekmeler kullanarak erişilen sayfalar Google tarafından optimize edilmez veya görülmez.</translation>
 <translation id="2096396629993765042">Google hesabınızdaki oturumunuz kapatılmayacaktır. Google hesabınızla ilişkili başka biçimlerde tarama geçmişi <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde bulunabilir.</translation>

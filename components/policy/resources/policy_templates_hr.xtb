@@ -1313,12 +1313,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se to pravilo ne postavi ili se postavi na lažno, način rada razvojnog programera bit će dostupan za uređaj.</translation>
 <translation id="5208240613060747912">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju prikazivati obavijesti. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultNotificationsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
-<translation id="5209594095390052164">Omogućuje odabir uključivanja ili isključivanja mogućnosti usporavanja mreže.
-      Primjenjuje se na sve korisnike i sva sučelja na uređaju. Kada se postavi,
-      usporavanje traje dok se ne isključi tim pravilom.
-
-      Ako se postavi na False, nema usporavanja.
-      Ako se postavi na True, sustav se usporava da bi se postigle pružene stope prijenosa i preuzimanja (u kbits/s).</translation>
 <translation id="5219844027738217407">Za Android aplikacije to pravilo utječe samo na mikrofon. Kada se to pravilo postavi na True, mikrofon je isključen za sve Android aplikacije, bez iznimke.</translation>
 <translation id="5226033722357981948">Odredi treba li onemogućiti alat za traženje dodataka</translation>
 <translation id="523505283826916779">Postavke pristupačnosti</translation>

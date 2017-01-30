@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Oferecer a opção de fazer login no Google Sites automaticamente com esta conta</translation>
 <translation id="1596174774107741586">Usar os servidores de sandbox do Google Payments</translation>
 <translation id="1598233202702788831">As atualizações foram desativadas pelo seu administrador.</translation>
-<translation id="1598604884989842103">Ativar interface do usuário da maximização do TouchView para teste</translation>
 <translation id="1600857548979126453">Acessar back-end do depurador de página</translation>
 <translation id="1601560923496285236">Aplicar</translation>
 <translation id="1603914832182249871">(Modo anônimo)</translation>
@@ -1760,7 +1759,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3206175707080061730">Um arquivo chamado "$1" já existe. Deseja substituí-lo?</translation>
 <translation id="320825648481311438">Quando ativado, o navegador gerencia o login e a saída das Contas do Google.</translation>
 <translation id="3208703785962634733">Não confirmado</translation>
-<translation id="3209459032754159027">Ativar exibição da promoção de login com o cartão de crédito no menu suspenso de Preenchimento automático.</translation>
 <translation id="3211904643589960506">Ativar a verificação de URLs de objetos da Web física.</translation>
 <translation id="3216508313927987948">Para que isso aconteça, você precisa treinar seu <ph name="DEVICE_TYPE" /> na próxima etapa.</translation>
 <translation id="3220586366024592812">Houve uma falha no processo de conexão de <ph name="CLOUD_PRINT_NAME" />. Deseja reiniciá-lo?</translation>
@@ -4620,7 +4618,6 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="7042418530779813870">&amp;Colar e pesquisar</translation>
 <translation id="7045480833981818310">Editor do Office para Documentos, Planilhas e Apresentações</translation>
 <translation id="7047998246166230966">Ponteiro</translation>
-<translation id="7048141481140415714">Usa Ctrl+Alt+Shift+8 para ativar/desativar o modo de maximização TouchView.</translation>
 <translation id="7049293980323620022">Manter arquivo?</translation>
 <translation id="7051943809462976355">Procurando mouse...</translation>
 <translation id="7052237160939977163">Enviar dados de rastreamento de desempenho</translation>
@@ -5789,7 +5786,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8632275030377321303">O proxy não pode ser modificado pelo usuário.</translation>
 <translation id="8636038761987659075">Configurações do site com "Todos os sites" e "Detalhes do site"</translation>
 <translation id="8637688295594795546">A atualização do sistema está disponível. Preparando para fazer download...</translation>
-<translation id="8638602948366220068">Ativar promoção de login com preenchimento automático de cartão de crédito</translation>
 <translation id="8639504893694748827">Rasterizador de cópia zero</translation>
 <translation id="8639963783467694461">Configurações de preenchimento automático</translation>
 <translation id="8642171459927087831">Token de acesso</translation>
@@ -6224,7 +6220,6 @@ Notificações posteriores, janelas e caixas de diálogo podem ser divididas ent
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Força o touchstart e o primeiro touchmove por listener de eventos de rolagem durante o deslize a serem tratados como passivos.</translation>
-<translation id="9184473426683023988">Importar e vincular ao dispositivo</translation>
 <translation id="9186729806195986201">Retornar também à versão previamente instalada do <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Ativar RV do Chrome.</translation>
 <translation id="9188441292293901223">Atualize o Android do seu smartphone para uma versão mais recente a fim de desbloquear este <ph name="DEVICE_TYPE" />.</translation>

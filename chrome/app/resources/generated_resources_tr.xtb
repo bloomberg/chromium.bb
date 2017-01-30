@@ -312,7 +312,7 @@
 <translation id="1406500794671479665">Doğrulanıyor...</translation>
 <translation id="1407050882688520094">Dosyada şu sertifika yetkililerini tanımlayan sertifikalarınız var:</translation>
 <translation id="1407489512183974736">Ortala ve Kırp</translation>
-<translation id="1408504635543854729">Cihazın içeriğini Dosyalar uygulamasında keşfedin. İçerik, bir yönetici tarafından kısıtlanmış ve üzerinde değişiklik yapılması engellenmiş durumda.</translation>
+<translation id="1408504635543854729">Cihazın içeriğini Dosyalar uygulamasında keşfedin. İçerik, bir yönetici tarafından kısıtlanmış ve üzerinde değişiklik yapılamaz.</translation>
 <translation id="1408789165795197664">Gelişmiş...</translation>
 <translation id="1409390508152595145">Denetlenen kullanıcı oluştur</translation>
 <translation id="1409662552980122915">Cihazı eşle</translation>
@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Bu hesapla Google sitelerinde otomatik olarak oturum açmayı öner</translation>
 <translation id="1596174774107741586">Google Payments korumalı alan sunucularını kullan</translation>
 <translation id="1598233202702788831">Güncellemeler yöneticiniz tarafından devre dışı bırakıldı.</translation>
-<translation id="1598604884989842103">Test için TouchView'un ekranı kaplamasını sağlayan kullanıcı arayüzünü etkinleştir</translation>
 <translation id="1600857548979126453">Sayfa hata ayıklayıcı arka ucuna erişme</translation>
 <translation id="1601560923496285236">Uygula</translation>
 <translation id="1603914832182249871">(Gizli mod)</translation>
@@ -824,7 +823,7 @@
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım ivmesini kullan</translation>
 <translation id="2078019350989722914">Çıkmadan Önce Uyar (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Sertifikalarınızdan birini silerseniz, kendinizi tanıtmak için artık bu sertifikayı kullanamazsınız.</translation>
-<translation id="2079545284768500474">Geri Al</translation>
+<translation id="2079545284768500474">Geri al</translation>
 <translation id="2080010875307505892">Sırpça klavye</translation>
 <translation id="2080070583977670716">Daha fazla ayar</translation>
 <translation id="2081322486940989439">Bu sitede Visa kabul edilmiyor.</translation>
@@ -1014,7 +1013,7 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2286950485307333924">Şu anda Chrome'da oturum açmış bulunmaktasınız</translation>
 <translation id="2287590536030307392">Tüm kablosuz bağlantıları devre dışı bırakın.</translation>
 <translation id="2291643155573394834">Sonraki sekme</translation>
-<translation id="2292848386125228270">Lütfen <ph name="PRODUCT_NAME" /> uygulamasını normal bir kullanıcı olarak başlatın. Geliştirme amacıyla uygulamayı root olarak çalıştırmanız gerekiyorsa --no-sandbox seçeneğini işaretleyerek yeniden çalıştırın.</translation>
+<translation id="2292848386125228270">Lütfen <ph name="PRODUCT_NAME" /> uygulamasını normal bir kullanıcı olarak başlatın. Geliştirme amacıyla uygulamayı root kullanıcı olarak çalıştırmanız gerekiyorsa korumasız alan seçeneğini işaretleyerek yeniden çalıştırın.</translation>
 <translation id="2294358108254308676"><ph name="PRODUCT_NAME" /> ürününü yüklemek istiyor musunuz?</translation>
 <translation id="2296019197782308739">EAP yöntemi:</translation>
 <translation id="2301382460326681002">Uzantı kök dizini geçersiz.</translation>
@@ -1761,7 +1760,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3206175707080061730">"$1" adlı bir dosya zaten var. Değiştirmek istiyor musunuz?</translation>
 <translation id="320825648481311438">Etkinleştirildiğinde, Google hesaplarında oturum açıp kapatmayı tarayıcı yönetir.</translation>
 <translation id="3208703785962634733">Onaylanmayan</translation>
-<translation id="3209459032754159027">Otomatik Doldurma açılır listesinde kredi kartı bilgilerinin yanında oturum açma tanıtımının gösterilmesini etkinleştirin.</translation>
 <translation id="3211904643589960506">Fiziksel Web nesnelerinden URL'ler için taramayı etkinleştirin.</translation>
 <translation id="3216508313927987948">Bunun yapılabilmesi için aşağıdaki adımı izleyerek <ph name="DEVICE_TYPE" /> cihazınızı eğitmeniz gerekecektir.</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> bağlayıcı işlemi kilitlendi. Tekrar başlatılsın mı?</translation>
@@ -2230,7 +2228,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3790909017043401679">SIM kart PIN'ini girme</translation>
 <translation id="3792890930871100565">Yazıcıların bağlantısını kes</translation>
 <translation id="3796648294839530037">Sık Kullanılan Ağlar:</translation>
-<translation id="3797900183766075808">"<ph name="SEARCH_TERMS" />" İçin <ph name="SEARCH_ENGINE" /> &amp;Arama Motorunda Arama Yap</translation>
+<translation id="3797900183766075808">"<ph name="SEARCH_TERMS" />" İçin <ph name="SEARCH_ENGINE" /> &amp;Üzerinde Arama Yap</translation>
 <translation id="3798325802885154040">Dokunarak tıklama işlevini etkinleştirmenize/devre dışı bırakmanıza olanak tanır</translation>
 <translation id="3798449238516105146">Sürüm</translation>
 <translation id="3798935682015223249">Dosya Yöneticisi'nde MTP desteği</translation>
@@ -4186,7 +4184,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6442697326824312960">Sekmeyi Ayır</translation>
 <translation id="6443783728907198276">Etkinleştirildiğinde WebRTC tarafından oluşturulan Stun iletileri Kaynak başlığı içerir.</translation>
 <translation id="6444070574980481588">Tarihi ve saati ayarlayın</translation>
-<translation id="6444688254019178081">Yerleştirilmiş pencereleri etkinleştir.</translation>
+<translation id="6444688254019178081">Pencere yerleştirmeyi etkinleştir.</translation>
 <translation id="6445450263907939268">Bu değişiklikleri istemiyorsanız önceki ayarlarınızı geri yükleyebilirsiniz.</translation>
 <translation id="6447842834002726250">Çerezler</translation>
 <translation id="6449285849137521213">"<ph name="EXTENSION_NAME" />" uygulaması eklendi.</translation>
@@ -4622,7 +4620,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7042418530779813870">Ya&amp;pıştır ve ara</translation>
 <translation id="7045480833981818310">Dokümanlar, E-Tablolar ve Slaytlar için Office Dosyası Düzenlemesi</translation>
 <translation id="7047998246166230966">İşaretçi</translation>
-<translation id="7048141481140415714">TouchView'un ekranı kaplama modunu açmak veya kapatmak için Ctrl+Alt+ÜstKrktr+8 kısayolunu etkinleştirin.</translation>
 <translation id="7049293980323620022">Dosya tutulsun mu?</translation>
 <translation id="7051943809462976355">Fare aranıyor...</translation>
 <translation id="7052237160939977163">Performans izleme verilerini gönder</translation>
@@ -5792,7 +5789,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8632275030377321303">Proxy kullanıcı tarafından değiştirilemez.</translation>
 <translation id="8636038761987659075">Tüm siteler ve Site ayrıntılarıyla site ayarları</translation>
 <translation id="8637688295594795546">Kullanılabilir sistem güncellemesi mevcut. İndirmeye hazırlanılıyor...</translation>
-<translation id="8638602948366220068">Otomatik Doldurma Kredi Kartı Oturum Açma Tanıtımını Etkinleştir</translation>
 <translation id="8639504893694748827">Sıfır kopyalı pikselleştirici</translation>
 <translation id="8639963783467694461">Otomatik doldurma ayarları</translation>
 <translation id="8642171459927087831">Erişim Verisi</translation>
@@ -6228,7 +6224,6 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" /> alan adından <ph name="DOWNLOAD_RECEIVED" /> alındı, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Hızlıca kaydırma sırasında kaydırma etkinlik işleyicilerine göre dokunarak başlatma ve ilk dokunmayla taşımanın pasif olarak ele alınmasını zorlar.</translation>
-<translation id="9184473426683023988">İçe Aktar ve Cihaza Bağla</translation>
 <translation id="9186729806195986201">Ayrıca daha önce yüklü <ph name="IDS_SHORT_PRODUCT_NAME" /> sürümüne de geri döndür.</translation>
 <translation id="9187651461283037651">Chrome VR'yi etkinleştir.</translation>
 <translation id="9188441292293901223">Bu <ph name="DEVICE_TYPE" /> cihazın kilidini açmak için lütfen telefonunuzu daha yeni bir Android sürümüne güncelleyin.</translation>

@@ -1326,12 +1326,6 @@ Hvis denne politik er sat til True (sandt), forhindrer <ph name="PRODUCT_OS_NAME
 
 Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertilstand fortsat tilgængelig for enheden.</translation>
 <translation id="5208240613060747912">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise underretninger. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultNotificationsSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
-<translation id="5209594095390052164">Gør det muligt at vælge, om netværksbegrænsning er aktiveret eller ej.
-      Dette gælder for alle brugere og for alle grænseflader på enheden. Når denne indstilling er valgt,
-      beholdes begrænsningen, indtil politikken ændres for at deaktivere den.
-
-      Hvis den er indstillet til falsk, er der ingen begrænsning.
-      Hvis den er indstillet til sand, er systemet begrænset for at opnå de angivne upload- og downloadhastigheder (i kbits/s).</translation>
 <translation id="5219844027738217407">I Android-apps påvirker denne politik kun mikrofonen. Når denne politik angives som Sand, slås lyden på mikrofonen fra i alle Android-apps uden undtagelser.</translation>
 <translation id="5226033722357981948">Angiv, om pluginsøgning skal deaktiveres</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>

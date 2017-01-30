@@ -488,7 +488,6 @@ SharedArrayBuffer.</translation>
 <translation id="1594234040488055839">Ofereix iniciar la sessió automàticament als llocs de Google amb aquest compte</translation>
 <translation id="1596174774107741586">Utilitza els servidors de la zona de proves de Google Payments</translation>
 <translation id="1598233202702788831">El vostre administrador ha desactivat les actualitzacions.</translation>
-<translation id="1598604884989842103">Activa la interfície d'usuari de maximització de TouchView per realitzar proves</translation>
 <translation id="1600857548979126453">Accedir al servidor de depuració de pàgina</translation>
 <translation id="1601560923496285236">Aplica</translation>
 <translation id="1603914832182249871">(Incògnit)</translation>
@@ -1760,7 +1759,6 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="3206175707080061730">El nom de fitxer "$1" ja existeix. El voleu substituir?</translation>
 <translation id="320825648481311438">Si està activada, el navegador gestiona els inicis i els tancaments de sessió dels comptes de Google.</translation>
 <translation id="3208703785962634733">No confirmat</translation>
-<translation id="3209459032754159027">Activa el missatge d'inici de sessió per a targetes de crèdit al desplegable d'emplenament automàtic.</translation>
 <translation id="3211904643589960506">Activa l'anàlisi d'URL des d'objectes del Web físic.</translation>
 <translation id="3216508313927987948">Amb aquesta finalitat, heu d'entrenar el dispositiu <ph name="DEVICE_TYPE" /> al pas següent.</translation>
 <translation id="3220586366024592812">El procés del connector <ph name="CLOUD_PRINT_NAME" /> s'ha bloquejat. Voleu reiniciar-lo?</translation>
@@ -4616,7 +4614,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7042418530779813870">En&amp;ganxa i cerca</translation>
 <translation id="7045480833981818310">Edició d'Office per a Documents, Fulls de càlcul i Presentacions</translation>
 <translation id="7047998246166230966">Busca</translation>
-<translation id="7048141481140415714">Activa Ctrl + Alt + Maj + 8 per alternar el mode de maximització de TouchView.</translation>
 <translation id="7049293980323620022">Vols desar el fitxer?</translation>
 <translation id="7051943809462976355">S'està cercant el ratolí...</translation>
 <translation id="7052237160939977163">Envia dades de seguiment del rendiment</translation>
@@ -5776,7 +5773,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8632275030377321303">L'usuari no pot modificar el servidor intermediari.</translation>
 <translation id="8636038761987659075">Configuració del lloc amb Tots els llocs i Detalls del lloc</translation>
 <translation id="8637688295594795546">Actualització del sistema disponible. S'està preparant la baixada…</translation>
-<translation id="8638602948366220068">Activa el missatge d'inici de sessió per a targetes de crèdit amb l'emplenament automàtic</translation>
 <translation id="8639504893694748827">Rasteritzador sense còpies</translation>
 <translation id="8639963783467694461">Configuració d'Emplenament automàtic</translation>
 <translation id="8642171459927087831">Testimoni d'accés</translation>
@@ -6211,7 +6207,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Força que els detectors d'esdeveniments de desplaçament de toc per iniciar i toc per moure es tractin com a passius durant el desplaçament.</translation>
-<translation id="9184473426683023988">Importa i vincula amb el dispositiu</translation>
 <translation id="9186729806195986201">Torna també a la versió instal·lada anteriorment de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="9187651461283037651">Activa l'RV de Chrome.</translation>
 <translation id="9188441292293901223">Feu l'actualització del telèfon a una versió més recent d'Android per desbloquejar aquest dispositiu <ph name="DEVICE_TYPE" /></translation>

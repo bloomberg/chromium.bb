@@ -1402,12 +1402,6 @@
 <translation id="5208240613060747912">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
-<translation id="5209594095390052164">Leidžiama pasirinkti, ar įgalintas tinklo reguliavimas.
-      Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje. Nustačius
-      reguliavimas taikomas, kol politika pakeičiama, kad jis būtų išjungtas.
-
-      Nustačius į „False“, nereguliuojama.
-      Nustačius į „True“, sistema reguliuojama, kad pasiektų pateiktą įkėlimo ir atsisiuntimo spartą (kilobitais per sek.).</translation>
 <translation id="5219844027738217407">„Android“ programose ši politika turi įtakos tik mikrofonui. Kai ši politika nustatyta į „Tiesa“, mikrofonas be išimčių nutildomas visose „Android“ programose.</translation>
 <translation id="5226033722357981948">Nurodyti, ar turi būti neleidžiamas papildinių ieškiklis</translation>
 <translation id="523505283826916779">Pasiekiamumo nustatymai</translation>

@@ -483,7 +483,6 @@
 <translation id="1594234040488055839">‏הצע כניסה אוטומטית לאתרי Google באמצעות חשבון זה</translation>
 <translation id="1596174774107741586">‏השתמש בשרתי ארגז החול של Google Payments</translation>
 <translation id="1598233202702788831">מנהל המערכת השבית את העדכונים.</translation>
-<translation id="1598604884989842103">‏הפעל את ממשק המשתמש של הגדלת TouchView לבדיקה</translation>
 <translation id="1600857548979126453">להיכנס לניפוי הבאגים העורפי של הדף</translation>
 <translation id="1601560923496285236">החל</translation>
 <translation id="1603914832182249871">(גלישה בסתר)</translation>
@@ -819,7 +818,7 @@
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
 <translation id="2078019350989722914">הזהר לפני היציאה (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">אם תמחק את אחד מהאישורים שלך, לא תוכל להמשיך ולהשתמש בו כדי לזהות את עצמך.</translation>
-<translation id="2079545284768500474">בטל</translation>
+<translation id="2079545284768500474">בטל פעולה</translation>
 <translation id="2080010875307505892">מקלדת סרבית</translation>
 <translation id="2080070583977670716">הגדרות נוספות</translation>
 <translation id="2081322486940989439">‏אתר זה אינו מקבל כרטיסי אשראי מסוג Visa.</translation>
@@ -1754,7 +1753,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3206175707080061730">קובץ בשם "$ 1" כבר קיים. האם אתה רוצה להחליף אותו?</translation>
 <translation id="320825648481311438">‏כשתכונה זו מופעלת, הדפדפן מנהל כניסה ויציאה מחשבונות Google.</translation>
 <translation id="3208703785962634733">לא מאושר</translation>
-<translation id="3209459032754159027">אפשר הצגת קידום הרשמה עם כרטיס אשראי בתפריט הנפתח של 'מילוי אוטומטי'.</translation>
 <translation id="3211904643589960506">הפעל סריקה של כתובות אתרים מאובייקטים באינטרנט הווירטופיזי.</translation>
 <translation id="3216508313927987948">כדי לעשות זאת, יהיה עליך לאמן את ה-<ph name="DEVICE_TYPE" /> בשלב הבא.</translation>
 <translation id="3220586366024592812">תהליך המחבר <ph name="CLOUD_PRINT_NAME" /> קרס. להפעיל מחדש?</translation>
@@ -4614,7 +4612,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7042418530779813870">הדבק וחפש</translation>
 <translation id="7045480833981818310">‏עריכת Office עבור Docs‏, Sheets ו-Slides</translation>
 <translation id="7047998246166230966">מצביע</translation>
-<translation id="7048141481140415714">‏הפעל את מקשי הקיצור Ctrl+Alt+Shift+8 להפעלה/כיבוי של מצב ההגדלה של TouchView.</translation>
 <translation id="7049293980323620022">להשאיר את הקובץ?</translation>
 <translation id="7051943809462976355">מחפש עכבר...</translation>
 <translation id="7052237160939977163">שלח נתוני מעקב אחר ביצועים</translation>
@@ -5773,7 +5770,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8632275030377321303">‏המשתמש לא יכול לשנות את שרת ה-proxy.</translation>
 <translation id="8636038761987659075">הגדרות אתרים עם 'כל האתרים' ו'פרטי אתר'</translation>
 <translation id="8637688295594795546">עדכון מערכת זמין. מתכונן להוריד…</translation>
-<translation id="8638602948366220068">אפשר קידום הרשמה עם כרטיס אשראי במילוי האוטומטי</translation>
 <translation id="8639504893694748827">יוצר רשת הנקודות לעותק אפס</translation>
 <translation id="8639963783467694461">הגדרות מילוי אוטומטי</translation>
 <translation id="8642171459927087831">אסימון גישה</translation>
@@ -6208,7 +6204,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> מ-<ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">‏כופה התייחסות אל touchstart, ואל touchmove ראשון בכל מעבד אירוע גלילה במהלך הנפה, כאל פסיביים.</translation>
-<translation id="9184473426683023988">יבא ואגד למכשיר</translation>
 <translation id="9186729806195986201">כמו כן, חזור לגרסה המותקנת הקודמת של <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">‏הפעל את Chrome VR.</translation>
 <translation id="9188441292293901223">‏עדכן את הטלפון לגרסה חדשה יותר של Android כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" /> זה.</translation>

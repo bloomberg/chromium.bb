@@ -51,6 +51,7 @@
 <translation id="1809939268435598390">ફોલ્ડર કાઢી નાખો</translation>
 <translation id="1813414402673211292">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="1820259098641718022">વાંચન સૂચિમાં ઉમેર્યું</translation>
+<translation id="1826516787628120939">તપાસી રહ્યાં છે</translation>
 <translation id="1842969606798536927">ચુકવણી કરો</translation>
 <translation id="1876721852596493031">ઉપયોગ ડેટા મોકલો</translation>
 <translation id="1886928167269928266">શરૂઆતથી</translation>
@@ -62,7 +63,7 @@
 <translation id="1989112275319619282">બ્રાઉઝ કરો</translation>
 <translation id="2054511809411770085">QR કોડ અથવા બારકોડ</translation>
 <translation id="2068952045031577364">ગત અઠવાડિયા</translation>
-<translation id="2079545284768500474">પૂર્વવત્ કરો</translation>
+<translation id="2079545284768500474">પૂર્વવત કરો</translation>
 <translation id="209018056901015185">ડેસ્કટોપ સાઇટની વિનંતી કરો</translation>
 <translation id="2100215774115172756">તમારી વાંચન સૂચિ ઑફલાઇન ઉપલબ્ધ છે.</translation>
 <translation id="2103075008456228677">history.google.com ખોલો</translation>
@@ -151,6 +152,7 @@
 <translation id="3638472932233958418">વેબપૃષ્ઠો પહેલાથી લોડ કરો</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
 <translation id="3692781555820666866">સક્ષમ કરવા પર, ઑમ્નિબૉક્સ, તમારી નજીકના ઉપકરણો દ્વારા બ્રોડકાસ્ટ કરવામાં આવેલા વેબ પૃષ્ઠો માટે સૂચનોને શામેલ કરશે.</translation>
+<translation id="3706658020782046159">શિપિંગ પદ્ધતિઓ અને આવશ્યકતાઓ તપાસવા વિતરણ માટેનું સરનામું પસંદ કરો.</translation>
 <translation id="3738139272394829648">શોધવા માટે ટચ કરો</translation>
 <translation id="3771033907050503522">છૂપા ટેબ્સ</translation>
 <translation id="3783017676699494206">છબી સાચવો</translation>
@@ -188,6 +190,7 @@
 તમારો ડેટા તમારા સમન્વયન પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો છે. સમન્વયન શરૂ કરવા માટે તે દાખલ કરો.</translation>
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="473775607612524610">અપડેટ કરો</translation>
+<translation id="4750394297954878236">સૂચનો</translation>
 <translation id="4773461607542755386">આ પૃષ્ઠને <ph name="APP_NAME" /> એપ્લિકેશનમાં ખોલીએ?</translation>
 <translation id="481968316161811770">કુકીઝ, સાઇટ ડેટા</translation>
 <translation id="4875622588773761625">શું તમે ઇચ્છો છો કે આ સાઇટ માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ અપડેટ કરે?</translation>

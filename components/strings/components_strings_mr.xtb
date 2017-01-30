@@ -157,7 +157,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> नी एक अवैध प्रतिसाद पाठविला.</translation>
 <translation id="2552545117464357659">थोडे नवीन</translation>
 <translation id="2556876185419854533">&amp; संपादित करा पूर्ववत करा</translation>
-<translation id="2587841377698384444">शब्दकोश API ID:</translation>
+<translation id="2587841377698384444">शब्दकोश API आयडी:</translation>
 <translation id="2597378329261239068">हा दस्तऐवज संकेतशब्द संरक्षित आहे. कृपया संकेतशब्द प्रविष्ट करा.</translation>
 <translation id="2609632851001447353">तफावत</translation>
 <translation id="2625385379895617796">आपले घड्याळ पुढे आहे</translation>
@@ -209,7 +209,7 @@
 <translation id="3041612393474885105">प्रमाणपत्र माहिती...</translation>
 <translation id="3063697135517575841">Chrome यावेळी आपल्या कार्डची पुष्टी करण्यात अक्षम होते. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="3093245981617870298">आपण ऑफलाइन आहात.</translation>
-<translation id="3105172416063519923">मालमत्ता ID:</translation>
+<translation id="3105172416063519923">मालमत्ता आयडी:</translation>
 <translation id="3109728660330352905">हे पृष्ठ पाहण्यासाठी आपण प्राधिकृत नाही.</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />कनेक्टिव्हिटी निदान चालवून पहा<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">प्रतिसाद डीकोड करण्यात अयशस्वी</translation>
@@ -242,7 +242,7 @@
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
 <translation id="3377188786107721145">धोरण विश्लेषण त्रुटी</translation>
 <translation id="3380365263193509176">अज्ञात त्रुटी</translation>
-<translation id="3380864720620200369">क्लायंट ID:</translation>
+<translation id="3380864720620200369">क्लायंट आयडी:</translation>
 <translation id="340013220407300675">आक्रमणकर्ते कदाचित <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वरून आपली माहिती चोरण्याचा प्रयत्न करत असू शकतात (उदाहरणार्थ, संकेतशब्द, संदेश किंवा क्रेडिट कार्ड).</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> सध्या आवाक्याबाहेर आहे.</translation>
 <translation id="3427342743765426898">&amp;संपादित करा पुन्हा करा</translation>
@@ -253,7 +253,7 @@
 <translation id="3462200631372590220">प्रगत लपवा</translation>
 <translation id="3479539252931486093">हे अनपेक्षित होते? <ph name="BEGIN_LINK" />आम्हाला कळवा<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
-<translation id="348000606199325318">क्रॅश ID <ph name="CRASH_LOCAL_ID" /> (सर्व्हर ID: <ph name="CRASH_ID" />)</translation>
+<translation id="348000606199325318">क्रॅश आयडी <ph name="CRASH_LOCAL_ID" /> (सर्व्हर आयडी: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">याक्षणी आम्ही आपल्या पालकांपर्यंत पोहोचू शकलो नाही. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
 <translation id="3528171143076753409">सर्व्हरचे प्रमाणपत्र विश्वासनीय नाही.</translation>
@@ -617,7 +617,7 @@
 <translation id="7469372306589899959">कार्डची पुष्टी करीत आहे</translation>
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="7485870689360869515">डेटा आढळला नाही.</translation>
-<translation id="7508255263130623398">परत केलेला धोरण डिव्हाइस ID रिक्त आहे किंवा वर्तमान डिव्हाइस ID शी जुळत नाही</translation>
+<translation id="7508255263130623398">परत केलेला धोरण डिव्हाइस आयडी रिक्त आहे किंवा वर्तमान डिव्हाइस आयडी शी जुळत नाही</translation>
 <translation id="7514365320538308">डाउनलोड करा</translation>
 <translation id="7518003948725431193">या वेबपत्त्यासाठी वेबपृष्ठ आढळले नाही: <ph name="URL" /></translation>
 <translation id="7535087603100972091">मूल्य</translation>
@@ -673,7 +673,7 @@
 <translation id="7951415247503192394">(32-बिट)</translation>
 <translation id="7956713633345437162">Mobile बुकमार्क</translation>
 <translation id="7961015016161918242">कधीही नाही</translation>
-<translation id="7962083544045318153">क्रॅश ID <ph name="CRASH_LOCAL_ID" /></translation>
+<translation id="7962083544045318153">क्रॅश आयडी <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893"> नेहमी <ph name="ORIGINAL_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतर करा</translation>
 <translation id="7995512525968007366">निर्दिष्ट केलेले नाही</translation>
 <translation id="8012647001091218357">आम्ही याक्षणी आपल्या पालकांपर्यंत पोहोचू शकलो नाही. कृपया पुन्हा प्रयत्न करा.</translation>
@@ -690,7 +690,7 @@
 <translation id="8149426793427495338">आपला संगणक निष्क्रीय झाला.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> येथील फाइल वाचनीय नाही. ती काढून टाकलेली, हलविलेली असू शकते किंवा फाइल परवानग्या प्रवेश प्रतिबंधित करत असू शकतात.</translation>
 <translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
-<translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" ID असलेल्या विस्तारासाठी अवैध अद्यतन URL.</translation>
+<translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" आयडी असलेल्या विस्तारासाठी अवैध अद्यतन URL.</translation>
 <translation id="8202097416529803614">ऑर्डर सारांश</translation>
 <translation id="8218327578424803826">नियुक्त केलेले स्थान:</translation>
 <translation id="8225771182978767009">ज्या व्यक्तीने हा संगणक सेट केला त्या व्यक्तीने ही साइट अवरोधित करण्याचे निवडले आहे.</translation>

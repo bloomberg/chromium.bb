@@ -1314,13 +1314,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se esta política não for definida ou for definida para Falso, o modo de programador continuará disponível para o dispositivo.</translation>
 <translation id="5208240613060747912">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a apresentar notificações. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultNotificationsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
-<translation id="5209594095390052164">Permite escolher se o controlo de rede está ativado ou não.
-      Isto aplica-se a todos os utilizadores e a todas as interfaces no dispositivo.
-      Depois de definido, o controlo mantém-se até a política ser alterada de modo a 
-      desativá-lo.
-
-      Se definido como falso, não há controlo.
-      Se definido como verdadeiro, o sistema é controlado para obter as taxas de carregamento e de transferência indicadas (em kbits/s).</translation>
 <translation id="5219844027738217407">Para aplicações Android, esta política afeta apenas o microfone. Se esta política estiver definida como verdadeira, o som do microfone é desativado para todas as aplicações Android, sem exceções.</translation>
 <translation id="5226033722357981948">Especificar se o localizador de plug-ins deverá ser desativado</translation>
 <translation id="523505283826916779">Definições de acessibilidade</translation>

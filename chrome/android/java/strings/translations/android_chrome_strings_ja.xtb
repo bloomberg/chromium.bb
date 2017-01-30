@@ -73,6 +73,7 @@
 <translation id="1647391597548383849">カメラへのアクセス</translation>
 <translation id="1656489000284462475">引取</translation>
 <translation id="1661474178782861119">記事は随時更新されます。また後でご覧ください。</translation>
+<translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">ダウンロードを待機しています...</translation>
 <translation id="169033420419426091">SD カードがないため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="1709438864123551175">データセーバー</translation>
@@ -107,7 +108,7 @@
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB を他のアプリで使用中</translation>
 <translation id="2073235970478114994">画像を読み込む</translation>
-<translation id="2079545284768500474">取り消す</translation>
+<translation id="2079545284768500474">元に戻す</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2095887075102408547">この機能が有効になっている場合、アクセスしたページはダウンロード前に Google サーバーで圧縮されます。プライベート接続（HTTPS）やシークレット タブでアクセスしたページには、Google による最適化や確認は行われません。</translation>
 <translation id="2096396629993765042">Google アカウントへのログイン状態は維持されます。Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>

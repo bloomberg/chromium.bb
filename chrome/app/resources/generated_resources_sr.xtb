@@ -485,7 +485,6 @@
 <translation id="1594234040488055839">Понуди аутоматско пријављивање на Google сајтове помоћу овог налога</translation>
 <translation id="1596174774107741586">Користи сервере Google Payments-а у заштићеном окружењу</translation>
 <translation id="1598233202702788831">Администратор је онемогућио ажурирања.</translation>
-<translation id="1598604884989842103">Омогући кориснички интерфејс за TouchView увећање ради тестирања</translation>
 <translation id="1600857548979126453">Приступ позадинском механизму програма за отклањање грешака на страници</translation>
 <translation id="1601560923496285236">Примени</translation>
 <translation id="1603914832182249871">(Без архивирања)</translation>
@@ -1758,7 +1757,6 @@
 <translation id="3206175707080061730">Датотека са називом „$1“ већ постоји. Желите ли да је замените?</translation>
 <translation id="320825648481311438">Када је ово омогућено, прегледач управља пријављивањем на Google налоге и одјављивањем са њих.</translation>
 <translation id="3208703785962634733">Непотврђено</translation>
-<translation id="3209459032754159027">Омогућите приказивање промотивног садржаја за пријављивање за кредитну картицу унутар падајућег менија Аутоматско попуњавање.</translation>
 <translation id="3211904643589960506">Омогући скенирање за URL-ове из објеката Интернета око нас.</translation>
 <translation id="3216508313927987948">Да бисте то остварили, мораћете да обучите <ph name="DEVICE_TYPE" /> у следећем кораку.</translation>
 <translation id="3220586366024592812">Процес конектора за <ph name="CLOUD_PRINT_NAME" /> је отказао. Желите ли поново да га покренете?</translation>
@@ -4619,7 +4617,6 @@
 <translation id="7042418530779813870">На&amp;лепи и претражи</translation>
 <translation id="7045480833981818310">Измене у Office-у за Документе, Табеле и Презентације</translation>
 <translation id="7047998246166230966">Показивач</translation>
-<translation id="7048141481140415714">Омогућите пречицу Ctrl+Alt+Shift+8 за укључивање/искључивање TouchView режима увећања.</translation>
 <translation id="7049293980323620022">Желите ли да задржите датотеку?</translation>
 <translation id="7051943809462976355">Тражи се миш...</translation>
 <translation id="7052237160939977163">Шаљи податке о праћењу учинка</translation>
@@ -5783,7 +5780,6 @@
 <translation id="8632275030377321303">Корисник не може да мења прокси.</translation>
 <translation id="8636038761987659075">Подешавања сајтова са опцијама Сви сајтови и Детаљи сајта</translation>
 <translation id="8637688295594795546">Доступно је ажурирање система. Припрема за преузимање...</translation>
-<translation id="8638602948366220068">Омогући промотивни садржај за пријављивање за кредитну картицу у Аутоматском попуњавању</translation>
 <translation id="8639504893694748827">Алатка за растеризацију за нулту копију</translation>
 <translation id="8639963783467694461">Подешавања Аутоматског попуњавања</translation>
 <translation id="8642171459927087831">Ознака приступа</translation>
@@ -6219,7 +6215,6 @@
 <translation id="9181716872983600413">Уникод</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> са <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Принудно бира да обрађивачи догађаја touchstart и first touchmove per scroll током пребацивања буду третирани као пасивни.</translation>
-<translation id="9184473426683023988">Увези и вежи за уређај</translation>
 <translation id="9186729806195986201">Такође врати и на претходно инсталирану верзију производа <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Омогући виртуелну реалност у Chrome-у.</translation>
 <translation id="9188441292293901223">Ажурирајте телефон на новију верзију Android-а да бисте откључали овај <ph name="DEVICE_TYPE" />.</translation>

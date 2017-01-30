@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">Offer to sign in to Google sites automatically with this account</translation>
 <translation id="1596174774107741586">Use Google Payments sandbox servers</translation>
 <translation id="1598233202702788831">Updates are disabled by your administrator.</translation>
-<translation id="1598604884989842103">Enable TouchView maximising UI for testing</translation>
 <translation id="1600857548979126453">Access the page debugger backend</translation>
 <translation id="1601560923496285236">Apply</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
@@ -1761,7 +1760,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3206175707080061730">A file named "$1" already exists. Do you want to replace it?</translation>
 <translation id="320825648481311438">When enabled, the browser manages signing in and out of Google accounts.</translation>
 <translation id="3208703785962634733">Unconfirmed</translation>
-<translation id="3209459032754159027">Enable showing the credit card sign-in promo inside the Auto-fill drop-down.</translation>
 <translation id="3211904643589960506">Enable scanning for URLs from Physical Web objects.</translation>
 <translation id="3216508313927987948">To make this happen, you'll need to train your <ph name="DEVICE_TYPE" /> in the following step.</translation>
 <translation id="3220586366024592812">The <ph name="CLOUD_PRINT_NAME" /> connector process has crashed. Restart?</translation>
@@ -4621,7 +4619,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7042418530779813870">Pa&amp;ste and search</translation>
 <translation id="7045480833981818310">Office Editing for Docs, Sheets &amp; Slides</translation>
 <translation id="7047998246166230966">Pointer</translation>
-<translation id="7048141481140415714">Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximising mode.</translation>
 <translation id="7049293980323620022">Keep file?</translation>
 <translation id="7051943809462976355">Searching for mouse...</translation>
 <translation id="7052237160939977163">Send performance trace data</translation>
@@ -5791,7 +5788,6 @@ Calculating time until full</translation>
 <translation id="8632275030377321303">The proxy cannot be modified by the user.</translation>
 <translation id="8636038761987659075">Site settings with All sites and Site details</translation>
 <translation id="8637688295594795546">System update available. Preparing to download…</translation>
-<translation id="8638602948366220068">Enable Auto-fill Credit Card Sign-in Promo</translation>
 <translation id="8639504893694748827">Zero-copy rasteriser</translation>
 <translation id="8639963783467694461">Auto-fill settings</translation>
 <translation id="8642171459927087831">Access Token</translation>
@@ -6169,7 +6165,7 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="9109122242323516435">To free up space, delete files from device storage.</translation>
 <translation id="9110990317705400362">We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Unlock</translation>
-<translation id="9111296877637560526">Enabling this option allows web applications to access experimental Virtual Reality APIs.</translation>
+<translation id="9111296877637560526">Enabling this option allows web applications to access experimental virtual reality APIs.</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE" />: <ph name="STATUS" /></translation>
 <translation id="9112614144067920641">Please choose a new PIN.</translation>
 <translation id="9112748030372401671">Change your wallpaper</translation>
@@ -6227,7 +6223,6 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> from <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Forces touch start, and first touch move per scroll event listeners during fling to be treated as passive.</translation>
-<translation id="9184473426683023988">Import and Bind to Device</translation>
 <translation id="9186729806195986201">Also return to the previously installed version of <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Enable Chrome VR.</translation>
 <translation id="9188441292293901223">Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE" />.</translation>

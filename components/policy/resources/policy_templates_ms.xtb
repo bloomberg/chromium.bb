@@ -1400,12 +1400,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="5208240613060747912">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk memaparkan pemberitahuan.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
-<translation id="5209594095390052164">Membenarkan pemilihan sama ada pendikitan rangkaian didayakan atau tidak.
-      Ini terpakai kepada semua pengguna dan kepada semua antara muka pada peranti. Setelah ditetapkan,
-      pendikitan terus aktif sehingga dasar diubah untuk melumpuhkan pendikitan.
-
-      Jika ditetapkan kepada palsu, tiada pendikitan.
-      Jika ditetapkan kepada benar, sistem didikitkan untuk mencapai kadar muat naik dan muat turun yang ditentukan (dalam kbit/s).</translation>
 <translation id="5219844027738217407">Untuk apl Android, dasar ini memberi kesan kepada mikrofon sahaja. Apabila dasar ini ditetapkan kepada benar, mikrofon akan diredam untuk semua apl Android, tanpa pengecualian.</translation>
 <translation id="5226033722357981948">Tentukan sama ada pencari pemalam perlu dilumpuhkan</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>

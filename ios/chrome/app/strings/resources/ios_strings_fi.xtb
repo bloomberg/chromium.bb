@@ -51,6 +51,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="1809939268435598390">Poista kansio</translation>
 <translation id="1813414402673211292">Poista selaustiedot</translation>
 <translation id="1820259098641718022">Lisättiin lukulistalle</translation>
+<translation id="1826516787628120939">Tarkistetaan</translation>
 <translation id="1842969606798536927">Maksa</translation>
 <translation id="1876721852596493031">Lähetä käyttötietoja</translation>
 <translation id="1886928167269928266">Alusta asti</translation>
@@ -151,6 +152,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3638472932233958418">Esilataa verkkosivut</translation>
 <translation id="3691593122358196899">Lisätty kirjanmerkiksi kansioon <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Kun tämä on käytössä, omniboxissa näytetään ehdotuksia lähellä olevien laitteiden lähettämistä verkkosivuista.</translation>
+<translation id="3706658020782046159">Näet toimitusvaihtoehdot ja ‑vaatimukset valitsemalla toimitusosoitteen.</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3771033907050503522">Incognito</translation>
 <translation id="3783017676699494206">Tallenna kuva</translation>
@@ -188,6 +190,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="473775607612524610">Päivitä</translation>
+<translation id="4750394297954878236">Ehdotukset</translation>
 <translation id="4773461607542755386">Avataanko tämä sivu sovelluksessa <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Evästeet, sivuston tiedot</translation>
 <translation id="4875622588773761625">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tämän sivuston salasanasi?</translation>

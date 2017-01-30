@@ -51,6 +51,7 @@
 <translation id="1809939268435598390">حذف مجلد</translation>
 <translation id="1813414402673211292">محو بيانات التصفح</translation>
 <translation id="1820259098641718022">تمت الإضافة إلى قائمة القراءة</translation>
+<translation id="1826516787628120939">حساب شيكات</translation>
 <translation id="1842969606798536927">الدفع</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1886928167269928266">بدايةَ الوقت</translation>
@@ -151,6 +152,7 @@
 <translation id="3638472932233958418">تحميل صفحات الويب مسبقًا</translation>
 <translation id="3691593122358196899">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">عند التمكين، سوف يتضمن المربّع متعدد الاستخدامات اقتراحات لبث صفحات الويب من الأجهزة القريبة منك.</translation>
+<translation id="3706658020782046159">اختر عنوان شحن للتحقّق من متطلبات وطرق الشحن.</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3771033907050503522">علامات تبويب التصفح المتخفي</translation>
 <translation id="3783017676699494206">حفظ الصورة</translation>
@@ -188,6 +190,7 @@
 تم تشفير بياناتك باستخدام عبارة مرور المزامنة. أدخلها لبدء المزامنة.</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="473775607612524610">تحديث</translation>
+<translation id="4750394297954878236">الاقتراحات</translation>
 <translation id="4773461607542755386">هل تريد فتح هذه الصفحة في تطبيق <ph name="APP_NAME" />؟</translation>
 <translation id="481968316161811770">ملفات تعريف الارتباط، وبيانات موقع الويب</translation>
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>

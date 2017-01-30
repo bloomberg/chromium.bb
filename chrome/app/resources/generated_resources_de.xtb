@@ -484,7 +484,6 @@
 <translation id="1594234040488055839">Automatische Anmeldungen in Google-Websites mit diesem Konto ermöglichen</translation>
 <translation id="1596174774107741586">Google Payments-Sandbox-Server verwenden</translation>
 <translation id="1598233202702788831">Updates sind durch Ihren Administrator deaktiviert.</translation>
-<translation id="1598604884989842103">Maximierungsbenutzeroberfläche in TouchView zu Testzwecken aktivieren</translation>
 <translation id="1600857548979126453">Auf das Back-End für Seiten-Debugger zugreifen</translation>
 <translation id="1601560923496285236">Übernehmen</translation>
 <translation id="1603914832182249871">(Anonym)</translation>
@@ -821,7 +820,7 @@
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="2078019350989722914">Vor Beenden warnen (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Falls Sie eines Ihrer eigenen Zertifikate löschen, können Sie sich damit nicht mehr identifizieren.</translation>
-<translation id="2079545284768500474">Rückgängig</translation>
+<translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2080010875307505892">Serbische Tastatur</translation>
 <translation id="2080070583977670716">Weitere Einstellungen</translation>
 <translation id="2081322486940989439">Visa wird von dieser Website nicht akzeptiert.</translation>
@@ -892,7 +891,7 @@
 <translation id="216169395504480358">WLAN hinzufügen...</translation>
 <translation id="2163470535490402084">Stellen Sie eine Internetverbindung her, um sich auf Ihrem Gerät (<ph name="DEVICE_TYPE" />) anzumelden.</translation>
 <translation id="2164862903024139959">Vietnamesische Tastatur (TCVN)</translation>
-<translation id="2165722503303595908">Abmessungen</translation>
+<translation id="2165722503303595908">Bildmaße</translation>
 <translation id="2166369534954157698">Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="2168214441502403371">Persische Tastatur</translation>
@@ -1711,7 +1710,7 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="3150927491400159470">Vollständiges Aktualisieren (Hard Reload)</translation>
 <translation id="315116470104423982">Mobilfunk</translation>
 <translation id="315141861755603168">"<ph name="BUNDLE_NAME" />" fügt diese Apps hinzu:</translation>
-<translation id="3151539355209957474">Beginn</translation>
+<translation id="3151539355209957474">Startzeit</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
 <translation id="3153177132960373163">Verwendung von Plug-ins für den Zugriff auf Ihren Computer für alle Websites zulassen</translation>
 <translation id="3154351730702813399">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
@@ -1756,7 +1755,6 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="3206175707080061730">Eine Datei mit dem Namen "$1" existiert bereits. Möchten Sie sie ersetzen?</translation>
 <translation id="320825648481311438">Ist die Funktion aktiviert, verwaltet der Browser die Anmeldung in und die Abmeldung von Google-Konten.</translation>
 <translation id="3208703785962634733">Nicht bestätigt</translation>
-<translation id="3209459032754159027">Anzeige des Hinweises zur Anmeldung in Chrome im AutoFill-Drop-down für Kreditkarten aktivieren.</translation>
 <translation id="3211904643589960506">Scannen nach URLs von Physical Web-Objekten aktivieren.</translation>
 <translation id="3216508313927987948">Damit dies geschieht, müssen Sie Ihr <ph name="DEVICE_TYPE" /> im folgenden Schritt trainieren.</translation>
 <translation id="3220586366024592812">Der <ph name="CLOUD_PRINT_NAME" />-Connector-Prozess ist abgestürzt. Neu starten?</translation>
@@ -2309,7 +2307,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3899879303189199559">Seit über einem Jahr offline</translation>
 <translation id="3899968422636198696"><ph name="ORGNAME" /> <ph name="HOSTNAME" /></translation>
 <translation id="3901991538546252627">Verbindung mit <ph name="NAME" /> wird hergestellt.</translation>
-<translation id="3902365939851986963">Touchscreen-Begrenzungen auf dem Display definieren</translation>
+<translation id="3902365939851986963">Touchscreen-Begrenzungen auf dem Display festlegen</translation>
 <translation id="3902799646152133632">Überspringt "no-store"-Hauptframe.</translation>
 <translation id="3904196543277238487">Höchste aktivierte TLS-Version.</translation>
 <translation id="3904709815599435085">Richtet die Android Hintergründe App als Standard-App für Hintergründe unter Chrome OS ein.</translation>
@@ -4609,7 +4607,6 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7042418530779813870">Einfügen und &amp;suchen</translation>
 <translation id="7045480833981818310">Office-Dateien in Google Docs, Tabellen und Präsentationen bearbeiten</translation>
 <translation id="7047998246166230966">Mauszeiger</translation>
-<translation id="7048141481140415714">Drücken Sie Strg + Alt + Shift + 8, um den Maximierungsmodus in TouchView zu aktivieren bzw. deaktivieren.</translation>
 <translation id="7049293980323620022">Datei beibehalten?</translation>
 <translation id="7051943809462976355">Suche nach Maus läuft...</translation>
 <translation id="7052237160939977163">Daten der Leistungsnachverfolgung senden</translation>
@@ -5780,7 +5777,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8632275030377321303">Der Proxy kann nicht vom Nutzer geändert werden.</translation>
 <translation id="8636038761987659075">Website-Einstellungen mit "Alle Websites" und "Websitedetails"</translation>
 <translation id="8637688295594795546">Systemupdate verfügbar. Download wird vorbereitet...</translation>
-<translation id="8638602948366220068">AutoFill-Anmeldehinweis für Kreditkarten aktivieren</translation>
 <translation id="8639504893694748827">Rasterung ohne Kopie</translation>
 <translation id="8639963783467694461">AutoFill-Einstellungen</translation>
 <translation id="8642171459927087831">Zugriffs-Token</translation>
@@ -6215,7 +6211,6 @@ Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständ
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> von <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Dadurch werden die Ereignis-Listener "touchstart" und "first touchmove" bei jedem Scrollen während des Ziehens als passiv behandelt.</translation>
-<translation id="9184473426683023988">Importieren und an Gerät binden</translation>
 <translation id="9186729806195986201">Auch die zuvor installierte Version von <ph name="IDS_SHORT_PRODUCT_NAME" /> wiederherstellen</translation>
 <translation id="9187651461283037651">Chrome VR aktivieren.</translation>
 <translation id="9188441292293901223">Bitte aktualisieren Sie Ihr Telefon auf eine neuere Android-Version, um dieses <ph name="DEVICE_TYPE" /> zu entsperren.</translation>

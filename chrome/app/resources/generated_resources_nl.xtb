@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Aanbieden om automatisch op Google-sites in te loggen met dit account</translation>
 <translation id="1596174774107741586">Sandbox-servers van Google Payments gebruiken</translation>
 <translation id="1598233202702788831">Updates zijn uitgeschakeld door je beheerder.</translation>
-<translation id="1598604884989842103">UI voor het maximaliseren van TouchView inschakelen voor testen</translation>
 <translation id="1600857548979126453">Back-end voor foutopsporing van pagina openen</translation>
 <translation id="1601560923496285236">Toepassen</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
@@ -1761,7 +1760,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="3206175707080061730">Er bestaat al een bestand met de naam '$1'. Wil je dit bestand vervangen?</translation>
 <translation id="320825648481311438">Indien ingeschakeld, beheert de browser het in- en uitloggen op Google-accounts.</translation>
 <translation id="3208703785962634733">Niet bevestigd</translation>
-<translation id="3209459032754159027">Optie voor inloggen met creditcard weergeven in dropdownmenu 'Automatisch aanvullen'.</translation>
 <translation id="3211904643589960506">Zoeken naar URL's van fysieke web-objecten inschakelen.</translation>
 <translation id="3216508313927987948">Hiervoor moet je je <ph name="DEVICE_TYPE" /> trainen in de volgende stap.</translation>
 <translation id="3220586366024592812">Het proces van de connector voor <ph name="CLOUD_PRINT_NAME" /> is vastgelopen. Wil je opnieuw starten?</translation>
@@ -2157,7 +2155,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3704162925118123524">Het is mogelijk dat je de inlogpagina moet bezoeken van het netwerk dat je gebruikt.</translation>
 <translation id="3704331259350077894">Activiteit gestaakt</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">Laden...</translation>
+<translation id="370665806235115550">Bezig met laden...</translation>
 <translation id="3706919628594312718">Muisinstellingen</translation>
 <translation id="3707020109030358290">Geen certificeringsinstantie.</translation>
 <translation id="3709244229496787112">De browser is afgesloten voordat het downloaden is voltooid.</translation>
@@ -4620,7 +4618,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7042418530779813870">&amp;Plakken en zoeken</translation>
 <translation id="7045480833981818310">Office-bewerkingen voor Documenten, Spreadsheets en Presentaties</translation>
 <translation id="7047998246166230966">Pijltje</translation>
-<translation id="7048141481140415714">Ctrl+Alt+Shift+8 inschakelen om de modus voor het maximaliseren van TouchView in of uit te schakelen.</translation>
 <translation id="7049293980323620022">Bestand behouden?</translation>
 <translation id="7051943809462976355">Muis zoeken...</translation>
 <translation id="7052237160939977163">Gegevens over het bijhouden van prestaties verzenden</translation>
@@ -5789,7 +5786,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8632275030377321303">De proxy kan niet worden aangepast door de gebruiker.</translation>
 <translation id="8636038761987659075">Site-instelingen met 'Alle sites' en 'Sitegegevens'</translation>
 <translation id="8637688295594795546">Systeemupdate beschikbaar. Download voorbereiden...</translation>
-<translation id="8638602948366220068">Aanbieding voor inloggen met creditcard in 'Automatisch aanvullen' inschakelen</translation>
 <translation id="8639504893694748827">In raster plaatsen van nulexemplaar</translation>
 <translation id="8639963783467694461">Instellingen voor Automatisch aanvullen</translation>
 <translation id="8642171459927087831">Toegangstoken</translation>
@@ -6226,7 +6222,6 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> van <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Hiermee wordt afgedwongen dat touchstart- en first touchmove-per-scroll-event-listeners als passief worden behandeld tijdens zwaaien.</translation>
-<translation id="9184473426683023988">Importeren en aan apparaat koppelen</translation>
 <translation id="9186729806195986201">Gebruik de vorige geïnstalleerde versie van <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="9187651461283037651">Chrome VR inschakelen.</translation>
 <translation id="9188441292293901223">Werk je telefoon bij naar een nieuwere versie van Android om dit <ph name="DEVICE_TYPE" /> te ontgrendelen.</translation>

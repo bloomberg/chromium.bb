@@ -51,6 +51,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="1809939268435598390">Elimina cartella</translation>
 <translation id="1813414402673211292">Cancella dati di navigazione</translation>
 <translation id="1820259098641718022">Aggiunta all'elenco di lettura</translation>
+<translation id="1826516787628120939">Verifica in corso...</translation>
 <translation id="1842969606798536927">Paga</translation>
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
 <translation id="1886928167269928266">Tutto</translation>
@@ -151,6 +152,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3638472932233958418">Precarica pagine web</translation>
 <translation id="3691593122358196899">Preferito aggiunto in: <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Quando è attivo, la omnibox include suggerimenti relativi alle pagine web trasmesse dai dispositivi nelle vicinanze.</translation>
+<translation id="3706658020782046159">Seleziona un indirizzo di spedizione per verificare i metodi di spedizione e i requisiti.</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
 <translation id="3771033907050503522">Schede di navigazione in incognito</translation>
 <translation id="3783017676699494206">Salva immagine</translation>
@@ -188,6 +190,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="4728558894243024398">Piattaforma</translation>
 <translation id="473775607612524610">Aggiorna</translation>
+<translation id="4750394297954878236">Suggerimenti</translation>
 <translation id="4773461607542755386">Aprire questa pagina nell'app <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Cookie, dati dei siti</translation>
 <translation id="4875622588773761625">Vuoi che <ph name="PASSWORD_MANAGER_BRAND" /> aggiorni la password di questo sito?</translation>

@@ -488,7 +488,6 @@
 <translation id="1594234040488055839">이 계정을 사용하여 Google 사이트에 자동으로 로그인할지 묻는 메시지 표시</translation>
 <translation id="1596174774107741586">Google Payments 샌드박스 서버 사용</translation>
 <translation id="1598233202702788831">관리자가 업데이트를 사용 중지했습니다.</translation>
-<translation id="1598604884989842103">테스트용으로 TouchView 최대화 UI 사용</translation>
 <translation id="1600857548979126453">페이지 디버거 백엔드에 액세스</translation>
 <translation id="1601560923496285236">적용</translation>
 <translation id="1603914832182249871">(시크릿 모드)</translation>
@@ -825,7 +824,7 @@
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2078019350989722914">종료하기 전 경고(<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">인증서 중 하나를 삭제하면 더 이상 삭제한 인증서를 사용하여 신원을 확인할 수 없습니다.</translation>
-<translation id="2079545284768500474">실행 취소</translation>
+<translation id="2079545284768500474">실행취소</translation>
 <translation id="2080010875307505892">세르비아어 키보드</translation>
 <translation id="2080070583977670716">설정 더보기</translation>
 <translation id="2081322486940989439">이 사이트에서는 Visa를 사용할 수 없습니다.</translation>
@@ -1762,7 +1761,6 @@
 <translation id="3206175707080061730">이름이 '$1'인 파일이 이미 존재합니다. 대체하시겠습니까?</translation>
 <translation id="320825648481311438">사용하도록 설정하면 브라우저에서 Google 계정의 로그인과 로그아웃을 관리합니다.</translation>
 <translation id="3208703785962634733">미확인</translation>
-<translation id="3209459032754159027">자동완성 드롭다운에 신용카드 로그인 프로모션 표시 사용</translation>
 <translation id="3211904643589960506">피지컬 웹 사물에서 URL을 스캔할 수 있도록 허용합니다.</translation>
 <translation id="3216508313927987948">이렇게 하려면 다음 단계에 따라 <ph name="DEVICE_TYPE" />에서 음성을 인식하도록 해야 합니다.</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> 커넥터 프로세스가 중단되었습니다. 다시 시작하시겠습니까?</translation>
@@ -4621,7 +4619,6 @@
 <translation id="7042418530779813870">붙여넣어 검색하기(&amp;S)</translation>
 <translation id="7045480833981818310">문서, 스프레드시트, 프레젠테이션용 Office 수정</translation>
 <translation id="7047998246166230966">포인터</translation>
-<translation id="7048141481140415714">TouchView 최대화 모드를 전환하려면 Ctrl+Alt+Shift+8을 사용하도록 설정합니다.</translation>
 <translation id="7049293980323620022">파일을 보관하시겠습니까?</translation>
 <translation id="7051943809462976355">마우스 검색 중...</translation>
 <translation id="7052237160939977163">성능 추적 데이터 전송</translation>
@@ -5791,7 +5788,6 @@
 <translation id="8632275030377321303">프록시는 사용자가 수정할 수 없습니다.</translation>
 <translation id="8636038761987659075">사이트 설정에서 전체 사이트 및 사이트 세부정보 보기</translation>
 <translation id="8637688295594795546">시스템 업데이트 사용가능. 다운로드 준비 중…</translation>
-<translation id="8638602948366220068">자동완성 신용카드 로그인 프로모션 사용</translation>
 <translation id="8639504893694748827">Zero-copy 래스터라이저</translation>
 <translation id="8639963783467694461">자동완성 설정</translation>
 <translation id="8642171459927087831">액세스 토큰</translation>
@@ -6227,7 +6223,6 @@
 <translation id="9181716872983600413">유니코드</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" />에서 <ph name="DOWNLOAD_RECEIVED" /> 다운로드(남은 시간: <ph name="TIME_LEFT" />)</translation>
 <translation id="9184146175870444618">터치스타트, 플링 중 스크롤 이벤트 리스너에 따른 첫 터치무브는 패시브로 처리되도록 강제 적용합니다.</translation>
-<translation id="9184473426683023988">가져와서 기기에 연결</translation>
 <translation id="9186729806195986201">또한 <ph name="IDS_SHORT_PRODUCT_NAME" />의 이전 설치 버전으로 되돌아갑니다.</translation>
 <translation id="9187651461283037651">Chrome VR 사용</translation>
 <translation id="9188441292293901223"><ph name="DEVICE_TYPE" />을(를) 잠금 해제하려면 휴대전화의 Android를 최신 버전으로 업데이트하세요.</translation>

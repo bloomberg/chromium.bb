@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">เสนอให้ลงชื่อเข้าใช้ไซต์ของ Google อัตโนมัติด้วยบัญชีนี้</translation>
 <translation id="1596174774107741586">ใช้แซนด์บ็อกซ์เซิร์ฟเวอร์ของ Google Payments</translation>
 <translation id="1598233202702788831">ผู้ดูแลระบบปิดใช้การอัปเดต</translation>
-<translation id="1598604884989842103">เปิดใช้ UI การขยาย TouchView สำหรับการทดสอบ</translation>
 <translation id="1600857548979126453">เข้าถึงแบ็คเอนด์เครื่องซ่อมแซมหน้าเว็บ</translation>
 <translation id="1601560923496285236">นำไปใช้</translation>
 <translation id="1603914832182249871">(โหมดไม่ระบุตัวตน)</translation>
@@ -1013,7 +1012,7 @@
 <translation id="2286950485307333924">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="2287590536030307392">ปิดการเชื่อมต่อไร้สายทั้งหมด</translation>
 <translation id="2291643155573394834">แท็บถัดไป</translation>
-<translation id="2292848386125228270">โปรดเริ่มต้น <ph name="PRODUCT_NAME" /> ในฐานะผู้ใช้ทั่วไป หากต้องการเรียกใช้ในฐานะผู้ใช้ระดับรากเพื่อการพัฒนา ให้เรียกใช้อีกครั้งโดยมีการตั้งค่าสถานะ --no-sandbox</translation>
+<translation id="2292848386125228270">โปรดเริ่มต้น <ph name="PRODUCT_NAME" /> ในฐานะผู้ใช้ทั่วไป หากต้องการเรียกใช้ในฐานะผู้ใช้ระดับรากเพื่อการพัฒนา ให้เรียกใช้อีกครั้งโดยตั้งค่าสถานะเป็น no-sandbox</translation>
 <translation id="2294358108254308676">คุณต้องการติดตั้ง <ph name="PRODUCT_NAME" /> หรือไม่</translation>
 <translation id="2296019197782308739">วิธีการ EAP:</translation>
 <translation id="2301382460326681002">ไดเรกทอรีหลักของส่วนขยายไม่ถูกต้อง</translation>
@@ -1760,7 +1759,6 @@
 <translation id="3206175707080061730">ไฟล์ชื่อ "$1" มีอยู่แล้ว คุณต้องการแทนที่ไฟล์ดังกล่าวหรือไม่</translation>
 <translation id="320825648481311438">เมื่อเปิดใช้ เบราว์เซอร์จะจัดการการลงชื่อเข้าใช้และการออกจากระบบบัญชี Google</translation>
 <translation id="3208703785962634733">ยังไม่ยืนยัน</translation>
-<translation id="3209459032754159027">เปิดใช้การแสดงโปรโมชันการลงชื่อเข้าใช้บัตรเครดิตในรายการป้อนอัตโนมัติแบบเลื่อนลง</translation>
 <translation id="3211904643589960506">เปิดใช้การสแกน URL จากออบเจ็กต์ของ Physical Web</translation>
 <translation id="3216508313927987948">ในการเริ่มใช้งาน คุณจะต้องฝึกให้ <ph name="DEVICE_TYPE" /> เรียนรู้ตามขั้นตอนต่อไปนี้</translation>
 <translation id="3220586366024592812">การทำงานของตัวเชื่อมต่อ <ph name="CLOUD_PRINT_NAME" /> ขัดข้อง จะรีสตาร์ทหรือไม่</translation>
@@ -2156,7 +2154,7 @@
 <translation id="3704162925118123524">เครือข่ายที่คุณใช้อาจต้องการให้คุณไปที่หน้าการเข้าสู่ระบบ</translation>
 <translation id="3704331259350077894">หยุดดำเนินกิจการ</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="370665806235115550">กำลังโหลด...</translation>
+<translation id="370665806235115550">กำลังโหลด ...</translation>
 <translation id="3706919628594312718">การตั้งค่าเมาส์</translation>
 <translation id="3707020109030358290">ไม่ใช่ผู้ออกใบรับรอง</translation>
 <translation id="3709244229496787112">เบราว์เซอร์ถูกปิดลงก่อนที่จะดาวน์โหลดเสร็จ</translation>
@@ -4620,7 +4618,6 @@
 <translation id="7042418530779813870">&amp;วางและค้นหา</translation>
 <translation id="7045480833981818310">การแก้ไขไฟล์ Office สำหรับเอกสาร ชีต และสไลด์</translation>
 <translation id="7047998246166230966">ตัวชี้</translation>
-<translation id="7048141481140415714">เปิดใช้ Ctrl+Alt+Shift+8 เพื่อสลับโหมดการขยาย TouchView</translation>
 <translation id="7049293980323620022">เก็บไฟล์ไว้ไหม</translation>
 <translation id="7051943809462976355">กำลังค้นหาเมาส์...</translation>
 <translation id="7052237160939977163">ส่งข้อมูลการติดตามผลการปฏิบัติงาน</translation>
@@ -5788,7 +5785,6 @@
 <translation id="8632275030377321303">ผู้ใช้ไม่สามารถแก้ไขพร็อกซีได้</translation>
 <translation id="8636038761987659075">การตั้งค่าไซต์พร้อมไซต์ทั้งหมดและรายละเอียดไซต์</translation>
 <translation id="8637688295594795546">มีอัปเดตระบบพร้อมใช้งาน กำลังเตรียมการดาวน์โหลด…</translation>
-<translation id="8638602948366220068">เปิดใช้โปรโมชันการลงชื่อเข้าใช้บัตรเครดิตแบบป้อนอัตโนมัติ</translation>
 <translation id="8639504893694748827">โปรแกรมแรสเตอร์แบบไม่มีสำเนา</translation>
 <translation id="8639963783467694461">การตั้งค่าป้อนอัตโนมัติ</translation>
 <translation id="8642171459927087831">โทเค็นการเข้าถึง</translation>
@@ -6223,7 +6219,6 @@
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> จาก <ph name="DOWNLOAD_DOMAIN" /> เหลือ <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">บังคับให้ใช้ Listener เหตุการณ์แบบแตะเปิดและแตะย้ายครั้งแรกต่อการเลื่อน 1 ครั้งในระหว่างการสะบัดเป็นแบบแพสซีฟ</translation>
-<translation id="9184473426683023988">นำเข้าและเชื่อมโยงกับอุปกรณ์</translation>
 <translation id="9186729806195986201">กลับไปใช้เวอร์ชันที่ติดตั้งไว้ก่อนหน้านี้ของ <ph name="IDS_SHORT_PRODUCT_NAME" /> ด้วย</translation>
 <translation id="9187651461283037651">เปิดใช้ Chrome VR</translation>
 <translation id="9188441292293901223">โปรดอัปเดตโทรศัพท์เป็น Android เวอร์ชันใหม่กว่าเพื่อปลดล็อก <ph name="DEVICE_TYPE" /> นี้</translation>

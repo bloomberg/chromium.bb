@@ -488,7 +488,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1594234040488055839">Nabízet automatické přihlášení na weby Google pomocí tohoto účtu</translation>
 <translation id="1596174774107741586">Používat izolované testovací servery služby Google Payments</translation>
 <translation id="1598233202702788831">Administrátor aktualizace zakázal.</translation>
-<translation id="1598604884989842103">Povolit aplikaci TouchView maximalizovat uživatelské rozhraní za účelem testování</translation>
 <translation id="1600857548979126453">Získat přístup k ladicímu programu stránky na serveru</translation>
 <translation id="1601560923496285236">Použít</translation>
 <translation id="1603914832182249871">(Anonymní režim)</translation>
@@ -825,7 +824,7 @@ UPOZORNĚNÍ: Když toto pravidlo povolíte, Chrome bude zaznamenávat data o v
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2078019350989722914">Před ukončením upozornit (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Smažete-li jeden z vlastních certifikátů, nebudete ho již moci používat k identifikaci své osoby.</translation>
-<translation id="2079545284768500474">Zpět</translation>
+<translation id="2079545284768500474" />
 <translation id="2080010875307505892">Srbská klávesnice</translation>
 <translation id="2080070583977670716">Další nastavení</translation>
 <translation id="2081322486940989439">Tento web nepřijímá karty Visa.</translation>
@@ -1761,7 +1760,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph n
 <translation id="3206175707080061730">Soubor s názvem „$1“ již existuje. Chcete jej nahradit?</translation>
 <translation id="320825648481311438">Pokud je tato možnost povolena, prohlížeč spravuje přihlášení k účtům Google a odhlášení od nich.</translation>
 <translation id="3208703785962634733">Nepotvrzeno</translation>
-<translation id="3209459032754159027">Povolit zobrazování propagace přihlašování pomocí platební karty v rozbalovací nabídce Automatické vyplňování.</translation>
 <translation id="3211904643589960506">Bude povoleno vyhledávání adres URL objektů Fyzického webu.</translation>
 <translation id="3216508313927987948">Aby se tak stalo, budete zařízení <ph name="DEVICE_TYPE" /> muset v následujícím kroku zacvičit.</translation>
 <translation id="3220586366024592812">Proces konektoru služby <ph name="CLOUD_PRINT_NAME" /> selhal. Restartovat?</translation>
@@ -4613,7 +4611,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7042418530779813870">Vložit a vyhledat</translation>
 <translation id="7045480833981818310">Úpravy souborů systému Office v Dokumentech, Tabulkách a Prezentacích Google</translation>
 <translation id="7047998246166230966">Kurzor</translation>
-<translation id="7048141481140415714">Povolí přepínání režimu maximalizace aplikace TouchView pomocí kombinace kláves Ctrl+Alt+Shift+8.</translation>
 <translation id="7049293980323620022">Ponechat soubor?</translation>
 <translation id="7051943809462976355">Vyhledávání myši...</translation>
 <translation id="7052237160939977163">Odesílat údaje sledování výkonu</translation>
@@ -5779,7 +5776,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8632275030377321303">Uživatel nemůže proxy server změnit.</translation>
 <translation id="8636038761987659075">Nastavení webů s možnostmi Všechny weby a Podrobnosti webu</translation>
 <translation id="8637688295594795546">K dispozici je aktualizace systému. Příprava stahování...</translation>
-<translation id="8638602948366220068">Povolit propagaci přihlašování pomocí platební karty v Automatickém doplňování</translation>
 <translation id="8639504893694748827">Rasterizér bez kopií</translation>
 <translation id="8639963783467694461">Nastavení automatického vyplňování</translation>
 <translation id="8642171459927087831">Přístupový token</translation>
@@ -6215,7 +6211,6 @@ Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</trans
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> z <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Vynutí, aby posluchač události touchstart a první posluchač události touchmove při rychlém posouvání byly považovány za pasivní.</translation>
-<translation id="9184473426683023988">Importovat a svázat se zařízením</translation>
 <translation id="9186729806195986201">Také obnovit předchozí nainstalovanou verzi aplikace <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="9187651461283037651">Povolit v Chromu virtuální realitu</translation>
 <translation id="9188441292293901223">Chcete-li odemknout toto zařízení <ph name="DEVICE_TYPE" />, aktualizujte svůj telefon na novější verzi platformy Android.</translation>

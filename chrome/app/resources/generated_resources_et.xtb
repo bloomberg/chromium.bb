@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Paku selle konto puhul automaatset sisselogimist Google'i saitidele</translation>
 <translation id="1596174774107741586">Teenuse Google Payments liivakasti serverite kasutamine</translation>
 <translation id="1598233202702788831">Administraator on värskendused keelanud.</translation>
-<translation id="1598604884989842103">Luba kasutajaliidest maksimeeriv TouchView testimiseks</translation>
 <translation id="1600857548979126453">Juurdepääs lehesiluri tagaosale</translation>
 <translation id="1601560923496285236">Rakenda</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
@@ -1761,7 +1760,6 @@ Nende ja edasiste juhiste nägemiseks vaadake meile aadressil <ph name="ACCOUNT_
 <translation id="3206175707080061730">Fail nimega „$1” on juba olemas. Kas soovite selle asendada?</translation>
 <translation id="320825648481311438">Kui see on lubatud, siis haldab brauser Google'i kontodele sisselogimist ja sealt väljalogimist.</translation>
 <translation id="3208703785962634733">Kinnitamata</translation>
-<translation id="3209459032754159027">Lubage krediitkaardivormi täitmisel sisselogimisviiba kuvamine automaattäite menüüs.</translation>
 <translation id="3211904643589960506">Lubatakse URL-ide skannimine füüsilise veebi objektidest.</translation>
 <translation id="3216508313927987948">Selleks peate seadet <ph name="DEVICE_TYPE" /> järgmises etapis treenima.</translation>
 <translation id="3220586366024592812">Üksuse <ph name="CLOUD_PRINT_NAME" /> ühendusprotsess jooksis kokku. Kas soovite taaskäivitada?</translation>
@@ -3877,7 +3875,7 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="60357267506638014">Tšehhi QWERTY</translation>
 <translation id="6039651071822577588">Võrguatribuudi sõnastiku vorming on vale</translation>
 <translation id="604001903249547235">Pilvepõhine varundus</translation>
-<translation id="6040143037577758943">Sule</translation>
+<translation id="6040143037577758943">Sulge</translation>
 <translation id="604124094241169006">Automaatne</translation>
 <translation id="6042308850641462728">Rohkem</translation>
 <translation id="6043317578411397101">Rakendus <ph name="APP_NAME" /> jagab Chrome'i vahelehte vahelehega <ph name="TAB_NAME" />.</translation>
@@ -4543,7 +4541,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="695755122858488207">Valimata raadionupp</translation>
 <translation id="696203921837389374">Luba sünkroonimine mobiilse andmeside kaudu</translation>
 <translation id="6964390816189577014">Kangelane</translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">Ok</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Seade</translation>
 <translation id="6969104364835835175">Funktsiooni PNaCl Subzero jõustamine</translation>
@@ -4620,7 +4618,6 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7042418530779813870">Kl&amp;eebi ja otsi</translation>
 <translation id="7045480833981818310">Office'i failide muutmine rakendustega Dokumendid, Arvutustabelid ja Esitlused</translation>
 <translation id="7047998246166230966">Kursor</translation>
-<translation id="7048141481140415714">Lubage klahvikombinatsiooni Ctrl + Alt + Tõstuklahv + 8 kasutamine TouchView' maksimeerimisrežiimi sisse- ja väljalülitamiseks.</translation>
 <translation id="7049293980323620022">Kas soovite faili säilitada?</translation>
 <translation id="7051943809462976355">Hiire otsimine ...</translation>
 <translation id="7052237160939977163">Saada toimivuse jälgimise andmeid</translation>
@@ -5789,7 +5786,6 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8632275030377321303">Kasutaja ei saa puhverserveri seadeid muuta.</translation>
 <translation id="8636038761987659075">Saidi seaded valikutega Kõik saidid ja Saidi üksikasjad</translation>
 <translation id="8637688295594795546">Süsteemiuuendus on saadaval. Allalaadimiseks valmistumine …</translation>
-<translation id="8638602948366220068">Sisselogimisviiba lubamine krediitkaardivormi automaattäitmisel</translation>
 <translation id="8639504893694748827">Nullkoopia rasterdaja</translation>
 <translation id="8639963783467694461">Automaatse täitmise seaded</translation>
 <translation id="8642171459927087831">Juurdepääsuluba</translation>
@@ -6225,7 +6221,6 @@ Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vah
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> domeenist <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Sõrmega libistamise ajal jõustatakse sündmusekuulajate kerimise puhul puutega käivitamise ja esimese puutega teisaldamise kohtlemine passiivselt.</translation>
-<translation id="9184473426683023988">Impordi ja seo seadmega</translation>
 <translation id="9186729806195986201">Taastatakse ka toote <ph name="IDS_SHORT_PRODUCT_NAME" /> varem installitud versioon.</translation>
 <translation id="9187651461283037651">Luba Chrome'i VR.</translation>
 <translation id="9188441292293901223">Seadme <ph name="DEVICE_TYPE" /> avamiseks värskendage oma telefon uuemale Androidi versioonile.</translation>

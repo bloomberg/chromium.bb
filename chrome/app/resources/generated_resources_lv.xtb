@@ -487,7 +487,6 @@
 <translation id="1594234040488055839">Piedāvāt automātiski pierakstīties Google vietnēs ar šo kontu</translation>
 <translation id="1596174774107741586">Izmantot Google Payments smilškastes serverus</translation>
 <translation id="1598233202702788831">Administrators ir atspējojis atjauninājumus.</translation>
-<translation id="1598604884989842103">Iespējot TouchView maksimizēšanas lietotāja saskarni testēšanai</translation>
 <translation id="1600857548979126453">Piekļūtu lapas atkļūdotāja aizmugursistēmai</translation>
 <translation id="1601560923496285236">Lietot</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
@@ -1762,7 +1761,6 @@ Lūdzu, pārbaudiet savu e-pasta iesūtni <ph name="ACCOUNT_EMAIL" />, lai skat�
 <translation id="3206175707080061730">Fails ar nosaukumu $1 jau eksistē. Vai vēlaties to aizstāt?</translation>
 <translation id="320825648481311438">Ja iespējots, pārlūks pārvalda pierakstīšanos Google kontos un izrakstīšanos no tiem.</translation>
 <translation id="3208703785962634733">Neapstiprināts</translation>
-<translation id="3209459032754159027">Iespējot reklāmas rādīšanu par pierakstīšanos, izmantojot kredītkarti, nolaižamajā izvēlnē Automātiskā aizpilde.</translation>
 <translation id="3211904643589960506">Vietrāžu URL skenēšanas iespējošana no Fiziskā tīmekļa objektiem</translation>
 <translation id="3216508313927987948">Lai to izdarītu, jums būs jāiemāca savai <ph name="DEVICE_TYPE" /> ierīcei tālāk norādītā darbība.</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> savienotāja process ir avarējis. Vai restartēt?</translation>
@@ -4623,7 +4621,6 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7042418530779813870">Ielīmēt un meklēt</translation>
 <translation id="7045480833981818310">Office Editing dokumentiem, izklājlapām un prezentācijām</translation>
 <translation id="7047998246166230966">Rādītājs</translation>
-<translation id="7048141481140415714">Tiek iespējota kombinācija Ctrl+Alt+Shift+8, lai pārslēgtu TouchView maksimizēšanas režīmu.</translation>
 <translation id="7049293980323620022">Vai paturēt failu?</translation>
 <translation id="7051943809462976355">Notiek peles meklēšana...</translation>
 <translation id="7052237160939977163">Sūtīt veiktspējas izsekošanas datus</translation>
@@ -5792,7 +5789,6 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="8632275030377321303">Lietotājs nevar modificēt starpniekservera iestatījumus.</translation>
 <translation id="8636038761987659075">Vietnes iestatījumi ar vienumiem “Visas vietnes” un “Vietnes informācija”</translation>
 <translation id="8637688295594795546">Ir pieejams sistēmas atjauninājums. Notiek sagatavošana lejupielādei…</translation>
-<translation id="8638602948366220068">Kredītkartes pierakstīšanās reklāmas iespējošana automātiskajā aizpildē</translation>
 <translation id="8639504893694748827">Rastrētājs, kas neveido kopijas</translation>
 <translation id="8639963783467694461">Automātiskās aizpildes iestatījumi</translation>
 <translation id="8642171459927087831">Piekļuves pilnvara</translation>
@@ -6228,7 +6224,6 @@ Atlicis: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="9181716872983600413">Unikoda</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> no <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">Iestata katras ritināšanas skāriena sākuma un pirmās skāriena kustības notikumu uztvērējus kā pasīvus straujas darbības veikšanas laikā.</translation>
-<translation id="9184473426683023988">Importēt ierīcē un saistīt ar to</translation>
 <translation id="9186729806195986201">Atjaunot arī iepriekš instalēto <ph name="IDS_SHORT_PRODUCT_NAME" /> versiju.</translation>
 <translation id="9187651461283037651">Iespējot Chrome virtuālo realitāti</translation>
 <translation id="9188441292293901223">Lūdzu, izmantojiet tālrunī jaunāku Android versiju, lai atbloķētu šo <ph name="DEVICE_TYPE" /> ierīci.</translation>

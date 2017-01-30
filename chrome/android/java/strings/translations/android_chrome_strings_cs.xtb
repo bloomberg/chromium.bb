@@ -73,6 +73,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1647391597548383849">Přístup k fotoaparátu</translation>
 <translation id="1656489000284462475">Vyzvednutí</translation>
 <translation id="1661474178782861119">Brzy se zobrazí další články. Užijte si večer.</translation>
+<translation id="1670399744444387456">Základní</translation>
 <translation id="1671236975893690980">Nevyřízené stahování…</translation>
 <translation id="169033420419426091">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo, protože není k dispozici SD karta.</translation>
 <translation id="1709438864123551175">Spořič dat</translation>
@@ -107,7 +108,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2038563949887743358">Zapnout funkci Verze webu pro PC</translation>
 <translation id="2045104531052923016">Ostatní aplikace: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">Načíst obrázky</translation>
-<translation id="2079545284768500474">Zpět</translation>
+<translation id="2079545284768500474" />
 <translation id="2082238445998314030">Výsledek <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">Je-li tato funkce zapnutá, Chrome navštívené stránky před stažením zkomprimuje pomocí serverů Google. Stránky zobrazené prostřednictvím soukromého připojení (HTTPS) nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány.</translation>
 <translation id="2096396629993765042">Nebudete odhlášeni ze svého účtu Google. Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> mohou být k dispozici další formy historie prohlížení zaznamenané ve vašem účtu Google.</translation>

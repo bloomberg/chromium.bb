@@ -51,6 +51,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="1809939268435598390">Odstrániť priečinok</translation>
 <translation id="1813414402673211292">Vyčistiť údaje o prehľadávaní</translation>
 <translation id="1820259098641718022">Pridané do zoznamu na čítanie</translation>
+<translation id="1826516787628120939">Kontroluje sa</translation>
 <translation id="1842969606798536927">Zaplatiť</translation>
 <translation id="1876721852596493031">Odosielanie údajov o používaní</translation>
 <translation id="1886928167269928266">Celé obdobie</translation>
@@ -151,6 +152,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3638472932233958418">Predbežne načítavať webové stránky</translation>
 <translation id="3691593122358196899">Uložené ako záložka v priečinku <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Keď je tento príznak aktivovaný, všeobecné pole bude zahŕňať návrhy webových stránok, ktoré vysielajú zariadenia v okolí.</translation>
+<translation id="3706658020782046159">Vyberte dodaciu adresu a prezrite si spôsoby dodania a požiadavky.</translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
 <translation id="3771033907050503522">Karty inkognito</translation>
 <translation id="3783017676699494206">Uložiť obrázok</translation>
@@ -188,6 +190,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 Údaje sú šifrované pomocou vlastnej prístupovej frázy synchronizácie. Keď ju zadáte, synchronizácia sa spustí.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
+<translation id="4750394297954878236">Návrhy</translation>
 <translation id="4773461607542755386">Otvoriť túto stránku v aplikácii <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Súbory cookie, údaje webu</translation>
 <translation id="4875622588773761625">Chcete, aby <ph name="PASSWORD_MANAGER_BRAND" /> ukladal heslá pre tieto stránky?</translation>
@@ -250,7 +253,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6012140227487808125">Prebieha šifrovanie…</translation>
 <translation id="6021332621416007159">Otvoriť v...</translation>
 <translation id="6039694632319341016">Chcete, aby aplikácia <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo používateľa <ph name="USERNAME" /> pre tento web?</translation>
-<translation id="6040143037577758943">Zatvoriť</translation>
+<translation id="6040143037577758943">Zavrieť</translation>
 <translation id="6042308850641462728">Viac</translation>
 <translation id="605721222689873409">RR</translation>
 <translation id="6066301408025741299">Sťahovanie zrušíte klepnutím.</translation>
