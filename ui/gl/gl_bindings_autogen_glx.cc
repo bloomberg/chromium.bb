@@ -20,7 +20,6 @@
 
 namespace gl {
 
-static bool g_debugBindingsInitialized;
 DriverGLX g_driver_glx;
 
 void DriverGLX::InitializeStaticBindings() {
@@ -136,844 +135,57 @@ void DriverGLX::InitializeExtensionBindings() {
   ext.b_GLX_SGI_video_sync =
       extensions.find("GLX_SGI_video_sync ") != std::string::npos;
 
-  debug_fn.glXBindTexImageEXTFn = 0;
   if (ext.b_GLX_EXT_texture_from_pixmap) {
     fn.glXBindTexImageEXTFn = reinterpret_cast<glXBindTexImageEXTProc>(
         GetGLProcAddress("glXBindTexImageEXT"));
   }
 
-  debug_fn.glXCopySubBufferMESAFn = 0;
   if (ext.b_GLX_MESA_copy_sub_buffer) {
     fn.glXCopySubBufferMESAFn = reinterpret_cast<glXCopySubBufferMESAProc>(
         GetGLProcAddress("glXCopySubBufferMESA"));
   }
 
-  debug_fn.glXCreateContextAttribsARBFn = 0;
   if (ext.b_GLX_ARB_create_context) {
     fn.glXCreateContextAttribsARBFn =
         reinterpret_cast<glXCreateContextAttribsARBProc>(
             GetGLProcAddress("glXCreateContextAttribsARB"));
   }
 
-  debug_fn.glXGetFBConfigFromVisualSGIXFn = 0;
   if (ext.b_GLX_SGIX_fbconfig) {
     fn.glXGetFBConfigFromVisualSGIXFn =
         reinterpret_cast<glXGetFBConfigFromVisualSGIXProc>(
             GetGLProcAddress("glXGetFBConfigFromVisualSGIX"));
   }
 
-  debug_fn.glXGetMscRateOMLFn = 0;
   if (ext.b_GLX_OML_sync_control) {
     fn.glXGetMscRateOMLFn = reinterpret_cast<glXGetMscRateOMLProc>(
         GetGLProcAddress("glXGetMscRateOML"));
   }
 
-  debug_fn.glXGetSyncValuesOMLFn = 0;
   if (ext.b_GLX_OML_sync_control) {
     fn.glXGetSyncValuesOMLFn = reinterpret_cast<glXGetSyncValuesOMLProc>(
         GetGLProcAddress("glXGetSyncValuesOML"));
   }
 
-  debug_fn.glXReleaseTexImageEXTFn = 0;
   if (ext.b_GLX_EXT_texture_from_pixmap) {
     fn.glXReleaseTexImageEXTFn = reinterpret_cast<glXReleaseTexImageEXTProc>(
         GetGLProcAddress("glXReleaseTexImageEXT"));
   }
 
-  debug_fn.glXSwapIntervalEXTFn = 0;
   if (ext.b_GLX_EXT_swap_control) {
     fn.glXSwapIntervalEXTFn = reinterpret_cast<glXSwapIntervalEXTProc>(
         GetGLProcAddress("glXSwapIntervalEXT"));
   }
 
-  debug_fn.glXSwapIntervalMESAFn = 0;
   if (ext.b_GLX_MESA_swap_control) {
     fn.glXSwapIntervalMESAFn = reinterpret_cast<glXSwapIntervalMESAProc>(
         GetGLProcAddress("glXSwapIntervalMESA"));
   }
 
-  debug_fn.glXWaitVideoSyncSGIFn = 0;
   if (ext.b_GLX_SGI_video_sync) {
     fn.glXWaitVideoSyncSGIFn = reinterpret_cast<glXWaitVideoSyncSGIProc>(
         GetGLProcAddress("glXWaitVideoSyncSGI"));
   }
-
-  if (g_debugBindingsInitialized)
-    InitializeDebugBindings();
-}
-
-extern "C" {
-
-static void GL_BINDING_CALL Debug_glXBindTexImageEXT(Display* dpy,
-                                                     GLXDrawable drawable,
-                                                     int buffer,
-                                                     int* attribList) {
-  GL_SERVICE_LOG("glXBindTexImageEXT"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << buffer << ", "
-                 << static_cast<const void*>(attribList) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXBindTexImageEXTFn != nullptr);
-  g_driver_glx.debug_fn.glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
-}
-
-static GLXFBConfig* GL_BINDING_CALL
-Debug_glXChooseFBConfig(Display* dpy,
-                        int screen,
-                        const int* attribList,
-                        int* nitems) {
-  GL_SERVICE_LOG("glXChooseFBConfig"
-                 << "(" << static_cast<const void*>(dpy) << ", " << screen
-                 << ", " << static_cast<const void*>(attribList) << ", "
-                 << static_cast<const void*>(nitems) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXChooseFBConfigFn != nullptr);
-  GLXFBConfig* result = g_driver_glx.debug_fn.glXChooseFBConfigFn(
-      dpy, screen, attribList, nitems);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static XVisualInfo* GL_BINDING_CALL Debug_glXChooseVisual(Display* dpy,
-                                                          int screen,
-                                                          int* attribList) {
-  GL_SERVICE_LOG("glXChooseVisual"
-                 << "(" << static_cast<const void*>(dpy) << ", " << screen
-                 << ", " << static_cast<const void*>(attribList) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXChooseVisualFn != nullptr);
-  XVisualInfo* result =
-      g_driver_glx.debug_fn.glXChooseVisualFn(dpy, screen, attribList);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static void GL_BINDING_CALL Debug_glXCopyContext(Display* dpy,
-                                                 GLXContext src,
-                                                 GLXContext dst,
-                                                 unsigned long mask) {
-  GL_SERVICE_LOG("glXCopyContext"
-                 << "(" << static_cast<const void*>(dpy) << ", " << src << ", "
-                 << dst << ", " << mask << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCopyContextFn != nullptr);
-  g_driver_glx.debug_fn.glXCopyContextFn(dpy, src, dst, mask);
-}
-
-static void GL_BINDING_CALL Debug_glXCopySubBufferMESA(Display* dpy,
-                                                       GLXDrawable drawable,
-                                                       int x,
-                                                       int y,
-                                                       int width,
-                                                       int height) {
-  GL_SERVICE_LOG("glXCopySubBufferMESA"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << x << ", " << y << ", " << width << ", " << height
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCopySubBufferMESAFn != nullptr);
-  g_driver_glx.debug_fn.glXCopySubBufferMESAFn(dpy, drawable, x, y, width,
-                                               height);
-}
-
-static GLXContext GL_BINDING_CALL Debug_glXCreateContext(Display* dpy,
-                                                         XVisualInfo* vis,
-                                                         GLXContext shareList,
-                                                         int direct) {
-  GL_SERVICE_LOG("glXCreateContext"
-                 << "(" << static_cast<const void*>(dpy) << ", "
-                 << static_cast<const void*>(vis) << ", " << shareList << ", "
-                 << direct << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCreateContextFn != nullptr);
-  GLXContext result =
-      g_driver_glx.debug_fn.glXCreateContextFn(dpy, vis, shareList, direct);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXContext GL_BINDING_CALL
-Debug_glXCreateContextAttribsARB(Display* dpy,
-                                 GLXFBConfig config,
-                                 GLXContext share_context,
-                                 int direct,
-                                 const int* attrib_list) {
-  GL_SERVICE_LOG("glXCreateContextAttribsARB"
-                 << "(" << static_cast<const void*>(dpy) << ", " << config
-                 << ", " << share_context << ", " << direct << ", "
-                 << static_cast<const void*>(attrib_list) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCreateContextAttribsARBFn != nullptr);
-  GLXContext result = g_driver_glx.debug_fn.glXCreateContextAttribsARBFn(
-      dpy, config, share_context, direct, attrib_list);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXPixmap GL_BINDING_CALL Debug_glXCreateGLXPixmap(Display* dpy,
-                                                          XVisualInfo* visual,
-                                                          Pixmap pixmap) {
-  GL_SERVICE_LOG("glXCreateGLXPixmap"
-                 << "(" << static_cast<const void*>(dpy) << ", "
-                 << static_cast<const void*>(visual) << ", " << pixmap << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCreateGLXPixmapFn != nullptr);
-  GLXPixmap result =
-      g_driver_glx.debug_fn.glXCreateGLXPixmapFn(dpy, visual, pixmap);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXContext GL_BINDING_CALL
-Debug_glXCreateNewContext(Display* dpy,
-                          GLXFBConfig config,
-                          int renderType,
-                          GLXContext shareList,
-                          int direct) {
-  GL_SERVICE_LOG("glXCreateNewContext"
-                 << "(" << static_cast<const void*>(dpy) << ", " << config
-                 << ", " << renderType << ", " << shareList << ", " << direct
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCreateNewContextFn != nullptr);
-  GLXContext result = g_driver_glx.debug_fn.glXCreateNewContextFn(
-      dpy, config, renderType, shareList, direct);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXPbuffer GL_BINDING_CALL
-Debug_glXCreatePbuffer(Display* dpy,
-                       GLXFBConfig config,
-                       const int* attribList) {
-  GL_SERVICE_LOG("glXCreatePbuffer"
-                 << "(" << static_cast<const void*>(dpy) << ", " << config
-                 << ", " << static_cast<const void*>(attribList) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCreatePbufferFn != nullptr);
-  GLXPbuffer result =
-      g_driver_glx.debug_fn.glXCreatePbufferFn(dpy, config, attribList);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXPixmap GL_BINDING_CALL Debug_glXCreatePixmap(Display* dpy,
-                                                       GLXFBConfig config,
-                                                       Pixmap pixmap,
-                                                       const int* attribList) {
-  GL_SERVICE_LOG("glXCreatePixmap"
-                 << "(" << static_cast<const void*>(dpy) << ", " << config
-                 << ", " << pixmap << ", "
-                 << static_cast<const void*>(attribList) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCreatePixmapFn != nullptr);
-  GLXPixmap result =
-      g_driver_glx.debug_fn.glXCreatePixmapFn(dpy, config, pixmap, attribList);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXWindow GL_BINDING_CALL Debug_glXCreateWindow(Display* dpy,
-                                                       GLXFBConfig config,
-                                                       Window win,
-                                                       const int* attribList) {
-  GL_SERVICE_LOG("glXCreateWindow"
-                 << "(" << static_cast<const void*>(dpy) << ", " << config
-                 << ", " << win << ", " << static_cast<const void*>(attribList)
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXCreateWindowFn != nullptr);
-  GLXWindow result =
-      g_driver_glx.debug_fn.glXCreateWindowFn(dpy, config, win, attribList);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static void GL_BINDING_CALL Debug_glXDestroyContext(Display* dpy,
-                                                    GLXContext ctx) {
-  GL_SERVICE_LOG("glXDestroyContext"
-                 << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
-  DCHECK(g_driver_glx.debug_fn.glXDestroyContextFn != nullptr);
-  g_driver_glx.debug_fn.glXDestroyContextFn(dpy, ctx);
-}
-
-static void GL_BINDING_CALL Debug_glXDestroyGLXPixmap(Display* dpy,
-                                                      GLXPixmap pixmap) {
-  GL_SERVICE_LOG("glXDestroyGLXPixmap"
-                 << "(" << static_cast<const void*>(dpy) << ", " << pixmap
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXDestroyGLXPixmapFn != nullptr);
-  g_driver_glx.debug_fn.glXDestroyGLXPixmapFn(dpy, pixmap);
-}
-
-static void GL_BINDING_CALL Debug_glXDestroyPbuffer(Display* dpy,
-                                                    GLXPbuffer pbuf) {
-  GL_SERVICE_LOG("glXDestroyPbuffer"
-                 << "(" << static_cast<const void*>(dpy) << ", " << pbuf
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXDestroyPbufferFn != nullptr);
-  g_driver_glx.debug_fn.glXDestroyPbufferFn(dpy, pbuf);
-}
-
-static void GL_BINDING_CALL Debug_glXDestroyPixmap(Display* dpy,
-                                                   GLXPixmap pixmap) {
-  GL_SERVICE_LOG("glXDestroyPixmap"
-                 << "(" << static_cast<const void*>(dpy) << ", " << pixmap
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXDestroyPixmapFn != nullptr);
-  g_driver_glx.debug_fn.glXDestroyPixmapFn(dpy, pixmap);
-}
-
-static void GL_BINDING_CALL Debug_glXDestroyWindow(Display* dpy,
-                                                   GLXWindow window) {
-  GL_SERVICE_LOG("glXDestroyWindow"
-                 << "(" << static_cast<const void*>(dpy) << ", " << window
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXDestroyWindowFn != nullptr);
-  g_driver_glx.debug_fn.glXDestroyWindowFn(dpy, window);
-}
-
-static const char* GL_BINDING_CALL Debug_glXGetClientString(Display* dpy,
-                                                            int name) {
-  GL_SERVICE_LOG("glXGetClientString"
-                 << "(" << static_cast<const void*>(dpy) << ", " << name
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetClientStringFn != nullptr);
-  const char* result = g_driver_glx.debug_fn.glXGetClientStringFn(dpy, name);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static int GL_BINDING_CALL Debug_glXGetConfig(Display* dpy,
-                                              XVisualInfo* visual,
-                                              int attrib,
-                                              int* value) {
-  GL_SERVICE_LOG("glXGetConfig"
-                 << "(" << static_cast<const void*>(dpy) << ", "
-                 << static_cast<const void*>(visual) << ", " << attrib << ", "
-                 << static_cast<const void*>(value) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetConfigFn != nullptr);
-  int result = g_driver_glx.debug_fn.glXGetConfigFn(dpy, visual, attrib, value);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXContext GL_BINDING_CALL Debug_glXGetCurrentContext(void) {
-  GL_SERVICE_LOG("glXGetCurrentContext"
-                 << "("
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetCurrentContextFn != nullptr);
-  GLXContext result = g_driver_glx.debug_fn.glXGetCurrentContextFn();
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static Display* GL_BINDING_CALL Debug_glXGetCurrentDisplay(void) {
-  GL_SERVICE_LOG("glXGetCurrentDisplay"
-                 << "("
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetCurrentDisplayFn != nullptr);
-  Display* result = g_driver_glx.debug_fn.glXGetCurrentDisplayFn();
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXDrawable GL_BINDING_CALL Debug_glXGetCurrentDrawable(void) {
-  GL_SERVICE_LOG("glXGetCurrentDrawable"
-                 << "("
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetCurrentDrawableFn != nullptr);
-  GLXDrawable result = g_driver_glx.debug_fn.glXGetCurrentDrawableFn();
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXDrawable GL_BINDING_CALL Debug_glXGetCurrentReadDrawable(void) {
-  GL_SERVICE_LOG("glXGetCurrentReadDrawable"
-                 << "("
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetCurrentReadDrawableFn != nullptr);
-  GLXDrawable result = g_driver_glx.debug_fn.glXGetCurrentReadDrawableFn();
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static int GL_BINDING_CALL Debug_glXGetFBConfigAttrib(Display* dpy,
-                                                      GLXFBConfig config,
-                                                      int attribute,
-                                                      int* value) {
-  GL_SERVICE_LOG("glXGetFBConfigAttrib"
-                 << "(" << static_cast<const void*>(dpy) << ", " << config
-                 << ", " << attribute << ", " << static_cast<const void*>(value)
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetFBConfigAttribFn != nullptr);
-  int result = g_driver_glx.debug_fn.glXGetFBConfigAttribFn(dpy, config,
-                                                            attribute, value);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXFBConfig GL_BINDING_CALL
-Debug_glXGetFBConfigFromVisualSGIX(Display* dpy, XVisualInfo* visualInfo) {
-  GL_SERVICE_LOG("glXGetFBConfigFromVisualSGIX"
-                 << "(" << static_cast<const void*>(dpy) << ", "
-                 << static_cast<const void*>(visualInfo) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetFBConfigFromVisualSGIXFn != nullptr);
-  GLXFBConfig result =
-      g_driver_glx.debug_fn.glXGetFBConfigFromVisualSGIXFn(dpy, visualInfo);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLXFBConfig* GL_BINDING_CALL Debug_glXGetFBConfigs(Display* dpy,
-                                                          int screen,
-                                                          int* nelements) {
-  GL_SERVICE_LOG("glXGetFBConfigs"
-                 << "(" << static_cast<const void*>(dpy) << ", " << screen
-                 << ", " << static_cast<const void*>(nelements) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetFBConfigsFn != nullptr);
-  GLXFBConfig* result =
-      g_driver_glx.debug_fn.glXGetFBConfigsFn(dpy, screen, nelements);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static bool GL_BINDING_CALL Debug_glXGetMscRateOML(Display* dpy,
-                                                   GLXDrawable drawable,
-                                                   int32_t* numerator,
-                                                   int32_t* denominator) {
-  GL_SERVICE_LOG("glXGetMscRateOML"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << static_cast<const void*>(numerator) << ", "
-                 << static_cast<const void*>(denominator) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetMscRateOMLFn != nullptr);
-  bool result = g_driver_glx.debug_fn.glXGetMscRateOMLFn(
-      dpy, drawable, numerator, denominator);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static void GL_BINDING_CALL Debug_glXGetSelectedEvent(Display* dpy,
-                                                      GLXDrawable drawable,
-                                                      unsigned long* mask) {
-  GL_SERVICE_LOG("glXGetSelectedEvent"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << static_cast<const void*>(mask) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetSelectedEventFn != nullptr);
-  g_driver_glx.debug_fn.glXGetSelectedEventFn(dpy, drawable, mask);
-}
-
-static bool GL_BINDING_CALL Debug_glXGetSyncValuesOML(Display* dpy,
-                                                      GLXDrawable drawable,
-                                                      int64_t* ust,
-                                                      int64_t* msc,
-                                                      int64_t* sbc) {
-  GL_SERVICE_LOG("glXGetSyncValuesOML"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << static_cast<const void*>(ust) << ", "
-                 << static_cast<const void*>(msc) << ", "
-                 << static_cast<const void*>(sbc) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetSyncValuesOMLFn != nullptr);
-  bool result =
-      g_driver_glx.debug_fn.glXGetSyncValuesOMLFn(dpy, drawable, ust, msc, sbc);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static XVisualInfo* GL_BINDING_CALL
-Debug_glXGetVisualFromFBConfig(Display* dpy, GLXFBConfig config) {
-  GL_SERVICE_LOG("glXGetVisualFromFBConfig"
-                 << "(" << static_cast<const void*>(dpy) << ", " << config
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXGetVisualFromFBConfigFn != nullptr);
-  XVisualInfo* result =
-      g_driver_glx.debug_fn.glXGetVisualFromFBConfigFn(dpy, config);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static int GL_BINDING_CALL Debug_glXIsDirect(Display* dpy, GLXContext ctx) {
-  GL_SERVICE_LOG("glXIsDirect"
-                 << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
-  DCHECK(g_driver_glx.debug_fn.glXIsDirectFn != nullptr);
-  int result = g_driver_glx.debug_fn.glXIsDirectFn(dpy, ctx);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static int GL_BINDING_CALL Debug_glXMakeContextCurrent(Display* dpy,
-                                                       GLXDrawable draw,
-                                                       GLXDrawable read,
-                                                       GLXContext ctx) {
-  GL_SERVICE_LOG("glXMakeContextCurrent"
-                 << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
-                 << read << ", " << ctx << ")");
-  DCHECK(g_driver_glx.debug_fn.glXMakeContextCurrentFn != nullptr);
-  int result =
-      g_driver_glx.debug_fn.glXMakeContextCurrentFn(dpy, draw, read, ctx);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static int GL_BINDING_CALL Debug_glXMakeCurrent(Display* dpy,
-                                                GLXDrawable drawable,
-                                                GLXContext ctx) {
-  GL_SERVICE_LOG("glXMakeCurrent"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << ctx << ")");
-  DCHECK(g_driver_glx.debug_fn.glXMakeCurrentFn != nullptr);
-  int result = g_driver_glx.debug_fn.glXMakeCurrentFn(dpy, drawable, ctx);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static int GL_BINDING_CALL Debug_glXQueryContext(Display* dpy,
-                                                 GLXContext ctx,
-                                                 int attribute,
-                                                 int* value) {
-  GL_SERVICE_LOG("glXQueryContext"
-                 << "(" << static_cast<const void*>(dpy) << ", " << ctx << ", "
-                 << attribute << ", " << static_cast<const void*>(value)
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXQueryContextFn != nullptr);
-  int result =
-      g_driver_glx.debug_fn.glXQueryContextFn(dpy, ctx, attribute, value);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static void GL_BINDING_CALL Debug_glXQueryDrawable(Display* dpy,
-                                                   GLXDrawable draw,
-                                                   int attribute,
-                                                   unsigned int* value) {
-  GL_SERVICE_LOG("glXQueryDrawable"
-                 << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
-                 << attribute << ", " << static_cast<const void*>(value)
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXQueryDrawableFn != nullptr);
-  g_driver_glx.debug_fn.glXQueryDrawableFn(dpy, draw, attribute, value);
-}
-
-static int GL_BINDING_CALL Debug_glXQueryExtension(Display* dpy,
-                                                   int* errorb,
-                                                   int* event) {
-  GL_SERVICE_LOG("glXQueryExtension"
-                 << "(" << static_cast<const void*>(dpy) << ", "
-                 << static_cast<const void*>(errorb) << ", "
-                 << static_cast<const void*>(event) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXQueryExtensionFn != nullptr);
-  int result = g_driver_glx.debug_fn.glXQueryExtensionFn(dpy, errorb, event);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static const char* GL_BINDING_CALL Debug_glXQueryExtensionsString(Display* dpy,
-                                                                  int screen) {
-  GL_SERVICE_LOG("glXQueryExtensionsString"
-                 << "(" << static_cast<const void*>(dpy) << ", " << screen
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXQueryExtensionsStringFn != nullptr);
-  const char* result =
-      g_driver_glx.debug_fn.glXQueryExtensionsStringFn(dpy, screen);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static const char* GL_BINDING_CALL Debug_glXQueryServerString(Display* dpy,
-                                                              int screen,
-                                                              int name) {
-  GL_SERVICE_LOG("glXQueryServerString"
-                 << "(" << static_cast<const void*>(dpy) << ", " << screen
-                 << ", " << name << ")");
-  DCHECK(g_driver_glx.debug_fn.glXQueryServerStringFn != nullptr);
-  const char* result =
-      g_driver_glx.debug_fn.glXQueryServerStringFn(dpy, screen, name);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static int GL_BINDING_CALL Debug_glXQueryVersion(Display* dpy,
-                                                 int* maj,
-                                                 int* min) {
-  GL_SERVICE_LOG("glXQueryVersion"
-                 << "(" << static_cast<const void*>(dpy) << ", "
-                 << static_cast<const void*>(maj) << ", "
-                 << static_cast<const void*>(min) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXQueryVersionFn != nullptr);
-  int result = g_driver_glx.debug_fn.glXQueryVersionFn(dpy, maj, min);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static void GL_BINDING_CALL Debug_glXReleaseTexImageEXT(Display* dpy,
-                                                        GLXDrawable drawable,
-                                                        int buffer) {
-  GL_SERVICE_LOG("glXReleaseTexImageEXT"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << buffer << ")");
-  DCHECK(g_driver_glx.debug_fn.glXReleaseTexImageEXTFn != nullptr);
-  g_driver_glx.debug_fn.glXReleaseTexImageEXTFn(dpy, drawable, buffer);
-}
-
-static void GL_BINDING_CALL Debug_glXSelectEvent(Display* dpy,
-                                                 GLXDrawable drawable,
-                                                 unsigned long mask) {
-  GL_SERVICE_LOG("glXSelectEvent"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << mask << ")");
-  DCHECK(g_driver_glx.debug_fn.glXSelectEventFn != nullptr);
-  g_driver_glx.debug_fn.glXSelectEventFn(dpy, drawable, mask);
-}
-
-static void GL_BINDING_CALL Debug_glXSwapBuffers(Display* dpy,
-                                                 GLXDrawable drawable) {
-  GL_SERVICE_LOG("glXSwapBuffers"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXSwapBuffersFn != nullptr);
-  g_driver_glx.debug_fn.glXSwapBuffersFn(dpy, drawable);
-}
-
-static void GL_BINDING_CALL Debug_glXSwapIntervalEXT(Display* dpy,
-                                                     GLXDrawable drawable,
-                                                     int interval) {
-  GL_SERVICE_LOG("glXSwapIntervalEXT"
-                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
-                 << ", " << interval << ")");
-  DCHECK(g_driver_glx.debug_fn.glXSwapIntervalEXTFn != nullptr);
-  g_driver_glx.debug_fn.glXSwapIntervalEXTFn(dpy, drawable, interval);
-}
-
-static void GL_BINDING_CALL Debug_glXSwapIntervalMESA(unsigned int interval) {
-  GL_SERVICE_LOG("glXSwapIntervalMESA"
-                 << "(" << interval << ")");
-  DCHECK(g_driver_glx.debug_fn.glXSwapIntervalMESAFn != nullptr);
-  g_driver_glx.debug_fn.glXSwapIntervalMESAFn(interval);
-}
-
-static void GL_BINDING_CALL Debug_glXUseXFont(Font font,
-                                              int first,
-                                              int count,
-                                              int list) {
-  GL_SERVICE_LOG("glXUseXFont"
-                 << "(" << font << ", " << first << ", " << count << ", "
-                 << list << ")");
-  DCHECK(g_driver_glx.debug_fn.glXUseXFontFn != nullptr);
-  g_driver_glx.debug_fn.glXUseXFontFn(font, first, count, list);
-}
-
-static void GL_BINDING_CALL Debug_glXWaitGL(void) {
-  GL_SERVICE_LOG("glXWaitGL"
-                 << "("
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXWaitGLFn != nullptr);
-  g_driver_glx.debug_fn.glXWaitGLFn();
-}
-
-static int GL_BINDING_CALL Debug_glXWaitVideoSyncSGI(int divisor,
-                                                     int remainder,
-                                                     unsigned int* count) {
-  GL_SERVICE_LOG("glXWaitVideoSyncSGI"
-                 << "(" << divisor << ", " << remainder << ", "
-                 << static_cast<const void*>(count) << ")");
-  DCHECK(g_driver_glx.debug_fn.glXWaitVideoSyncSGIFn != nullptr);
-  int result =
-      g_driver_glx.debug_fn.glXWaitVideoSyncSGIFn(divisor, remainder, count);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static void GL_BINDING_CALL Debug_glXWaitX(void) {
-  GL_SERVICE_LOG("glXWaitX"
-                 << "("
-                 << ")");
-  DCHECK(g_driver_glx.debug_fn.glXWaitXFn != nullptr);
-  g_driver_glx.debug_fn.glXWaitXFn();
-}
-}  // extern "C"
-
-void DriverGLX::InitializeDebugBindings() {
-  if (!debug_fn.glXBindTexImageEXTFn) {
-    debug_fn.glXBindTexImageEXTFn = fn.glXBindTexImageEXTFn;
-    fn.glXBindTexImageEXTFn = Debug_glXBindTexImageEXT;
-  }
-  if (!debug_fn.glXChooseFBConfigFn) {
-    debug_fn.glXChooseFBConfigFn = fn.glXChooseFBConfigFn;
-    fn.glXChooseFBConfigFn = Debug_glXChooseFBConfig;
-  }
-  if (!debug_fn.glXChooseVisualFn) {
-    debug_fn.glXChooseVisualFn = fn.glXChooseVisualFn;
-    fn.glXChooseVisualFn = Debug_glXChooseVisual;
-  }
-  if (!debug_fn.glXCopyContextFn) {
-    debug_fn.glXCopyContextFn = fn.glXCopyContextFn;
-    fn.glXCopyContextFn = Debug_glXCopyContext;
-  }
-  if (!debug_fn.glXCopySubBufferMESAFn) {
-    debug_fn.glXCopySubBufferMESAFn = fn.glXCopySubBufferMESAFn;
-    fn.glXCopySubBufferMESAFn = Debug_glXCopySubBufferMESA;
-  }
-  if (!debug_fn.glXCreateContextFn) {
-    debug_fn.glXCreateContextFn = fn.glXCreateContextFn;
-    fn.glXCreateContextFn = Debug_glXCreateContext;
-  }
-  if (!debug_fn.glXCreateContextAttribsARBFn) {
-    debug_fn.glXCreateContextAttribsARBFn = fn.glXCreateContextAttribsARBFn;
-    fn.glXCreateContextAttribsARBFn = Debug_glXCreateContextAttribsARB;
-  }
-  if (!debug_fn.glXCreateGLXPixmapFn) {
-    debug_fn.glXCreateGLXPixmapFn = fn.glXCreateGLXPixmapFn;
-    fn.glXCreateGLXPixmapFn = Debug_glXCreateGLXPixmap;
-  }
-  if (!debug_fn.glXCreateNewContextFn) {
-    debug_fn.glXCreateNewContextFn = fn.glXCreateNewContextFn;
-    fn.glXCreateNewContextFn = Debug_glXCreateNewContext;
-  }
-  if (!debug_fn.glXCreatePbufferFn) {
-    debug_fn.glXCreatePbufferFn = fn.glXCreatePbufferFn;
-    fn.glXCreatePbufferFn = Debug_glXCreatePbuffer;
-  }
-  if (!debug_fn.glXCreatePixmapFn) {
-    debug_fn.glXCreatePixmapFn = fn.glXCreatePixmapFn;
-    fn.glXCreatePixmapFn = Debug_glXCreatePixmap;
-  }
-  if (!debug_fn.glXCreateWindowFn) {
-    debug_fn.glXCreateWindowFn = fn.glXCreateWindowFn;
-    fn.glXCreateWindowFn = Debug_glXCreateWindow;
-  }
-  if (!debug_fn.glXDestroyContextFn) {
-    debug_fn.glXDestroyContextFn = fn.glXDestroyContextFn;
-    fn.glXDestroyContextFn = Debug_glXDestroyContext;
-  }
-  if (!debug_fn.glXDestroyGLXPixmapFn) {
-    debug_fn.glXDestroyGLXPixmapFn = fn.glXDestroyGLXPixmapFn;
-    fn.glXDestroyGLXPixmapFn = Debug_glXDestroyGLXPixmap;
-  }
-  if (!debug_fn.glXDestroyPbufferFn) {
-    debug_fn.glXDestroyPbufferFn = fn.glXDestroyPbufferFn;
-    fn.glXDestroyPbufferFn = Debug_glXDestroyPbuffer;
-  }
-  if (!debug_fn.glXDestroyPixmapFn) {
-    debug_fn.glXDestroyPixmapFn = fn.glXDestroyPixmapFn;
-    fn.glXDestroyPixmapFn = Debug_glXDestroyPixmap;
-  }
-  if (!debug_fn.glXDestroyWindowFn) {
-    debug_fn.glXDestroyWindowFn = fn.glXDestroyWindowFn;
-    fn.glXDestroyWindowFn = Debug_glXDestroyWindow;
-  }
-  if (!debug_fn.glXGetClientStringFn) {
-    debug_fn.glXGetClientStringFn = fn.glXGetClientStringFn;
-    fn.glXGetClientStringFn = Debug_glXGetClientString;
-  }
-  if (!debug_fn.glXGetConfigFn) {
-    debug_fn.glXGetConfigFn = fn.glXGetConfigFn;
-    fn.glXGetConfigFn = Debug_glXGetConfig;
-  }
-  if (!debug_fn.glXGetCurrentContextFn) {
-    debug_fn.glXGetCurrentContextFn = fn.glXGetCurrentContextFn;
-    fn.glXGetCurrentContextFn = Debug_glXGetCurrentContext;
-  }
-  if (!debug_fn.glXGetCurrentDisplayFn) {
-    debug_fn.glXGetCurrentDisplayFn = fn.glXGetCurrentDisplayFn;
-    fn.glXGetCurrentDisplayFn = Debug_glXGetCurrentDisplay;
-  }
-  if (!debug_fn.glXGetCurrentDrawableFn) {
-    debug_fn.glXGetCurrentDrawableFn = fn.glXGetCurrentDrawableFn;
-    fn.glXGetCurrentDrawableFn = Debug_glXGetCurrentDrawable;
-  }
-  if (!debug_fn.glXGetCurrentReadDrawableFn) {
-    debug_fn.glXGetCurrentReadDrawableFn = fn.glXGetCurrentReadDrawableFn;
-    fn.glXGetCurrentReadDrawableFn = Debug_glXGetCurrentReadDrawable;
-  }
-  if (!debug_fn.glXGetFBConfigAttribFn) {
-    debug_fn.glXGetFBConfigAttribFn = fn.glXGetFBConfigAttribFn;
-    fn.glXGetFBConfigAttribFn = Debug_glXGetFBConfigAttrib;
-  }
-  if (!debug_fn.glXGetFBConfigFromVisualSGIXFn) {
-    debug_fn.glXGetFBConfigFromVisualSGIXFn = fn.glXGetFBConfigFromVisualSGIXFn;
-    fn.glXGetFBConfigFromVisualSGIXFn = Debug_glXGetFBConfigFromVisualSGIX;
-  }
-  if (!debug_fn.glXGetFBConfigsFn) {
-    debug_fn.glXGetFBConfigsFn = fn.glXGetFBConfigsFn;
-    fn.glXGetFBConfigsFn = Debug_glXGetFBConfigs;
-  }
-  if (!debug_fn.glXGetMscRateOMLFn) {
-    debug_fn.glXGetMscRateOMLFn = fn.glXGetMscRateOMLFn;
-    fn.glXGetMscRateOMLFn = Debug_glXGetMscRateOML;
-  }
-  if (!debug_fn.glXGetSelectedEventFn) {
-    debug_fn.glXGetSelectedEventFn = fn.glXGetSelectedEventFn;
-    fn.glXGetSelectedEventFn = Debug_glXGetSelectedEvent;
-  }
-  if (!debug_fn.glXGetSyncValuesOMLFn) {
-    debug_fn.glXGetSyncValuesOMLFn = fn.glXGetSyncValuesOMLFn;
-    fn.glXGetSyncValuesOMLFn = Debug_glXGetSyncValuesOML;
-  }
-  if (!debug_fn.glXGetVisualFromFBConfigFn) {
-    debug_fn.glXGetVisualFromFBConfigFn = fn.glXGetVisualFromFBConfigFn;
-    fn.glXGetVisualFromFBConfigFn = Debug_glXGetVisualFromFBConfig;
-  }
-  if (!debug_fn.glXIsDirectFn) {
-    debug_fn.glXIsDirectFn = fn.glXIsDirectFn;
-    fn.glXIsDirectFn = Debug_glXIsDirect;
-  }
-  if (!debug_fn.glXMakeContextCurrentFn) {
-    debug_fn.glXMakeContextCurrentFn = fn.glXMakeContextCurrentFn;
-    fn.glXMakeContextCurrentFn = Debug_glXMakeContextCurrent;
-  }
-  if (!debug_fn.glXMakeCurrentFn) {
-    debug_fn.glXMakeCurrentFn = fn.glXMakeCurrentFn;
-    fn.glXMakeCurrentFn = Debug_glXMakeCurrent;
-  }
-  if (!debug_fn.glXQueryContextFn) {
-    debug_fn.glXQueryContextFn = fn.glXQueryContextFn;
-    fn.glXQueryContextFn = Debug_glXQueryContext;
-  }
-  if (!debug_fn.glXQueryDrawableFn) {
-    debug_fn.glXQueryDrawableFn = fn.glXQueryDrawableFn;
-    fn.glXQueryDrawableFn = Debug_glXQueryDrawable;
-  }
-  if (!debug_fn.glXQueryExtensionFn) {
-    debug_fn.glXQueryExtensionFn = fn.glXQueryExtensionFn;
-    fn.glXQueryExtensionFn = Debug_glXQueryExtension;
-  }
-  if (!debug_fn.glXQueryExtensionsStringFn) {
-    debug_fn.glXQueryExtensionsStringFn = fn.glXQueryExtensionsStringFn;
-    fn.glXQueryExtensionsStringFn = Debug_glXQueryExtensionsString;
-  }
-  if (!debug_fn.glXQueryServerStringFn) {
-    debug_fn.glXQueryServerStringFn = fn.glXQueryServerStringFn;
-    fn.glXQueryServerStringFn = Debug_glXQueryServerString;
-  }
-  if (!debug_fn.glXQueryVersionFn) {
-    debug_fn.glXQueryVersionFn = fn.glXQueryVersionFn;
-    fn.glXQueryVersionFn = Debug_glXQueryVersion;
-  }
-  if (!debug_fn.glXReleaseTexImageEXTFn) {
-    debug_fn.glXReleaseTexImageEXTFn = fn.glXReleaseTexImageEXTFn;
-    fn.glXReleaseTexImageEXTFn = Debug_glXReleaseTexImageEXT;
-  }
-  if (!debug_fn.glXSelectEventFn) {
-    debug_fn.glXSelectEventFn = fn.glXSelectEventFn;
-    fn.glXSelectEventFn = Debug_glXSelectEvent;
-  }
-  if (!debug_fn.glXSwapBuffersFn) {
-    debug_fn.glXSwapBuffersFn = fn.glXSwapBuffersFn;
-    fn.glXSwapBuffersFn = Debug_glXSwapBuffers;
-  }
-  if (!debug_fn.glXSwapIntervalEXTFn) {
-    debug_fn.glXSwapIntervalEXTFn = fn.glXSwapIntervalEXTFn;
-    fn.glXSwapIntervalEXTFn = Debug_glXSwapIntervalEXT;
-  }
-  if (!debug_fn.glXSwapIntervalMESAFn) {
-    debug_fn.glXSwapIntervalMESAFn = fn.glXSwapIntervalMESAFn;
-    fn.glXSwapIntervalMESAFn = Debug_glXSwapIntervalMESA;
-  }
-  if (!debug_fn.glXUseXFontFn) {
-    debug_fn.glXUseXFontFn = fn.glXUseXFontFn;
-    fn.glXUseXFontFn = Debug_glXUseXFont;
-  }
-  if (!debug_fn.glXWaitGLFn) {
-    debug_fn.glXWaitGLFn = fn.glXWaitGLFn;
-    fn.glXWaitGLFn = Debug_glXWaitGL;
-  }
-  if (!debug_fn.glXWaitVideoSyncSGIFn) {
-    debug_fn.glXWaitVideoSyncSGIFn = fn.glXWaitVideoSyncSGIFn;
-    fn.glXWaitVideoSyncSGIFn = Debug_glXWaitVideoSyncSGI;
-  }
-  if (!debug_fn.glXWaitXFn) {
-    debug_fn.glXWaitXFn = fn.glXWaitXFn;
-    fn.glXWaitXFn = Debug_glXWaitX;
-  }
-  g_debugBindingsInitialized = true;
 }
 
 void DriverGLX::ClearBindings() {
@@ -1570,6 +782,500 @@ int TraceGLXApi::glXWaitVideoSyncSGIFn(int divisor,
 
 void TraceGLXApi::glXWaitXFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXWaitX")
+  glx_api_->glXWaitXFn();
+}
+
+void DebugGLXApi::glXBindTexImageEXTFn(Display* dpy,
+                                       GLXDrawable drawable,
+                                       int buffer,
+                                       int* attribList) {
+  GL_SERVICE_LOG("glXBindTexImageEXT"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << buffer << ", "
+                 << static_cast<const void*>(attribList) << ")");
+  glx_api_->glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
+}
+
+GLXFBConfig* DebugGLXApi::glXChooseFBConfigFn(Display* dpy,
+                                              int screen,
+                                              const int* attribList,
+                                              int* nitems) {
+  GL_SERVICE_LOG("glXChooseFBConfig"
+                 << "(" << static_cast<const void*>(dpy) << ", " << screen
+                 << ", " << static_cast<const void*>(attribList) << ", "
+                 << static_cast<const void*>(nitems) << ")");
+  GLXFBConfig* result =
+      glx_api_->glXChooseFBConfigFn(dpy, screen, attribList, nitems);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+XVisualInfo* DebugGLXApi::glXChooseVisualFn(Display* dpy,
+                                            int screen,
+                                            int* attribList) {
+  GL_SERVICE_LOG("glXChooseVisual"
+                 << "(" << static_cast<const void*>(dpy) << ", " << screen
+                 << ", " << static_cast<const void*>(attribList) << ")");
+  XVisualInfo* result = glx_api_->glXChooseVisualFn(dpy, screen, attribList);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+void DebugGLXApi::glXCopyContextFn(Display* dpy,
+                                   GLXContext src,
+                                   GLXContext dst,
+                                   unsigned long mask) {
+  GL_SERVICE_LOG("glXCopyContext"
+                 << "(" << static_cast<const void*>(dpy) << ", " << src << ", "
+                 << dst << ", " << mask << ")");
+  glx_api_->glXCopyContextFn(dpy, src, dst, mask);
+}
+
+void DebugGLXApi::glXCopySubBufferMESAFn(Display* dpy,
+                                         GLXDrawable drawable,
+                                         int x,
+                                         int y,
+                                         int width,
+                                         int height) {
+  GL_SERVICE_LOG("glXCopySubBufferMESA"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << x << ", " << y << ", " << width << ", " << height
+                 << ")");
+  glx_api_->glXCopySubBufferMESAFn(dpy, drawable, x, y, width, height);
+}
+
+GLXContext DebugGLXApi::glXCreateContextFn(Display* dpy,
+                                           XVisualInfo* vis,
+                                           GLXContext shareList,
+                                           int direct) {
+  GL_SERVICE_LOG("glXCreateContext"
+                 << "(" << static_cast<const void*>(dpy) << ", "
+                 << static_cast<const void*>(vis) << ", " << shareList << ", "
+                 << direct << ")");
+  GLXContext result = glx_api_->glXCreateContextFn(dpy, vis, shareList, direct);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXContext DebugGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
+                                                     GLXFBConfig config,
+                                                     GLXContext share_context,
+                                                     int direct,
+                                                     const int* attrib_list) {
+  GL_SERVICE_LOG("glXCreateContextAttribsARB"
+                 << "(" << static_cast<const void*>(dpy) << ", " << config
+                 << ", " << share_context << ", " << direct << ", "
+                 << static_cast<const void*>(attrib_list) << ")");
+  GLXContext result = glx_api_->glXCreateContextAttribsARBFn(
+      dpy, config, share_context, direct, attrib_list);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXPixmap DebugGLXApi::glXCreateGLXPixmapFn(Display* dpy,
+                                            XVisualInfo* visual,
+                                            Pixmap pixmap) {
+  GL_SERVICE_LOG("glXCreateGLXPixmap"
+                 << "(" << static_cast<const void*>(dpy) << ", "
+                 << static_cast<const void*>(visual) << ", " << pixmap << ")");
+  GLXPixmap result = glx_api_->glXCreateGLXPixmapFn(dpy, visual, pixmap);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXContext DebugGLXApi::glXCreateNewContextFn(Display* dpy,
+                                              GLXFBConfig config,
+                                              int renderType,
+                                              GLXContext shareList,
+                                              int direct) {
+  GL_SERVICE_LOG("glXCreateNewContext"
+                 << "(" << static_cast<const void*>(dpy) << ", " << config
+                 << ", " << renderType << ", " << shareList << ", " << direct
+                 << ")");
+  GLXContext result = glx_api_->glXCreateNewContextFn(dpy, config, renderType,
+                                                      shareList, direct);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXPbuffer DebugGLXApi::glXCreatePbufferFn(Display* dpy,
+                                           GLXFBConfig config,
+                                           const int* attribList) {
+  GL_SERVICE_LOG("glXCreatePbuffer"
+                 << "(" << static_cast<const void*>(dpy) << ", " << config
+                 << ", " << static_cast<const void*>(attribList) << ")");
+  GLXPbuffer result = glx_api_->glXCreatePbufferFn(dpy, config, attribList);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXPixmap DebugGLXApi::glXCreatePixmapFn(Display* dpy,
+                                         GLXFBConfig config,
+                                         Pixmap pixmap,
+                                         const int* attribList) {
+  GL_SERVICE_LOG("glXCreatePixmap"
+                 << "(" << static_cast<const void*>(dpy) << ", " << config
+                 << ", " << pixmap << ", "
+                 << static_cast<const void*>(attribList) << ")");
+  GLXPixmap result =
+      glx_api_->glXCreatePixmapFn(dpy, config, pixmap, attribList);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXWindow DebugGLXApi::glXCreateWindowFn(Display* dpy,
+                                         GLXFBConfig config,
+                                         Window win,
+                                         const int* attribList) {
+  GL_SERVICE_LOG("glXCreateWindow"
+                 << "(" << static_cast<const void*>(dpy) << ", " << config
+                 << ", " << win << ", " << static_cast<const void*>(attribList)
+                 << ")");
+  GLXWindow result = glx_api_->glXCreateWindowFn(dpy, config, win, attribList);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+void DebugGLXApi::glXDestroyContextFn(Display* dpy, GLXContext ctx) {
+  GL_SERVICE_LOG("glXDestroyContext"
+                 << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
+  glx_api_->glXDestroyContextFn(dpy, ctx);
+}
+
+void DebugGLXApi::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
+  GL_SERVICE_LOG("glXDestroyGLXPixmap"
+                 << "(" << static_cast<const void*>(dpy) << ", " << pixmap
+                 << ")");
+  glx_api_->glXDestroyGLXPixmapFn(dpy, pixmap);
+}
+
+void DebugGLXApi::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
+  GL_SERVICE_LOG("glXDestroyPbuffer"
+                 << "(" << static_cast<const void*>(dpy) << ", " << pbuf
+                 << ")");
+  glx_api_->glXDestroyPbufferFn(dpy, pbuf);
+}
+
+void DebugGLXApi::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
+  GL_SERVICE_LOG("glXDestroyPixmap"
+                 << "(" << static_cast<const void*>(dpy) << ", " << pixmap
+                 << ")");
+  glx_api_->glXDestroyPixmapFn(dpy, pixmap);
+}
+
+void DebugGLXApi::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
+  GL_SERVICE_LOG("glXDestroyWindow"
+                 << "(" << static_cast<const void*>(dpy) << ", " << window
+                 << ")");
+  glx_api_->glXDestroyWindowFn(dpy, window);
+}
+
+const char* DebugGLXApi::glXGetClientStringFn(Display* dpy, int name) {
+  GL_SERVICE_LOG("glXGetClientString"
+                 << "(" << static_cast<const void*>(dpy) << ", " << name
+                 << ")");
+  const char* result = glx_api_->glXGetClientStringFn(dpy, name);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+int DebugGLXApi::glXGetConfigFn(Display* dpy,
+                                XVisualInfo* visual,
+                                int attrib,
+                                int* value) {
+  GL_SERVICE_LOG("glXGetConfig"
+                 << "(" << static_cast<const void*>(dpy) << ", "
+                 << static_cast<const void*>(visual) << ", " << attrib << ", "
+                 << static_cast<const void*>(value) << ")");
+  int result = glx_api_->glXGetConfigFn(dpy, visual, attrib, value);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXContext DebugGLXApi::glXGetCurrentContextFn(void) {
+  GL_SERVICE_LOG("glXGetCurrentContext"
+                 << "("
+                 << ")");
+  GLXContext result = glx_api_->glXGetCurrentContextFn();
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+Display* DebugGLXApi::glXGetCurrentDisplayFn(void) {
+  GL_SERVICE_LOG("glXGetCurrentDisplay"
+                 << "("
+                 << ")");
+  Display* result = glx_api_->glXGetCurrentDisplayFn();
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXDrawable DebugGLXApi::glXGetCurrentDrawableFn(void) {
+  GL_SERVICE_LOG("glXGetCurrentDrawable"
+                 << "("
+                 << ")");
+  GLXDrawable result = glx_api_->glXGetCurrentDrawableFn();
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXDrawable DebugGLXApi::glXGetCurrentReadDrawableFn(void) {
+  GL_SERVICE_LOG("glXGetCurrentReadDrawable"
+                 << "("
+                 << ")");
+  GLXDrawable result = glx_api_->glXGetCurrentReadDrawableFn();
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+int DebugGLXApi::glXGetFBConfigAttribFn(Display* dpy,
+                                        GLXFBConfig config,
+                                        int attribute,
+                                        int* value) {
+  GL_SERVICE_LOG("glXGetFBConfigAttrib"
+                 << "(" << static_cast<const void*>(dpy) << ", " << config
+                 << ", " << attribute << ", " << static_cast<const void*>(value)
+                 << ")");
+  int result = glx_api_->glXGetFBConfigAttribFn(dpy, config, attribute, value);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXFBConfig DebugGLXApi::glXGetFBConfigFromVisualSGIXFn(
+    Display* dpy,
+    XVisualInfo* visualInfo) {
+  GL_SERVICE_LOG("glXGetFBConfigFromVisualSGIX"
+                 << "(" << static_cast<const void*>(dpy) << ", "
+                 << static_cast<const void*>(visualInfo) << ")");
+  GLXFBConfig result =
+      glx_api_->glXGetFBConfigFromVisualSGIXFn(dpy, visualInfo);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLXFBConfig* DebugGLXApi::glXGetFBConfigsFn(Display* dpy,
+                                            int screen,
+                                            int* nelements) {
+  GL_SERVICE_LOG("glXGetFBConfigs"
+                 << "(" << static_cast<const void*>(dpy) << ", " << screen
+                 << ", " << static_cast<const void*>(nelements) << ")");
+  GLXFBConfig* result = glx_api_->glXGetFBConfigsFn(dpy, screen, nelements);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+bool DebugGLXApi::glXGetMscRateOMLFn(Display* dpy,
+                                     GLXDrawable drawable,
+                                     int32_t* numerator,
+                                     int32_t* denominator) {
+  GL_SERVICE_LOG("glXGetMscRateOML"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << static_cast<const void*>(numerator) << ", "
+                 << static_cast<const void*>(denominator) << ")");
+  bool result =
+      glx_api_->glXGetMscRateOMLFn(dpy, drawable, numerator, denominator);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+void DebugGLXApi::glXGetSelectedEventFn(Display* dpy,
+                                        GLXDrawable drawable,
+                                        unsigned long* mask) {
+  GL_SERVICE_LOG("glXGetSelectedEvent"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << static_cast<const void*>(mask) << ")");
+  glx_api_->glXGetSelectedEventFn(dpy, drawable, mask);
+}
+
+bool DebugGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
+                                        GLXDrawable drawable,
+                                        int64_t* ust,
+                                        int64_t* msc,
+                                        int64_t* sbc) {
+  GL_SERVICE_LOG("glXGetSyncValuesOML"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << static_cast<const void*>(ust) << ", "
+                 << static_cast<const void*>(msc) << ", "
+                 << static_cast<const void*>(sbc) << ")");
+  bool result = glx_api_->glXGetSyncValuesOMLFn(dpy, drawable, ust, msc, sbc);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+XVisualInfo* DebugGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
+                                                     GLXFBConfig config) {
+  GL_SERVICE_LOG("glXGetVisualFromFBConfig"
+                 << "(" << static_cast<const void*>(dpy) << ", " << config
+                 << ")");
+  XVisualInfo* result = glx_api_->glXGetVisualFromFBConfigFn(dpy, config);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+int DebugGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
+  GL_SERVICE_LOG("glXIsDirect"
+                 << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
+  int result = glx_api_->glXIsDirectFn(dpy, ctx);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+int DebugGLXApi::glXMakeContextCurrentFn(Display* dpy,
+                                         GLXDrawable draw,
+                                         GLXDrawable read,
+                                         GLXContext ctx) {
+  GL_SERVICE_LOG("glXMakeContextCurrent"
+                 << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
+                 << read << ", " << ctx << ")");
+  int result = glx_api_->glXMakeContextCurrentFn(dpy, draw, read, ctx);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+int DebugGLXApi::glXMakeCurrentFn(Display* dpy,
+                                  GLXDrawable drawable,
+                                  GLXContext ctx) {
+  GL_SERVICE_LOG("glXMakeCurrent"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << ctx << ")");
+  int result = glx_api_->glXMakeCurrentFn(dpy, drawable, ctx);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+int DebugGLXApi::glXQueryContextFn(Display* dpy,
+                                   GLXContext ctx,
+                                   int attribute,
+                                   int* value) {
+  GL_SERVICE_LOG("glXQueryContext"
+                 << "(" << static_cast<const void*>(dpy) << ", " << ctx << ", "
+                 << attribute << ", " << static_cast<const void*>(value)
+                 << ")");
+  int result = glx_api_->glXQueryContextFn(dpy, ctx, attribute, value);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+void DebugGLXApi::glXQueryDrawableFn(Display* dpy,
+                                     GLXDrawable draw,
+                                     int attribute,
+                                     unsigned int* value) {
+  GL_SERVICE_LOG("glXQueryDrawable"
+                 << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
+                 << attribute << ", " << static_cast<const void*>(value)
+                 << ")");
+  glx_api_->glXQueryDrawableFn(dpy, draw, attribute, value);
+}
+
+int DebugGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
+  GL_SERVICE_LOG("glXQueryExtension"
+                 << "(" << static_cast<const void*>(dpy) << ", "
+                 << static_cast<const void*>(errorb) << ", "
+                 << static_cast<const void*>(event) << ")");
+  int result = glx_api_->glXQueryExtensionFn(dpy, errorb, event);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+const char* DebugGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
+  GL_SERVICE_LOG("glXQueryExtensionsString"
+                 << "(" << static_cast<const void*>(dpy) << ", " << screen
+                 << ")");
+  const char* result = glx_api_->glXQueryExtensionsStringFn(dpy, screen);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+const char* DebugGLXApi::glXQueryServerStringFn(Display* dpy,
+                                                int screen,
+                                                int name) {
+  GL_SERVICE_LOG("glXQueryServerString"
+                 << "(" << static_cast<const void*>(dpy) << ", " << screen
+                 << ", " << name << ")");
+  const char* result = glx_api_->glXQueryServerStringFn(dpy, screen, name);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+int DebugGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
+  GL_SERVICE_LOG("glXQueryVersion"
+                 << "(" << static_cast<const void*>(dpy) << ", "
+                 << static_cast<const void*>(maj) << ", "
+                 << static_cast<const void*>(min) << ")");
+  int result = glx_api_->glXQueryVersionFn(dpy, maj, min);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+void DebugGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
+                                          GLXDrawable drawable,
+                                          int buffer) {
+  GL_SERVICE_LOG("glXReleaseTexImageEXT"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << buffer << ")");
+  glx_api_->glXReleaseTexImageEXTFn(dpy, drawable, buffer);
+}
+
+void DebugGLXApi::glXSelectEventFn(Display* dpy,
+                                   GLXDrawable drawable,
+                                   unsigned long mask) {
+  GL_SERVICE_LOG("glXSelectEvent"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << mask << ")");
+  glx_api_->glXSelectEventFn(dpy, drawable, mask);
+}
+
+void DebugGLXApi::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
+  GL_SERVICE_LOG("glXSwapBuffers"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ")");
+  glx_api_->glXSwapBuffersFn(dpy, drawable);
+}
+
+void DebugGLXApi::glXSwapIntervalEXTFn(Display* dpy,
+                                       GLXDrawable drawable,
+                                       int interval) {
+  GL_SERVICE_LOG("glXSwapIntervalEXT"
+                 << "(" << static_cast<const void*>(dpy) << ", " << drawable
+                 << ", " << interval << ")");
+  glx_api_->glXSwapIntervalEXTFn(dpy, drawable, interval);
+}
+
+void DebugGLXApi::glXSwapIntervalMESAFn(unsigned int interval) {
+  GL_SERVICE_LOG("glXSwapIntervalMESA"
+                 << "(" << interval << ")");
+  glx_api_->glXSwapIntervalMESAFn(interval);
+}
+
+void DebugGLXApi::glXUseXFontFn(Font font, int first, int count, int list) {
+  GL_SERVICE_LOG("glXUseXFont"
+                 << "(" << font << ", " << first << ", " << count << ", "
+                 << list << ")");
+  glx_api_->glXUseXFontFn(font, first, count, list);
+}
+
+void DebugGLXApi::glXWaitGLFn(void) {
+  GL_SERVICE_LOG("glXWaitGL"
+                 << "("
+                 << ")");
+  glx_api_->glXWaitGLFn();
+}
+
+int DebugGLXApi::glXWaitVideoSyncSGIFn(int divisor,
+                                       int remainder,
+                                       unsigned int* count) {
+  GL_SERVICE_LOG("glXWaitVideoSyncSGI"
+                 << "(" << divisor << ", " << remainder << ", "
+                 << static_cast<const void*>(count) << ")");
+  int result = glx_api_->glXWaitVideoSyncSGIFn(divisor, remainder, count);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+void DebugGLXApi::glXWaitXFn(void) {
+  GL_SERVICE_LOG("glXWaitX"
+                 << "("
+                 << ")");
   glx_api_->glXWaitXFn();
 }
 

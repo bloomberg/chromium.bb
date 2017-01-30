@@ -2556,8 +2556,8 @@ namespace gl {
 """ % includes_string)
 
   file.write('\n')
-  file.write('static bool g_debugBindingsInitialized;\n')
-  file.write('Driver%s g_driver_%s;\n' % (set_name.upper(), set_name.lower()))
+  if set_name != 'gl':
+    file.write('Driver%s g_driver_%s;\n' % (set_name.upper(), set_name.lower()))
   file.write('\n')
 
   # Write stub functions that take the place of some functions before a context
@@ -2650,11 +2650,8 @@ namespace gl {
   if set_name == 'gl':
     file.write("""\
 void DriverGL::InitializeDynamicBindings(
-    GLContext* context) {
-  DCHECK(context && context->IsCurrent(NULL));
-  const GLVersionInfo* ver = context->GetVersionInfo();
-  ALLOW_UNUSED_LOCAL(ver);
-  std::string extensions = context->GetExtensions() + " ";
+    const GLVersionInfo* ver, const std::string& context_extensions) {
+  std::string extensions = context_extensions + " ";
   ALLOW_UNUSED_LOCAL(extensions);
 
 """)
@@ -2685,7 +2682,6 @@ void Driver%s::InitializeExtensionBindings() {
     for func in extension_funcs:
       if not 'static_binding' in func:
         file.write('\n')
-        file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
         WriteConditionalFuncBinding(file, func)
 
   OutputExtensionBindings(
@@ -2708,104 +2704,6 @@ void DriverEGL::InitializeExtensionBindings() {
     'extensions',
     sorted(used_extensions),
     [ f for f in functions if not IsClientExtensionFunc(f) ])
-
-  # Some new function pointers have been added, so update them in debug bindings
-  file.write('\n')
-  file.write('  if (g_debugBindingsInitialized)\n')
-  file.write('    InitializeDebugBindings();\n')
-  file.write('}\n')
-  file.write('\n')
-
-  # Write logging wrappers for each function.
-  file.write('extern "C" {\n')
-  for func in functions:
-    return_type = func['return_type']
-    arguments = func['arguments']
-    file.write('\n')
-    file.write('static %s GL_BINDING_CALL Debug_%s(%s) {\n' %
-        (return_type, func['known_as'], arguments))
-    argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
-    argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
-    log_argument_names = re.sub(
-        r'const char\* ([a-zA-Z0-9_]+)', r'CONSTCHAR_\1', arguments)
-    log_argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\* ([a-zA-Z0-9_]+)',
-        r'CONSTVOID_\2', log_argument_names)
-    log_argument_names = re.sub(
-        r'(?<!E)GLenum ([a-zA-Z0-9_]+)', r'GLenum_\1', log_argument_names)
-    log_argument_names = re.sub(
-        r'(?<!E)GLboolean ([a-zA-Z0-9_]+)', r'GLboolean_\1', log_argument_names)
-    log_argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
-        log_argument_names)
-    log_argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
-        log_argument_names)
-    log_argument_names = re.sub(
-        r'CONSTVOID_([a-zA-Z0-9_]+)',
-        r'static_cast<const void*>(\1)', log_argument_names)
-    log_argument_names = re.sub(
-        r'CONSTCHAR_([a-zA-Z0-9_]+)', r'\1', log_argument_names)
-    log_argument_names = re.sub(
-        r'GLenum_([a-zA-Z0-9_]+)', r'GLEnums::GetStringEnum(\1)',
-        log_argument_names)
-    log_argument_names = re.sub(
-        r'GLboolean_([a-zA-Z0-9_]+)', r'GLEnums::GetStringBool(\1)',
-        log_argument_names)
-    log_argument_names = log_argument_names.replace(',', ' << ", " <<')
-    if argument_names == 'void' or argument_names == '':
-      argument_names = ''
-      log_argument_names = ''
-    else:
-      log_argument_names = " << " + log_argument_names
-    function_name = func['known_as']
-    if return_type == 'void':
-      file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
-          (function_name, log_argument_names))
-      file.write('  DCHECK(g_driver_%s.debug_fn.%sFn != nullptr);\n' %
-          (set_name.lower(), function_name))
-      file.write('  g_driver_%s.debug_fn.%sFn(%s);\n' %
-          (set_name.lower(), function_name, argument_names))
-      if 'logging_code' in func:
-        file.write("%s\n" % func['logging_code'])
-      if options.generate_dchecks and set_name == 'gl':
-        file.write('  {\n')
-        file.write('    GLenum error = g_driver_gl.debug_fn.glGetErrorFn();\n')
-        file.write('    DCHECK(error == 0);\n')
-        file.write('  }\n')
-    else:
-      file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
-          (function_name, log_argument_names))
-      file.write('  DCHECK(g_driver_%s.debug_fn.%sFn != nullptr);\n' %
-          (set_name.lower(), function_name))
-      file.write('  %s result = g_driver_%s.debug_fn.%sFn(%s);\n' %
-          (return_type, set_name.lower(), function_name, argument_names))
-      if 'logging_code' in func:
-        file.write("%s\n" % func['logging_code'])
-      else:
-        file.write('  GL_SERVICE_LOG("GL_RESULT: " << result);\n')
-      if options.generate_dchecks and set_name == 'gl':
-        file.write('  {\n')
-        file.write('    GLenum _error = g_driver_gl.debug_fn.glGetErrorFn();\n')
-        file.write('    DCHECK(_error == 0);\n')
-        file.write('  }\n')
-      file.write('  return result;\n')
-    file.write('}\n')
-  file.write('}  // extern "C"\n')
-
-  # Write function to initialize the debug function pointers.
-  file.write('\n')
-  file.write('void Driver%s::InitializeDebugBindings() {\n' %
-             set_name.upper())
-  for func in functions:
-    first_name = func['known_as']
-    file.write('  if (!debug_fn.%sFn) {\n' % first_name)
-    file.write('    debug_fn.%sFn = fn.%sFn;\n' % (first_name, first_name))
-    file.write('    fn.%sFn = Debug_%s;\n' % (first_name, first_name))
-    file.write('  }\n')
-  file.write('  g_debugBindingsInitialized = true;\n')
   file.write('}\n')
 
   # Write function to clear all function pointers.
@@ -2858,6 +2756,81 @@ void DriverEGL::InitializeExtensionBindings() {
     else:
       file.write('  return %s_api_->%sFn(%s);\n' %
           (set_name.lower(), function_name, argument_names))
+    file.write('}\n')
+
+  # Write DebugGLApi functions
+  for func in functions:
+    return_type = func['return_type']
+    arguments = func['arguments']
+    file.write('\n')
+    file.write('%s Debug%sApi::%sFn(%s) {\n' %
+        (return_type, set_name.upper(), func['known_as'], arguments))
+    argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
+    argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
+    log_argument_names = re.sub(
+        r'const char\* ([a-zA-Z0-9_]+)', r'CONSTCHAR_\1', arguments)
+    log_argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\* ([a-zA-Z0-9_]+)',
+        r'CONSTVOID_\2', log_argument_names)
+    log_argument_names = re.sub(
+        r'(?<!E)GLenum ([a-zA-Z0-9_]+)', r'GLenum_\1', log_argument_names)
+    log_argument_names = re.sub(
+        r'(?<!E)GLboolean ([a-zA-Z0-9_]+)', r'GLboolean_\1', log_argument_names)
+    log_argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
+        log_argument_names)
+    log_argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
+        log_argument_names)
+    log_argument_names = re.sub(
+        r'CONSTVOID_([a-zA-Z0-9_]+)',
+        r'static_cast<const void*>(\1)', log_argument_names)
+    log_argument_names = re.sub(
+        r'CONSTCHAR_([a-zA-Z0-9_]+)', r'\1', log_argument_names)
+    log_argument_names = re.sub(
+        r'GLenum_([a-zA-Z0-9_]+)', r'GLEnums::GetStringEnum(\1)',
+        log_argument_names)
+    log_argument_names = re.sub(
+        r'GLboolean_([a-zA-Z0-9_]+)', r'GLEnums::GetStringBool(\1)',
+        log_argument_names)
+    log_argument_names = log_argument_names.replace(',', ' << ", " <<')
+    if argument_names == 'void' or argument_names == '':
+      argument_names = ''
+      log_argument_names = ''
+    else:
+      log_argument_names = " << " + log_argument_names
+    function_name = func['known_as']
+    if return_type == 'void':
+      file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
+          (function_name, log_argument_names))
+      file.write('  %s_api_->%sFn(%s);\n' %
+          (set_name.lower(), function_name, argument_names))
+      if 'logging_code' in func:
+        file.write("%s\n" % func['logging_code'])
+      if options.generate_dchecks and set_name == 'gl':
+        file.write('  {\n')
+        file.write('    GLenum error = %s_api_->glGetErrorFn();\n'
+            % set_name.lower())
+        file.write('    DCHECK(error == 0);\n')
+        file.write('  }\n')
+    else:
+      file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
+          (function_name, log_argument_names))
+      file.write('  %s result = %s_api_->%sFn(%s);\n' %
+          (return_type, set_name.lower(), function_name, argument_names))
+      if 'logging_code' in func:
+        file.write("%s\n" % func['logging_code'])
+      else:
+        file.write('  GL_SERVICE_LOG("GL_RESULT: " << result);\n')
+      if options.generate_dchecks and set_name == 'gl':
+        file.write('  {\n')
+        file.write('    GLenum _error = %s_api_->glGetErrorFn();\n' %
+            set_name.lower())
+        file.write('    DCHECK(_error == 0);\n')
+        file.write('  }\n')
+      file.write('  return result;\n')
     file.write('}\n')
 
   # Write NoContextGLApi functions

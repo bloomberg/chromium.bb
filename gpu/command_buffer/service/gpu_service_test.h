@@ -14,7 +14,7 @@
 #include "ui/gl/gl_mock.h"
 
 namespace gl {
-class GLContextStubWithExtensions;
+class GLContextStub;
 class GLSurface;
 class GLSurfaceStub;
 }
@@ -40,7 +40,7 @@ class GpuServiceTest : public testing::Test {
  private:
   bool ran_setup_;
   bool ran_teardown_;
-  scoped_refptr<gl::GLContextStubWithExtensions> context_;
+  scoped_refptr<gl::GLContextStub> context_;
   scoped_refptr<gl::GLSurfaceStub> surface_;
   base::MessageLoop message_loop_;
 };

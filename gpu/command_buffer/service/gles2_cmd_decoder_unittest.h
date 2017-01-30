@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
 

@@ -19,6 +19,7 @@ GL_EXPORT extern const char kGLImplementationEGLName[];
 GL_EXPORT extern const char kGLImplementationANGLEName[];
 GL_EXPORT extern const char kGLImplementationSwiftShaderName[];
 extern const char kGLImplementationMockName[];
+extern const char kGLImplementationStubName[];
 
 GL_EXPORT extern const char kANGLEImplementationDefaultName[];
 GL_EXPORT extern const char kANGLEImplementationD3D9Name[];

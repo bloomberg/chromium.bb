@@ -15,6 +15,7 @@ class GLSurfaceTestSupport {
   static void InitializeOneOffImplementation(GLImplementation impl,
                                              bool fallback_to_osmesa);
   static void InitializeOneOffWithMockBindings();
+  static void InitializeOneOffWithStubBindings();
 };
 
 }  // namespace gl

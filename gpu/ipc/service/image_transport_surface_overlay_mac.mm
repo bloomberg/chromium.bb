@@ -41,7 +41,6 @@ typedef void* GLeglImageOES;
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image_io_surface.h"
 #include "ui/gl/gpu_switching_manager.h"
-#include "ui/gl/scoped_api.h"
 #include "ui/gl/scoped_cgl.h"
 
 namespace {
@@ -115,7 +114,6 @@ bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurfaceFormat format) {
 void ImageTransportSurfaceOverlayMac::Destroy() {
   ca_layer_tree_coordinator_.reset();
   if (previous_frame_fence_) {
-    gl::ScopedSetGLToRealGLApi scoped_set_gl_api;
     // Ensure we are using the context with which the fence was created.
     gl::ScopedCGLSetCurrentContext scoped_set_current(fence_context_obj_);
     CheckGLErrors("Before destroy fence");
@@ -187,7 +185,6 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   // If supported, use GLFence to ensure that we haven't gotten more than one
   // frame ahead of GL.
   if (gl::GLFence::IsSupported()) {
-    gl::ScopedSetGLToRealGLApi scoped_set_gl_api;
     CheckGLErrors("Before fence/flush");
 
     // If we have gotten more than one frame ahead of GL, wait for the previous
@@ -234,7 +231,6 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   } else {
     // GLFence isn't supported - issue a glFinish on each frame to ensure
     // there is backpressure from GL.
-    gl::ScopedSetGLToRealGLApi scoped_set_gl_api;
     TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::glFinish");
     CheckGLErrors("Before finish");
     glFinish();

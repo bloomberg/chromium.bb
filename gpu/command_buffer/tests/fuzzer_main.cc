@@ -29,7 +29,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_egl.h"
-#include "ui/gl/gl_context_stub_with_extensions.h"
+#include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_stub_api.h"
@@ -111,13 +111,13 @@ class CommandBufferSetup {
     context_->Initialize(surface_.get(), gl::GLContextAttribs());
 #else
     surface_ = new gl::GLSurfaceStub;
-    context_ = new gl::GLContextStub(share_group_.get());
+    scoped_refptr<gl::GLContextStub> context_stub =
+        new gl::GLContextStub(share_group_.get());
+    context_stub->SetGLVersionString("OpenGL ES 3.1");
+    context_stub->SetExtensionsString(kExtensions);
+    context_stub->SetUseStubApi(true);
+    context_ = context_stub;
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-
-    api_ = base::MakeUnique<gl::GLStubApi>();
-    api_->set_version("OpenGL ES 3.1");
-    api_->set_extensions(kExtensions);
-    gl::SetStubGLApi(api_.get());
 #endif
 
     sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
@@ -290,9 +290,6 @@ class CommandBufferSetup {
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-#if !defined(GPU_FUZZER_USE_ANGLE)
-  std::unique_ptr<gl::GLStubApi> api_;
-#endif
 
   scoped_refptr<gles2::ShaderTranslatorCache> translator_cache_;
   scoped_refptr<gles2::FramebufferCompletenessCache> completeness_cache_;

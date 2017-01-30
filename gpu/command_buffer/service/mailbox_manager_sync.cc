@@ -38,7 +38,8 @@ base::LazyInstance<std::queue<SyncTokenToFenceMap::iterator>> g_sync_points =
 void CreateFenceLocked(const SyncToken& sync_token) {
 #if !defined(OS_MACOSX)
   g_lock.Get().AssertAcquired();
-  if (gl::GetGLImplementation() == gl::kGLImplementationMockGL)
+  if (gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
+      gl::GetGLImplementation() == gl::kGLImplementationStubGL)
     return;
 
   std::queue<SyncTokenToFenceMap::iterator>& sync_points = g_sync_points.Get();

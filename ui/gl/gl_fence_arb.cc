@@ -78,8 +78,10 @@ void GLFenceARB::HandleClientWaitFailure() {
   if (GLContext::GetCurrent()->WasAllocatedUsingRobustnessExtension()) {
     // This function pointer is only set if one of the robustness
     // extensions was available.
-    DCHECK(g_driver_gl.fn.glGetGraphicsResetStatusARBFn);
-    DCHECK(g_driver_gl.fn.glGetGraphicsResetStatusARBFn() != GL_NO_ERROR);
+    DCHECK(g_current_gl_driver &&
+           g_current_gl_driver->fn.glGetGraphicsResetStatusARBFn);
+    DCHECK(g_current_gl_driver->fn.glGetGraphicsResetStatusARBFn() !=
+           GL_NO_ERROR);
     LOG(ERROR) << "Failed to wait for GLFence; context was lost. Error code: "
                << GetGLErrors();
   } else {

@@ -223,9 +223,18 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
       &vertex_array_id_map_, have_context,
       [](GLuint vertex_array) { glDeleteVertexArraysOES(1, &vertex_array); });
 
+  // Destroy the surface before the context, some surface destructors make GL
+  // calls.
+  surface_ = nullptr;
+
   if (group_) {
     group_->Destroy(this, have_context);
     group_ = nullptr;
+  }
+
+  if (context_.get()) {
+    context_->ReleaseCurrent(nullptr);
+    context_ = nullptr;
   }
 }
 

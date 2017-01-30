@@ -209,10 +209,10 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   // in turn initialize FeatureInfo, which needs a context to determine
   // extension support.
   context_ = new StrictMock<GLContextMock>();
-  context_->AddExtensionsString(normalized_init.extensions.c_str());
+  context_->SetExtensionsString(normalized_init.extensions.c_str());
   context_->SetGLVersionString(normalized_init.gl_version.c_str());
 
-  context_->GLContextStubWithExtensions::MakeCurrent(surface_.get());
+  context_->GLContextStub::MakeCurrent(surface_.get());
 
   TestHelper::SetupContextGroupInitExpectations(
       gl_.get(),

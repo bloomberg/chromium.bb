@@ -11,7 +11,8 @@
 
 namespace gl {
 
-RealWGLApi* g_real_wgl;
+RealWGLApi* g_real_wgl = nullptr;
+DebugWGLApi* g_debug_wgl = nullptr;
 
 void InitializeStaticGLBindingsWGL() {
   g_driver_wgl.InitializeStaticBindings();
@@ -24,10 +25,17 @@ void InitializeStaticGLBindingsWGL() {
 }
 
 void InitializeDebugGLBindingsWGL() {
-  g_driver_wgl.InitializeDebugBindings();
+  if (!g_debug_wgl) {
+    g_debug_wgl = new DebugWGLApi(g_real_wgl);
+  }
+  g_current_wgl_context = g_debug_wgl;
 }
 
 void ClearBindingsWGL() {
+  if (g_debug_wgl) {
+    delete g_debug_wgl;
+    g_debug_wgl = NULL;
+  }
   if (g_real_wgl) {
     delete g_real_wgl;
     g_real_wgl = NULL;
@@ -110,6 +118,10 @@ const char* RealWGLApi::wglGetExtensionsStringEXTFn() {
   filtered_ext_exts_ = FilterGLExtensionList(str, disabled_exts_);
   return filtered_ext_exts_.c_str();
 }
+
+DebugWGLApi::DebugWGLApi(WGLApi* wgl_api) : wgl_api_(wgl_api) {}
+
+DebugWGLApi::~DebugWGLApi() {}
 
 TraceWGLApi::~TraceWGLApi() {
 }

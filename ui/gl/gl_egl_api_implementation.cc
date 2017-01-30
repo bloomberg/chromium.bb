@@ -12,20 +12,8 @@
 
 namespace gl {
 
-namespace {
-
-void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
-  glClearDepthf(static_cast<GLclampf>(depth));
-}
-
-void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
-                                                    GLclampd z_far) {
-  glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
-}
-
-}  // namespace
-
-RealEGLApi* g_real_egl;
+RealEGLApi* g_real_egl = nullptr;
+DebugEGLApi* g_debug_egl = nullptr;
 
 void InitializeStaticGLBindingsEGL() {
   g_driver_egl.InitializeStaticBindings();
@@ -34,18 +22,20 @@ void InitializeStaticGLBindingsEGL() {
   }
   g_real_egl->Initialize(&g_driver_egl);
   g_current_egl_context = g_real_egl;
-
-  // These two functions take single precision float rather than double
-  // precision float parameters in GLES.
-  ::gl::g_driver_gl.fn.glClearDepthFn = MarshalClearDepthToClearDepthf;
-  ::gl::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
 }
 
 void InitializeDebugGLBindingsEGL() {
-  g_driver_egl.InitializeDebugBindings();
+  if (!g_debug_egl) {
+    g_debug_egl = new DebugEGLApi(g_real_egl);
+  }
+  g_current_egl_context = g_debug_egl;
 }
 
 void ClearBindingsEGL() {
+  if (g_debug_egl) {
+    delete g_debug_egl;
+    g_debug_egl = NULL;
+  }
   if (g_real_egl) {
     delete g_real_egl;
     g_real_egl = NULL;
@@ -109,6 +99,10 @@ const char* RealEGLApi::eglQueryStringFn(EGLDisplay dpy, EGLint name) {
   }
   return EGLApiBase::eglQueryStringFn(dpy, name);
 }
+
+DebugEGLApi::DebugEGLApi(EGLApi* egl_api) : egl_api_(egl_api) {}
+
+DebugEGLApi::~DebugEGLApi() {}
 
 TraceEGLApi::~TraceEGLApi() {
 }

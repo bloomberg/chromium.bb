@@ -14,6 +14,7 @@ const char kGLImplementationEGLName[]         = "egl";
 const char kGLImplementationANGLEName[]       = "angle";
 const char kGLImplementationSwiftShaderName[] = "swiftshader";
 const char kGLImplementationMockName[]        = "mock";
+const char kGLImplementationStubName[] = "stub";
 
 const char kANGLEImplementationDefaultName[]  = "default";
 const char kANGLEImplementationD3D9Name[]     = "d3d9";

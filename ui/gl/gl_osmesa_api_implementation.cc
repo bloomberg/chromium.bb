@@ -6,7 +6,8 @@
 
 namespace gl {
 
-RealOSMESAApi* g_real_osmesa;
+RealOSMESAApi* g_real_osmesa = nullptr;
+DebugOSMESAApi* g_debug_osmesa = nullptr;
 
 void InitializeStaticGLBindingsOSMESA() {
   g_driver_osmesa.InitializeStaticBindings();
@@ -19,10 +20,17 @@ void InitializeStaticGLBindingsOSMESA() {
 }
 
 void InitializeDebugGLBindingsOSMESA() {
-  g_driver_osmesa.InitializeDebugBindings();
+  if (!g_debug_osmesa) {
+    g_debug_osmesa = new DebugOSMESAApi(g_real_osmesa);
+  }
+  g_current_osmesa_context = g_debug_osmesa;
 }
 
 void ClearBindingsOSMESA() {
+  if (g_debug_osmesa) {
+    delete g_debug_osmesa;
+    g_debug_osmesa = NULL;
+  }
   if (g_real_osmesa) {
     delete g_real_osmesa;
     g_real_osmesa = NULL;
@@ -57,6 +65,10 @@ RealOSMESAApi::~RealOSMESAApi() {
 void RealOSMESAApi::Initialize(DriverOSMESA* driver) {
   InitializeBase(driver);
 }
+
+DebugOSMESAApi::DebugOSMESAApi(OSMESAApi* osmesa_api)
+    : osmesa_api_(osmesa_api) {}
+DebugOSMESAApi::~DebugOSMESAApi() {}
 
 TraceOSMESAApi::~TraceOSMESAApi() {
 }

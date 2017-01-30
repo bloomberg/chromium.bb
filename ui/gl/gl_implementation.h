@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_IMPLEMENTATION_H_
 #define UI_GL_GL_IMPLEMENTATION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,9 @@
 
 namespace gl {
 
+class GLApi;
+struct GLVersionInfo;
+
 // The GL implementation currently in use.
 enum GLImplementation {
   kGLImplementationNone,
@@ -24,7 +28,8 @@ enum GLImplementation {
   kGLImplementationOSMesaGL,
   kGLImplementationAppleGL,
   kGLImplementationEGLGLES2,
-  kGLImplementationMockGL
+  kGLImplementationMockGL,
+  kGLImplementationStubGL,
 };
 
 struct GL_EXPORT GLWindowSystemBindingInfo {
@@ -109,11 +114,15 @@ GL_EXPORT GLFunctionPointerType GetGLProcAddress(const char* name);
 // bindings themselves. This is a relatively expensive call, so
 // callers should cache the result.
 GL_EXPORT std::string GetGLExtensionsFromCurrentContext();
+GL_EXPORT std::string GetGLExtensionsFromCurrentContext(GLApi* api);
 
 // Helper for the GL bindings implementation to understand whether
 // glGetString(GL_EXTENSIONS) or glGetStringi(GL_EXTENSIONS, i) will
 // be used in the function above.
 GL_EXPORT bool WillUseGLGetStringForExtensions();
+GL_EXPORT bool WillUseGLGetStringForExtensions(GLApi* api);
+
+GL_EXPORT std::unique_ptr<GLVersionInfo> GetVersionInfoFromContext(GLApi* api);
 
 // Helpers to load a library and log error on failure.
 GL_EXPORT base::NativeLibrary LoadLibraryAndPrintError(

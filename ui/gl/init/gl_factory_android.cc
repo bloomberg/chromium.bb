@@ -60,7 +60,7 @@ bool GLNonOwnedContext::Initialize(GLSurface* compatible_surface,
 }
 
 bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
-  SetRealGLApi();
+  BindGLApi();
   SetCurrent(surface);
   InitializeDynamicBindings();
   return true;
@@ -99,6 +99,12 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
   switch (GetGLImplementation()) {
     case kGLImplementationMockGL:
       return scoped_refptr<GLContext>(new GLContextStub(share_group));
+    case kGLImplementationStubGL: {
+      scoped_refptr<GLContextStub> stub_context =
+          new GLContextStub(share_group);
+      stub_context->SetUseStubApi(true);
+      return stub_context;
+    }
     case kGLImplementationOSMesaGL:
       return InitializeGLContext(new GLContextOSMesa(share_group),
                                  compatible_surface, attribs);
@@ -152,6 +158,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
       }
     }
     case kGLImplementationMockGL:
+    case kGLImplementationStubGL:
       return new GLSurfaceStub;
     default:
       NOTREACHED();

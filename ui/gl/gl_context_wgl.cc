@@ -105,7 +105,7 @@ bool GLContextWGL::MakeCurrent(GLSurface* surface) {
   }
 
   // Set this as soon as the context is current, since we might call into GL.
-  SetRealGLApi();
+  BindGLApi();
 
   SetCurrent(surface);
   InitializeDynamicBindings();

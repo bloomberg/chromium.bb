@@ -530,15 +530,17 @@ void GpuCommandBufferStub::Destroy() {
   for (auto& observer : destruction_observers_)
     observer.OnWillDestroyStub();
 
+  // Remove this after crbug.com/248395 is sorted out.
+  // Destroy the surface before the context, some surface destructors make GL
+  // calls.
+  surface_ = nullptr;
+
   if (decoder_) {
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
 
   command_buffer_.reset();
-
-  // Remove this after crbug.com/248395 is sorted out.
-  surface_ = NULL;
 }
 
 bool GpuCommandBufferStub::Initialize(
@@ -654,9 +656,10 @@ bool GpuCommandBufferStub::Initialize(
     }
     // This should be either:
     // (1) a non-virtual GL context, or
-    // (2) a mock context.
+    // (2) a mock/stub context.
     DCHECK(context->GetHandle() ||
-           gl::GetGLImplementation() == gl::kGLImplementationMockGL);
+           gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
+           gl::GetGLImplementation() == gl::kGLImplementationStubGL);
     context = new GLContextVirtual(
         gl_share_group, context.get(), decoder_->AsWeakPtr());
     if (!context->Initialize(

@@ -314,7 +314,7 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
       size_t gles2_data_stride =
           RowSizeForBufferFormat(size.width(), format, 0);
       if (stride == gles2_data_stride ||
-          g_driver_gl.ext.b_GL_EXT_unpack_subimage)
+          g_current_gl_driver->ext.b_GL_EXT_unpack_subimage)
         return nullptr;  // No data conversion needed
 
       std::unique_ptr<uint8_t[]> gles2_data(

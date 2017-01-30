@@ -159,7 +159,7 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
 
   DCHECK(gl::g_driver_egl.ext.b_EGL_KHR_image_base &&
          gl::g_driver_egl.ext.b_EGL_KHR_gl_texture_2D_image &&
-         gl::g_driver_gl.ext.b_GL_OES_EGL_image);
+         gl::g_current_gl_driver->ext.b_GL_OES_EGL_image);
 
   const EGLint egl_attrib_list[] = {
       EGL_GL_TEXTURE_LEVEL_KHR, 0, EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -265,6 +265,7 @@ scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
       return NativeImageBufferEGL::Create(texture_id);
 #endif
     case gl::kGLImplementationMockGL:
+    case gl::kGLImplementationStubGL:
       return new NativeImageBufferStub;
     default:
       NOTREACHED();

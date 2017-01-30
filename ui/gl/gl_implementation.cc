@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -55,7 +56,7 @@ void CleanupNativeLibraries(void* unused) {
 
 }  // namespace
 
-base::ThreadLocalPointer<GLApi>* g_current_gl_context_tls = NULL;
+base::ThreadLocalPointer<CurrentGL>* g_current_gl_context_tls = NULL;
 OSMESAApi* g_current_osmesa_context;
 
 #if defined(USE_EGL)
@@ -144,13 +145,11 @@ GLFunctionPointerType GetGLProcAddress(const char* name) {
 }
 
 void InitializeNullDrawGLBindings() {
-  // This is platform independent, so it does not need to live in a platform
-  // specific implementation file.
-  InitializeNullDrawGLBindingsGL();
+  SetNullDrawGLBindingsEnabled(true);
 }
 
 bool HasInitializedNullDrawGLBindings() {
-  return HasInitializedNullDrawGLBindingsGL();
+  return GetNullDrawBindingsEnabled();
 }
 
 std::string FilterGLExtensionList(
@@ -174,41 +173,60 @@ std::string FilterGLExtensionList(
 }
 
 DisableNullDrawGLBindings::DisableNullDrawGLBindings() {
-  initial_enabled_ = SetNullDrawGLBindingsEnabledGL(false);
+  initial_enabled_ = SetNullDrawGLBindingsEnabled(false);
 }
 
 DisableNullDrawGLBindings::~DisableNullDrawGLBindings() {
-  SetNullDrawGLBindingsEnabledGL(initial_enabled_);
+  SetNullDrawGLBindingsEnabled(initial_enabled_);
 }
 
 GLWindowSystemBindingInfo::GLWindowSystemBindingInfo()
     : direct_rendering(true) {}
 
 std::string GetGLExtensionsFromCurrentContext() {
-  if (WillUseGLGetStringForExtensions()) {
-    return reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  return GetGLExtensionsFromCurrentContext(g_current_gl_context);
+}
+
+std::string GetGLExtensionsFromCurrentContext(GLApi* api) {
+  if (WillUseGLGetStringForExtensions(api)) {
+    const char* extensions =
+        reinterpret_cast<const char*>(api->glGetStringFn(GL_EXTENSIONS));
+    return extensions ? std::string(extensions) : std::string();
   }
 
-  std::vector<std::string> exts;
   GLint num_extensions = 0;
-  glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+  api->glGetIntegervFn(GL_NUM_EXTENSIONS, &num_extensions);
+
+  std::vector<std::string> exts(num_extensions);
   for (GLint i = 0; i < num_extensions; ++i) {
-    const char* extension = reinterpret_cast<const char*>(
-        glGetStringi(GL_EXTENSIONS, i));
+    const char* extension =
+        reinterpret_cast<const char*>(api->glGetStringiFn(GL_EXTENSIONS, i));
     DCHECK(extension != NULL);
-    exts.push_back(extension);
+    exts[i] = extension;
   }
   return base::JoinString(exts, " ");
 }
 
 bool WillUseGLGetStringForExtensions() {
+  return WillUseGLGetStringForExtensions(g_current_gl_context);
+}
+
+bool WillUseGLGetStringForExtensions(GLApi* api) {
   const char* version_str =
-      reinterpret_cast<const char*>(glGetString(GL_VERSION));
+      reinterpret_cast<const char*>(api->glGetStringFn(GL_VERSION));
   unsigned major_version, minor_version;
   bool is_es, is_es2, is_es3;
   GLVersionInfo::ParseVersionString(version_str, &major_version, &minor_version,
                                     &is_es, &is_es2, &is_es3);
   return is_es || major_version < 3;
+}
+
+std::unique_ptr<GLVersionInfo> GetVersionInfoFromContext(GLApi* api) {
+  std::string extensions = GetGLExtensionsFromCurrentContext(api);
+  return base::MakeUnique<GLVersionInfo>(
+      reinterpret_cast<const char*>(api->glGetStringFn(GL_VERSION)),
+      reinterpret_cast<const char*>(api->glGetStringFn(GL_RENDERER)),
+      extensions.c_str());
 }
 
 base::NativeLibrary LoadLibraryAndPrintError(

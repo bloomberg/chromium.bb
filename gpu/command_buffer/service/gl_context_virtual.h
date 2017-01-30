@@ -40,6 +40,8 @@ class GPU_EXPORT GLContextVirtual : public gl::GLContext {
   void* GetHandle() override;
   scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override;
   void OnSetSwapInterval(int interval) override;
+  std::string GetGLVersion() override;
+  std::string GetGLRenderer() override;
   std::string GetExtensions() override;
   void SetSafeToForceGpuSwitch() override;
   bool WasAllocatedUsingRobustnessExtension() override;

@@ -11,7 +11,6 @@
 #include "ui/gl/gl_fence_arb.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_fence_nv.h"
-#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -28,15 +27,16 @@ GLFence::~GLFence() {
 }
 
 bool GLFence::IsSupported() {
-  DCHECK(GetGLVersionInfo());
-  return g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
-         GetGLVersionInfo()->is_desktop_core_profile ||
+  DCHECK(g_current_gl_version && g_current_gl_driver);
+  return g_current_gl_driver->ext.b_GL_ARB_sync ||
+         g_current_gl_version->is_es3 ||
+         g_current_gl_version->is_desktop_core_profile ||
 #if defined(OS_MACOSX)
-         g_driver_gl.ext.b_GL_APPLE_fence ||
+         g_current_gl_driver->ext.b_GL_APPLE_fence ||
 #else
          g_driver_egl.ext.b_EGL_KHR_fence_sync ||
 #endif
-         g_driver_gl.ext.b_GL_NV_fence;
+         g_current_gl_driver->ext.b_GL_NV_fence;
 }
 
 GLFence* GLFence::Create() {
@@ -51,18 +51,19 @@ GLFence* GLFence::Create() {
     fence.reset(new GLFenceEGL);
   } else
 #endif
-      if (g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
-          GetGLVersionInfo()->is_desktop_core_profile) {
+      if (g_current_gl_driver->ext.b_GL_ARB_sync ||
+          g_current_gl_version->is_es3 ||
+          g_current_gl_version->is_desktop_core_profile) {
     // Prefer ARB_sync which supports server-side wait.
     fence.reset(new GLFenceARB);
 #if defined(OS_MACOSX)
-  } else if (g_driver_gl.ext.b_GL_APPLE_fence) {
+  } else if (g_current_gl_driver->ext.b_GL_APPLE_fence) {
     fence.reset(new GLFenceAPPLE);
 #else
   } else if (g_driver_egl.ext.b_EGL_KHR_fence_sync) {
     fence.reset(new GLFenceEGL);
 #endif
-  } else if (g_driver_gl.ext.b_GL_NV_fence) {
+  } else if (g_current_gl_driver->ext.b_GL_NV_fence) {
     fence.reset(new GLFenceNV);
   }
 

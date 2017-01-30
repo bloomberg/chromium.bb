@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "ui/gl/gl_helper.h"
 #include "ui/gl/gl_version_info.h"
-#include "ui/gl/scoped_api.h"
 #include "ui/gl/scoped_binders.h"
 
 namespace gl {
@@ -72,7 +71,6 @@ STRINGIZE(
 
 YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info) {
   bool use_core_profile = gl_version_info.is_desktop_core_profile;
-  ScopedSetGLToRealGLApi scoped_set_gl_api;
   glGenFramebuffersEXT(1, &framebuffer_);
   vertex_buffer_ = GLHelper::SetupQuadVertexBuffer();
   vertex_shader_ = GLHelper::LoadShader(
@@ -107,7 +105,6 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info) {
 }
 
 YUVToRGBConverter::~YUVToRGBConverter() {
-  ScopedSetGLToRealGLApi scoped_set_gl_api;
   glDeleteTextures(1, &y_texture_);
   glDeleteTextures(1, &uv_texture_);
   glDeleteProgram(program_);
@@ -120,8 +117,6 @@ YUVToRGBConverter::~YUVToRGBConverter() {
 void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
                                         const gfx::Size& size,
                                         unsigned rgb_texture) {
-  ScopedSetGLToRealGLApi scoped_set_gl_api;
-
   // Note that state restoration is done explicitly instead of scoped binders to
   // avoid https://crbug.com/601729.
   GLint old_active_texture = -1;

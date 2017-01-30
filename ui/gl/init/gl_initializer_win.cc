@@ -250,6 +250,7 @@ bool InitializeGLOneOffPlatform() {
       break;
     case kGLImplementationOSMesaGL:
     case kGLImplementationMockGL:
+    case kGLImplementationStubGL:
       break;
     default:
       NOTREACHED();
@@ -277,7 +278,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
     case kGLImplementationDesktopGL:
       return InitializeStaticWGLInternal();
     case kGLImplementationMockGL:
-      SetGLImplementation(kGLImplementationMockGL);
+    case kGLImplementationStubGL:
+      SetGLImplementation(implementation);
       InitializeStaticGLBindingsGL();
       return true;
     default:

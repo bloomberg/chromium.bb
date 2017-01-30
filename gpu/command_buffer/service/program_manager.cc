@@ -1383,7 +1383,7 @@ bool Program::Link(ShaderManager* manager,
     ExecuteProgramOutputBindCalls();
 
     before_time = TimeTicks::Now();
-    if (cache && gl::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
+    if (cache && gl::g_current_gl_driver->ext.b_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),
                           PROGRAM_BINARY_RETRIEVABLE_HINT,
                           GL_TRUE);

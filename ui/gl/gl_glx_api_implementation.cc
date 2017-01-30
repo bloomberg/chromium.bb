@@ -12,6 +12,7 @@
 namespace gl {
 
 RealGLXApi* g_real_glx;
+DebugGLXApi* g_debug_glx;
 
 void InitializeStaticGLBindingsGLX() {
   g_driver_glx.InitializeStaticBindings();
@@ -24,10 +25,17 @@ void InitializeStaticGLBindingsGLX() {
 }
 
 void InitializeDebugGLBindingsGLX() {
-  g_driver_glx.InitializeDebugBindings();
+  if (!g_debug_glx) {
+    g_debug_glx = new DebugGLXApi(g_real_glx);
+  }
+  g_current_glx_context = g_debug_glx;
 }
 
 void ClearBindingsGLX() {
+  if (g_debug_glx) {
+    delete g_debug_glx;
+    g_debug_glx = NULL;
+  }
   if (g_real_glx) {
     delete g_real_glx;
     g_real_glx = NULL;
@@ -95,6 +103,9 @@ const char* RealGLXApi::glXQueryExtensionsStringFn(Display* dpy,
   filtered_exts_ = FilterGLExtensionList(str, disabled_exts_);
   return filtered_exts_.c_str();
 }
+
+DebugGLXApi::DebugGLXApi(GLXApi* glx_api) : glx_api_(glx_api) {}
+DebugGLXApi::~DebugGLXApi() {}
 
 TraceGLXApi::~TraceGLXApi() {
 }

@@ -94,4 +94,12 @@ void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
   InitializeOneOffImplementation(kGLImplementationMockGL, false);
 }
 
+void GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
+#if defined(USE_OZONE)
+  // This function skips where Ozone is otherwise initialized.
+  ui::OzonePlatform::InitializeForGPU();
+#endif
+  InitializeOneOffImplementation(kGLImplementationStubGL, false);
+}
+
 }  // namespace gl

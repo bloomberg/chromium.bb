@@ -55,6 +55,21 @@ class GL_EXPORT RealWGLApi : public WGLApiBase {
   std::string filtered_ext_exts_;
 };
 
+// Logs debug information for every WGL call.
+class GL_EXPORT DebugWGLApi : public WGLApi {
+ public:
+  DebugWGLApi(WGLApi* wgl_api);
+  ~DebugWGLApi() override;
+
+  // Include the auto-generated part of this class. We split this because
+  // it means we can easily edit the non-auto generated parts right here in
+  // this file instead of having to edit some template or the code generator.
+  #include "gl_bindings_api_autogen_wgl.h"
+
+ private:
+  WGLApi* wgl_api_;
+};
+
 // Inserts a TRACE for every WGL call.
 class GL_EXPORT TraceWGLApi : public WGLApi {
  public:

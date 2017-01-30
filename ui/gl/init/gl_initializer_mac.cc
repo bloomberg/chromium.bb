@@ -163,7 +163,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
     case kGLImplementationAppleGL:
       return InitializeStaticCGLInternal(implementation);
     case kGLImplementationMockGL:
-      SetGLImplementation(kGLImplementationMockGL);
+    case kGLImplementationStubGL:
+      SetGLImplementation(implementation);
       InitializeStaticGLBindingsGL();
       return true;
     default:

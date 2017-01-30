@@ -4855,6 +4855,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     gpu_tracer_.reset();
   }
 
+  // Destroy the surface before the context, some surface destructors make GL
+  // calls.
+  surface_ = nullptr;
+
   if (group_.get()) {
     group_->Destroy(this, have_context);
     group_ = NULL;

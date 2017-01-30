@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -149,8 +150,20 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
 void GLContextCGL::Destroy() {
   if (yuv_to_rgb_converter_) {
+    // If this context is not current, bind this context's API so that the YUV
+    // converter can safely destruct
+    GLContext* current_context = GetRealCurrent();
+    if (current_context != this) {
+      SetCurrentGL(GetCurrentGL());
+    }
+
     ScopedCGLSetCurrentContext(static_cast<CGLContextObj>(context_));
     yuv_to_rgb_converter_.reset();
+
+    // Rebind the current context's API if needed.
+    if (current_context && current_context != this) {
+      SetCurrentGL(current_context->GetCurrentGL());
+    }
   }
   if (discrete_pixelformat_) {
     if (base::MessageLoop::current() != nullptr) {
@@ -236,7 +249,7 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   }
 
   // Set this as soon as the context is current, since we might call into GL.
-  SetRealGLApi();
+  BindGLApi();
 
   SetCurrent(surface);
   InitializeDynamicBindings();

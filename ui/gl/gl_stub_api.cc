@@ -15,8 +15,7 @@ void GenHelper(GLsizei count, GLuint* objects) {
 
 }  // anonymous namespace
 
-GLStubApi::GLStubApi()
-    : version_("OpenGL ES 3.0"), extensions_("GL_EXT_framebuffer_object") {}
+GLStubApi::GLStubApi() {}
 
 GLStubApi::~GLStubApi() = default;
 

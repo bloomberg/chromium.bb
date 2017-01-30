@@ -166,8 +166,8 @@ InProcessCommandBuffer::Service::mailbox_manager() {
 
 gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
   if (!program_cache_.get() &&
-      (gl::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
-       gl::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
+      (gl::g_current_gl_driver->ext.b_GL_ARB_get_program_binary ||
+       gl::g_current_gl_driver->ext.b_GL_OES_get_program_binary) &&
       !gpu_preferences().disable_gpu_program_cache) {
     const GpuDriverBugWorkarounds& workarounds = gpu_driver_bug_workarounds_;
     bool disable_disk_cache =

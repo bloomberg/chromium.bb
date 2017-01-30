@@ -553,9 +553,11 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
 
   memory_tracker_ = NULL;
 
-  passthrough_resources_->Destroy(have_context);
-  passthrough_resources_.reset();
-  ReportProgress();
+  if (passthrough_resources_) {
+    passthrough_resources_->Destroy(have_context);
+    passthrough_resources_.reset();
+    ReportProgress();
+  }
 }
 
 uint32_t ContextGroup::GetMemRepresented() const {

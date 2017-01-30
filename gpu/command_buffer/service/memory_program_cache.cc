@@ -200,6 +200,12 @@ void RunShaderCallback(const ShaderCacheCallback& callback,
   callback.Run(key, shader);
 }
 
+bool ProgramBinaryExtensionsAvailable() {
+  return gl::g_current_gl_driver &&
+         (gl::g_current_gl_driver->ext.b_GL_ARB_get_program_binary ||
+          gl::g_current_gl_driver->ext.b_GL_OES_get_program_binary);
+}
+
 }  // namespace
 
 MemoryProgramCache::MemoryProgramCache(
@@ -229,6 +235,11 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     const std::vector<std::string>& transform_feedback_varyings,
     GLenum transform_feedback_buffer_mode,
     const ShaderCacheCallback& shader_callback) {
+  if (!ProgramBinaryExtensionsAvailable()) {
+    // Early exit if this context can't support program binaries
+    return PROGRAM_LOAD_FAILURE;
+  }
+
   char a_sha[kHashLength];
   char b_sha[kHashLength];
   DCHECK(shader_a && !shader_a->last_compiled_source().empty() &&
@@ -295,6 +306,10 @@ void MemoryProgramCache::SaveLinkedProgram(
     const std::vector<std::string>& transform_feedback_varyings,
     GLenum transform_feedback_buffer_mode,
     const ShaderCacheCallback& shader_callback) {
+  if (!ProgramBinaryExtensionsAvailable()) {
+    // Early exit if this context can't support program binaries
+    return;
+  }
   if (disable_program_caching_for_transform_feedback_ &&
       !transform_feedback_varyings.empty()) {
     return;

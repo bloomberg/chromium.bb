@@ -3398,7 +3398,7 @@ TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
       reinterpret_cast<gl::GLFunctionPointerType>(
-          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
+          gl::g_current_gl_driver->fn.glDiscardFramebufferEXTFn));
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT"));
@@ -3449,7 +3449,7 @@ TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
       reinterpret_cast<gl::GLFunctionPointerType>(
-          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
+          gl::g_current_gl_driver->fn.glDiscardFramebufferEXTFn));
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
@@ -3492,7 +3492,7 @@ TEST_P(GLES2DecoderManualInitTest, ClearBackbufferBitsOnDiscardFramebufferEXT) {
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
       reinterpret_cast<gl::GLFunctionPointerType>(
-          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
+          gl::g_current_gl_driver->fn.glDiscardFramebufferEXTFn));
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
@@ -3716,7 +3716,7 @@ TEST_P(GLES2DecoderManualInitTest,
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
       reinterpret_cast<gl::GLFunctionPointerType>(
-          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
+          gl::g_current_gl_driver->fn.glDiscardFramebufferEXTFn));
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;

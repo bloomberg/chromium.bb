@@ -12,8 +12,10 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -127,6 +129,14 @@ class GPUInfoCollectorTest
       }
     }
 
+    // Need to make a context current so that WillUseGLGetStringForExtensions
+    // can be called
+    context_ = new gl::GLContextStub;
+    context_->SetExtensionsString(test_values_.gl_extensions.c_str());
+    context_->SetGLVersionString(test_values_.gl_version.c_str());
+    surface_ = new gl::GLSurfaceStub;
+    context_->MakeCurrent(surface_.get());
+
     EXPECT_CALL(*gl_, GetString(GL_VERSION))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
             test_values_.gl_version.c_str())));
@@ -175,6 +185,8 @@ class GPUInfoCollectorTest
   // Use StrictMock to make 100% sure we know how GL will be called.
   std::unique_ptr<::testing::StrictMock<::gl::MockGLInterface>> gl_;
   GPUInfo test_values_;
+  scoped_refptr<gl::GLContextStub> context_;
+  scoped_refptr<gl::GLSurfaceStub> surface_;
   const char* gl_shading_language_version_ = nullptr;
 
   // Persistent storage is needed for the split extension string.

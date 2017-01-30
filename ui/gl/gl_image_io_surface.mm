@@ -16,7 +16,6 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/scoped_api.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/yuv_to_rgb_converter.h"
 
@@ -279,8 +278,6 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
 
   YUVToRGBConverter* yuv_to_rgb_converter = gl_context->GetYUVToRGBConverter();
   DCHECK(yuv_to_rgb_converter);
-
-  ScopedSetGLToRealGLApi scoped_set_gl_api;
 
   // Note that state restoration is done explicitly instead of scoped binders to
   // avoid https://crbug.com/601729.

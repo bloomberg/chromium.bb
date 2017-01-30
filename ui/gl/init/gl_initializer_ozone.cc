@@ -47,6 +47,7 @@ bool InitializeGLOneOffPlatform() {
       return true;
     case kGLImplementationOSMesaGL:
     case kGLImplementationMockGL:
+    case kGLImplementationStubGL:
       return true;
     default:
       return false;
@@ -70,7 +71,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
     case kGLImplementationEGLGLES2:
       return InitializeStaticEGLInternal();
     case kGLImplementationMockGL:
-      SetGLImplementation(kGLImplementationMockGL);
+    case kGLImplementationStubGL:
+      SetGLImplementation(implementation);
       InitializeStaticGLBindingsGL();
       return true;
     default:

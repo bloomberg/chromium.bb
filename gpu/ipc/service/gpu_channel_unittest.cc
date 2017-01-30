@@ -11,8 +11,6 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 #include "ipc/ipc_test_sink.h"
-#include "ui/gl/gl_context_stub_with_extensions.h"
-#include "ui/gl/gl_stub_api.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -26,8 +24,7 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
   void SetUp() override {
     // We need GL bindings to actually initialize command buffers.
-    gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-    gl::SetStubGLApi(&api_);
+    gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
 
     GpuChannelTestCommon::SetUp();
   }
@@ -89,7 +86,6 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
  private:
   base::TestMessageLoop message_loop_;
-  gl::GLStubApi api_;
 };
 
 #if defined(OS_WIN)
