@@ -159,12 +159,13 @@ void ContentAutofillDriver::PopupHidden() {
 
 gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
     const gfx::RectF& bounding_box) {
-  if (!RendererIsAvailable())
+  content::RenderWidgetHostView* view = render_frame_host_->GetView();
+  if (!view)
     return bounding_box;
 
   gfx::Point orig_point(bounding_box.x(), bounding_box.y());
   gfx::Point transformed_point =
-      render_frame_host_->GetView()->TransformPointToRootCoordSpace(orig_point);
+      view->TransformPointToRootCoordSpace(orig_point);
   return gfx::RectF(transformed_point.x(), transformed_point.y(),
                     bounding_box.width(), bounding_box.height());
 }
