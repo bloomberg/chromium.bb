@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -28,11 +29,17 @@ namespace {
 const size_t kMaxMachineNameLength = 15;
 const char kInvalidMachineNameCharacters[] = "\\/:*?\"<>|";
 
+// Delay policy fetch to be more realistic.
+constexpr int kPolicyFetchDelaySeconds = 5;
+
 // Drop stub policy file of |policy_type| at |policy_path| containing
 // |serialized_payload|.
 bool WritePolicyFile(const base::FilePath& policy_path,
                      const std::string& serialized_payload,
                      const std::string& policy_type) {
+  base::PlatformThread::Sleep(
+      base::TimeDelta::FromSeconds(kPolicyFetchDelaySeconds));
+
   em::PolicyData data;
   data.set_policy_value(serialized_payload);
   data.set_policy_type(policy_type);
