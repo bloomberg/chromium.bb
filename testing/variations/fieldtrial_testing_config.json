@@ -1202,6 +1202,26 @@
             ]
         }
     ],
+    "NetProxyPreconnects": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "NetProxyPreconnects",
+                    "params": {
+                        "restrict_to_one_preconnect_for_proxies": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "platforms": [
