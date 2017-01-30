@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/threading/worker_pool.h"
-#import "ios/net/cookies/cookie_store_ios.h"
+#import "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/shell/shell_network_delegate.h"
@@ -85,7 +85,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
                 web::WebThread::GetBlockingPool()->GetSequenceToken()),
             true, nullptr);
     std::unique_ptr<net::CookieStoreIOS> cookie_store(
-        new net::CookieStoreIOS(persistent_store.get()));
+        new net::CookieStoreIOSPersistent(persistent_store.get()));
     storage_->set_cookie_store(std::move(cookie_store));
 
     std::string user_agent = web::GetWebClient()->GetUserAgent(false);

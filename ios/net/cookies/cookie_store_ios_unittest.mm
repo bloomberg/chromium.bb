@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,9 +36,8 @@ namespace net {
 struct CookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
     ClearCookies();
-    std::unique_ptr<CookieStoreIOS> store(new CookieStoreIOS(nullptr));
-    store->synchronization_state_ = CookieStoreIOS::SYNCHRONIZED;
-    return std::move(store);
+    return base::MakeUnique<CookieStoreIOS>(
+        [NSHTTPCookieStorage sharedHTTPCookieStorage]);
   }
 
   static const bool supports_http_only = false;
@@ -52,7 +52,7 @@ struct CookieStoreIOSTestTraits {
 
 struct InactiveCookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
-    return base::MakeUnique<CookieStoreIOS>(nullptr);
+    return base::MakeUnique<CookieStoreIOSPersistent>(nullptr);
   }
 
   static const bool is_cookie_monster = false;
@@ -230,7 +230,8 @@ class NotSynchronizedCookieStoreIOSWithBackend : public testing::Test {
   NotSynchronizedCookieStoreIOSWithBackend()
       : kTestCookieURL("http://foo.google.com/bar"),
         backend_(new TestPersistentCookieStore),
-        store_(new net::CookieStoreIOS(backend_.get())) {
+        store_(base::MakeUnique<net::CookieStoreIOSPersistent>(backend_.get()))
+  {
     cookie_changed_callback_ = store_->AddCallbackForCookie(
         kTestCookieURL, "abc",
         base::Bind(&RecordCookieChanges, &cookies_changed_, &cookies_removed_));
@@ -273,8 +274,8 @@ class SynchronizedCookieStoreIOS : public testing::Test {
         kTestCookieURL3("http://foo.google.com"),
         kTestCookieURL4("http://bar.google.com/bar"),
         backend_(new TestPersistentCookieStore),
-        store_(net::CookieStoreIOS::CreateCookieStore(
-            [NSHTTPCookieStorage sharedHTTPCookieStorage])) {
+        store_(base::MakeUnique<net::CookieStoreIOS>(
+                [NSHTTPCookieStorage sharedHTTPCookieStorage])) {
     cookie_changed_callback_ = store_->AddCallbackForCookie(
         kTestCookieURL, "abc",
         base::Bind(&RecordCookieChanges, &cookies_changed_, &cookies_removed_));
@@ -417,9 +418,9 @@ TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
   base::MessageLoop loop;
   const GURL kTestCookieURL("http://foo.google.com/bar");
   ClearCookies();
-  std::unique_ptr<CookieStoreIOS> cookie_store(
-      CookieStoreIOS::CreateCookieStore(
-          [NSHTTPCookieStorage sharedHTTPCookieStorage]));
+  std::unique_ptr<CookieStoreIOS> cookie_store(base::MakeUnique<CookieStoreIOS>(
+      [NSHTTPCookieStorage sharedHTTPCookieStorage]));
+
   // Add a cookie.
   net::CookieOptions options;
   options.set_include_httponly();

@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/net/cookies/cookie_store_ios.h"
+#include "ios/net/cookies/cookie_store_ios_persistent.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -96,7 +96,8 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
         config.path, true /* restore_old_session_cookies */,
         config.crypto_delegate);
   }
-  return base::MakeUnique<net::CookieStoreIOS>(persistent_store.get());
+  return base::MakeUnique<net::CookieStoreIOSPersistent>(
+      persistent_store.get());
 }
 
 bool ShouldClearSessionCookies() {

@@ -477,7 +477,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   main_context_->set_http_transaction_factory(main_cache);
 
   // Cookies
-  cookie_store_ = net::CookieStoreIOS::CreateCookieStore(
+  cookie_store_ = base::MakeUnique<CookieStoreIOS>(
       [NSHTTPCookieStorage sharedHTTPCookieStorage]);
   main_context_->set_cookie_store(cookie_store_.get());
 
