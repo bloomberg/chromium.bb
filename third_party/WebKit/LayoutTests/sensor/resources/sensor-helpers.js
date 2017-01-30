@@ -7,7 +7,7 @@ class CallbackWrapper {
       try {
         callback(args);
       } catch(e) {
-        reject_func();
+        reject_func(e);
       }
     }
   }
@@ -374,9 +374,9 @@ function sensor_test(func, name, properties) {
       return new Promise((resolve, reject) => { setTimeout(resolve, 0); });
     };
 
-    let onFailure = () => {
+    let onFailure = error => {
       sensor.mockSensorProvider.reset();
-      return new Promise((resolve, reject) => { setTimeout(reject, 0); });
+      return new Promise((resolve, reject) => { setTimeout(() => {reject(error);}, 0); });
     };
 
     return Promise.resolve(func(sensor)).then(onSuccess, onFailure);
