@@ -500,11 +500,16 @@ void InspectorAnimationAgent::animationPlayStateChanged(
     blink::Animation::AnimationPlayState oldPlayState,
     blink::Animation::AnimationPlayState newPlayState) {
   const String& animationId = String::number(animation->sequenceNumber());
-  if (m_idToAnimation.get(animationId) ||
-      m_clearedAnimations.contains(animationId))
+
+  // We no longer care about animations that have been released.
+  if (m_clearedAnimations.contains(animationId))
     return;
-  if (newPlayState == blink::Animation::Running ||
-      newPlayState == blink::Animation::Finished)
+
+  // Record newly starting animations only once, as |buildObjectForAnimation|
+  // constructs and caches our internal representation of the given |animation|.
+  if ((newPlayState == blink::Animation::Running ||
+       newPlayState == blink::Animation::Finished) &&
+      !m_idToAnimation.contains(animationId))
     frontend()->animationStarted(buildObjectForAnimation(*animation));
   else if (newPlayState == blink::Animation::Idle ||
            newPlayState == blink::Animation::Paused)

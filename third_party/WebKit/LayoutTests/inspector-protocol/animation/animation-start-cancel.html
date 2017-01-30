@@ -1,0 +1,51 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function triggerEmptyTransition()
+{
+    node.style.transition = "1s";
+    node.offsetTop;
+    node.style.width = "200px";
+    node.offsetTop;
+    // Deliberately delay for two RAFs, which causes the animation to start
+    // before we cancel it by clearing the transition.
+    window.requestAnimationFrame(function() {
+      window.requestAnimationFrame(function() {
+        node.style.transition = "";
+      });
+    });
+}
+
+function test()
+{
+    InspectorTest.eventHandler["Animation.animationCreated"] = onCreated;
+    InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
+    InspectorTest.eventHandler["Animation.animationCanceled"] = onCanceled;
+    InspectorTest.sendCommand("Animation.enable", {});
+    InspectorTest.evaluateInPage("triggerEmptyTransition()", function() {});
+
+    function onCreated()
+    {
+        InspectorTest.log("Animation created");
+    }
+
+    function onStarted()
+    {
+        InspectorTest.log("Animation started");
+    }
+
+    function onCanceled()
+    {
+        InspectorTest.log("Animation canceled");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+    <div id="node" style="background-color: red; width: 100px"></div>
+</body>
+</html>
