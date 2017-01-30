@@ -1,80 +1,110 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
     <script>
-      description("Test exceptional arguments for AudioParam timeline events");
+      let audit = Audit.createTaskRunner();
 
-      var context;
-      var gain;
-
-      // For these values, AudioParam methods should throw an error because they are invalid; only
+      // For these values, AudioParam methods should throw an error because they
+      // are invalid; only
       // finite values are allowed.
-      var targetValues = [Infinity, -Infinity, NaN];
+      let targetValues = [Infinity, -Infinity, NaN];
 
-      // For these time values, AudioParam methods should throw an error because they are
-      // invalid. Only finite non-negative values are allowed for any time or time-like parameter.
-      var timeValues = [-1, Infinity, -Infinity, NaN];
+      // For these time values, AudioParam methods should throw an error because
+      // they are
+      // invalid. Only finite non-negative values are allowed for any time or
+      // time-like parameter.
+      let timeValues = [-1, Infinity, -Infinity, NaN];
 
-      // For these duration values, AudioParam methods should throw an error because they are
+      // For these duration values, AudioParam methods should throw an error
+      // because they are
       // invalid. Only finite values are allowed for any duration parameter.
-      var durationValues = [-1, Infinity, -Infinity, NaN, 0];
+      let durationValues = [-1, Infinity, -Infinity, NaN, 0];
 
-      // For these timeConstant values for setTargetAtTime an error must be thrown because they are
+      // For these timeConstant values for setTargetAtTime an error must be
+      // thrown because they are
       // invalid.
-      var timeConstantValues = [-1, Infinity, -Infinity, NaN];
+      let timeConstantValues = [-1, Infinity, -Infinity, NaN];
 
-      // Just an array for use by setValueCurveAtTime. The length and contents of the array are not
+      // Just an array for use by setValueCurveAtTime. The length and contents
+      // of the array are not
       // important.
-      var curve = new Float32Array(10);
+      let curve = new Float32Array(10);
 
-      function runTest() {
-        if (window.testRunner) {
-            testRunner.dumpAsText();
-            testRunner.waitUntilDone();
-        }
-        window.jsTestIsAsync = true;
-
-        context = new AudioContext();
-        gain = context.createGain();
+      audit.define('test', function(task, should) {
+        task.describe(
+            'Test exceptional arguments for AudioParam timeline events');
+        let context = new AudioContext();
+        let gain = context.createGain();
 
         // Test the value parameter
         for (value of targetValues) {
-          shouldThrow("gain.gain.setValueAtTime(" + value + ", 1)");
-          shouldThrow("gain.gain.linearRampToValueAtTime(" + value + ", 1)");
-          shouldThrow("gain.gain.exponentialRampToValueAtTime(" + value + ", 1)");
-          shouldThrow("gain.gain.setTargetAtTime(" + value + ", 1, 1)");
+          let testMethods = [
+            {name: 'setValueAtTime', arg: [value, 1]},
+            {name: 'linearRampToValueAtTime', arg: [value, 1]},
+            {name: 'exponentialRampToValueAtTime', arg: [value, 1]},
+            {name: 'setTargetAtTime', arg: [value, 1, 1]}
+          ];
+
+          for (method of testMethods) {
+            let message = 'gain.gain.' + method.name + '(' + method.arg + ')';
+            should(
+                () => gain.gain[method.name].apply(gain.gain, method.arg),
+                message)
+                .throw();
+          }
         }
 
         // Test the time parameter
         for (startTime of timeValues) {
-          shouldThrow("gain.gain.setValueAtTime(1, " + startTime + ")");
-          shouldThrow("gain.gain.linearRampToValueAtTime(1, " + startTime + ")");
-          shouldThrow("gain.gain.exponentialRampToValueAtTime(1, " + startTime + ")");
-          shouldThrow("gain.gain.setTargetAtTime(1, " + startTime + ", 1)");
+          let testMethods = [
+            {name: 'setValueAtTime', arg: [1, startTime]},
+            {name: 'linearRampToValueAtTime', arg: [1, startTime]},
+            {name: 'exponentialRampToValueAtTime', arg: [1, startTime]},
+            {name: 'setTargetAtTime', arg: [1, startTime, 1]}
+          ];
+
+          for (method of testMethods) {
+            let message = 'gain.gain.' + method.name + '(' + method.arg + ')';
+            should(
+                () => gain.gain[method.name].apply(gain.gain, method.arg),
+                message)
+                .throw();
+          }
         }
 
         // Test time constant
         for (value of timeConstantValues) {
-          shouldThrow("gain.gain.setTargetAtTime(1, 1, " + value + ")");
+          should(
+              () => gain.gain.setTargetAtTime(1, 1, value),
+              'gain.gain.setTargetAtTime(1, 1, ' + value + ')')
+              .throw();
         }
 
         // Test startTime and duration for setValueCurveAtTime
         for (startTime of timeValues) {
-          shouldThrow("gain.gain.setValueCurveAtTime(curve, " + startTime + ", 1)");
+          should(
+              () => gain.gain.setValueCurveAtTime(curve, startTime, 1),
+              'gain.gain.setValueCurveAtTime(curve, ' + startTime + ', 1)')
+              .throw();
         }
         for (duration of durationValues) {
-          shouldThrow("gain.gain.setValueCurveAtTime(curve, 1, " + duration + ")");
+          should(
+              () => gain.gain.setValueCurveAtTime(curve, 1, duration),
+              'gain.gain.setValueCurveAtTime(curve, 1, ' + duration + ')')
+              .throw();
         }
 
-        finishJSTest();
-      }
+        task.done();
+      });
 
-      runTest();
-      successfullyParsed = true;
+      audit.run();
     </script>
   </body>
 </html>
