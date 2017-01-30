@@ -18,7 +18,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
 
@@ -276,7 +275,6 @@ public abstract class SwipableOverlayView extends FrameLayout {
                         + computeScrollDifference(scrollOffsetY, scrollExtentY);
                 translation = Math.max(0.0f, Math.min(mTotalHeight, translation));
                 setTranslationY(translation);
-                updateVisibility();
             }
         };
     }
@@ -316,21 +314,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
         mCurrentAnimation.setDuration(duration);
         mCurrentAnimation.addListener(mAnimatorListener);
         mCurrentAnimation.setInterpolator(mInterpolator);
-        mCurrentAnimation.addListener(new CancelAwareAnimatorListener() {
-            @Override
-            public void onEnd(Animator animator) {
-                updateVisibility();
-            }
-        });
         mCurrentAnimation.start();
-    }
-
-    private void updateVisibility() {
-        if (getTranslationY() >= getHeight()) {
-            if (getVisibility() != GONE) setVisibility(GONE);
-        } else {
-            if (getVisibility() != VISIBLE) setVisibility(VISIBLE);
-        }
     }
 
     private int computeScrollDifference(int scrollOffsetY, int scrollExtentY) {
