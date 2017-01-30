@@ -66,7 +66,7 @@ BaseBlockingPage::CreateDefaultDisplayOptions(
     const UnsafeResourceList& unsafe_resources) {
   return SafeBrowsingErrorUI::SBErrorDisplayOptions(
       IsMainPageLoadBlocked(unsafe_resources),
-      true,    // kSafeBrowsingExtendedReportingOptInAllowed
+      false,   // kSafeBrowsingExtendedReportingOptInAllowed
       false,   // is_off_the_record
       false,   // is_extended_reporting
       false,   // is_scout
