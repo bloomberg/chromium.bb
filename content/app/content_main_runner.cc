@@ -46,7 +46,6 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_main.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/common/set_process_title.h"
@@ -111,6 +110,10 @@
 
 #if defined(USE_NSS_CERTS)
 #include "crypto/nss_util.h"
+#endif
+
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#include "content/browser/gpu/gpu_process_host.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
