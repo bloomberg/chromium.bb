@@ -7,6 +7,10 @@ Autorename:
     by generate_gn.py. https://chromium-review.googlesource.com/#/c/274543/
 
 Current patches:
+  Changes to libavformat/flacdec.c crbug.com/686387
+    95bde49982a82bc10470c0adab5969ffe635d064  Check avio_read result when reading
+                                              flac block header. (upstreamed)
+
   Changes to libavcodec/flac_parser.c crbug.com/665305
     Started decrementing buffered header count during flac parsing, to prevent
     a clusterfuzz hang.
@@ -41,6 +45,7 @@ Current patches:
     4fe9bb85b83fffe4c3640493ef6655b0992a822c re-adds an "undef strod" and
     new strtod decl to fix Windows compilation issues to strtod.c .
 
+  !!!SECURITY SENSITIVE ISSUE PLEASE VERIFY AFTER EACH FFMPEG ROLL!!!
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
