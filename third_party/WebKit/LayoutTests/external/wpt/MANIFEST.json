@@ -18328,6 +18328,12 @@
      {}
     ]
    ],
+   "IndexedDB/idbdatabase-transaction-exception-order.html": [
+    [
+     "/IndexedDB/idbdatabase-transaction-exception-order.html",
+     {}
+    ]
+   ],
    "IndexedDB/idbdatabase_close.htm": [
     [
      "/IndexedDB/idbdatabase_close.htm",
@@ -18626,6 +18632,12 @@
      {}
     ]
    ],
+   "IndexedDB/idbindex-query-exception-order.html": [
+    [
+     "/IndexedDB/idbindex-query-exception-order.html",
+     {}
+    ]
+   ],
    "IndexedDB/idbindex-rename-abort.html": [
     [
      "/IndexedDB/idbindex-rename-abort.html",
@@ -18844,6 +18856,30 @@
      {}
     ]
    ],
+   "IndexedDB/idbobjectstore-add-put-exception-order.html": [
+    [
+     "/IndexedDB/idbobjectstore-add-put-exception-order.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbobjectstore-clear-exception-order.html": [
+    [
+     "/IndexedDB/idbobjectstore-clear-exception-order.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbobjectstore-delete-exception-order.html": [
+    [
+     "/IndexedDB/idbobjectstore-delete-exception-order.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbobjectstore-deleteIndex-exception-order.html": [
+    [
+     "/IndexedDB/idbobjectstore-deleteIndex-exception-order.html",
+     {}
+    ]
+   ],
    "IndexedDB/idbobjectstore-getAll-enforcerange.html": [
     [
      "/IndexedDB/idbobjectstore-getAll-enforcerange.html",
@@ -18853,6 +18889,12 @@
    "IndexedDB/idbobjectstore-getAllKeys-enforcerange.html": [
     [
      "/IndexedDB/idbobjectstore-getAllKeys-enforcerange.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbobjectstore-query-exception-order.html": [
+    [
+     "/IndexedDB/idbobjectstore-query-exception-order.html",
      {}
     ]
    ],
@@ -19345,6 +19387,12 @@
    "IndexedDB/idbrequest_result.html": [
     [
      "/IndexedDB/idbrequest_result.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbtransaction-objectStore-exception-order.html": [
+    [
+     "/IndexedDB/idbtransaction-objectStore-exception-order.html",
      {}
     ]
    ],
@@ -35601,6 +35649,10 @@
    "0e0ae655c2767b3755490104a28ae26e0d4cd500",
    "testharness"
   ],
+  "IndexedDB/idbdatabase-transaction-exception-order.html": [
+   "8033f0b03f01eb4363291dbc4ef16ae4b66c5bc5",
+   "testharness"
+  ],
   "IndexedDB/idbdatabase_close.htm": [
    "6b0a32c465f735544b89da588bb043bbfbb66230",
    "testharness"
@@ -35797,6 +35849,10 @@
    "7d6028c0810f8cab7572c448a04c3e246bf1ec5a",
    "testharness"
   ],
+  "IndexedDB/idbindex-query-exception-order.html": [
+   "08dee6a9b0edf24801c3841c720a57f7f3de510e",
+   "testharness"
+  ],
   "IndexedDB/idbindex-rename-abort.html": [
    "34f3b979e4af1095209ea630d193193244fe954a",
    "testharness"
@@ -35941,12 +35997,32 @@
    "ecdfe47233f46edb270f7e57fe2ddf2c56377254",
    "testharness"
   ],
+  "IndexedDB/idbobjectstore-add-put-exception-order.html": [
+   "1a55a0194ff0a48c3689a8095fd2eb25c4cdc7a0",
+   "testharness"
+  ],
+  "IndexedDB/idbobjectstore-clear-exception-order.html": [
+   "246b46c340d37a3232289a53bb8ca32048d2b3ba",
+   "testharness"
+  ],
+  "IndexedDB/idbobjectstore-delete-exception-order.html": [
+   "170b46b8a0792002e3d3491cb95e4c768bccd758",
+   "testharness"
+  ],
+  "IndexedDB/idbobjectstore-deleteIndex-exception-order.html": [
+   "2fbff038323ca4ec3d85bcece55dd59441a3e5fb",
+   "testharness"
+  ],
   "IndexedDB/idbobjectstore-getAll-enforcerange.html": [
    "64de20d7ada146b69df90377faef6e4837b5a5e9",
    "testharness"
   ],
   "IndexedDB/idbobjectstore-getAllKeys-enforcerange.html": [
    "6c2fe5ac83765f679fd2572d4ad0d7d30466480d",
+   "testharness"
+  ],
+  "IndexedDB/idbobjectstore-query-exception-order.html": [
+   "91e12b5c824638c4f46892364ca3572bf5f28cea",
    "testharness"
   ],
   "IndexedDB/idbobjectstore-rename-abort.html": [
@@ -36271,6 +36347,10 @@
   ],
   "IndexedDB/idbrequest_result.html": [
    "3b6d79f577fa4869e801bbc493225beb5f70dbec",
+   "testharness"
+  ],
+  "IndexedDB/idbtransaction-objectStore-exception-order.html": [
+   "9c3e4f3e4ec46d222a611a812ef1d670741a9b6b",
    "testharness"
   ],
   "IndexedDB/idbtransaction-oncomplete.htm": [

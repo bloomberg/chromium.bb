@@ -1,14 +1,14 @@
-<!DOCTYPE html>
-<title>IndexedDB: IDBObjectStore add()/put() Exception Ordering</title>
+<!doctype html>
 <meta charset=utf-8>
-<link rel="help" href="https://w3c.github.io/IndexedDB/#dom-idbobjectstore-add">
+<title>IndexedDB: IDBObjectStore add()/put() Exception Ordering</title>
 <link rel="help" href="https://w3c.github.io/IndexedDB/#dom-idbobjectstore-put">
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="resources/testharness-helpers.js"></script>
+<link rel="help" href="https://w3c.github.io/IndexedDB/#dom-idbobjectstore-add">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support.js"></script>
 <script>
 
-['add', 'put'].forEach(method => {
+['put', 'add'].forEach(method => {
   indexeddb_test(
     (t, db) => {
       const store = db.createObjectStore('s');
