@@ -227,11 +227,11 @@ external/wpt/cors [ Skip ]
 external/wpt/csp [ Skip ]
 external/wpt/cssom [ Skip ]
 external/wpt/cssom-view [ Skip ]
-## Owners: TBD
+## Owners: dom-dev@chromium.org
 # external/wpt/custom-elements [ Pass ]
 external/wpt/custom-elements/v0/registering/unresolved-element-pseudoclass [ Skip ]
 external/wpt/docs [ Skip ]
-## Owners: tkent@chromium.org
+## Owners: dom-dev@chromium.org
 external/wpt/dom [ Pass ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/domparsing [ Pass ]
@@ -257,9 +257,9 @@ external/wpt/generic-sensor [ Skip ]
 external/wpt/geolocation-API [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/hr-time [ Pass ]
-## Owners: tkent@chromium.org
+## Owners: dom-dev@chromium.org
 # external/wpt/html [ Pass ]
-## Owners: TBD
+## Owners: dom-dev@chromium.org
 # external/wpt/html-imports [ Pass ]
 external/wpt/html-longdesc [ Skip ]
 external/wpt/html-media-capture [ Skip ]
@@ -322,7 +322,7 @@ external/wpt/server-side.md [ Skip ]
 # external/wpt/service-workers [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/service-workers/cache-storage [ Pass ]
-## Owners: kochi@chromium.org crbug.com/505364
+## Owners: dom-dev@chromium.org
 # external/wpt/shadow-dom [ Pass ]
 ## Owners: domenic@chromium.org,ricea@chromium.org,tyoshino@chromium.org
 external/wpt/streams [ Pass ]
@@ -511,11 +511,6 @@ external/wpt/html/editing/dnd/platform/plugin/swfsources [ Skip ]
 # crbug.com/662667: CRLF line endings
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-003.html [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-004.html [ Skip ]
-
-# these contain an extraneous debug log div ..
-external/wpt/html-imports/link-import-null.html [ Skip ]
-external/wpt/html-imports/link-import.html [ Skip ]
-external/wpt/html-imports/loading-import.html [ Skip ]
 
 # We'll never be able to test WebRTC deny tests since we always auto-allow
 # user media.
