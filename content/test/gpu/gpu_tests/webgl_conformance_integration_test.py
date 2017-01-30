@@ -4,6 +4,7 @@
 
 import logging
 import os
+import sys
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
@@ -396,3 +397,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           test_paths.append(test)
 
     return test_paths
+
+def load_tests(loader, tests, pattern):
+  del loader, tests, pattern  # Unused.
+  return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

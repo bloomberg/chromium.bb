@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import os
+import sys
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
@@ -126,3 +127,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
+
+def load_tests(loader, tests, pattern):
+  del loader, tests, pattern  # Unused.
+  return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

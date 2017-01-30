@@ -5,6 +5,7 @@
 import logging
 import os
 import random
+import sys
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
@@ -132,3 +133,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     repetitions = 20
     for _ in range(0, repetitions):
       self._CheckScreenshot()
+
+def load_tests(loader, tests, pattern):
+  del loader, tests, pattern  # Unused.
+  return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

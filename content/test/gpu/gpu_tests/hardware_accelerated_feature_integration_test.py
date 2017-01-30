@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 from gpu_tests import gpu_integration_test
 import gpu_tests.hardware_accelerated_feature_expectations as hw_expectations
 
@@ -70,3 +72,7 @@ class HardwareAcceleratedFeatureIntegrationTest(
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
       self.fail('%s not hardware accelerated' % feature)
+
+def load_tests(loader, tests, pattern):
+  del loader, tests, pattern  # Unused.
+  return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

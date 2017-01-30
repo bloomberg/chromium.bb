@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import os
+import sys
 import time
 
 from gpu_tests import gpu_integration_test
@@ -251,3 +252,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     tab.EvaluateJavaScript('loseContextUsingExtension()')
     tab.Activate()
     self._WaitForTabAndCheckCompletion()
+
+def load_tests(loader, tests, pattern):
+  del loader, tests, pattern  # Unused.
+  return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

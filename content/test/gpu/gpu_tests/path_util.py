@@ -38,3 +38,8 @@ def SetupTelemetryPaths():
       chromium_src_dir, 'third_party', 'catapult', 'common', 'py_utils')
   if py_utils_path not in sys.path:
     sys.path.append(py_utils_path)
+
+  pylint_path = os.path.join(
+      chromium_src_dir, 'third_party', 'pylint')
+  if pylint_path not in sys.path:
+    sys.path.append(pylint_path)

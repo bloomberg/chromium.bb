@@ -194,3 +194,8 @@ class GpuIntegrationTest(
 
   def setUp(self):
     self._EnsureTabIsAvailable()
+
+def LoadAllTestsInModule(module):
+  # Just delegates to serially_executed_browser_test_case to reduce the
+  # number of imports in other files.
+  return serially_executed_browser_test_case.LoadAllTestsInModule(module)

@@ -4,7 +4,9 @@
 
 import json
 import os
+import sys
 
+from gpu_tests import gpu_integration_test
 from gpu_tests import cloud_storage_integration_test_base
 from gpu_tests import maps_expectations
 from gpu_tests import path_util
@@ -138,3 +140,7 @@ class MapsIntegrationTest(
     # line.
     expected = self._ReadPixelExpectations(pixel_expectations_file)
     self._ValidateScreenshotSamples(tab, url, screenshot, expected, dpr)
+
+def load_tests(loader, tests, pattern):
+  del loader, tests, pattern  # Unused.
+  return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

@@ -525,3 +525,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--gpu-testing-gl-version=2.1 Mesa 10.1'])
     self._Navigate(test_path)
     self._VerifyGpuProcessPresent()
+
+def load_tests(loader, tests, pattern):
+  del loader, tests, pattern  # Unused.
+  return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])
