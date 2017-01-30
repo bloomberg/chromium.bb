@@ -20,7 +20,6 @@ from xml.dom import minidom
 
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import tree_status
-from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import patch_series
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -35,6 +34,7 @@ from chromite.lib import gob_util
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
+from chromite.lib import triage_lib
 
 
 site_config = config_lib.GetConfig()

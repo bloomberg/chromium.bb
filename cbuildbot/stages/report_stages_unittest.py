@@ -19,7 +19,6 @@ from chromite.lib import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.lib import metadata_lib
 from chromite.lib import results_lib
-from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
@@ -33,6 +32,7 @@ from chromite.lib import osutils
 from chromite.lib import patch_unittest
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
+from chromite.lib import triage_lib
 
 
 # pylint: disable=protected-access

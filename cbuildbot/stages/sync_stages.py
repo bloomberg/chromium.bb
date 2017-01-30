@@ -26,7 +26,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
-from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
@@ -44,6 +43,7 @@ from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
+from chromite.lib import triage_lib
 from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
 

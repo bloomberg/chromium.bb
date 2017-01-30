@@ -16,7 +16,6 @@ from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import tree_status
-from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
@@ -39,6 +38,7 @@ from chromite.lib import portage_util
 from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
+from chromite.lib import triage_lib
 
 
 site_config = config_lib.GetConfig()
