@@ -231,10 +231,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnVisibilityChanged(bool visible) override;
   void OnDidChangeBounds(const gfx::Rect& old_bounds,
                          const gfx::Rect& new_bounds) override;
-  std::unique_ptr<WindowPortPropertyData> OnWillChangeProperty(
+  std::unique_ptr<ui::PropertyData> OnWillChangeProperty(
       const void* key) override;
   void OnPropertyChanged(const void* key,
-                         std::unique_ptr<WindowPortPropertyData> data) override;
+                         std::unique_ptr<ui::PropertyData> data) override;
 
   WindowTreeClient* window_tree_client_;
 

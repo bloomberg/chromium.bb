@@ -4,9 +4,9 @@
 
 #include "ui/wm/core/shadow_types.h"
 
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(wm::ShadowElevation);
+DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::ShadowElevation);
 
 namespace wm {
 
@@ -18,8 +18,8 @@ ShadowElevation GetShadowElevation(aura::Window* window) {
   return window->GetProperty(kShadowElevationKey);
 }
 
-DEFINE_WINDOW_PROPERTY_KEY(ShadowElevation,
-                           kShadowElevationKey,
-                           ShadowElevation::NONE);
+DEFINE_UI_CLASS_PROPERTY_KEY(ShadowElevation,
+                          kShadowElevationKey,
+                          ShadowElevation::NONE);
 
 }  // namespace wm

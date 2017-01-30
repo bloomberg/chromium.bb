@@ -4,16 +4,16 @@
 
 #include "ui/aura/client/screen_position_client.h"
 
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ScreenPositionClient*)
+DECLARE_UI_CLASS_PROPERTY_TYPE(aura::client::ScreenPositionClient*)
 
 namespace aura {
 namespace client {
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ScreenPositionClient*,
-                                 kScreenPositionClientKey,
-                                 NULL);
+DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(ScreenPositionClient*,
+                                kScreenPositionClientKey,
+                                NULL);
 
 void SetScreenPositionClient(Window* root_window,
                              ScreenPositionClient* client) {

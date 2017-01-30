@@ -5,14 +5,14 @@
 #include "ui/aura/client/focus_change_observer.h"
 
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(aura::client::FocusChangeObserver*)
+DECLARE_UI_CLASS_PROPERTY_TYPE(aura::client::FocusChangeObserver*)
 
 namespace aura {
 namespace client {
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(
     FocusChangeObserver*, kFocusChangeObserverKey, NULL);
 
 FocusChangeObserver* GetFocusChangeObserver(Window* window) {

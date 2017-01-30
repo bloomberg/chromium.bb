@@ -36,7 +36,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -50,11 +50,11 @@
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::WmWindow*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::WmWindow*);
 
 namespace ash {
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(WmWindow, kWmWindowKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(WmWindow, kWmWindowKey, nullptr);
 
 static_assert(aura::Window::kInitialId == kShellWindowId_Invalid,
               "ids must match");

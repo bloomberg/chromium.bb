@@ -10,7 +10,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -41,10 +41,12 @@ struct WindowTouchDetails {
   base::TimeTicks last_mt_time_;
 };
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowTouchDetails, kWindowTouchDetails, NULL);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(WindowTouchDetails,
+                                   kWindowTouchDetails,
+                                   NULL);
 }
 
-DECLARE_WINDOW_PROPERTY_TYPE(WindowTouchDetails*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(WindowTouchDetails*);
 
 namespace ash {
 

@@ -5,15 +5,15 @@
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
 
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WorkspaceEventHandlerMus*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::WorkspaceEventHandlerMus*);
 
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(ash::mus::WorkspaceEventHandlerMus*,
-                           kWorkspaceEventHandlerProperty,
-                           nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(ash::mus::WorkspaceEventHandlerMus*,
+                             kWorkspaceEventHandlerProperty,
+                             nullptr);
 
 }  // namespace
 

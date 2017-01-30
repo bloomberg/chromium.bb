@@ -63,7 +63,7 @@
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_features.h"
 #include "ui/compositor/compositor_vsync_manager.h"

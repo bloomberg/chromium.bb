@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/mus/mus_client.h"

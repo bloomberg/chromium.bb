@@ -17,8 +17,8 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/layer.h"
@@ -61,12 +61,12 @@
 #include "ui/base/win/shell.h"
 #endif
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(VIEWS_EXPORT,
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                       views::DesktopNativeWidgetAura*);
 
 namespace views {
 
-DEFINE_WINDOW_PROPERTY_KEY(DesktopNativeWidgetAura*,
+DEFINE_UI_CLASS_PROPERTY_KEY(DesktopNativeWidgetAura*,
                            kDesktopNativeWidgetAuraKey, NULL);
 
 namespace {

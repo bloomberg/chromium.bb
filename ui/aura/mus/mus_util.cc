@@ -5,7 +5,7 @@
 #include "ui/aura/mus/mus_util.h"
 
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
 namespace aura {
 namespace {

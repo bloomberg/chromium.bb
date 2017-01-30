@@ -6,19 +6,19 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/resources/grit/ui_resources.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::Shadow*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::Shadow*);
 
 namespace ash {
 namespace mus {
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(Shadow*, kShadowProperty, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(Shadow*, kShadowProperty, nullptr);
 
 // The opacity used for active shadow when animating between
 // inactive/active shadow.

@@ -15,7 +15,7 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/wm/core/shadow.h"
@@ -25,8 +25,8 @@
 
 using std::make_pair;
 
-DECLARE_WINDOW_PROPERTY_TYPE(wm::Shadow*);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(wm::Shadow, kShadowLayerKey, nullptr);
+DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::Shadow*);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(::wm::Shadow, kShadowLayerKey, nullptr);
 
 namespace wm {
 

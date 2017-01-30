@@ -5,17 +5,17 @@
 #include "ui/wm/public/activation_client.h"
 
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)
-DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ActivationClient*)
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)
+DECLARE_UI_CLASS_PROPERTY_TYPE(aura::client::ActivationClient*)
 
 namespace aura {
 namespace client {
 
-DEFINE_WINDOW_PROPERTY_KEY(
+DEFINE_UI_CLASS_PROPERTY_KEY(
     ActivationClient*, kRootWindowActivationClientKey, NULL);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kHideOnDeactivate, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideOnDeactivate, false);
 
 void SetActivationClient(Window* root_window, ActivationClient* client) {
   root_window->SetProperty(kRootWindowActivationClientKey, client);

@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
+#include "ui/base/class_property.h"
 
 namespace gfx {
 class Rect;
@@ -22,11 +23,6 @@ namespace aura {
 
 class Window;
 class WindowObserver;
-
-// See comments in OnWillChangeProperty() for details.
-struct AURA_EXPORT WindowPortPropertyData {
-  virtual ~WindowPortPropertyData() {}
-};
 
 // WindowPort defines an interface to enable Window to be used with or without
 // mus. WindowPort is owned by Window and called at key points in Windows
@@ -65,14 +61,14 @@ class AURA_EXPORT WindowPort {
   // Called before a property is changed. The return value from this is supplied
   // into OnPropertyChanged() so that WindowPort may pass data between the two
   // calls.
-  virtual std::unique_ptr<WindowPortPropertyData> OnWillChangeProperty(
+  virtual std::unique_ptr<ui::PropertyData> OnWillChangeProperty(
       const void* key) = 0;
 
   // Called after a property changes, but before observers are notified. |data|
   // is the return value from OnWillChangeProperty().
   virtual void OnPropertyChanged(
       const void* key,
-      std::unique_ptr<WindowPortPropertyData> data) = 0;
+      std::unique_ptr<ui::PropertyData> data) = 0;
 
  protected:
   // Returns the WindowPort associated with a Window.

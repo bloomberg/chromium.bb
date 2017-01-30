@@ -9,12 +9,13 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_item_types.h"
+#include "ui/base/class_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 template <typename T>
-struct WindowProperty;
+using WindowProperty = ui::ClassProperty<T>;
 }
 
 namespace ash {

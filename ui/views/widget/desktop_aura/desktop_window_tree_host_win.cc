@@ -11,7 +11,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/win/shell.h"
@@ -39,7 +39,7 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(views::DesktopWindowTreeHostWin*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostWin*);
 
 namespace views {
 
@@ -61,12 +61,13 @@ void InsetBottomRight(gfx::Rect* rect, const gfx::Vector2d& vector) {
 
 }  // namespace
 
-DEFINE_WINDOW_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
 
 // Identifies the DesktopWindowTreeHostWin associated with the
 // WindowEventDispatcher.
-DEFINE_WINDOW_PROPERTY_KEY(DesktopWindowTreeHostWin*, kDesktopWindowTreeHostKey,
-                           NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostWin*,
+                             kDesktopWindowTreeHostKey,
+                             NULL);
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, public:

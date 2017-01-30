@@ -12,19 +12,20 @@
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/stub/stub_window.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(aura::WindowTreeHostMus*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(aura::WindowTreeHostMus*);
 
 namespace aura {
 
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(WindowTreeHostMus*, kWindowTreeHostMusKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(
+    WindowTreeHostMus*, kWindowTreeHostMusKey, nullptr);
 
 static uint32_t accelerated_widget_count = 1;
 

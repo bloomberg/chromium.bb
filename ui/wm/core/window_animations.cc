@@ -21,7 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -39,9 +39,9 @@
 #include "ui/wm/core/wm_core_switches.h"
 #include "ui/wm/public/animation_host.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(wm::WindowVisibilityAnimationType)
-DECLARE_WINDOW_PROPERTY_TYPE(wm::WindowVisibilityAnimationTransition)
-DECLARE_WINDOW_PROPERTY_TYPE(float)
+DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationType)
+DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationTransition)
+DECLARE_UI_CLASS_PROPERTY_TYPE(float)
 
 namespace wm {
 namespace {
@@ -146,16 +146,16 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
 
 }  // namespace
 
-DEFINE_WINDOW_PROPERTY_KEY(int,
-                           kWindowVisibilityAnimationTypeKey,
-                           WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
-DEFINE_WINDOW_PROPERTY_KEY(int, kWindowVisibilityAnimationDurationKey, 0);
-DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationTransition,
-                           kWindowVisibilityAnimationTransitionKey,
-                           ANIMATE_BOTH);
-DEFINE_WINDOW_PROPERTY_KEY(float,
-                           kWindowVisibilityAnimationVerticalPositionKey,
-                           kWindowAnimation_Vertical_TranslateY);
+DEFINE_UI_CLASS_PROPERTY_KEY(int,
+                          kWindowVisibilityAnimationTypeKey,
+                          WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+DEFINE_UI_CLASS_PROPERTY_KEY(int, kWindowVisibilityAnimationDurationKey, 0);
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowVisibilityAnimationTransition,
+                          kWindowVisibilityAnimationTransitionKey,
+                          ANIMATE_BOTH);
+DEFINE_UI_CLASS_PROPERTY_KEY(float,
+                          kWindowVisibilityAnimationVerticalPositionKey,
+                          kWindowAnimation_Vertical_TranslateY);
 
 // A HidingWindowAnimationObserver that deletes observer and detached
 // layers upon the completion of the implicit animation.

@@ -14,7 +14,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
 namespace aura {
 
@@ -419,7 +419,7 @@ void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
     window_tree_client_->OnWindowMusBoundsChanged(this, old_bounds, new_bounds);
 }
 
-std::unique_ptr<WindowPortPropertyData> WindowPortMus::OnWillChangeProperty(
+std::unique_ptr<ui::PropertyData> WindowPortMus::OnWillChangeProperty(
     const void* key) {
   // |window_| is null if a property is set on the aura::Window before
   // Window::Init() is called. It's safe to ignore the change in this case as
@@ -433,7 +433,7 @@ std::unique_ptr<WindowPortPropertyData> WindowPortMus::OnWillChangeProperty(
 
 void WindowPortMus::OnPropertyChanged(
     const void* key,
-    std::unique_ptr<WindowPortPropertyData> data) {
+    std::unique_ptr<ui::PropertyData> data) {
   // See comment in OnWillChangeProperty() as to why |window_| may be null.
   if (!window_)
     return;

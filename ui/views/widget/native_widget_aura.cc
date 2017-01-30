@@ -26,8 +26,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/class_property.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
@@ -71,13 +71,13 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #endif
 
-DECLARE_WINDOW_PROPERTY_TYPE(views::internal::NativeWidgetPrivate*)
+DECLARE_UI_CLASS_PROPERTY_TYPE(views::internal::NativeWidgetPrivate*)
 
 namespace views {
 
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(internal::NativeWidgetPrivate*,
+DEFINE_UI_CLASS_PROPERTY_KEY(internal::NativeWidgetPrivate*,
                            kNativeWidgetPrivateKey,
                            nullptr);
 

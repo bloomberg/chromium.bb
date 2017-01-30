@@ -15,40 +15,41 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 
 // See aura_constants.cc for bool, int32_t, int64_t, std::string, gfx::Rect,
 // base::string16, uint32_t (via SkColor), and gfx::ImageSkia.
-DECLARE_WINDOW_PROPERTY_TYPE(uint8_t)
-DECLARE_WINDOW_PROPERTY_TYPE(uint16_t)
-DECLARE_WINDOW_PROPERTY_TYPE(uint64_t)
-DECLARE_WINDOW_PROPERTY_TYPE(int8_t)
-DECLARE_WINDOW_PROPERTY_TYPE(int16_t)
+DECLARE_UI_CLASS_PROPERTY_TYPE(uint8_t)
+DECLARE_UI_CLASS_PROPERTY_TYPE(uint16_t)
+DECLARE_UI_CLASS_PROPERTY_TYPE(uint64_t)
+DECLARE_UI_CLASS_PROPERTY_TYPE(int8_t)
+DECLARE_UI_CLASS_PROPERTY_TYPE(int16_t)
 
 namespace aura {
 
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(bool, kTestPropertyKey0, false);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kTestPropertyKey1, true);
-DEFINE_WINDOW_PROPERTY_KEY(uint8_t, kTestPropertyKey2, UINT8_MAX / 3);
-DEFINE_WINDOW_PROPERTY_KEY(uint16_t, kTestPropertyKey3, UINT16_MAX / 3);
-DEFINE_WINDOW_PROPERTY_KEY(uint32_t, kTestPropertyKey4, UINT32_MAX);
-DEFINE_WINDOW_PROPERTY_KEY(uint64_t, kTestPropertyKey5, UINT64_MAX);
-DEFINE_WINDOW_PROPERTY_KEY(int8_t, kTestPropertyKey6, 0);
-DEFINE_WINDOW_PROPERTY_KEY(int16_t, kTestPropertyKey7, 1);
-DEFINE_WINDOW_PROPERTY_KEY(int32_t, kTestPropertyKey8, -1);
-DEFINE_WINDOW_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey0, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey1, true);
+DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey2, UINT8_MAX / 3);
+DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey3, UINT16_MAX / 3);
+DEFINE_UI_CLASS_PROPERTY_KEY(uint32_t, kTestPropertyKey4, UINT32_MAX);
+DEFINE_UI_CLASS_PROPERTY_KEY(uint64_t, kTestPropertyKey5, UINT64_MAX);
+DEFINE_UI_CLASS_PROPERTY_KEY(int8_t, kTestPropertyKey6, 0);
+DEFINE_UI_CLASS_PROPERTY_KEY(int16_t, kTestPropertyKey7, 1);
+DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kTestPropertyKey8, -1);
+DEFINE_UI_CLASS_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777);
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kTestImagePropertyKey,
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kTestImagePropertyKey,
                                  nullptr);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Size, kTestSizePropertyKey, nullptr);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kTestStringPropertyKey, nullptr);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(base::string16, kTestString16PropertyKey,
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kTestSizePropertyKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(
+     std::string, kTestStringPropertyKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::string16, kTestString16PropertyKey,
                                  nullptr);
 
 const char kTestPropertyServerKey0[] = "test-property-server0";

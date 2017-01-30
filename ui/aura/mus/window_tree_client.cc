@@ -69,7 +69,7 @@ inline uint16_t HiWord(uint32_t id) {
   return static_cast<uint16_t>((id >> 16) & 0xFFFF);
 }
 
-struct WindowPortPropertyDataMus : public WindowPortPropertyData {
+struct WindowPortPropertyDataMus : public ui::PropertyData {
   std::string transport_name;
   std::unique_ptr<std::vector<uint8_t>> transport_value;
 };
@@ -596,7 +596,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
 
   std::unordered_map<std::string, std::vector<uint8_t>> transport_properties;
   std::set<const void*> property_keys =
-      window->GetWindow()->GetAllPropertKeys();
+      window->GetWindow()->GetAllPropertyKeys();
   PropertyConverter* property_converter = delegate_->GetPropertyConverter();
   for (const void* key : property_keys) {
     std::string transport_name;
@@ -712,7 +712,7 @@ void WindowTreeClient::OnWindowMusSetVisible(WindowMus* window, bool visible) {
   tree_->SetWindowVisibility(change_id, window->server_id(), visible);
 }
 
-std::unique_ptr<WindowPortPropertyData>
+std::unique_ptr<ui::PropertyData>
 WindowTreeClient::OnWindowMusWillChangeProperty(WindowMus* window,
                                                 const void* key) {
   if (IsInternalProperty(key))
@@ -731,7 +731,7 @@ WindowTreeClient::OnWindowMusWillChangeProperty(WindowMus* window,
 void WindowTreeClient::OnWindowMusPropertyChanged(
     WindowMus* window,
     const void* key,
-    std::unique_ptr<WindowPortPropertyData> data) {
+    std::unique_ptr<ui::PropertyData> data) {
   if (HandleInternalPropertyChanged(window, key) || !data)
     return;
 

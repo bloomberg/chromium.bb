@@ -6,18 +6,19 @@
 
 #include "ash/common/wm_layout_manager.h"
 #include "ash/common/wm_window.h"
-#include "ui/aura/window_property.h"
+#include "ui/aura/window.h"
+#include "ui/base/class_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::AuraLayoutManagerAdapter*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::AuraLayoutManagerAdapter*);
 
 namespace ash {
 namespace {
 // AuraLayoutManagerAdapter is an aura::LayoutManager, so it's owned by the
 // aura::Window it is installed on. This property is used to lookup the
 // AuraLayoutManagerAdapter given only an aura::Window.
-DEFINE_WINDOW_PROPERTY_KEY(AuraLayoutManagerAdapter*,
-                           kAuraLayoutManagerAdapter,
-                           nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(AuraLayoutManagerAdapter*,
+                             kAuraLayoutManagerAdapter,
+                             nullptr);
 }  // namespace
 
 AuraLayoutManagerAdapter::AuraLayoutManagerAdapter(

@@ -34,22 +34,22 @@
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::NonClientFrameController*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::NonClientFrameController*);
 
 namespace ash {
 namespace mus {
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(NonClientFrameController*,
-                           kNonClientFrameControllerKey,
-                           nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameController*,
+                             kNonClientFrameControllerKey,
+                             nullptr);
 
 // This class supports draggable app windows that paint their own custom frames.
 // It uses empty insets, doesn't paint anything, and hit tests return HTCAPTION.

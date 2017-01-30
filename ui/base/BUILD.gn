@@ -67,6 +67,8 @@ component("base") {
     "accelerators/platform_accelerator_cocoa.mm",
     "android/ui_base_jni_registrar.cc",
     "android/ui_base_jni_registrar.h",
+    "class_property.cc",
+    "class_property.h",
     "clipboard/clipboard_android.cc",
     "clipboard/clipboard_android.h",
     "clipboard/clipboard_mac.h",
@@ -227,6 +229,7 @@ component("base") {
     "nine_image_painter_factory.h",
     "page_transition_types.cc",
     "page_transition_types.h",
+    "property_data.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
     "resource/resource_bundle_android.cc",
@@ -743,6 +746,7 @@ bundle_data("ui_base_unittests_bundle_data") {
 
 test("ui_base_unittests") {
   sources = [
+    "class_property_unittest.cc",
     "clipboard/clipboard_mac_unittest.mm",
     "clipboard/clipboard_util_mac_unittest.mm",
     "l10n/l10n_util_mac_unittest.mm",

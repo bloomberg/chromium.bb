@@ -30,8 +30,8 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -48,7 +48,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/skia_util.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(const char*)
+DECLARE_UI_CLASS_PROPERTY_TYPE(const char*)
 
 namespace {
 
@@ -98,31 +98,13 @@ class DeletionTestProperty {
   DISALLOW_COPY_AND_ASSIGN(DeletionTestProperty);
 };
 
-class TestProperty {
- public:
-  TestProperty() {}
-  ~TestProperty() {
-    last_deleted_ = this;
-  }
-  static TestProperty* last_deleted() { return last_deleted_; }
-
- private:
-  static TestProperty* last_deleted_;
-  DISALLOW_COPY_AND_ASSIGN(TestProperty);
-};
-
-TestProperty* TestProperty::last_deleted_ = nullptr;
-
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(DeletionTestProperty,
-                                 kDeletionTestPropertyKey,
-                                 nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(DeletionTestProperty,
+                                   kDeletionTestPropertyKey,
+                                   nullptr);
 
 }  // namespace
 
-DECLARE_WINDOW_PROPERTY_TYPE(TestProperty*);
-
-DECLARE_WINDOW_PROPERTY_TYPE(DeletionTestProperty*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*);
 
 namespace aura {
 namespace test {
@@ -1655,73 +1637,18 @@ TEST_P(WindowTest, TransformGesture) {
   EXPECT_EQ(gfx::Point(10, 10).ToString(), delegate->position().ToString());
 }
 
-namespace {
-DEFINE_WINDOW_PROPERTY_KEY(int, kIntKey, -2);
-DEFINE_WINDOW_PROPERTY_KEY(const char*, kStringKey, "squeamish");
-}
-
 TEST_P(WindowTest, Property) {
   std::unique_ptr<Window> w(CreateTestWindowWithId(0, root_window()));
 
   static const char native_prop_key[] = "fnord";
 
   // Non-existent properties should return the default values.
-  EXPECT_EQ(-2, w->GetProperty(kIntKey));
-  EXPECT_EQ(std::string("squeamish"), w->GetProperty(kStringKey));
-  EXPECT_EQ(NULL, w->GetNativeWindowProperty(native_prop_key));
-
-  // A set property value should be returned again (even if it's the default
-  // value).
-  w->SetProperty(kIntKey, INT_MAX);
-  EXPECT_EQ(INT_MAX, w->GetProperty(kIntKey));
-  w->SetProperty(kIntKey, -2);
-  EXPECT_EQ(-2, w->GetProperty(kIntKey));
-  w->SetProperty(kIntKey, INT_MIN);
-  EXPECT_EQ(INT_MIN, w->GetProperty(kIntKey));
-
-  w->SetProperty(kStringKey, static_cast<const char*>(NULL));
-  EXPECT_EQ(NULL, w->GetProperty(kStringKey));
-  w->SetProperty(kStringKey, "squeamish");
-  EXPECT_EQ(std::string("squeamish"), w->GetProperty(kStringKey));
-  w->SetProperty(kStringKey, "ossifrage");
-  EXPECT_EQ(std::string("ossifrage"), w->GetProperty(kStringKey));
+  EXPECT_EQ(nullptr, w->GetNativeWindowProperty(native_prop_key));
 
   w->SetNativeWindowProperty(native_prop_key, &*w);
   EXPECT_EQ(&*w, w->GetNativeWindowProperty(native_prop_key));
-  w->SetNativeWindowProperty(native_prop_key, NULL);
-  EXPECT_EQ(NULL, w->GetNativeWindowProperty(native_prop_key));
-
-  // ClearProperty should restore the default value.
-  w->ClearProperty(kIntKey);
-  EXPECT_EQ(-2, w->GetProperty(kIntKey));
-  w->ClearProperty(kStringKey);
-  EXPECT_EQ(std::string("squeamish"), w->GetProperty(kStringKey));
-}
-
-TEST_P(WindowTest, OwnedProperty) {
-  std::unique_ptr<Window> w(CreateTestWindowWithId(0, root_window()));
-  EXPECT_EQ(NULL, w->GetProperty(kOwnedKey));
-  TestProperty* last_deleted = TestProperty::last_deleted();
-  TestProperty* p1 = new TestProperty();
-  w->SetProperty(kOwnedKey, p1);
-  EXPECT_EQ(p1, w->GetProperty(kOwnedKey));
-  EXPECT_EQ(last_deleted, TestProperty::last_deleted());
-
-  TestProperty* p2 = new TestProperty();
-  w->SetProperty(kOwnedKey, p2);
-  EXPECT_EQ(p2, w->GetProperty(kOwnedKey));
-  EXPECT_EQ(p1, TestProperty::last_deleted());
-
-  w->ClearProperty(kOwnedKey);
-  EXPECT_EQ(NULL, w->GetProperty(kOwnedKey));
-  EXPECT_EQ(p2, TestProperty::last_deleted());
-
-  TestProperty* p3 = new TestProperty();
-  w->SetProperty(kOwnedKey, p3);
-  EXPECT_EQ(p3, w->GetProperty(kOwnedKey));
-  EXPECT_EQ(p2, TestProperty::last_deleted());
-  w.reset();
-  EXPECT_EQ(p3, TestProperty::last_deleted());
+  w->SetNativeWindowProperty(native_prop_key, nullptr);
+  EXPECT_EQ(nullptr, w->GetNativeWindowProperty(native_prop_key));
 }
 
 namespace {

@@ -13,7 +13,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
@@ -25,7 +25,7 @@ namespace wm {
 
 // Transient child's modal parent.
 extern const aura::WindowProperty<aura::Window*>* const kModalParentKey;
-DEFINE_WINDOW_PROPERTY_KEY(aura::Window*, kModalParentKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kModalParentKey, NULL);
 
 namespace {
 

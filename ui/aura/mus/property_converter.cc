@@ -9,7 +9,7 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
 namespace aura {
 

@@ -9,18 +9,18 @@
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::MoveEventHandler*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::MoveEventHandler*);
 
 namespace {
 
 // Key used for storing identifier sent to clients for windows.
-DEFINE_WINDOW_PROPERTY_KEY(ash::mus::MoveEventHandler*,
-                           kWmMoveEventHandler,
-                           nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(ash::mus::MoveEventHandler*,
+                             kWmMoveEventHandler,
+                             nullptr);
 
 }  // namespace
 

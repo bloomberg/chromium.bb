@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -24,15 +24,15 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(display::Display::Rotation);
+DECLARE_UI_CLASS_PROPERTY_TYPE(display::Display::Rotation);
 
 namespace ash {
 namespace {
 
 #if defined(OS_WIN)
-DEFINE_WINDOW_PROPERTY_KEY(display::Display::Rotation,
-                           kRotationPropertyKey,
-                           display::Display::ROTATE_0);
+DEFINE_UI_CLASS_PROPERTY_KEY(display::Display::Rotation,
+                             kRotationPropertyKey,
+                             display::Display::ROTATE_0);
 #endif
 
 // Round near zero value to zero.

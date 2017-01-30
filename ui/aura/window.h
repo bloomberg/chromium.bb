@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/class_property.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_owner.h"
@@ -51,13 +52,9 @@ class WindowPort;
 class WindowObserver;
 class WindowTreeHost;
 
-// Defined in window_property.h (which we do not include)
+// Defined in class_property.h (which we do not include)
 template<typename T>
-struct WindowProperty;
-
-namespace subtle {
-class PropertyHelper;
-}
+using WindowProperty = ui::ClassProperty<T>;
 
 namespace test {
 class WindowTestApi;
@@ -69,7 +66,8 @@ class WindowTestApi;
 class AURA_EXPORT Window : public ui::LayerDelegate,
                            public ui::LayerOwner,
                            public ui::EventTarget,
-                           public ui::GestureConsumer {
+                           public ui::GestureConsumer,
+                           public ui::PropertyHandler {
  public:
   // Initial value of id() for newly created windows.
   static constexpr int kInitialId = -1;
@@ -292,25 +290,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // reenable painting.
   void SuppressPaint();
 
-  // Sets the |value| of the given window |property|. Setting to the default
-  // value (e.g., NULL) removes the property. The caller is responsible for the
-  // lifetime of any object set as a property on the Window.
-  template<typename T>
-  void SetProperty(const WindowProperty<T>* property, T value);
-
-  // Returns the value of the given window |property|.  Returns the
-  // property-specific default value if the property was not previously set.
-  template<typename T>
-  T GetProperty(const WindowProperty<T>* property) const;
-
-  // Sets the |property| to its default value. Useful for avoiding a cast when
-  // setting to NULL.
-  template<typename T>
-  void ClearProperty(const WindowProperty<T>* property);
-
-  // Returns the value of all properties with a non-default value.
-  std::set<const void*> GetAllPropertKeys() const;
-
   // NativeWidget::[GS]etNativeWindowProperty use strings as keys, and this is
   // difficult to change while retaining compatibility with other platforms.
   // TODO(benrg): Find a better solution.
@@ -318,7 +297,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void* GetNativeWindowProperty(const char* key) const;
 
   // Type of a function to delete a property that this window owns.
-  typedef void (*PropertyDeallocator)(int64_t value);
+  //typedef void (*PropertyDeallocator)(int64_t value);
 
   // Overridden from ui::LayerDelegate:
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
@@ -337,21 +316,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // use from the destructor.
   void RemoveOrDestroyChildren();
 
+  // Overrides from ui::PropertyHandler
+  std::unique_ptr<ui::PropertyData> BeforePropertyChange(const void* key)
+      override;
+  void AfterPropertyChange(const void* key,
+                           int64_t old_value,
+                           std::unique_ptr<ui::PropertyData> data) override;
  private:
   friend class LayoutManager;
   friend class PropertyConverter;
   friend class WindowPort;
   friend class WindowTargeter;
-  friend class subtle::PropertyHelper;
   friend class test::WindowTestApi;
-
-  // Called by the public {Set,Get,Clear}Property functions.
-  int64_t SetPropertyInternal(const void* key,
-                              const char* name,
-                              PropertyDeallocator deallocator,
-                              int64_t value,
-                              int64_t default_value);
-  int64_t GetPropertyInternal(const void* key, int64_t default_value) const;
 
   // Returns true if the mouse pointer at relative-to-this-Window's-origin
   // |local_point| can trigger an event for this Window.
@@ -510,17 +486,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   gfx::Insets hit_test_bounds_override_inner_;
 
   base::ObserverList<WindowObserver, true> observers_;
-
-  // Value struct to keep the name and deallocator for this property.
-  // Key cannot be used for this purpose because it can be char* or
-  // WindowProperty<>.
-  struct Value {
-    const char* name;
-    int64_t value;
-    PropertyDeallocator deallocator;
-  };
-
-  std::map<const void*, Value> prop_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

@@ -45,7 +45,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/mojo/event.mojom.h"

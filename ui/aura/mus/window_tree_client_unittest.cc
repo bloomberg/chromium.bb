@@ -30,9 +30,9 @@
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host_observer.h"
+#include "ui/base/class_property.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/event.h"
@@ -43,9 +43,9 @@ namespace aura {
 
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(uint8_t, kTestPropertyKey1, 0);
-DEFINE_WINDOW_PROPERTY_KEY(uint16_t, kTestPropertyKey2, 0);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kTestPropertyKey3, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey1, 0);
+DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey2, 0);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey3, false);
 
 const char kTestPropertyServerKey1[] = "test-property-server1";
 const char kTestPropertyServerKey2[] = "test-property-server2";

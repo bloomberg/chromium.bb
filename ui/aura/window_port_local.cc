@@ -79,13 +79,13 @@ void WindowPortLocal::OnVisibilityChanged(bool visible) {}
 void WindowPortLocal::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                         const gfx::Rect& new_bounds) {}
 
-std::unique_ptr<WindowPortPropertyData> WindowPortLocal::OnWillChangeProperty(
+std::unique_ptr<ui::PropertyData> WindowPortLocal::OnWillChangeProperty(
     const void* key) {
   return nullptr;
 }
 
 void WindowPortLocal::OnPropertyChanged(
     const void* key,
-    std::unique_ptr<WindowPortPropertyData> data) {}
+    std::unique_ptr<ui::PropertyData> data) {}
 
 }  // namespace aura

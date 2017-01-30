@@ -7,17 +7,17 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::DisconnectedAppHandler*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::DisconnectedAppHandler*);
 
 namespace ash {
 namespace mus {
 namespace {
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(DisconnectedAppHandler,
-                                 kDisconnectedAppHandlerKey,
-                                 nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(DisconnectedAppHandler,
+                                   kDisconnectedAppHandlerKey,
+                                   nullptr);
 
 }  // namespace
 

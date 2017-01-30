@@ -16,7 +16,7 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"

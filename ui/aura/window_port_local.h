@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/window_port.h"
+#include "ui/base/property_data.h"
 
 namespace aura {
 
@@ -27,10 +28,10 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
   void OnVisibilityChanged(bool visible) override;
   void OnDidChangeBounds(const gfx::Rect& old_bounds,
                          const gfx::Rect& new_bounds) override;
-  std::unique_ptr<WindowPortPropertyData> OnWillChangeProperty(
+  std::unique_ptr<ui::PropertyData> OnWillChangeProperty(
       const void* key) override;
   void OnPropertyChanged(const void* key,
-                         std::unique_ptr<WindowPortPropertyData> data) override;
+                         std::unique_ptr<ui::PropertyData> data) override;
 
  private:
   Window* window_;

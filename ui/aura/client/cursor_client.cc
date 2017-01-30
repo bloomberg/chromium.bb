@@ -5,15 +5,15 @@
 #include "ui/aura/client/cursor_client.h"
 
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(aura::client::CursorClient*)
+DECLARE_UI_CLASS_PROPERTY_TYPE(aura::client::CursorClient*)
 
 namespace aura {
 namespace client {
 
 // A property key to store a client that handles window moves.
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(
     CursorClient*, kCursorClientKey, NULL);
 
 void SetCursorClient(Window* window, CursorClient* client) {

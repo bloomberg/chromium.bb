@@ -4,14 +4,14 @@
 
 #include "ash/mus/window_properties.h"
 
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 
 namespace ash {
 namespace mus {
 
-DEFINE_WINDOW_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false);
 
-DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowIsJanky, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowIsJanky, false);
 
 }  // namespace mus
 }  // namespace ash

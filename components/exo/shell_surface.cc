@@ -27,10 +27,10 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/class_property.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -331,7 +331,7 @@ ShellSurface::ScopedAnimationsDisabled::~ScopedAnimationsDisabled() {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, public:
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
+DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 
 ShellSurface::ShellSurface(Surface* surface,
                            ShellSurface* parent,

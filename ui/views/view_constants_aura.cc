@@ -4,13 +4,13 @@
 
 #include "ui/views/view_constants_aura.h"
 
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/views/view.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(VIEWS_EXPORT, views::View*);
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::View*);
 
 namespace views {
 
-DEFINE_WINDOW_PROPERTY_KEY(views::View*, kHostViewKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(views::View*, kHostViewKey, NULL);
 
 }  // namespace views

@@ -123,14 +123,7 @@ Window::~Window() {
   // depends upon properties existing the properties are still valid.
   layout_manager_.reset();
 
-  // Clear properties.
-  for (std::map<const void*, Value>::const_iterator iter = prop_map_.begin();
-       iter != prop_map_.end();
-       ++iter) {
-    if (iter->second.deallocator)
-      (*iter->second.deallocator)(iter->second.value);
-  }
-  prop_map_.clear();
+  ClearProperties();
 
   // The layer will either be destroyed by |layer_owner_|'s dtor, or by whoever
   // acquired it.
@@ -599,14 +592,7 @@ void Window::SuppressPaint() {
   layer()->SuppressPaint();
 }
 
-std::set<const void*> Window::GetAllPropertKeys() const {
-  std::set<const void*> keys;
-  for (auto& pair : prop_map_)
-    keys.insert(pair.first);
-  return keys;
-}
-
-// {Set,Get,Clear}Property are implemented in window_property.h.
+// {Set,Get,Clear}Property are implemented in class_property.h.
 
 void Window::SetNativeWindowProperty(const char* key, void* value) {
   SetPropertyInternal(key, key, NULL, reinterpret_cast<int64_t>(value), 0);
@@ -661,41 +647,22 @@ void Window::RemoveOrDestroyChildren() {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Window, private:
+std::unique_ptr<ui::PropertyData> Window::BeforePropertyChange(
+    const void* key) {
+  return port_ ? port_->OnWillChangeProperty(key) : nullptr;
+}
 
-int64_t Window::SetPropertyInternal(const void* key,
-                                    const char* name,
-                                    PropertyDeallocator deallocator,
-                                    int64_t value,
-                                    int64_t default_value) {
-  // This code may be called before |port_| has been created.
-  std::unique_ptr<WindowPortPropertyData> data =
-      port_ ? port_->OnWillChangeProperty(key) : nullptr;
-  int64_t old = GetPropertyInternal(key, default_value);
-  if (value == default_value) {
-    prop_map_.erase(key);
-  } else {
-    Value prop_value;
-    prop_value.name = name;
-    prop_value.value = value;
-    prop_value.deallocator = deallocator;
-    prop_map_[key] = prop_value;
-  }
+void Window::AfterPropertyChange(const void* key,
+                                 int64_t old_value,
+                                 std::unique_ptr<ui::PropertyData> data) {
   if (port_)
     port_->OnPropertyChanged(key, std::move(data));
   for (WindowObserver& observer : observers_)
-    observer.OnWindowPropertyChanged(this, key, old);
-  return old;
+    observer.OnWindowPropertyChanged(this, key, old_value);
 }
 
-int64_t Window::GetPropertyInternal(const void* key,
-                                    int64_t default_value) const {
-  std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
-  if (iter == prop_map_.end())
-    return default_value;
-  return iter->second.value;
-}
+///////////////////////////////////////////////////////////////////////////////
+// Window, private:
 
 bool Window::HitTest(const gfx::Point& local_point) {
   gfx::Rect local_bounds(bounds().size());

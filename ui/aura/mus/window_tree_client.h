@@ -38,6 +38,10 @@ namespace gfx {
 class Insets;
 }
 
+namespace ui {
+struct PropertyData;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -58,7 +62,6 @@ class InFlightVisibleChange;
 class MusContextFactory;
 class WindowMus;
 class WindowPortMus;
-struct WindowPortPropertyData;
 class WindowTreeClientDelegate;
 class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
@@ -277,12 +280,12 @@ class AURA_EXPORT WindowTreeClient
                             size_t current_index,
                             size_t dest_index);
   void OnWindowMusSetVisible(WindowMus* window, bool visible);
-  std::unique_ptr<WindowPortPropertyData> OnWindowMusWillChangeProperty(
+  std::unique_ptr<ui::PropertyData> OnWindowMusWillChangeProperty(
       WindowMus* window,
       const void* key);
   void OnWindowMusPropertyChanged(WindowMus* window,
                                   const void* key,
-                                  std::unique_ptr<WindowPortPropertyData> data);
+                                  std::unique_ptr<ui::PropertyData> data);
 
   // Callback passed from WmPerformMoveLoop().
   void OnWmMoveLoopCompleted(uint32_t change_id, bool completed);

@@ -26,8 +26,8 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
@@ -41,14 +41,14 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(exo::Surface*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(exo::Surface*);
 
 namespace exo {
 namespace {
 
 // A property key containing the surface that is associated with
 // window. If unset, no surface is associated with window.
-DEFINE_WINDOW_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr);
 
 // Helper function that returns an iterator to the first entry in |list|
 // with |key|.

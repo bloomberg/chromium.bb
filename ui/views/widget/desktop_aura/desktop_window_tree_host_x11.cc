@@ -26,7 +26,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
+#include "ui/base/class_property.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
@@ -64,7 +64,7 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*);
 
 namespace views {
 
@@ -72,10 +72,10 @@ DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture =
     NULL;
 std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = NULL;
 
-DEFINE_WINDOW_PROPERTY_KEY(
+DEFINE_UI_CLASS_PROPERTY_KEY(
     aura::Window*, kViewsWindowForRootWindow, NULL);
 
-DEFINE_WINDOW_PROPERTY_KEY(
+DEFINE_UI_CLASS_PROPERTY_KEY(
     DesktopWindowTreeHostX11*, kHostForRootWindow, NULL);
 
 namespace {
