@@ -73,11 +73,8 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
     DCHECK(network_task_runner_.get());
 
     network_task_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&DomainReliabilityMonitor::ClearBrowsingData,
-                   monitor_,
-                   clear_mode,
-                   base::Callback<bool(const GURL&)>(origin_filter)),
+        FROM_HERE, base::Bind(&DomainReliabilityMonitor::ClearBrowsingData,
+                              monitor_, clear_mode, origin_filter),
         callback);
   }
 
