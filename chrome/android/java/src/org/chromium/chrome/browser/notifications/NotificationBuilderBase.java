@@ -211,6 +211,11 @@ public abstract class NotificationBuilderBase {
         return this;
     }
 
+    /** Returns whether a small icon bitmap was set. */
+    public boolean hasSmallIconBitmap() {
+        return mSmallIconBitmap != null;
+    }
+
     /**
      * Sets the PendingIntent to send when the notification is clicked.
      */

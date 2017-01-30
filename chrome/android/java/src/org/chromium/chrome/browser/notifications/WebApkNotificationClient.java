@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.RemoteException;
 
 import org.chromium.base.ContextUtils;
@@ -38,13 +43,27 @@ public class WebApkNotificationClient {
      * display. Handing over the notification makes the notification look like it originated from
      * the WebAPK - not Chrome - in the Android UI.
      */
-    public static void notifyNotification(String webApkPackage,
+    public static void notifyNotification(final String webApkPackage,
             final NotificationBuilderBase notificationBuilder, final String platformTag,
             final int platformID) {
         final ApiUseCallback connectionCallback = new ApiUseCallback() {
             @Override
             public void useApi(IWebApkApi api) throws RemoteException {
-                notificationBuilder.setSmallIcon(api.getSmallIconId());
+                int smallIconId = api.getSmallIconId();
+                // Prior to Android M, the small icon had to be from the resources of the app whose
+                // NotificationManager is used in {@link NotificationManager#notify()}. On Android
+                // M+, the small icon has to be from the resources of the app whose context is
+                // passed to the {@link Notification.Builder()} constructor.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    // Android M+ introduced
+                    // {@link Notification.Builder#setSmallIcon(Bitmap icon)}.
+                    if (!notificationBuilder.hasSmallIconBitmap()) {
+                        notificationBuilder.setSmallIcon(
+                                decodeImageResource(webApkPackage, smallIconId));
+                    }
+                } else {
+                    notificationBuilder.setSmallIcon(smallIconId);
+                }
                 api.notifyNotification(platformTag, platformID, notificationBuilder.build());
             }
         };
@@ -66,5 +85,16 @@ public class WebApkNotificationClient {
         };
         WebApkServiceConnectionManager.getInstance().connect(
                 ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
+    }
+
+    /** Decodes bitmap from WebAPK's resources. */
+    private static Bitmap decodeImageResource(String webApkPackage, int resourceId) {
+        PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
+        try {
+            Resources resources = packageManager.getResourcesForApplication(webApkPackage);
+            return BitmapFactory.decodeResource(resources, resourceId);
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
     }
 }
