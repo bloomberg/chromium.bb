@@ -43,6 +43,17 @@ void PreloadedWebView::PreloadOnIdle(PreloadCallback preload) {
 
 std::unique_ptr<views::WebView> PreloadedWebView::TryTake() {
   idle_detector_.reset();
+
+  // Clear cached reference if it is no longer valid (ie, destroyed in task
+  // manager).
+  if (preloaded_instance_ &&
+      !preloaded_instance_->GetWebContents()
+           ->GetRenderViewHost()
+           ->GetWidget()
+           ->GetView()) {
+    preloaded_instance_.reset();
+  }
+
   return std::move(preloaded_instance_);
 }
 
