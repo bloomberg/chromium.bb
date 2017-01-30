@@ -1042,8 +1042,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   int i, mi_step, np = 0;
   int mvasint[100];
   int mvnumber = 0;
-  int global_offset_c = mi_col * 8;
-  int global_offset_r = mi_row * 8;
+  int global_offset_c = mi_col * MI_SIZE;
+  int global_offset_r = mi_row * MI_SIZE;
   int samples_per_neighbor = 4;
 
   // scan the above row
@@ -1055,13 +1055,13 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
       MB_MODE_INFO *mbmi = &mi->mbmi;
 
-      mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[mbmi->sb_type]);
+      mi_step = AOMMIN(xd->n8_w, mi_size_wide[mbmi->sb_type]);
 
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
         int bw = block_size_wide[mbmi->sb_type];
         int bh = block_size_high[mbmi->sb_type];
-        int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
-        int cc_offset = i * 8 + AOMMAX(bw, 8) / 2 - 1;
+        int cr_offset = -AOMMAX(bh, MI_SIZE) / 2 - 1;
+        int cc_offset = i * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2 - 1;
         int j;
         int pixelperblock = samples_per_neighbor;
 
@@ -1098,13 +1098,13 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
       MB_MODE_INFO *mbmi = &mi->mbmi;
 
-      mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[mbmi->sb_type]);
+      mi_step = AOMMIN(xd->n8_h, mi_size_high[mbmi->sb_type]);
 
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
         int bw = block_size_wide[mbmi->sb_type];
         int bh = block_size_high[mbmi->sb_type];
-        int cr_offset = i * 8 + AOMMAX(bh, 8) / 2 - 1;
-        int cc_offset = -AOMMAX(bw, 8) / 2 - 1;
+        int cr_offset = i * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2 - 1;
+        int cc_offset = -AOMMAX(bw, MI_SIZE) / 2 - 1;
         int j;
         int pixelperblock = samples_per_neighbor;
 
@@ -1142,8 +1142,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
     if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
       int bw = block_size_wide[mbmi->sb_type];
       int bh = block_size_high[mbmi->sb_type];
-      int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
-      int cc_offset = -AOMMAX(bw, 8) / 2 - 1;
+      int cr_offset = -AOMMAX(bh, MI_SIZE) / 2 - 1;
+      int cc_offset = -AOMMAX(bw, MI_SIZE) / 2 - 1;
       int j;
       int pixelperblock = samples_per_neighbor;
 
@@ -1183,8 +1183,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
     int bh = block_size_high[mbmi->sb_type];
     int mv_row = mbmi->mv[0].as_mv.row;
     int mv_col = mbmi->mv[0].as_mv.col;
-    int cr_offset = AOMMAX(bh, 8) / 2 - 1;
-    int cc_offset = AOMMAX(bw, 8) / 2 - 1;
+    int cr_offset = AOMMAX(bh, MI_SIZE) / 2 - 1;
+    int cc_offset = AOMMAX(bw, MI_SIZE) / 2 - 1;
     int j;
     int pixelperblock = samples_per_neighbor;
 
