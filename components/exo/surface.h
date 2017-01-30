@@ -26,6 +26,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace base {
 namespace trace_event {
@@ -171,8 +172,9 @@ class Surface : public ui::ContextFactoryObserver,
   void RegisterCursorProvider(CursorProvider* provider);
   void UnregisterCursorProvider(CursorProvider* provider);
 
-  // Returns true if surface has at least one cursor provider registered.
-  bool HasCursorProvider() const;
+  // Returns the cursor for the surface. If no cursor provider is registered
+  // then kCursorNull is returned.
+  gfx::NativeCursor GetCursor();
 
   // Set the surface delegate.
   void SetSurfaceDelegate(SurfaceDelegate* delegate);

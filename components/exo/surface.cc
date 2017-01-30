@@ -21,6 +21,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/exo/buffer.h"
+#include "components/exo/pointer.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -77,10 +78,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnBoundsChanged(const gfx::Rect& old_bounds,
                        const gfx::Rect& new_bounds) override {}
   gfx::NativeCursor GetCursor(const gfx::Point& point) override {
-    // If surface has a cursor provider then return 'none' as cursor providers
-    // are responsible for drawing cursors. Use default cursor if no cursor
-    // provider is registered.
-    return surface_->HasCursorProvider() ? ui::kCursorNone : ui::kCursorNull;
+    return surface_->GetCursor();
   }
   int GetNonClientComponent(const gfx::Point& point) const override {
     return HTNOWHERE;
@@ -559,8 +557,15 @@ void Surface::UnregisterCursorProvider(Pointer* provider) {
   cursor_providers_.erase(provider);
 }
 
-bool Surface::HasCursorProvider() const {
-  return !cursor_providers_.empty();
+gfx::NativeCursor Surface::GetCursor() {
+  // What cursor we display when we have multiple cursor providers is not
+  // important. Return the first non-null cursor.
+  for (const auto& cursor_provider : cursor_providers_) {
+    gfx::NativeCursor cursor = cursor_provider->GetCursor();
+    if (cursor != ui::kCursorNull)
+      return cursor;
+  }
+  return ui::kCursorNull;
 }
 
 void Surface::SetSurfaceDelegate(SurfaceDelegate* delegate) {

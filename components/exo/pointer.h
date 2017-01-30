@@ -7,21 +7,24 @@
 
 #include <memory>
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace cc {
+class CopyOutputResult;
+}
 
 namespace ui {
 class Event;
 class MouseEvent;
-}
-
-namespace views {
-class Widget;
 }
 
 namespace exo {
@@ -45,6 +48,9 @@ class Pointer : public ui::EventHandler,
   // pointer location, in surface local coordinates.
   void SetCursor(Surface* surface, const gfx::Point& hotspot);
 
+  // Returns the current cursor for the pointer.
+  gfx::NativeCursor GetCursor();
+
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
@@ -60,20 +66,21 @@ class Pointer : public ui::EventHandler,
   void OnSurfaceDestroying(Surface* surface) override;
 
  private:
-  // Creates the |widget_| for pointer.
-  void CreatePointerWidget();
+  // Asynchronously update the cursor by capturing a snapshot of |surface_|.
+  void CaptureCursor();
 
-  // Updates the scale of the cursor with the latest state.
-  void UpdateCursorScale();
+  // Called when cursor snapshot has been captured.
+  void OnCursorCaptured(const gfx::Point& hotspot,
+                        std::unique_ptr<cc::CopyOutputResult> result);
+
+  // Update cursor to reflect the current value of |cursor_|.
+  void UpdateCursor();
 
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
   // The delegate instance that all events are dispatched to.
   PointerDelegate* const delegate_;
-
-  // The widget for the pointer cursor.
-  std::unique_ptr<views::Widget> widget_;
 
   // The current pointer surface.
   Surface* surface_ = nullptr;
@@ -84,11 +91,15 @@ class Pointer : public ui::EventHandler,
   // The location of the pointer in the current focus surface.
   gfx::PointF location_;
 
-  // The scale applied to the cursor to compensate for the UI scale.
-  float cursor_scale_ = 1.0f;
-
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;
+
+  // The current cursor.
+  ui::Cursor cursor_;
+
+  // Cancelable callback for pending cursor capture.
+  base::CancelableCallback<void(std::unique_ptr<cc::CopyOutputResult>)>
+      cursor_captured_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };

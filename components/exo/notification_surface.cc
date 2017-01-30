@@ -28,10 +28,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnBoundsChanged(const gfx::Rect& old_bounds,
                        const gfx::Rect& new_bounds) override {}
   gfx::NativeCursor GetCursor(const gfx::Point& point) override {
-    // If surface has a cursor provider then return 'none' as cursor providers
-    // are responsible for drawing cursors. Use default cursor if no cursor
-    // provider is registered.
-    return surface_->HasCursorProvider() ? ui::kCursorNone : ui::kCursorNull;
+    return surface_->GetCursor();
   }
   int GetNonClientComponent(const gfx::Point& point) const override {
     return HTNOWHERE;
