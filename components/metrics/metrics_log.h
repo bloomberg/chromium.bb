@@ -74,6 +74,10 @@ class MetricsLog {
   // always incrementing for use in measuring time durations.
   static int64_t GetCurrentTime();
 
+  // Record core profile settings into the SystemProfileProto.
+  static void RecordCoreSystemProfile(MetricsServiceClient* client,
+                                      SystemProfileProto* system_profile);
+
   // Records a user-initiated action.
   void RecordUserAction(const std::string& key);
 
@@ -81,6 +85,9 @@ class MetricsLog {
   void RecordHistogramDelta(const std::string& histogram_name,
                             const base::HistogramSamples& snapshot);
 
+
+  // TODO(rkaplow): I think this can be a little refactored as it currently
+  // records a pretty arbitrary set of things.
   // Records the current operating environment, including metrics provided by
   // the specified set of |metrics_providers|.  Takes the list of synthetic
   // trial IDs as a parameter. A synthetic trial is one that is set up

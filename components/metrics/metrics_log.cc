@@ -103,13 +103,7 @@ MetricsLog::MetricsLog(const std::string& client_id,
   if (product != uma_proto_.product())
     uma_proto_.set_product(product);
 
-  SystemProfileProto* system_profile = uma_proto_.mutable_system_profile();
-  system_profile->set_build_timestamp(GetBuildTime());
-  system_profile->set_app_version(client_->GetVersionString());
-  system_profile->set_channel(client_->GetChannel());
-#if defined(SYZYASAN)
-  system_profile->set_is_asan_build(true);
-#endif
+  RecordCoreSystemProfile(client_, uma_proto_.mutable_system_profile());
 }
 
 MetricsLog::~MetricsLog() {
@@ -168,6 +162,35 @@ void MetricsLog::RecordUserAction(const std::string& key) {
   UserActionEventProto* user_action = uma_proto_.add_user_action_event();
   user_action->set_name_hash(Hash(key));
   user_action->set_time(GetCurrentTime());
+}
+
+void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
+                                         SystemProfileProto* system_profile) {
+  system_profile->set_build_timestamp(metrics::MetricsLog::GetBuildTime());
+  system_profile->set_app_version(client->GetVersionString());
+  system_profile->set_channel(client->GetChannel());
+  system_profile->set_application_locale(client->GetApplicationLocale());
+
+#if defined(SYZYASAN)
+  system_profile->set_is_asan_build(true);
+#endif
+
+  metrics::SystemProfileProto::Hardware* hardware =
+      system_profile->mutable_hardware();
+  hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
+  hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
+  hardware->set_hardware_class(base::SysInfo::HardwareModelName());
+#if defined(OS_WIN)
+  hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
+#endif
+
+  metrics::SystemProfileProto::OS* os = system_profile->mutable_os();
+  os->set_name(base::SysInfo::OperatingSystemName());
+  os->set_version(base::SysInfo::OperatingSystemVersion());
+#if defined(OS_ANDROID)
+  os->set_fingerprint(
+      base::android::BuildInfo::GetInstance()->android_build_fp());
+#endif
 }
 
 void MetricsLog::RecordHistogramDelta(const std::string& histogram_name,
@@ -375,32 +398,9 @@ std::string MetricsLog::RecordEnvironment(
   // Reduce granularity of the install_date field to nearest hour.
   system_profile->set_install_date(RoundSecondsToHour(install_date));
 
-  system_profile->set_application_locale(client_->GetApplicationLocale());
-
-  SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
-
-  // HardwareModelName() will return an empty string on platforms where it's
-  // not implemented or if an error occured.
-  hardware->set_hardware_class(base::SysInfo::HardwareModelName());
-
-  hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
-  hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
-#if defined(OS_WIN)
-  hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
-#endif
-
-  SystemProfileProto::OS* os = system_profile->mutable_os();
-  std::string os_name = base::SysInfo::OperatingSystemName();
-  os->set_name(os_name);
-
-  os->set_version(base::SysInfo::OperatingSystemVersion());
-#if defined(OS_ANDROID)
-  os->set_fingerprint(
-      base::android::BuildInfo::GetInstance()->android_build_fp());
-#endif
-
+  SystemProfileProto::Hardware::CPU* cpu =
+      system_profile->mutable_hardware()->mutable_cpu();
   base::CPU cpu_info;
-  SystemProfileProto::Hardware::CPU* cpu = hardware->mutable_cpu();
   cpu->set_vendor_name(cpu_info.vendor_name());
   cpu->set_signature(cpu_info.signature());
   cpu->set_num_cores(base::SysInfo::NumberOfProcessors());

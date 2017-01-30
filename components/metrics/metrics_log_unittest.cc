@@ -15,6 +15,7 @@
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -25,6 +26,14 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/active_field_trials.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/win/current_module.h"
+#endif
 
 namespace metrics {
 
@@ -156,7 +165,7 @@ TEST_F(MetricsLogTest, LogType) {
   EXPECT_EQ(MetricsLog::INITIAL_STABILITY_LOG, log2.log_type());
 }
 
-TEST_F(MetricsLogTest, EmptyRecord) {
+TEST_F(MetricsLogTest, BasicRecord) {
   TestMetricsServiceClient client;
   client.set_version_string("bogus version");
   TestingPrefServiceSimple prefs;
@@ -175,10 +184,35 @@ TEST_F(MetricsLogTest, EmptyRecord) {
   ChromeUserMetricsExtension expected;
   expected.set_client_id(5217101509553811875);  // Hashed bogus client ID
   expected.set_session_id(137);
-  expected.mutable_system_profile()->set_build_timestamp(
+
+  SystemProfileProto* system_profile = expected.mutable_system_profile();
+  system_profile->set_app_version("bogus version");
+  system_profile->set_channel(client.GetChannel());
+  system_profile->set_application_locale(client.GetApplicationLocale());
+
+#if defined(SYZYASAN)
+  system_profile->set_is_asan_build(true);
+#endif
+  metrics::SystemProfileProto::Hardware* hardware =
+      system_profile->mutable_hardware();
+  hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
+  hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
+  hardware->set_hardware_class(base::SysInfo::HardwareModelName());
+#if defined(OS_WIN)
+  hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
+#endif
+
+  system_profile->mutable_os()->set_name(base::SysInfo::OperatingSystemName());
+  system_profile->mutable_os()->set_version(
+      base::SysInfo::OperatingSystemVersion());
+#if defined(OS_ANDROID)
+  system_profile->mutable_os()->set_fingerprint(
+      base::android::BuildInfo::GetInstance()->android_build_fp());
+#endif
+
+  // Hard to mock.
+  system_profile->set_build_timestamp(
       parsed.system_profile().build_timestamp());
-  expected.mutable_system_profile()->set_app_version("bogus version");
-  expected.mutable_system_profile()->set_channel(client.GetChannel());
 
   EXPECT_EQ(expected.SerializeAsString(), encoded);
 }

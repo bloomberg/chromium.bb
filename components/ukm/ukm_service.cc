@@ -15,6 +15,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/proto/ukm/report.pb.h"
@@ -100,6 +101,7 @@ UkmService::UkmService(PrefService* pref_service,
       self_ptr_factory_(this) {
   DCHECK(pref_service_);
   DCHECK(client_);
+  DVLOG(1) << "UkmService::Constructor";
 
   persisted_logs_.DeserializeLogs();
 
@@ -192,7 +194,6 @@ void UkmService::BuildAndStoreLog() {
   DVLOG(1) << "UkmService::BuildAndStoreLog";
   Report report;
   report.set_client_id(client_id_);
-  // TODO(holte): Populate system_profile.
 
   for (const auto& source : sources_) {
     Source* proto_source = report.add_sources();
@@ -201,6 +202,9 @@ void UkmService::BuildAndStoreLog() {
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount", sources_.size());
   sources_.clear();
 
+  metrics::MetricsLog::RecordCoreSystemProfile(client_,
+                                               report.mutable_system_profile());
+  // TODO(rkaplow): Populate network information.
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
   persisted_logs_.StoreLog(serialized_log);
