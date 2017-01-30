@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::SaveCardBubbleControllerImpl);
@@ -163,15 +163,17 @@ base::TimeDelta SaveCardBubbleControllerImpl::Elapsed() const {
   return timer_->Elapsed();
 }
 
-void SaveCardBubbleControllerImpl::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void SaveCardBubbleControllerImpl::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   // Nothing to do if there's no bubble available.
   if (save_card_callback_.is_null())
     return;
 
   // Don't react to in-page (fragment) navigations.
-  if (details.is_in_page)
+  if (navigation_handle->IsSamePage())
     return;
 
   // Don't do anything if a navigation occurs before a user could reasonably

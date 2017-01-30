@@ -18,7 +18,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +39,13 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
 
   void set_elapsed(base::TimeDelta elapsed) { elapsed_ = elapsed; }
 
-  using SaveCardBubbleControllerImpl::DidNavigateMainFrame;
+  void SimulateNavigation() {
+    content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+    std::unique_ptr<content::NavigationHandle> navigation_handle =
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            GURL(), rfh, true);
+    // Destructor calls DidFinishNavigation.
+  }
 
  protected:
   base::TimeDelta Elapsed() const override { return elapsed_; }
@@ -239,8 +245,8 @@ TEST_F(SaveCardBubbleControllerImplTest,
   base::HistogramTester histogram_tester;
   // Fake-navigate after bubble has been visible for a long time.
   controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
+
+  controller()->SimulateNavigation();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
@@ -255,8 +261,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   base::HistogramTester histogram_tester;
   // Fake-navigate after bubble has been visible for a long time.
   controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
+  controller()->SimulateNavigation();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.Reshows",
@@ -271,8 +276,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   controller()->OnBubbleClosed();
   // Fake-navigate after bubble has been visible for a long time.
   controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
+  controller()->SimulateNavigation();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
@@ -288,8 +292,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   controller()->OnBubbleClosed();
   // Fake-navigate after bubble has been visible for a long time.
   controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
+  controller()->SimulateNavigation();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.Reshows",

@@ -66,9 +66,8 @@ class SaveCardBubbleControllerImpl
   virtual base::TimeDelta Elapsed() const;
 
   // content::WebContentsObserver:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;
