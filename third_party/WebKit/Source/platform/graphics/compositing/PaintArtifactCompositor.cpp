@@ -595,9 +595,9 @@ bool PaintArtifactCompositor::mightOverlap(
     const PaintChunk& paintChunk,
     const PendingLayer& candidatePendingLayer,
     GeometryMapper& geometryMapper) {
-  PropertyTreeState rootPropertyTreeState(
-      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  PropertyTreeState rootPropertyTreeState(TransformPaintPropertyNode::root(),
+                                          ClipPaintPropertyNode::root(),
+                                          EffectPaintPropertyNode::root());
 
   FloatRect paintChunkScreenVisualRect =
       geometryMapper.localToAncestorVisualRect(
@@ -706,10 +706,9 @@ void PaintArtifactCompositor::update(
         paintArtifact, pendingLayer, layerOffset, newContentLayerClients,
         rasterChunkInvalidations, storeDebugInfo, geometryMapper);
 
-    int transformId = propertyTreeManager.ensureCompositorTransformNode(
-        pendingLayer.propertyTreeState.transform());
-    int scrollId = propertyTreeManager.ensureCompositorScrollNode(
-        pendingLayer.propertyTreeState.scroll());
+    const auto* transform = pendingLayer.propertyTreeState.transform();
+    int transformId =
+        propertyTreeManager.ensureCompositorTransformNode(transform);
     int clipId = propertyTreeManager.ensureCompositorClipNode(
         pendingLayer.propertyTreeState.clip());
     int effectId = propertyTreeManager.switchToEffectNode(
@@ -724,7 +723,10 @@ void PaintArtifactCompositor::update(
     layer->SetTransformTreeIndex(transformId);
     layer->SetClipTreeIndex(clipId);
     layer->SetEffectTreeIndex(effectId);
-    layer->SetScrollTreeIndex(scrollId);
+    if (const auto* scrollNode = transform->scrollNode()) {
+      layer->SetScrollTreeIndex(
+          propertyTreeManager.ensureCompositorScrollNode(scrollNode));
+    }
 
     layer->SetShouldCheckBackfaceVisibility(pendingLayer.backfaceHidden);
 

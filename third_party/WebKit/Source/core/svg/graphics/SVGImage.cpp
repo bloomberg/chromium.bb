@@ -292,9 +292,9 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   // from the embedding frame tree.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     PaintChunk::Id id(patternPicture, DisplayItem::kSVGImage);
-    PropertyTreeState state(
-        TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-        EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+    PropertyTreeState state(TransformPaintPropertyNode::root(),
+                            ClipPaintPropertyNode::root(),
+                            EffectPaintPropertyNode::root());
     m_paintController->updateCurrentPaintChunkProperties(&id, state);
   }
 
@@ -393,9 +393,9 @@ void SVGImage::drawInternal(SkCanvas* canvas,
   // from the embedding frame tree.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     PaintChunk::Id id(imagePicture, DisplayItem::kSVGImage);
-    PropertyTreeState state(
-        TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-        EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+    PropertyTreeState state(TransformPaintPropertyNode::root(),
+                            ClipPaintPropertyNode::root(),
+                            EffectPaintPropertyNode::root());
     m_paintController->updateCurrentPaintChunkProperties(&id, state);
   }
 

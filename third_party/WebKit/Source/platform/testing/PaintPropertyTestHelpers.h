@@ -5,7 +5,6 @@
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
 namespace blink {
@@ -24,9 +23,9 @@ static inline PassRefPtr<EffectPaintPropertyNode> createOpacityOnlyEffect(
 }
 
 static inline PaintChunkProperties defaultPaintChunkProperties() {
-  PropertyTreeState propertyTreeState(
-      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  PropertyTreeState propertyTreeState(TransformPaintPropertyNode::root(),
+                                      ClipPaintPropertyNode::root(),
+                                      EffectPaintPropertyNode::root());
   PaintChunkProperties defaultProperties(propertyTreeState);
 
   return defaultProperties;

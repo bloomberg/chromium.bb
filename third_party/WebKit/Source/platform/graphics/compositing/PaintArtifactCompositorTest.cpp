@@ -42,9 +42,9 @@ using ::blink::testing::createOpacityOnlyEffect;
 using ::testing::Pointee;
 
 PaintChunkProperties defaultPaintChunkProperties() {
-  PropertyTreeState propertyTreeState(
-      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  PropertyTreeState propertyTreeState(TransformPaintPropertyNode::root(),
+                                      ClipPaintPropertyNode::root(),
+                                      EffectPaintPropertyNode::root());
   return PaintChunkProperties(propertyTreeState);
 }
 
@@ -168,8 +168,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneTransform) {
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(), TransformationMatrix().rotate(90),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0,
-          CompositingReason3DTransform);
+          FloatPoint3D(100, 100, 0), false, 0, CompositingReason3DTransform);
 
   TestPaintArtifact artifact;
   artifact
@@ -215,12 +214,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining) {
   RefPtr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(), TransformationMatrix().scale(2),
-          FloatPoint3D(10, 10, 0), nullptr, false, 0,
-          CompositingReason3DTransform);
+          FloatPoint3D(10, 10, 0), false, 0, CompositingReason3DTransform);
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(
           transform1, TransformationMatrix().translate(5, 5), FloatPoint3D(),
-          nullptr, false, 0, CompositingReason3DTransform);
+          false, 0, CompositingReason3DTransform);
 
   TestPaintArtifact artifact;
   artifact
@@ -276,7 +274,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
     RefPtr<TransformPaintPropertyNode> transform3 =
         TransformPaintPropertyNode::create(
             transform2, TransformationMatrix().rotate3d(0, 45, 0),
-            FloatPoint3D(), nullptr, transformIsFlattened);
+            FloatPoint3D(), transformIsFlattened);
 
     TestPaintArtifact artifact;
     artifact
@@ -323,17 +321,17 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SortingContextID) {
   // Establishes a 3D rendering context.
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(transform1, TransformationMatrix(),
-                                         FloatPoint3D(), nullptr, false, 1,
+                                         FloatPoint3D(), false, 1,
                                          CompositingReason3DTransform);
   // Extends the 3D rendering context of transform2.
   RefPtr<TransformPaintPropertyNode> transform3 =
       TransformPaintPropertyNode::create(transform2, TransformationMatrix(),
-                                         FloatPoint3D(), nullptr, false, 1,
+                                         FloatPoint3D(), false, 1,
                                          CompositingReason3DTransform);
   // Establishes a 3D rendering context distinct from transform2.
   RefPtr<TransformPaintPropertyNode> transform4 =
       TransformPaintPropertyNode::create(transform2, TransformationMatrix(),
-                                         FloatPoint3D(), nullptr, false, 2,
+                                         FloatPoint3D(), false, 2,
                                          CompositingReason3DTransform);
 
   TestPaintArtifact artifact;
@@ -667,20 +665,19 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
-  RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
-      ScrollPaintPropertyNode::root(), IntSize(11, 13), IntSize(27, 31), true,
-      false, 0 /* mainThreadScrollingReasons */);
   CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<TransformPaintPropertyNode> scrollTranslation =
-      TransformPaintPropertyNode::create(
+      TransformPaintPropertyNode::createScrollTranslation(
           TransformPaintPropertyNode::root(),
-          TransformationMatrix().translate(7, 9), FloatPoint3D(), scroll.get(),
-          false, 0, CompositingReasonNone, expectedCompositorElementId);
+          TransformationMatrix().translate(7, 9), FloatPoint3D(), false, 0,
+          CompositingReasonNone, expectedCompositorElementId,
+          ScrollPaintPropertyNode::root(), IntSize(11, 13), IntSize(27, 31),
+          true, false, 0 /* mainThreadScrollingReasons */);
 
   TestPaintArtifact artifact;
   artifact
       .chunk(scrollTranslation, ClipPaintPropertyNode::root(),
-             EffectPaintPropertyNode::root(), scroll)
+             EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(11, 13, 17, 19), Color::white);
   update(artifact.build());
 
@@ -712,72 +709,54 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<EffectPaintPropertyNode> effect =
       createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
 
-  RefPtr<ScrollPaintPropertyNode> scrollA = ScrollPaintPropertyNode::create(
-      ScrollPaintPropertyNode::root(), IntSize(2, 3), IntSize(5, 7), false,
-      true, MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
   CompositorElementId expectedCompositorElementIdA = CompositorElementId(2, 0);
   RefPtr<TransformPaintPropertyNode> scrollTranslationA =
-      TransformPaintPropertyNode::create(
+      TransformPaintPropertyNode::createScrollTranslation(
           TransformPaintPropertyNode::root(),
-          TransformationMatrix().translate(11, 13), FloatPoint3D(),
-          scrollA.get(), false, 0, CompositingReasonNone,
-          expectedCompositorElementIdA);
-  RefPtr<ScrollPaintPropertyNode> scrollB = ScrollPaintPropertyNode::create(
-      scrollA, IntSize(19, 23), IntSize(29, 31), true, false,
-      0 /* mainThreadScrollingReasons */);
+          TransformationMatrix().translate(11, 13), FloatPoint3D(), false, 0,
+          CompositingReasonNone, expectedCompositorElementIdA,
+          ScrollPaintPropertyNode::root(), IntSize(2, 3), IntSize(5, 7), false,
+          true,
+          MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+
   CompositorElementId expectedCompositorElementIdB = CompositorElementId(3, 0);
   RefPtr<TransformPaintPropertyNode> scrollTranslationB =
-      TransformPaintPropertyNode::create(
+      TransformPaintPropertyNode::createScrollTranslation(
           scrollTranslationA, TransformationMatrix().translate(37, 41),
-          FloatPoint3D(), scrollB.get(), false, 0, CompositingReasonNone,
-          expectedCompositorElementIdB);
+          FloatPoint3D(), false, 0, CompositingReasonNone,
+          expectedCompositorElementIdB, scrollTranslationA->scrollNode(),
+          IntSize(19, 23), IntSize(29, 31), true, false,
+          0 /* mainThreadScrollingReasons */);
   TestPaintArtifact artifact;
-  artifact
-      .chunk(scrollTranslationA, ClipPaintPropertyNode::root(), effect, scrollA)
+  artifact.chunk(scrollTranslationA, ClipPaintPropertyNode::root(), effect)
       .rectDrawing(FloatRect(7, 11, 13, 17), Color::white);
-  artifact
-      .chunk(scrollTranslationB, ClipPaintPropertyNode::root(), effect, scrollB)
+  artifact.chunk(scrollTranslationB, ClipPaintPropertyNode::root(), effect)
       .rectDrawing(FloatRect(1, 2, 3, 5), Color::white);
   update(artifact.build());
 
   const cc::ScrollTree& scrollTree = propertyTrees().scroll_tree;
   // Node #0 reserved for null; #1 for root render surface.
-  ASSERT_EQ(4u, scrollTree.size());
-  const cc::ScrollNode& scrollNodeA = *scrollTree.Node(2);
-  EXPECT_EQ(gfx::Size(2, 3), scrollNodeA.scroll_clip_layer_bounds);
-  EXPECT_EQ(gfx::Size(5, 7), scrollNodeA.bounds);
-  EXPECT_FALSE(scrollNodeA.user_scrollable_horizontal);
-  EXPECT_TRUE(scrollNodeA.user_scrollable_vertical);
-  EXPECT_EQ(1, scrollNodeA.parent_id);
-  const cc::ScrollNode& scrollNodeB = *scrollTree.Node(3);
-  EXPECT_EQ(gfx::Size(19, 23), scrollNodeB.scroll_clip_layer_bounds);
-  EXPECT_EQ(gfx::Size(29, 31), scrollNodeB.bounds);
-  EXPECT_TRUE(scrollNodeB.user_scrollable_horizontal);
-  EXPECT_FALSE(scrollNodeB.user_scrollable_vertical);
-  EXPECT_EQ(scrollNodeA.id, scrollNodeB.parent_id);
-  EXPECT_EQ(expectedCompositorElementIdA, scrollNodeA.element_id);
-  EXPECT_EQ(scrollNodeA.id,
+  ASSERT_EQ(3u, scrollTree.size());
+  const cc::ScrollNode& scrollNode = *scrollTree.Node(2);
+  EXPECT_EQ(gfx::Size(2, 3), scrollNode.scroll_clip_layer_bounds);
+  EXPECT_EQ(gfx::Size(5, 7), scrollNode.bounds);
+  EXPECT_FALSE(scrollNode.user_scrollable_horizontal);
+  EXPECT_TRUE(scrollNode.user_scrollable_vertical);
+  EXPECT_EQ(1, scrollNode.parent_id);
+  EXPECT_EQ(expectedCompositorElementIdA, scrollNode.element_id);
+  EXPECT_EQ(scrollNode.id,
             elementIdToScrollNodeIndex(expectedCompositorElementIdA));
-  EXPECT_EQ(expectedCompositorElementIdB, scrollNodeB.element_id);
-  EXPECT_EQ(scrollNodeB.id,
-            elementIdToScrollNodeIndex(expectedCompositorElementIdB));
+
   EXPECT_EQ(expectedCompositorElementIdA, contentLayerAt(0)->element_id());
-  EXPECT_EQ(expectedCompositorElementIdB, contentLayerAt(1)->element_id());
 
   const cc::TransformTree& transformTree = propertyTrees().transform_tree;
   const cc::TransformNode& transformNodeA =
-      *transformTree.Node(scrollNodeA.transform_id);
+      *transformTree.Node(scrollNode.transform_id);
   EXPECT_TRUE(transformNodeA.local.IsIdentity());
   EXPECT_EQ(gfx::ScrollOffset(-11, -13), transformNodeA.scroll_offset);
 
-  const cc::TransformNode& transformNodeB =
-      *transformTree.Node(scrollNodeB.transform_id);
-  EXPECT_EQ(gfx::ScrollOffset(-37, -41), transformNodeB.scroll_offset);
-
-  EXPECT_TRUE(scrollNodeA.main_thread_scrolling_reasons &
+  EXPECT_TRUE(scrollNode.main_thread_scrolling_reasons &
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
-  EXPECT_FALSE(scrollNodeB.main_thread_scrolling_reasons &
-               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeSimpleChunks) {
@@ -865,7 +844,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, Merge2DTransform) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(50, 50), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0);
+          false, 0);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -914,12 +893,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(), TransformationMatrix(),
-          FloatPoint3D(), nullptr, false, 0, CompositingReason3DTransform);
+          FloatPoint3D(), false, 0, CompositingReason3DTransform);
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(
           transform.get(), TransformationMatrix().translate(50, 50),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0);
+          FloatPoint3D(100, 100, 0), false, 0);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -958,9 +937,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeTransformOrigin) {
   RefPtr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::create(
-          TransformPaintPropertyNode::root(), TransformationMatrix().rotate(45),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0);
+      TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
+                                         TransformationMatrix().rotate(45),
+                                         FloatPoint3D(100, 100, 0), false, 0);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -1061,7 +1040,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeNested) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(50, 50), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0);
+          false, 0);
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
       ClipPaintPropertyNode::root(), transform.get(),
@@ -1121,12 +1100,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ClipPushedUp) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(20, 25), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0);
+          false, 0);
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(
           transform.get(), TransformationMatrix().translate(20, 25),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0);
+          FloatPoint3D(100, 100, 0), false, 0);
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
       ClipPaintPropertyNode::root(), transform2.get(),
@@ -1183,12 +1162,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectPushedUp) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(20, 25), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0);
+          false, 0);
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(
           transform.get(), TransformationMatrix().translate(20, 25),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0);
+          FloatPoint3D(100, 100, 0), false, 0);
 
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
@@ -1246,12 +1225,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectAndClipPushedUp) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(20, 25), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0);
+          false, 0);
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(
           transform.get(), TransformationMatrix().translate(20, 25),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0);
+          FloatPoint3D(100, 100, 0), false, 0);
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
       ClipPaintPropertyNode::root(), transform.get(),
@@ -1415,14 +1394,14 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TwoTransformsClipBetween) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(20, 25), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0);
+          false, 0);
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
       ClipPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
       FloatRoundedRect(0, 0, 50, 60));
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(
           transform.get(), TransformationMatrix().translate(20, 25),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0);
+          FloatPoint3D(100, 100, 0), false, 0);
   TestPaintArtifact testArtifact;
   testArtifact
       .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
@@ -1463,7 +1442,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OverlapTransform) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(50, 50), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0, CompositingReason3DTransform);
+          false, 0, CompositingReason3DTransform);
 
   TestPaintArtifact testArtifact;
   testArtifact.chunk(defaultPaintChunkProperties())
@@ -1518,7 +1497,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(99, 0), FloatPoint3D(100, 100, 0),
-          nullptr, false);
+          false);
 
   paintChunk2.properties.propertyTreeState.setTransform(transform.get());
   EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
@@ -1528,7 +1507,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(100, 0), FloatPoint3D(100, 100, 0),
-          nullptr, false);
+          false);
   paintChunk2.properties.propertyTreeState.setTransform(transform2.get());
 
   EXPECT_FALSE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
@@ -1539,7 +1518,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   PaintChunk chunk1;
   chunk1.properties.propertyTreeState = PropertyTreeState(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+      EffectPaintPropertyNode::root());
   chunk1.properties.backfaceHidden = true;
   chunk1.knownToBeOpaque = true;
   chunk1.bounds = FloatRect(0, 0, 30, 40);
@@ -1579,12 +1558,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(20, 25), FloatPoint3D(100, 100, 0),
-          nullptr, false, 0);
+          false, 0);
 
   PaintChunk chunk1;
   chunk1.properties.propertyTreeState = PropertyTreeState(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+      EffectPaintPropertyNode::root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
 
   PaintArtifactCompositor::PendingLayer pendingLayer(chunk1);
@@ -1605,7 +1584,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerKnownOpaque) {
   PaintChunk chunk1;
   chunk1.properties.propertyTreeState = PropertyTreeState(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+      EffectPaintPropertyNode::root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
   chunk1.knownToBeOpaque = false;
   PaintArtifactCompositor::PendingLayer pendingLayer(chunk1);
@@ -1636,8 +1615,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformWithElementId) {
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(), TransformationMatrix().rotate(90),
-          FloatPoint3D(100, 100, 0), nullptr, false, 0,
-          CompositingReason3DTransform, expectedCompositorElementId);
+          FloatPoint3D(100, 100, 0), false, 0, CompositingReason3DTransform,
+          expectedCompositorElementId);
 
   TestPaintArtifact artifact;
   artifact

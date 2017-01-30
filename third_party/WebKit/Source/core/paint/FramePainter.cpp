@@ -103,10 +103,6 @@ void FramePainter::paint(GraphicsContext& context,
         properties.propertyTreeState.setClip(
             m_frameView->contentClip()->parent());
         properties.propertyTreeState.setEffect(contentsState->effect());
-        auto* scrollBarScroll = contentsState->scroll();
-        if (m_frameView->scroll())
-          scrollBarScroll = m_frameView->scroll()->parent();
-        properties.propertyTreeState.setScroll(scrollBarScroll);
         scopedPaintChunkProperties.emplace(context.getPaintController(),
                                            *frameView().layoutView(),
                                            properties);

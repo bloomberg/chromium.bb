@@ -8,7 +8,6 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -24,9 +23,9 @@ class GeometryMapperTest : public ::testing::Test,
   std::unique_ptr<GeometryMapper> geometryMapper;
 
   PropertyTreeState rootPropertyTreeState() {
-    PropertyTreeState state(
-        TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-        EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+    PropertyTreeState state(TransformPaintPropertyNode::root(),
+                            ClipPaintPropertyNode::root(),
+                            EffectPaintPropertyNode::root());
     return state;
   }
 

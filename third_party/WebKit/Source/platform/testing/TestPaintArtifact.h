@@ -47,11 +47,9 @@ class TestPaintArtifact {
   ~TestPaintArtifact();
 
   // Add to the artifact.
-  TestPaintArtifact& chunk(
-      PassRefPtr<TransformPaintPropertyNode>,
-      PassRefPtr<ClipPaintPropertyNode>,
-      PassRefPtr<EffectPaintPropertyNode>,
-      PassRefPtr<ScrollPaintPropertyNode> = ScrollPaintPropertyNode::root());
+  TestPaintArtifact& chunk(PassRefPtr<const TransformPaintPropertyNode>,
+                           PassRefPtr<const ClipPaintPropertyNode>,
+                           PassRefPtr<const EffectPaintPropertyNode>);
   TestPaintArtifact& chunk(const PaintChunkProperties&);
   TestPaintArtifact& rectDrawing(const FloatRect& bounds, Color);
   TestPaintArtifact& foreignLayer(const FloatPoint&,

@@ -47,9 +47,14 @@ const ScrollPaintPropertyNode* PaintPropertyTreeBuilderTest::frameScroll(
     FrameView* frameView) {
   if (!frameView)
     frameView = document().view();
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-    return frameView->layoutView()->paintProperties()->scroll();
-  return frameView->scroll();
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    const auto* scrollTranslation =
+        frameView->layoutView()->paintProperties()->scrollTranslation();
+    return scrollTranslation ? scrollTranslation->scrollNode() : nullptr;
+  }
+  return frameView->scrollTranslation()
+             ? frameView->scrollTranslation()->scrollNode()
+             : nullptr;
 }
 
 const ObjectPaintProperties*
@@ -149,7 +154,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   EXPECT_TRUE(positionedScrollNode->parent()->isRoot());
   EXPECT_EQ(TransformationMatrix().translate(0, -3),
             positionedScrollTranslation->matrix());
-  EXPECT_EQ(nullptr, target1Properties->scroll());
+  EXPECT_EQ(nullptr, target1Properties->scrollTranslation());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(200, 150, 100, 100),
                           target1->layoutObject(), frameView->layoutView());
 
@@ -175,7 +180,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   EXPECT_TRUE(transformedScrollNode->parent()->isRoot());
   EXPECT_EQ(TransformationMatrix().translate(0, -5),
             transformedScrollTranslation->matrix());
-  EXPECT_EQ(nullptr, target2Properties->scroll());
+  EXPECT_EQ(nullptr, target2Properties->scrollTranslation());
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(208, 153, 200, 100),
                           target2->layoutObject(), frameView->layoutView());
@@ -196,11 +201,12 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
             scrollerProperties->scrollTranslation()->parent());
   EXPECT_EQ(frameScrollTranslation(),
             scrollerProperties->overflowClip()->localTransformSpace());
-  EXPECT_EQ(frameScroll(), scrollerProperties->scroll()->parent());
-  EXPECT_EQ(FloatSize(413, 317), scrollerProperties->scroll()->clip());
-  EXPECT_EQ(FloatSize(660, 10200), scrollerProperties->scroll()->bounds());
-  EXPECT_FALSE(scrollerProperties->scroll()->userScrollableHorizontal());
-  EXPECT_TRUE(scrollerProperties->scroll()->userScrollableVertical());
+  const auto* scroll = scrollerProperties->scrollTranslation()->scrollNode();
+  EXPECT_EQ(frameScroll(), scroll->parent());
+  EXPECT_EQ(FloatSize(413, 317), scroll->clip());
+  EXPECT_EQ(FloatSize(660, 10200), scroll->bounds());
+  EXPECT_FALSE(scroll->userScrollableHorizontal());
+  EXPECT_TRUE(scroll->userScrollableVertical());
   EXPECT_EQ(FloatRoundedRect(120, 340, 413, 317),
             scrollerProperties->overflowClip()->clipRect());
   EXPECT_EQ(frameContentClip(), scrollerProperties->overflowClip()->parent());
@@ -2721,7 +2727,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
       overflow->layoutObject()->paintProperties();
   auto* scrollTranslation = overflowScrollProperties->scrollTranslation();
   auto* overflowScrollNode = scrollTranslation->scrollNode();
-  EXPECT_EQ(frameScroll(), overflowScrollProperties->scroll()->parent());
+  EXPECT_EQ(
+      frameScroll(),
+      overflowScrollProperties->scrollTranslation()->scrollNode()->parent());
   EXPECT_EQ(TransformationMatrix().translate(0, -37),
             scrollTranslation->matrix());
   EXPECT_EQ(IntSize(5, 3), overflowScrollNode->clip());
@@ -2876,7 +2884,8 @@ TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
   Element* overflow = document().getElementById("overflow");
   EXPECT_TRUE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
   // No scroll node is needed.
-  EXPECT_EQ(overflow->layoutObject()->paintProperties()->scroll(), nullptr);
+  EXPECT_EQ(overflow->layoutObject()->paintProperties()->scrollTranslation(),
+            nullptr);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {

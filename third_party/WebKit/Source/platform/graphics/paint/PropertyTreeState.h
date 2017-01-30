@@ -7,7 +7,6 @@
 
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashTraits.h"
@@ -23,16 +22,11 @@ class PLATFORM_EXPORT PropertyTreeState {
  public:
   PropertyTreeState(const TransformPaintPropertyNode* transform,
                     const ClipPaintPropertyNode* clip,
-                    const EffectPaintPropertyNode* effect,
-                    const ScrollPaintPropertyNode* scroll)
-      : m_transform(transform),
-        m_clip(clip),
-        m_effect(effect),
-        m_scroll(scroll) {
+                    const EffectPaintPropertyNode* effect)
+      : m_transform(transform), m_clip(clip), m_effect(effect) {
     DCHECK(!m_transform || !m_transform->hasOneRef());
     DCHECK(!m_clip || !m_clip->hasOneRef());
     DCHECK(!m_effect || !m_effect->hasOneRef());
-    DCHECK(!m_scroll || !m_scroll->hasOneRef());
   }
 
   bool hasDirectCompositingReasons() const;
@@ -61,17 +55,9 @@ class PLATFORM_EXPORT PropertyTreeState {
     m_effect = std::move(node);
   }
 
-  const ScrollPaintPropertyNode* scroll() const {
-    DCHECK(!m_scroll || !m_scroll->hasOneRef());
-    return m_scroll.get();
-  }
-  void setScroll(RefPtr<const ScrollPaintPropertyNode> node) {
-    m_scroll = std::move(node);
-  }
-
-  // Returns the compositor element id, if any, for this property state. If none
-  // of the scroll, effect or transform nodes for this state have a compositor
-  // element id then a default instance is returned.
+  // Returns the compositor element id, if any, for this property state. If
+  // neither the effect nor transform nodes have a compositor element id then a
+  // default instance is returned.
   const CompositorElementId compositorElementId() const;
 
   enum InnermostNode {
@@ -127,13 +113,11 @@ class PLATFORM_EXPORT PropertyTreeState {
   RefPtr<const TransformPaintPropertyNode> m_transform;
   RefPtr<const ClipPaintPropertyNode> m_clip;
   RefPtr<const EffectPaintPropertyNode> m_effect;
-  // TODO(pdr): Remove the scroll node from PropertyTreeState.
-  RefPtr<const ScrollPaintPropertyNode> m_scroll;
 };
 
 inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {
   return a.transform() == b.transform() && a.clip() == b.clip() &&
-         a.effect() == b.effect() && a.scroll() == b.scroll();
+         a.effect() == b.effect();
 }
 
 // Iterates over the sequence transforms, clips and effects for a

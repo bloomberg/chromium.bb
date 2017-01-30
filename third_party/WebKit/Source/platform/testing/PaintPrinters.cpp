@@ -82,14 +82,6 @@ void PrintTo(const PaintChunkProperties& properties, std::ostream* os) {
     printedProperty = true;
   }
 
-  if (properties.propertyTreeState.scroll()) {
-    if (printedProperty)
-      *os << ", ";
-    *os << "scroll=";
-    PrintTo(*properties.propertyTreeState.scroll(), os);
-    printedProperty = true;
-  }
-
   if (printedProperty)
     *os << ", ";
   *os << "backfaceHidden=" << properties.backfaceHidden;

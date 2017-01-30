@@ -15,10 +15,6 @@ void ObjectPaintProperties::updateContentsProperties() const {
 
   if (scrollTranslation())
     m_contentsProperties->setTransform(scrollTranslation());
-
-  if (scroll())
-    m_contentsProperties->setScroll(scroll());
-
   if (overflowClip())
     m_contentsProperties->setClip(overflowClip());
   else if (cssClip())

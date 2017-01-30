@@ -714,11 +714,6 @@ class CORE_EXPORT FrameView final
     return m_scrollTranslation.get();
   }
 
-  void setScroll(PassRefPtr<ScrollPaintPropertyNode> scroll) {
-    m_scroll = scroll;
-  }
-  ScrollPaintPropertyNode* scroll() const { return m_scroll.get(); }
-
   void setContentClip(PassRefPtr<ClipPaintPropertyNode> contentClip) {
     m_contentClip = contentClip;
   }
@@ -1151,7 +1146,6 @@ class CORE_EXPORT FrameView final
   // enabled.
   RefPtr<TransformPaintPropertyNode> m_preTranslation;
   RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
-  RefPtr<ScrollPaintPropertyNode> m_scroll;
   // The content clip clips the document (= LayoutView) but not the scrollbars.
   // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is
   // enabled.

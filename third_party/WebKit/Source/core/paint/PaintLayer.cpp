@@ -328,31 +328,50 @@ void PaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus() {
   }
 }
 
+static const ScrollPaintPropertyNode* nearestScrollNode(
+    const TransformPaintPropertyNode* transform) {
+  if (const auto* scrollNode = transform->scrollNode())
+    return scrollNode;
+  for (const auto* ancestor = transform->parent(); ancestor;
+       ancestor = ancestor->parent()) {
+    if (const auto* scrollNode = ancestor->scrollNode())
+      return scrollNode;
+  }
+  // The root transform node references the root scroll node so a scroll node
+  // should always exist.
+  NOTREACHED();
+  return nullptr;
+}
+
 bool PaintLayer::sticksToViewport() const {
   if (layoutObject()->style()->position() != FixedPosition &&
       layoutObject()->style()->position() != StickyPosition)
     return false;
 
+  // TODO(pdr): This approach of calculating the nearest scroll node is O(n).
+  // An option for improving this is to cache the nearest scroll node in
+  // the local border box properties.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     const ScrollPaintPropertyNode* ancestorTargetScrollNode;
     if (layoutObject()->style()->position() == FixedPosition) {
-      ancestorTargetScrollNode = layoutObject()
-                                     ->view()
-                                     ->paintProperties()
-                                     ->localBorderBoxProperties()
-                                     ->scroll();
+      ancestorTargetScrollNode =
+          nearestScrollNode(layoutObject()
+                                ->view()
+                                ->paintProperties()
+                                ->localBorderBoxProperties()
+                                ->transform());
     } else {
-      ancestorTargetScrollNode = layoutObject()
-                                     ->view()
-                                     ->paintProperties()
-                                     ->contentsProperties()
-                                     ->scroll();
+      ancestorTargetScrollNode = nearestScrollNode(layoutObject()
+                                                       ->view()
+                                                       ->paintProperties()
+                                                       ->contentsProperties()
+                                                       ->transform());
     }
 
-    return layoutObject()
-               ->paintProperties()
-               ->localBorderBoxProperties()
-               ->scroll() == ancestorTargetScrollNode;
+    return nearestScrollNode(layoutObject()
+                                 ->paintProperties()
+                                 ->localBorderBoxProperties()
+                                 ->transform()) == ancestorTargetScrollNode;
   }
 
   return (layoutObject()->style()->position() == FixedPosition &&

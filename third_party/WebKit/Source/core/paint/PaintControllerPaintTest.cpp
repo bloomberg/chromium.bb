@@ -227,8 +227,10 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
                             DisplayItem::kClipFrameToVisibleContentRect)));
   }
 
+  // Verify that the background does not scroll.
   const PaintChunk& backgroundChunk = rootPaintController().paintChunks()[0];
-  EXPECT_TRUE(backgroundChunk.properties.propertyTreeState.scroll()->isRoot());
+  EXPECT_FALSE(backgroundChunk.properties.propertyTreeState.transform()
+                   ->isScrollTranslation());
 
   const EffectPaintPropertyNode* effectNode = div.paintProperties()->effect();
   EXPECT_EQ(0.5f, effectNode->opacity());

@@ -219,16 +219,20 @@ class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
   static void addFrameViewProperties(
       const FrameView& frameView,
       PropertyTreePrinter<ScrollPaintPropertyNode>& printer) {
-    if (const ScrollPaintPropertyNode* scroll = frameView.scroll())
-      printer.addPropertyNode(scroll, "Scroll (FrameView)");
+    if (const auto* scrollTranslation = frameView.scrollTranslation()) {
+      const auto* scrollNode = scrollTranslation->scrollNode();
+      printer.addPropertyNode(scrollNode, "Scroll (FrameView)");
+    }
   }
 
   static void addObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& paintProperties,
       PropertyTreePrinter<ScrollPaintPropertyNode>& printer) {
-    if (const ScrollPaintPropertyNode* scroll = paintProperties.scroll())
-      printer.addPropertyNode(scroll, "Scroll (" + object.debugName() + ")");
+    if (const auto* scrollTranslation = paintProperties.scrollTranslation()) {
+      printer.addPropertyNode(scrollTranslation->scrollNode(),
+                              "Scroll (" + object.debugName() + ")");
+    }
   }
 };
 
@@ -429,7 +433,9 @@ class PaintPropertyTreeGraphBuilder {
       if (object.isLayoutView() && overflowClip->parent())
         writePaintPropertyNode(*overflowClip->parent(), nullptr, "rootClip");
     }
-    const ScrollPaintPropertyNode* scroll = properties->scroll();
+
+    const auto* scroll =
+        scrollTranslation ? scrollTranslation->scrollNode() : nullptr;
     if (scroll)
       writePaintPropertyNode(*scroll, &object, "scroll");
   }
@@ -450,8 +456,6 @@ class PaintPropertyTreeGraphBuilder {
         writePaintPropertyNode(*root, &frameView, "rootClip");
       if (const auto* root = getRoot(contentsState->effect()))
         writePaintPropertyNode(*root, &frameView, "rootEffect");
-      if (const auto* root = getRoot(contentsState->scroll()))
-        writePaintPropertyNode(*root, &frameView, "rootScroll");
     }
     TransformPaintPropertyNode* preTranslation = frameView.preTranslation();
     if (preTranslation)
@@ -464,7 +468,8 @@ class PaintPropertyTreeGraphBuilder {
     ClipPaintPropertyNode* contentClip = frameView.contentClip();
     if (contentClip)
       writePaintPropertyNode(*contentClip, &frameView, "contentClip");
-    const ScrollPaintPropertyNode* scroll = frameView.scroll();
+    const auto* scroll =
+        scrollTranslation ? scrollTranslation->scrollNode() : nullptr;
     if (scroll)
       writePaintPropertyNode(*scroll, &frameView, "scroll");
   }

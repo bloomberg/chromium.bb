@@ -48,12 +48,11 @@ TestPaintArtifact::TestPaintArtifact() : m_displayItemList(0), m_built(false) {}
 TestPaintArtifact::~TestPaintArtifact() {}
 
 TestPaintArtifact& TestPaintArtifact::chunk(
-    PassRefPtr<TransformPaintPropertyNode> transform,
-    PassRefPtr<ClipPaintPropertyNode> clip,
-    PassRefPtr<EffectPaintPropertyNode> effect,
-    PassRefPtr<ScrollPaintPropertyNode> scroll) {
-  PropertyTreeState propertyTreeState(transform.get(), clip.get(), effect.get(),
-                                      scroll.get());
+    PassRefPtr<const TransformPaintPropertyNode> transform,
+    PassRefPtr<const ClipPaintPropertyNode> clip,
+    PassRefPtr<const EffectPaintPropertyNode> effect) {
+  PropertyTreeState propertyTreeState(transform.get(), clip.get(),
+                                      effect.get());
   PaintChunkProperties properties(propertyTreeState);
   return chunk(properties);
 }

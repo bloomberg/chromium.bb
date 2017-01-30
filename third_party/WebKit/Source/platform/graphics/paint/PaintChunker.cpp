@@ -41,7 +41,6 @@ bool PaintChunker::incrementDisplayItemIndex(const DisplayItem& item) {
     DCHECK(m_currentProperties.propertyTreeState.transform());
     DCHECK(m_currentProperties.propertyTreeState.clip());
     DCHECK(m_currentProperties.propertyTreeState.effect());
-    DCHECK(m_currentProperties.propertyTreeState.scroll());
   }
 #endif
 

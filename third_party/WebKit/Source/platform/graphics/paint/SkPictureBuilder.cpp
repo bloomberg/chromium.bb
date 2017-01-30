@@ -30,9 +30,9 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
     // independent property tree set.
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(*this, DisplayItem::kSVGImage);
-      PropertyTreeState state(
-          TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-          EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+      PropertyTreeState state(TransformPaintPropertyNode::root(),
+                              ClipPaintPropertyNode::root(),
+                              EffectPaintPropertyNode::root());
       m_paintController->updateCurrentPaintChunkProperties(&id, state);
     }
   }

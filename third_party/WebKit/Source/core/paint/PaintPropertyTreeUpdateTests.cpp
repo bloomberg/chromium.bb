@@ -35,7 +35,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_FALSE(frameScroll()->threadedScrollingDisabled());
   EXPECT_FALSE(overflowA->layoutObject()
                    ->paintProperties()
-                   ->scroll()
+                   ->scrollTranslation()
+                   ->scrollNode()
                    ->threadedScrollingDisabled());
 
   document().settings()->setThreadedScrollingEnabled(false);
@@ -47,7 +48,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_TRUE(frameScroll()->threadedScrollingDisabled());
   EXPECT_TRUE(overflowA->layoutObject()
                   ->paintProperties()
-                  ->scroll()
+                  ->scrollTranslation()
+                  ->scrollNode()
                   ->threadedScrollingDisabled());
 }
 
@@ -88,11 +90,13 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_TRUE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
   EXPECT_TRUE(overflowA->layoutObject()
                   ->paintProperties()
-                  ->scroll()
+                  ->scrollTranslation()
+                  ->scrollNode()
                   ->hasBackgroundAttachmentFixedDescendants());
   EXPECT_TRUE(overflowB->layoutObject()
                   ->paintProperties()
-                  ->scroll()
+                  ->scrollTranslation()
+                  ->scrollNode()
                   ->hasBackgroundAttachmentFixedDescendants());
 
   // Removing a main thread scrolling reason should update the entire tree.
@@ -101,11 +105,13 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_FALSE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
   EXPECT_FALSE(overflowA->layoutObject()
                    ->paintProperties()
-                   ->scroll()
+                   ->scrollTranslation()
+                   ->scrollNode()
                    ->hasBackgroundAttachmentFixedDescendants());
   EXPECT_FALSE(overflowB->layoutObject()
                    ->paintProperties()
-                   ->scroll()
+                   ->scrollTranslation()
+                   ->scrollNode()
                    ->hasBackgroundAttachmentFixedDescendants());
 
   // Adding a main thread scrolling reason should update the entire tree.
@@ -114,11 +120,13 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_TRUE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
   EXPECT_TRUE(overflowA->layoutObject()
                   ->paintProperties()
-                  ->scroll()
+                  ->scrollTranslation()
+                  ->scrollNode()
                   ->hasBackgroundAttachmentFixedDescendants());
   EXPECT_TRUE(overflowB->layoutObject()
                   ->paintProperties()
-                  ->scroll()
+                  ->scrollTranslation()
+                  ->scrollNode()
                   ->hasBackgroundAttachmentFixedDescendants());
 }
 
@@ -232,15 +240,18 @@ TEST_P(PaintPropertyTreeUpdateTest,
   // reasons as we could be.
   EXPECT_TRUE(overflowA->layoutObject()
                   ->paintProperties()
-                  ->scroll()
+                  ->scrollTranslation()
+                  ->scrollNode()
                   ->hasBackgroundAttachmentFixedDescendants());
   EXPECT_FALSE(overflowB->layoutObject()
                    ->paintProperties()
-                   ->scroll()
+                   ->scrollTranslation()
+                   ->scrollNode()
                    ->hasBackgroundAttachmentFixedDescendants());
   EXPECT_TRUE(overflowB->layoutObject()
                   ->paintProperties()
-                  ->scroll()
+                  ->scrollTranslation()
+                  ->scrollNode()
                   ->parent()
                   ->isRoot());
 
@@ -249,15 +260,18 @@ TEST_P(PaintPropertyTreeUpdateTest,
   document().view()->updateAllLifecyclePhases();
   EXPECT_FALSE(overflowA->layoutObject()
                    ->paintProperties()
-                   ->scroll()
+                   ->scrollTranslation()
+                   ->scrollNode()
                    ->hasBackgroundAttachmentFixedDescendants());
   EXPECT_FALSE(overflowB->layoutObject()
                    ->paintProperties()
-                   ->scroll()
+                   ->scrollTranslation()
+                   ->scrollNode()
                    ->hasBackgroundAttachmentFixedDescendants());
   EXPECT_FALSE(overflowB->layoutObject()
                    ->paintProperties()
-                   ->scroll()
+                   ->scrollTranslation()
+                   ->scrollNode()
                    ->parent()
                    ->hasBackgroundAttachmentFixedDescendants());
 }

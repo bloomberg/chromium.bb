@@ -14,7 +14,7 @@ namespace blink {
 
 // The set of paint properties applying to a |PaintChunk|. These properties are
 // not local-only paint style parameters such as color, but instead represent
-// the hierarchy of transforms, clips, effects, etc, that apply to a contiguous
+// the hierarchy of transforms, clips, and effects that apply to a contiguous
 // chunk of display items. A single DisplayItemClient can generate multiple
 // properties of the same type and this struct represents the total state of all
 // properties for a given |PaintChunk|.
@@ -28,8 +28,7 @@ struct PaintChunkProperties {
       : propertyTreeState(state), backfaceHidden(false) {}
 
   PaintChunkProperties()
-      : propertyTreeState(nullptr, nullptr, nullptr, nullptr),
-        backfaceHidden(false) {}
+      : propertyTreeState(nullptr, nullptr, nullptr), backfaceHidden(false) {}
 
   PropertyTreeState propertyTreeState;
   bool backfaceHidden;

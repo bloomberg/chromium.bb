@@ -126,7 +126,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
   LayoutObject* scrollObject =
       document().getElementById("scroll")->layoutObject();
   const auto* scrollObjectProperties = scrollObject->paintProperties();
-  String scrollPathAsString = scrollObjectProperties->scroll()->toTreeString();
+  String scrollPathAsString =
+      scrollObjectProperties->scrollTranslation()->scrollNode()->toTreeString();
   EXPECT_THAT(scrollPathAsString.ascii().data(),
               testing::MatchesRegex("root .* parent.*"
                                     "  .* parent.*"));

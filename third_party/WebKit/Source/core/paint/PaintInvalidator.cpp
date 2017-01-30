@@ -116,7 +116,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     } else {
       PropertyTreeState currentTreeState(
           context.treeBuilderContext.current.transform,
-          context.treeBuilderContext.current.clip, nullptr, nullptr);
+          context.treeBuilderContext.current.clip, nullptr);
       result = LayoutRect(geometryMapper.sourceToDestinationVisualRect(
           FloatRect(rect), currentTreeState, *containerContentsProperties));
     }
@@ -245,11 +245,14 @@ class ScopedUndoFrameViewContentClipAndScroll {
 
     if (frameView.contentClip() == m_savedContext.clip)
       m_treeBuilderContext.current.clip = m_savedContext.clip->parent();
-    if (frameView.scroll() == m_savedContext.scroll)
-      m_treeBuilderContext.current.scroll = m_savedContext.scroll->parent();
-    if (frameView.scrollTranslation() == m_savedContext.transform)
-      m_treeBuilderContext.current.transform =
-          m_savedContext.transform->parent();
+    if (const auto* scrollTranslation = frameView.scrollTranslation()) {
+      if (scrollTranslation->scrollNode() == m_savedContext.scroll)
+        m_treeBuilderContext.current.scroll = m_savedContext.scroll->parent();
+      if (scrollTranslation == m_savedContext.transform) {
+        m_treeBuilderContext.current.transform =
+            m_savedContext.transform->parent();
+      }
+    }
   }
 
   ~ScopedUndoFrameViewContentClipAndScroll() {

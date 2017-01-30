@@ -62,8 +62,6 @@ class FindFrameViewPropertiesNeedingUpdateScope {
       m_originalContentClip = contentClip->clone();
     if (auto* scrollTranslation = m_frameView->scrollTranslation())
       m_originalScrollTranslation = scrollTranslation->clone();
-    if (auto* scroll = m_frameView->scroll())
-      m_originalScroll = scroll->clone();
   }
 
   ~FindFrameViewPropertiesNeedingUpdateScope() {
@@ -83,7 +81,6 @@ class FindFrameViewPropertiesNeedingUpdateScope {
                                  m_frameView->contentClip());
     DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalScrollTranslation,
                                  m_frameView->scrollTranslation());
-    DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalScroll, m_frameView->scroll());
 
     // Restore original clean bit.
     m_frameView->clearNeedsPaintPropertyUpdate();
@@ -96,7 +93,6 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   RefPtr<TransformPaintPropertyNode> m_originalPreTranslation;
   RefPtr<ClipPaintPropertyNode> m_originalContentClip;
   RefPtr<TransformPaintPropertyNode> m_originalScrollTranslation;
-  RefPtr<ScrollPaintPropertyNode> m_originalScroll;
 };
 
 #define DCHECK_OBJECT_PROPERTY_EQ(object, original, updated)            \
@@ -165,9 +161,6 @@ class FindObjectPropertiesNeedingUpdateScope {
                                 m_originalProperties->scrollTranslation(),
                                 objectProperties->scrollTranslation());
       DCHECK_OBJECT_PROPERTY_EQ(m_object,
-                                m_originalProperties->scrollTranslation(),
-                                objectProperties->scrollTranslation());
-      DCHECK_OBJECT_PROPERTY_EQ(m_object,
                                 m_originalProperties->scrollbarPaintOffset(),
                                 objectProperties->scrollbarPaintOffset());
       const auto* originalBorderBox =
@@ -181,8 +174,6 @@ class FindObjectPropertiesNeedingUpdateScope {
                                   objectBorderBox->clip());
         DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->effect(),
                                   objectBorderBox->effect());
-        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->scroll(),
-                                  objectBorderBox->scroll());
       } else {
         DCHECK_EQ(!!originalBorderBox, !!objectBorderBox)
             << " Object: " << m_object.debugName();

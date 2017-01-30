@@ -91,11 +91,6 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_scrollbarPaintOffset.get();
   }
 
-  // Auxiliary scrolling information. Includes information such as the hierarchy
-  // of scrollable areas, the extent that can be scrolled, etc. The actual
-  // scroll offset is stored in the transform tree (m_scrollTranslation).
-  const ScrollPaintPropertyNode* scroll() const { return m_scroll.get(); }
-
   const EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
@@ -116,24 +111,22 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_overflowClip.get();
   }
 
-  // This is a complete set of property nodes and paint offset that should be
-  // used as a starting point to paint this layout object. This is cached
-  // because some properties inherit from the containing block chain instead of
-  // the painting parent and cannot be derived in O(1) during the paint walk.
-  // For example, <div style='opacity: 0.3; position: relative; margin: 11px;'/>
-  // would have a paint offset of (11px, 11px) and propertyTreeState.effect()
-  // would be an effect node with opacity of 0.3 which was created by the div
-  // itself. Note that propertyTreeState.transform() would not be null but would
-  // instead point to the transform space setup by div's ancestors.
+  // This is a complete set of property nodes that should be used as a starting
+  // point to paint this layout object. This is cached because some properties
+  // inherit from the containing block chain instead of the painting parent and
+  // cannot be derived in O(1) during the paint walk. For example:
+  // <div style='opacity: 0.3;'/> would have a propertyTreeState.effect()
+  // with opacity of 0.3 which was created by the div itself. Note that
+  // propertyTreeState.transform() would not be null but would instead point to
+  // the transform space setup by div's ancestors.
   const PropertyTreeState* localBorderBoxProperties() const {
     return m_localBorderBoxProperties.get();
   }
 
-  // This is the complete set of property nodes and paint offset that can be
-  // used to paint the contents of this object. It is similar to
-  // localBorderBoxProperties but includes properties (e.g., overflow clip,
-  // scroll translation) that apply to contents. This is suitable for paint
-  // invalidation.
+  // This is the complete set of property nodes that can be used to paint the
+  // contents of this object. It is similar to localBorderBoxProperties but
+  // includes properties (e.g., overflow clip, scroll translation) that apply to
+  // contents. This is suitable for paint invalidation.
   const PropertyTreeState* contentsProperties() const {
     if (!m_contentsProperties) {
       if (!m_localBorderBoxProperties)
@@ -155,16 +148,14 @@ class CORE_EXPORT ObjectPaintProperties {
   void updateLocalBorderBoxProperties(
       const TransformPaintPropertyNode* transform,
       const ClipPaintPropertyNode* clip,
-      const EffectPaintPropertyNode* effect,
-      const ScrollPaintPropertyNode* scroll) {
+      const EffectPaintPropertyNode* effect) {
     if (m_localBorderBoxProperties) {
       m_localBorderBoxProperties->setTransform(transform);
       m_localBorderBoxProperties->setClip(clip);
       m_localBorderBoxProperties->setEffect(effect);
-      m_localBorderBoxProperties->setScroll(scroll);
     } else {
-      m_localBorderBoxProperties = WTF::wrapUnique(new PropertyTreeState(
-          PropertyTreeState(transform, clip, effect, scroll)));
+      m_localBorderBoxProperties = WTF::wrapUnique(
+          new PropertyTreeState(PropertyTreeState(transform, clip, effect)));
     }
     m_contentsProperties = nullptr;
   }
@@ -190,7 +181,6 @@ class CORE_EXPORT ObjectPaintProperties {
   }
   bool clearScrollTranslation() { return clear(m_scrollTranslation); }
   bool clearScrollbarPaintOffset() { return clear(m_scrollbarPaintOffset); }
-  bool clearScroll() { return clear(m_scroll); }
 
   // The following update* functions return true if the property tree structure
   // changes (a new node was created), and false otherwise. See the class-level
@@ -220,15 +210,17 @@ class CORE_EXPORT ObjectPaintProperties {
     DCHECK(!svgLocalToBorderBoxTransform())
         << "SVG elements cannot scroll so there should never be both a scroll "
            "translation and an SVG local to border box transform.";
-    return update(m_scrollTranslation, std::forward<Args>(args)...);
+    if (m_scrollTranslation) {
+      m_scrollTranslation->updateScrollTranslation(std::forward<Args>(args)...);
+      return false;
+    }
+    m_scrollTranslation = TransformPaintPropertyNode::createScrollTranslation(
+        std::forward<Args>(args)...);
+    return true;
   }
   template <typename... Args>
   bool updateScrollbarPaintOffset(Args&&... args) {
     return update(m_scrollbarPaintOffset, std::forward<Args>(args)...);
-  }
-  template <typename... Args>
-  bool updateScroll(Args&&... args) {
-    return update(m_scroll, std::forward<Args>(args)...);
   }
   template <typename... Args>
   bool updateEffect(Args&&... args) {
@@ -279,8 +271,6 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->m_scrollTranslation = m_scrollTranslation->clone();
     if (m_scrollbarPaintOffset)
       cloned->m_scrollbarPaintOffset = m_scrollbarPaintOffset->clone();
-    if (m_scroll)
-      cloned->m_scroll = m_scroll->clone();
     if (m_localBorderBoxProperties) {
       cloned->m_localBorderBoxProperties =
           WTF::wrapUnique(new PropertyTreeState(*m_localBorderBoxProperties));
@@ -331,7 +321,6 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<TransformPaintPropertyNode> m_svgLocalToBorderBoxTransform;
   RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
   RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
-  RefPtr<ScrollPaintPropertyNode> m_scroll;
 
   std::unique_ptr<PropertyTreeState> m_localBorderBoxProperties;
   mutable std::unique_ptr<PropertyTreeState> m_contentsProperties;

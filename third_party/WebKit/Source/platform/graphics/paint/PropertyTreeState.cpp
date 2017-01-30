@@ -99,7 +99,7 @@ const PropertyTreeState* PropertyTreeStateIterator::next() {
 
 String PropertyTreeState::toTreeString() const {
   return transform()->toTreeString() + "\n" + clip()->toTreeString() + "\n" +
-         effect()->toTreeString() + "\n" + scroll()->toTreeString();
+         effect()->toTreeString();
 }
 
 #endif

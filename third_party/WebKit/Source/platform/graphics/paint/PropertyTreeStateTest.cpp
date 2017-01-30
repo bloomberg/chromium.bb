@@ -24,8 +24,7 @@ TEST_F(PropertyTreeStateTest, TransformOnEffectOnClip) {
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
       clip.get(), CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver);
 
-  PropertyTreeState state(transform.get(), clip.get(), effect.get(),
-                          ScrollPaintPropertyNode::root());
+  PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Transform, state.innermostNode());
 
   PropertyTreeStateIterator iterator(state);
@@ -35,9 +34,9 @@ TEST_F(PropertyTreeStateTest, TransformOnEffectOnClip) {
 }
 
 TEST_F(PropertyTreeStateTest, RootState) {
-  PropertyTreeState state(
-      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  PropertyTreeState state(TransformPaintPropertyNode::root(),
+                          ClipPaintPropertyNode::root(),
+                          EffectPaintPropertyNode::root());
   EXPECT_EQ(PropertyTreeState::None, state.innermostNode());
 }
 
@@ -54,8 +53,7 @@ TEST_F(PropertyTreeStateTest, EffectOnClipOnTransform) {
       EffectPaintPropertyNode::root(), transform.get(), clip.get(),
       CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver);
 
-  PropertyTreeState state(transform.get(), clip.get(), effect.get(),
-                          ScrollPaintPropertyNode::root());
+  PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Effect, state.innermostNode());
 
   PropertyTreeStateIterator iterator(state);
@@ -78,8 +76,7 @@ TEST_F(PropertyTreeStateTest, ClipOnEffectOnTransform) {
       ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
       SkBlendMode::kSrcOver);
 
-  PropertyTreeState state(transform.get(), clip.get(), effect.get(),
-                          ScrollPaintPropertyNode::root());
+  PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Clip, state.innermostNode());
 
   PropertyTreeStateIterator iterator(state);
@@ -110,8 +107,7 @@ TEST_F(PropertyTreeStateTest, ClipDescendantOfTransform) {
   // ancestor of the clip's transform. This models situations such as
   // a clip inside a scroller that applies to an absolute-positioned element
   // which escapes the scroll transform but not the clip.
-  PropertyTreeState state(transform.get(), clip.get(), effect.get(),
-                          ScrollPaintPropertyNode::root());
+  PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Clip, state.innermostNode());
 
   PropertyTreeStateIterator iterator(state);
@@ -143,8 +139,7 @@ TEST_F(PropertyTreeStateTest, EffectDescendantOfTransform) {
   // ancestor of the clip's transform. This models situations such as
   // a clip inside a scroller that applies to an absolute-positioned element
   // which escapes the scroll transform but not the clip.
-  PropertyTreeState state(transform.get(), clip.get(), effect.get(),
-                          ScrollPaintPropertyNode::root());
+  PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Effect, state.innermostNode());
 
   PropertyTreeStateIterator iterator(state);
@@ -154,22 +149,21 @@ TEST_F(PropertyTreeStateTest, EffectDescendantOfTransform) {
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdNoElementIdOnAnyNode) {
-  PropertyTreeState state(
-      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
-      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  PropertyTreeState state(TransformPaintPropertyNode::root(),
+                          ClipPaintPropertyNode::root(),
+                          EffectPaintPropertyNode::root());
   EXPECT_EQ(CompositorElementId(), state.compositorElementId());
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnTransformNode) {
   CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::create(
-          TransformPaintPropertyNode::root(), TransformationMatrix(),
-          FloatPoint3D(), nullptr, false, 0, CompositingReasonNone,
-          expectedCompositorElementId);
+      TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
+                                         TransformationMatrix(), FloatPoint3D(),
+                                         false, 0, CompositingReasonNone,
+                                         expectedCompositorElementId);
   PropertyTreeState state(transform.get(), ClipPaintPropertyNode::root(),
-                          EffectPaintPropertyNode::root(),
-                          ScrollPaintPropertyNode::root());
+                          EffectPaintPropertyNode::root());
   EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
 }
 
@@ -181,27 +175,24 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
       SkBlendMode::kSrcOver, CompositingReasonNone,
       expectedCompositorElementId);
   PropertyTreeState state(TransformPaintPropertyNode::root(),
-                          ClipPaintPropertyNode::root(), effect.get(),
-                          ScrollPaintPropertyNode::root());
+                          ClipPaintPropertyNode::root(), effect.get());
   EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
-  RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
-      ScrollPaintPropertyNode::root(), IntSize(), IntSize(), true, false, 0);
   CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::create(
-          TransformPaintPropertyNode::root(), TransformationMatrix(),
-          FloatPoint3D(), nullptr, false, 0, CompositingReasonNone,
-          expectedCompositorElementId);
+      TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
+                                         TransformationMatrix(), FloatPoint3D(),
+                                         false, 0, CompositingReasonNone,
+                                         expectedCompositorElementId);
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
       ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
       SkBlendMode::kSrcOver, CompositingReasonNone,
       expectedCompositorElementId);
   PropertyTreeState state(transform.get(), ClipPaintPropertyNode::root(),
-                          effect.get(), scroll.get());
+                          effect.get());
   EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
 }
 

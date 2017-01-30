@@ -4977,8 +4977,8 @@ String FrameView::mainThreadScrollingReasonsAsText() const {
     // Slimming paint v2 stores main thread scrolling reasons on property
     // trees instead of in |m_mainThreadScrollingReasons|.
     MainThreadScrollingReasons reasons = 0;
-    if (const auto* scrollNode = scroll())
-      reasons |= scrollNode->mainThreadScrollingReasons();
+    if (const auto* scrollTranslation = this->scrollTranslation())
+      reasons |= scrollTranslation->scrollNode()->mainThreadScrollingReasons();
     return String(
         MainThreadScrollingReason::mainThreadScrollingReasonsAsText(reasons)
             .c_str());
