@@ -730,7 +730,27 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
   LAZY_STREAM(PLOG_STREAM(DCHECK), false)                               \
   << "Check failed: " #condition ". "
 
-#else  // _PREFAST_
+#elif defined(__clang_analyzer__)
+
+// Keeps the static analyzer from proceeding along the current codepath,
+// otherwise false positive errors may be generated  by null pointer checks.
+inline constexpr bool AnalyzerNoReturn() __attribute__((analyzer_noreturn)) {
+  return false;
+}
+
+#define DCHECK(condition)                                                     \
+  LAZY_STREAM(                                                                \
+      LOG_STREAM(DCHECK),                                                     \
+      DCHECK_IS_ON() ? (logging::AnalyzerNoReturn() || !(condition)) : false) \
+      << "Check failed: " #condition ". "
+
+#define DPCHECK(condition)                                                    \
+  LAZY_STREAM(                                                                \
+      PLOG_STREAM(DCHECK),                                                    \
+      DCHECK_IS_ON() ? (logging::AnalyzerNoReturn() || !(condition)) : false) \
+      << "Check failed: " #condition ". "
+
+#else
 
 #if DCHECK_IS_ON()
 
@@ -748,7 +768,7 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 
 #endif  // DCHECK_IS_ON()
 
-#endif  // _PREFAST_
+#endif
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use DCHECK_EQ et al below.
