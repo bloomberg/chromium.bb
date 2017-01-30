@@ -660,30 +660,31 @@ update_prop(struct ivi_layout_view *ivi_view)
 static void
 commit_changes(struct ivi_layout *layout)
 {
-	struct ivi_layout_screen  *iviscrn  = NULL;
-	struct ivi_layout_layer   *ivilayer = NULL;
+	struct ivi_layout_screen *iviscrn = NULL;
+	struct ivi_layout_layer *ivilayer = NULL;
+	struct ivi_layout_surface *ivisurf = NULL;
 	struct ivi_layout_view *ivi_view  = NULL;
 
-	wl_list_for_each(iviscrn, &layout->screen_list, link) {
-		wl_list_for_each(ivilayer, &iviscrn->order.layer_list, order.link) {
-			/*
-			 * If ivilayer is invisible, weston_view of ivisurf doesn't
-			 * need to be modified.
-			 */
-			if (ivilayer->prop.visibility == false)
-				continue;
+	wl_list_for_each(ivi_view, &layout->view_list, link) {
+		ivisurf = ivi_view->ivisurf;
+		ivilayer = ivi_view->on_layer;
+		iviscrn = ivilayer->on_screen;
 
-			wl_list_for_each(ivi_view, &ivilayer->order.view_list, order_link) {
-				/*
-				 * If ivilayer is invisible, weston_view of ivisurf doesn't
-				 * need to be modified.
-				 */
-				if (ivi_view->ivisurf->prop.visibility == false)
-					continue;
+		/*
+		 * If the view is not on the currently rendered scenegraph,
+		 * we do not need to update its properties.
+		 */
+		if (wl_list_empty(&ivi_view->order_link) || !iviscrn)
+			continue;
 
-				update_prop(ivi_view);
-			}
-		}
+		/*
+		 * If the view's layer or surface is invisible, we do not need
+		 * to update its properties.
+		 */
+		if (!ivilayer->prop.visibility || !ivisurf->prop.visibility)
+			continue;
+
+		update_prop(ivi_view);
 	}
 }
 
