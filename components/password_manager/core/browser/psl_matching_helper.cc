@@ -99,6 +99,10 @@ std::string GetRegistryControlledDomain(const GURL& signon_realm) {
 }
 
 bool IsFederatedMatch(const std::string& signon_realm, const GURL& origin) {
+  // Federated matches only apply to HTTPS.
+  if (!origin.SchemeIs(url::kHttpsScheme))
+    return false;
+
   // The format should be "federation://origin.host/federation.host;
   std::string federated_realm = "federation://" + origin.host() + "/";
   return signon_realm.size() > federated_realm.size() &&

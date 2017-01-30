@@ -886,12 +886,20 @@ TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictAddLogin) {
   CheckPSLUpdate(UPDATE_BY_ADDLOGIN);
 }
 
-TEST_F(NativeBackendGnomeTest, FetchFederatedCredential) {
+TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnHTTPS) {
   other_auth_.signon_realm = "federation://www.example.com/google.com";
   other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
   EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
-                                          GURL("http://www.example.com/"),
+                                          GURL("https://www.example.com/"),
                                           PasswordForm::SCHEME_HTML, nullptr));
+}
+
+TEST_F(NativeBackendGnomeTest, DontFetchFederatedCredentialOnHTTP) {
+  other_auth_.signon_realm = "federation://www.example.com/google.com";
+  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  EXPECT_FALSE(CheckCredentialAvailability(other_auth_,
+                                           GURL("http://www.example.com/"),
+                                           PasswordForm::SCHEME_HTML, nullptr));
 }
 
 TEST_F(NativeBackendGnomeTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {

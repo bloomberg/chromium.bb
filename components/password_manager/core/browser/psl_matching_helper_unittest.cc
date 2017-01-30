@@ -219,7 +219,7 @@ TEST(PSLMatchingUtilsTest, IsFederatedMatch) {
       {"", "https://facebook.com/", false},
       {"https://facebook.com/", "", false},
       {"federation://example.com/google.com", "https://example.com/", true},
-      {"federation://example.com/google.com", "http://example.com/", true},
+      {"federation://example.com/google.com", "http://example.com/", false},
       {"federation://example.com/google.com", "example.com", false},
       {"federation://example.com/", "http://example.com/", false},
       {"federation://example.com/google.com", "example", false},

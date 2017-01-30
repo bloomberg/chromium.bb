@@ -693,16 +693,24 @@ TEST_F(NativeBackendLibsecretTest, PSLUpdatingStrictAddLogin) {
   CheckPSLUpdate(UPDATE_BY_ADDLOGIN);
 }
 
-TEST_F(NativeBackendLibsecretTest, FetchFederatedCredential) {
+TEST_F(NativeBackendLibsecretTest, FetchFederatedCredentialOnHTTPS) {
   other_auth_.signon_realm = "federation://www.example.com/google.com";
   other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
   EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
-                                          GURL("http://www.example.com/"),
+                                          GURL("https://www.example.com/"),
                                           PasswordForm::SCHEME_HTML, nullptr));
 }
 
-TEST_F(NativeBackendLibsecretTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
+TEST_F(NativeBackendLibsecretTest, DontFetchFederatedCredentialOnHTTP) {
   other_auth_.signon_realm = "federation://www.example.com/google.com";
+  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  EXPECT_FALSE(CheckCredentialAvailability(other_auth_,
+                                           GURL("http://www.example.com/"),
+                                           PasswordForm::SCHEME_HTML, nullptr));
+}
+
+TEST_F(NativeBackendLibsecretTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
+  other_auth_.signon_realm = "federation://www.sub.example.com/google.com";
   other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
   EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
                                           GURL("https://www.example.com/"),
@@ -711,11 +719,11 @@ TEST_F(NativeBackendLibsecretTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
 
 TEST_F(NativeBackendLibsecretTest,
        DontFetchPSLMatchedFederatedCredentialOnHTTP) {
-  other_auth_.signon_realm = "federation://www.example.com/google.com";
+  other_auth_.signon_realm = "federation://www.sub.example.com/google.com";
   other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
-  EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
-                                          GURL("http://www.example.com/"),
-                                          PasswordForm::SCHEME_HTML, nullptr));
+  EXPECT_FALSE(CheckCredentialAvailability(other_auth_,
+                                           GURL("http://www.example.com/"),
+                                           PasswordForm::SCHEME_HTML, nullptr));
 }
 
 TEST_F(NativeBackendLibsecretTest, BasicUpdateLogin) {
