@@ -454,6 +454,16 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #else
     const int mi_step = mi_size_wide[BLOCK_16X16];
 #endif
+
+#if CONFIG_TPL_MV
+    int tpl_sample_pos[5][2] = { { -1, xd->n8_w },
+                                 { 0, xd->n8_w },
+                                 { xd->n8_h, xd->n8_w },
+                                 { xd->n8_h, 0 },
+                                 { xd->n8_h, -1 } };
+    int i;
+#endif
+
     for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_step) {
       for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_step) {
         coll_blk_count += add_col_ref_mv(
@@ -461,6 +471,17 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
             blk_col, refmv_count, ref_mv_stack, mode_context);
       }
     }
+
+#if CONFIG_TPL_MV
+    for (i = 0; i < 5; ++i) {
+      blk_row = tpl_sample_pos[i][0];
+      blk_col = tpl_sample_pos[i][1];
+      coll_blk_count += add_col_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
+                                       mi_col, ref_frame, blk_row, blk_col,
+                                       refmv_count, ref_mv_stack, mode_context);
+    }
+#endif
+
     if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
   } else {
     mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
