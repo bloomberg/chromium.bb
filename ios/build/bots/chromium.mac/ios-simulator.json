@@ -1,8 +1,4 @@
 {
-  "owners": [
-    "dpranke",
-    "smut"
-  ],
   "comments": [
     "Tests for 64-bit iOS 10.0 simulators.",
     "Tests run on iPhone 6s and iPad Air 2, both 64-bit.",
@@ -22,7 +18,6 @@
   "additional_compile_targets": [
     "all"
   ],
-  "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",
   "tests": [

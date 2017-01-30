@@ -1,7 +1,4 @@
 {
-  "owners": [
-    "hans"
-  ],
   "comments": [
     "Clang tip-of-tree builder for iOS."
   ],
@@ -9,6 +6,7 @@
   "gn_args": [
     "ios_enable_code_signing=false",
     "is_component_build=false",
+    "is_debug=false",
     "llvm_force_head_revision=true",
     "target_cpu=\"arm\"",
     "target_os=\"ios\""
@@ -19,7 +17,6 @@
   "env": {
     "LLVM_FORCE_HEAD_REVISION": "YES"
   },
-  "compiler": "ninja",
   "configuration": "Release",
   "sdk": "iphoneos10.0",
   "tests": [

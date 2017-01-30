@@ -1,7 +1,4 @@
 {
-  "owners": [
-    "huangml"
-  ],
   "comments": [
     "Tests for 64-bit iOS 10.0 simulators."
   ],
@@ -9,11 +6,11 @@
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
+    "is_debug=true",
     "target_cpu=\"x64\"",
     "target_os=\"ios\"",
     "use_goma=true"
   ],
-  "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",
   "tests": [

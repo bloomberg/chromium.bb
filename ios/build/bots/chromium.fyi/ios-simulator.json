@@ -1,7 +1,4 @@
 {
-  "owners": [
-    "smut"
-  ],
   "comments": [
     "Runs tests on @3x, @2x, 64-bit, 32-bit, phone, tablet, iOS 10, and iOS 9."
   ],
@@ -16,7 +13,6 @@
     "target_os=\"ios\"",
     "use_goma=true"
   ],
-  "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",
   "tests": [
