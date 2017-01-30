@@ -3663,9 +3663,9 @@ static void write_tile_info(const AV1_COMMON *const cm,
   if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_DEBLOCKING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
   aom_wb_write_bit(wb, cm->loop_filter_across_tiles_enabled);
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 }
 
 static int get_refresh_mask(AV1_COMP *cpi) {

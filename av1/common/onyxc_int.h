@@ -368,9 +368,9 @@ typedef struct AV1Common {
   int tile_cols, tile_rows;
   int tile_width, tile_height;  // In MI units
 
-#if CONFIG_DEBLOCKING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
   int loop_filter_across_tiles_enabled;
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
   int byte_alignment;
   int skip_loop_filter;

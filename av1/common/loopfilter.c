@@ -893,7 +893,7 @@ static void build_y_mask(const loop_filter_info_n *const lfi_n,
     *int_4x4_y |= (size_mask[block_size] & 0xffffffffffffffffULL) << shift_y;
 }
 
-#if CONFIG_DEBLOCKING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
 // This function update the bit masks for the entire 64x64 region represented
 // by mi_row, mi_col. In case one of the edge is a tile boundary, loop filtering
 // for that edge is disabled. This function only check the tile boundary info
@@ -905,21 +905,21 @@ static void update_tile_boundary_filter_mask(AV1_COMMON *const cm,
   int i;
   MODE_INFO *const mi = cm->mi + mi_row * cm->mi_stride + mi_col;
 
-  if (mi->mbmi.tile_boundary_info & TILE_LEFT_BOUNDARY) {
+  if (mi->mbmi.boundary_info & TILE_LEFT_BOUNDARY) {
     for (i = 0; i <= TX_32X32; i++) {
       lfm->left_y[i] &= 0xfefefefefefefefeULL;
       lfm->left_uv[i] &= 0xeeee;
     }
   }
 
-  if (mi->mbmi.tile_boundary_info & TILE_ABOVE_BOUNDARY) {
+  if (mi->mbmi.boundary_info & TILE_ABOVE_BOUNDARY) {
     for (i = 0; i <= TX_32X32; i++) {
       lfm->above_y[i] &= 0xffffffffffffff00ULL;
       lfm->above_uv[i] &= 0xfff0;
     }
   }
 }
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
 // This function sets up the bit masks for the entire 64x64 region represented
 // by mi_row, mi_col.
@@ -1206,11 +1206,11 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
     }
   }
 
-#if CONFIG_DEBLOCKING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
   if (av1_disable_loopfilter_on_tile_boundary(cm)) {
     update_tile_boundary_filter_mask(cm, mi_row, mi_col, lfm);
   }
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
   // Assert if we try to apply 2 different loop filters at the same position.
   assert(!(lfm->left_y[TX_16X16] & lfm->left_y[TX_8X8]));
@@ -1462,12 +1462,12 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
 
     // Disable filtering on the leftmost column or tile boundary
     border_mask = ~(mi_col == 0);
-#if CONFIG_DEBLOCKING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
     if (av1_disable_loopfilter_on_tile_boundary(cm) &&
-        ((mib[0]->mbmi.tile_boundary_info & TILE_LEFT_BOUNDARY) != 0)) {
+        ((mib[0]->mbmi.boundary_info & TILE_LEFT_BOUNDARY) != 0)) {
       border_mask = 0xfffffffe;
     }
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
 #if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
@@ -1666,11 +1666,11 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
     unsigned int mask_8x8_r;
     unsigned int mask_4x4_r;
 
-#if CONFIG_DEBLOCKING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
     // Disable filtering on the abovemost row or tile boundary
     const MODE_INFO *mi = cm->mi + (mi_row + r) * cm->mi_stride;
     if ((av1_disable_loopfilter_on_tile_boundary(cm) &&
-         (mi->mbmi.tile_boundary_info & TILE_ABOVE_BOUNDARY)) ||
+         (mi->mbmi.boundary_info & TILE_ABOVE_BOUNDARY)) ||
         (mi_row + idx_r == 0)) {
       mask_16x16_r = 0;
       mask_8x8_r = 0;
@@ -1680,7 +1680,7 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
       mask_16x16_r = 0;
       mask_8x8_r = 0;
       mask_4x4_r = 0;
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
     } else {
       mask_16x16_r = mask_16x16[r];
       mask_8x8_r = mask_8x8[r];

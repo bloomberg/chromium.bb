@@ -376,9 +376,8 @@ typedef struct {
   int num_proj_ref[2];
   WarpedMotionParams wm_params[2];
 #endif  // CONFIG_WARPED_MOTION
-#if CONFIG_DEBLOCKING_ACROSS_TILES
-  TILE_BOUNDARY_TYPE tile_boundary_info;
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+
+  BOUNDARY_TYPE boundary_info;
 } MB_MODE_INFO;
 
 typedef struct MODE_INFO {

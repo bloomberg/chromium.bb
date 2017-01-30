@@ -60,28 +60,39 @@ void av1_get_tile_n_bits(const int mi_cols, int *min_log2_tile_cols,
 }
 #endif  // !CONFIG_EXT_TILE
 
-#if CONFIG_DEBLOCKING_ACROSS_TILES
-void av1_update_tile_boundary_info(const struct AV1Common *cm,
-                                   const TileInfo *const tile_info, int mi_row,
-                                   int mi_col) {
+void av1_update_boundary_info(const struct AV1Common *cm,
+                              const TileInfo *const tile_info, int mi_row,
+                              int mi_col) {
   int row, col;
   for (row = mi_row; row < (mi_row + cm->mib_size); row++)
     for (col = mi_col; col < (mi_col + cm->mib_size); col++) {
       MODE_INFO *const mi = cm->mi + row * cm->mi_stride + col;
-      mi->mbmi.tile_boundary_info = 0;
-      if (row == tile_info->mi_row_start)
-        mi->mbmi.tile_boundary_info |= TILE_ABOVE_BOUNDARY;
-      if (col == tile_info->mi_col_start)
-        mi->mbmi.tile_boundary_info |= TILE_LEFT_BOUNDARY;
-      if ((row + 1) >= tile_info->mi_row_end)
-        mi->mbmi.tile_boundary_info |= TILE_BOTTOM_BOUNDARY;
-      if ((col + 1) >= tile_info->mi_col_end)
-        mi->mbmi.tile_boundary_info |= TILE_RIGHT_BOUNDARY;
+      mi->mbmi.boundary_info = 0;
+      if (cm->tile_cols * cm->tile_rows > 1) {
+        if (row == tile_info->mi_row_start)
+          mi->mbmi.boundary_info |= TILE_ABOVE_BOUNDARY;
+        if (col == tile_info->mi_col_start)
+          mi->mbmi.boundary_info |= TILE_LEFT_BOUNDARY;
+        if ((row + 1) >= tile_info->mi_row_end)
+          mi->mbmi.boundary_info |= TILE_BOTTOM_BOUNDARY;
+        if ((col + 1) >= tile_info->mi_col_end)
+          mi->mbmi.boundary_info |= TILE_RIGHT_BOUNDARY;
+      }
+      // Frame boundary is treated as tile boundary
+      if (row == 0)
+        mi->mbmi.boundary_info |= FRAME_ABOVE_BOUNDARY | TILE_ABOVE_BOUNDARY;
+      if (col == 0)
+        mi->mbmi.boundary_info |= FRAME_LEFT_BOUNDARY | TILE_LEFT_BOUNDARY;
+      if ((row + 1) >= cm->mi_rows)
+        mi->mbmi.boundary_info |= FRAME_BOTTOM_BOUNDARY | TILE_BOTTOM_BOUNDARY;
+      if ((col + 1) >= cm->mi_cols)
+        mi->mbmi.boundary_info |= FRAME_RIGHT_BOUNDARY | TILE_RIGHT_BOUNDARY;
     }
 }
 
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
 int av1_disable_loopfilter_on_tile_boundary(const struct AV1Common *cm) {
   return (!cm->loop_filter_across_tiles_enabled &&
           (cm->tile_cols * cm->tile_rows > 1));
 }
-#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
