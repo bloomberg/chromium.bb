@@ -49,6 +49,10 @@ class CORE_EXPORT FilterEffectBuilder final {
   STACK_ALLOCATED();
 
  public:
+  FilterEffectBuilder(const FloatRect& zoomedReferenceBox,
+                      float zoom,
+                      const SkPaint* fillPaint = nullptr,
+                      const SkPaint* strokePaint = nullptr);
   FilterEffectBuilder(Node*,
                       const FloatRect& zoomedReferenceBox,
                       float zoom,

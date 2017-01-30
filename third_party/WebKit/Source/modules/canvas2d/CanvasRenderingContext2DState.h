@@ -95,6 +95,8 @@ class CanvasRenderingContext2DState final
   sk_sp<SkImageFilter> getFilter(Element*,
                                  IntSize canvasSize,
                                  CanvasRenderingContext2D*) const;
+  sk_sp<SkImageFilter> getFilterForOffscreenCanvas(IntSize canvasSize) const;
+  bool hasFilterForOffscreenCanvas(IntSize canvasSize) const;
   bool hasFilter(Element*, IntSize canvasSize, CanvasRenderingContext2D*) const;
   void clearResolvedFilter() const;
 

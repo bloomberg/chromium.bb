@@ -120,6 +120,14 @@ Vector<float> sepiaMatrix(double amount) {
 
 }  // namespace
 
+FilterEffectBuilder::FilterEffectBuilder(const FloatRect& zoomedReferenceBox,
+                                         float zoom,
+                                         const SkPaint* fillPaint,
+                                         const SkPaint* strokePaint) {
+  FilterEffectBuilder(nullptr, zoomedReferenceBox, zoom, fillPaint,
+                      strokePaint);
+}
+
 FilterEffectBuilder::FilterEffectBuilder(Node* target,
                                          const FloatRect& zoomedReferenceBox,
                                          float zoom,

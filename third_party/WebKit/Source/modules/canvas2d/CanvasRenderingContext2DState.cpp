@@ -272,6 +272,40 @@ void CanvasRenderingContext2DState::resetTransform() {
   m_isTransformInvertible = true;
 }
 
+sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilterForOffscreenCanvas(
+    IntSize canvasSize) const {
+  if (!m_filterValue)
+    return nullptr;
+
+  if (m_resolvedFilter)
+    return m_resolvedFilter;
+
+  FilterOperations operations =
+      FilterOperationResolver::createOffscreenFilterOperations(*m_filterValue);
+
+  // We can't reuse m_fillPaint and m_strokePaint for the filter, since these
+  // incorporate the global alpha, which isn't applicable here.
+  SkPaint fillPaintForFilter;
+  m_fillStyle->applyToPaint(fillPaintForFilter);
+  fillPaintForFilter.setColor(m_fillStyle->paintColor());
+  SkPaint strokePaintForFilter;
+  m_strokeStyle->applyToPaint(strokePaintForFilter);
+  strokePaintForFilter.setColor(m_strokeStyle->paintColor());
+
+  FilterEffectBuilder filterEffectBuilder(
+      FloatRect((FloatPoint()), FloatSize(canvasSize)),
+      1.0f,  // Deliberately ignore zoom on the canvas element.
+      &fillPaintForFilter, &strokePaintForFilter);
+
+  FilterEffect* lastEffect = filterEffectBuilder.buildFilterEffect(operations);
+  if (lastEffect) {
+    m_resolvedFilter =
+        SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
+  }
+
+  return m_resolvedFilter;
+}
+
 sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilter(
     Element* styleResolutionHost,
     IntSize canvasSize,
@@ -327,6 +361,13 @@ sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilter(
   }
 
   return m_resolvedFilter;
+}
+
+bool CanvasRenderingContext2DState::hasFilterForOffscreenCanvas(
+    IntSize canvasSize) const {
+  // Checking for a non-null m_filterValue isn't sufficient, since this value
+  // might refer to a non-existent filter.
+  return !!getFilterForOffscreenCanvas(canvasSize);
 }
 
 bool CanvasRenderingContext2DState::hasFilter(

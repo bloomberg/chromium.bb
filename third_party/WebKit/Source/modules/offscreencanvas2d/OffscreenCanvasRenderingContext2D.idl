@@ -28,7 +28,7 @@
     // compositing
     attribute unrestricted double globalAlpha; // (default 1.0)
     attribute DOMString globalCompositeOperation; // (default source-over)
-    [Exposed=Window] attribute DOMString filter;
+    attribute DOMString filter;
 
     // image smoothing
     attribute boolean imageSmoothingEnabled; // (default True)

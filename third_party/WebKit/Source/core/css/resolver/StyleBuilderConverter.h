@@ -27,6 +27,7 @@
 #ifndef StyleBuilderConverter_h
 #define StyleBuilderConverter_h
 
+#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSValue.h"
@@ -73,6 +74,7 @@ class StyleBuilderConverter {
                                                        const CSSValue&);
   static FilterOperations convertFilterOperations(StyleResolverState&,
                                                   const CSSValue&);
+  static FilterOperations convertOffscreenFilterOperations(const CSSValue&);
   template <typename T>
   static T convertFlags(StyleResolverState&, const CSSValue&);
   static FontDescription::FamilyDescription convertFontFamily(
@@ -130,7 +132,11 @@ class StyleBuilderConverter {
                                               const CSSValue&);
   static LengthSize convertRadius(StyleResolverState&, const CSSValue&);
   static EPaintOrder convertPaintOrder(StyleResolverState&, const CSSValue&);
-  static ShadowData convertShadow(StyleResolverState&, const CSSValue&);
+  static ShadowData convertShadow(const CSSToLengthConversionData&,
+                                  StyleResolverState*,
+                                  const CSSValue&);
+  static double convertValueToNumber(const CSSFunctionValue*,
+                                     const CSSPrimitiveValue*);
   static PassRefPtr<ShadowList> convertShadowList(StyleResolverState&,
                                                   const CSSValue&);
   static ShapeValue* convertShapeValue(StyleResolverState&, const CSSValue&);
