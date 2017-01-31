@@ -15,8 +15,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="16dp"
         android:paddingBottom="16dp"
-        android:orientation="horizontal"
-        android:background="@android:color/white" >
+        android:orientation="horizontal" >
 
         <ImageView
             android:id="@+id/icon_view"
@@ -28,7 +27,8 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:orientation="vertical" >
+          android:orientation="vertical"
+          android:paddingStart="16dp" >
 
           <TextView
               android:id="@+id/title"

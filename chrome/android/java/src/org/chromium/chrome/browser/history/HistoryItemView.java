@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.TintedImageButton;
+import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
 /**
@@ -32,6 +33,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     private TintedImageButton mRemoveButton;
     private ImageView mIconImageView;
     private VectorDrawableCompat mBlockedVisitDrawable;
+    private View mContentView;
 
     private HistoryManager mHistoryManager;
     private final RoundedIconGenerator mIconGenerator;
@@ -39,6 +41,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     private final int mMinIconSize;
     private final int mDisplayedIconSize;
     private final int mCornerRadius;
+    private final int mEndPadding;
 
     private boolean mRemoveButtonVisible;
 
@@ -53,6 +56,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
                 getResources(), R.color.default_favicon_background_color);
         mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
                 mCornerRadius, iconColor, textSize);
+        mEndPadding = context.getResources().getDimensionPixelSize(
+                R.dimen.selectable_list_layout_row_end_padding);
     }
 
     @Override
@@ -61,6 +66,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         mTitle = (TextView) findViewById(R.id.title);
         mDomain = (TextView) findViewById(R.id.domain);
         mIconImageView = (ImageView) findViewById(R.id.icon_view);
+        mContentView = findViewById(R.id.content);
         mRemoveButton = (TintedImageButton) findViewById(R.id.remove);
         mRemoveButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -97,6 +103,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
             mTitle.setTextColor(
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color));
         }
+
+        setBackgroundResourceForGroupPosition();
     }
 
     /**
@@ -108,6 +116,10 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
         mHistoryManager = manager;
         if (!getItem().wasBlockedVisit()) requestIcon();
+
+        MarginResizer.createWithViewAdapter(this,
+                mHistoryManager.getSelectableListLayout().getUiConfig(),
+                mHistoryManager.getDefaultLateralListItemMarginPx(), 0);
     }
 
     /**
@@ -164,8 +176,35 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     }
 
     private void updateRemoveButtonVisibility() {
-        mRemoveButton.setVisibility(
-                !PrefServiceBridge.getInstance().canDeleteBrowsingHistory() ? View.GONE :
-                    mRemoveButtonVisible ? View.VISIBLE : View.INVISIBLE);
+        int removeButtonVisibility =
+                !PrefServiceBridge.getInstance().canDeleteBrowsingHistory() ? View.GONE
+                        : mRemoveButtonVisible ? View.VISIBLE : View.INVISIBLE;
+        mRemoveButton.setVisibility(removeButtonVisibility);
+
+        int endPadding = removeButtonVisibility == View.GONE ? mEndPadding : 0;
+        ApiCompatibilityUtils.setPaddingRelative(mContentView,
+                ApiCompatibilityUtils.getPaddingStart(mContentView),
+                mContentView.getPaddingTop(), endPadding, mContentView.getPaddingBottom());
+    }
+
+    /**
+     * Sets the background resource for this view using the item's positioning in its group.
+     */
+    public void setBackgroundResourceForGroupPosition() {
+        int backgroundResource;
+
+        boolean isLastInGroup =  getItem().isLastInGroup();
+        boolean isFirstInGroup = getItem().isFirstInGroup();
+        if (!isLastInGroup && !isFirstInGroup) {
+            backgroundResource = R.drawable.list_item_middle;
+        } else if (!isLastInGroup) {
+            backgroundResource = R.drawable.list_item_top;
+        } else if (!isFirstInGroup) {
+            backgroundResource = R.drawable.list_item_bottom;
+        } else {
+            backgroundResource = R.drawable.list_item_single;
+        }
+
+        setBackgroundResource(backgroundResource);
     }
 }

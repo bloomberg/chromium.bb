@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp.cards;
+package org.chromium.chrome.browser.widget.displaystyle;
 
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
-import org.chromium.chrome.browser.ntp.UiConfig;
-
 /**
- * Adds lateral margins to the view when the display style is {@link UiConfig#DISPLAY_STYLE_WIDE}.
+ * Changes a view's margins when switching between {@link UiConfig} display styles.
  */
 public class MarginResizer implements DisplayStyleObserver {
+    /** The default value for the lateral margins. */
     private int mDefaultMarginSizePixels;
-    private final int mWideMarginSizePixels;
+    /** The wide display value for the lateral margins. */
+    private int mWideMarginSizePixels;
     private final View mView;
 
     @UiConfig.DisplayStyle
@@ -25,20 +23,24 @@ public class MarginResizer implements DisplayStyleObserver {
     /**
      * Factory method that creates a {@link MarginResizer} and wraps it in a
      * {@link DisplayStyleObserverAdapter} that will take care of invoking it when appropriate.
-     * @param view the view that will have its margins resized
-     * @param config the UiConfig object to subscribe to
-     * @return the newly created {@link MarginResizer}
+     * @param view The view that will have its margins resized.
+     * @param config The UiConfig object to subscribe to.
+     * @param defaultMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_REGULAR}.
+     * @param wideMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_WIDE}.
+     * @return The newly created {@link MarginResizer}.
      */
-    public static MarginResizer createWithViewAdapter(View view, UiConfig config) {
-        MarginResizer marginResizer = new MarginResizer(view);
+    public static MarginResizer createWithViewAdapter(View view, UiConfig config,
+            int defaultMarginPixels, int wideMarginPixels) {
+        MarginResizer marginResizer =
+                new MarginResizer(view, defaultMarginPixels, wideMarginPixels);
         new DisplayStyleObserverAdapter(view, config, marginResizer);
         return marginResizer;
     }
 
-    public MarginResizer(View view) {
+    public MarginResizer(View view, int defaultMarginPixels, int wideMarginPixels) {
         mView = view;
-        mWideMarginSizePixels =
-                view.getResources().getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
+        mDefaultMarginSizePixels = defaultMarginPixels;
+        mWideMarginSizePixels = wideMarginPixels;
     }
 
     @Override
@@ -50,11 +52,12 @@ public class MarginResizer implements DisplayStyleObserver {
     /**
      * Sets the lateral margins on the associated view, using the appropriate value depending on
      * the current display style.
-     * @param marginPixels margin size to use in {@link UiConfig#DISPLAY_STYLE_REGULAR}. This value
-     *                     will be used as new default value for the lateral margins.
+     * @param defaultMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_REGULAR}.
+     * @param wideMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_WIDE}.
      */
-    public void setMargins(int marginPixels) {
-        this.mDefaultMarginSizePixels = marginPixels;
+    public void setMargins(int defaultMarginPixels, int wideMarginPixels) {
+        mDefaultMarginSizePixels = defaultMarginPixels;
+        mWideMarginSizePixels = wideMarginPixels;
         updateMargins();
     }
 

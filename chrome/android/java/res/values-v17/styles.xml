@@ -576,8 +576,6 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">16dp</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
         <item name="android:textSize">16sp</item>
         <item name="android:visibility">gone</item>
     </style>
@@ -597,9 +595,9 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
         <item name="android:background">@null</item>
         <item name="android:scaleType">center</item>
+        <item name="android:paddingEnd">@dimen/selectable_list_layout_row_end_padding</item>
     </style>
 
     <!-- Download Home -->

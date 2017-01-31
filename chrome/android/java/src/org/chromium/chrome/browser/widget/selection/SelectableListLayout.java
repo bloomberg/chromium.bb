@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.widget.selection;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,26 +26,32 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;
+import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import javax.annotation.Nullable;
 
 /**
  * Contains UI elements common to selectable list views: a loading view, empty view, selection
- * toolbar, shadow, and recycler view.
+ * toolbar, shadow, and RecyclerView.
  *
  * After the SelectableListLayout is inflated, it should be initialized through calls to
  * #initializeRecyclerView(), #initializeToolbar(), and #initializeEmptyView().
  *
  * @param <E> The type of the selectable items this layout holds.
  */
-public class SelectableListLayout<E> extends RelativeLayout {
+public class SelectableListLayout<E> extends RelativeLayout implements DisplayStyleObserver {
+    private static final int WIDE_DISPLAY_MIN_PADDING_DP = 16;
+
     private Adapter<RecyclerView.ViewHolder> mAdapter;
     private ViewStub mToolbarStub;
     private TextView mEmptyView;
     private LoadingView mLoadingView;
     private RecyclerView mRecyclerView;
     SelectableListToolbar<E> mToolbar;
+
+    private UiConfig mUiConfig;
 
     private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
         @Override
@@ -81,6 +89,13 @@ public class SelectableListLayout<E> extends RelativeLayout {
 
         setFocusable(true);
         setFocusableInTouchMode(true);
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (mUiConfig != null) mUiConfig.updateDisplayStyle();
     }
 
     /**
@@ -169,5 +184,56 @@ public class SelectableListLayout<E> extends RelativeLayout {
      */
     public void onDestroyed() {
         mAdapter.unregisterAdapterDataObserver(mAdapterObserver);
+    }
+
+    /**
+     * When this layout has a wide display style, it will be width constrained to
+     * {@link UiConfig#WIDE_DISPLAY_STYLE_MIN_WIDTH_DP}. If the current screen width is greater than
+     * UiConfig#WIDE_DISPLAY_STYLE_MIN_WIDTH_DP, the SelectableListLayout will be visually centered
+     * by adding padding to both sides.
+     *
+     * This method should be called after the toolbar and RecyclerView are initialized.
+     *
+     * @param wideDisplayToolbarLateralOffsetPx The offset to use for the toolbar's lateral padding
+     *                                          when in {@link UiConfig#DISPLAY_STYLE_WIDE}.
+     */
+    public void setHasWideDisplayStyle(int wideDisplayToolbarLateralOffsetPx) {
+        mUiConfig = new UiConfig(this);
+        mToolbar.setHasWideDisplayStyle(wideDisplayToolbarLateralOffsetPx, mUiConfig);
+        mUiConfig.addObserver(this);
+    }
+
+    /**
+     * @return The {@link UiConfig} associated with this View if one has been created, or null.
+     */
+    @Nullable
+    public UiConfig getUiConfig() {
+        return mUiConfig;
+    }
+
+    @Override
+    public void onDisplayStyleChanged(int newDisplayStyle) {
+        int padding = getPaddingForDisplayStyle(newDisplayStyle, getResources());
+
+        ApiCompatibilityUtils.setPaddingRelative(mRecyclerView,
+                padding, mRecyclerView.getPaddingTop(),
+                padding, mRecyclerView.getPaddingBottom());
+    }
+
+    /**
+     * @param displayStyle See UiConfig.DisplayStyle.
+     * @param resources The {@link Resources} used to retrieve configuration and display metrics.
+     * @return The lateral padding to use for the current display style.
+     */
+    public static int getPaddingForDisplayStyle(int displayStyle, Resources resources) {
+        int padding = 0;
+        if (displayStyle == UiConfig.DISPLAY_STYLE_WIDE) {
+            int screenWidthDp = resources.getConfiguration().screenWidthDp;
+            float dpToPx = resources.getDisplayMetrics().density;
+            padding = (int) (((screenWidthDp - UiConfig.WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) / 2.f)
+                    * dpToPx);
+            padding = (int) Math.max(WIDE_DISPLAY_MIN_PADDING_DP * dpToPx, padding);
+        }
+        return padding;
     }
 }

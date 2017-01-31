@@ -49,6 +49,9 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         /** Position of the TimedItem in the list, or {@link #INVALID_POSITION} if not shown. */
         private int mPosition = INVALID_POSITION;
 
+        private boolean mIsFirstInGroup;
+        private boolean mIsLastInGroup;
+
         /** See {@link #mPosition}. */
         private final void setPosition(int position) {
             mPosition = position;
@@ -57,6 +60,34 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         /** See {@link #mPosition}. */
         public final int getPosition() {
             return mPosition;
+        }
+
+        /**
+         * @param isFirst Whether this item is the first in its group.
+         */
+        public final void setIsFirstInGroup(boolean isFirst) {
+            mIsFirstInGroup = isFirst;
+        }
+
+        /**
+         * @param isLast Whether this item is the last in its group.
+         */
+        public final void setIsLastInGroup(boolean isLast) {
+            mIsLastInGroup = isLast;
+        }
+
+        /**
+         * @return Whether this item is the first in its group.
+         */
+        public boolean isFirstInGroup() {
+            return mIsFirstInGroup;
+        }
+
+        /**
+         * @return Whether this item is the last in its group.
+         */
+        public boolean isLastInGroup() {
+            return mIsLastInGroup;
         }
 
         /** @return The timestamp for this item. */
@@ -71,7 +102,10 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         public abstract long getStableId();
     }
 
-    private static class DateViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * A {@link RecyclerView.ViewHolder} that displays a date header.
+     */
+    public static class DateViewHolder extends RecyclerView.ViewHolder {
         private TextView mTextView;
 
         public DateViewHolder(View view) {
@@ -79,6 +113,9 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             if (view instanceof TextView) mTextView = (TextView) view;
         }
 
+        /**
+         * @param date The date that this DateViewHolder should display.
+         */
         public void setDate(Date date) {
             // Calender.getInstance() may take long time to run, so Calendar object should be reused
             // as much as possible.
@@ -145,9 +182,12 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             mIndex = index;
 
             sortIfNeeded();
-            for (TimedItem item : mItems) {
+            for (int i = 0; i < mItems.size(); i++) {
                 index += 1;
+                TimedItem item = mItems.get(i);
                 item.setPosition(index);
+                item.setIsFirstInGroup(i == 0);
+                item.setIsLastInGroup(i == mItems.size() - 1);
             }
         }
 
@@ -244,10 +284,19 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
 
     /**
      * Creates a {@link BasicViewHolder} in the given view parent for the footer.
-     * @see #onCreateViewHolder(ViewGroup, int)
+     * See {@link #onCreateViewHolder(ViewGroup, int)}.
      */
     protected BasicViewHolder createFooter(ViewGroup parent) {
         return null;
+    }
+
+    /**
+     * Creates a {@link DateViewHolder} in the given view parent.
+     * @see #onCreateViewHolder(ViewGroup, int)
+     */
+    protected DateViewHolder createDateViewHolder(ViewGroup parent) {
+        return new DateViewHolder(LayoutInflater.from(parent.getContext()).inflate(
+                getTimedItemViewResId(), parent, false));
     }
 
     /**
@@ -415,8 +464,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     @Override
     public final RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == TYPE_DATE) {
-            return new DateViewHolder(LayoutInflater.from(parent.getContext()).inflate(
-                    getTimedItemViewResId(), parent, false));
+            return createDateViewHolder(parent);
         } else if (viewType == TYPE_NORMAL) {
             return createViewHolder(parent);
         } else if (viewType == TYPE_HEADER) {

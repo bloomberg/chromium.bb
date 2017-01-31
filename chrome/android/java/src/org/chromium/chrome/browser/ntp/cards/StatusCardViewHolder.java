@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
  * ViewHolder for Status and Promo cards.

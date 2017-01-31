@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp.cards;
+package org.chromium.chrome.browser.widget.displaystyle;
 
 import android.view.View;
-
-import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
-import org.chromium.chrome.browser.ntp.UiConfig;
 
 /**
  * Implementation of {@link DisplayStyleObserver} designed to play nicely with

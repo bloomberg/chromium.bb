@@ -9,6 +9,7 @@ import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.Browser;
 import android.support.annotation.VisibleForTesting;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.FadingShadowView;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -56,6 +58,9 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
 
     private static HistoryProvider sProviderForTests;
+
+    private final int mListItemLateralShadowSizePx;
+    private final int mDefaultLateralListItemMarginPx;
 
     private final Activity mActivity;
     private final SelectableListLayout<HistoryItem> mSelectableListLayout;
@@ -82,11 +87,15 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mHistoryAdapter = new HistoryAdapter(mSelectionDelegate, this,
                 sProviderForTests != null ? sProviderForTests : new BrowsingHistoryBridge());
 
+        // 1. Create SelectableListLayout.
         mSelectableListLayout =
                 (SelectableListLayout<HistoryItem>) LayoutInflater.from(activity).inflate(
                         R.layout.history_main, null);
+
+        // 2. Initialize RecyclerView.
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
 
+        // 3. Initialize toolbar.
         mToolbar = (HistoryManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.history_toolbar, mSelectionDelegate, R.string.menu_history, null,
                 R.id.normal_menu_group, R.id.selection_mode_menu_group,
@@ -96,6 +105,28 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mToolbarShadow = (FadingShadowView) mSelectableListLayout.findViewById(R.id.shadow);
         mToolbarShadow.setVisibility(View.GONE);
 
+        // 4. Configure values for {@link UiConfig#DISPLAY_STYLE_WIDE} and
+        //    {@link UiConfig#DISPLAY_STYLE_REGULAR}.
+        // The list item shadow is part of the drawable nine-patch used as the list item background.
+        // Use the dimensions of the shadow (from the drawable's padding) to calculate the margins
+        // to use in the regular and wide display styles.
+        Rect listItemShadow = new Rect();
+        ApiCompatibilityUtils.getDrawable(
+                mActivity.getResources(), R.drawable.card_middle).getPadding(listItemShadow);
+        int cardCornerRadius = mActivity.getResources().getDimensionPixelSize(
+                R.dimen.card_corner_radius);
+
+        assert listItemShadow.left == listItemShadow.right;
+        // The list item shadow size is used in {@link UiConfig#DISPLAY_STYLE_WIDE} to visually
+        // align other elements with the edge of the list items.
+        mListItemLateralShadowSizePx = listItemShadow.left;
+        // A negative margin is used in {@link UiConfig#DISPLAY_STYLE_REGULAR} to hide the lateral
+        // shadow.
+        mDefaultLateralListItemMarginPx = -(listItemShadow.left + cardCornerRadius);
+
+        mSelectableListLayout.setHasWideDisplayStyle(mListItemLateralShadowSizePx);
+
+        // 5. Initialize empty view.
         mEmptyView = mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(
                         mActivity.getResources(), R.drawable.history_big,
@@ -105,8 +136,18 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mEmptyView.setTextColor(ApiCompatibilityUtils.getColor(mActivity.getResources(),
                 R.color.google_grey_500));
 
+        // 6. Create large icon bridge.
+        mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
+        ActivityManager activityManager = ((ActivityManager) ContextUtils
+                .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
+        int maxSize = Math.min((activityManager.getMemoryClass() / 4) * MEGABYTES_TO_BYTES,
+                FAVICON_MAX_CACHE_SIZE_BYTES);
+        mLargeIconBridge.createCache(maxSize);
+
+        // 7. Initialize the adapter to load items.
         mHistoryAdapter.initialize();
 
+        // 8. Add scroll listener to page in more items when necessary.
         mRecyclerView.addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -124,13 +165,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                 }
             }});
 
-        mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
-        ActivityManager activityManager = ((ActivityManager) ContextUtils
-                .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
-        int maxSize = Math.min((activityManager.getMemoryClass() / 4) * MEGABYTES_TO_BYTES,
-                FAVICON_MAX_CACHE_SIZE_BYTES);
-        mLargeIconBridge.createCache(maxSize);
-
+        // 9. Listen to changes in sign in state.
         SigninManager.get(mActivity).addSignInStateObserver(this);
 
         recordUserAction("Show");
@@ -276,6 +311,31 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     public LargeIconBridge getLargeIconBridge() {
         return mLargeIconBridge;
+    }
+
+    /**
+     * @return The SelectableListLayout that displays HistoryItems.
+     */
+    public SelectableListLayout<HistoryItem> getSelectableListLayout() {
+        return mSelectableListLayout;
+    }
+
+    /**
+     * @return The px size of the lateral shadow in the 9-patch used for the list item background.
+     *         This value should be used in {@link UiConfig#DISPLAY_STYLE_REGULAR} to visually align
+     *         elements with the edge of the list items.
+     */
+    public int getListItemLateralShadowSizePx() {
+        return mListItemLateralShadowSizePx;
+    }
+
+    /**
+     * @return The start and end margin for list items when in
+     *         {@link UiConfig#DISPLAY_STYLE_REGULAR}. This value should be used to hide the lateral
+     *         shadows on list items.
+     */
+    public int getDefaultLateralListItemMarginPx() {
+        return mDefaultLateralListItemMarginPx;
     }
 
     private void openItemsInNewTabs(List<HistoryItem> items, boolean isIncognito) {

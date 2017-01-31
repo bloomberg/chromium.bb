@@ -290,7 +290,6 @@
          (https://crbug.com/660837). -->
     <dimen name="snippets_peeking_card_peek_amount">32dp</dimen>
     <dimen name="snippets_peeking_card_bounce_distance">10dp</dimen>
-    <dimen name="snippets_card_corner_radius">2dp</dimen>
     <dimen name="snippets_card_gap">0.5dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="snippets_publisher_margin_top_with_article_snippet">16dp</dimen>
@@ -393,8 +392,15 @@
     <dimen name="downloads_item_icon_size">48dp</dimen>
     <dimen name="downloads_item_margin">16dp</dimen>
 
+    <!-- SelectableListLayout styles -->
+    <dimen name="selectable_list_layout_end_icon">24dp</dimen>
+    <dimen name="selectable_list_layout_row_end_padding">16dp</dimen>
+    <dimen name="selectable_list_layout_start_icon_width">56dp</dimen>
+    <dimen name="toolbar_wide_display_nav_icon_offset">-18dp</dimen>
+    <dimen name="toolbar_wide_display_end_offset">-14dp</dimen>
+
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
-    <dimen name="selectable_list_layout_end_icon">24dp</dimen>
-    <dimen name="selectable_list_layout_start_icon_width">64dp</dimen>
+    <dimen name="card_corner_radius">2dp</dimen>
+    <dimen name="history_default_text_margin">16dp</dimen>
 </resources>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp;
+package org.chromium.chrome.browser.widget.displaystyle;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Exposes general configuration info about the NTP UI.
+ * Exposes general configuration info about the display style for a given reference View.
  */
 public class UiConfig {
     /** The different supported UI setups. Observers can register to be notified of changes.*/
@@ -32,10 +32,10 @@ public class UiConfig {
     public static final int DISPLAY_STYLE_REGULAR = 1;
     public static final int DISPLAY_STYLE_WIDE = 2;
 
-    private static final int REGULAR_CARD_MIN_WIDTH_DP = 360;
-    private static final int WIDE_CARD_MIN_WIDTH_DP = 600;
+    public static final int REGULAR_DISPLAY_STYLE_MIN_WIDTH_DP = 360;
+    public static final int WIDE_DISPLAY_STYLE_MIN_WIDTH_DP = 600;
 
-    private static final String TAG = "Ntp";
+    private static final String TAG = "DisplayStyle";
     private static final boolean DEBUG = false;
 
     @DisplayStyle
@@ -87,8 +87,6 @@ public class UiConfig {
     }
 
     private void updateDisplayStyle(@DisplayStyle int displayStyle) {
-        if (displayStyle == mCurrentDisplayStyle) return;
-
         mCurrentDisplayStyle = displayStyle;
         for (DisplayStyleObserver observer : mObservers) {
             observer.onDisplayStyleChanged(displayStyle);
@@ -113,10 +111,10 @@ public class UiConfig {
 
         @DisplayStyle
         int newDisplayStyle;
-        if (widthDp < REGULAR_CARD_MIN_WIDTH_DP) {
+        if (widthDp < REGULAR_DISPLAY_STYLE_MIN_WIDTH_DP) {
             newDisplayStyle = DISPLAY_STYLE_NARROW;
             if (DEBUG) debugString = String.format("DISPLAY_STYLE_NARROW (w=%ddp)", widthDp);
-        } else if (widthDp >= WIDE_CARD_MIN_WIDTH_DP) {
+        } else if (widthDp >= WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) {
             newDisplayStyle = DISPLAY_STYLE_WIDE;
             if (DEBUG) debugString = String.format("DISPLAY_STYLE_WIDE (w=%ddp)", widthDp);
         } else {

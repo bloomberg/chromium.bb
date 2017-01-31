@@ -6,7 +6,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:layout_marginBottom="8dp" >
 
     <org.chromium.ui.widget.TextViewWithClickableSpans
         android:id="@+id/signed_in_not_synced"
@@ -24,8 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@android:color/white" >
+        android:background="@drawable/list_item_single" >
 
         <Button
             android:id="@+id/clear_browsing_data_button"

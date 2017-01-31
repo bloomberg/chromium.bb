@@ -31,6 +31,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
+import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.ui.UiUtils;
 
@@ -46,7 +48,7 @@ import javax.annotation.Nullable;
  * @param <E> The type of the selectable items this toolbar interacts with.
  */
 public class SelectableListToolbar<E> extends Toolbar implements SelectionObserver<E>,
-        OnClickListener, OnEditorActionListener {
+        OnClickListener, OnEditorActionListener, DisplayStyleObserver {
 
     /**
      * A delegate that handles searching the list of selectable items associated with this toolbar.
@@ -98,6 +100,16 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private int mNormalBackgroundColor;
     private int mSelectionBackgroundColor;
     private int mSearchBackgroundColor;
+
+    private UiConfig mUiConfig;
+    private int mDefaultTitleMarginStartPx;
+    private int mWideDisplayLateralOffsetPx;
+    private int mWideDisplayEndOffsetPx;
+    private int mWideDisplayNavButtonOffsetPx;
+    private int mOriginalContentInsetStart;
+    private int mOriginalContentInsetEnd;
+    private int mOriginalContentInsetStartWithNavigation;
+    private int mOriginalContentInsetEndWithActions;
 
     /**
      * Constructor for inflating from XML.
@@ -215,6 +227,11 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         LayoutInflater.from(getContext()).inflate(R.layout.number_roll_view, this);
         mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
         mNumberRollView.setContentDescriptionString(R.plurals.accessibility_selected_items);
+
+        mOriginalContentInsetStart = getContentInsetStart();
+        mOriginalContentInsetEnd = getContentInsetEnd();
+        mOriginalContentInsetStartWithNavigation = getContentInsetStartWithNavigation();
+        mOriginalContentInsetEndWithActions = getContentInsetEndWithActions();
     }
 
     @Override
@@ -376,6 +393,68 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     }
 
     /**
+     * When the toolbar has a wide display style, its contents will be width constrained to
+     * {@link UiConfig#WIDE_DISPLAY_STYLE_MIN_WIDTH_DP}. If the current screen width is greater than
+     * UiConfig#WIDE_DISPLAY_STYLE_MIN_WIDTH_DP, the toolbar contents will be visually centered by
+     * adding padding to both sides.
+     *
+     * @param wideDisplayLateralOffsetPx The offset to use for the lateral padding when in
+     *                                   {@link UiConfig#DISPLAY_STYLE_WIDE}.
+     */
+    public void setHasWideDisplayStyle(int wideDisplayLateralOffsetPx, UiConfig uiConfig) {
+        mWideDisplayLateralOffsetPx = wideDisplayLateralOffsetPx;
+        mDefaultTitleMarginStartPx = getTitleMarginStart();
+        mWideDisplayNavButtonOffsetPx =
+                getResources().getDimensionPixelSize(R.dimen.toolbar_wide_display_nav_icon_offset);
+        mWideDisplayEndOffsetPx = getResources().getDimensionPixelSize(
+                R.dimen.toolbar_wide_display_end_offset);
+
+        mUiConfig = uiConfig;
+        mUiConfig.addObserver(this);
+
+    }
+
+    @Override
+    public void onDisplayStyleChanged(int newDisplayStyle) {
+        int padding =
+                SelectableListLayout.getPaddingForDisplayStyle(newDisplayStyle, getResources());
+        int paddingStartOffset = 0;
+        int paddingEndOffset = 0;
+        int contentInsetStart = mOriginalContentInsetStart;
+        int contentInsetStartWithNavigation = mOriginalContentInsetStartWithNavigation;
+        int contentInsetEnd = mOriginalContentInsetEnd;
+        int contentInsetEndWithActions = mOriginalContentInsetEndWithActions;
+
+        if (newDisplayStyle == UiConfig.DISPLAY_STYLE_WIDE) {
+            paddingStartOffset = mWideDisplayLateralOffsetPx;
+
+            // The title and nav buttons are inset in the normal display style. In the wide display
+            // style they should be aligned with the starting edge of the list elements.
+            if (mIsSearching || mIsSelectionEnabled) {
+                paddingStartOffset += mWideDisplayNavButtonOffsetPx;
+            } else {
+                paddingStartOffset -= mDefaultTitleMarginStartPx;
+            }
+
+            // The end button is also inset in the normal display. In the wide display it should be
+            // aligned with the ending edge of the list elements.
+            paddingEndOffset = mWideDisplayLateralOffsetPx + mWideDisplayEndOffsetPx;
+
+            contentInsetStart = 0;
+            contentInsetStartWithNavigation = 0;
+            contentInsetEnd = 0;
+            contentInsetEndWithActions = 0;
+        }
+
+        ApiCompatibilityUtils.setPaddingRelative(this,
+                padding + paddingStartOffset, this.getPaddingTop(),
+                padding + paddingEndOffset, this.getPaddingBottom());
+        setContentInsetsRelative(contentInsetStart, contentInsetEnd);
+        setContentInsetStartWithNavigation(contentInsetStartWithNavigation);
+        setContentInsetEndWithActions(contentInsetEndWithActions);
+    }
+
+    /**
      * Set up ActionBarDrawerToggle, a.k.a. hamburger button.
      */
     private void initActionBarDrawerToggle() {
@@ -401,6 +480,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         mNumberRollView.setVisibility(View.GONE);
         mNumberRollView.setNumber(0, false);
+
+        updateDisplayStyleIfNecessary();
     }
 
     private void showSelectionView(List<E> selectedItems, boolean wasSelectionEnabled) {
@@ -418,6 +499,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         mNumberRollView.setNumber(selectedItems.size(), true);
 
         if (mIsSearching) UiUtils.hideKeyboard(mSearchEditText);
+
+        updateDisplayStyleIfNecessary();
     }
 
     private void showSearchViewInternal() {
@@ -427,6 +510,12 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         setNavigationButton(NAVIGATION_BUTTON_BACK);
         setBackgroundColor(mSearchBackgroundColor);
+
+        updateDisplayStyleIfNecessary();
+    }
+
+    private void updateDisplayStyleIfNecessary() {
+        if (mUiConfig != null) onDisplayStyleChanged(mUiConfig.getCurrentDisplayStyle());
     }
 
     @VisibleForTesting

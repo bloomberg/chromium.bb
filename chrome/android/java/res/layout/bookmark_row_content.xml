@@ -20,7 +20,7 @@
             android:layout_width="@dimen/selectable_list_layout_start_icon_width"
             android:layout_height="match_parent"
             android:contentDescription="@null"
-            android:scaleType="center" />
+            android:scaleType="center"/>
 
         <TextView
             android:id="@+id/title"
@@ -32,7 +32,8 @@
             android:gravity="center_vertical"
             android:textAlignment="viewStart"
             android:textColor="@color/default_text_color"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:paddingStart="16dp"  />
 
         <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/more"

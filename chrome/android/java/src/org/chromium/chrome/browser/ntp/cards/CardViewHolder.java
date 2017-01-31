@@ -22,9 +22,10 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
-import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
  * Holder for a generic card.
@@ -61,6 +62,7 @@ public abstract class CardViewHolder
     private final int mCardGap;
 
     private final int mDefaultLateralMargin;
+    private final int mWideLateralMargin;
 
     protected final NewTabPageRecyclerView mRecyclerView;
 
@@ -118,15 +120,17 @@ public abstract class CardViewHolder
 
         mUiConfig = uiConfig;
 
-        mMarginResizer = MarginResizer.createWithViewAdapter(itemView, mUiConfig);
-
         // Configure the resizer to use negative margins on regular display to balance out the
         // lateral shadow of the card 9-patch and avoid a rounded corner effect.
         int cardCornerRadius = recyclerView.getResources().getDimensionPixelSize(
-                R.dimen.snippets_card_corner_radius);
+                R.dimen.card_corner_radius);
         assert mCardShadow.left == mCardShadow.right;
         mDefaultLateralMargin = -(mCardShadow.left + cardCornerRadius);
-        mMarginResizer.setMargins(mDefaultLateralMargin);
+        mWideLateralMargin = recyclerView.getResources().getDimensionPixelSize(
+                R.dimen.ntp_wide_card_lateral_margins);
+
+        mMarginResizer = MarginResizer.createWithViewAdapter(itemView, mUiConfig,
+                mDefaultLateralMargin, mWideLateralMargin);
     }
 
     @Override
@@ -289,7 +293,8 @@ public abstract class CardViewHolder
         itemView.setPadding(lateralPadding, mMaxPeekPadding, lateralPadding, mMaxPeekPadding);
 
         // Adjust the margins. The shadow width is offset via the default lateral margin.
-        mMarginResizer.setMargins(mDefaultLateralMargin + mMaxPeekPadding - peekPadding);
+        mMarginResizer.setMargins(mDefaultLateralMargin + mMaxPeekPadding - peekPadding,
+                mWideLateralMargin);
 
         // Set the opacity of the card content to be 0 when peeking and 1 when full width.
         int itemViewChildCount = ((ViewGroup) itemView).getChildCount();
