@@ -16,8 +16,6 @@ class BookmarkNode;
 // and must not be changed. New values must be added at the end, and if
 // a value is removed it should not be reused.
 typedef enum {
-  // Corresponds with the "all items" view.
-  MenuItemAll = 0,
   // A very thin divider.
   MenuItemDivider = 1,
   // A BookmarkNode* that is a folder.
@@ -51,7 +49,6 @@ BOOL NumberIsValidMenuItemType(int number);
 // Returns the menuitem located at the root ancestor of this item.
 - (BookmarkMenuItem*)parentItem;
 
-+ (BookmarkMenuItem*)allMenuItem;
 + (BookmarkMenuItem*)dividerMenuItem;
 + (BookmarkMenuItem*)folderMenuItemForNode:(const bookmarks::BookmarkNode*)node
                               rootAncestor:

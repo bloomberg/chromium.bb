@@ -439,9 +439,6 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)promoStateChangedAnimated:(BOOL)animate {
-  if (experimental_flags::IsAllBookmarksEnabled())
-    return;  // The promo is not shown if All Bookmarks is enabled.
-
   BOOL newPromoState =
       !self.editing && self.folder &&
       self.folder->type() == BookmarkNode::MOBILE &&

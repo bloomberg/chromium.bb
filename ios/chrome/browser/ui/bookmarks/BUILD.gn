@@ -4,8 +4,6 @@
 
 source_set("bookmarks") {
   sources = [
-    "bookmark_all_collection_view.h",
-    "bookmark_all_collection_view.mm",
     "bookmark_collection_cells.h",
     "bookmark_collection_cells.mm",
     "bookmark_collection_view.h",
@@ -204,9 +202,6 @@ bundle_data("resources") {
     "resources/bookmark_blue_folder.png",
     "resources/bookmark_blue_folder@2x.png",
     "resources/bookmark_blue_folder@3x.png",
-    "resources/bookmark_blue_star.png",
-    "resources/bookmark_blue_star@2x.png",
-    "resources/bookmark_blue_star@3x.png",
     "resources/bookmark_gray_back.png",
     "resources/bookmark_gray_back@2x.png",
     "resources/bookmark_gray_back@3x.png",
@@ -228,9 +223,6 @@ bundle_data("resources") {
     "resources/bookmark_gray_new_folder.png",
     "resources/bookmark_gray_new_folder@2x.png",
     "resources/bookmark_gray_new_folder@3x.png",
-    "resources/bookmark_gray_star.png",
-    "resources/bookmark_gray_star@2x.png",
-    "resources/bookmark_gray_star@3x.png",
     "resources/bookmark_gray_star_large.png",
     "resources/bookmark_gray_star_large@2x.png",
     "resources/bookmark_gray_star_large@3x.png",

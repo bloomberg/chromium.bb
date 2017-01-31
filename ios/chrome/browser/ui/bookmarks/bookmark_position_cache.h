@@ -20,7 +20,6 @@
 @property(nonatomic, assign, readonly) CGFloat position;
 @property(nonatomic, assign, readonly) bookmarks::MenuItemType type;
 
-+ (BookmarkPositionCache*)cacheForMenuItemAllWithPosition:(CGFloat)position;
 + (BookmarkPositionCache*)cacheForMenuItemFolderWithPosition:(CGFloat)position
                                                     folderId:(int64_t)folderId;
 
