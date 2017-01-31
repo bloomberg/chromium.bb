@@ -422,11 +422,14 @@ class BuilderStage(object):
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
 
-  def _Finish(self):
-    """Called after a stage has been performed. May be overriden."""
+  def Finish(self):
+    """Called after a stage has already completed.
 
-    self._PrintLoudly('Finished Stage %s - %s' %
-                      (self.name, cros_build_lib.UserDateTimeFormat()))
+    Will be called on both success or failure. EXPECTIONS WILL BE LOGGED AND
+    IGNORED, and will not fail the stage.
+
+    This is an appropriate place for non-essential cleanup/reporting work.
+    """
 
   def WaitUntilReady(self):
     """Wait until all the preconditions for the stage are satisfied.
@@ -645,7 +648,17 @@ class BuilderStage(object):
                                                 self._build_stage_id,
                                                 result)
 
-      self._Finish()
+      try:
+        self.Finish()
+      except Exception as e:
+        # Failures here are OUTSIDE of the stage and not handled well. Log and
+        # continue with the assumption that the ReportStage will re-upload this
+        # data or report a failure correctly.
+        logging.warning('IGNORED: Finish failure: %s', e)
+
+      self._PrintLoudly('Finished Stage %s - %s' %
+                        (self.name, cros_build_lib.UserDateTimeFormat()))
+
       sys.stdout.flush()
       sys.stderr.flush()
 

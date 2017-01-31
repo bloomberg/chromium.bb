@@ -122,21 +122,13 @@ class SyncChromeStage(generic_stages.BuilderStage,
         {'chrome': self._run.attrs.chrome_version})
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
-  def _Finish(self):
+  def Finish(self):
     """Provide chrome_version to the rest of the run."""
-    try:
-      # Even if the stage failed, a None value for chrome_version still
-      # means something.  In other words, this stage tried to run.
-      self._run.attrs.chrome_version = self.chrome_version
-      self._WriteChromeVersionToMetadata()
-    except Exception as e:
-      # Failures here are OUTSIDE of the stage and not handled well. Log and
-      # continue with the assumption that the ReportStage will re-upload this
-      # data or report a failure correctly.
-      logging.warning('IGNORED: Failure uploading metadata: %s', e)
-
+    # Even if the stage failed, a None value for chrome_version still
+    # means something.  In other words, this stage tried to run.
+    self._run.attrs.chrome_version = self.chrome_version
+    self._WriteChromeVersionToMetadata()
     super(SyncChromeStage, self)._Finish()
-
 
 class PatchChromeStage(generic_stages.BuilderStage):
   """Stage that applies Chrome patches if needed."""
