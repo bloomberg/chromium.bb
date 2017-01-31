@@ -255,6 +255,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   expected_request.details.total.label = base::ASCIIToUTF16("TOTAL");
   expected_request.details.total.amount.currency = base::ASCIIToUTF16("GBP");
   expected_request.details.total.amount.value = base::ASCIIToUTF16("6.66");
+  expected_request.details.error = base::ASCIIToUTF16("Error in details");
 
   std::unique_ptr<base::DictionaryValue> details_dict(
       new base::DictionaryValue);
@@ -265,6 +266,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   amount_dict->SetString("value", "6.66");
   total_dict->Set("amount", std::move(amount_dict));
   details_dict->Set("total", std::move(total_dict));
+  details_dict->SetString("error", "Error in details");
   request_dict.Set("details", std::move(details_dict));
 
   EXPECT_TRUE(output_request.FromDictionaryValue(request_dict));
@@ -583,6 +585,13 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   details2.total.label = base::ASCIIToUTF16("Shipping");
   EXPECT_NE(details1, details2);
   details2.total.label = base::ASCIIToUTF16("Total");
+  EXPECT_EQ(details1, details2);
+
+  details1.error = base::ASCIIToUTF16("Foo");
+  EXPECT_NE(details1, details2);
+  details2.error = base::ASCIIToUTF16("Bar");
+  EXPECT_NE(details1, details2);
+  details2.error = base::ASCIIToUTF16("Foo");
   EXPECT_EQ(details1, details2);
 
   PaymentItem payment_item;

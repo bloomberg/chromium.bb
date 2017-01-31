@@ -35,6 +35,7 @@ static const char kPaymentCurrencyAmountCurrency[] = "currency";
 static const char kPaymentCurrencyAmountValue[] = "value";
 static const char kPaymentDetails[] = "details";
 static const char kPaymentDetailsDisplayItems[] = "displayItems";
+static const char kPaymentDetailsError[] = "error";
 static const char kPaymentDetailsShippingOptions[] = "shippingOptions";
 static const char kPaymentDetailsTotal[] = "total";
 static const char kPaymentItemAmount[] = "amount";
@@ -260,7 +261,7 @@ bool PaymentDetails::operator==(const PaymentDetails& other) const {
   return this->total == other.total &&
          this->display_items == other.display_items &&
          this->shipping_options == other.shipping_options &&
-         this->modifiers == other.modifiers;
+         this->modifiers == other.modifiers && this->error == other.error;
 }
 
 bool PaymentDetails::operator!=(const PaymentDetails& other) const {
@@ -309,6 +310,9 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value) {
       this->shipping_options.push_back(shipping_option);
     }
   }
+
+  // Error is optional.
+  value.GetString(kPaymentDetailsError, &this->error);
 
   return true;
 }

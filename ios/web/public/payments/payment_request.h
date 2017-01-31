@@ -238,6 +238,10 @@ class PaymentDetails {
   // Modifiers for particular payment method identifiers. For example, it allows
   // adjustment to the total amount based on payment method.
   std::vector<PaymentDetailsModifier> modifiers;
+
+  // If non-empty, this is the error message the user agent should display to
+  // the user when the payment request is updated using updateWith.
+  base::string16 error;
 };
 
 // Information describing a shipping option.

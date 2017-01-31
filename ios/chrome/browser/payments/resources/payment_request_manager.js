@@ -497,7 +497,8 @@ window.PaymentCurrencyAmount;
  *   total: (window.PaymentItem|undefined),
  *   displayItems: (!Array<!window.PaymentItem>|undefined),
  *   shippingOptions: (!Array<!window.PaymentShippingOption>|undefined),
- *   modifiers: (!Array<!window.PaymentDetailsModifier>|undefined)
+ *   modifiers: (!Array<!window.PaymentDetailsModifier>|undefined),
+ *   error: (string|undefined)
  * }}
  */
 window.PaymentDetails;
