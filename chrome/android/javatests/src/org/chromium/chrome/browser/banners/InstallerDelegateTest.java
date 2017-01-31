@@ -14,9 +14,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Tests the InstallerDelegate to make sure that it functions correctly and responds to changes
  * in the PackageManager.
@@ -32,16 +29,14 @@ public class InstallerDelegateTest extends InstrumentationTestCase
         public boolean isInstalled = false;
 
         @Override
-        public List<PackageInfo> getInstalledPackages(int flags) {
-            List<PackageInfo> packages = new ArrayList<PackageInfo>();
-
-            if (isInstalled) {
-                PackageInfo info = new PackageInfo();
-                info.packageName = MOCK_PACKAGE_NAME;
-                packages.add(info);
+        public PackageInfo getPackageInfo(String packageName, int flags)
+                throws NameNotFoundException {
+            if (!isInstalled) {
+                throw new NameNotFoundException();
             }
-
-            return packages;
+            PackageInfo packageInfo = new PackageInfo();
+            packageInfo.packageName = MOCK_PACKAGE_NAME;
+            return packageInfo;
         }
     }
 

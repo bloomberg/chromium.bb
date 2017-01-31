@@ -7,12 +7,12 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.browsing_data.UrlFilter;
 import org.chromium.chrome.browser.browsing_data.UrlFilterBridge;
 
@@ -257,13 +257,8 @@ public class WebappRegistry {
      * Returns true if the given WebAPK is installed.
      */
     private boolean isWebApkInstalled(String webApkPackage) {
-        try {
-            ContextUtils.getApplicationContext().getPackageManager().getPackageInfo(
-                    webApkPackage, PackageManager.GET_ACTIVITIES);
-        } catch (NameNotFoundException e) {
-            return false;
-        }
-        return true;
+        PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
+        return InstallerDelegate.isInstalled(packageManager, webApkPackage);
     }
 
     private static SharedPreferences openSharedPreferences() {

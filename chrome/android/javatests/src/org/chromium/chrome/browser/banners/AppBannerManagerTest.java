@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -118,16 +119,15 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         public boolean isInstalled = false;
 
         @Override
-        public List<PackageInfo> getInstalledPackages(int flags) {
-            List<PackageInfo> packages = new ArrayList<PackageInfo>();
-
+        public PackageInfo getPackageInfo(String packageName, int flags)
+                throws NameNotFoundException {
             if (isInstalled) {
                 PackageInfo info = new PackageInfo();
                 info.packageName = NATIVE_APP_PACKAGE;
-                packages.add(info);
+                return info;
+            } else {
+                throw new PackageManager.NameNotFoundException();
             }
-
-            return packages;
         }
     }
 
