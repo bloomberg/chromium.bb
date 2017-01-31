@@ -30,14 +30,8 @@
 namespace {
 
 ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
-  if (!window)
-    return nullptr;
-
   Profile* profile = nullptr;
-  // Window types not listed here (such as tooltips) will never use Chrome
-  // theming.
-  if (window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-      window->type() == ui::wm::WINDOW_TYPE_POPUP) {
+  if (window) {
     profile = reinterpret_cast<Profile*>(
         window->GetNativeWindowProperty(Profile::kProfileKey));
   }

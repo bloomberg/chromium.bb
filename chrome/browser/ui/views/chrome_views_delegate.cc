@@ -450,20 +450,23 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   // While the majority of the time, context wasn't plumbed through due to the
   // existence of a global WindowParentingClient, if this window is toplevel,
   // it's possible that there is no contextual state that we can use.
-  if (params->parent == NULL && params->context == NULL && !params->child) {
-    params->native_widget = new views::DesktopNativeWidgetAura(delegate);
-  } else if (use_non_toplevel_window) {
+  gfx::NativeWindow parent_or_context =
+      params->parent ? params->parent : params->context;
+  void* profile =
+      parent_or_context
+          ? parent_or_context->GetNativeWindowProperty(Profile::kProfileKey)
+          : nullptr;
+  if ((!params->parent && !params->context && !params->child) ||
+      !use_non_toplevel_window) {
+    views::DesktopNativeWidgetAura* native_widget =
+        new views::DesktopNativeWidgetAura(delegate);
+    params->native_widget = native_widget;
+    native_widget->SetNativeWindowProperty(Profile::kProfileKey, profile);
+  } else {
     views::NativeWidgetAura* native_widget =
         new views::NativeWidgetAura(delegate);
-    if (params->parent) {
-      Profile* parent_profile = reinterpret_cast<Profile*>(
-          params->parent->GetNativeWindowProperty(Profile::kProfileKey));
-      native_widget->SetNativeWindowProperty(Profile::kProfileKey,
-                                             parent_profile);
-    }
     params->native_widget = native_widget;
-  } else {
-    params->native_widget = new views::DesktopNativeWidgetAura(delegate);
+    native_widget->SetNativeWindowProperty(Profile::kProfileKey, profile);
   }
 #endif
 }

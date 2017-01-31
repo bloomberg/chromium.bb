@@ -97,6 +97,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // we are being activated/deactivated.
   void HandleActivationChanged(bool active);
 
+  // Overridden from internal::NativeWidgetPrivate:
+  void SetNativeWindowProperty(const char* name, void* value) override;
+
  protected:
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
@@ -114,7 +117,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   const ui::Layer* GetLayer() const override;
   void ReorderNativeViews() override;
   void ViewRemoved(View* view) override;
-  void SetNativeWindowProperty(const char* name, void* value) override;
   void* GetNativeWindowProperty(const char* name) const override;
   TooltipManager* GetTooltipManager() const override;
   void SetCapture() override;
