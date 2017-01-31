@@ -1434,6 +1434,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_QUICK_UNLOCK_PIN_DESCRIPTION" desc="Description of the flag used to enable quick unlock pin.">
     Enabling PIN quick unlock allows you to use a PIN to unlock your Chromebook on the lock screen after you have signed into your device.
   </message>
+  <message name="IDS_FLAGS_QUICK_UNLOCK_FINGERPRINT" desc="Title of the flag used to enable quick unlock fingerprint.">
+    Quick Unlock (Fingerprint)
+  </message>
+  <message name="IDS_FLAGS_QUICK_UNLOCK_FINGERPRINT_DESCRIPTION" desc="Description of the flag used to enable quick unlock fingerprint.">
+    Enabling fingerprint quick unlock allows you to setup and use a fingerprint to unlock your Chromebook on the lock screen after you have signed into your device.
+  </message>
   <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_LEARN_MORE" desc="Text of the Learn More link in the echo dialog.">
     Learn More
   </message>

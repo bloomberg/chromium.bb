@@ -139,6 +139,8 @@ constexpr char kLockScreenHTMLPath[] = "people_page/lock_screen.html";
 constexpr char kLockScreenJSPath[] = "people_page/lock_screen.js";
 constexpr char kSetupPinHTMLPath[] = "people_page/setup_pin_dialog.html";
 constexpr char kSetupPinJSPath[] = "people_page/setup_pin_dialog.js";
+constexpr char kFingerprintListHTMLPath[] = "people_page/fingerprint_list.html";
+constexpr char kFingerprintListJSPath[] = "people_page/fingerprint_list.js";
 constexpr char kSettingsRouteHTMLPath[] = "route.html";
 constexpr char kSettingsRouteJSPath[] = "route.js";
 constexpr char kSettingsSharedCSSHTMLPath[] = "settings_shared_css.html";
@@ -269,6 +271,8 @@ OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 void OptionsUIHTMLSource::CreateDataSourceMap() {
 #if defined(OS_CHROMEOS)
   path_to_idr_map_[kIconsHTMLPath] = IDR_OPTIONS_ICONS_HTML;
+
+  // These are part of the LockScreen UI.
   path_to_idr_map_[kPinKeyboardHTMLPath] = IDR_OPTIONS_PIN_KEYBOARD_HTML;
   path_to_idr_map_[kPinKeyboardJSPath] = IDR_OPTIONS_PIN_KEYBOARD_JS;
   path_to_idr_map_[kPasswordPromptDialogHTMLPath] =
@@ -287,6 +291,10 @@ void OptionsUIHTMLSource::CreateDataSourceMap() {
   path_to_idr_map_[kLockScreenJSPath] = IDR_OPTIONS_LOCK_SCREEN_JS;
   path_to_idr_map_[kSetupPinHTMLPath] = IDR_OPTIONS_SETUP_PIN_DIALOG_HTML;
   path_to_idr_map_[kSetupPinJSPath] = IDR_OPTIONS_SETUP_PIN_DIALOG_JS;
+  path_to_idr_map_[kFingerprintListHTMLPath] =
+      IDR_OPTIONS_FINGERPRINT_LIST_HTML;
+  path_to_idr_map_[kFingerprintListJSPath] = IDR_OPTIONS_FINGERPRINT_LIST_JS;
+
   path_to_idr_map_[kSettingsRouteHTMLPath] = IDR_OPTIONS_ROUTE_HTML;
   path_to_idr_map_[kSettingsRouteJSPath] = IDR_OPTIONS_ROUTE_JS;
   path_to_idr_map_[kSettingsSharedCSSHTMLPath] = IDR_SETTINGS_SHARED_CSS_HTML;

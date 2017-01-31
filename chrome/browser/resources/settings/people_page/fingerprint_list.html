@@ -1,0 +1,36 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="/settings_shared_css.html">
+
+<dom-module id="settings-fingerprint-list">
+  <template>
+    <style include="settings-shared"></style>
+
+    <div>$i18n{lockScreenRegisteredFingerprints}</div>
+    <iron-list id="fingerprintsList" items="[[fingerprints_]]">
+      <template>
+        <div class="list-item">
+          <paper-input value="{{item}}"></paper-input>
+          <button is="paper-icon-button-light"
+              on-tap="onFingerprintDelete_">
+            <iron-icon icon="cr:delete"></iron-icon>
+          </button>
+          </paper-icon-button>
+        </div>
+      </template>
+    </iron-list>
+    <div class="settings-box first radio-indent">
+      <paper-button class="action-button" on-tap="onAddFingerprint_"
+          disabled="[[!canAddNewFingerprint_(fingerprints_.*)]]">
+        [[getFingerprintButtonText_(fingerprints_.*)]]
+      </paper-button>
+    </div>
+    <i>$i18n{lockScreenFingerprintWarning}</i>
+  </template>
+  <script src="fingerprint_list.js"></script>
+</dom-module>

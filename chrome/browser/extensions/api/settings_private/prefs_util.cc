@@ -208,6 +208,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[::prefs::kEnableAutoScreenLock] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kEnableQuickUnlockFingerprint] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Accessibility.
   (*s_whitelist)[::prefs::kAccessibilitySpokenFeedbackEnabled] =

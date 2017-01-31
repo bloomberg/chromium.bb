@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="/controls/settings_toggle_button.html">
+<link rel="import" href="/people_page/fingerprint_list.html">
 <link rel="import" href="/people_page/lock_screen_constants.html">
 <link rel="import" href="/people_page/lock_state_behavior.html">
 <link rel="import" href="/people_page/password_prompt_dialog.html">
@@ -37,6 +38,21 @@
           </a>
         </div>
       </div>
+
+      <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
+        <div class="settings-box">
+          <settings-toggle-button class="start"
+              pref="{{prefs.settings.enable_quick_unlock_fingerprint}}"
+              label="$i18n{lockScreenFingerprintEnable}">
+          </settings-toggle-button>
+        </div>
+        <iron-collapse
+            opened="[[prefs.settings.enable_quick_unlock_fingerprint.value]]">
+          <div class="settings-box continuation">
+            <settings-fingerprint-list></settings-fingerprint-list>
+          </div>
+        </iron-collapse>
+      </template>
 
       <div class="settings-box">
         <settings-toggle-button class="start"

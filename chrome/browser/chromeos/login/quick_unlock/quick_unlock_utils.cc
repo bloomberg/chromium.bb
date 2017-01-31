@@ -36,6 +36,8 @@ void RegisterQuickUnlockProfilePrefs(PrefRegistrySimple* registry) {
   // 0 indicates no maximum length for the pin.
   registry->RegisterIntegerPref(prefs::kPinUnlockMaximumLength, 0);
   registry->RegisterBooleanPref(prefs::kPinUnlockWeakPinsAllowed, true);
+
+  registry->RegisterBooleanPref(prefs::kEnableQuickUnlockFingerprint, false);
 }
 
 bool IsPinUnlockEnabled(PrefService* pref_service) {
@@ -62,6 +64,11 @@ bool IsPinUnlockEnabled(PrefService* pref_service) {
 
   // Enable quick unlock only if the switch is present.
   return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
+}
+
+bool IsFingerprintUnlockEnabled() {
+  // Enable fingerprint unlock only if the switch is present.
+  return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint);
 }
 
 void EnableQuickUnlockForTesting() {

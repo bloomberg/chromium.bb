@@ -155,6 +155,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddBoolean("stylusAllowed", ash::IsPaletteFeatureEnabled());
   html_source->AddBoolean("pinUnlockEnabled",
                           chromeos::IsPinUnlockEnabled(profile->GetPrefs()));
+  html_source->AddBoolean("fingerprintUnlockEnabled",
+                          chromeos::IsFingerprintUnlockEnabled());
   html_source->AddBoolean("androidAppsAllowed",
                           arc::IsArcAllowedForProfile(profile) &&
                               !arc::IsArcOptInVerificationDisabled());

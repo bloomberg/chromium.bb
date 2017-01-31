@@ -64,6 +64,12 @@
                    type="chrome_html"
                    flattenhtml="true"
                    allowexternalscript="true" />
+        <structure name="IDR_OPTIONS_FINGERPRINT_LIST_JS"
+                   file="settings/people_page/fingerprint_list.js"
+                   type="chrome_html" />
+        <structure name="IDR_OPTIONS_FINGERPRINT_LIST_HTML"
+                   file="settings/people_page/fingerprint_list.html"
+                   type="chrome_html" />
         <structure name="IDR_OPTIONS_LOCK_SCREEN_JS"
                    file="settings/people_page/lock_screen.js"
                    type="chrome_html" />

@@ -2061,6 +2061,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"quick-unlock-pin", IDS_FLAGS_QUICK_UNLOCK_PIN,
      IDS_FLAGS_QUICK_UNLOCK_PIN_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kQuickUnlockPin)},
+    {"quick-unlock-fingerprint", IDS_FLAGS_QUICK_UNLOCK_FINGERPRINT,
+     IDS_FLAGS_QUICK_UNLOCK_FINGERPRINT_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kQuickUnlockFingerprint)},
 #endif  // OS_CHROMEOS
     {"browser-task-scheduler", IDS_FLAGS_BROWSER_TASK_SCHEDULER_NAME,
      IDS_FLAGS_BROWSER_TASK_SCHEDULER_DESCRIPTION, kOsAll,

@@ -519,12 +519,24 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "configurePinTooShort", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT} ,
     { "configurePinTooLong", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_LONG} ,
     { "configurePinWeakPin", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN },
+    { "lockScreenAddFingerprint",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ADD_FINGERPRINT_BUTTON},
+    { "lockScreenCannotAddFingerprint",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CANNOT_ADD_NEW_FINGERPRINT},
     { "lockScreenChangePinButton",
       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CHANGE_PIN_BUTTON},
+    { "lockScreenFingerprintEnable",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ENABLE_FINGERPRINT_CHECKBOX_LABEL},
+    { "lockScreenFingerprintNewName",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME},
+    { "lockScreenFingerprintWarning",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_LESS_SECURE},
     { "lockScreenNone", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NONE },
     { "lockScreenPasswordOnly", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_ONLY },
     { "lockScreenPinOrPassword",
       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_OR_PASSWORD },
+    { "lockScreenRegisteredFingerprints",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_REGISTERED_FINGERPRINTS_LABEL},
     { "lockScreenSetupPinButton",
       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON },
     { "lockScreenTitle", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE },
@@ -770,6 +782,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   values->SetBoolean("showQuickUnlockSettings",
                      chromeos::IsPinUnlockEnabled(profile->GetPrefs()));
+  values->SetBoolean("fingerprintUnlockEnabled",
+                     chromeos::IsFingerprintUnlockEnabled());
   if (chromeos::IsPinUnlockEnabled(profile->GetPrefs())) {
     values->SetString(
         "enableScreenlock",

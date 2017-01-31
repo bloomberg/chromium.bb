@@ -89,7 +89,8 @@ Polymer({
     quickUnlockEnabled_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('pinUnlockEnabled');
+        return loadTimeData.getBoolean('pinUnlockEnabled') ||
+            loadTimeData.getBoolean('fingerprintUnlockEnabled');
       },
       readOnly: true,
     },

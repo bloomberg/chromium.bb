@@ -48,7 +48,31 @@ Polymer({
     writeUma_: {
       type: Object,
       value: function() { return settings.recordLockScreenProgress; }
-    }
+    },
+
+    /**
+     * True if pin unlock settings should be displayed on this machine.
+     * @private
+     */
+    pinUnlockEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('pinUnlockEnabled');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * True if fingerprint unlock settings should be displayed on this machine.
+     * @private
+     */
+    fingerprintUnlockEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('fingerprintUnlockEnabled');
+      },
+      readOnly: true,
+    },
   },
 
   /** selectedUnlockType is defined in LockStateBehavior. */

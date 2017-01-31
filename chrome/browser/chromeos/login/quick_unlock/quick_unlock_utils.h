@@ -28,6 +28,9 @@ void RegisterQuickUnlockProfilePrefs(PrefRegistrySimple* registry);
 // flag is present.
 bool IsPinUnlockEnabled(PrefService* pref_service);
 
+// Returns true if the fingerprint unlock feature flag is present.
+bool IsFingerprintUnlockEnabled();
+
 // Forcibly enable quick-unlock for testing.
 void EnableQuickUnlockForTesting();
 

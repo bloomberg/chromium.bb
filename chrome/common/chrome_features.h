@@ -146,6 +146,8 @@ extern const base::Feature kOptInImeMenu;
 
 extern const base::Feature kQuickUnlockPin;
 
+extern const base::Feature kQuickUnlockFingerprint;
+
 extern const base::Feature kEHVInputOnImeMenu;
 
 extern const base::Feature kCrosCompUpdates;

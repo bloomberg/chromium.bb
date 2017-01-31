@@ -2136,6 +2136,24 @@
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON" desc="Button that is used to setup a new PIN when the user does not have a PIN yet.">
       Set up PIN
     </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_REGISTERED_FINGERPRINTS_LABEL" desc="Text above fingerprint list that tells users their registered fingerprints.">
+      Registered fingerprints:
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ADD_FINGERPRINT_BUTTON" desc="Button that is used to add a new fingerprint.">
+      Add Fingerprint
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CANNOT_ADD_NEW_FINGERPRINT" desc="Text telling users they have reached the maximum allowed fingerprints.">
+      You can only add <ph name="MAX_FINGERPRINTS">$1<ex>5</ex></ph> fingerprints.
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_LESS_SECURE" desc="Text telling users that fingerprints might be less secure than strong PINs or passwords.">
+      Note: Your fingerprint may be less secure than a strong password or PIN.
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME" desc="The default name (plus a number for a newly added fingerprint).">
+      Finger <ph name="NEW_FINGER_NUMBER">$1<ex>1</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ENABLE_FINGERPRINT_CHECKBOX_LABEL" desc="The text on the label of the checkbox which allows users to enable or disable fingerprint usage.">
+      Enable fingerprint login and authentication
+    </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE" desc="Title of the password prompt dialog popup.">
       Confirm your password
     </message>

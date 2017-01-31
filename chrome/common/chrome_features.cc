@@ -247,9 +247,13 @@ const base::Feature kUseGroupedPermissionInfobars{
 const base::Feature kOptInImeMenu{"OptInImeMenu",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables PIN quick unlock settings integration.
+// Enables or disables PIN quick unlock.
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables fingerprint quick unlock.
+const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables emoji, handwriting and voice input on opt-in IME menu.
 const base::Feature kEHVInputOnImeMenu{"EmojiHandwritingVoiceInput",
