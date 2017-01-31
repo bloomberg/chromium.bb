@@ -16,9 +16,12 @@ To import a new snapshot of wayland-protocols:
 - Checkout the latest release tag: git checkout 1.7
 - Change the DEPS entry to the newly checked out commit.
 - Update generated files:
-    wayland-scanner code < src/unstable/xdg-shell/xdg-shell-unstable-v5.xml > protocol/xdg-shell-protocol.c
+    wayland-scanner code < src/unstable/xdg-shell/xdg-shell-unstable-v5.xml > protocol/xdg-shell-v5-protocol.c
     wayland-scanner server-header < src/unstable/xdg-shell/xdg-shell-unstable-v5.xml > include/protocol/xdg-shell-unstable-v5-server-protocol.h
     wayland-scanner client-header < src/unstable/xdg-shell/xdg-shell-unstable-v5.xml > include/protocol/xdg-shell-unstable-v5-client-protocol.h
+    wayland-scanner code < src/unstable/xdg-shell/xdg-shell-unstable-v6.xml > protocol/xdg-shell-v6-protocol.c
+    wayland-scanner server-header < src/unstable/xdg-shell/xdg-shell-unstable-v6.xml > include/protocol/xdg-shell-unstable-v6-server-protocol.h
+    wayland-scanner client-header < src/unstable/xdg-shell/xdg-shell-unstable-v6.xml > include/protocol/xdg-shell-unstable-v6-client-protocol.h
     wayland-scanner code < src/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml > protocol/linux-dmabuf-protocol.c
     wayland-scanner server-header < src/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml > include/protocol/linux-dmabuf-unstable-v1-server-protocol.h
     wayland-scanner client-header < src/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml > include/protocol/linux-dmabuf-unstable-v1-client-protocol.h

@@ -10,7 +10,10 @@ source_set("xdg_shell_protocol") {
   sources = [
     "include/protocol/xdg-shell-unstable-v5-client-protocol.h",
     "include/protocol/xdg-shell-unstable-v5-server-protocol.h",
-    "protocol/xdg-shell-protocol.c",
+    "include/protocol/xdg-shell-unstable-v6-client-protocol.h",
+    "include/protocol/xdg-shell-unstable-v6-server-protocol.h",
+    "protocol/xdg-shell-v5-protocol.c",
+    "protocol/xdg-shell-v6-protocol.c",
   ]
 
   deps = [

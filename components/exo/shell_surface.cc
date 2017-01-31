@@ -684,8 +684,13 @@ void ShellSurface::OnSurfaceCommit() {
   surface_->CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
   surface_->CommitSurfaceHierarchy();
 
-  if (enabled() && !widget_)
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+  if (enabled() && !widget_) {
+    // Defer widget creation until surface contains some contents.
+    if (surface_->content_size().IsEmpty())
+      Configure();
+    else
+      CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+  }
 
   // Apply the accumulated pending origin offset to reflect acknowledged
   // configure requests.
@@ -1148,8 +1153,6 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
 }
 
 void ShellSurface::Configure() {
-  DCHECK(widget_);
-
   // Delay configure callback if |scoped_configure_| is set.
   if (scoped_configure_) {
     scoped_configure_->set_needs_configure();
@@ -1159,21 +1162,28 @@ void ShellSurface::Configure() {
   gfx::Vector2d origin_offset = pending_origin_config_offset_;
   pending_origin_config_offset_ = gfx::Vector2d();
 
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(widget_->GetNativeWindow());
+  int resize_component = HTCAPTION;
+  if (widget_) {
+    ash::wm::WindowState* window_state =
+        ash::wm::GetWindowState(widget_->GetNativeWindow());
 
-  // If surface is being resized, save the resize direction.
-  int resize_component = window_state->is_dragged()
-                             ? window_state->drag_details()->window_component
-                             : HTCAPTION;
+    // If surface is being resized, save the resize direction.
+    if (window_state->is_dragged())
+      resize_component = window_state->drag_details()->window_component;
+  }
 
   uint32_t serial = 0;
   if (!configure_callback_.is_null()) {
-    const views::NonClientView* non_client_view = widget_->non_client_view();
-    serial = configure_callback_.Run(
-        non_client_view->frame_view()->GetBoundsForClientView().size(),
-        ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
-        IsResizing(), widget_->IsActive());
+    if (widget_) {
+      const views::NonClientView* non_client_view = widget_->non_client_view();
+      serial = configure_callback_.Run(
+          non_client_view->frame_view()->GetBoundsForClientView().size(),
+          ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
+          IsResizing(), widget_->IsActive());
+    } else {
+      serial = configure_callback_.Run(
+          gfx::Size(), ash::wm::WINDOW_STATE_TYPE_NORMAL, false, false);
+    }
   }
 
   if (!serial) {

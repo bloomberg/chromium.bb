@@ -210,12 +210,16 @@ TEST_F(ShellSurfaceTest, SetTitle) {
 }
 
 TEST_F(ShellSurfaceTest, SetApplicationId) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   EXPECT_EQ(nullptr, shell_surface->GetWidget());
   shell_surface->SetApplicationId("pre-widget-id");
 
+  surface->Attach(buffer.get());
   surface->Commit();
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
   EXPECT_EQ("pre-widget-id", ShellSurface::GetApplicationId(window));
@@ -312,6 +316,9 @@ void Close(int* close_call_count) {
 }
 
 TEST_F(ShellSurfaceTest, CloseCallback) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -319,6 +326,7 @@ TEST_F(ShellSurfaceTest, CloseCallback) {
   shell_surface->set_close_callback(
       base::Bind(&Close, base::Unretained(&close_call_count)));
 
+  surface->Attach(buffer.get());
   surface->Commit();
 
   EXPECT_EQ(0, close_call_count);
@@ -497,10 +505,14 @@ TEST_F(ShellSurfaceTest, PopupWindow) {
 }
 
 TEST_F(ShellSurfaceTest, Shadow) {
+  gfx::Size buffer_size(128, 128);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(
       new ShellSurface(surface.get(), nullptr, gfx::Rect(), true, false,
                        ash::kShellWindowId_DefaultContainer));
+  surface->Attach(buffer.get());
   surface->Commit();
 
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
@@ -514,7 +526,6 @@ TEST_F(ShellSurfaceTest, Shadow) {
 
   // 2) Just creating a sub surface won't create a shadow.
   std::unique_ptr<Surface> child = display->CreateSurface();
-  gfx::Size buffer_size(128, 128);
   std::unique_ptr<Buffer> child_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   child->Attach(child_buffer.get());
@@ -570,6 +581,9 @@ TEST_F(ShellSurfaceTest, Shadow) {
 }
 
 TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
   // Set the bounds to disable auto managed mode.
   std::unique_ptr<ShellSurface> shell_surface(
@@ -580,6 +594,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   const gfx::Size content_size(100, 100);
   const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
   shell_surface->SetGeometry(original_bounds);
+  surface->Attach(buffer.get());
   surface->Commit();
 
   // Placing a shadow at screen origin will make the shadow's origin (-10, -10).
@@ -629,6 +644,9 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
 }
 
 TEST_F(ShellSurfaceTest, ShadowWithTransform) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
   // Set the bounds to disable auto managed mode.
   std::unique_ptr<ShellSurface> shell_surface(
@@ -639,6 +657,7 @@ TEST_F(ShellSurfaceTest, ShadowWithTransform) {
   const gfx::Size content_size(100, 100);
   const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
   shell_surface->SetGeometry(original_bounds);
+  surface->Attach(buffer.get());
   surface->Commit();
 
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
