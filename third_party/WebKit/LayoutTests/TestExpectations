@@ -1940,7 +1940,6 @@ crbug.com/655458 external/wpt/workers/semantics/interface-objects/004.html [ Fai
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/importScripts/004.html [ Failure ]
 crbug.com/655458 external/wpt/workers/Worker_ErrorEvent_error.htm [ Failure ]
 crbug.com/655458 external/wpt/workers/semantics/reporting-errors/002.html [ Failure ]
-crbug.com/655458 external/wpt/workers/interfaces/DedicatedWorkerGlobalScope/postMessage/structured-clone-message.html [ Failure ]
 crbug.com/655458 external/wpt/workers/semantics/reporting-errors/001.html [ Failure ]
 crbug.com/655458 external/wpt/workers/semantics/run-a-worker/003.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/Worker/AbstractWorker.onerror.html [ Failure ]
