@@ -49,6 +49,10 @@ const CGFloat kSignedOutWidthPadding = 2;
 // Kern value for the avatar button title.
 const CGFloat kTitleKern = 0.25;
 
+// Upper and lower bounds for determining if the frame's theme color is a
+// "dark" theme. This value is determined by trial and error.
+const CGFloat kFrameColorDarkUpperBound = 0.33;
+
 }  // namespace
 
 // Button cell with a custom border given by a set of nine-patch image grids.
@@ -151,11 +155,14 @@ const CGFloat kTitleKern = 0.25;
 - (void)setErrorStatus:(BOOL)hasError;
 - (void)dealloc;
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
+
+// Called right after |window_| became/resigned the main window.
+- (void)mainWindowDidChangeNotification:(NSNotification*)aNotification;
 @end
 
 @implementation AvatarButtonController
 
-- (id)initWithBrowser:(Browser*)browser {
+- (id)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
   if ((self = [super initWithBrowser:browser])) {
     ThemeService* themeService =
         ThemeServiceFactory::GetForProfile(browser->profile());
@@ -192,11 +199,22 @@ const CGFloat kTitleKern = 0.25;
     hasError_ = profileObserver_->HasAvatarError();
     [self updateAvatarButtonAndLayoutParent:NO];
 
+    window_ = window;
+
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
                selector:@selector(themeDidChangeNotification:)
                    name:kBrowserThemeDidChangeNotification
                  object:nil];
+
+    [center addObserver:self
+               selector:@selector(mainWindowDidChangeNotification:)
+                   name:NSWindowDidBecomeMainNotification
+                 object:window];
+    [center addObserver:self
+               selector:@selector(mainWindowDidChangeNotification:)
+                   name:NSWindowDidResignMainNotification
+                 object:window];
   }
   return self;
 }
@@ -215,15 +233,16 @@ const CGFloat kTitleKern = 0.25;
   [self updateAvatarButtonAndLayoutParent:YES];
 }
 
+- (void)mainWindowDidChangeNotification:(NSNotification*)aNotification {
+  [self updateAvatarButtonAndLayoutParent:NO];
+}
+
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
   // The button text has a black foreground and a white drop shadow for regular
   // windows, and a light text with a dark drop shadow for guest windows
   // which are themed with a dark background.
-  NSColor* foregroundColor;
-  const ui::ThemeProvider* theme =
-      &ThemeService::GetThemeProviderForProfile(browser_->profile());
-  foregroundColor = theme ? theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT)
-                          : [NSColor blackColor];
+  NSColor* foregroundColor =
+      [self isFrameColorDark] ? [NSColor whiteColor] : [NSColor blackColor];
 
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
@@ -294,6 +313,23 @@ const CGFloat kTitleKern = 0.25;
   [self updateAvatarButtonAndLayoutParent:YES];
 }
 
+- (BOOL)isFrameColorDark {
+  const ui::ThemeProvider* themeProvider =
+      &ThemeService::GetThemeProviderForProfile(browser_->profile());
+  const int propertyId = [window_ isMainWindow]
+                             ? ThemeProperties::COLOR_FRAME
+                             : ThemeProperties::COLOR_FRAME_INACTIVE;
+  if (themeProvider && themeProvider->HasCustomColor(propertyId)) {
+    NSColor* frameColor = themeProvider->GetNSColor(propertyId);
+    frameColor =
+        [frameColor colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
+    return frameColor &&
+           [frameColor whiteComponent] < kFrameColorDarkUpperBound;
+  }
+
+  return false;
+}
+
 - (void)showAvatarBubbleAnchoredAt:(NSView*)anchor
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
                    withServiceType:(signin::GAIAServiceType)serviceType
@@ -310,6 +346,7 @@ const CGFloat kTitleKern = 0.25;
 - (void)bubbleWillClose:(NSNotification*)notif {
   AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
   [button setIsActive:NO];
+  [self updateAvatarButtonAndLayoutParent:NO];
   [super bubbleWillClose:notif];
 }
 

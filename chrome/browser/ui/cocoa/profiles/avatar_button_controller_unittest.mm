@@ -27,6 +27,30 @@
 // Defined in the AvatarButtonController implementation.
 @interface AvatarButtonController (ExposedForTesting)
 - (void)setErrorStatus:(BOOL)hasError;
+- (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent;
+@end
+
+// Mocks the AvatarButtonController class so that we can mock its browser
+// window's frame color.
+@interface MockAvatarButtonController : AvatarButtonController {
+  // True if the frame color is dark.
+  BOOL isFrameDark_;
+}
+
+- (void)setIsFrameDark:(BOOL)isDark;
+
+@end
+
+@implementation MockAvatarButtonController
+
+- (void)setIsFrameDark:(BOOL)isDark {
+  isFrameDark_ = isDark;
+}
+
+- (BOOL)isFrameColorDark {
+  return isFrameDark_;
+}
+
 @end
 
 class AvatarButtonControllerTest : public CocoaProfileTest {
@@ -37,8 +61,9 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    controller_.reset(
-        [[AvatarButtonController alloc] initWithBrowser:browser()]);
+    controller_.reset([[MockAvatarButtonController alloc]
+        initWithBrowser:browser()
+                 window:nil]);
   }
 
   void TearDown() override {
@@ -50,10 +75,10 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
 
   NSView* view() { return [controller_ view]; }
 
-  AvatarButtonController* controller() { return controller_.get(); }
+  MockAvatarButtonController* controller() { return controller_.get(); }
 
  private:
-  base::scoped_nsobject<AvatarButtonController> controller_;
+  base::scoped_nsobject<MockAvatarButtonController> controller_;
 };
 
 TEST_F(AvatarButtonControllerTest, GenericButtonShown) {
@@ -103,4 +128,28 @@ TEST_F(AvatarButtonControllerTest, DoubleOpen) {
       info_bubble::kAnimateNone;
   [menu close];
   EXPECT_FALSE([controller() menuController]);
+}
+
+TEST_F(AvatarButtonControllerTest, TitleColor) {
+  // Create a second profile, to force the button to display the profile name.
+  testing_profile_manager()->CreateTestingProfile("batman");
+
+  // Set the frame color to be not dark. The button's title color should be
+  // black.
+  [controller() setIsFrameDark:NO];
+  [controller() updateAvatarButtonAndLayoutParent:NO];
+  NSColor* titleColor =
+      [[button() attributedTitle] attribute:NSForegroundColorAttributeName
+                                    atIndex:0
+                             effectiveRange:nil];
+  DCHECK_EQ(titleColor, [NSColor blackColor]);
+
+  // Set the frame color to be dark. The button's title color should be white.
+  [controller() setIsFrameDark:YES];
+  [controller() updateAvatarButtonAndLayoutParent:NO];
+  titleColor =
+      [[button() attributedTitle] attribute:NSForegroundColorAttributeName
+                                    atIndex:0
+                             effectiveRange:nil];
+  DCHECK_EQ(titleColor, [NSColor whiteColor]);
 }

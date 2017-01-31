@@ -20,9 +20,16 @@ class Browser;
   // Whether the signed in profile has an authentication error. Used to
   // display an error icon next to the button text.
   BOOL hasError_;
+
+  // The window associated with the avatar button. Weak.
+  NSWindow* window_;
 }
-// Designated initializer.
-- (id)initWithBrowser:(Browser*)browser;
+// Designated initializer. The parameter |window| is required because
+// browser->window() might be null when the initalizer is called.
+- (id)initWithBrowser:(Browser*)browser window:(NSWindow*)window;
+
+// Returns YES if the browser window's frame color is dark.
+- (BOOL)isFrameColorDark;
 
 // Overridden so that we can change the active state of the avatar button.
 - (void)showAvatarBubbleAnchoredAt:(NSView*)anchor

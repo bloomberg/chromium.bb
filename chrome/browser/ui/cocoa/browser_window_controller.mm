@@ -1639,8 +1639,9 @@ bool IsTabDetachingInFullscreenEnabled() {
   // the browser profile's name unless the browser is incognito.
   NSView* view;
   if ([self shouldUseNewAvatarButton]) {
-    avatarButtonController_.reset(
-      [[AvatarButtonController alloc] initWithBrowser:browser_.get()]);
+    avatarButtonController_.reset([[AvatarButtonController alloc]
+        initWithBrowser:browser_.get()
+                 window:[self window]]);
   } else {
     avatarButtonController_.reset(
       [[AvatarIconController alloc] initWithBrowser:browser_.get()]);
