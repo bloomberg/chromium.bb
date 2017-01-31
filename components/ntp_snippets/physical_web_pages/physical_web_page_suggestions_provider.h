@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_PHYSICAL_WEB_PAGES_PHYSICAL_WEB_PAGE_SUGGESTIONS_PROVIDER_H_
 #define COMPONENTS_NTP_SNIPPETS_PHYSICAL_WEB_PAGES_PHYSICAL_WEB_PAGE_SUGGESTIONS_PROVIDER_H_
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -90,12 +91,16 @@ class PhysicalWebPageSuggestionsProvider
   // necessary.
   void InvalidateSuggestion(const std::string& page_id);
 
+  void AppendToShownScannedUrls(
+      const std::vector<ContentSuggestion>& suggestions);
+
   // Reads dismissed IDs from Prefs.
   std::set<std::string> ReadDismissedIDsFromPrefs() const;
 
   // Writes |dismissed_ids| into Prefs.
   void StoreDismissedIDsToPrefs(const std::set<std::string>& dismissed_ids);
 
+  std::multimap<GURL, GURL> shown_resolved_urls_by_scanned_url_;
   CategoryStatus category_status_;
   const Category provided_category_;
   physical_web::PhysicalWebDataSource* physical_web_data_source_;

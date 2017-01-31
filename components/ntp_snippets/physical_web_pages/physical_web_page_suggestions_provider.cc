@@ -152,11 +152,13 @@ void PhysicalWebPageSuggestionsProvider::Fetch(
     const std::set<std::string>& known_suggestion_ids,
     const FetchDoneCallback& callback) {
   DCHECK_EQ(category, provided_category_);
+  std::vector<ContentSuggestion> suggestions =
+      GetMostRecentPhysicalWebPagesWithFilter(kMaxSuggestionsCount,
+                                              known_suggestion_ids);
+  AppendToShownScannedUrls(suggestions);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, Status::Success(),
-                 base::Passed(GetMostRecentPhysicalWebPagesWithFilter(
-                     kMaxSuggestionsCount, known_suggestion_ids))));
+      FROM_HERE, base::Bind(callback, Status::Success(),
+                            base::Passed(std::move(suggestions))));
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearHistory(
@@ -215,21 +217,25 @@ void PhysicalWebPageSuggestionsProvider::NotifyStatusChanged(
 
 void PhysicalWebPageSuggestionsProvider::FetchPhysicalWebPages() {
   DCHECK_EQ(CategoryStatus::AVAILABLE, category_status_);
+  std::vector<ContentSuggestion> suggestions =
+      GetMostRecentPhysicalWebPagesWithFilter(
+          kMaxSuggestionsCount,
+          /*excluded_ids=*/std::set<std::string>());
+  shown_resolved_urls_by_scanned_url_.clear();
+  AppendToShownScannedUrls(suggestions);
   observer()->OnNewSuggestions(this, provided_category_,
-                               GetMostRecentPhysicalWebPagesWithFilter(
-                                   kMaxSuggestionsCount,
-                                   /*excluded_ids=*/std::set<std::string>()));
+                               std::move(suggestions));
 }
 
 std::vector<ContentSuggestion>
 PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
-    int max_quantity,
+    int max_count,
     const std::set<std::string>& excluded_ids) {
   std::unique_ptr<physical_web::MetadataList> page_metadata_list =
       physical_web_data_source_->GetMetadataList();
 
   // These is to filter out dismissed suggestions and at the same time prune the
-  // dismissed IDs list removing nonavailable pages (this is need since some
+  // dismissed IDs list removing nonavailable pages (this is needed since some
   // OnLost() calls may have been missed).
   const std::set<std::string> old_dismissed_ids = ReadDismissedIDsFromPrefs();
   std::set<std::string> new_dismissed_ids;
@@ -256,7 +262,7 @@ PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
 
   std::vector<ContentSuggestion> suggestions;
   for (const auto& page_metadata : filtered_metadata_list) {
-    if (static_cast<int>(suggestions.size()) == max_quantity) {
+    if (static_cast<int>(suggestions.size()) == max_count) {
       break;
     }
     suggestions.push_back(ConvertPhysicalWebPage(page_metadata));
@@ -283,7 +289,33 @@ void PhysicalWebPageSuggestionsProvider::OnFound(const GURL& url) {
 }
 
 void PhysicalWebPageSuggestionsProvider::OnLost(const GURL& url) {
-  InvalidateSuggestion(url.spec());
+  auto it = shown_resolved_urls_by_scanned_url_.find(url);
+  if (it == shown_resolved_urls_by_scanned_url_.end()) {
+    // The notification is propagated further in case the suggestion is shown on
+    // old NTPs (created before last |shown_resolved_urls_by_scanned_url_|
+    // update).
+
+    // TODO(vitaliii): Use |resolved_url| here when it is available. Currently
+    // there is no way to find out |resolved_url|, which corresponds to this
+    // |scanned_url| (the metadata has been already removed from the Physical
+    // Web list). We use |scanned_url| (it may be the same as |resolved_url|,
+    // otherwise nothing happens), however, we should use the latter once it is
+    // provided (e.g. as an argument).
+    InvalidateSuggestion(url.spec());
+    return;
+  }
+
+  // This is not a reference, because the multimap pair will be removed below.
+  const GURL lost_resolved_url = it->second;
+  shown_resolved_urls_by_scanned_url_.erase(it);
+  if (std::find_if(shown_resolved_urls_by_scanned_url_.begin(),
+                   shown_resolved_urls_by_scanned_url_.end(),
+                   [lost_resolved_url](const std::pair<GURL, GURL>& pair) {
+                     return lost_resolved_url == pair.second;
+                   }) == shown_resolved_urls_by_scanned_url_.end()) {
+    // There are no more beacons for this URL.
+    InvalidateSuggestion(lost_resolved_url.spec());
+  }
 }
 
 void PhysicalWebPageSuggestionsProvider::OnDistanceChanged(
@@ -303,6 +335,21 @@ void PhysicalWebPageSuggestionsProvider::InvalidateSuggestion(
   if (it != dismissed_ids.end()) {
     dismissed_ids.erase(it);
     StoreDismissedIDsToPrefs(dismissed_ids);
+  }
+}
+
+void PhysicalWebPageSuggestionsProvider::AppendToShownScannedUrls(
+    const std::vector<ContentSuggestion>& suggestions) {
+  std::unique_ptr<physical_web::MetadataList> page_metadata_list =
+      physical_web_data_source_->GetMetadataList();
+  for (const auto& page_metadata : *page_metadata_list) {
+    if (std::find_if(suggestions.begin(), suggestions.end(),
+                     [page_metadata](const ContentSuggestion& suggestion) {
+                       return suggestion.url() == page_metadata.resolved_url;
+                     }) != suggestions.end()) {
+      shown_resolved_urls_by_scanned_url_.insert(std::make_pair(
+          page_metadata.scanned_url, page_metadata.resolved_url));
+    }
   }
 }
 

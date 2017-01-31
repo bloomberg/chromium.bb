@@ -298,17 +298,6 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest, ShouldDismiss) {
 }
 
 TEST_F(PhysicalWebPageSuggestionsProviderTest,
-       ShouldInvalidateSuggestionOnUrlLost) {
-  IgnoreOnCategoryStatusChangedToAvailable();
-  IgnoreOnNewSuggestions();
-  physical_web_data_source()->SetMetadataList(CreateDummyPhysicalWebPages({1}));
-  CreateProvider();
-
-  EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, GetDummySuggestionId(1)));
-  FireUrlLost("https://resolved_url.com/1");
-}
-
-TEST_F(PhysicalWebPageSuggestionsProviderTest,
        ShouldNotShowDismissedSuggestions) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
@@ -403,6 +392,77 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
       base::Bind(&CaptureDismissedSuggestions, &dismissed_suggestions));
   EXPECT_THAT(dismissed_suggestions,
               ElementsAre(HasUrl("https://resolved_url.com/1")));
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldInvalidateSuggestionWhenItsOnlyBeaconIsLost) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({1, 2}));
+
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _));
+  CreateProvider();
+
+  EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, GetDummySuggestionId(1)));
+  FireUrlLost("https://scanned_url.com/1");
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldNotInvalidateSuggestionWhenBeaconWithDifferentScannedURLRemains) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  // Make 2 beacons point to the same URL, while having different |scanned_url|.
+  std::unique_ptr<physical_web::MetadataList> pages =
+      CreateDummyPhysicalWebPages({1, 2});
+  (*pages)[1].resolved_url = (*pages)[0].resolved_url;
+  physical_web_data_source()->SetMetadataList(std::move(pages));
+
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _));
+  CreateProvider();
+
+  // The first beacons is lost, but the second one still points to the same
+  // |resolved_url|, so the suggestion must not be invalidated.
+  EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, _)).Times(0);
+  FireUrlLost("https://scanned_url.com/1");
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldNotInvalidateSuggestionWhenBeaconWithSameScannedURLRemains) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  // Make 2 beacons point to the same URL, while having the same |scanned_url|.
+  std::unique_ptr<physical_web::MetadataList> pages =
+      CreateDummyPhysicalWebPages({1, 2});
+  (*pages)[1].scanned_url = (*pages)[0].scanned_url;
+  (*pages)[1].resolved_url = (*pages)[0].resolved_url;
+  physical_web_data_source()->SetMetadataList(std::move(pages));
+
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _));
+  CreateProvider();
+
+  // The first beacons is lost, but the second one still points to the same
+  // |resolved_url|, so the suggestion must not be invalidated.
+  EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, _)).Times(0);
+  FireUrlLost("https://scanned_url.com/1");
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldInvalidateSuggestionWhenAllBeaconsLost) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  // Make 3 beacons point to the same URL. Two of them have the same
+  // |scanned_url|.
+  std::unique_ptr<physical_web::MetadataList> pages =
+      CreateDummyPhysicalWebPages({1, 2, 3});
+  (*pages)[1].scanned_url = (*pages)[0].scanned_url;
+  (*pages)[1].resolved_url = (*pages)[0].resolved_url;
+  (*pages)[2].resolved_url = (*pages)[0].resolved_url;
+  physical_web_data_source()->SetMetadataList(std::move(pages));
+
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _));
+  CreateProvider();
+
+  FireUrlLost("https://scanned_url.com/1");
+  FireUrlLost("https://scanned_url.com/1");
+  EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, GetDummySuggestionId(1)));
+  FireUrlLost("https://scanned_url.com/3");
 }
 
 }  // namespace ntp_snippets
