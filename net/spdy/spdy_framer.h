@@ -21,7 +21,6 @@
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_flags.h"
 #include "net/spdy/spdy_header_block.h"
-#include "net/spdy/spdy_headers_block_parser.h"
 #include "net/spdy/spdy_headers_handler_interface.h"
 #include "net/spdy/spdy_protocol.h"
 
@@ -634,13 +633,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                     SpdyFrameType type,
                                     int padding_payload_len);
 
-  // Deliver the given control frame's uncompressed headers block to the
-  // visitor in chunks. Returns true if the visitor has accepted all of the
-  // chunks.
-  bool IncrementallyDeliverControlFrameHeaderData(SpdyStreamId stream_id,
-                                                  const char* data,
-                                                  size_t len);
-
   // Utility to copy the given data block to the current frame buffer, up
   // to the given maximum number of bytes, and update the buffer
   // data (pointer and length). Returns the number of bytes
@@ -736,7 +728,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyFramerVisitorInterface* visitor_;
   SpdyFramerDebugVisitorInterface* debug_visitor_;
 
-  std::unique_ptr<SpdyHeadersBlockParser> header_parser_;
   SpdyHeadersHandlerInterface* header_handler_;
 
   // Optional decoder to use instead of this instance.

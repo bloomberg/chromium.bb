@@ -33,7 +33,6 @@
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
 #include "net/spdy/spdy_framer_decoder_adapter.h"
-#include "net/spdy/spdy_headers_block_parser.h"
 
 using base::StringPiece;
 using std::hex;
@@ -1199,8 +1198,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
 }
 
 // Does not buffer the control payload. Instead, either passes directly to the
-// visitor or decompresses and then passes directly to the visitor, via
-// IncrementallyDeliverControlFrameHeaderData()
+// visitor or decompresses and then passes directly to the visitor.
 size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
                                                   size_t data_len) {
   DCHECK_EQ(SPDY_CONTROL_FRAME_HEADER_BLOCK, state_);
@@ -2422,27 +2420,6 @@ HpackDecoderInterface* SpdyFramer::GetHpackDecoder() {
     }
   }
   return hpack_decoder_.get();
-}
-
-bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
-    SpdyStreamId stream_id, const char* data, size_t len) {
-  bool read_successfully = true;
-  while (read_successfully && len > 0) {
-    size_t bytes_to_deliver = std::min(len, kHeaderDataChunkMaxSize);
-    read_successfully = header_parser_->HandleControlFrameHeadersData(
-        stream_id, data, bytes_to_deliver);
-    if (header_parser_->get_error() == SpdyHeadersBlockParser::NEED_MORE_DATA) {
-      read_successfully = true;
-    }
-    data += bytes_to_deliver;
-    len -= bytes_to_deliver;
-    if (!read_successfully) {
-      // Assume that the problem was the header block was too large for the
-      // visitor.
-      set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
-    }
-  }
-  return read_successfully;
 }
 
 void SpdyFramer::SetDecoderHeaderTableDebugVisitor(
