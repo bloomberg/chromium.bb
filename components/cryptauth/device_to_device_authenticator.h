@@ -43,6 +43,27 @@ namespace cryptauth {
 class DeviceToDeviceAuthenticator : public Authenticator,
                                     public ConnectionObserver {
  public:
+  class Factory {
+   public:
+    static std::unique_ptr<Authenticator> NewInstance(
+        cryptauth::Connection* connection,
+        const std::string& account_id,
+        std::unique_ptr<cryptauth::SecureMessageDelegate>
+            secure_message_delegate);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<Authenticator> BuildInstance(
+        cryptauth::Connection* connection,
+        const std::string& account_id,
+        std::unique_ptr<cryptauth::SecureMessageDelegate>
+            secure_message_delegate);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   // Creates the instance:
   // |connection|: The connection to the remote device, which must be in a
   //     connected state. Not owned.

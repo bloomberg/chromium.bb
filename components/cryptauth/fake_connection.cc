@@ -11,13 +11,15 @@
 
 namespace cryptauth {
 
-namespace {
-const char kFakeFeatureName[] = "fakeFeature";
-}  // namespace
-
 FakeConnection::FakeConnection(const RemoteDevice& remote_device)
-    : Connection(remote_device) {
-  Connect();
+    : FakeConnection(remote_device, /* should_auto_connect */ true) {}
+
+FakeConnection::FakeConnection(
+    const RemoteDevice& remote_device, bool should_auto_connect)
+    : Connection(remote_device), should_auto_connect_(should_auto_connect) {
+  if (should_auto_connect_) {
+    Connect();
+  }
 }
 
 FakeConnection::~FakeConnection() {
@@ -25,11 +27,38 @@ FakeConnection::~FakeConnection() {
 }
 
 void FakeConnection::Connect() {
-  SetStatus(CONNECTED);
+  if (should_auto_connect_) {
+    SetStatus(CONNECTED);
+  } else {
+    SetStatus(IN_PROGRESS);
+  }
 }
 
 void FakeConnection::Disconnect() {
   SetStatus(DISCONNECTED);
+}
+
+void FakeConnection::AddObserver(ConnectionObserver* observer) {
+  observers_.push_back(observer);
+  Connection::AddObserver(observer);
+}
+
+void FakeConnection::RemoveObserver(ConnectionObserver* observer) {
+  observers_.erase(
+      std::remove(observers_.begin(), observers_.end(), observer),
+      observers_.end());
+  Connection::RemoveObserver(observer);
+}
+
+void FakeConnection::CompleteInProgressConnection(bool success) {
+  DCHECK(!should_auto_connect_);
+  DCHECK(status() == IN_PROGRESS);
+
+  if (success) {
+    SetStatus(CONNECTED);
+  } else {
+    SetStatus(DISCONNECTED);
+  }
 }
 
 void FakeConnection::FinishSendingMessageWithSuccess(bool success) {
@@ -40,9 +69,12 @@ void FakeConnection::FinishSendingMessageWithSuccess(bool success) {
   OnDidSendMessage(*sent_message, success);
 }
 
-void FakeConnection::ReceiveMessageWithPayload(const std::string& payload) {
+void FakeConnection::ReceiveMessage(
+    const std::string& feature, const std::string& payload) {
+  pending_feature_ = feature;
   pending_payload_ = payload;
   OnBytesReceived(std::string());
+  pending_feature_.clear();
   pending_payload_.clear();
 }
 
@@ -54,8 +86,7 @@ void FakeConnection::SendMessageImpl(std::unique_ptr<WireMessage> message) {
 std::unique_ptr<WireMessage> FakeConnection::DeserializeWireMessage(
     bool* is_incomplete_message) {
   *is_incomplete_message = false;
-  return base::MakeUnique<WireMessage>(
-      pending_payload_, std::string(kFakeFeatureName));
+  return base::MakeUnique<WireMessage>(pending_payload_, pending_feature_);
 }
 
 }  // namespace cryptauth

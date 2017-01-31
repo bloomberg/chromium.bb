@@ -1,0 +1,137 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_CRYPTAUTH_SECURE_CHANNEL_H_
+#define COMPONENTS_CRYPTAUTH_SECURE_CHANNEL_H_
+
+#include <deque>
+
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/cryptauth/authenticator.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/connection_observer.h"
+#include "components/cryptauth/device_to_device_authenticator.h"
+#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/secure_context.h"
+#include "components/cryptauth/secure_message_delegate.h"
+
+namespace cryptauth {
+
+// An authenticated bi-directional channel for exchanging messages with remote
+// devices. |SecureChannel| manages a |Connection| by initializing it and
+// authenticating it via a security handshake once the connection has occurred.
+// Once the channel has been authenticated, messages sent are automatically
+// encrypted and messages received are automatically decrypted.
+class SecureChannel : public ConnectionObserver {
+ public:
+  // Enumeration of possible states of connecting to a remote device.
+  //   DISCONNECTED: There is no connection to the device, nor is there a
+  //       pending connection attempt.
+  //   CONNECTING: There is an ongoing connection attempt.
+  //   CONNECTED: There is a Bluetooth connection to the device, but the
+  //       connection has not yet been authenticated.
+  //   AUTHENTICATING: There is an active connection that is currently in the
+  //       process of authenticating via a 3-message authentication handshake.
+  //   AUTHENTICATED: The connection has been authenticated, and arbitrary
+  //       messages can be sent/received to/from the device.
+  enum class Status {
+    DISCONNECTED,
+    CONNECTING,
+    CONNECTED,
+    AUTHENTICATING,
+    AUTHENTICATED,
+  };
+
+  static std::string StatusToString(const Status& status);
+
+  class Observer {
+   public:
+    virtual void OnSecureChannelStatusChanged(
+        SecureChannel* secure_channel,
+        const Status& old_status,
+        const Status& new_status) = 0;
+
+    virtual void OnMessageReceived(
+        SecureChannel* secure_channel,
+        const std::string& feature,
+        const std::string& payload) = 0;
+  };
+
+  class Delegate {
+   public:
+    virtual ~Delegate();
+
+    virtual std::unique_ptr<SecureMessageDelegate>
+    CreateSecureMessageDelegate() = 0;
+  };
+
+  SecureChannel(
+      std::unique_ptr<Connection> connection,
+      std::unique_ptr<Delegate> delegate);
+  ~SecureChannel() override;
+
+  void Initialize();
+
+  void SendMessage(const std::string& feature, const std::string& payload);
+
+  void Disconnect();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  Status status() const {
+    return status_;
+  }
+
+  // ConnectionObserver:
+  void OnConnectionStatusChanged(Connection* connection,
+                                 Connection::Status old_status,
+                                 Connection::Status new_status) override;
+  void OnMessageReceived(const Connection& connection,
+                         const WireMessage& wire_message) override;
+  void OnSendCompleted(const cryptauth::Connection& connection,
+                       const cryptauth::WireMessage& wire_message,
+                       bool success) override;
+
+ private:
+  // Message waiting to be sent. Note that this is *not* the message that will
+  // end up being sent over the wire; before that can be done, the payload must
+  // be encrypted.
+  struct PendingMessage {
+    PendingMessage();
+    PendingMessage(const std::string& feature, const std::string& payload);
+    virtual ~PendingMessage();
+
+    const std::string feature;
+    const std::string payload;
+  };
+
+  void TransitionToStatus(const Status& new_status);
+  void Authenticate();
+  void ProcessMessageQueue();
+  void OnMessageEncoded(
+      const std::string& feature, const std::string& encoded_message);
+  void OnMessageDecoded(
+      const std::string& feature, const std::string& decoded_message);
+  void OnAuthenticationResult(
+      Authenticator::Result result,
+      std::unique_ptr<SecureContext> secure_context);
+
+  std::unique_ptr<Connection> connection_;
+  std::unique_ptr<Delegate> delegate_;
+  std::unique_ptr<Authenticator> authenticator_;
+  std::unique_ptr<SecureContext> secure_context_;
+  Status status_;
+  std::deque<PendingMessage> queued_messages_;
+  std::unique_ptr<PendingMessage> pending_message_;
+  base::ObserverList<Observer> observer_list_;
+  base::WeakPtrFactory<SecureChannel> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecureChannel);
+};
+
+}  // namespace cryptauth
+
+#endif  // COMPONENTS_CRYPTAUTH_SECURE_CHANNEL_H_

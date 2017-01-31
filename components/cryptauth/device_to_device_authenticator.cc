@@ -29,6 +29,39 @@ const int kResponderAuthTimeoutSeconds = 5;
 
 }  // namespace
 
+// static
+DeviceToDeviceAuthenticator::Factory*
+    DeviceToDeviceAuthenticator::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<Authenticator>
+DeviceToDeviceAuthenticator::Factory::NewInstance(
+    cryptauth::Connection* connection,
+    const std::string& account_id,
+    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate) {
+  if (!factory_instance_) {
+    factory_instance_ = new Factory();
+  }
+  return factory_instance_->BuildInstance(
+      connection, account_id, std::move(secure_message_delegate));
+}
+
+// static
+void DeviceToDeviceAuthenticator::Factory::SetInstanceForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<Authenticator>
+DeviceToDeviceAuthenticator::Factory::BuildInstance(
+    cryptauth::Connection* connection,
+    const std::string& account_id,
+    std::unique_ptr<cryptauth::SecureMessageDelegate>
+    secure_message_delegate) {
+  return base::WrapUnique(new DeviceToDeviceAuthenticator(
+      connection, account_id, std::move(secure_message_delegate)));
+}
+
 DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(
     Connection* connection,
     const std::string& account_id,

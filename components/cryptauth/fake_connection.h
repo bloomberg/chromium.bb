@@ -10,25 +10,40 @@
 
 namespace cryptauth {
 
+class ConnectionObserver;
+
 // A fake implementation of Connection to use in tests.
 class FakeConnection : public Connection {
  public:
   FakeConnection(const RemoteDevice& remote_device);
+  FakeConnection(const RemoteDevice& remote_device, bool should_auto_connect);
   ~FakeConnection() override;
 
   // Connection:
   void Connect() override;
   void Disconnect() override;
+  void AddObserver(ConnectionObserver* observer) override;
+  void RemoveObserver(ConnectionObserver* observer) override;
+
+  // Completes a connection attempt which was originally started via a call to
+  // |Connect()|. If |success| is true, the connection's status shifts to
+  // |CONNECTED|; otherwise, the status shifts to |DISCONNECTED|. Note that this
+  // function should only be called when |should_auto_connect| is false.
+  void CompleteInProgressConnection(bool success);
 
   // Completes the current send operation with success |success|.
   void FinishSendingMessageWithSuccess(bool success);
 
   // Simulates receiving a wire message with the given |payload|, bypassing the
   // container WireMessage format.
-  void ReceiveMessageWithPayload(const std::string& payload);
+  void ReceiveMessage(const std::string& feature, const std::string& payload);
 
   // Returns the current message in progress of being sent.
   WireMessage* current_message() { return current_message_.get(); }
+
+  std::vector<ConnectionObserver*>& observers() {
+    return observers_;
+  }
 
   using Connection::SetStatus;
 
@@ -42,9 +57,14 @@ class FakeConnection : public Connection {
   // SendMessageImpl() and FinishSendingMessageWithSuccess().
   std::unique_ptr<WireMessage> current_message_;
 
-  // The payload that should be returned when DeserializeWireMessage() is
-  // called.
+  // The feature and payload that should be returned when
+  // DeserializeWireMessage() is called.
+  std::string pending_feature_;
   std::string pending_payload_;
+
+  std::vector<ConnectionObserver*> observers_;
+
+  const bool should_auto_connect_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnection);
 };
