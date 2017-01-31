@@ -64,7 +64,6 @@ class DirectoryOwnersExtractor(object):
             A dict mapping (owner) email addresses to (owned) directories.
         """
         tests = [self.finder.layout_test_name(path) for path in changed_files]
-        print tests
         tests = [t for t in tests if t is not None]
         email_map = {}
         for directory, owners in self.owner_map.iteritems():
