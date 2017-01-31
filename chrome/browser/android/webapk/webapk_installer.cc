@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/manifest_util.h"
 #include "jni/WebApkInstaller_jni.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -507,6 +508,10 @@ void WebApkInstaller::SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
   std::string serialized_request;
   request_proto->SerializeToString(&serialized_request);
   url_fetcher_->SetUploadData(kProtoMimeType, serialized_request);
+  url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                             net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
 }
 
