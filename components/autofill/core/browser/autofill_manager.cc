@@ -1167,6 +1167,13 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     upload_request_ = payments::PaymentsClient::UploadRequestDetails();
     upload_request_.card = *imported_credit_card;
 
+    // In order to prompt the user to upload their card, we must have both:
+    //  1) Card with CVC
+    //  2) 1+ recently-used or modified addresses that meet the client-side
+    //     validation rules
+    // Here we perform both checks before returning or logging anything,
+    // because if only one of the two is missing, it may be fixable.
+
     // Check for a CVC to determine whether we can prompt the user to upload
     // their card. If no CVC is present, do nothing. We could fall back to a
     // local save but we believe that sometimes offering upload and sometimes
@@ -1179,6 +1186,20 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
         break;
       }
     }
+
+    // Upload requires that recently used or modified addresses meet the
+    // client-side validation rules.
+    autofill::AutofillMetrics::CardUploadDecisionMetric
+        get_profiles_decision_metric = AutofillMetrics::UPLOAD_OFFERED;
+    std::string rappor_metric_name;
+    bool get_profiles_succeeded =
+        GetProfilesForCreditCardUpload(*imported_credit_card,
+                                       &upload_request_.profiles,
+                                       &get_profiles_decision_metric,
+                                       &rappor_metric_name);
+
+    // Both the CVC and address checks are done.  Conform to the legacy order of
+    // reporting on CVC then address.
     if (upload_request_.cvc.empty()) {
       AutofillMetrics::LogCardUploadDecisionMetric(
           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
@@ -1186,12 +1207,13 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
                            "Autofill.CardUploadNotOfferedNoCvc");
       return;
     }
-
-    // Upload also requires recently used or modified addresses that meet the
-    // client-side validation rules.
-    if (!GetProfilesForCreditCardUpload(*imported_credit_card,
-                                        &upload_request_.profiles,
-                                        submitted_form.source_url())) {
+    if (!get_profiles_succeeded) {
+      DCHECK(get_profiles_decision_metric != AutofillMetrics::UPLOAD_OFFERED);
+      AutofillMetrics::LogCardUploadDecisionMetric(
+          get_profiles_decision_metric);
+      if (!rappor_metric_name.empty()) {
+        CollectRapportSample(submitted_form.source_url(), rappor_metric_name);
+      }
       return;
     }
 
@@ -1203,7 +1225,9 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
 bool AutofillManager::GetProfilesForCreditCardUpload(
     const CreditCard& card,
     std::vector<AutofillProfile>* profiles,
-    const GURL& source_url) const {
+    autofill::AutofillMetrics::CardUploadDecisionMetric*
+        address_upload_decision_metric,
+    std::string* rappor_metric_name) const {
   std::vector<AutofillProfile> candidate_profiles;
   const base::Time now = base::Time::Now();
   const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
@@ -1216,9 +1240,9 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
     }
   }
   if (candidate_profiles.empty()) {
-    AutofillMetrics::LogCardUploadDecisionMetric(
-        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
-    CollectRapportSample(source_url, "Autofill.CardUploadNotOfferedNoAddress");
+    *address_upload_decision_metric =
+        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS;
+    *rappor_metric_name = "Autofill.CardUploadNotOfferedNoAddress";
     return false;
   }
 
@@ -1246,10 +1270,9 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
         // countries, we'll need to make the name comparison more sophisticated.
         if (!base::EqualsCaseInsensitiveASCII(
                 verified_name, RemoveMiddleInitial(address_name))) {
-          AutofillMetrics::LogCardUploadDecisionMetric(
-              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
-          CollectRapportSample(source_url,
-                               "Autofill.CardUploadNotOfferedConflictingNames");
+          *address_upload_decision_metric =
+              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
+          *rappor_metric_name = "Autofill.CardUploadNotOfferedConflictingNames";
           return false;
         }
       }
@@ -1258,9 +1281,9 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
   // If neither the card nor any of the addresses have a name associated with
   // them, the candidate set is invalid.
   if (verified_name.empty()) {
-    AutofillMetrics::LogCardUploadDecisionMetric(
-        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
-    CollectRapportSample(source_url, "Autofill.CardUploadNotOfferedNoName");
+    *address_upload_decision_metric =
+        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
+    *rappor_metric_name = "Autofill.CardUploadNotOfferedNoName";
     return false;
   }
 
@@ -1286,8 +1309,8 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
         // likely to fail.
         if (!(StartsWith(verified_zip, zip, base::CompareCase::SENSITIVE) ||
               StartsWith(zip, verified_zip, base::CompareCase::SENSITIVE))) {
-          AutofillMetrics::LogCardUploadDecisionMetric(
-              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
+          *address_upload_decision_metric =
+              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS;
           return false;
         }
       }
@@ -1297,8 +1320,8 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
   // If none of the candidate addresses have a zip, the candidate set is
   // invalid.
   if (verified_zip.empty()) {
-    AutofillMetrics::LogCardUploadDecisionMetric(
-        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
+    *address_upload_decision_metric =
+        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
     return false;
   }
 
@@ -1307,7 +1330,8 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
 }
 
 void AutofillManager::CollectRapportSample(const GURL& source_url,
-                                           const char* metric_name) const {
+                                           const std::string& metric_name)
+    const {
   if (source_url.is_valid() && client_->GetRapporServiceImpl()) {
     rappor::SampleDomainAndRegistryFromGURL(client_->GetRapporServiceImpl(),
                                             metric_name, source_url);

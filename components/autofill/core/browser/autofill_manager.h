@@ -404,15 +404,19 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // Logs |metric_name| with RAPPOR, for the specific form |source_url|.
   void CollectRapportSample(const GURL& source_url,
-                            const char* metric_name) const;
+                            const std::string& metric_name) const;
 
   // Examines |card| and the stored profiles and if a candidate set of profiles
   // is found that matches the client-side validation rules, assigns the values
-  // to |profiles|. |source_url| is the source URL for the form. If no valid set
-  // can be found, returns false.
+  // to |profiles|.  If no valid set can be found, returns false, assigns the
+  // failure reason to |address_upload_decision_metric|, and if applicable, the
+  // RAPPOR metric to log to |rappor_metric_name|.
   bool GetProfilesForCreditCardUpload(const CreditCard& card,
                                       std::vector<AutofillProfile>* profiles,
-                                      const GURL& source_url) const;
+                                      autofill::AutofillMetrics::
+                                          CardUploadDecisionMetric*
+                                              address_upload_decision_metric,
+                                      std::string* rappor_metric_name) const;
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
