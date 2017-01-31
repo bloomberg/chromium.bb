@@ -153,13 +153,14 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
     bool HasZeroConsumerHoldCount();
+    void SetFrameFeedbackId(int id);
     void SetConsumerFeedbackObserver(
         media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer);
     void SetFrameBufferPool(media::FrameBufferPool* frame_buffer_pool);
 
    private:
     const int buffer_id_;
-    const int frame_feedback_id_;
+    int frame_feedback_id_;
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer_;
     media::FrameBufferPool* frame_buffer_pool_;
     double max_consumer_utilization_;

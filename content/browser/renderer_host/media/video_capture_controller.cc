@@ -145,6 +145,11 @@ bool VideoCaptureController::BufferState::HasZeroConsumerHoldCount() {
   return consumer_hold_count_ == 0;
 }
 
+void VideoCaptureController::BufferState::SetFrameFeedbackId(int id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  frame_feedback_id_ = id;
+}
+
 void VideoCaptureController::BufferState::SetConsumerFeedbackObserver(
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -377,15 +382,16 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
   DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
 
   // Insert if not exists.
-  const auto it =
-      buffer_id_to_state_map_
-          .insert(std::make_pair(
-              buffer_id, BufferState(buffer_id, buffer.frame_feedback_id(),
-                                     consumer_feedback_observer_.get(),
-                                     frame_buffer_pool_.get())))
-          .first;
-  BufferState& buffer_state = it->second;
+  const auto insert_result = buffer_id_to_state_map_.insert(std::make_pair(
+      buffer_id, BufferState(buffer_id, buffer.frame_feedback_id(),
+                             consumer_feedback_observer_.get(),
+                             frame_buffer_pool_.get())));
+  BufferState& buffer_state = insert_result.first->second;
   DCHECK(buffer_state.HasZeroConsumerHoldCount());
+  // If a BufferState for |buffer_id| already existed, we must update the
+  // |frame_feedback_id| of the existing entry.
+  if (!insert_result.second)
+    buffer_state.SetFrameFeedbackId(buffer.frame_feedback_id());
 
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
     if (!frame->metadata()->HasKey(VideoFrameMetadata::FRAME_RATE)) {

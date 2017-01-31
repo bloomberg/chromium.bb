@@ -593,4 +593,62 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
+// Tests that frame feedback provided by consumers is correctly reported back
+// to the producing device for a sequence of frames that is longer than the
+// number of buffers shared between the device and consumer.
+TEST_F(VideoCaptureControllerTest, FrameFeedbackIsReportedForSequenceOfFrames) {
+  const int kTestFrameSequenceLength = 10;
+  media::VideoCaptureFormat arbitrary_format(
+      gfx::Size(320, 240), arbitrary_frame_rate_, media::PIXEL_FORMAT_I420);
+
+  // Register |client_a_| at |controller_|.
+  media::VideoCaptureParams session_100;
+  session_100.requested_format = arbitrary_format;
+  const VideoCaptureControllerID route_id(0x99);
+  controller_->AddClient(route_id, client_a_.get(), 100, session_100);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(client_a_.get());
+
+  for (int frame_index = 0; frame_index < kTestFrameSequenceLength;
+       frame_index++) {
+    const int stub_frame_feedback_id = frame_index;
+    const float stub_consumer_utilization =
+        static_cast<float>(frame_index) / kTestFrameSequenceLength;
+
+    client_a_->resource_utilization_ = stub_consumer_utilization;
+
+    EXPECT_CALL(*client_a_,
+                DoBufferReady(route_id, arbitrary_format.frame_size))
+        .Times(1);
+    EXPECT_CALL(
+        *mock_consumer_feedback_observer_,
+        OnUtilizationReport(stub_frame_feedback_id, stub_consumer_utilization))
+        .Times(1);
+
+    // Device prepares and pushes a frame.
+    // For the first half of the frames we exercise ReserveOutputBuffer() while
+    // for the second half we exercise ResurrectLastOutputBuffer().
+    // The frame is expected to arrive at |client_a_|.DoBufferReady(), which
+    // automatically notifies |controller_| that it has finished consuming it.
+    media::VideoCaptureDevice::Client::Buffer buffer;
+    if (frame_index < kTestFrameSequenceLength / 2) {
+      buffer = device_client_->ReserveOutputBuffer(
+          arbitrary_format.frame_size, arbitrary_format.pixel_format,
+          arbitrary_format.pixel_storage, stub_frame_feedback_id);
+    } else {
+      buffer = device_client_->ResurrectLastOutputBuffer(
+          arbitrary_format.frame_size, arbitrary_format.pixel_format,
+          arbitrary_format.pixel_storage, stub_frame_feedback_id);
+    }
+    ASSERT_TRUE(buffer.is_valid());
+    device_client_->OnIncomingCapturedBuffer(
+        std::move(buffer), arbitrary_format, arbitrary_reference_time_,
+        arbitrary_timestamp_);
+
+    base::RunLoop().RunUntilIdle();
+    Mock::VerifyAndClearExpectations(client_a_.get());
+    Mock::VerifyAndClearExpectations(mock_consumer_feedback_observer_);
+  }
+}
+
 }  // namespace content
