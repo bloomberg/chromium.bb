@@ -67,9 +67,18 @@ void OnRenderProcessGoneDetail(int child_process_id, bool crashed) {
   GetAwRenderProcessGoneDelegatesForRenderProcess(child_process_id, &delegates);
   for (auto delegate : delegates) {
     if (!delegate->OnRenderProcessGoneDetail(child_process_id, crashed)) {
-      // Keeps this log unchanged, CTS test uses it to detect crash.
-      LOG(FATAL) << "Render process's abnormal termination wasn't handled by"
-                 << " all associated webviews, triggering application crash";
+      if (crashed) {
+        // Keeps this log unchanged, CTS test uses it to detect crash.
+        LOG(FATAL) << "Render process's crash wasn't handled by all associated"
+                   << " webviews, triggering application crash";
+      } else {
+        // The render process was most likely killed for OOM or switching
+        // WebView provider, to make WebView backward compatible, kills the
+        // browser process instead of triggering crash.
+        LOG(ERROR) << "Render process kill (OOM or update) wasn't handed by"
+                   << " all associated webviews, killing application.";
+        kill(getpid(), SIGKILL);
+      }
     }
   }
 }
