@@ -1825,7 +1825,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mUmaSessionStats = new UmaSessionStats(this);
         }
 
-        mUmaSessionStats.updateMetricsServiceState();
+        UmaSessionStats.updateMetricsServiceState();
         mUmaSessionStats.startNewSession(getTabModelSelector());
     }
 

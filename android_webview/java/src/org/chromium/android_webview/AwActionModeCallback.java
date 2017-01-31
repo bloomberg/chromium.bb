@@ -93,7 +93,7 @@ public class AwActionModeCallback implements ActionMode.Callback {
         RecordUserAction.record("MobileActionMode.ProcessTextIntent");
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 
-        String query = mHelper.sanitizeQuery(mHelper.getSelectedText(),
+        String query = ActionModeCallbackHelper.sanitizeQuery(mHelper.getSelectedText(),
                 ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
 

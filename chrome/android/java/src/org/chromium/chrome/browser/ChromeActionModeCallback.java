@@ -87,7 +87,7 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
         RecordUserAction.record("MobileActionMode.WebSearch");
         if (mTab.getTabModelSelector() == null) return;
 
-        String query = mHelper.sanitizeQuery(mHelper.getSelectedText(),
+        String query = ActionModeCallbackHelper.sanitizeQuery(mHelper.getSelectedText(),
                 ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
 

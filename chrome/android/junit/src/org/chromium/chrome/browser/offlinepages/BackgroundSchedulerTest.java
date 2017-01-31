@@ -14,14 +14,15 @@ import android.content.Context;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.Task;
 
-import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.util.Feature;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ShadowExtractor;
+
+import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.util.Feature;
 
 /**
  * Unit tests for BackgroundScheduler.
@@ -47,9 +48,8 @@ public class BackgroundSchedulerTest {
     @Test
     @Feature({"OfflinePages"})
     public void testSchedule() {
-        BackgroundScheduler scheduler = new BackgroundScheduler();
         assertNull(mGcmNetworkManager.getScheduledTask());
-        scheduler.schedule(mContext, mConditions1);
+        BackgroundScheduler.schedule(mContext, mConditions1);
         // Check with gcmNetworkManagerShadow that schedule got called.
         assertNotNull(mGcmNetworkManager.getScheduledTask());
 
@@ -65,13 +65,12 @@ public class BackgroundSchedulerTest {
     @Test
     @Feature({"OfflinePages"})
     public void testUnschedule() {
-        BackgroundScheduler scheduler = new BackgroundScheduler();
         assertNull(mGcmNetworkManager.getScheduledTask());
-        scheduler.schedule(mContext, mConditions1);
+        BackgroundScheduler.schedule(mContext, mConditions1);
         assertNotNull(mGcmNetworkManager.getScheduledTask());
 
         assertNull(mGcmNetworkManager.getCanceledTask());
-        scheduler.unschedule(mContext);
+        BackgroundScheduler.unschedule(mContext);
         assertNotNull(mGcmNetworkManager.getCanceledTask());
     }
 }

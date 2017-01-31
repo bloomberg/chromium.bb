@@ -23,11 +23,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.media.router.cast.CastMessageHandler.RequestRecord;
-import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONObjectLike;
-import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONStringLike;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -37,6 +32,12 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
+
+import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.media.router.cast.CastMessageHandler.RequestRecord;
+import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONObjectLike;
+import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONStringLike;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -273,7 +274,7 @@ public class CastMessageHandlerTest {
                 any(JSONObject.class), anyString(), anyString(), anyInt());
         for (String messageType : CastMessageHandler.getMediaMessageTypesForTest()) {
             // TODO(zqzhang): SET_VOLUME and STOP should not reach here?
-            if (messageType == "MEDIA_SET_VOLUME" || messageType == "STOP_MEDIA")
+            if ("MEDIA_SET_VOLUME".equals(messageType) || "STOP_MEDIA".equals(messageType))
                 continue;
             JSONObject innerMessage = new JSONObject().put("type", messageType);
             JSONObject message = buildCastV2Message(CLIENT_ID1, innerMessage);

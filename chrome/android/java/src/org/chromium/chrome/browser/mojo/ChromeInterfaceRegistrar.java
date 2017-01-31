@@ -19,6 +19,8 @@ import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.TextDetection;
 import org.chromium.webshare.mojom.ShareService;
 
+@SuppressWarnings("MultipleTopLevelClassesInFile")
+
 /** Registers mojo interface implementations exposed to C++ code at the Chrome layer. */
 class ChromeInterfaceRegistrar {
     @CalledByNative

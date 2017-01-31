@@ -212,7 +212,7 @@ public class ChromeLauncherActivity extends Activity
                         ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)) {
                 // Launch the First Run Experience for VIEW Intents with URLs before launching
                 // ChromeTabbedActivity if necessary.
-                if (getIntent() != null && getIntent().getAction() == Intent.ACTION_VIEW
+                if (getIntent() != null && Intent.ACTION_VIEW.equals(getIntent().getAction())
                         && IntentHandler.getUrlFromIntent(getIntent()) != null) {
                     if (launchFirstRunExperience(true)) {
                         finish();

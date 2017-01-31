@@ -402,7 +402,7 @@ public class MinidumpUploadService extends IntentService {
             Log.w(TAG, "Could not find a crash dump with local ID " + localId);
             return;
         }
-        File renamedMinidumpFile = fileManager.trySetForcedUpload(minidumpFile);
+        File renamedMinidumpFile = CrashFileManager.trySetForcedUpload(minidumpFile);
         if (renamedMinidumpFile == null) {
             Log.w(TAG, "Could not rename the file " + minidumpFile.getName() + " for re-upload");
             return;

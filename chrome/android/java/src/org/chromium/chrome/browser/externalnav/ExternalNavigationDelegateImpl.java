@@ -580,7 +580,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         Intent intent = tab.getTabRedirectHandler() != null
                 ? tab.getTabRedirectHandler().getInitialIntent() : null;
         // TODO(mariakhomenko): consider also handling NDEF_DISCOVER action redirects.
-        if (isIncomingRedirect && intent != null && intent.getAction() == Intent.ACTION_VIEW) {
+        if (isIncomingRedirect && intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
             // Set the URL the redirect was resolved to for checking the existence of the
             // instant app inside handleIncomingIntent().
             Intent resolvedIntent = new Intent(intent);

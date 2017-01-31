@@ -184,7 +184,7 @@ public class DownloadNotificationService extends Service {
             DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).cancelTask();
             // Limit the number of auto resumption attempts in case Chrome falls into a vicious
             // cycle.
-            if (intent.getAction() == ACTION_DOWNLOAD_RESUME_ALL) {
+            if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())) {
                 if (mNumAutoResumptionAttemptLeft > 0) {
                     mNumAutoResumptionAttemptLeft--;
                     updateResumptionAttemptLeft();
@@ -613,7 +613,7 @@ public class DownloadNotificationService extends Service {
      * @param intent Intent that contains the download action.
      */
     private DownloadSharedPreferenceEntry getDownloadEntryFromIntent(Intent intent) {
-        if (intent.getAction() == ACTION_DOWNLOAD_RESUME_ALL) return null;
+        if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())) return null;
         String guid = IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_GUID);
         return mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(guid);
     }
@@ -634,14 +634,14 @@ public class DownloadNotificationService extends Service {
             return;
         }
 
-        if (intent.getAction() == ACTION_DOWNLOAD_PAUSE) {
+        if (ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
             // If browser process already goes away, the download should have already paused. Do
             // nothing in that case.
             if (!DownloadManagerService.hasDownloadManagerService()) {
                 notifyDownloadPaused(entry.downloadGuid, !entry.isOffTheRecord, false);
                 return;
             }
-        } else if (intent.getAction() == ACTION_DOWNLOAD_RESUME) {
+        } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
             boolean metered = DownloadManagerService.isActiveNetworkMetered(mContext);
             if (!entry.canDownloadWhileMetered) {
                 // If user manually resumes a download, update the network type if it
@@ -651,11 +651,11 @@ public class DownloadNotificationService extends Service {
             entry.isAutoResumable = true;
             // Update the SharedPreference entry.
             mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(entry);
-        } else if (intent.getAction() == ACTION_DOWNLOAD_RESUME_ALL
+        } else if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())
                 && (mDownloadSharedPreferenceHelper.getEntries().isEmpty()
                         || DownloadManagerService.hasDownloadManagerService())) {
             return;
-        } else if (intent.getAction() == ACTION_DOWNLOAD_OPEN) {
+        } else if (ACTION_DOWNLOAD_OPEN.equals(intent.getAction())) {
             // TODO(fgorski): Do we even need to do anything special here, before we launch Chrome?
         }
 
@@ -668,14 +668,13 @@ public class DownloadNotificationService extends Service {
             @Override
             public void finishNativeInitialization() {
                 int itemType = entry != null ? entry.itemType
-                        : (intent.getAction() == ACTION_DOWNLOAD_OPEN
+                        : (ACTION_DOWNLOAD_OPEN.equals(intent.getAction())
                                 ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
                                 : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD);
                 DownloadServiceDelegate downloadServiceDelegate =
-                        intent.getAction() == ACTION_DOWNLOAD_OPEN ? null
+                        ACTION_DOWNLOAD_OPEN.equals(intent.getAction()) ? null
                                 : getServiceDelegate(itemType);
-                switch (intent.getAction()) {
-                    case ACTION_DOWNLOAD_CANCEL:
+                if (ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())) {
                         // TODO(qinmin): Alternatively, we can delete the downloaded content on
                         // SD card, and remove the download ID from the SharedPreferences so we
                         // don't need to restart the browser process. http://crbug.com/579643.
@@ -683,30 +682,24 @@ public class DownloadNotificationService extends Service {
                         downloadServiceDelegate.cancelDownload(entry.downloadGuid,
                                 entry.isOffTheRecord, IntentUtils.safeGetBooleanExtra(
                                         intent, EXTRA_NOTIFICATION_DISMISSED, false));
-                        break;
-                    case ACTION_DOWNLOAD_PAUSE:
+                } else if (ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
                         downloadServiceDelegate.pauseDownload(entry.downloadGuid,
                                 entry.isOffTheRecord);
-                        break;
-                    case ACTION_DOWNLOAD_RESUME:
+                } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
                         notifyDownloadPending(entry.downloadGuid, entry.fileName,
                                 entry.isOffTheRecord, entry.canDownloadWhileMetered,
                                 entry.isOfflinePage());
                         downloadServiceDelegate.resumeDownload(entry.buildDownloadItem(), true);
-                        break;
-                    case ACTION_DOWNLOAD_RESUME_ALL:
+                } else if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())) {
                         assert entry == null;
                         resumeAllPendingDownloads();
-                        break;
-                    case ACTION_DOWNLOAD_OPEN:
+                } else if (ACTION_DOWNLOAD_OPEN.equals(intent.getAction())) {
                         OfflinePageDownloadBridge.openDownloadedPage(
                                 IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_GUID));
-                        break;
-                    default:
+                } else {
                         Log.e(TAG, "Unrecognized intent action.", intent);
-                        break;
                 }
-                if (intent.getAction() != ACTION_DOWNLOAD_OPEN) {
+                if (!ACTION_DOWNLOAD_OPEN.equals(intent.getAction())) {
                     downloadServiceDelegate.destroyServiceDelegate();
                 }
             }
