@@ -634,13 +634,6 @@ by a child template that "extends" this file.
             android:exported="false" >
         </activity>
 
-        <!-- Opt-in activity for Physical Web -->
-        <activity android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebOptInActivity"
-            android:label="@string/physical_web_list_urls_activity_title"
-            android:theme="@style/PhysicalWebOptInStyle"
-            android:exported="false">
-        </activity>
-
         <!-- Service for handling Nearby Messages -->
         <service android:name="org.chromium.chrome.browser.physicalweb.NearbyMessageIntentService"
             android:exported="false" />
