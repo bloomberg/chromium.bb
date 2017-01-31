@@ -136,7 +136,7 @@ bool AwContentRendererClient::HandleNavigation(
   }
 
   bool ignore_navigation = false;
-  base::string16 url = request.url().string();
+  base::string16 url = request.url().string().utf16();
   bool has_user_gesture = request.hasUserGesture();
 
   int render_frame_id = render_frame->GetRoutingID();
@@ -195,8 +195,8 @@ void AwContentRendererClient::GetNavigationErrorStrings(
   if (error_html) {
     GURL gurl(failed_request.url());
     std::string url = net::EscapeForHTML(gurl.possibly_invalid_spec());
-    std::string err =
-        base::UTF16ToUTF8(base::StringPiece16(error.localizedDescription));
+    std::string err = error.localizedDescription.utf8(
+        blink::WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
 
     std::vector<std::string> replacements;
     replacements.push_back(
@@ -241,7 +241,7 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     if (error.localizedDescription.isEmpty())
       *error_description = base::ASCIIToUTF16(net::ErrorToString(error.reason));
     else
-      *error_description = error.localizedDescription;
+      *error_description = error.localizedDescription.utf16();
   }
 }
 

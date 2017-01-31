@@ -12,6 +12,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
@@ -59,7 +60,8 @@ void AppWebMessagePortClient::OnWebToAppMessage(
   v8::Local<v8::Context> context = main_frame->mainWorldScriptContext();
   v8::Context::Scope context_scope(context);
   DCHECK(!context.IsEmpty());
-  WebSerializedScriptValue v = WebSerializedScriptValue::fromString(message);
+  WebSerializedScriptValue v = WebSerializedScriptValue::fromString(
+      blink::WebString::fromUTF16(message));
   v8::Local<v8::Value> v8value = v.deserialize();
 
   std::unique_ptr<V8ValueConverter> converter;
@@ -99,7 +101,7 @@ void AppWebMessagePortClient::OnAppToWebMessage(
       converter->ToV8Value(value.get(), context);
   WebSerializedScriptValue serialized_script_value =
       WebSerializedScriptValue::serialize(result_value);
-  base::string16 result = serialized_script_value.toString();
+  base::string16 result = serialized_script_value.toString().utf16();
   Send(new AppWebMessagePortHostMsg_ConvertedAppToWebMessage(
       render_frame()->GetRoutingID(), message_port_id, result,
       sent_message_port_ids));

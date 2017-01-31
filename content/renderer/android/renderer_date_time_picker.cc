@@ -27,8 +27,8 @@ DateTimeSuggestion ToDateTimeSuggestion(
     const blink::WebDateTimeSuggestion& suggestion) {
   DateTimeSuggestion result;
   result.value = suggestion.value;
-  result.localized_value = suggestion.localizedValue;
-  result.label = suggestion.label;
+  result.localized_value = suggestion.localizedValue.utf16();
+  result.label = suggestion.label.utf16();
   return result;
 }
 

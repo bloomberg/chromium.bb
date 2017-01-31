@@ -184,39 +184,6 @@ class WebString {
   BLINK_COMMON_EXPORT WebString(const WTF::AtomicString&);
   BLINK_COMMON_EXPORT WebString& operator=(const WTF::AtomicString&);
   BLINK_COMMON_EXPORT operator WTF::AtomicString() const;
-#else
-  // WARNING: implicit conversions to/from string16 are being deprecated,
-  // use fromUTF16() or utf16() instead in new changes.
-  WebString(const base::string16& s) { assign(s.data(), s.length()); }
-
-  WebString& operator=(const base::string16& s) {
-    assign(s.data(), s.length());
-    return *this;
-  }
-
-  operator base::string16() const {
-    return base::Latin1OrUTF16ToUTF16(length(), data8(), data16());
-  }
-
-  WebString(const base::NullableString16& s) {
-    if (s.is_null())
-      reset();
-    else
-      assign(s.string().data(), s.string().length());
-  }
-
-  WebString& operator=(const base::NullableString16& s) {
-    if (s.is_null())
-      reset();
-    else
-      assign(s.string().data(), s.string().length());
-    return *this;
-  }
-
-  operator base::NullableString16() const {
-    return base::NullableString16(operator base::string16(),
-                                  m_private.isNull());
-  }
 #endif
 
  private:

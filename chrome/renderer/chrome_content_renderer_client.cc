@@ -987,14 +987,14 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     // and component extensions.  Also allow dev interfaces when --enable-nacl
     // is set, but do not allow --enable-nacl to provide dev interfaces to
     // webstore installed and other normally allowed URLs.
-    WebString dev_attribute = WebString::fromUTF8("@dev");
+    std::string dev_attribute("@dev");
     if (is_extension_unrestricted ||
         (is_nacl_unrestricted && !is_nacl_allowed_by_location)) {
       // Add the special '@dev' attribute.
       std::vector<base::string16> param_names;
       std::vector<base::string16> param_values;
-      param_names.push_back(dev_attribute);
-      param_values.push_back(WebString());
+      param_names.push_back(base::ASCIIToUTF16(dev_attribute));
+      param_values.push_back(base::string16());
       AppendParams(
           param_names,
           param_values,
@@ -1004,8 +1004,10 @@ bool ChromeContentRendererClient::IsNaClAllowed(
       // If the params somehow contain '@dev', remove it.
       size_t attribute_count = params->attributeNames.size();
       for (size_t i = 0; i < attribute_count; ++i) {
-        if (params->attributeNames[i].equals(dev_attribute))
+        if (params->attributeNames[i].equals(dev_attribute.data(),
+                                             dev_attribute.length())) {
           params->attributeNames[i] = WebString();
+        }
       }
     }
   }

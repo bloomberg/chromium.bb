@@ -36,7 +36,7 @@ bool ContentDetector::FindContentRange(const WebHitTestResult& hit_test,
   if (surrounding_text.isNull())
     return false;
 
-  base::string16 content = surrounding_text.textContent();
+  base::string16 content = surrounding_text.textContent().utf16();
   if (content.empty())
     return false;
 

@@ -32,19 +32,20 @@ namespace {
 
 GURL GetAbsoluteUrl(const blink::WebNode& node,
                     const base::string16& url_fragment) {
-  return GURL(node.document().completeURL(url_fragment));
+  return GURL(
+      node.document().completeURL(blink::WebString::fromUTF16(url_fragment)));
 }
 
 base::string16 GetHref(const blink::WebElement& element) {
   // Get the actual 'href' attribute, which might relative if valid or can
   // possibly contain garbage otherwise, so not using absoluteLinkURL here.
-  return element.getAttribute("href");
+  return element.getAttribute("href").utf16();
 }
 
 GURL GetAbsoluteSrcUrl(const blink::WebElement& element) {
   if (element.isNull())
     return GURL();
-  return GetAbsoluteUrl(element, element.getAttribute("src"));
+  return GetAbsoluteUrl(element, element.getAttribute("src").utf16());
 }
 
 blink::WebElement GetImgChild(const blink::WebNode& node) {
@@ -201,7 +202,7 @@ void AwRenderFrameExt::FocusedNodeChanged(const blink::WebNode& node) {
   AwHitTestData data;
 
   data.href = GetHref(element);
-  data.anchor_text = element.textContent();
+  data.anchor_text = element.textContent().utf16();
 
   GURL absolute_link_url;
   if (node.isLink())
@@ -230,7 +231,7 @@ void AwRenderFrameExt::OnDoHitTest(const gfx::PointF& touch_center,
 
   GURL absolute_image_url = result.absoluteImageURL();
   if (!result.urlElement().isNull()) {
-    data.anchor_text = result.urlElement().textContent();
+    data.anchor_text = result.urlElement().textContent().utf16();
     data.href = GetHref(result.urlElement());
     // If we hit an image that failed to load, Blink won't give us its URL.
     // Fall back to walking the DOM in this case.

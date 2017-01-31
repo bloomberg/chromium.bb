@@ -11,7 +11,6 @@
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck_provider_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace {
 
@@ -33,8 +32,7 @@ void FakeMessageArrival(
 TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   FakeTextCheckingCompletion completion;
 
-  provider_.RequestTextChecking(blink::WebString("hello "),
-                                &completion,
+  provider_.RequestTextChecking(base::ASCIIToUTF16("hello "), &completion,
                                 std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 0U);
   EXPECT_EQ(provider_.messages_.size(), 1U);
@@ -44,7 +42,7 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
       provider_.messages_[0], &read_parameters1);
   EXPECT_TRUE(ok);
-  EXPECT_EQ(std::get<2>(read_parameters1), base::UTF8ToUTF16("hello "));
+  EXPECT_EQ(std::get<2>(read_parameters1), base::ASCIIToUTF16("hello "));
 
   FakeMessageArrival(&provider_, read_parameters1);
   EXPECT_EQ(completion.completion_count_, 1U);
@@ -53,12 +51,10 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 
 TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   FakeTextCheckingCompletion completion1;
-  provider_.RequestTextChecking(blink::WebString("hello "),
-                                &completion1,
+  provider_.RequestTextChecking(base::ASCIIToUTF16("hello "), &completion1,
                                 std::vector<SpellCheckMarker>());
   FakeTextCheckingCompletion completion2;
-  provider_.RequestTextChecking(blink::WebString("bye "),
-                                &completion2,
+  provider_.RequestTextChecking(base::ASCIIToUTF16("bye "), &completion2,
                                 std::vector<SpellCheckMarker>());
 
   EXPECT_EQ(completion1.completion_count_, 0U);

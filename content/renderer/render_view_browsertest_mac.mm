@@ -92,7 +92,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   view->OnUpdateWebPreferences(prefs);
 
   const int kMaxOutputCharacters = 1024;
-  base::string16 output;
+  std::string output;
 
   NSEvent* arrowDownKeyDown = CmdDeadKeyEvent(NSKeyDown, kVK_DownArrow);
   NSEvent* arrowUpKeyDown = CmdDeadKeyEvent(NSKeyDown, kVK_UpArrow);
@@ -109,8 +109,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
-                                                    kMaxOutputCharacters);
-  EXPECT_EQ(kArrowDownScrollDown, base::UTF16ToASCII(output));
+                                                    kMaxOutputCharacters)
+               .ascii();
+  EXPECT_EQ(kArrowDownScrollDown, output);
 
   const char* kArrowUpScrollUp = "38,false,false,true,false\n0\np1";
   view->OnSetEditCommandsForNextKeyEvent(
@@ -119,8 +120,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
-                                                    kMaxOutputCharacters);
-  EXPECT_EQ(kArrowUpScrollUp, base::UTF16ToASCII(output));
+                                                    kMaxOutputCharacters)
+               .ascii();
+  EXPECT_EQ(kArrowUpScrollUp, output);
 
   // Now let javascript eat the key events -- no scrolling should happen.
   // Set a scroll position slightly down the page to ensure that it does not
@@ -134,8 +136,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
-                                                    kMaxOutputCharacters);
-  EXPECT_EQ(kArrowDownNoScroll, base::UTF16ToASCII(output));
+                                                    kMaxOutputCharacters)
+               .ascii();
+  EXPECT_EQ(kArrowDownNoScroll, output);
 
   const char* kArrowUpNoScroll = "38,false,false,true,false\n100\np1";
   view->OnSetEditCommandsForNextKeyEvent(
@@ -144,8 +147,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
-                                                    kMaxOutputCharacters);
-  EXPECT_EQ(kArrowUpNoScroll, base::UTF16ToASCII(output));
+                                                    kMaxOutputCharacters)
+               .ascii();
+  EXPECT_EQ(kArrowUpNoScroll, output);
 }
 
 }  // namespace content
