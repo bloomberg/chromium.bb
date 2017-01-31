@@ -109,4 +109,9 @@ CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(
   return styleValueVector;
 }
 
+CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(
+    const CSSValue& cssValue) {
+  return cssValueToStyleValueVector(CSSPropertyInvalid, cssValue);
+}
+
 }  // namespace blink

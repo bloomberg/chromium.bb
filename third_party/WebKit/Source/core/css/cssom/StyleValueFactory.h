@@ -19,6 +19,8 @@ class StyleValueFactory {
  public:
   static CSSStyleValueVector cssValueToStyleValueVector(CSSPropertyID,
                                                         const CSSValue&);
+  // If you don't have complex CSS properties, use this one.
+  static CSSStyleValueVector cssValueToStyleValueVector(const CSSValue&);
 };
 
 }  // namespace blink
