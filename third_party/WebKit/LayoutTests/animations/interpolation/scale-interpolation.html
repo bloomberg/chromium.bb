@@ -23,6 +23,19 @@
 <script>
 assertInterpolation({
   property: 'scale',
+  from: 'none',
+  to: '1.5',
+}, [
+  {at: -1, is: '0.5'},
+  {at: 0, is: 'none'},
+  {at: 0.25, is: '1.125'},
+  {at: 0.75, is: '1.375'},
+  {at: 1, is: '1.5'},
+  {at: 2, is: '2'},
+]);
+
+assertInterpolation({
+  property: 'scale',
   from: neutralKeyframe,
   to: '1.5',
 }, [
@@ -40,7 +53,7 @@ assertInterpolation({
   to: '1.5',
 }, [
   {at: -1, is: '0.5'},
-  {at: 0, is: '1'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: '1.125'},
   {at: 0.75, is: '1.375'},
   {at: 1, is: '1.5'},
@@ -144,7 +157,7 @@ assertInterpolation({
   to: '2 0.5 1',
 }, [
   {at: -1, is: '0 1.5'},
-  {at: 0, is: '1'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: '1.25 0.875'},
   {at: 0.75, is: '1.75 0.625'},
   {at: 1, is: '2 0.5'},
@@ -160,7 +173,7 @@ assertInterpolation({
   {at: 0, is: '2 0.5 1'},
   {at: 0.25, is: '1.75 0.6251'},
   {at: 0.75, is: '1.25 0.875'},
-  {at: 1, is: '1 1 1'},
+  {at: 1, is: 'none'},
   {at: 2, is: '0 1.5'},
 ]);
 
@@ -170,7 +183,7 @@ assertInterpolation({
   to: 'inherit',
 }, [
   {at: -1, is: '1.5 1 0'},
-  {at: 0, is: '1'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: '0.875 1 1.25'},
   {at: 0.75, is: '0.625 1 1.75'},
   {at: 1, is: '0.5 1 2'},
@@ -186,7 +199,7 @@ assertInterpolation({
   {at: 0, is: '0.5 1 2'},
   {at: 0.25, is: '0.625 1 1.75'},
   {at: 0.75, is: '0.875 1 1.25'},
-  {at: 1, is: '1 1 1'},
+  {at: 1, is: 'none'},
   {at: 2, is: '1.5 1 0'},
 ]);
 </script>

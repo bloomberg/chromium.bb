@@ -303,7 +303,8 @@ static PassRefPtr<AnimatableValue> createFromTransformProperties(
     double zoom,
     PassRefPtr<TransformOperation> initialTransform) {
   TransformOperations operation;
-  operation.operations().push_back(transform ? transform : initialTransform);
+  if (transform || initialTransform)
+    operation.operations().push_back(transform ? transform : initialTransform);
   return AnimatableTransform::create(operation, transform ? zoom : 1);
 }
 
@@ -624,11 +625,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
           style.rotate(), style.effectiveZoom(), initialRotate);
     }
     case CSSPropertyScale: {
-      DEFINE_STATIC_REF(ScaleTransformOperation, initialScale,
-                        ScaleTransformOperation::create(
-                            1, 1, 1, TransformOperation::Scale3D));
       return createFromTransformProperties(style.scale(), style.effectiveZoom(),
-                                           initialScale);
+                                           nullptr);
     }
     case CSSPropertyOffsetAnchor:
       return createFromLengthPoint(style.offsetAnchor(), style);

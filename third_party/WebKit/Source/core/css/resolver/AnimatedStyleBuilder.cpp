@@ -299,6 +299,8 @@ TransformOperation* animatableValueToTransformOperation(
     TransformOperation::OperationType type) {
   const TransformOperations& transformList =
       toAnimatableTransform(value)->transformOperations();
+  if (transformList.size() == 0)
+    return nullptr;
   ASSERT(transformList.size() == 1);
   ASSERT(transformList.operations()[0].get()->type() == type);
   return transformList.operations()[0].get();
