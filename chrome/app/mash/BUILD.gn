@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/nacl/config.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -69,6 +70,13 @@ service_manifest("mash_manifest") {
 
   if (is_linux && !is_android) {
     packaged_services += [ "//components/font_service:manifest" ]
+  }
+
+  if (enable_nacl) {
+    packaged_services += [ "//components/nacl/loader:nacl_loader_manifest" ]
+    if (is_win && target_cpu == "x86") {
+      packaged_services += [ "//components/nacl/broker:nacl_broker_manifest" ]
+    }
   }
 }
 
