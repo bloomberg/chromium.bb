@@ -129,7 +129,7 @@ void TestIntraPred8(AvxPredFunc const *pred_funcs) {
     "95f7bfc262329a5849eda66d8f7c68ce",
 #if CONFIG_ALT_INTRA
     "f6ade499c626d38eb70661184b79bc57",
-    "28a52163fa8bd2216e6af1ce3113af09"
+    "f9217748b7188479c2990e42d2dc1da1"
 #else
     "815b75c8e0d91cc1ae766dc5d3e445a3",
 #endif  // CONFIG_ALT_INTRA
@@ -154,7 +154,7 @@ void TestIntraPred16(AvxPredFunc const *pred_funcs) {
     "a8fe1c70432f09d0c20c67bdb6432c4d",
 #if CONFIG_ALT_INTRA
     "7adcaaa3554eb71a81fc48cb9043984b",
-    "3f83cda25a2c1647e1b48803922c33df"
+    "de44142b9670ab7c85d4c318c47257e5"
 #else
     "b8a41aa968ec108af447af4217cba91b",
 #endif  // CONFIG_ALT_INTRA
