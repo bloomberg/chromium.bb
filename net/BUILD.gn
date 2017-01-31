@@ -4094,6 +4094,7 @@ test("net_unittests") {
     "base/url_util_unittest.cc",
     "cert/caching_cert_verifier_unittest.cc",
     "cert/cert_verifier_unittest.cc",
+    "cert/cert_verify_proc_android_unittest.cc",
     "cert/cert_verify_proc_ios_unittest.cc",
     "cert/cert_verify_proc_unittest.cc",
     "cert/cert_verify_proc_whitelist_unittest.cc",
