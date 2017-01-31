@@ -2151,6 +2151,25 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
     set_segment_id_supertx(cm, mi_row, mi_col, bsize);
 
+#if CONFIG_DELTA_Q
+    if (cm->delta_q_present_flag) {
+      for (i = 0; i < MAX_SEGMENTS; i++) {
+        xd->plane[0].seg_dequant[i][0] =
+            av1_dc_quant(xd->current_qindex, cm->y_dc_delta_q, cm->bit_depth);
+        xd->plane[0].seg_dequant[i][1] =
+            av1_ac_quant(xd->current_qindex, 0, cm->bit_depth);
+        xd->plane[1].seg_dequant[i][0] =
+            av1_dc_quant(xd->current_qindex, cm->uv_dc_delta_q, cm->bit_depth);
+        xd->plane[1].seg_dequant[i][1] =
+            av1_ac_quant(xd->current_qindex, cm->uv_ac_delta_q, cm->bit_depth);
+        xd->plane[2].seg_dequant[i][0] =
+            av1_dc_quant(xd->current_qindex, cm->uv_dc_delta_q, cm->bit_depth);
+        xd->plane[2].seg_dequant[i][1] =
+            av1_ac_quant(xd->current_qindex, cm->uv_ac_delta_q, cm->bit_depth);
+      }
+    }
+#endif
+
     xd->mi = cm->mi_grid_visible + offset;
     xd->mi[0] = cm->mi + offset;
     set_mi_row_col(xd, tile, mi_row, mi_size_high[bsize], mi_col,

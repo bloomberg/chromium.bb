@@ -1987,17 +1987,22 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   mbmi->mv[1].as_int = 0;
   mbmi->segment_id = read_inter_segment_id(cm, xd, mi_row, mi_col, r);
 #if CONFIG_SUPERTX
-  if (!supertx_enabled) {
+  if (!supertx_enabled)
 #endif  // CONFIG_SUPERTX
     mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+
 #if CONFIG_DELTA_Q
-    if (cm->delta_q_present_flag) {
-      xd->current_qindex =
-          xd->prev_qindex +
-          read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) * cm->delta_q_res;
-      xd->prev_qindex = xd->current_qindex;
-    }
+  if (cm->delta_q_present_flag) {
+    xd->current_qindex =
+        xd->prev_qindex +
+        read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) * cm->delta_q_res;
+    xd->prev_qindex = xd->current_qindex;
+  }
 #endif
+
+#if CONFIG_SUPERTX
+  if (!supertx_enabled) {
+#endif  // CONFIG_SUPERTX
     inter_block = read_is_inter_block(cm, xd, mbmi->segment_id, r);
 
 #if CONFIG_VAR_TX
