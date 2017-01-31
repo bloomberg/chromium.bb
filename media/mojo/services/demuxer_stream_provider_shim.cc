@@ -13,36 +13,31 @@
 namespace media {
 
 DemuxerStreamProviderShim::DemuxerStreamProviderShim(
-    mojom::DemuxerStreamPtr audio,
-    mojom::DemuxerStreamPtr video,
+    std::vector<mojom::DemuxerStreamPtr> streams,
     const base::Closure& demuxer_ready_cb)
     : demuxer_ready_cb_(demuxer_ready_cb),
       streams_ready_(0),
       weak_factory_(this) {
-  DCHECK(audio || video);
+  DCHECK(!streams.empty());
   DCHECK(!demuxer_ready_cb_.is_null());
 
-  if (audio) {
-    streams_.push_back(new MojoDemuxerStreamAdapter(
-        std::move(audio), base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
-                                     weak_factory_.GetWeakPtr())));
-  }
-
-  if (video) {
-    streams_.push_back(new MojoDemuxerStreamAdapter(
-        std::move(video), base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
-                                     weak_factory_.GetWeakPtr())));
+  for (auto& s : streams) {
+    streams_.emplace_back(new MojoDemuxerStreamAdapter(
+        std::move(s), base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
+                                 weak_factory_.GetWeakPtr())));
   }
 }
 
 DemuxerStreamProviderShim::~DemuxerStreamProviderShim() {
 }
 
+// This function returns only the first stream of the given |type| for now.
+// TODO(servolk): Make this work with multiple streams.
 DemuxerStream* DemuxerStreamProviderShim::GetStream(DemuxerStream::Type type) {
   DCHECK(demuxer_ready_cb_.is_null());
-  for (auto* stream : streams_) {
+  for (auto& stream : streams_) {
     if (stream->type() == type)
-      return stream;
+      return stream.get();
   }
 
   return nullptr;

@@ -12,11 +12,11 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
 interface Renderer {
-  // Initializes the Renderer with one or both of an audio and video stream,
-  // executing the callback with whether the initialization succeeded.
+  // Initializes the Renderer with either one or more audio / video |streams|,
+  // or a |media_url| executing the callback with whether the initialization
+  // succeeded.
   Initialize(associated RendererClient client,
-             DemuxerStream? audio,
-             DemuxerStream? video,
+             array<DemuxerStream>? streams,
              url.mojom.Url? media_url,
              url.mojom.Url? first_party_for_cookies) => (bool success);
 

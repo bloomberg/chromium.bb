@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
@@ -96,8 +99,9 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   // Callback for connection error on |remote_renderer_|.
   void OnConnectionError();
 
-  // Callback for connection error on |audio_stream_| and |video_stream_|.
-  void OnDemuxerStreamConnectionError(DemuxerStream::Type type);
+  // Callback for connection error on any of |streams_|. The |stream| parameter
+  // indicates which stream the error happened on.
+  void OnDemuxerStreamConnectionError(MojoDemuxerStreamImpl* stream);
 
   // Callbacks for |remote_renderer_| methods.
   void OnInitialized(media::RendererClient* client, bool success);
@@ -131,8 +135,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   // destroyed. The local demuxer streams returned by DemuxerStreamProvider
   // cannot be used after |this| is destroyed.
   // TODO(alokp): Add tests for MojoDemuxerStreamImpl.
-  std::unique_ptr<MojoDemuxerStreamImpl> audio_stream_;
-  std::unique_ptr<MojoDemuxerStreamImpl> video_stream_;
+  std::vector<std::unique_ptr<MojoDemuxerStreamImpl>> streams_;
 
   // This class is constructed on one thread and used exclusively on another
   // thread. This member is used to safely pass the RendererPtr from one thread

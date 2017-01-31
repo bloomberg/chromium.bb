@@ -77,8 +77,7 @@ MojoRendererService::~MojoRendererService() {}
 
 void MojoRendererService::Initialize(
     mojom::RendererClientAssociatedPtrInfo client,
-    mojom::DemuxerStreamPtr audio,
-    mojom::DemuxerStreamPtr video,
+    base::Optional<std::vector<mojom::DemuxerStreamPtr>> streams,
     const base::Optional<GURL>& media_url,
     const base::Optional<GURL>& first_party_for_cookies,
     const InitializeCallback& callback) {
@@ -89,14 +88,13 @@ void MojoRendererService::Initialize(
   state_ = STATE_INITIALIZING;
 
   if (media_url == base::nullopt) {
+    DCHECK(streams.has_value());
     stream_provider_.reset(new DemuxerStreamProviderShim(
-        std::move(audio), std::move(video),
+        std::move(*streams),
         base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
     return;
   }
 
-  DCHECK(!audio);
-  DCHECK(!video);
   DCHECK(!media_url.value().is_empty());
   DCHECK(first_party_for_cookies);
   stream_provider_.reset(new MediaUrlDemuxer(nullptr, media_url.value(),

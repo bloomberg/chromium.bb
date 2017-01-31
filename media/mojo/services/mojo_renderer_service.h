@@ -63,8 +63,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
 
   // mojom::Renderer implementation.
   void Initialize(mojom::RendererClientAssociatedPtrInfo client,
-                  mojom::DemuxerStreamPtr audio,
-                  mojom::DemuxerStreamPtr video,
+                  base::Optional<std::vector<mojom::DemuxerStreamPtr>> streams,
                   const base::Optional<GURL>& media_url,
                   const base::Optional<GURL>& first_party_for_cookies,
                   const InitializeCallback& callback) final;

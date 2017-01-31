@@ -138,9 +138,10 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
-    renderer_->Initialize(std::move(client_ptr_info), nullptr,
-                          std::move(video_stream_proxy), base::nullopt,
-                          base::nullopt,
+    std::vector<mojom::DemuxerStreamPtr> streams;
+    streams.push_back(std::move(video_stream_proxy));
+    renderer_->Initialize(std::move(client_ptr_info), std::move(streams),
+                          base::nullopt, base::nullopt,
                           base::Bind(&MediaServiceTest::OnRendererInitialized,
                                      base::Unretained(this)));
   }

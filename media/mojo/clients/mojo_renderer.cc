@@ -78,28 +78,33 @@ void MojoRenderer::InitializeRendererFromStreams(
   DemuxerStream* const video =
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 
-  mojom::DemuxerStreamPtr audio_stream;
+  std::vector<mojom::DemuxerStreamPtr> streams;
   if (audio) {
-    audio_stream_.reset(
-        new MojoDemuxerStreamImpl(audio, MakeRequest(&audio_stream)));
-    // Using base::Unretained(this) is safe because |this| owns
-    // |audio_stream_|, and the error handler can't be invoked once
-    // |audio_stream_| is destroyed.
-    audio_stream_->set_connection_error_handler(
+    mojom::DemuxerStreamPtr audio_stream;
+    std::unique_ptr<MojoDemuxerStreamImpl> mojo_stream =
+        base::MakeUnique<MojoDemuxerStreamImpl>(audio,
+                                                MakeRequest(&audio_stream));
+    // Using base::Unretained(this) is safe because |this| owns |mojo_stream|,
+    // and the error handler can't be invoked once |mojo_stream| is destroyed.
+    mojo_stream->set_connection_error_handler(
         base::Bind(&MojoRenderer::OnDemuxerStreamConnectionError,
-                   base::Unretained(this), DemuxerStream::AUDIO));
+                   base::Unretained(this), mojo_stream.get()));
+    streams_.push_back(std::move(mojo_stream));
+    streams.push_back(std::move(audio_stream));
   }
 
-  mojom::DemuxerStreamPtr video_stream;
   if (video) {
-    video_stream_.reset(
-        new MojoDemuxerStreamImpl(video, MakeRequest(&video_stream)));
-    // Using base::Unretained(this) is safe because |this| owns
-    // |video_stream_|, and the error handler can't be invoked once
-    // |video_stream_| is destroyed.
-    video_stream_->set_connection_error_handler(
+    mojom::DemuxerStreamPtr video_stream;
+    std::unique_ptr<MojoDemuxerStreamImpl> mojo_stream =
+        base::MakeUnique<MojoDemuxerStreamImpl>(video,
+                                                MakeRequest(&video_stream));
+    // Using base::Unretained(this) is safe because |this| owns |mojo_stream|,
+    // and the error handler can't be invoked once |mojo_stream| is destroyed.
+    mojo_stream->set_connection_error_handler(
         base::Bind(&MojoRenderer::OnDemuxerStreamConnectionError,
-                   base::Unretained(this), DemuxerStream::VIDEO));
+                   base::Unretained(this), mojo_stream.get()));
+    streams_.push_back(std::move(mojo_stream));
+    streams.push_back(std::move(video_stream));
   }
 
   BindRemoteRendererIfNeeded();
@@ -111,8 +116,8 @@ void MojoRenderer::InitializeRendererFromStreams(
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
-      std::move(client_ptr_info), std::move(audio_stream),
-      std::move(video_stream), base::nullopt, base::nullopt,
+      std::move(client_ptr_info), std::move(streams), base::nullopt,
+      base::nullopt,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
@@ -130,9 +135,9 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
+  std::vector<mojom::DemuxerStreamPtr> streams;
   remote_renderer_->Initialize(
-      std::move(client_ptr_info), mojom::DemuxerStreamPtr(),
-      mojom::DemuxerStreamPtr(), url_params.media_url,
+      std::move(client_ptr_info), std::move(streams), url_params.media_url,
       url_params.first_party_for_cookies,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
@@ -315,17 +320,18 @@ void MojoRenderer::OnConnectionError() {
     client_->OnError(PIPELINE_ERROR_DECODE);
 }
 
-void MojoRenderer::OnDemuxerStreamConnectionError(DemuxerStream::Type type) {
-  DVLOG(1) << __func__ << ": " << type;
+void MojoRenderer::OnDemuxerStreamConnectionError(
+    MojoDemuxerStreamImpl* stream) {
+  DVLOG(1) << __func__ << ": stream=" << stream;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (type == DemuxerStream::AUDIO) {
-    audio_stream_.reset();
-  } else if (type == DemuxerStream::VIDEO) {
-    video_stream_.reset();
-  } else {
-    NOTREACHED() << "Unexpected demuxer stream type: " << type;
+  for (auto& s : streams_) {
+    if (s.get() == stream) {
+      s.reset();
+      return;
+    }
   }
+  NOTREACHED() << "Unrecognized demuxer stream=" << stream;
 }
 
 void MojoRenderer::BindRemoteRendererIfNeeded() {
