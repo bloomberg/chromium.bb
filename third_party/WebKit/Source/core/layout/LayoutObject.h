@@ -2430,9 +2430,26 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
 
     void setPositionedState(int positionState) {
-      // This mask maps FixedPosition and AbsolutePosition to
+      // This maps FixedPosition and AbsolutePosition to
       // IsOutOfFlowPositioned, saving one bit.
-      m_positionedState = static_cast<PositionedState>(positionState & 0x3);
+      switch (positionState) {
+        case StaticPosition:
+          m_positionedState = IsStaticallyPositioned;
+          break;
+        case RelativePosition:
+          m_positionedState = IsRelativelyPositioned;
+          break;
+        case AbsolutePosition:
+        case FixedPosition:
+          m_positionedState = IsOutOfFlowPositioned;
+          break;
+        case StickyPosition:
+          m_positionedState = IsStickyPositioned;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
     }
     void clearPositionedState() { m_positionedState = StaticPosition; }
 
