@@ -254,10 +254,9 @@ TestTaskSchedulerTaskRunner::~TestTaskSchedulerTaskRunner() = default;
 
 ScopedTaskScheduler::ScopedTaskScheduler() : ScopedTaskScheduler(nullptr) {}
 
-ScopedTaskScheduler::ScopedTaskScheduler(MessageLoop* external_message_loop) {
+ScopedTaskScheduler::ScopedTaskScheduler(MessageLoop* message_loop) {
   DCHECK(!TaskScheduler::GetInstance());
-  TaskScheduler::SetInstance(
-      MakeUnique<TestTaskScheduler>(external_message_loop));
+  TaskScheduler::SetInstance(MakeUnique<TestTaskScheduler>(message_loop));
   task_scheduler_ = TaskScheduler::GetInstance();
 }
 
