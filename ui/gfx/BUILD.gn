@@ -166,8 +166,6 @@ component("gfx") {
     "selection_model.h",
     "sequential_id_generator.cc",
     "sequential_id_generator.h",
-    "shadow_util.cc",
-    "shadow_util.h",
     "shadow_value.cc",
     "shadow_value.h",
     "skbitmap_operations.cc",
@@ -233,6 +231,10 @@ component("gfx") {
       "paint_throbber.h",
       "scoped_canvas.cc",
       "scoped_canvas.h",
+      "shadow_util.cc",
+      "shadow_util.h",
+      "skia_paint_util.cc",
+      "skia_paint_util.h",
     ]
   }
 
@@ -402,13 +404,11 @@ component("gfx") {
     ]
   }
 
-  if (!use_aura) {
-    if (!toolkit_views) {
-      sources -= [
-        "nine_image_painter.cc",
-        "nine_image_painter.h",
-      ]
-    }
+  if ((!use_aura && !toolkit_views) || is_ios) {
+    sources -= [
+      "nine_image_painter.cc",
+      "nine_image_painter.h",
+    ]
   }
 
   if (use_x11) {

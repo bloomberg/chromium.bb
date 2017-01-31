@@ -18,7 +18,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/shadow_value.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"

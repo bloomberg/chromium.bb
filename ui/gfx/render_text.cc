@@ -30,6 +30,7 @@
 #include "ui/gfx/platform_font.h"
 #include "ui/gfx/render_text_harfbuzz.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/text_elider.h"

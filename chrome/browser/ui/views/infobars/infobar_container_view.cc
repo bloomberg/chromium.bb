@@ -11,7 +11,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/views/view_targeter.h"
 
 namespace {

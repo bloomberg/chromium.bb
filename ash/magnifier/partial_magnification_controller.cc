@@ -14,6 +14,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
