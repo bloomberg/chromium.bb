@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -232,8 +231,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
   // For incognito, we use a non-persistent channel ID store.
   main_context_storage->set_channel_id_service(
       base::MakeUnique<net::ChannelIDService>(
-          new net::DefaultChannelIDStore(nullptr),
-          base::WorkerPool::GetTaskRunner(true)));
+          new net::DefaultChannelIDStore(nullptr)));
 
   using content::CookieStoreConfig;
   main_context_storage->set_cookie_store(CreateCookieStore(CookieStoreConfig(
@@ -326,8 +324,7 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   std::unique_ptr<net::CookieStore> cookie_store =
       content::CreateCookieStore(content::CookieStoreConfig());
   std::unique_ptr<net::ChannelIDService> channel_id_service(
-      new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr),
-                                base::WorkerPool::GetTaskRunner(true)));
+      new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));
   cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
   context->SetCookieStore(std::move(cookie_store));
 

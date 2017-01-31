@@ -25,7 +25,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/worker_pool.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "ios/crnet/sdch_owner_pref_storage.h"
@@ -462,9 +461,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
     // constructed. If not, build an ephemeral ChannelIDService with no backing
     // disk store.
     // TODO(ellyjones): support persisting ChannelID.
-    params.channel_id_service = new net::ChannelIDService(
-        new net::DefaultChannelIDStore(NULL),
-        base::WorkerPool::GetTaskRunner(true));
+    params.channel_id_service =
+        new net::ChannelIDService(new net::DefaultChannelIDStore(NULL));
   }
 
   // TODO(mmenke):  These really shouldn't be leaked.

@@ -43,6 +43,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -3443,16 +3444,21 @@ class TestSSLConfigService : public SSLConfigService {
 #if !defined(OS_IOS)
 class TokenBindingURLRequestTest : public URLRequestTestHTTP {
  public:
+  TokenBindingURLRequestTest()
+      : scoped_task_scheduler_(base::MessageLoop::current()) {}
+
   void SetUp() override {
     default_context_.set_ssl_config_service(
         new TestSSLConfigService(false, false, false, true));
-    channel_id_service_.reset(new ChannelIDService(
-        new DefaultChannelIDStore(NULL), base::ThreadTaskRunnerHandle::Get()));
+    channel_id_service_.reset(
+        new ChannelIDService(new DefaultChannelIDStore(NULL)));
     default_context_.set_channel_id_service(channel_id_service_.get());
     URLRequestTestHTTP::SetUp();
   }
 
  protected:
+  // Required by ChannelIDService.
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
 };
 
@@ -8531,13 +8537,17 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
 
 class HTTPSRequestTest : public testing::Test {
  public:
-  HTTPSRequestTest() : default_context_(true) {
+  HTTPSRequestTest()
+      : scoped_task_scheduler_(base::MessageLoop::current()),
+        default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.Init();
   }
   ~HTTPSRequestTest() override {}
 
  protected:
+  // Required by ChannelIDService.
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   TestURLRequestContext default_context_;
 };
@@ -9154,7 +9164,9 @@ TEST_F(HTTPSFallbackTest, TLSv1_1NoFallback) {
 
 class HTTPSSessionTest : public testing::Test {
  public:
-  HTTPSSessionTest() : default_context_(true) {
+  HTTPSSessionTest()
+      : scoped_task_scheduler_(base::MessageLoop::current()),
+        default_context_(true) {
     cert_verifier_.set_default_result(OK);
 
     default_context_.set_network_delegate(&default_network_delegate_);
@@ -9164,6 +9176,8 @@ class HTTPSSessionTest : public testing::Test {
   ~HTTPSSessionTest() override {}
 
  protected:
+  // Required by ChannelIDService.
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   MockCertVerifier cert_verifier_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   TestURLRequestContext default_context_;

@@ -23,9 +23,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
@@ -16484,6 +16486,10 @@ TEST_F(HttpNetworkTransactionTest, ThrottlingPrioritySetDestroy) {
 
 #if !defined(OS_IOS)
 TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
+  // Required by ChannelIDService.
+  base::test::ScopedTaskScheduler scoped_task_scheduler(
+      base::MessageLoop::current());
+
   const std::string https_url = "https://www.example.com";
   HttpRequestInfo request;
   request.url = GURL(https_url);
@@ -16501,8 +16507,8 @@ TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
                       MockRead(ASYNC, ERR_IO_PENDING)};
   StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
-  session_deps_.channel_id_service.reset(new ChannelIDService(
-      new DefaultChannelIDStore(nullptr), base::ThreadTaskRunnerHandle::Get()));
+  session_deps_.channel_id_service.reset(
+      new ChannelIDService(new DefaultChannelIDStore(nullptr)));
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());

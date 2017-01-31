@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/threading/worker_pool.h"
 #import "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
@@ -99,8 +98,7 @@ net::URLRequestContext* CRIWVURLRequestContextGetter::GetURLRequestContext() {
     transport_security_persister_.reset(new net::TransportSecurityPersister(
         transport_security_state.get(), base_path_, file_task_runner_, false));
     storage_->set_channel_id_service(base::MakeUnique<net::ChannelIDService>(
-        new net::DefaultChannelIDStore(nullptr),
-        base::WorkerPool::GetTaskRunner(true)));
+        new net::DefaultChannelIDStore(nullptr)));
     storage_->set_http_server_properties(
         std::unique_ptr<net::HttpServerProperties>(
             new net::HttpServerPropertiesImpl()));

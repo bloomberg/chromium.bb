@@ -20,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -199,8 +198,7 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
             BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
                 base::SequencedWorkerPool::GetSequenceToken()));
     channel_id_service_.reset(new net::ChannelIDService(
-        new net::DefaultChannelIDStore(channel_id_db.get()),
-        base::WorkerPool::GetTaskRunner(true)));
+        new net::DefaultChannelIDStore(channel_id_db.get())));
     safe_browsing_request_context_->set_channel_id_service(
         channel_id_service_.get());
     safe_browsing_cookie_store_->SetChannelIDServiceID(

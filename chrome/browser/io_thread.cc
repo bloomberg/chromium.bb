@@ -28,7 +28,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -619,9 +618,7 @@ void IOThread::Init() {
       content::CreateCookieStore(content::CookieStoreConfig());
   // In-memory channel ID store.
   globals_->system_channel_id_service.reset(
-      new net::ChannelIDService(
-          new net::DefaultChannelIDStore(NULL),
-          base::WorkerPool::GetTaskRunner(true)));
+      new net::ChannelIDService(new net::DefaultChannelIDStore(NULL)));
   globals_->system_cookie_store->SetChannelIDServiceID(
       globals_->system_channel_id_service->GetUniqueID());
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());

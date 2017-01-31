@@ -26,7 +26,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -399,9 +398,7 @@ void MCSProbe::InitializeNetworkState() {
     cert_verifier_ = net::CertVerifier::CreateDefault();
   }
   system_channel_id_service_.reset(
-      new net::ChannelIDService(
-          new net::DefaultChannelIDStore(NULL),
-          base::WorkerPool::GetTaskRunner(true)));
+      new net::ChannelIDService(new net::DefaultChannelIDStore(NULL)));
 
   transport_security_state_.reset(new net::TransportSecurityState());
   cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());

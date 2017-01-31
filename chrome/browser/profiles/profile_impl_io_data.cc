@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -524,8 +523,7 @@ void ProfileImplIOData::InitializeInternal(
           lazy_params_->special_storage_policy.get());
   main_context_storage->set_channel_id_service(
       base::MakeUnique<net::ChannelIDService>(
-          new net::DefaultChannelIDStore(channel_id_db.get()),
-          base::WorkerPool::GetTaskRunner(true)));
+          new net::DefaultChannelIDStore(channel_id_db.get())));
 
   main_context->cookie_store()->SetChannelIDServiceID(
       main_context->channel_id_service()->GetUniqueID());
@@ -680,8 +678,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   }
   std::unique_ptr<net::ChannelIDService> channel_id_service(
       new net::ChannelIDService(
-          new net::DefaultChannelIDStore(channel_id_db.get()),
-          base::WorkerPool::GetTaskRunner(true)));
+          new net::DefaultChannelIDStore(channel_id_db.get())));
   cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.

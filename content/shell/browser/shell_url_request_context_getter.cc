@@ -15,7 +15,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -129,8 +128,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         new net::URLRequestContextStorage(url_request_context_.get()));
     storage_->set_cookie_store(CreateCookieStore(CookieStoreConfig()));
     storage_->set_channel_id_service(base::WrapUnique(
-        new net::ChannelIDService(new net::DefaultChannelIDStore(NULL),
-                                  base::WorkerPool::GetTaskRunner(true))));
+        new net::ChannelIDService(new net::DefaultChannelIDStore(NULL))));
     url_request_context_->cookie_store()->SetChannelIDServiceID(
         url_request_context_->channel_id_service()->GetUniqueID());
     storage_->set_http_user_agent_settings(

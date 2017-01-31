@@ -25,7 +25,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/net_log/chrome_net_log.h"
@@ -385,8 +384,7 @@ void IOSChromeIOThread::Init() {
   globals_->system_cookie_store.reset(new net::CookieMonster(nullptr, nullptr));
   // In-memory channel ID store.
   globals_->system_channel_id_service.reset(
-      new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr),
-                                base::WorkerPool::GetTaskRunner(true)));
+      new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));
   globals_->system_cookie_store->SetChannelIDServiceID(
       globals_->system_channel_id_service->GetUniqueID());
   globals_->http_user_agent_settings.reset(new net::StaticHttpUserAgentSettings(

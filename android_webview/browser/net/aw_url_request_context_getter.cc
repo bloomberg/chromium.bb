@@ -23,7 +23,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/worker_pool.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -219,8 +218,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
             BrowserThread::GetBlockingPool()->GetSequenceToken()));
 
     channel_id_service.reset(new net::ChannelIDService(
-        new net::DefaultChannelIDStore(channel_id_db.get()),
-        base::WorkerPool::GetTaskRunner(true)));
+        new net::DefaultChannelIDStore(channel_id_db.get())));
   }
 
   // Android provides a local HTTP proxy that handles all the proxying.
