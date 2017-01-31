@@ -10687,22 +10687,24 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_SUPERTX
     int best_rate_nocoef;
 #endif
-    int64_t distortion2 = 0, dummy_rd = best_rd, this_rd, model_rd = INT64_MAX;
+    int64_t distortion2 = 0, best_rd_palette = best_rd, this_rd,
+            best_model_rd_palette = INT64_MAX;
     int skippable = 0, rate_overhead_palette = 0;
     RD_STATS rd_stats_y;
     TX_SIZE uv_tx;
     uint8_t *const best_palette_color_map =
         x->palette_buffer->best_palette_color_map;
     uint8_t *const color_map = xd->plane[0].color_index_map;
-    MB_MODE_INFO mbmi_dummy;
+    MB_MODE_INFO best_mbmi_palette = best_mbmode;
 
     mbmi->mode = DC_PRED;
     mbmi->uv_mode = DC_PRED;
     mbmi->ref_frame[0] = INTRA_FRAME;
     mbmi->ref_frame[1] = NONE_FRAME;
     rate_overhead_palette = rd_pick_palette_intra_sby(
-        cpi, x, bsize, palette_ctx, intra_mode_cost[DC_PRED], &mbmi_dummy,
-        best_palette_color_map, &dummy_rd, &model_rd, NULL, NULL, NULL, NULL);
+        cpi, x, bsize, palette_ctx, intra_mode_cost[DC_PRED],
+        &best_mbmi_palette, best_palette_color_map, &best_rd_palette,
+        &best_model_rd_palette, NULL, NULL, NULL, NULL);
     if (pmi->palette_size[0] == 0) goto PALETTE_EXIT;
     memcpy(color_map, best_palette_color_map,
            rows * cols * sizeof(best_palette_color_map[0]));
