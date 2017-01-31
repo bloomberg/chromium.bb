@@ -508,7 +508,7 @@ class Manager(object):
         files = [(file, self._filesystem.join(self._results_directory, file))
                  for file in ["failing_results.json", "full_results.json", "times_ms.json"]]
 
-        url = "http://%s/testfile/upload" % self._options.test_results_server
+        url = "https://%s/testfile/upload" % self._options.test_results_server
         # Set uploading timeout in case appengine server is having problems.
         # 120 seconds are more than enough to upload test results.
         uploader = FileUploader(url, 120)
