@@ -161,65 +161,17 @@ bool SettingsIdToString(SpdySettingsIds id, const char** settings_id_string) {
   return false;
 }
 
-bool IsValidRstStreamStatus(int rst_stream_status_field) {
-  // NO_ERROR is the first valid status code.
-  if (rst_stream_status_field < SerializeRstStreamStatus(RST_STREAM_NO_ERROR)) {
-    return false;
-  }
-
-  // TODO(hkhalil): Omit COMPRESSION_ERROR and SETTINGS_TIMEOUT
-  /*
-  // This works because GOAWAY and RST_STREAM share a namespace.
-  if (rst_stream_status_field ==
-  SerializeGoAwayStatus(version, GOAWAY_COMPRESSION_ERROR) ||
-  rst_stream_status_field ==
-  SerializeGoAwayStatus(version, GOAWAY_SETTINGS_TIMEOUT)) {
-  return false;
-  }
-  */
-
-  // HTTP_1_1_REQUIRED is the last valid status code.
-  if (rst_stream_status_field >
-      SerializeRstStreamStatus(RST_STREAM_HTTP_1_1_REQUIRED)) {
-    return false;
-  }
-
-  return true;
-}
-
 SpdyRstStreamStatus ParseRstStreamStatus(int rst_stream_status_field) {
-  switch (rst_stream_status_field) {
-    case 0:
-      return RST_STREAM_NO_ERROR;
-    case 1:
-      return RST_STREAM_PROTOCOL_ERROR;
-    case 2:
-      return RST_STREAM_INTERNAL_ERROR;
-    case 3:
-      return RST_STREAM_FLOW_CONTROL_ERROR;
-    case 5:
-      return RST_STREAM_STREAM_CLOSED;
-    case 6:
-      return RST_STREAM_FRAME_SIZE_ERROR;
-    case 7:
-      return RST_STREAM_REFUSED_STREAM;
-    case 8:
-      return RST_STREAM_CANCEL;
-    case 10:
-      return RST_STREAM_CONNECT_ERROR;
-    case 11:
-      return RST_STREAM_ENHANCE_YOUR_CALM;
-    case 12:
-      return RST_STREAM_INADEQUATE_SECURITY;
-    case 13:
-      return RST_STREAM_HTTP_1_1_REQUIRED;
+  if (rst_stream_status_field < RST_STREAM_MIN ||
+      rst_stream_status_field > RST_STREAM_MAX) {
+    return RST_STREAM_INTERNAL_ERROR;
   }
 
-  SPDY_BUG << "Invalid RST_STREAM status " << rst_stream_status_field;
-  return RST_STREAM_PROTOCOL_ERROR;
+  return static_cast<SpdyRstStreamStatus>(rst_stream_status_field);
 }
 
 int SerializeRstStreamStatus(SpdyRstStreamStatus rst_stream_status) {
+  // TODO(bnc): Simplify this method.
   switch (rst_stream_status) {
     case RST_STREAM_NO_ERROR:
       return 0;
@@ -251,57 +203,16 @@ int SerializeRstStreamStatus(SpdyRstStreamStatus rst_stream_status) {
   }
 }
 
-bool IsValidGoAwayStatus(int goaway_status_field) {
-  // GOAWAY_NO_ERROR is the first valid status.
-  if (goaway_status_field < SerializeGoAwayStatus(GOAWAY_NO_ERROR)) {
-    return false;
-  }
-
-  // GOAWAY_HTTP_1_1_REQUIRED is the last valid status.
-  if (goaway_status_field > SerializeGoAwayStatus(GOAWAY_HTTP_1_1_REQUIRED)) {
-    return false;
-  }
-
-  return true;
-}
-
 SpdyGoAwayStatus ParseGoAwayStatus(int goaway_status_field) {
-  switch (goaway_status_field) {
-    case 0:
-      return GOAWAY_NO_ERROR;
-    case 1:
-      return GOAWAY_PROTOCOL_ERROR;
-    case 2:
-      return GOAWAY_INTERNAL_ERROR;
-    case 3:
-      return GOAWAY_FLOW_CONTROL_ERROR;
-    case 4:
-      return GOAWAY_SETTINGS_TIMEOUT;
-    case 5:
-      return GOAWAY_STREAM_CLOSED;
-    case 6:
-      return GOAWAY_FRAME_SIZE_ERROR;
-    case 7:
-      return GOAWAY_REFUSED_STREAM;
-    case 8:
-      return GOAWAY_CANCEL;
-    case 9:
-      return GOAWAY_COMPRESSION_ERROR;
-    case 10:
-      return GOAWAY_CONNECT_ERROR;
-    case 11:
-      return GOAWAY_ENHANCE_YOUR_CALM;
-    case 12:
-      return GOAWAY_INADEQUATE_SECURITY;
-    case 13:
-      return GOAWAY_HTTP_1_1_REQUIRED;
+  if (goaway_status_field < GOAWAY_MIN || goaway_status_field > GOAWAY_MAX) {
+    return GOAWAY_INTERNAL_ERROR;
   }
 
-  SPDY_BUG << "Unhandled GOAWAY status " << goaway_status_field;
-  return GOAWAY_PROTOCOL_ERROR;
+  return static_cast<SpdyGoAwayStatus>(goaway_status_field);
 }
 
 int SerializeGoAwayStatus(SpdyGoAwayStatus status) {
+  // TODO(bnc): Simplify this method.
   switch (status) {
     case GOAWAY_NO_ERROR:
       return 0;

@@ -353,11 +353,8 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
       if (!IsSupportedHttp2ErrorCode(error_code)) {
         error_code = Http2ErrorCode::INTERNAL_ERROR;
       }
-      SpdyRstStreamStatus status = RST_STREAM_INTERNAL_ERROR;
-      uint32_t status_raw = static_cast<int>(error_code);
-      if (IsValidRstStreamStatus(status_raw)) {
-        status = ParseRstStreamStatus(status_raw);
-      }
+      SpdyRstStreamStatus status =
+          ParseRstStreamStatus(static_cast<int>(error_code));
       visitor()->OnRstStream(header.stream_id, status);
     }
   }
@@ -441,15 +438,8 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
     if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
       frame_header_ = header;
       has_frame_header_ = true;
-      uint32_t status_raw = static_cast<int>(goaway.error_code);
-      SpdyGoAwayStatus status;
-      if (IsValidGoAwayStatus(status_raw)) {
-        status = ParseGoAwayStatus(status_raw);
-      } else {
-        // Treat unrecognized status codes as INTERNAL_ERROR as
-        // recommended by the HTTP/2 spec.
-        status = SpdyGoAwayStatus::GOAWAY_INTERNAL_ERROR;
-      }
+      SpdyGoAwayStatus status =
+          ParseGoAwayStatus(static_cast<int>(goaway.error_code));
       visitor()->OnGoAway(goaway.last_stream_id, status);
     }
   }

@@ -147,6 +147,7 @@ using SettingsMap = std::map<SpdySettingsIds, uint32_t>;
 // Status codes for RST_STREAM frames.
 enum SpdyRstStreamStatus {
   RST_STREAM_NO_ERROR = 0,
+  RST_STREAM_MIN = RST_STREAM_NO_ERROR,
   RST_STREAM_PROTOCOL_ERROR = 1,
   RST_STREAM_INTERNAL_ERROR = 2,
   RST_STREAM_FLOW_CONTROL_ERROR = 3,
@@ -160,12 +161,14 @@ enum SpdyRstStreamStatus {
   RST_STREAM_ENHANCE_YOUR_CALM = 11,
   RST_STREAM_INADEQUATE_SECURITY = 12,
   RST_STREAM_HTTP_1_1_REQUIRED = 13,
+  RST_STREAM_MAX = RST_STREAM_HTTP_1_1_REQUIRED,
   RST_STREAM_NUM_STATUS_CODES = 14
 };
 
 // Status codes for GOAWAY frames.
 enum SpdyGoAwayStatus {
   GOAWAY_NO_ERROR = 0,
+  GOAWAY_MIN = GOAWAY_NO_ERROR,
   GOAWAY_PROTOCOL_ERROR = 1,
   GOAWAY_INTERNAL_ERROR = 2,
   GOAWAY_FLOW_CONTROL_ERROR = 3,
@@ -178,7 +181,8 @@ enum SpdyGoAwayStatus {
   GOAWAY_CONNECT_ERROR = 10,
   GOAWAY_ENHANCE_YOUR_CALM = 11,
   GOAWAY_INADEQUATE_SECURITY = 12,
-  GOAWAY_HTTP_1_1_REQUIRED = 13
+  GOAWAY_HTTP_1_1_REQUIRED = 13,
+  GOAWAY_MAX = GOAWAY_HTTP_1_1_REQUIRED
 };
 
 // A SPDY priority is a number between 0 and 7 (inclusive).
@@ -250,14 +254,9 @@ NET_EXPORT_PRIVATE bool ParseSettingsId(int wire_setting_id,
 NET_EXPORT_PRIVATE bool SettingsIdToString(SpdySettingsIds id,
                                            const char** settings_id_string);
 
-// Returns true if a given on-the-wire enumeration of a RST_STREAM status code
-// is valid, false otherwise.
-NET_EXPORT_PRIVATE bool IsValidRstStreamStatus(int rst_stream_status_field);
-
-// Parses a RST_STREAM status code from an on-the-wire enumeration.
-// Behavior is undefined for invalid RST_STREAM status code fields; consumers
-// should first use IsValidRstStreamStatus() to verify validity of RST_STREAM
-// status code fields..
+// Parses a RST_STREAM error code from an on-the-wire enumeration.
+// Treat unrecognized error codes as INTERNAL_ERROR
+// as recommended by the HTTP/2 specification.
 NET_EXPORT_PRIVATE SpdyRstStreamStatus
 ParseRstStreamStatus(int rst_stream_status_field);
 
@@ -267,13 +266,9 @@ ParseRstStreamStatus(int rst_stream_status_field);
 NET_EXPORT_PRIVATE int SerializeRstStreamStatus(
     SpdyRstStreamStatus rst_stream_status);
 
-// Returns true if a given on-the-wire enumeration of a GOAWAY status code is
-// valid, false otherwise.
-NET_EXPORT_PRIVATE bool IsValidGoAwayStatus(int goaway_status_field);
-
-// Parses a GOAWAY status from an on-the-wire enumeration.
-// Behavior is undefined for invalid GOAWAY status fields; consumers should
-// first use IsValidGoAwayStatus() to verify validity of GOAWAY status fields.
+// Parses a GOAWAY error code from an on-the-wire enumeration.
+// Treat unrecognized error codes as INTERNAL_ERROR
+// as recommended by the HTTP/2 specification.
 NET_EXPORT_PRIVATE SpdyGoAwayStatus ParseGoAwayStatus(int goaway_status_field);
 
 // Serializes a given GOAWAY status to the on-the-wire enumeration value.

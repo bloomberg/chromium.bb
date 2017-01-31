@@ -1362,65 +1362,53 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
     // Use frame-specific handlers.
     switch (current_frame_type_) {
       case RST_STREAM: {
-        SpdyRstStreamStatus status = RST_STREAM_NO_ERROR;
-        uint32_t status_raw = status;
+        uint32_t status_raw = RST_STREAM_NO_ERROR;
         bool successful_read = reader.ReadUInt32(&status_raw);
         DCHECK(successful_read);
         DCHECK(reader.IsDoneReading());
-        if (IsValidRstStreamStatus(status_raw)) {
-          status = ParseRstStreamStatus(status_raw);
-        } else {
-          // Treat unrecognized status codes as INTERNAL_ERROR as
-          // recommended by the HTTP/2 spec.
-          status = RST_STREAM_INTERNAL_ERROR;
-        }
+        SpdyRstStreamStatus status = ParseRstStreamStatus(status_raw);
         visitor_->OnRstStream(current_frame_stream_id_, status);
       } break;
       case PING: {
-          SpdyPingId id = 0;
-          bool is_ack = current_frame_flags_ & PING_FLAG_ACK;
-          bool successful_read = true;
-          successful_read = reader.ReadUInt64(&id);
-          DCHECK(successful_read);
-          DCHECK(reader.IsDoneReading());
-          visitor_->OnPing(id, is_ack);
-        }
-        break;
+        SpdyPingId id = 0;
+        bool is_ack = current_frame_flags_ & PING_FLAG_ACK;
+        bool successful_read = true;
+        successful_read = reader.ReadUInt64(&id);
+        DCHECK(successful_read);
+        DCHECK(reader.IsDoneReading());
+        visitor_->OnPing(id, is_ack);
+      } break;
       case WINDOW_UPDATE: {
         uint32_t delta_window_size = 0;
-          bool successful_read = true;
-          successful_read = reader.ReadUInt32(&delta_window_size);
-          DCHECK(successful_read);
-          DCHECK(reader.IsDoneReading());
-          visitor_->OnWindowUpdate(current_frame_stream_id_,
-                                   delta_window_size);
-        }
-        break;
+        bool successful_read = true;
+        successful_read = reader.ReadUInt32(&delta_window_size);
+        DCHECK(successful_read);
+        DCHECK(reader.IsDoneReading());
+        visitor_->OnWindowUpdate(current_frame_stream_id_, delta_window_size);
+      } break;
       case BLOCKED: {
-          DCHECK(reader.IsDoneReading());
-          visitor_->OnBlocked(current_frame_stream_id_);
-        }
-        break;
+        DCHECK(reader.IsDoneReading());
+        visitor_->OnBlocked(current_frame_stream_id_);
+      } break;
       case PRIORITY: {
-          uint32_t stream_dependency;
-          uint32_t parent_stream_id;
-          bool exclusive;
-          uint8_t serialized_weight;
-          bool successful_read = reader.ReadUInt32(&stream_dependency);
-          DCHECK(successful_read);
-          UnpackStreamDependencyValues(stream_dependency, &exclusive,
-                                       &parent_stream_id);
+        uint32_t stream_dependency;
+        uint32_t parent_stream_id;
+        bool exclusive;
+        uint8_t serialized_weight;
+        bool successful_read = reader.ReadUInt32(&stream_dependency);
+        DCHECK(successful_read);
+        UnpackStreamDependencyValues(stream_dependency, &exclusive,
+                                     &parent_stream_id);
 
-          successful_read = reader.ReadUInt8(&serialized_weight);
-          DCHECK(successful_read);
-          DCHECK(reader.IsDoneReading());
-          // Per RFC 7540 section 6.3, serialized weight value is
-          // actual value - 1.
-          int weight = serialized_weight + 1;
-          visitor_->OnPriority(
-              current_frame_stream_id_, parent_stream_id, weight, exclusive);
-        }
-        break;
+        successful_read = reader.ReadUInt8(&serialized_weight);
+        DCHECK(successful_read);
+        DCHECK(reader.IsDoneReading());
+        // Per RFC 7540 section 6.3, serialized weight value is
+        // actual value - 1.
+        int weight = serialized_weight + 1;
+        visitor_->OnPriority(current_frame_stream_id_, parent_stream_id, weight,
+                             exclusive);
+      } break;
       default:
         // Unreachable.
         LOG(FATAL) << "Unhandled control frame " << current_frame_type_;
@@ -1459,17 +1447,10 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
       DCHECK(successful_read);
 
       // Parse status code.
-      SpdyGoAwayStatus status = GOAWAY_NO_ERROR;
       uint32_t status_raw = GOAWAY_NO_ERROR;
       successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);
-      if (IsValidGoAwayStatus(status_raw)) {
-        status = ParseGoAwayStatus(status_raw);
-      } else {
-        // Treat unrecognized status codes as INTERNAL_ERROR as
-        // recommended by the HTTP/2 spec.
-        status = GOAWAY_INTERNAL_ERROR;
-      }
+      SpdyGoAwayStatus status = ParseGoAwayStatus(status_raw);
       // Finished parsing the GOAWAY header, call frame handler.
       visitor_->OnGoAway(current_frame_stream_id_, status);
     }
