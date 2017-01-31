@@ -2055,7 +2055,7 @@ void LayoutBlockFlow::marginBeforeEstimateForChild(
   // require clearance to move past any floats. If that's the case we want to be
   // sure we estimate the correct position including margins after any floats
   // rather than use 'clearance' later which could give us the wrong position.
-  if (grandchildBox->style()->clear() != ClearNone &&
+  if (grandchildBox->style()->clear() != EClear::kNone &&
       childBlockFlow->marginBeforeForChild(*grandchildBox) == 0)
     return;
 
@@ -2701,7 +2701,7 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child,
 
   // We also clear floats if we are too big to sit on the same line as a float
   // (and wish to avoid floats by default).
-  LayoutUnit result = clear != ClearNone
+  LayoutUnit result = clear != EClear::kNone
                           ? (logicalBottom - logicalTop).clampNegativeToZero()
                           : LayoutUnit();
   if (!result && child->avoidsFloats()) {
@@ -3913,13 +3913,14 @@ void LayoutBlockFlow::addOverhangingFloats(LayoutBlockFlow* child,
 }
 
 LayoutUnit LayoutBlockFlow::lowestFloatLogicalBottom(EClear clear) const {
-  if (clear == ClearNone || !m_floatingObjects)
+  if (clear == EClear::kNone || !m_floatingObjects)
     return LayoutUnit();
 
-  FloatingObject::Type floatType =
-      clear == ClearLeft ? FloatingObject::FloatLeft
-                         : clear == ClearRight ? FloatingObject::FloatRight
-                                               : FloatingObject::FloatLeftRight;
+  FloatingObject::Type floatType = clear == EClear::kLeft
+                                       ? FloatingObject::FloatLeft
+                                       : clear == EClear::kRight
+                                             ? FloatingObject::FloatRight
+                                             : FloatingObject::FloatLeftRight;
   return m_floatingObjects->lowestFloatLogicalBottom(floatType);
 }
 

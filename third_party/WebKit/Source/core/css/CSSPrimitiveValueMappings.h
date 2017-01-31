@@ -964,16 +964,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EClear e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case ClearNone:
+    case EClear::kNone:
       m_valueID = CSSValueNone;
       break;
-    case ClearLeft:
+    case EClear::kLeft:
       m_valueID = CSSValueLeft;
       break;
-    case ClearRight:
+    case EClear::kRight:
       m_valueID = CSSValueRight;
       break;
-    case ClearBoth:
+    case EClear::kBoth:
       m_valueID = CSSValueBoth;
       break;
   }
@@ -983,19 +983,19 @@ template <>
 inline EClear CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueNone:
-      return ClearNone;
+      return EClear::kNone;
     case CSSValueLeft:
-      return ClearLeft;
+      return EClear::kLeft;
     case CSSValueRight:
-      return ClearRight;
+      return EClear::kRight;
     case CSSValueBoth:
-      return ClearBoth;
+      return EClear::kBoth;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return ClearNone;
+  return EClear::kNone;
 }
 
 template <>

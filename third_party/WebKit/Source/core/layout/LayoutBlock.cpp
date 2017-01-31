@@ -1495,13 +1495,13 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(
     if (child->isFloating() ||
         (child->isBox() && toLayoutBox(child)->avoidsFloats())) {
       LayoutUnit floatTotalWidth = floatLeftWidth + floatRightWidth;
-      if (childStyle->clear() == ClearBoth ||
-          childStyle->clear() == ClearLeft) {
+      if (childStyle->clear() == EClear::kBoth ||
+          childStyle->clear() == EClear::kLeft) {
         maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
         floatLeftWidth = LayoutUnit();
       }
-      if (childStyle->clear() == ClearBoth ||
-          childStyle->clear() == ClearRight) {
+      if (childStyle->clear() == EClear::kBoth ||
+          childStyle->clear() == EClear::kRight) {
         maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
         floatRightWidth = LayoutUnit();
       }

@@ -169,7 +169,7 @@ enum class EVerticalAlign : unsigned {
   Length
 };
 
-enum EClear { ClearNone = 0, ClearLeft = 1, ClearRight = 2, ClearBoth = 3 };
+enum class EClear : unsigned { kNone, kLeft, kRight, kBoth };
 
 enum class ETableLayout : unsigned { kAuto, kFixed };
 

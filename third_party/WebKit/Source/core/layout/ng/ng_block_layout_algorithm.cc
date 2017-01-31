@@ -43,15 +43,15 @@ void AdjustToClearance(const NGConstraintSpace& space,
       right_exclusion ? right_exclusion->rect.BlockEndOffset() : *content_size;
 
   switch (style.clear()) {
-    case EClear::ClearNone:
+    case EClear::kNone:
       return;  // nothing to do here.
-    case EClear::ClearLeft:
+    case EClear::kLeft:
       *content_size = left_block_end_offset;
       break;
-    case EClear::ClearRight:
+    case EClear::kRight:
       *content_size = right_block_end_offset;
       break;
-    case EClear::ClearBoth:
+    case EClear::kBoth:
       *content_size = std::max(left_block_end_offset, right_block_end_offset);
       break;
     default:

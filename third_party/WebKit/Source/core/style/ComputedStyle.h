@@ -313,7 +313,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_overflowY = static_cast<unsigned>(initialOverflowY());
     m_nonInheritedData.m_verticalAlign =
         static_cast<unsigned>(initialVerticalAlign());
-    m_nonInheritedData.m_clear = initialClear();
+    m_nonInheritedData.m_clear = static_cast<unsigned>(initialClear());
     m_nonInheritedData.m_position = initialPosition();
     m_nonInheritedData.m_tableLayout =
         static_cast<unsigned>(initialTableLayout());
@@ -767,11 +767,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // clear
-  static EClear initialClear() { return ClearNone; }
+  static EClear initialClear() { return EClear::kNone; }
   EClear clear() const {
     return static_cast<EClear>(m_nonInheritedData.m_clear);
   }
-  void setClear(EClear v) { m_nonInheritedData.m_clear = v; }
+  void setClear(EClear v) {
+    m_nonInheritedData.m_clear = static_cast<unsigned>(v);
+  }
 
   // Page break properties.
   // break-after (shorthand for page-break-after and -webkit-column-break-after)

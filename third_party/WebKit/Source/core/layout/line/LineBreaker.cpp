@@ -53,7 +53,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver,
 void LineBreaker::reset() {
   m_positionedObjects.clear();
   m_hyphenated = false;
-  m_clear = ClearNone;
+  m_clear = EClear::kNone;
 }
 
 InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver,

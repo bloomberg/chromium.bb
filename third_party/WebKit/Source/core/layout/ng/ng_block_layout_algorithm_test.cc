@@ -1115,7 +1115,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_PositionFragmentsWithClear) {
   };
 
   // clear: none
-  run_with_clearance(EClear::ClearNone);
+  run_with_clearance(EClear::kNone);
   // 20 = std::max(body's margin 8, clearance's margins 20)
   EXPECT_EQ(LayoutUnit(20), body_fragment->TopOffset());
   EXPECT_EQ(LayoutUnit(0), container_fragment->TopOffset());
@@ -1129,7 +1129,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_PositionFragmentsWithClear) {
   EXPECT_EQ(LayoutUnit(200), adjoining_clearance_fragment->TopOffset());
 
   // clear: right
-  run_with_clearance(EClear::ClearRight);
+  run_with_clearance(EClear::kRight);
   // 8 = body's margin. This doesn't collapse its margins with 'clearance' block
   // as it's not an adjoining block to body.
   EXPECT_EQ(LayoutUnit(8), body_fragment->TopOffset());
@@ -1144,7 +1144,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_PositionFragmentsWithClear) {
   EXPECT_EQ(LayoutUnit(370), adjoining_clearance_fragment->TopOffset());
 
   // clear: left
-  run_with_clearance(EClear::ClearLeft);
+  run_with_clearance(EClear::kLeft);
   // 8 = body's margin. This doesn't collapse its margins with 'clearance' block
   // as it's not an adjoining block to body.
   EXPECT_EQ(LayoutUnit(8), body_fragment->TopOffset());
@@ -1160,7 +1160,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_PositionFragmentsWithClear) {
 
   // clear: both
   // same as clear: right
-  run_with_clearance(EClear::ClearBoth);
+  run_with_clearance(EClear::kBoth);
   EXPECT_EQ(LayoutUnit(8), body_fragment->TopOffset());
   EXPECT_EQ(LayoutUnit(0), container_fragment->TopOffset());
   EXPECT_EQ(LayoutUnit(170), clerance_fragment->TopOffset());
