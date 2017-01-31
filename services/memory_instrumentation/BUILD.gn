@@ -2,28 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
+source_set("lib") {
   sources = [
-    "coordinator.h",
-  ]
-
-  deps = [
-    ":struct_traits",
-  ]
-
-  public_deps = [
-    "//services/memory_instrumentation/public/interfaces",
-  ]
-}
-
-source_set("struct_traits") {
-  sources = [
-    "memory_instrumentation_traits.cc",
-    "memory_instrumentation_traits.h",
+    "coordinator_impl.cc",
+    "coordinator_impl.h",
   ]
 
   public_deps = [
     "//base",
+    "//services/memory_instrumentation/public/cpp",
     "//services/memory_instrumentation/public/interfaces",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "coordinator_impl_unittest.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//testing/gtest",
   ]
 }

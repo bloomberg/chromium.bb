@@ -16,6 +16,7 @@ import("//testing/test.gni")
 service_test("service_unittests") {
   deps = [
     "//services/image_decoder:tests",
+    "//services/memory_instrumentation:tests",
   ]
 
   if (is_android) {
