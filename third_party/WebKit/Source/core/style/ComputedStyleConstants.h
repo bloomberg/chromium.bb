@@ -169,8 +169,6 @@ enum class EVerticalAlign : unsigned {
   Length
 };
 
-enum class EClear : unsigned { kNone, kLeft, kRight, kBoth };
-
 enum class ETableLayout : unsigned { kAuto, kFixed };
 
 enum TextCombine { TextCombineNone, TextCombineAll };

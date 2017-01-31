@@ -226,7 +226,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              m_overflowX == other.m_overflowX &&
              m_overflowY == other.m_overflowY &&
              m_verticalAlign == other.m_verticalAlign &&
-             m_clear == other.m_clear && m_position == other.m_position &&
+             m_position == other.m_position &&
              m_tableLayout == other.m_tableLayout &&
              // hasViewportUnits
              m_breakBefore == other.m_breakBefore &&
@@ -255,7 +255,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_overflowX : 3;         // EOverflow
     unsigned m_overflowY : 3;         // EOverflow
     unsigned m_verticalAlign : 4;     // EVerticalAlign
-    unsigned m_clear : 2;             // EClear
     unsigned m_position : 3;          // EPosition
     unsigned m_tableLayout : 1;       // ETableLayout
 
@@ -313,7 +312,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_overflowY = static_cast<unsigned>(initialOverflowY());
     m_nonInheritedData.m_verticalAlign =
         static_cast<unsigned>(initialVerticalAlign());
-    m_nonInheritedData.m_clear = static_cast<unsigned>(initialClear());
     m_nonInheritedData.m_position = initialPosition();
     m_nonInheritedData.m_tableLayout =
         static_cast<unsigned>(initialTableLayout());
@@ -764,15 +762,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   EBoxSizing boxSizing() const { return m_box->boxSizing(); }
   void setBoxSizing(EBoxSizing s) {
     SET_VAR(m_box, m_boxSizing, static_cast<unsigned>(s));
-  }
-
-  // clear
-  static EClear initialClear() { return EClear::kNone; }
-  EClear clear() const {
-    return static_cast<EClear>(m_nonInheritedData.m_clear);
-  }
-  void setClear(EClear v) {
-    m_nonInheritedData.m_clear = static_cast<unsigned>(v);
   }
 
   // Page break properties.

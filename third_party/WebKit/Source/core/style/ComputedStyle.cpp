@@ -81,7 +81,7 @@ struct SameSizeAsComputedStyle : public ComputedStyleBase,
   } m_inheritedData;
 
   struct NonInheritedData {
-    unsigned m_bitfields[3];
+    unsigned m_bitfields[2];
   } m_nonInheritedData;
 };
 
@@ -372,7 +372,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   m_nonInheritedData.m_overflowX = other.m_nonInheritedData.m_overflowX;
   m_nonInheritedData.m_overflowY = other.m_nonInheritedData.m_overflowY;
   m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
-  m_nonInheritedData.m_clear = other.m_nonInheritedData.m_clear;
   m_nonInheritedData.m_position = other.m_nonInheritedData.m_position;
   m_nonInheritedData.m_tableLayout = other.m_nonInheritedData.m_tableLayout;
   m_nonInheritedData.m_hasViewportUnits =
@@ -817,8 +816,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
 
   if (m_nonInheritedData.m_overflowX != other.m_nonInheritedData.m_overflowX ||
       m_nonInheritedData.m_overflowY != other.m_nonInheritedData.m_overflowY ||
-      m_nonInheritedData.m_clear != other.m_nonInheritedData.m_clear ||
-      getUnicodeBidi() != other.getUnicodeBidi() ||
+      clear() != other.clear() || getUnicodeBidi() != other.getUnicodeBidi() ||
       floating() != other.floating() ||
       m_nonInheritedData.m_originalDisplay !=
           other.m_nonInheritedData.m_originalDisplay)

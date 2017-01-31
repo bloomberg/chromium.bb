@@ -755,7 +755,12 @@
       inherited: true,
       interpolable: true,
     },
-    "clear",
+    {
+      name: "clear",
+      initial_keyword: "none",
+      keyword_only: true,
+      keywords: ["none", "left", "right", "both"],
+    },
     {
       name: "clip",
       api_class: true,
