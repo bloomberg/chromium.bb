@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_SCHEDULER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_SCHEDULER_H_
 
+#include "components/offline_pages/core/background/device_conditions.h"
+
 namespace offline_pages {
 
 // Interface of a class responsible for scheduling a task to initiate
@@ -40,6 +42,9 @@ class Scheduler {
 
   // Unschedules the currently scheduled task, if any.
   virtual void Unschedule() = 0;
+
+  // Get the current device conditions from the android APIs.
+  virtual const DeviceConditions& GetCurrentDeviceConditions() = 0;
 };
 
 }  // namespace offline_pages

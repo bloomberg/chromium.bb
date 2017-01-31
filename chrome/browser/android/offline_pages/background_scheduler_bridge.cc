@@ -56,6 +56,10 @@ static jboolean StartScheduledProcessing(
       device_conditions, base::Bind(&ProcessingDoneCallback, j_callback_ref));
 }
 
+BackgroundSchedulerBridge::BackgroundSchedulerBridge() = default;
+
+BackgroundSchedulerBridge::~BackgroundSchedulerBridge() = default;
+
 void BackgroundSchedulerBridge::Schedule(
     const TriggerConditions& trigger_conditions) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -90,6 +94,27 @@ ScopedJavaLocalRef<jobject> BackgroundSchedulerBridge::CreateTriggerConditions(
   return Java_BackgroundSchedulerBridge_createTriggerConditions(
       env, require_power_connected, minimum_battery_percentage,
       require_unmetered_network);
+}
+
+const DeviceConditions&
+BackgroundSchedulerBridge::GetCurrentDeviceConditions() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  // Call the JNI methods to get the device conditions we need.
+  jboolean jpower = Java_BackgroundSchedulerBridge_getPowerConditions(env);
+  jint jbattery = Java_BackgroundSchedulerBridge_getBatteryConditions(env);
+  jint jnetwork = Java_BackgroundSchedulerBridge_getNetworkConditions(env);
+
+  // Cast the java types back to the types we use.
+  bool power = static_cast<bool>(jpower);
+  int battery = static_cast<int>(jbattery);
+
+  net::NetworkChangeNotifier::ConnectionType network_connection_type =
+      static_cast<net::NetworkChangeNotifier::ConnectionType>(jnetwork);
+
+  // Now return the current conditions to the caller.
+  device_conditions_ = base::MakeUnique<DeviceConditions>(
+      power, battery, network_connection_type);
+  return *device_conditions_;
 }
 
 bool RegisterBackgroundSchedulerBridge(JNIEnv* env) {

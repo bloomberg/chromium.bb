@@ -319,11 +319,8 @@ bool OfflinePageEvaluationBridge::PushRequestProcessing(
   DCHECK(request_coordinator_);
   base::android::RunCallbackAndroid(j_callback_obj, false);
 
-  net::NetworkChangeNotifier::ConnectionType connection =
-      net::NetworkChangeNotifier::GetConnectionType();
-  DeviceConditions device_conditions(false, 0, connection);
   return request_coordinator_->StartImmediateProcessing(
-      device_conditions, base::Bind(&OnPushRequestsDone, j_callback_ref));
+      base::Bind(&OnPushRequestsDone, j_callback_ref));
 }
 
 void OfflinePageEvaluationBridge::SavePageLater(

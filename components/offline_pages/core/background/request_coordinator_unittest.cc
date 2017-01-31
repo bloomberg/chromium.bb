@@ -130,7 +130,7 @@ class RequestCoordinatorTest : public testing::Test {
   void WaitingCallbackFunction(bool result) { waiter_.Signal(); }
 
   net::NetworkChangeNotifier::ConnectionType GetConnectionType() {
-    return coordinator()->GetConnectionType();
+    return coordinator()->current_conditions_->GetNetConnectionType();
   }
 
   // Callback for Add requests.
@@ -171,24 +171,23 @@ class RequestCoordinatorTest : public testing::Test {
     offliner_->enable_callback(enable);
   }
 
-  void SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType connection) {
-    coordinator()->SetNetworkConditionsForTest(connection);
-  }
-
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
     network_quality_provider_->SetEffectiveConnectionTypeForTest(type);
   }
 
   void SetNetworkConnected(bool connected) {
     if (connected) {
-      SetNetworkConditionsForTest(
-          net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+      DeviceConditions device_conditions(
+          !kPowerRequired, kBatteryPercentageHigh,
+          net::NetworkChangeNotifier::CONNECTION_3G);
+      SetDeviceConditionsForTest(device_conditions);
       SetEffectiveConnectionTypeForTest(
           net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
     } else {
-      SetNetworkConditionsForTest(
-          net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+      DeviceConditions device_conditions(
+          !kPowerRequired, kBatteryPercentageHigh,
+          net::NetworkChangeNotifier::CONNECTION_NONE);
+      SetDeviceConditionsForTest(device_conditions);
       SetEffectiveConnectionTypeForTest(
           net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     }
@@ -228,6 +227,10 @@ class RequestCoordinatorTest : public testing::Test {
 
   void SetDeviceConditionsForTest(DeviceConditions device_conditions) {
     coordinator()->SetDeviceConditionsForTest(device_conditions);
+  }
+
+  DeviceConditions* GetDeviceConditions() {
+    return coordinator()->current_conditions_.get();
   }
 
   void WaitForCallback() { waiter_.Wait(); }
@@ -450,8 +453,7 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithRequestInProgress) {
 }
 
 TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithNoRequests) {
-  EXPECT_TRUE(coordinator()->StartImmediateProcessing(device_conditions(),
-                                                      processing_callback()));
+  EXPECT_TRUE(coordinator()->StartImmediateProcessing(processing_callback()));
   PumpLoop();
 
   EXPECT_TRUE(processing_callback_called());
@@ -464,8 +466,7 @@ TEST_F(RequestCoordinatorTest, StartImmediateProcessingOnSvelte) {
   // Set as low-end device to verfiy immediate processing will not start.
   SetIsLowEndDeviceForTest(true);
 
-  EXPECT_FALSE(coordinator()->StartImmediateProcessing(device_conditions(),
-                                                       processing_callback()));
+  EXPECT_FALSE(coordinator()->StartImmediateProcessing(processing_callback()));
   histograms().ExpectBucketCount("OfflinePages.Background.ImmediateStartStatus",
                                  5 /* NOT_STARTED_ON_SVELTE */, 1);
 }
@@ -474,8 +475,8 @@ TEST_F(RequestCoordinatorTest, StartImmediateProcessingWhenDisconnected) {
   DeviceConditions disconnected_conditions(
       !kPowerRequired, kBatteryPercentageHigh,
       net::NetworkChangeNotifier::CONNECTION_NONE);
-  EXPECT_FALSE(coordinator()->StartImmediateProcessing(disconnected_conditions,
-                                                       processing_callback()));
+  SetDeviceConditionsForTest(disconnected_conditions);
+  EXPECT_FALSE(coordinator()->StartImmediateProcessing(processing_callback()));
   histograms().ExpectBucketCount("OfflinePages.Background.ImmediateStartStatus",
                                  3 /* NO_CONNECTION */, 1);
 }
@@ -491,8 +492,7 @@ TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithRequestInProgress) {
   EnableOfflinerCallback(false);
 
   // Sending the request to the offliner should make it busy.
-  EXPECT_TRUE(coordinator()->StartImmediateProcessing(device_conditions(),
-                                                      processing_callback()));
+  EXPECT_TRUE(coordinator()->StartImmediateProcessing(processing_callback()));
   PumpLoop();
 
   EXPECT_TRUE(is_busy());
@@ -500,8 +500,7 @@ TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithRequestInProgress) {
   EXPECT_FALSE(processing_callback_called());
 
   // Now trying to start processing should return false since already busy.
-  EXPECT_FALSE(coordinator()->StartImmediateProcessing(device_conditions(),
-                                                       processing_callback()));
+  EXPECT_FALSE(coordinator()->StartImmediateProcessing(processing_callback()));
 
   histograms().ExpectBucketCount("OfflinePages.Background.ImmediateStartStatus",
                                  1 /* BUSY */, 1);
@@ -538,7 +537,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   EXPECT_EQ(coordinator()
                 ->GetTriggerConditions(last_requests()[0]->user_requested())
                 .minimum_battery_percentage,
-            scheduler_stub->conditions()->minimum_battery_percentage);
+            scheduler_stub->trigger_conditions()->minimum_battery_percentage);
 
   // Check that the observer got the notification that a page is available
   EXPECT_TRUE(observer().added_called());
@@ -590,7 +589,7 @@ TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
   EXPECT_EQ(coordinator()
                 ->GetTriggerConditions(last_requests()[0]->user_requested())
                 .minimum_battery_percentage,
-            scheduler_stub->conditions()->minimum_battery_percentage);
+            scheduler_stub->trigger_conditions()->minimum_battery_percentage);
 
   // Check that the observer got the notification that a page is available
   EXPECT_TRUE(observer().added_called());
@@ -853,7 +852,8 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
       reinterpret_cast<SchedulerStub*>(coordinator()->scheduler());
   EXPECT_TRUE(scheduler_stub->schedule_called());
   EXPECT_TRUE(scheduler_stub->unschedule_called());
-  const Scheduler::TriggerConditions* conditions = scheduler_stub->conditions();
+  const Scheduler::TriggerConditions* conditions =
+      scheduler_stub->trigger_conditions();
   EXPECT_EQ(conditions->require_power_connected,
             coordinator()->policy()->PowerRequired(!kUserRequested));
   EXPECT_EQ(
@@ -882,7 +882,8 @@ TEST_F(RequestCoordinatorTest, SchedulerGetsLeastRestrictiveConditions) {
   // priority.
   SchedulerStub* scheduler_stub =
       reinterpret_cast<SchedulerStub*>(coordinator()->scheduler());
-  const Scheduler::TriggerConditions* conditions = scheduler_stub->conditions();
+  const Scheduler::TriggerConditions* conditions =
+      scheduler_stub->trigger_conditions();
   EXPECT_TRUE(scheduler_stub->schedule_called());
   EXPECT_EQ(conditions->require_power_connected,
             coordinator()->policy()->PowerRequired(kUserRequested));
@@ -1373,8 +1374,9 @@ TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
 TEST_F(RequestCoordinatorTest,
        SavePageDoesStartProcessingWhenPoorlyConnected) {
   // Set specific network type for 2G with poor effective connection.
-  SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_2G);
+  DeviceConditions device_conditions(!kPowerRequired, kBatteryPercentageHigh,
+                                     net::NetworkChangeNotifier::CONNECTION_2G);
+  SetDeviceConditionsForTest(device_conditions);
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 

@@ -76,4 +76,25 @@ public class BackgroundScheduler {
 
         gcmNetworkManager.schedule(task);
     }
+
+    /**
+     * Get the latest power conditions from the android APIs.
+     */
+    public static boolean getPowerConditions(Context context) {
+        return OfflinePageUtils.getPowerConditions(context);
+    }
+
+    /**
+     * Get the latest battery conditions from the android APIs.
+     */
+    public static int getBatteryConditions(Context context) {
+        return OfflinePageUtils.getBatteryConditions(context);
+    }
+
+    /**
+     * Get the latest network conditions from the android APIs.
+     */
+    public static int getNetworkConditions(Context context) {
+        return OfflinePageUtils.getNetworkConditions(context);
+    }
 }

@@ -15,17 +15,22 @@ namespace android {
 
 class EvaluationTestScheduler : public Scheduler {
  public:
+  EvaluationTestScheduler();
+  ~EvaluationTestScheduler() override;
+
   // Scheduler implementation.
   void Schedule(const TriggerConditions& trigger_conditions) override;
   void BackupSchedule(const TriggerConditions& trigger_conditions,
                       long delay_in_seconds) override;
   void Unschedule() override;
+  DeviceConditions& GetCurrentDeviceConditions() override;
 
   // Callback used by user request.
   void ImmediateScheduleCallback(bool result);
 
  private:
   RequestCoordinator* coordinator_;
+  DeviceConditions device_conditions_;
 };
 
 }  // namespace android

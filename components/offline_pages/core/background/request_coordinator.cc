@@ -166,8 +166,7 @@ RequestCoordinator::RequestCoordinator(
       is_busy_(false),
       is_starting_(false),
       processing_state_(ProcessingWindowState::STOPPED),
-      use_test_connection_type_(false),
-      test_connection_type_(),
+      use_test_device_conditions_(false),
       offliner_(std::move(offliner)),
       policy_(std::move(policy)),
       queue_(std::move(queue)),
@@ -424,15 +423,6 @@ void RequestCoordinator::ResumeRequests(
   ScheduleAsNeeded();
 }
 
-net::NetworkChangeNotifier::ConnectionType
-RequestCoordinator::GetConnectionType() {
-  // If we have a connection type set for test, use that.
-  if (use_test_connection_type_)
-    return test_connection_type_;
-
-  return net::NetworkChangeNotifier::GetConnectionType();
-}
-
 void RequestCoordinator::AddRequestResultCallback(
     RequestAvailability availability,
     AddRequestResult result,
@@ -524,27 +514,28 @@ bool RequestCoordinator::StartScheduledProcessing(
     const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
   DVLOG(2) << "Scheduled " << __func__;
+  current_conditions_.reset(new DeviceConditions(device_conditions));
   return StartProcessingInternal(ProcessingWindowState::SCHEDULED_WINDOW,
-                                 device_conditions, callback);
+                                 callback);
 }
 
 // Returns true if the caller should expect a callback, false otherwise.
 bool RequestCoordinator::StartImmediateProcessing(
-    const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
+  UpdateCurrentConditionsFromAndroid();
   OfflinerImmediateStartStatus immediate_start_status =
-      TryImmediateStart(device_conditions, callback);
+      TryImmediateStart(callback);
   UMA_HISTOGRAM_ENUMERATION(
       "OfflinePages.Background.ImmediateStartStatus", immediate_start_status,
       RequestCoordinator::OfflinerImmediateStartStatus::STATUS_COUNT);
   return immediate_start_status == OfflinerImmediateStartStatus::STARTED;
 }
 
+// The current_conditions_ must be set sometime before calling
+// StartProcessingInternal on all calling code paths.
 bool RequestCoordinator::StartProcessingInternal(
     const ProcessingWindowState processing_state,
-    const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
-  current_conditions_.reset(new DeviceConditions(device_conditions));
   if (is_starting_ || is_busy_)
     return false;
   processing_state_ = processing_state;
@@ -560,17 +551,11 @@ bool RequestCoordinator::StartProcessingInternal(
 }
 
 void RequestCoordinator::StartImmediatelyIfConnected() {
-  // Start processing with manufactured conservative battery conditions
-  // (i.e., assume no battery).
-  // TODO(dougarnett): Obtain actual battery conditions (from Android/Java).
-  DeviceConditions device_conditions(false, 0, GetConnectionType());
-  StartImmediateProcessing(device_conditions,
-                           internal_start_processing_callback_);
+  StartImmediateProcessing(internal_start_processing_callback_);
 }
 
 RequestCoordinator::OfflinerImmediateStartStatus
 RequestCoordinator::TryImmediateStart(
-    const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
   DVLOG(2) << "Immediate " << __func__;
   // Make sure not already busy processing.
@@ -586,7 +571,7 @@ RequestCoordinator::TryImmediateStart(
     return OfflinerImmediateStartStatus::NOT_STARTED_ON_SVELTE;
   }
 
-  if (device_conditions.GetNetConnectionType() ==
+  if (current_conditions_->GetNetConnectionType() ==
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
     RequestConnectedEventForStarting();
     return OfflinerImmediateStartStatus::NO_CONNECTION;
@@ -597,7 +582,7 @@ RequestCoordinator::TryImmediateStart(
   }
 
   if (StartProcessingInternal(ProcessingWindowState::IMMEDIATE_WINDOW,
-                              device_conditions, callback))
+                              callback))
     return OfflinerImmediateStartStatus::STARTED;
   else
     return OfflinerImmediateStartStatus::NOT_ACCEPTED;
@@ -618,8 +603,32 @@ void RequestCoordinator::HandleConnectedEventForStarting() {
   StartImmediatelyIfConnected();
 }
 
+void RequestCoordinator::UpdateCurrentConditionsFromAndroid() {
+  // If we have already set the connection type for testing, don't get it from
+  // android, but use what the test already set up.
+  if (use_test_device_conditions_)
+    return;
+
+  current_conditions_ = base::MakeUnique<DeviceConditions>(
+      scheduler_->GetCurrentDeviceConditions());
+}
+
 void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
   is_starting_ = true;
+
+  // If this is the first call, the device conditions are current, no need to
+  // update them.
+  // TODO(petewil): Now that we can get conditions any time, consider getting
+  // them now instead of passing them in earlier when we start scheduled
+  // processing.
+  if (!is_start_of_processing) {
+    // Get current device conditions from the Java side across the bridge.
+    // NetworkChangeNotifier will not have the right conditions if chromium is
+    // in the background in android, so prefer to always get the conditions via
+    // the android APIs.
+    UpdateCurrentConditionsFromAndroid();
+  }
+
   base::TimeDelta processing_time_budget;
   if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
     processing_time_budget = base::TimeDelta::FromSeconds(
@@ -630,14 +639,8 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
         policy_->GetProcessingTimeBudgetForImmediateLoadInSeconds());
   }
 
-  // Determine connection type. If just starting processing, the best source is
-  // from the current device conditions (they are fresh and motivated starting
-  // processing whereas NetworkChangeNotifier may lag reality).
-  net::NetworkChangeNotifier::ConnectionType connection_type;
-  if (is_start_of_processing)
-    connection_type = current_conditions_->GetNetConnectionType();
-  else
-    connection_type = GetConnectionType();
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      current_conditions_->GetNetConnectionType();
 
   // If there is no network or no time left in the budget, return to the
   // scheduler. We do not remove the pending scheduler task that was set

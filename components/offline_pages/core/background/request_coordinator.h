@@ -116,8 +116,7 @@ class RequestCoordinator : public KeyedService,
   // a callback. If processing was already active or some condition was
   // not suitable for immediate processing (e.g., network or low-end device),
   // returns false.
-  bool StartImmediateProcessing(const DeviceConditions& device_conditions,
-                                const base::Callback<void(bool)>& callback);
+  bool StartImmediateProcessing(const base::Callback<void(bool)>& callback);
 
   // Stops the current request processing if active. This is a way for
   // caller to abort processing; otherwise, processing will complete on
@@ -257,7 +256,6 @@ class RequestCoordinator : public KeyedService,
                              std::unique_ptr<UpdateRequestsResult> result);
 
   bool StartProcessingInternal(const ProcessingWindowState processing_state,
-                               const DeviceConditions& device_conditions,
                                const base::Callback<void(bool)>& callback);
 
   // Start processing now if connected (but with conservative assumption
@@ -265,7 +263,6 @@ class RequestCoordinator : public KeyedService,
   void StartImmediatelyIfConnected();
 
   OfflinerImmediateStartStatus TryImmediateStart(
-      const DeviceConditions& device_conditions,
       const base::Callback<void(bool)>& callback);
 
   // Requests a callback upon the next network connection to start processing.
@@ -332,6 +329,9 @@ class RequestCoordinator : public KeyedService,
   // processing window (vs. continuing within a current processing window).
   void TryNextRequest(bool is_start_of_processing);
 
+  // Cross the JNI Bridge and get the current device conditions from Android.
+  void UpdateCurrentConditionsFromAndroid();
+
   // If there is an active request in the list, cancel that request.
   bool CancelActiveRequestIfItMatches(const std::vector<int64_t>& request_ids);
 
@@ -353,17 +353,8 @@ class RequestCoordinator : public KeyedService,
                        const std::string& name_space,
                        std::unique_ptr<UpdateRequestsResult> result);
 
-  // Method to wrap calls to getting the connection type so it can be
-  // changed for tests.
-  net::NetworkChangeNotifier::ConnectionType GetConnectionType();
-
-  void SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType connection) {
-    use_test_connection_type_ = true;
-    test_connection_type_ = connection;
-  }
-
   void SetDeviceConditionsForTest(const DeviceConditions& current_conditions) {
+    use_test_device_conditions_ = true;
     current_conditions_.reset(new DeviceConditions(current_conditions));
   }
 
@@ -384,8 +375,9 @@ class RequestCoordinator : public KeyedService,
   bool is_starting_;
   // Identifies the type of current processing window or if processing stopped.
   ProcessingWindowState processing_state_;
-  // True if we should use the test connection type instead of the actual type.
-  bool use_test_connection_type_;
+  // True if we should use the test device conditions instead of actual
+  // conditions.
+  bool use_test_device_conditions_;
   // For use by tests, a fake network connection type
   net::NetworkChangeNotifier::ConnectionType test_connection_type_;
   // Owned pointer to the current offliner.

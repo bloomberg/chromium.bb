@@ -236,8 +236,34 @@ public class OfflinePageUtils {
         };
     }
 
+    /**
+     * Returns a class encapsulating the current power, battery, and network conditions.
+     */
     public static DeviceConditions getDeviceConditions(Context context) {
         return getInstance().getDeviceConditionsImpl(context);
+    }
+
+    /**
+     * Return true if the device is plugged into wall power.
+     */
+    public static boolean getPowerConditions(Context context) {
+        // TODO(petewil): refactor to get power, network, and battery directly from both here and
+        // getDeviceConditionsImpl instead of always making a DeviceConditions object.
+        return getInstance().getDeviceConditionsImpl(context).isPowerConnected();
+    }
+
+    /**
+     * Get the percentage of battery remaining
+     */
+    public static int getBatteryConditions(Context context) {
+        return getInstance().getDeviceConditionsImpl(context).getBatteryPercentage();
+    }
+
+    /**
+     * Returns an enum representing the type of the network connection.
+     */
+    public static int getNetworkConditions(Context context) {
+        return getInstance().getDeviceConditionsImpl(context).getNetConnectionType();
     }
 
     /**

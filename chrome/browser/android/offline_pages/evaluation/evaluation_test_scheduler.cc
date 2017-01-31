@@ -14,6 +14,11 @@
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "net/base/network_change_notifier.h"
 
+namespace {
+const int kBatteryPercentageHigh = 75;
+const bool kPowerRequired = true;
+}  // namespace
+
 namespace offline_pages {
 
 namespace android {
@@ -35,11 +40,7 @@ void GetAllRequestsDone(
     Profile* profile = ProfileManager::GetLastUsedProfile();
     RequestCoordinator* coordinator =
         RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
-    // TODO(romax) Maybe get current real condition.
-    DeviceConditions device_conditions(
-        true, 0, net::NetworkChangeNotifier::GetConnectionType());
-    coordinator->StartImmediateProcessing(device_conditions,
-                                          base::Bind(&ProcessingDoneCallback));
+    coordinator->StartImmediateProcessing(base::Bind(&ProcessingDoneCallback));
   }
 }
 
@@ -59,6 +60,13 @@ void StartProcessing() {
 }
 
 }  // namespace
+
+EvaluationTestScheduler::EvaluationTestScheduler()
+    : device_conditions_(kPowerRequired,
+                         kBatteryPercentageHigh,
+                         net::NetworkChangeNotifier::CONNECTION_2G) {}
+
+EvaluationTestScheduler::~EvaluationTestScheduler() {}
 
 void EvaluationTestScheduler::Schedule(
     const TriggerConditions& trigger_conditions) {
@@ -90,6 +98,10 @@ void EvaluationTestScheduler::Unschedule() {
   // case we somehow get called here and need to implement the method.
   coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
                                             " Unschedule called!");
+}
+
+DeviceConditions& EvaluationTestScheduler::GetCurrentDeviceConditions() {
+  return device_conditions_;
 }
 
 void EvaluationTestScheduler::ImmediateScheduleCallback(bool result) {

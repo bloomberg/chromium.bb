@@ -24,20 +24,27 @@ class SchedulerStub : public Scheduler {
   // Unschedules the currently scheduled task, if any.
   void Unschedule() override;
 
+  // Get the current device conditions from the android APIs.
+  const DeviceConditions& GetCurrentDeviceConditions() override;
+
   bool schedule_called() const { return schedule_called_; }
 
   bool backup_schedule_called() const { return backup_schedule_called_; }
 
   bool unschedule_called() const { return unschedule_called_; }
 
-  TriggerConditions const* conditions() const { return &conditions_; }
+  TriggerConditions const* trigger_conditions() const {
+    return &trigger_conditions_;
+  }
 
  private:
   bool schedule_called_;
   bool backup_schedule_called_;
   bool unschedule_called_;
+  bool get_current_device_conditions_called_;
   long schedule_delay_;
-  TriggerConditions conditions_;
+  DeviceConditions device_conditions_;
+  TriggerConditions trigger_conditions_;
 };
 
 }  // namespace offline_pages

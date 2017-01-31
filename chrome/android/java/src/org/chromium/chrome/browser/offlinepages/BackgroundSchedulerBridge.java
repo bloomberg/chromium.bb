@@ -47,6 +47,21 @@ public class BackgroundSchedulerBridge {
         BackgroundScheduler.unschedule(ContextUtils.getApplicationContext());
     }
 
+    @CalledByNative
+    private static boolean getPowerConditions() {
+        return BackgroundScheduler.getPowerConditions(ContextUtils.getApplicationContext());
+    }
+
+    @CalledByNative
+    private static int getBatteryConditions() {
+        return BackgroundScheduler.getBatteryConditions(ContextUtils.getApplicationContext());
+    }
+
+    @CalledByNative
+    private static int getNetworkConditions() {
+        return BackgroundScheduler.getNetworkConditions(ContextUtils.getApplicationContext());
+    }
+
     /**
      * Used by native code to create and pass up Java object encapsulating the
      * trigger conditions.
