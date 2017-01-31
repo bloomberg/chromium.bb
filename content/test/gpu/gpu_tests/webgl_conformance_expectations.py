@@ -471,6 +471,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['linux', 'intel'], bug=642822)
 
+    self.Fail('WebglExtension_EXT_disjoint_timer_query',
+        ['linux', 'intel'], bug=687210)
+
     ####################
     # Android failures #
     ####################
