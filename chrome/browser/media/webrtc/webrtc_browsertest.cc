@@ -48,12 +48,6 @@ class WebRtcBrowserTest : public WebRtcTestBase {
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
-
-    // Flag used by |RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise|.
-    // TODO(hbos): Remove this when bug crbug.com/627816 is resolved (when this
-    // flag is removed).
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "RTCPeerConnectionNewGetStats");
   }
 
   void RunsAudioVideoWebRTCCallInTwoTabs(

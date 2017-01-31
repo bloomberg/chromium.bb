@@ -84,9 +84,6 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
                                    input_video);
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "RTCPeerConnectionNewGetStats");
   }
 
   void StartCall(const std::string& audio_codec,

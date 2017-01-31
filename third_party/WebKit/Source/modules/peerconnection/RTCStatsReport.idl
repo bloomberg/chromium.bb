@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/webrtc-pc/#rtcstatsreport-object
-[
-    RuntimeEnabled=RTCPeerConnectionNewGetStats,
-] interface RTCStatsReport {
+interface RTCStatsReport {
     readonly maplike<DOMString, object>;
 };
