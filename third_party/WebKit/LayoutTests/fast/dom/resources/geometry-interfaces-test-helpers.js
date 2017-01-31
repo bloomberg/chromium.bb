@@ -18,7 +18,7 @@ function assert_identity_matrix(actual) {
 
 function toArray(actual) {
   var array = actual.toFloat64Array();
-  // Do not care negative zero for testing accomodation.
+  // Do not care negative zero for testing accommodation.
   for (var i = 0; i < array.length; i++) {
     if (array[i] === -0)
       array[i] = 0;

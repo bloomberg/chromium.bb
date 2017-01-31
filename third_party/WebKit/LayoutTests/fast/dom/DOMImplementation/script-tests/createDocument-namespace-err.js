@@ -1,4 +1,4 @@
-description("createDocument tests modeled after createElementNS tests from mozilla which were attached to webkit bug 16833");
+description("createDocument tests modelled after createElementNS tests from mozilla which were attached to webkit bug 16833");
 
 // document.implementation.createDocument() should throw the same set of errors
 // as document.createElementNS()

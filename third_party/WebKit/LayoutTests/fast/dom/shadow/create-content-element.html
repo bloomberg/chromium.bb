@@ -40,7 +40,7 @@ function setupTargetTree()
 function test()
 {
     testRunner.dumpAsText();
-    log("This test compares a shadow-based render tree with one for a refrence DOM tree.");
+    log("This test compares a shadow-based render tree with one for a reference DOM tree.");
     setupTargetTree();
     var targetContainerLayoutTree = window.internals.elementLayoutTreeAsText(document.getElementById("targetContainer"));
     var targetLayoutTree = removeContainerLines(targetContainerLayoutTree);

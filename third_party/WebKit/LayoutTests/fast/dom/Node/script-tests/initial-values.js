@@ -1,4 +1,4 @@
-description("Test creation of each type of Node and check intial values")
+description("Test creation of each type of Node and check initial values")
 
 var xmlDoc = document.implementation.createDocument("http://www.w3.org/1999/xhtml", "html", null);
 

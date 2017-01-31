@@ -25,9 +25,9 @@ function setup()
     var head = document.getElementsByTagName('head')[0];
 
     // 2 additional <style>s needed for StyleSheetList test (one is included in the template).
-    // 3 rules needed in the first addtional <style> for the CSSRuleList test.
+    // 3 rules needed in the first additional <style> for the CSSRuleList test.
     // 3 declarations needed in the first rule needed for the CSSStyleDeclaration test.
-    // @media rule in the second addtional <style> for the MediaList test.
+    // @media rule in the second additional <style> for the MediaList test.
     head.appendChild(createFromMarkup("<style> ol { width: 100px; height: 100px; color: green; } ol { } ol { } </style>"));
     head.appendChild(createFromMarkup("<style> @media screen, projector, printer { ol { } } </style>"));
 

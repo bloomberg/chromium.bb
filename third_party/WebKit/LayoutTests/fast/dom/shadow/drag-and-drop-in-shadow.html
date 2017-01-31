@@ -21,7 +21,7 @@ var dragstartCount = 0;
 host.addEventListener('dragstart', function(e) {
     dragstartCount++;
     if (dragstartCount == 2) {
-        debug("dragstart event occured twice.");
+        debug("dragstart event occurred twice.");
         if (window.testRunner) {
             testRunner.notifyDone();
         }

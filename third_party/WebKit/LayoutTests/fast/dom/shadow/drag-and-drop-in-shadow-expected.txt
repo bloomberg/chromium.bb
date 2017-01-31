@@ -3,7 +3,7 @@ Tests whether we can start dragging a node in shadow trees.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-dragstart event occured twice.
+dragstart event occurred twice.
 PASS successfullyParsed is true
 
 TEST COMPLETE

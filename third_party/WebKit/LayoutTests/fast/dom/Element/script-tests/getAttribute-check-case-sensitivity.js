@@ -66,7 +66,7 @@ shouldBe("testAttribNodeNamePreservesCase()", '"a,a"');
     
 function testAttribNodeNamePreservesCaseGetNode()
 {
-    // getAttributeNode doesnt work on DIVs, use body element
+    // getAttributeNode doesn't work on DIVs, use body element
     var body = document.body;
 
     var a = body.ownerDocument.createAttribute("A");
@@ -86,7 +86,7 @@ shouldBe("testAttribNodeNamePreservesCaseGetNode()", '"a,a"');
 
 function testAttribNodeNamePreservesCaseGetNode2()
 {
-    // getAttributeNode doesnt work on DIVs, use body element
+    // getAttributeNode doesn't work on DIVs, use body element
     var body = document.body;
 
     var a = body.ownerDocument.createAttribute("B");
@@ -113,7 +113,7 @@ shouldBe("testAttribNodeNamePreservesCaseGetNode2()", '"b,b"');
 
 function testAttribNodeNameGetMutate()
 {
-    // getAttributeNode doesnt work on DIVs, use body element.
+    // getAttributeNode doesn't work on DIVs, use body element.
     var body = document.body;
 
     var a = body.ownerDocument.createAttribute("c");

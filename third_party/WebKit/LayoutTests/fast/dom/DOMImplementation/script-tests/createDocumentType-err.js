@@ -1,4 +1,4 @@
-description("createDocument tests modeled after mozilla's testing");
+description("createDocument tests modelled after mozilla's testing");
 
 function ExpectedNotEnoughArgumentsMessage(num) {
     return "\"TypeError: Failed to execute 'createDocumentType' on 'DOMImplementation': 3 arguments required, but only " + num + " present.\"";
