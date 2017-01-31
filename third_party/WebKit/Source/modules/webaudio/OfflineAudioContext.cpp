@@ -257,13 +257,15 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState,
 
   // The specified suspend time is in the past; reject the promise.
   if (frame < currentSampleFrame()) {
+    size_t currentFrameClamped = std::min(currentSampleFrame(), length());
+    double currentTimeClamped =
+        std::min(currentTime(), length() / static_cast<double>(sampleRate()));
     resolver->reject(DOMException::create(
         InvalidStateError,
-        "cannot schedule a suspend at frame " + String::number(frame) + " (" +
-            String::number(when) +
-            " seconds) because it is earlier than the current frame of " +
-            String::number(currentSampleFrame()) + " (" +
-            String::number(currentTime()) + " seconds)"));
+        "suspend(" + String::number(when) + ") failed to suspend at frame " +
+            String::number(frame) + " because it is earlier than the current " +
+            "frame of " + String::number(currentFrameClamped) + " (" +
+            String::number(currentTimeClamped) + " seconds)"));
     return promise;
   }
 

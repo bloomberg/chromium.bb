@@ -49,7 +49,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
   DECLARE_VIRTUAL_TRACE();
 
-  unsigned length() const { return m_totalRenderFrames; }
+  size_t length() const { return m_totalRenderFrames; }
 
   ScriptPromise startOfflineRendering(ScriptState*);
 

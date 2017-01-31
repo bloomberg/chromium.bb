@@ -49,6 +49,17 @@
         context.startRendering().then(done);
       });
 
+      // Task: suspending after rendering is finished must be rejected with the
+      // properly clamped frame/time information.
+      audit.defineTask('suspend-after-render-completion', function (done) {
+        var context = new OfflineAudioContext(
+            1, sampleRate * renderDuration, sampleRate);
+        context.startRendering().then(function () {
+            Should('Scheduling a suspend after the render completion',
+              context.suspend(renderDuration)).beRejected();
+        }).then(done);
+      });
+
       // Task: Calling multiple suspends at the same rendering quantum should
       // reject the promise.
       audit.defineTask('identical-suspend-time', function (done) {
@@ -123,6 +134,7 @@
       audit.runTasks(
         'suspend-invalid-argument',
         'suspend-in-the-past',
+        'suspend-after-render-completion',
         'identical-suspend-time',
         'resume-before-suspend',
         'resume-without-suspend',
