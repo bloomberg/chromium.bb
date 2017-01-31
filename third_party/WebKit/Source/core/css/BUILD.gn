@@ -348,6 +348,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPI.h",
     "properties/CSSPropertyAPIAlignItems.cpp",
     "properties/CSSPropertyAPIAlignOrJustifySelf.cpp",
+    "properties/CSSPropertyAPIBaselineShift.cpp",
     "properties/CSSPropertyAPIBorderRadius.cpp",
     "properties/CSSPropertyAPICaretColor.cpp",
     "properties/CSSPropertyAPIClip.cpp",

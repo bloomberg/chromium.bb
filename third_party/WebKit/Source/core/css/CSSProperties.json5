@@ -573,6 +573,7 @@
     },
     {
       name: "baseline-shift",
+      api_class: true,
       custom_inherit: true,
       custom_value: true,
       interpolable: true,

@@ -1156,13 +1156,6 @@ static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range,
   return consumeUrl(range, context);
 }
 
-static CSSValue* consumeBaselineShift(CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
-    return consumeIdent(range);
-  return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll);
-}
-
 static CSSValue* consumePerspective(CSSParserTokenRange& range,
                                     const CSSParserContext* context,
                                     CSSPropertyID unresolvedProperty) {
@@ -2229,8 +2222,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeNumber(m_range, ValueRangeNonNegative);
     case CSSPropertyWebkitBoxFlex:
       return consumeNumber(m_range, ValueRangeAll);
-    case CSSPropertyBaselineShift:
-      return consumeBaselineShift(m_range);
     case CSSPropertyStrokeWidth:
     case CSSPropertyStrokeDashoffset:
     case CSSPropertyCx:
