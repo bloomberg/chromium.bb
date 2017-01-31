@@ -15,7 +15,7 @@ class CSSValue;
 class CSSPropertyAlignmentUtils {
   STATIC_ONLY(CSSPropertyAlignmentUtils);
 
-  static CSSValue* consumeSelfPositionOverflowPosition(CSSParserTokenRange& range);
+  static CSSValue* consumeSelfPositionOverflowPosition(CSSParserTokenRange&);
 };
 
 }  // namespace blink

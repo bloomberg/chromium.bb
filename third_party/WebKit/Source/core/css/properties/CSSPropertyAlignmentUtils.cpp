@@ -11,8 +11,7 @@ namespace blink {
 
 namespace {
 
-CSSIdentifierValue* consumeSelfPositionKeyword(
-    CSSParserTokenRange& range) {
+CSSIdentifierValue* consumeSelfPositionKeyword(CSSParserTokenRange& range) {
   CSSValueID id = range.peek().id();
   if (id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter ||
       id == CSSValueSelfStart || id == CSSValueSelfEnd ||
@@ -22,7 +21,7 @@ CSSIdentifierValue* consumeSelfPositionKeyword(
   return nullptr;
 }
 
-} // namespace
+}  // namespace
 
 CSSValue* CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
     CSSParserTokenRange& range) {

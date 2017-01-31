@@ -1578,28 +1578,6 @@ static CSSValue* consumeCommaSeparatedBackgroundComponent(
   return result;
 }
 
-static CSSValue* consumeAlignItems(CSSParserTokenRange& range) {
-  // align-items property does not allow the 'auto' value.
-  if (identMatches<CSSValueAuto>(range.peek().id()))
-    return nullptr;
-  return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(range);
-}
-
-static CSSValue* consumeJustifyItems(CSSParserTokenRange& range) {
-  CSSParserTokenRange rangeCopy = range;
-  CSSIdentifierValue* legacy = consumeIdent<CSSValueLegacy>(rangeCopy);
-  CSSIdentifierValue* positionKeyword =
-      consumeIdent<CSSValueCenter, CSSValueLeft, CSSValueRight>(rangeCopy);
-  if (!legacy)
-    legacy = consumeIdent<CSSValueLegacy>(rangeCopy);
-  if (legacy && positionKeyword) {
-    range = rangeCopy;
-    return CSSValuePair::create(legacy, positionKeyword,
-                                CSSValuePair::DropIdenticalValues);
-  }
-  return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(range);
-}
-
 static CSSValue* consumeFitContent(CSSParserTokenRange& range,
                                    CSSParserMode cssParserMode) {
   CSSParserTokenRange rangeCopy = range;
@@ -2310,17 +2288,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitMaskRepeatX:
     case CSSPropertyWebkitMaskRepeatY:
       return nullptr;
-    case CSSPropertyAlignItems:
-      DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-      return consumeAlignItems(m_range);
-    case CSSPropertyJustifySelf:
-    case CSSPropertyAlignSelf:
-      ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-      return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
-          m_range);
-    case CSSPropertyJustifyItems:
-      ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-      return consumeJustifyItems(m_range);
     case CSSPropertyGridColumnEnd:
     case CSSPropertyGridColumnStart:
     case CSSPropertyGridRowEnd:

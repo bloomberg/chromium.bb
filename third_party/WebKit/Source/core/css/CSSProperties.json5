@@ -501,6 +501,7 @@
       name: "align-items",
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialDefaultAlignment",
+      api_class: true,
     },
     {
       name: "alignment-baseline",
@@ -510,6 +511,7 @@
       name: "align-self",
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialSelfAlignment",
+      api_class: "CSSPropertyAPIAlignOrJustifySelf",
     },
     {
       name: "backdrop-filter",
@@ -1020,12 +1022,14 @@
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialSelfAlignment",
       runtime_flag: "CSSGridLayout",
+      api_class: true,
     },
     {
       name: "justify-self",
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialSelfAlignment",
       runtime_flag: "CSSGridLayout",
+      api_class: "CSSPropertyAPIAlignOrJustifySelf",
     },
     {
       name: "left",
