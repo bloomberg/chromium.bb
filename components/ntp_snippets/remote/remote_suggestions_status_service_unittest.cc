@@ -40,24 +40,6 @@ class RemoteSuggestionsStatusServiceTest : public ::testing::Test {
   variations::testing::VariationParamsManager params_manager_;
 };
 
-TEST_F(RemoteSuggestionsStatusServiceTest, SigninNeededIfSpecifiedByParam) {
-  // Specify by the parameter that signin is required.
-  params_manager_.SetVariationParamsWithFeatureAssociations(
-      ntp_snippets::kStudyName, {{"fetching_requires_signin", "true"}},
-      {ntp_snippets::kArticleSuggestionsFeature.name});
-
-  auto service = MakeService();
-
-  // The default test setup is signed out.
-  EXPECT_EQ(RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED,
-            service->GetStatusFromDeps());
-
-  // Once signed in, we should be in a compatible state.
-  utils_.fake_signin_manager()->SignIn("foo@bar.com");
-  EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
-            service->GetStatusFromDeps());
-}
-
 TEST_F(RemoteSuggestionsStatusServiceTest, NoSigninNeeded) {
   auto service = MakeService();
 

@@ -1021,11 +1021,6 @@ void RemoteSuggestionsProviderImpl::OnStatusChanged(
       EnterState(State::DISABLED);
       UpdateAllCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
-
-    case RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED:
-      EnterState(State::DISABLED);
-      UpdateAllCategoryStatus(CategoryStatus::SIGNED_OUT);
-      break;
   }
 }
 

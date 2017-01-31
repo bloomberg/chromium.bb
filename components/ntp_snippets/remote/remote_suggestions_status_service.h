@@ -23,8 +23,6 @@ enum class RemoteSuggestionsStatus : int {
   ENABLED_AND_SIGNED_OUT,
   // Suggestions have been disabled as part of the service configuration.
   EXPLICITLY_DISABLED,
-  // The user is not signed in, but sign-in is required.
-  SIGNED_OUT_AND_DISABLED,
 };
 
 // Aggregates data from preferences and signin to notify the provider of
@@ -71,7 +69,6 @@ class RemoteSuggestionsStatusService {
   RemoteSuggestionsStatus status_;
   StatusChangeCallback status_change_callback_;
 
-  bool require_signin_;
   SigninManagerBase* signin_manager_;
   PrefService* pref_service_;
 

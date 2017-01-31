@@ -1528,37 +1528,6 @@ TEST_F(RemoteSuggestionsProviderImplTest, DismissShouldRespectAllKnownUrls) {
               IsEmpty());
 }
 
-TEST_F(RemoteSuggestionsProviderImplTest, StatusChanges) {
-  auto service = MakeSuggestionsProvider();
-
-  // Simulate user signed out
-  SetUpFetchResponse(GetTestJson({GetSuggestion()}));
-  service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
-                           RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(observer().StatusForCategory(articles_category()),
-              Eq(CategoryStatus::SIGNED_OUT));
-  EXPECT_THAT(RemoteSuggestionsProviderImpl::State::DISABLED,
-              Eq(service->state_));
-  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
-              IsEmpty());  // No fetch should be made.
-
-  // Simulate user sign in. The service should be ready again and load
-  // suggestions.
-  SetUpFetchResponse(GetTestJson({GetSuggestion()}));
-  service->OnStatusChanged(RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED,
-                           RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
-  EXPECT_THAT(observer().StatusForCategory(articles_category()),
-              Eq(CategoryStatus::AVAILABLE_LOADING));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(observer().StatusForCategory(articles_category()),
-              Eq(CategoryStatus::AVAILABLE));
-  EXPECT_THAT(RemoteSuggestionsProviderImpl::State::READY, Eq(service->state_));
-  EXPECT_FALSE(service->GetSuggestionsForTesting(articles_category()).empty());
-}
-
 TEST_F(RemoteSuggestionsProviderImplTest, ImageReturnedWithTheSameId) {
   auto service = MakeSuggestionsProvider();
 

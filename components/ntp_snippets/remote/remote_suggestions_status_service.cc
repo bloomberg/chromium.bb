@@ -15,31 +15,12 @@
 
 namespace ntp_snippets {
 
-namespace {
-
-const char kFetchingRequiresSignin[] = "fetching_requires_signin";
-const char kFetchingRequiresSigninEnabled[] = "true";
-const char kFetchingRequiresSigninDisabled[] = "false";
-
-}  // namespace
-
 RemoteSuggestionsStatusService::RemoteSuggestionsStatusService(
     SigninManagerBase* signin_manager,
     PrefService* pref_service)
     : status_(RemoteSuggestionsStatus::EXPLICITLY_DISABLED),
-      require_signin_(false),
       signin_manager_(signin_manager),
-      pref_service_(pref_service) {
-  std::string param_value_str = variations::GetVariationParamValueByFeature(
-      kArticleSuggestionsFeature, kFetchingRequiresSignin);
-  if (param_value_str == kFetchingRequiresSigninEnabled) {
-    require_signin_ = true;
-  } else if (!param_value_str.empty() &&
-             param_value_str != kFetchingRequiresSigninDisabled) {
-    DLOG(WARNING) << "Unknow value for the variations parameter "
-                  << kFetchingRequiresSignin << ": " << param_value_str;
-  }
-}
+      pref_service_(pref_service) {}
 
 RemoteSuggestionsStatusService::~RemoteSuggestionsStatusService() = default;
 
@@ -97,11 +78,6 @@ RemoteSuggestionsStatus RemoteSuggestionsStatusService::GetStatusFromDeps()
   if (!pref_service_->GetBoolean(prefs::kEnableSnippets)) {
     DVLOG(1) << "[GetStatusFromDeps] Disabled via pref";
     return RemoteSuggestionsStatus::EXPLICITLY_DISABLED;
-  }
-
-  if (require_signin_ && !IsSignedIn()) {
-    DVLOG(1) << "[GetStatusFromDeps] Signed out and disabled due to this.";
-    return RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED;
   }
 
   DVLOG(1) << "[GetStatusFromDeps] Enabled, signed "
