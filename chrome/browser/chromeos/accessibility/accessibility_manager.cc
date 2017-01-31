@@ -562,6 +562,11 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
 }
 
 bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
+#if 1
+  // Temporarily disabling this feature until UI feedback is fixed.
+  // http://crbug.com/662501
+  return false;
+#else
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector)
@@ -582,6 +587,7 @@ bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
   KioskAppManager::App app;
   CHECK(manager->GetApp(manager->GetAutoLaunchApp(), &app));
   return app.was_auto_launched_with_zero_delay;
+#endif
 }
 
 bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
