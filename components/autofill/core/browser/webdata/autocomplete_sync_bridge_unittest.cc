@@ -179,6 +179,13 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return CreateSpecifics(suffix, std::vector<int>{0});
   }
 
+  std::string GetClientTag(const AutofillSpecifics& specifics) {
+    std::string tag =
+        bridge()->GetClientTag(SpecificsToEntity(specifics).value());
+    EXPECT_FALSE(tag.empty());
+    return tag;
+  }
+
   std::string GetStorageKey(const AutofillSpecifics& specifics) {
     std::string key =
         bridge()->GetStorageKey(SpecificsToEntity(specifics).value());
@@ -282,7 +289,50 @@ class AutocompleteSyncBridgeTest : public testing::Test {
 };
 
 TEST_F(AutocompleteSyncBridgeTest, GetClientTag) {
-  // TODO(skym, crbug.com/675991): Implementation.
+  std::string tag = GetClientTag(CreateSpecifics(1));
+  EXPECT_EQ(tag, GetClientTag(CreateSpecifics(1)));
+  EXPECT_NE(tag, GetClientTag(CreateSpecifics(2)));
+}
+
+TEST_F(AutocompleteSyncBridgeTest, GetClientTagNotAffectedByTimestamp) {
+  AutofillSpecifics specifics = CreateSpecifics(1);
+  std::string tag = GetClientTag(specifics);
+
+  specifics.add_usage_timestamp(1);
+  EXPECT_EQ(tag, GetClientTag(specifics));
+
+  specifics.add_usage_timestamp(0);
+  EXPECT_EQ(tag, GetClientTag(specifics));
+
+  specifics.add_usage_timestamp(-1);
+  EXPECT_EQ(tag, GetClientTag(specifics));
+}
+
+TEST_F(AutocompleteSyncBridgeTest, GetClientTagRespectsNullCharacter) {
+  AutofillSpecifics specifics;
+  std::string tag = GetClientTag(specifics);
+
+  specifics.set_value(std::string("\0", 1));
+  EXPECT_NE(tag, GetClientTag(specifics));
+}
+
+// The client tags should never change as long as we want to maintain backwards
+// compatibility with the previous iteration of autocomplete-sync integration,
+// AutocompleteSyncableService and Sync's Directory. This is because old clients
+// will re-generate client tags and then hashes on local changes, and this
+// process must create identical values to what this client has created. If this
+// test case starts failing, you should not alter the fixed values here unless
+// you know what you're doing.
+TEST_F(AutocompleteSyncBridgeTest, GetClientTagFixed) {
+  EXPECT_EQ("autofill_entry|name%201|value%201",
+            GetClientTag(CreateSpecifics(1)));
+  EXPECT_EQ("autofill_entry|name%202|value%202",
+            GetClientTag(CreateSpecifics(2)));
+  EXPECT_EQ("autofill_entry||", GetClientTag(AutofillSpecifics()));
+  AutofillSpecifics specifics;
+  specifics.set_name("\xEC\xA4\x91");
+  specifics.set_value("\xD0\x80");
+  EXPECT_EQ("autofill_entry|%EC%A4%91|%D0%80", GetClientTag(specifics));
 }
 
 TEST_F(AutocompleteSyncBridgeTest, GetStorageKey) {
@@ -291,8 +341,7 @@ TEST_F(AutocompleteSyncBridgeTest, GetStorageKey) {
   EXPECT_NE(key, GetStorageKey(CreateSpecifics(2)));
 }
 
-// Timestamps should not affect storage keys.
-TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyTimestamp) {
+TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyNotAffectedByTimestamp) {
   AutofillSpecifics specifics = CreateSpecifics(1);
   std::string key = GetStorageKey(specifics);
 
@@ -306,8 +355,7 @@ TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyTimestamp) {
   EXPECT_EQ(key, GetStorageKey(specifics));
 }
 
-// Verify that the \0 character is respected as a difference.
-TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyNull) {
+TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyRespectsNullCharacter) {
   AutofillSpecifics specifics;
   std::string key = GetStorageKey(specifics);
 
