@@ -747,6 +747,12 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
     return;
 
   int char_count = engine_->GetCharCount(page_index);
+
+  // Treat a char count of -1 (error) as 0 (an empty page), since
+  // other pages might have valid content.
+  if (char_count < 0)
+    char_count = 0;
+
   PP_PrivateAccessibilityPageInfo page_info;
   page_info.page_index = page_index;
   page_info.bounds = engine_->GetPageBoundsRect(page_index);
