@@ -113,8 +113,7 @@ var CrScrollableBehavior = {
         'can-scroll', scrollable.clientHeight < scrollable.scrollHeight);
     scrollable.classList.toggle('is-scrolled', scrollable.scrollTop > 0);
     scrollable.classList.toggle(
-        'scrolled-to-bottom',
-        scrollable.scrollTop + scrollable.clientHeight >=
+        'scrolled-to-bottom', scrollable.scrollTop + scrollable.clientHeight >=
             scrollable.scrollHeight);
   },
 };

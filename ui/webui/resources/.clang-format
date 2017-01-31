@@ -1,0 +1,8 @@
+# Please keep this file the same as chrome/browser/resources/.clang-format.
+BasedOnStyle: Chromium
+
+# Renaming quotes in <include> and <if> break things.
+# For normal JS code, please prefer ' to ".
+JavaScriptQuotes: Leave
+
+AllowShortFunctionsOnASingleLine: Empty
