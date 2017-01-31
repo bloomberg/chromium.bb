@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/login/login_state.h"
@@ -38,7 +39,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -934,24 +934,42 @@ void WifiConfigView::Init(bool show_8021x) {
       ParseUIProperty(&passphrase_ui_data_, network, ::onc::wifi::kPassphrase);
   }
 
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
+  views::GridLayout* layout = new views::GridLayout(this);
+  LayoutDelegate* delegate = LayoutDelegate::Get();
+  layout->SetInsets(gfx::Insets(
+      delegate->GetLayoutDistance(
+          LayoutDelegate::LayoutDistanceType::PANEL_HORIZ_MARGIN),
+      delegate->GetLayoutDistance(
+          LayoutDelegate::LayoutDistanceType::PANEL_VERT_MARGIN),
+      delegate->GetLayoutDistance(
+          LayoutDelegate::LayoutDistanceType::BUTTON_VEDGE_MARGIN_NEW),
+      delegate->GetLayoutDistance(
+          LayoutDelegate::LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW)));
+  this->SetLayoutManager(layout);
 
   const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
+  const int kLabelMinWidth = 150;
   const int kPasswordVisibleWidth = 20;
   // Label
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
+                        views::GridLayout::USE_PREF, 0, kLabelMinWidth);
+  column_set->AddPaddingColumn(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_HORIZONTAL_SPACING));
   // Textfield, combobox.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0,
                         ChildNetworkConfigView::kInputFieldMinWidth);
-  column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
+  column_set->AddPaddingColumn(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_HORIZONTAL_SPACING));
   // Password visible button / policy indicator.
-  column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, kPasswordVisibleWidth);
+  column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 0,
+                        views::GridLayout::FIXED, kPasswordVisibleWidth, 0);
+  column_set->AddPaddingColumn(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_HORIZONTAL_SPACING));
 
   // SSID input
   if (!network || network->type() != shill::kTypeEthernet) {
@@ -963,14 +981,18 @@ void WifiConfigView::Init(bool show_8021x) {
       ssid_textfield_->set_controller(this);
       ssid_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
-      layout->AddView(ssid_textfield_);
+      layout->AddView(ssid_textfield_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
     } else {
       views::Label* label =
           new views::Label(base::UTF8ToUTF16(network->name()));
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       layout->AddView(label);
     }
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
   }
 
   // Security select
@@ -983,8 +1005,13 @@ void WifiConfigView::Init(bool show_8021x) {
     security_combobox_ = new views::Combobox(security_combobox_model_.get());
     security_combobox_->SetAccessibleName(label_text);
     security_combobox_->set_listener(this);
+    layout->AddView(security_combobox_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
     layout->AddView(security_combobox_);
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
   }
 
   // Only enumerate certificates in the data model for 802.1X networks.
@@ -1003,9 +1030,13 @@ void WifiConfigView::Init(bool show_8021x) {
     eap_method_combobox_->SetAccessibleName(eap_label_text);
     eap_method_combobox_->set_listener(this);
     eap_method_combobox_->SetEnabled(eap_method_ui_data_.IsEditable());
-    layout->AddView(eap_method_combobox_);
+    layout->AddView(eap_method_combobox_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
     layout->AddView(new ControlledSettingIndicatorView(eap_method_ui_data_));
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
 
     // Phase 2 authentication
     layout->StartRow(0, column_view_set_id);
@@ -1021,9 +1052,13 @@ void WifiConfigView::Init(bool show_8021x) {
     phase_2_auth_label_->SetEnabled(false);
     phase_2_auth_combobox_->SetEnabled(false);
     phase_2_auth_combobox_->set_listener(this);
-    layout->AddView(phase_2_auth_combobox_);
+    layout->AddView(phase_2_auth_combobox_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
     layout->AddView(new ControlledSettingIndicatorView(phase_2_auth_ui_data_));
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
 
     // Server CA certificate
     layout->StartRow(0, column_view_set_id);
@@ -1040,10 +1075,14 @@ void WifiConfigView::Init(bool show_8021x) {
     server_ca_cert_label_->SetEnabled(false);
     server_ca_cert_combobox_->SetEnabled(false);
     server_ca_cert_combobox_->set_listener(this);
-    layout->AddView(server_ca_cert_combobox_);
+    layout->AddView(server_ca_cert_combobox_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
     layout->AddView(
         new ControlledSettingIndicatorView(server_ca_cert_ui_data_));
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
 
     // Subject Match
     layout->StartRow(0, column_view_set_id);
@@ -1054,8 +1093,12 @@ void WifiConfigView::Init(bool show_8021x) {
     subject_match_textfield_ = new views::Textfield();
     subject_match_textfield_->SetAccessibleName(subject_match_label_text);
     subject_match_textfield_->set_controller(this);
-    layout->AddView(subject_match_textfield_);
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddView(subject_match_textfield_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
 
     // User certificate
     layout->StartRow(0, column_view_set_id);
@@ -1069,9 +1112,13 @@ void WifiConfigView::Init(bool show_8021x) {
     user_cert_label_->SetEnabled(false);
     user_cert_combobox_->SetEnabled(false);
     user_cert_combobox_->set_listener(this);
-    layout->AddView(user_cert_combobox_);
+    layout->AddView(user_cert_combobox_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
     layout->AddView(new ControlledSettingIndicatorView(user_cert_ui_data_));
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
 
     // Identity
     layout->StartRow(0, column_view_set_id);
@@ -1083,9 +1130,13 @@ void WifiConfigView::Init(bool show_8021x) {
     identity_textfield_->SetAccessibleName(identity_label_text);
     identity_textfield_->set_controller(this);
     identity_textfield_->SetEnabled(identity_ui_data_.IsEditable());
-    layout->AddView(identity_textfield_);
+    layout->AddView(identity_textfield_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
     layout->AddView(new ControlledSettingIndicatorView(identity_ui_data_));
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
   }
 
   // Passphrase input
@@ -1102,7 +1153,9 @@ void WifiConfigView::Init(bool show_8021x) {
   passphrase_textfield_->SetEnabled(network &&
                                     passphrase_ui_data_.IsEditable());
   passphrase_textfield_->SetAccessibleName(passphrase_label_text);
-  layout->AddView(passphrase_textfield_);
+  layout->AddView(passphrase_textfield_, 1, 1, views::GridLayout::FILL,
+                  views::GridLayout::FILL, 0,
+                  ChildNetworkConfigView::kInputFieldHeight);
 
   if (passphrase_ui_data_.IsManaged()) {
     layout->AddView(new ControlledSettingIndicatorView(passphrase_ui_data_));
@@ -1138,7 +1191,9 @@ void WifiConfigView::Init(bool show_8021x) {
     layout->AddView(passphrase_visible_button_);
   }
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_VERTICAL_SPACING));
 
   if (show_8021x) {
     // Anonymous identity
@@ -1151,11 +1206,20 @@ void WifiConfigView::Init(bool show_8021x) {
     identity_anonymous_label_->SetEnabled(false);
     identity_anonymous_textfield_->SetEnabled(false);
     identity_anonymous_textfield_->set_controller(this);
-    layout->AddView(identity_anonymous_textfield_);
+    layout->AddView(identity_anonymous_textfield_, 1, 1,
+                    views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
     layout->AddView(
         new ControlledSettingIndicatorView(identity_anonymous_ui_data_));
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
   }
+
+  // We need a little bit more padding before Checkboxes.
+  layout->AddPaddingRow(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_VERTICAL_SPACING));
 
   // Checkboxes.
 
@@ -1182,7 +1246,9 @@ void WifiConfigView::Init(bool show_8021x) {
     layout->SkipColumns(1);
     layout->AddView(share_network_checkbox_);
   }
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_VERTICAL_SPACING));
 
   // Create an error label.
   layout->StartRow(0, column_view_set_id);

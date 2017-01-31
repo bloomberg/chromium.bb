@@ -1,0 +1,6 @@
+include_rules = [
+  # TODO(xdai): Remove this DEPS file after layout_delegate.h/cc is moved to a
+  # better place.
+  "!chrome/browser/ui/views/harmony/layout_delegate.h",
+]
+

@@ -69,6 +69,7 @@ gfx::NativeWindow GetParentForUnhostedDialog() {
 
 // static
 const int ChildNetworkConfigView::kInputFieldMinWidth = 270;
+const int ChildNetworkConfigView::kInputFieldHeight = 28;
 
 NetworkConfigView::NetworkConfigView()
     : child_config_view_(nullptr),
@@ -199,6 +200,10 @@ views::View* NetworkConfigView::GetInitiallyFocusedView() {
   return child_config_view_->GetInitiallyFocusedView();
 }
 
+int NetworkConfigView::GetDefaultDialogButton() const {
+  return ui::DIALOG_BUTTON_CANCEL;
+}
+
 base::string16 NetworkConfigView::GetWindowTitle() const {
   DCHECK(!child_config_view_->GetTitle().empty());
   return child_config_view_->GetTitle();
@@ -232,9 +237,12 @@ void NetworkConfigView::ShowAdvancedView() {
                                           true /* show_8021x */);
   AddChildView(child_config_view_);
   // Resize the window to be able to hold the new widgets.
-  gfx::Size size = views::Widget::GetLocalizedContentsSize(
+  gfx::Size size = GetWidget()->client_view()->GetPreferredSize();
+  gfx::Size predefined_size = views::Widget::GetLocalizedContentsSize(
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES);
+  size.SetToMax(predefined_size);
+
   // Get the new bounds with desired size at the same center point.
   gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
   int horiz_padding = bounds.width() - size.width();
