@@ -17,6 +17,10 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
 
+namespace gin {
+class V8Platform;
+}
+
 namespace tracked_objects {
 class Location;
 }
@@ -122,6 +126,20 @@ class BASE_EXPORT TaskScheduler {
   // SetInstance(). This should be used very rarely; most users of TaskScheduler
   // should use the post_task.h API.
   static TaskScheduler* GetInstance();
+
+ private:
+  friend class gin::V8Platform;
+
+  // Returns the maximum number of non-single-threaded tasks posted with
+  // |traits| that can run concurrently in this TaskScheduler.
+  //
+  // Do not use this method. To process n items, post n tasks that each process
+  // 1 item rather than GetMaxConcurrentTasksWithTraitsDeprecated() tasks that
+  // each process n/GetMaxConcurrentTasksWithTraitsDeprecated() items.
+  //
+  // TODO(fdoray): Remove this method. https://crbug.com/687264
+  virtual int GetMaxConcurrentTasksWithTraitsDeprecated(
+      const TaskTraits& traits) const = 0;
 };
 
 }  // namespace base

@@ -51,6 +51,8 @@ class TestTaskScheduler : public TaskScheduler {
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
       const TaskTraits& traits) override;
   std::vector<const HistogramBase*> GetHistograms() const override;
+  int GetMaxConcurrentTasksWithTraitsDeprecated(
+      const TaskTraits& traits) const override;
   void Shutdown() override;
   void FlushForTesting() override;
   void JoinForTesting() override;
@@ -154,6 +156,11 @@ TestTaskScheduler::CreateSingleThreadTaskRunnerWithTraits(
 std::vector<const HistogramBase*> TestTaskScheduler::GetHistograms() const {
   NOTREACHED();
   return std::vector<const HistogramBase*>();
+}
+
+int TestTaskScheduler::GetMaxConcurrentTasksWithTraitsDeprecated(
+    const TaskTraits& traits) const {
+  return 1;
 }
 
 void TestTaskScheduler::Shutdown() {
