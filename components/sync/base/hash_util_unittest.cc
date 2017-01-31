@@ -4,7 +4,6 @@
 
 #include "components/sync/base/hash_util.h"
 
-#include "components/sync/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

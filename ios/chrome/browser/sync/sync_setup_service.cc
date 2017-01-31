@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/stop_source.h"

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 
 using base::SingleThreadTaskRunner;

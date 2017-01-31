@@ -5,7 +5,6 @@
 #include "components/sync/engine_impl/test_entry_factory.h"
 
 #include "components/sync/base/hash_util.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"

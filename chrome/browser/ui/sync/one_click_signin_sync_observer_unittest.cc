@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -47,7 +46,7 @@ class MockWebContentsObserver : public content::WebContentsObserver {
   // navigation start is a sufficient signal for the purposes of this test.
   // Listening for this call also has the advantage of being synchronous.
   MOCK_METHOD1(DidStartNavigation, void(content::NavigationHandle*));
-  // TODO: remove this method when PlzNavigate is turned on by default.
+  // TODO(jam): remove this method when PlzNavigate is turned on by default.
   MOCK_METHOD2(DidStartNavigationToPendingEntry,
                void(const GURL&, content::ReloadType));
 };

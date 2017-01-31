@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/browser_sync/profile_sync_service_mock.h"

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"

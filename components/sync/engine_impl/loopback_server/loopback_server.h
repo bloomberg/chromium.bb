@@ -27,7 +27,7 @@ namespace syncer {
 // A loopback version of the Sync server used for local profile serialization.
 class LoopbackServer {
  public:
-  LoopbackServer(const base::FilePath& persistent_file);
+  explicit LoopbackServer(const base::FilePath& persistent_file);
   virtual ~LoopbackServer();
 
   // Handles a /command POST (with the given |request|) to the server. Three

@@ -4,9 +4,7 @@
 
 #include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"

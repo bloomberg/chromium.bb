@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/migration_waiter.h"
 
-#include <string>
-
 #include "base/logging.h"
 #include "chrome/browser/sync/test/integration/migration_watcher.h"
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_observer.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

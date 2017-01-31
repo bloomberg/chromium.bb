@@ -5,6 +5,7 @@
 #include "components/sync/engine/attachments/in_memory_attachment_store.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"

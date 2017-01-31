@@ -17,6 +17,7 @@ class OneClickSigninLinksDelegate {
  protected:
   OneClickSigninLinksDelegate() {}
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninLinksDelegate);
 };
 

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_REVISIT_BROADCASTER_H_
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_REVISIT_BROADCASTER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"

@@ -4,6 +4,7 @@
 
 #include "components/sync/engine/attachments/fake_attachment_downloader.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 

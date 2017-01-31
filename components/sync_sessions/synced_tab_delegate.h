@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_SYNCED_TAB_DELEGATE_H__
 #define COMPONENTS_SYNC_SESSIONS_SYNCED_TAB_DELEGATE_H__
 
+#include <memory>
 #include <string>
 #include <vector>
 

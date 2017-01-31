@@ -6,10 +6,9 @@
 
 #include <stddef.h>
 
-#include <memory>
+#include <vector>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/reading_list/core/reading_list_switches.h"

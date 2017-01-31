@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNCED_TAB_DELEGATE_H_
 #define IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNCED_TAB_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

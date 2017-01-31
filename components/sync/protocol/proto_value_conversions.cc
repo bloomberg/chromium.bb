@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/memory/ptr_util.h"

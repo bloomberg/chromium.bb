@@ -4,6 +4,9 @@
 
 #include "components/sync/engine/engine_components_factory_impl.h"
 
+#include <map>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"

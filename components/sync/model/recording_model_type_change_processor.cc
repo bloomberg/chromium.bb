@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/metadata_batch.h"
 
 namespace syncer {

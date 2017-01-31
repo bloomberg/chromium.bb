@@ -6,7 +6,6 @@
 
 #include "components/sync/base/extensions_activity.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/chrome_notification_types.h"

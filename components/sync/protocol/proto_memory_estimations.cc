@@ -6,6 +6,8 @@
 
 #include "components/sync/protocol/proto_memory_estimations.h"
 
+#include <string>
+
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/protocol/proto_visitors.h"
 

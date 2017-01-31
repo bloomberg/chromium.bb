@@ -18,7 +18,6 @@
 #include "components/sync/device_info/device_info_util.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
-#include "components/sync/model/model_error.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"

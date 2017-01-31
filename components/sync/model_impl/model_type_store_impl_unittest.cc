@@ -4,6 +4,7 @@
 
 #include "components/sync/model_impl/model_type_store_impl.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"

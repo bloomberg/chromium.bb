@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SYNC_TAB_CONTENTS_SYNCED_TAB_DELEGATE_H_
 #define CHROME_BROWSER_UI_SYNC_TAB_CONTENTS_SYNCED_TAB_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

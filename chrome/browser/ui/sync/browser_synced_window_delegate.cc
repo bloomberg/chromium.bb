@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/sessions/core/session_id.h"
 
 BrowserSyncedWindowDelegate::BrowserSyncedWindowDelegate(Browser* browser)
     : browser_(browser) {}

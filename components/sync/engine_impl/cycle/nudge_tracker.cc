@@ -4,6 +4,7 @@
 
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/memory/ptr_util.h"

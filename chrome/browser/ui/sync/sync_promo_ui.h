@@ -13,7 +13,6 @@ class SyncPromoUI {
   // Returns true if the sync promo should be visible.
   // |profile| is the profile for which the promo would be displayed.
   static bool ShouldShowSyncPromo(Profile* profile);
-
 };
 
 #endif  // CHROME_BROWSER_UI_SYNC_SYNC_PROMO_UI_H_
