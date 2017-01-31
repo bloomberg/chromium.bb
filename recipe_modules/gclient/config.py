@@ -143,6 +143,7 @@ def chromium_bare(c):
   p['pdfium'] = ('src/third_party/pdfium', 'HEAD')
   p['skia'] = ('src/third_party/skia', 'HEAD')
   p['v8'] = ('src/v8', 'HEAD')
+  p['v8/v8'] = ('src/v8', 'HEAD')
   p['webrtc'] = ('src/third_party/webrtc', 'HEAD')
 
 @config_ctx(includes=['chromium_bare'])
