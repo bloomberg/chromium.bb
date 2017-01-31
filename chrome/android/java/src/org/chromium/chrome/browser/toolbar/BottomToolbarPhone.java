@@ -51,5 +51,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     @Override
     public void setBottomSheet(BottomSheet sheet) {
         mBottomSheet = sheet;
+        getLocationBar().setBottomSheet(mBottomSheet);
     }
 }

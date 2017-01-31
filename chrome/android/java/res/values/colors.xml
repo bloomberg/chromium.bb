@@ -140,6 +140,7 @@
     <color name="locationbar_status_color_light">#ffffff</color>
     <color name="locationbar_status_separator_color">#3d000000</color>
     <color name="locationbar_status_separator_color_light">#3dffffff</color>
+    <color name="omnibox_focused_fading_background_color">#a6000000</color>
 
     <!-- Find in Page colors -->
     <color name="find_result_bar_background_color">#bfffffff</color>

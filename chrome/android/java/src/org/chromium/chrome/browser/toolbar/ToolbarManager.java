@@ -201,7 +201,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbar = (ToolbarLayout) controlContainer.findViewById(R.id.toolbar);
 
         mToolbar.setPaintInvalidator(invalidator);
-        mToolbar.setBottomSheet(activity.getBottomSheet());
+        if (activity.getBottomSheet() != null) mToolbar.setBottomSheet(activity.getBottomSheet());
 
         mActionModeController = new ActionModeController(activity, mActionBarDelegate);
         mActionModeController.setCustomSelectionActionModeCallback(

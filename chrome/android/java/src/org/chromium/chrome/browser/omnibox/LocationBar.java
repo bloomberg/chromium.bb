@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -76,6 +77,12 @@ public interface LocationBar extends UrlBarDelegate {
      * Sets the {@link ToolbarDataProvider} to be used for accessing {@link Toolbar} state.
      */
     void setToolbarDataProvider(ToolbarDataProvider model);
+
+    /**
+     * Set the bottom sheet for Chrome Home.
+     * @param sheet The bottom sheet for Chrome Home if it exists.
+     */
+    void setBottomSheet(BottomSheet sheet);
 
     /**
      * Sets the menu helper that should be used if there is a menu button in {@link LocationBar}.

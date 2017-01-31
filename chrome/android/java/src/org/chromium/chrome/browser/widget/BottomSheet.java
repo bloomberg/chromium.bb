@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
@@ -42,7 +41,7 @@ import java.lang.annotation.RetentionPolicy;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-public class BottomSheet extends LinearLayout {
+public class BottomSheet extends FrameLayout {
     /** The different states that the bottom sheet can have. */
     @IntDef({SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL})
     @Retention(RetentionPolicy.SOURCE)
@@ -211,7 +210,6 @@ public class BottomSheet extends LinearLayout {
     public BottomSheet(Context context, AttributeSet atts) {
         super(context, atts);
 
-        setOrientation(LinearLayout.VERTICAL);
         mVelocityTracker = VelocityTracker.obtain();
 
         mGestureDetector = new GestureDetector(context, new BottomSheetSwipeDetector());
@@ -385,8 +383,16 @@ public class BottomSheet extends LinearLayout {
         // Compute the height that the content section of the bottom sheet.
         float contentHeight =
                 (mContainerHeight * mStateRatios[mStateRatios.length - 1]) - mToolbarHeight;
-        mBottomSheetContent.setLayoutParams(
-                new LinearLayout.LayoutParams((int) mContainerWidth, (int) contentHeight));
+
+        MarginLayoutParams sheetContentParams =
+                (MarginLayoutParams) mBottomSheetContent.getLayoutParams();
+        sheetContentParams.width = (int) mContainerWidth;
+        sheetContentParams.height = (int) contentHeight;
+        sheetContentParams.topMargin = (int) mToolbarHeight;
+
+        MarginLayoutParams toolbarShadowParams =
+                (MarginLayoutParams) findViewById(R.id.toolbar_shadow).getLayoutParams();
+        toolbarShadowParams.topMargin = (int) mToolbarHeight;
     }
 
     /**

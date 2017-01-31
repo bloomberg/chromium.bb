@@ -80,8 +80,8 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.TintedImageButton;
-import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -120,7 +120,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     // response (as opposed to treating it like a typed string in the Omnibox).
     private static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
 
-    private static final int CONTENT_OVERLAY_COLOR = 0xA6000000;
     private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFF5F5F6;
     private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
 
@@ -143,6 +142,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
+
+    /** A handle to the bottom sheet for chrome home. */
+    private BottomSheet mBottomSheet;
 
     private AutocompleteController mAutocomplete;
 
@@ -181,9 +183,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private Runnable mRequestSuggestions;
 
     private ViewGroup mOmniboxResultsContainer;
-    private ObjectAnimator mFadeInOmniboxBackgroundAnimator;
-    private ObjectAnimator mFadeOutOmniboxBackgroundAnimator;
-    private Animator mOmniboxBackgroundAnimator;
+    private View mFadingView;
+    private ObjectAnimator mOverlayFadeInAnimator;
+    private ObjectAnimator mOverlayFadeOutAnimator;
+    private Animator mOverlayAnimator;
 
     private boolean mSuggestionsShown;
     private boolean mUrlHasFocus;
@@ -1041,7 +1044,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (mUrlFocusChangeListener != null) mUrlFocusChangeListener.onUrlFocusChange(hasFocus);
 
         updateOmniboxResultsContainer();
-        if (hasFocus) updateOmniboxResultsContainerBackground(true);
+        if (hasFocus) updateFadingBackgroundView(true);
     }
 
     /**
@@ -1161,6 +1164,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 onUrlFocusChange(hasFocus);
             }
         });
+    }
+
+    @Override
+    public void setBottomSheet(BottomSheet sheet) {
+        mBottomSheet = sheet;
     }
 
     @Override
@@ -1879,10 +1887,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         } else if (v == mMicButton) {
             RecordUserAction.record("MobileOmniboxVoiceSearch");
             startVoiceRecognition();
-        } else if (v == mOmniboxResultsContainer) {
+        } else if (v == mFadingView) {
             // This will only be triggered when no suggestion items are selected in the container.
             setUrlBarFocus(false);
-            updateOmniboxResultsContainerBackground(false);
+            updateFadingBackgroundView(false);
         }
     }
 
@@ -2189,11 +2197,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private void initOmniboxResultsContainer() {
         if (mOmniboxResultsContainer != null) return;
 
-        ViewStub overlayStub =
-                (ViewStub) getRootView().findViewById(R.id.omnibox_results_container_stub);
+        // Use the omnibox results container in the bottom sheet if it exists.
+        int omniboxResultsContainerId = R.id.omnibox_results_container_stub;
+        if (mBottomSheet != null) {
+            omniboxResultsContainerId = R.id.bottom_omnibox_results_container_stub;
+        }
+
+        ViewStub overlayStub = (ViewStub) getRootView().findViewById(omniboxResultsContainerId);
         mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
-        mOmniboxResultsContainer.setBackgroundColor(CONTENT_OVERLAY_COLOR);
-        mOmniboxResultsContainer.setOnClickListener(this);
     }
 
     private void updateOmniboxResultsContainer() {
@@ -2201,7 +2212,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             initOmniboxResultsContainer();
             updateOmniboxResultsContainerVisibility(true);
         } else if (mOmniboxResultsContainer != null) {
-            updateOmniboxResultsContainerBackground(false);
+            updateFadingBackgroundView(false);
         }
     }
 
@@ -2213,79 +2224,94 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         if (visible) {
             mOmniboxResultsContainer.setVisibility(VISIBLE);
-            if (activity != null) activity.addViewObscuringAllTabs(mOmniboxResultsContainer);
+            if (activity != null) activity.addViewObscuringAllTabs(mFadingView);
         } else {
             mOmniboxResultsContainer.setVisibility(INVISIBLE);
-            if (activity != null) activity.removeViewObscuringAllTabs(mOmniboxResultsContainer);
+            if (activity != null) activity.removeViewObscuringAllTabs(mFadingView);
         }
     }
 
     /**
-     * Set the background of the omnibox results container.
+     * Initialize the fading background for when the omnibox is focused.
+     */
+    private void initFadingOverlayView() {
+        mFadingView = getRootView().findViewById(R.id.fading_focus_target);
+        mFadingView.setAlpha(0.0f);
+        mFadingView.setOnClickListener(this);
+    }
+
+    /**
+     * Update the fading background view that shows when the omnibox is focused.
      * @param visible Whether the background should be made visible.
      */
-    private void updateOmniboxResultsContainerBackground(boolean visible) {
+    private void updateFadingBackgroundView(boolean visible) {
         if (getToolbarDataProvider() == null) return;
+
+        if (mFadingView == null) initFadingOverlayView();
 
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
-        if (visible) {
-            if (locationBarShownInNTP) {
-                mOmniboxResultsContainer.getBackground().setAlpha(0);
-            } else {
-                fadeInOmniboxResultsContainerBackground();
-            }
+
+        if (visible && !locationBarShownInNTP) {
+            // If the location bar is shown in the NTP, the toolbar will eventually trigger a
+            // fade in.
+            showFadingOverlay();
         } else {
-            if (locationBarShownInNTP) {
-                updateOmniboxResultsContainerVisibility(false);
-            } else {
-                fadeOutOmniboxResultsContainerBackground();
-            }
+            hideFadingOverlay(!locationBarShownInNTP);
         }
     }
 
     /**
-     * Trigger a fade in of the omnibox results background.
+     * Trigger a fade in of the omnibox results background creating a new animation if necessary.
      */
-    protected void fadeInOmniboxResultsContainerBackground() {
-        if (mFadeInOmniboxBackgroundAnimator == null) {
-            mFadeInOmniboxBackgroundAnimator = ObjectAnimator.ofInt(
-                    getRootView().findViewById(R.id.omnibox_results_container).getBackground(),
-                    AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 0, 255);
-            mFadeInOmniboxBackgroundAnimator.setDuration(OMNIBOX_CONTAINER_BACKGROUND_FADE_MS);
-            mFadeInOmniboxBackgroundAnimator.setInterpolator(
+    protected void showFadingOverlay() {
+        if (mOverlayFadeInAnimator == null) {
+            mOverlayFadeInAnimator = ObjectAnimator.ofFloat(mFadingView, ALPHA, 1f);
+            mOverlayFadeInAnimator.setDuration(OMNIBOX_CONTAINER_BACKGROUND_FADE_MS);
+            mOverlayFadeInAnimator.setInterpolator(
                     BakedBezierInterpolator.FADE_IN_CURVE);
         }
-        runOmniboxResultsFadeAnimation(mFadeInOmniboxBackgroundAnimator);
+
+        mFadingView.setVisibility(View.VISIBLE);
+        runFadeOverlayAnimation(mOverlayFadeInAnimator);
     }
 
-    private void fadeOutOmniboxResultsContainerBackground() {
-        if (mFadeOutOmniboxBackgroundAnimator == null) {
-            mFadeOutOmniboxBackgroundAnimator = ObjectAnimator.ofInt(
-                    getRootView().findViewById(R.id.omnibox_results_container).getBackground(),
-                    AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 255, 0);
-            mFadeOutOmniboxBackgroundAnimator.setDuration(OMNIBOX_CONTAINER_BACKGROUND_FADE_MS);
-            mFadeOutOmniboxBackgroundAnimator.setInterpolator(
-                    BakedBezierInterpolator.FADE_OUT_CURVE);
-            mFadeOutOmniboxBackgroundAnimator.addListener(new CancelAwareAnimatorListener() {
+    /**
+     * Trigger a fade out of the omnibox results background creating a new animation if necessary.
+     */
+    private void hideFadingOverlay(boolean fadeOut) {
+        if (mOverlayFadeOutAnimator == null) {
+            mOverlayFadeOutAnimator = ObjectAnimator.ofFloat(mFadingView, ALPHA, 0f);
+            mOverlayFadeOutAnimator.setDuration(OMNIBOX_CONTAINER_BACKGROUND_FADE_MS);
+            mOverlayFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+            mOverlayFadeOutAnimator.addListener(new CancelAwareAnimatorListener() {
                 @Override
                 public void onEnd(Animator animator) {
-                    updateOmniboxResultsContainerVisibility(false);
+                    mFadingView.setVisibility(View.GONE);
+                    onFadingOverlayHidden();
                 }
             });
         }
-        runOmniboxResultsFadeAnimation(mFadeOutOmniboxBackgroundAnimator);
+
+        runFadeOverlayAnimation(mOverlayFadeOutAnimator);
+        if (!fadeOut) mOverlayFadeOutAnimator.end();
     }
 
-    private void runOmniboxResultsFadeAnimation(Animator fadeAnimation) {
-        if (mOmniboxBackgroundAnimator == fadeAnimation
-                && mOmniboxBackgroundAnimator.isRunning()) {
+    /**
+     * A notification that the fading overlay view is completely hidden.
+     */
+    private void onFadingOverlayHidden() {
+        updateOmniboxResultsContainerVisibility(false);
+    }
+
+    private void runFadeOverlayAnimation(Animator fadeAnimation) {
+        if (mOverlayAnimator == fadeAnimation && mOverlayAnimator.isRunning()) {
             return;
-        } else if (mOmniboxBackgroundAnimator != null) {
-            mOmniboxBackgroundAnimator.cancel();
+        } else if (mOverlayAnimator != null) {
+            mOverlayAnimator.cancel();
         }
-        mOmniboxBackgroundAnimator = fadeAnimation;
-        mOmniboxBackgroundAnimator.start();
+        mOverlayAnimator = fadeAnimation;
+        mOverlayAnimator.start();
     }
 
     @Override
