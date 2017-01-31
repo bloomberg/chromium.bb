@@ -4,7 +4,7 @@
 
 // This features file defines manifest keys implemented under src/chrome.
 // See chrome/common/extensions/api/_features.md to understand this file, as
-// well as feature.h, simple_feature.h, and base_feature_provider.h.
+// well as feature.h, simple_feature.h, and feature_provider.h.
 
 {
   "about_page": {

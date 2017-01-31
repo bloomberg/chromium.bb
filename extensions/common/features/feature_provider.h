@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 
 namespace extensions {
 
@@ -20,12 +21,8 @@ using FeatureMap = std::map<std::string, std::unique_ptr<Feature>>;
 // Implemented by classes that can vend features.
 class FeatureProvider {
  public:
-  FeatureProvider() {}
-  virtual ~FeatureProvider() {}
-
-  //
-  // Static helpers.
-  //
+  FeatureProvider();
+  virtual ~FeatureProvider();
 
   // Gets a FeatureProvider for a specific type, like "permission".
   static const FeatureProvider* GetByName(const std::string& name);
@@ -46,21 +43,29 @@ class FeatureProvider {
   static const Feature* GetPermissionFeature(const std::string& name);
   static const Feature* GetBehaviorFeature(const std::string& name);
 
-  //
-  // Instance methods.
-  //
-
   // Returns the feature with the specified name.
-  virtual Feature* GetFeature(const std::string& name) const = 0;
+  Feature* GetFeature(const std::string& name) const;
 
   // Returns the parent feature of |feature|, or NULL if there isn't one.
-  virtual Feature* GetParent(Feature* feature) const = 0;
+  Feature* GetParent(Feature* feature) const;
 
   // Returns the features inside the |parent| namespace, recursively.
-  virtual std::vector<Feature*> GetChildren(const Feature& parent) const = 0;
+  std::vector<Feature*> GetChildren(const Feature& parent) const;
 
   // Returns a map containing all features described by this instance.
-  virtual const FeatureMap& GetAllFeatures() const = 0;
+  // TODO(devlin): Rename this to be features().
+  const FeatureMap& GetAllFeatures() const;
+
+  void AddFeature(base::StringPiece name, std::unique_ptr<Feature> feature);
+
+  // Takes ownership. Used in preference to unique_ptr variant to reduce size
+  // of generated code.
+  void AddFeature(base::StringPiece name, Feature* feature);
+
+ private:
+  FeatureMap features_;
+
+  DISALLOW_COPY_AND_ASSIGN(FeatureProvider);
 };
 
 }  // namespace extensions

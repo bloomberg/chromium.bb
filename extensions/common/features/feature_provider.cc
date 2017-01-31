@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/extensions_client.h"
@@ -77,6 +79,9 @@ const Feature* GetFeatureFromProviderByName(const std::string& provider_name,
 
 }  // namespace
 
+FeatureProvider::FeatureProvider() {}
+FeatureProvider::~FeatureProvider() {}
+
 // static
 const FeatureProvider* FeatureProvider::GetByName(const std::string& name) {
   return g_static.Get().GetFeatures(name);
@@ -120,6 +125,61 @@ const Feature* FeatureProvider::GetPermissionFeature(const std::string& name) {
 // static
 const Feature* FeatureProvider::GetBehaviorFeature(const std::string& name) {
   return GetFeatureFromProviderByName("behavior", name);
+}
+
+Feature* FeatureProvider::GetFeature(const std::string& name) const {
+  FeatureMap::const_iterator iter = features_.find(name);
+  if (iter != features_.end())
+    return iter->second.get();
+  else
+    return nullptr;
+}
+
+Feature* FeatureProvider::GetParent(Feature* feature) const {
+  CHECK(feature);
+  if (feature->no_parent())
+    return nullptr;
+
+  std::vector<std::string> split = base::SplitString(
+      feature->name(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (split.size() < 2)
+    return nullptr;
+  split.pop_back();
+  return GetFeature(base::JoinString(split, "."));
+}
+
+// Children of a given API are named starting with parent.name()+".", which
+// means they'll be contiguous in the features_ std::map.
+std::vector<Feature*> FeatureProvider::GetChildren(
+    const Feature& parent) const {
+  std::string prefix = parent.name() + ".";
+  const FeatureMap::const_iterator first_child = features_.lower_bound(prefix);
+
+  // All children have names before (parent.name() + ('.'+1)).
+  ++prefix.back();
+  const FeatureMap::const_iterator after_children =
+      features_.lower_bound(prefix);
+
+  std::vector<Feature*> result;
+  result.reserve(std::distance(first_child, after_children));
+  for (FeatureMap::const_iterator it = first_child; it != after_children;
+       ++it) {
+    result.push_back(it->second.get());
+  }
+  return result;
+}
+
+const FeatureMap& FeatureProvider::GetAllFeatures() const {
+  return features_;
+}
+
+void FeatureProvider::AddFeature(base::StringPiece name,
+                                 std::unique_ptr<Feature> feature) {
+  features_[name.as_string()] = std::move(feature);
+}
+
+void FeatureProvider::AddFeature(base::StringPiece name, Feature* feature) {
+  features_[name.as_string()] = std::unique_ptr<Feature>(feature);
 }
 
 }  // namespace extensions

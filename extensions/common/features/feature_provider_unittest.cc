@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/features/base_feature_provider.h"
+#include "extensions/common/features/feature_provider.h"
 
 #include <algorithm>
 #include <set>
@@ -21,7 +21,7 @@ namespace extensions {
 
 // Tests that a real manifest feature is available for the correct types of
 // extensions and apps.
-TEST(BaseFeatureProviderTest, ManifestFeatureTypes) {
+TEST(FeatureProviderTest, ManifestFeatureTypes) {
   // NOTE: This feature cannot have multiple rules, otherwise it is not a
   // SimpleFeature.
   const SimpleFeature* feature = static_cast<const SimpleFeature*>(
@@ -41,8 +41,8 @@ TEST(BaseFeatureProviderTest, ManifestFeatureTypes) {
 
 // Tests that real manifest features have the correct availability for an
 // extension.
-TEST(BaseFeatureProviderTest, ManifestFeatureAvailability) {
-  const FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
+TEST(FeatureProviderTest, ManifestFeatureAvailability) {
+  const FeatureProvider* provider = FeatureProvider::GetByName("manifest");
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
@@ -56,34 +56,37 @@ TEST(BaseFeatureProviderTest, ManifestFeatureAvailability) {
 
   Feature* feature = provider->GetFeature("description");
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            feature->IsAvailableToContext(extension.get(),
-                                          Feature::UNSPECIFIED_CONTEXT,
-                                          GURL()).result());
+            feature
+                ->IsAvailableToContext(extension.get(),
+                                       Feature::UNSPECIFIED_CONTEXT, GURL())
+                .result());
 
   // This is a generic extension, so an app-only feature isn't allowed.
   feature = provider->GetFeature("app.background");
   ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::INVALID_TYPE,
-            feature->IsAvailableToContext(extension.get(),
-                                          Feature::UNSPECIFIED_CONTEXT,
-                                          GURL()).result());
+            feature
+                ->IsAvailableToContext(extension.get(),
+                                       Feature::UNSPECIFIED_CONTEXT, GURL())
+                .result());
 
   // A feature not listed in the manifest isn't allowed.
   feature = provider->GetFeature("background");
   ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::NOT_PRESENT,
-            feature->IsAvailableToContext(extension.get(),
-                                          Feature::UNSPECIFIED_CONTEXT,
-                                          GURL()).result());
+            feature
+                ->IsAvailableToContext(extension.get(),
+                                       Feature::UNSPECIFIED_CONTEXT, GURL())
+                .result());
 }
 
 // Tests that a real permission feature is available for the correct types of
 // extensions and apps.
-TEST(BaseFeatureProviderTest, PermissionFeatureTypes) {
+TEST(FeatureProviderTest, PermissionFeatureTypes) {
   // NOTE: This feature cannot have multiple rules, otherwise it is not a
   // SimpleFeature.
   const SimpleFeature* feature = static_cast<const SimpleFeature*>(
-      BaseFeatureProvider::GetPermissionFeature("power"));
+      FeatureProvider::GetPermissionFeature("power"));
   ASSERT_TRUE(feature);
   const std::vector<Manifest::Type>& extension_types =
       feature->extension_types();
@@ -95,9 +98,8 @@ TEST(BaseFeatureProviderTest, PermissionFeatureTypes) {
 }
 
 // Tests that real permission features have the correct availability for an app.
-TEST(BaseFeatureProviderTest, PermissionFeatureAvailability) {
-  const FeatureProvider* provider =
-      BaseFeatureProvider::GetByName("permission");
+TEST(FeatureProviderTest, PermissionFeatureAvailability) {
+  const FeatureProvider* provider = FeatureProvider::GetByName("permission");
 
   scoped_refptr<const Extension> app =
       ExtensionBuilder()
@@ -122,27 +124,30 @@ TEST(BaseFeatureProviderTest, PermissionFeatureAvailability) {
 
   // A permission requested in the manifest is available.
   Feature* feature = provider->GetFeature("power");
-  EXPECT_EQ(
-      Feature::IS_AVAILABLE,
-      feature->IsAvailableToContext(
-                   app.get(), Feature::UNSPECIFIED_CONTEXT, GURL()).result());
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            feature
+                ->IsAvailableToContext(app.get(), Feature::UNSPECIFIED_CONTEXT,
+                                       GURL())
+                .result());
 
   // A permission only available to whitelisted extensions returns availability
   // NOT_FOUND_IN_WHITELIST.
   feature = provider->GetFeature("bluetoothPrivate");
   ASSERT_TRUE(feature);
-  EXPECT_EQ(
-      Feature::NOT_FOUND_IN_WHITELIST,
-      feature->IsAvailableToContext(
-                   app.get(), Feature::UNSPECIFIED_CONTEXT, GURL()).result());
+  EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST,
+            feature
+                ->IsAvailableToContext(app.get(), Feature::UNSPECIFIED_CONTEXT,
+                                       GURL())
+                .result());
 
   // A permission that isn't part of the manifest returns NOT_PRESENT.
   feature = provider->GetFeature("serial");
   ASSERT_TRUE(feature);
-  EXPECT_EQ(
-      Feature::NOT_PRESENT,
-      feature->IsAvailableToContext(
-                   app.get(), Feature::UNSPECIFIED_CONTEXT, GURL()).result());
+  EXPECT_EQ(Feature::NOT_PRESENT,
+            feature
+                ->IsAvailableToContext(app.get(), Feature::UNSPECIFIED_CONTEXT,
+                                       GURL())
+                .result());
 }
 
 }  // namespace extensions
