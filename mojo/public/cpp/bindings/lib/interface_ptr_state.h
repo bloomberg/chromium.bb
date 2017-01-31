@@ -198,8 +198,6 @@ class InterfacePtrState {
         // will not be used.
         0u));
     proxy_.reset(new Proxy(endpoint_client_.get()));
-    if (Interface::PassesAssociatedKinds_)
-      proxy_->set_group_controller(endpoint_client_->group_controller());
   }
 
   void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,

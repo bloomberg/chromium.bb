@@ -17,7 +17,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
@@ -109,11 +108,6 @@ class AssociatedBinding {
         std::move(handle), &stub_,
         base::WrapUnique(new typename Interface::RequestValidator_()),
         Interface::HasSyncMethods_, std::move(runner), Interface::Version_));
-
-    if (Interface::PassesAssociatedKinds_) {
-      stub_.serialization_context()->group_controller =
-          endpoint_client_->group_controller();
-    }
   }
 
   // Adds a message filter to be notified of each incoming message before

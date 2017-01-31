@@ -19,9 +19,12 @@
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/message_buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message.h"
 
 namespace mojo {
+
+class AssociatedGroupController;
 
 using ReportBadMessageCallback = base::Callback<void(const std::string& error)>;
 
@@ -73,11 +76,29 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   const internal::MessageHeader* header() const {
     return static_cast<const internal::MessageHeader*>(buffer_->data());
   }
-
   internal::MessageHeader* header() {
-    return const_cast<internal::MessageHeader*>(
-        static_cast<const Message*>(this)->header());
+    return static_cast<internal::MessageHeader*>(buffer_->data());
   }
+
+  const internal::MessageHeaderV1* header_v1() const {
+    DCHECK_GE(version(), 1u);
+    return static_cast<const internal::MessageHeaderV1*>(buffer_->data());
+  }
+  internal::MessageHeaderV1* header_v1() {
+    DCHECK_GE(version(), 1u);
+    return static_cast<internal::MessageHeaderV1*>(buffer_->data());
+  }
+
+  const internal::MessageHeaderV2* header_v2() const {
+    DCHECK_GE(version(), 2u);
+    return static_cast<const internal::MessageHeaderV2*>(buffer_->data());
+  }
+  internal::MessageHeaderV2* header_v2() {
+    DCHECK_GE(version(), 2u);
+    return static_cast<internal::MessageHeaderV2*>(buffer_->data());
+  }
+
+  uint32_t version() const { return header()->version; }
 
   uint32_t interface_id() const { return header()->interface_id; }
   void set_interface_id(uint32_t id) { header()->interface_id = id; }
@@ -86,31 +107,31 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   bool has_flag(uint32_t flag) const { return !!(header()->flags & flag); }
 
   // Access the request_id field (if present).
-  bool has_request_id() const { return header()->version >= 1; }
-  uint64_t request_id() const {
-    DCHECK(has_request_id());
-    return static_cast<const internal::MessageHeaderWithRequestID*>(
-               header())->request_id;
-  }
+  uint64_t request_id() const { return header_v1()->request_id; }
   void set_request_id(uint64_t request_id) {
-    DCHECK(has_request_id());
-    static_cast<internal::MessageHeaderWithRequestID*>(header())
-        ->request_id = request_id;
+    header_v1()->request_id = request_id;
   }
 
   // Access the payload.
-  const uint8_t* payload() const { return data() + header()->num_bytes; }
+  const uint8_t* payload() const;
   uint8_t* mutable_payload() { return const_cast<uint8_t*>(payload()); }
-  uint32_t payload_num_bytes() const {
-    DCHECK(data_num_bytes() >= header()->num_bytes);
-    size_t num_bytes = data_num_bytes() - header()->num_bytes;
-    DCHECK(num_bytes <= std::numeric_limits<uint32_t>::max());
-    return static_cast<uint32_t>(num_bytes);
-  }
+  uint32_t payload_num_bytes() const;
+
+  uint32_t payload_num_interface_ids() const;
+  const uint32_t* payload_interface_ids() const;
 
   // Access the handles.
   const std::vector<Handle>* handles() const { return &handles_; }
   std::vector<Handle>* mutable_handles() { return &handles_; }
+
+  const std::vector<ScopedInterfaceEndpointHandle>*
+  associated_endpoint_handles() const {
+    return &associated_endpoint_handles_;
+  }
+  std::vector<ScopedInterfaceEndpointHandle>*
+  mutable_associated_endpoint_handles() {
+    return &associated_endpoint_handles_;
+  }
 
   // Access the underlying Buffer interface.
   internal::Buffer* buffer() { return buffer_.get(); }
@@ -124,11 +145,22 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   // rejected by bindings validation code.
   void NotifyBadMessage(const std::string& error);
 
+  // Serializes |associated_endpoint_handles_| into the payload_interface_ids
+  // field.
+  void SerializeAssociatedEndpointHandles(
+      AssociatedGroupController* group_controller);
+
+  // Deserializes |associated_endpoint_handles_| from the payload_interface_ids
+  // field.
+  bool DeserializeAssociatedEndpointHandles(
+      AssociatedGroupController* group_controller);
+
  private:
   void CloseHandles();
 
   std::unique_ptr<internal::MessageBuffer> buffer_;
   std::vector<Handle> handles_;
+  std::vector<ScopedInterfaceEndpointHandle> associated_endpoint_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(Message);
 };

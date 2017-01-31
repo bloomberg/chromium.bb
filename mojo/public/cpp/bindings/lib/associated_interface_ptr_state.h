@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
@@ -100,9 +99,6 @@ class AssociatedInterfacePtrState {
         base::WrapUnique(new typename Interface::ResponseValidator_()), false,
         std::move(runner), 0u));
     proxy_.reset(new Proxy(endpoint_client_.get()));
-    if (Interface::PassesAssociatedKinds_) {
-      proxy_->set_group_controller(endpoint_client_->group_controller());
-    }
   }
 
   // After this method is called, the object is in an invalid state and

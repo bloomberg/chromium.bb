@@ -17,7 +17,8 @@ namespace test {
 
 void AllocRequestMessage(uint32_t name, const char* text, Message* message) {
   size_t payload_size = strlen(text) + 1;  // Plus null terminator.
-  internal::RequestMessageBuilder builder(name, payload_size);
+  internal::MessageBuilder builder(name, Message::kFlagExpectsResponse,
+                                   payload_size, 0);
   memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
   *message = std::move(*builder.message());
 }
@@ -27,7 +28,9 @@ void AllocResponseMessage(uint32_t name,
                           uint64_t request_id,
                           Message* message) {
   size_t payload_size = strlen(text) + 1;  // Plus null terminator.
-  internal::ResponseMessageBuilder builder(name, payload_size, request_id);
+  internal::MessageBuilder builder(name, Message::kFlagIsResponse, payload_size,
+                                   0);
+  builder.message()->set_request_id(request_id);
   memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
   *message = std::move(*builder.message());
 }

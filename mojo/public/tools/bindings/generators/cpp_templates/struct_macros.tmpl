@@ -19,7 +19,8 @@
 {%- macro get_serialized_size(struct, input_field_pattern, context,
                               input_may_be_temp=False) -%}
   size_t size = sizeof({{struct|get_qualified_name_for_kind(internal=True)}});
-{%-   for pf in struct.packed.packed_fields_in_ordinal_order if pf.field.kind|is_object_kind %}
+{%-   for pf in struct.packed.packed_fields_in_ordinal_order
+          if pf.field.kind|is_object_kind or pf.field.kind|is_associated_kind %}
 {%-     set name = pf.field.name -%}
 {%-     set kind = pf.field.kind -%}
 {%-     set original_input_field = input_field_pattern|format(name) %}

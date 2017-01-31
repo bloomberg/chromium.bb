@@ -124,6 +124,8 @@ struct Pointer {
 };
 static_assert(sizeof(Pointer<char>) == 8, "Bad_sizeof(Pointer)");
 
+using GenericPointer = Pointer<void>;
+
 struct Handle_Data {
   Handle_Data() = default;
   explicit Handle_Data(uint32_t value) : value(value) {}
@@ -140,18 +142,23 @@ struct Interface_Data {
 };
 static_assert(sizeof(Interface_Data) == 8, "Bad_sizeof(Interface_Data)");
 
+struct AssociatedEndpointHandle_Data {
+  AssociatedEndpointHandle_Data() = default;
+  explicit AssociatedEndpointHandle_Data(uint32_t value) : value(value) {}
+
+  bool is_valid() const { return value != kEncodedInvalidHandleValue; }
+
+  uint32_t value;
+};
+static_assert(sizeof(AssociatedEndpointHandle_Data) == 4,
+              "Bad_sizeof(AssociatedEndpointHandle_Data)");
+
 struct AssociatedInterface_Data {
-  InterfaceId interface_id;
+  AssociatedEndpointHandle_Data handle;
   uint32_t version;
 };
 static_assert(sizeof(AssociatedInterface_Data) == 8,
               "Bad_sizeof(AssociatedInterface_Data)");
-
-struct AssociatedInterfaceRequest_Data {
-  InterfaceId interface_id;
-};
-static_assert(sizeof(AssociatedInterfaceRequest_Data) == 4,
-              "Bad_sizeof(AssociatedInterfaceRequest_Data)");
 
 #pragma pack(pop)
 
@@ -234,7 +241,7 @@ struct MojomTypeTraits<AssociatedInterfacePtrInfoDataView<T>, false> {
 
 template <typename T>
 struct MojomTypeTraits<AssociatedInterfaceRequestDataView<T>, false> {
-  using Data = AssociatedInterfaceRequest_Data;
+  using Data = AssociatedEndpointHandle_Data;
   using DataAsArrayElement = Data;
 
   static const MojomTypeCategory category =

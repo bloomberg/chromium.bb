@@ -84,7 +84,7 @@ bool StructDeserializeImpl(const DataArrayType& input, UserType* output) {
     memcpy(input_buffer, &input.front(), input.size());
   }
 
-  ValidationContext validation_context(input_buffer, input.size(), 0);
+  ValidationContext validation_context(input_buffer, input.size(), 0, 0);
   bool result = false;
   if (DataType::Validate(input_buffer, &validation_context)) {
     auto data = reinterpret_cast<DataType*>(input_buffer);

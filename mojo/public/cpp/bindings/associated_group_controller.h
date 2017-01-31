@@ -38,6 +38,9 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
   // Typically, this method is used to (1) create an endpoint handle for the
   // master interface; or (2) create an endpoint handle on receiving an
   // interface ID from the message pipe.
+  //
+  // On failure, the method returns an invalid handle. Usually that is because
+  // the ID has already been used to create a handle.
   virtual ScopedInterfaceEndpointHandle CreateLocalEndpointHandle(
       InterfaceId id) = 0;
 

@@ -154,6 +154,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
 
  private:
   class InterfaceEndpoint;
+  class IncomingMessageWrapper;
   struct Task;
 
   ~MultiplexRouter() override;
@@ -208,7 +209,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
       ClientCallBehavior client_call_behavior,
       base::SingleThreadTaskRunner* current_task_runner);
   bool ProcessIncomingMessage(
-      Message* message,
+      IncomingMessageWrapper* message_wrapper,
       ClientCallBehavior client_call_behavior,
       base::SingleThreadTaskRunner* current_task_runner);
 

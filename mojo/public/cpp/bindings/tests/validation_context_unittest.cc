@@ -17,6 +17,8 @@ namespace test {
 namespace {
 
 using Handle_Data = mojo::internal::Handle_Data;
+using AssociatedEndpointHandle_Data =
+    mojo::internal::AssociatedEndpointHandle_Data;
 
 const void* ToPtr(uintptr_t ptr) {
   return reinterpret_cast<const void*>(ptr);
@@ -27,7 +29,7 @@ TEST(ValidationContextTest, ConstructorRangeOverflow) {
   {
     // Test memory range overflow.
     internal::ValidationContext context(
-        ToPtr(std::numeric_limits<uintptr_t>::max() - 3000), 5000, 0);
+        ToPtr(std::numeric_limits<uintptr_t>::max() - 3000), 5000, 0, 0);
 
     EXPECT_FALSE(context.IsValidRange(
         ToPtr(std::numeric_limits<uintptr_t>::max() - 3000), 1));
@@ -35,11 +37,14 @@ TEST(ValidationContextTest, ConstructorRangeOverflow) {
         ToPtr(std::numeric_limits<uintptr_t>::max() - 3000), 1));
   }
 
-  if (sizeof(size_t) > sizeof(uint32_t)) {
+  if (sizeof(size_t) <= sizeof(uint32_t))
+    return;
+
+  {
     // Test handle index range overflow.
     size_t num_handles =
         static_cast<size_t>(std::numeric_limits<uint32_t>::max()) + 5;
-    internal::ValidationContext context(ToPtr(0), 0, num_handles);
+    internal::ValidationContext context(ToPtr(0), 0, num_handles, 0);
 
     EXPECT_FALSE(context.ClaimHandle(Handle_Data(0)));
     EXPECT_FALSE(context.ClaimHandle(
@@ -48,12 +53,28 @@ TEST(ValidationContextTest, ConstructorRangeOverflow) {
     EXPECT_TRUE(context.ClaimHandle(
         Handle_Data(internal::kEncodedInvalidHandleValue)));
   }
+
+  {
+    size_t num_associated_endpoint_handles =
+        static_cast<size_t>(std::numeric_limits<uint32_t>::max()) + 5;
+    internal::ValidationContext context(ToPtr(0), 0, 0,
+                                        num_associated_endpoint_handles);
+
+    EXPECT_FALSE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(0)));
+    EXPECT_FALSE(
+        context.ClaimAssociatedEndpointHandle(AssociatedEndpointHandle_Data(
+            std::numeric_limits<uint32_t>::max() - 1)));
+
+    EXPECT_TRUE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(internal::kEncodedInvalidHandleValue)));
+  }
 }
 #endif
 
 TEST(ValidationContextTest, IsValidRange) {
   {
-    internal::ValidationContext context(ToPtr(1234), 100, 0);
+    internal::ValidationContext context(ToPtr(1234), 100, 0, 0);
 
     // Basics.
     EXPECT_FALSE(context.IsValidRange(ToPtr(100), 5));
@@ -79,7 +100,7 @@ TEST(ValidationContextTest, IsValidRange) {
   }
 
   {
-    internal::ValidationContext context(ToPtr(1234), 100, 0);
+    internal::ValidationContext context(ToPtr(1234), 100, 0, 0);
     // Should return false for empty ranges.
     EXPECT_FALSE(context.IsValidRange(ToPtr(0), 0));
     EXPECT_FALSE(context.IsValidRange(ToPtr(1200), 0));
@@ -90,7 +111,7 @@ TEST(ValidationContextTest, IsValidRange) {
 
   {
     // The valid memory range is empty.
-    internal::ValidationContext context(ToPtr(1234), 0, 0);
+    internal::ValidationContext context(ToPtr(1234), 0, 0, 0);
 
     EXPECT_FALSE(context.IsValidRange(ToPtr(1234), 1));
     EXPECT_FALSE(context.IsValidRange(ToPtr(1234), 0));
@@ -98,7 +119,7 @@ TEST(ValidationContextTest, IsValidRange) {
 
   {
     internal::ValidationContext context(
-        ToPtr(std::numeric_limits<uintptr_t>::max() - 2000), 1000, 0);
+        ToPtr(std::numeric_limits<uintptr_t>::max() - 2000), 1000, 0, 0);
 
     // Test overflow.
     EXPECT_FALSE(context.IsValidRange(
@@ -115,7 +136,7 @@ TEST(ValidationContextTest, IsValidRange) {
 
 TEST(ValidationContextTest, ClaimHandle) {
   {
-    internal::ValidationContext context(ToPtr(0), 0, 10);
+    internal::ValidationContext context(ToPtr(0), 0, 10, 0);
 
     // Basics.
     EXPECT_TRUE(context.ClaimHandle(Handle_Data(0)));
@@ -137,7 +158,7 @@ TEST(ValidationContextTest, ClaimHandle) {
 
   {
     // No handle to claim.
-    internal::ValidationContext context(ToPtr(0), 0, 0);
+    internal::ValidationContext context(ToPtr(0), 0, 0, 0);
 
     EXPECT_FALSE(context.ClaimHandle(Handle_Data(0)));
 
@@ -152,7 +173,7 @@ TEST(ValidationContextTest, ClaimHandle) {
     EXPECT_EQ(internal::kEncodedInvalidHandleValue,
               std::numeric_limits<uint32_t>::max());
     internal::ValidationContext context(
-        ToPtr(0), 0, std::numeric_limits<uint32_t>::max());
+        ToPtr(0), 0, std::numeric_limits<uint32_t>::max(), 0);
 
     EXPECT_TRUE(context.ClaimHandle(
         Handle_Data(std::numeric_limits<uint32_t>::max() - 1)));
@@ -166,9 +187,71 @@ TEST(ValidationContextTest, ClaimHandle) {
   }
 }
 
+TEST(ValidationContextTest, ClaimAssociatedEndpointHandle) {
+  {
+    internal::ValidationContext context(ToPtr(0), 0, 0, 10);
+
+    // Basics.
+    EXPECT_TRUE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(0)));
+    EXPECT_FALSE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(0)));
+
+    EXPECT_TRUE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(9)));
+    EXPECT_FALSE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(10)));
+
+    // Should fail because it is smaller than the max index that has been
+    // claimed.
+    EXPECT_FALSE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(8)));
+
+    // Should return true for invalid handle.
+    EXPECT_TRUE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(internal::kEncodedInvalidHandleValue)));
+    EXPECT_TRUE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(internal::kEncodedInvalidHandleValue)));
+  }
+
+  {
+    // No handle to claim.
+    internal::ValidationContext context(ToPtr(0), 0, 0, 0);
+
+    EXPECT_FALSE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(0)));
+
+    // Should still return true for invalid handle.
+    EXPECT_TRUE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(internal::kEncodedInvalidHandleValue)));
+  }
+
+  {
+    // Test the case that |num_associated_endpoint_handles| is the same value as
+    // |internal::kEncodedInvalidHandleValue|.
+    EXPECT_EQ(internal::kEncodedInvalidHandleValue,
+              std::numeric_limits<uint32_t>::max());
+    internal::ValidationContext context(ToPtr(0), 0, 0,
+                                        std::numeric_limits<uint32_t>::max());
+
+    EXPECT_TRUE(
+        context.ClaimAssociatedEndpointHandle(AssociatedEndpointHandle_Data(
+            std::numeric_limits<uint32_t>::max() - 1)));
+    EXPECT_FALSE(
+        context.ClaimAssociatedEndpointHandle(AssociatedEndpointHandle_Data(
+            std::numeric_limits<uint32_t>::max() - 1)));
+    EXPECT_FALSE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(0)));
+
+    // Should still return true for invalid handle.
+    EXPECT_TRUE(context.ClaimAssociatedEndpointHandle(
+        AssociatedEndpointHandle_Data(internal::kEncodedInvalidHandleValue)));
+  }
+}
+
 TEST(ValidationContextTest, ClaimMemory) {
   {
-    internal::ValidationContext context(ToPtr(1000), 2000, 0);
+    internal::ValidationContext context(ToPtr(1000), 2000, 0, 0);
 
     // Basics.
     EXPECT_FALSE(context.ClaimMemory(ToPtr(500), 100));
@@ -186,7 +269,7 @@ TEST(ValidationContextTest, ClaimMemory) {
 
   {
     // No memory to claim.
-    internal::ValidationContext context(ToPtr(10000), 0, 0);
+    internal::ValidationContext context(ToPtr(10000), 0, 0, 0);
 
     EXPECT_FALSE(context.ClaimMemory(ToPtr(10000), 1));
     EXPECT_FALSE(context.ClaimMemory(ToPtr(10000), 0));
@@ -194,7 +277,7 @@ TEST(ValidationContextTest, ClaimMemory) {
 
   {
     internal::ValidationContext context(
-        ToPtr(std::numeric_limits<uintptr_t>::max() - 1000), 500, 0);
+        ToPtr(std::numeric_limits<uintptr_t>::max() - 1000), 500, 0, 0);
 
     // Test overflow.
     EXPECT_FALSE(context.ClaimMemory(

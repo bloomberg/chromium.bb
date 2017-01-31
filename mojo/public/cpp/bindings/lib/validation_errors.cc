@@ -98,10 +98,7 @@ void ReportValidationErrorForMessage(
     mojo::Message* message,
     ValidationError error,
     const char* description) {
-  ValidationContext validation_context(
-      message->data(), message->data_num_bytes(),
-      message->handles()->size(), message,
-      description);
+  ValidationContext validation_context(nullptr, 0, 0, 0, message, description);
   ReportValidationError(&validation_context, error);
 }
 

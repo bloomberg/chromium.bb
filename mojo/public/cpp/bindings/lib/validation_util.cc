@@ -101,11 +101,11 @@ bool ValidateMessageIsResponse(const Message* message,
 }
 
 bool IsHandleOrInterfaceValid(const AssociatedInterface_Data& input) {
-  return IsValidInterfaceId(input.interface_id);
+  return input.handle.is_valid();
 }
 
-bool IsHandleOrInterfaceValid(const AssociatedInterfaceRequest_Data& input) {
-  return IsValidInterfaceId(input.interface_id);
+bool IsHandleOrInterfaceValid(const AssociatedEndpointHandle_Data& input) {
+  return input.is_valid();
 }
 
 bool IsHandleOrInterfaceValid(const Interface_Data& input) {
@@ -130,7 +130,7 @@ bool ValidateHandleOrInterfaceNonNullable(
 }
 
 bool ValidateHandleOrInterfaceNonNullable(
-    const AssociatedInterfaceRequest_Data& input,
+    const AssociatedEndpointHandle_Data& input,
     const char* error_message,
     ValidationContext* validation_context) {
   if (IsHandleOrInterfaceValid(input))
@@ -170,7 +170,7 @@ bool ValidateHandleOrInterfaceNonNullable(
 
 bool ValidateHandleOrInterface(const AssociatedInterface_Data& input,
                                ValidationContext* validation_context) {
-  if (!IsMasterInterfaceId(input.interface_id))
+  if (validation_context->ClaimAssociatedEndpointHandle(input.handle))
     return true;
 
   ReportValidationError(validation_context,
@@ -178,9 +178,9 @@ bool ValidateHandleOrInterface(const AssociatedInterface_Data& input,
   return false;
 }
 
-bool ValidateHandleOrInterface(const AssociatedInterfaceRequest_Data& input,
+bool ValidateHandleOrInterface(const AssociatedEndpointHandle_Data& input,
                                ValidationContext* validation_context) {
-  if (!IsMasterInterfaceId(input.interface_id))
+  if (validation_context->ClaimAssociatedEndpointHandle(input))
     return true;
 
   ReportValidationError(validation_context,

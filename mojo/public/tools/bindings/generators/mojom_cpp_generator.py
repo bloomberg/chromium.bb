@@ -342,7 +342,7 @@ def GetCppFieldType(kind):
   if mojom.IsAssociatedInterfaceKind(kind):
     return "mojo::internal::AssociatedInterface_Data"
   if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "mojo::internal::AssociatedInterfaceRequest_Data"
+    return "mojo::internal::AssociatedEndpointHandle_Data"
   if mojom.IsEnumKind(kind):
     return "int32_t"
   if mojom.IsStringKind(kind):

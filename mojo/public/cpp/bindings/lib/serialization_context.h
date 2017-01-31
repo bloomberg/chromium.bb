@@ -12,15 +12,12 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
-
-class AssociatedGroupController;
-
 namespace internal {
 
 // A container for handles during serialization/deserialization.
@@ -57,19 +54,21 @@ class MOJO_CPP_BINDINGS_EXPORT SerializedHandleVector {
 // Context information for serialization/deserialization routines.
 struct MOJO_CPP_BINDINGS_EXPORT SerializationContext {
   SerializationContext();
-  explicit SerializationContext(
-      scoped_refptr<AssociatedGroupController> in_group_controller);
 
   ~SerializationContext();
-
-  // Used to serialize/deserialize associated interface pointers and requests.
-  scoped_refptr<AssociatedGroupController> group_controller;
 
   // Opaque context pointers returned by StringTraits::SetUpContext().
   std::unique_ptr<std::queue<void*>> custom_contexts;
 
   // Stashes handles encoded in a message by index.
   SerializedHandleVector handles;
+
+  // The number of ScopedInterfaceEndpointHandles that need to be serialized.
+  // It is calculated by PrepareToSerialize().
+  uint32_t associated_endpoint_count = 0;
+
+  // Stashes ScopedInterfaceEndpointHandles encoded in a message by index.
+  std::vector<ScopedInterfaceEndpointHandle> associated_endpoint_handles;
 };
 
 }  // namespace internal

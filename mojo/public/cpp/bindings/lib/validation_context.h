@@ -28,6 +28,8 @@ class MOJO_CPP_BINDINGS_EXPORT ValidationContext {
  public:
   // [data, data + data_num_bytes) specifies the initial valid memory range.
   // [0, num_handles) specifies the initial valid range of handle indices.
+  // [0, num_associated_endpoint_handles) specifies the initial valid range of
+  // associated endpoint handle indices.
   //
   // If provided, |message| and |description| provide additional information
   // to use when reporting validation errors. In addition if |message| is
@@ -36,6 +38,7 @@ class MOJO_CPP_BINDINGS_EXPORT ValidationContext {
   ValidationContext(const void* data,
                     size_t data_num_bytes,
                     size_t num_handles,
+                    size_t num_associated_endpoint_handles,
                     Message* message = nullptr,
                     const base::StringPiece& description = "",
                     int stack_depth = 0);
@@ -74,6 +77,28 @@ class MOJO_CPP_BINDINGS_EXPORT ValidationContext {
     // |index| + 1 shouldn't overflow, because |index| is not the max value of
     // uint32_t (it is less than |handle_end_|).
     handle_begin_ = index + 1;
+    return true;
+  }
+
+  // Claims the specified encoded associated endpoint handle.
+  // The method succeeds if:
+  // - |encoded_handle|'s value is |kEncodedInvalidHandleValue|.
+  // - the handle is contained inside the valid range of associated endpoint
+  //   handle indices. In this case, the valid range is shinked to begin right
+  //   after the claimed handle.
+  bool ClaimAssociatedEndpointHandle(
+      const AssociatedEndpointHandle_Data& encoded_handle) {
+    uint32_t index = encoded_handle.value;
+    if (index == kEncodedInvalidHandleValue)
+      return true;
+
+    if (index < associated_endpoint_handle_begin_ ||
+        index >= associated_endpoint_handle_end_)
+      return false;
+
+    // |index| + 1 shouldn't overflow, because |index| is not the max value of
+    // uint32_t (it is less than |associated_endpoint_handle_end_|).
+    associated_endpoint_handle_begin_ = index + 1;
     return true;
   }
 
@@ -127,6 +152,11 @@ class MOJO_CPP_BINDINGS_EXPORT ValidationContext {
   // [handle_begin_, handle_end_) is the valid handle index range.
   uint32_t handle_begin_;
   uint32_t handle_end_;
+
+  // [associated_endpoint_handle_begin_, associated_endpoint_handle_end_) is the
+  // valid associated endpoint handle index range.
+  uint32_t associated_endpoint_handle_begin_;
+  uint32_t associated_endpoint_handle_end_;
 
   int stack_depth_;
 

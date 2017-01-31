@@ -20,6 +20,9 @@ class Message;
 
 namespace internal {
 
+template <typename T>
+class Array_Data;
+
 #pragma pack(push, 1)
 
 struct MessageHeader : internal::StructHeader {
@@ -35,13 +38,19 @@ struct MessageHeader : internal::StructHeader {
 };
 static_assert(sizeof(MessageHeader) == 24, "Bad sizeof(MessageHeader)");
 
-struct MessageHeaderWithRequestID : MessageHeader {
+struct MessageHeaderV1 : MessageHeader {
   // Only used if either kFlagExpectsResponse or kFlagIsResponse is set in
   // order to match responses with corresponding requests.
   uint64_t request_id;
 };
-static_assert(sizeof(MessageHeaderWithRequestID) == 32,
-              "Bad sizeof(MessageHeaderWithRequestID)");
+static_assert(sizeof(MessageHeaderV1) == 32, "Bad sizeof(MessageHeaderV1)");
+
+struct MessageHeaderV2 : MessageHeaderV1 {
+  MessageHeaderV2();
+  GenericPointer payload;
+  Pointer<Array_Data<uint32_t>> payload_interface_ids;
+};
+static_assert(sizeof(MessageHeaderV2) == 48, "Bad sizeof(MessageHeaderV2)");
 
 #pragma pack(pop)
 

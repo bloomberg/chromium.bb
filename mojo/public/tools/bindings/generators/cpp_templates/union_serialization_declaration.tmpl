@@ -23,7 +23,7 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
 {%- for field in union.fields %}
 {%-   set name = field.name %}
       case {{data_view}}::Tag::{{name|upper}}: {
-{%-   if field.kind|is_object_kind %}
+{%-   if field.kind|is_object_kind or field.kind|is_associated_kind %}
 {%-     set kind = field.kind %}
 {%-     set serializer_type = kind|unmapped_type_for_serializer %}
         decltype(CallWithContext(Traits::{{name}}, input, custom_context))

@@ -20,7 +20,8 @@
 [u4]2                              // num_elements
 [u4]2                              // interface ID index
 [u4]14                             // version
-[u4]3                              // interface ID index
+[u4]2                              // interface ID index: The same value as the
+                                   // one above.
 [u4]18                             // version
 [anchr]associated_interface_array
 

@@ -24,9 +24,9 @@ namespace internal {
 namespace {
 
 bool ValidateControlResponse(Message* message) {
-  ValidationContext validation_context(
-      message->data(), message->data_num_bytes(), message->handles()->size(),
-      message, "ControlResponseValidator");
+  ValidationContext validation_context(message->payload(),
+                                       message->payload_num_bytes(), 0, 0,
+                                       message, "ControlResponseValidator");
   if (!ValidateMessageIsResponse(message, &validation_context))
     return false;
 
@@ -79,7 +79,8 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
   params_ptr->input = std::move(input_ptr);
   size_t size = PrepareToSerialize<interface_control::RunMessageParamsDataView>(
       params_ptr, &context);
-  RequestMessageBuilder builder(interface_control::kRunMessageId, size);
+  MessageBuilder builder(interface_control::kRunMessageId,
+                         Message::kFlagExpectsResponse, size, 0);
 
   interface_control::internal::RunMessageParams_Data* params = nullptr;
   Serialize<interface_control::RunMessageParamsDataView>(
@@ -99,7 +100,8 @@ Message ConstructRunOrClosePipeMessage(
   size_t size = PrepareToSerialize<
       interface_control::RunOrClosePipeMessageParamsDataView>(params_ptr,
                                                               &context);
-  MessageBuilder builder(interface_control::kRunOrClosePipeMessageId, size);
+  MessageBuilder builder(interface_control::kRunOrClosePipeMessageId, 0, size,
+                         0);
 
   interface_control::internal::RunOrClosePipeMessageParams_Data* params =
       nullptr;

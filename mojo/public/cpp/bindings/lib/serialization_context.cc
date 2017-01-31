@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -49,10 +48,6 @@ void SerializedHandleVector::Swap(std::vector<mojo::Handle>* other) {
 }
 
 SerializationContext::SerializationContext() {}
-
-SerializationContext::SerializationContext(
-    scoped_refptr<AssociatedGroupController> in_group_controller)
-    : group_controller(std::move(in_group_controller)) {}
 
 SerializationContext::~SerializationContext() {
   DCHECK(!custom_contexts || custom_contexts->empty());

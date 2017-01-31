@@ -99,7 +99,7 @@ class ConnectorTest : public testing::Test {
 
   void AllocMessage(const char* text, Message* message) {
     size_t payload_size = strlen(text) + 1;  // Plus null terminator.
-    internal::MessageBuilder builder(1, payload_size);
+    internal::MessageBuilder builder(1, 0, payload_size, 0);
     memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
 
     *message = std::move(*builder.message());

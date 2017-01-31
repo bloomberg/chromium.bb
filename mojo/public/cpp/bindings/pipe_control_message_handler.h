@@ -10,8 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
-#include "mojo/public/cpp/bindings/interface_id.h"
-#include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -48,7 +46,6 @@ class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageHandler
 
   std::string description_;
   PipeControlMessageHandlerDelegate* const delegate_;
-  internal::SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeControlMessageHandler);
 };

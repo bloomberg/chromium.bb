@@ -11,11 +11,6 @@ class {{export_attribute}} {{interface.name}}Proxy
   void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}}) override;
 {%- endfor %}
 
-  void set_group_controller(
-        scoped_refptr<mojo::AssociatedGroupController> group_controller) {
-    group_controller_ = std::move(group_controller);
-  }
  private:
   mojo::MessageReceiverWithResponder* receiver_;
-  scoped_refptr<mojo::AssociatedGroupController> group_controller_;
 };

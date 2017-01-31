@@ -5,8 +5,10 @@
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
+#include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/lib/validation_context.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
@@ -41,8 +43,9 @@ bool PipeControlMessageHandler::Accept(Message* message) {
 }
 
 bool PipeControlMessageHandler::Validate(Message* message) {
-  internal::ValidationContext validation_context(
-      message->data(), message->data_num_bytes(), 0, message, description_);
+  internal::ValidationContext validation_context(message->payload(),
+                                                 message->payload_num_bytes(),
+                                                 0, 0, message, description_);
 
   if (message->name() == pipe_control::kRunOrClosePipeMessageId) {
     if (!internal::ValidateMessageIsRequestWithoutResponse(
@@ -58,13 +61,14 @@ bool PipeControlMessageHandler::Validate(Message* message) {
 }
 
 bool PipeControlMessageHandler::RunOrClosePipe(Message* message) {
+  internal::SerializationContext context;
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params =
       reinterpret_cast<
           pipe_control::internal::RunOrClosePipeMessageParams_Data*>(
           message->mutable_payload());
   pipe_control::RunOrClosePipeMessageParamsPtr params_ptr;
   internal::Deserialize<pipe_control::RunOrClosePipeMessageParamsDataView>(
-      params, &params_ptr, &context_);
+      params, &params_ptr, &context);
 
   if (params_ptr->input->is_peer_associated_endpoint_closed_event()) {
     const auto& event =

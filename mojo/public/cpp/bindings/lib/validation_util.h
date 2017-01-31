@@ -112,7 +112,7 @@ bool ValidateInlinedUnionNonNullable(const T& input,
 MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
     const AssociatedInterface_Data& input);
 MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
-    const AssociatedInterfaceRequest_Data& input);
+    const AssociatedEndpointHandle_Data& input);
 MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
     const Interface_Data& input);
 MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
@@ -123,7 +123,7 @@ MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterfaceNonNullable(
     const char* error_message,
     ValidationContext* validation_context);
 MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterfaceNonNullable(
-    const AssociatedInterfaceRequest_Data& input,
+    const AssociatedEndpointHandle_Data& input,
     const char* error_message,
     ValidationContext* validation_context);
 MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterfaceNonNullable(
@@ -191,7 +191,7 @@ MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterface(
     const AssociatedInterface_Data& input,
     ValidationContext* validation_context);
 MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterface(
-    const AssociatedInterfaceRequest_Data& input,
+    const AssociatedEndpointHandle_Data& input,
     ValidationContext* validation_context);
 MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterface(
     const Interface_Data& input,

@@ -263,7 +263,7 @@ class Array_Data {
       T,
       IsUnionDataType<T>::value,
       std::is_same<T, AssociatedInterface_Data>::value ||
-          std::is_same<T, AssociatedInterfaceRequest_Data>::value ||
+          std::is_same<T, AssociatedEndpointHandle_Data>::value ||
           std::is_same<T, Interface_Data>::value ||
           std::is_same<T, Handle_Data>::value>;
   using Element = T;

@@ -288,8 +288,17 @@ struct ArraySerializer<
 
   static size_t GetSerializedSize(UserTypeIterator* input,
                                   SerializationContext* context) {
-    return sizeof(Data) +
-           Align(input->GetSize() * sizeof(typename Data::Element));
+    size_t element_count = input->GetSize();
+    if (BelongsTo<Element,
+                  MojomTypeCategory::ASSOCIATED_INTERFACE |
+                      MojomTypeCategory::ASSOCIATED_INTERFACE_REQUEST>::value) {
+      for (size_t i = 0; i < element_count; ++i) {
+        typename UserTypeIterator::GetNextResult next = input->GetNext();
+        size_t size = PrepareToSerialize<Element>(next, context);
+        DCHECK_EQ(size, 0u);
+      }
+    }
+    return sizeof(Data) + Align(element_count * sizeof(typename Data::Element));
   }
 
   static void SerializeElements(UserTypeIterator* input,

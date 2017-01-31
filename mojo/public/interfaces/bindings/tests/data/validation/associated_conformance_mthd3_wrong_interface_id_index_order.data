@@ -17,10 +17,13 @@
 
 [anchr]param0_ptr
 [dist4]associated_interface_array  // num_bytes
-[u4]2                              // num_elements
+[u4]3                              // num_elements
 [u4]2                              // interface ID index
 [u4]14                             // version
 [u4]3                              // interface ID index
+[u4]0                              // version
+[u4]0                              // interface ID index : It is smaller than
+                                   // the first element above, which is wrong.
 [u4]18                             // version
 [anchr]associated_interface_array
 

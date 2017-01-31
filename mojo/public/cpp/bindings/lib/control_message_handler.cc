@@ -19,9 +19,9 @@ namespace internal {
 namespace {
 
 bool ValidateControlRequestWithResponse(Message* message) {
-  ValidationContext validation_context(
-      message->data(), message->data_num_bytes(), message->handles()->size(),
-      message, "ControlRequestValidator");
+  ValidationContext validation_context(message->payload(),
+                                       message->payload_num_bytes(), 0, 0,
+                                       message, "ControlRequestValidator");
   if (!ValidateMessageIsRequestExpectingResponse(message, &validation_context))
     return false;
 
@@ -35,9 +35,9 @@ bool ValidateControlRequestWithResponse(Message* message) {
 }
 
 bool ValidateControlRequestWithoutResponse(Message* message) {
-  ValidationContext validation_context(
-      message->data(), message->data_num_bytes(), message->handles()->size(),
-      message, "ControlRequestValidator");
+  ValidationContext validation_context(message->payload(),
+                                       message->payload_num_bytes(), 0, 0,
+                                       message, "ControlRequestValidator");
   if (!ValidateMessageIsRequestWithoutResponse(message, &validation_context))
     return false;
 
@@ -116,8 +116,9 @@ bool ControlMessageHandler::Run(Message* message,
   size_t size =
       PrepareToSerialize<interface_control::RunResponseMessageParamsDataView>(
           response_params_ptr, &context_);
-  ResponseMessageBuilder builder(interface_control::kRunMessageId, size,
-                                 message->request_id());
+  MessageBuilder builder(interface_control::kRunMessageId,
+                         Message::kFlagIsResponse, size, 0);
+  builder.message()->set_request_id(message->request_id());
 
   interface_control::internal::RunResponseMessageParams_Data* response_params =
       nullptr;
