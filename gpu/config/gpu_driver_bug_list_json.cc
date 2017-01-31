@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.29",
+  "version": "9.30",
   "entries": [
     {
       "id": 1,
@@ -2324,6 +2324,9 @@ LONG_STRING_CONST(
         "use_virtualized_gl_contexts"
       ]
     },
+)  // LONG_STRING_CONST macro
+// Avoid C2026 (string too big) error on VisualStudio.
+LONG_STRING_CONST(
     {
       "id": 214,
       "description": "Certain versions of Qualcomm driver don't setup scissor state correctly when FBO0 is bound.",
@@ -2332,6 +2335,16 @@ LONG_STRING_CONST(
       "machine_model_name": ["Nexus 7"],
       "features": [
         "force_update_scissor_state_when_binding_fbo0"
+      ]
+    },
+    {
+      "id": 215,
+      "description": "Fake no-op GPU driver bug workaround for testing",
+      "cr_bugs": [682912],
+      "vendor_id": "0xbad9",
+      "device_id": ["0xbad9"],
+      "features": [
+        "use_gpu_driver_workaround_for_testing"
       ]
     }
   ]
