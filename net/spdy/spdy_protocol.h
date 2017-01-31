@@ -233,10 +233,6 @@ NET_EXPORT_PRIVATE bool IsDefinedFrameType(int frame_type_field);
 // use IsValidFrameType() to verify validity of frame type fields.
 NET_EXPORT_PRIVATE SpdyFrameType ParseFrameType(int frame_type_field);
 
-// Serializes a given frame type to the on-the-wire enumeration value.
-// Returns -1 on failure (I.E. Invalid frame type).
-NET_EXPORT_PRIVATE int SerializeFrameType(SpdyFrameType frame_type);
-
 // (HTTP/2) All standard frame types except WINDOW_UPDATE are
 // (stream-specific xor connection-level). Returns false iff we know
 // the given frame type does not align with the given streamID.
@@ -260,20 +256,10 @@ NET_EXPORT_PRIVATE bool SettingsIdToString(SpdySettingsIds id,
 NET_EXPORT_PRIVATE SpdyRstStreamStatus
 ParseRstStreamStatus(int rst_stream_status_field);
 
-// Serializes a given RST_STREAM status code to the on-the-wire enumeration
-// value.  Returns -1 on failure (I.E. Invalid RST_STREAM status code for the
-// given version).
-NET_EXPORT_PRIVATE int SerializeRstStreamStatus(
-    SpdyRstStreamStatus rst_stream_status);
-
 // Parses a GOAWAY error code from an on-the-wire enumeration.
 // Treat unrecognized error codes as INTERNAL_ERROR
 // as recommended by the HTTP/2 specification.
 NET_EXPORT_PRIVATE SpdyGoAwayStatus ParseGoAwayStatus(int goaway_status_field);
-
-// Serializes a given GOAWAY status to the on-the-wire enumeration value.
-// Returns -1 on failure (I.E. Invalid GOAWAY status for the given version).
-NET_EXPORT_PRIVATE int SerializeGoAwayStatus(SpdyGoAwayStatus status);
 
 // Frame type for non-control (i.e. data) frames.
 const int kDataFrameType = 0;

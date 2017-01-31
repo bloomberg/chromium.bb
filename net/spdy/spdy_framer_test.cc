@@ -509,7 +509,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void InitHeaderStreaming(SpdyFrameType header_control_type,
                            SpdyStreamId stream_id) {
-    if (!IsDefinedFrameType(SerializeFrameType(header_control_type))) {
+    if (!IsDefinedFrameType(header_control_type)) {
       DLOG(FATAL) << "Attempted to init header streaming with "
                   << "invalid control frame type: " << header_control_type;
     }
@@ -2134,7 +2134,7 @@ TEST_P(SpdyFramerTest, SerializeBlocked) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
 
   const char kDescription[] = "BLOCKED frame";
-  const char kType = static_cast<unsigned char>(SerializeFrameType(BLOCKED));
+  const unsigned char kType = static_cast<unsigned char>(BLOCKED);
   const unsigned char kFrameData[] = {
       0x00,  0x00, 0x00,        // Length: 0
       kType,                    //   Type: BLOCKED
@@ -2484,7 +2484,7 @@ TEST_P(SpdyFramerTest, CreateAltSvc) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
 
   const char kDescription[] = "ALTSVC frame";
-  const char kType = static_cast<unsigned char>(SerializeFrameType(ALTSVC));
+  const char kType = static_cast<unsigned char>(ALTSVC);
   const unsigned char kFrameData[] = {
       0x00, 0x00, 0x49, kType, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x06, 'o',
       'r',  'i',  'g',  'i',   'n',  'p',  'i',  'd',  '1',  '=',  '"',  'h',
@@ -4040,7 +4040,7 @@ TEST_P(SpdyFramerTest, OnAltSvcEmptyProtocolId) {
 }
 
 TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
-  const char kType = static_cast<unsigned char>(SerializeFrameType(ALTSVC));
+  const char kType = static_cast<unsigned char>(ALTSVC);
   const unsigned char kFrameDataOriginLenLargerThanFrame[] = {
       0x00, 0x00, 0x05, kType, 0x00, 0x00, 0x00,
       0x00, 0x03, 0x42, 0x42,  'f',  'o',  'o',

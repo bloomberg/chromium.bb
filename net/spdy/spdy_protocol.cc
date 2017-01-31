@@ -59,39 +59,6 @@ SpdyFrameType ParseFrameType(int frame_type_field) {
   return static_cast<SpdyFrameType>(frame_type_field);
 }
 
-int SerializeFrameType(SpdyFrameType frame_type) {
-  switch (frame_type) {
-    case DATA:
-      return kDataFrameType;
-    case HEADERS:
-      return 1;
-    case PRIORITY:
-      return 2;
-    case RST_STREAM:
-      return 3;
-    case SETTINGS:
-      return 4;
-    case PUSH_PROMISE:
-      return 5;
-    case PING:
-      return 6;
-    case GOAWAY:
-      return 7;
-    case WINDOW_UPDATE:
-      return 8;
-    case CONTINUATION:
-      return 9;
-    // ALTSVC and BLOCKED are extensions.
-    case ALTSVC:
-      return 10;
-    case BLOCKED:
-      return 11;
-    default:
-      SPDY_BUG << "Serializing unhandled frame type " << frame_type;
-      return -1;
-  }
-}
-
 bool IsValidHTTP2FrameStreamId(SpdyStreamId current_frame_stream_id,
                                SpdyFrameType frame_type_field) {
   if (current_frame_stream_id == 0) {
@@ -170,82 +137,12 @@ SpdyRstStreamStatus ParseRstStreamStatus(int rst_stream_status_field) {
   return static_cast<SpdyRstStreamStatus>(rst_stream_status_field);
 }
 
-int SerializeRstStreamStatus(SpdyRstStreamStatus rst_stream_status) {
-  // TODO(bnc): Simplify this method.
-  switch (rst_stream_status) {
-    case RST_STREAM_NO_ERROR:
-      return 0;
-    case RST_STREAM_PROTOCOL_ERROR:
-      return 1;
-    case RST_STREAM_INTERNAL_ERROR:
-      return 2;
-    case RST_STREAM_FLOW_CONTROL_ERROR:
-      return 3;
-    case RST_STREAM_STREAM_CLOSED:
-      return 5;
-    case RST_STREAM_FRAME_SIZE_ERROR:
-      return 6;
-    case RST_STREAM_REFUSED_STREAM:
-      return 7;
-    case RST_STREAM_CANCEL:
-      return 8;
-    case RST_STREAM_CONNECT_ERROR:
-      return 10;
-    case RST_STREAM_ENHANCE_YOUR_CALM:
-      return 11;
-    case RST_STREAM_INADEQUATE_SECURITY:
-      return 12;
-    case RST_STREAM_HTTP_1_1_REQUIRED:
-      return 13;
-    default:
-      SPDY_BUG << "Unhandled RST_STREAM status " << rst_stream_status;
-      return -1;
-  }
-}
-
 SpdyGoAwayStatus ParseGoAwayStatus(int goaway_status_field) {
   if (goaway_status_field < GOAWAY_MIN || goaway_status_field > GOAWAY_MAX) {
     return GOAWAY_INTERNAL_ERROR;
   }
 
   return static_cast<SpdyGoAwayStatus>(goaway_status_field);
-}
-
-int SerializeGoAwayStatus(SpdyGoAwayStatus status) {
-  // TODO(bnc): Simplify this method.
-  switch (status) {
-    case GOAWAY_NO_ERROR:
-      return 0;
-    case GOAWAY_PROTOCOL_ERROR:
-      return 1;
-    case GOAWAY_INTERNAL_ERROR:
-      return 2;
-    case GOAWAY_FLOW_CONTROL_ERROR:
-      return 3;
-    case GOAWAY_SETTINGS_TIMEOUT:
-      return 4;
-    case GOAWAY_STREAM_CLOSED:
-      return 5;
-    case GOAWAY_FRAME_SIZE_ERROR:
-      return 6;
-    case GOAWAY_REFUSED_STREAM:
-      return 7;
-    case GOAWAY_CANCEL:
-      return 8;
-    case GOAWAY_COMPRESSION_ERROR:
-      return 9;
-    case GOAWAY_CONNECT_ERROR:
-      return 10;
-    case GOAWAY_ENHANCE_YOUR_CALM:
-      return 11;
-    case GOAWAY_INADEQUATE_SECURITY:
-      return 12;
-    case GOAWAY_HTTP_1_1_REQUIRED:
-      return 13;
-    default:
-      SPDY_BUG << "Serializing unhandled GOAWAY status " << status;
-      return -1;
-  }
 }
 
 const char* const kHttp2Npn = "h2";

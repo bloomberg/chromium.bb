@@ -1804,7 +1804,7 @@ SpdySerializedFrame SpdyFramer::SerializeRstStream(
 
   builder.BeginNewFrame(*this, RST_STREAM, 0, rst_stream.stream_id());
 
-  builder.WriteUInt32(SerializeRstStreamStatus(rst_stream.status()));
+  builder.WriteUInt32(rst_stream.status());
 
   DCHECK_EQ(expected_length, builder.length());
   return builder.take();
@@ -1869,7 +1869,7 @@ SpdySerializedFrame SpdyFramer::SerializeGoAway(
   builder.WriteUInt32(goaway.last_good_stream_id());
 
   // GOAWAY frames also specify the error status code.
-  builder.WriteUInt32(SerializeGoAwayStatus(goaway.status()));
+  builder.WriteUInt32(goaway.status());
 
   // GOAWAY frames may also specify opaque data.
   if (!goaway.description().empty()) {
