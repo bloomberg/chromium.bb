@@ -286,7 +286,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   if (version_min) {
     config->version_min = version_min;
   }
-  if (version_max) {
+  if (version_max && version_max >= net::SSL_PROTOCOL_VERSION_TLS1_2) {
     config->version_max = version_max;
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;

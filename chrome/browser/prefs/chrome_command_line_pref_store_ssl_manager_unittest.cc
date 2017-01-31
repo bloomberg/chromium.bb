@@ -36,7 +36,7 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kSSLVersionMin, "tls1.1");
-  command_line.AppendSwitchASCII(switches::kSSLVersionMax, "tls1");
+  command_line.AppendSwitchASCII(switches::kSSLVersionMax, "tls1.3");
 
   sync_preferences::PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
@@ -57,7 +57,7 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
   config_service->GetSSLConfig(&ssl_config);
   // Command-line flags should be respected.
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_1, ssl_config.version_min);
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_max);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
 
   // Explicitly double-check the settings are not in the preference store.
   const PrefService::Preference* version_min_pref =
@@ -75,4 +75,3 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
   EXPECT_FALSE(local_state_store->GetString(ssl_config::prefs::kSSLVersionMax,
                                             &version_max_str));
 }
-

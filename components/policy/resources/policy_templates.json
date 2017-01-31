@@ -139,7 +139,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 360
+#   For your editing convenience: highest ID currently used: 361
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml.
 #
@@ -8256,6 +8256,48 @@
       If this policy is not configured or if it is set to "tls1.2" then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> no longer performs this fallback. Note this does not disable support for older TLS versions, only whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will work around buggy servers which cannot negotiate versions correctly.
 
       Otherwise, if compatibility with a buggy server must be maintained, this policy may be set to "tls1.1". This is a stopgap measure and the server should be rapidly fixed.''',
+    },
+    {
+      'name': 'SSLVersionMax',
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'tls1.2',
+          'tls1.3',
+        ],
+      },
+      'items': [
+        {
+          'name': 'TLSv1.2',
+          'value': 'tls1.2',
+          'caption': 'TLS 1.2',
+        },
+        {
+          'name': 'TLSv1.3',
+          'value': 'tls1.3',
+          'caption': 'TLS 1.3',
+        },
+      ],
+      'supported_on': [
+        'chrome.*:57-',
+        'chrome_os:57-',
+        'android:57-',
+        'ios:57-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'tls1.2',
+      'id': 361,
+      'caption': '''Maximum SSL version enabled''',
+      'tags': ['system-security'],
+      'desc': '''Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> around version 66 (around February 2018).
+
+      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default maximum version which is TLSv1.3.
+
+      Otherwise it may be set to one of the following values: "tls1.2" or "tls1.3". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions greater than the specified version. An unrecognized value will be ignored.''',
     },
     {
       'name': 'CertificateTransparencyEnforcementDisabledForUrls',

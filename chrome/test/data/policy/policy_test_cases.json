@@ -1951,6 +1951,16 @@
     "note": "This policy is retired, see https://crbug.com/621780."
   },
 
+  "SSLVersionMax": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SSLVersionMax": "tls1.2" },
+    "pref_mappings": [
+      { "pref": "ssl.version_max",
+        "local_state": true
+      }
+    ]
+  },
+
   "CertificateTransparencyEnforcementDisabledForUrls": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "CertificateTransparencyEnforcementDisabledForUrls": ["example.com"] },
