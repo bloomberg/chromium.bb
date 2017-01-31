@@ -15,9 +15,14 @@ using testing::InvokeWithoutArgs;
 
 namespace video_capture {
 
+// This alias ensures test output is easily attributed to this service's tests.
+// TODO(rockot/chfremer): Consider just renaming the type.
+using VideoCaptureServiceTest = ServiceTest;
+
 // Tests that an answer arrives from the service when calling
 // EnumerateDeviceDescriptors().
-TEST_F(ServiceTest, DISABLED_EnumerateDeviceDescriptorsCallbackArrives) {
+TEST_F(VideoCaptureServiceTest,
+       DISABLED_EnumerateDeviceDescriptorsCallbackArrives) {
   base::RunLoop wait_loop;
   EXPECT_CALL(descriptor_receiver_, Run(_))
       .Times(Exactly(1))
@@ -27,7 +32,7 @@ TEST_F(ServiceTest, DISABLED_EnumerateDeviceDescriptorsCallbackArrives) {
   wait_loop.Run();
 }
 
-TEST_F(ServiceTest, DISABLED_FakeDeviceFactoryEnumeratesOneDevice) {
+TEST_F(VideoCaptureServiceTest, DISABLED_FakeDeviceFactoryEnumeratesOneDevice) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
   EXPECT_CALL(descriptor_receiver_, Run(_))
@@ -45,7 +50,8 @@ TEST_F(ServiceTest, DISABLED_FakeDeviceFactoryEnumeratesOneDevice) {
 
 // Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
 // code when trying to create a device for an invalid descriptor.
-TEST_F(ServiceTest, DISABLED_ErrorCodeOnCreateDeviceForInvalidDescriptor) {
+TEST_F(VideoCaptureServiceTest,
+       DISABLED_ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
   mojom::DevicePtr fake_device_proxy;

@@ -10,7 +10,6 @@
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
 #include "services/video_capture/test/fake_device_test.h"
 #include "services/video_capture/test/mock_receiver.h"
-#include "services/video_capture/test/service_test.h"
 
 using testing::_;
 using testing::Invoke;
@@ -30,7 +29,11 @@ struct FrameInfo {
 
 namespace video_capture {
 
-TEST_F(FakeDeviceTest, DISABLED_FrameCallbacksArrive) {
+// This alias ensures test output is easily attributed to this service's tests.
+// TODO(rockot/chfremer): Consider just renaming the type.
+using FakeVideoCaptureDeviceTest = FakeDeviceTest;
+
+TEST_F(FakeVideoCaptureDeviceTest, DISABLED_FrameCallbacksArrive) {
   base::RunLoop wait_loop;
   // These two constants must be static as a workaround
   // for a MSVC++ bug about lambda captures, see the discussion at
@@ -54,7 +57,8 @@ TEST_F(FakeDeviceTest, DISABLED_FrameCallbacksArrive) {
 
 // Tests that frames received from a fake capture device match the requested
 // format and have increasing timestamps.
-TEST_F(FakeDeviceTest, DISABLED_ReceiveFramesFromFakeCaptureDevice) {
+TEST_F(FakeVideoCaptureDeviceTest,
+       DISABLED_ReceiveFramesFromFakeCaptureDevice) {
   base::RunLoop wait_loop;
   mojom::ReceiverPtr receiver_proxy;
   // These two constants must be static as a workaround

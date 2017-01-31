@@ -10,9 +10,14 @@ using testing::Invoke;
 
 namespace video_capture {
 
+// This alias ensures test output is easily attributed to this service's tests.
+// TODO(rockot/chfremer): Consider just renaming the type.
+using MockVideoCaptureDeviceTest = MockDeviceTest;
+
 // Tests that the service stops the capture device when the client closes the
 // connection to the device proxy.
-TEST_F(MockDeviceTest, DISABLED_DeviceIsStoppedWhenDiscardingDeviceProxy) {
+TEST_F(MockVideoCaptureDeviceTest,
+       DISABLED_DeviceIsStoppedWhenDiscardingDeviceProxy) {
   base::RunLoop wait_loop;
 
   // The mock device must hold on to the device client that is passed to it.
@@ -34,7 +39,8 @@ TEST_F(MockDeviceTest, DISABLED_DeviceIsStoppedWhenDiscardingDeviceProxy) {
 
 // Tests that the service stops the capture device when the client closes the
 // connection to the client proxy it provided to the service.
-TEST_F(MockDeviceTest, DISABLED_DeviceIsStoppedWhenDiscardingDeviceClient) {
+TEST_F(MockVideoCaptureDeviceTest,
+       DISABLED_DeviceIsStoppedWhenDiscardingDeviceClient) {
   base::RunLoop wait_loop;
 
   // The mock device must hold on to the device client that is passed to it.
