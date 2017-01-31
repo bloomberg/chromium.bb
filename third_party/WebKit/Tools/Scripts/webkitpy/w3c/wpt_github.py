@@ -92,7 +92,9 @@ class WPTGitHub(object):
         }
         data, status_code = self.request(path, method='PUT', body=body)
 
-        if status_code == 200:
+        if status_code == 405:
+            raise Exception('PR did not passed necessary checks to merge: %d' % pull_request_number)
+        elif status_code == 200:
             return data
         else:
             raise Exception('PR could not be merged: %d' % pull_request_number)
