@@ -7,6 +7,7 @@
   <template>
     <style>
       :host {
+        display: inline-flex;
         overflow: hidden;
         padding: 2px;
         position: relative;
@@ -125,10 +126,10 @@
     </style>
     <div id="icon" class$="[[getIconClass_(networkState, isListItem)]]">
     </div>
-    <iron-icon id="technology" hidden ="[[!showTechnology_(networkState)]]"
+    <iron-icon id="technology" hidden="[[!showTechnology_(networkState)]]"
         icon="[[getTechnology_(networkState)]]">
     </iron-icon>
-    <iron-icon id="secure" hidden ="[[!showSecure_(networkState)]]"
+    <iron-icon id="secure" hidden="[[!showSecure_(networkState)]]"
         icon="network:badge-secure">
     </iron-icon>
   </template>
