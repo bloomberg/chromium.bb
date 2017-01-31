@@ -68,7 +68,7 @@ function test()
 
             UI.panels.resources._showDOMStorage(storage);
             view = UI.panels.resources._domStorageViews.get(storage);
-            InspectorTest.addSniffer(view, "_dataGridForDOMStorageItems", viewUpdated);
+            InspectorTest.addSniffer(view, "_showDOMStorageItems", viewUpdated);
         },
 
         function addItemTest(next)
