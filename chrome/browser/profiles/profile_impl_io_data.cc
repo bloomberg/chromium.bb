@@ -757,9 +757,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeMediaRequestContext(
           net::MEDIA_CACHE, ChooseCacheBackendType(), cache_path,
           cache_max_size,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
-  std::unique_ptr<net::HttpCache> media_http_cache =
-      CreateHttpFactory(main_request_context_storage()->http_network_session(),
-                        std::move(media_backend));
+  std::unique_ptr<net::HttpCache> media_http_cache = CreateHttpFactory(
+      main_request_context()->http_transaction_factory(),
+      std::move(media_backend));
 
   // Transfer ownership of the cache to MediaRequestContext.
   context->SetHttpTransactionFactory(std::move(media_http_cache));

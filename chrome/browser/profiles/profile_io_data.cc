@@ -1308,8 +1308,10 @@ std::unique_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
 }
 
 std::unique_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
-    net::HttpNetworkSession* shared_session,
+    net::HttpTransactionFactory* main_http_factory,
     std::unique_ptr<net::HttpCache::BackendFactory> backend) const {
+  DCHECK(main_http_factory);
+  net::HttpNetworkSession* shared_session = main_http_factory->GetSession();
   return base::MakeUnique<net::HttpCache>(
       base::WrapUnique(new DevToolsNetworkTransactionFactory(
           network_controller_handle_.GetController(), shared_session)),

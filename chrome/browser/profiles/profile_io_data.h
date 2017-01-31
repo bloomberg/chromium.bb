@@ -415,9 +415,10 @@ class ProfileIOData {
       net::HttpNetworkSession* session,
       std::unique_ptr<net::HttpCache::BackendFactory> main_backend) const;
 
-  // Creates network transaction factory.
+  // Creates network transaction factory. The created factory will share
+  // HttpNetworkSession with |main_http_factory|.
   std::unique_ptr<net::HttpCache> CreateHttpFactory(
-      net::HttpNetworkSession* shared_session,
+      net::HttpTransactionFactory* main_http_factory,
       std::unique_ptr<net::HttpCache::BackendFactory> backend) const;
 
   void SetCookieSettingsForTesting(
