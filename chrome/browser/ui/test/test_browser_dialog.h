@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
@@ -65,9 +64,6 @@ class TestBrowserDialog {
   // Show the dialog corresponding to |name| and leave it open.
   virtual void ShowDialog(const std::string& name) = 0;
 
-  // The window that owns the dialogs. Used to find where the dialog appears.
-  virtual gfx::NativeWindow DialogParent() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBrowserDialog);
 };
@@ -78,11 +74,6 @@ template <class Base>
 class SupportsTestDialog : public Base, public TestBrowserDialog {
  protected:
   SupportsTestDialog() {}
-
-  // TestBrowserDialog:
-  gfx::NativeWindow DialogParent() override {
-    return this->browser()->window()->GetNativeWindow();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupportsTestDialog);

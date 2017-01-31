@@ -85,5 +85,15 @@ bool WidgetTest::IsNativeWindowTransparent(gfx::NativeWindow window) {
   return ![window isOpaque];
 }
 
+// static
+Widget::Widgets WidgetTest::GetAllWidgets() {
+  Widget::Widgets all_widgets;
+  for (NSWindow* window : [NSApp windows]) {
+    if (Widget* widget = Widget::GetWidgetForNativeWindow(window))
+      all_widgets.insert(widget);
+  }
+  return all_widgets;
+}
+
 }  // namespace test
 }  // namespace views

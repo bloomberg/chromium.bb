@@ -51,6 +51,9 @@ class AuraTestHelper {
   explicit AuraTestHelper(base::MessageLoopForUI* message_loop);
   ~AuraTestHelper();
 
+  // Returns the current AuraTestHelper, or nullptr if it's not alive.
+  static AuraTestHelper* GetInstance();
+
   // Makes aura target mus with a mock WindowTree (TestWindowTree). Must be
   // called before SetUp().
   void EnableMusWithTestWindowTree(

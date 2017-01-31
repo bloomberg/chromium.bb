@@ -38,6 +38,11 @@
 
 namespace aura {
 namespace test {
+namespace {
+
+AuraTestHelper* g_instance = nullptr;
+
+}  // namespace
 
 AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
     : setup_called_(false), teardown_called_(false) {
@@ -56,6 +61,11 @@ AuraTestHelper::~AuraTestHelper() {
       << "AuraTestHelper::SetUp() never called.";
   CHECK(teardown_called_)
       << "AuraTestHelper::TearDown() never called.";
+}
+
+// static
+AuraTestHelper* AuraTestHelper::GetInstance() {
+  return g_instance;
 }
 
 void AuraTestHelper::EnableMusWithTestWindowTree(
@@ -128,9 +138,12 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
 
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
     window_tree()->AckAllChanges();
+
+  g_instance = this;
 }
 
 void AuraTestHelper::TearDown() {
+  g_instance = nullptr;
   teardown_called_ = true;
   parenting_client_.reset();
   client::SetFocusClient(root_window(), nullptr);

@@ -90,6 +90,9 @@ class WidgetTest : public ViewsTestBase {
   // Return true if |window| is transparent according to the native platform.
   static bool IsNativeWindowTransparent(gfx::NativeWindow window);
 
+  // Returns the set of all Widgets that currently have a NativeWindow.
+  static Widget::Widgets GetAllWidgets();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetTest);
 };
