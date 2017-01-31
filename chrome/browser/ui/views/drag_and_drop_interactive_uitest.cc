@@ -517,6 +517,12 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   void DragImageBetweenFrames_Step2(DragImageBetweenFrames_TestState*);
   void DragImageBetweenFrames_Step3(DragImageBetweenFrames_TestState*);
 
+  struct DragImageFromDisappearingFrame_TestState;
+  void DragImageFromDisappearingFrame_Step2(
+      DragImageFromDisappearingFrame_TestState*);
+  void DragImageFromDisappearingFrame_Step3(
+      DragImageFromDisappearingFrame_TestState*);
+
   struct CrossSiteDrag_TestState;
   void CrossSiteDrag_Step2(CrossSiteDrag_TestState*);
   void CrossSiteDrag_Step3(CrossSiteDrag_TestState*);
@@ -1047,6 +1053,122 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
       1, state->right_frame_events_counter->GetNumberOfReceivedEvents("drop"));
   EXPECT_EQ(0, state->right_frame_events_counter->GetNumberOfReceivedEvents(
                    {"dragstart", "dragleave", "dragenter", "dragend"}));
+}
+
+// There is no known way to execute test-controlled tasks during
+// a drag-and-drop loop run by Windows OS.
+#if defined(OS_WIN)
+#define MAYBE_DragImageFromDisappearingFrame \
+  DISABLED_DragImageFromDisappearingFrame
+#else
+#define MAYBE_DragImageFromDisappearingFrame DragImageFromDisappearingFrame
+#endif
+
+// Data that needs to be shared across multiple test steps below
+// (i.e. across DragImageFromDisappearingFrame_Step2 and
+// DragImageFromDisappearingFrame_Step3).
+struct DragAndDropBrowserTest::DragImageFromDisappearingFrame_TestState {
+  DOMDragEventVerifier expected_dom_event_data;
+  std::unique_ptr<DOMDragEventWaiter> drop_event_waiter;
+};
+
+// Scenario: drag an image from the left into the right frame and delete the
+// left frame during the drag.  This is a regression test for
+// https://crbug.com/670123.
+// Test coverage: dragenter, dragover, drop DOM events.
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
+                       MAYBE_DragImageFromDisappearingFrame) {
+  // Load the test page.
+  std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
+  ASSERT_TRUE(NavigateToTestPage("a.com"));
+  ASSERT_TRUE(NavigateLeftFrame(frame_site, "image_source.html"));
+  ASSERT_TRUE(NavigateRightFrame(frame_site, "drop_target.html"));
+
+  // Setup test expectations.
+  DragAndDropBrowserTest::DragImageFromDisappearingFrame_TestState state;
+  state.expected_dom_event_data.set_expected_drop_effect("none");
+  // (dragstart event handler in image_source.html is asking for "copy" only).
+  state.expected_dom_event_data.set_expected_effect_allowed("copy");
+  state.expected_dom_event_data.set_expected_mime_types(
+      "text/html,text/plain,text/uri-list");
+  state.expected_dom_event_data.set_expected_client_position("(155, 150)");
+  state.expected_dom_event_data.set_expected_page_position("(155, 150)");
+
+  // Start the drag in the left frame.
+  DragStartWaiter drag_start_waiter(web_contents());
+  drag_start_waiter.PostTaskWhenDragStarts(
+      base::Bind(&DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step2,
+                 base::Unretained(this), base::Unretained(&state)));
+  EXPECT_TRUE(SimulateMouseDownAndDragStartInLeftFrame());
+
+  // The next step of the test (DragImageFromDisappearingFrame_Step2) runs
+  // inside the nested drag-and-drop message loop - the call below won't return
+  // until the drag-and-drop has already ended.
+  drag_start_waiter.WaitUntilDragStart(nullptr, nullptr, nullptr, nullptr);
+
+  DragImageFromDisappearingFrame_Step3(&state);
+}
+
+void DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step2(
+    DragAndDropBrowserTest::DragImageFromDisappearingFrame_TestState* state) {
+  // Delete the left frame in an attempt to repro https://crbug.com/670123.
+  content::RenderFrameDeletedObserver frame_deleted_observer(left_frame());
+  ASSERT_TRUE(ExecuteScript(web_contents()->GetMainFrame(),
+                            "frame = document.getElementById('left');\n"
+                            "frame.parentNode.removeChild(frame);\n"));
+  frame_deleted_observer.WaitUntilDeleted();
+
+  // While dragging, move mouse from the left into the right frame.
+  // This should trigger dragleave and dragenter events.
+  {
+    DOMDragEventWaiter dragenter_event_waiter("dragenter", right_frame());
+    ASSERT_TRUE(SimulateMouseMoveToRightFrame());
+
+    {  // Verify dragenter DOM event.
+      std::string dragenter_event;
+      EXPECT_TRUE(
+          dragenter_event_waiter.WaitForNextMatchingEvent(&dragenter_event));
+      EXPECT_THAT(dragenter_event, state->expected_dom_event_data.Matches());
+    }
+
+    // Note that ash (unlike aura/x11) will not fire dragover event in response
+    // to the same mouse event that trigerred a dragenter.  Because of that, we
+    // postpone dragover testing until the next test step below.  See
+    // implementation of ash::DragDropController::DragUpdate for details.
+  }
+
+  // Move the mouse twice in the right frame.  The 1st move will ensure that
+  // allowed operations communicated by the renderer will be stored in
+  // WebContentsViewAura::current_drag_op_.  The 2nd move will ensure that this
+  // gets be copied into DesktopDragDropClientAuraX11::negotiated_operation_.
+  for (int i = 0; i < 2; i++) {
+    DOMDragEventWaiter dragover_event_waiter("dragover", right_frame());
+    ASSERT_TRUE(SimulateMouseMoveToRightFrame());
+
+    {  // Verify dragover DOM event.
+      std::string dragover_event;
+      EXPECT_TRUE(
+          dragover_event_waiter.WaitForNextMatchingEvent(&dragover_event));
+      EXPECT_THAT(dragover_event, state->expected_dom_event_data.Matches());
+    }
+  }
+
+  // Release the mouse button to end the drag.
+  state->drop_event_waiter.reset(new DOMDragEventWaiter("drop", right_frame()));
+  SimulateMouseUp();
+  // The test will continue in DragImageFromDisappearingFrame_Step3.
+}
+
+void DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step3(
+    DragAndDropBrowserTest::DragImageFromDisappearingFrame_TestState* state) {
+  // Verify drop DOM event.
+  {
+    std::string drop_event;
+    EXPECT_TRUE(
+        state->drop_event_waiter->WaitForNextMatchingEvent(&drop_event));
+    state->drop_event_waiter.reset();
+    EXPECT_THAT(drop_event, state->expected_dom_event_data.Matches());
+  }
 }
 
 // There is no known way to execute test-controlled tasks during
