@@ -4211,7 +4211,14 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
 
 // Tests the SaveImportedProfile method with different profiles to make sure the
 // merge logic works correctly.
-TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
+// Flaky on TSan, see crbug.com/686226.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SaveImportedProfile DISABLED_SaveImportedProfile
+#else
+#define MAYBE_SaveImportedProfile SaveImportedProfile
+#endif
+
+TEST_F(PersonalDataManagerTest, MAYBE_SaveImportedProfile) {
   typedef struct {
     autofill::ServerFieldType field_type;
     std::string field_value;
@@ -4568,7 +4575,14 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
 
 // Tests that MergeProfile produces a merged profile with the expected usage
 // statistics.
-TEST_F(PersonalDataManagerTest, MergeProfile_UsageStats) {
+// Flaky on TSan, see crbug.com/686226.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_MergeProfile_UsageStats DISABLED_MergeProfile_UsageStats
+#else
+#define MAYBE_MergeProfile_UsageStats MergeProfile_UsageStats
+#endif
+
+TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
   // Create an initial profile with a use count of 10, an old use date and an
   // old modification date of 4 days ago.
   AutofillProfile* profile =
