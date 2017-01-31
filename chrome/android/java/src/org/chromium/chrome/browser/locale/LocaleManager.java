@@ -70,7 +70,8 @@ public class LocaleManager {
     public static LocaleManager getInstance() {
         assert ThreadUtils.runningOnUiThread();
         if (sInstance == null) {
-            sInstance = ChromeApplication.createObject(LocaleManager.class);
+            sInstance = ((ChromeApplication) ContextUtils.getApplicationContext())
+                    .createLocaleManager();
         }
         return sInstance;
     }

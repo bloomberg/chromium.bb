@@ -41,7 +41,8 @@ public class HelpAndFeedback {
     public static HelpAndFeedback getInstance(Context context) {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            sInstance = ChromeApplication.createObject(HelpAndFeedback.class);
+            sInstance = ((ChromeApplication) context.getApplicationContext())
+                    .createHelpAndFeedback();
         }
         return sInstance;
     }

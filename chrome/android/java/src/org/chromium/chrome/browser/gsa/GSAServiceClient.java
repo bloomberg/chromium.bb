@@ -175,7 +175,8 @@ public class GSAServiceClient {
         mHandler = new IncomingHandler();
         mMessenger = new Messenger(mHandler);
         mConnection = new GSAServiceConnection();
-        mGsaHelper = ChromeApplication.createObject(GSAHelper.class);
+        mGsaHelper = ((ChromeApplication) mContext.getApplicationContext())
+                .createGsaHelper();
     }
 
     /**

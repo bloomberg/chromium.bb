@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -56,7 +57,9 @@ public class MultiWindowUtils implements ActivityStateListener {
      */
     public static MultiWindowUtils getInstance() {
         if (sInstance.get() == null) {
-            sInstance.compareAndSet(null, ChromeApplication.createObject(MultiWindowUtils.class));
+            ChromeApplication application =
+                    (ChromeApplication) ContextUtils.getApplicationContext();
+            sInstance.compareAndSet(null, application.createMultiWindowUtils());
         }
         return sInstance.get();
     }

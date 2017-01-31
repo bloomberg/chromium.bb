@@ -22,7 +22,7 @@ public class PhysicalWebEnvironment {
     public static PhysicalWebEnvironment getInstance(ChromeApplication chromeApplication) {
         synchronized (INSTANCE_LOCK) {
             if (sInstance == null) {
-                sInstance = ChromeApplication.createObject(PhysicalWebEnvironment.class);
+                sInstance = chromeApplication.createPhysicalWebEnvironment();
             }
         }
         return sInstance;

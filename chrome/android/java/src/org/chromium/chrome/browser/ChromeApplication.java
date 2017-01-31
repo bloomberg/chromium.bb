@@ -29,13 +29,22 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.datausage.ExternalDataUseObserver;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
+import org.chromium.chrome.browser.gsa.GSAHelper;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.metrics.VariationsSession;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.qualityprovider.ExternalEstimateProviderAndroid;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
+import org.chromium.chrome.browser.physicalweb.PhysicalWebEnvironment;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -110,6 +119,13 @@ public class ChromeApplication extends ContentApplication {
         // It may be wise to update this anticipated capacity from time time as expectations for
         // the quantity of downsteam-specific implementations increases (or decreases).
         mImplementationMap = new ArrayMap<Class, Class>(8);
+    }
+
+    /**
+     * Returns a new instance of VariationsSession.
+     */
+    public VariationsSession createVariationsSession() {
+        return new VariationsSession();
     }
 
     /**
@@ -272,11 +288,58 @@ public class ChromeApplication extends ContentApplication {
     }
 
     /**
+     * @return An instance of ExternalAuthUtils to be installed as a singleton.
+     */
+    public ExternalAuthUtils createExternalAuthUtils() {
+        return new ExternalAuthUtils();
+    }
+
+    /**
+     * Returns a new instance of HelpAndFeedback.
+     */
+    public HelpAndFeedback createHelpAndFeedback() {
+        return new HelpAndFeedback();
+    }
+
+    /**
      * @return An instance of {@link CustomTabsConnection}. Should not be called
      * outside of {@link CustomTabsConnection#getInstance()}.
      */
     public CustomTabsConnection createCustomTabsConnection() {
         return new CustomTabsConnection(this);
+    }
+
+    /**
+     * @return A new {@link PhysicalWebBleClient} instance.
+     */
+    public PhysicalWebBleClient createPhysicalWebBleClient() {
+        return new PhysicalWebBleClient();
+    }
+
+    /**
+     * @return A new {@link PhysicalWebEnvironment} instance.
+     */
+    public PhysicalWebEnvironment createPhysicalWebEnvironment() {
+        return new PhysicalWebEnvironment();
+    }
+
+    public InstantAppsHandler createInstantAppsHandler() {
+        return new InstantAppsHandler();
+    }
+
+    /**
+     * @return An instance of {@link GSAHelper} that handles the start point of chrome's integration
+     *         with GSA.
+     */
+    public GSAHelper createGsaHelper() {
+        return new GSAHelper();
+    }
+
+    /**
+     * @return An instance of {@link LocaleManager} that handles customized locale related logic.
+     */
+    public LocaleManager createLocaleManager() {
+        return new LocaleManager();
     }
 
    /**
@@ -296,6 +359,13 @@ public class ChromeApplication extends ContentApplication {
     public PolicyAuditor getPolicyAuditor() {
         // This class has a protected constructor to prevent accidental instantiation.
         return new PolicyAuditor() {};
+    }
+
+    /**
+     * @return An instance of MultiWindowUtils to be installed as a singleton.
+     */
+    public MultiWindowUtils createMultiWindowUtils() {
+        return new MultiWindowUtils();
     }
 
     /**

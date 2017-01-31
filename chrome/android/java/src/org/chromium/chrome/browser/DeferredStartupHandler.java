@@ -30,7 +30,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
-import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
@@ -226,11 +225,13 @@ public class DeferredStartupHandler {
             }
         });
 
+        final ChromeApplication application = (ChromeApplication) mAppContext;
+
         mDeferredTasks.add(new Runnable() {
             @Override
             public void run() {
                 // Starts syncing with GSA.
-                ChromeApplication.createObject(GSAHelper.class).startSync();
+                application.createGsaHelper().startSync();
             }
         });
 
