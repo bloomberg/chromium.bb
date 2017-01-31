@@ -37,7 +37,7 @@ function test3()
 function test4()
 {
     debugger;
-    Framework.safeRun(Framework.doSomeWork, callback); // Should NOT step into callback (otherwise too many StepIns)
+    Framework.safeRun(Framework.doSomeWork, callback); // Should step into callback
 }
 
 function test5()

@@ -84,21 +84,21 @@ function test()
             {
                 InspectorTest.addResult("Click by second breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(clickByFirstLocation);
-                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 1);
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 1, next);
             }
 
             function clickByFirstLocation()
             {
                 InspectorTest.addResult("Click by first breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(clickBySecondLocationAgain);
-                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 0);
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 0, next);
             }
 
             function clickBySecondLocationAgain()
             {
                 InspectorTest.addResult("Click by second breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
-                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 1);
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 1, next);
             }
         },
 
@@ -126,8 +126,8 @@ function test()
             {
                 InspectorTest.addResult("Click by first inline breakpoints");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
-                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 0);
-                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 4, 0);
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 0, next);
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 4, 0, next);
             }
         }
     ]);
