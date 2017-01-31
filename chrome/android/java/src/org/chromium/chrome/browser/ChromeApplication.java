@@ -91,6 +91,11 @@ public class ChromeApplication extends ContentApplication {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
+
+        // This field may be used before onCreate is called, so we need to create it here.
+        // It may be wise to update this anticipated capacity from time time as expectations for
+        // the quantity of downsteam-specific implementations increases (or decreases).
+        mImplementationMap = new ArrayMap<Class, Class>(8);
     }
 
     /**
@@ -116,9 +121,6 @@ public class ChromeApplication extends ContentApplication {
         super.onCreate();
 
         TraceEvent.end("ChromeApplication.onCreate");
-        // It may be wise to update this anticipated capacity from time time as expectations for
-        // the quantity of downsteam-specific implementations increases (or decreases).
-        mImplementationMap = new ArrayMap<Class, Class>(8);
     }
 
     /**
