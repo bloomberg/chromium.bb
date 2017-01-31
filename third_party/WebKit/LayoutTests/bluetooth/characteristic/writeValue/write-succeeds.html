@@ -5,6 +5,8 @@
 <script>
 'use strict';
 promise_test(() => {
+  let length = 1;
+  let characteristic;
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}],
@@ -12,9 +14,9 @@ promise_test(() => {
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
-    .then(characteristic => Promise.all([
-      characteristic.writeValue(new Uint8Array(1 /* length */)),
-      characteristic.writeValue(new ArrayBuffer(1 /* length */)),
-      characteristic.writeValue(new DataView(new ArrayBuffer(1 /* length */)))]));
+    .then(c => characteristic = c)
+    .then(() => characteristic.writeValue(new Uint8Array(length)))
+    .then(() => characteristic.writeValue(new ArrayBuffer(length)))
+    .then(() => characteristic.writeValue(new DataView(new ArrayBuffer(length))));
 }, 'A regular write request to a writable characteristic should succeed.');
 </script>
