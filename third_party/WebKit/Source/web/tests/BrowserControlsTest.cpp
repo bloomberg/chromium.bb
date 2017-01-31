@@ -726,6 +726,86 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectLayoutHeight)) {
   EXPECT_EQ(300, frame()->view()->layoutSize(IncludeScrollbars).height());
 }
 
+// Ensure that browser controls do not affect the layout by showing and hiding
+// except for position: fixed elements.
+TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
+  // Initialize with the browser controls showing.
+  WebViewImpl* webView = initialize("percent-height.html");
+  webView->resizeWithBrowserControls(WebSize(400, 300), 100.f, true);
+  webView->updateBrowserControlsState(WebBrowserControlsBoth,
+                                      WebBrowserControlsShown, false);
+  webView->browserControls().setShownRatio(1);
+  webView->updateAllLifecyclePhases();
+
+  Element* absPos = getElementById(WebString::fromUTF8("abs"));
+  Element* fixedPos = getElementById(WebString::fromUTF8("fixed"));
+
+  ASSERT_EQ(100.f, webView->browserControls().contentOffset());
+
+  // Hide the browser controls.
+  verticalScroll(-100.f);
+  webView->resizeWithBrowserControls(WebSize(400, 400), 100.f, false);
+  webView->updateAllLifecyclePhases();
+  ASSERT_EQ(300, frame()->view()->layoutSize(IncludeScrollbars).height());
+
+  // Now lock the controls in a hidden state. The layout and elements should
+  // resize without a WebView::resize.
+  webView->updateBrowserControlsState(WebBrowserControlsHidden,
+                                      WebBrowserControlsBoth, false);
+
+  EXPECT_FLOAT_EQ(200.f, absPos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(200.f, fixedPos->getBoundingClientRect()->height());
+
+  EXPECT_EQ(400, frame()->view()->layoutSize(IncludeScrollbars).height());
+
+  // Unlock the controls, the sizes should change even though the controls are
+  // still hidden.
+  webView->updateBrowserControlsState(WebBrowserControlsBoth,
+                                      WebBrowserControlsBoth, false);
+
+  EXPECT_FLOAT_EQ(150.f, absPos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(200.f, fixedPos->getBoundingClientRect()->height());
+
+  EXPECT_EQ(300, frame()->view()->layoutSize(IncludeScrollbars).height());
+
+  // Now lock the controls in a shown state.
+  webView->updateBrowserControlsState(WebBrowserControlsShown,
+                                      WebBrowserControlsBoth, false);
+  webView->resizeWithBrowserControls(WebSize(400, 300), 100.f, true);
+
+  EXPECT_FLOAT_EQ(150.f, absPos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(150.f, fixedPos->getBoundingClientRect()->height());
+
+  EXPECT_EQ(300, frame()->view()->layoutSize(IncludeScrollbars).height());
+
+  // Shown -> Hidden
+  webView->resizeWithBrowserControls(WebSize(400, 400), 100.f, false);
+  webView->updateBrowserControlsState(WebBrowserControlsHidden,
+                                      WebBrowserControlsBoth, false);
+
+  EXPECT_FLOAT_EQ(200.f, absPos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(200.f, fixedPos->getBoundingClientRect()->height());
+
+  EXPECT_EQ(400, frame()->view()->layoutSize(IncludeScrollbars).height());
+
+  // Go from Unlocked and showing, to locked and hidden but issue the resize
+  // before the constraint update to check for race issues.
+  webView->updateBrowserControlsState(WebBrowserControlsBoth,
+                                      WebBrowserControlsShown, false);
+  webView->resizeWithBrowserControls(WebSize(400, 300), 100.f, true);
+  ASSERT_EQ(300, frame()->view()->layoutSize(IncludeScrollbars).height());
+  webView->updateAllLifecyclePhases();
+
+  webView->resizeWithBrowserControls(WebSize(400, 400), 100.f, false);
+  webView->updateBrowserControlsState(WebBrowserControlsHidden,
+                                      WebBrowserControlsHidden, false);
+
+  EXPECT_FLOAT_EQ(200.f, absPos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(200.f, fixedPos->getBoundingClientRect()->height());
+
+  EXPECT_EQ(400, frame()->view()->layoutSize(IncludeScrollbars).height());
+}
+
 // Ensure that browser controls do not affect vh units.
 TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnits)) {
   // Initialize with the browser controls showing.

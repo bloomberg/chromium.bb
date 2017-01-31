@@ -49,6 +49,8 @@ class CORE_EXPORT BrowserControls final
   // scroll amount.
   FloatSize scrollBy(FloatSize scrollDelta);
 
+  WebBrowserControlsState permittedState() const { return m_permittedState; }
+
  private:
   explicit BrowserControls(const FrameHost&);
   void resetBaseline();
