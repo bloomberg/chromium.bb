@@ -853,12 +853,10 @@ bool PasswordAutofillAgent::ShowSuggestions(
     if ((element.isPasswordField() ||
          HasAutocompleteAttributeValue(element, "username")) &&
         security_state::IsHttpWarningInFormEnabled() &&
-        !content::IsOriginSecure(url::Origin(render_frame()
-                                                 ->GetRenderView()
-                                                 ->GetMainRenderFrame()
-                                                 ->GetWebFrame()
-                                                 ->getSecurityOrigin())
-                                     .GetURL())) {
+        !content::IsOriginSecure(
+            url::Origin(
+                render_frame()->GetWebFrame()->top()->getSecurityOrigin())
+                .GetURL())) {
       autofill_agent_->ShowNotSecureWarning(element);
       return true;
     }
