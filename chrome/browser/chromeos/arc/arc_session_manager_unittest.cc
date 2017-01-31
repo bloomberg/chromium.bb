@@ -13,13 +13,21 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
+#include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor_observer.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -49,7 +57,64 @@
 
 namespace arc {
 
-class ArcSessionManagerTestBase : public testing::Test {
+namespace {
+
+class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
+ public:
+  FakeLoginDisplayHost() {
+    DCHECK(!chromeos::LoginDisplayHost::default_host_);
+    chromeos::LoginDisplayHost::default_host_ = this;
+  }
+
+  ~FakeLoginDisplayHost() override {
+    DCHECK_EQ(chromeos::LoginDisplayHost::default_host_, this);
+    chromeos::LoginDisplayHost::default_host_ = nullptr;
+  }
+
+  /// chromeos::LoginDisplayHost:
+  chromeos::LoginDisplay* CreateLoginDisplay(
+      chromeos::LoginDisplay::Delegate* delegate) override {
+    return nullptr;
+  }
+  gfx::NativeWindow GetNativeWindow() const override { return nullptr; }
+  chromeos::OobeUI* GetOobeUI() const override { return nullptr; }
+  chromeos::WebUILoginView* GetWebUILoginView() const override {
+    return nullptr;
+  }
+  void BeforeSessionStart() override {}
+  void Finalize() override {}
+  void OnCompleteLogin() override {}
+  void OpenProxySettings() override {}
+  void SetStatusAreaVisible(bool visible) override {}
+  chromeos::AutoEnrollmentController* GetAutoEnrollmentController() override {
+    return nullptr;
+  }
+  void StartWizard(chromeos::OobeScreen first_screen) override {}
+  chromeos::WizardController* GetWizardController() override { return nullptr; }
+  chromeos::AppLaunchController* GetAppLaunchController() override {
+    return nullptr;
+  }
+  void StartUserAdding(const base::Closure& completion_callback) override {}
+  void CancelUserAdding() override {}
+  void StartSignInScreen(const chromeos::LoginScreenContext& context) override {
+  }
+  void OnPreferencesChanged() override {}
+  void PrewarmAuthentication() override {}
+  void StartAppLaunch(const std::string& app_id,
+                      bool diagnostic_mode,
+                      bool is_auto_launch) override {}
+  void StartDemoAppLaunch() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeLoginDisplayHost);
+};
+
+}  // namespace
+
+// Bool parameter is used to implement ArcSessionOobeOptInTest tests for
+// managed/unmanaged users. To prevent ambiguous testing::Test inheritance
+// implement derivation here, in base class.
+class ArcSessionManagerTestBase : public testing::TestWithParam<bool> {
  public:
   ArcSessionManagerTestBase()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
@@ -97,7 +162,7 @@ class ArcSessionManagerTestBase : public testing::Test {
   }
 
  protected:
-  Profile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_.get(); }
 
   ArcSessionManager* arc_session_manager() {
     return arc_session_manager_.get();
@@ -525,6 +590,182 @@ TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
   arc_session_manager()->OnProvisioningFinished(
       ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
   EXPECT_TRUE(terminated);
+}
+
+class ArcSessionOobeOptInTest : public ArcSessionManagerTest {
+ public:
+  ArcSessionOobeOptInTest() = default;
+
+ protected:
+  void CreateLoginDisplayHost() {
+    fake_login_display_host_ = base::MakeUnique<FakeLoginDisplayHost>();
+  }
+
+  void CloseLoginDisplayHost() { fake_login_display_host_.reset(); }
+
+  void AppendEnableArcOOBEOptInSwitch() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kEnableArcOOBEOptIn);
+  }
+
+ private:
+  std::unique_ptr<FakeLoginDisplayHost> fake_login_display_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInTest);
+};
+
+TEST_F(ArcSessionOobeOptInTest, OobeOptInActive) {
+  // OOBE OptIn is active in case of OOBE is started for new user and ARC OOBE
+  // is enabled by switch.
+  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  GetFakeUserManager()->set_current_user_new(true);
+  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  CreateLoginDisplayHost();
+  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+
+  AppendEnableArcOOBEOptInSwitch();
+  GetFakeUserManager()->set_current_user_new(false);
+  CloseLoginDisplayHost();
+  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  GetFakeUserManager()->set_current_user_new(true);
+  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  CreateLoginDisplayHost();
+  EXPECT_TRUE(ArcSessionManager::IsOobeOptInActive());
+}
+
+class ArcSessionOobeOptInNegotiatorTest
+    : public ArcSessionOobeOptInTest,
+      public chromeos::ArcTermsOfServiceScreenActor {
+ public:
+  ArcSessionOobeOptInNegotiatorTest() = default;
+
+  void SetUp() override {
+    ArcSessionOobeOptInTest::SetUp();
+
+    AppendEnableArcOOBEOptInSwitch();
+
+    ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenActorForTesting(
+        this);
+
+    GetFakeUserManager()->set_current_user_new(true);
+
+    CreateLoginDisplayHost();
+
+    if (IsManagedUser()) {
+      policy::ProfilePolicyConnector* const connector =
+          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+              profile());
+      connector->OverrideIsManagedForTesting(true);
+
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcEnabled, new base::FundamentalValue(true));
+    }
+
+    arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  }
+
+  void TearDown() override {
+    // Correctly stop service.
+    arc_session_manager()->Shutdown();
+
+    ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenActorForTesting(
+        nullptr);
+
+    ArcSessionOobeOptInTest::TearDown();
+  }
+
+ protected:
+  bool IsManagedUser() { return GetParam(); }
+
+  void ReportResult(bool accepted) {
+    for (auto& observer : observer_list_) {
+      if (accepted)
+        observer.OnAccept();
+      else
+        observer.OnSkip();
+    }
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void ReportActorDestroyed() {
+    for (auto& observer : observer_list_)
+      observer.OnActorDestroyed(this);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void MaybeWaitForDataRemoved() {
+    // In case of managed user we no need to wait data removal because
+    // ArcSessionManager is initialized with arc.enabled = true already and
+    // request to remove ARC data is not issued.
+    if (IsManagedUser())
+      return;
+
+    DCHECK_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+              ArcSessionManager::Get()->state());
+    ArcDataRemovedWaiter().Wait();
+  }
+
+  chromeos::ArcTermsOfServiceScreenActor* actor() { return this; }
+
+ private:
+  // ArcTermsOfServiceScreenActor:
+  void AddObserver(
+      chromeos::ArcTermsOfServiceScreenActorObserver* observer) override {
+    observer_list_.AddObserver(observer);
+  }
+
+  void RemoveObserver(
+      chromeos::ArcTermsOfServiceScreenActorObserver* observer) override {
+    observer_list_.RemoveObserver(observer);
+  }
+
+  void Show() override {
+    // To match ArcTermsOfServiceScreenHandler logic where prefs::kArcEnabled is
+    // set to true on showing UI.
+    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  }
+
+  void Hide() override {}
+
+  base::ObserverList<chromeos::ArcTermsOfServiceScreenActorObserver>
+      observer_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
+};
+
+INSTANTIATE_TEST_CASE_P(ArcSessionOobeOptInNegotiatorTestImpl,
+                        ArcSessionOobeOptInNegotiatorTest,
+                        ::testing::Values(true, false));
+
+TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
+  actor()->Show();
+  MaybeWaitForDataRemoved();
+  EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  ReportResult(true);
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  EXPECT_TRUE(arc_session_manager()->IsArcEnabled());
+}
+
+TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
+  actor()->Show();
+  MaybeWaitForDataRemoved();
+  EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  ReportResult(false);
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+  EXPECT_FALSE(!IsManagedUser() && arc_session_manager()->IsArcEnabled());
+}
+
+TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsActorDestroyed) {
+  actor()->Show();
+  MaybeWaitForDataRemoved();
+  EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  CloseLoginDisplayHost();
+  ReportActorDestroyed();
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+  EXPECT_FALSE(!IsManagedUser() && arc_session_manager()->IsArcEnabled());
 }
 
 }  // namespace arc

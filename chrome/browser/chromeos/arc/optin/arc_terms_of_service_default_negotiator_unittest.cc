@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
-#include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_negotiator.h"
+#include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/common/pref_names.h"
@@ -23,10 +23,10 @@
 
 namespace arc {
 
-class ArcTermsOfServiceNegotiatorTest : public testing::Test {
+class ArcTermsOfServiceDefaultNegotiatorTest : public testing::Test {
  public:
-  ArcTermsOfServiceNegotiatorTest() = default;
-  ~ArcTermsOfServiceNegotiatorTest() override = default;
+  ArcTermsOfServiceDefaultNegotiatorTest() = default;
+  ~ArcTermsOfServiceDefaultNegotiatorTest() override = default;
 
   void SetUp() override {
     user_manager_enabler_ =
@@ -39,7 +39,7 @@ class ArcTermsOfServiceNegotiatorTest : public testing::Test {
 
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_.get());
     fake_arc_support_ = base::MakeUnique<FakeArcSupport>(support_host_.get());
-    negotiator_ = base::MakeUnique<ArcTermsOfServiceNegotiator>(
+    negotiator_ = base::MakeUnique<ArcTermsOfServiceDefaultNegotiator>(
         profile_->GetPrefs(), support_host());
   }
 
@@ -66,7 +66,7 @@ class ArcTermsOfServiceNegotiatorTest : public testing::Test {
   std::unique_ptr<FakeArcSupport> fake_arc_support_;
   std::unique_ptr<ArcTermsOfServiceNegotiator> negotiator_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceNegotiatorTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceDefaultNegotiatorTest);
 };
 
 namespace {
@@ -103,7 +103,7 @@ ArcTermsOfServiceNegotiator::NegotiationCallback UpdateStatusCallback(
 
 }  // namespace
 
-TEST_F(ArcTermsOfServiceNegotiatorTest, Accept) {
+TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Accept) {
   // Show Terms of service page.
   Status status = Status::PENDING;
   negotiator()->StartNegotiation(UpdateStatusCallback(&status));
@@ -135,7 +135,7 @@ TEST_F(ArcTermsOfServiceNegotiatorTest, Accept) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcLocationServiceEnabled));
 }
 
-TEST_F(ArcTermsOfServiceNegotiatorTest, Cancel) {
+TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Cancel) {
   // Show Terms of service page.
   Status status = Status::PENDING;
   negotiator()->StartNegotiation(UpdateStatusCallback(&status));
@@ -166,7 +166,7 @@ TEST_F(ArcTermsOfServiceNegotiatorTest, Cancel) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcLocationServiceEnabled));
 }
 
-TEST_F(ArcTermsOfServiceNegotiatorTest, Retry) {
+TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Retry) {
   // Show Terms of service page.
   Status status = Status::PENDING;
   negotiator()->StartNegotiation(UpdateStatusCallback(&status));

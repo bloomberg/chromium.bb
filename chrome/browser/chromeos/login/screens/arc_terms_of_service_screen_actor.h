@@ -11,34 +11,18 @@
 
 namespace chromeos {
 
+class ArcTermsOfServiceScreenActorObserver;
+
 // Interface for dependency injection between TermsOfServiceScreen and its
 // WebUI representation.
 class ArcTermsOfServiceScreenActor {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() = default;
+  virtual ~ArcTermsOfServiceScreenActor() = default;
 
-    // Called when the user skips the PlayStore Terms of Service.
-    virtual void OnSkip() = 0;
-
-    // Called when the user accepts the PlayStore Terms of Service.
-    virtual void OnAccept() = 0;
-
-    // Called when actor is destroyed so there is no dead reference to it.
-    virtual void OnActorDestroyed(ArcTermsOfServiceScreenActor* actor) = 0;
-
-   protected:
-    Delegate() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
-  virtual ~ArcTermsOfServiceScreenActor() {}
-
-  // Sets screen this actor belongs to.
-  virtual void SetDelegate(Delegate* screen) = 0;
+  // Adds/Removes observer for actor.
+  virtual void AddObserver(ArcTermsOfServiceScreenActorObserver* observer) = 0;
+  virtual void RemoveObserver(
+      ArcTermsOfServiceScreenActorObserver* observer) = 0;
 
   // Shows the contents of the screen.
   virtual void Show() = 0;

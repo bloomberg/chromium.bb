@@ -121,6 +121,9 @@ class ArcSessionManager : public ArcSessionObserver,
 
   static ArcSessionManager* Get();
 
+  // Exposed here for unit_tests validation.
+  static bool IsOobeOptInActive();
+
   // It is called from chrome/browser/prefs/browser_prefs.cc.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

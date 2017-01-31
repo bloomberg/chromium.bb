@@ -21,9 +21,11 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_negotiator.h"
+#include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
+#include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -120,6 +122,20 @@ void ArcSessionManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kArcTermsAccepted, false);
   registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, true);
   registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, true);
+}
+
+// static
+bool ArcSessionManager::IsOobeOptInActive() {
+  // ARC OOBE OptIn is optional for now. Test if it exists and login host is
+  // active.
+  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
+    return false;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableArcOOBEOptIn))
+    return false;
+  if (!chromeos::LoginDisplayHost::default_host())
+    return false;
+  return true;
 }
 
 // static
@@ -587,13 +603,19 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   // 2) User accepted the Terms of service on Opt-in flow, but logged out
   //   before ARC sign in procedure was done. Then, logs in again.
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
-    support_host_->ShowArcLoading();
+    // Don't show UI for this progress if it was not shown.
+    if (support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE)
+      support_host_->ShowArcLoading();
     StartArcAndroidManagementCheck();
     return;
   }
 
-  // Need user's explicit Terms Of Service agreement.
-  StartTermsOfServiceNegotiation();
+  // Need user's explicit Terms Of Service agreement. Prevent race condition
+  // when ARC can be enabled before profile is synced. In last case
+  // OnOptInPreferenceChanged is called twice.
+  // TODO (crbug.com/687185)
+  if (state_ != State::SHOWING_TERMS_OF_SERVICE)
+    StartTermsOfServiceNegotiation();
 }
 
 void ArcSessionManager::ShutdownSession() {
@@ -759,10 +781,18 @@ void ArcSessionManager::StartTermsOfServiceNegotiation() {
   }
 
   SetState(State::SHOWING_TERMS_OF_SERVICE);
-  if (support_host_) {
+  if (IsOobeOptInActive()) {
+    VLOG(1) << "Use OOBE negotiator.";
     terms_of_service_negotiator_ =
-        base::MakeUnique<ArcTermsOfServiceNegotiator>(profile_->GetPrefs(),
-                                                      support_host_.get());
+        base::MakeUnique<ArcTermsOfServiceOobeNegotiator>();
+  } else if (support_host_) {
+    VLOG(1) << "Use default negotiator.";
+    terms_of_service_negotiator_ =
+        base::MakeUnique<ArcTermsOfServiceDefaultNegotiator>(
+            profile_->GetPrefs(), support_host_.get());
+  }
+
+  if (terms_of_service_negotiator_) {
     terms_of_service_negotiator_->StartNegotiation(
         base::Bind(&ArcSessionManager::OnTermsOfServiceNegotiated,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -783,7 +813,10 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   // Terms were accepted.
   profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
 
-  support_host_->ShowArcLoading();
+  // Don't show UI for this progress if it was not shown.
+  if (support_host_ &&
+      support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE)
+    support_host_->ShowArcLoading();
   StartArcAndroidManagementCheck();
 }
 
@@ -791,7 +824,9 @@ void ArcSessionManager::StartArcAndroidManagementCheck() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(arc_session_runner_->IsStopped());
   DCHECK(state_ == State::SHOWING_TERMS_OF_SERVICE ||
-         state_ == State::CHECKING_ANDROID_MANAGEMENT);
+         state_ == State::CHECKING_ANDROID_MANAGEMENT ||
+         (state_ == State::STOPPED &&
+          profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)));
   SetState(State::CHECKING_ANDROID_MANAGEMENT);
 
   android_management_checker_.reset(new ArcAndroidManagementChecker(

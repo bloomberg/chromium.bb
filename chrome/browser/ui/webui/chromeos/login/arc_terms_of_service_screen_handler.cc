@@ -6,11 +6,14 @@
 
 #include "base/i18n/timezone.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor_observer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,9 +32,8 @@ ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler()
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-
-  if (screen_)
-    screen_->OnActorDestroyed(this);
+  for (auto& observer : observer_list_)
+    observer.OnActorDestroyed(this);
 }
 
 void ArcTermsOfServiceScreenHandler::RegisterMessages() {
@@ -113,8 +115,14 @@ void ArcTermsOfServiceScreenHandler::OnLocationServicesModeChanged(
   CallJS("setLocationServicesMode", enabled, managed);
 }
 
-void ArcTermsOfServiceScreenHandler::SetDelegate(Delegate* screen) {
-  screen_ = screen;
+void ArcTermsOfServiceScreenHandler::AddObserver(
+    ArcTermsOfServiceScreenActorObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ArcTermsOfServiceScreenHandler::RemoveObserver(
+    ArcTermsOfServiceScreenActorObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void ArcTermsOfServiceScreenHandler::Show() {
@@ -142,6 +150,12 @@ void ArcTermsOfServiceScreenHandler::Initialize() {
 void ArcTermsOfServiceScreenHandler::DoShow() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   CHECK(profile);
+
+  // Enable ARC to match ArcSessionManager logic. ArcSessionManager expects that
+  // ARC is enabled (prefs::kArcEnabled = true) on showing Terms of Service. If
+  // user accepts ToS then prefs::kArcEnabled is left activated. If user skips
+  // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
+  profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
       this, profile->GetPrefs()));
   pref_handler_->Start();
@@ -153,18 +167,17 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 }
 
 void ArcTermsOfServiceScreenHandler::HandleSkip() {
-  if (screen_)
-    screen_->OnSkip();
+  for (auto& observer : observer_list_)
+    observer.OnSkip();
 }
 
 void ArcTermsOfServiceScreenHandler::HandleAccept(
     bool enable_backup_restore,
     bool enable_location_services) {
-  if (screen_) {
-    pref_handler_->EnableBackupRestore(enable_backup_restore);
-    pref_handler_->EnableLocationService(enable_location_services);
-    screen_->OnAccept();
-  }
+  pref_handler_->EnableBackupRestore(enable_backup_restore);
+  pref_handler_->EnableLocationService(enable_location_services);
+  for (auto& observer : observer_list_)
+    observer.OnAccept();
 }
 
 }  // namespace chromeos

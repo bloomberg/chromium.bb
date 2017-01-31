@@ -176,6 +176,8 @@ class FakeChromeUserManager : public ChromeUserManager {
     multi_profile_user_controller_ = controller;
   }
 
+  void set_current_user_new(bool new_user) { current_user_new_ = new_user; }
+
  private:
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
@@ -186,6 +188,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   std::unique_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   AccountId owner_account_id_ = EmptyAccountId();
   bool fake_ephemeral_users_enabled_ = false;
+  bool current_user_new_ = false;
 
   BootstrapManager* bootstrap_manager_ = nullptr;
   MultiProfileUserController* multi_profile_user_controller_ = nullptr;

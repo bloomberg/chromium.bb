@@ -469,7 +469,7 @@ bool FakeChromeUserManager::IsCurrentUserOwner() const {
 }
 
 bool FakeChromeUserManager::IsCurrentUserNew() const {
-  return false;
+  return current_user_new_;
 }
 
 bool FakeChromeUserManager::IsCurrentUserNonCryptohomeDataEphemeral() const {

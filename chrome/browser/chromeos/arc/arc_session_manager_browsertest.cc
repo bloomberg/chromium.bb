@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -91,37 +92,6 @@ class ArcSessionManagerShutdownObserver : public ArcSessionManager::Observer {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerShutdownObserver);
-};
-
-// Observer of ARC data has been removed.
-class ArcSessionManagerDataRemovedObserver
-    : public ArcSessionManager::Observer {
- public:
-  ArcSessionManagerDataRemovedObserver() {
-    ArcSessionManager::Get()->AddObserver(this);
-  }
-
-  ~ArcSessionManagerDataRemovedObserver() override {
-    ArcSessionManager::Get()->RemoveObserver(this);
-  }
-
-  void Wait() {
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
-  // ArcSessionManager::Observer:
-  void OnArcDataRemoved() override {
-    if (!run_loop_)
-      return;
-    run_loop_->Quit();
-  }
-
- private:
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerDataRemovedObserver);
 };
 
 class ArcSessionManagerTest : public InProcessBrowserTest {
@@ -266,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, MAYBE_ManagedAndroidAccount) {
   ArcSessionManagerShutdownObserver().Wait();
   ASSERT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
             ArcSessionManager::Get()->state());
-  ArcSessionManagerDataRemovedObserver().Wait();
+  ArcDataRemovedWaiter().Wait();
   ASSERT_EQ(ArcSessionManager::State::STOPPED,
             ArcSessionManager::Get()->state());
 }
