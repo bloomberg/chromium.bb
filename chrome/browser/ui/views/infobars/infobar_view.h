@@ -38,10 +38,6 @@ class InfoBarView : public infobars::InfoBar,
  protected:
   typedef std::vector<views::Label*> Labels;
 
-  static const int kButtonButtonSpacing;
-  static const int kEndOfLabelSpacing;
-  static const SkColor kTextColor;
-
   ~InfoBarView() override;
 
   // Creates a label with the appropriate font and color for an infobar.

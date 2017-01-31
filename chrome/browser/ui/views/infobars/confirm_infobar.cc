@@ -18,6 +18,14 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/layout/layout_constants.h"
+
+namespace {
+
+constexpr int kButtonButtonSpacing = views::kRelatedButtonHSpacing;
+constexpr int kEndOfLabelSpacing = views::kItemLabelSpacing;
+
+}  // namespace
 
 // InfoBarService -------------------------------------------------------------
 

@@ -62,11 +62,6 @@ constexpr SkColor GetInfobarTextColor() {
 
 // InfoBarView ----------------------------------------------------------------
 
-// static
-const int InfoBarView::kButtonButtonSpacing = views::kRelatedButtonHSpacing;
-const int InfoBarView::kEndOfLabelSpacing = views::kItemLabelSpacing;
-const SkColor InfoBarView::kTextColor = GetInfobarTextColor();
-
 InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
       views::ExternalFocusTracker(this, nullptr),
