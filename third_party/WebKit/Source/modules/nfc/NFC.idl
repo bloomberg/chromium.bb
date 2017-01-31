@@ -9,8 +9,8 @@ typedef (DOMString or ArrayBuffer or NFCMessage) NFCPushMessage;
 [
   RuntimeEnabled=WebNFC,
 ] interface NFC {
-    [CallWith=ScriptState] Promise<void> push (NFCPushMessage message, optional NFCPushOptions options);
-    [CallWith=ScriptState] Promise<void> cancelPush (optional NFCPushTarget target = "any");
-    [CallWith=ScriptState] Promise<long> watch (MessageCallback callback, optional NFCWatchOptions options);
-    [CallWith=ScriptState] Promise<void> cancelWatch (optional long id);
+    [CallWith=ScriptState, MeasureAs=WebNFCPush] Promise<void> push (NFCPushMessage message, optional NFCPushOptions options);
+    [CallWith=ScriptState, MeasureAs=WebNFCCancelPush] Promise<void> cancelPush (optional NFCPushTarget target = "any");
+    [CallWith=ScriptState, MeasureAs=WebNFCWatch] Promise<long> watch (MessageCallback callback, optional NFCWatchOptions options);
+    [CallWith=ScriptState, MeasureAs=WebNFCCancelWatch] Promise<void> cancelWatch (optional long id);
 };

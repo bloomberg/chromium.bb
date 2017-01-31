@@ -1443,6 +1443,10 @@ class CORE_EXPORT UseCounter {
     V8MediaSession_PlaybackState_AttributeGetter = 1790,
     V8MediaSession_PlaybackState_AttributeSetter = 1791,
     V8MediaSession_SetActionHandler_Method = 1792,
+    WebNFCPush = 1793,
+    WebNFCCancelPush = 1794,
+    WebNFCWatch = 1795,
+    WebNFCCancelWatch = 1796,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
