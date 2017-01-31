@@ -14,6 +14,7 @@ function test()
     dumpParsedSearchQuery("function", false);
     dumpParsedSearchQuery(" function", false);
     dumpParsedSearchQuery(" function file:js", false);
+    dumpParsedSearchQuery("file:js   function   ", false);
     dumpParsedSearchQuery("\s", true);
     dumpParsedSearchQuery(" \s hello", true);
     InspectorTest.completeTest();
