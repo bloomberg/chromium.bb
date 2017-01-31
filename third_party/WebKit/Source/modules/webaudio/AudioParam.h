@@ -251,7 +251,7 @@ class AudioParam final : public GarbageCollectedFinalized<AudioParam>,
                                   double duration,
                                   ExceptionState&);
   AudioParam* cancelScheduledValues(double startTime, ExceptionState&);
-  AudioParam* cancelValuesAndHoldAtTime(double startTime, ExceptionState&);
+  AudioParam* cancelAndHoldAtTime(double startTime, ExceptionState&);
 
  private:
   AudioParam(BaseAudioContext&,

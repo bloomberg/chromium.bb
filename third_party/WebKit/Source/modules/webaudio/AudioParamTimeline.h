@@ -64,7 +64,7 @@ class AudioParamTimeline {
                            double duration,
                            ExceptionState&);
   void cancelScheduledValues(double startTime, ExceptionState&);
-  void cancelValuesAndHoldAtTime(double cancelTime, ExceptionState&);
+  void cancelAndHoldAtTime(double cancelTime, ExceptionState&);
 
   // hasValue is set to true if a valid timeline value is returned.
   // otherwise defaultValue is returned.

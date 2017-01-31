@@ -618,9 +618,8 @@ void AudioParamTimeline::cancelScheduledValues(double startTime,
   }
 }
 
-void AudioParamTimeline::cancelValuesAndHoldAtTime(
-    double cancelTime,
-    ExceptionState& exceptionState) {
+void AudioParamTimeline::cancelAndHoldAtTime(double cancelTime,
+                                             ExceptionState& exceptionState) {
   DCHECK(isMainThread());
 
   if (!isNonNegativeAudioParamTime(cancelTime, exceptionState))

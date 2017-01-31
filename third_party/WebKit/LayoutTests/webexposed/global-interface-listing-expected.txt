@@ -213,8 +213,8 @@ interface AudioParam
     getter maxValue
     getter minValue
     getter value
+    method cancelAndHoldAtTime
     method cancelScheduledValues
-    method cancelValuesAndHoldAtTime
     method constructor
     method exponentialRampToValueAtTime
     method linearRampToValueAtTime

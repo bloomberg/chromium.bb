@@ -209,9 +209,9 @@
         }).then(task.done.bind(task));
       });
 
-      // Test automations scheduled after the call to cancelValuesAndHoldAtTime.
+      // Test automations scheduled after the call to cancelAndHoldAtTime.
       // Very similar to the above tests, but we also schedule an event after
-      // cancelValuesAndHoldAtTime and verify that curve after cancellation has
+      // cancelAndHoldAtTime and verify that curve after cancellation has
       // the correct values.
 
       audit.define("post cancel: Linear", function (task, should) {
@@ -404,7 +404,7 @@
         src.loop = true;
 
         // We'll do the automation tests with three gain nodes.  One (g0) will
-        // have cancelValuesAndHoldAtTime and the other (g1) will not.  g1 is
+        // have cancelAndHoldAtTime and the other (g1) will not.  g1 is
         // used as the expected result for that automation up to the
         // cancellation point.  They should be the same.  The third node (g2) is
         // used for testing automations inserted after the cancellation point,
@@ -428,7 +428,7 @@
 
         // Cancel scheduled events somewhere in the middle of the test
         // automation.
-        g0.gain.cancelValuesAndHoldAtTime(cancelTime);
+        g0.gain.cancelAndHoldAtTime(cancelTime);
 
         let constantEndTime;
         if (postCancelTest) {
@@ -438,8 +438,8 @@
         }
 
         // Connect everything together (with a merger to make a two-channel
-        // result).  Channel 0 is the test (with cancelValuesAndHoldAtTime) and
-        // channel 1 is the reference (without cancelValuesAndHoldAtTime).
+        // result).  Channel 0 is the test (with cancelAndHoldAtTime) and
+        // channel 1 is the reference (without cancelAndHoldAtTime).
         // Channel 1 is used to verify that everything up to the cancellation
         // has the correct values.
         src.connect(g0);

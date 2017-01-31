@@ -517,10 +517,9 @@ AudioParam* AudioParam::cancelScheduledValues(double startTime,
   return this;
 }
 
-AudioParam* AudioParam::cancelValuesAndHoldAtTime(
-    double startTime,
-    ExceptionState& exceptionState) {
-  handler().timeline().cancelValuesAndHoldAtTime(startTime, exceptionState);
+AudioParam* AudioParam::cancelAndHoldAtTime(double startTime,
+                                            ExceptionState& exceptionState) {
+  handler().timeline().cancelAndHoldAtTime(startTime, exceptionState);
   return this;
 }
 
