@@ -33,6 +33,20 @@
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_property_mirror.h"
 
+namespace {
+
+void MirrorIcon(aura::Window* window,
+                aura::Window* root_window,
+                const aura::WindowProperty<gfx::ImageSkia*>* key) {
+  gfx::ImageSkia* value = window->GetProperty(key);
+  if (!value || value->isNull())
+    root_window->ClearProperty(key);
+  else
+    root_window->SetProperty(key, new gfx::ImageSkia(*value));
+}
+
+}  // namespace
+
 // Relays aura content window properties to its root window (the mash frame).
 // Ash relies on various window properties for frame titles, shelf items, etc.
 // These properties are read from the client's root, not child content windows.
@@ -52,8 +66,7 @@ class MusPropertyMirrorAsh : public views::MusPropertyMirror {
       int32_t value = window->GetProperty(ash::kShelfItemTypeKey);
       root_window->SetProperty(ash::kShelfItemTypeKey, value);
     } else if (key == aura::client::kAppIconKey) {
-      gfx::ImageSkia* value = window->GetProperty(aura::client::kAppIconKey);
-      root_window->SetProperty(aura::client::kAppIconKey, value);
+      MirrorIcon(window, root_window, aura::client::kAppIconKey);
     } else if (key == aura::client::kAppIdKey) {
       std::string* value = window->GetProperty(aura::client::kAppIdKey);
       root_window->SetProperty(aura::client::kAppIdKey, value);
@@ -64,8 +77,7 @@ class MusPropertyMirrorAsh : public views::MusPropertyMirror {
       base::string16* value = window->GetProperty(aura::client::kTitleKey);
       root_window->SetProperty(aura::client::kTitleKey, value);
     } else if (key == aura::client::kWindowIconKey) {
-      gfx::ImageSkia* value = window->GetProperty(aura::client::kWindowIconKey);
-      root_window->SetProperty(aura::client::kWindowIconKey, value);
+      MirrorIcon(window, root_window, aura::client::kWindowIconKey);
     }
   }
 
