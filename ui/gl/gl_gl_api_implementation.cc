@@ -437,20 +437,29 @@ void RealGLApi::glDrawElementsFn(GLenum mode,
 }
 
 void RealGLApi::glClearDepthFn(GLclampd depth) {
-  if (driver_->fn.glClearDepthFn) {
-    GLApiBase::glClearDepthFn(depth);
-  } else {
+  // OpenGL ES only has glClearDepthf, forward the parameters from glClearDepth.
+  // Many mock tests expect only glClearDepth is called so don't make the
+  // interception when testing with mocks.
+  if (version_->is_es && GetGLImplementation() != kGLImplementationMockGL) {
     DCHECK(driver_->fn.glClearDepthfFn);
     GLApiBase::glClearDepthfFn(static_cast<GLclampf>(depth));
+  } else {
+    DCHECK(driver_->fn.glClearDepthFn);
+    GLApiBase::glClearDepthFn(depth);
   }
 }
 
 void RealGLApi::glDepthRangeFn(GLclampd z_near, GLclampd z_far) {
-  if (driver_->fn.glDepthRangeFn) {
-    GLApiBase::glDepthRangeFn(z_near, z_far);
-  } else {
+  // OpenGL ES only has glDepthRangef, forward the parameters from glDepthRange.
+  // Many mock tests expect only glDepthRange is called so don't make the
+  // interception when testing with mocks.
+  if (version_->is_es && GetGLImplementation() != kGLImplementationMockGL) {
+    DCHECK(driver_->fn.glDepthRangefFn);
     GLApiBase::glDepthRangefFn(static_cast<GLclampf>(z_near),
                                static_cast<GLclampf>(z_far));
+  } else {
+    DCHECK(driver_->fn.glDepthRangeFn);
+    GLApiBase::glDepthRangeFn(z_near, z_far);
   }
 }
 
