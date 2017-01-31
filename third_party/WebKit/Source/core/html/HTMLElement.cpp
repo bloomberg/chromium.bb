@@ -1161,6 +1161,7 @@ const AtomicString& HTMLElement::eventParameterName() {
 }
 
 int HTMLElement::offsetLeftForBinding() {
+  ensureCompositingInputsClean();
   Element* offsetParent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
     return adjustLayoutUnitForAbsoluteZoom(
@@ -1171,6 +1172,7 @@ int HTMLElement::offsetLeftForBinding() {
 }
 
 int HTMLElement::offsetTopForBinding() {
+  ensureCompositingInputsClean();
   Element* offsetParent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
     return adjustLayoutUnitForAbsoluteZoom(

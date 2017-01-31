@@ -429,7 +429,7 @@ bool Element::shouldIgnoreAttributeCase() const {
 }
 
 void Element::scrollIntoView(bool alignToTop) {
-  document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  ensureCompositingInputsClean();
 
   if (!layoutObject())
     return;
@@ -454,7 +454,7 @@ void Element::scrollIntoView(bool alignToTop) {
 }
 
 void Element::scrollIntoViewIfNeeded(bool centerIfNeeded) {
-  document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  ensureCompositingInputsClean();
 
   if (!layoutObject())
     return;
@@ -634,7 +634,7 @@ void Element::callApplyScroll(ScrollState& scrollState) {
 }
 
 int Element::offsetLeft() {
-  document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  ensureCompositingInputsClean();
   if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
     return adjustLayoutUnitForAbsoluteZoom(
                LayoutUnit(layoutObject->pixelSnappedOffsetLeft(offsetParent())),
@@ -644,7 +644,7 @@ int Element::offsetLeft() {
 }
 
 int Element::offsetTop() {
-  document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  ensureCompositingInputsClean();
   if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
     return adjustLayoutUnitForAbsoluteZoom(
                LayoutUnit(layoutObject->pixelSnappedOffsetTop(offsetParent())),
@@ -1119,7 +1119,7 @@ IntRect Element::visibleBoundsInVisualViewport() const {
 }
 
 void Element::clientQuads(Vector<FloatQuad>& quads) {
-  document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  ensureCompositingInputsClean();
 
   LayoutObject* elementLayoutObject = layoutObject();
   if (!elementLayoutObject)
@@ -4118,6 +4118,19 @@ void Element::logUpdateAttributeIfIsolatedWorldAndInDocument(
   argv.push_back(params.oldValue);
   argv.push_back(params.newValue);
   activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
+}
+
+void Element::ensureCompositingInputsClean() {
+  if (!inActiveDocument())
+    return;
+
+  // The call to updateLifecycleToCompositingCleanPlusScrolling| below would
+  // also run layout for us if we omitted this call. However we do not want to
+  // include pending style sheets when doing the layout, hence this call.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (FrameView* view = document().view())
+    view->updateLifecycleToCompositingCleanPlusScrolling();
 }
 
 DEFINE_TRACE(Element) {

@@ -825,6 +825,10 @@ void PaintLayerScrollableArea::updateAfterLayout() {
 
   DisableCompositingQueryAsserts disabler;
   positionOverflowControls();
+
+  // Layout of a scrollable area, or any of its descendants (sticky or
+  // otherwise), invalidates the cached sticky constraints.
+  invalidateAllStickyConstraints();
 }
 
 void PaintLayerScrollableArea::clampScrollOffsetAfterOverflowChange() {

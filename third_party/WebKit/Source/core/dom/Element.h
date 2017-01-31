@@ -801,6 +801,11 @@ class CORE_EXPORT Element : public ContainerNode {
 
   virtual void parserDidSetAttributes() {}
 
+  // Helper method which ensures that compositing inputs have been cleaned.
+  // Cleaning the compositing inputs is required when computing the location of
+  // position:sticky elements or their descendants.
+  void ensureCompositingInputsClean();
+
  private:
   void scrollLayoutBoxBy(const ScrollToOptions&);
   void scrollLayoutBoxTo(const ScrollToOptions&);
