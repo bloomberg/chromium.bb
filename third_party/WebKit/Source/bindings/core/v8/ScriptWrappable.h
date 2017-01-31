@@ -172,7 +172,6 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
   friend class HeapSnaphotWrapperVisitor;
   friend class V8HiddenValue;
   friend class V8PrivateProperty;
-  friend class WebGLRenderingContextBase;
 
   v8::Local<v8::Object> mainWorldWrapper(v8::Isolate* isolate) const {
     return v8::Local<v8::Object>::New(isolate, m_mainWorldWrapper);
