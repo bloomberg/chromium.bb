@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -25,7 +27,7 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  * TODO(dgn): If the bottom sheet view is not recreated across tab changes, it will have to be
  * notified of it, at least when it is pulled up on the new tab.
  */
-public class SuggestionsBottomSheetContent {
+public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetContent {
     private final NewTabPageRecyclerView mRecyclerView;
     private final ContextMenuManager mContextMenuManager;
     private final SuggestionsUiDelegateImpl mSuggestionsManager;
@@ -53,8 +55,14 @@ public class SuggestionsBottomSheetContent {
         mRecyclerView.setUpSwipeToDismiss();
     }
 
+    @Override
     public RecyclerView getScrollingContentView() {
         return mRecyclerView;
+    }
+
+    @Override
+    public View getToolbarView() {
+        return null;
     }
 
     public ContextMenuManager getContextMenuManager() {

@@ -11,20 +11,18 @@ import android.content.Context;
 import android.graphics.Region;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ScrollingView;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.NativePage;
-import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
 
@@ -106,17 +104,40 @@ public class BottomSheet extends FrameLayout {
     /** Used for getting the current tab. */
     private TabModelSelector mTabModelSelector;
 
-    /** A handle to the native page being shown by the sheet. */
-    private NativePage mNativePage;
+    /** A handle to the content being shown by the sheet. */
+    private BottomSheetContent mSheetContent;
+
+    /** This is the default {@link BottomSheetContent} to show when the bottom sheet is opened. */
+    private BottomSheetContent mSuggestionsContent;
 
     /** A handle to the toolbar control container. */
     private View mControlContainer;
 
     /** A handle to the FrameLayout that holds the content of the bottom sheet. */
-    private FrameLayout mBottomSheetContent;
+    private FrameLayout mBottomSheetContentContainer;
 
-    /** A handle to the main scrolling view in the bottom sheet's content. */
-    private ScrollingView mScrollingContentView;
+    /**
+     * An interface defining content that can be displayed inside of the bottom sheet for Chrome
+     * Home.
+     */
+    public interface BottomSheetContent {
+        /**
+         * Gets the {@link ScrollingView} that holds the content to be displayed in the Chrome Home
+         * bottom sheet.
+         * @return The scrolling content view.
+         */
+        RecyclerView getScrollingContentView();
+
+        /**
+         * Get the {@link View} that contains the toolbar specific to the content being displayed.
+         * If null is returned, the omnibox is used.
+         * TODO(mdjones): This still needs implementation in the sheet.
+         *
+         * @return The toolbar view.
+         */
+        @Nullable
+        View getToolbarView();
+    }
 
     /**
      * This class is responsible for detecting swipe and scroll events on the bottom sheet or
@@ -152,9 +173,12 @@ public class BottomSheet extends FrameLayout {
                     MathUtils.areFloatsEqual(currentShownRatio,
                             mStateRatios[mStateRatios.length - 1]);
 
+            RecyclerView scrollingView = null;
+            if (mSheetContent != null) scrollingView = mSheetContent.getScrollingContentView();
+
             // Allow the bottom sheet's content to be scrolled up without dragging the sheet down.
-            if (!isTouchEventInToolbar(e2) && isSheetInMaxPosition && mScrollingContentView != null
-                    && mScrollingContentView.computeVerticalScrollOffset() > 0) {
+            if (!isTouchEventInToolbar(e2) && isSheetInMaxPosition && scrollingView != null
+                    && scrollingView.computeVerticalScrollOffset() > 0) {
                 mIsScrolling = false;
                 return false;
             }
@@ -280,7 +304,7 @@ public class BottomSheet extends FrameLayout {
         mControlContainer = controlContainer;
         mToolbarHeight = mControlContainer.getHeight();
 
-        mBottomSheetContent = (FrameLayout) findViewById(R.id.bottom_sheet_content);
+        mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
 
         mCurrentState = SHEET_STATE_PEEK;
 
@@ -338,24 +362,32 @@ public class BottomSheet extends FrameLayout {
      * A notification that the sheet is exiting the peek state into one that shows content.
      */
     private void onExitPeekState() {
-        if (mNativePage == null) {
-            showNativePage(new NewTabPage(mTabModelSelector.getCurrentTab().getActivity(),
-                    mTabModelSelector.getCurrentTab(), mTabModelSelector));
+        if (mSuggestionsContent == null) {
+            mSuggestionsContent = new SuggestionsBottomSheetContent(
+                        mTabModelSelector.getCurrentTab().getActivity(),
+                        mTabModelSelector.getCurrentTab(), mTabModelSelector);
         }
+
+        showContent(mSuggestionsContent);
     }
 
     /**
-     * Show a native page in the bottom sheet's content area.
-     * @param page The NativePage to show.
+     * Show content in the bottom sheet's content area.
+     * @param page The BottomSheetContent to show.
      */
-    private void showNativePage(NativePage page) {
-        if (mNativePage != null) mBottomSheetContent.removeView(mNativePage.getView());
+    private void showContent(BottomSheetContent content) {
+        // If the desired content is already showing, do nothing.
+        if (mSheetContent == content) return;
 
-        mNativePage = page;
-        mBottomSheetContent.addView(mNativePage.getView());
-        mScrollingContentView = findScrollingChild(mNativePage.getView());
+        if (mSheetContent != null) {
+            mBottomSheetContentContainer.removeView(mSheetContent.getScrollingContentView());
+            mSheetContent = null;
+        }
 
-        mNativePage.updateForUrl("");
+        if (content == null) return;
+
+        mSheetContent = content;
+        mBottomSheetContentContainer.addView(mSheetContent.getScrollingContentView());
     }
 
     /**
@@ -385,7 +417,7 @@ public class BottomSheet extends FrameLayout {
                 (mContainerHeight * mStateRatios[mStateRatios.length - 1]) - mToolbarHeight;
 
         MarginLayoutParams sheetContentParams =
-                (MarginLayoutParams) mBottomSheetContent.getLayoutParams();
+                (MarginLayoutParams) mBottomSheetContentContainer.getLayoutParams();
         sheetContentParams.width = (int) mContainerWidth;
         sheetContentParams.height = (int) contentHeight;
         sheetContentParams.topMargin = (int) mToolbarHeight;
@@ -393,29 +425,6 @@ public class BottomSheet extends FrameLayout {
         MarginLayoutParams toolbarShadowParams =
                 (MarginLayoutParams) findViewById(R.id.toolbar_shadow).getLayoutParams();
         toolbarShadowParams.topMargin = (int) mToolbarHeight;
-    }
-
-    /**
-     * Find the first ScrollingView in a view hierarchy.
-     * TODO(mdjones): The root of native pages should be a ScrollingView so this logic is not
-     * necessary.
-     * @param view The root of the tree or subtree.
-     * @return The first scrolling view or null.
-     */
-    private ScrollingView findScrollingChild(@Nullable View view) {
-        if (view instanceof ScrollingView) {
-            return (ScrollingView) view;
-        }
-        if (view instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) view;
-            for (int i = 0, count = group.getChildCount(); i < count; i++) {
-                ScrollingView scrollingChild = findScrollingChild(group.getChildAt(i));
-                if (scrollingChild != null) {
-                    return scrollingChild;
-                }
-            }
-        }
-        return null;
     }
 
     /**
