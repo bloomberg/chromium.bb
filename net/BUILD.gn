@@ -4181,6 +4181,7 @@ test("net_unittests") {
     "dns/dns_query_unittest.cc",
     "dns/dns_response_unittest.cc",
     "dns/dns_session_unittest.cc",
+    "dns/dns_socket_pool_unittest.cc",
     "dns/dns_transaction_unittest.cc",
     "dns/dns_util_unittest.cc",
     "dns/host_cache_unittest.cc",
