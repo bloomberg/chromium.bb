@@ -77,42 +77,47 @@ static LayoutUnit computeUnderlineOffsetForUnder(
   }
 }
 
-static int computeUnderlineOffset(const ComputedStyle& style,
-                                  const FontMetrics& fontMetrics,
-                                  const InlineTextBox* inlineTextBox,
-                                  const float textDecorationThickness) {
+static int computeUnderlineOffsetForRoman(const FontMetrics& fontMetrics,
+                                          const float textDecorationThickness) {
   // Compute the gap between the font and the underline. Use at least one
   // pixel gap, if underline is thick then use a bigger gap.
   int gap = 0;
 
   // Underline position of zero means draw underline on Baseline Position,
   // in Blink we need at least 1-pixel gap to adding following check.
-  // Positive underline Position means underline should be drawn above baselin e
+  // Positive underline Position means underline should be drawn above baseline
   // and negative value means drawing below baseline, negating the value as in
-  // Blink
-  // downward Y-increases.
+  // Blink downward Y-increases.
 
   if (fontMetrics.underlinePosition())
     gap = -fontMetrics.underlinePosition();
   else
     gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
 
+  // Position underline near the alphabetic baseline.
+  return fontMetrics.ascent() + gap;
+}
+
+static int computeUnderlineOffset(const ComputedStyle& style,
+                                  const FontMetrics& fontMetrics,
+                                  const InlineTextBox* inlineTextBox,
+                                  const float textDecorationThickness) {
   // FIXME: We support only horizontal text for now.
   switch (style.getTextUnderlinePosition()) {
+    default:
+      NOTREACHED();
+    // Fall through.
     case TextUnderlinePositionAuto:
-      return fontMetrics.ascent() +
-             gap;  // Position underline near the alphabetic baseline.
+      return computeUnderlineOffsetForRoman(fontMetrics,
+                                            textDecorationThickness);
     case TextUnderlinePositionUnder: {
-      // Position underline relative to the under edge of the lowest element's
+      // Position underline at the under edge of the lowest element's
       // content box.
       LayoutUnit offset = computeUnderlineOffsetForUnder(style, inlineTextBox);
       offset = inlineTextBox->logicalHeight() + std::max(offset, LayoutUnit());
-      return offset.toInt() + gap;
+      return offset.toInt();
     }
   }
-
-  NOTREACHED();
-  return fontMetrics.ascent() + gap;
 }
 
 static bool shouldSetDecorationAntialias(
