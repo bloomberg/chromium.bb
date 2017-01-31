@@ -730,7 +730,6 @@ AST_MATCHER(clang::FunctionDecl, shouldPrefixFunctionName) {
 
 bool GetNameForDecl(const clang::FunctionDecl& decl,
                     clang::ASTContext& context,
-                    bool for_type_trait,
                     std::string& name) {
   name = decl.getName().str();
   name[0] = clang::toUppercase(name[0]);
@@ -778,7 +777,6 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
 
 bool GetNameForDecl(const clang::EnumConstantDecl& decl,
                     clang::ASTContext& context,
-                    bool for_type_trait,
                     std::string& name) {
   StringRef original_name = decl.getName();
 
@@ -806,7 +804,6 @@ bool GetNameForDecl(const clang::EnumConstantDecl& decl,
 
 bool GetNameForDecl(const clang::FieldDecl& decl,
                     clang::ASTContext& context,
-                    bool for_type_trait,
                     std::string& name) {
   StringRef original_name = decl.getName();
   bool member_prefix = original_name.startswith(kBlinkFieldPrefix);
@@ -826,7 +823,6 @@ bool GetNameForDecl(const clang::FieldDecl& decl,
 
 bool GetNameForDecl(const clang::VarDecl& decl,
                     clang::ASTContext& context,
-                    bool for_type_trait,
                     std::string& name) {
   StringRef original_name = decl.getName();
 
@@ -854,6 +850,13 @@ bool GetNameForDecl(const clang::VarDecl& decl,
       return false;
   }
 
+  // This is a type trait that appears in consumers of WTF as well as inside
+  // WTF. We want it to be named in this_style_of_case accordingly.
+  if (IsKnownTraitName(original_name)) {
+    name = CamelCaseToUnderscoreCase(original_name);
+    return true;
+  }
+
   // static class members match against VarDecls. Blink style dictates that
   // these should be prefixed with `s_`, so strip that off. Also check for `m_`
   // and strip that off too, for code that accidentally uses the wrong prefix.
@@ -861,13 +864,6 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     original_name = original_name.substr(strlen(kBlinkStaticMemberPrefix));
   else if (original_name.startswith(kBlinkFieldPrefix))
     original_name = original_name.substr(strlen(kBlinkFieldPrefix));
-
-  // Type traits are written in_this_form rather than kInThisForm and not like
-  // members.
-  if (for_type_trait) {
-    name = CamelCaseToUnderscoreCase(original_name);
-    return true;
-  }
 
   bool is_const = IsProbablyConst(decl, context);
   if (is_const) {
@@ -907,34 +903,31 @@ bool GetNameForDecl(const clang::VarDecl& decl,
 
 bool GetNameForDecl(const clang::FunctionTemplateDecl& decl,
                     clang::ASTContext& context,
-                    bool for_type_trait,
                     std::string& name) {
   clang::FunctionDecl* templated_function = decl.getTemplatedDecl();
-  return GetNameForDecl(*templated_function, context, for_type_trait, name);
+  return GetNameForDecl(*templated_function, context, name);
 }
 
 bool GetNameForDecl(const clang::NamedDecl& decl,
                     clang::ASTContext& context,
-                    bool for_type_trait,
                     std::string& name) {
   if (auto* function = clang::dyn_cast<clang::FunctionDecl>(&decl))
-    return GetNameForDecl(*function, context, for_type_trait, name);
+    return GetNameForDecl(*function, context, name);
   if (auto* var = clang::dyn_cast<clang::VarDecl>(&decl))
-    return GetNameForDecl(*var, context, for_type_trait, name);
+    return GetNameForDecl(*var, context, name);
   if (auto* field = clang::dyn_cast<clang::FieldDecl>(&decl))
-    return GetNameForDecl(*field, context, for_type_trait, name);
+    return GetNameForDecl(*field, context, name);
   if (auto* function_template =
           clang::dyn_cast<clang::FunctionTemplateDecl>(&decl))
-    return GetNameForDecl(*function_template, context, for_type_trait, name);
+    return GetNameForDecl(*function_template, context, name);
   if (auto* enumc = clang::dyn_cast<clang::EnumConstantDecl>(&decl))
-    return GetNameForDecl(*enumc, context, for_type_trait, name);
+    return GetNameForDecl(*enumc, context, name);
 
   return false;
 }
 
 bool GetNameForDecl(const clang::UsingDecl& decl,
                     clang::ASTContext& context,
-                    bool for_type_trait,
                     std::string& name) {
   assert(decl.shadow_size() > 0);
 
@@ -942,8 +935,7 @@ bool GetNameForDecl(const clang::UsingDecl& decl,
   // functions, it can introduce multiple shadowed declarations. Just using the
   // first one is OK, since overloaded functions have the same name, by
   // definition.
-  return GetNameForDecl(*decl.shadow_begin()->getTargetDecl(), context,
-                        for_type_trait, name);
+  return GetNameForDecl(*decl.shadow_begin()->getTargetDecl(), context, name);
 }
 
 template <typename Type>
@@ -1148,7 +1140,7 @@ class DeclRewriterBase : public RewriterBase<TargetNode> {
 
     // Get the new name.
     std::string new_name;
-    if (!GetNameForDecl(*decl, *result.Context, for_type_traits_, new_name))
+    if (!GetNameForDecl(*decl, *result.Context, new_name))
       return;  // If false, the name was not suitable for renaming.
 
     // Check if we are able to rewrite the decl (to avoid rewriting if the
@@ -1161,11 +1153,6 @@ class DeclRewriterBase : public RewriterBase<TargetNode> {
 
     Base::AddReplacement(result, old_name, std::move(new_name));
   }
-
-  void set_for_type_traits(bool set) { for_type_traits_ = set; }
-
- protected:
-  bool for_type_traits_ = false;
 };
 
 using FieldDeclRewriter = DeclRewriterBase<clang::FieldDecl, clang::NamedDecl>;
@@ -1493,16 +1480,16 @@ int main(int argc, const char* argv[]) {
   //   };
   // matches |x|, |y|, and |VALUE|.
   auto field_decl_matcher = id("decl", fieldDecl(in_blink_namespace));
-  auto is_type_trait_value = varDecl(
-      anyOf(hasName("value"), isKnownTraitName()), hasStaticStorageDuration(),
-      isPublic(), hasType(isConstQualified()),
-      hasType(type(anyOf(builtinType(), enumType()))),
-      unless(hasAncestor(recordDecl(
-          has(cxxMethodDecl(isUserProvided(), isInstanceMethod()))))));
+  auto is_type_trait_value =
+      varDecl(hasName("value"), hasStaticStorageDuration(), isPublic(),
+              hasType(isConstQualified()),
+              hasType(type(anyOf(builtinType(), enumType()))),
+              unless(hasAncestor(recordDecl(
+                  has(cxxMethodDecl(isUserProvided(), isInstanceMethod()))))));
   auto var_decl_matcher =
       id("decl", varDecl(in_blink_namespace, unless(is_type_trait_value)));
-  auto type_trait_matcher =
-      id("decl", varDecl(is_type_trait_value, unless(hasName("value"))));
+  // For known trait names, rename every instance anywhere in the codebase.
+  auto type_trait_decl_matcher = id("decl", varDecl(isKnownTraitName()));
   auto enum_member_decl_matcher =
       id("decl", enumConstantDecl(in_blink_namespace));
 
@@ -1511,10 +1498,7 @@ int main(int argc, const char* argv[]) {
 
   VarDeclRewriter var_decl_rewriter(&replacements);
   match_finder.addMatcher(var_decl_matcher, &var_decl_rewriter);
-
-  VarDeclRewriter type_trait_rewriter(&replacements);
-  type_trait_rewriter.set_for_type_traits(true);
-  match_finder.addMatcher(type_trait_matcher, &type_trait_rewriter);
+  match_finder.addMatcher(type_trait_decl_matcher, &var_decl_rewriter);
 
   EnumConstantDeclRewriter enum_member_decl_rewriter(&replacements);
   match_finder.addMatcher(enum_member_decl_matcher, &enum_member_decl_rewriter);
@@ -1537,7 +1521,8 @@ int main(int argc, const char* argv[]) {
           // there's nothing interesting to rewrite in those either.
           unless(hasAncestor(functionDecl(isDefaulted())))));
   auto decl_ref_matcher = id("expr", declRefExpr(to(var_decl_matcher)));
-  auto type_trait_ref_matcher = id("expr", declRefExpr(to(type_trait_matcher)));
+  auto type_trait_ref_matcher =
+      id("expr", declRefExpr(to(type_trait_decl_matcher)));
   auto enum_member_ref_matcher =
       id("expr", declRefExpr(to(enum_member_decl_matcher)));
 
@@ -1546,10 +1531,7 @@ int main(int argc, const char* argv[]) {
 
   DeclRefRewriter decl_ref_rewriter(&replacements);
   match_finder.addMatcher(decl_ref_matcher, &decl_ref_rewriter);
-
-  DeclRefRewriter type_trait_ref_rewriter(&replacements);
-  type_trait_ref_rewriter.set_for_type_traits(true);
-  match_finder.addMatcher(type_trait_ref_matcher, &type_trait_ref_rewriter);
+  match_finder.addMatcher(type_trait_ref_matcher, &decl_ref_rewriter);
 
   EnumConstantDeclRefRewriter enum_member_ref_rewriter(&replacements);
   match_finder.addMatcher(enum_member_ref_matcher, &enum_member_ref_rewriter);
