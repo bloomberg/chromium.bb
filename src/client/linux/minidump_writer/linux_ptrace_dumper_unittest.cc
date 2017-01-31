@@ -66,6 +66,62 @@ using namespace google_breakpad;
 
 namespace {
 
+pid_t SetupChildProcess(int number_of_threads) {
+  char kNumberOfThreadsArgument[2];
+  sprintf(kNumberOfThreadsArgument, "%d", number_of_threads);
+
+  int fds[2];
+  EXPECT_NE(-1, pipe(fds));
+
+  pid_t child_pid = fork();
+  if (child_pid == 0) {
+    // In child process.
+    close(fds[0]);
+
+    string helper_path(GetHelperBinary());
+    if (helper_path.empty()) {
+      ADD_FAILURE() << "Couldn't find helper binary";
+      return -1;
+    }
+
+    // Pass the pipe fd and the number of threads as arguments.
+    char pipe_fd_string[8];
+    sprintf(pipe_fd_string, "%d", fds[1]);
+    execl(helper_path.c_str(),
+          "linux_dumper_unittest_helper",
+          pipe_fd_string,
+          kNumberOfThreadsArgument,
+          NULL);
+    // Kill if we get here.
+    printf("Errno from exec: %d", errno);
+    ADD_FAILURE() << "Exec of " << helper_path << " failed: " << strerror(errno);
+    return -1;
+  }
+  close(fds[1]);
+
+  // Wait for all child threads to indicate that they have started
+  for (int threads = 0; threads < number_of_threads; threads++) {
+    struct pollfd pfd;
+    memset(&pfd, 0, sizeof(pfd));
+    pfd.fd = fds[0];
+    pfd.events = POLLIN | POLLERR;
+
+    const int r = HANDLE_EINTR(poll(&pfd, 1, 1000));
+    EXPECT_EQ(1, r);
+    EXPECT_TRUE(pfd.revents & POLLIN);
+    uint8_t junk;
+    EXPECT_EQ(read(fds[0], &junk, sizeof(junk)),
+              static_cast<ssize_t>(sizeof(junk)));
+  }
+  close(fds[0]);
+
+  // There is a race here because we may stop a child thread before
+  // it is actually running the busy loop. Empirically this sleep
+  // is sufficient to avoid the race.
+  usleep(100000);
+  return child_pid;
+}
+
 typedef wasteful_vector<uint8_t> id_vector;
 typedef testing::Test LinuxPtraceDumperTest;
 
@@ -370,58 +426,9 @@ TEST_F(LinuxPtraceDumperChildTest, FileIDsMatch) {
 
 TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
   static const int kNumberOfThreadsInHelperProgram = 5;
-  char kNumberOfThreadsArgument[2];
-  sprintf(kNumberOfThreadsArgument, "%d", kNumberOfThreadsInHelperProgram);
 
-  int fds[2];
-  ASSERT_NE(-1, pipe(fds));
-
-  pid_t child_pid = fork();
-  if (child_pid == 0) {
-    // In child process.
-    close(fds[0]);
-
-    string helper_path(GetHelperBinary());
-    if (helper_path.empty()) {
-      FAIL() << "Couldn't find helper binary";
-      exit(1);
-    }
-
-    // Pass the pipe fd and the number of threads as arguments.
-    char pipe_fd_string[8];
-    sprintf(pipe_fd_string, "%d", fds[1]);
-    execl(helper_path.c_str(),
-          "linux_dumper_unittest_helper",
-          pipe_fd_string,
-          kNumberOfThreadsArgument,
-          NULL);
-    // Kill if we get here.
-    printf("Errno from exec: %d", errno);
-    FAIL() << "Exec of " << helper_path << " failed: " << strerror(errno);
-    exit(0);
-  }
-  close(fds[1]);
-
-  // Wait for all child threads to indicate that they have started
-  for (int threads = 0; threads < kNumberOfThreadsInHelperProgram; threads++) {
-    struct pollfd pfd;
-    memset(&pfd, 0, sizeof(pfd));
-    pfd.fd = fds[0];
-    pfd.events = POLLIN | POLLERR;
-
-    const int r = HANDLE_EINTR(poll(&pfd, 1, 1000));
-    ASSERT_EQ(1, r);
-    ASSERT_TRUE(pfd.revents & POLLIN);
-    uint8_t junk;
-    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)),
-              static_cast<ssize_t>(sizeof(junk)));
-  }
-  close(fds[0]);
-
-  // There is a race here because we may stop a child thread before
-  // it is actually running the busy loop. Empirically this sleep
-  // is sufficient to avoid the race.
-  usleep(100000);
+  pid_t child_pid = SetupChildProcess(kNumberOfThreadsInHelperProgram);
+  ASSERT_NE(child_pid, -1);
 
   // Children are ready now.
   LinuxPtraceDumper dumper(child_pid);
@@ -459,6 +466,78 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
                            4);
     EXPECT_EQ(dumper.threads()[i], one_thread_id);
   }
+  EXPECT_TRUE(dumper.ThreadsResume());
+  kill(child_pid, SIGKILL);
+
+  // Reap child
+  int status;
+  ASSERT_NE(-1, HANDLE_EINTR(waitpid(child_pid, &status, 0)));
+  ASSERT_TRUE(WIFSIGNALED(status));
+  ASSERT_EQ(SIGKILL, WTERMSIG(status));
+}
+
+TEST_F(LinuxPtraceDumperTest, SanitizeStackCopy) {
+  static const int kNumberOfThreadsInHelperProgram = 1;
+
+  pid_t child_pid = SetupChildProcess(kNumberOfThreadsInHelperProgram);
+  ASSERT_NE(child_pid, -1);
+
+  LinuxPtraceDumper dumper(child_pid);
+  ASSERT_TRUE(dumper.Init());
+  EXPECT_TRUE(dumper.ThreadsSuspend());
+
+  ThreadInfo thread_info;
+  EXPECT_TRUE(dumper.GetThreadInfoByIndex(0, &thread_info));
+
+  const void* stack;
+  size_t stack_len;
+  EXPECT_TRUE(dumper.GetStackInfo(&stack, &stack_len, thread_info.stack_pointer));
+
+  uint8_t* stack_copy = new uint8_t[stack_len];
+  dumper.CopyFromProcess(stack_copy, child_pid, stack, stack_len);
+
+  size_t stack_offset =
+      thread_info.stack_pointer - reinterpret_cast<uintptr_t>(stack);
+
+  const size_t word_count = (stack_len - stack_offset) / sizeof(uintptr_t);
+  uintptr_t* stack_words = new uintptr_t[word_count];
+
+  memcpy(stack_words, stack_copy + stack_offset, word_count * sizeof(uintptr_t));
+  std::map<uintptr_t, int> pre_sanitization_words;
+  for (size_t i = 0; i < word_count; ++i)
+    ++pre_sanitization_words[stack_words[i]];
+
+  fprintf(stderr, "stack_offset=%lu stack_len=%lu stack=%p\n", stack_offset, stack_len, stack);
+  dumper.SanitizeStackCopy(stack_copy, stack_len, thread_info.stack_pointer,
+                           stack_offset);
+
+  // Memory below the stack pointer should be zeroed.
+  for (size_t i = 0; i < stack_offset; ++i) {
+    ASSERT_EQ(0, stack_copy[i]);
+  }
+
+  memcpy(stack_words, stack_copy + stack_offset, word_count * sizeof(uintptr_t));
+  std::map<uintptr_t, int> post_sanitization_words;
+  for (size_t i = 0; i < word_count; ++i)
+    ++post_sanitization_words[stack_words[i]];
+
+  std::set<uintptr_t> words;
+  for (auto &word : pre_sanitization_words) words.insert(word.first);
+  for (auto &word : post_sanitization_words) words.insert(word.first);
+
+  for (auto word : words) {
+    if (word == static_cast<uintptr_t>(0X0DEFACED0DEFACEDull)) {
+      continue;
+    }
+
+    bool should_be_sanitized = true;
+    if (static_cast<intptr_t>(word) <= 4096 &&
+        static_cast<intptr_t>(word) >= -4096) should_be_sanitized = false;
+    if (dumper.FindMappingNoBias(word)) should_be_sanitized = false;
+
+    ASSERT_EQ(should_be_sanitized, post_sanitization_words[word] == 0);
+  }
+
   EXPECT_TRUE(dumper.ThreadsResume());
   kill(child_pid, SIGKILL);
 

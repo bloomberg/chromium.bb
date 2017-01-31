@@ -134,6 +134,7 @@ class MicrodumpWriter {
                   const MappingList& mappings,
                   bool skip_dump_if_principal_mapping_not_referenced,
                   uintptr_t address_within_principal_mapping,
+                  bool sanitize_stack,
                   const MicrodumpExtraInfo& microdump_extra_info,
                   LinuxDumper* dumper)
       : ucontext_(context ? &context->context : NULL),
@@ -145,6 +146,7 @@ class MicrodumpWriter {
         skip_dump_if_principal_mapping_not_referenced_(
             skip_dump_if_principal_mapping_not_referenced),
         address_within_principal_mapping_(address_within_principal_mapping),
+        sanitize_stack_(sanitize_stack),
         microdump_extra_info_(microdump_extra_info),
         log_line_(NULL),
         stack_copy_(NULL),
@@ -368,6 +370,11 @@ class MicrodumpWriter {
   }
 
   void DumpThreadStack() {
+    if (sanitize_stack_) {
+      dumper_->SanitizeStackCopy(stack_copy_, stack_len_, stack_pointer_,
+                                 stack_pointer_ - stack_lower_bound_);
+    }
+
     LogAppend("S 0 ");
     LogAppend(stack_pointer_);
     LogAppend(" ");
@@ -580,6 +587,7 @@ class MicrodumpWriter {
   const MappingList& mapping_list_;
   bool skip_dump_if_principal_mapping_not_referenced_;
   uintptr_t address_within_principal_mapping_;
+  bool sanitize_stack_;
   const MicrodumpExtraInfo microdump_extra_info_;
   char* log_line_;
 
@@ -607,6 +615,7 @@ bool WriteMicrodump(pid_t crashing_process,
                     const MappingList& mappings,
                     bool skip_dump_if_principal_mapping_not_referenced,
                     uintptr_t address_within_principal_mapping,
+                    bool sanitize_stack,
                     const MicrodumpExtraInfo& microdump_extra_info) {
   LinuxPtraceDumper dumper(crashing_process);
   const ExceptionHandler::CrashContext* context = NULL;
@@ -619,9 +628,10 @@ bool WriteMicrodump(pid_t crashing_process,
     dumper.set_crash_signal(context->siginfo.si_signo);
     dumper.set_crash_thread(context->tid);
   }
-  MicrodumpWriter writer(
-      context, mappings, skip_dump_if_principal_mapping_not_referenced,
-      address_within_principal_mapping, microdump_extra_info, &dumper);
+  MicrodumpWriter writer(context, mappings,
+                         skip_dump_if_principal_mapping_not_referenced,
+                         address_within_principal_mapping, sanitize_stack,
+                         microdump_extra_info, &dumper);
   if (!writer.Init())
     return false;
   writer.Dump();

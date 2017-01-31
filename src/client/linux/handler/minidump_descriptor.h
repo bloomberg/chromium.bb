@@ -64,7 +64,8 @@ class MinidumpDescriptor {
         c_path_(NULL),
         size_limit_(-1),
         address_within_principal_mapping_(0),
-        skip_dump_if_principal_mapping_not_referenced_(false) {
+        skip_dump_if_principal_mapping_not_referenced_(false),
+        sanitize_stacks_(false) {
     assert(!directory.empty());
   }
 
@@ -74,7 +75,8 @@ class MinidumpDescriptor {
         c_path_(NULL),
         size_limit_(-1),
         address_within_principal_mapping_(0),
-        skip_dump_if_principal_mapping_not_referenced_(false) {
+        skip_dump_if_principal_mapping_not_referenced_(false),
+        sanitize_stacks_(false) {
     assert(fd != -1);
   }
 
@@ -83,7 +85,8 @@ class MinidumpDescriptor {
         fd_(-1),
         size_limit_(-1),
         address_within_principal_mapping_(0),
-        skip_dump_if_principal_mapping_not_referenced_(false) {}
+        skip_dump_if_principal_mapping_not_referenced_(false),
+        sanitize_stacks_(false) {}
 
   explicit MinidumpDescriptor(const MinidumpDescriptor& descriptor);
   MinidumpDescriptor& operator=(const MinidumpDescriptor& descriptor);
@@ -126,6 +129,11 @@ class MinidumpDescriptor {
         skip_dump_if_principal_mapping_not_referenced;
   }
 
+  bool sanitize_stacks() const { return sanitize_stacks_; }
+  void set_sanitize_stacks(bool sanitize_stacks) {
+    sanitize_stacks_ = sanitize_stacks;
+  }
+
   MicrodumpExtraInfo* microdump_extra_info() {
     assert(IsMicrodumpOnConsole());
     return &microdump_extra_info_;
@@ -166,6 +174,13 @@ class MinidumpDescriptor {
   // associated with |address_within_principal_mapping_| will not have their
   // stacks logged.
   bool skip_dump_if_principal_mapping_not_referenced_;
+
+  // If set, stacks are sanitized to remove PII. This involves
+  // overwriting any pointer-aligned words that are not either
+  // pointers into a process mapping or small integers (+/-4096). This
+  // leaves enough information to unwind stacks, and preserve some
+  // register values, but elides strings and other program data.
+  bool sanitize_stacks_;
 
   // The extra microdump data (e.g. product name/version, build
   // fingerprint, gpu fingerprint) that should be appended to the dump
