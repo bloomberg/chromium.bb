@@ -16,6 +16,11 @@ class NativeBindingsApiTest : public ExtensionApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
+    // We whitelist the extension so that it can use the cast.streaming.* APIs,
+    // which are the only APIs that are prefixed twice.
+    command_line->AppendSwitchASCII(
+        switches::kWhitelistedExtensionID,
+        "ddchlicdkolnonkihahngkmmmjnjlkkf");
     // Note: We don't use a FeatureSwitch::ScopedOverride here because we need
     // the switch to be propogated to the renderer, which doesn't happen with
     // a ScopedOverride.

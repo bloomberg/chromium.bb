@@ -16,6 +16,8 @@ namespace extensions {
 
 class Feature;
 
+// Note: Binding code (specifically native_extension_bindings_system.cc) relies
+// on this being a sorted map.
 using FeatureMap = std::map<std::string, std::unique_ptr<Feature>>;
 
 // Implemented by classes that can vend features.

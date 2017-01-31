@@ -28,21 +28,37 @@ namespace extensions {
 
 namespace {
 
+enum class ItemType {
+  EXTENSION,
+  PLATFORM_APP,
+};
+
 // Creates an extension with the given |name| and |permissions|.
 scoped_refptr<Extension> CreateExtension(
     const std::string& name,
+    ItemType type,
     const std::vector<std::string>& permissions) {
   DictionaryBuilder manifest;
   manifest.Set("name", name);
   manifest.Set("manifest_version", 2);
   manifest.Set("version", "0.1");
   manifest.Set("description", "test extension");
+
+  if (type == ItemType::PLATFORM_APP) {
+    DictionaryBuilder background;
+    background.Set("scripts", ListBuilder().Append("test.js").Build());
+    manifest.Set(
+        "app",
+        DictionaryBuilder().Set("background", background.Build()).Build());
+  }
+
   {
     ListBuilder permissions_builder;
     for (const std::string& permission : permissions)
       permissions_builder.Append(permission);
     manifest.Set("permissions", permissions_builder.Build());
   }
+
   return ExtensionBuilder()
       .SetManifest(manifest.Build())
       .SetLocation(Manifest::INTERNAL)
@@ -155,7 +171,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 
 TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   scoped_refptr<Extension> extension =
-      CreateExtension("foo", {"idle", "power"});
+      CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
@@ -248,7 +264,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
 
 TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
   scoped_refptr<Extension> extension =
-      CreateExtension("foo", {"idle", "power"});
+      CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
@@ -289,7 +305,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
 // Tests that referencing the same API multiple times returns the same object;
 // i.e. chrome.foo === chrome.foo.
 TEST_F(NativeExtensionBindingsSystemUnittest, APIObjectsAreEqual) {
-  scoped_refptr<Extension> extension = CreateExtension("foo", {"idle"});
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", ItemType::EXTENSION, {"idle"});
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
@@ -316,7 +333,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, APIObjectsAreEqual) {
 TEST_F(NativeExtensionBindingsSystemUnittest,
        ReferencingAPIAfterDisposingContext) {
   scoped_refptr<Extension> extension =
-      CreateExtension("foo", {"idle", "power"});
+      CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
 
   RegisterExtension(extension->id());
 
@@ -372,7 +389,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
 
   source_map()->RegisterModule("idle", kCustomBinding);
 
-  scoped_refptr<Extension> extension = CreateExtension("foo", {"idle"});
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", ItemType::EXTENSION, {"idle"});
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
@@ -453,7 +471,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
 TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
   InitEventChangeHandler();
   scoped_refptr<Extension> extension =
-      CreateExtension("foo", {"idle", "power"});
+      CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
 
   RegisterExtension(extension->id());
 
@@ -499,6 +517,88 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
       FunctionFromString(context, kRemoveListener);
   RunFunction(remove_listener, context, arraysize(argv), argv);
   ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
+}
+
+TEST_F(NativeExtensionBindingsSystemUnittest,
+       TestPrefixedApiEventsAndAppBinding) {
+  InitEventChangeHandler();
+  scoped_refptr<Extension> app = CreateExtension("foo", ItemType::PLATFORM_APP,
+                                                 std::vector<std::string>());
+  EXPECT_TRUE(app->is_platform_app());
+  RegisterExtension(app->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, app.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(app->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  // The 'chrome.app' object should have 'runtime' and 'window' entries, but
+  // not the internal 'currentWindowInternal' object.
+  v8::Local<v8::Value> app_binding_keys =
+      V8ValueFromScriptSource(context,
+                              "JSON.stringify(Object.keys(chrome.app));");
+  ASSERT_FALSE(app_binding_keys.IsEmpty());
+  ASSERT_TRUE(app_binding_keys->IsString());
+  EXPECT_EQ("[\"runtime\",\"window\"]",
+            gin::V8ToString(app_binding_keys));
+
+  const char kUseAppRuntime[] =
+      "(function() {\n"
+      "  chrome.app.runtime.onLaunched.addListener(function() {});\n"
+      "});";
+  v8::Local<v8::Function> use_app_runtime =
+      FunctionFromString(context, kUseAppRuntime);
+  EXPECT_CALL(*event_change_handler(),
+              OnChange(binding::EventListenersChanged::HAS_LISTENERS,
+                       script_context, "app.runtime.onLaunched"))
+      .Times(1);
+  RunFunctionOnGlobal(use_app_runtime, context, 0, nullptr);
+  ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
+}
+
+TEST_F(NativeExtensionBindingsSystemUnittest,
+       TestPrefixedApiMethodsAndSystemBinding) {
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", ItemType::EXTENSION, {"system.cpu"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  // The system.cpu object should exist, but system.network should not (as the
+  // extension didn't request permission to it).
+  v8::Local<v8::Value> system_cpu =
+      V8ValueFromScriptSource(context, "chrome.system.cpu");
+  ASSERT_FALSE(system_cpu.IsEmpty());
+  EXPECT_TRUE(system_cpu->IsObject());
+  EXPECT_FALSE(system_cpu->IsUndefined());
+
+  v8::Local<v8::Value> system_network =
+      V8ValueFromScriptSource(context, "chrome.system.network");
+  ASSERT_FALSE(system_network.IsEmpty());
+  EXPECT_TRUE(system_network->IsUndefined());
+
+  const char kUseSystemCpu[] =
+      "(function() {\n"
+      "  chrome.system.cpu.getInfo(function() {})\n"
+      "});";
+  v8::Local<v8::Function> use_system_cpu =
+      FunctionFromString(context, kUseSystemCpu);
+  RunFunctionOnGlobal(use_system_cpu, context, 0, nullptr);
+
+  EXPECT_EQ(extension->id(), last_params().extension_id);
+  EXPECT_EQ("system.cpu.getInfo", last_params().name);
+  EXPECT_TRUE(last_params().has_callback);
 }
 
 }  // namespace extensions

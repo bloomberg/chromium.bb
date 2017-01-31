@@ -86,6 +86,14 @@ var tests = [
       tabId = tab.id;
     });
   },
+  function castStreaming() {
+    // chrome.cast.streaming APIs are the only ones that are triply-prefixed.
+    chrome.test.assertTrue(!!chrome.cast);
+    chrome.test.assertTrue(!!chrome.cast.streaming);
+    chrome.test.assertTrue(!!chrome.cast.streaming.udpTransport);
+    chrome.test.assertTrue(!!chrome.cast.streaming.udpTransport.setOptions);
+    chrome.test.succeed();
+  }
 ];
 
 chrome.test.getConfig(config => {
