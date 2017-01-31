@@ -76,11 +76,6 @@ SensorProxy* SensorProviderProxy::getSensorProxy(
 }
 
 void SensorProviderProxy::onSensorProviderConnectionError() {
-  if (!Platform::current()) {
-    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
-    return;
-  }
-
   m_sensorProvider.reset();
   for (SensorProxy* sensor : m_sensorProxies)
     sensor->handleSensorError();

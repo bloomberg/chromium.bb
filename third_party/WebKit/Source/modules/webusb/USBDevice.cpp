@@ -945,11 +945,6 @@ void USBDevice::asyncReset(ScriptPromiseResolver* resolver, bool success) {
 }
 
 void USBDevice::onConnectionError() {
-  if (!Platform::current()) {
-    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
-    return;
-  }
-
   m_device.reset();
   m_opened = false;
   for (ScriptPromiseResolver* resolver : m_deviceRequests)

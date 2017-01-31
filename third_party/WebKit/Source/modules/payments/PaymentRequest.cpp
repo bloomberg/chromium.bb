@@ -945,11 +945,6 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
 }
 
 void PaymentRequest::OnError(PaymentErrorReason error) {
-  if (!Platform::current()) {
-    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
-    return;
-  }
-
   bool isError = false;
   ExceptionCode ec = UnknownError;
   String message;

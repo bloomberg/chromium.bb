@@ -224,11 +224,6 @@ void USB::OnDeviceRemoved(usb::DeviceInfoPtr deviceInfo) {
 }
 
 void USB::onDeviceManagerConnectionError() {
-  if (!Platform::current()) {
-    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
-    return;
-  }
-
   m_deviceManager.reset();
   for (ScriptPromiseResolver* resolver : m_deviceManagerRequests)
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
@@ -236,11 +231,6 @@ void USB::onDeviceManagerConnectionError() {
 }
 
 void USB::onChooserServiceConnectionError() {
-  if (!Platform::current()) {
-    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
-    return;
-  }
-
   m_chooserService.reset();
   for (ScriptPromiseResolver* resolver : m_chooserServiceRequests)
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));

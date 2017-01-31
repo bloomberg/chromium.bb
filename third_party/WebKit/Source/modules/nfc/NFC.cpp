@@ -746,11 +746,6 @@ void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
 }
 
 void NFC::OnConnectionError() {
-  if (!Platform::current()) {
-    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
-    return;
-  }
-
   m_nfc.reset();
   m_callbacks.clear();
 
