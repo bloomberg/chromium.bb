@@ -27,10 +27,18 @@ RendererWindowTreeClient* RendererWindowTreeClient::Get(int routing_id) {
 
 // static
 void RendererWindowTreeClient::Create(int routing_id) {
-  DCHECK(g_connections.Get().find(routing_id) == g_connections.Get().end());
+  DCHECK(g_connections.Get().find(routing_id) == g_connections.Get().end())
+      << routing_id;
   RendererWindowTreeClient* connection =
       new RendererWindowTreeClient(routing_id);
   g_connections.Get().insert(std::make_pair(routing_id, connection));
+}
+
+// static
+void RendererWindowTreeClient::Destroy(int routing_id) {
+  auto* client = Get(routing_id);
+  if (client)
+    client->DestroySelf();
 }
 
 RendererWindowTreeClient::RendererWindowTreeClient(int routing_id)

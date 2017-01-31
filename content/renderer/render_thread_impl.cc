@@ -706,8 +706,9 @@ void RenderThreadImpl::Init(
   AddFilter((new ServiceWorkerContextMessageFilter())->GetFilter());
 
 #if defined(USE_AURA)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMusInRenderer)) {
+  if (IsRunningInMash() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoUseMusInRenderer)) {
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
   }
 #endif
@@ -1894,7 +1895,8 @@ RenderThreadImpl::CreateCompositorFrameSink(
     use_software = true;
 
 #if defined(USE_AURA)
-  if (!use_software && command_line.HasSwitch(switches::kUseMusInRenderer)) {
+  if (!use_software && IsRunningInMash() &&
+      !command_line.HasSwitch(switches::kNoUseMusInRenderer)) {
     return RendererWindowTreeClient::Get(routing_id)
         ->CreateCompositorFrameSink(
             frame_sink_id,

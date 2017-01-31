@@ -401,7 +401,7 @@ TEST_F(RenderWidgetUnittest, TouchDuringOrOutsideFlingUmaMetrics) {
 class PopupRenderWidget : public RenderWidget {
  public:
   explicit PopupRenderWidget(CompositorDependencies* compositor_deps)
-      : RenderWidget(1,
+      : RenderWidget(routing_id_++,
                      compositor_deps,
                      blink::WebPopupTypePage,
                      ScreenInfo(),
@@ -432,9 +432,12 @@ class PopupRenderWidget : public RenderWidget {
  private:
   IPC::TestSink sink_;
   MockWebWidget mock_webwidget_;
+  static int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupRenderWidget);
 };
+
+int PopupRenderWidget::routing_id_ = 1;
 
 class RenderWidgetPopupUnittest : public testing::Test {
  public:

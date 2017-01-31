@@ -1470,12 +1470,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   ImageTransportFactory::Initialize();
   ImageTransportFactory::GetInstance()->SetGpuChannelEstablishFactory(factory);
 #if defined(USE_AURA)
-  bool use_mus_in_renderer = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseMusInRenderer);
-  if (aura::Env::GetInstance() && !use_mus_in_renderer) {
-    aura::Env::GetInstance()->set_context_factory(GetContextFactory());
-    aura::Env::GetInstance()->set_context_factory_private(
-        GetContextFactoryPrivate());
+  bool use_mus_in_renderer = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoUseMusInRenderer);
+  if (!use_mus_in_renderer || env_->mode() == aura::Env::Mode::LOCAL) {
+    env_->set_context_factory(GetContextFactory());
+    env_->set_context_factory_private(GetContextFactoryPrivate());
   }
 #endif  // defined(USE_AURA)
 #endif  // defined(OS_ANDROID)

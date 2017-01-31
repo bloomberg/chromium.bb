@@ -34,6 +34,9 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
   // connection to mus is lost, or when the window is closed.
   static void Create(int routing_id);
 
+  // Destroys the client instance, if one exists. Otherwise, does nothing.
+  static void Destroy(int routing_id);
+
   // Returns the RendererWindowTreeClient associated with |routing_id|. Returns
   // nullptr if none exists.
   static RendererWindowTreeClient* Get(int routing_id);

@@ -368,8 +368,8 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 
 bool IsMus() {
   return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kUseMusInRenderer);
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kNoUseMusInRenderer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
