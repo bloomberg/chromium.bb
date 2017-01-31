@@ -239,16 +239,26 @@ class BuildStartStage(generic_stages.BuilderStage):
       if db:
         waterfall = d['buildbot-master-name']
         assert waterfall in constants.CIDB_KNOWN_WATERFALLS
-        build_id = db.InsertBuild(
-            builder_name=d['builder-name'],
-            waterfall=waterfall,
-            build_number=d['build-number'],
-            build_config=d['bot-config'],
-            bot_hostname=d['bot-hostname'],
-            master_build_id=d['master_build_id'],
-            timeout_seconds=self._GetBuildTimeoutSeconds(),
-            important=d['important'],
-            buildbucket_id=self._run.options.buildbucket_id)
+        try:
+          build_id = db.InsertBuild(
+              builder_name=d['builder-name'],
+              waterfall=waterfall,
+              build_number=d['build-number'],
+              build_config=d['bot-config'],
+              bot_hostname=d['bot-hostname'],
+              master_build_id=d['master_build_id'],
+              timeout_seconds=self._GetBuildTimeoutSeconds(),
+              important=d['important'],
+              buildbucket_id=self._run.options.buildbucket_id)
+        except Exception as e:
+          logging.error('Error: %s\n If the buildbucket_id to insert is '
+                        'duplicated to the buildbucket_id of an old build and '
+                        'the old build was canceled because of a waterfall '
+                        'master restart, please ignore this error. Else, '
+                        'the error needs more investigation. More context: '
+                        'crbug.com/679974 and crbug.com/685889', e)
+          raise e
+
         self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
                                                  'db_type': db_type})
         logging.info('Inserted build_id %s into cidb database type %s.',
