@@ -141,7 +141,7 @@ public class BottomSheet extends FrameLayout {
 
             // Cancel the settling animation if it is running so it doesn't conflict with where the
             // user wants to move the sheet.
-            boolean wasSettleAnimatorRunning = mSettleAnimator != null;
+            boolean wasSettleAnimatorRunning = isRunningSettleAnimation();
             cancelAnimation();
 
             mVelocityTracker.addMovement(e2);
@@ -521,7 +521,7 @@ public class BottomSheet extends FrameLayout {
      * If the animation to settle the sheet in one of its states is running.
      * @return True if the animation is running.
      */
-    private boolean isRunningSettleAnimation() {
+    public boolean isRunningSettleAnimation() {
         return mSettleAnimator != null;
     }
 

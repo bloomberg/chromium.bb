@@ -53,4 +53,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mBottomSheet = sheet;
         getLocationBar().setBottomSheet(mBottomSheet);
     }
+
+    @Override
+    public boolean shouldIgnoreSwipeGesture() {
+        // Only detect swipes if the bottom sheet in the peeking state and not animating.
+        return mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_PEEK
+                || mBottomSheet.isRunningSettleAnimation() || super.shouldIgnoreSwipeGesture();
+    }
 }
