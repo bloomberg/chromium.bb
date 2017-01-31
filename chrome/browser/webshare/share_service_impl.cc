@@ -9,8 +9,10 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -111,6 +113,18 @@ bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
   return true;
 }
 
+void ShareServiceImpl::ShowPickerDialog(
+    const std::vector<base::string16>& targets,
+    const base::Callback<void(SharePickerResult)>& callback) {
+  // TODO(mgiuca): Get the browser window as |parent_window|.
+#if defined(OS_LINUX) || defined(OS_WIN)
+  chrome::ShowWebShareTargetPickerDialog(nullptr /* parent_window */, targets,
+                                         callback);
+#else
+  callback.Run(SharePickerResult::CANCEL);
+#endif
+}
+
 void ShareServiceImpl::OpenTargetURL(const GURL& target_url) {
 // TODO(constantina): Prevent this code from being run/compiled in android.
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -124,6 +138,25 @@ void ShareServiceImpl::Share(const std::string& title,
                              const std::string& text,
                              const GURL& share_url,
                              const ShareCallback& callback) {
+  // TODO(constantina): Replace hard-coded name with the registered target list.
+  constexpr char kTargetName[] = "Web Share Target Test App";
+  std::vector<base::string16> targets{base::ASCIIToUTF16(kTargetName)};
+
+  ShowPickerDialog(targets, base::Bind(&ShareServiceImpl::OnPickerClosed,
+                                       base::Unretained(this), title, text,
+                                       share_url, callback));
+}
+
+void ShareServiceImpl::OnPickerClosed(const std::string& title,
+                                      const std::string& text,
+                                      const GURL& share_url,
+                                      const ShareCallback& callback,
+                                      SharePickerResult result) {
+  if (result == SharePickerResult::CANCEL) {
+    callback.Run(base::Optional<std::string>("Share was cancelled"));
+    return;
+  }
+
   // TODO(constantina): replace hard-coded URL with one from user-chosen site.
   constexpr char kUrlBase[] = "https://wicg.github.io/web-share-target/";
   constexpr char kUrlTemplate[] =

@@ -2319,6 +2319,24 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         Create
       </message>
 
+      <!-- Web Share Target picker dialog -->
+      <if expr="not use_titlecase">
+        <message name="IDS_WEBSHARE_TARGET_PICKER_TITLE" desc="Title of the dialog to choose a target for sharing.">
+          Share via
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_WEBSHARE_TARGET_PICKER_TITLE" desc="Title of the dialog to choose a target for sharing.">
+          Share Via
+        </message>
+      </if>
+      <message name="IDS_WEBSHARE_TARGET_PICKER_LABEL" desc="Text of the main label in the dialog to choose a target for sharing.">
+        Choose an app to share to:
+      </message>
+      <message name="IDS_WEBSHARE_TARGET_PICKER_COMMIT" desc="Title of the button to share content to the chosen application.">
+        Share
+      </message>
+
       <!-- Content blocking strings -->
       <message name="IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL" desc="Header for multiple automatic downloads page on Content Settings dialog">
         Automatic Downloads

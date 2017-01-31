@@ -1894,6 +1894,8 @@ split_static_library("ui") {
         "views/translate/translate_icon_view.h",
         "views/validation_message_bubble_view.cc",
         "views/validation_message_bubble_view.h",
+        "views/webshare/webshare_target_picker_view.cc",
+        "views/webshare/webshare_target_picker_view.h",
         "views/website_settings/chooser_bubble_ui_view.cc",
         "views/website_settings/chooser_bubble_ui_view.h",
         "views/website_settings/permission_prompt_impl_views.cc",

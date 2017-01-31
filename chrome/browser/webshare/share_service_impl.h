@@ -8,10 +8,16 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
 
 class GURL;
+
+enum class SharePickerResult {
+  CANCEL,
+  SHARE
+};
 
 // Desktop implementation of the ShareService Mojo service.
 class ShareServiceImpl : public blink::mojom::ShareService {
@@ -30,6 +36,13 @@ class ShareServiceImpl : public blink::mojom::ShareService {
  private:
   FRIEND_TEST_ALL_PREFIXES(ShareServiceImplUnittest, ReplacePlaceholders);
 
+  // Shows the share picker dialog with |targets| as the list of applications
+  // presented to the user. Passes the result to |callback|. Virtual for
+  // testing.
+  virtual void ShowPickerDialog(
+      const std::vector<base::string16>& targets,
+      const base::Callback<void(SharePickerResult)>& callback);
+
   // Opens a new tab and navigates to |target_url|.
   // Virtual for testing purposes.
   virtual void OpenTargetURL(const GURL& target_url);
@@ -47,6 +60,12 @@ class ShareServiceImpl : public blink::mojom::ShareService {
                                   base::StringPiece text,
                                   const GURL& share_url,
                                   std::string* url_template_filled);
+
+  void OnPickerClosed(const std::string& title,
+                      const std::string& text,
+                      const GURL& share_url,
+                      const ShareCallback& callback,
+                      SharePickerResult result);
 
   DISALLOW_COPY_AND_ASSIGN(ShareServiceImpl);
 };

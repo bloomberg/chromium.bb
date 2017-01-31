@@ -32,10 +32,21 @@ class ShareServiceTestImpl : public ShareServiceImpl {
     return share_service_helper_raw;
   }
 
+  void set_picker_result(SharePickerResult result) {
+    picker_result_ = result;
+  }
+
   const std::string& GetLastUsedTargetURL() { return last_used_target_url_; }
 
  private:
+  SharePickerResult picker_result_ = SharePickerResult::SHARE;
   std::string last_used_target_url_;
+
+  void ShowPickerDialog(
+      const std::vector<base::string16>& targets,
+      const base::Callback<void(SharePickerResult)>& callback) override {
+    callback.Run(picker_result_);
+  }
 
   void OpenTargetURL(const GURL& target_url) override {
     last_used_target_url_ = target_url.spec();
@@ -90,6 +101,26 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
   base::RunLoop run_loop;
   on_callback_ = run_loop.QuitClosure();
 
+  share_service_->Share(kTitle, kText, url, callback);
+
+  run_loop.Run();
+}
+
+// Tests the result of cancelling the share in the picker UI.
+TEST_F(ShareServiceImplUnittest, ShareCancel) {
+  // Ask that the dialog be cancelled.
+  share_service_helper_->set_picker_result(SharePickerResult::CANCEL);
+
+  // Expect an error message in response.
+  base::Callback<void(const base::Optional<std::string>&)> callback =
+      base::Bind(&ShareServiceImplUnittest::DidShare, base::Unretained(this),
+                 std::string(),
+                 base::Optional<std::string>("Share was cancelled"));
+
+  base::RunLoop run_loop;
+  on_callback_ = run_loop.QuitClosure();
+
+  const GURL url(kUrlSpec);
   share_service_->Share(kTitle, kText, url, callback);
 
   run_loop.Run();
