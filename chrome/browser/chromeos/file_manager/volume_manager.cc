@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_service.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
@@ -407,7 +408,7 @@ void VolumeManager::Initialize() {
 
   // Subscribe to ARC file system events.
   if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
-      arc::ArcSessionManager::IsAllowedForProfile(profile_)) {
+      arc::IsArcAllowedForProfile(profile_)) {
     arc::ArcSessionManager::Get()->AddObserver(this);
     OnArcOptInChanged(arc::ArcSessionManager::Get()->IsArcEnabled());
   }
@@ -430,7 +431,7 @@ void VolumeManager::Shutdown() {
 
   // Unsubscribe from ARC file system events.
   if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
-      arc::ArcSessionManager::IsAllowedForProfile(profile_)) {
+      arc::IsArcAllowedForProfile(profile_)) {
     auto* session_manager = arc::ArcSessionManager::Get();
     // TODO(crbug.com/672829): We need nullptr check here because
     // ArcSessionManager may or may not be alive at this point.
@@ -744,7 +745,7 @@ void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
 void VolumeManager::OnArcOptInChanged(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(arc::kMediaViewFeature));
-  DCHECK(arc::ArcSessionManager::IsAllowedForProfile(profile_));
+  DCHECK(arc::IsArcAllowedForProfile(profile_));
 
   if (enabled == arc_volumes_mounted_)
     return;

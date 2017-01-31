@@ -80,5 +80,18 @@ TEST_F(ArcUtilTest, IsArcAvailable_OfficialSupport) {
   EXPECT_TRUE(IsArcAvailable());
 }
 
+// TODO(hidehiko): Add test for IsArcKioskMode().
+// It depends on UserManager, but a utility to inject fake instance is
+// available only in chrome/. To use it in components/, refactoring is needed.
+
+TEST_F(ArcUtilTest, IsArcOptInVerificationDisabled) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({""});
+  EXPECT_FALSE(IsArcOptInVerificationDisabled());
+
+  command_line->InitFromArgv({"", "--disable-arc-opt-in-verification"});
+  EXPECT_TRUE(IsArcOptInVerificationDisabled());
+}
+
 }  // namespace
 }  // namespace arc

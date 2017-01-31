@@ -13,7 +13,7 @@
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "components/arc/arc_util.h"
 #endif
 
@@ -36,7 +36,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
 #if defined(OS_CHROMEOS)
   // TODO(b/34478891): Remove this from app launch.
   if (set_playstore_status) {
-    if (arc::ArcSessionManager::IsAllowedForProfile(profile))
+    if (arc::IsArcAllowedForProfile(profile))
       play_store_status = PlayStoreStatus::PLAY_STORE_STATUS_ENABLED;
     else if (arc::IsArcAvailable())
       play_store_status = PlayStoreStatus::PLAY_STORE_STATUS_AVAILABLE;

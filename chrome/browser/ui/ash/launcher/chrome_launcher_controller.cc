@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
@@ -147,7 +148,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
           profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
-  if (arc::ArcSessionManager::IsAllowedForProfile(profile_)) {
+  if (arc::IsArcAllowedForProfile(profile_)) {
     std::unique_ptr<AppIconLoader> arc_app_icon_loader =
         base::MakeUnique<ArcAppIconLoader>(
             profile_, extension_misc::EXTENSION_ICON_SMALL, this);

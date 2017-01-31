@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -202,7 +203,7 @@ ChromeLauncherControllerImpl::ChromeLauncherControllerImpl(
   AttachProfile(profile);
   model_->AddObserver(this);
 
-  if (arc::ArcSessionManager::IsAllowedForProfile(this->profile()))
+  if (arc::IsArcAllowedForProfile(this->profile()))
     arc_deferred_launcher_.reset(new ArcAppDeferredLauncherController(this));
 
   // In multi profile mode we might have a window manager. We try to create it
@@ -806,7 +807,7 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile_to_attach) {
       new LauncherExtensionAppUpdater(this, profile()));
   app_updaters_.push_back(std::move(extension_app_updater));
 
-  if (arc::ArcSessionManager::IsAllowedForProfile(profile())) {
+  if (arc::IsArcAllowedForProfile(profile())) {
     std::unique_ptr<LauncherAppUpdater> arc_app_updater(
         new LauncherArcAppUpdater(this, profile()));
     app_updaters_.push_back(std::move(arc_app_updater));

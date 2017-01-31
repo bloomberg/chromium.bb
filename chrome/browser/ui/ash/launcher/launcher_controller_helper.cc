@@ -8,7 +8,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -152,7 +154,7 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   if (!GetExtensionByID(profile_, id))
     return false;
   if (id == ArcSupportHost::kHostAppId) {
-    if (!arc::ArcSessionManager::IsAllowedForProfile(profile()))
+    if (!arc::IsArcAllowedForProfile(profile()))
       return false;
     const arc::ArcSessionManager* arc_session_manager =
         arc::ArcSessionManager::Get();

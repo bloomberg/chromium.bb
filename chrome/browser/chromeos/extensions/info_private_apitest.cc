@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
@@ -103,11 +103,11 @@ IN_PROC_BROWSER_TEST_F(ChromeOSArcInfoPrivateTest, ArcEnabled) {
 
 IN_PROC_BROWSER_TEST_F(ChromeOSArcInfoPrivateTest, ArcAvailable) {
   // Even if ARC is available, ARC may not be able to be enabled. (Please
-  // see ArcSessionManager::IsAllowedForProfile() for details).
+  // see arc::IsArcAllowedForProfile() for details).
   // In such cases, we expect "available". However, current testing framework
   // does not seem to run with such cases, unfortunately. So, here directly
   // control the function.
-  arc::ArcSessionManager::DisallowForTesting();
+  arc::DisallowArcForTesting();
   ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
                                         "arc available"))
       << message_;

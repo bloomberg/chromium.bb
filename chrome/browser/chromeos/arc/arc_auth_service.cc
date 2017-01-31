@@ -20,6 +20,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/arc_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace arc {
@@ -60,9 +61,8 @@ ProvisioningResult ConvertArcSignInFailureReasonToProvisioningResult(
 }
 
 mojom::ChromeAccountType GetAccountType() {
-  return ArcSessionManager::IsArcKioskMode()
-             ? mojom::ChromeAccountType::ROBOT_ACCOUNT
-             : mojom::ChromeAccountType::USER_ACCOUNT;
+  return IsArcKioskMode() ? mojom::ChromeAccountType::ROBOT_ACCOUNT
+                          : mojom::ChromeAccountType::USER_ACCOUNT;
 }
 
 }  // namespace
@@ -188,7 +188,7 @@ void ArcAuthService::GetAuthCodeDeprecated(
     const GetAuthCodeDeprecatedCallback& callback) {
   // For robot account we must use RequestAccountInfo because it allows
   // to specify account type.
-  DCHECK(!ArcSessionManager::IsArcKioskMode());
+  DCHECK(!IsArcKioskMode());
   RequestAccountInfoInternal(
       base::MakeUnique<ArcAuthService::AccountInfoNotifier>(callback));
 }
@@ -213,7 +213,7 @@ void ArcAuthService::RequestAccountInfoInternal(
   DCHECK(!notifier_);
   DCHECK(!fetcher_);
 
-  if (ArcSessionManager::IsOptInVerificationDisabled()) {
+  if (IsArcOptInVerificationDisabled()) {
     notifier->Notify(
         false /* = is_enforced */, std::string(), GetAccountType(),
         policy_util::IsAccountManaged(ArcSessionManager::Get()->profile()));
@@ -223,7 +223,7 @@ void ArcAuthService::RequestAccountInfoInternal(
   // Hereafter asynchronous operation. Remember the notifier.
   notifier_ = std::move(notifier);
 
-  if (ArcSessionManager::IsArcKioskMode()) {
+  if (IsArcKioskMode()) {
     // In Kiosk mode, use Robot auth code fetching.
     fetcher_ = base::MakeUnique<ArcRobotAuthCodeFetcher>();
   } else if (base::FeatureList::IsEnabled(arc::kArcUseAuthEndpointFeature)) {
@@ -237,7 +237,7 @@ void ArcAuthService::RequestAccountInfoInternal(
     UpdateSilentAuthCodeUMA(OptInSilentAuthCode::DISABLED);
     // Otherwise, show LSO page and let user click "Sign in" button.
     // Here, support_host should be available always. The case support_host is
-    // not created is when 1) IsOptInVerificationDisabled() is true or 2)
+    // not created is when 1) IsArcOptInVerificationDisabled() is true or 2)
     // IsArcKioskMode() is true. Both cases are handled above.
     fetcher_ = base::MakeUnique<ArcManualAuthCodeFetcher>(
         ArcSessionManager::Get()->auth_context(),
@@ -258,8 +258,7 @@ void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
   }
 
   notifier_->Notify(
-      !ArcSessionManager::IsOptInVerificationDisabled(), auth_code,
-      GetAccountType(),
+      !IsArcOptInVerificationDisabled(), auth_code, GetAccountType(),
       policy_util::IsAccountManaged(ArcSessionManager::Get()->profile()));
   notifier_.reset();
 }

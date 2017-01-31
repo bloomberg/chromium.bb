@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 
 namespace arc {
 
@@ -33,6 +34,16 @@ bool IsArcAvailable() {
 
 void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kEnableArc);
+}
+
+bool IsArcKioskMode() {
+  return user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp();
+}
+
+bool IsArcOptInVerificationDisabled() {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      chromeos::switches::kDisableArcOptInVerification);
 }
 
 }  // namespace arc

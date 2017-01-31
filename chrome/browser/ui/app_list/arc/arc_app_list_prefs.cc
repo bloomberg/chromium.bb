@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -246,7 +247,7 @@ ArcAppListPrefs::ArcAppListPrefs(
   if (!arc_session_manager)
     return;
 
-  DCHECK(arc::ArcSessionManager::IsAllowedForProfile(profile));
+  DCHECK(arc::IsArcAllowedForProfile(profile));
 
   const std::vector<std::string> existing_app_ids = GetAppIds();
   tracked_apps_.insert(existing_app_ids.begin(), existing_app_ids.end());

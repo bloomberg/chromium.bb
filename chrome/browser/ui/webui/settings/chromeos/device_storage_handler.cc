@@ -22,12 +22,14 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/cryptohome/homedir_methods.h"
+#include "components/arc/arc_util.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/user_manager/user_manager.h"
@@ -349,8 +351,8 @@ void StorageHandler::UpdateAndroidSize() {
   updating_android_size_ = true;
 
   Profile* const profile = Profile::FromWebUI(web_ui());
-  if (!arc::ArcSessionManager::IsAllowedForProfile(profile) ||
-      arc::ArcSessionManager::IsOptInVerificationDisabled() ||
+  if (!arc::IsArcAllowedForProfile(profile) ||
+      arc::IsArcOptInVerificationDisabled() ||
       !arc::ArcSessionManager::Get()->IsArcEnabled()) {
     return;
   }

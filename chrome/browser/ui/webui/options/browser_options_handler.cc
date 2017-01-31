@@ -124,6 +124,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
@@ -140,7 +141,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1166,8 +1167,8 @@ void BrowserOptionsHandler::InitializePage() {
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
           user->GetAccountId()));
 
-  if (arc::ArcSessionManager::IsAllowedForProfile(profile) &&
-      !arc::ArcSessionManager::IsOptInVerificationDisabled()) {
+  if (arc::IsArcAllowedForProfile(profile) &&
+      !arc::IsArcOptInVerificationDisabled()) {
     base::FundamentalValue is_arc_enabled(
         arc::ArcSessionManager::Get()->IsArcEnabled());
     web_ui()->CallJavascriptFunctionUnsafe(
@@ -2005,7 +2006,7 @@ void BrowserOptionsHandler::ShowAndroidAppsSettings(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Settings in secondary profile cannot access ARC.
-  if (!arc::ArcSessionManager::IsAllowedForProfile(profile)) {
+  if (!arc::IsArcAllowedForProfile(profile)) {
     LOG(ERROR) << "Settings can't be invoked for non-primary profile";
     return;
   }
@@ -2024,7 +2025,7 @@ void BrowserOptionsHandler::ShowAccessibilityTalkBackSettings(
     const base::ListValue *args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Settings in secondary profile cannot access ARC.
-  if (!arc::ArcSessionManager::IsAllowedForProfile(profile)) {
+  if (!arc::IsArcAllowedForProfile(profile)) {
     LOG(WARNING) << "Settings can't be invoked for non-primary profile";
     return;
   }

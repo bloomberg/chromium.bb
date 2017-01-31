@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"  // kSettingsAppId
 #include "ui/events/event_constants.h"
@@ -92,7 +93,7 @@ void AndroidAppsHandler::ShowAndroidAppsSettings(const base::ListValue* args) {
   int flags = activated_from_keyboard ? ui::EF_NONE : ui::EF_LEFT_MOUSE_BUTTON;
 
   // Settings in secondary profile cannot access ARC.
-  CHECK(arc::ArcSessionManager::IsAllowedForProfile(profile_));
+  CHECK(arc::IsArcAllowedForProfile(profile_));
   arc::LaunchAndroidSettingsApp(profile_, flags);
 }
 

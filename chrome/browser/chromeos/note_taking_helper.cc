@@ -19,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -122,7 +123,7 @@ NoteTakingAppInfos NoteTakingHelper::GetAvailableApps(Profile* profile) {
   for (const auto& app : chrome_apps)
     infos.push_back(NoteTakingAppInfo{app->name(), app->id(), false});
 
-  if (arc::ArcSessionManager::Get()->IsAllowedForProfile(profile))
+  if (arc::IsArcAllowedForProfile(profile))
     infos.insert(infos.end(), android_apps_.begin(), android_apps_.end());
 
   // Determine which app, if any, is preferred.
@@ -324,7 +325,7 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
 
   if (LooksLikeAndroidPackageName(app_id)) {
     // Android app.
-    if (!arc::ArcSessionManager::Get()->IsAllowedForProfile(profile)) {
+    if (!arc::IsArcAllowedForProfile(profile)) {
       LOG(WARNING) << "Can't launch Android app " << app_id << " for profile";
       return LaunchResult::ANDROID_NOT_SUPPORTED_BY_PROFILE;
     }

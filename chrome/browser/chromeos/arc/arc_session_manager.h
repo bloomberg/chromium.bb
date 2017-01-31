@@ -126,22 +126,11 @@ class ArcSessionManager : public ArcSessionObserver,
 
   static void DisableUIForTesting();
   static void SetShelfDelegateForTesting(ash::ShelfDelegate* shelf_delegate);
-
-  // Checks if OptIn verification was disabled by switch in command line.
-  static bool IsOptInVerificationDisabled();
-
   static void EnableCheckAndroidManagementForTesting();
 
-  // Returns true if Arc is allowed to run for the given profile.
-  static bool IsAllowedForProfile(const Profile* profile);
-
-  // Disallows ARC for all profiles for testing.
-  static void DisallowForTesting();
-
-  // Returns true if ARC should run under Kiosk mode.
-  static bool IsArcKioskMode();
-
   // Returns true if Arc is allowed to run for the current session.
+  // TODO(hidehiko): The name is very close to IsArcAllowedForProfile(), but
+  // has different meaning. Clean this up.
   bool IsAllowed() const;
 
   void OnPrimaryUserProfilePrepared(Profile* profile);
@@ -170,7 +159,14 @@ class ArcSessionManager : public ArcSessionObserver,
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
 
+  // TODO(hidehiko): Better to rename longer but descriptive one, e.g.
+  // IsArcEnabledPreferenceManaged.
+  // TODO(hidehiko): Look at the real usage, and write document.
   bool IsArcManaged() const;
+
+  // TODO(hidehiko): better to rename longer but descriptive one, e.g.
+  // IsArcPlayStoreEnabled().
+  // TODO(hidehiko): Look at the real usage, and write document.
   bool IsArcEnabled() const;
 
   // This requires Arc to be allowed (|IsAllowed|)for current profile.

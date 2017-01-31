@@ -41,6 +41,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
@@ -395,7 +396,7 @@ void AppListSyncableService::BuildModel() {
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
 #if defined(OS_CHROMEOS)
-  if (arc::ArcSessionManager::IsAllowedForProfile(profile_))
+  if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
 #endif
   DCHECK(profile_);

@@ -20,12 +20,10 @@
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -47,7 +45,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 
@@ -67,9 +64,6 @@ ash::ShelfDelegate* g_shelf_delegate_for_testing = nullptr;
 // The Android management check is disabled by default, it's used only for
 // testing.
 bool g_enable_check_android_management_for_testing = false;
-
-// Let IsAllowedForProfile() return "false" for any profile.
-bool g_disallow_for_testing = false;
 
 // Maximum amount of time we'll wait for ARC to finish booting up. Once this
 // timeout expires, keep ARC running in case the user wants to file feedback,
@@ -140,81 +134,8 @@ void ArcSessionManager::SetShelfDelegateForTesting(
 }
 
 // static
-bool ArcSessionManager::IsOptInVerificationDisabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableArcOptInVerification);
-}
-
-// static
 void ArcSessionManager::EnableCheckAndroidManagementForTesting() {
   g_enable_check_android_management_for_testing = true;
-}
-
-// static
-bool ArcSessionManager::IsAllowedForProfile(const Profile* profile) {
-  if (g_disallow_for_testing) {
-    VLOG(1) << "ARC is disallowed for testing.";
-    return false;
-  }
-
-  if (!IsArcAvailable()) {
-    VLOG(1) << "ARC is not available.";
-    return false;
-  }
-
-  if (!profile) {
-    VLOG(1) << "ARC is not supported for systems without profile.";
-    return false;
-  }
-
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    VLOG(1) << "Non-primary users are not supported in ARC.";
-    return false;
-  }
-
-  // IsPrimaryProfile can return true for an incognito profile corresponding
-  // to the primary profile, but ARC does not support it.
-  if (profile->IsOffTheRecord()) {
-    VLOG(1) << "Incognito profile is not supported in ARC.";
-    return false;
-  }
-
-  if (profile->IsLegacySupervised()) {
-    VLOG(1) << "Supervised users are not supported in ARC.";
-    return false;
-  }
-
-  user_manager::User const* const user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if ((!user || !user->HasGaiaAccount()) && !IsArcKioskMode()) {
-    VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
-    return false;
-  }
-
-  chromeos::UserFlow* user_flow =
-      chromeos::ChromeUserManager::Get()->GetUserFlow(user->GetAccountId());
-  if (!user_flow || !user_flow->CanStartArc()) {
-    VLOG(1) << "ARC is not allowed in the current user flow.";
-    return false;
-  }
-
-  if (user_manager::UserManager::Get()
-          ->IsCurrentUserCryptohomeDataEphemeral()) {
-    VLOG(2) << "Users with ephemeral data are not supported in ARC.";
-    return false;
-  }
-
-  return true;
-}
-
-// static
-void ArcSessionManager::DisallowForTesting() {
-  g_disallow_for_testing = true;
-}
-
-// static
-bool ArcSessionManager::IsArcKioskMode() {
-  return user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp();
 }
 
 void ArcSessionManager::OnSessionReady() {
@@ -365,7 +286,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     // Don't show Play Store app for ARC Kiosk because the only one UI in kiosk
     // mode must be the kiosk app and device is not needed for opt-in.
-    if (!IsOptInVerificationDisabled() && !IsArcKioskMode()) {
+    if (!IsArcOptInVerificationDisabled() && !IsArcKioskMode()) {
       playstore_launcher_.reset(
           new ArcAppLauncher(profile_, kPlayStoreAppId, true));
     }
@@ -449,10 +370,10 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   Shutdown();
 
-  if (!IsAllowedForProfile(profile))
+  if (!IsArcAllowedForProfile(profile))
     return;
 
-  // TODO(khmel): Move this to IsAllowedForProfile.
+  // TODO(khmel): Move this to IsArcAllowedForProfile.
   if (policy_util::IsArcDisabledForEnterprise() &&
       policy_util::IsAccountManaged(profile)) {
     VLOG(2) << "Enterprise users are not supported in ARC.";
@@ -470,7 +391,7 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
   // be the kiosk app. In case of error the UI will be useless as well, because
   // in typical use case there will be no one nearby the kiosk device, who can
   // do some action to solve the problem be means of UI.
-  if (!g_disable_ui_for_testing && !IsOptInVerificationDisabled() &&
+  if (!g_disable_ui_for_testing && !IsArcOptInVerificationDisabled() &&
       !IsArcKioskMode()) {
     DCHECK(!support_host_);
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
@@ -632,13 +553,13 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   // For backward compatibility, this check needs to be prior to the
   // kArcTermsAccepted check below.
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) ||
-      IsOptInVerificationDisabled() || IsArcKioskMode()) {
+      IsArcOptInVerificationDisabled() || IsArcKioskMode()) {
     StartArc();
 
     // Skip Android management check for testing.
     // We also skip if Android management check for Kiosk mode,
     // because there are no managed human users for Kiosk exist.
-    if (IsOptInVerificationDisabled() || IsArcKioskMode() ||
+    if (IsArcOptInVerificationDisabled() || IsArcKioskMode() ||
         (g_disable_ui_for_testing &&
          !g_enable_check_android_management_for_testing)) {
       return;

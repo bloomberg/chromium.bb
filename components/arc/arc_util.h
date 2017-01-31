@@ -33,6 +33,13 @@ bool IsArcAvailable();
 // |command_line| must not be nullptr.
 void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line);
 
+// Returns true if ARC should run under Kiosk mode.
+bool IsArcKioskMode();
+
+// Checks if opt-in verification was disabled by switch in command line.
+// In most cases, it is disabled for testing purpose.
+bool IsArcOptInVerificationDisabled();
+
 }  // namespace arc
 
 #endif  // COMPONENTS_ARC_ARC_UTIL_H_

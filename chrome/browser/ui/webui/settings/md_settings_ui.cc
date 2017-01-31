@@ -46,7 +46,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/common/system/chromeos/power/power_status.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/arc/arc_util.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
@@ -154,10 +155,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddBoolean("stylusAllowed", ash::IsPaletteFeatureEnabled());
   html_source->AddBoolean("pinUnlockEnabled",
                           chromeos::IsPinUnlockEnabled(profile->GetPrefs()));
-  html_source->AddBoolean(
-      "androidAppsAllowed",
-      arc::ArcSessionManager::IsAllowedForProfile(profile) &&
-          !arc::ArcSessionManager::IsOptInVerificationDisabled());
+  html_source->AddBoolean("androidAppsAllowed",
+                          arc::IsArcAllowedForProfile(profile) &&
+                              !arc::IsArcOptInVerificationDisabled());
 
   // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
   bool enable_power_settings =

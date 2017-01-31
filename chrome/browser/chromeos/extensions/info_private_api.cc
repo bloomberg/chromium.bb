@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -261,10 +261,8 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   }
 
   if (property_name == kPropertyPlayStoreStatus) {
-    if (arc::ArcSessionManager::IsAllowedForProfile(
-            Profile::FromBrowserContext(context_))) {
+    if (arc::IsArcAllowedForProfile(Profile::FromBrowserContext(context_)))
       return new base::StringValue(kPlayStoreStatusEnabled);
-    }
     if (arc::IsArcAvailable())
       return new base::StringValue(kPlayStoreStatusAvailable);
     return new base::StringValue(kPlayStoreStatusNotAvailable);

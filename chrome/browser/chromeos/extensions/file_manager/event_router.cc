@@ -18,7 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -509,7 +509,7 @@ void EventRouter::ObserveEvents() {
 
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
 
-  if (arc::ArcSessionManager::IsAllowedForProfile(profile_)) {
+  if (arc::IsArcAllowedForProfile(profile_)) {
     auto* intent_helper =
         arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
     if (intent_helper)

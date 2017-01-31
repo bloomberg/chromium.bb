@@ -33,6 +33,7 @@
 #include "ui/app_list/search/tokenized_string_match.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
@@ -258,7 +259,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
   data_sources_.push_back(
       std::unique_ptr<DataSource>(new ExtensionDataSource(profile, this)));
 #if defined(OS_CHROMEOS)
-  if (arc::ArcSessionManager::IsAllowedForProfile(profile)) {
+  if (arc::IsArcAllowedForProfile(profile)) {
     data_sources_.push_back(
         std::unique_ptr<DataSource>(new ArcDataSource(profile, this)));
   }
