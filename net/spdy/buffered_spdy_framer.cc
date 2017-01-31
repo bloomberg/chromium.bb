@@ -203,7 +203,7 @@ void BufferedSpdyFramer::OnContinuation(SpdyStreamId stream_id, bool end) {
 }
 
 bool BufferedSpdyFramer::OnUnknownFrame(SpdyStreamId stream_id,
-                                        int frame_type) {
+                                        uint8_t frame_type) {
   return visitor_->OnUnknownFrame(stream_id, frame_type);
 }
 

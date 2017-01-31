@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 
 #include "base/logging.h"
@@ -178,7 +179,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
                          size_t len) override;
   void OnStreamEnd(SpdyStreamId stream_id) override;
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
-  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override;
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override;
 
   // Callbacks defined in SpdyHeadersHandlerInterface.
@@ -746,7 +747,7 @@ void SpdyTestDeframerImpl::OnWindowUpdate(SpdyStreamId stream_id,
 // of the set of currently open streams. For now we'll assume that unknown
 // frame types are unsupported.
 bool SpdyTestDeframerImpl::OnUnknownFrame(SpdyStreamId stream_id,
-                                          int frame_type) {
+                                          uint8_t frame_type) {
   DVLOG(1) << "OnAltSvc stream_id: " << stream_id;
   CHECK_EQ(frame_type_, UNSET) << "   frame_type_="
                                << Http2FrameTypeToString(frame_type_);

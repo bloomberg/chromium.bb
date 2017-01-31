@@ -123,7 +123,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     altsvc_vector_ = altsvc_vector;
   }
 
-  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
     return true;
   }
 

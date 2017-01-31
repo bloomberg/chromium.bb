@@ -109,7 +109,8 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                     SpdyStreamId parent_stream_id,
                     int weight,
                     bool exclusive));
-  MOCK_METHOD2(OnUnknownFrame, bool(SpdyStreamId stream_id, int frame_type));
+  MOCK_METHOD2(OnUnknownFrame,
+               bool(SpdyStreamId stream_id, uint8_t frame_type));
 };
 
 class ForceHolAckListener : public QuicAckListenerInterface {

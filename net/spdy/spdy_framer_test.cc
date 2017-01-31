@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>
@@ -171,7 +172,7 @@ class SpdyFramerTestUtil {
       // Do nothing.
     }
 
-    bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+    bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
       LOG(FATAL);
       return false;
     }
@@ -465,7 +466,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++priority_count_;
   }
 
-  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
     VLOG(1) << "OnUnknownFrame(" << stream_id << ", " << frame_type << ")";
     return on_unknown_frame_result_;
   }

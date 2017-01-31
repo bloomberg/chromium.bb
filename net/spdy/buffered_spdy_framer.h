@@ -107,7 +107,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   // Return true if this appears to be a valid extension frame, false otherwise.
   // We distinguish between extension frames and nonsense by checking
   // whether the stream id is valid.
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) = 0;
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) = 0;
 
  protected:
   virtual ~BufferedSpdyFramerVisitorInterface() {}
@@ -171,7 +171,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                          size_t length,
                          bool fin) override;
   void OnContinuation(SpdyStreamId stream_id, bool end) override;
-  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override;
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);

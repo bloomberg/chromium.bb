@@ -173,7 +173,7 @@ void SpdyFramerVisitorAdapter::OnAltSvc(
 }
 
 bool SpdyFramerVisitorAdapter::OnUnknownFrame(SpdyStreamId stream_id,
-                                              int frame_type) {
+                                              uint8_t frame_type) {
   return visitor_->OnUnknownFrame(stream_id, frame_type);
 }
 

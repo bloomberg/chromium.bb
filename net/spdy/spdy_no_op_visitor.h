@@ -9,6 +9,8 @@
 #ifndef NET_SPDY_SPDY_NO_OP_VISITOR_H_
 #define NET_SPDY_SPDY_NO_OP_VISITOR_H_
 
+#include <cstdint>
+
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
 
@@ -63,7 +65,7 @@ class SpdyNoOpVisitor : public SpdyFramerVisitorInterface,
                   SpdyStreamId parent_stream_id,
                   int weight,
                   bool exclusive) override {}
-  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override;
 
   // SpdyFramerDebugVisitorInterface methods:
   void OnSendCompressedFrame(SpdyStreamId stream_id,

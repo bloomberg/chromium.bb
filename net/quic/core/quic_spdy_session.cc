@@ -5,6 +5,7 @@
 #include "net/quic/core/quic_spdy_session.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <string>
 #include <utility>
 
@@ -258,7 +259,7 @@ class QuicSpdySession::SpdyFramerVisitor
     CloseConnection("SPDY PRIORITY frame received.");
   }
 
-  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
     CloseConnection("Unknown frame type received.");
     return false;
   }

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <memory>
 
 #include "base/strings/string_piece.h"
@@ -146,7 +147,7 @@ class SpdyFramerVisitorAdapter : public SpdyFramerVisitorInterface {
                 base::StringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override;
-  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override;
 
  protected:
   SpdyFramerVisitorInterface* visitor() const { return visitor_; }

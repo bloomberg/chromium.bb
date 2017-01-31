@@ -2355,7 +2355,7 @@ void SpdySession::OnAltSvc(
       scheme_host_port, alternative_service_info_vector);
 }
 
-bool SpdySession::OnUnknownFrame(SpdyStreamId stream_id, int frame_type) {
+bool SpdySession::OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) {
   // Validate stream id.
   // Was the frame sent on a stream id that has not been used in this session?
   if (stream_id % 2 == 1 && stream_id > stream_hi_water_mark_)
