@@ -116,6 +116,20 @@ bool BitmapRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
   return true;
 }
 
+bool BitmapRasterBufferProvider::IsResourceReadyToDraw(
+    ResourceId resource_id) const {
+  // Bitmap resources are immediately ready to draw.
+  return true;
+}
+
+uint64_t BitmapRasterBufferProvider::SetReadyToDrawCallback(
+    const ResourceProvider::ResourceIdArray& resource_ids,
+    const base::Closure& callback,
+    uint64_t pending_callback_id) const {
+  // Bitmap resources are immediately ready to draw.
+  return 0;
+}
+
 void BitmapRasterBufferProvider::Shutdown() {}
 
 }  // namespace cc

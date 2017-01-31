@@ -165,6 +165,9 @@ class CC_EXPORT ResourceProvider
   void GenerateSyncTokenForResource(ResourceId resource_id);
   void GenerateSyncTokenForResources(const ResourceIdArray& resource_ids);
 
+  // Gets the most recent sync token from the indicated resources.
+  gpu::SyncToken GetSyncTokenForResources(const ResourceIdArray& resource_ids);
+
   // Creates accounting for a child. Returns a child ID.
   int CreateChild(const ReturnCallback& return_callback);
 

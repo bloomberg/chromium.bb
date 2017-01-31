@@ -974,6 +974,17 @@ void ResourceProvider::GenerateSyncTokenForResources(
   }
 }
 
+gpu::SyncToken ResourceProvider::GetSyncTokenForResources(
+    const ResourceIdArray& resource_ids) {
+  gpu::SyncToken latest_sync_token;
+  for (ResourceId id : resource_ids) {
+    const gpu::SyncToken& sync_token = GetResource(id)->mailbox().sync_token();
+    if (sync_token.release_count() > latest_sync_token.release_count())
+      latest_sync_token = sync_token;
+  }
+  return latest_sync_token;
+}
+
 ResourceProvider::Resource* ResourceProvider::InsertResource(
     ResourceId id,
     Resource resource) {

@@ -37,6 +37,11 @@ class CC_EXPORT BitmapRasterBufferProvider : public RasterBufferProvider {
   ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
+  bool IsResourceReadyToDraw(ResourceId id) const override;
+  uint64_t SetReadyToDrawCallback(
+      const ResourceProvider::ResourceIdArray& resource_ids,
+      const base::Closure& callback,
+      uint64_t pending_callback_id) const override;
   void Shutdown() override;
 
  protected:

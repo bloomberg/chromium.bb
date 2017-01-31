@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/unique_notifier.h"
@@ -47,7 +48,9 @@ const size_t kMaxStagingBuffers = 32U;
 enum RasterBufferProviderType {
   RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
   RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
+  RASTER_BUFFER_PROVIDER_TYPE_ASYNC_ONE_COPY,
   RASTER_BUFFER_PROVIDER_TYPE_GPU,
+  RASTER_BUFFER_PROVIDER_TYPE_ASYNC_GPU,
   RASTER_BUFFER_PROVIDER_TYPE_BITMAP
 };
 
@@ -62,13 +65,11 @@ class TestRasterTaskCompletionHandler {
 class TestRasterTaskImpl : public TileTask {
  public:
   TestRasterTaskImpl(TestRasterTaskCompletionHandler* completion_handler,
-                     std::unique_ptr<ScopedResource> resource,
                      unsigned id,
                      std::unique_ptr<RasterBuffer> raster_buffer,
                      TileTask::Vector* dependencies)
       : TileTask(true, dependencies),
         completion_handler_(completion_handler),
-        resource_(std::move(resource)),
         id_(id),
         raster_buffer_(std::move(raster_buffer)),
         raster_source_(FakeRasterSource::CreateFilled(gfx::Size(1, 1))) {}
@@ -96,7 +97,6 @@ class TestRasterTaskImpl : public TileTask {
 
  private:
   TestRasterTaskCompletionHandler* completion_handler_;
-  std::unique_ptr<ScopedResource> resource_;
   unsigned id_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
   scoped_refptr<RasterSource> raster_source_;
@@ -108,13 +108,11 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
  public:
   BlockingTestRasterTaskImpl(
       TestRasterTaskCompletionHandler* completion_handler,
-      std::unique_ptr<ScopedResource> resource,
       unsigned id,
       std::unique_ptr<RasterBuffer> raster_buffer,
       base::Lock* lock,
       TileTask::Vector* dependencies)
       : TestRasterTaskImpl(completion_handler,
-                           std::move(resource),
                            id,
                            std::move(raster_buffer),
                            dependencies),
@@ -172,11 +170,25 @@ class RasterBufferProviderTest
             kMaxBytesPerCopyOperation, false, kMaxStagingBuffers,
             PlatformColor::BestTextureFormat(), false);
         break;
+      case RASTER_BUFFER_PROVIDER_TYPE_ASYNC_ONE_COPY:
+        Create3dResourceProvider();
+        raster_buffer_provider_ = base::MakeUnique<OneCopyRasterBufferProvider>(
+            base::ThreadTaskRunnerHandle::Get().get(), context_provider_.get(),
+            worker_context_provider_.get(), resource_provider_.get(),
+            kMaxBytesPerCopyOperation, false, kMaxStagingBuffers,
+            PlatformColor::BestTextureFormat(), true);
+        break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0, false);
+        break;
+      case RASTER_BUFFER_PROVIDER_TYPE_ASYNC_GPU:
+        Create3dResourceProvider();
+        raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
+            context_provider_.get(), worker_context_provider_.get(),
+            resource_provider_.get(), false, 0, true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
@@ -191,6 +203,7 @@ class RasterBufferProviderTest
   }
 
   void TearDown() override {
+    resources_.clear();
     tile_task_manager_->Shutdown();
     tile_task_manager_->CheckForCompletedTasks();
 
@@ -233,8 +246,9 @@ class RasterBufferProviderTest
     std::unique_ptr<RasterBuffer> raster_buffer =
         raster_buffer_provider_->AcquireBufferForRaster(resource.get(), 0, 0);
     TileTask::Vector empty;
-    tasks_.push_back(new TestRasterTaskImpl(this, std::move(resource), id,
-                                            std::move(raster_buffer), &empty));
+    tasks_.push_back(
+        new TestRasterTaskImpl(this, id, std::move(raster_buffer), &empty));
+    resources_.push_back(std::move(resource));
   }
 
   void AppendTask(unsigned id) { AppendTask(id, gfx::Size(1, 1)); }
@@ -251,7 +265,8 @@ class RasterBufferProviderTest
         raster_buffer_provider_->AcquireBufferForRaster(resource.get(), 0, 0);
     TileTask::Vector empty;
     tasks_.push_back(new BlockingTestRasterTaskImpl(
-        this, std::move(resource), id, std::move(raster_buffer), lock, &empty));
+        this, id, std::move(raster_buffer), lock, &empty));
+    resources_.push_back(std::move(resource));
   }
 
   const std::vector<RasterTaskResult>& completed_tasks() const {
@@ -313,6 +328,7 @@ class RasterBufferProviderTest
   bool timed_out_;
   RasterTaskVector tasks_;
   std::vector<RasterTaskResult> completed_tasks_;
+  std::vector<std::unique_ptr<ScopedResource>> resources_;
   TaskGraph graph_;
 };
 
@@ -382,12 +398,65 @@ TEST_P(RasterBufferProviderTest, LostContext) {
   EXPECT_FALSE(completed_tasks()[1].canceled);
 }
 
-INSTANTIATE_TEST_CASE_P(RasterBufferProviderTests,
-                        RasterBufferProviderTest,
-                        ::testing::Values(RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
-                                          RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
-                                          RASTER_BUFFER_PROVIDER_TYPE_GPU,
-                                          RASTER_BUFFER_PROVIDER_TYPE_BITMAP));
+TEST_P(RasterBufferProviderTest, ReadyToDrawCallback) {
+  AppendTask(0u);
+  ScheduleTasks();
+  RunMessageLoopUntilAllTasksHaveCompleted();
+
+  ResourceProvider::ResourceIdArray array;
+  for (const auto& resource : resources_) {
+    array.push_back(resource->id());
+  }
+  base::RunLoop run_loop;
+  uint64_t callback_id = raster_buffer_provider_->SetReadyToDrawCallback(
+      array,
+      base::Bind([](base::RunLoop* run_loop) { run_loop->Quit(); }, &run_loop),
+      0);
+
+  if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_ASYNC_GPU ||
+      GetParam() == RASTER_BUFFER_PROVIDER_TYPE_ASYNC_ONE_COPY)
+    EXPECT_TRUE(callback_id);
+
+  if (!callback_id)
+    return;
+
+  run_loop.Run();
+}
+
+TEST_P(RasterBufferProviderTest, ReadyToDrawCallbackNoDuplicate) {
+  AppendTask(0u);
+  ScheduleTasks();
+  RunMessageLoopUntilAllTasksHaveCompleted();
+
+  ResourceProvider::ResourceIdArray array;
+  for (const auto& resource : resources_) {
+    array.push_back(resource->id());
+  }
+
+  uint64_t callback_id = raster_buffer_provider_->SetReadyToDrawCallback(
+      array, base::Bind([]() {}), 0);
+
+  // Calling SetReadyToDrawCallback a second time for the same resources
+  // should return the same callback ID.
+  uint64_t callback_id_2 = raster_buffer_provider_->SetReadyToDrawCallback(
+      array, base::Bind([]() {}), 0);
+
+  EXPECT_EQ(callback_id, callback_id_2);
+
+  if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_ASYNC_GPU ||
+      GetParam() == RASTER_BUFFER_PROVIDER_TYPE_ASYNC_ONE_COPY)
+    EXPECT_TRUE(callback_id);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    RasterBufferProviderTests,
+    RasterBufferProviderTest,
+    ::testing::Values(RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
+                      RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
+                      RASTER_BUFFER_PROVIDER_TYPE_ASYNC_ONE_COPY,
+                      RASTER_BUFFER_PROVIDER_TYPE_GPU,
+                      RASTER_BUFFER_PROVIDER_TYPE_ASYNC_GPU,
+                      RASTER_BUFFER_PROVIDER_TYPE_BITMAP));
 
 }  // namespace
 }  // namespace cc

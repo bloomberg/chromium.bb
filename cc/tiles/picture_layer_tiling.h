@@ -247,6 +247,8 @@ class CC_EXPORT PictureLayerTiling {
   void AsValueInto(base::trace_event::TracedValue* array) const;
   size_t GPUMemoryUsageInBytes() const;
 
+  void UpdateRequiredStatesOnTile(Tile* tile) const;
+
  protected:
   friend class CoverageIterator;
   friend class PrioritizedTile;
@@ -290,7 +292,6 @@ class CC_EXPORT PictureLayerTiling {
   Tile::CreateInfo CreateInfoForTile(int i, int j) const;
   bool ShouldCreateTileAt(const Tile::CreateInfo& info) const;
   bool IsTileOccluded(const Tile* tile) const;
-  void UpdateRequiredStatesOnTile(Tile* tile) const;
   PrioritizedTile MakePrioritizedTile(
       Tile* tile,
       PriorityRectType priority_rect_type) const;

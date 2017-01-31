@@ -132,6 +132,10 @@ class CC_EXPORT TileManager {
   // date draw information.
   void Flush();
 
+  // Called when the required-for-activation/required-for-draw state of tiles
+  // may have changed.
+  void DidModifyTilePriorities();
+
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info,
                                    int layer_id,
                                    int source_frame_number,
@@ -151,10 +155,11 @@ class CC_EXPORT TileManager {
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
-      draw_info.resource_ = resource_pool_->AcquireResource(
+      draw_info.set_resource(resource_pool_->AcquireResource(
           tiles[i]->desired_texture_size(),
           raster_buffer_provider_->GetResourceFormat(false),
-          client_->GetTileColorSpace());
+          client_->GetTileColorSpace()));
+      draw_info.set_resource_ready_for_draw();
     }
   }
 
@@ -302,6 +307,8 @@ class CC_EXPORT TileManager {
 
   bool UsePartialRaster() const;
 
+  void CheckPendingGpuWorkTiles(bool issue_signals);
+
   TileManagerClient* client_;
   base::SequencedTaskRunner* task_runner_;
   ResourcePool* resource_pool_;
@@ -337,11 +344,24 @@ class CC_EXPORT TileManager {
   uint64_t prepare_tiles_count_;
   uint64_t next_tile_id_;
 
+  std::unordered_set<Tile*> pending_gpu_work_tiles_;
+  uint64_t pending_required_for_activation_callback_id_ = 0;
+  uint64_t pending_required_for_draw_callback_id_ = 0;
+  // If true, we should re-compute tile requirements in
+  // CheckPendingGpuWorkTiles.
+  bool pending_tile_requirements_dirty_ = false;
+
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
   std::vector<scoped_refptr<TileTask>> locked_image_tasks_;
   const bool check_tile_priority_inversion_;
 
+  // We need two WeakPtrFactory objects as the invalidation pattern of each is
+  // different. The |task_set_finished_weak_ptr_factory_| is invalidated any
+  // time new tasks are scheduled, preventing a race when the callback has
+  // been scheduled but not yet executed.
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
+  // The |ready_to_draw_callback_weak_ptr_factory_| is never invalidated.
+  base::WeakPtrFactory<TileManager> ready_to_draw_callback_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

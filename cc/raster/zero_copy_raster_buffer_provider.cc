@@ -125,6 +125,20 @@ bool ZeroCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource()
   return false;
 }
 
+bool ZeroCopyRasterBufferProvider::IsResourceReadyToDraw(
+    ResourceId resource_id) const {
+  // Zero-copy resources are immediately ready to draw.
+  return true;
+}
+
+uint64_t ZeroCopyRasterBufferProvider::SetReadyToDrawCallback(
+    const ResourceProvider::ResourceIdArray& resource_ids,
+    const base::Closure& callback,
+    uint64_t pending_callback_id) const {
+  // Zero-copy resources are immediately ready to draw.
+  return 0;
+}
+
 void ZeroCopyRasterBufferProvider::Shutdown() {}
 
 }  // namespace cc

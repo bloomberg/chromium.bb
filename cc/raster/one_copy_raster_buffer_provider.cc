@@ -21,6 +21,7 @@
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -160,6 +161,47 @@ bool OneCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
   // implementation, it cannot directly partial raster into the externally
   // owned resource provided in AcquireBufferForRaster.
   return false;
+}
+
+bool OneCopyRasterBufferProvider::IsResourceReadyToDraw(
+    ResourceId resource_id) const {
+  if (!async_worker_context_enabled_)
+    return true;
+
+  ResourceProvider::ResourceIdArray resources;
+  resources.push_back(resource_id);
+  gpu::SyncToken sync_token =
+      resource_provider_->GetSyncTokenForResources(resources);
+  if (!sync_token.HasData())
+    return true;
+
+  // IsSyncTokenSignalled is threadsafe, no need for worker context lock.
+  return worker_context_provider_->ContextSupport()->IsSyncTokenSignalled(
+      sync_token);
+}
+
+uint64_t OneCopyRasterBufferProvider::SetReadyToDrawCallback(
+    const ResourceProvider::ResourceIdArray& resource_ids,
+    const base::Closure& callback,
+    uint64_t pending_callback_id) const {
+  if (!async_worker_context_enabled_)
+    return 0;
+
+  gpu::SyncToken sync_token =
+      resource_provider_->GetSyncTokenForResources(resource_ids);
+  uint64_t callback_id = sync_token.release_count();
+  DCHECK_NE(callback_id, 0u);
+
+  // If the callback is different from the one the caller is already waiting on,
+  // pass the callback through to SignalSinkToken. Otherwise the request is
+  // redundant.
+  if (callback_id != pending_callback_id) {
+    // SignalSyncToken is threadsafe, no need for worker context lock.
+    worker_context_provider_->ContextSupport()->SignalSyncToken(sync_token,
+                                                                callback);
+  }
+
+  return callback_id;
 }
 
 void OneCopyRasterBufferProvider::Shutdown() {

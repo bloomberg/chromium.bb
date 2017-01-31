@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,6 +40,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
+
+using testing::_;
+using testing::Invoke;
+using testing::Return;
+using testing::StrictMock;
 
 namespace cc {
 namespace {
@@ -1489,7 +1496,7 @@ class TileManagerTest : public TestLayerTreeHostBase {
       const LayerTreeSettings& settings,
       TaskRunnerProvider* task_runner_provider,
       TaskGraphRunner* task_graph_runner) override {
-    return base::MakeUnique<MockLayerTreeHostImpl>(
+    return base::MakeUnique<testing::NiceMock<MockLayerTreeHostImpl>>(
         settings, task_runner_provider, task_graph_runner);
   }
 
@@ -1923,6 +1930,337 @@ TEST_F(PartialRasterTileManagerTest, PartialRasterSuccessfullyEnabled) {
 // raster is disabled.
 TEST_F(TileManagerTest, PartialRasterSuccessfullyDisabled) {
   RunPartialRasterCheck(TakeHostImpl(), false /* partial_raster_enabled */);
+}
+
+// FakeRasterBufferProviderImpl that allows us to mock ready to draw
+// functionality.
+class MockReadyToDrawRasterBufferProviderImpl
+    : public FakeRasterBufferProviderImpl {
+ public:
+  MOCK_CONST_METHOD1(IsResourceReadyToDraw, bool(ResourceId resource_id));
+  MOCK_CONST_METHOD3(
+      SetReadyToDrawCallback,
+      uint64_t(const ResourceProvider::ResourceIdArray& resource_ids,
+               const base::Closure& callback,
+               uint64_t pending_callback_id));
+
+  std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource,
+      uint64_t resource_content_id,
+      uint64_t previous_content_id) override {
+    return base::MakeUnique<FakeRasterBuffer>();
+  }
+
+ private:
+  class FakeRasterBuffer : public RasterBuffer {
+   public:
+    void Playback(
+        const RasterSource* raster_source,
+        const gfx::Rect& raster_full_rect,
+        const gfx::Rect& raster_dirty_rect,
+        uint64_t new_content_id,
+        float scale,
+        const RasterSource::PlaybackSettings& playback_settings) override {}
+  };
+};
+
+class TileManagerReadyToDrawTest : public TileManagerTest {
+ public:
+  ~TileManagerReadyToDrawTest() override {
+    // Ensure that the host impl doesn't outlive |raster_buffer_provider_|.
+    TakeHostImpl();
+  }
+
+  void SetUp() override {
+    TileManagerTest::SetUp();
+    host_impl()->tile_manager()->SetRasterBufferProviderForTesting(
+        &mock_raster_buffer_provider_);
+
+    const gfx::Size layer_bounds(1000, 1000);
+
+    solid_color_recording_source_ =
+        FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+
+    SkPaint solid_paint;
+    SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
+    solid_paint.setColor(solid_color);
+    solid_color_recording_source_->add_draw_rect_with_paint(
+        gfx::Rect(layer_bounds), solid_paint);
+
+    solid_color_recording_source_->Rerecord();
+
+    recording_source_ =
+        FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+    SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
+    SkPaint non_solid_paint;
+    non_solid_paint.setColor(non_solid_color);
+
+    for (int i = 0; i < 100; ++i) {
+      for (int j = 0; j < 100; ++j) {
+        recording_source_->add_draw_rect_with_paint(
+            gfx::Rect(10 * i, 10 * j, 5, 5), non_solid_paint);
+      }
+    }
+    recording_source_->Rerecord();
+  }
+
+  LayerTreeSettings CreateSettings() override {
+    LayerTreeSettingsForTesting settings;
+    settings.renderer_settings.buffer_to_texture_target_map =
+        DefaultBufferToTextureTargetMapForTesting();
+    return settings;
+  }
+
+  void SetupTreesWithActiveTreeTiles() {
+    scoped_refptr<RasterSource> active_tree_raster_source =
+        RasterSource::CreateFromRecordingSource(recording_source_.get(), false);
+    scoped_refptr<RasterSource> pending_tree_raster_source =
+        RasterSource::CreateFromRecordingSource(
+            solid_color_recording_source_.get(), false);
+
+    SetupTrees(pending_tree_raster_source, active_tree_raster_source);
+  }
+
+  void SetupTreesWithPendingTreeTiles() {
+    scoped_refptr<RasterSource> active_tree_raster_source =
+        RasterSource::CreateFromRecordingSource(
+            solid_color_recording_source_.get(), false);
+    scoped_refptr<RasterSource> pending_tree_raster_source =
+        RasterSource::CreateFromRecordingSource(recording_source_.get(), false);
+
+    SetupTrees(pending_tree_raster_source, active_tree_raster_source);
+  }
+
+  TileManager* tile_manager() { return host_impl()->tile_manager(); }
+  MockReadyToDrawRasterBufferProviderImpl* mock_raster_buffer_provider() {
+    return &mock_raster_buffer_provider_;
+  }
+
+ private:
+  StrictMock<MockReadyToDrawRasterBufferProviderImpl>
+      mock_raster_buffer_provider_;
+  std::unique_ptr<FakeRecordingSource> recording_source_;
+  std::unique_ptr<FakeRecordingSource> solid_color_recording_source_;
+};
+
+TEST_F(TileManagerReadyToDrawTest, SmoothActivationWaitsOnCallback) {
+  host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
+  SetupTreesWithPendingTreeTiles();
+
+  base::Closure callback;
+  {
+    base::RunLoop run_loop;
+
+    // Until we activate our ready to draw callback, treat all resources as not
+    // ready to draw.
+    EXPECT_CALL(*mock_raster_buffer_provider(),
+                IsResourceReadyToDraw(testing::_))
+        .WillRepeatedly(Return(false));
+
+    EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
+        .WillOnce(testing::Invoke([&run_loop, &callback](
+            const ResourceProvider::ResourceIdArray& resource_ids,
+            const base::Closure& callback_in, uint64_t pending_callback_id) {
+          callback = callback_in;
+          run_loop.Quit();
+          return 1;
+        }));
+    host_impl()->tile_manager()->DidModifyTilePriorities();
+    host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_FALSE(host_impl()->tile_manager()->IsReadyToActivate());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate())
+        .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+    EXPECT_CALL(*mock_raster_buffer_provider(),
+                IsResourceReadyToDraw(testing::_))
+        .WillRepeatedly(Return(true));
+    callback.Run();
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+}
+
+TEST_F(TileManagerReadyToDrawTest, NonSmoothActivationDoesNotWaitOnCallback) {
+  SetupTreesWithPendingTreeTiles();
+
+  // We're using a StrictMock on the RasterBufferProvider, so any function call
+  // will cause a test failure.
+  base::RunLoop run_loop;
+
+  host_impl()->tile_manager()->DidModifyTilePriorities();
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate())
+      .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+  run_loop.Run();
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+}
+
+TEST_F(TileManagerReadyToDrawTest, SmoothDrawWaitsOnCallback) {
+  host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
+  SetupTreesWithActiveTreeTiles();
+
+  base::Closure callback;
+  {
+    base::RunLoop run_loop;
+
+    // Until we activate our ready to draw callback, treat all resources as not
+    // ready to draw.
+    EXPECT_CALL(*mock_raster_buffer_provider(),
+                IsResourceReadyToDraw(testing::_))
+        .WillRepeatedly(Return(false));
+
+    EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
+        .WillOnce(Invoke([&run_loop, &callback](
+            const ResourceProvider::ResourceIdArray& resource_ids,
+            const base::Closure& callback_in, uint64_t pending_callback_id) {
+          callback = callback_in;
+          run_loop.Quit();
+          return 1;
+        }));
+    host_impl()->tile_manager()->DidModifyTilePriorities();
+    host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+    run_loop.Run();
+  }
+
+  EXPECT_FALSE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(MockHostImpl(), NotifyReadyToDraw())
+        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+    EXPECT_CALL(*mock_raster_buffer_provider(),
+                IsResourceReadyToDraw(testing::_))
+        .WillRepeatedly(Return(true));
+    callback.Run();
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+}
+
+TEST_F(TileManagerReadyToDrawTest, NonSmoothDrawDoesNotWaitOnCallback) {
+  SetupTreesWithActiveTreeTiles();
+
+  // We're using a StrictMock on the RasterBufferProvider, so any function call
+  // will cause a test failure.
+  base::RunLoop run_loop;
+
+  host_impl()->tile_manager()->DidModifyTilePriorities();
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_CALL(MockHostImpl(), NotifyReadyToDraw())
+      .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+  run_loop.Run();
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+}
+
+TEST_F(TileManagerReadyToDrawTest, NoCallbackWhenAlreadyReadyToDraw) {
+  host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
+  SetupTreesWithPendingTreeTiles();
+
+  base::RunLoop run_loop;
+  host_impl()->tile_manager()->DidModifyTilePriorities();
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate())
+      .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+  EXPECT_CALL(*mock_raster_buffer_provider(), IsResourceReadyToDraw(_))
+      .WillRepeatedly(Return(true));
+  run_loop.Run();
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+}
+
+void UpdateVisibleRect(FakePictureLayerImpl* layer,
+                       const gfx::Rect visible_rect) {
+  PictureLayerTilingSet* tiling_set = layer->tilings();
+  for (size_t j = 0; j < tiling_set->num_tilings(); ++j) {
+    PictureLayerTiling* tiling = tiling_set->tiling_at(j);
+    tiling->SetTilePriorityRectsForTesting(
+        visible_rect,                  // Visible rect.
+        visible_rect,                  // Skewport rect.
+        visible_rect,                  // Soon rect.
+        gfx::Rect(0, 0, 1000, 1000));  // Eventually rect.
+  }
+}
+
+TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
+  host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
+  SetupTreesWithPendingTreeTiles();
+
+  // Initially create a tiling with a visible rect of (0, 0, 100, 100) and
+  // a soon rect of the rest of the layer.
+  UpdateVisibleRect(pending_layer(), gfx::Rect(0, 0, 100, 100));
+
+  // Mark all these tiles as ready to draw.
+  base::RunLoop run_loop;
+  host_impl()->tile_manager()->DidModifyTilePriorities();
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate())
+      .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+  EXPECT_CALL(*mock_raster_buffer_provider(), IsResourceReadyToDraw(_))
+      .WillRepeatedly(Return(true));
+  run_loop.Run();
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+
+  // Move the viewport to (900, 900, 100, 100), so that we need a different set
+  // of tilings.
+  UpdateVisibleRect(pending_layer(), gfx::Rect(900, 900, 100, 100));
+
+  EXPECT_CALL(*mock_raster_buffer_provider(), IsResourceReadyToDraw(testing::_))
+      .WillRepeatedly(Return(false));
+
+  base::Closure callback;
+  {
+    base::RunLoop run_loop;
+
+    EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
+        .WillOnce(testing::Invoke([&run_loop, &callback](
+            const ResourceProvider::ResourceIdArray& resource_ids,
+            const base::Closure& callback_in, uint64_t pending_callback_id) {
+          callback = callback_in;
+          run_loop.Quit();
+          return 1;
+        }));
+    host_impl()->tile_manager()->DidModifyTilePriorities();
+    host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_FALSE(host_impl()->tile_manager()->IsReadyToActivate());
+
+  // Now switch back to our original tiling. We should be immediately able to
+  // activate, as we still have the original tile, and no longer need the
+  // tiles from the previous callback.
+  UpdateVisibleRect(pending_layer(), gfx::Rect(0, 0, 100, 100));
+
+  {
+    base::RunLoop run_loop;
+    host_impl()->tile_manager()->DidModifyTilePriorities();
+    host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+    EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate())
+        .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
 }
 
 }  // namespace

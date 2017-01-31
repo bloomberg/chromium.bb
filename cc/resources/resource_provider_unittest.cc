@@ -3784,5 +3784,35 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
   }
 }
 
+TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+
+  // ~Random set of |release_count|s to set on sync tokens.
+  uint64_t release_counts[5] = {7, 3, 10, 2, 5};
+
+  ResourceProvider::ResourceIdArray array;
+  for (uint32_t i = 0; i < arraysize(release_counts); ++i) {
+    ResourceId id = resource_provider_->CreateResource(
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+        gfx::ColorSpace());
+    array.push_back(id);
+
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider_.get(), id,
+                                             false);
+    gpu::SyncToken token;
+    token.Set(gpu::CommandBufferNamespace::INVALID, 0, gpu::CommandBufferId(),
+              release_counts[i]);
+    lock.set_sync_token(token);
+  }
+
+  gpu::SyncToken last_token =
+      resource_provider_->GetSyncTokenForResources(array);
+  EXPECT_EQ(last_token.release_count(), 10u);
+}
+
 }  // namespace
 }  // namespace cc
