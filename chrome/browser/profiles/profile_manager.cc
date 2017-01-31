@@ -1367,13 +1367,16 @@ Profile* ProfileManager::CreateAndInitializeProfile(
 #if !defined(OS_ANDROID)
 void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
     const CreateCallback& callback, const base::FilePath& profile_dir) {
-  // In case we delete non-active profile, just proceed.
-  const base::FilePath last_used_profile =
+  // In case we delete non-active profile and current profile is valid, proceed.
+  const base::FilePath last_used_profile_path =
       GetLastUsedProfileDir(user_data_dir_);
   const base::FilePath guest_profile_path = GetGuestProfilePath();
-  if (last_used_profile != profile_dir &&
-      last_used_profile != guest_profile_path) {
-    FinishDeletingProfile(profile_dir, last_used_profile);
+  Profile* last_used_profile = GetProfileByPath(last_used_profile_path);
+  if (last_used_profile_path != profile_dir &&
+      last_used_profile_path != guest_profile_path &&
+      last_used_profile != nullptr &&
+      !last_used_profile->IsLegacySupervised()) {
+    FinishDeletingProfile(profile_dir, last_used_profile_path);
     return;
   }
 
