@@ -4293,7 +4293,7 @@
             {
                 "id": "AXGlobalStates",
                 "type": "string",
-                "enum": [ "disabled", "hidden", "hiddenRoot", "invalid" ],
+                "enum": [ "disabled", "hidden", "hiddenRoot", "invalid", "keyshortcuts", "roledescription" ],
                 "description": "States which apply to every AX node."
             },
             {
@@ -4317,7 +4317,7 @@
             {
                 "id": "AXRelationshipAttributes",
                 "type": "string",
-                "enum": [ "activedescendant", "flowto", "controls", "describedby", "labelledby", "owns" ],
+                "enum": [ "activedescendant", "controls", "describedby", "details", "errormessage", "flowto", "labelledby", "owns" ],
                 "description": "Relationships between elements other than parent/child/sibling."
             },
             {

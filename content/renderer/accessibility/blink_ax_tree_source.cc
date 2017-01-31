@@ -83,7 +83,17 @@ class AXContentNodeDataSparseAttributeAdapter
 
   void addStringAttribute(blink::WebAXStringAttribute attribute,
                           const blink::WebString& value) override {
-    NOTREACHED();
+    switch (attribute) {
+      case blink::WebAXStringAttribute::AriaKeyShortcuts:
+        // TODO(dmazzoni): implement aria-keyshortcuts. http://crbug.com/644766
+        break;
+      case blink::WebAXStringAttribute::AriaRoleDescription:
+        // TODO(dmazzoni): implement aria-roledescription.
+        // http://crbug.com/644766
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   void addObjectAttribute(blink::WebAXObjectAttribute attribute,
@@ -91,6 +101,10 @@ class AXContentNodeDataSparseAttributeAdapter
     switch (attribute) {
       case blink::WebAXObjectAttribute::AriaActiveDescendant:
         dst_->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, value.axID());
+        break;
+      case blink::WebAXObjectAttribute::AriaErrorMessage:
+        // TODO(dmazzoni): implement aria-errormessage.
+        // http://crbug.com/644766
         break;
       default:
         NOTREACHED();
@@ -104,6 +118,9 @@ class AXContentNodeDataSparseAttributeAdapter
       case blink::WebAXObjectVectorAttribute::AriaControls:
         AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, value,
                                           dst_);
+        break;
+      case blink::WebAXObjectVectorAttribute::AriaDetails:
+        // TODO(dmazzoni): implement aria-details. http://crbug.com/644766
         break;
       case blink::WebAXObjectVectorAttribute::AriaFlowTo:
         AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, value, dst_);

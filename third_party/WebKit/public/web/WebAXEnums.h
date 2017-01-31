@@ -360,13 +360,17 @@ enum class WebAXBoolAttribute {};
 // Sparse attributes of a WebAXObject whose value is a string.
 // In order for it to be a sparse attribute the default value
 // must be "".
-enum class WebAXStringAttribute {};
+enum class WebAXStringAttribute {
+  AriaKeyShortcuts,
+  AriaRoleDescription,
+};
 
 // Sparse attributes of a WebAXObject whose value is a reference to
 // another WebAXObject within the same frame. In order for it to be a
 // sparse attribute the default value must be the null WebAXObject.
 enum class WebAXObjectAttribute {
   AriaActiveDescendant,
+  AriaErrorMessage,
 };
 
 // Sparse attributes of a WebAXObject whose value is a vector of
@@ -375,6 +379,7 @@ enum class WebAXObjectAttribute {
 // empty vector.
 enum class WebAXObjectVectorAttribute {
   AriaControls,
+  AriaDetails,
   AriaFlowTo,
 };
 

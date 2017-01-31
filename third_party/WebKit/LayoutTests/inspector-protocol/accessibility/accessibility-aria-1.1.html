@@ -1,0 +1,30 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="./accessibility-dumpAccessibilityNodes.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.sendCommand("DOM.getDocument", {}, (msg) => {
+        InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest("[data-dump]", false, msg);
+    });
+}
+
+</script>
+</head>
+<body onLoad="runTest();">
+  <input data-dump aria-errormessage="err">
+  <h3 id="err">This text field has an error!</h3>
+
+  <img data-dump aria-details="d1 d2" aria-label="Label">
+  <div id="d1">Details 1</div>
+  <div id="d2">Details 2</div>
+
+  <button data-dump aria-keyshortcuts="Ctrl+A">Select All</button>
+
+  <input data-dump type="checkbox" aria-roledescription="Lightswitch" checked>
+
+</body>
+</html>

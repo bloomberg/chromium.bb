@@ -341,15 +341,35 @@ class SparseAttributeAXPropertyAdapter
   Member<AXObject> m_axObject;
   protocol::Array<AXProperty>& m_properties;
 
-  void addBoolAttribute(AXBoolAttribute attribute, bool value) {}
+  void addBoolAttribute(AXBoolAttribute attribute, bool value) {
+    // Implement this when we add the first sparse bool attribute.
+  }
 
-  void addStringAttribute(AXStringAttribute attribute, const String& value) {}
+  void addStringAttribute(AXStringAttribute attribute, const String& value) {
+    switch (attribute) {
+      case AXStringAttribute::AriaKeyShortcuts:
+        m_properties.addItem(
+            createProperty(AXGlobalStatesEnum::Keyshortcuts,
+                           createValue(value, AXValueTypeEnum::String)));
+        break;
+      case AXStringAttribute::AriaRoleDescription:
+        m_properties.addItem(
+            createProperty(AXGlobalStatesEnum::Roledescription,
+                           createValue(value, AXValueTypeEnum::String)));
+        break;
+    }
+  }
 
   void addObjectAttribute(AXObjectAttribute attribute, AXObject& object) {
     switch (attribute) {
       case AXObjectAttribute::AriaActiveDescendant:
         m_properties.addItem(
             createProperty(AXRelationshipAttributesEnum::Activedescendant,
+                           createRelatedNodeListValue(object)));
+        break;
+      case AXObjectAttribute::AriaErrorMessage:
+        m_properties.addItem(
+            createProperty(AXRelationshipAttributesEnum::Errormessage,
                            createRelatedNodeListValue(object)));
         break;
     }
@@ -361,6 +381,11 @@ class SparseAttributeAXPropertyAdapter
       case AXObjectVectorAttribute::AriaControls:
         m_properties.addItem(createRelatedNodeListProperty(
             AXRelationshipAttributesEnum::Controls, objects, aria_controlsAttr,
+            *m_axObject));
+        break;
+      case AXObjectVectorAttribute::AriaDetails:
+        m_properties.addItem(createRelatedNodeListProperty(
+            AXRelationshipAttributesEnum::Details, objects, aria_controlsAttr,
             *m_axObject));
         break;
       case AXObjectVectorAttribute::AriaFlowTo:

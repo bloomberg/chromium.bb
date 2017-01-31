@@ -26,8 +26,10 @@ aria-colspan
 aria-controls
 aria-current
 aria-describedby
+aria-details
 aria-disabled
 aria-dropeffect
+aria-errormessage
 aria-expanded
 aria-flowto
 aria-grabbed
@@ -35,6 +37,7 @@ aria-haspopup
 aria-help
 aria-hidden
 aria-invalid
+aria-keyshortcuts
 aria-label
 aria-labeledby
 aria-labelledby
@@ -50,6 +53,7 @@ aria-pressed
 aria-readonly
 aria-relevant
 aria-required
+aria-roledescription
 aria-rowcount
 aria-rowindex
 aria-rowspan

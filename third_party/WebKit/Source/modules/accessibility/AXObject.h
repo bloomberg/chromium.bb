@@ -328,14 +328,19 @@ enum TextUnderElementMode {
 
 enum class AXBoolAttribute {};
 
-enum class AXStringAttribute {};
+enum class AXStringAttribute {
+  AriaKeyShortcuts,
+  AriaRoleDescription,
+};
 
 enum class AXObjectAttribute {
   AriaActiveDescendant,
+  AriaErrorMessage,
 };
 
 enum class AXObjectVectorAttribute {
   AriaControls,
+  AriaDetails,
   AriaFlowTo,
 };
 
