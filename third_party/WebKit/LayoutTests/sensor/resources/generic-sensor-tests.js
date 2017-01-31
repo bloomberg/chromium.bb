@@ -310,7 +310,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
                 // (not to a timer) so fluctuations are possible, so we
                 // reference to the actual elapsed updates count.
                 let elapsedUpdates = mockSensor.reading_updates_count() - readingUpdatesCounter;
-                assert_equals(fastSensorNotifiedCounter, elapsedUpdates);
+                assert_approx_equals(fastSensorNotifiedCounter, elapsedUpdates, 1);
                 fastSensor.stop();
                 slowSensor.stop();
                 resolve(mockSensor);

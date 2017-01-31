@@ -2326,8 +2326,6 @@ crbug.com/678493 virtual/mojo-loading/http/tests/permissions/chromium/test-reque
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
-crbug.com/680043 sensor/ambient-light-sensor.html [ Pass Failure ]
-
 crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 
 # When WebAssembly is exposed in V8 (soon), this test has the wrong number of expected Object.getOwnPropertyNames() for global object.
