@@ -87,6 +87,7 @@ enum SamplerType {
 enum BlendMode {
   BLEND_MODE_NONE,
   BLEND_MODE_NORMAL,
+  BLEND_MODE_DESTINATION_IN,
   BLEND_MODE_SCREEN,
   BLEND_MODE_OVERLAY,
   BLEND_MODE_DARKEN,
@@ -308,6 +309,7 @@ class FragmentShader {
 
   std::string GetHelperFunctions() const;
   std::string GetBlendFunction() const;
+  std::string GetBlendFunctionBodyForAlpha() const;
   std::string GetBlendFunctionBodyForRGB() const;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShader);

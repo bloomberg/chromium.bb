@@ -110,6 +110,8 @@ BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
   switch (mode) {
     case SkBlendMode::kSrcOver:
       return BLEND_MODE_NORMAL;
+    case SkBlendMode::kDstIn:
+      return BLEND_MODE_DESTINATION_IN;
     case SkBlendMode::kScreen:
       return BLEND_MODE_SCREEN;
     case SkBlendMode::kOverlay:
@@ -714,17 +716,22 @@ static sk_sp<SkImage> ApplyImageFilter(
 }
 
 bool GLRenderer::CanApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode) {
-  return use_blend_equation_advanced_ || blend_mode == SkBlendMode::kScreen ||
-         blend_mode == SkBlendMode::kSrcOver;
+  return use_blend_equation_advanced_ || blend_mode == SkBlendMode::kSrcOver ||
+         blend_mode == SkBlendMode::kDstIn ||
+         blend_mode == SkBlendMode::kScreen;
 }
 
 void GLRenderer::ApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode) {
-  DCHECK(CanApplyBlendModeUsingBlendFunc(blend_mode));
-
   // Any modes set here must be reset in RestoreBlendFuncToDefault
-  if (use_blend_equation_advanced_) {
+  if (blend_mode == SkBlendMode::kSrcOver) {
+    // Left no-op intentionally.
+  } else if (blend_mode == SkBlendMode::kDstIn) {
+    gl_->BlendFunc(GL_ZERO, GL_SRC_ALPHA);
+  } else if (blend_mode == SkBlendMode::kScreen) {
+    gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
+  } else {
+    DCHECK(use_blend_equation_advanced_);
     GLenum equation = GL_FUNC_ADD;
-
     switch (blend_mode) {
       case SkBlendMode::kScreen:
         equation = GL_SCREEN_KHR;
@@ -772,25 +779,25 @@ void GLRenderer::ApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode) {
         equation = GL_HSL_LUMINOSITY_KHR;
         break;
       default:
+        NOTREACHED() << "Unexpected blend mode: SkBlendMode::k"
+                     << SkBlendMode_Name(blend_mode);
         return;
     }
-
     gl_->BlendEquation(equation);
-  } else {
-    if (blend_mode == SkBlendMode::kScreen) {
-      gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
-    }
   }
 }
 
 void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
-  if (blend_mode == SkBlendMode::kSrcOver)
-    return;
-
-  if (use_blend_equation_advanced_) {
-    gl_->BlendEquation(GL_FUNC_ADD);
-  } else {
-    gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  switch (blend_mode) {
+    case SkBlendMode::kSrcOver:
+      break;
+    case SkBlendMode::kDstIn:
+    case SkBlendMode::kScreen:
+      gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+      break;
+    default:
+      DCHECK(use_blend_equation_advanced_);
+      gl_->BlendEquation(GL_FUNC_ADD);
   }
 }
 

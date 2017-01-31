@@ -498,10 +498,12 @@ void Layer::SetBlendMode(SkBlendMode blend_mode) {
   if (inputs_.blend_mode == blend_mode)
     return;
 
-  // Allowing only blend modes that are defined in the CSS Compositing standard:
+  // Allowing only blend modes that are defined in the CSS Compositing standard,
+  // plus destination-in which is used to implement masks.
   // http://dev.w3.org/fxtf/compositing-1/#blending
   switch (blend_mode) {
     case SkBlendMode::kSrcOver:
+    case SkBlendMode::kDstIn:
     case SkBlendMode::kScreen:
     case SkBlendMode::kOverlay:
     case SkBlendMode::kDarken:
@@ -524,7 +526,6 @@ void Layer::SetBlendMode(SkBlendMode blend_mode) {
     case SkBlendMode::kDst:
     case SkBlendMode::kDstOver:
     case SkBlendMode::kSrcIn:
-    case SkBlendMode::kDstIn:
     case SkBlendMode::kSrcOut:
     case SkBlendMode::kDstOut:
     case SkBlendMode::kSrcATop:

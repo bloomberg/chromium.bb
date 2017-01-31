@@ -84,6 +84,8 @@ static inline SkBlendMode BlendModeToSkXfermode(BlendMode blend_mode) {
     case BLEND_MODE_NONE:
     case BLEND_MODE_NORMAL:
       return SkBlendMode::kSrcOver;
+    case BLEND_MODE_DESTINATION_IN:
+      return SkBlendMode::kDstIn;
     case BLEND_MODE_SCREEN:
       return SkBlendMode::kScreen;
     case BLEND_MODE_OVERLAY:
@@ -236,6 +238,7 @@ static const TexCoordPrecision kPrecisionList[] = {TEX_COORD_PRECISION_MEDIUM,
 static const BlendMode kBlendModeList[LAST_BLEND_MODE + 1] = {
     BLEND_MODE_NONE,
     BLEND_MODE_NORMAL,
+    BLEND_MODE_DESTINATION_IN,
     BLEND_MODE_SCREEN,
     BLEND_MODE_OVERLAY,
     BLEND_MODE_DARKEN,

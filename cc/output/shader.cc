@@ -724,17 +724,25 @@ std::string FragmentShader::GetHelperFunctions() const {
 
 std::string FragmentShader::GetBlendFunction() const {
   return "vec4 Blend(vec4 src, vec4 dst) {"
-         "    vec4 result;"
-         "    result.a = src.a + (1.0 - src.a) * dst.a;" +
-         GetBlendFunctionBodyForRGB() +
+         "    vec4 result;" +
+         GetBlendFunctionBodyForAlpha() + GetBlendFunctionBodyForRGB() +
          "    return result;"
          "}";
+}
+
+std::string FragmentShader::GetBlendFunctionBodyForAlpha() const {
+  if (blend_mode_ == BLEND_MODE_DESTINATION_IN)
+    return "result.a = src.a * dst.a;";
+  else
+    return "result.a = src.a + (1.0 - src.a) * dst.a;";
 }
 
 std::string FragmentShader::GetBlendFunctionBodyForRGB() const {
   switch (blend_mode_) {
     case BLEND_MODE_NORMAL:
       return "result.rgb = src.rgb + dst.rgb * (1.0 - src.a);";
+    case BLEND_MODE_DESTINATION_IN:
+      return "result.rgb = dst.rgb * src.a;";
     case BLEND_MODE_SCREEN:
       return "result.rgb = src.rgb + (1.0 - src.rgb) * dst.rgb;";
     case BLEND_MODE_LIGHTEN:
