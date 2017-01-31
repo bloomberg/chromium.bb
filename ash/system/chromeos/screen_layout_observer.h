@@ -51,14 +51,31 @@ class ASH_EXPORT ScreenLayoutObserver : public WmDisplayObserver {
   // also sets |additional_message_out| which appears in the notification with
   // the |message_out|.
   bool GetDisplayMessageForNotification(const DisplayInfoMap& old_info,
-                                        base::string16* message_out,
-                                        base::string16* additional_message_out);
+                                        base::string16* out_message,
+                                        base::string16* out_additional_message);
 
   // Creates or updates the display notification.
   void CreateOrUpdateNotification(const base::string16& message,
                                   const base::string16& additional_message);
 
+  // Returns the notification message that should be shown when mirror display
+  // mode is exited.
+  bool GetExitMirrorModeMessage(base::string16* out_message,
+                                base::string16* out_additional_message);
+
   DisplayInfoMap display_info_;
+
+  enum class DisplayMode {
+    SINGLE,
+    EXTENDED_2,       // 2 displays in extended mode.
+    EXTENDED_3_PLUS,  // 3+ displays in extended mode.
+    MIRRORING,
+    UNIFIED,
+    DOCKED
+  };
+
+  DisplayMode old_display_mode_ = DisplayMode::SINGLE;
+  DisplayMode current_display_mode_ = DisplayMode::SINGLE;
 
   bool show_notifications_for_testing = true;
 

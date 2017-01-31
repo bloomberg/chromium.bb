@@ -292,8 +292,14 @@
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
     Mirroring to <ph name="DISPLAY_NAME">$1</ph>
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT" desc="The label used in the tray to show that mirror mode is exiting.">
+    Exiting mirror mode
+  </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED" desc="The label used in the tray to show that the current status is extended.">
     Extending screen to <ph name="DISPLAY_NAME">$1</ph>
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED" desc="The text of the notification to show when a display is removed.">
+    Removed display <ph name="DISPLAY_NAME">$1</ph>
   </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL" desc="The label used in the tray to show that the current status is mirroring and the device doesn't have the internal display.">
     Mirroring
@@ -306,6 +312,9 @@
   </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION" desc="The body of the notification indicating that the system is in docked mode.">
     You can keep using your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> while it's connected to an external display, even with the lid closed.
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_EXITING" desc="The notification message shown to the user when the device is exiting docked mode.">
+    Exiting docked mode
   </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
     <ph name="DISPLAY_NAME">$1</ph> resolution was changed to <ph name="RESOLUTION">$2</ph>
@@ -336,6 +345,9 @@
   </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED" desc="The title of the notification indicating that the system is in unified desktop mode.">
     Unified desktop mode
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED_EXITING" desc="The title of the notification indicating that the system is exiting unified desktop mode.">
+    Exiting unified desktop mode
   </message>
   <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
     CAPS LOCK is on
