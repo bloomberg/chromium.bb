@@ -5,6 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/input/selection.h"
 #include "cc/ipc/traits_test_service.mojom.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -48,6 +49,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
       const CompositorFrameMetadata& c,
       const EchoCompositorFrameMetadataCallback& callback) override {
     callback.Run(c);
+  }
+
+  void EchoCopyOutputRequest(
+      const CopyOutputRequest& c,
+      const EchoCopyOutputRequestCallback& callback) override {
+    callback.Run(std::move(c));
   }
 
   void EchoFilterOperation(
@@ -115,6 +122,8 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
+
+void StubCopyOutputRequestCallback(std::unique_ptr<CopyOutputResult> result) {}
 
 }  // namespace
 
@@ -342,6 +351,48 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(referenced_surfaces.size(), output.referenced_surfaces.size());
   for (uint32_t i = 0; i < referenced_surfaces.size(); ++i)
     EXPECT_EQ(referenced_surfaces[i], output.referenced_surfaces[i]);
+}
+
+TEST_F(StructTraitsTest, CopyOutputRequest) {
+  const gfx::Rect area(5, 7, 44, 55);
+  const auto callback = base::Bind(StubCopyOutputRequestCallback);
+  const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
+      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
+  const uint32_t target = 3;
+  const auto source =
+      base::UnguessableToken::Deserialize(0xdeadbeef, 0xdeadf00d);
+  gpu::Mailbox mailbox;
+  mailbox.SetName(mailbox_name);
+  TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
+
+  // Test with bitmap.
+  std::unique_ptr<CopyOutputRequest> input;
+  input = CopyOutputRequest::CreateBitmapRequest(callback);
+  input->set_area(area);
+  input->set_source(source);
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  CopyOutputRequest output;
+  proxy->EchoCopyOutputRequest(*input.get(), &output);
+
+  EXPECT_TRUE(output.force_bitmap_result());
+  EXPECT_FALSE(output.has_texture_mailbox());
+  EXPECT_TRUE(output.has_area());
+  EXPECT_EQ(area, output.area());
+  EXPECT_EQ(source, output.source());
+
+  // Test with texture mailbox.
+  input = CopyOutputRequest::CreateRequest(callback);
+  input->SetTextureMailbox(texture_mailbox);
+
+  CopyOutputRequest output2;
+  proxy->EchoCopyOutputRequest(*input.get(), &output2);
+
+  EXPECT_TRUE(output2.has_texture_mailbox());
+  EXPECT_FALSE(output2.has_area());
+  EXPECT_EQ(mailbox, output2.texture_mailbox().mailbox());
+  EXPECT_EQ(target, output2.texture_mailbox().target());
+  EXPECT_FALSE(output2.has_source());
 }
 
 TEST_F(StructTraitsTest, FilterOperation) {

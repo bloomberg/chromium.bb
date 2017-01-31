@@ -1,0 +1,18 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module cc.mojom;
+
+import "cc/ipc/texture_mailbox.mojom";
+import "mojo/common/unguessable_token.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+// See cc/output/copy_output_request.h.
+// Note: result_callback_ is not included in this struct.
+struct CopyOutputRequest {
+  mojo.common.mojom.UnguessableToken? source;
+  bool force_bitmap_result;
+  gfx.mojom.Rect? area;
+  cc.mojom.TextureMailbox? texture_mailbox;
+};

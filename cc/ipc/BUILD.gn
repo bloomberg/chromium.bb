@@ -42,6 +42,7 @@ mojom("interfaces") {
     "begin_frame_args.mojom",
     "compositor_frame.mojom",
     "compositor_frame_metadata.mojom",
+    "copy_output_request.mojom",
     "filter_operation.mojom",
     "filter_operations.mojom",
     "frame_sink_id.mojom",

@@ -14,11 +14,17 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/rect.h"
 
 class SkBitmap;
 
 namespace cc {
+
+namespace mojom {
+class CopyOutputRequestDataView;
+}
+
 class CopyOutputResult;
 
 class CC_EXPORT CopyOutputRequest {
@@ -41,6 +47,8 @@ class CC_EXPORT CopyOutputRequest {
       const CopyOutputRequest& original_request,
       const CopyOutputRequestCallback& result_callback);
 
+  CopyOutputRequest();
+
   ~CopyOutputRequest();
 
   bool IsEmpty() const { return result_callback_.is_null(); }
@@ -57,19 +65,16 @@ class CC_EXPORT CopyOutputRequest {
   // By default copy requests copy the entire layer's subtree output. If an
   // area is given, then the intersection of this rect (in layer space) with
   // the layer's subtree output will be returned.
-  void set_area(const gfx::Rect& area) {
-    has_area_ = true;
-    area_ = area;
-  }
-  bool has_area() const { return has_area_; }
-  gfx::Rect area() const { return area_; }
+  void set_area(const gfx::Rect& area) { area_ = area; }
+  bool has_area() const { return area_.has_value(); }
+  const gfx::Rect& area() const { return *area_; }
 
   // By default copy requests create a new TextureMailbox to return contents
   // in. This allows a client to provide a TextureMailbox, and the compositor
   // will place the result inside the TextureMailbox.
   void SetTextureMailbox(const TextureMailbox& texture_mailbox);
-  bool has_texture_mailbox() const { return has_texture_mailbox_; }
-  const TextureMailbox& texture_mailbox() const { return texture_mailbox_; }
+  bool has_texture_mailbox() const { return texture_mailbox_.has_value(); }
+  const TextureMailbox& texture_mailbox() const { return *texture_mailbox_; }
 
   void SendEmptyResult();
   void SendBitmapResult(std::unique_ptr<SkBitmap> bitmap);
@@ -81,16 +86,16 @@ class CC_EXPORT CopyOutputRequest {
   void SendResult(std::unique_ptr<CopyOutputResult> result);
 
  private:
-  CopyOutputRequest();
+  friend struct mojo::StructTraits<mojom::CopyOutputRequestDataView,
+                                   CopyOutputRequest>;
+
   CopyOutputRequest(bool force_bitmap_result,
                     const CopyOutputRequestCallback& result_callback);
 
   base::Optional<base::UnguessableToken> source_;
   bool force_bitmap_result_;
-  bool has_area_;
-  bool has_texture_mailbox_;
-  gfx::Rect area_;
-  TextureMailbox texture_mailbox_;
+  base::Optional<gfx::Rect> area_;
+  base::Optional<TextureMailbox> texture_mailbox_;
   CopyOutputRequestCallback result_callback_;
 };
 
