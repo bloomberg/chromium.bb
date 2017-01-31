@@ -19,9 +19,6 @@
 namespace views {
 namespace {
 
-// Size used for the default SquareInkDropRipple.
-const int kInkDropSize = 24;
-
 // The scale factor to compute the large size of the default
 // SquareInkDropRipple.
 const float kLargeInkDropScale = 1.333f;
@@ -32,8 +29,8 @@ const float kInkDropVisibleOpacity = 0.175f;
 }  // namespace
 
 // static
-const int InkDropHostView::kInkDropSmallCornerRadius = 2;
-const int InkDropHostView::kInkDropLargeCornerRadius = 4;
+constexpr int InkDropHostView::kInkDropSmallCornerRadius;
+constexpr int InkDropHostView::kInkDropLargeCornerRadius;
 
 // An EventHandler that is guaranteed to be invoked and is not prone to
 // InkDropHostView descendents who do not call
@@ -167,23 +164,21 @@ std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
-    const gfx::Point& center_point) const {
-  const gfx::Size small_size(kInkDropSize, kInkDropSize);
+    const gfx::Point& center_point,
+    const gfx::Size& size) const {
   std::unique_ptr<InkDropRipple> ripple(new SquareInkDropRipple(
-      CalculateLargeInkDropSize(small_size), kInkDropLargeCornerRadius,
-      small_size, kInkDropSmallCornerRadius, center_point,
-      GetInkDropBaseColor(), ink_drop_visible_opacity()));
+      CalculateLargeInkDropSize(size), kInkDropLargeCornerRadius, size,
+      kInkDropSmallCornerRadius, center_point, GetInkDropBaseColor(),
+      ink_drop_visible_opacity()));
   return ripple;
 }
 
 std::unique_ptr<InkDropHighlight>
-InkDropHostView::CreateDefaultInkDropHighlight(
-    const gfx::PointF& center_point) const {
-  const gfx::Size small_size(kInkDropSize, kInkDropSize);
-  std::unique_ptr<InkDropHighlight> highlight(
-      new InkDropHighlight(small_size, kInkDropSmallCornerRadius, center_point,
-                           GetInkDropBaseColor()));
-  highlight->set_explode_size(CalculateLargeInkDropSize(small_size));
+InkDropHostView::CreateDefaultInkDropHighlight(const gfx::PointF& center_point,
+                                               const gfx::Size& size) const {
+  std::unique_ptr<InkDropHighlight> highlight(new InkDropHighlight(
+      size, kInkDropSmallCornerRadius, center_point, GetInkDropBaseColor()));
+  highlight->set_explode_size(CalculateLargeInkDropSize(size));
   return highlight;
 }
 

@@ -54,8 +54,11 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   void SetInkDropMode(InkDropMode ink_drop_mode);
 
  protected:
-  static const int kInkDropSmallCornerRadius;
-  static const int kInkDropLargeCornerRadius;
+  static constexpr int kInkDropSmallCornerRadius = 2;
+  static constexpr int kInkDropLargeCornerRadius = 4;
+
+  // Size used for the default SquareInkDropRipple.
+  static constexpr int kDefaultInkDropSize = 24;
 
   // Returns a large ink drop size based on the |small_size| that works well
   // with the SquareInkDropRipple animation durations.
@@ -68,11 +71,15 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
 
   // Returns the default InkDropRipple centered on |center_point|.
   std::unique_ptr<InkDropRipple> CreateDefaultInkDropRipple(
-      const gfx::Point& center_point) const;
+      const gfx::Point& center_point,
+      const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
+                                        kDefaultInkDropSize)) const;
 
   // Returns the default InkDropHighlight centered on |center_point|.
   std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
-      const gfx::PointF& center_point) const;
+      const gfx::PointF& center_point,
+      const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
+                                        kDefaultInkDropSize)) const;
 
   // Returns the point of the |last_ripple_triggering_event_| if it was a
   // LocatedEvent, otherwise the center point of the local bounds is returned.
