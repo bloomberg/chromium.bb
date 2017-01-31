@@ -34,7 +34,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #endif
 
 #if defined(USE_ASH)
