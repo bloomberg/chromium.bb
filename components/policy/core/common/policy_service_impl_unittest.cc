@@ -662,7 +662,7 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
   policy_service_->RemoveObserver(POLICY_DOMAIN_SIGNIN_EXTENSIONS, &observer);
 }
 
-TEST_F(PolicyServiceTest, FixDeprecatedPolicies) {
+TEST_F(PolicyServiceTest, SeparateProxyPoliciesMerging) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
   const PolicyNamespace extension_namespace(POLICY_DOMAIN_EXTENSIONS, "xyz");
 

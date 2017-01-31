@@ -2002,10 +2002,6 @@
       ],
     },
     {
-      # TODO(joaodasilva): Make this the default and deprecate the other proxy
-      # policies once all providers are ready to load 'dict' policies.
-      # This is currently an internal policy.
-      # https://crbug.com/108992, https://crbug.com/108996
       'name': 'ProxySettings',
       'type': 'dict',
       'schema': {

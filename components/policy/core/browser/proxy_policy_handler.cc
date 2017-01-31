@@ -56,8 +56,7 @@ namespace policy {
 
 // The proxy policies have the peculiarity that they are loaded from individual
 // policies, but the providers then expose them through a unified
-// DictionaryValue. Once Dictionary policies are fully supported, the individual
-// proxy policies will be deprecated. http://crbug.com/108996
+// DictionaryValue.
 
 ProxyPolicyHandler::ProxyPolicyHandler() {}
 

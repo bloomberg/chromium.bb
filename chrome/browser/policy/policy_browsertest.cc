@@ -1067,7 +1067,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_EQ(GURL(url::kAboutBlankURL), web_contents->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PolicyPreprocessing) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, SeparateProxyPoliciesMerging) {
   // Add an individual proxy policy value.
   PolicyMap policies;
   policies.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

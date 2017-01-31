@@ -33,14 +33,11 @@ const char* kProxyPolicies[] = {
   key::kProxyBypassList,
 };
 
-void FixDeprecatedPolicies(PolicyMap* policies) {
-  // Proxy settings have been configured by 5 policies that didn't mix well
-  // together, and maps of policies had to take this into account when merging
-  // policy sources. The proxy settings will eventually be configured by a
-  // single Dictionary policy when all providers have support for that. For
-  // now, the individual policies are mapped here to a single Dictionary policy
-  // that the rest of the policy machinery uses.
-
+// Maps the separate policies for proxy settings into a single Dictionary
+// policy. This allows to keep the logic of merging policies from different
+// sources simple, as all separate proxy policies should be considered as a
+// single whole during merging.
+void RemapProxyPolicies(PolicyMap* policies) {
   // The highest (level, scope) pair for an existing proxy policy is determined
   // first, and then only policies with those exact attributes are merged.
   PolicyMap::Entry current_priority;  // Defaults to the lowest priority.
@@ -194,7 +191,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   for (auto provider : providers_) {
     PolicyBundle provided_bundle;
     provided_bundle.CopyFrom(provider->policies());
-    FixDeprecatedPolicies(&provided_bundle.Get(chrome_namespace));
+    RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
   }
 
