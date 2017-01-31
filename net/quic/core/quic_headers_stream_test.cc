@@ -352,7 +352,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
     }
     framer_->ProcessInput(saved_data_.data(), saved_data_.length());
     EXPECT_FALSE(framer_->HasError())
-        << SpdyFramer::ErrorCodeToString(framer_->error_code());
+        << SpdyFramer::SpdyFramerErrorToString(framer_->spdy_framer_error());
 
     CheckHeaders();
     saved_data_.clear();
@@ -455,7 +455,7 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
       EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id, true)).Times(1);
       framer_->ProcessInput(saved_data_.data(), saved_data_.length());
       EXPECT_FALSE(framer_->HasError())
-          << SpdyFramer::ErrorCodeToString(framer_->error_code());
+          << SpdyFramer::SpdyFramerErrorToString(framer_->spdy_framer_error());
       CheckHeaders();
       saved_data_.clear();
     } else {

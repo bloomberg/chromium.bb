@@ -174,7 +174,7 @@ void SpdyFramer::Reset() {
   }
   state_ = SPDY_READY_FOR_FRAME;
   previous_state_ = SPDY_READY_FOR_FRAME;
-  error_code_ = SPDY_NO_ERROR;
+  spdy_framer_error_ = SPDY_NO_ERROR;
   remaining_data_length_ = 0;
   remaining_control_header_ = 0;
   current_frame_buffer_.Rewind();
@@ -216,11 +216,11 @@ bool SpdyFramer::probable_http_response() const {
   return probable_http_response_;
 }
 
-SpdyFramer::SpdyError SpdyFramer::error_code() const {
+SpdyFramer::SpdyFramerError SpdyFramer::spdy_framer_error() const {
   if (decoder_adapter_ != nullptr) {
-    return decoder_adapter_->error_code();
+    return decoder_adapter_->spdy_framer_error();
   }
-  return error_code_;
+  return spdy_framer_error_;
 }
 
 SpdyFramer::SpdyState SpdyFramer::state() const {
@@ -360,9 +360,9 @@ const char* SpdyFramer::StateToString(int state) {
   return "UNKNOWN_STATE";
 }
 
-void SpdyFramer::set_error(SpdyError error) {
+void SpdyFramer::set_error(SpdyFramerError error) {
   DCHECK(visitor_);
-  error_code_ = error;
+  spdy_framer_error_ = error;
   // These values will usually get reset once we come to the end
   // of a header block, but if we run into an error that
   // might not happen, so reset them here.
@@ -373,8 +373,8 @@ void SpdyFramer::set_error(SpdyError error) {
   visitor_->OnError(this);
 }
 
-const char* SpdyFramer::ErrorCodeToString(int error_code) {
-  switch (error_code) {
+const char* SpdyFramer::SpdyFramerErrorToString(int spdy_framer_error) {
+  switch (spdy_framer_error) {
     case SPDY_NO_ERROR:
       return "NO_ERROR";
     case SPDY_INVALID_STREAM_ID:
@@ -791,7 +791,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
 }
 
 void SpdyFramer::ProcessControlFrameHeader() {
-  DCHECK_EQ(SPDY_NO_ERROR, error_code_);
+  DCHECK_EQ(SPDY_NO_ERROR, spdy_framer_error_);
   DCHECK_LE(GetFrameHeaderSize(), current_frame_buffer_.len());
 
   // Do some sanity checking on the control frame sizes and flags.

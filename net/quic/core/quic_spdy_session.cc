@@ -4,6 +4,8 @@
 
 #include "net/quic/core/quic_spdy_session.h"
 
+#include <algorithm>
+#include <string>
 #include <utility>
 
 #include "net/quic/core/quic_flags.h"
@@ -135,9 +137,9 @@ class QuicSpdySession::SpdyFramerVisitor
   }
 
   void OnError(SpdyFramer* framer) override {
-    CloseConnection(
-        QuicStrCat("SPDY framing error: ",
-                   SpdyFramer::ErrorCodeToString(framer->error_code())));
+    CloseConnection(QuicStrCat(
+        "SPDY framing error: ",
+        SpdyFramer::SpdyFramerErrorToString(framer->spdy_framer_error())));
   }
 
   void OnDataFrameHeader(SpdyStreamId stream_id,

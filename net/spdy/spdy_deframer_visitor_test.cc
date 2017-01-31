@@ -45,7 +45,7 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
   bool DeframeInput(const char* input, size_t size) {
     size_t input_remaining = size;
     while (input_remaining > 0 &&
-           decoder_.error_code() == SpdyFramer::SPDY_NO_ERROR) {
+           decoder_.spdy_framer_error() == SpdyFramer::SPDY_NO_ERROR) {
       // To make the tests more interesting, we feed random (and small) chunks
       // into the framer.  This simulates getting strange-sized reads from
       // the socket.
@@ -60,7 +60,7 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
       }
     }
     return (input_remaining == 0 &&
-            decoder_.error_code() == SpdyFramer::SPDY_NO_ERROR);
+            decoder_.spdy_framer_error() == SpdyFramer::SPDY_NO_ERROR);
   }
 
   SpdySerializedFrame SerializeFrame(const SpdyFrameIR& frame) {

@@ -481,7 +481,7 @@ void SpdyTestDeframerImpl::OnDataFrameHeader(SpdyStreamId stream_id,
 // The SpdyFramer will not process any more data at this point.
 void SpdyTestDeframerImpl::OnError(SpdyFramer* framer) {
   DVLOG(1) << "SpdyFramer detected an error in the stream: "
-           << SpdyFramer::ErrorCodeToString(framer->error_code())
+           << SpdyFramer::SpdyFramerErrorToString(framer->spdy_framer_error())
            << "     frame_type_: " << Http2FrameTypeToString(frame_type_);
   listener_->OnError(framer, this);
 }

@@ -188,7 +188,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
     return priority_;
   }
 
-  void OnError(SpdyFramer::SpdyError error_code) override {}
+  void OnError(SpdyFramer::SpdyFramerError spdy_framer_error) override {}
   void OnStreamError(SpdyStreamId stream_id,
                      const std::string& description) override {}
   void OnHeaders(SpdyStreamId stream_id,

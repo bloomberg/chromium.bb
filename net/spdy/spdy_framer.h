@@ -269,8 +269,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_ALTSVC_FRAME_PAYLOAD,
   };
 
-  // SPDY error codes.
-  enum SpdyError {
+  // Framer error codes.
+  enum SpdyFramerError {
     SPDY_NO_ERROR,
     SPDY_INVALID_STREAM_ID,            // Stream ID is invalid
     SPDY_INVALID_CONTROL_FRAME,        // Control frame is mal-formatted.
@@ -356,7 +356,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void Reset();
 
   // Check the state of the framer.
-  SpdyError error_code() const;
+  SpdyFramerError spdy_framer_error() const;
   SpdyState state() const;
   bool HasError() const { return state() == SPDY_ERROR; }
 
@@ -491,7 +491,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // For debugging.
   static const char* StateToString(int state);
-  static const char* ErrorCodeToString(int error_code);
+  static const char* SpdyFramerErrorToString(int spdy_framer_error);
   static const char* StatusCodeToString(int status_code);
   static const char* FrameTypeToString(SpdyFrameType type);
 
@@ -611,7 +611,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   //
   // For valid frames, returns the correct SpdyFrameType.
   // Otherwise returns a best guess at invalid frame type,
-  // after setting the appropriate SpdyError.
+  // after setting the appropriate SpdyFramerError.
   SpdyFrameType ValidateFrameHeader(bool is_control_frame,
                                     int frame_type_field,
                                     size_t payload_length_field);
@@ -656,7 +656,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   uint8_t SerializeHeaderFrameFlags(const SpdyHeadersIR& header_ir) const;
 
   // Set the error code and moves the framer into the error state.
-  void set_error(SpdyError error);
+  void set_error(SpdyFramerError error);
 
   // The size of the control frame buffer.
   // Since this is only used for control frame headers, the maximum control
@@ -675,7 +675,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   SpdyState state_;
   SpdyState previous_state_;
-  SpdyError error_code_;
+  SpdyFramerError spdy_framer_error_;
 
   // Note that for DATA frame, remaining_data_length_ is sum of lengths of
   // frame header, padding length field (optional), data payload (optional) and
