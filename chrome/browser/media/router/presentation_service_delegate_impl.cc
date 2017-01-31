@@ -157,7 +157,6 @@ class PresentationFrame {
                         const MediaRoute::Id& route_id);
 
   const MediaRoute::Id GetRouteId(const std::string& presentation_id) const;
-  const std::vector<MediaRoute::Id> GetRouteIds() const;
 
   void OnPresentationSessionStarted(
       const content::PresentationSessionInfo& session,
@@ -213,13 +212,6 @@ const MediaRoute::Id PresentationFrame::GetRouteId(
     const std::string& presentation_id) const {
   auto it = presentation_id_to_route_id_.find(presentation_id);
   return it != presentation_id_to_route_id_.end() ? it->second : "";
-}
-
-const std::vector<MediaRoute::Id> PresentationFrame::GetRouteIds() const {
-  std::vector<MediaRoute::Id> route_ids;
-  for (const auto& e : presentation_id_to_route_id_)
-    route_ids.push_back(e.second);
-  return route_ids;
 }
 
 bool PresentationFrame::SetScreenAvailabilityListener(
@@ -398,8 +390,6 @@ class PresentationFrameManager {
 
   const MediaRoute::Id GetRouteId(const RenderFrameHostId& render_frame_host_id,
                                   const std::string& presentation_id) const;
-  const std::vector<MediaRoute::Id> GetRouteIds(
-      const RenderFrameHostId& render_frame_host_id) const;
 
   const PresentationRequest* default_presentation_request() const {
     return default_presentation_request_.get();
@@ -481,13 +471,6 @@ const MediaRoute::Id PresentationFrameManager::GetRouteId(
   const auto it = presentation_frames_.find(render_frame_host_id);
   return it != presentation_frames_.end()
       ? it->second->GetRouteId(presentation_id) : MediaRoute::Id();
-}
-
-const std::vector<MediaRoute::Id> PresentationFrameManager::GetRouteIds(
-    const RenderFrameHostId& render_frame_host_id) const {
-  const auto it = presentation_frames_.find(render_frame_host_id);
-  return it != presentation_frames_.end() ? it->second->GetRouteIds()
-                                          : std::vector<MediaRoute::Id>();
 }
 
 bool PresentationFrameManager::SetScreenAvailabilityListener(
