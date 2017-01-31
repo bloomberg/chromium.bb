@@ -182,7 +182,7 @@ def RunGit(cmd, msg_on_error='', ignore_return_code=False):
   if returncode:
     if ignore_return_code:
       return None
-    raise TrybotError('%s. \n%s' % (msg_on_error, err))
+    raise TrybotError('%s. \n%s \n%s' % (msg_on_error, err, output))
 
   return output.strip()
 
