@@ -1669,15 +1669,8 @@ void PaintLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow) {
   if (!frameView)
     return;
 
-  // FIXME: Does this need to be fixed later for OOPI?
   bool isVisibleToHitTest = box().style()->visibleToHitTesting();
-  if (HTMLFrameOwnerElement* owner = frame->deprecatedLocalOwner()) {
-    isVisibleToHitTest &= owner->layoutObject() &&
-                          owner->layoutObject()->style()->visibleToHitTesting();
-  }
-
   bool didScrollOverflow = m_scrollsOverflow;
-
   m_scrollsOverflow = hasOverflow && isVisibleToHitTest;
   if (didScrollOverflow == scrollsOverflow())
     return;
