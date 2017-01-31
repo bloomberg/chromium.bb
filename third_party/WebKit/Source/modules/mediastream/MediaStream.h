@@ -26,7 +26,6 @@
 #ifndef MediaStream_h
 #define MediaStream_h
 
-#include "core/dom/ExecutionContext.h"
 #include "core/html/URLRegistry.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -37,6 +36,8 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
+class ScriptState;
 
 class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
                                          public ContextClient,
@@ -57,7 +58,7 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   void addTrack(MediaStreamTrack*, ExceptionState&);
   void removeTrack(MediaStreamTrack*, ExceptionState&);
   MediaStreamTrack* getTrackById(String);
-  MediaStream* clone(ExecutionContext*);
+  MediaStream* clone(ScriptState*);
 
   MediaStreamTrackVector getAudioTracks() const { return m_audioTracks; }
   MediaStreamTrackVector getVideoTracks() const { return m_videoTracks; }

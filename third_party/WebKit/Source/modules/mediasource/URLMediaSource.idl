@@ -31,5 +31,5 @@
 // https://w3c.github.io/media-source/#url
 
 partial interface URL {
-    [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ExecutionContext] static DOMString createObjectURL(MediaSource source);
+    [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ScriptState] static DOMString createObjectURL(MediaSource source);
 };

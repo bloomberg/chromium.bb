@@ -791,14 +791,14 @@ RTCSessionDescription* RTCPeerConnection::remoteDescription() {
 }
 
 void RTCPeerConnection::setConfiguration(
-    ExecutionContext* context,
+    ScriptState* scriptState,
     const RTCConfiguration& rtcConfiguration,
     ExceptionState& exceptionState) {
   if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
     return;
 
-  WebRTCConfiguration configuration =
-      parseConfiguration(context, rtcConfiguration, exceptionState);
+  WebRTCConfiguration configuration = parseConfiguration(
+      scriptState->getExecutionContext(), rtcConfiguration, exceptionState);
 
   if (exceptionState.hadException())
     return;
@@ -1061,7 +1061,7 @@ String RTCPeerConnection::iceConnectionState() const {
   return String();
 }
 
-void RTCPeerConnection::addStream(ExecutionContext* context,
+void RTCPeerConnection::addStream(ScriptState* scriptState,
                                   MediaStream* stream,
                                   const Dictionary& mediaConstraints,
                                   ExceptionState& exceptionState) {
@@ -1079,8 +1079,8 @@ void RTCPeerConnection::addStream(ExecutionContext* context,
     return;
 
   MediaErrorState mediaErrorState;
-  WebMediaConstraints constraints =
-      MediaConstraintsImpl::create(context, mediaConstraints, mediaErrorState);
+  WebMediaConstraints constraints = MediaConstraintsImpl::create(
+      scriptState->getExecutionContext(), mediaConstraints, mediaErrorState);
   if (mediaErrorState.hadException()) {
     mediaErrorState.raiseException(exceptionState);
     return;
@@ -1169,7 +1169,7 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState) {
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(
-    ExecutionContext* context,
+    ScriptState* scriptState,
     String label,
     const Dictionary& options,
     ExceptionState& exceptionState) {
@@ -1181,6 +1181,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   DictionaryHelper::get(options, "negotiated", init.negotiated);
 
   unsigned short value = 0;
+  ExecutionContext* context = scriptState->getExecutionContext();
   if (DictionaryHelper::get(options, "id", value))
     init.id = value;
   if (DictionaryHelper::get(options, "maxRetransmits", value)) {

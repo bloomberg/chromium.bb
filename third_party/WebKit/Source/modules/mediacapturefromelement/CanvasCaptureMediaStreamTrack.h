@@ -32,7 +32,7 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
   HTMLCanvasElement* canvas() const;
   void requestFrame();
 
-  CanvasCaptureMediaStreamTrack* clone(ExecutionContext*) override;
+  CanvasCaptureMediaStreamTrack* clone(ScriptState*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

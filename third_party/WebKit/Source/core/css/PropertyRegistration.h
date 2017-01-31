@@ -11,14 +11,14 @@
 namespace blink {
 
 class ExceptionState;
-class ExecutionContext;
 class PropertyDescriptor;
+class ScriptState;
 
 class PropertyRegistration {
   STATIC_ONLY(PropertyRegistration);
 
  public:
-  static void registerProperty(ExecutionContext*,
+  static void registerProperty(ScriptState*,
                                const PropertyDescriptor&,
                                ExceptionState&);
 };

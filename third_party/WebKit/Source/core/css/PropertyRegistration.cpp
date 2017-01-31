@@ -61,7 +61,7 @@ static bool computationallyIndependent(const CSSValue& value) {
 }
 
 void PropertyRegistration::registerProperty(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     const PropertyDescriptor& descriptor,
     ExceptionState& exceptionState) {
   // Bindings code ensures these are set.
@@ -76,7 +76,7 @@ void PropertyRegistration::registerProperty(
     return;
   }
   AtomicString atomicName(name);
-  Document* document = toDocument(executionContext);
+  Document* document = toDocument(scriptState->getExecutionContext());
   PropertyRegistry& registry = *document->propertyRegistry();
   if (registry.registration(atomicName)) {
     exceptionState.throwDOMException(

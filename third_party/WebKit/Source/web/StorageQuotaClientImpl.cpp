@@ -54,11 +54,12 @@ StorageQuotaClientImpl::StorageQuotaClientImpl() {}
 
 StorageQuotaClientImpl::~StorageQuotaClientImpl() {}
 
-void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext,
+void StorageQuotaClientImpl::requestQuota(ScriptState* scriptState,
                                           WebStorageQuotaType storageType,
                                           unsigned long long newQuotaInBytes,
                                           StorageQuotaCallback* successCallback,
                                           StorageErrorCallback* errorCallback) {
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   DCHECK(executionContext);
 
   if (executionContext->isDocument()) {

@@ -72,7 +72,7 @@ class MODULES_EXPORT MediaStreamTrack
   String readyState() const;
 
   void stopTrack(ExceptionState&);
-  virtual MediaStreamTrack* clone(ExecutionContext*);
+  virtual MediaStreamTrack* clone(ScriptState*);
 
   void getConstraints(MediaTrackConstraints&);
 

@@ -48,7 +48,7 @@ class StorageQuotaClientImpl
 
   ~StorageQuotaClientImpl() override;
 
-  void requestQuota(ExecutionContext*,
+  void requestQuota(ScriptState*,
                     WebStorageQuotaType,
                     unsigned long long newQuotaInBytes,
                     StorageQuotaCallback*,

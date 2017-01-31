@@ -11,15 +11,15 @@
 namespace blink {
 
 class ExceptionState;
-class ExecutionContext;
+class ScriptState;
 class Blob;
 
 class URLFileAPI {
   STATIC_ONLY(URLFileAPI);
 
  public:
-  static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
-  static void revokeObjectURL(ExecutionContext*, const String&);
+  static String createObjectURL(ScriptState*, Blob*, ExceptionState&);
+  static void revokeObjectURL(ScriptState*, const String&);
 };
 
 }  // namespace blink

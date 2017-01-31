@@ -30,8 +30,8 @@
 
 #include "modules/quota/DeprecatedStorageInfo.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/quota/StorageErrorCallback.h"
@@ -44,7 +44,7 @@ namespace blink {
 DeprecatedStorageInfo::DeprecatedStorageInfo() {}
 
 void DeprecatedStorageInfo::queryUsageAndQuota(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     int storageType,
     StorageUsageCallback* successCallback,
     StorageErrorCallback* errorCallback) {
@@ -53,16 +53,16 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
-    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
-                               StorageErrorCallback::createSameThreadTask(
-                                   errorCallback, NotSupportedError));
+    scriptState->getExecutionContext()->postTask(
+        TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
+        StorageErrorCallback::createSameThreadTask(errorCallback,
+                                                   NotSupportedError));
     return;
   }
-  storageQuota->queryUsageAndQuota(executionContext, successCallback,
-                                   errorCallback);
+  storageQuota->queryUsageAndQuota(scriptState, successCallback, errorCallback);
 }
 
-void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext,
+void DeprecatedStorageInfo::requestQuota(ScriptState* scriptState,
                                          int storageType,
                                          unsigned long long newQuotaInBytes,
                                          StorageQuotaCallback* successCallback,
@@ -72,12 +72,13 @@ void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext,
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
-    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
-                               StorageErrorCallback::createSameThreadTask(
-                                   errorCallback, NotSupportedError));
+    scriptState->getExecutionContext()->postTask(
+        TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
+        StorageErrorCallback::createSameThreadTask(errorCallback,
+                                                   NotSupportedError));
     return;
   }
-  storageQuota->requestQuota(executionContext, newQuotaInBytes, successCallback,
+  storageQuota->requestQuota(scriptState, newQuotaInBytes, successCallback,
                              errorCallback);
 }
 

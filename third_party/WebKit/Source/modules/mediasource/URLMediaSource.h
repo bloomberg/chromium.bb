@@ -37,13 +37,13 @@
 namespace blink {
 
 class MediaSource;
-class ExecutionContext;
+class ScriptState;
 
 class URLMediaSource {
   STATIC_ONLY(URLMediaSource);
 
  public:
-  static String createObjectURL(ExecutionContext*, MediaSource*);
+  static String createObjectURL(ScriptState*, MediaSource*);
 };
 
 }  // namespace blink

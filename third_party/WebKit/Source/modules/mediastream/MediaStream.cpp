@@ -26,7 +26,9 @@
 #include "modules/mediastream/MediaStream.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
@@ -274,14 +276,15 @@ MediaStreamTrack* MediaStream::getTrackById(String id) {
   return 0;
 }
 
-MediaStream* MediaStream::clone(ExecutionContext* context) {
+MediaStream* MediaStream::clone(ScriptState* scriptState) {
   MediaStreamTrackVector tracks;
+  ExecutionContext* context = scriptState->getExecutionContext();
   for (MediaStreamTrackVector::iterator iter = m_audioTracks.begin();
        iter != m_audioTracks.end(); ++iter)
-    tracks.push_back((*iter)->clone(context));
+    tracks.push_back((*iter)->clone(scriptState));
   for (MediaStreamTrackVector::iterator iter = m_videoTracks.begin();
        iter != m_videoTracks.end(); ++iter)
-    tracks.push_back((*iter)->clone(context));
+    tracks.push_back((*iter)->clone(scriptState));
   return MediaStream::create(context, tracks);
 }
 

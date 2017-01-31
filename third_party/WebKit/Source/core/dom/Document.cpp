@@ -4416,10 +4416,11 @@ void Document::registerEventFactory(
   eventFactories().insert(std::move(eventFactory));
 }
 
-Event* Document::createEvent(ExecutionContext* executionContext,
+Event* Document::createEvent(ScriptState* scriptState,
                              const String& eventType,
                              ExceptionState& exceptionState) {
   Event* event = nullptr;
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   for (const auto& factory : eventFactories()) {
     event = factory->create(executionContext, eventType);
     if (event) {

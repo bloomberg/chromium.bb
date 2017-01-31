@@ -30,6 +30,7 @@
 
 #include "modules/quota/DeprecatedStorageQuota.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -50,9 +51,10 @@ namespace blink {
 DeprecatedStorageQuota::DeprecatedStorageQuota(Type type) : m_type(type) {}
 
 void DeprecatedStorageQuota::queryUsageAndQuota(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     StorageUsageCallback* successCallback,
     StorageErrorCallback* errorCallback) {
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   ASSERT(executionContext);
 
   WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
@@ -81,10 +83,11 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
                                                  callbacks);
 }
 
-void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext,
+void DeprecatedStorageQuota::requestQuota(ScriptState* scriptState,
                                           unsigned long long newQuotaInBytes,
                                           StorageQuotaCallback* successCallback,
                                           StorageErrorCallback* errorCallback) {
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   ASSERT(executionContext);
 
   WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
@@ -105,7 +108,7 @@ void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext,
     return;
   }
 
-  client->requestQuota(executionContext, storageType, newQuotaInBytes,
+  client->requestQuota(scriptState, storageType, newQuotaInBytes,
                        successCallback, errorCallback);
 }
 

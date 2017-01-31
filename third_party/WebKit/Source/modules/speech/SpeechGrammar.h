@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ScriptState;
 
 class MODULES_EXPORT SpeechGrammar final
     : public GarbageCollectedFinalized<SpeechGrammar>,
@@ -46,9 +46,9 @@ class MODULES_EXPORT SpeechGrammar final
                                    // constructor should look like.
   static SpeechGrammar* create(const KURL& src, double weight);
 
-  const KURL& src(ExecutionContext*) const { return m_src; }
+  const KURL& src(ScriptState*) const { return m_src; }
   const KURL& src() const { return m_src; }
-  void setSrc(ExecutionContext*, const String& src);
+  void setSrc(ScriptState*, const String& src);
 
   double weight() const { return m_weight; }
   void setWeight(double weight) { m_weight = weight; }

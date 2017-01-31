@@ -40,7 +40,7 @@ namespace blink {
 class DOMWrapperWorld;
 class EventDispatchMediator;
 class EventTarget;
-class ExecutionContext;
+class ScriptState;
 
 class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
                           public ScriptWrappable {
@@ -154,8 +154,8 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
     return target();
   }  // MSIE extension - "the object that fired the event"
 
-  bool legacyReturnValue(ExecutionContext*) const;
-  void setLegacyReturnValue(ExecutionContext*, bool returnValue);
+  bool legacyReturnValue(ScriptState*) const;
+  void setLegacyReturnValue(ScriptState*, bool returnValue);
 
   virtual const AtomicString& interfaceName() const;
   bool hasInterface(const AtomicString&) const;
@@ -198,10 +198,10 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   bool defaultHandled() const { return m_defaultHandled; }
   void setDefaultHandled() { m_defaultHandled = true; }
 
-  bool cancelBubble(ExecutionContext* = nullptr) const {
+  bool cancelBubble(ScriptState* = nullptr) const {
     return propagationStopped();
   }
-  void setCancelBubble(ExecutionContext*, bool);
+  void setCancelBubble(ScriptState*, bool);
 
   Event* underlyingEvent() const { return m_underlyingEvent.get(); }
   void setUnderlyingEvent(Event*);

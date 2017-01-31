@@ -38,7 +38,7 @@
     MediaStreamTrack? getTrackById(DOMString trackId);
     [RaisesException] void addTrack(MediaStreamTrack track);
     [RaisesException] void removeTrack(MediaStreamTrack track);
-    [CallWith=ExecutionContext] MediaStream clone();
+    [CallWith=ScriptState] MediaStream clone();
     [Measure] readonly attribute boolean active;
     attribute EventHandler onaddtrack;
     attribute EventHandler onremovetrack;

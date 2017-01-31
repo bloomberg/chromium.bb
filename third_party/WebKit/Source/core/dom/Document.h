@@ -772,7 +772,7 @@ class CORE_EXPORT Document : public ContainerNode,
   EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
 
   static void registerEventFactory(std::unique_ptr<EventFactoryBase>);
-  static Event* createEvent(ExecutionContext*,
+  static Event* createEvent(ScriptState*,
                             const String& eventType,
                             ExceptionState&);
 

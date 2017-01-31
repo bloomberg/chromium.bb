@@ -54,7 +54,7 @@ class StorageQuotaClient : public Supplement<Page> {
   StorageQuotaClient() {}
   virtual ~StorageQuotaClient() {}
 
-  virtual void requestQuota(ExecutionContext*,
+  virtual void requestQuota(ScriptState*,
                             WebStorageQuotaType,
                             unsigned long long newQuotaInBytes,
                             StorageQuotaCallback*,

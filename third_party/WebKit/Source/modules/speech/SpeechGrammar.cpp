@@ -37,9 +37,8 @@ SpeechGrammar* SpeechGrammar::create(const KURL& src, double weight) {
   return new SpeechGrammar(src, weight);
 }
 
-void SpeechGrammar::setSrc(ExecutionContext* executionContext,
-                           const String& src) {
-  Document* document = toDocument(executionContext);
+void SpeechGrammar::setSrc(ScriptState* scriptState, const String& src) {
+  Document* document = toDocument(scriptState->getExecutionContext());
   m_src = document->completeURL(src);
 }
 

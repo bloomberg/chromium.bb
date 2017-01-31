@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ScriptState;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
@@ -56,11 +56,11 @@ class DeprecatedStorageQuota final
     return new DeprecatedStorageQuota(type);
   }
 
-  void queryUsageAndQuota(ExecutionContext*,
+  void queryUsageAndQuota(ScriptState*,
                           StorageUsageCallback*,
                           StorageErrorCallback*);
 
-  void requestQuota(ExecutionContext*,
+  void requestQuota(ScriptState*,
                     unsigned long long newQuotaInBytes,
                     StorageQuotaCallback*,
                     StorageErrorCallback*);

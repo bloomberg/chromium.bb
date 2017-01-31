@@ -5,6 +5,7 @@
 #include "core/fileapi/URLFileAPI.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
@@ -14,10 +15,11 @@
 namespace blink {
 
 // static
-String URLFileAPI::createObjectURL(ExecutionContext* executionContext,
+String URLFileAPI::createObjectURL(ScriptState* scriptState,
                                    Blob* blob,
                                    ExceptionState& exceptionState) {
   DCHECK(blob);
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   DCHECK(executionContext);
 
   if (blob->isClosed()) {
@@ -34,8 +36,9 @@ String URLFileAPI::createObjectURL(ExecutionContext* executionContext,
 }
 
 // static
-void URLFileAPI::revokeObjectURL(ExecutionContext* executionContext,
+void URLFileAPI::revokeObjectURL(ScriptState* scriptState,
                                  const String& urlString) {
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   DCHECK(executionContext);
 
   KURL url(KURL(), urlString);

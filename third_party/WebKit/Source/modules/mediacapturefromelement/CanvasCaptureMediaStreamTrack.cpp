@@ -39,7 +39,7 @@ void CanvasCaptureMediaStreamTrack::requestFrame() {
 }
 
 CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::clone(
-    ExecutionContext* context) {
+    ScriptState* scriptState) {
   MediaStreamComponent* clonedComponent = component()->clone();
   CanvasCaptureMediaStreamTrack* clonedTrack =
       new CanvasCaptureMediaStreamTrack(*this, clonedComponent);
