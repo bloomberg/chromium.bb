@@ -230,17 +230,21 @@ class UpdateConfigStage(generic_stages.BuilderStage):
         self.chromite_dir, 'bin', 'cbuildbot_view_config')
     cmd = [view_config_path, '--update']
 
-    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
+    try:
+      cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
+    except:
+      logging.error('Failed to update configs. Please check the format of the '
+                    'remote template file %s and the local template copy %s',
+                    self.template_gs_path, self.CONFIG_DUMP_PATH)
+      raise
 
     show_waterfall_path = os.path.join(
         self.chromite_dir, 'bin', 'cros_show_waterfall_layout')
     cmd = [show_waterfall_path]
     layout_file_name = os.path.join(
         self.chromite_dir, 'cbuildbot/waterfall_layout_dump.txt')
-    with cros_build_lib.OutputCapturer(stdout_path=layout_file_name) as output:
+    with cros_build_lib.OutputCapturer(stdout_path=layout_file_name):
       cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
-
-    logging.info("waterfall_layout_dump %s" % output.GetStdout())
 
   def _RunUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
