@@ -119,6 +119,10 @@
   return [_staticHTMLViewController webView];
 }
 
+- (void)setDelegate:(id<CRWNativeContentDelegate>)delegate {
+  [_staticHTMLViewController setDelegate:delegate];
+}
+
 - (NSString*)title {
   return [_staticHTMLViewController title];
 }
