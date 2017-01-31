@@ -8,7 +8,9 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPaintImageGenerator.h"
+#include "core/css/CSSVariableData.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -17,6 +19,12 @@ class CSSPaintValue : public CSSImageGeneratorValue {
   static CSSPaintValue* create(CSSCustomIdentValue* name) {
     return new CSSPaintValue(name);
   }
+
+  static CSSPaintValue* create(CSSCustomIdentValue* name,
+                               Vector<RefPtr<CSSVariableData>>& variableData) {
+    return new CSSPaintValue(name, variableData);
+  }
+
   ~CSSPaintValue();
 
   String customCSSText() const;
@@ -46,6 +54,8 @@ class CSSPaintValue : public CSSImageGeneratorValue {
  private:
   explicit CSSPaintValue(CSSCustomIdentValue* name);
 
+  CSSPaintValue(CSSCustomIdentValue* name, Vector<RefPtr<CSSVariableData>>&);
+
   class Observer final : public CSSPaintImageGenerator::Observer {
     WTF_MAKE_NONCOPYABLE(Observer);
 
@@ -69,6 +79,7 @@ class CSSPaintValue : public CSSImageGeneratorValue {
   Member<CSSCustomIdentValue> m_name;
   Member<CSSPaintImageGenerator> m_generator;
   Member<Observer> m_paintImageGeneratorObserver;
+  Vector<RefPtr<CSSVariableData>> m_argumentVariableData;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, isPaintValue());

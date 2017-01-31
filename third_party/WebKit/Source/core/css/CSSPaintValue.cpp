@@ -16,12 +16,22 @@ CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
       m_name(name),
       m_paintImageGeneratorObserver(new Observer(this)) {}
 
+CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name,
+                             Vector<RefPtr<CSSVariableData>>& variableData)
+    : CSSPaintValue(name) {
+  m_argumentVariableData.swap(variableData);
+}
+
 CSSPaintValue::~CSSPaintValue() {}
 
 String CSSPaintValue::customCSSText() const {
   StringBuilder result;
   result.append("paint(");
   result.append(m_name->customCSSText());
+  for (const auto& variableData : m_argumentVariableData) {
+    result.append(", ");
+    result.append(variableData.get()->tokenRange().serialize());
+  }
   result.append(')');
   return result.toString();
 }
@@ -56,7 +66,7 @@ bool CSSPaintValue::knownToBeOpaque(const LayoutObject& layoutObject) const {
 }
 
 bool CSSPaintValue::equals(const CSSPaintValue& other) const {
-  return name() == other.name();
+  return name() == other.name() && customCSSText() == other.customCSSText();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSPaintValue) {

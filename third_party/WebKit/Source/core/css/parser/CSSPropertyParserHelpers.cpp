@@ -14,6 +14,7 @@
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
+#include "core/css/CSSVariableData.h"
 #include "core/css/StyleColor.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/frame/UseCounter.h"
@@ -22,6 +23,25 @@
 namespace blink {
 
 namespace CSSPropertyParserHelpers {
+
+namespace {
+
+// Add CSSVariableData to variableData vector.
+bool addCSSPaintArgument(const Vector<CSSParserToken>& tokens,
+                         Vector<RefPtr<CSSVariableData>>* const variableData) {
+  CSSParserTokenRange tokenRange(tokens);
+  if (!tokenRange.atEnd()) {
+    RefPtr<CSSVariableData> unparsedCSSVariableData =
+        CSSVariableData::create(tokenRange, false, false);
+    if (unparsedCSSVariableData.get()) {
+      variableData->push_back(std::move(unparsedCSSVariableData));
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 void complete4Sides(CSSValue* side[4]) {
   if (side[3])
@@ -351,12 +371,17 @@ CSSIdentifierValue* consumeIdentRange(CSSParserTokenRange& range,
   return consumeIdent(range);
 }
 
+CSSCustomIdentValue* consumeCustomIdentWithToken(const CSSParserToken& token) {
+  if (token.type() != IdentToken || isCSSWideKeyword(token.value()))
+    return nullptr;
+  return CSSCustomIdentValue::create(token.value().toAtomicString());
+}
+
 CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange& range) {
   if (range.peek().type() != IdentToken ||
       isCSSWideKeyword(range.peek().value()))
     return nullptr;
-  return CSSCustomIdentValue::create(
-      range.consumeIncludingWhitespace().value().toAtomicString());
+  return consumeCustomIdentWithToken(range.consumeIncludingWhitespace());
 }
 
 CSSStringValue* consumeString(CSSParserTokenRange& range) {
@@ -1123,11 +1148,44 @@ static CSSValue* consumePaint(CSSParserTokenRange& args,
                               const CSSParserContext* context) {
   DCHECK(RuntimeEnabledFeatures::cssPaintAPIEnabled());
 
-  CSSCustomIdentValue* name = consumeCustomIdent(args);
+  const CSSParserToken& nameToken = args.consumeIncludingWhitespace();
+  CSSCustomIdentValue* name = consumeCustomIdentWithToken(nameToken);
   if (!name)
     return nullptr;
 
-  return CSSPaintValue::create(name);
+  if (args.atEnd())
+    return CSSPaintValue::create(name);
+
+  if (!RuntimeEnabledFeatures::cssPaintAPIArgumentsEnabled()) {
+    // Arguments not enabled, but exists. Invalid.
+    return nullptr;
+  }
+
+  // Begin parse paint arguments.
+  if (!consumeCommaIncludingWhitespace(args))
+    return nullptr;
+
+  // Consume arguments. Currently does not support complicated arguments
+  // like function calls.
+  // TODO(renjieliu): We may want to optimize the implementation by resolve
+  // variables early if paint function is registered.
+  Vector<CSSParserToken> argumentTokens;
+  Vector<RefPtr<CSSVariableData>> variableData;
+  while (!args.atEnd()) {
+    if (args.peek().type() != CommaToken) {
+      argumentTokens.push_back(args.consumeIncludingWhitespace());
+    } else {
+      if (!addCSSPaintArgument(argumentTokens, &variableData))
+        return nullptr;
+      argumentTokens.clear();
+      if (!consumeCommaIncludingWhitespace(args))
+        return nullptr;
+    }
+  }
+  if (!addCSSPaintArgument(argumentTokens, &variableData))
+    return nullptr;
+
+  return CSSPaintValue::create(name, variableData);
 }
 
 static CSSValue* consumeGeneratedImage(CSSParserTokenRange& range,
