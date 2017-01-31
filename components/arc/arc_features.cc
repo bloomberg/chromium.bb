@@ -17,4 +17,9 @@ const base::Feature kBootCompletedBroadcastFeature {
     "ArcBootCompletedBroadcast", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
+// Controls whether we show Arc Files app in Chrome launcher.
+const base::Feature kShowArcFilesAppFeature {
+    "ShowArcFilesApp", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 }  // namespace arc

@@ -2222,6 +2222,13 @@ const FeatureEntry kFeatureEntries[] = {
        IDS_FLAGS_GDI_TEXT_PRINTING_DESCRIPTION, kOsWin,
        FEATURE_VALUE_TYPE(features::kGdiTextPrinting)}
 #endif
+
+#if defined(OS_CHROMEOS)
+    {"show-arc-files-app", IDS_FLAGS_SHOW_ARC_FILES_APP_NAME,
+      IDS_FLAGS_SHOW_ARC_FILES_APP_DESCRIPTION, kOsCrOS,
+      FEATURE_VALUE_TYPE(arc::kShowArcFilesAppFeature)},
+#endif // defined(OS_CHROMEOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

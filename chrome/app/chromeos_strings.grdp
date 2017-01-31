@@ -88,6 +88,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_NEW_ZIP_UNPACKER_DESCRIPTION" desc="Description of about::flags option for the new ZIP unpacker based on the File System Provider API.">
     New ZIP unpacker flow, based on the File System Provider API.
   </message>
+  <message name="IDS_FLAGS_SHOW_ARC_FILES_APP_NAME" desc="Name of about::flags option for showing Android Files app in launcher.">
+    Show Android Files app
+  </message>
+  <message name="IDS_FLAGS_SHOW_ARC_FILES_APP_DESCRIPTION" desc="Description of the about::flag option for showing ARC Files app in launcher.">
+    Show Android Files app in Chrome OS launcher. This is only effective on a device with access to Play Store.
+  </message>
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">
     An operation is taking longer than expected. Do you want to abort it?
   </message>
