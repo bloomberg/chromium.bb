@@ -51,7 +51,7 @@ constexpr int kClosePaddingTop = 7;
 // The MD spec states that the center of the "x" should be 16x16 from the top
 // right of the dialog.
 constexpr int kClosePaddingRightMd = 4;
-constexpr int kClosePaddingTopMd = 5;
+constexpr int kClosePaddingTopMd = 4;
 
 // Get the |vertical| or horizontal amount that |available_bounds| overflows
 // |window_bounds|.

@@ -36,6 +36,12 @@ class VIEWS_EXPORT VectorIconButton : public views::ImageButton {
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
+  // Performs the work common to both SetIcon() variants.
+  void OnSetIcon();
+
+  // Called when something may have affected the button's images or colors.
+  void UpdateImagesAndColors();
+
   VectorIconButtonDelegate* delegate_;
   // TODO(estade): remove |id_| in favor of |icon_| once all callers have been
   // updated.
