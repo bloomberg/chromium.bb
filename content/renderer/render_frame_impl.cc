@@ -2864,6 +2864,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       // TODO(avayvod, asvitkine): Query the value directly when it is available
       // in the renderer process. See https://crbug.com/681160.
       GetWebkitPreferences().max_keyframe_distance_to_disable_background_video,
+      GetWebkitPreferences().enable_instant_source_buffer_gc,
       GetContentClient()->renderer()->AllowMediaSuspend());
 
   bool use_fallback_path = false;

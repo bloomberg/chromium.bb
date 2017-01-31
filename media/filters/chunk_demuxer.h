@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/synchronization/lock.h"
 #include "media/base/byte_queue.h"
 #include "media/base/demuxer.h"
@@ -65,6 +66,11 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Returns false iff buffer is still full after running eviction.
   // https://w3c.github.io/media-source/#sourcebuffer-coded-frame-eviction
   bool EvictCodedFrames(DecodeTimestamp media_time, size_t newDataSize);
+
+  void OnMemoryPressure(
+      DecodeTimestamp media_time,
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
+      bool force_instant_gc);
 
   // Signal to the stream that duration has changed to |duration|.
   void OnSetDuration(base::TimeDelta duration);
@@ -269,6 +275,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool EvictCodedFrames(const std::string& id,
                         base::TimeDelta currentMediaTime,
                         size_t newDataSize);
+
+  void OnMemoryPressure(
+      base::TimeDelta currentMediaTime,
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
+      bool force_instant_gc);
 
   // Returns the current presentation duration.
   double GetDuration();

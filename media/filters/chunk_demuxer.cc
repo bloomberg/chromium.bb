@@ -125,6 +125,15 @@ bool ChunkDemuxerStream::EvictCodedFrames(DecodeTimestamp media_time,
   return stream_->GarbageCollectIfNeeded(media_time, newDataSize);
 }
 
+void ChunkDemuxerStream::OnMemoryPressure(
+    DecodeTimestamp media_time,
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
+    bool force_instant_gc) {
+  base::AutoLock auto_lock(lock_);
+  return stream_->OnMemoryPressure(media_time, memory_pressure_level,
+                                   force_instant_gc);
+}
+
 void ChunkDemuxerStream::OnSetDuration(TimeDelta duration) {
   base::AutoLock auto_lock(lock_);
   stream_->OnSetDuration(duration);
@@ -733,6 +742,19 @@ void ChunkDemuxer::OnSelectedVideoTrackChanged(
   if (selected_stream) {
     DVLOG(1) << __func__ << ": enabling stream " << selected_stream;
     selected_stream->set_enabled(true, currTime);
+  }
+}
+
+void ChunkDemuxer::OnMemoryPressure(
+    base::TimeDelta currentMediaTime,
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
+    bool force_instant_gc) {
+  DecodeTimestamp media_time_dts =
+      DecodeTimestamp::FromPresentationTime(currentMediaTime);
+  base::AutoLock auto_lock(lock_);
+  for (const auto& itr : source_state_map_) {
+    itr.second->OnMemoryPressure(media_time_dts, memory_pressure_level,
+                                 force_instant_gc);
   }
 }
 

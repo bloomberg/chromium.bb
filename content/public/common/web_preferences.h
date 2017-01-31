@@ -272,6 +272,14 @@ struct CONTENT_EXPORT WebPreferences {
   // the renderer process. See https://crbug.com/681160.
   base::TimeDelta max_keyframe_distance_to_disable_background_video;
 
+  // When memory pressure based garbage collection is enabled for MSE, the
+  // |enable_instant_source_buffer_gc| flag controls whether the GC is done
+  // immediately on memory pressure notification or during the next SourceBuffer
+  // append (slower, but is MSE-spec compliant).
+  // TODO(servolk, asvitkine): Query the value directly when it is available in
+  // the renderer process. See https://crbug.com/681160.
+  bool enable_instant_source_buffer_gc;
+
   // Whether it is a presentation receiver.
   bool presentation_receiver;
 

@@ -24,6 +24,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     SurfaceManager* surface_manager,
     base::WeakPtr<MediaObserver> media_observer,
     base::TimeDelta max_keyframe_distance_to_disable_background_video,
+    bool enable_instant_source_buffer_gc,
     bool allow_suspend)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
@@ -38,6 +39,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       media_observer_(media_observer),
       max_keyframe_distance_to_disable_background_video_(
           max_keyframe_distance_to_disable_background_video),
+      enable_instant_source_buffer_gc_(enable_instant_source_buffer_gc),
       allow_suspend_(allow_suspend) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}

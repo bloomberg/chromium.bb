@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/demuxer.h"
 #include "media/base/demuxer_stream.h"
@@ -74,6 +75,17 @@ class MEDIA_EXPORT SourceBufferState {
   // Returns false iff buffer is still full after running eviction.
   // https://w3c.github.io/media-source/#sourcebuffer-coded-frame-eviction
   bool EvictCodedFrames(DecodeTimestamp media_time, size_t newDataSize);
+
+  // Gets invoked when the system is experiencing memory pressure, i.e. there's
+  // not enough free memory. The |media_time| is the media playback position at
+  // the time of memory pressure notification (needed for accurate GC). The
+  // |memory_pressure_listener| indicates memory pressure severity. The
+  // |force_instant_gc| is used to force the MSE garbage collection algorithm to
+  // be run right away, without waiting for the next append.
+  void OnMemoryPressure(
+      DecodeTimestamp media_time,
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
+      bool force_instant_gc);
 
   // Returns true if currently parsing a media segment, or false otherwise.
   bool parsing_media_segment() const { return parsing_media_segment_; }

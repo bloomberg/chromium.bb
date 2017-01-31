@@ -16,9 +16,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
@@ -169,6 +171,11 @@ class SourceBufferStreamTest : public testing::Test {
 
   void SeekToTimestampMs(int64_t timestamp_ms) {
     stream_->Seek(base::TimeDelta::FromMilliseconds(timestamp_ms));
+  }
+
+  bool GarbageCollect(base::TimeDelta media_time, int new_data_size) {
+    return stream_->GarbageCollectIfNeeded(
+        DecodeTimestamp::FromPresentationTime(media_time), new_data_size);
   }
 
   bool GarbageCollectWithPlaybackAtBuffer(int position, int newDataBuffers) {
@@ -4750,6 +4757,77 @@ TEST_F(SourceBufferStreamTest, GetHighestPresentationTimestamp) {
 
   RemoveInMs(10, 20, 20);
   EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
+}
+
+TEST_F(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
+  SetMemoryLimit(16);
+  NewCodedFrameGroupAppend("0K 1 2 3K 4 5 6K 7 8 9K 10 11 12K 13 14 15K");
+  CheckExpectedRangesByTimestamp("{ [0,16) }");
+
+  // This feature is disabled by default, so by default memory pressure
+  // notification takes no effect and the memory limits and won't remove
+  // anything from buffered ranges, since we are under the limit of 20 bytes.
+  stream_->OnMemoryPressure(
+      DecodeTimestamp::FromMilliseconds(0),
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false);
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(8), 0));
+  CheckExpectedRangesByTimestamp("{ [0,16) }");
+
+  // Now enable the feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kMemoryPressureBasedSourceBufferGC);
+
+  // Verify that effective MSE memory limit is reduced under memory pressure.
+  stream_->OnMemoryPressure(
+      DecodeTimestamp::FromMilliseconds(0),
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false);
+
+  // Effective memory limit is now 8 buffers, but we still will not collect any
+  // data between the current playback position 3 and last append position 15.
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(4), 0));
+  CheckExpectedRangesByTimestamp("{ [3,16) }");
+
+  // As playback proceeds further to time 9 we should be able to collect
+  // enough data to bring us back under memory limit of 8 buffers.
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(9), 0));
+  CheckExpectedRangesByTimestamp("{ [9,16) }");
+
+  // If memory pressure becomes critical, the garbage collection algorithm
+  // becomes even more aggressive and collects everything up to the current
+  // playback position.
+  stream_->OnMemoryPressure(
+      DecodeTimestamp::FromMilliseconds(0),
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, false);
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(13), 0));
+  CheckExpectedRangesByTimestamp("{ [12,16) }");
+
+  // But even under critical memory pressure the MSE memory limit imposed by the
+  // memory pressure is soft, i.e. we should be able to append more data
+  // successfully up to the hard limit of 16 bytes.
+  NewCodedFrameGroupAppend("16K 17 18 19 20 21 22 23 24 25 26 27");
+  CheckExpectedRangesByTimestamp("{ [12,28) }");
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(13), 0));
+  CheckExpectedRangesByTimestamp("{ [12,28) }");
+}
+
+TEST_F(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
+  SetMemoryLimit(16);
+  NewCodedFrameGroupAppend("0K 1 2 3K 4 5 6K 7 8 9K 10 11 12K 13 14 15K");
+  CheckExpectedRangesByTimestamp("{ [0,16) }");
+
+  // Verify that garbage collection happens immediately on critical memory
+  // pressure notification, even without explicit GarbageCollect invocation,
+  // when the immediate GC is allowed.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kMemoryPressureBasedSourceBufferGC);
+  stream_->OnMemoryPressure(
+      DecodeTimestamp::FromMilliseconds(7),
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true);
+  CheckExpectedRangesByTimestamp("{ [6,16) }");
+  stream_->OnMemoryPressure(
+      DecodeTimestamp::FromMilliseconds(9),
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true);
+  CheckExpectedRangesByTimestamp("{ [9,16) }");
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

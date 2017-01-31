@@ -247,6 +247,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(hide_download_ui)
   IPC_STRUCT_TRAITS_MEMBER(background_video_track_optimization_enabled)
   IPC_STRUCT_TRAITS_MEMBER(max_keyframe_distance_to_disable_background_video)
+  IPC_STRUCT_TRAITS_MEMBER(enable_instant_source_buffer_gc)
   IPC_STRUCT_TRAITS_MEMBER(presentation_receiver)
 IPC_STRUCT_TRAITS_END()
 

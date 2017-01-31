@@ -18,6 +18,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -237,7 +238,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       preroll_attempt_pending_(false),
       observer_(params.media_observer()),
       max_keyframe_distance_to_disable_background_video_(
-          params.max_keyframe_distance_to_disable_background_video()) {
+          params.max_keyframe_distance_to_disable_background_video()),
+      enable_instant_source_buffer_gc_(
+          params.enable_instant_source_buffer_gc()) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
@@ -1160,6 +1163,36 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
       new WebMediaSourceImpl(chunk_demuxer_, media_log_));
 }
 
+void WebMediaPlayerImpl::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  DVLOG(2) << __func__ << " memory_pressure_level=" << memory_pressure_level;
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC));
+  DCHECK(chunk_demuxer_);
+
+  // The new value of |memory_pressure_level| will take effect on the next
+  // garbage collection. Typically this means the next SourceBuffer append()
+  // operation, since per MSE spec, the garbage collection must only occur
+  // during SourceBuffer append(). But if memory pressure is critical it might
+  // be better to perform GC immediately rather than wait for the next append
+  // and potentially get killed due to out-of-memory.
+  // So if this experiment is enabled and pressure level is critical, we'll pass
+  // down force_instant_gc==true, which will force immediate GC on
+  // SourceBufferStreams.
+  bool force_instant_gc =
+      (enable_instant_source_buffer_gc_ &&
+       memory_pressure_level ==
+           base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+
+  // base::Unretained is safe, since chunk_demuxer_ is actually owned by
+  // |this| via this->demuxer_.
+  media_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ChunkDemuxer::OnMemoryPressure,
+                            base::Unretained(chunk_demuxer_),
+                            base::TimeDelta::FromSecondsD(currentTime()),
+                            memory_pressure_level, force_instant_gc));
+}
+
 void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -1714,6 +1747,13 @@ void WebMediaPlayerImpl::StartPipeline() {
             base::Bind(&WebMediaPlayerImpl::OnDemuxerOpened, AsWeakPtr())),
         encrypted_media_init_data_cb, media_log_);
     demuxer_.reset(chunk_demuxer_);
+
+    if (base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC)) {
+      // base::Unretained is safe because |this| owns memory_pressure_listener_.
+      memory_pressure_listener_ =
+          base::MakeUnique<base::MemoryPressureListener>(base::Bind(
+              &WebMediaPlayerImpl::OnMemoryPressure, base::Unretained(this)));
+    }
   }
 
   // TODO(sandersd): FileSystem objects may also be non-static, but due to our

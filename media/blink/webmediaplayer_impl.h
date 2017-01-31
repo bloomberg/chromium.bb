@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -352,6 +353,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void ReportMemoryUsage();
   void FinishMemoryUsageReport(int64_t demuxer_memory_usage);
 
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   // Called during OnHidden() when we want a suspended player to enter the
   // paused state after some idle timeout.
   void ScheduleIdlePauseTimer();
@@ -568,6 +572,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<Demuxer> demuxer_;
   ChunkDemuxer* chunk_demuxer_;
 
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
   BufferedDataSourceHostImpl buffered_data_source_host_;
   linked_ptr<UrlIndex> url_index_;
 
@@ -670,6 +676,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // The maximum video keyframe distance that allows triggering background
   // playback optimizations.
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;
+
+  // When MSE memory pressure based garbage collection is enabled, the
+  // |enable_instant_source_buffer_gc| controls whether the GC is done
+  // immediately on memory pressure notification or during the next SourceBuffer
+  // append (slower, but MSE spec compliant).
+  bool enable_instant_source_buffer_gc_ = false;
 
   // Whether disabled the video track as an optimization.
   bool video_track_disabled_ = false;

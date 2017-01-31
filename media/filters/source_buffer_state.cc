@@ -306,6 +306,26 @@ bool SourceBufferState::EvictCodedFrames(DecodeTimestamp media_time,
   return success;
 }
 
+void SourceBufferState::OnMemoryPressure(
+    DecodeTimestamp media_time,
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
+    bool force_instant_gc) {
+  // Notify video streams about memory pressure first, since video typically
+  // takes up the most memory and that's where we can expect most savings.
+  for (const auto& it : video_streams_) {
+    it.second->OnMemoryPressure(media_time, memory_pressure_level,
+                                force_instant_gc);
+  }
+  for (const auto& it : audio_streams_) {
+    it.second->OnMemoryPressure(media_time, memory_pressure_level,
+                                force_instant_gc);
+  }
+  for (const auto& it : text_streams_) {
+    it.second->OnMemoryPressure(media_time, memory_pressure_level,
+                                force_instant_gc);
+  }
+}
+
 Ranges<TimeDelta> SourceBufferState::GetBufferedRanges(TimeDelta duration,
                                                        bool ended) const {
   RangesList ranges_list;

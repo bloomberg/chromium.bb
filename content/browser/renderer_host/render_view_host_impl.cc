@@ -544,6 +544,13 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
               "max_keyframe_distance_ms",
               base::TimeDelta::FromSeconds(10).InMilliseconds()));
 
+  // TODO(servolk, asvitkine): Query the value directly when it is available in
+  // the renderer process. See https://crbug.com/681160.
+  prefs.enable_instant_source_buffer_gc =
+      variations::GetVariationParamByFeatureAsBool(
+          media::kMemoryPressureBasedSourceBufferGC,
+          "enable_instant_source_buffer_gc", false);
+
   std::map<std::string, std::string> expensive_background_throttling_prefs;
   variations::GetVariationParamsByFeature(
       features::kExpensiveBackgroundTimerThrottling,
