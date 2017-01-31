@@ -15,6 +15,7 @@
   "additional_compile_targets": [
     "all"
   ],
+  "clobber": true,
   "use_goma_canary": true,
   "configuration": "Release",
   "sdk": "iphoneos10.0",
