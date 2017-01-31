@@ -408,6 +408,7 @@ GtkUi::GtkUi() : middle_click_action_(GetDefaultMiddleClickAction()) {
   gtk_widget_realize(fake_window_);  // Is this necessary?
 #elif GTK_MAJOR_VERSION == 3
   native_theme_ = NativeThemeGtk3::instance();
+  (void)fake_window_;  // Silence the unused warning.
 #else
 #error "Unsupported GTK version"
 #endif
@@ -863,11 +864,6 @@ void GtkUi::LoadGtkValues() {
 
   UpdateDeviceScaleFactor();
 
-  // Build the various icon tints.
-  GetNormalButtonTintHSL(&button_tint_);
-  GetNormalEntryForegroundHSL(&entry_tint_);
-  GetSelectedEntryForegroundHSL(&selected_entry_tint_);
-
   // We pick the text and background colors for the NTP out of the colors for a
   // GtkEntry. We do this because GtkEntries background color is never the same
   // as |toolbar_color|, is usually a white, and when it isn't a white,
@@ -971,38 +967,6 @@ void GtkUi::BuildFrameColors() {
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
       color_utils::HSLShift(color_frame_inactive, kDefaultTintFrameIncognito);
 #endif
-}
-
-void GtkUi::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
-  SkColor accent_color = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_ProminentButtonColor);
-  SkColor text_color = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
-  SkColor base_color =
-      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
-
-  PickButtonTintFromColors(accent_color, text_color, base_color, tint);
-}
-
-void GtkUi::GetNormalEntryForegroundHSL(color_utils::HSL* tint) const {
-  SkColor accent_color = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_ProminentButtonColor);
-  SkColor text_color = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  SkColor base_color = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-
-  PickButtonTintFromColors(accent_color, text_color, base_color, tint);
-}
-
-void GtkUi::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
-  // The simplest of all the tints. We just use the selected text in the entry
-  // since the icons tinted this way will only be displayed against
-  // base[GTK_STATE_SELECTED].
-  SkColor color = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionColor);
-
-  color_utils::SkColorToHSL(color, tint);
 }
 
 void GtkUi::UpdateDefaultFont() {
