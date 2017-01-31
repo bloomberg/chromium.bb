@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
+import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -1750,11 +1751,9 @@ public class ToolbarPhone extends ToolbarLayout
         mUrlFocusLayoutAnimator.playTogether(animators);
 
         mUrlFocusChangeInProgress = true;
-        mUrlFocusLayoutAnimator.addListener(new AnimatorListenerAdapter() {
-            private boolean mCanceled;
-
+        mUrlFocusLayoutAnimator.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) {
+            public void onStart(Animator animation) {
                 if (!hasFocus) {
                     mDisableLocationBarRelayout = true;
                 } else {
@@ -1764,14 +1763,12 @@ public class ToolbarPhone extends ToolbarLayout
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) {
-                mCanceled = true;
+            public void onCancel(Animator animation) {
+                if (!hasFocus) mDisableLocationBarRelayout = false;
             }
 
             @Override
-            public void onAnimationEnd(Animator animation) {
-                if (mCanceled) return;
-
+            public void onEnd(Animator animation) {
                 if (!hasFocus) {
                     mDisableLocationBarRelayout = false;
                     mLayoutLocationBarInFocusedMode = false;
