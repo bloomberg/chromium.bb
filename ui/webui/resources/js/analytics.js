@@ -5,4 +5,4 @@
 // This file serves as a proxy to bring the included js file from /third_party
 // into its correct location under the resources directory tree, whence it is
 // delivered via a chrome://resources URL.  See ../webui_resources.grd.
-<include src="../../../../third_party/analytics/google-analytics-bundle.js">
+<include src='../../../../third_party/analytics/google-analytics-bundle.js'>
