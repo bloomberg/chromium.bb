@@ -741,18 +741,6 @@
      {}
     ]
    ],
-   "html/dom/elements/global-attributes/dir_auto-N-EN-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-N-EN-expected.html",
-     [
-      [
-       "/html/dom/elements/global-attributes/dir_auto-N-EN-L-ref.html",
-       "=="
-      ]
-     ],
-     {}
-    ]
-   ],
    "html/dom/elements/global-attributes/dir_auto-N-EN.html": [
     [
      "/html/dom/elements/global-attributes/dir_auto-N-EN.html",
@@ -1275,18 +1263,6 @@
      [
       [
        "/html/dom/elements/global-attributes/dir_auto-textarea-script-N-EN-ref.html",
-       "=="
-      ]
-     ],
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs-expected.html",
-     [
-      [
-       "/html/dom/elements/global-attributes/dir_auto-textarea-N-between-Rs-ref.html",
        "=="
       ]
      ],
@@ -3769,6 +3745,11 @@
      {}
     ]
    ],
+   "./MANIFEST.json": [
+    [
+     {}
+    ]
+   ],
    "./README.md": [
     [
      {}
@@ -5294,6 +5275,16 @@
      {}
     ]
    ],
+   "fullscreen/api/document-exit-fullscreen-twice-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fullscreen/api/document-fullscreen-element-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "fullscreen/api/element-ready-check-fullscreen-iframe-child-manual-expected.txt": [
     [
      {}
@@ -5304,7 +5295,32 @@
      {}
     ]
    ],
+   "fullscreen/api/element-request-fullscreen-and-move-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fullscreen/api/element-request-fullscreen-and-remove-iframe-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fullscreen/api/element-request-fullscreen-and-remove-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "fullscreen/api/element-request-fullscreen-timing-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fullscreen/api/element-request-fullscreen-twice-manual-expected.txt": [
     [
      {}
     ]
@@ -7049,11 +7065,6 @@
      {}
     ]
    ],
-   "html/dom/elements/global-attributes/dir_auto-N-EN-ref-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/dom/elements/global-attributes/dir_auto-N-L-ref.html": [
     [
      {}
@@ -7234,17 +7245,7 @@
      {}
     ]
    ],
-   "html/dom/elements/global-attributes/dir_auto-pre-N-EN-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/dom/elements/global-attributes/dir_auto-pre-N-EN-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-pre-N-between-Rs-expected.html": [
     [
      {}
     ]
@@ -7254,17 +7255,7 @@
      {}
     ]
    ],
-   "html/dom/elements/global-attributes/dir_auto-pre-mixed-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/dom/elements/global-attributes/dir_auto-pre-mixed-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-textarea-N-EN-expected.html": [
     [
      {}
     ]
@@ -7274,17 +7265,7 @@
      {}
     ]
    ],
-   "html/dom/elements/global-attributes/dir_auto-textarea-N-between-Rs-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/dom/elements/global-attributes/dir_auto-textarea-N-between-Rs-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-textarea-mixed-expected.html": [
     [
      {}
     ]
@@ -7294,22 +7275,7 @@
      {}
     ]
    ],
-   "html/dom/elements/global-attributes/dir_auto-textarea-script-N-EN-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/dom/elements/global-attributes/dir_auto-textarea-script-N-EN-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs-ref-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-textarea-script-mixed-expected.html": [
     [
      {}
     ]
@@ -7320,11 +7286,6 @@
     ]
    ],
    "html/dom/elements/global-attributes/lang-xmllang-01-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/lang-xyzzy-expected.html": [
     [
      {}
     ]
@@ -7360,141 +7321,6 @@
     ]
    ],
    "html/dom/elements/global-attributes/the-lang-attribute-011.html.headers": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c-expected.html": [
     [
      {}
     ]
@@ -11614,41 +11440,6 @@
      {}
     ]
    ],
-   "html/editing/the-hidden-attribute/hidden-1a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/editing/the-hidden-attribute/hidden-1b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/editing/the-hidden-attribute/hidden-1c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/editing/the-hidden-attribute/hidden-1d-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/editing/the-hidden-attribute/hidden-1e-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/editing/the-hidden-attribute/hidden-1f-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/editing/the-hidden-attribute/hidden-1g-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/editing/the-hidden-attribute/hidden-2-ref.svg": [
     [
      {}
@@ -11744,42 +11535,12 @@
      {}
     ]
    ],
-   "html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type-ref.html": [
     [
      {}
     ]
    ],
-   "html/rendering/bindings/the-select-element-0/option-label-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/bindings/the-select-element-0/option-label-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/bindings/the-textarea-element-0/cols-default-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/bindings/the-textarea-element-0/cols-zero-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/bindings/the-textarea-element-0/rows-default-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/bindings/the-textarea-element-0/rows-zero-expected.html": [
     [
      {}
     ]
@@ -11790,11 +11551,6 @@
     ]
    ],
    "html/rendering/interactive-media/links-forms-and-navigation/original-id.json": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/flow-content-0/div-align-expected.html": [
     [
      {}
     ]
@@ -11814,27 +11570,7 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/lists/li-type-supported-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/lists/li-type-supported-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/li-type-supported-xhtml-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-alpha-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-roman-expected.html": [
     [
      {}
     ]
@@ -11844,57 +11580,7 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-alpha-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-roman-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-supported-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/lists/ol-type-supported-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-supported-xhtml-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-circle-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-disc-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-invalid-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-lower-alpha-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-lower-roman-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-none-expected.html": [
     [
      {}
     ]
@@ -11904,57 +11590,7 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-round-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-square-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-upper-alpha-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-upper-roman-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ul-type-supported-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/lists/ul-type-supported-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ul-type-supported-xhtml-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-decimal-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-invalid-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-alpha-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-roman-expected.html": [
     [
      {}
     ]
@@ -11964,52 +11600,12 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-alpha-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-roman-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-q-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-ref.html": [
     [
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-s-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-x-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/tables/table-border-1-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/tables/table-border-1-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/tables/table-border-2-expected.html": [
     [
      {}
     ]
@@ -12024,22 +11620,7 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/tables/table-cell-width-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/tables/table-cell-width-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/tables/table-cell-width-s-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/tables/table-layout-expected.html": [
     [
      {}
     ]
@@ -12054,17 +11635,7 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/tables/table-width-150percent-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/tables/table-width-150percent-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/tables/table-width-expected.html": [
     [
      {}
     ]
@@ -12074,22 +11645,7 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/tables/table-width-s-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/the-fieldset-element-0/min-width-not-important-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/the-fieldset-element-0/ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/the-hr-element-0/align-expected.html": [
     [
      {}
     ]
@@ -12099,17 +11655,7 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/the-hr-element-0/color-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/the-hr-element-0/color-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/the-hr-element-0/width-expected.html": [
     [
      {}
     ]
@@ -12124,22 +11670,12 @@
      {}
     ]
    ],
-   "html/rendering/non-replaced-elements/the-page/body_text_00ffff-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/non-replaced-elements/the-page/body_text_00ffff-ref.html": [
     [
      {}
     ]
    ],
    "html/rendering/non-replaced-elements/the-page/test-body.xhtml": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/img-dim-expected.html": [
     [
      {}
     ]
@@ -12174,17 +11710,7 @@
      {}
     ]
    ],
-   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_scale-expected.html": [
     [
      {}
     ]
@@ -12194,17 +11720,7 @@
      {}
     ]
    ],
-   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_without_context_a-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_without_context_ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/replaced-elements/images/space-expected.html": [
     [
      {}
     ]
@@ -12309,27 +11825,12 @@
      {}
     ]
    ],
-   "html/semantics/document-metadata/the-link-element/stylesheet-empty-href-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/document-metadata/the-link-element/stylesheet-empty-href-ref.html": [
     [
      {}
     ]
    ],
-   "html/semantics/document-metadata/the-link-element/stylesheet-media-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/document-metadata/the-link-element/stylesheet-media-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/document-metadata/the-link-element/stylesheet-with-base-expected.html": [
     [
      {}
     ]
@@ -12360,11 +11861,6 @@
     ]
    ],
    "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/dynamic-append-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/document-metadata/the-style-element/html_style_in_comment-expected.html": [
     [
      {}
     ]
@@ -12589,11 +12085,6 @@
      {}
     ]
    ],
-   "html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/embedded-content/the-embed-element/embed-represent-nothing-ref.html": [
     [
      {}
@@ -12625,11 +12116,6 @@
     ]
    ],
    "html/semantics/embedded-content/the-iframe-element/iframe-load-event-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/embedded-content/the-iframe-element/iframe-with-base-expected.html": [
     [
      {}
     ]
@@ -12934,11 +12420,6 @@
      {}
     ]
    ],
-   "html/semantics/forms/the-input-element/image01-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/forms/the-input-element/image01-ref.html": [
     [
      {}
@@ -13109,36 +12590,6 @@
      {}
     ]
    ],
-   "html/semantics/grouping-content/the-ol-element/reversed-1a-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/reversed-1b-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/reversed-1c-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/reversed-1d-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/reversed-1e-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/reversed-2-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/grouping-content/the-ol-element/reversed-2-ref.html": [
     [
      {}
@@ -13215,11 +12666,6 @@
     ]
    ],
    "html/semantics/links/links-created-by-a-and-area-elements/support/noopener-target-2.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/links/linktypes/alternate-css-expected.html": [
     [
      {}
     ]
@@ -13589,17 +13035,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-auto-dir-default-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-auto-dir-default-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-missing-pdf-expected.html": [
     [
      {}
     ]
@@ -13609,17 +13045,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-nested-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-nested-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-number-expected.html": [
     [
      {}
     ]
@@ -13629,17 +13055,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-separate-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-separate-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-1-expected.html": [
     [
      {}
     ]
@@ -13649,17 +13065,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-2-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-2-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-1-expected.html": [
     [
      {}
     ]
@@ -13669,17 +13075,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-2-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-2-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-1-expected.html": [
     [
      {}
     ]
@@ -13689,17 +13085,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-2-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-2-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-1-expected.html": [
     [
      {}
     ]
@@ -13709,17 +13095,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-2-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-2-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-surrounding-run-expected.html": [
     [
      {}
     ]
@@ -13729,17 +13105,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-wrapped-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-wrapped-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdi-element/bdi-paragraph-level-container-expected.html": [
     [
      {}
     ]
@@ -13749,32 +13115,7 @@
      {}
     ]
    ],
-   "html/semantics/text-level-semantics/the-bdo-element/bdo-child-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdo-element/bdo-ltr-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdo-element/bdo-override-expected.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-bdo-element/bidi-001-expected.html": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/text-level-semantics/the-bdo-element/bidi-001-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-br-element/br-bidi-in-inline-ancestors-expected.html": [
     [
      {}
     ]
@@ -13795,11 +13136,6 @@
     ]
    ],
    "html/semantics/text-level-semantics/the-time-element/001-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-wbr-element/wbr-element-expected.html": [
     [
      {}
     ]
@@ -14725,11 +14061,6 @@
     ]
    ],
    "preload/single_download_preload-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "quirks-mode/historical/list-item-bullet-size-expected.html": [
     [
      {}
     ]
@@ -15899,17 +15230,7 @@
      {}
     ]
    ],
-   "shadow-dom/untriaged/shadow-trees/nested-shadow-trees/nested_tree_reftest-expected.html": [
-    [
-     {}
-    ]
-   ],
    "shadow-dom/untriaged/shadow-trees/nested-shadow-trees/nested_tree_reftest-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "shadow-dom/untriaged/shadow-trees/reprojection/reprojection-001-expected.html": [
     [
      {}
     ]
@@ -15919,17 +15240,7 @@
      {}
     ]
    ],
-   "shadow-dom/untriaged/shadow-trees/shadow-root-001-expected.html": [
-    [
-     {}
-    ]
-   ],
    "shadow-dom/untriaged/shadow-trees/shadow-root-001-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "shadow-dom/untriaged/shadow-trees/shadow-root-002-expected.html": [
     [
      {}
     ]
@@ -15939,17 +15250,7 @@
      {}
     ]
    ],
-   "shadow-dom/untriaged/shadow-trees/text-decoration-001-expected.html": [
-    [
-     {}
-    ]
-   ],
    "shadow-dom/untriaged/shadow-trees/text-decoration-001-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "shadow-dom/untriaged/styles/not-apply-in-shadow-root-001-expected.html": [
     [
      {}
     ]
@@ -16439,17 +15740,7 @@
      {}
     ]
    ],
-   "svg/linking/reftests/href-a-element-attr-change-expected.html": [
-    [
-     {}
-    ]
-   ],
    "svg/linking/reftests/href-a-element-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "svg/linking/reftests/href-feImage-element-expected.html": [
     [
      {}
     ]
@@ -16459,17 +15750,7 @@
      {}
     ]
    ],
-   "svg/linking/reftests/href-filter-element-expected.html": [
-    [
-     {}
-    ]
-   ],
    "svg/linking/reftests/href-filter-element-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "svg/linking/reftests/href-gradient-element-expected.html": [
     [
      {}
     ]
@@ -16479,17 +15760,7 @@
      {}
     ]
    ],
-   "svg/linking/reftests/href-image-element-expected.html": [
-    [
-     {}
-    ]
-   ],
    "svg/linking/reftests/href-image-element-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "svg/linking/reftests/href-pattern-element-expected.html": [
     [
      {}
     ]
@@ -16499,17 +15770,7 @@
      {}
     ]
    ],
-   "svg/linking/reftests/href-textPath-element-expected.html": [
-    [
-     {}
-    ]
-   ],
    "svg/linking/reftests/href-textPath-element-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "svg/linking/reftests/href-use-element-expected.html": [
     [
      {}
     ]
@@ -34660,416 +33921,6 @@
      {}
     ]
    ]
-  },
-  "visual": {
-   "html/dom/elements/global-attributes/dir_auto-EN-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-EN-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-N-EN-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-N-EN-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-N-EN-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-N-EN-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-N-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-N-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-N-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-N-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-bdi-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-bdi-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-bdi-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-bdi-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-dir-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-dir-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-dir-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-dir-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-dir_auto-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-dir_auto-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-dir_auto-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-dir_auto-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-script-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-script-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-script-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-script-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-style-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-style-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-style-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-style-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-textarea-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-textarea-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-contained-textarea-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-contained-textarea-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-EN-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-EN-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-EN-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-EN-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-N-EN-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-N-EN-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-N-EN-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-N-EN-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-N-EN-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-N-EN-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-N-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-N-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-N-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-N-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-EN-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-EN-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-EN-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-EN-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-N-EN-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-N-EN-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-N-EN-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-N-L-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-N-L-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-N-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-N-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-input-script-R-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-input-script-R-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/dir_auto-isolate-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/dir_auto-isolate-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/lang-xmllang-01-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/lang-xmllang-01-expected.html",
-     {}
-    ]
-   ],
-   "html/dom/elements/global-attributes/style-01-expected.html": [
-    [
-     "/html/dom/elements/global-attributes/style-01-expected.html",
-     {}
-    ]
-   ],
-   "html/rendering/non-replaced-elements/flow-content-0/figure-expected.html": [
-    [
-     "/html/rendering/non-replaced-elements/flow-content-0/figure-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/embedded-content/the-img-element/document-base-url-expected.html": [
-    [
-     "/html/semantics/embedded-content/the-img-element/document-base-url-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-textarea-element/textarea-newline-bidi-expected.html": [
-    [
-     "/html/semantics/forms/the-textarea-element/textarea-newline-bidi-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-textarea-element/wrap-reflect-1a-expected.html": [
-    [
-     "/html/semantics/forms/the-textarea-element/wrap-reflect-1a-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-textarea-element/wrap-reflect-1b-expected.html": [
-    [
-     "/html/semantics/forms/the-textarea-element/wrap-reflect-1b-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-001-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-001-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-002-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-002-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/grouping-ol-rev-reftest-001-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-ol-element/grouping-ol-rev-reftest-001-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-001-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-001-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-002-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-002-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-001-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-001-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-002-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-002-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-003-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-003-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-pre-element/grouping-pre-reftest-001-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-pre-element/grouping-pre-reftest-001-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/grouping-content/the-pre-element/pre-newline-bidi-expected.html": [
-    [
-     "/html/semantics/grouping-content/the-pre-element/pre-newline-bidi-expected.html",
-     {}
-    ]
-   ],
-   "html/semantics/text-level-semantics/the-br-element/br-bidi-expected.html": [
-    [
-     "/html/semantics/text-level-semantics/the-br-element/br-bidi-expected.html",
-     {}
-    ]
-   ]
   }
  },
  "paths": {
@@ -35079,6 +33930,10 @@
   ],
   "./LICENSE.md": [
    "89af73c41d456ee93bd40921e96414c1908fc48c",
+   "support"
+  ],
+  "./MANIFEST.json": [
+   "3e36194cb38e3f18efda9d53f7a0a880cf69b95d",
    "support"
   ],
   "./README.md": [
@@ -39497,9 +38352,17 @@
    "fcac6966d40246ce9b62dd80233b9967c7d9c146",
    "manual"
   ],
+  "fullscreen/api/document-exit-fullscreen-twice-manual-expected.txt": [
+   "7f86414430e0d686e79d9cbf70bfc7bfe5f7ade1",
+   "support"
+  ],
   "fullscreen/api/document-exit-fullscreen-twice-manual.html": [
    "9b6cda0c63e56720f1ab29ffca524384967d7a2f",
    "manual"
+  ],
+  "fullscreen/api/document-fullscreen-element-manual-expected.txt": [
+   "d908037de6dd9a92d9371f0d93ca48f24fd6469b",
+   "support"
   ],
   "fullscreen/api/document-fullscreen-element-manual.html": [
    "7026a680ddd3f0b3dfbfd75dccbcfb78b88b8ceb",
@@ -39557,17 +38420,33 @@
    "b09e6ee5ac5086094bd07cc4ebe431bd91b598bc",
    "manual"
   ],
+  "fullscreen/api/element-request-fullscreen-and-move-manual-expected.txt": [
+   "b745cc256da8fb8275e8b37a8500cee4c318bc31",
+   "support"
+  ],
   "fullscreen/api/element-request-fullscreen-and-move-manual.html": [
    "29fb0d686ac510d169fbc10ca98eaed599f292df",
    "manual"
+  ],
+  "fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual-expected.txt": [
+   "2cfb7cb27c14df1a29c3c79e81bfd0ff4d4bc529",
+   "support"
   ],
   "fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html": [
    "412ea81c4697594c9cc63709ef29ea2abc3c10d7",
    "manual"
   ],
+  "fullscreen/api/element-request-fullscreen-and-remove-iframe-manual-expected.txt": [
+   "91dd32273c1e81281cf9e034a9247a285721f310",
+   "support"
+  ],
   "fullscreen/api/element-request-fullscreen-and-remove-iframe-manual.html": [
    "465cb3419b1f3e7b6b385722833e20f285fa864d",
    "manual"
+  ],
+  "fullscreen/api/element-request-fullscreen-and-remove-manual-expected.txt": [
+   "6e3f989bb1966e353cb18ab120abe74c9fe98c78",
+   "support"
   ],
   "fullscreen/api/element-request-fullscreen-and-remove-manual.html": [
    "5153805ee2b098649ddced4ae8f22b37db6600bf",
@@ -39608,6 +38487,10 @@
   "fullscreen/api/element-request-fullscreen-top-manual.html": [
    "53ad260cb1cd2951d7cacfbc73c2c49837c1ebd4",
    "manual"
+  ],
+  "fullscreen/api/element-request-fullscreen-twice-manual-expected.txt": [
+   "6cd133b03a8a11dc583024d050b174f0d74b4d68",
+   "support"
   ],
   "fullscreen/api/element-request-fullscreen-twice-manual.html": [
    "b83f5d0212137f1b939e0f84e5ecd86dd06916b9",
@@ -42553,10 +41436,6 @@
    "5f89b64e2acf26d03bf7a64f46b72afaa729c1d6",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-EN-R-expected.html": [
-   "52e08a2e47e04c2e1afaf05f13562636ece4459e",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-EN-R-ref.html": [
    "52e08a2e47e04c2e1afaf05f13562636ece4459e",
    "support"
@@ -42564,10 +41443,6 @@
   "html/dom/elements/global-attributes/dir_auto-EN-R.html": [
    "4840c2a1eb6ec4af6f7c7a131c816f54acc13129",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-L-expected.html": [
-   "c8b9b098cb25842c0805da0117fcd8450d1590d9",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-L-ref.html": [
    "c8b9b098cb25842c0805da0117fcd8450d1590d9",
@@ -42577,10 +41452,6 @@
    "2692413861b4049fd9dd8557e2cd54f5e55958f5",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-N-EN-L-expected.html": [
-   "0650491db81d1017758053560dc8dafb2987018f",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-N-EN-L-ref.html": [
    "0650491db81d1017758053560dc8dafb2987018f",
    "support"
@@ -42588,10 +41459,6 @@
   "html/dom/elements/global-attributes/dir_auto-N-EN-L.html": [
    "0839a7dce6973fb1061d8fae8a2c2ef67b3e4965",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-N-EN-R-expected.html": [
-   "98c5fe967f0df208b7841cd962c771a60e4cf8f0",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-N-EN-R-ref.html": [
    "98c5fe967f0df208b7841cd962c771a60e4cf8f0",
@@ -42601,14 +41468,6 @@
    "affcb624b8a53c7345b568c591d7a7077445cdb9",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-N-EN-expected.html": [
-   "69d28b3ae329da7cdd8cbd2fa98c898647564ff7",
-   "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-N-EN-ref-expected.html": [
-   "0650491db81d1017758053560dc8dafb2987018f",
-   "support"
-  ],
   "html/dom/elements/global-attributes/dir_auto-N-EN-ref.html": [
    "69d28b3ae329da7cdd8cbd2fa98c898647564ff7",
    "reftest_node"
@@ -42616,10 +41475,6 @@
   "html/dom/elements/global-attributes/dir_auto-N-EN.html": [
    "9aefe9f19e083688aae1d2ed7332e5bd3979f883",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-N-L-expected.html": [
-   "c033a8d8887af10980527029f418bb8dd97b9c6a",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-N-L-ref.html": [
    "c033a8d8887af10980527029f418bb8dd97b9c6a",
@@ -42629,10 +41484,6 @@
    "b14509b12c63bef6c1dc84522bd2865c83687bf6",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-N-R-expected.html": [
-   "f20fe4c4851b4db1558c5dd4560124721d07be36",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-N-R-ref.html": [
    "f20fe4c4851b4db1558c5dd4560124721d07be36",
    "support"
@@ -42640,10 +41491,6 @@
   "html/dom/elements/global-attributes/dir_auto-N-R.html": [
    "2d9d9d3c5831173067b7a14b7415a18c03748829",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-R-expected.html": [
-   "a99e845c7aab75de3e827d7494541fcddfffae96",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-R-ref.html": [
    "a99e845c7aab75de3e827d7494541fcddfffae96",
@@ -42653,10 +41500,6 @@
    "21892792d6e5fef7df4dce45d51962b616c1c00f",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-contained-L-expected.html": [
-   "8828c5d8bafdac3e8463926abd14c1ddc94e3516",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-contained-L-ref.html": [
    "8828c5d8bafdac3e8463926abd14c1ddc94e3516",
    "support"
@@ -42664,10 +41507,6 @@
   "html/dom/elements/global-attributes/dir_auto-contained-L.html": [
    "7e57249b6e595ecad90aef30fbfa22b26ae41152",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-contained-R-expected.html": [
-   "e00ec6bfafa83dad4e0d1f8cf9078540fabafbf0",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-contained-R-ref.html": [
    "e00ec6bfafa83dad4e0d1f8cf9078540fabafbf0",
@@ -42677,10 +41516,6 @@
    "44dff6144c7b2611a3e69580e526fcb2ddabebd9",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-contained-bdi-L-expected.html": [
-   "e6ad07bff056d38a28a839f23044aee257985d81",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-contained-bdi-L-ref.html": [
    "e6ad07bff056d38a28a839f23044aee257985d81",
    "support"
@@ -42688,10 +41523,6 @@
   "html/dom/elements/global-attributes/dir_auto-contained-bdi-L.html": [
    "97f44afb8e10bd82751a6f1d9bcd9b4cceb7682b",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-contained-bdi-R-expected.html": [
-   "eb6a732e4bc2cda1fcc2c4ed2bab5eaaf4159d1a",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-contained-bdi-R-ref.html": [
    "eb6a732e4bc2cda1fcc2c4ed2bab5eaaf4159d1a",
@@ -42701,10 +41532,6 @@
    "049c5f235a8956a0271f806b024b1a4a09ff7e66",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-contained-dir-L-expected.html": [
-   "6bbc5e4708983510833d3c2540e7d9e3fb006f73",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-contained-dir-L-ref.html": [
    "6bbc5e4708983510833d3c2540e7d9e3fb006f73",
    "support"
@@ -42712,10 +41539,6 @@
   "html/dom/elements/global-attributes/dir_auto-contained-dir-L.html": [
    "fbf5408411b9a1c6ad71329e86c1e0916849c077",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-contained-dir-R-expected.html": [
-   "ca2d6cf19a33ccbde547c94b35b5bb8b79095abd",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-contained-dir-R-ref.html": [
    "ca2d6cf19a33ccbde547c94b35b5bb8b79095abd",
@@ -42725,10 +41548,6 @@
    "42e56b404da4701bc253c1d96564fae5697c34cc",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-contained-dir_auto-L-expected.html": [
-   "99cc43394be244215b8fddbf852d6da94bf4d954",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-contained-dir_auto-L-ref.html": [
    "99cc43394be244215b8fddbf852d6da94bf4d954",
    "support"
@@ -42736,10 +41555,6 @@
   "html/dom/elements/global-attributes/dir_auto-contained-dir_auto-L.html": [
    "870830929c2be960a57616ba70663c281f5d935b",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-contained-dir_auto-R-expected.html": [
-   "f8be184bef057f599d1b01f690994f0a166fd326",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-contained-dir_auto-R-ref.html": [
    "f8be184bef057f599d1b01f690994f0a166fd326",
@@ -42749,10 +41564,6 @@
    "a026f77ae55cccbffd7cea34249acbe2b64fcb56",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-contained-script-L-expected.html": [
-   "44be00a051d546ffce0cc188b5b42bb4f9708185",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-contained-script-L-ref.html": [
    "44be00a051d546ffce0cc188b5b42bb4f9708185",
    "support"
@@ -42760,10 +41571,6 @@
   "html/dom/elements/global-attributes/dir_auto-contained-script-L.html": [
    "4ffe8225ca52239154e531401ef4f91b044545f9",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-contained-script-R-expected.html": [
-   "b5827264f1d0abe47bf4ec8946c5608f8df7dfc3",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-contained-script-R-ref.html": [
    "b5827264f1d0abe47bf4ec8946c5608f8df7dfc3",
@@ -42773,10 +41580,6 @@
    "92cb1878cdd76a1c254d8d7de5ddc3afdeb5163f",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-contained-style-L-expected.html": [
-   "d5436f2b5cea3a53565db908bf146ce23835bd1d",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-contained-style-L-ref.html": [
    "d5436f2b5cea3a53565db908bf146ce23835bd1d",
    "support"
@@ -42784,10 +41587,6 @@
   "html/dom/elements/global-attributes/dir_auto-contained-style-L.html": [
    "2ea846ffb34a5b28b6f0124ff13dc16696008f90",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-contained-style-R-expected.html": [
-   "940233c194df56a61c07c599939da336ff013b89",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-contained-style-R-ref.html": [
    "940233c194df56a61c07c599939da336ff013b89",
@@ -42797,10 +41596,6 @@
    "c4939bf0cac58b9f878d17675f877ce4b5035285",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-contained-textarea-L-expected.html": [
-   "56abaee4c1a72086b0543af9f0f4c5d80d545797",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-contained-textarea-L-ref.html": [
    "56abaee4c1a72086b0543af9f0f4c5d80d545797",
    "support"
@@ -42808,10 +41603,6 @@
   "html/dom/elements/global-attributes/dir_auto-contained-textarea-L.html": [
    "b603d2f0ca7a57238f55992201f730a84d07e256",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-contained-textarea-R-expected.html": [
-   "1ade01ec0121c1da62d52648d59d045a403b7430",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-contained-textarea-R-ref.html": [
    "1ade01ec0121c1da62d52648d59d045a403b7430",
@@ -42821,10 +41612,6 @@
    "f030fd7098376603d34dd5b508a5ed9b7d5dbe86",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-EN-L-expected.html": [
-   "faa67b3a8c27df008a1c80ebadf5a7d8053df2a7",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-EN-L-ref.html": [
    "faa67b3a8c27df008a1c80ebadf5a7d8053df2a7",
    "support"
@@ -42832,10 +41619,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-EN-L.html": [
    "5759d093606e53b68b0f50e1f3a6ba5d25cc0ae4",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-EN-R-expected.html": [
-   "93dc76b79d9ef1c77ed32ef83977e294078e4ef9",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-EN-R-ref.html": [
    "93dc76b79d9ef1c77ed32ef83977e294078e4ef9",
@@ -42845,10 +41628,6 @@
    "3ed7cd50bbac6796b405a2d4f8f880de1ee47ad1",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-L-expected.html": [
-   "309fe79670f3ae336c70ebd41110c774a35d966d",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-L-ref.html": [
    "309fe79670f3ae336c70ebd41110c774a35d966d",
    "support"
@@ -42856,10 +41635,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-L.html": [
    "78e1b2e16850484324a3df8d0f9c422d7efeb719",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-N-EN-L-expected.html": [
-   "8058aa2b936f646a299d54cb4c4412e364e5fd25",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-N-EN-L-ref.html": [
    "8058aa2b936f646a299d54cb4c4412e364e5fd25",
@@ -42869,10 +41644,6 @@
    "3d959387e93b3dd99d0e223eb6f5a253b9260ceb",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-N-EN-R-expected.html": [
-   "9376309e9dafe11734d0b963bf1a7a36f8388bf3",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-N-EN-R-ref.html": [
    "9376309e9dafe11734d0b963bf1a7a36f8388bf3",
    "support"
@@ -42880,10 +41651,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-N-EN-R.html": [
    "077a2c1d57110aea292bf6da302f3b16962ae639",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-N-EN-expected.html": [
-   "c7d4c449fe7eea0b1c2d24cced35edd1c1e3de5d",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-N-EN-ref.html": [
    "c7d4c449fe7eea0b1c2d24cced35edd1c1e3de5d",
@@ -42893,10 +41660,6 @@
    "5396cbde2fb108caa42f42c9a9ce781020fbeab8",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-N-L-expected.html": [
-   "82634313b8751d1993dec92867531747b468c280",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-N-L-ref.html": [
    "82634313b8751d1993dec92867531747b468c280",
    "support"
@@ -42904,10 +41667,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-N-L.html": [
    "1a65cb2e6c8080f9d1d795b5ef27d1023ba56a19",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-N-R-expected.html": [
-   "11e1abb3fb073fe531ebad22d9876c350db7e2ab",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-N-R-ref.html": [
    "11e1abb3fb073fe531ebad22d9876c350db7e2ab",
@@ -42917,10 +41676,6 @@
    "a19b26445f5dbd1833a123f9391ed39a1a03ec48",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-R-expected.html": [
-   "19d8e650154ef0cca0a093f10e1ff5a4bd5e4885",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-R-ref.html": [
    "19d8e650154ef0cca0a093f10e1ff5a4bd5e4885",
    "support"
@@ -42928,10 +41683,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-R.html": [
    "39cba6b769deb1880f93207f2c534425a29de27f",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-EN-L-expected.html": [
-   "a1fe8e1ab5bd2da0999fc01c747a55bf8013d97a",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-script-EN-L-ref.html": [
    "a1fe8e1ab5bd2da0999fc01c747a55bf8013d97a",
@@ -42941,10 +41692,6 @@
    "25f4af11d06beb8f2a237dba266ac678f8caf7b3",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-EN-R-expected.html": [
-   "41f8b9288150a38d3fe4d07af96d48696b368b0d",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-script-EN-R-ref.html": [
    "41f8b9288150a38d3fe4d07af96d48696b368b0d",
    "support"
@@ -42952,10 +41699,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-script-EN-R.html": [
    "8795f424b9c826f5ad1c44fae6732ec9c73385fc",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-L-expected.html": [
-   "598f02d13e38d8d4603cefc74ab093a321d90cb0",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-script-L-ref.html": [
    "598f02d13e38d8d4603cefc74ab093a321d90cb0",
@@ -42965,10 +41708,6 @@
    "b053db6c7148e4cfad0677b35a342c5d8b8d7865",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-L-expected.html": [
-   "fa4e9805892cffb7d1e50832d2dd5ab7d8d37149",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-L-ref.html": [
    "fa4e9805892cffb7d1e50832d2dd5ab7d8d37149",
    "support"
@@ -42976,10 +41715,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-L.html": [
    "5eb48e7a3934128248ac87cdd0d758ba683e292b",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-R-expected.html": [
-   "bee0053456900c04a1c7430ea12719bb6907a4ad",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-R-ref.html": [
    "bee0053456900c04a1c7430ea12719bb6907a4ad",
@@ -42989,10 +41724,6 @@
    "ad2ca54bfde000e76816e39ac153d50d87979458",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-expected.html": [
-   "b7969d11eb822a1724b28c4a63c38f8d06c81fb7",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN-ref.html": [
    "b7969d11eb822a1724b28c4a63c38f8d06c81fb7",
    "support"
@@ -43000,10 +41731,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-script-N-EN.html": [
    "3fd6a5a360bb08c1c0e45f31c8e1bd93bea9475e",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-N-L-expected.html": [
-   "4a659d0fdaeadd1f0d0b605e8606c284df0ebad0",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-script-N-L-ref.html": [
    "4a659d0fdaeadd1f0d0b605e8606c284df0ebad0",
@@ -43013,10 +41740,6 @@
    "778bab97d57367b80c211421b74039d720a6a75d",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-N-R-expected.html": [
-   "2132a9450891dfa8d18e2b374a62bd783dbe0a6c",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-input-script-N-R-ref.html": [
    "2132a9450891dfa8d18e2b374a62bd783dbe0a6c",
    "support"
@@ -43024,10 +41747,6 @@
   "html/dom/elements/global-attributes/dir_auto-input-script-N-R.html": [
    "f7d6e5df3b5579359ba0d430519e0814529b9faa",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-input-script-R-expected.html": [
-   "5e3fedf81e601e38a34b328936d897f0607eac31",
-   "visual"
   ],
   "html/dom/elements/global-attributes/dir_auto-input-script-R-ref.html": [
    "5e3fedf81e601e38a34b328936d897f0607eac31",
@@ -43037,10 +41756,6 @@
    "75f06f5e68cbe0db1171d8a7d23633e1f0c400f8",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-isolate-expected.html": [
-   "c3fa723f6b0e082e8af07bb41fed8b01cb4d8bea",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/dir_auto-isolate-ref.html": [
    "c3fa723f6b0e082e8af07bb41fed8b01cb4d8bea",
    "support"
@@ -43048,10 +41763,6 @@
   "html/dom/elements/global-attributes/dir_auto-isolate.html": [
    "6776f751a2fc48f319566fd6cb1ec442ad477907",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-pre-N-EN-expected.html": [
-   "57a161033d95572c422037b02ed1e5c78f6f0a9c",
-   "support"
   ],
   "html/dom/elements/global-attributes/dir_auto-pre-N-EN-ref.html": [
    "57a161033d95572c422037b02ed1e5c78f6f0a9c",
@@ -43061,10 +41772,6 @@
    "19749371786744008be859f020f2a6a11291d523",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-pre-N-between-Rs-expected.html": [
-   "6abaf1774734654ce416757cf3289de0cd94bb04",
-   "support"
-  ],
   "html/dom/elements/global-attributes/dir_auto-pre-N-between-Rs-ref.html": [
    "6abaf1774734654ce416757cf3289de0cd94bb04",
    "support"
@@ -43072,10 +41779,6 @@
   "html/dom/elements/global-attributes/dir_auto-pre-N-between-Rs.html": [
    "da624de9505ef1c62b736837e33192ea98ff55cf",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-pre-mixed-expected.html": [
-   "a6a7dcb5329209776cda9df8a25fa068d0fa791a",
-   "support"
   ],
   "html/dom/elements/global-attributes/dir_auto-pre-mixed-ref.html": [
    "a6a7dcb5329209776cda9df8a25fa068d0fa791a",
@@ -43085,10 +41788,6 @@
    "fde85b2bcc2bf96cf0f73f82133eddbe6294ef38",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-textarea-N-EN-expected.html": [
-   "13c7b842a4971a198b4065be120818143e0134e4",
-   "support"
-  ],
   "html/dom/elements/global-attributes/dir_auto-textarea-N-EN-ref.html": [
    "13c7b842a4971a198b4065be120818143e0134e4",
    "support"
@@ -43096,10 +41795,6 @@
   "html/dom/elements/global-attributes/dir_auto-textarea-N-EN.html": [
    "b29226846d2926a29923149e3e6d62972919b6eb",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-textarea-N-between-Rs-expected.html": [
-   "023bce560f90a6d7d8f94b5b3e6e7dbf4090b900",
-   "support"
   ],
   "html/dom/elements/global-attributes/dir_auto-textarea-N-between-Rs-ref.html": [
    "023bce560f90a6d7d8f94b5b3e6e7dbf4090b900",
@@ -43109,10 +41804,6 @@
    "79b5a0cf78cd47b5bfc07accf39a1d5f29618268",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-textarea-mixed-expected.html": [
-   "8da8d69d022c601815ff3b35dacc03367cd6a021",
-   "support"
-  ],
   "html/dom/elements/global-attributes/dir_auto-textarea-mixed-ref.html": [
    "8da8d69d022c601815ff3b35dacc03367cd6a021",
    "support"
@@ -43120,10 +41811,6 @@
   "html/dom/elements/global-attributes/dir_auto-textarea-mixed.html": [
    "8555d1644c5fddcebc43f8e6372ac0fc75e0a775",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-textarea-script-N-EN-expected.html": [
-   "13c7b842a4971a198b4065be120818143e0134e4",
-   "support"
   ],
   "html/dom/elements/global-attributes/dir_auto-textarea-script-N-EN-ref.html": [
    "13c7b842a4971a198b4065be120818143e0134e4",
@@ -43133,14 +41820,6 @@
    "2e86f05932639a34977b4229942a7b64d0be8895",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs-expected.html": [
-   "0c2fe320f82ac3d65aea508d9b1c1e8179b286f0",
-   "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs-ref-expected.html": [
-   "023bce560f90a6d7d8f94b5b3e6e7dbf4090b900",
-   "support"
-  ],
   "html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs-ref.html": [
    "0c2fe320f82ac3d65aea508d9b1c1e8179b286f0",
    "reftest_node"
@@ -43148,10 +41827,6 @@
   "html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs.html": [
    "8258e74229fc4b2db2fd5241f87d1bdcb2532784",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/dir_auto-textarea-script-mixed-expected.html": [
-   "8da8d69d022c601815ff3b35dacc03367cd6a021",
-   "support"
   ],
   "html/dom/elements/global-attributes/dir_auto-textarea-script-mixed-ref.html": [
    "8da8d69d022c601815ff3b35dacc03367cd6a021",
@@ -43177,10 +41852,6 @@
    "b13b47d91bb3159de5564f7e9c5d22fd21dd3bec",
    "testharness"
   ],
-  "html/dom/elements/global-attributes/lang-xmllang-01-expected.html": [
-   "4b72fb911b768df8990f7bf0be264bf6feb4989c",
-   "visual"
-  ],
   "html/dom/elements/global-attributes/lang-xmllang-01-ref.html": [
    "4b72fb911b768df8990f7bf0be264bf6feb4989c",
    "support"
@@ -43189,10 +41860,6 @@
    "a1f1a0b3d02c1d7b950079f8f02fa991245ad112",
    "reftest"
   ],
-  "html/dom/elements/global-attributes/lang-xyzzy-expected.html": [
-   "4689b24ddbb024358113c054db112a45cc020d39",
-   "support"
-  ],
   "html/dom/elements/global-attributes/lang-xyzzy-ref.html": [
    "4689b24ddbb024358113c054db112a45cc020d39",
    "support"
@@ -43200,10 +41867,6 @@
   "html/dom/elements/global-attributes/lang-xyzzy.html": [
    "7421ed448c19460e65726a0c7ebeffabd7070512",
    "reftest"
-  ],
-  "html/dom/elements/global-attributes/style-01-expected.html": [
-   "921c89f22ae55431b5ca7db4198f57b8ac934deb",
-   "visual"
   ],
   "html/dom/elements/global-attributes/style-01-ref.html": [
    "921c89f22ae55431b5ca7db4198f57b8ac934deb",
@@ -43297,217 +41960,109 @@
    "bec8edb2763e83b4141e92f95b02521cd16fbc02",
    "testharness"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001a-expected.html": [
-   "481e37afb0a1e4afbb065cf4b8d54503c95fc43f",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001a.html": [
    "cb6a9e3eaf18c711ace6ba90188b14271d068a63",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001b-expected.html": [
-   "481e37afb0a1e4afbb065cf4b8d54503c95fc43f",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001b.html": [
    "5d649ab35535acbc2fa417b6a5ed220f86b35828",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001c-expected.html": [
-   "481e37afb0a1e4afbb065cf4b8d54503c95fc43f",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-001c.html": [
    "21f5e7a44bbd7dd9fa0af86c4cf0a0827b26ce73",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002a-expected.html": [
-   "87c877c29e66d4b2350df9b5eb4feafa726aa873",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002a.html": [
    "516a5065e2b0cee59a99de777fe1cd1ea2a180aa",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002b-expected.html": [
-   "79186a3866dacfa342cffdb3bd11e51f49d1944b",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002b.html": [
    "3a1f201fd94aaeef76f7343b2bfc95166ebefe6e",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c-expected.html": [
-   "8d5d9cd60e1ac7dc8384649ed8122b465231e877",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html": [
    "eea35917830274ec8611a69aa26d30a4f80db7aa",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003a-expected.html": [
-   "8b8b1869748cacabe4caaf1880eb0decb1eab368",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003a.html": [
    "c403b8eb38dcdc56068aeb3ae97db815dadeeb39",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003b-expected.html": [
-   "8b8b1869748cacabe4caaf1880eb0decb1eab368",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003b.html": [
    "12b1624400f15ec545b9869e370b56a80b390eef",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003c-expected.html": [
-   "8b8b1869748cacabe4caaf1880eb0decb1eab368",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-003c.html": [
    "f77cb04e9c7555d9a8aca84fe1d488f258474fe7",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004a-expected.html": [
-   "fdda7afefa6ea76ed3daf56c6f24f7f86d8cea9a",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004a.html": [
    "c9e9f980e9614ae64c4bf57fc7be1b41a8379102",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004b-expected.html": [
-   "fdda7afefa6ea76ed3daf56c6f24f7f86d8cea9a",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004b.html": [
    "64c9d5f6f93efb510dfee279aa028f7d2c8e3f4f",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004c-expected.html": [
-   "fdda7afefa6ea76ed3daf56c6f24f7f86d8cea9a",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-004c.html": [
    "49274deeb3fec514233f497e4556ac3965d92bff",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005a-expected.html": [
-   "3f7e31835f9e694dc06096402ed76bcf8249ed12",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005a.html": [
    "5038049a6d509d3fb02898a919086e41e45c5805",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005b-expected.html": [
-   "3f7e31835f9e694dc06096402ed76bcf8249ed12",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005b.html": [
    "c10966f470e869fb94fe625e05b7ef2a72ed5bc8",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005c-expected.html": [
-   "3f7e31835f9e694dc06096402ed76bcf8249ed12",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-005c.html": [
    "f5d29be83b09fd7c9e270817b1a5d5dbf8bfceff",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a-expected.html": [
-   "6b881024990f683ac580080838eb83126957a779",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html": [
    "69e9d654f10d67599f25616f8a7d201372a80657",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b-expected.html": [
-   "6b881024990f683ac580080838eb83126957a779",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b.html": [
    "5db430c1f69d1812aae8cde3f032b0a33f533dd0",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c-expected.html": [
-   "30ee5fafd1b0e2a1d4176ca9bbe456fc0abce2eb",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html": [
    "7fe0fb704a392507442b06783f78d95f80691508",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007a-expected.html": [
-   "b4b27b4aa64d087a929b77c5efe0a5dac3860144",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007a.html": [
    "d54e5690fb7f89089730d5f1c570c887e878c6f6",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007b-expected.html": [
-   "b4b27b4aa64d087a929b77c5efe0a5dac3860144",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007b.html": [
    "694deacfdcaf5e48db1784c25a742e10323300b8",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007c-expected.html": [
-   "b4b27b4aa64d087a929b77c5efe0a5dac3860144",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-007c.html": [
    "75a2e8a6a3444aed1c6a4fab10694efcd8479407",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008a-expected.html": [
-   "a61a586f944e35c6de5c717ba9d73edf7861d4b8",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008a.html": [
    "e53ea6bd642740e855347adf02b81378e5e0998c",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008b-expected.html": [
-   "a61a586f944e35c6de5c717ba9d73edf7861d4b8",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008b.html": [
    "8ab3636cae95e935f3b869d4732badb1a504689c",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008c-expected.html": [
-   "a61a586f944e35c6de5c717ba9d73edf7861d4b8",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-008c.html": [
    "f47b679d3d078b327768a51f1f8b663d8ffd3016",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a-expected.html": [
-   "d8c82f3466f954c818a055eca533c87305533479",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a.html": [
    "1d387e8dbe003b008b2b301f34084bacd25b58cb",
    "reftest"
   ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b-expected.html": [
-   "355953f8ebb44f79bfe3cad728bcaaa3ec04e4bb",
-   "support"
-  ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html": [
    "3160e51288daf20bf76dc269d7117b7d142bc27d",
    "reftest"
-  ],
-  "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c-expected.html": [
-   "355953f8ebb44f79bfe3cad728bcaaa3ec04e4bb",
-   "support"
   ],
   "html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html": [
    "789155da4c5e8ca040cc1b0df8076154b659fb3c",
@@ -46909,57 +45464,29 @@
    "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
    "support"
   ],
-  "html/editing/the-hidden-attribute/hidden-1a-expected.html": [
-   "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
-   "support"
-  ],
   "html/editing/the-hidden-attribute/hidden-1a.html": [
    "de76f6d416b11a1407229f6d0d15dc95aacef2e7",
    "reftest"
-  ],
-  "html/editing/the-hidden-attribute/hidden-1b-expected.html": [
-   "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
-   "support"
   ],
   "html/editing/the-hidden-attribute/hidden-1b.html": [
    "15d5d40c80be03a3b5d31c8424a23ecf11c2502f",
    "reftest"
   ],
-  "html/editing/the-hidden-attribute/hidden-1c-expected.html": [
-   "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
-   "support"
-  ],
   "html/editing/the-hidden-attribute/hidden-1c.html": [
    "b49c6d86221c12a6e3a8a6c9f760c53253091303",
    "reftest"
-  ],
-  "html/editing/the-hidden-attribute/hidden-1d-expected.html": [
-   "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
-   "support"
   ],
   "html/editing/the-hidden-attribute/hidden-1d.html": [
    "d56e6521ea3e4d542b3b1547e701417aefed5886",
    "reftest"
   ],
-  "html/editing/the-hidden-attribute/hidden-1e-expected.html": [
-   "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
-   "support"
-  ],
   "html/editing/the-hidden-attribute/hidden-1e.html": [
    "33346fc3c1b0fde55caa6a186513c5650962531d",
    "reftest"
   ],
-  "html/editing/the-hidden-attribute/hidden-1f-expected.html": [
-   "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
-   "support"
-  ],
   "html/editing/the-hidden-attribute/hidden-1f.html": [
    "6c6b02bc3030e02f1bdc6a9764381d3729212a11",
    "reftest"
-  ],
-  "html/editing/the-hidden-attribute/hidden-1g-expected.html": [
-   "7d7ae1dcb8c6a2e0f3a1b2ffffed957f3b1d2a85",
-   "support"
   ],
   "html/editing/the-hidden-attribute/hidden-1g.html": [
    "1823cceca9a6aa802af50cc4e7da8592def40990",
@@ -47141,10 +45668,6 @@
    "02f00d35b00fd8c08f7063ab8920171ab5070a71",
    "testharness"
   ],
-  "html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type-expected.html": [
-   "a5fa95e71b00d1ad88fdff3fc9e93b6588742eee",
-   "support"
-  ],
   "html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type-ref.html": [
    "a5fa95e71b00d1ad88fdff3fc9e93b6588742eee",
    "support"
@@ -47152,10 +45675,6 @@
   "html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html": [
    "6186a83ccdba01d4c5430f4afce7ae397427f0c5",
    "reftest"
-  ],
-  "html/rendering/bindings/the-select-element-0/option-label-expected.html": [
-   "34ac1b429801bdb44125c92f5df03fb79b15aad4",
-   "support"
   ],
   "html/rendering/bindings/the-select-element-0/option-label-ref.html": [
    "34ac1b429801bdb44125c92f5df03fb79b15aad4",
@@ -47165,33 +45684,17 @@
    "f8fcfb9055a678a2b6714a15957485c137296177",
    "reftest"
   ],
-  "html/rendering/bindings/the-textarea-element-0/cols-default-expected.html": [
-   "0c91f2093be9e8f9815e4907fcf98d32c66af2d4",
-   "support"
-  ],
   "html/rendering/bindings/the-textarea-element-0/cols-default.html": [
    "8b963bce003842a81c6d52a860cc5bd49c598933",
    "reftest"
-  ],
-  "html/rendering/bindings/the-textarea-element-0/cols-zero-expected.html": [
-   "0c91f2093be9e8f9815e4907fcf98d32c66af2d4",
-   "support"
   ],
   "html/rendering/bindings/the-textarea-element-0/cols-zero.html": [
    "8e1e339ae7358c35c9f7caae4b55bbb3af7e892f",
    "reftest"
   ],
-  "html/rendering/bindings/the-textarea-element-0/rows-default-expected.html": [
-   "0c91f2093be9e8f9815e4907fcf98d32c66af2d4",
-   "support"
-  ],
   "html/rendering/bindings/the-textarea-element-0/rows-default.html": [
    "de96b189c5f22e5ca94a9871d3b050913bf20f08",
    "reftest"
-  ],
-  "html/rendering/bindings/the-textarea-element-0/rows-zero-expected.html": [
-   "0c91f2093be9e8f9815e4907fcf98d32c66af2d4",
-   "support"
   ],
   "html/rendering/bindings/the-textarea-element-0/rows-zero.html": [
    "07decc10c95c65c33578bb1b3e15d406e914c1aa",
@@ -47205,10 +45708,6 @@
    "f4ec57281d8f32a4931599edc65941ea0db78d5f",
    "support"
   ],
-  "html/rendering/non-replaced-elements/flow-content-0/div-align-expected.html": [
-   "e29cbaaf20761847d68e8c75d1516e25dee0d02a",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/flow-content-0/div-align-ref.html": [
    "e29cbaaf20761847d68e8c75d1516e25dee0d02a",
    "support"
@@ -47216,10 +45715,6 @@
   "html/rendering/non-replaced-elements/flow-content-0/div-align.html": [
    "9c049440cb28e4be6eb8e4d9b85fb6529457e3c4",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/flow-content-0/figure-expected.html": [
-   "bc22a60dfab459b65f1ccacdce853a6af1c326fd",
-   "visual"
   ],
   "html/rendering/non-replaced-elements/flow-content-0/figure-ref.html": [
    "bc22a60dfab459b65f1ccacdce853a6af1c326fd",
@@ -47233,15 +45728,7 @@
    "1993a0736f73b9ac2916f89de4fa34fdab90cca9",
    "support"
   ],
-  "html/rendering/non-replaced-elements/lists/li-type-supported-expected.html": [
-   "a208df22e25e9c3d98f196753fa51d5a0fac500e",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/li-type-supported-ref.html": [
-   "a208df22e25e9c3d98f196753fa51d5a0fac500e",
-   "support"
-  ],
-  "html/rendering/non-replaced-elements/lists/li-type-supported-xhtml-expected.html": [
    "a208df22e25e9c3d98f196753fa51d5a0fac500e",
    "support"
   ],
@@ -47253,17 +45740,9 @@
    "b4b93b48bb6da64d135613e5d73885a18aa7d9ab",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-alpha-expected.html": [
-   "014508b5fd3f5d411d87e3efddcef87031a8553c",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-alpha.html": [
    "e556577acbb6f7f2f985691300ea2c354ea295da",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-roman-expected.html": [
-   "014508b5fd3f5d411d87e3efddcef87031a8553c",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-roman.html": [
    "bd99faaa307fdca511a8cb68b341ecf2376f8726",
@@ -47273,31 +45752,15 @@
    "014508b5fd3f5d411d87e3efddcef87031a8553c",
    "support"
   ],
-  "html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-alpha-expected.html": [
-   "014508b5fd3f5d411d87e3efddcef87031a8553c",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-alpha.html": [
    "86ba4a1fc9dd030326c869456f1f915dbc55c706",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-roman-expected.html": [
-   "014508b5fd3f5d411d87e3efddcef87031a8553c",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-roman.html": [
    "ef5dd6ccad1c311425519218015279bf8c4efb09",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ol-type-supported-expected.html": [
-   "ca19f6e10f4ea50a68f07c1b18f350451ff1e32b",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ol-type-supported-ref.html": [
-   "ca19f6e10f4ea50a68f07c1b18f350451ff1e32b",
-   "support"
-  ],
-  "html/rendering/non-replaced-elements/lists/ol-type-supported-xhtml-expected.html": [
    "ca19f6e10f4ea50a68f07c1b18f350451ff1e32b",
    "support"
   ],
@@ -47309,49 +45772,25 @@
    "a7dd43386da371e243998c5309769a98ae3aaf51",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-circle-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-circle.html": [
    "12520d6f88dea06487485f94d116da70a528a4f1",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-disc-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-disc.html": [
    "cfa6790fa4a6bf718bd471953fa9c5200126f687",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-invalid-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-invalid.html": [
    "2b1357456c5ec76c85539138ee127aead40cec83",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-lower-alpha-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-lower-alpha.html": [
    "aae05a4770fc8db603c533c98ea0cc0d67706c80",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-lower-roman-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-lower-roman.html": [
    "5f767bf1d79377a5311163193fb97f6eabda55d7",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-none-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-none.html": [
    "90b110b70e1cc202d7fae8288f9413119276b9df",
@@ -47361,47 +45800,23 @@
    "ad2cccd38a78c7461266356cba69673c08c636c7",
    "support"
   ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-round-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-round.html": [
    "1a1ec21baf21aea4724264d938bfce4ddf667715",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-square-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-square.html": [
    "329d32692c84fc1cd457ed533b8dee38827bac9e",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-upper-alpha-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-upper-alpha.html": [
    "6b10d133f59248152576bf248790c56f63788a8d",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ol-type-unsupported-upper-roman-expected.html": [
-   "ad2cccd38a78c7461266356cba69673c08c636c7",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ol-type-unsupported-upper-roman.html": [
    "70c9c0b8a411394668837fc834ed5f8fa955f6dc",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ul-type-supported-expected.html": [
-   "e0bf757f7b006d9ecc4c71a6ab0a9ac52b5d2829",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ul-type-supported-ref.html": [
-   "e0bf757f7b006d9ecc4c71a6ab0a9ac52b5d2829",
-   "support"
-  ],
-  "html/rendering/non-replaced-elements/lists/ul-type-supported-xhtml-expected.html": [
    "e0bf757f7b006d9ecc4c71a6ab0a9ac52b5d2829",
    "support"
   ],
@@ -47413,33 +45828,17 @@
    "829be53c029f0511a68a36804d6a8874771933fd",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ul-type-unsupported-decimal-expected.html": [
-   "aed2fe85523bbf7660829354eb8c85dbf9b85e62",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-decimal.html": [
    "62447d263ff0747c2fe0ce6875c424c7a5a0514b",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ul-type-unsupported-invalid-expected.html": [
-   "aed2fe85523bbf7660829354eb8c85dbf9b85e62",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-invalid.html": [
    "5317d6722c970b373a2b986ce9853f9dd0bb71d9",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-alpha-expected.html": [
-   "aed2fe85523bbf7660829354eb8c85dbf9b85e62",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-alpha.html": [
    "ceef368ad8666be4313313ce079cca5be9ae31c5",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-roman-expected.html": [
-   "aed2fe85523bbf7660829354eb8c85dbf9b85e62",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-roman.html": [
    "93fbacc30968a98d97d09b6c253a0d7a3c7dc3ea",
@@ -47449,33 +45848,17 @@
    "aed2fe85523bbf7660829354eb8c85dbf9b85e62",
    "support"
   ],
-  "html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-alpha-expected.html": [
-   "aed2fe85523bbf7660829354eb8c85dbf9b85e62",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-alpha.html": [
    "c6f56f8007440981b8c475d490d1be1b216597ca",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-roman-expected.html": [
-   "aed2fe85523bbf7660829354eb8c85dbf9b85e62",
-   "support"
   ],
   "html/rendering/non-replaced-elements/lists/ul-type-unsupported-upper-roman.html": [
    "eafbd5d4f39a28fb5c2c4f3af8d176ea247e0efa",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-a-expected.html": [
-   "31621388c5c272a94e918d63c54ede9c308a881f",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-a.html": [
    "da59b8c71eb6abbcc4423b424f19c47d7fbd10b5",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-q-expected.html": [
-   "31621388c5c272a94e918d63c54ede9c308a881f",
-   "support"
   ],
   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-q.html": [
    "b3062636521aae5317fb11aa26924f16d026e9d6",
@@ -47485,25 +45868,13 @@
    "31621388c5c272a94e918d63c54ede9c308a881f",
    "support"
   ],
-  "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-s-expected.html": [
-   "31621388c5c272a94e918d63c54ede9c308a881f",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-s.html": [
    "798edd60960bd2349625b18e499a8ab3b6308284",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-x-expected.html": [
-   "31621388c5c272a94e918d63c54ede9c308a881f",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-x.xhtml": [
    "0c65854ebeb20fe22798d24f427c57d3a478b480",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/tables/table-border-1-expected.html": [
-   "1f3aa494ba434211a8cdcd1be289e702856fa05a",
-   "support"
   ],
   "html/rendering/non-replaced-elements/tables/table-border-1-ref.html": [
    "1f3aa494ba434211a8cdcd1be289e702856fa05a",
@@ -47512,10 +45883,6 @@
   "html/rendering/non-replaced-elements/tables/table-border-1.html": [
    "17a35d8b06ed08ba39c9fcc3abf7566941ee0c6a",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/tables/table-border-2-expected.html": [
-   "deaba5f29b60ae3b02dd633b49f2d3ab3fb8c278",
-   "support"
   ],
   "html/rendering/non-replaced-elements/tables/table-border-2-notref.html": [
    "8c5f73d1db910b6137a06bfecd700e2c8f5cbec4",
@@ -47529,15 +45896,7 @@
    "a58057471669a04fa625d2dc9a8d860ada53a25c",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/tables/table-cell-width-expected.html": [
-   "8b33615d70e3a5347e9ea8891a4ba997d3806de6",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/tables/table-cell-width-ref.html": [
-   "8b33615d70e3a5347e9ea8891a4ba997d3806de6",
-   "support"
-  ],
-  "html/rendering/non-replaced-elements/tables/table-cell-width-s-expected.html": [
    "8b33615d70e3a5347e9ea8891a4ba997d3806de6",
    "support"
   ],
@@ -47548,10 +45907,6 @@
   "html/rendering/non-replaced-elements/tables/table-cell-width.html": [
    "699050ab3bcc8fc11d51c2ae4b9b10aee46876a5",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/tables/table-layout-expected.html": [
-   "d5fdae37ca0ac9def696205d613983c2d7e2e5ae",
-   "support"
   ],
   "html/rendering/non-replaced-elements/tables/table-layout-notref.html": [
    "a05fad3c06f94c3a617f2efdc589bbb3f5525983",
@@ -47565,10 +45920,6 @@
    "ec05c435cfd09291184360db7e8b0c5af9c7ba31",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/tables/table-width-150percent-expected.html": [
-   "a25b7aad09676bed5d05714aeae6b5a6b4dbb4b5",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/tables/table-width-150percent-ref.html": [
    "a25b7aad09676bed5d05714aeae6b5a6b4dbb4b5",
    "support"
@@ -47577,15 +45928,7 @@
    "bc78dfc6c24812c9910a5289f64d18a80d5b9c05",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/tables/table-width-expected.html": [
-   "bb17cabc8fd9ac93888aaa58c72ed1bfdbc636ce",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/tables/table-width-ref.html": [
-   "bb17cabc8fd9ac93888aaa58c72ed1bfdbc636ce",
-   "support"
-  ],
-  "html/rendering/non-replaced-elements/tables/table-width-s-expected.html": [
    "bb17cabc8fd9ac93888aaa58c72ed1bfdbc636ce",
    "support"
   ],
@@ -47597,20 +45940,12 @@
    "d14590d989f2c2c65f59f0f952115038fa705087",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/the-fieldset-element-0/min-width-not-important-expected.html": [
-   "ca98c73f07f62c3536f6fe1d2460fc94c575aad1",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/the-fieldset-element-0/min-width-not-important.html": [
    "1b765f689ff6c297942d79fd093cb2d572e66f9a",
    "reftest"
   ],
   "html/rendering/non-replaced-elements/the-fieldset-element-0/ref.html": [
    "ca98c73f07f62c3536f6fe1d2460fc94c575aad1",
-   "support"
-  ],
-  "html/rendering/non-replaced-elements/the-hr-element-0/align-expected.html": [
-   "eb2082192a4be6b4b4d6eafc7c3d609afb0cde49",
    "support"
   ],
   "html/rendering/non-replaced-elements/the-hr-element-0/align-ref.html": [
@@ -47621,10 +45956,6 @@
    "119fa52740995b00e49c170914265958be5403c5",
    "reftest"
   ],
-  "html/rendering/non-replaced-elements/the-hr-element-0/color-expected.html": [
-   "1ba77c5a096a3aabffca5031c056d2b7e946bc56",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/the-hr-element-0/color-ref.html": [
    "1ba77c5a096a3aabffca5031c056d2b7e946bc56",
    "support"
@@ -47632,10 +45963,6 @@
   "html/rendering/non-replaced-elements/the-hr-element-0/color.html": [
    "37ba851b3393d3fe2e60985f502bf29438947449",
    "reftest"
-  ],
-  "html/rendering/non-replaced-elements/the-hr-element-0/width-expected.html": [
-   "33d7505b42b0507d8fd73151e32fa71d73e3b862",
-   "support"
   ],
   "html/rendering/non-replaced-elements/the-hr-element-0/width-ref.html": [
    "33d7505b42b0507d8fd73151e32fa71d73e3b862",
@@ -47649,10 +45976,6 @@
    "588faa58c26ff0c8f2bdbf52bd0549f119028c92",
    "support"
   ],
-  "html/rendering/non-replaced-elements/the-page/body_text_00ffff-expected.html": [
-   "def352c51713beb2904827cb297a6ac8664e40a8",
-   "support"
-  ],
   "html/rendering/non-replaced-elements/the-page/body_text_00ffff-ref.html": [
    "def352c51713beb2904827cb297a6ac8664e40a8",
    "support"
@@ -47663,10 +45986,6 @@
   ],
   "html/rendering/non-replaced-elements/the-page/test-body.xhtml": [
    "7a229199399e678847280e6e88e40e5b37bfdd11",
-   "support"
-  ],
-  "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/img-dim-expected.html": [
-   "a383f05b889bb8272aec262b271890334460db12",
    "support"
   ],
   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/img-dim-ref.html": [
@@ -47709,10 +46028,6 @@
    "c1a52d71881ec5326761f415cc319a467587be17",
    "reftest"
   ],
-  "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback-expected.html": [
-   "b4f3b4b0159928ea0d7dab5d4dbf9f75676a4a07",
-   "support"
-  ],
   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback-ref.html": [
    "b4f3b4b0159928ea0d7dab5d4dbf9f75676a4a07",
    "support"
@@ -47720,10 +46035,6 @@
   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback.html": [
    "29e2eedb67a0a8e80c5bc09cbda5acb3d74bed74",
    "reftest"
-  ],
-  "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_scale-expected.html": [
-   "c7485363b55464d72b14633f0fdfc46243609758",
-   "support"
   ],
   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_scale.html": [
    "625ed524ddc055ed07e1df91637d7aba1d4e59f7",
@@ -47733,20 +46044,12 @@
    "c7485363b55464d72b14633f0fdfc46243609758",
    "support"
   ],
-  "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_without_context_a-expected.html": [
-   "9c96574d448d5df8aeb64bcdda404660e99d815f",
-   "support"
-  ],
   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_without_context_a.html": [
    "762f90525d565216dc516bdddb115c3426054400",
    "reftest"
   ],
   "html/rendering/replaced-elements/embedded-content-rendering-rules/canvas_without_context_ref.html": [
    "9c96574d448d5df8aeb64bcdda404660e99d815f",
-   "support"
-  ],
-  "html/rendering/replaced-elements/images/space-expected.html": [
-   "d5b9df319bcb762ac7dedf04fec4c08885a25101",
    "support"
   ],
   "html/rendering/replaced-elements/images/space-ref.html": [
@@ -47901,10 +46204,6 @@
    "e4a66764ea94d51b42d485d75a3305ea2ab79226",
    "support"
   ],
-  "html/semantics/document-metadata/the-link-element/stylesheet-empty-href-expected.html": [
-   "1ac8e070630e58df8489b779bdd75cb2b38c25ef",
-   "support"
-  ],
   "html/semantics/document-metadata/the-link-element/stylesheet-empty-href-ref.html": [
    "1ac8e070630e58df8489b779bdd75cb2b38c25ef",
    "support"
@@ -47913,10 +46212,6 @@
    "8c54fc2f3709a971b97d963e5e83e7566c298968",
    "reftest"
   ],
-  "html/semantics/document-metadata/the-link-element/stylesheet-media-expected.html": [
-   "1ac8e070630e58df8489b779bdd75cb2b38c25ef",
-   "support"
-  ],
   "html/semantics/document-metadata/the-link-element/stylesheet-media-ref.html": [
    "1ac8e070630e58df8489b779bdd75cb2b38c25ef",
    "support"
@@ -47924,10 +46219,6 @@
   "html/semantics/document-metadata/the-link-element/stylesheet-media.html": [
    "e92ded997918ce8e77ec42ed53e38be5c7df1656",
    "reftest"
-  ],
-  "html/semantics/document-metadata/the-link-element/stylesheet-with-base-expected.html": [
-   "de15b17da5a06486fa1cb13e241115ccca1f8a45",
-   "support"
   ],
   "html/semantics/document-metadata/the-link-element/stylesheet-with-base-ref.html": [
    "de15b17da5a06486fa1cb13e241115ccca1f8a45",
@@ -47984,10 +46275,6 @@
   "html/semantics/document-metadata/the-style-element/historical.html": [
    "a79507053f56789fe02f0cc6ef841c9d0e46d490",
    "testharness"
-  ],
-  "html/semantics/document-metadata/the-style-element/html_style_in_comment-expected.html": [
-   "e2ea59540fe2572a5a7a3af6d3dc3462aeeb2a2a",
-   "support"
   ],
   "html/semantics/document-metadata/the-style-element/html_style_in_comment-ref.html": [
    "e2ea59540fe2572a5a7a3af6d3dc3462aeeb2a2a",
@@ -48577,10 +46864,6 @@
    "db06f508b6f178c4e0deb19b6820df02b058bd32",
    "testharness"
   ],
-  "html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01-expected.html": [
-   "bdcd35bc3b9f80ec0c25c34a7977b97a06ffab88",
-   "support"
-  ],
   "html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01.html": [
    "2b595a45498791fc4737ea3095bb5ee89cbc3d8f",
    "reftest"
@@ -48636,10 +46919,6 @@
   "html/semantics/embedded-content/the-iframe-element/iframe-load-event.html": [
    "d45f7b847e30fe8e3c2e03ef838b55d11ef4592f",
    "testharness"
-  ],
-  "html/semantics/embedded-content/the-iframe-element/iframe-with-base-expected.html": [
-   "9e04580af238e0aea1f124e1748b0a008ddb8a0b",
-   "support"
   ],
   "html/semantics/embedded-content/the-iframe-element/iframe-with-base-ref.html": [
    "9e04580af238e0aea1f124e1748b0a008ddb8a0b",
@@ -48740,10 +47019,6 @@
   "html/semantics/embedded-content/the-img-element/data-url.html": [
    "bdbfbe9a5908c6233bd7b9697a0762bd2e0f6ede",
    "testharness"
-  ],
-  "html/semantics/embedded-content/the-img-element/document-base-url-expected.html": [
-   "add78257076d22891334b93c8072d098ace9b6eb",
-   "visual"
   ],
   "html/semantics/embedded-content/the-img-element/document-base-url-ref.html": [
    "add78257076d22891334b93c8072d098ace9b6eb",
@@ -49277,10 +47552,6 @@
    "3cc3df0d6b19a14ab979e2fffedce95e8380fca8",
    "testharness"
   ],
-  "html/semantics/forms/the-input-element/image01-expected.html": [
-   "9ff11164254c68977111a83071345360b0789812",
-   "support"
-  ],
   "html/semantics/forms/the-input-element/image01-ref.html": [
    "9ff11164254c68977111a83071345360b0789812",
    "support"
@@ -49525,10 +47796,6 @@
    "b61235681689807b5d46b8aaca9ae6c7a18039f7",
    "testharness"
   ],
-  "html/semantics/forms/the-textarea-element/textarea-newline-bidi-expected.html": [
-   "26eb3e615f8b0e15cf02b7ee18d39fd71b04da70",
-   "visual"
-  ],
   "html/semantics/forms/the-textarea-element/textarea-newline-bidi-ref.html": [
    "26eb3e615f8b0e15cf02b7ee18d39fd71b04da70",
    "support"
@@ -49545,17 +47812,9 @@
    "176e2ca4fdb0fe1b83e0154f5b61340fdacf66a9",
    "support"
   ],
-  "html/semantics/forms/the-textarea-element/wrap-reflect-1a-expected.html": [
-   "176e2ca4fdb0fe1b83e0154f5b61340fdacf66a9",
-   "visual"
-  ],
   "html/semantics/forms/the-textarea-element/wrap-reflect-1a.html": [
    "9487ed78005c0ccc3d6ba8a2f4bd42f15659e00e",
    "reftest"
-  ],
-  "html/semantics/forms/the-textarea-element/wrap-reflect-1b-expected.html": [
-   "176e2ca4fdb0fe1b83e0154f5b61340fdacf66a9",
-   "visual"
   ],
   "html/semantics/forms/the-textarea-element/wrap-reflect-1b.html": [
    "4920affb48df0cb5e9a2c75776125ee1bf31904d",
@@ -49589,10 +47848,6 @@
    "1bb031d483d052dfc4481e002371ccc74570ef07",
    "testharness"
   ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-001-expected.html": [
-   "a4b6ead0a56d0bd187b7a36e17678bf7836d9801",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-001-ref.html": [
    "a4b6ead0a56d0bd187b7a36e17678bf7836d9801",
    "support"
@@ -49600,10 +47855,6 @@
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-001.html": [
    "41a9a1d617feb2a786a04343d37aadcccd8bbd33",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-002-expected.html": [
-   "07484bd1be25d3bb943d220d95681cf18d0c3397",
-   "visual"
   ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-002-ref.html": [
    "07484bd1be25d3bb943d220d95681cf18d0c3397",
@@ -49613,10 +47864,6 @@
    "cf41d95e33f67b99d974464397f933b4ae09149c",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item-expected.html": [
-   "df9b660f10e9d238ed7509661797375f26da219d",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item-ref.html": [
    "df9b660f10e9d238ed7509661797375f26da219d",
    "support"
@@ -49624,10 +47871,6 @@
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item.html": [
    "c302bd98a42f9fd866c036e8ec1c4e535d9a9020",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu-expected.html": [
-   "43eae10a8c31389116b8f742090b581b6a0602ad",
-   "visual"
   ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu-ref.html": [
    "43eae10a8c31389116b8f742090b581b6a0602ad",
@@ -49637,10 +47880,6 @@
    "9543c8c640c115d8c7e793a23783bcf7b86545f0",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed-expected.html": [
-   "ee952f316823dccdeaa87fea7acf9e83fa9c2ecb",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed-ref.html": [
    "ee952f316823dccdeaa87fea7acf9e83fa9c2ecb",
    "support"
@@ -49648,10 +47887,6 @@
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed.html": [
    "73ad146f573b50a40caead509382e639b2ff0182",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir-expected.html": [
-   "acd7602d7c5da1b3bb8223a56624885f3e68cbbf",
-   "visual"
   ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir-ref.html": [
    "acd7602d7c5da1b3bb8223a56624885f3e68cbbf",
@@ -49661,10 +47896,6 @@
    "6c59df96f4ac30f316ece8f52b1e8f04ff738e09",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol-expected.html": [
-   "10ce2e3b4ebccd9e33ceb1f000f38a913e62376a",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol-ref.html": [
    "10ce2e3b4ebccd9e33ceb1f000f38a913e62376a",
    "support"
@@ -49672,10 +47903,6 @@
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol.html": [
    "6ae9ba3ca7b7c392f6bb497f3f7b023ac43bd5ba",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent-expected.html": [
-   "8df865548be05deeb324e44a12cd8287e3dd8f06",
-   "visual"
   ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent-ref.html": [
    "8df865548be05deeb324e44a12cd8287e3dd8f06",
@@ -49685,10 +47912,6 @@
    "a2c717ea87a4bc4bfe2c9d3c2def14728083563e",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes-expected.html": [
-   "1d3eac3f8643649d69983509d1756ca1045cca35",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes-ref.html": [
    "1d3eac3f8643649d69983509d1756ca1045cca35",
    "support"
@@ -49696,10 +47919,6 @@
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html": [
    "9406705dd604bb1c581854409044d767001ab2db",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul-expected.html": [
-   "af8704449639c5a531d40411c841ce6f80b76367",
-   "visual"
   ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul-ref.html": [
    "af8704449639c5a531d40411c841ce6f80b76367",
@@ -49709,10 +47928,6 @@
    "680ef0dbfea0bcb7ca12905c4d6ccf5a65b29707",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner-expected.html": [
-   "3d09b34aee7f995c2e77673602443b1d9bc1a940",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner-ref.html": [
    "3d09b34aee7f995c2e77673602443b1d9bc1a940",
    "support"
@@ -49720,10 +47935,6 @@
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html": [
    "829a238ff1da7b16a7ee0d39df51147f7a5882fd",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered-expected.html": [
-   "2547d6ce7e7a8062fae3381b8e3098641dfb0b77",
-   "visual"
   ],
   "html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered-ref.html": [
    "2547d6ce7e7a8062fae3381b8e3098641dfb0b77",
@@ -49741,10 +47952,6 @@
    "9832675121d169fa35e20e7b8b4a2fbb1fa32cd7",
    "support"
   ],
-  "html/semantics/grouping-content/the-ol-element/grouping-ol-rev-reftest-001-expected.html": [
-   "6c860e7e2df46c307147da987fff7035bdf6cb5f",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-ol-element/grouping-ol-rev-reftest-001-ref.html": [
    "6c860e7e2df46c307147da987fff7035bdf6cb5f",
    "support"
@@ -49752,10 +47959,6 @@
   "html/semantics/grouping-content/the-ol-element/grouping-ol-rev-reftest-001.html": [
    "54bf0bbf4db645694aa75fb0d92efd03679a99e2",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-001-expected.html": [
-   "fcf0c36f565f988c351c9132e2858ebb34bd2591",
-   "visual"
   ],
   "html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-001-ref.html": [
    "fcf0c36f565f988c351c9132e2858ebb34bd2591",
@@ -49765,10 +47968,6 @@
    "1005aafa6ddaaf7fe0a5f030d6268591eaaa25be",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-002-expected.html": [
-   "976fa92e353d0216b233b7fc9fc0d5d39e9ab343",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-002-ref.html": [
    "976fa92e353d0216b233b7fc9fc0d5d39e9ab343",
    "support"
@@ -49776,10 +47975,6 @@
   "html/semantics/grouping-content/the-ol-element/grouping-ol-start-reftest-002.html": [
    "df89de10d8863dfa1533ab905a52a8b625d46391",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-001-expected.html": [
-   "f0f8211e5e80e5eedaea3bb8513dd91c6c07e8c1",
-   "visual"
   ],
   "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-001-ref.html": [
    "f0f8211e5e80e5eedaea3bb8513dd91c6c07e8c1",
@@ -49789,10 +47984,6 @@
    "02ce969c8019c3f2c2ebf239fac84fac2f094251",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-002-expected.html": [
-   "2d27dc4ba0139e7367a9325dde46037203ce8798",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-002-ref.html": [
    "2d27dc4ba0139e7367a9325dde46037203ce8798",
    "support"
@@ -49800,10 +47991,6 @@
   "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-002.html": [
    "ffdddc968bf4ec26fae3a524af1a65eeb1671afe",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-003-expected.html": [
-   "c7a89b7bf448bd719e1382a382c0cdd5c3d583c9",
-   "visual"
   ],
   "html/semantics/grouping-content/the-ol-element/grouping-ol-type-reftest-003-ref.html": [
    "c7a89b7bf448bd719e1382a382c0cdd5c3d583c9",
@@ -49833,49 +48020,25 @@
    "fba28dfd4365113e22cde81fa1c8ff7ea3c12f42",
    "support"
   ],
-  "html/semantics/grouping-content/the-ol-element/reversed-1a-expected.html": [
-   "fba28dfd4365113e22cde81fa1c8ff7ea3c12f42",
-   "support"
-  ],
   "html/semantics/grouping-content/the-ol-element/reversed-1a.html": [
    "9f36d1263ec2dcce6adb5a584efd176c66d33741",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-ol-element/reversed-1b-expected.html": [
-   "fba28dfd4365113e22cde81fa1c8ff7ea3c12f42",
-   "support"
   ],
   "html/semantics/grouping-content/the-ol-element/reversed-1b.html": [
    "fc31d2e57e43ee9a7c45c367552f01570fa7967e",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-ol-element/reversed-1c-expected.html": [
-   "fba28dfd4365113e22cde81fa1c8ff7ea3c12f42",
-   "support"
-  ],
   "html/semantics/grouping-content/the-ol-element/reversed-1c.html": [
    "f501c5a507374616d8b65ac9f3f2f23e15b10d7e",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-ol-element/reversed-1d-expected.html": [
-   "fba28dfd4365113e22cde81fa1c8ff7ea3c12f42",
-   "support"
   ],
   "html/semantics/grouping-content/the-ol-element/reversed-1d.html": [
    "10d79be3235c358b04de0682cdd1c5382c789a14",
    "reftest"
   ],
-  "html/semantics/grouping-content/the-ol-element/reversed-1e-expected.html": [
-   "fba28dfd4365113e22cde81fa1c8ff7ea3c12f42",
-   "support"
-  ],
   "html/semantics/grouping-content/the-ol-element/reversed-1e.html": [
    "89f0c0d4239c29d1b47291c0e3baf007bbb418ce",
    "reftest"
-  ],
-  "html/semantics/grouping-content/the-ol-element/reversed-2-expected.html": [
-   "e5629e10dacd7c8eea4dc03f57e3dea7339961dc",
-   "support"
   ],
   "html/semantics/grouping-content/the-ol-element/reversed-2-ref.html": [
    "e5629e10dacd7c8eea4dc03f57e3dea7339961dc",
@@ -49889,10 +48052,6 @@
    "021a20053c9d7921937ac4a488b562f5520004fd",
    "testharness"
   ],
-  "html/semantics/grouping-content/the-pre-element/grouping-pre-reftest-001-expected.html": [
-   "6b46337620623ec21b002d2eb1aad905c0c401b6",
-   "visual"
-  ],
   "html/semantics/grouping-content/the-pre-element/grouping-pre-reftest-001-ref.html": [
    "6b46337620623ec21b002d2eb1aad905c0c401b6",
    "support"
@@ -49904,10 +48063,6 @@
   "html/semantics/grouping-content/the-pre-element/grouping-pre.html": [
    "9aa6e489f7d407be49797832db208ac2d452e48c",
    "testharness"
-  ],
-  "html/semantics/grouping-content/the-pre-element/pre-newline-bidi-expected.html": [
-   "321e6abdc6290977e32c4c9ff79b6935d708cb05",
-   "visual"
   ],
   "html/semantics/grouping-content/the-pre-element/pre-newline-bidi-ref.html": [
    "321e6abdc6290977e32c4c9ff79b6935d708cb05",
@@ -50011,10 +48166,6 @@
   ],
   "html/semantics/links/links-created-by-a-and-area-elements/support/noopener-target-2.html": [
    "363d0cc7d503f32f6cf8f43479de3b3fb8e401d8",
-   "support"
-  ],
-  "html/semantics/links/linktypes/alternate-css-expected.html": [
-   "0962515838bc3815dae82af0df45f8f5bd60c283",
    "support"
   ],
   "html/semantics/links/linktypes/alternate-css-ref.html": [
@@ -50717,10 +48868,6 @@
    "d6cf92ac34d83cdd6357d516daeb87108933f8ed",
    "testharness"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-auto-dir-default-expected.html": [
-   "5895c849bb0236cbfcdc3114b0f34b8babecb976",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-auto-dir-default-ref.html": [
    "5895c849bb0236cbfcdc3114b0f34b8babecb976",
    "support"
@@ -50728,10 +48875,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-auto-dir-default.html": [
    "3093a0683442d30c4474d79943c15d1d92314322",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-missing-pdf-expected.html": [
-   "8af8a3f045917edd1a3fda1109c55015b00099f8",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-missing-pdf-ref.html": [
    "8af8a3f045917edd1a3fda1109c55015b00099f8",
@@ -50741,10 +48884,6 @@
    "2a9cfaac6e4ebccbb027d057c5e512826a137ef0",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-nested-expected.html": [
-   "6c8136e6450ab1f8e616930d6c80dc9f41fa10c9",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-nested-ref.html": [
    "6c8136e6450ab1f8e616930d6c80dc9f41fa10c9",
    "support"
@@ -50752,10 +48891,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-nested.html": [
    "8a29b0e4d110ecc6826eda5d0841d4c30a17a658",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-number-expected.html": [
-   "f456f7f8168f10e7c9a0543e9a086dacfda3296f",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-number-ref.html": [
    "f456f7f8168f10e7c9a0543e9a086dacfda3296f",
@@ -50765,10 +48900,6 @@
    "6ae71e93299912991b5ae19cb964df10772f1af6",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-separate-expected.html": [
-   "ef2d251d3425f9cc49bf77406fb8dfc5f13d1f78",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-separate-ref.html": [
    "ef2d251d3425f9cc49bf77406fb8dfc5f13d1f78",
    "support"
@@ -50776,10 +48907,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-separate.html": [
    "0fc7be24d07487f0601e977afb7a4fd32c5fe5f2",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-1-expected.html": [
-   "4fba4b4a9d19428f44dd55c3db9c9f104ec25303",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-1-ref.html": [
    "4fba4b4a9d19428f44dd55c3db9c9f104ec25303",
@@ -50789,10 +48916,6 @@
    "9973163fbbfb913f37f245322050cc0f27719575",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-2-expected.html": [
-   "8693fea0c30c78f08b953731b6f5c6df3d8b0756",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-2-ref.html": [
    "8693fea0c30c78f08b953731b6f5c6df3d8b0756",
    "support"
@@ -50800,10 +48923,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-another-bdi-2.html": [
    "03a0e99254a0036d593e3aa34c4ac6fed6a400f3",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-1-expected.html": [
-   "2b7f3d1067bb626ae9c76f64ed47a47377a85991",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-1-ref.html": [
    "2b7f3d1067bb626ae9c76f64ed47a47377a85991",
@@ -50813,10 +48932,6 @@
    "4e5747638aee8b78420d14de677a56b391278d22",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-2-expected.html": [
-   "3165dc2708a2fe319121d8c9b4c9f77d0f0def10",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-2-ref.html": [
    "3165dc2708a2fe319121d8c9b4c9f77d0f0def10",
    "support"
@@ -50824,10 +48939,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-following-2.html": [
    "9b6d332f8b1a1fee0169aaf2e5ae312cef54c44b",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-1-expected.html": [
-   "d38cfd6a6a62a89a154714783883b8ecd2450077",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-1-ref.html": [
    "d38cfd6a6a62a89a154714783883b8ecd2450077",
@@ -50837,10 +48948,6 @@
    "0687c3cdf4ad2a817a6d84f928bdf9464d059360",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-2-expected.html": [
-   "3165dc2708a2fe319121d8c9b4c9f77d0f0def10",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-2-ref.html": [
    "3165dc2708a2fe319121d8c9b4c9f77d0f0def10",
    "support"
@@ -50848,10 +48955,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-letter-preceding-2.html": [
    "93501a1476d5609568800792213dd07b76a8a070",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-1-expected.html": [
-   "da32b06ca1fe257aff5bd241c8627604a926cdd3",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-1-ref.html": [
    "da32b06ca1fe257aff5bd241c8627604a926cdd3",
@@ -50861,10 +48964,6 @@
    "d56a3f2148198fd26672ac6e7a2375d2c716fbff",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-2-expected.html": [
-   "f8bef8cd792031689a2e636231fedb4b90cc457c",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-2-ref.html": [
    "f8bef8cd792031689a2e636231fedb4b90cc457c",
    "support"
@@ -50872,10 +48971,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-number-following-2.html": [
    "41167184dde5d4b33fd25956355e074c60ed2a8a",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-surrounding-run-expected.html": [
-   "75e0c3e20c435cd2dfeb83c528bb873653a08a27",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-to-surrounding-run-ref.html": [
    "75e0c3e20c435cd2dfeb83c528bb873653a08a27",
@@ -50885,10 +48980,6 @@
    "df17aa62a40ab35d4518826e693f3a3178db757d",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-wrapped-expected.html": [
-   "1be3e7d726bce9dd2e48f3ac04850c6aa1ff164f",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-wrapped-ref.html": [
    "1be3e7d726bce9dd2e48f3ac04850c6aa1ff164f",
    "support"
@@ -50896,10 +48987,6 @@
   "html/semantics/text-level-semantics/the-bdi-element/bdi-neutral-wrapped.html": [
    "7b737c54122882aafa0a0675a7c718686871feb7",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdi-element/bdi-paragraph-level-container-expected.html": [
-   "8f06616796375f3c8ef8f6ca99a7277558caaa69",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdi-element/bdi-paragraph-level-container-ref.html": [
    "8f06616796375f3c8ef8f6ca99a7277558caaa69",
@@ -50909,33 +48996,17 @@
    "c264f67ee5a5c11ed1e4d4b71a567da69f6d609c",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdo-element/bdo-child-expected.html": [
-   "da64ec4f4c5daaffb8efa6834570103136d9598d",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdo-element/bdo-child.html": [
    "cf129c53d7e71643af317e353322bc8c78f9b557",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdo-element/bdo-ltr-expected.html": [
-   "da64ec4f4c5daaffb8efa6834570103136d9598d",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdo-element/bdo-ltr.html": [
    "28be43ccc519cb0b603b51568a0f6233b2b18ba7",
    "reftest"
   ],
-  "html/semantics/text-level-semantics/the-bdo-element/bdo-override-expected.html": [
-   "da64ec4f4c5daaffb8efa6834570103136d9598d",
-   "support"
-  ],
   "html/semantics/text-level-semantics/the-bdo-element/bdo-override.html": [
    "c11d8073a5f401984a5d916e0c3b54b4ea888146",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-bdo-element/bidi-001-expected.html": [
-   "da64ec4f4c5daaffb8efa6834570103136d9598d",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-bdo-element/bidi-001-ref.html": [
    "da64ec4f4c5daaffb8efa6834570103136d9598d",
@@ -50944,14 +49015,6 @@
   "html/semantics/text-level-semantics/the-bdo-element/bidi-001.html": [
    "3fcc7f141c74fc7d790c05f103092fa7e8eb80fe",
    "reftest"
-  ],
-  "html/semantics/text-level-semantics/the-br-element/br-bidi-expected.html": [
-   "96d57057095200c2c35fd45e2c5f16191e143a8e",
-   "visual"
-  ],
-  "html/semantics/text-level-semantics/the-br-element/br-bidi-in-inline-ancestors-expected.html": [
-   "fc71edfa9ac6d1ee7a271f7519643246e068681e",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-br-element/br-bidi-in-inline-ancestors-ref.html": [
    "fc71edfa9ac6d1ee7a271f7519643246e068681e",
@@ -50984,10 +49047,6 @@
   "html/semantics/text-level-semantics/the-time-element/001.html": [
    "437568c95f09bac529d5625a66f41d4c57b0eece",
    "testharness"
-  ],
-  "html/semantics/text-level-semantics/the-wbr-element/wbr-element-expected.html": [
-   "36f56c25dc44a3c3ad305f4ad8f8bfc2a8e66a26",
-   "support"
   ],
   "html/semantics/text-level-semantics/the-wbr-element/wbr-element-ref.html": [
    "36f56c25dc44a3c3ad305f4ad8f8bfc2a8e66a26",
@@ -52912,10 +50971,6 @@
   "quirks-mode/hashless-hex-color.html": [
    "161c0bfaabbfb59c426e855b9dcfa746ea9e8f95",
    "testharness"
-  ],
-  "quirks-mode/historical/list-item-bullet-size-expected.html": [
-   "2579fff5cb55faf66c71dfed695f05db8774d98d",
-   "support"
   ],
   "quirks-mode/historical/list-item-bullet-size-ref.html": [
    "2579fff5cb55faf66c71dfed695f05db8774d98d",
@@ -54945,10 +53000,6 @@
    "13d9a1cd232638aabdb16fe690e4dc1b4e42e63d",
    "support"
   ],
-  "shadow-dom/untriaged/shadow-trees/nested-shadow-trees/nested_tree_reftest-expected.html": [
-   "ef49f33b6b0cf7cbccb014b8d9f8a3b566a65acd",
-   "support"
-  ],
   "shadow-dom/untriaged/shadow-trees/nested-shadow-trees/nested_tree_reftest-ref.html": [
    "ef49f33b6b0cf7cbccb014b8d9f8a3b566a65acd",
    "support"
@@ -54956,10 +53007,6 @@
   "shadow-dom/untriaged/shadow-trees/nested-shadow-trees/nested_tree_reftest.html": [
    "02e413b7c949565eec471a70567070b51862de05",
    "reftest"
-  ],
-  "shadow-dom/untriaged/shadow-trees/reprojection/reprojection-001-expected.html": [
-   "aed15b3ac6099e78c85888efda6a83f036ea7b2e",
-   "support"
   ],
   "shadow-dom/untriaged/shadow-trees/reprojection/reprojection-001-ref.html": [
    "aed15b3ac6099e78c85888efda6a83f036ea7b2e",
@@ -54969,10 +53016,6 @@
    "f0b31261b239418c6880a296c801dee794efce9b",
    "reftest"
   ],
-  "shadow-dom/untriaged/shadow-trees/shadow-root-001-expected.html": [
-   "116623b23b371fa7cab9a896cf1976c20a10c8e7",
-   "support"
-  ],
   "shadow-dom/untriaged/shadow-trees/shadow-root-001-ref.html": [
    "116623b23b371fa7cab9a896cf1976c20a10c8e7",
    "support"
@@ -54981,10 +53024,6 @@
    "e280b5a4deac961299865af7ecb2a07dd15d04ed",
    "reftest"
   ],
-  "shadow-dom/untriaged/shadow-trees/shadow-root-002-expected.html": [
-   "cf4a5b16b9b6bd4f2947c22a31999dc2b6ba337b",
-   "support"
-  ],
   "shadow-dom/untriaged/shadow-trees/shadow-root-002-ref.html": [
    "cf4a5b16b9b6bd4f2947c22a31999dc2b6ba337b",
    "support"
@@ -54992,10 +53031,6 @@
   "shadow-dom/untriaged/shadow-trees/shadow-root-002.html": [
    "893c799fd943b70f261f39909e0a3976ee56d769",
    "reftest"
-  ],
-  "shadow-dom/untriaged/shadow-trees/text-decoration-001-expected.html": [
-   "06ae2a7dd068bbc238d5eb439ba6a145d32670ae",
-   "support"
   ],
   "shadow-dom/untriaged/shadow-trees/text-decoration-001-ref.html": [
    "06ae2a7dd068bbc238d5eb439ba6a145d32670ae",
@@ -55060,10 +53095,6 @@
   "shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/window-named-properties-003.html": [
    "fe20957cf7647794085dc4bc280ac64652200b24",
    "testharness"
-  ],
-  "shadow-dom/untriaged/styles/not-apply-in-shadow-root-001-expected.html": [
-   "f1a5d01eb6b34ebe95253eddaa9890cc651167d3",
-   "support"
   ],
   "shadow-dom/untriaged/styles/not-apply-in-shadow-root-001-ref.html": [
    "f1a5d01eb6b34ebe95253eddaa9890cc651167d3",
@@ -56045,20 +54076,12 @@
    "43fcfad319ce0492d76ea062f37ddfc07a62a8aa",
    "testharness"
   ],
-  "svg/linking/reftests/href-a-element-attr-change-expected.html": [
-   "73b9070b0ecb76c45aaecd6b9e373d99d215bd84",
-   "support"
-  ],
   "svg/linking/reftests/href-a-element-attr-change.html": [
    "6605832f7f8bff45a35fd436effa0c01e12c91e5",
    "reftest"
   ],
   "svg/linking/reftests/href-a-element-ref.html": [
    "73b9070b0ecb76c45aaecd6b9e373d99d215bd84",
-   "support"
-  ],
-  "svg/linking/reftests/href-feImage-element-expected.html": [
-   "2fdd34f2d0747fd24d6619c6e9410faba745bad1",
    "support"
   ],
   "svg/linking/reftests/href-feImage-element-ref.html": [
@@ -56069,10 +54092,6 @@
    "141396bd312319b949e0df1208e5136d76e1b003",
    "reftest"
   ],
-  "svg/linking/reftests/href-filter-element-expected.html": [
-   "4a52318b315aedf81a7b7b0c6edd7612fda7206e",
-   "support"
-  ],
   "svg/linking/reftests/href-filter-element-ref.html": [
    "4a52318b315aedf81a7b7b0c6edd7612fda7206e",
    "support"
@@ -56080,10 +54099,6 @@
   "svg/linking/reftests/href-filter-element.html": [
    "1f5e67a03ba45e8cb7a02df8de737078436fbff1",
    "reftest"
-  ],
-  "svg/linking/reftests/href-gradient-element-expected.html": [
-   "d4833e7a117a083348a314dacf4e9ab8c64f07c9",
-   "support"
   ],
   "svg/linking/reftests/href-gradient-element-ref.html": [
    "d4833e7a117a083348a314dacf4e9ab8c64f07c9",
@@ -56093,10 +54108,6 @@
    "6d45de7f34f8bda2d60b6022ecd01f673cb34c2f",
    "reftest"
   ],
-  "svg/linking/reftests/href-image-element-expected.html": [
-   "305396893fe2c4e16056968f40117e3dc0e3aea3",
-   "support"
-  ],
   "svg/linking/reftests/href-image-element-ref.html": [
    "305396893fe2c4e16056968f40117e3dc0e3aea3",
    "support"
@@ -56104,10 +54115,6 @@
   "svg/linking/reftests/href-image-element.html": [
    "a872a27eafe20c885e99cc9a910a55b9bc57beb5",
    "reftest"
-  ],
-  "svg/linking/reftests/href-pattern-element-expected.html": [
-   "ddcce2b27d57622192b4a62a890a73775702116f",
-   "support"
   ],
   "svg/linking/reftests/href-pattern-element-ref.html": [
    "ddcce2b27d57622192b4a62a890a73775702116f",
@@ -56117,10 +54124,6 @@
    "0209fc26f91cda97588976cfdd0bc247de19613c",
    "reftest"
   ],
-  "svg/linking/reftests/href-textPath-element-expected.html": [
-   "a95d304f663ee0770b3bcac1eb95a0d5c7db7f83",
-   "support"
-  ],
   "svg/linking/reftests/href-textPath-element-ref.html": [
    "a95d304f663ee0770b3bcac1eb95a0d5c7db7f83",
    "support"
@@ -56128,10 +54131,6 @@
   "svg/linking/reftests/href-textPath-element.html": [
    "23988646ddaed6045c30e6756791613d6f8ba2ec",
    "reftest"
-  ],
-  "svg/linking/reftests/href-use-element-expected.html": [
-   "8a4977599d6f531a76524191cb9bad75803a455e",
-   "support"
   ],
   "svg/linking/reftests/href-use-element-ref.html": [
    "8a4977599d6f531a76524191cb9bad75803a455e",

@@ -875,9 +875,6 @@ crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-elemen
 crbug.com/490511 external/wpt/html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback.html [ Failure ]
 crbug.com/490511 external/wpt/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/invalid-src.html [ Skip ]
-# MANIFEST.json contains Blink-style reference files.
-crbug.com/268729 external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs-expected.html [ Skip ]
-crbug.com/268729 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-expected.html [ Skip ]
 # MANIFEST.json contains any *-manual.*. https://github.com/w3c/web-platform-tests/issues/4137
 Bug(github) external/wpt/uievents/keyboard/key-manual.css [ Skip ]
 Bug(github) external/wpt/uievents/keyboard/key-manual.js [ Skip ]
