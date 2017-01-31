@@ -2592,7 +2592,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   bool isLink() const { return m_nonInheritedData.m_isLink; }
-  void setIsLink(bool b) { m_nonInheritedData.m_isLink = b; }
+  void setIsLink() { m_nonInheritedData.m_isLink = true; }
 
   EInsideLink insideLink() const {
     return static_cast<EInsideLink>(m_inheritedData.m_insideLink);
