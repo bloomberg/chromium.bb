@@ -124,7 +124,11 @@ template("mac_toolchain") {
     cc = compiler_prefix + _cc
     cxx = compiler_prefix + _cxx
 
-    if (use_clang_static_analyzer && !toolchain_uses_goma) {
+    if (use_clang_static_analyzer) {
+      # Static analysis isn't supported under GOMA. See crbug.com/687245
+      # for progress on this issue.
+      assert(!use_goma, "'use_clang_static_analyzer' cannot be used with GOMA.")
+
       # Call "ccc-analyzer" or "c++-analyzer" instead of directly calling Clang.
       # |wrapper_tool| sets the environment variables which are read by the
       # analyzer tools.
