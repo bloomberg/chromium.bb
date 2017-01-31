@@ -96,14 +96,21 @@ void StartupAppLauncher::Initialize() {
 }
 
 void StartupAppLauncher::ContinueWithNetworkReady() {
-  if (!network_ready_handled_) {
-    network_ready_handled_ = true;
-    // The network might not be ready when KioskAppManager tries to update
-    // external cache initially. Update the external cache now that the network
-    // is ready for sure.
-    wait_for_crx_update_ = true;
-    KioskAppManager::Get()->UpdateExternalCache();
+  if (network_ready_handled_)
+    return;
+
+  network_ready_handled_ = true;
+
+  if (delegate_->ShouldSkipAppInstallation()) {
+    MaybeLaunchApp();
+    return;
   }
+
+  // The network might not be ready when KioskAppManager tries to update
+  // external cache initially. Update the external cache now that the network
+  // is ready for sure.
+  wait_for_crx_update_ = true;
+  KioskAppManager::Get()->UpdateExternalCache();
 }
 
 void StartupAppLauncher::StartLoadingOAuthFile() {
@@ -188,6 +195,11 @@ void StartupAppLauncher::MaybeInitializeNetwork() {
     return;
   }
 
+  if (delegate_->ShouldSkipAppInstallation()) {
+    MaybeLaunchApp();
+    return;
+  }
+
   // Update the offline enabled crx cache if the network is ready;
   // or just install the app.
   if (delegate_->IsNetworkReady())
@@ -243,11 +255,20 @@ void StartupAppLauncher::OnRefreshTokensLoaded() {
 }
 
 void StartupAppLauncher::MaybeLaunchApp() {
-  // Check if the app is offline enabled.
   const Extension* extension = GetPrimaryAppExtension();
-  DCHECK(extension);
+  // Verify that requred apps are installed. While the apps should be
+  // present at this point, crash recovery flow skips app installation steps -
+  // this means that the kiosk app might not yet be downloaded. If that is
+  // the case, bail out from the app launch.
+  if (!extension || !AreSecondaryAppsInstalled()) {
+    OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_LAUNCH);
+    return;
+  }
+
   const bool offline_enabled =
       extensions::OfflineEnabledInfo::IsOfflineEnabled(extension);
+  // If the app is not offline enabled, make sure the network is ready before
+  // launching.
   if (offline_enabled || delegate_->IsNetworkReady()) {
     BrowserThread::PostTask(
         BrowserThread::UI,

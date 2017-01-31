@@ -43,6 +43,13 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
     // See comments above. Network is assumed to be online here.
     return true;
   }
+  bool ShouldSkipAppInstallation() override {
+    // Given that this delegate does not reliably report whether the network is
+    // ready, avoid making app update checks - this might take a while if
+    // network is not online. Also, during crash-restart, we should continue
+    // with the same app version as the restored session.
+    return true;
+  }
   void OnLoadingOAuthFile() override {}
   void OnInitializingTokenService() override {}
   void OnInstallingApp() override {}

@@ -101,6 +101,7 @@ class AppLaunchController
   // StartupAppLauncher::Delegate overrides:
   void InitializeNetwork() override;
   bool IsNetworkReady() override;
+  bool ShouldSkipAppInstallation() override;
   void OnLoadingOAuthFile() override;
   void OnInitializingTokenService() override;
   void OnInstallingApp() override;

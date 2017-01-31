@@ -46,6 +46,10 @@ class StartupAppLauncher : public base::SupportsWeakPtr<StartupAppLauncher>,
     // Returns true if Internet is online.
     virtual bool IsNetworkReady() = 0;
 
+    // Whether app launch flow can assume all required apps are installed, and
+    // skip app installation steps.
+    virtual bool ShouldSkipAppInstallation() = 0;
+
     virtual void OnLoadingOAuthFile() = 0;
     virtual void OnInitializingTokenService() = 0;
     virtual void OnInstallingApp() = 0;
