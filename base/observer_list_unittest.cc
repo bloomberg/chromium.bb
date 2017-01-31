@@ -5,13 +5,18 @@
 #include "base/observer_list.h"
 #include "base/observer_list_threadsafe.h"
 
+#include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,20 +68,6 @@ class Disrupter : public Foo {
   ObserverList<Foo>* list_;
   Foo* doomed_;
   bool remove_self_;
-};
-
-class ThreadSafeDisrupter : public Foo {
- public:
-  ThreadSafeDisrupter(ObserverListThreadSafe<Foo>* list, Foo* doomed)
-      : list_(list),
-        doomed_(doomed) {
-  }
-  ~ThreadSafeDisrupter() override {}
-  void Observe(int x) override { list_->RemoveObserver(doomed_); }
-
- private:
-  ObserverListThreadSafe<Foo>* list_;
-  Foo* doomed_;
 };
 
 template <typename ObserverListType>
@@ -276,7 +267,6 @@ TEST(ObserverListThreadSafeTest, BasicTest) {
   Adder b(-1);
   Adder c(1);
   Adder d(-1);
-  ThreadSafeDisrupter evil(observer_list.get(), &c);
 
   observer_list->AddObserver(&a);
   observer_list->AddObserver(&b);
@@ -284,11 +274,11 @@ TEST(ObserverListThreadSafeTest, BasicTest) {
   observer_list->Notify(FROM_HERE, &Foo::Observe, 10);
   RunLoop().RunUntilIdle();
 
-  observer_list->AddObserver(&evil);
   observer_list->AddObserver(&c);
   observer_list->AddObserver(&d);
 
   observer_list->Notify(FROM_HERE, &Foo::Observe, 10);
+  observer_list->RemoveObserver(&c);
   RunLoop().RunUntilIdle();
 
   EXPECT_EQ(20, a.total);
@@ -329,18 +319,18 @@ TEST(ObserverListThreadSafeTest, RemoveObserver) {
   EXPECT_EQ(0, b.total);
 }
 
-TEST(ObserverListThreadSafeTest, WithoutMessageLoop) {
+TEST(ObserverListThreadSafeTest, WithoutSequence) {
   scoped_refptr<ObserverListThreadSafe<Foo> > observer_list(
       new ObserverListThreadSafe<Foo>);
 
   Adder a(1), b(1), c(1);
 
-  // No MessageLoop, so these should not be added.
+  // No sequence, so these should not be added.
   observer_list->AddObserver(&a);
   observer_list->AddObserver(&b);
 
   {
-    // Add c when there's a loop.
+    // Add c when there's a sequence.
     MessageLoop loop;
     observer_list->AddObserver(&c);
 
@@ -351,10 +341,10 @@ TEST(ObserverListThreadSafeTest, WithoutMessageLoop) {
     EXPECT_EQ(0, b.total);
     EXPECT_EQ(10, c.total);
 
-    // Now add a when there's a loop.
+    // Now add a when there's a sequence.
     observer_list->AddObserver(&a);
 
-    // Remove c when there's a loop.
+    // Remove c when there's a sequence.
     observer_list->RemoveObserver(&c);
 
     // Notify again.
@@ -366,7 +356,7 @@ TEST(ObserverListThreadSafeTest, WithoutMessageLoop) {
     EXPECT_EQ(10, c.total);
   }
 
-  // Removing should always succeed with or without a loop.
+  // Removing should always succeed with or without a sequence.
   observer_list->RemoveObserver(&a);
 
   // Notifying should not fail but should also be a no-op.
@@ -489,6 +479,79 @@ TEST(ObserverListThreadSafeTest, OutlivesMessageLoop) {
   delete loop;
   // Test passes if we don't crash here.
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
+}
+
+namespace {
+
+class SequenceVerificationObserver : public Foo {
+ public:
+  explicit SequenceVerificationObserver(
+      scoped_refptr<SequencedTaskRunner> task_runner)
+      : task_runner_(std::move(task_runner)) {}
+  ~SequenceVerificationObserver() override = default;
+
+  void Observe(int x) override {
+    called_on_valid_sequence_ = task_runner_->RunsTasksOnCurrentThread();
+  }
+
+  bool called_on_valid_sequence() const { return called_on_valid_sequence_; }
+
+ private:
+  const scoped_refptr<SequencedTaskRunner> task_runner_;
+  bool called_on_valid_sequence_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(SequenceVerificationObserver);
+};
+
+}  // namespace
+
+// Verify that observers are notified on the correct sequence.
+TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
+  test::ScopedTaskScheduler scoped_task_scheduler;
+
+  auto task_runner_1 = CreateSequencedTaskRunnerWithTraits(TaskTraits());
+  auto task_runner_2 = CreateSequencedTaskRunnerWithTraits(TaskTraits());
+
+  auto observer_list = make_scoped_refptr(new ObserverListThreadSafe<Foo>());
+
+  SequenceVerificationObserver observer_1(task_runner_1);
+  SequenceVerificationObserver observer_2(task_runner_2);
+
+  task_runner_1->PostTask(
+      FROM_HERE, Bind(&ObserverListThreadSafe<Foo>::AddObserver, observer_list,
+                      Unretained(&observer_1)));
+  task_runner_2->PostTask(
+      FROM_HERE, Bind(&ObserverListThreadSafe<Foo>::AddObserver, observer_list,
+                      Unretained(&observer_2)));
+
+  RunLoop().RunUntilIdle();
+
+  observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
+
+  RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(observer_1.called_on_valid_sequence());
+  EXPECT_TRUE(observer_2.called_on_valid_sequence());
+}
+
+// Verify that when an observer is added to a NOTIFY_ALL ObserverListThreadSafe
+// from a notification, it is itself notified.
+TEST(ObserverListThreadSafeTest, AddObserverFromNotificationNotifyAll) {
+  MessageLoop message_loop;
+  auto observer_list = make_scoped_refptr(new ObserverListThreadSafe<Foo>());
+
+  Adder observer_added_from_notification(1);
+
+  AddInObserve<ObserverListThreadSafe<Foo>> initial_observer(
+      observer_list.get());
+  initial_observer.SetToAdd(&observer_added_from_notification);
+  observer_list->AddObserver(&initial_observer);
+
+  observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
+
+  RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, observer_added_from_notification.GetValue());
 }
 
 TEST(ObserverListTest, Existing) {

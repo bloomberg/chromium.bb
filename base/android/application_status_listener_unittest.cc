@@ -69,6 +69,9 @@ class MultiThreadedTest {
         APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES);
     event_.Wait();
     EXPECT_EQ(APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES, state_);
+
+    // Delete |listener_| on the thread on which it was created.
+    thread_.task_runner()->DeleteSoon(FROM_HERE, listener_.release());
   }
 
  private:
