@@ -719,9 +719,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   bool is_control_frame = false;
 
   int control_frame_type_field = kDataFrameType;
-  // ProcessControlFrameHeader() will set current_frame_type_ to the
-  // correct value if this is a valid control frame.
-  current_frame_type_ = DATA;
   uint32_t length_field = 0;
   bool successful_read = reader.ReadUInt24(&length_field);
   DCHECK(successful_read);
@@ -730,7 +727,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   successful_read = reader.ReadUInt8(&control_frame_type_field_uint8);
   DCHECK(successful_read);
   // We check control_frame_type_field's validity in
-  // ProcessControlFrameHeader().
+  // ValidateFrameHeader().
   control_frame_type_field = control_frame_type_field_uint8;
   is_control_frame = control_frame_type_field != kDataFrameType;
 
@@ -788,13 +785,13 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
       }
     }
   } else {
-    ProcessControlFrameHeader(control_frame_type_field);
+    ProcessControlFrameHeader();
   }
 
   return original_len - len;
 }
 
-void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
+void SpdyFramer::ProcessControlFrameHeader() {
   DCHECK_EQ(SPDY_NO_ERROR, error_code_);
   DCHECK_LE(GetFrameHeaderSize(), current_frame_buffer_.len());
 

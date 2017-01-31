@@ -618,7 +618,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                     size_t payload_length_field);
 
   // Helpers for above internal breakouts from ProcessInput.
-  void ProcessControlFrameHeader(int control_frame_type_field);
+  void ProcessControlFrameHeader();
   // Always passed exactly 1 setting's worth of data.
   bool ProcessSetting(const char* data);
 
