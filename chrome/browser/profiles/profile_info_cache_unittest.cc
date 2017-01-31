@@ -221,10 +221,17 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
   EXPECT_EQ(new_gaia_id, GetCache()->GetGAIAIdOfProfileAtIndex(1));
   EXPECT_NE(new_user_name, GetCache()->GetUserNameOfProfileAtIndex(0));
 
-  size_t new_icon_index = 3;
+  const size_t new_icon_index = 3;
   GetCache()->SetAvatarIconOfProfileAtIndex(1, new_icon_index);
+  EXPECT_EQ(new_icon_index, GetCache()->GetAvatarIconIndexOfProfileAtIndex(1));
   // Not much to test.
   GetCache()->GetAvatarIconOfProfileAtIndex(1);
+
+  const size_t wrong_icon_index = profiles::GetDefaultAvatarIconCount() + 1;
+  const size_t generic_icon_index = 0;
+  GetCache()->SetAvatarIconOfProfileAtIndex(1, wrong_icon_index);
+  EXPECT_EQ(generic_icon_index,
+            GetCache()->GetAvatarIconIndexOfProfileAtIndex(1));
 }
 
 TEST_F(ProfileInfoCacheTest, Sort) {

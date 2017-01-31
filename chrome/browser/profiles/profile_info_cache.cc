@@ -603,6 +603,11 @@ void ProfileInfoCache::SetAuthInfoOfProfileAtIndex(
 
 void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
                                                      size_t icon_index) {
+  if (!profiles::IsDefaultAvatarIconIndex(icon_index)) {
+    DLOG(WARNING) << "Unknown avatar icon index: " << icon_index;
+    // switch to generic avatar
+    icon_index = 0;
+  }
   std::unique_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kAvatarIconKey,
