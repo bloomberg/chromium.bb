@@ -71,24 +71,33 @@ function checkSession() {
       } else {
         // set the new session
         startedConnection = session;
-        console.log('connection state is "' + startedConnection.state + '"');
-        if (startedConnection.state == "connected") {
-          sendResult(true, '');
-        } else if (startedConnection.state == "connecting") {
-          startedConnection.onconnect = () => {
-            sendResult(true, '');
-          };
-        } else {
-          sendResult(false,
-            'Expect connection state to be "connecting" or "connected", ' +
-            'actual "' + startedConnection.state + '"');
-        }
+        waitForConnectedStateAndSendResult(startedConnection);
       }
     }).catch(function(e) {
       // terminate old session if exists
       startedConnection && startedConnection.terminate();
       sendResult(false, 'Failed to start session: encountered exception ' + e);
     })
+  }
+}
+
+/**
+ * Asserts the current state of the connection is 'connected' or 'connecting'.
+ * If the current state is connecting, waits for it to become 'connected'.
+ * @param {!PresentationConnection} connection
+ */
+function waitForConnectedStateAndSendResult(connection) {
+  console.log(`connection state is "${connection.state}"`);
+  if (connection.state == 'connected') {
+    sendResult(true, '');
+  } else if (connection.state == 'connecting') {
+    connection.onconnect = () => {
+      sendResult(true, '');
+    };
+  } else {
+    sendResult(false,
+      `Expect connection state to be "connecting" or "connected", actual: \
+      "${connection.state}"`);
   }
 }
 
@@ -184,7 +193,7 @@ function reconnectSession(sessionId) {
       sendResult(false, 'reconnectSession returned null session');
     } else {
       reconnectedSession = session;
-      sendResult(true, '');
+      waitForConnectedStateAndSendResult(reconnectedSession);
     }
   }).catch(function(error) {
     sendResult(false, 'reconnectSession failed: ' + error.message);
