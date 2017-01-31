@@ -639,7 +639,7 @@ void SpdyFramer::SpdySettingsScratch::Reset() {
 SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
                                               int frame_type_field,
                                               size_t payload_length_field) {
-  if (!IsValidFrameType(frame_type_field)) {
+  if (!IsDefinedFrameType(frame_type_field)) {
     // We ignore unknown frame types for extensibility, as long as
     // the rest of the control frame header is valid.
     // We rely on the visitor to check validity of current_frame_stream_id_.

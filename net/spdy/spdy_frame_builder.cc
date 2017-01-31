@@ -39,7 +39,7 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
                                      SpdyFrameType type,
                                      uint8_t flags,
                                      SpdyStreamId stream_id) {
-  DCHECK(IsValidFrameType(SerializeFrameType(type)));
+  DCHECK(IsDefinedFrameType(SerializeFrameType(type)));
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
   bool success = true;
   if (length_ > 0) {
@@ -70,7 +70,7 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
                                      uint8_t flags,
                                      SpdyStreamId stream_id,
                                      size_t length) {
-  DCHECK(IsValidFrameType(SerializeFrameType(type)));
+  DCHECK(IsDefinedFrameType(SerializeFrameType(type)));
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
   bool success = true;
   SPDY_BUG_IF(framer.GetFrameMaximumSize() < length_)

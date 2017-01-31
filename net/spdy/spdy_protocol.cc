@@ -45,13 +45,14 @@ SpdyPriority Http2WeightToSpdy3Priority(int weight) {
   return static_cast<SpdyPriority>(7.f - (weight - 1) / kSteps);
 }
 
-bool IsValidFrameType(int frame_type_field) {
+bool IsDefinedFrameType(int frame_type_field) {
   return frame_type_field >= MIN_FRAME_TYPE &&
          frame_type_field <= MAX_FRAME_TYPE;
 }
 
 SpdyFrameType ParseFrameType(int frame_type_field) {
-  SPDY_BUG_IF(!IsValidFrameType(frame_type_field)) << "Invalid frame type.";
+  SPDY_BUG_IF(!IsDefinedFrameType(frame_type_field))
+      << "Frame type not defined: " << static_cast<int>(frame_type_field);
   return static_cast<SpdyFrameType>(frame_type_field);
 }
 

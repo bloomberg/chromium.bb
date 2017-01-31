@@ -225,9 +225,9 @@ const unsigned int kHttp2RootStreamId = 0;
 
 typedef uint64_t SpdyPingId;
 
-// Returns true if a given on-the-wire enumeration of a frame type is valid
-// for a given protocol version, false otherwise.
-NET_EXPORT_PRIVATE bool IsValidFrameType(int frame_type_field);
+// Returns true if a given on-the-wire enumeration of a frame type is defined
+// in a standardized HTTP/2 specification, false otherwise.
+NET_EXPORT_PRIVATE bool IsDefinedFrameType(int frame_type_field);
 
 // Parses a frame type from an on-the-wire enumeration.
 // Behavior is undefined for invalid frame type fields; consumers should first
