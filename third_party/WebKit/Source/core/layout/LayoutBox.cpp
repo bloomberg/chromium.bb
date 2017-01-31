@@ -4752,7 +4752,7 @@ bool LayoutBox::childNeedsRelayoutForPagination(const LayoutBox& child) const {
   // Figure out if we really need to force re-layout of the child. We only need
   // to do this if there's a chance that we need to recalculate pagination
   // struts inside.
-  if (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalTop)) {
+  if (pageLogicalHeightForOffset(logicalTop)) {
     LayoutUnit logicalHeight = child.logicalHeightWithVisibleOverflow();
     LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
         logicalTop, AssociateWithLatterPage);

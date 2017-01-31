@@ -1034,8 +1034,7 @@ LayoutUnit LayoutBlockFlow::adjustFloatLogicalTopForPagination(
     } else {
       // Even if we didn't break before the border box to the next
       // fragmentainer, we need to check if we can fit the margin before it.
-      if (LayoutUnit pageLogicalHeight =
-              pageLogicalHeightForOffset(logicalTopMarginEdge)) {
+      if (pageLogicalHeightForOffset(logicalTopMarginEdge)) {
         LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
             logicalTopMarginEdge, AssociateWithLatterPage);
         if (remainingSpace <= marginBefore)
