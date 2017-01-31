@@ -219,7 +219,8 @@ static INLINE void av1_get_rest_tile_limits(
 
 extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
 
-int av1_alloc_restoration_struct(RestorationInfo *rst_info, int width,
+int av1_alloc_restoration_struct(struct AV1Common *cm,
+                                 RestorationInfo *rst_info, int width,
                                  int height);
 void av1_free_restoration_struct(RestorationInfo *rst_info);
 

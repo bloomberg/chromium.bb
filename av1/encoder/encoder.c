@@ -752,7 +752,8 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate extra rstbuf for restoration");
   for (i = 0; i < MAX_MB_PLANE; ++i)
-    av1_alloc_restoration_struct(&cpi->rst_search[i], cm->width, cm->height);
+    av1_alloc_restoration_struct(cm, &cpi->rst_search[i], cm->width,
+                                 cm->height);
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,

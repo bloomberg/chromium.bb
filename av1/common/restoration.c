@@ -47,22 +47,27 @@ typedef void (*restore_func_highbd_type)(uint8_t *data8, int width, int height,
                                          int dst_stride);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-int av1_alloc_restoration_struct(RestorationInfo *rst_info, int width,
-                                 int height) {
+int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
+                                 int width, int height) {
   const int ntiles = av1_get_rest_ntiles(width, height, NULL, NULL, NULL, NULL);
   rst_info->restoration_type = (RestorationType *)aom_realloc(
       rst_info->restoration_type, sizeof(*rst_info->restoration_type) * ntiles);
-  rst_info->wiener_info = (WienerInfo *)aom_realloc(
-      rst_info->wiener_info, sizeof(*rst_info->wiener_info) * ntiles);
-  assert(rst_info->wiener_info != NULL);
+  aom_free(rst_info->wiener_info);
+  CHECK_MEM_ERROR(
+      cm, rst_info->wiener_info,
+      (WienerInfo *)aom_memalign(16, sizeof(*rst_info->wiener_info) * ntiles));
   memset(rst_info->wiener_info, 0, sizeof(*rst_info->wiener_info) * ntiles);
-  rst_info->sgrproj_info = (SgrprojInfo *)aom_realloc(
-      rst_info->sgrproj_info, sizeof(*rst_info->sgrproj_info) * ntiles);
-  assert(rst_info->sgrproj_info != NULL);
+  CHECK_MEM_ERROR(
+      cm, rst_info->sgrproj_info,
+      (SgrprojInfo *)aom_realloc(rst_info->sgrproj_info,
+                                 sizeof(*rst_info->sgrproj_info) * ntiles));
   rst_info->domaintxfmrf_info = (DomaintxfmrfInfo *)aom_realloc(
       rst_info->domaintxfmrf_info,
       sizeof(*rst_info->domaintxfmrf_info) * ntiles);
-  assert(rst_info->domaintxfmrf_info != NULL);
+  CHECK_MEM_ERROR(cm, rst_info->domaintxfmrf_info,
+                  (DomaintxfmrfInfo *)aom_realloc(
+                      rst_info->domaintxfmrf_info,
+                      sizeof(*rst_info->domaintxfmrf_info) * ntiles));
   return ntiles;
 }
 
