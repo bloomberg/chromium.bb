@@ -365,6 +365,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     /** Called when the filter has been changed by the user. */
     void onFilterChanged(int filter) {
         mBackendProvider.getSelectionDelegate().clearSelection();
+        mToolbar.hideSearchView();
 
         for (DownloadUiObserver observer : mObservers) {
             observer.onFilterChanged(filter);
