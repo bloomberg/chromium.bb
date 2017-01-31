@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -76,8 +77,8 @@ RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
       type_info_(kRequestTypeInfo[static_cast<int>(type)]) {
   DCHECK(pref_service);
 
-  std::string quota = variations::GetVariationParamValue(
-      ntp_snippets::kStudyName,
+  std::string quota = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kArticleSuggestionsFeature,
       base::StringPrintf("quota_%s", GetRequestTypeName()));
   if (!base::StringToInt(quota, &quota_)) {
     LOG_IF(WARNING, !quota.empty())
@@ -86,8 +87,8 @@ RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
     quota_ = type_info_.default_quota;
   }
 
-  std::string interactive_quota = variations::GetVariationParamValue(
-      ntp_snippets::kStudyName,
+  std::string interactive_quota = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kArticleSuggestionsFeature,
       base::StringPrintf("interactive_quota_%s", GetRequestTypeName()));
   if (!base::StringToInt(interactive_quota, &interactive_quota_)) {
     LOG_IF(WARNING, !interactive_quota.empty())
