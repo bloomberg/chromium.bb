@@ -53,6 +53,7 @@ const char kKeyShowPin[] = "showPin";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
+const char kKeyIsActiveDirectory[] = "isActiveDirectory";
 const char kKeyInitialAuthType[] = "initialAuthType";
 const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
 const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
@@ -180,6 +181,7 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeyShowPin, CanShowPinForUser(user));
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
+  user_dict->SetBoolean(kKeyIsActiveDirectory, user->IsActiveDirectoryUser());
 
   FillMultiProfileUserPrefs(user, user_dict, is_signin_to_add);
   FillKnownUserPrefs(user, user_dict);

@@ -229,6 +229,10 @@ html[dir=rtl] .main-pane {
   display: none;
 }
 
+.pod[is-active-directory] .reauth-warning {
+  display: none;
+}
+
 .pod[auth-type='offlinePassword'].focused .password-entry-container,
 .pod[auth-type='forceOfflinePassword'].focused .password-entry-container {
   display: flex;

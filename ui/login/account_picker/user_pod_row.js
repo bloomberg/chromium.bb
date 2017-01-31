@@ -780,6 +780,9 @@ cr.define('login', function() {
           AUTH_TYPE.OFFLINE_PASSWORD;
       this.setAuthType(initialAuthType, null);
 
+      if (this.user.isActiveDirectory)
+        this.setAttribute('is-active-directory', '');
+
       this.userClickAuthAllowed_ = false;
 
       // Lazy load the assets needed for the polymer submit button.
