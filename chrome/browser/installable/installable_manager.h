@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -33,6 +34,14 @@ struct InstallableParams {
   // |fetch_valid_primary_icon| is true.
   int minimum_primary_icon_size_in_px = -1;
 
+  // The ideal badge icon size to fetch. Used only if
+  // |fetch_valid_badge_icon| is true.
+  int ideal_badge_icon_size_in_px = -1;
+
+  // The minimum badge icon size to fetch. Used only if
+  // |fetch_valid_badge_icon| is true.
+  int minimum_badge_icon_size_in_px = -1;
+
   // Check whether the site is installable. That is, it has a manifest valid for
   // a web app and a service worker controlling the manifest start URL and the
   // current URL.
@@ -41,6 +50,10 @@ struct InstallableParams {
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the primary icon size parameters.
   bool fetch_valid_primary_icon = false;
+
+  // Check whether there is a fetchable, non-empty icon in the manifest
+  // conforming to the badge icon size parameters.
+  bool fetch_valid_badge_icon = false;
 };
 
 // This struct is passed to an InstallableCallback when the InstallableManager
@@ -66,6 +79,17 @@ struct InstallableData {
   // fetch_valid_primary_icon was true and a primary icon could not be
   // retrieved, the reason will be in error_code.
   const SkBitmap* primary_icon;
+
+  // Empty if no badge_icon was requested.
+  const GURL& badge_icon_url;
+
+  // nullptr if the most appropriate badge icon couldn't be determined or
+  // downloaded. The underlying badge icon is owned by the InstallableManager;
+  // clients must copy the bitmap if they want to to use it. Since the badge
+  // icon is optional, no error code is set if it cannot be fetched, and clients
+  // specifying fetch_valid_badge_icon must check that the bitmap exists before
+  // using it.
+  const SkBitmap* badge_icon;
 
   // true if the site has a service worker and a viable web app manifest. If
   // check_installable was true and the site isn't installable, the reason will
@@ -110,21 +134,25 @@ class InstallableManager
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest, CheckWebapp);
 
   using Task = std::pair<InstallableParams, InstallableCallback>;
-  using IconParams = std::pair<int, int>;
+  using IconParams = std::tuple<int, int, content::Manifest::Icon::IconPurpose>;
 
   struct ManifestProperty;
   struct InstallableProperty;
   struct IconProperty;
 
-  // Returns the IconProperty matching |params|. Creates if it doesn't exist.
-  IconProperty& GetIcon(const InstallableParams& params);
+  // Returns an IconParams object that queries for a primary icon conforming to
+  // the primary icon size parameters in |params|.
+  IconParams ParamsForPrimaryIcon(const InstallableParams& params) const;
+  // Returns an IconParams object that queries for a badge icon conforming to
+  // the badge icon size parameters in |params|.
+  IconParams ParamsForBadgeIcon(const InstallableParams& params) const;
 
-  // Returns true if the icon sizes in |params| matches any fetched icon. false
-  // if no icon has been requested yet or there is no match.
-  bool IsIconFetched(const InstallableParams& params) const;
+  // Returns true if |params| matches any fetched icon, or false if no icon has
+  // been requested yet or there is no match.
+  bool IsIconFetched(const IconParams& params) const;
 
-  // Sets the icon parameters in |params| as being fetched.
-  void SetIconFetched(const InstallableParams& params);
+  // Sets the icon matching |params| as fetched.
+  void SetIconFetched(const IconParams& params);
 
   // Returns the error code associated with the resources requested in |params|,
   // or NO_ERROR_DETECTED if there is no error.
@@ -169,8 +197,9 @@ class InstallableManager
   void CheckServiceWorker();
   void OnDidCheckHasServiceWorker(bool has_service_worker);
 
-  void CheckAndFetchBestIcon();
-  void OnAppIconFetched(const GURL icon_url, const SkBitmap& bitmap);
+  void CheckAndFetchBestIcon(const IconParams& params);
+  void OnIconFetched(
+      const GURL icon_url, const IconParams& params, const SkBitmap& bitmap);
 
   // content::WebContentsObserver overrides
   void DidFinishNavigation(content::NavigationHandle* handle) override;

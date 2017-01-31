@@ -142,20 +142,27 @@ void InstallableManager::GetData(const InstallableParams& params,
   StartNextTask();
 }
 
-InstallableManager::IconProperty& InstallableManager::GetIcon(
-    const InstallableParams& params) {
-  return icons_[{params.ideal_primary_icon_size_in_px,
-                 params.minimum_primary_icon_size_in_px}];
+InstallableManager::IconParams InstallableManager::ParamsForPrimaryIcon(
+    const InstallableParams& params) const {
+  return std::make_tuple(params.ideal_primary_icon_size_in_px,
+                         params.minimum_primary_icon_size_in_px,
+                         IconPurpose::ANY);
 }
 
-bool InstallableManager::IsIconFetched(const InstallableParams& params) const {
-  const auto it = icons_.find({params.ideal_primary_icon_size_in_px,
-                               params.minimum_primary_icon_size_in_px});
+InstallableManager::IconParams InstallableManager::ParamsForBadgeIcon(
+    const InstallableParams& params) const {
+  return std::make_tuple(params.ideal_badge_icon_size_in_px,
+                         params.minimum_badge_icon_size_in_px,
+                         IconPurpose::BADGE);
+}
+
+bool InstallableManager::IsIconFetched(const IconParams& params) const {
+  const auto it = icons_.find(params);
   return it != icons_.end() && it->second.fetched;
 }
 
-void InstallableManager::SetIconFetched(const InstallableParams& params) {
-  GetIcon(params).fetched = true;
+void InstallableManager::SetIconFetched(const IconParams& params) {
+  icons_[params].fetched = true;
 }
 
 InstallableStatusCode InstallableManager::GetErrorCode(
@@ -167,11 +174,12 @@ InstallableStatusCode InstallableManager::GetErrorCode(
     return installable_->error;
 
   if (params.fetch_valid_primary_icon) {
-    IconProperty& icon = GetIcon(params);
+    IconProperty& icon = icons_[ParamsForPrimaryIcon(params)];
     if (icon.error != NO_ERROR_DETECTED)
       return icon.error;
   }
 
+  // Do not report badge icon's error because badge icon is optional.
   return NO_ERROR_DETECTED;
 }
 
@@ -189,17 +197,15 @@ void InstallableManager::set_installable_error(
 }
 
 InstallableStatusCode InstallableManager::icon_error(
-    const InstallableManager::IconParams& icon_params) {
+    const IconParams& icon_params) {
   return icons_[icon_params].error;
 }
 
-GURL& InstallableManager::icon_url(
-    const InstallableManager::IconParams& icon_params) {
+GURL& InstallableManager::icon_url(const IconParams& icon_params) {
   return icons_[icon_params].url;
 }
 
-const SkBitmap* InstallableManager::icon(
-    const InstallableManager::IconParams& icon_params) {
+const SkBitmap* InstallableManager::icon(const IconParams& icon_params) {
   return icons_[icon_params].icon.get();
 }
 
@@ -216,7 +222,10 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
   //  b. the resource has been fetched/checked.
   return manifest_->fetched &&
          (!params.check_installable || installable_->fetched) &&
-         (!params.fetch_valid_primary_icon || IsIconFetched(params));
+         (!params.fetch_valid_primary_icon ||
+             IsIconFetched(ParamsForPrimaryIcon(params))) &&
+         (!params.fetch_valid_badge_icon ||
+             IsIconFetched(ParamsForBadgeIcon(params)));
 }
 
 void InstallableManager::Reset() {
@@ -236,19 +245,32 @@ void InstallableManager::SetManifestDependentTasksComplete() {
   const InstallableParams& params = tasks_[0].first;
 
   installable_->fetched = true;
-  SetIconFetched(params);
+  SetIconFetched(ParamsForPrimaryIcon(params));
+  SetIconFetched(ParamsForBadgeIcon(params));
 }
 
 void InstallableManager::RunCallback(const Task& task,
                                      InstallableStatusCode code) {
   const InstallableParams& params = task.first;
-  IconProperty& icon = GetIcon(params);
+  IconProperty null_icon;
+  IconProperty* primary_icon = &null_icon;
+  IconProperty* badge_icon = &null_icon;
+
+  if (params.fetch_valid_primary_icon &&
+      base::ContainsKey(icons_, ParamsForPrimaryIcon(params)))
+    primary_icon = &icons_[ParamsForPrimaryIcon(params)];
+  if (params.fetch_valid_badge_icon &&
+      base::ContainsKey(icons_, ParamsForBadgeIcon(params)))
+    badge_icon = &icons_[ParamsForBadgeIcon(params)];
+
   InstallableData data = {
       code,
       manifest_url(),
       manifest(),
-      params.fetch_valid_primary_icon ? icon.url : GURL::EmptyGURL(),
-      params.fetch_valid_primary_icon ? icon.icon.get() : nullptr,
+      primary_icon->url,
+      primary_icon->icon.get(),
+      badge_icon->url,
+      badge_icon->icon.get(),
       params.check_installable ? is_installable() : false};
 
   task.second.Run(data);
@@ -279,14 +301,19 @@ void InstallableManager::WorkOnTask() {
     return;
   }
 
-  if (!manifest_->fetched)
+  if (!manifest_->fetched) {
     FetchManifest();
-  else if (params.check_installable && !installable_->fetched)
+  } else if (params.check_installable && !installable_->fetched) {
     CheckInstallable();
-  else if (params.fetch_valid_primary_icon && !IsIconFetched(params))
-    CheckAndFetchBestIcon();
-  else
+  } else if (params.fetch_valid_primary_icon &&
+             !IsIconFetched(ParamsForPrimaryIcon(params))) {
+    CheckAndFetchBestIcon(ParamsForPrimaryIcon(params));
+  } else if (params.fetch_valid_badge_icon &&
+             !IsIconFetched(ParamsForBadgeIcon(params))) {
+    CheckAndFetchBestIcon(ParamsForBadgeIcon(params));
+  } else {
     NOTREACHED();
+  }
 }
 
 void InstallableManager::FetchManifest() {
@@ -402,26 +429,35 @@ void InstallableManager::OnDidCheckHasServiceWorker(bool has_service_worker) {
   WorkOnTask();
 }
 
-void InstallableManager::CheckAndFetchBestIcon() {
+void InstallableManager::CheckAndFetchBestIcon(const IconParams& params) {
   DCHECK(!manifest().IsEmpty());
-  DCHECK(!tasks_.empty());
 
-  const InstallableParams& params = tasks_[0].first;
-  IconProperty& icon = GetIcon(params);
+  int ideal_icon_size_in_px = std::get<0>(params);
+  int minimum_icon_size_in_px = std::get<1>(params);
+  IconPurpose icon_purpose = std::get<2>(params);
+
+  IconProperty& icon = icons_[params];
   icon.fetched = true;
 
+  // Filter by icon purpose.
+  std::vector<content::Manifest::Icon> filtered_icons;
+  std::copy_if(manifest().icons.begin(), manifest().icons.end(),
+               std::back_inserter(filtered_icons),
+               [icon_purpose](const content::Manifest::Icon& icon) {
+                 return base::ContainsValue(icon.purpose, icon_purpose);
+               });
+
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
-      manifest().icons, params.ideal_primary_icon_size_in_px,
-      params.minimum_primary_icon_size_in_px);
+      filtered_icons, ideal_icon_size_in_px, minimum_icon_size_in_px);
 
   if (icon_url.is_empty()) {
     icon.error = NO_ACCEPTABLE_ICON;
   } else {
     bool can_download_icon = ManifestIconDownloader::Download(
-        GetWebContents(), icon_url, params.ideal_primary_icon_size_in_px,
-        params.minimum_primary_icon_size_in_px,
-        base::Bind(&InstallableManager::OnAppIconFetched,
-                   weak_factory_.GetWeakPtr(), icon_url));
+        GetWebContents(), icon_url, ideal_icon_size_in_px,
+        minimum_icon_size_in_px,
+        base::Bind(&InstallableManager::OnIconFetched,
+                   weak_factory_.GetWeakPtr(), icon_url, params));
     if (can_download_icon)
       return;
     icon.error = CANNOT_DOWNLOAD_ICON;
@@ -430,11 +466,9 @@ void InstallableManager::CheckAndFetchBestIcon() {
   WorkOnTask();
 }
 
-void InstallableManager::OnAppIconFetched(const GURL icon_url,
-                                          const SkBitmap& bitmap) {
-  DCHECK(!tasks_.empty());
-  const InstallableParams& params = tasks_[0].first;
-  IconProperty& icon = GetIcon(params);
+void InstallableManager::OnIconFetched(
+    const GURL icon_url, const IconParams& params, const SkBitmap& bitmap) {
+  IconProperty& icon = icons_[params];
 
   if (!GetWebContents())
     return;

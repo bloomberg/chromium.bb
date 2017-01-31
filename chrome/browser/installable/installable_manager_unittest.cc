@@ -26,12 +26,14 @@ class InstallableManagerUnitTest : public testing::Test {
     manifest.start_url = GURL("http://example.com");
     manifest.display = blink::WebDisplayModeStandalone;
 
-    content::Manifest::Icon icon;
-    icon.type = base::ASCIIToUTF16("image/png");
-    icon.sizes.push_back(gfx::Size(144, 144));
-    icon.purpose.push_back(IconPurpose::ANY);
-    manifest.icons.push_back(icon);
+    content::Manifest::Icon primary_icon;
+    primary_icon.type = base::ASCIIToUTF16("image/png");
+    primary_icon.sizes.push_back(gfx::Size(144, 144));
+    primary_icon.purpose.push_back(IconPurpose::ANY);
+    manifest.icons.push_back(primary_icon);
 
+    // No need to include the optional badge icon as it does not affect the
+    // unit tests.
     return manifest;
   }
 
