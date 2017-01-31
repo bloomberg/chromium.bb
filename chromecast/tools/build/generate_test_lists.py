@@ -100,7 +100,6 @@ def CombineRuntimeDeps(test_files_dir, deps_output_file):
                                                             "")
     with open(runtime_deps_file, "r") as f:
       runtime_deps[test_name] = [dep.strip() for dep in f]
-      assert runtime_deps[test_name][0] == os.path.join(".", test_name)
 
   with open(deps_output_file, "w") as outfile:
     json.dump(
