@@ -420,10 +420,23 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
       web_session_str, std::vector<uint8_t>(response, response + response_size),
       std::move(promise));
 
-  if (key_system_ == kExternalClearKeyRenewalKeySystem && !renewal_timer_set_) {
-    ScheduleNextRenewal();
-    renewal_timer_set_ = true;
+  // TODO(xhwang): Only schedule renewal and update expiration change when the
+  // promise is resolved.
+
+  cdm::Time expiration = 0.0;  // Never expires.
+
+  if (key_system_ == kExternalClearKeyRenewalKeySystem) {
+    // For renewal key system, set a non-zero expiration that is approximately
+    // 100 years after 01 January 1970 UTC.
+    expiration = 3153600000.0;  // 100 * 365 * 24 * 60 * 60;
+
+    if (!renewal_timer_set_) {
+      ScheduleNextRenewal();
+      renewal_timer_set_ = true;
+    }
   }
+
+  host_->OnExpirationChange(session_id, session_id_length, expiration);
 }
 
 void ClearKeyCdm::CloseSession(uint32_t promise_id,

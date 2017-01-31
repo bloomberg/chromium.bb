@@ -830,8 +830,13 @@ void ContentDecryptorDelegate::OnSessionExpirationChange(
   StringVar* session_id_string = StringVar::FromPPVar(session_id);
   DCHECK(session_id_string);
 
-  session_expiration_update_cb_.Run(session_id_string->value(),
-                                    ppapi::PPTimeToTime(new_expiry_time));
+  // PPTimeToTime() converts exact 0 to base::Time::UnixEpoch, which is not
+  // desired here. We want to convert 0.0 to a null base::Time.
+  base::Time expiry_time;
+  if (new_expiry_time != 0.0)
+    expiry_time = ppapi::PPTimeToTime(new_expiry_time);
+
+  session_expiration_update_cb_.Run(session_id_string->value(), expiry_time);
 }
 
 void ContentDecryptorDelegate::OnSessionClosed(PP_Var session_id) {

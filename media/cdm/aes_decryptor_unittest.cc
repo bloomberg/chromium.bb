@@ -35,6 +35,7 @@
 #include "url/gurl.h"
 
 using ::testing::_;
+using ::testing::AtMost;
 using ::testing::Gt;
 using ::testing::IsNull;
 using ::testing::NotNull;
@@ -51,6 +52,9 @@ MATCHER(IsJSONDictionary, "") {
   std::string result(arg.begin(), arg.end());
   std::unique_ptr<base::Value> root(base::JSONReader().ReadToValue(result));
   return (root.get() && root->GetType() == base::Value::Type::DICTIONARY);
+}
+MATCHER(IsNullTime, "") {
+  return arg.is_null();
 }
 
 namespace media {
@@ -363,6 +367,12 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
     } else {
       EXPECT_CALL(cdm_client_, OnSessionKeysChangeCalled(_, _)).Times(0);
     }
+
+    // AesDecryptor never calls OnSessionExpirationUpdate() since Clear Key key
+    // system doesn't need it. But ClearKeyCdm does call it for testing purpose.
+    EXPECT_CALL(cdm_client_,
+                OnSessionExpirationUpdate(session_id, IsNullTime()))
+        .Times(AtMost(1));
 
     cdm_->UpdateSession(session_id,
                         std::vector<uint8_t>(key.begin(), key.end()),
