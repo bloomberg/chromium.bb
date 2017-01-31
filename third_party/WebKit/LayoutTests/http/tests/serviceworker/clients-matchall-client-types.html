@@ -16,11 +16,11 @@ var expected_with_window = [
     ['visible', true, new URL(iframe_url, location).href, 'nested']
 ];
 var expected_with_shared_worker = [
-    [,,new URL(shared_worker_url, location).href, 'none']
+    [undefined, undefined, new URL(shared_worker_url, location).href, 'none']
 ];
 var expected_with_all = [
     ['visible', true, new URL(iframe_url, location).href, 'nested'],
-    [,,new URL(shared_worker_url, location).href, 'none']
+    [undefined, undefined, new URL(shared_worker_url, location).href, 'none']
 ];
 
 function test_matchall(frame, expected, query_options) {
@@ -28,15 +28,14 @@ function test_matchall(frame, expected, query_options) {
   frame.focus();
   return new Promise(function(resolve, reject) {
     var channel = new MessageChannel();
-    channel.port1.onmessage = function(e) {
-      assert_equals(e.data.length, expected.length);
-      for (var i = 0; i < e.data.length; i++)
-        assert_array_equals(e.data[i], expected[i]);
-      resolve();
-    };
+    channel.port1.onmessage = function(e) { resolve(e.data); };
     frame.contentWindow.navigator.serviceWorker.controller.postMessage(
         {port:channel.port2, options:query_options},
         [channel.port2]);
+  }).then(function(data) {
+    assert_equals(data.length, expected.length);
+    for (var i = 0; i < data.length; i++)
+      assert_array_equals(data[i], expected[i]);
   });
 }
 
