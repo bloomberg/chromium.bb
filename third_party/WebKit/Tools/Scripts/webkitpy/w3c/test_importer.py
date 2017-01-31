@@ -75,7 +75,7 @@ class TestImporter(object):
         _log.info('Local path: %s', temp_repo_path)
         self.run(['git', 'clone', repo_url, temp_repo_path])
 
-        if options.target == 'wpt':
+        if options.target == 'wpt' and not options.ignore_exportable_commits:
             commits = self.exportable_but_not_exported_commits(temp_repo_path)
             if commits:
                 _log.error('There were exportable but not-yet-exported commits:')
@@ -122,6 +122,8 @@ class TestImporter(object):
                             help='uploads CL and initiates commit queue.')
         parser.add_argument('--auth-refresh-token-json',
                             help='Rietveld auth refresh JSON token.')
+        parser.add_argument('--ignore-exportable-commits', action='store_true',
+                            help='Continue even if there are exportable commits that may be overwritten.')
         return parser.parse_args(argv)
 
     def checkout_is_okay(self, allow_local_commits):
