@@ -191,7 +191,7 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
 // The lock screen will be preloaded so it is instantly available when the user
 // locks the Chromebook device.
 const base::Feature kPreloadLockScreen{"PreloadLockScreen",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables the Print Scaling feature in print preview.
