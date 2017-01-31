@@ -742,6 +742,21 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInOOPIF) {
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
+// Test a particular PDF encountered in the wild that triggered a crash
+// when accessibility is enabled.  (http://crbug.com/668724)
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  GURL test_pdf_url(embedded_test_server()->GetURL(
+      "/pdf_private/accessibility_crash_2.pdf"));
+
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));

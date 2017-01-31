@@ -180,7 +180,8 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
   int text_run_font_size = FPDFText_GetFontSize(text_page, char_index);
   pp::FloatRect text_run_bounds =
       GetFloatCharRectInPixels(page, text_page, char_index);
-  char_index++;
+  if (char_index < chars_count)
+    char_index++;
   while (char_index < chars_count) {
     unsigned int character = FPDFText_GetUnicode(text_page, char_index);
 
