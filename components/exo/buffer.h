@@ -67,6 +67,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // Returns the size of the buffer.
   gfx::Size GetSize() const;
 
+  // Returns the format of the buffer.
+  gfx::BufferFormat GetFormat() const;
+
   // Returns a trace value representing the state of the buffer.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 

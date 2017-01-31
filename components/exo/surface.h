@@ -361,6 +361,9 @@ class Surface : public ui::ContextFactoryObserver,
   // The last resource that was sent to a surface.
   cc::TransferableResource current_resource_;
 
+  // Whether the last resource that was sent to a surface has an alpha channel.
+  bool current_resource_has_alpha_ = false;
+
   // This is true if a call to Commit() as been made but
   // CommitSurfaceHierarchy() has not yet been called.
   bool needs_commit_surface_hierarchy_ = false;

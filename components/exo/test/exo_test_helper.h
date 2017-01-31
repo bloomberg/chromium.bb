@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -48,7 +49,8 @@ class ExoTestHelper {
 
   // Creates a GpuMemoryBuffer instance that can be used for tests.
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
-      const gfx::Size& size);
+      const gfx::Size& size,
+      gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888);
 
   // Creates window of size (width, height) at center of screen.
   ExoTestWindow CreateWindow(int width, int height, bool is_modal);

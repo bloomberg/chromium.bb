@@ -524,6 +524,10 @@ gfx::Size Buffer::GetSize() const {
   return gpu_memory_buffer_->GetSize();
 }
 
+gfx::BufferFormat Buffer::GetFormat() const {
+  return gpu_memory_buffer_->GetFormat();
+}
+
 std::unique_ptr<base::trace_event::TracedValue> Buffer::AsTracedValue() const {
   std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());

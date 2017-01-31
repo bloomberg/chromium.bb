@@ -67,6 +67,22 @@ bool ListContainsEntry(T& list, U key) {
   return FindListEntry(list, key) != list.end();
 }
 
+// Helper function that returns true if |format| may have an alpha channel.
+// Note: False positives are allowed but false negatives are not.
+bool FormatHasAlpha(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
+      return false;
+    default:
+      return true;
+  }
+}
+
 class CustomWindowDelegate : public aura::WindowDelegate {
  public:
   explicit CustomWindowDelegate(Surface* surface) : surface_(surface) {}
@@ -417,10 +433,14 @@ void Surface::Commit() {
     has_pending_layer_changes_ = true;
 
   if (has_pending_contents_) {
-    if (pending_buffer_.buffer() &&
-        (current_resource_.size != pending_buffer_.buffer()->GetSize())) {
-      has_pending_layer_changes_ = true;
-    } else if (!pending_buffer_.buffer() && !current_resource_.size.IsEmpty()) {
+    if (pending_buffer_.buffer()) {
+      if (current_resource_.size != pending_buffer_.buffer()->GetSize())
+        has_pending_layer_changes_ = true;
+      // Whether layer fills bounds opaquely or not might have changed.
+      if (current_resource_has_alpha_ !=
+          FormatHasAlpha(pending_buffer_.buffer()->GetFormat()))
+        has_pending_layer_changes_ = true;
+    } else if (!current_resource_.size.IsEmpty()) {
       has_pending_layer_changes_ = true;
     }
   }
@@ -471,6 +491,7 @@ void Surface::CommitSurfaceHierarchy() {
                         content_size_),
         surface_reference_factory_);
     window_->layer()->SetFillsBoundsOpaquely(
+        !current_resource_has_alpha_ ||
         state_.blend_mode == SkBlendMode::kSrc ||
         state_.opaque_region.contains(
             gfx::RectToSkIRect(gfx::Rect(content_size_))));
@@ -732,13 +753,17 @@ void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
 }
 
 void Surface::UpdateResource(bool client_usage) {
-  if (!current_buffer_.buffer() ||
-      !current_buffer_.buffer()->ProduceTransferableResource(
+  if (current_buffer_.buffer() &&
+      current_buffer_.buffer()->ProduceTransferableResource(
           compositor_frame_sink_holder_.get(), next_resource_id_++,
           state_.only_visible_on_secure_output, client_usage,
           &current_resource_)) {
+    current_resource_has_alpha_ =
+        FormatHasAlpha(current_buffer_.buffer()->GetFormat());
+  } else {
     current_resource_.id = 0;
     current_resource_.size = gfx::Size();
+    current_resource_has_alpha_ = false;
   }
 }
 
@@ -802,7 +827,8 @@ void Surface::UpdateSurface(bool full_damage) {
           render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
       float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
       gfx::Rect opaque_rect;
-      if (state_.blend_mode == SkBlendMode::kSrc ||
+      if (!current_resource_has_alpha_ ||
+          state_.blend_mode == SkBlendMode::kSrc ||
           state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect))) {
         opaque_rect = quad_rect;
       } else if (state_.opaque_region.isRect()) {
