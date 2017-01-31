@@ -33,7 +33,7 @@
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TrackEvent.h"
 
-using namespace blink;
+namespace blink {
 
 TextTrackList::TextTrackList(HTMLMediaElement* owner)
     : m_owner(owner), m_asyncEventQueue(GenericEventQueue::create(this)) {}
@@ -314,3 +314,5 @@ DEFINE_TRACE_WRAPPERS(TextTrackList) {
     visitor->traceWrappers(track);
   EventTargetWithInlineData::traceWrappers(visitor);
 }
+
+}  // namespace blink

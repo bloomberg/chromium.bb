@@ -59,9 +59,9 @@
 
 using blink::protocol::Array;
 
-namespace {
+namespace blink {
 
-using namespace blink;
+namespace {
 
 static const CSSParserContext* parserContextForDocument(Document* document) {
   return document ? CSSParserContext::create(*document)
@@ -679,8 +679,6 @@ String canonicalCSSText(CSSRule* rule) {
 }
 
 }  // namespace
-
-namespace blink {
 
 enum MediaListSource {
   MediaListSourceLinkedSheet,

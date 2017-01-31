@@ -11,9 +11,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/text/WTFString.h"
 
-namespace {
+namespace blink {
 
-using namespace blink;
+namespace {
 
 String connectionTypeToString(WebConnectionType type) {
   switch (type) {
@@ -41,8 +41,6 @@ String connectionTypeToString(WebConnectionType type) {
 }
 
 }  // namespace
-
-namespace blink {
 
 NetworkInformation* NetworkInformation::create(ExecutionContext* context) {
   return new NetworkInformation(context);

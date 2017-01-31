@@ -49,13 +49,12 @@
 #include <list>
 #include <memory>
 
-using namespace blink;
-using blink::URLTestHelpers::toKURL;
+namespace blink {
 
 namespace {
 
 WebURL toWebURL(const char* url) {
-  return WebURL(toKURL(url));
+  return WebURL(blink::URLTestHelpers::toKURL(url));
 }
 
 class TestPrerendererClient : public WebPrerendererClient {
@@ -225,6 +224,8 @@ class PrerenderingTest : public testing::Test {
 
   FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
+
+}  // namespace
 
 TEST_F(PrerenderingTest, SinglePrerender) {
   initialize("http://www.foo.com/", "prerender/single_prerender.html");
@@ -470,4 +471,4 @@ TEST_F(PrerenderingTest, RelNext) {
       relNextAndPrerender.relTypes());
 }
 
-}  // namespace
+}  // namespace blink

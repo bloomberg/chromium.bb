@@ -34,7 +34,7 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace blink;
+namespace blink {
 
 namespace {
 
@@ -131,6 +131,8 @@ TEST(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue) {
   checkKeyPathStringValue(isolate, scriptValue, "foo", "zoo");
   checkKeyPathNullValue(isolate, scriptValue, "bar");
 }
+
+}  // namespace
 
 TEST(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue) {
   V8TestingScope scope;
@@ -236,4 +238,4 @@ TEST(InjectIDBKeyTest, SubProperty) {
                  scriptObject, "foo.xyz.foo");
 }
 
-}  // namespace
+}  // namespace blink

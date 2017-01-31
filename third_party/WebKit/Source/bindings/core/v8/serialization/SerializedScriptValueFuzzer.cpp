@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <v8.h>
 
-using namespace blink;
+namespace blink {
 
 namespace {
 
@@ -47,7 +47,7 @@ class WebMessagePortChannelImpl final : public WebMessagePortChannel {
 
 }  // namespace
 
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+int LLVMFuzzerInitialize(int* argc, char*** argv) {
   const char kExposeGC[] = "--expose_gc";
   v8::V8::SetFlagsFromString(kExposeGC, sizeof(kExposeGC));
   InitializeBlinkFuzzTest(argc, argv);
@@ -62,7 +62,7 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   return 0;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Odd sizes are handled in various ways, depending how they arrive.
   // Let's not worry about that case here.
   if (size % sizeof(UChar))
@@ -109,4 +109,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       v8::Isolate::kFullGarbageCollection);
 
   return 0;
+}
+
+}  // namespace blink
+
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  return blink::LLVMFuzzerInitialize(argc, argv);
+}
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  return blink::LLVMFuzzerTestOneInput(data, size);
 }

@@ -9,23 +9,19 @@
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "wtf/text/WTFString.h"
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 // Intentionally leaked during fuzzing.
 // See testing/libfuzzer/efficient_fuzzer.md.
 DummyPageHolder* pageHolder = nullptr;
 
-}  // namespace
-
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+int LLVMFuzzerInitialize(int* argc, char*** argv) {
   InitializeBlinkFuzzTest(argc, argv);
   pageHolder = DummyPageHolder::create().release();
   return 0;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   String header = String::fromUTF8(data, size);
   unsigned hash = header.isNull() ? 0 : header.impl()->hash();
 
@@ -45,4 +41,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
   return 0;
+}
+
+}  // namespace blink
+
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  return blink::LLVMFuzzerInitialize(argc, argv);
+}
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  return blink::LLVMFuzzerTestOneInput(data, size);
 }

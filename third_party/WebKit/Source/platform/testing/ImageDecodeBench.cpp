@@ -38,7 +38,9 @@ typedef struct _stat sttype;
 typedef struct stat sttype;
 #endif
 
-using namespace blink;
+namespace blink {
+
+namespace {
 
 #if defined(_WIN32)
 
@@ -246,6 +248,8 @@ bool decodeImageData(SharedBuffer* data,
   return !decoder->failed();
 }
 
+}  // namespace
+
 int main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
 
@@ -341,4 +345,10 @@ int main(int argc, char* argv[]) {
   double averageTime = totalTime / static_cast<double>(iterations);
   printf("%f %f\n", totalTime, averageTime);
   return 0;
+}
+
+}  // namespace blink
+
+int main(int argc, char* argv[]) {
+  return blink::main(argc, argv);
 }

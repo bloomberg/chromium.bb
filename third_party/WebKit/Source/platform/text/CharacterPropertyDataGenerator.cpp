@@ -17,11 +17,11 @@
 #include <utrie2.h>
 #endif
 
+namespace blink {
+
 #if defined(USING_SYSTEM_ICU)
 static void generate(FILE*) {}
 #else
-
-using namespace blink;
 
 const UChar32 kMaxCodepoint = 0x10FFFF;
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
@@ -119,13 +119,15 @@ static void generate(FILE* fp) {
 }
 #endif
 
+}  // namespace blink
+
 int main(int argc, char** argv) {
   // Write the serialized array to the source file.
   if (argc <= 1) {
-    generate(stdout);
+    blink::generate(stdout);
   } else {
     FILE* fp = fopen(argv[1], "wb");
-    generate(fp);
+    blink::generate(fp);
     fclose(fp);
   }
 

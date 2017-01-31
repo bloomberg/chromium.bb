@@ -54,8 +54,6 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebVector.h"
 
-using namespace blink;
-
 namespace blink {
 
 // We provide a custom implementation of this class that calls out to the

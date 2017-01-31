@@ -30,7 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include <math.h>
 
-using namespace blink;
+namespace blink {
 
 TimeRanges::TimeRanges(double start, double end) {
   add(start, end);
@@ -209,3 +209,5 @@ double TimeRanges::nearest(double newPlaybackPosition,
   }
   return bestMatch;
 }
+
+}  // namespace blink

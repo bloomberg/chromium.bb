@@ -95,9 +95,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 
-namespace {
+namespace blink {
 
-using namespace blink;
+namespace {
 
 void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
   // If any changes to CSS Animations were detected, stash the update away for
@@ -140,8 +140,6 @@ bool cacheCustomPropertiesForApplyAtRules(StyleResolverState& state,
 }
 
 }  // namespace
-
-namespace blink {
 
 using namespace HTMLNames;
 

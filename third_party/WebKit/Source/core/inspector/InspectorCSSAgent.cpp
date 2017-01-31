@@ -90,6 +90,8 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringConcatenate.h"
 
+namespace blink {
+
 namespace {
 
 int s_frontendOperationCounter = 0;
@@ -99,8 +101,6 @@ class FrontendOperationScope {
   FrontendOperationScope() { ++s_frontendOperationCounter; }
   ~FrontendOperationScope() { --s_frontendOperationCounter; }
 };
-
-using namespace blink;
 
 String createShorthandValue(Document* document,
                             const String& shorthand,
@@ -307,8 +307,6 @@ static const char ruleRecordingEnabled[] = "ruleRecordingEnabled";
 }
 
 typedef blink::protocol::CSS::Backend::EnableCallback EnableCallback;
-
-namespace blink {
 
 enum ForcePseudoClassFlags {
   PseudoNone = 0,

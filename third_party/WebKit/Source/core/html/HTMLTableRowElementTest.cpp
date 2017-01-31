@@ -9,9 +9,7 @@
 #include "core/html/HTMLTableElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-using namespace blink;
+namespace blink {
 
 // rowIndex
 // https://html.spec.whatwg.org/multipage/tables.html#dom-tr-rowindex
@@ -46,4 +44,4 @@ TEST(HTMLTableRowElementTest, rowIndex_inUnrelatedElementInTable) {
       << "row index -1";
 }
 
-}  // namespace
+}  // namespace blink

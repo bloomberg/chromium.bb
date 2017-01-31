@@ -6563,8 +6563,6 @@ template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 }  // namespace blink
 
 #ifndef NDEBUG
-using namespace blink;
-
 static WeakDocumentSet& liveDocumentSet() {
   DEFINE_STATIC_LOCAL(WeakDocumentSet, set, ());
   return set;
@@ -6573,7 +6571,7 @@ static WeakDocumentSet& liveDocumentSet() {
 void showLiveDocumentInstances() {
   WeakDocumentSet& set = liveDocumentSet();
   fprintf(stderr, "There are %u documents currently alive:\n", set.size());
-  for (Document* document : set)
+  for (blink::Document* document : set)
     fprintf(stderr, "- Document %p URL: %s\n", document,
             document->url().getString().utf8().data());
 }
