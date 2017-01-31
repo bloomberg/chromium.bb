@@ -18,12 +18,17 @@
     width: 1000px;
     background: linear-gradient(to bottom, red, white);
   }
+
+  .spacer {
+    height: 2000px;
+  }
 </style>
 
 <div id='nonFastRegion'><div>This should be covered by a green overlay.</div></div>
 
 <p>A single square should be visible covered by a green overlay.</p>
 <div id="console"></div>
+<div class="spacer"></div>
 
 <script src="../resources/js-test.js"></script>
 <script src="../resources/run-after-layout-and-paint.js"></script>

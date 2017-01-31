@@ -112,8 +112,10 @@ void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(
   if (!m_page->mainFrame()->isLocalFrame() ||
       !m_page->deprecatedLocalMainFrame()->view())
     return;
-  if (WebLayer* scrollLayer = toWebLayer(
-          m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
+  if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()
+                                             ->view()
+                                             ->layoutViewportScrollableArea()
+                                             ->layerForScrolling())) {
     Vector<IntRect> rects = region.rects();
     WebVector<WebRect> webRects(rects.size());
     for (size_t i = 0; i < rects.size(); ++i)

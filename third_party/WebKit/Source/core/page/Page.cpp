@@ -173,21 +173,19 @@ ScrollingCoordinator* Page::scrollingCoordinator() {
 }
 
 ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame) {
+  DisableCompositingQueryAsserts disabler;
   if (ScrollingCoordinator* scrollingCoordinator =
           this->scrollingCoordinator()) {
     // Hits in compositing/iframes/iframe-composited-scrolling.html
-    DisableCompositingQueryAsserts disabler;
     scrollingCoordinator->updateAfterCompositingChangeIfNeeded();
   }
 
-  if (!frame->view()->layerForScrolling())
+  GraphicsLayer* layer =
+      frame->view()->layoutViewportScrollableArea()->layerForScrolling();
+  if (!layer)
     return ClientRectList::create();
-
-  // Now retain non-fast scrollable regions
-  return ClientRectList::create(frame->view()
-                                    ->layerForScrolling()
-                                    ->platformLayer()
-                                    ->nonFastScrollableRegion());
+  return ClientRectList::create(
+      layer->platformLayer()->nonFastScrollableRegion());
 }
 
 void Page::setMainFrame(Frame* mainFrame) {
