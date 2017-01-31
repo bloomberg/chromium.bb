@@ -19,7 +19,7 @@ public class HistoryActivity extends SynchronousInitializationActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mHistoryManager = new HistoryManager(this);
+        mHistoryManager = new HistoryManager(this, null);
         setContentView(mHistoryManager.getView());
     }
 

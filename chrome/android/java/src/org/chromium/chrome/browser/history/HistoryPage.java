@@ -31,7 +31,7 @@ public class HistoryPage extends BasicNativePage {
 
     @Override
     protected void initialize(Activity activity, final Tab tab) {
-        mHistoryManager = new HistoryManager(activity);
+        mHistoryManager = new HistoryManager(activity, this);
         mTitle = activity.getString(R.string.menu_history);
     }
 

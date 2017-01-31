@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -31,6 +32,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -64,6 +66,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private final int mDefaultLateralListItemMarginPx;
 
     private final Activity mActivity;
+    private final boolean mIsDisplayedInNativePage;
     private final SelectableListLayout<HistoryItem> mSelectableListLayout;
     private final HistoryAdapter mHistoryAdapter;
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
@@ -81,8 +84,9 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      * @param activity The Activity associated with the HistoryManager.
      */
     @SuppressWarnings("unchecked")  // mSelectableListLayout
-    public HistoryManager(Activity activity) {
+    public HistoryManager(Activity activity, @Nullable NativePage nativePage) {
         mActivity = activity;
+        mIsDisplayedInNativePage = nativePage != null;
 
         mSelectionDelegate = new SelectionDelegate<>();
         mSelectionDelegate.addObserver(this);
@@ -174,9 +178,16 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         recordUserAction("Show");
     }
 
+    /**
+     * @return Whether the history manager UI is displayed in a native page.
+     */
+    public boolean isDisplayedInNativePage() {
+        return mIsDisplayedInNativePage;
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.close_menu_id && !DeviceFormFactor.isTablet(mActivity)) {
+        if (item.getItemId() == R.id.close_menu_id && !isDisplayedInNativePage()) {
             mActivity.finish();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_new_tab) {

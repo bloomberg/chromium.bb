@@ -14,7 +14,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 
@@ -36,6 +35,10 @@ public class HistoryManagerToolbar extends SelectableListToolbar<HistoryItem> {
      */
     public void setManager(HistoryManager manager) {
         mManager = manager;
+
+        if (mManager.isDisplayedInNativePage()) {
+            getMenu().removeItem(R.id.close_menu_id);
+        }
     }
 
     @Override
@@ -72,10 +75,6 @@ public class HistoryManagerToolbar extends SelectableListToolbar<HistoryItem> {
     }
 
     private void updateMenuItemVisibility() {
-        if (DeviceFormFactor.isTablet(getContext())) {
-            getMenu().removeItem(R.id.close_menu_id);
-        }
-
         // Once the selection mode delete or incognito menu options are removed, they will not
         // be added back until the user refreshes the history UI. This could happen if the user is
         // signed in to an account that cannot remove browsing history or has incognito disabled and
