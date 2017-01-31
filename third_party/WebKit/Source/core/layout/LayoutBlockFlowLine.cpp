@@ -1675,9 +1675,11 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
           clearPreviousFloat =
               (prevFloat &&
                ((prevFloat->styleRef().floating() == EFloat::kLeft &&
-                 (childStyle.clear() & ClearLeft)) ||
+                 (childStyle.clear() == ClearBoth ||
+                  childStyle.clear() == ClearLeft)) ||
                 (prevFloat->styleRef().floating() == EFloat::kRight &&
-                 (childStyle.clear() & ClearRight))));
+                 (childStyle.clear() == ClearBoth ||
+                  childStyle.clear() == ClearRight))));
           prevFloat = child;
         } else {
           clearPreviousFloat = false;
