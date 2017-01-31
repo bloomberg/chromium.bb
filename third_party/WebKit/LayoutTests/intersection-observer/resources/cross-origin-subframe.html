@@ -52,9 +52,15 @@ observer.observe(target);
 function step0() {
   entries = entries.concat(observer.takeRecords());
   nextStep = step1;
+  var expected = [{
+    boundingClientRect: coordinatesToClientRectJson(8, 208, 108, 308),
+    intersectionRect: coordinatesToClientRectJson(0, 0, 0, 0),
+    rootBounds: "null",
+    target: target.id
+  }];
   port.postMessage({
     actual: entries.map(entryToJson),
-    expected: [],
+    expected: expected,
     description: "First rAF"
   }, "*");
   entries = [];

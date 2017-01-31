@@ -173,8 +173,7 @@ IntersectionObserver::IntersectionObserver(
       m_rightMargin(Fixed),
       m_bottomMargin(Fixed),
       m_leftMargin(Fixed),
-      m_rootIsImplicit(root ? 0 : 1),
-      m_initialState(InitialState::kHidden) {
+      m_rootIsImplicit(root ? 0 : 1) {
   switch (rootMargin.size()) {
     case 0:
       break;
@@ -272,11 +271,6 @@ void IntersectionObserver::observe(Element* target,
                                "element is not a descendant of root."));
   }
 
-  if (m_initialState == InitialState::kAuto) {
-    for (auto& observation : m_observations)
-      observation->setLastThresholdIndex(std::numeric_limits<unsigned>::max());
-  }
-
   if (FrameView* frameView = targetFrame->view())
     frameView->scheduleAnimation();
 }
@@ -312,11 +306,6 @@ void IntersectionObserver::disconnect(ExceptionState& exceptionState) {
   for (auto& observation : m_observations)
     observation->disconnect();
   m_observations.clear();
-}
-
-void IntersectionObserver::setInitialState(InitialState initialState) {
-  DCHECK(m_observations.isEmpty());
-  m_initialState = initialState;
 }
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(

@@ -32,21 +32,6 @@ class CORE_EXPORT IntersectionObserver final
       Function<void(const HeapVector<Member<IntersectionObserverEntry>>&),
                WTF::SameThreadAffinity>;
 
-  // Defines the assumed initial state of the observed element. If the actual
-  // state is the same as the initial state, then no observation will be
-  // delivered. kAuto means the initial observation will always get sent.
-  enum InitialState {
-    // TODO(skyostil): Add support for kVisible.
-    kAuto = 0,
-    kHidden = 1,
-    kDoNotUseMax = 2
-  };
-
-  // InitialState is stored in a single bit in m_initialState.  If adding new
-  // enum values, increase the size of m_initialState and update the assert.
-  static_assert(InitialState::kDoNotUseMax == 2,
-                "InitialState fits in a single bit.");
-
   static IntersectionObserver* create(const IntersectionObserverInit&,
                                       IntersectionObserverCallback&,
                                       ExceptionState&);
@@ -93,12 +78,6 @@ class CORE_EXPORT IntersectionObserver final
     return m_observations;
   }
 
-  // Set the assumed initial state of the observed element. Note that this can
-  // only be set before calling observe().
-  // TODO(skyostil): Move this setting to IntersectionObserverInit once the API
-  // is finalized.
-  void setInitialState(InitialState);
-
   DECLARE_TRACE();
 
  private:
@@ -122,8 +101,6 @@ class CORE_EXPORT IntersectionObserver final
   Length m_bottomMargin;
   Length m_leftMargin;
   unsigned m_rootIsImplicit : 1;
-  // m_initialState contains values from enum InitialState
-  unsigned m_initialState : 1;
 };
 
 }  // namespace blink

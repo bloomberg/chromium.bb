@@ -23,18 +23,21 @@ class IntersectionObservation final
   IntersectionObserver* observer() const { return m_observer.get(); }
   Element* target() const { return m_target; }
   unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
-  void setLastThresholdIndex(unsigned index) { m_lastThresholdIndex = index; }
   void computeIntersectionObservations(DOMHighResTimeStamp);
   void disconnect();
 
   DECLARE_TRACE();
 
  private:
+  void setLastThresholdIndex(unsigned index) { m_lastThresholdIndex = index; }
+
   Member<IntersectionObserver> m_observer;
   WeakMember<Element> m_target;
 
   const unsigned m_shouldReportRootBounds : 1;
+
   unsigned m_lastThresholdIndex : 30;
+  static const unsigned kMaxThresholdIndex = (unsigned)0x40000000;
 };
 
 }  // namespace blink

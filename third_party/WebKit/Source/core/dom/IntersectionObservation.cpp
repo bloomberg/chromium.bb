@@ -16,7 +16,10 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
     : m_observer(observer),
       m_target(&target),
       m_shouldReportRootBounds(shouldReportRootBounds),
-      m_lastThresholdIndex(0) {}
+      // Note that the spec says the initial value of m_lastThresholdIndex
+      // should be -1, but since m_lastThresholdIndex is unsigned, we use a
+      // different sentinel value.
+      m_lastThresholdIndex(kMaxThresholdIndex - 1) {}
 
 void IntersectionObservation::computeIntersectionObservations(
     DOMHighResTimeStamp timestamp) {
@@ -63,6 +66,9 @@ void IntersectionObservation::computeIntersectionObservations(
     newVisibleRatio = 0;
     newThresholdIndex = 0;
   }
+
+  RELEASE_ASSERT(newThresholdIndex < kMaxThresholdIndex);
+
   if (m_lastThresholdIndex != newThresholdIndex) {
     IntRect snappedRootBounds = geometry.rootIntRect();
     IntRect* rootBoundsPointer =

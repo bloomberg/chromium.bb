@@ -91,16 +91,16 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
 
   compositor().beginFrame();
   testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 0);
+  EXPECT_EQ(observerCallback->callCount(), 1);
 
   // When document is not suspended, beginFrame() will generate notifications
   // and post a task to deliver them.
   document().view()->layoutViewportScrollableArea()->setScrollOffset(
       ScrollOffset(0, 300), ProgrammaticScroll);
   compositor().beginFrame();
-  EXPECT_EQ(observerCallback->callCount(), 0);
-  testing::runPendingTasks();
   EXPECT_EQ(observerCallback->callCount(), 1);
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 2);
 
   // When a document is suspended, beginFrame() will generate a notification,
   // but it will not be delivered.  The notification will, however, be
@@ -109,9 +109,9 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   document().view()->layoutViewportScrollableArea()->setScrollOffset(
       ScrollOffset(0, 0), ProgrammaticScroll);
   compositor().beginFrame();
-  EXPECT_EQ(observerCallback->callCount(), 1);
+  EXPECT_EQ(observerCallback->callCount(), 2);
   testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 1);
+  EXPECT_EQ(observerCallback->callCount(), 2);
   EXPECT_FALSE(observer->takeRecords(exceptionState).isEmpty());
 
   // Generate a notification while document is suspended; then resume document.
@@ -120,11 +120,11 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
       ScrollOffset(0, 300), ProgrammaticScroll);
   compositor().beginFrame();
   testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 1);
-  document().resumeScheduledTasks();
-  EXPECT_EQ(observerCallback->callCount(), 1);
-  testing::runPendingTasks();
   EXPECT_EQ(observerCallback->callCount(), 2);
+  document().resumeScheduledTasks();
+  EXPECT_EQ(observerCallback->callCount(), 2);
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 3);
 }
 
 }  // namespace blink

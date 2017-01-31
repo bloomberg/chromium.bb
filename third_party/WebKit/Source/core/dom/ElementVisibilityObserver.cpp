@@ -31,8 +31,6 @@ void ElementVisibilityObserver::start() {
                            wrapWeakPersistent(this)));
   DCHECK(m_intersectionObserver);
 
-  m_intersectionObserver->setInitialState(
-      IntersectionObserver::InitialState::kAuto);
   m_intersectionObserver->observe(m_element.release());
 }
 
