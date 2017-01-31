@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_cycle_event_filter_aura.h"
 
+#include "ash/common/accelerators/debug_commands.h"
 #include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm_shell.h"
@@ -27,14 +28,15 @@ WindowCycleEventFilterAura::~WindowCycleEventFilterAura() {
 }
 
 void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
-  // Until the alt key is released, all key events except the tab press (which
-  // is handled by the accelerator controller to call Step) are handled by this
-  // window cycle controller: https://crbug.com/340339.
-  if (event->key_code() != ui::VKEY_TAB ||
-      event->type() != ui::ET_KEY_PRESSED) {
+  // Until the alt key is released, all key events except the trigger key press
+  // (which is handled by the accelerator controller to call Step) are handled
+  // by this window cycle controller: https://crbug.com/340339.
+  bool is_trigger_key = event->key_code() == ui::VKEY_TAB ||
+                        (debug::DeveloperAcceleratorsEnabled() &&
+                         event->key_code() == ui::VKEY_W);
+  if (!is_trigger_key || event->type() != ui::ET_KEY_PRESSED)
     event->StopPropagation();
-  }
-  if (event->key_code() == ui::VKEY_TAB) {
+  if (is_trigger_key) {
     if (event->type() == ui::ET_KEY_RELEASED) {
       repeat_timer_.Stop();
     } else if (event->type() == ui::ET_KEY_PRESSED && event->is_repeat() &&
