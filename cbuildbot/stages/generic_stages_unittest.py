@@ -406,6 +406,27 @@ class BuilderStageTest(AbstractStageTestCase):
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
+  def testRunExitEarlyException(self):
+    """Verify stage exit early exceptions are handled."""
+    class TestError(Exception):
+      """Unique test exception"""
+
+    perform_mock = self.PatchObject(generic_stages.BuilderStage, 'PerformStage')
+    perform_mock.side_effect = TestError('fail!')
+
+    stage = self.ConstructStage()
+    results_lib.Results.Clear()
+    self.assertRaises(failures_lib.StepFailure, self._RunCapture, stage)
+
+    results = results_lib.Results.Get()[0]
+    self.assertTrue(isinstance(results.result, TestError))
+    self.assertEqual(str(results.result), 'fail!')
+    self.mock_cidb.StartBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID)
+    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID,
+        constants.BUILDER_STATUS_FAILED)
+
   def testRunWithWaitFailure(self):
     """Test Run when WaitUntilReady returns False"""
     stage = self.ConstructStage()
