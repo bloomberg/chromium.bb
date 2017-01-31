@@ -24,6 +24,8 @@ class URLRequest;
 
 namespace content {
 
+class ResourceController;
+
 // ResourceHandler that initiates special handling of the response if needed,
 // based on the response's MIME type (starts downloads, sends data to some
 // plugin types via a special channel).
@@ -33,28 +35,24 @@ namespace content {
 //  - OnResponseStarted on |next_handler| never sets |*defer|.
 //  - OnResponseCompleted on |next_handler| never sets |*defer|.
 class CONTENT_EXPORT InterceptingResourceHandler
-    : public LayeredResourceHandler,
-      public ResourceController {
+    : public LayeredResourceHandler {
  public:
   InterceptingResourceHandler(std::unique_ptr<ResourceHandler> next_handler,
                               net::URLRequest* request);
   ~InterceptingResourceHandler() override;
 
   // ResourceHandler implementation:
-  void SetController(ResourceController* controller) override;
-  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  void OnResponseStarted(
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;
-  bool OnReadCompleted(int bytes_read, bool* defer) override;
-  void OnResponseCompleted(const net::URLRequestStatus& status,
-                           bool* defer) override;
-
-  // ResourceController implementation:
-  void Cancel() override;
-  void CancelAndIgnore() override;
-  void CancelWithError(int error_code) override;
-  void Resume() override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
+  void OnResponseCompleted(
+      const net::URLRequestStatus& status,
+      std::unique_ptr<ResourceController> controller) override;
 
   // Replaces the next handler with |new_handler|, sending
   // |payload_for_old_handler| to the old handler. Must be called after
@@ -70,11 +68,19 @@ class CONTENT_EXPORT InterceptingResourceHandler
   }
 
  private:
+  // ResourceController subclass that calls into the InterceptingResourceHandler
+  // on cancel/resume.
+  class Controller;
+
   enum class State {
     // The InterceptingResourceHandler is waiting for the mime type of the
     // response to be identified, to check if the next handler should be
     // replaced with an appropriate one.
     STARTING,
+
+    // The InterceptingResourceHandler is starting the process of swapping
+    // handlers.
+    SWAPPING_HANDLERS,
 
     // The InterceptingResourceHandler is sending the payload given via
     // UseNewHandler to the old handler and waiting for its completion via
@@ -108,18 +114,15 @@ class CONTENT_EXPORT InterceptingResourceHandler
     PASS_THROUGH,
   };
 
-  // Runs necessary operations depending on |state_|. Returns false when an
-  // error happens, and set |*defer| to true if the operation continues upon
-  // return.
-  bool DoLoop(bool* defer);
+  // Runs necessary operations depending on |state_|.
+  void DoLoop();
 
-  // The return value and |defer| has the same meaning as DoLoop.
-  bool SendPayloadToOldHandler(bool* defer);
-  bool SendFirstReadBufferToNewHandler(bool* defer);
-  bool SendOnResponseStartedToNewHandler(bool* defer);
+  void ResumeInternal();
 
-  // Wraps calls to DoLoop. Resumes or Cancels underlying request, if needed.
-  void AdvanceState();
+  void SendOnResponseStartedToOldHandler();
+  void SendPayloadToOldHandler();
+  void SendFirstReadBufferToNewHandler();
+  void SendOnResponseStartedToNewHandler();
 
   State state_ = State::STARTING;
 
@@ -138,6 +141,14 @@ class CONTENT_EXPORT InterceptingResourceHandler
   size_t first_read_buffer_bytes_written_ = 0;
 
   scoped_refptr<ResourceResponse> response_;
+
+  // Next two values are used to handle synchronous Resume calls without a
+  // PostTask.
+
+  // True if the code is currently within a DoLoop.
+  bool in_do_loop_ = false;
+  // True if the request was resumed while |in_do_loop_| was true;
+  bool advance_to_next_state_ = false;
 
   base::WeakPtrFactory<InterceptingResourceHandler> weak_ptr_factory_;
 

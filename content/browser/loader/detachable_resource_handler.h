@@ -22,6 +22,8 @@ class URLRequest;
 
 namespace content {
 
+class ResourceController;
+
 // A ResourceHandler which delegates all calls to the next handler, unless
 // detached. Once detached, it drives the request to completion itself. This is
 // used for requests which outlive the owning renderer, such as <link
@@ -32,13 +34,14 @@ namespace content {
 //
 // Note that, once detached, the request continues without the original next
 // handler, so any policy decisions in that handler are skipped.
-class DetachableResourceHandler : public ResourceHandler,
-                                  public ResourceController {
+class DetachableResourceHandler : public ResourceHandler {
  public:
   DetachableResourceHandler(net::URLRequest* request,
                             base::TimeDelta cancel_delay,
                             std::unique_ptr<ResourceHandler> next_handler);
   ~DetachableResourceHandler() override;
+
+  void SetDelegate(Delegate* delegate) override;
 
   bool is_detached() const { return next_handler_ == NULL; }
   void Detach();
@@ -48,34 +51,36 @@ class DetachableResourceHandler : public ResourceHandler,
   }
 
   // ResourceHandler implementation:
-  void SetController(ResourceController* controller) override;
-  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                           ResourceResponse* response,
-                           bool* defer) override;
-  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
-  bool OnWillStart(const GURL& url, bool* defer) override;
+  void OnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
+  void OnResponseStarted(
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
+  void OnWillStart(const GURL& url,
+                   std::unique_ptr<ResourceController> controller) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;
-  bool OnReadCompleted(int bytes_read, bool* defer) override;
-  void OnResponseCompleted(const net::URLRequestStatus& status,
-                           bool* defer) override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
+  void OnResponseCompleted(
+      const net::URLRequestStatus& status,
+      std::unique_ptr<ResourceController> controller) override;
   void OnDataDownloaded(int bytes_downloaded) override;
 
-  // ResourceController implementation:
-  void Resume() override;
-  void Cancel() override;
-  void CancelAndIgnore() override;
-  void CancelWithError(int error_code) override;
-
  private:
+  class Controller;
+
+  void OnTimedOut();
+
   std::unique_ptr<ResourceHandler> next_handler_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
   std::unique_ptr<base::OneShotTimer> detached_timer_;
   base::TimeDelta cancel_delay_;
 
-  bool is_deferred_;
   bool is_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(DetachableResourceHandler);

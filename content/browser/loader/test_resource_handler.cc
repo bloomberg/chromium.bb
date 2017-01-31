@@ -5,6 +5,7 @@
 #include "content/browser/loader/test_resource_handler.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/public/common/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,14 +49,10 @@ TestResourceHandler::TestResourceHandler()
 
 TestResourceHandler::~TestResourceHandler() {}
 
-void TestResourceHandler::SetController(ResourceController* controller) {
-  controller_ = controller;
-}
-
-bool TestResourceHandler::OnRequestRedirected(
+void TestResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
   EXPECT_EQ(1, on_will_start_called_);
   EXPECT_EQ(0, on_response_started_called_);
@@ -66,18 +63,23 @@ bool TestResourceHandler::OnRequestRedirected(
 
   if (!on_request_redirected_result_) {
     canceled_ = true;
-    return false;
+    controller->Cancel();
+    return;
   }
 
-  *defer = defer_on_request_redirected_;
-  defer_on_request_redirected_ = false;
-  if (*defer)
+  if (defer_on_request_redirected_) {
+    defer_on_request_redirected_ = false;
+    HoldController(std::move(controller));
     deferred_run_loop_->Quit();
-  return true;
+    return;
+  }
+
+  controller->Resume();
 }
 
-bool TestResourceHandler::OnResponseStarted(ResourceResponse* response,
-                                            bool* defer) {
+void TestResourceHandler::OnResponseStarted(
+    ResourceResponse* response,
+    std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
   EXPECT_EQ(1, on_will_start_called_);
   EXPECT_EQ(0, on_response_started_called_);
@@ -91,17 +93,28 @@ bool TestResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   if (!on_response_started_result_) {
     canceled_ = true;
-    return false;
+    controller->Cancel();
+    return;
   }
 
-  *defer = defer_on_response_started_;
-  defer_on_response_started_ = false;
-  if (*defer)
+  if (!on_request_redirected_result_) {
+    controller->Cancel();
+    return;
+  }
+
+  if (defer_on_response_started_) {
+    defer_on_response_started_ = false;
+    HoldController(std::move(controller));
     deferred_run_loop_->Quit();
-  return true;
+    return;
+  }
+
+  controller->Resume();
 }
 
-bool TestResourceHandler::OnWillStart(const GURL& url, bool* defer) {
+void TestResourceHandler::OnWillStart(
+    const GURL& url,
+    std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
   EXPECT_EQ(0, on_response_started_called_);
   EXPECT_EQ(0, on_will_start_called_);
@@ -114,13 +127,18 @@ bool TestResourceHandler::OnWillStart(const GURL& url, bool* defer) {
 
   if (!on_will_start_result_) {
     canceled_ = true;
-    return false;
+    controller->Cancel();
+    return;
   }
 
-  *defer = defer_on_will_start_;
-  if (*defer)
+  if (defer_on_will_start_) {
+    defer_on_will_start_ = false;
+    HoldController(std::move(controller));
     deferred_run_loop_->Quit();
-  return true;
+    return;
+  }
+
+  controller->Resume();
 }
 
 bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
@@ -129,7 +147,12 @@ bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   EXPECT_FALSE(canceled_);
   EXPECT_FALSE(expect_on_data_downloaded_);
   EXPECT_EQ(0, on_response_completed_called_);
-  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
+  // Only create a ScopedCallDepthTracker if not called re-entrantly, as
+  // OnWillRead may be called synchronously in response to a Resume(), but
+  // nothing may be called synchronously in response to the OnWillRead call.
+  std::unique_ptr<ScopedCallDepthTracker> call_depth_tracker;
+  if (call_depth_ == 0)
+    call_depth_tracker = base::MakeUnique<ScopedCallDepthTracker>(&call_depth_);
 
   ++on_will_read_called_;
 
@@ -144,7 +167,9 @@ bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   return on_will_read_result_;
 }
 
-bool TestResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
+void TestResourceHandler::OnReadCompleted(
+    int bytes_read,
+    std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
   EXPECT_FALSE(expect_on_data_downloaded_);
   EXPECT_EQ(1, on_will_start_called_);
@@ -164,23 +189,23 @@ bool TestResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
   if (!on_read_completed_result_ || (!on_read_eof_result_ && bytes_read == 0)) {
     canceled_ = true;
-    return false;
+    controller->Cancel();
+    return;
   }
 
-  *defer = defer_on_read_completed_;
-  defer_on_read_completed_ = false;
-  if (bytes_read == 0 && defer_on_read_eof_)
-    *defer = true;
-
-  if (*defer)
+  if (defer_on_read_completed_ || (bytes_read == 0 && defer_on_read_eof_)) {
+    defer_on_read_completed_ = false;
+    HoldController(std::move(controller));
     deferred_run_loop_->Quit();
+    return;
+  }
 
-  return true;
+  controller->Resume();
 }
 
 void TestResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
 
   EXPECT_EQ(0, on_response_completed_called_);
@@ -192,12 +217,19 @@ void TestResourceHandler::OnResponseCompleted(
   if (request_status_ptr_)
     *request_status_ptr_ = status;
   final_status_ = status;
-  *defer = defer_on_response_completed_;
-  defer_on_response_completed_ = false;
 
-  if (*defer)
-    deferred_run_loop_->Quit();
+  // Consider response completed.  Even if deferring, the TestResourceHandler
+  // won't be called again.
   response_complete_run_loop_.Quit();
+
+  if (defer_on_response_completed_) {
+    defer_on_response_completed_ = false;
+    HoldController(std::move(controller));
+    deferred_run_loop_->Quit();
+    return;
+  }
+
+  controller->Resume();
 }
 
 void TestResourceHandler::OnDataDownloaded(int bytes_downloaded) {
@@ -211,13 +243,13 @@ void TestResourceHandler::OnDataDownloaded(int bytes_downloaded) {
 
 void TestResourceHandler::Resume() {
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
-  controller_->Resume();
+  ResourceHandler::Resume();
 }
 
 void TestResourceHandler::CancelWithError(net::Error net_error) {
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
   canceled_ = true;
-  controller_->CancelWithError(net_error);
+  ResourceHandler::CancelWithError(net_error);
 }
 
 void TestResourceHandler::SetBufferSize(int buffer_size) {

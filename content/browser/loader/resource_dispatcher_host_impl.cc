@@ -53,6 +53,7 @@
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
+#include "content/browser/loader/null_resource_controller.h"
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_loader.h"
@@ -2345,12 +2346,14 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     // status -- it has no effect beyond this, since the request hasn't started.
     request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
 
-    bool defer = false;
-    handler->OnResponseCompleted(request->status(), &defer);
-    if (defer) {
-      // TODO(darin): The handler is not ready for us to kill the request. Oops!
-      NOTREACHED();
-    }
+    bool was_resumed = false;
+    // TODO(mmenke): Get rid of NullResourceController and do something more
+    // reasonable.
+    handler->OnResponseCompleted(
+        request->status(),
+        base::MakeUnique<NullResourceController>(&was_resumed));
+    // TODO(darin): The handler is not ready for us to kill the request. Oops!
+    DCHECK(was_resumed);
 
     IncrementOutstandingRequestsMemory(-1, *info);
 

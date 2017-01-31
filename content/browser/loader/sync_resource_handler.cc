@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "content/browser/loader/netlog_observer.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/common/resource_messages.h"
@@ -35,10 +36,10 @@ SyncResourceHandler::~SyncResourceHandler() {
     result_handler_.Run(nullptr);
 }
 
-bool SyncResourceHandler::OnRequestRedirected(
+void SyncResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   if (rdh_->delegate()) {
     rdh_->delegate()->OnRequestRedirected(
         redirect_info.new_url, request(), GetRequestInfo()->GetContext(),
@@ -51,21 +52,24 @@ bool SyncResourceHandler::OnRequestRedirected(
   // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
   if (redirect_info.new_url.GetOrigin() != result_.final_url.GetOrigin()) {
     LOG(ERROR) << "Cross origin redirect denied";
-    return false;
+    controller->Cancel();
+    return;
   }
   result_.final_url = redirect_info.new_url;
 
   total_transfer_size_ += request()->GetTotalReceivedBytes();
-  return true;
+  controller->Resume();
 }
 
-bool SyncResourceHandler::OnResponseStarted(
+void SyncResourceHandler::OnResponseStarted(
     ResourceResponse* response,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
   DCHECK(info->requester_info()->IsRenderer());
-  if (!info->requester_info()->filter())
-    return false;
+  if (!info->requester_info()->filter()) {
+    controller->Cancel();
+    return;
+  }
 
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(request(), info->GetContext(),
@@ -83,11 +87,13 @@ bool SyncResourceHandler::OnResponseStarted(
   result_.response_time = response->head.response_time;
   result_.load_timing = response->head.load_timing;
   result_.devtools_info = response->head.devtools_info;
-  return true;
+  controller->Resume();
 }
 
-bool SyncResourceHandler::OnWillStart(const GURL& url, bool* defer) {
-  return true;
+void SyncResourceHandler::OnWillStart(
+    const GURL& url,
+    std::unique_ptr<ResourceController> controller) {
+  controller->Resume();
 }
 
 bool SyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
@@ -99,16 +105,17 @@ bool SyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   return true;
 }
 
-bool SyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
-  if (!bytes_read)
-    return true;
-  result_.data.append(read_buffer_->data(), bytes_read);
-  return true;
+void SyncResourceHandler::OnReadCompleted(
+    int bytes_read,
+    std::unique_ptr<ResourceController> controller) {
+  if (bytes_read)
+    result_.data.append(read_buffer_->data(), bytes_read);
+  controller->Resume();
 }
 
 void SyncResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   result_.error_code = status.error();
 
   int total_transfer_size = request()->GetTotalReceivedBytes();
@@ -116,6 +123,8 @@ void SyncResourceHandler::OnResponseCompleted(
   result_.encoded_body_length = request()->GetRawBodyBytes();
 
   base::ResetAndReturn(&result_handler_).Run(&result_);
+
+  controller->Resume();
 }
 
 void SyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {

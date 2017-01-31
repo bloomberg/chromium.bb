@@ -26,6 +26,7 @@ class URLRequest;
 namespace content {
 class ByteStreamReader;
 struct DownloadCreateInfo;
+class ResourceController;
 
 // Forwards data to the download thread.
 class CONTENT_EXPORT DownloadResourceHandler
@@ -49,15 +50,19 @@ class CONTENT_EXPORT DownloadResourceHandler
   // ResourceDispatcherHostImpl.
   static std::unique_ptr<ResourceHandler> Create(net::URLRequest* request);
 
-  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                           ResourceResponse* response,
-                           bool* defer) override;
+  void OnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
 
   // Send the download creation information to the download thread.
-  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  void OnResponseStarted(
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
 
   // Pass-through implementation.
-  bool OnWillStart(const GURL& url, bool* defer) override;
+  void OnWillStart(const GURL& url,
+                   std::unique_ptr<ResourceController> controller) override;
 
   // Create a new buffer, which will be handed to the download thread for file
   // writing and deletion.
@@ -65,10 +70,12 @@ class CONTENT_EXPORT DownloadResourceHandler
                   int* buf_size,
                   int min_size) override;
 
-  bool OnReadCompleted(int bytes_read, bool* defer) override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
 
-  void OnResponseCompleted(const net::URLRequestStatus& status,
-                           bool* defer) override;
+  void OnResponseCompleted(
+      const net::URLRequestStatus& status,
+      std::unique_ptr<ResourceController> controller) override;
 
   // N/A to this flavor of DownloadHandler.
   void OnDataDownloaded(int bytes_downloaded) override;
@@ -100,6 +107,7 @@ class CONTENT_EXPORT DownloadResourceHandler
   std::unique_ptr<DownloadTabInfo> tab_info_;
 
   DownloadRequestCore core_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadResourceHandler);
 };
 

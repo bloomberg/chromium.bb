@@ -32,93 +32,116 @@ ThrottlingResourceHandler::ThrottlingResourceHandler(
 ThrottlingResourceHandler::~ThrottlingResourceHandler() {
 }
 
-bool ThrottlingResourceHandler::OnRequestRedirected(
+void ThrottlingResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
+  DCHECK(!has_controller());
   DCHECK(!cancelled_by_resource_throttle_);
-  DCHECK(!*defer);
 
+  HoldController(std::move(controller));
   while (next_index_ < throttles_.size()) {
     int index = next_index_;
-    throttles_[index]->WillRedirectRequest(redirect_info, defer);
+    bool defer = false;
+    throttles_[index]->WillRedirectRequest(redirect_info, &defer);
     next_index_++;
     if (cancelled_by_resource_throttle_)
-      return false;
-    if (*defer) {
+      return;
+
+    if (defer) {
       OnRequestDeferred(index);
       deferred_stage_ = DEFERRED_REDIRECT;
       deferred_redirect_ = redirect_info;
       deferred_response_ = response;
-      return true;  // Do not cancel.
+      return;
     }
   }
 
   next_index_ = 0;  // Reset for next time.
 
-  return next_handler_->OnRequestRedirected(redirect_info, response, defer);
+  next_handler_->OnRequestRedirected(redirect_info, response,
+                                     ReleaseController());
 }
 
-bool ThrottlingResourceHandler::OnWillStart(const GURL& url, bool* defer) {
+void ThrottlingResourceHandler::OnWillStart(
+    const GURL& url,
+    std::unique_ptr<ResourceController> controller) {
   DCHECK(!cancelled_by_resource_throttle_);
-  DCHECK(!*defer);
+  DCHECK(!has_controller());
 
+  HoldController(std::move(controller));
   while (next_index_ < throttles_.size()) {
     int index = next_index_;
-    throttles_[index]->WillStartRequest(defer);
+    bool defer = false;
+    throttles_[index]->WillStartRequest(&defer);
     next_index_++;
     if (cancelled_by_resource_throttle_)
-      return false;
-    if (*defer) {
+      return;
+    if (defer) {
       OnRequestDeferred(index);
       deferred_stage_ = DEFERRED_START;
       deferred_url_ = url;
-      return true;  // Do not cancel.
+      return;
     }
   }
 
   next_index_ = 0;  // Reset for next time.
 
-  return next_handler_->OnWillStart(url, defer);
+  return next_handler_->OnWillStart(url, ReleaseController());
 }
 
-bool ThrottlingResourceHandler::OnResponseStarted(ResourceResponse* response,
-                                                  bool* defer) {
+void ThrottlingResourceHandler::OnResponseStarted(
+    ResourceResponse* response,
+    std::unique_ptr<ResourceController> controller) {
   DCHECK(!cancelled_by_resource_throttle_);
-  DCHECK(!*defer);
+  DCHECK(!has_controller());
 
+  HoldController(std::move(controller));
   while (next_index_ < throttles_.size()) {
     int index = next_index_;
-    throttles_[index]->WillProcessResponse(defer);
+    bool defer = false;
+    throttles_[index]->WillProcessResponse(&defer);
     next_index_++;
     if (cancelled_by_resource_throttle_)
-      return false;
-    if (*defer) {
+      return;
+    if (defer) {
       OnRequestDeferred(index);
       deferred_stage_ = DEFERRED_RESPONSE;
       deferred_response_ = response;
-      return true;  // Do not cancel.
+      return;
     }
   }
 
   next_index_ = 0;  // Reset for next time.
 
-  return next_handler_->OnResponseStarted(response, defer);
+  return next_handler_->OnResponseStarted(response, ReleaseController());
 }
 
 void ThrottlingResourceHandler::Cancel() {
+  if (!has_controller()) {
+    OutOfBandCancel(net::ERR_ABORTED, false /* tell_renderer */);
+    return;
+  }
   cancelled_by_resource_throttle_ = true;
-  controller()->Cancel();
+  ResourceHandler::Cancel();
 }
 
 void ThrottlingResourceHandler::CancelAndIgnore() {
+  if (!has_controller()) {
+    OutOfBandCancel(net::ERR_ABORTED, false /* tell_renderer */);
+    return;
+  }
   cancelled_by_resource_throttle_ = true;
-  controller()->CancelAndIgnore();
+  ResourceHandler::CancelAndIgnore();
 }
 
 void ThrottlingResourceHandler::CancelWithError(int error_code) {
+  if (!has_controller()) {
+    OutOfBandCancel(error_code, false /* tell_renderer */);
+    return;
+  }
   cancelled_by_resource_throttle_ = true;
-  controller()->CancelWithError(error_code);
+  ResourceHandler::CancelWithError(error_code);
 }
 
 void ThrottlingResourceHandler::Resume() {
@@ -128,6 +151,8 @@ void ThrottlingResourceHandler::Resume() {
   // currently active throttle called Cancel() or if it was another one.
   if (cancelled_by_resource_throttle_)
     return;
+
+  DCHECK(has_controller());
 
   DeferredStage last_deferred_stage = deferred_stage_;
   deferred_stage_ = DEFERRED_NONE;
@@ -151,46 +176,34 @@ void ThrottlingResourceHandler::Resume() {
 
 void ThrottlingResourceHandler::ResumeStart() {
   DCHECK(!cancelled_by_resource_throttle_);
+  DCHECK(has_controller());
 
   GURL url = deferred_url_;
   deferred_url_ = GURL();
 
-  bool defer = false;
-  if (!OnWillStart(url, &defer)) {
-    controller()->Cancel();
-  } else if (!defer) {
-    controller()->Resume();
-  }
+  OnWillStart(url, ReleaseController());
 }
 
 void ThrottlingResourceHandler::ResumeRedirect() {
   DCHECK(!cancelled_by_resource_throttle_);
+  DCHECK(has_controller());
 
   net::RedirectInfo redirect_info = deferred_redirect_;
   deferred_redirect_ = net::RedirectInfo();
   scoped_refptr<ResourceResponse> response;
   deferred_response_.swap(response);
 
-  bool defer = false;
-  if (!OnRequestRedirected(redirect_info, response.get(), &defer)) {
-    controller()->Cancel();
-  } else if (!defer) {
-    controller()->Resume();
-  }
+  OnRequestRedirected(redirect_info, response.get(), ReleaseController());
 }
 
 void ThrottlingResourceHandler::ResumeResponse() {
   DCHECK(!cancelled_by_resource_throttle_);
+  DCHECK(has_controller());
 
   scoped_refptr<ResourceResponse> response;
   deferred_response_.swap(response);
 
-  bool defer = false;
-  if (!OnResponseStarted(response.get(), &defer)) {
-    controller()->Cancel();
-  } else if (!defer) {
-    controller()->Resume();
-  }
+  OnResponseStarted(response.get(), ReleaseController());
 }
 
 void ThrottlingResourceHandler::OnRequestDeferred(int throttle_index) {

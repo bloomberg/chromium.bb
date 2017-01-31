@@ -20,6 +20,7 @@ class URLRequest;
 }
 
 namespace content {
+class ResourceController;
 class SaveFileManager;
 
 // Forwards data to the save thread.
@@ -50,15 +51,19 @@ class SaveFileResourceHandler : public ResourceHandler {
 
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.
-  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                           ResourceResponse* response,
-                           bool* defer) override;
+  void OnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
 
   // Sends the download creation information to the download thread.
-  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  void OnResponseStarted(
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
 
   // Pass-through implementation.
-  bool OnWillStart(const GURL& url, bool* defer) override;
+  void OnWillStart(const GURL& url,
+                   std::unique_ptr<ResourceController> controller) override;
 
   // Creates a new buffer, which will be handed to the download thread for file
   // writing and deletion.
@@ -67,10 +72,12 @@ class SaveFileResourceHandler : public ResourceHandler {
                   int min_size) override;
 
   // Passes the buffer to the download file writer.
-  bool OnReadCompleted(int bytes_read, bool* defer) override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
 
-  void OnResponseCompleted(const net::URLRequestStatus& status,
-                           bool* defer) override;
+  void OnResponseCompleted(
+      const net::URLRequestStatus& status,
+      std::unique_ptr<ResourceController> controller) override;
 
   // N/A to this flavor of SaveFileResourceHandler.
   void OnDataDownloaded(int bytes_downloaded) override;

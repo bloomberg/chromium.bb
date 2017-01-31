@@ -139,24 +139,34 @@ std::unique_ptr<ResourceHandler> DownloadResourceHandler::Create(
   return handler;
 }
 
-bool DownloadResourceHandler::OnRequestRedirected(
+void DownloadResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
-    bool* defer) {
-  return core_.OnRequestRedirected();
+    std::unique_ptr<ResourceController> controller) {
+  if (core_.OnRequestRedirected()) {
+    controller->Resume();
+  } else {
+    controller->Cancel();
+  }
 }
 
 // Send the download creation information to the download thread.
-bool DownloadResourceHandler::OnResponseStarted(
+void DownloadResourceHandler::OnResponseStarted(
     ResourceResponse* response,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   // The MIME type in ResourceResponse is the product of
   // MimeTypeResourceHandler.
-  return core_.OnResponseStarted(response->head.mime_type);
+  if (core_.OnResponseStarted(response->head.mime_type)) {
+    controller->Resume();
+  } else {
+    controller->Cancel();
+  }
 }
 
-bool DownloadResourceHandler::OnWillStart(const GURL& url, bool* defer) {
-  return true;
+void DownloadResourceHandler::OnWillStart(
+    const GURL& url,
+    std::unique_ptr<ResourceController> controller) {
+  controller->Resume();
 }
 
 // Create a new buffer, which will be handed to the download thread for file
@@ -168,14 +178,29 @@ bool DownloadResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 }
 
 // Pass the buffer to the download file writer.
-bool DownloadResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
-  return core_.OnReadCompleted(bytes_read, defer);
+void DownloadResourceHandler::OnReadCompleted(
+    int bytes_read,
+    std::unique_ptr<ResourceController> controller) {
+  DCHECK(!has_controller());
+
+  bool defer = false;
+  if (!core_.OnReadCompleted(bytes_read, &defer)) {
+    controller->Cancel();
+    return;
+  }
+
+  if (defer) {
+    HoldController(std::move(controller));
+  } else {
+    controller->Resume();
+  }
 }
 
 void DownloadResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   core_.OnResponseCompleted(status);
+  controller->Resume();
 }
 
 void DownloadResourceHandler::OnDataDownloaded(int bytes_downloaded) {
@@ -226,7 +251,7 @@ void DownloadResourceHandler::OnStart(
 
 void DownloadResourceHandler::OnReadyToRead() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  controller()->Resume();
+  Resume();
 }
 
 void DownloadResourceHandler::CancelRequest() {

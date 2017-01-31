@@ -780,22 +780,14 @@ TEST_P(RedirectToFileResourceHandlerTest, FirstWriteFails) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->status());
 
-  net::Error expected_error;
-  if (GetParam() == CompletionMode::ASYNC) {
-    expected_error = net::ERR_FAILED;
-  } else {
-    // An error cannot be passed up in the synchronous failure case.
-    // TODO(mmenke): That is changing, fix this.
-    expected_error = net::ERR_ABORTED;
-  }
-  EXPECT_EQ(expected_error, mock_loader_->error_code());
+  EXPECT_EQ(net::ERR_FAILED, mock_loader_->error_code());
   EXPECT_EQ(0, test_handler_->on_response_completed_called());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseCompleted(
-                net::URLRequestStatus::FromError(expected_error)));
+                net::URLRequestStatus::FromError(net::ERR_FAILED)));
   EXPECT_EQ(0, test_handler_->total_bytes_downloaded());
   EXPECT_FALSE(test_handler_->final_status().is_success());
-  EXPECT_EQ(expected_error, test_handler_->final_status().error());
+  EXPECT_EQ(net::ERR_FAILED, test_handler_->final_status().error());
 }
 
 TEST_P(RedirectToFileResourceHandlerTest, SecondWriteFails) {
@@ -824,22 +816,14 @@ TEST_P(RedirectToFileResourceHandlerTest, SecondWriteFails) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->status());
 
-  net::Error expected_error;
-  if (GetParam() == CompletionMode::ASYNC) {
-    expected_error = net::ERR_FAILED;
-  } else {
-    // An error cannot be passed up in the synchronous failure case.
-    // TODO(mmenke): That is changing, fix this.
-    expected_error = net::ERR_ABORTED;
-  }
-  EXPECT_EQ(expected_error, mock_loader_->error_code());
+  EXPECT_EQ(net::ERR_FAILED, mock_loader_->error_code());
   EXPECT_EQ(0, test_handler_->on_response_completed_called());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseCompleted(
-                net::URLRequestStatus::FromError(expected_error)));
+                net::URLRequestStatus::FromError(net::ERR_FAILED)));
   EXPECT_EQ(kFirstWriteSize, test_handler_->total_bytes_downloaded());
   EXPECT_FALSE(test_handler_->final_status().is_success());
-  EXPECT_EQ(expected_error, test_handler_->final_status().error());
+  EXPECT_EQ(net::ERR_FAILED, test_handler_->final_status().error());
 }
 
 INSTANTIATE_TEST_CASE_P(/* No prefix needed */,

@@ -8,15 +8,48 @@
 
 namespace content {
 
+ResourceHandler::Delegate::Delegate() {}
+
+ResourceHandler::Delegate::~Delegate() {}
+
+void ResourceHandler::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+}
+
 ResourceHandler::~ResourceHandler() {}
 
 ResourceHandler::ResourceHandler(net::URLRequest* request)
-    : controller_(NULL),
-      request_(request) {
+    : request_(request) {}
+
+void ResourceHandler::HoldController(
+    std::unique_ptr<ResourceController> controller) {
+  controller_ = std::move(controller);
 }
 
-void ResourceHandler::SetController(ResourceController* controller) {
-  controller_ = controller;
+std::unique_ptr<ResourceController> ResourceHandler::ReleaseController() {
+  DCHECK(controller_);
+
+  return std::move(controller_);
+}
+
+void ResourceHandler::Resume() {
+  ReleaseController()->Resume();
+}
+
+void ResourceHandler::Cancel() {
+  ReleaseController()->Cancel();
+}
+
+void ResourceHandler::CancelAndIgnore() {
+  ReleaseController()->CancelAndIgnore();
+}
+
+void ResourceHandler::CancelWithError(int error_code) {
+  ReleaseController()->CancelWithError(error_code);
+}
+
+void ResourceHandler::OutOfBandCancel(int error_code, bool tell_renderer) {
+  delegate_->OutOfBandCancel(error_code, tell_renderer);
 }
 
 ResourceRequestInfoImpl* ResourceHandler::GetRequestInfo() const {

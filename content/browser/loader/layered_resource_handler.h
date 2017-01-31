@@ -16,6 +16,8 @@ class URLRequest;
 
 namespace content {
 
+class ResourceController;
+
 // A ResourceHandler that simply delegates all calls to a next handler.  This
 // class is intended to be subclassed.
 class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
@@ -25,18 +27,24 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
   ~LayeredResourceHandler() override;
 
   // ResourceHandler implementation:
-  void SetController(ResourceController* controller) override;
-  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                           ResourceResponse* response,
-                           bool* defer) override;
-  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
-  bool OnWillStart(const GURL& url, bool* defer) override;
+  void SetDelegate(Delegate* delegate) override;
+  void OnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
+  void OnResponseStarted(
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
+  void OnWillStart(const GURL& url,
+                   std::unique_ptr<ResourceController> controller) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;
-  bool OnReadCompleted(int bytes_read, bool* defer) override;
-  void OnResponseCompleted(const net::URLRequestStatus& status,
-                           bool* defer) override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
+  void OnResponseCompleted(
+      const net::URLRequestStatus& status,
+      std::unique_ptr<ResourceController> controller) override;
   void OnDataDownloaded(int bytes_downloaded) override;
 
   std::unique_ptr<ResourceHandler> next_handler_;

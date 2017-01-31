@@ -4,7 +4,9 @@
 
 #include "content/browser/loader/stream_resource_handler.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "content/browser/loader/resource_controller.h"
 #include "net/url_request/url_request_status.h"
 
 namespace content {
@@ -13,31 +15,32 @@ StreamResourceHandler::StreamResourceHandler(net::URLRequest* request,
                                              StreamRegistry* registry,
                                              const GURL& origin)
     : ResourceHandler(request) {
-  writer_.InitializeStream(registry, origin);
+  writer_.InitializeStream(registry, origin,
+                           base::Bind(&StreamResourceHandler::OutOfBandCancel,
+                                      base::Unretained(this), net::ERR_ABORTED,
+                                      true /* tell_renderer */));
 }
 
 StreamResourceHandler::~StreamResourceHandler() {
 }
 
-void StreamResourceHandler::SetController(ResourceController* controller) {
-  writer_.set_controller(controller);
-  ResourceHandler::SetController(controller);
-}
-
-bool StreamResourceHandler::OnRequestRedirected(
+void StreamResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* resp,
-    bool* defer) {
-  return true;
+    std::unique_ptr<ResourceController> controller) {
+  controller->Resume();
 }
 
-bool StreamResourceHandler::OnResponseStarted(ResourceResponse* resp,
-                                              bool* defer) {
-  return true;
+void StreamResourceHandler::OnResponseStarted(
+    ResourceResponse* resp,
+    std::unique_ptr<ResourceController> controller) {
+  controller->Resume();
 }
 
-bool StreamResourceHandler::OnWillStart(const GURL& url, bool* defer) {
-  return true;
+void StreamResourceHandler::OnWillStart(
+    const GURL& url,
+    std::unique_ptr<ResourceController> controller) {
+  controller->Resume();
 }
 
 bool StreamResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
@@ -47,15 +50,19 @@ bool StreamResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   return true;
 }
 
-bool StreamResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
-  writer_.OnReadCompleted(bytes_read, defer);
-  return true;
+void StreamResourceHandler::OnReadCompleted(
+    int bytes_read,
+    std::unique_ptr<ResourceController> controller) {
+  writer_.OnReadCompleted(bytes_read,
+                          base::Bind(&ResourceController::Resume,
+                                     base::Passed(std::move(controller))));
 }
 
 void StreamResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   writer_.Finalize(status.error());
+  controller->Resume();
 }
 
 void StreamResourceHandler::OnDataDownloaded(int bytes_downloaded) {

@@ -43,24 +43,27 @@ class TestResourceHandler : public ResourceHandler {
   ~TestResourceHandler() override;
 
   // ResourceHandler implementation:
-  void SetController(ResourceController* controller) override;
-  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                           ResourceResponse* response,
-                           bool* defer) override;
-  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
-  bool OnWillStart(const GURL& url, bool* defer) override;
+  void OnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
+  void OnResponseStarted(
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
+  void OnWillStart(const GURL& url,
+                   std::unique_ptr<ResourceController> controller) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;
-  bool OnReadCompleted(int bytes_read, bool* defer) override;
-  void OnResponseCompleted(const net::URLRequestStatus& status,
-                           bool* defer) override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
+  void OnResponseCompleted(
+      const net::URLRequestStatus& status,
+      std::unique_ptr<ResourceController> controller) override;
   void OnDataDownloaded(int bytes_downloaded) override;
 
-  // Invoke the corresponding methods on the ResourceHandler's
-  // ResourceController.
   void Resume();
-  void CancelWithError(net::Error net_error);
+  void CancelWithError(net::Error error_code);
 
   // Sets the size of the read buffer returned by OnWillRead. Releases reference
   // to previous read buffer. Default size is 2048 bytes.
@@ -168,8 +171,6 @@ class TestResourceHandler : public ResourceHandler {
 
   scoped_refptr<net::IOBuffer> buffer_;
   size_t buffer_size_;
-
-  ResourceController* controller_;
 
   bool on_will_start_result_ = true;
   bool on_request_redirected_result_ = true;

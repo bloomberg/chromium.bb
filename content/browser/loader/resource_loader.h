@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/loader/resource_controller.h"
+#include "content/browser/loader/resource_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
@@ -34,7 +35,7 @@ class ResourceRequestInfoImpl;
 class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
                                       public SSLErrorHandler::Delegate,
                                       public SSLClientAuthHandler::Delegate,
-                                      public ResourceController {
+                                      public ResourceHandler::Delegate {
  public:
   ResourceLoader(std::unique_ptr<net::URLRequest> request,
                  std::unique_ptr<ResourceHandler> handler,
@@ -53,7 +54,13 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   void ClearLoginDelegate();
 
+  // ResourceHandler::Delegate implementation:
+  void OutOfBandCancel(int error_code, bool tell_renderer) override;
+
  private:
+  // ResourceController implementation for the ResourceLoader.
+  class Controller;
+
   // net::URLRequest::Delegate implementation:
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
@@ -76,17 +83,25 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void ContinueWithCertificate(net::X509Certificate* cert) override;
   void CancelCertificateSelection() override;
 
-  // ResourceController implementation:
-  void Resume() override;
-  void Cancel() override;
-  void CancelAndIgnore() override;
-  void CancelWithError(int error_code) override;
+  // These correspond to Controller's methods.
+  // TODO(mmenke):  Seems like this could be simplified a little.
+
+  // |called_from_resource_controller| is true if called directly from a
+  // ResourceController, in which case |resource_handler_| must not be invoked
+  // or destroyed synchronously to avoid re-entrancy issues, and false
+  // otherwise.
+  void Resume(bool called_from_resource_controller);
+  void Cancel();
+  void CancelAndIgnore();
+  void CancelWithError(int error_code);
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);
   void FollowDeferredRedirectInternal();
   void CompleteResponseStarted();
-  void ReadMore(bool is_continuation);
+  // If |handle_result_async| is true, the result of a read that completed
+  // synchronously will be handled asynchronously, except on EOF or error.
+  void ReadMore(bool handle_result_async);
   void ResumeReading();
   // Passes a read result to the handler.
   void CompleteRead(int bytes_read);
@@ -110,6 +125,12 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   enum DeferredStage {
     DEFERRED_NONE,
+    // Magic deferral "stage" which means that the code is currently in a
+    // recursive call from the ResourceLoader. When in this state, Resume() does
+    // nothing but update the deferral state, and when the stack is unwound back
+    // up to the ResourceLoader, the request will be continued. This is used to
+    // prevent the stack from getting too deep.
+    DEFERRED_SYNC,
     DEFERRED_START,
     DEFERRED_REDIRECT,
     DEFERRED_READ,
@@ -117,6 +138,8 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
     DEFERRED_FINISH
   };
   DeferredStage deferred_stage_;
+
+  class ScopedDeferral;
 
   std::unique_ptr<net::URLRequest> request_;
   std::unique_ptr<ResourceHandler> handler_;

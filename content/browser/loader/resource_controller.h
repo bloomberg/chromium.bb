@@ -16,6 +16,8 @@ namespace content {
 // to cancel load with any other error code.
 class CONTENT_EXPORT ResourceController {
  public:
+  virtual ~ResourceController() {}
+
   virtual void Cancel() = 0;
   virtual void CancelAndIgnore() = 0;
   virtual void CancelWithError(int error_code) = 0;
@@ -24,9 +26,6 @@ class CONTENT_EXPORT ResourceController {
   // deferred. Guaranteed not to call back into the ResourceHandler, or destroy
   // it, synchronously.
   virtual void Resume() = 0;
-
- protected:
-  virtual ~ResourceController() {}
 };
 
 }  // namespace content

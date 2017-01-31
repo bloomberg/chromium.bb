@@ -17,103 +17,90 @@
 
 namespace content {
 
+class MockResourceLoader::TestResourceController : public ResourceController {
+ public:
+  explicit TestResourceController(base::WeakPtr<MockResourceLoader> mock_loader)
+      : mock_loader_(mock_loader) {}
+  ~TestResourceController() override {}
+
+  void Resume() override { mock_loader_->OnResume(); }
+
+  void Cancel() override { CancelWithError(net::ERR_ABORTED); }
+
+  void CancelAndIgnore() override {
+    ADD_FAILURE() << "Unexpected CancelAndIgnore call.";
+    Cancel();
+  }
+
+  void CancelWithError(int error_code) override {
+    mock_loader_->OnCancel(error_code);
+  }
+
+  base::WeakPtr<MockResourceLoader> mock_loader_;
+};
+
 MockResourceLoader::MockResourceLoader(ResourceHandler* resource_handler)
-    : resource_handler_(resource_handler) {
-  resource_handler_->SetController(this);
+    : resource_handler_(resource_handler), weak_factory_(this) {
+  resource_handler_->SetDelegate(this);
 }
 
 MockResourceLoader::~MockResourceLoader() {}
 
 MockResourceLoader::Status MockResourceLoader::OnWillStart(const GURL& url) {
+  EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
-  status_ = Status::CALLING_HANDLER;
 
-  bool defer = false;
-  bool result = resource_handler_->OnWillStart(url, &defer);
-  // The second case isn't really allowed, but a number of classes do it
-  // anyways.
-  EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
-              (result == false && status_ == Status::CANCELED));
-  if (!result) {
-    // In the case of double-cancels, keep the old error code.
-    // TODO(mmenke):  Once there are no more double cancel cases, remove this
-    // code.
-    if (status_ != Status::CANCELED)
-      error_code_ = net::ERR_ABORTED;
-    status_ = Status::CANCELED;
-  } else if (defer) {
+  status_ = Status::CALLING_HANDLER;
+  resource_handler_->OnWillStart(url, base::MakeUnique<TestResourceController>(
+                                          weak_factory_.GetWeakPtr()));
+  if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
-  } else {
-    status_ = Status::IDLE;
-  }
   return status_;
 }
 
 MockResourceLoader::Status MockResourceLoader::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     scoped_refptr<ResourceResponse> response) {
+  EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
-  status_ = Status::CALLING_HANDLER;
 
-  bool defer = false;
+  status_ = Status::CALLING_HANDLER;
   // Note that |this| does not hold onto |response|, to match ResourceLoader's
   // behavior. If |resource_handler_| wants to use |response| asynchronously, it
   // needs to hold onto its own pointer to it.
-  bool result = resource_handler_->OnRequestRedirected(redirect_info,
-                                                       response.get(), &defer);
-  // The second case isn't really allowed, but a number of classes do it
-  // anyways.
-  EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
-              (result == false && status_ == Status::CANCELED));
-  if (!result) {
-    // In the case of double-cancels, keep the old error code.
-    if (status_ != Status::CANCELED)
-      error_code_ = net::ERR_ABORTED;
-    status_ = Status::CANCELED;
-  } else if (defer) {
+  resource_handler_->OnRequestRedirected(
+      redirect_info, response.get(),
+      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+  if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
-  } else {
-    status_ = Status::IDLE;
-  }
   return status_;
 }
 
 MockResourceLoader::Status MockResourceLoader::OnResponseStarted(
     scoped_refptr<ResourceResponse> response) {
+  EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
-  status_ = Status::CALLING_HANDLER;
 
-  bool defer = false;
+  status_ = Status::CALLING_HANDLER;
   // Note that |this| does not hold onto |response|, to match ResourceLoader's
   // behavior. If |resource_handler_| wants to use |response| asynchronously, it
   // needs to hold onto its own pointer to it.
-  bool result = resource_handler_->OnResponseStarted(response.get(), &defer);
-  // The second case isn't really allowed, but a number of classes do it
-  // anyways.
-  EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
-              (result == false && status_ == Status::CANCELED));
-  if (!result) {
-    // In the case of double-cancels, keep the old error code.
-    if (status_ != Status::CANCELED)
-      error_code_ = net::ERR_ABORTED;
-    status_ = Status::CANCELED;
-  } else if (defer) {
+  resource_handler_->OnResponseStarted(
+      response.get(),
+      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+  if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
-  } else {
-    status_ = Status::IDLE;
-  }
   return status_;
 }
 
 MockResourceLoader::Status MockResourceLoader::OnWillRead(int min_size) {
+  EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
-  EXPECT_FALSE(io_buffer_);
-  EXPECT_EQ(0, io_buffer_size_);
 
   status_ = Status::CALLING_HANDLER;
-
   bool result =
       resource_handler_->OnWillRead(&io_buffer_, &io_buffer_size_, min_size);
+
   // The second case isn't really allowed, but a number of classes do it
   // anyways.
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
@@ -136,6 +123,7 @@ MockResourceLoader::Status MockResourceLoader::OnWillRead(int min_size) {
 
 MockResourceLoader::Status MockResourceLoader::OnReadCompleted(
     base::StringPiece bytes) {
+  EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
   EXPECT_LE(bytes.size(), static_cast<size_t>(io_buffer_size_));
 
@@ -143,29 +131,17 @@ MockResourceLoader::Status MockResourceLoader::OnReadCompleted(
   std::copy(bytes.begin(), bytes.end(), io_buffer_->data());
   io_buffer_ = nullptr;
   io_buffer_size_ = 0;
-  status_ = Status::CALLING_HANDLER;
-
-  bool defer = false;
-  bool result = resource_handler_->OnReadCompleted(bytes.size(), &defer);
-  // The second case isn't really allowed, but a number of classes do it
-  // anyways.
-  EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
-              (result == false && status_ == Status::CANCELED));
-  if (!result) {
-    // In the case of double-cancels, keep the old error code.
-    if (status_ != Status::CANCELED)
-      error_code_ = net::ERR_ABORTED;
-    status_ = Status::CANCELED;
-  } else if (defer) {
+  resource_handler_->OnReadCompleted(
+      bytes.size(),
+      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+  if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
-  } else {
-    status_ = Status::IDLE;
-  }
   return status_;
 }
 
 MockResourceLoader::Status MockResourceLoader::OnResponseCompleted(
     const net::URLRequestStatus& status) {
+  EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   // This should only happen while the ResourceLoader is idle or the request was
   // canceled.
   EXPECT_TRUE(status_ == Status::IDLE ||
@@ -175,15 +151,12 @@ MockResourceLoader::Status MockResourceLoader::OnResponseCompleted(
   io_buffer_ = nullptr;
   io_buffer_size_ = 0;
   status_ = Status::CALLING_HANDLER;
-
-  bool defer = false;
-  resource_handler_->OnResponseCompleted(status, &defer);
-  EXPECT_EQ(Status::CALLING_HANDLER, status_);
-  if (defer) {
+  resource_handler_->OnResponseCompleted(
+      status,
+      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+  if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
-  } else {
-    status_ = Status::IDLE;
-  }
+  EXPECT_NE(Status::CANCELED, status_);
   return status_;
 }
 
@@ -198,14 +171,12 @@ MockResourceLoader::OnResponseCompletedFromExternalOutOfBandCancel(
   io_buffer_size_ = 0;
   status_ = Status::CALLING_HANDLER;
 
-  bool defer = false;
-  resource_handler_->OnResponseCompleted(url_request_status, &defer);
-  EXPECT_EQ(Status::CALLING_HANDLER, status_);
-  if (defer) {
+  resource_handler_->OnResponseCompleted(
+      url_request_status,
+      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+  if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
-  } else {
-    status_ = Status::IDLE;
-  }
+  EXPECT_NE(Status::CANCELED, status_);
   return status_;
 }
 
@@ -219,35 +190,42 @@ void MockResourceLoader::WaitUntilIdleOrCanceled() {
   EXPECT_TRUE(status_ == Status::IDLE || status_ == Status::CANCELED);
 }
 
-void MockResourceLoader::Cancel() {
-  CancelWithError(net::ERR_ABORTED);
+void MockResourceLoader::OutOfBandCancel(int error_code, bool tell_renderer) {
+  // Shouldn't be called in-band.
+  EXPECT_NE(Status::CALLING_HANDLER, status_);
+
+  status_ = Status::CANCELED;
+  canceled_out_of_band_ = true;
+
+  // To mimic real behavior, keep old error, in the case of double-cancel.
+  if (error_code_ == net::OK)
+    error_code_ = error_code;
 }
 
-void MockResourceLoader::CancelAndIgnore() {
-  NOTREACHED();
-}
-
-void MockResourceLoader::CancelWithError(int error_code) {
-  EXPECT_LT(error_code, 0);
-  // Ignore double cancels.  Classes shouldn't be doing this, as
-  // ResourceLoader doesn't really support it, but they do anywways.  :(
-  // TODO(mmenke): Remove this check.
-  if (error_code_ != net::OK)
+void MockResourceLoader::OnCancel(int error_code) {
+  // It's currently allowed to be canceled in-band after being cancelled
+  // out-of-band, so do nothing, unless the status is no longer CANCELED, which
+  // which case, OnResponseCompleted has already been called, and cancels aren't
+  // expected then.
+  // TODO(mmenke):  Make CancelOutOfBand synchronously destroy the
+  // ResourceLoader.
+  if (canceled_out_of_band_ && status_ == Status::CANCELED)
     return;
 
-  // ResourceLoader really expects canceled not to be called synchronously, but
-  // a lot of code does it, so allow it.
-  // TODO(mmenke):  Remove CALLING_HANDLER.
+  EXPECT_LT(error_code, 0);
   EXPECT_TRUE(status_ == Status::CALLBACK_PENDING ||
-              status_ == Status::CALLING_HANDLER || status_ == Status::IDLE);
+              status_ == Status::CALLING_HANDLER);
+
   status_ = Status::CANCELED;
   error_code_ = error_code;
   if (canceled_or_idle_run_loop_)
     canceled_or_idle_run_loop_->Quit();
 }
 
-void MockResourceLoader::Resume() {
-  EXPECT_EQ(Status::CALLBACK_PENDING, status_);
+void MockResourceLoader::OnResume() {
+  EXPECT_TRUE(status_ == Status::CALLBACK_PENDING ||
+              status_ == Status::CALLING_HANDLER);
+
   status_ = Status::IDLE;
   if (canceled_or_idle_run_loop_)
     canceled_or_idle_run_loop_->Quit();

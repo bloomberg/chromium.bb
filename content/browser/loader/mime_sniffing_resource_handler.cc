@@ -18,6 +18,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
@@ -65,6 +66,48 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
 
 }  // namespace
 
+class MimeSniffingResourceHandler::Controller : public ResourceController {
+ public:
+  explicit Controller(MimeSniffingResourceHandler* mime_handler)
+      : mime_handler_(mime_handler) {}
+
+  void Resume() override {
+    MarkAsUsed();
+    mime_handler_->ResumeInternal();
+  }
+
+  void Cancel() override {
+    MarkAsUsed();
+    mime_handler_->Cancel();
+  }
+
+  void CancelAndIgnore() override {
+    MarkAsUsed();
+    mime_handler_->CancelAndIgnore();
+  }
+
+  void CancelWithError(int error_code) override {
+    MarkAsUsed();
+    mime_handler_->CancelWithError(error_code);
+  }
+
+ private:
+  void MarkAsUsed() {
+#if DCHECK_IS_ON()
+    DCHECK(!used_);
+    used_ = true;
+#endif
+  }
+
+#if DCHECK_IS_ON()
+  bool used_ = false;
+#endif
+
+  MimeSniffingResourceHandler* mime_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(Controller);
+};
+
 MimeSniffingResourceHandler::MimeSniffingResourceHandler(
     std::unique_ptr<ResourceHandler> next_handler,
     ResourceDispatcherHostImpl* host,
@@ -84,23 +127,18 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       bytes_read_(0),
       intercepting_handler_(intercepting_handler),
       request_context_type_(request_context_type),
+      in_state_loop_(false),
+      advance_state_(false),
       weak_ptr_factory_(this) {
 }
 
 MimeSniffingResourceHandler::~MimeSniffingResourceHandler() {}
 
-void MimeSniffingResourceHandler::SetController(
-    ResourceController* controller) {
-  ResourceHandler::SetController(controller);
+void MimeSniffingResourceHandler::OnWillStart(
+    const GURL& url,
+    std::unique_ptr<ResourceController> controller) {
+  DCHECK(!has_controller());
 
-  // Downstream handlers see the MimeSniffingResourceHandler as their
-  // ResourceController, which allows it to consume part or all of the resource
-  // response, and then later replay it to downstream handler.
-  DCHECK(next_handler_.get());
-  next_handler_->SetController(this);
-}
-
-bool MimeSniffingResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   const char* accept_value = nullptr;
   switch (GetRequestInfo()->GetResourceType()) {
     case RESOURCE_TYPE_MAIN_FRAME:
@@ -137,12 +175,15 @@ bool MimeSniffingResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   // The false parameter prevents overwriting an existing accept header value,
   // which is needed because JS can manually set an accept header on an XHR.
   request()->SetExtraRequestHeaderByName(kAcceptHeader, accept_value, false);
-  return next_handler_->OnWillStart(url, defer);
+  next_handler_->OnWillStart(url, std::move(controller));
 }
 
-bool MimeSniffingResourceHandler::OnResponseStarted(ResourceResponse* response,
-                                                    bool* defer) {
+void MimeSniffingResourceHandler::OnResponseStarted(
+    ResourceResponse* response,
+    std::unique_ptr<ResourceController> controller) {
   DCHECK_EQ(STATE_STARTING, state_);
+  DCHECK(!has_controller());
+
   response_ = response;
 
   state_ = STATE_BUFFERING;
@@ -151,8 +192,10 @@ bool MimeSniffingResourceHandler::OnResponseStarted(ResourceResponse* response,
   // the response, and so must be skipped for 304 responses.
   if (!(response_->head.headers.get() &&
         response_->head.headers->response_code() == 304)) {
-    if (ShouldSniffContent())
-      return true;
+    if (ShouldSniffContent()) {
+      controller->Resume();
+      return;
+    }
 
     if (response_->head.mime_type.empty()) {
       // Ugg.  The server told us not to sniff the content but didn't give us a
@@ -168,7 +211,8 @@ bool MimeSniffingResourceHandler::OnResponseStarted(ResourceResponse* response,
     }
   }
 
-  return ProcessState(defer);
+  HoldController(std::move(controller));
+  AdvanceState();
 }
 
 bool MimeSniffingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
@@ -194,9 +238,15 @@ bool MimeSniffingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   return true;
 }
 
-bool MimeSniffingResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
-  if (state_ == STATE_STREAMING)
-    return next_handler_->OnReadCompleted(bytes_read, defer);
+void MimeSniffingResourceHandler::OnReadCompleted(
+    int bytes_read,
+    std::unique_ptr<ResourceController> controller) {
+  DCHECK(!has_controller());
+
+  if (state_ == STATE_STREAMING) {
+    next_handler_->OnReadCompleted(bytes_read, std::move(controller));
+    return;
+  }
 
   DCHECK_EQ(state_, STATE_BUFFERING);
   bytes_read_ += bytes_read;
@@ -213,23 +263,29 @@ bool MimeSniffingResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   // that is probably better than the current one.
   response_->head.mime_type.assign(new_type);
 
-  if (!made_final_decision && (bytes_read > 0))
-    return true;
+  if (!made_final_decision && (bytes_read > 0)) {
+    controller->Resume();
+    return;
+  }
 
-  return ProcessState(defer);
+  HoldController(std::move(controller));
+  AdvanceState();
 }
 
 void MimeSniffingResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    bool* defer) {
+    std::unique_ptr<ResourceController> resource_controller) {
   // Upon completion, act like a pass-through handler in case the downstream
   // handler defers OnResponseCompleted.
   state_ = STATE_STREAMING;
 
-  next_handler_->OnResponseCompleted(status, defer);
+  next_handler_->OnResponseCompleted(status, std::move(resource_controller));
 }
 
-void MimeSniffingResourceHandler::Resume() {
+void MimeSniffingResourceHandler::ResumeInternal() {
+  DCHECK_NE(state_, STATE_BUFFERING);
+  DCHECK(!advance_state_);
+
   // If no information is currently being transmitted to downstream handlers,
   // they should not attempt to resume the request.
   if (state_ == STATE_BUFFERING) {
@@ -237,10 +293,8 @@ void MimeSniffingResourceHandler::Resume() {
     return;
   }
 
-  // If the BufferingHandler is acting as a pass-through handler, just ask the
-  // upwards ResourceController to resume the request.
-  if (state_ == STATE_STARTING || state_ == STATE_STREAMING) {
-    controller()->Resume();
+  if (in_state_loop_) {
+    advance_state_ = true;
     return;
   }
 
@@ -252,83 +306,76 @@ void MimeSniffingResourceHandler::Resume() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MimeSniffingResourceHandler::Cancel() {
-  controller()->Cancel();
-}
-
-void MimeSniffingResourceHandler::CancelAndIgnore() {
-  controller()->CancelAndIgnore();
-}
-
-void MimeSniffingResourceHandler::CancelWithError(int error_code) {
-  controller()->CancelWithError(error_code);
-}
-
 void MimeSniffingResourceHandler::AdvanceState() {
-  bool defer = false;
-  if (!ProcessState(&defer)) {
-    Cancel();
-  } else if (!defer) {
-    DCHECK_EQ(STATE_STREAMING, state_);
-    controller()->Resume();
-  }
-}
+  DCHECK(!in_state_loop_);
+  DCHECK(!advance_state_);
 
-bool MimeSniffingResourceHandler::ProcessState(bool* defer) {
-  bool return_value = true;
-  while (!*defer && return_value && state_ != STATE_STREAMING) {
+  base::AutoReset<bool> auto_in_state_loop(&in_state_loop_, true);
+  advance_state_ = true;
+  while (advance_state_) {
+    advance_state_ = false;
+
     switch (state_) {
       case STATE_BUFFERING:
-        return_value = MaybeIntercept(defer);
+        MaybeIntercept();
         break;
       case STATE_INTERCEPTION_CHECK_DONE:
-        return_value = ReplayResponseReceived(defer);
+        ReplayResponseReceived();
         break;
       case STATE_REPLAYING_RESPONSE_RECEIVED:
-        return_value = ReplayReadCompleted(defer);
+        ReplayReadCompleted();
         break;
+      case STATE_STARTING:
+      case STATE_STREAMING:
+        in_state_loop_ = false;
+        Resume();
+        return;
       default:
         NOTREACHED();
         break;
     }
   }
-  return return_value;
+
+  DCHECK(in_state_loop_);
+  in_state_loop_ = false;
 }
 
-bool MimeSniffingResourceHandler::MaybeIntercept(bool* defer) {
+void MimeSniffingResourceHandler::MaybeIntercept() {
   DCHECK_EQ(STATE_BUFFERING, state_);
   // If a request that can be intercepted failed the check for interception
   // step, it should be canceled.
-  if (!MaybeStartInterception(defer))
-    return false;
+  if (!MaybeStartInterception())
+    return;
 
-  if (!*defer)
-    state_ = STATE_INTERCEPTION_CHECK_DONE;
-
-  return true;
+  state_ = STATE_INTERCEPTION_CHECK_DONE;
+  ResumeInternal();
 }
 
-bool MimeSniffingResourceHandler::ReplayResponseReceived(bool* defer) {
+void MimeSniffingResourceHandler::ReplayResponseReceived() {
   DCHECK_EQ(STATE_INTERCEPTION_CHECK_DONE, state_);
   state_ = STATE_REPLAYING_RESPONSE_RECEIVED;
-  return next_handler_->OnResponseStarted(response_.get(), defer);
+  next_handler_->OnResponseStarted(response_.get(),
+                                   base::MakeUnique<Controller>(this));
 }
 
-bool MimeSniffingResourceHandler::ReplayReadCompleted(bool* defer) {
+void MimeSniffingResourceHandler::ReplayReadCompleted() {
   DCHECK_EQ(STATE_REPLAYING_RESPONSE_RECEIVED, state_);
 
   state_ = STATE_STREAMING;
 
-  if (!read_buffer_.get())
-    return true;
+  if (!read_buffer_.get()) {
+    ResumeInternal();
+    return;
+  }
 
-  bool result = next_handler_->OnReadCompleted(bytes_read_, defer);
+  int bytes_read = bytes_read_;
 
   read_buffer_ = nullptr;
   read_buffer_size_ = 0;
   bytes_read_ = 0;
 
-  return result;
+  next_handler_->OnReadCompleted(bytes_read,
+                                 base::MakeUnique<Controller>(this));
 }
 
 bool MimeSniffingResourceHandler::ShouldSniffContent() {
@@ -359,7 +406,7 @@ bool MimeSniffingResourceHandler::ShouldSniffContent() {
   return false;
 }
 
-bool MimeSniffingResourceHandler::MaybeStartInterception(bool* defer) {
+bool MimeSniffingResourceHandler::MaybeStartInterception() {
   if (!CanBeIntercepted())
     return true;
 
@@ -373,9 +420,9 @@ bool MimeSniffingResourceHandler::MaybeStartInterception(bool* defer) {
     DCHECK(!info->allow_download());
 
     bool handled_by_plugin;
-    if (!CheckForPluginHandler(defer, &handled_by_plugin))
+    if (!CheckForPluginHandler(&handled_by_plugin))
       return false;
-    if (handled_by_plugin || *defer)
+    if (handled_by_plugin)
       return true;
   }
 
@@ -394,9 +441,9 @@ bool MimeSniffingResourceHandler::MaybeStartInterception(bool* defer) {
       return true;
 
     bool handled_by_plugin;
-    if (!CheckForPluginHandler(defer, &handled_by_plugin))
+    if (!CheckForPluginHandler(&handled_by_plugin))
       return false;
-    if (handled_by_plugin || *defer)
+    if (handled_by_plugin)
       return true;
   }
 
@@ -416,7 +463,6 @@ bool MimeSniffingResourceHandler::MaybeStartInterception(bool* defer) {
 }
 
 bool MimeSniffingResourceHandler::CheckForPluginHandler(
-    bool* defer,
     bool* handled_by_plugin) {
   *handled_by_plugin = false;
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -435,8 +481,8 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
         base::Bind(&MimeSniffingResourceHandler::OnPluginsLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
     request()->LogBlockedBy("MimeSniffingResourceHandler");
-    *defer = true;
-    return true;
+    // Will complete asynchronously.
+    return false;
   }
 
   if (has_plugin && plugin.type != WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
@@ -452,8 +498,10 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
   std::unique_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
       plugin_path, request(), response_.get(), &payload));
   if (handler) {
-    if (!CheckResponseIsNotProvisional())
+    if (!CheckResponseIsNotProvisional()) {
+      Cancel();
       return false;
+    }
     *handled_by_plugin = true;
     intercepting_handler_->UseNewHandler(std::move(handler), payload);
   }

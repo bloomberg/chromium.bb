@@ -32,6 +32,8 @@ class ShareableFileReference;
 
 namespace content {
 
+class ResourceController;
+
 // Redirects network data to a file.  This is intended to be layered in front of
 // either the AsyncResourceHandler or the SyncResourceHandler.  The downstream
 // resource handler does not see OnWillRead or OnReadCompleted calls. Instead,
@@ -61,14 +63,19 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
       const CreateTemporaryFileStreamFunction& create_temporary_file_stream);
 
   // LayeredResourceHandler implementation:
-  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
-  bool OnWillStart(const GURL& url, bool* defer) override;
+  void OnResponseStarted(
+      ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
+  void OnWillStart(const GURL& url,
+                   std::unique_ptr<ResourceController> controller) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;
-  bool OnReadCompleted(int bytes_read, bool* defer) override;
-  void OnResponseCompleted(const net::URLRequestStatus& status,
-                           bool* defer) override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
+  void OnResponseCompleted(
+      const net::URLRequestStatus& status,
+      std::unique_ptr<ResourceController> controller) override;
 
   // Returns the size of |buf_|, to make sure it's being increased as expected.
   int GetBufferSizeForTesting() const;
@@ -81,9 +88,14 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   // Called by RedirectToFileResourceHandler::Writer.
   void DidWriteToFile(int result);
 
+  // Attempts to write more data to the file, if possible. Returns false on
+  // error. Returns true if there's already a write in progress, all data was
+  // written successfully, or a new write was started that will complete
+  // asynchronously. Resumes the request if there's more data to read and more
+  // buffer space available.
   bool WriteMore();
+
   bool BufIsFull() const;
-  void Resume();
 
   CreateTemporaryFileStreamFunction create_temporary_file_stream_;
 
@@ -110,8 +122,6 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   // allocate a buffer of 32k and double it in OnReadCompleted() if the buffer
   // was filled, up to a maximum size of 512k.
   int next_buffer_size_;
-
-  bool did_defer_;
 
   bool completed_during_write_;
   GURL will_start_url_;

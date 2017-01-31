@@ -243,7 +243,8 @@ const char kRedirectHeaders[] =
 
 class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
  public:
-  MockHTTPSJobURLRequestInterceptor(bool redirect) : redirect_(redirect) {}
+  explicit MockHTTPSJobURLRequestInterceptor(bool redirect)
+      : redirect_(redirect) {}
   ~MockHTTPSJobURLRequestInterceptor() override {}
 
   // net::URLRequestInterceptor:
@@ -261,7 +262,6 @@ class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
   bool redirect_;
 };
 
-// Arbitrary read buffer size.
 // Test browser client that captures calls to SelectClientCertificates and
 // records the arguments of the most recent call for later inspection.
 class SelectCertificateBrowserClient : public TestContentBrowserClient {
@@ -1372,7 +1372,9 @@ TEST_F(ResourceLoaderTest, OutOfBandCancelDuringStart) {
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
   EXPECT_EQ(1, handle_external_protocol_);
 
-  raw_ptr_resource_handler_->CancelWithError(net::ERR_FAILED);
+  // Can't cancel through the ResourceHandler, since that depends on
+  // ResourceDispatachHost, which these tests don't use.
+  loader_->CancelRequest(false);
   raw_ptr_resource_handler_->WaitUntilResponseComplete();
 
   EXPECT_EQ(0, did_received_redirect_);
@@ -1383,7 +1385,8 @@ TEST_F(ResourceLoaderTest, OutOfBandCancelDuringStart) {
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(net::ERR_ABORTED,
+            raw_ptr_resource_handler_->final_status().error());
   EXPECT_EQ("", raw_ptr_resource_handler_->body());
 }
 
@@ -1401,7 +1404,9 @@ TEST_F(ResourceLoaderTest, OutOfBandCancelDuringRead) {
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
   EXPECT_EQ(1, handle_external_protocol_);
 
-  raw_ptr_resource_handler_->CancelWithError(net::ERR_FAILED);
+  // Can't cancel through the ResourceHandler, since that depends on
+  // ResourceDispatachHost, which these tests don't use.
+  loader_->CancelRequest(false);
   raw_ptr_resource_handler_->WaitUntilResponseComplete();
   EXPECT_EQ(0, did_received_redirect_);
   EXPECT_EQ(1, did_receive_response_);
@@ -1412,7 +1417,8 @@ TEST_F(ResourceLoaderTest, OutOfBandCancelDuringRead) {
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_completed_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(net::ERR_ABORTED,
+            raw_ptr_resource_handler_->final_status().error());
   EXPECT_EQ("", raw_ptr_resource_handler_->body());
 }
 
@@ -1420,8 +1426,9 @@ TEST_F(ResourceLoaderTest, ResumeCanceledRequest) {
   raw_ptr_resource_handler_->set_defer_on_will_start(true);
 
   loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
   loader_->CancelRequest(true);
-  static_cast<ResourceController*>(loader_.get())->Resume();
+  raw_ptr_resource_handler_->Resume();
 }
 
 class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {

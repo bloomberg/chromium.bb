@@ -10,9 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "content/browser/loader/resource_controller.h"
+#include "content/browser/loader/resource_handler.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -24,13 +26,12 @@ class URLRequestStatus;
 }
 
 namespace content {
-class ResourceHandler;
 struct ResourceResponse;
 
 // Class that takes the place of the ResourceLoader for tests. It simplifies
 // testing ResourceHandlers by managing callbacks and performing basic sanity
 // checks. The test fixture is responsible for advancing states.
-class MockResourceLoader : public ResourceController {
+class MockResourceLoader : public ResourceHandler::Delegate {
  public:
   explicit MockResourceLoader(ResourceHandler* resource_handler);
   ~MockResourceLoader() override;
@@ -85,21 +86,26 @@ class MockResourceLoader : public ResourceController {
   int io_buffer_size() const { return io_buffer_size_; }
 
  private:
-  // ResourceController implementation.
-  void Cancel() override;
-  void CancelAndIgnore() override;
-  void CancelWithError(int error_code) override;
-  void Resume() override;
+  class TestResourceController;
+
+  // ResourceHandler::Delegate implementation:
+  void OutOfBandCancel(int error_code, bool tell_renderer) override;
+
+  void OnCancel(int error_code);
+  void OnResume();
 
   ResourceHandler* const resource_handler_;
 
   Status status_ = Status::IDLE;
   int error_code_ = net::OK;
+  bool canceled_out_of_band_ = false;
 
   scoped_refptr<net::IOBuffer> io_buffer_;
   int io_buffer_size_ = 0;
 
   std::unique_ptr<base::RunLoop> canceled_or_idle_run_loop_;
+
+  base::WeakPtrFactory<MockResourceLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockResourceLoader);
 };

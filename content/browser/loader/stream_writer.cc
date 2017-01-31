@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/stream_writer.h"
 
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/streams/stream.h"
@@ -14,8 +15,7 @@
 
 namespace content {
 
-StreamWriter::StreamWriter() : controller_(nullptr), immediate_mode_(false) {
-}
+StreamWriter::StreamWriter() : immediate_mode_(false) {}
 
 StreamWriter::~StreamWriter() {
   if (stream_.get())
@@ -23,7 +23,9 @@ StreamWriter::~StreamWriter() {
 }
 
 void StreamWriter::InitializeStream(StreamRegistry* registry,
-                                    const GURL& origin) {
+                                    const GURL& origin,
+                                    const base::Closure& cancel_callback) {
+  cancel_callback_ = cancel_callback;
   DCHECK(!stream_.get());
 
   // TODO(tyoshino): Find a way to share this with the blob URL creation in
@@ -47,9 +49,14 @@ void StreamWriter::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   *buf_size = kReadBufSize;
 }
 
-void StreamWriter::OnReadCompleted(int bytes_read, bool* defer) {
-  if (!bytes_read)
+void StreamWriter::OnReadCompleted(
+    int bytes_read,
+    const base::Closure& need_more_data_callback) {
+  DCHECK(!need_more_data_callback_);
+  if (!bytes_read) {
+    need_more_data_callback.Run();
     return;
+  }
 
   // We have more data to read.
   DCHECK(read_buffer_.get());
@@ -63,8 +70,11 @@ void StreamWriter::OnReadCompleted(int bytes_read, bool* defer) {
   if (immediate_mode_)
     stream_->Flush();
 
-  if (!stream_->can_add_data())
-    *defer = true;
+  if (!stream_->can_add_data()) {
+    need_more_data_callback_ = need_more_data_callback;
+    return;
+  }
+  need_more_data_callback.Run();
 }
 
 void StreamWriter::Finalize(int status) {
@@ -75,11 +85,11 @@ void StreamWriter::Finalize(int status) {
 }
 
 void StreamWriter::OnSpaceAvailable(Stream* stream) {
-  controller_->Resume();
+  base::ResetAndReturn(&need_more_data_callback_).Run();
 }
 
 void StreamWriter::OnClose(Stream* stream) {
-  controller_->Cancel();
+  cancel_callback_.Run();
 }
 
 }  // namespace content

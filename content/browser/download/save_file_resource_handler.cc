@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/download/save_file_manager.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/redirect_info.h"
@@ -37,16 +38,17 @@ SaveFileResourceHandler::SaveFileResourceHandler(
 SaveFileResourceHandler::~SaveFileResourceHandler() {
 }
 
-bool SaveFileResourceHandler::OnRequestRedirected(
+void SaveFileResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   final_url_ = redirect_info.new_url;
-  return true;
+  controller->Resume();
 }
 
-bool SaveFileResourceHandler::OnResponseStarted(ResourceResponse* response,
-                                                bool* defer) {
+void SaveFileResourceHandler::OnResponseStarted(
+    ResourceResponse* response,
+    std::unique_ptr<ResourceController> controller) {
   // |save_manager_| consumes (deletes):
   SaveFileCreateInfo* info = new SaveFileCreateInfo(
       url_, final_url_, save_item_id_, save_package_id_, render_process_id_,
@@ -55,11 +57,17 @@ bool SaveFileResourceHandler::OnResponseStarted(ResourceResponse* response,
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::StartSave, save_manager_, info));
-  return true;
+  controller->Resume();
 }
 
-bool SaveFileResourceHandler::OnWillStart(const GURL& url, bool* defer) {
-  return authorization_state_ == AuthorizationState::AUTHORIZED;
+void SaveFileResourceHandler::OnWillStart(
+    const GURL& url,
+    std::unique_ptr<ResourceController> controller) {
+  if (authorization_state_ == AuthorizationState::AUTHORIZED) {
+    controller->Resume();
+  } else {
+    controller->Cancel();
+  }
 }
 
 bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
@@ -75,7 +83,9 @@ bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   return true;
 }
 
-bool SaveFileResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
+void SaveFileResourceHandler::OnReadCompleted(
+    int bytes_read,
+    std::unique_ptr<ResourceController> controller) {
   DCHECK_EQ(AuthorizationState::AUTHORIZED, authorization_state_);
   DCHECK(read_buffer_.get());
   // We are passing ownership of this buffer to the save file manager.
@@ -85,12 +95,12 @@ bool SaveFileResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::UpdateSaveProgress, save_manager_,
                  save_item_id_, base::RetainedRef(buffer), bytes_read));
-  return true;
+  controller->Resume();
 }
 
 void SaveFileResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    bool* defer) {
+    std::unique_ptr<ResourceController> controller) {
   if (authorization_state_ != AuthorizationState::AUTHORIZED)
     DCHECK(!status.is_success());
 
@@ -99,7 +109,8 @@ void SaveFileResourceHandler::OnResponseCompleted(
       base::Bind(&SaveFileManager::SaveFinished, save_manager_, save_item_id_,
                  save_package_id_,
                  status.is_success() && !status.is_io_pending()));
-  read_buffer_ = NULL;
+  read_buffer_ = nullptr;
+  controller->Resume();
 }
 
 void SaveFileResourceHandler::OnDataDownloaded(int bytes_downloaded) {

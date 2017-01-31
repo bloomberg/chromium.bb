@@ -812,6 +812,8 @@ source_set("browser") {
     "loader/navigation_url_loader_impl_core.h",
     "loader/netlog_observer.cc",
     "loader/netlog_observer.h",
+    "loader/null_resource_controller.cc",
+    "loader/null_resource_controller.h",
     "loader/power_save_block_resource_throttle.cc",
     "loader/power_save_block_resource_throttle.h",
     "loader/redirect_to_file_resource_handler.cc",
