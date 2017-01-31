@@ -2111,10 +2111,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ETableLayout e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case TableLayoutAuto:
+    case ETableLayout::kAuto:
       m_valueID = CSSValueAuto;
       break;
-    case TableLayoutFixed:
+    case ETableLayout::kFixed:
       m_valueID = CSSValueFixed;
       break;
   }
@@ -2124,15 +2124,15 @@ template <>
 inline ETableLayout CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueFixed:
-      return TableLayoutFixed;
+      return ETableLayout::kFixed;
     case CSSValueAuto:
-      return TableLayoutAuto;
+      return ETableLayout::kAuto;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return TableLayoutAuto;
+  return ETableLayout::kAuto;
 }
 
 template <>

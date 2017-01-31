@@ -171,7 +171,7 @@ enum class EVerticalAlign : unsigned {
 
 enum EClear { ClearNone = 0, ClearLeft = 1, ClearRight = 2, ClearBoth = 3 };
 
-enum ETableLayout { TableLayoutAuto, TableLayoutFixed };
+enum class ETableLayout : unsigned { kAuto, kFixed };
 
 enum TextCombine { TextCombineNone, TextCombineAll };
 

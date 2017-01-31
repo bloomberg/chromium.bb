@@ -315,7 +315,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialVerticalAlign());
     m_nonInheritedData.m_clear = initialClear();
     m_nonInheritedData.m_position = initialPosition();
-    m_nonInheritedData.m_tableLayout = initialTableLayout();
+    m_nonInheritedData.m_tableLayout =
+        static_cast<unsigned>(initialTableLayout());
     m_nonInheritedData.m_breakBefore = initialBreakBefore();
     m_nonInheritedData.m_breakAfter = initialBreakAfter();
     m_nonInheritedData.m_breakInside = initialBreakInside();
@@ -1779,11 +1780,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(m_rareNonInheritedData, m_pageSizeType, t);
   }
   // table-layout
-  static ETableLayout initialTableLayout() { return TableLayoutAuto; }
+  static ETableLayout initialTableLayout() { return ETableLayout::kAuto; }
   ETableLayout tableLayout() const {
     return static_cast<ETableLayout>(m_nonInheritedData.m_tableLayout);
   }
-  void setTableLayout(ETableLayout v) { m_nonInheritedData.m_tableLayout = v; }
+  void setTableLayout(ETableLayout v) {
+    m_nonInheritedData.m_tableLayout = static_cast<unsigned>(v);
+  }
 
   // Text decoration properties.
   // text-decoration-line
@@ -3433,7 +3436,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Table layout utility functions.
   bool isFixedTableLayout() const {
-    return tableLayout() == TableLayoutFixed && !logicalWidth().isAuto();
+    return tableLayout() == ETableLayout::kFixed && !logicalWidth().isAuto();
   }
 
   // Filter/transform utility functions.
