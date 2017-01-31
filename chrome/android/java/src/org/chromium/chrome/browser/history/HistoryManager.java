@@ -16,6 +16,7 @@ import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ItemAnimator;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
@@ -70,6 +71,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private final TextView mEmptyView;
     private final FadingShadowView mToolbarShadow;
     private final RecyclerView mRecyclerView;
+    private final ItemAnimator mItemAnimator;
     private LargeIconBridge mLargeIconBridge;
 
     private boolean mIsSearching;
@@ -94,6 +96,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         // 2. Initialize RecyclerView.
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
+        mItemAnimator = mRecyclerView.getItemAnimator();
 
         // 3. Initialize toolbar.
         mToolbar = (HistoryManagerToolbar) mSelectableListLayout.initializeToolbar(
@@ -200,6 +203,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
+            mRecyclerView.setItemAnimator(null);
             mToolbar.showSearchView();
             mToolbarShadow.setVisibility(View.VISIBLE);
             mSelectableListLayout.setEmptyViewText(R.string.history_manager_no_results);
@@ -304,6 +308,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mSelectableListLayout.setEmptyViewText(R.string.history_manager_empty);
         mIsSearching = false;
         setToolbarShadowVisibility();
+        mRecyclerView.setItemAnimator(mItemAnimator);
     }
 
     /**
