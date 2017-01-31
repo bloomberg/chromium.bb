@@ -31,6 +31,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_list.h"
@@ -621,7 +622,7 @@ void DataReductionProxyTestContext::AttachToURLRequestContext(
   // |request_context_storage| takes ownership of the network delegate.
   std::unique_ptr<DataReductionProxyNetworkDelegate> network_delegate =
       io_data()->CreateNetworkDelegate(
-          base::MakeUnique<net::TestNetworkDelegate>(), true);
+          base::MakeUnique<net::NetworkDelegateImpl>(), true);
 
   request_context_storage->set_network_delegate(std::move(network_delegate));
 

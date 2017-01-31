@@ -104,6 +104,11 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       const net::ProxyRetryInfoMap& proxy_retry_info,
       net::HttpRequestHeaders* headers) override;
 
+  // Called after a redirect response. Clears out persistent
+  // DataReductionProxyData from the URLRequest.
+  void OnBeforeRedirectInternal(net::URLRequest* request,
+                                const GURL& new_location) override;
+
   // Indicates that the URL request has been completed or failed.
   // |started| indicates whether the request has been started. If false,
   // some information like the socket address is not available.

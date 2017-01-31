@@ -205,7 +205,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   DCHECK(data_reduction_proxy_config_);
   DCHECK(request);
 
-  // If this is after a redirect, reset |request|'s DataReductionProxyData.
+  // Reset |request|'s DataReductionProxyData.
   DataReductionProxyData::ClearData(request);
 
   if (params::IsIncludedInHoldbackFieldTrial()) {
@@ -276,6 +276,14 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   data_reduction_proxy_request_options_->AddRequestHeader(headers);
   if (lofi_decider)
     lofi_decider->MaybeSetIgnorePreviewsBlacklistDirective(headers);
+}
+
+void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
+    net::URLRequest* request,
+    const GURL& new_location) {
+  // Since this is after a redirect response, reset |request|'s
+  // DataReductionProxyData.
+  DataReductionProxyData::ClearData(request);
 }
 
 void DataReductionProxyNetworkDelegate::OnCompletedInternal(
