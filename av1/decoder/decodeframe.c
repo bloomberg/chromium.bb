@@ -478,16 +478,9 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
 }
 #endif
 
-static void predict_and_reconstruct_intra_block(AV1_COMMON *cm,
-                                                MACROBLOCKD *const xd,
-#if CONFIG_ANS
-                                                struct AnsDecoder *const r,
-#else
-                                                aom_reader *r,
-#endif  // CONFIG_ANS
-                                                MB_MODE_INFO *const mbmi,
-                                                int plane, int row, int col,
-                                                TX_SIZE tx_size) {
+static void predict_and_reconstruct_intra_block(
+    AV1_COMMON *cm, MACROBLOCKD *const xd, aom_reader *const r,
+    MB_MODE_INFO *const mbmi, int plane, int row, int col, TX_SIZE tx_size) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   PREDICTION_MODE mode = (plane == 0) ? mbmi->mode : mbmi->uv_mode;
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
@@ -586,12 +579,8 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #if !CONFIG_VAR_TX || CONFIG_SUPERTX || \
     (!CONFIG_VAR_TX && CONFIG_EXT_TX && CONFIG_RECT_TX)
 static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
-#if CONFIG_ANS
-                                   struct AnsDecoder *const r,
-#else
-                                   aom_reader *r,
-#endif
-                                   int segment_id, int plane, int row, int col,
+                                   aom_reader *const r, int segment_id,
+                                   int plane, int row, int col,
                                    TX_SIZE tx_size) {
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
   int block_idx = (row << 1) + col;
