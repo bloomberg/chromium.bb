@@ -46,6 +46,7 @@
 #include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
+#include "core/css/properties/CSSPropertyMarginUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
 #include "core/css/properties/CSSPropertyShapeUtils.h"
 #include "core/frame/UseCounter.h"
@@ -473,14 +474,6 @@ static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue) {
         CSSValuePair::DropIdenticalValues));
   } while (!range.atEnd());
   return list;
-}
-
-static CSSValue* consumeMarginOrOffset(CSSParserTokenRange& range,
-                                       CSSParserMode cssParserMode,
-                                       UnitlessQuirk unitless) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
 }
 
 static CSSValue* consumeLocale(CSSParserTokenRange& range) {
@@ -2100,14 +2093,14 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyLeft:
     case CSSPropertyRight:
     case CSSPropertyTop:
-      return consumeMarginOrOffset(m_range, m_context->mode(),
-                                   UnitlessQuirk::Allow);
+      return CSSPropertyMarginUtils::consumeMarginOrOffset(
+          m_range, m_context->mode(), UnitlessQuirk::Allow);
     case CSSPropertyWebkitMarginStart:
     case CSSPropertyWebkitMarginEnd:
     case CSSPropertyWebkitMarginBefore:
     case CSSPropertyWebkitMarginAfter:
-      return consumeMarginOrOffset(m_range, m_context->mode(),
-                                   UnitlessQuirk::Forbid);
+      return CSSPropertyMarginUtils::consumeMarginOrOffset(
+          m_range, m_context->mode(), UnitlessQuirk::Forbid);
     case CSSPropertyScrollSnapDestination:
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:

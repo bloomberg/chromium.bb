@@ -422,6 +422,8 @@ blink_core_sources("css") {
     "properties/CSSPropertyDescriptor.h",
     "properties/CSSPropertyLengthUtils.cpp",
     "properties/CSSPropertyLengthUtils.h",
+    "properties/CSSPropertyMarginUtils.cpp",
+    "properties/CSSPropertyMarginUtils.h",
     "properties/CSSPropertyShapeUtils.cpp",
     "properties/CSSPropertyShapeUtils.h",
     "resolver/AnimatedStyleBuilder.cpp",
