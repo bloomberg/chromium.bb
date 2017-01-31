@@ -210,7 +210,7 @@ Vector<String> DataObject::filenames() const {
   Vector<String> results;
   for (size_t i = 0; i < m_itemList.size(); ++i) {
     if (m_itemList[i]->isFilename())
-      results.push_back(toFile(m_itemList[i]->getAsFile())->path());
+      results.push_back(m_itemList[i]->getAsFile()->path());
   }
   return results;
 }

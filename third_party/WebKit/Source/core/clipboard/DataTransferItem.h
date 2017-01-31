@@ -38,9 +38,9 @@
 
 namespace blink {
 
-class Blob;
 class DataObjectItem;
 class DataTransfer;
+class File;
 class ScriptState;
 class StringCallback;
 
@@ -57,7 +57,7 @@ class CORE_EXPORT DataTransferItem final
   String type() const;
 
   void getAsString(ScriptState*, StringCallback*) const;
-  Blob* getAsFile() const;
+  File* getAsFile() const;
 
   DataTransfer* getDataTransfer() { return m_dataTransfer.get(); }
   DataObjectItem* getDataObjectItem() { return m_item.get(); }

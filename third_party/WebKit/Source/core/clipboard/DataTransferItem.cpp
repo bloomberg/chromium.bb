@@ -83,7 +83,7 @@ void DataTransferItem::getAsString(ScriptState* scriptState,
       "DataTransferItem.getAsString");
 }
 
-Blob* DataTransferItem::getAsFile() const {
+File* DataTransferItem::getAsFile() const {
   if (!m_dataTransfer->canReadData())
     return nullptr;
 

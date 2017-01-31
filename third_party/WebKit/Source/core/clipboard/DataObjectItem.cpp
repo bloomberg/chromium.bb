@@ -106,7 +106,7 @@ DataObjectItem::DataObjectItem(ItemKind kind,
       m_type(type),
       m_sequenceNumber(sequenceNumber) {}
 
-Blob* DataObjectItem::getAsFile() const {
+File* DataObjectItem::getAsFile() const {
   if (kind() != FileKind)
     return nullptr;
 
@@ -126,7 +126,8 @@ Blob* DataObjectItem::getAsFile() const {
         WebClipboard::BufferStandard);
     if (blobInfo.size() < 0)
       return nullptr;
-    return Blob::create(BlobDataHandle::create(blobInfo.uuid(), blobInfo.type(),
+    return File::create("image.png", currentTimeMS(),
+                        BlobDataHandle::create(blobInfo.uuid(), blobInfo.type(),
                                                blobInfo.size()));
   }
 

@@ -40,8 +40,6 @@
 
 namespace blink {
 
-class Blob;
-
 class CORE_EXPORT DataObjectItem
     : public GarbageCollectedFinalized<DataObjectItem> {
  public:
@@ -66,7 +64,7 @@ class CORE_EXPORT DataObjectItem
   ItemKind kind() const { return m_kind; }
   String type() const { return m_type; }
   String getAsString() const;
-  Blob* getAsFile() const;
+  File* getAsFile() const;
 
   // Used to support legacy DataTransfer APIs and renderer->browser
   // serialization.

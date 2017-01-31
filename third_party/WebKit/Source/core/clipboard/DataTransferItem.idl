@@ -35,6 +35,5 @@ interface DataTransferItem {
     readonly attribute DOMString type;
     // TODO(foolip): The callback argument should be a FunctionStringCallback.
     [CallWith=ScriptState] void getAsString(StringCallback? callback);
-    // TODO(foolip): getAsFile() should return a File object. crbug.com/361145
-    Blob? getAsFile();
+    File? getAsFile();
 };
