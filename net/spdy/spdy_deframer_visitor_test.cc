@@ -72,7 +72,7 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
     string result;
     for (const auto& frame_ptr : frames) {
       auto sf = SerializeFrame(*frame_ptr);
-      base::StringPiece(sf.data(), sf.size()).AppendToString(&result);
+      result.append(sf.data(), sf.size());
     }
     return result;
   }

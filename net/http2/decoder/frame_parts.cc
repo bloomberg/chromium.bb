@@ -55,7 +55,7 @@ FrameParts::FrameParts(const Http2FrameHeader& header) : frame_header(header) {
 FrameParts::FrameParts(const Http2FrameHeader& header, StringPiece payload)
     : FrameParts(header) {
   VLOG(1) << "FrameParts with payload.size() = " << payload.size();
-  payload.AppendToString(&this->payload);
+  this->payload.append(payload.data(), payload.size());
   opt_payload_length = payload.size();
 }
 FrameParts::FrameParts(const Http2FrameHeader& header,
@@ -118,8 +118,8 @@ void FrameParts::SetTotalPadLength(size_t total_pad_length) {
 }
 
 void FrameParts::SetAltSvcExpected(StringPiece origin, StringPiece value) {
-  origin.AppendToString(&altsvc_origin);
-  value.AppendToString(&altsvc_value);
+  altsvc_origin.append(origin.data(), origin.size());
+  altsvc_value.append(value.data(), value.size());
   opt_altsvc_origin_length = origin.size();
   opt_altsvc_value_length = value.size();
 }
@@ -507,7 +507,7 @@ AssertionResult FrameParts::InPaddedFrame() {
 AssertionResult FrameParts::AppendString(StringPiece source,
                                          string* target,
                                          base::Optional<size_t>* opt_length) {
-  source.AppendToString(target);
+  target->append(source.data(), source.size());
   if (opt_length != nullptr) {
     VERIFY_TRUE(*opt_length) << "Length is not set yet\n" << *this;
     VERIFY_LE(target->size(), static_cast<size_t>(opt_length->value()))
