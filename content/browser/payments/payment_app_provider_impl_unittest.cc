@@ -51,9 +51,9 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
   }
 
   void InvokePaymentApp(int64_t registration_id,
-                        payments::mojom::PaymentAppRequestDataPtr data) {
+                        payments::mojom::PaymentAppRequestPtr app_request) {
     PaymentAppProviderImpl::GetInstance()->InvokePaymentApp(
-        browser_context(), registration_id, std::move(data));
+        browser_context(), registration_id, std::move(app_request));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -128,14 +128,14 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   ASSERT_TRUE(called);
   ASSERT_EQ(3U, manifests.size());
 
-  payments::mojom::PaymentAppRequestDataPtr data =
-      payments::mojom::PaymentAppRequestData::New();
-  data->methodData.push_back(payments::mojom::PaymentMethodData::New());
-  data->total = payments::mojom::PaymentItem::New();
-  data->total->amount = payments::mojom::PaymentCurrencyAmount::New();
+  payments::mojom::PaymentAppRequestPtr app_request =
+      payments::mojom::PaymentAppRequest::New();
+  app_request->methodData.push_back(payments::mojom::PaymentMethodData::New());
+  app_request->total = payments::mojom::PaymentItem::New();
+  app_request->total->amount = payments::mojom::PaymentCurrencyAmount::New();
 
   EXPECT_FALSE(payment_app_invoked());
-  InvokePaymentApp(manifests[1].first, std::move(data));
+  InvokePaymentApp(manifests[1].first, std::move(app_request));
 
   ASSERT_TRUE(payment_app_invoked());
   EXPECT_EQ(manifests[1].first, last_sw_registration_id());

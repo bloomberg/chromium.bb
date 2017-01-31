@@ -38,7 +38,7 @@ class CONTENT_EXPORT PaymentAppProvider {
   virtual void InvokePaymentApp(
       BrowserContext* browser_context,
       int64_t registration_id,
-      payments::mojom::PaymentAppRequestDataPtr data) = 0;
+      payments::mojom::PaymentAppRequestPtr app_request) = 0;
 
  protected:
   virtual ~PaymentAppProvider() {}

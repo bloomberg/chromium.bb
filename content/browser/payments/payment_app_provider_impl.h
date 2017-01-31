@@ -28,7 +28,7 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
   void InvokePaymentApp(
       BrowserContext* browser_context,
       int64_t registration_id,
-      payments::mojom::PaymentAppRequestDataPtr data) override;
+      payments::mojom::PaymentAppRequestPtr app_request) override;
 
  private:
   PaymentAppProviderImpl();

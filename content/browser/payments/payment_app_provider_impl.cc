@@ -49,7 +49,7 @@ void DispatchPaymentRequestEventError(
 }
 
 void DispatchPaymentRequestEvent(
-    payments::mojom::PaymentAppRequestDataPtr data,
+    payments::mojom::PaymentAppRequestPtr app_request,
     scoped_refptr<ServiceWorkerVersion> active_version) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(active_version);
@@ -59,12 +59,12 @@ void DispatchPaymentRequestEvent(
       base::Bind(&DispatchPaymentRequestEventError));
 
   active_version->event_dispatcher()->DispatchPaymentRequestEvent(
-      std::move(data),
+      std::move(app_request),
       base::Bind(&DidDispatchPaymentRequestEvent, active_version, request_id));
 }
 
 void DidFindRegistrationOnIO(
-    payments::mojom::PaymentAppRequestDataPtr data,
+    payments::mojom::PaymentAppRequestPtr app_request,
     ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -77,7 +77,8 @@ void DidFindRegistrationOnIO(
   DCHECK(active_version);
   active_version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
-      base::Bind(&DispatchPaymentRequestEvent, base::Passed(std::move(data)),
+      base::Bind(&DispatchPaymentRequestEvent,
+                 base::Passed(std::move(app_request)),
                  make_scoped_refptr(active_version)),
       base::Bind(&DispatchPaymentRequestEventError));
 }
@@ -85,12 +86,12 @@ void DidFindRegistrationOnIO(
 void FindRegistrationOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     int64_t registration_id,
-    payments::mojom::PaymentAppRequestDataPtr data) {
+    payments::mojom::PaymentAppRequestPtr app_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context->FindReadyRegistrationForIdOnly(
-      registration_id,
-      base::Bind(&DidFindRegistrationOnIO, base::Passed(std::move(data))));
+      registration_id, base::Bind(&DidFindRegistrationOnIO,
+                                  base::Passed(std::move(app_request))));
 }
 
 }  // namespace
@@ -124,7 +125,7 @@ void PaymentAppProviderImpl::GetAllManifests(
 void PaymentAppProviderImpl::InvokePaymentApp(
     BrowserContext* browser_context,
     int64_t registration_id,
-    payments::mojom::PaymentAppRequestDataPtr data) {
+    payments::mojom::PaymentAppRequestPtr app_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
@@ -135,7 +136,7 @@ void PaymentAppProviderImpl::InvokePaymentApp(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&FindRegistrationOnIO, std::move(service_worker_context),
-                 registration_id, base::Passed(std::move(data))));
+                 registration_id, base::Passed(std::move(app_request))));
 }
 
 PaymentAppProviderImpl::PaymentAppProviderImpl() {}

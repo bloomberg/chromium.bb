@@ -223,7 +223,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       const DispatchSyncEventCallback& callback) override;
   void DispatchPaymentRequestEvent(
-      payments::mojom::PaymentAppRequestDataPtr data,
+      payments::mojom::PaymentAppRequestPtr app_request,
       const DispatchPaymentRequestEventCallback& callback) override;
 
   void OnActivateEvent(int request_id);

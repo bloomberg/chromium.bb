@@ -8,6 +8,6 @@
     RuntimeEnabled=PaymentApp,
     Exposed=ServiceWorker
 ] interface PaymentRequestEvent : ExtendableEvent {
-    readonly attribute PaymentAppRequestData data;
+    readonly attribute PaymentAppRequest appRequest;
     void respondWith(Promise<PaymentResponse> response);
 };

@@ -871,7 +871,7 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
 }
 
 void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
-    payments::mojom::PaymentAppRequestDataPtr data,
+    payments::mojom::PaymentAppRequestPtr app_request,
     const DispatchPaymentRequestEventCallback& callback) {
   NOTIMPLEMENTED();
 }

@@ -70,11 +70,12 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
   }
 
   void OnPaymentRequestEvent(
-      payments::mojom::PaymentAppRequestDataPtr data,
+      payments::mojom::PaymentAppRequestPtr app_request,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchPaymentRequestEventCallback& callback) override {
     ASSERT_FALSE(was_dispatched_);
-    EmbeddedWorkerTestHelper::OnPaymentRequestEvent(std::move(data), callback);
+    EmbeddedWorkerTestHelper::OnPaymentRequestEvent(std::move(app_request),
+                                                    callback);
     was_dispatched_ = true;
   }
 

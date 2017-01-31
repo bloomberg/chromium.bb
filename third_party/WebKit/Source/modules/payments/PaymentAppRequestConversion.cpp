@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentAppRequestDataConversion.h"
+#include "modules/payments/PaymentAppRequestConversion.h"
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
-#include "modules/payments/PaymentAppRequestData.h"
+#include "modules/payments/PaymentAppRequest.h"
 #include "modules/payments/PaymentCurrencyAmount.h"
 #include "modules/payments/PaymentDetailsModifier.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentMethodData.h"
-#include "public/platform/modules/payments/WebPaymentAppRequestData.h"
+#include "public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "public/platform/modules/payments/WebPaymentMethodData.h"
 
 namespace blink {
@@ -83,24 +83,24 @@ PaymentMethodData toPaymentMethodData(
 
 }  // namespace
 
-PaymentAppRequestData PaymentAppRequestDataConversion::toPaymentAppRequestData(
+PaymentAppRequest PaymentAppRequestConversion::toPaymentAppRequest(
     ScriptState* scriptState,
-    const WebPaymentAppRequestData& webData) {
-  PaymentAppRequestData data;
+    const WebPaymentAppRequest& webAppRequest) {
+  PaymentAppRequest appRequest;
 
-  data.setOrigin(webData.origin);
+  appRequest.setOrigin(webAppRequest.origin);
   HeapVector<PaymentMethodData> methodData;
-  for (const auto& md : webData.methodData) {
+  for (const auto& md : webAppRequest.methodData) {
     methodData.push_back(toPaymentMethodData(scriptState, md));
   }
-  data.setMethodData(methodData);
-  data.setTotal(toPaymentItem(webData.total));
+  appRequest.setMethodData(methodData);
+  appRequest.setTotal(toPaymentItem(webAppRequest.total));
   HeapVector<PaymentDetailsModifier> modifiers;
-  for (const auto& modifier : webData.modifiers) {
+  for (const auto& modifier : webAppRequest.modifiers) {
     modifiers.push_back(toPaymentDetailsModifier(scriptState, modifier));
   }
-  data.setOptionId(webData.optionId);
-  return data;
+  appRequest.setOptionId(webAppRequest.optionId);
+  return appRequest;
 }
 
 }  // namespace blink

@@ -198,7 +198,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
           callback);
   virtual void OnPaymentRequestEvent(
-      payments::mojom::PaymentAppRequestDataPtr data,
+      payments::mojom::PaymentAppRequestPtr data,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchPaymentRequestEventCallback& callback);
 
@@ -242,7 +242,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
           callback);
   void OnPaymentRequestEventStub(
-      payments::mojom::PaymentAppRequestDataPtr data,
+      payments::mojom::PaymentAppRequestPtr data,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchPaymentRequestEventCallback& callback);
 

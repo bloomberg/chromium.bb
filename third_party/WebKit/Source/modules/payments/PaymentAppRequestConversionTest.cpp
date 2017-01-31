@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentAppRequestDataConversion.h"
+#include "modules/payments/PaymentAppRequestConversion.h"
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "public/platform/modules/payments/WebPaymentAppRequestData.h"
+#include "public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,8 +31,8 @@ static WebPaymentMethodData createWebPaymentMethodDataForTest() {
   return webMethodData;
 }
 
-static WebPaymentAppRequestData createWebPaymentAppRequestDataForTest() {
-  WebPaymentAppRequestData webData;
+static WebPaymentAppRequest createWebPaymentAppRequestForTest() {
+  WebPaymentAppRequest webData;
   webData.origin = WebString::fromUTF8("https://example.com");
   Vector<WebPaymentMethodData> methodData;
   methodData.push_back(createWebPaymentMethodDataForTest());
@@ -42,12 +42,11 @@ static WebPaymentAppRequestData createWebPaymentAppRequestDataForTest() {
   return webData;
 }
 
-TEST(PaymentAppRequestDataConversionTest, ToPaymentAppRequestData) {
+TEST(PaymentAppRequestConversionTest, ToPaymentAppRequest) {
   V8TestingScope scope;
-  WebPaymentAppRequestData webData = createWebPaymentAppRequestDataForTest();
-  PaymentAppRequestData data =
-      PaymentAppRequestDataConversion::toPaymentAppRequestData(
-          scope.getScriptState(), webData);
+  WebPaymentAppRequest webData = createWebPaymentAppRequestForTest();
+  PaymentAppRequest data = PaymentAppRequestConversion::toPaymentAppRequest(
+      scope.getScriptState(), webData);
 
   ASSERT_TRUE(data.hasMethodData());
   ASSERT_EQ(1UL, data.methodData().size());

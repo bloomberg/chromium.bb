@@ -35,7 +35,7 @@ interface PaymentAppManager {
       => (PaymentAppManifest payment_app_manifest, PaymentAppManifestError error);
 };
 
-struct PaymentAppRequestData {
+struct PaymentAppRequest {
   url.mojom.Url origin;
   array<PaymentMethodData> methodData;
   PaymentItem total;

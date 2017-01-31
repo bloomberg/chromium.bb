@@ -6,7 +6,7 @@
 #define PaymentRequestEvent_h
 
 #include "modules/EventModules.h"
-#include "modules/payments/PaymentAppRequestData.h"
+#include "modules/payments/PaymentAppRequest.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
 
@@ -22,22 +22,22 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
 
  public:
   static PaymentRequestEvent* create(const AtomicString& type,
-                                     const PaymentAppRequestData&,
+                                     const PaymentAppRequest&,
                                      WaitUntilObserver*);
   ~PaymentRequestEvent() override;
 
   const AtomicString& interfaceName() const override;
 
-  void data(PaymentAppRequestData&) const;
+  void appRequest(PaymentAppRequest&) const;
   void respondWith(ScriptPromise);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   PaymentRequestEvent(const AtomicString& type,
-                      const PaymentAppRequestData&,
+                      const PaymentAppRequest&,
                       WaitUntilObserver*);
-  PaymentAppRequestData m_data;
+  PaymentAppRequest m_appRequest;
 };
 
 }  // namespace blink

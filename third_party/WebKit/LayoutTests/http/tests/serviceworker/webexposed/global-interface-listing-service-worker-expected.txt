@@ -703,7 +703,7 @@ interface Path2D
     method quadraticCurveTo
     method rect
 interface PaymentRequestEvent : ExtendableEvent
-    getter data
+    getter appRequest
     method constructor
     method respondWith
 interface PerformanceObserverEntryList
