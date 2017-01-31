@@ -34,3 +34,11 @@ function rectToString(rect) {
     return '[' + [rect.left, rect.top, rect.width, rect.height].join(', ') + ']';
 }
 
+function sortRects(rects) {
+  Array.prototype.sort.call(rects, (a, b) => (
+      a.left - b.left ||
+      a.top - b.top ||
+      a.width - b.width ||
+      a.height - b.height));
+  return rects;
+}

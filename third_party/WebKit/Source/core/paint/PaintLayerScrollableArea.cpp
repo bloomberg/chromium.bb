@@ -565,6 +565,10 @@ IntSize PaintLayerScrollableArea::contentsSize() const {
   return IntSize(pixelSnappedScrollWidth(), pixelSnappedScrollHeight());
 }
 
+bool PaintLayerScrollableArea::isScrollable() const {
+  return scrollsOverflow();
+}
+
 IntPoint PaintLayerScrollableArea::lastKnownMousePosition() const {
   return box().frame() ? box().frame()->eventHandler().lastKnownMousePosition()
                        : IntPoint();

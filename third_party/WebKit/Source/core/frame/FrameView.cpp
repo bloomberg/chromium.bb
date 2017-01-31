@@ -2593,7 +2593,7 @@ IntRect FrameView::scrollableAreaBoundingBox() const {
       .enclosingBoundingBox();
 }
 
-bool FrameView::isScrollable() {
+bool FrameView::isScrollable() const {
   return getScrollingReasons() == Scrollable;
 }
 
@@ -2635,6 +2635,9 @@ FrameView::ScrollingReasons FrameView::getScrollingReasons() const {
 }
 
 void FrameView::updateParentScrollableAreaSet() {
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    return;
+
   // That ensures that only inner frames are cached.
   FrameView* parentFrameView = this->parentFrameView();
   if (!parentFrameView)
@@ -3660,7 +3663,8 @@ void FrameView::setParent(Widget* parentView) {
 void FrameView::removeChild(Widget* child) {
   ASSERT(child->parent() == this);
 
-  if (child->isFrameView())
+  if (child->isFrameView() &&
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     removeScrollableArea(toFrameView(child));
 
   child->setParent(0);
@@ -4889,15 +4893,20 @@ void FrameView::updateSubFrameScrollOnMainReason(
     return;
 
   reasons |= toLocalFrame(frame).view()->mainThreadScrollingReasonsPerFrame();
-  if (WebLayer* scrollLayer =
-          toLocalFrame(frame).view()->layerForScrolling()->platformLayer()) {
-    if (reasons) {
-      scrollLayer->addMainThreadScrollingReasons(reasons);
-    } else {
-      // Clear all main thread scrolling reasons except the one that's set
-      // if there is a running scroll animation.
-      scrollLayer->clearMainThreadScrollingReasons(
-          ~MainThreadScrollingReason::kHandlingScrollFromMainThread);
+  if (GraphicsLayer* layerForScrolling = toLocalFrame(frame)
+                                             .view()
+                                             ->layoutViewportScrollableArea()
+                                             ->layerForScrolling()) {
+    if (WebLayer* platformLayerForScrolling =
+            layerForScrolling->platformLayer()) {
+      if (reasons) {
+        platformLayerForScrolling->addMainThreadScrollingReasons(reasons);
+      } else {
+        // Clear all main thread scrolling reasons except the one that's set
+        // if there is a running scroll animation.
+        platformLayerForScrolling->clearMainThreadScrollingReasons(
+            ~MainThreadScrollingReason::kHandlingScrollFromMainThread);
+      }
     }
   }
 

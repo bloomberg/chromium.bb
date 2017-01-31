@@ -319,6 +319,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return ScrollBehaviorInstant;
   }
 
+  virtual bool isScrollable() const { return true; }
+
   // TODO(bokan): FrameView::setScrollOffset uses updateScrollbars to scroll
   // which bails out early if its already in updateScrollbars, the effect being
   // that programmatic scrolls (i.e. setScrollOffset) are disabled when in

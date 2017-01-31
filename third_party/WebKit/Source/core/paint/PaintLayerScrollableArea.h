@@ -280,6 +280,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   int visibleHeight() const override;
   int visibleWidth() const override;
   IntSize contentsSize() const override;
+  bool isScrollable() const override;
   IntPoint lastKnownMousePosition() const override;
   bool scrollAnimatorEnabled() const override;
   bool shouldSuspendScrollAnimations() const override;

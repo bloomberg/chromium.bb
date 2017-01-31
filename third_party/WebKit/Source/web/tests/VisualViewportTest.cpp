@@ -1646,13 +1646,15 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
   navigateTo(m_baseURL + "content-width-1000.html");
 
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
-  WebLayer* scrollLayer = frameView.layerForScrolling()->platformLayer();
 
   webViewImpl()->mainFrame()->executeScript(
       WebScriptSource("var content = document.getElementById(\"content\");"
                       "content.style.width = \"1500px\";"
                       "content.style.height = \"2400px\";"));
   frameView.updateAllLifecyclePhases();
+  WebLayer* scrollLayer = frameView.layoutViewportScrollableArea()
+                              ->layerForScrolling()
+                              ->platformLayer();
 
   EXPECT_SIZE_EQ(IntSize(1500, 2400), IntSize(scrollLayer->bounds()));
 }

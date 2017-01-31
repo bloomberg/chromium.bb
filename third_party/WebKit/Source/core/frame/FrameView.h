@@ -339,7 +339,7 @@ class CORE_EXPORT FrameView final
   };
 
   ScrollingReasons getScrollingReasons() const;
-  bool isScrollable();
+  bool isScrollable() const override;
   bool isProgrammaticallyScrollable() override;
 
   enum ScrollbarModesCalculationStrategy { RulesFromWebContentOnly, AnyRule };
