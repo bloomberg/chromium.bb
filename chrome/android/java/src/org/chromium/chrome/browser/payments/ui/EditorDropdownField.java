@@ -76,7 +76,7 @@ class EditorDropdownField implements EditorFieldView {
             // ommited in the count.
             if (mFieldModel.getValue() == null) mSelectedIndex = adapter.getCount();
         } else {
-            adapter = new ArrayAdapter<CharSequence>(
+            adapter = new DropdownFieldAdapter<CharSequence>(
                     context, R.layout.multiline_spinner_item, dropdownValues);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         }

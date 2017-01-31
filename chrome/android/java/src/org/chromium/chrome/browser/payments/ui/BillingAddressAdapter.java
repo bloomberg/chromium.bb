@@ -6,24 +6,21 @@ package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Subclass of ArrayAdapter used to display a dropdown hint that won't appear in the expanded
- * dropdown options but will be used when no element is selected. The last shown element will have a
- * "+" icon on its left and a blue tint to indicate the option to add an element.
+ * Subclass of DropdownFieldAdapter used to display a dropdown hint that won't appear in the
+ * expanded dropdown options but will be used when no element is selected. The last shown element
+ * will have a "+" icon on its left and a blue tint to indicate the option to add an element.
  *
  * @param <T> The type of element to be inserted into the adapter.
  *
@@ -38,7 +35,7 @@ import java.util.List;
  *                                                         . hint       . -> hidden
  *                                                         ..............
  */
-public class BillingAddressAdapter<T> extends ArrayAdapter<T> {
+public class BillingAddressAdapter<T> extends DropdownFieldAdapter<T> {
     private final int mTextViewResourceId;
 
     /**
@@ -59,7 +56,7 @@ public class BillingAddressAdapter<T> extends ArrayAdapter<T> {
     public BillingAddressAdapter(
             Context context, int resource, int textViewResourceId, List<T> objects, T hint) {
         // Make a copy of objects so the hint is not added to the original list.
-        super(context, resource, textViewResourceId, new ArrayList<T>(objects));
+        super(context, resource, textViewResourceId, objects);
         // The hint is added as the last element. It will not be shown when the dropdown is
         // expanded and not be taken into account in the getCount function.
         add(hint);
@@ -72,19 +69,6 @@ public class BillingAddressAdapter<T> extends ArrayAdapter<T> {
         // Don't display last item, it is used as hint.
         int count = super.getCount();
         return count > 0 ? count - 1 : count;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View view = super.getView(position, convertView, parent);
-
-        // Add the left and right padding of the parent's background to the selected item view to
-        // avoid overlaping the downward triangle.
-        Rect rect = new Rect();
-        parent.getBackground().getPadding(rect);
-        view.setPadding(view.getPaddingLeft() + rect.left, view.getPaddingTop(),
-                view.getPaddingRight() + rect.right, view.getPaddingBottom());
-        return view;
     }
 
     @Override
