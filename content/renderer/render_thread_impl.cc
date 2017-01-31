@@ -1826,7 +1826,7 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics() const {
       "PurgeAndSuspend.Experimental.MemoryGrowth.BlinkGCKB",
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         blink_gc_kb));
-  UMA_HISTOGRAM_MEMORY_MB(
+  UMA_HISTOGRAM_MEMORY_KB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.MallocKB",
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         malloc_mb) * 1024);
@@ -1834,11 +1834,11 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics() const {
       "PurgeAndSuspend.Experimental.MemoryGrowth.DiscardableKB",
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         discardable_kb));
-  UMA_HISTOGRAM_MEMORY_MB(
+  UMA_HISTOGRAM_MEMORY_KB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.V8MainThreadIsolateKB",
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         v8_main_thread_isolate_mb) * 1024);
-  UMA_HISTOGRAM_MEMORY_MB(
+  UMA_HISTOGRAM_MEMORY_KB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB",
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         total_allocated_mb) * 1024);
