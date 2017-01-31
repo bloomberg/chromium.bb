@@ -120,10 +120,7 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
   chrome_prefix.append(url::kStandardSchemeSeparator);
   std::vector<AboutURLTestCase> test_cases(
       {{GURL(chrome_prefix + chrome::kChromeUISettingsHost),
-        GURL(chrome_prefix + chrome::kChromeUISettingsHost)},
-       {GURL(chrome_prefix + chrome::kChromeUIHelpHost),
-        GURL(chrome_prefix + chrome::kChromeUISettingsHost + "/" +
-             chrome::kChromeUIHelpHost)}});
+        GURL(chrome_prefix + chrome::kChromeUISettingsHost)}});
   TestWillHandleBrowserAboutURL(test_cases);
 }
 
