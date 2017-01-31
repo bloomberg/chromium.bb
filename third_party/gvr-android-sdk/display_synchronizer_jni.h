@@ -111,7 +111,7 @@ static const JNINativeMethod kMethodsDisplaySynchronizer[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-  if (base::android::IsManualJniRegistrationDisabled())
+  if (jni_generator::ShouldSkipJniRegistration(false))
     return true;
 
   const int kMethodsDisplaySynchronizerSize =

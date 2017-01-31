@@ -19,6 +19,7 @@ import android.view.Surface;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
 import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
@@ -31,6 +32,7 @@ import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessConstants;
 import org.chromium.content.browser.ChildProcessCreationParams;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
@@ -191,6 +193,12 @@ public class ChildProcessServiceImpl {
                         }
                     }
                     CommandLine.init(mCommandLineParams);
+
+                    if (ContentSwitches.SWITCH_RENDERER_PROCESS.equals(
+                            CommandLine.getInstance().getSwitchValue(
+                                    ContentSwitches.SWITCH_PROCESS_TYPE))) {
+                        JNIUtils.enableSelectiveJniRegistration();
+                    }
 
                     Linker linker = null;
                     boolean requestedSharedRelro = false;
