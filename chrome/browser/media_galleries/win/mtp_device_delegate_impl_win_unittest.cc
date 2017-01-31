@@ -111,11 +111,6 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
 }
 
 void MTPDeviceDelegateImplWinTest::TearDown() {
-  // The MediaFileSystemRegistry owned by the TestingBrowserProcess must be
-  // destroyed before the StorageMonitor because it calls
-  // StorageMonitor::RemoveObserver() in its destructor.
-  TestingBrowserProcess::DeleteInstance();
-
   // Windows storage monitor must be destroyed on the same thread
   // as construction.
   TestStorageMonitor::Destroy();
