@@ -2035,6 +2035,14 @@
     ]
   },
 
+  "ShowCastIconInToolbar": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "ShowCastIconInToolbar": false },
+    "pref_mappings": [
+      { "pref": "media_router.show_cast_icon_in_toolbar" }
+    ]
+  },
+
   "NTPContentSuggestionsEnabled": {
     "os": ["android"],
     "test_policy": { "NTPContentSuggestionsEnabled": false },

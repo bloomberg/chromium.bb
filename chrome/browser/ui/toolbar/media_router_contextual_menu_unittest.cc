@@ -15,6 +15,18 @@
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
+namespace {
+
+bool HasCommandId(ui::MenuModel* menu_model, int command_id) {
+  for (int i = 0; i < menu_model->GetItemCount(); i++) {
+    if (menu_model->GetCommandIdAt(i) == command_id)
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
  public:
   MediaRouterContextualMenuUnitTest() {}
@@ -149,4 +161,17 @@ TEST_F(MediaRouterContextualMenuUnitTest, ToggleAlwaysShowIconItem) {
   menu.ExecuteCommand(IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION, 0);
   EXPECT_FALSE(component_migration_helper->GetComponentActionPref(
       ComponentToolbarActionsFactory::kMediaRouterActionId));
+}
+
+TEST_F(MediaRouterContextualMenuUnitTest, ActionShownByPolicy) {
+  // Create a contextual menu for an icon shown by administrator policy.
+  MediaRouterContextualMenu menu(browser(), true);
+
+  // The item "Added by your administrator" should be shown disabled.
+  EXPECT_TRUE(menu.IsCommandIdVisible(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY));
+  EXPECT_FALSE(menu.IsCommandIdEnabled(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY));
+
+  // The checkbox item "Always show icon" should not be shown.
+  EXPECT_FALSE(HasCommandId(menu.menu_model(),
+                            IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION));
 }

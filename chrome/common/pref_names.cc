@@ -1971,6 +1971,11 @@ const char kSystemTimezoneAutomaticDetectionPolicy[] =
 #if defined(ENABLE_MEDIA_ROUTER)
 // Pref name for the policy controlling whether to enable Media Router.
 const char kEnableMediaRouter[] = "media_router.enable_media_router";
+#if !defined(OS_ANDROID)
+// Pref name for the policy controlling whether to force the Cast icon to be
+// shown in the toolbar/overflow menu.
+const char kShowCastIconInToolbar[] = "media_router.show_cast_icon_in_toolbar";
+#endif  // !defined(OS_ANDROID)
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
 // *************** SERVICE PREFS ***************

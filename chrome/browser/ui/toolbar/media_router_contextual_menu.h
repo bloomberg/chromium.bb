@@ -19,6 +19,9 @@ class ComponentMigrationHelper;
 class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
  public:
   explicit MediaRouterContextualMenu(Browser* browser);
+
+  // Constructor for injecting values in tests.
+  MediaRouterContextualMenu(Browser* browser, bool shown_by_policy);
   ~MediaRouterContextualMenu() override;
 
   ui::MenuModel* menu_model() { return &menu_model_; }
@@ -28,6 +31,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
                            ToggleCloudServicesItem);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ToggleAlwaysShowIconItem);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
+                           ActionShownByPolicy);
 
   // Gets or sets the "Always show icon" option.
   bool GetAlwaysShowActionPref() const;

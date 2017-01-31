@@ -737,6 +737,9 @@ extern const char kSystemTimezoneAutomaticDetectionPolicy[];
 
 #if defined(ENABLE_MEDIA_ROUTER)
 extern const char kEnableMediaRouter[];
+#if !defined(OS_ANDROID)
+extern const char kShowCastIconInToolbar[];
+#endif  // !defined(OS_ANDROID)
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if !defined(OS_ANDROID)

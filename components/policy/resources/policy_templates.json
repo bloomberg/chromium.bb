@@ -139,7 +139,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 361
+#   For your editing convenience: highest ID currently used: 362
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml.
 #
@@ -9141,19 +9141,48 @@
       The desire is to remove this override in the future.''',
     },
     {
-      'name': 'EnableMediaRouter',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:52-', 'chrome_os:52-', 'android:52-'],
-      'features': {
-        'dynamic_refresh': False,
-        'per_profile': True,
-      },
-      'example_value': True,
-      'id': 333,
-      'caption': '''Enables cast''',
-      'tags': [],
-      'desc': '''If this is set to true or is not set, users will be able to cast tabs, sites or the desktop from the browser. If set to false, this option will be disabled.'''
+      'name': 'GoogleCast',
+      'type': 'group',
+      'caption': '''Google Cast''',
+      'desc': '''Configure policies for Google Cast, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.''',
+      'policies': [
+        {
+          'name': 'EnableMediaRouter',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.*:52-', 'chrome_os:52-', 'android:52-'],
+          'features': {
+            'dynamic_refresh': False,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 333,
+          'caption': '''Enables Google Cast''',
+          'tags': [],
+          'desc': '''If this policy is set to true or is not set, Google Cast will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites, and (if shown) the Cast toolbar icon.
+
+          If this policy set to false, Google Cast will be disabled.'''
+        },
+        {
+          'name': 'ShowCastIconInToolbar',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.*:58-', 'chrome_os:58-'],
+          'features': {
+            'dynamic_refresh': False,
+            'per_profile': True,
+          },
+          'example_value': False,
+          'id': 362,
+          'caption': '''Shows the Google Cast toolbar icon''',
+          'tags': [],
+          'desc': '''If this policy is set to true, the Cast toolbar icon will always be shown on the toolbar or the overflow menu, and users will not be able to remove it.
+
+          If this policy is set to false or is not set, users will be able to pin or remove the icon via its contextual menu.
+
+          If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect, and the toolbar icon would not be shown.'''
+        },
+      ],
     },
     {
       'name': 'ArcBackupRestoreEnabled',

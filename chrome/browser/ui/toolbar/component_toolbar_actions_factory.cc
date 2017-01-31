@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "extensions/common/feature_switch.h"
 
@@ -44,6 +45,11 @@ ComponentToolbarActionsFactory* ComponentToolbarActionsFactory::GetInstance() {
 std::set<std::string> ComponentToolbarActionsFactory::GetInitialComponentIds(
     Profile* profile) {
   std::set<std::string> component_ids;
+  if (media_router::MediaRouterEnabled(profile) &&
+      MediaRouterActionController::IsActionShownByPolicy(profile)) {
+    component_ids.insert(kMediaRouterActionId);
+  }
+
   return component_ids;
 }
 

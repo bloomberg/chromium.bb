@@ -24,6 +24,17 @@ MediaRouterActionController::~MediaRouterActionController() {
   DCHECK_EQ(dialog_count_, 0u);
 }
 
+// static
+bool MediaRouterActionController::IsActionShownByPolicy(Profile* profile) {
+  CHECK(profile);
+  const PrefService::Preference* pref =
+      profile->GetPrefs()->FindPreference(prefs::kShowCastIconInToolbar);
+  bool show = false;
+  if (pref->IsManaged())
+    pref->GetValue()->GetAsBoolean(&show);
+  return show;
+}
+
 void MediaRouterActionController::OnIssue(const media_router::Issue& issue) {
   has_issue_ = true;
   MaybeAddOrRemoveAction();
@@ -68,8 +79,10 @@ MediaRouterActionController::MediaRouterActionController(
       media_router::MediaRoutesObserver(router),
       profile_(profile),
       component_action_delegate_(component_action_delegate),
-      component_migration_helper_(component_migration_helper) {
-  DCHECK(profile_);
+      component_migration_helper_(component_migration_helper),
+      shown_by_policy_(
+          MediaRouterActionController::IsActionShownByPolicy(profile)) {
+  CHECK(profile_);
   media_router::IssuesObserver::Init();
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
@@ -93,7 +106,8 @@ void MediaRouterActionController::MaybeAddOrRemoveAction() {
 }
 
 bool MediaRouterActionController::ShouldEnableAction() const {
-  return has_local_display_route_ || has_issue_ || dialog_count_ ||
+  return shown_by_policy_ || has_local_display_route_ || has_issue_ ||
+         dialog_count_ ||
          component_migration_helper_->GetComponentActionPref(
              ComponentToolbarActionsFactory::kMediaRouterActionId);
 }

@@ -31,6 +31,9 @@ class MediaRouterActionController : public media_router::IssuesObserver,
       ComponentMigrationHelper* component_migration_helper);
   ~MediaRouterActionController() override;
 
+  // Whether the media router action is shown by an administrator policy.
+  static bool IsActionShownByPolicy(Profile* profile);
+
   // media_router::IssuesObserver:
   void OnIssue(const media_router::Issue& issue) override;
   void OnIssuesCleared() override;
@@ -76,6 +79,9 @@ class MediaRouterActionController : public media_router::IssuesObserver,
 
   bool has_issue_ = false;
   bool has_local_display_route_ = false;
+
+  // Whether the media router action is shown by an administrator policy.
+  bool shown_by_policy_;
 
   // The number of dialogs that are currently open.
   size_t dialog_count_ = 0;

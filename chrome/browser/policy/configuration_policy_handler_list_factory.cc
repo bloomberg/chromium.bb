@@ -411,6 +411,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnableMediaRouter,
     prefs::kEnableMediaRouter,
     base::Value::Type::BOOLEAN },
+#if !defined(OS_ANDROID)
+  { key::kShowCastIconInToolbar,
+    prefs::kShowCastIconInToolbar,
+    base::Value::Type::BOOLEAN },
+#endif  // !defined(OS_ANDROID)
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 #if BUILDFLAG(ENABLE_WEBRTC)
   { key::kWebRtcUdpPortRange,

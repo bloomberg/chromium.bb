@@ -224,6 +224,11 @@
 #include "ui/base/window_open_disposition.h"
 #endif
 
+#if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
+#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
+#endif  // defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
 using testing::Mock;
@@ -3578,6 +3583,47 @@ IN_PROC_BROWSER_TEST_F(MediaRouterEnabledPolicyTest, MediaRouterEnabled) {
 IN_PROC_BROWSER_TEST_F(MediaRouterDisabledPolicyTest, MediaRouterDisabled) {
   EXPECT_FALSE(media_router::MediaRouterEnabled(browser()->profile()));
 }
+
+#if !defined(OS_ANDROID)
+template <bool enable>
+class MediaRouterActionPolicyTest : public PolicyTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(key::kShowCastIconInToolbar, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::MakeUnique<base::FundamentalValue>(enable), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
+ protected:
+  bool HasMediaRouterActionAtInit() const {
+    const std::set<std::string>& component_ids =
+        ComponentToolbarActionsFactory::GetInstance()->GetInitialComponentIds(
+            browser()->profile());
+    return base::ContainsKey(
+        component_ids, ComponentToolbarActionsFactory::kMediaRouterActionId);
+  }
+};
+
+using MediaRouterActionEnabledPolicyTest = MediaRouterActionPolicyTest<true>;
+using MediaRouterActionDisabledPolicyTest = MediaRouterActionPolicyTest<false>;
+
+IN_PROC_BROWSER_TEST_F(MediaRouterActionEnabledPolicyTest,
+                       MediaRouterActionEnabled) {
+  EXPECT_TRUE(
+      MediaRouterActionController::IsActionShownByPolicy(browser()->profile()));
+  EXPECT_TRUE(HasMediaRouterActionAtInit());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterActionDisabledPolicyTest,
+                       MediaRouterActionDisabled) {
+  EXPECT_FALSE(
+      MediaRouterActionController::IsActionShownByPolicy(browser()->profile()));
+  EXPECT_FALSE(HasMediaRouterActionAtInit());
+}
+#endif  // !defined(OS_ANDROID)
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if BUILDFLAG(ENABLE_WEBRTC)

@@ -391,7 +391,10 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
 #if defined(ENABLE_MEDIA_ROUTER)
   registry->RegisterBooleanPref(prefs::kEnableMediaRouter, true);
-#endif
+#if !defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
+#endif  // !defined(OS_ANDROID)
+#endif  // defined(ENABLE_MEDIA_ROUTER)
   // Initialize the cache prefs.
   registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
   registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
