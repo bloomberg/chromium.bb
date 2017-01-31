@@ -176,8 +176,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kAllowScreenLock, true);
 #endif
-
-  registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
 }
 
 std::string Profile::GetDebugName() {

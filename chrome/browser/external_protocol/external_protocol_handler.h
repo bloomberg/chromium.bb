@@ -14,7 +14,6 @@
 
 class GURL;
 class PrefRegistrySimple;
-class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -35,8 +34,7 @@ class ExternalProtocolHandler {
     CreateShellWorker(
         const shell_integration::DefaultWebClientWorkerCallback& callback,
         const std::string& protocol) = 0;
-    virtual BlockState GetBlockState(const std::string& scheme,
-                                     Profile* profile) = 0;
+    virtual BlockState GetBlockState(const std::string& scheme) = 0;
     virtual void BlockRequest() = 0;
     virtual void RunExternalProtocolDialog(
         const GURL& url,
@@ -52,12 +50,10 @@ class ExternalProtocolHandler {
   };
 
   // Returns whether we should block a given scheme.
-  static BlockState GetBlockState(const std::string& scheme, Profile* profile);
+  static BlockState GetBlockState(const std::string& scheme);
 
   // Sets whether we should block a given scheme.
-  static void SetBlockState(const std::string& scheme,
-                            BlockState state,
-                            Profile* profile);
+  static void SetBlockState(const std::string& scheme, BlockState state);
 
   // Checks to see if the protocol is allowed, if it is whitelisted,
   // the application associated with the protocol is launched on the io thread,

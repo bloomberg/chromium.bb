@@ -391,8 +391,8 @@ class MailtoExternalProtocolHandlerDelegate
                                                               protocol);
   }
 
-  ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
-                                                    Profile* profile) override {
+  ExternalProtocolHandler::BlockState GetBlockState(
+      const std::string& scheme) override {
     return ExternalProtocolHandler::DONT_BLOCK;
   }
 
