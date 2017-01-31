@@ -13,7 +13,7 @@
 namespace blink {
 
 StylePropertySet* CSSVariableData::propertySet() {
-  ASSERT(!m_needsVariableResolution);
+  DCHECK(!m_needsVariableResolution);
   if (!m_cachedPropertySet) {
     m_propertySet = CSSParser::parseCustomPropertySet(m_tokens);
     m_cachedPropertySet = true;
@@ -35,7 +35,7 @@ void CSSVariableData::updateTokens(const CSSParserTokenRange& range) {
       m_tokens.push_back(token);
     }
   }
-  ASSERT(currentOffset ==
+  DCHECK(currentOffset ==
          m_backingString.getCharacters<CharacterType>() +
              m_backingString.length());
 }
@@ -66,7 +66,7 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
     : m_isAnimationTainted(isAnimationTainted),
       m_needsVariableResolution(needsVariableResolution),
       m_cachedPropertySet(false) {
-  ASSERT(!range.atEnd());
+  DCHECK(!range.atEnd());
   consumeAndUpdateTokens(range);
 }
 
