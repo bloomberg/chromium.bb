@@ -116,8 +116,7 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcImeService>(arc_bridge_service));
   arc_service_manager_->AddService(base::MakeUnique<ArcIntentHelperBridge>(
-      arc_bridge_service, arc_service_manager_->icon_loader(),
-      arc_service_manager_->activity_resolver()));
+      arc_bridge_service, arc_service_manager_->activity_resolver()));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcMetricsService>(arc_bridge_service));
   arc_service_manager_->AddService(

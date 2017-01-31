@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,23 +22,20 @@ class ArcIntentHelperTest : public testing::Test {
 
  protected:
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
-  scoped_refptr<ActivityIconLoader> icon_loader_;
   scoped_refptr<LocalActivityResolver> activity_resolver_;
   std::unique_ptr<ArcIntentHelperBridge> instance_;
 
  private:
   void SetUp() override {
     arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
-    icon_loader_ = new ActivityIconLoader();
     activity_resolver_ = new LocalActivityResolver();
     instance_ = base::MakeUnique<ArcIntentHelperBridge>(
-        arc_bridge_service_.get(), icon_loader_, activity_resolver_);
+        arc_bridge_service_.get(), activity_resolver_);
   }
 
   void TearDown() override {
     instance_.reset();
     activity_resolver_ = nullptr;
-    icon_loader_ = nullptr;
     arc_bridge_service_.reset();
   }
 

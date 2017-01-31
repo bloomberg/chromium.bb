@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -113,7 +113,7 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
       std::vector<mojom::IntentHandlerInfoPtr> handlers);
   void OnAppIconsReceived(
       std::vector<mojom::IntentHandlerInfoPtr> handlers,
-      std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
+      std::unique_ptr<ArcIntentHelperBridge::ActivityToIconsMap> icons);
   void OnIntentPickerClosed(std::vector<mojom::IntentHandlerInfoPtr> handlers,
                             const std::string& selected_app_package,
                             CloseReason close_reason);

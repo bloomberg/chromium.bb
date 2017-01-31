@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/page_transition_util.h"
 #include "content/public/browser/browser_context.h"
@@ -46,12 +45,6 @@ void ShowFallbackExternalProtocolDialog(int render_process_host_id,
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
   new ExternalProtocolDialog(web_contents, url);
-}
-
-scoped_refptr<ActivityIconLoader> GetIconLoader() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
-  return arc_service_manager ? arc_service_manager->icon_loader() : nullptr;
 }
 
 void CloseTabIfNeeded(int render_process_host_id, int routing_id) {
@@ -332,15 +325,15 @@ void OnAppIconsReceived(
     int routing_id,
     const GURL& url,
     std::vector<mojom::IntentHandlerInfoPtr> handlers,
-    std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
+    std::unique_ptr<ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   using AppInfo = ArcNavigationThrottle::AppInfo;
   std::vector<AppInfo> app_info;
 
   for (const auto& handler : handlers) {
-    const ActivityIconLoader::ActivityName activity(handler->package_name,
-                                                    handler->activity_name);
+    const ArcIntentHelperBridge::ActivityName activity(handler->package_name,
+                                                       handler->activity_name);
     const auto it = icons->find(activity);
     app_info.emplace_back(
         AppInfo(it != icons->end() ? it->second.icon20 : gfx::Image(),
@@ -372,9 +365,9 @@ void OnUrlHandlerList(int render_process_host_id,
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
-  scoped_refptr<ActivityIconLoader> icon_loader = GetIconLoader();
-
-  if (!instance || !icon_loader) {
+  auto* intent_helper_bridge =
+      ArcServiceManager::GetGlobalService<ArcIntentHelperBridge>();
+  if (!instance || !intent_helper_bridge) {
     // ARC is not running anymore. Show the Chrome OS dialog.
     ShowFallbackExternalProtocolDialog(render_process_host_id, routing_id, url);
     return;
@@ -401,11 +394,11 @@ void OnUrlHandlerList(int render_process_host_id,
     std::swap(handlers[indices.first], handlers[indices.second]);
 
   // Then request the icons.
-  std::vector<ActivityIconLoader::ActivityName> activities;
+  std::vector<ArcIntentHelperBridge::ActivityName> activities;
   for (const auto& handler : handlers) {
     activities.emplace_back(handler->package_name, handler->activity_name);
   }
-  icon_loader->GetActivityIcons(
+  intent_helper_bridge->GetActivityIcons(
       activities, base::Bind(OnAppIconsReceived, render_process_host_id,
                              routing_id, url, base::Passed(&handlers)));
 }

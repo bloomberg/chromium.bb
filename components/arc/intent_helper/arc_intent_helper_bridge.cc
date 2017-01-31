@@ -15,8 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
 #include "ui/base/layout.h"
@@ -34,11 +32,9 @@ const char ArcIntentHelperBridge::kArcIntentHelperPackageName[] =
 
 ArcIntentHelperBridge::ArcIntentHelperBridge(
     ArcBridgeService* bridge_service,
-    const scoped_refptr<ActivityIconLoader>& icon_loader,
     const scoped_refptr<LocalActivityResolver>& activity_resolver)
     : ArcService(bridge_service),
       binding_(this),
-      icon_loader_(icon_loader),
       activity_resolver_(activity_resolver) {
   DCHECK(thread_checker_.CalledOnValidThread());
   arc_bridge_service()->intent_helper()->AddObserver(this);
@@ -65,7 +61,7 @@ void ArcIntentHelperBridge::OnInstanceClosed() {
 
 void ArcIntentHelperBridge::OnIconInvalidated(const std::string& package_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  icon_loader_->InvalidateIcons(package_name);
+  icon_loader_.InvalidateIcons(package_name);
 }
 
 void ArcIntentHelperBridge::OnOpenDownloads() {
@@ -93,6 +89,13 @@ void ArcIntentHelperBridge::SetWallpaperDeprecated(
   LOG(ERROR) << "IntentHelper.SetWallpaper is deprecated";
 }
 
+ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
+    const std::vector<ActivityName>& activities,
+    const OnIconsReadyCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return icon_loader_.GetActivityIcons(activities, callback);
+}
+
 void ArcIntentHelperBridge::AddObserver(ArcIntentHelperObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -104,8 +107,7 @@ void ArcIntentHelperBridge::RemoveObserver(ArcIntentHelperObserver* observer) {
 std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(
     const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::unique_ptr<LinkHandlerModelImpl> impl(
-      new LinkHandlerModelImpl(icon_loader_));
+  auto impl = base::MakeUnique<LinkHandlerModelImpl>();
   if (!impl->Init(url))
     return nullptr;
   return std::move(impl);
@@ -128,41 +130,6 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
     handlers_filtered.push_back(std::move(handler));
   }
   return handlers_filtered;
-}
-
-// static
-bool ArcIntentHelperBridge::IsIntentHelperAvailable(GetResult* out_error_code) {
-  auto* arc_service_manager = ArcServiceManager::Get();
-  if (!arc_service_manager) {
-    // TODO(hidehiko): IsArcAvailable() looks not the condition to be checked
-    // here, because ArcServiceManager instance is created regardless of ARC
-    // availability. This happens only before MessageLoop starts or after
-    // MessageLoop stops, practically.
-    // Also, returning FAILED_ARC_NOT_READY looks problematic at the moment,
-    // because ArcProcessTask::StartIconLoading accesses to
-    // ArcServiceManager::Get() return value, which can be nullptr.
-    if (!IsArcAvailable()) {
-      VLOG(2) << "ARC bridge is not supported.";
-      if (out_error_code)
-        *out_error_code = GetResult::FAILED_ARC_NOT_SUPPORTED;
-    } else {
-      VLOG(2) << "ARC bridge is not ready.";
-      if (out_error_code)
-        *out_error_code = GetResult::FAILED_ARC_NOT_READY;
-    }
-    return false;
-  }
-
-  auto* intent_helper_holder =
-      arc_service_manager->arc_bridge_service()->intent_helper();
-  if (!intent_helper_holder->has_instance()) {
-    VLOG(2) << "ARC intent helper instance is not ready.";
-    if (out_error_code)
-      *out_error_code = GetResult::FAILED_ARC_NOT_READY;
-    return false;
-  }
-
-  return true;
 }
 
 void ArcIntentHelperBridge::OnIntentFiltersUpdated(

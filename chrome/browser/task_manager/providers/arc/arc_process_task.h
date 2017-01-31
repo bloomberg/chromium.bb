@@ -15,7 +15,7 @@
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 
 namespace task_manager {
 
@@ -48,7 +48,7 @@ class ArcProcessTask
  private:
   void StartIconLoading();
   void OnIconLoaded(
-      std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons);
+      std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons);
 
   const base::ProcessId nspid_;
   const std::string process_name_;

@@ -20,7 +20,6 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,16 +33,6 @@ namespace file_tasks {
 namespace {
 
 constexpr char kAppIdSeparator = '/';
-
-// Returns the icon loader that wraps the Mojo interface for ARC Intent Helper.
-scoped_refptr<arc::ActivityIconLoader> GetArcActivityIconLoader() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager)
-    return nullptr;
-  return arc_service_manager->icon_loader();
-}
 
 // Converts an Android intent action (see kIntentAction* in
 // components/arc/intent_helper/intent_constants.h) to a file task action ID
@@ -102,7 +91,7 @@ void OnArcIconLoaded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
-    std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons);
+    std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons);
 
 // Called after the handlers from ARC is obtained. Proceeds to OnArcIconLoaded.
 void OnArcHandlerList(
@@ -111,20 +100,20 @@ void OnArcHandlerList(
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_refptr<arc::ActivityIconLoader> icon_loader =
-      GetArcActivityIconLoader();
-  if (!icon_loader) {
+  auto* intent_helper_bridge =
+      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
+  if (!intent_helper_bridge) {
     callback.Run(std::move(result_list));
     return;
   }
 
   std::vector<arc::mojom::IntentHandlerInfoPtr> handlers_filtered =
       arc::ArcIntentHelperBridge::FilterOutIntentHelper(std::move(handlers));
-  std::vector<arc::ActivityIconLoader::ActivityName> activity_names;
+  std::vector<arc::ArcIntentHelperBridge::ActivityName> activity_names;
   for (const arc::mojom::IntentHandlerInfoPtr& handler : handlers_filtered)
     activity_names.emplace_back(handler->package_name, handler->activity_name);
 
-  icon_loader->GetActivityIcons(
+  intent_helper_bridge->GetActivityIcons(
       activity_names, base::Bind(&OnArcIconLoaded, base::Passed(&result_list),
                                  callback, base::Passed(&handlers_filtered)));
 }
@@ -134,7 +123,7 @@ void OnArcIconLoaded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
-    std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons) {
+    std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   using extensions::api::file_manager_private::Verb;
@@ -148,7 +137,7 @@ void OnArcIconLoaded(
         action == arc::kIntentActionSendMultiple) {
       handler_verb = Verb::VERB_SHARE_WITH;
     }
-    auto it = icons->find(arc::ActivityIconLoader::ActivityName(
+    auto it = icons->find(arc::ArcIntentHelperBridge::ActivityName(
         handler->package_name, handler->activity_name));
     const GURL& icon_url =
         (it == icons->end() ? GURL::EmptyGURL()

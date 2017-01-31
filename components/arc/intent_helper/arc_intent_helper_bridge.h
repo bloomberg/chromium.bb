@@ -17,6 +17,7 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -28,7 +29,6 @@ class LinkHandlerModel;
 
 namespace arc {
 
-class ActivityIconLoader;
 class ArcBridgeService;
 class IntentFilter;
 class LocalActivityResolver;
@@ -40,18 +40,8 @@ class ArcIntentHelperBridge
       public mojom::IntentHelperHost,
       public ash::LinkHandlerModelFactory {
  public:
-  enum class GetResult {
-    // Failed. The intent_helper instance is not yet ready. This is a temporary
-    // error.
-    FAILED_ARC_NOT_READY,
-    // Failed. Either ARC is not supported at all or intent_helper instance
-    // version is too old.
-    FAILED_ARC_NOT_SUPPORTED,
-  };
-
   ArcIntentHelperBridge(
       ArcBridgeService* bridge_service,
-      const scoped_refptr<ActivityIconLoader>& icon_loader,
       const scoped_refptr<LocalActivityResolver>& activity_resolver);
   ~ArcIntentHelperBridge() override;
 
@@ -71,6 +61,17 @@ class ArcIntentHelperBridge
   void OpenWallpaperPicker() override;
   void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
 
+  // Retrieves icons for the |activities| and calls |callback|.
+  // See ActivityIconLoader::GetActivityIcons() for more details.
+  using ActivityName = internal::ActivityIconLoader::ActivityName;
+  // A part of OnIconsReadyCallback signature.
+  using ActivityToIconsMap = internal::ActivityIconLoader::ActivityToIconsMap;
+  using OnIconsReadyCallback =
+      internal::ActivityIconLoader::OnIconsReadyCallback;
+  using GetResult = internal::ActivityIconLoader::GetResult;
+  GetResult GetActivityIcons(const std::vector<ActivityName>& activities,
+                             const OnIconsReadyCallback& callback);
+
   // ash::LinkHandlerModelFactory
   std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;
 
@@ -82,10 +83,6 @@ class ArcIntentHelperBridge
   static std::vector<mojom::IntentHandlerInfoPtr> FilterOutIntentHelper(
       std::vector<mojom::IntentHandlerInfoPtr> handlers);
 
-  // Checks if the intent helper interface is available. When it is not, returns
-  // false and updates |out_error_code| if it's not nullptr.
-  static bool IsIntentHelperAvailable(GetResult* out_error_code);
-
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 
@@ -93,7 +90,7 @@ class ArcIntentHelperBridge
 
  private:
   mojo::Binding<mojom::IntentHelperHost> binding_;
-  scoped_refptr<ActivityIconLoader> icon_loader_;
+  internal::ActivityIconLoader icon_loader_;
   scoped_refptr<LocalActivityResolver> activity_resolver_;
 
   base::ThreadChecker thread_checker_;

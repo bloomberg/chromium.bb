@@ -24,7 +24,6 @@ ArcServiceManager::ArcServiceManager(
     scoped_refptr<base::TaskRunner> blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner),
       arc_bridge_service_(base::MakeUnique<ArcBridgeService>()),
-      icon_loader_(new ActivityIconLoader()),
       activity_resolver_(new LocalActivityResolver()) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
@@ -79,7 +78,6 @@ ArcService* ArcServiceManager::GetNamedServiceInternal(
 
 void ArcServiceManager::Shutdown() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  icon_loader_ = nullptr;
   activity_resolver_ = nullptr;
   services_.clear();
 }

@@ -12,6 +12,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/process.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,14 +50,6 @@ base::string16 MakeTitle(const std::string& process_name,
   return title;
 }
 
-scoped_refptr<arc::ActivityIconLoader> GetIconLoader() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager)
-    return nullptr;
-  return arc_service_manager->icon_loader();
-}
-
 // An activity name for retrieving the package's default icon without
 // specifying an activity name.
 constexpr char kEmptyActivityName[] = "";
@@ -88,22 +81,23 @@ ArcProcessTask::ArcProcessTask(base::ProcessId pid,
 void ArcProcessTask::StartIconLoading() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_refptr<arc::ActivityIconLoader> icon_loader = GetIconLoader();
-  arc::ActivityIconLoader::GetResult result =
-      arc::ActivityIconLoader::GetResult::FAILED_ARC_NOT_READY;
-  if (icon_loader) {
+  auto* intent_helper_bridge =
+      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
+  arc::ArcIntentHelperBridge::GetResult result =
+      arc::ArcIntentHelperBridge::GetResult::FAILED_ARC_NOT_READY;
+  if (intent_helper_bridge) {
     // In some case, the package_name_ does not exists, it would be expected to
     // get default process icon. For example, daemon processes in android
     // container such like surfaceflinger, debuggerd or installd. Each of them
     // would be shown on task manager but does not have a package name.
-    std::vector<arc::ActivityIconLoader::ActivityName> activities = {
+    std::vector<arc::ArcIntentHelperBridge::ActivityName> activities = {
         {package_name_, kEmptyActivityName}};
-    result = icon_loader->GetActivityIcons(
+    result = intent_helper_bridge->GetActivityIcons(
         activities, base::Bind(&ArcProcessTask::OnIconLoaded,
                                weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (result == arc::ActivityIconLoader::GetResult::FAILED_ARC_NOT_READY) {
+  if (result == arc::ArcIntentHelperBridge::GetResult::FAILED_ARC_NOT_READY) {
     // Need to retry loading the icon.
     arc::ArcServiceManager::Get()
         ->arc_bridge_service()
@@ -158,7 +152,7 @@ void ArcProcessTask::OnInstanceReady() {
 
   // Instead of calling into StartIconLoading() directly, return to the main
   // loop first to make sure other ArcBridgeService observers are notified.
-  // Otherwise, arc::ActivityIconLoader::GetActivityIcon() may fail again.
+  // Otherwise, arc::ArcIntentHelperBridge::GetActivityIcon() may fail again.
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    base::Bind(&ArcProcessTask::StartIconLoading,
                                               weak_ptr_factory_.GetWeakPtr()));
@@ -169,7 +163,7 @@ void ArcProcessTask::SetProcessState(arc::mojom::ProcessState process_state) {
 }
 
 void ArcProcessTask::OnIconLoaded(
-    std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons) {
+    std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   for (const auto& kv : *icons) {
     const gfx::Image& icon = kv.second.icon16;

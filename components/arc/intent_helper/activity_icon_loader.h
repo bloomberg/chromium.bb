@@ -13,18 +13,19 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace arc {
+namespace internal {
 
 // A class which retrieves an activity icon from ARC.
-class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
+class ActivityIconLoader {
  public:
   struct Icons {
     Icons(const gfx::Image& icon16, const gfx::Image& icon20,
@@ -69,6 +70,7 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
       base::Callback<void(std::unique_ptr<ActivityToIconsMap>)>;
 
   ActivityIconLoader();
+  ~ActivityIconLoader();
 
   // Removes icons associated with |package_name| from the cache.
   void InvalidateIcons(const std::string& package_name);
@@ -92,17 +94,10 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
   const ActivityToIconsMap& cached_icons_for_testing() { return cached_icons_; }
 
  private:
-  friend class base::RefCounted<ActivityIconLoader>;
-  ~ActivityIconLoader();
-
   // A function called when the mojo IPC returns.
   void OnIconsReady(std::unique_ptr<ActivityToIconsMap> cached_result,
                     const OnIconsReadyCallback& cb,
                     std::vector<mojom::ActivityIconPtr> icons);
-
-  // Resizes and encodes |icons| and returns the results as ActivityToIconsMap.
-  static std::unique_ptr<ActivityToIconsMap> ResizeAndEncodeIcons(
-      std::vector<mojom::ActivityIconPtr> icons);
 
   // A function called when ResizeIcons finishes. Append items in |result| to
   // |cached_icons_|.
@@ -117,9 +112,13 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
 
   base::ThreadChecker thread_checker_;
 
+  // This must come last to make sure weak pointers are invalidated first.
+  base::WeakPtrFactory<ActivityIconLoader> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ActivityIconLoader);
 };
 
+}  // namespace internal
 }  // namespace arc
 
 #endif  // COMPONENTS_ARC_INTENT_HELPER_ACTIVITY_ICON_LOADER_H_
