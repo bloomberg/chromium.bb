@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
 #import "ios/web_view/public/criwv_translate_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,9 +14,9 @@
 
 @interface TranslateController ()
 // Action Sheet to prompt user whether or not the page should be translated.
-@property (nonatomic, strong) UIAlertController* beforeTranslateActionSheet;
+@property(nonatomic, strong) UIAlertController* beforeTranslateActionSheet;
 // Manager which performs the translation of the content.
-@property (nonatomic, strong) id<CRIWVTranslateManager> translateManager;
+@property(nonatomic, strong) id<CRIWVTranslateManager> translateManager;
 @end
 
 @implementation TranslateController
@@ -35,8 +34,6 @@
 - (void)translateStepChanged:(CRIWVTransateStep)step
                      manager:(id<CRIWVTranslateManager>)manager {
   if (step == CRIWVTransateStepBeforeTranslate) {
-    DCHECK(!_translateManager);
-    DCHECK(!_beforeTranslateActionSheet);
     self.translateManager = manager;
     self.beforeTranslateActionSheet = [UIAlertController
         alertControllerWithTitle:nil
@@ -46,9 +43,7 @@
         [UIAlertAction actionWithTitle:@"Nope."
                                  style:UIAlertActionStyleCancel
                                handler:^(UIAlertAction* action) {
-                                 DCHECK(_beforeTranslateActionSheet);
                                  self.beforeTranslateActionSheet = nil;
-                                 DCHECK(_translateManager);
                                  self.translateManager = nil;
                                }];
     [_beforeTranslateActionSheet addAction:cancelAction];
@@ -57,9 +52,7 @@
         [UIAlertAction actionWithTitle:@"Yes!"
                                  style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction* action) {
-                                 DCHECK(_beforeTranslateActionSheet);
                                  self.beforeTranslateActionSheet = nil;
-                                 DCHECK(_translateManager);
                                  [_translateManager translate];
                                  self.translateManager = nil;
                                }];

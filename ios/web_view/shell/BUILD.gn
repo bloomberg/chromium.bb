@@ -18,14 +18,14 @@ ios_app_bundle("ios_web_view_shell") {
   info_plist = "Info.plist"
   sources = [
     "shell_app_delegate.h",
-    "shell_app_delegate.mm",
+    "shell_app_delegate.m",
     "shell_delegate.h",
-    "shell_delegate.mm",
-    "shell_exe_main.mm",
+    "shell_delegate.m",
+    "shell_exe_main.m",
     "shell_view_controller.h",
-    "shell_view_controller.mm",
+    "shell_view_controller.m",
     "translate_controller.h",
-    "translate_controller.mm",
+    "translate_controller.m",
   ]
   libs = [
     "CFNetwork.framework",

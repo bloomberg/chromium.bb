@@ -13,7 +13,7 @@
 #endif
 
 @interface ShellAppDelegate ()
-@property (nonatomic, strong) ShellDelegate* delegate;
+@property(nonatomic, strong) ShellDelegate* delegate;
 @end
 
 @implementation ShellAppDelegate

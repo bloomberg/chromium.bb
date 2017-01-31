@@ -12,21 +12,17 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-const CGFloat kButtonSize = 44;
-}
-
 @interface ShellViewController ()
 // Container for |webView|.
-@property (nonatomic, strong) UIView* containerView;
+@property(nonatomic, strong) UIView* containerView;
 // Text field used for navigating to URLs.
-@property (nonatomic, strong) UITextField* field;
+@property(nonatomic, strong) UITextField* field;
 // Toolbar containing navigation buttons and |field|.
-@property (nonatomic, strong) UIToolbar* toolbar;
+@property(nonatomic, strong) UIToolbar* toolbar;
 // CRIWV view which renders the web page.
-@property (nonatomic, strong) id<CRIWVWebView> webView;
+@property(nonatomic, strong) id<CRIWVWebView> webView;
 // Handles the translation of the content displayed in |webView|.
-@property (nonatomic, strong) TranslateController* translateController;
+@property(nonatomic, strong) TranslateController* translateController;
 
 - (void)back;
 - (void)forward;
@@ -66,8 +62,10 @@ const CGFloat kButtonSize = 44;
                                       UIViewAutoresizingFlexibleHeight];
   [self.view addSubview:_containerView];
 
-  // Text field.
   const int kButtonCount = 3;
+  const CGFloat kButtonSize = 44;
+
+  // Text field.
   self.field = [[UITextField alloc]
       initWithFrame:CGRectMake(kButtonCount * kButtonSize, 6,
                                CGRectGetWidth([_toolbar frame]) -
