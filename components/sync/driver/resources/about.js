@@ -41,8 +41,14 @@ cr.define('chrome.sync.about_tab', function() {
     var type_status_array = chrome.sync.aboutInfo.type_status;
     type_status_array.forEach(function(row) {
       if (row.name == modelType) {
-        row.num_entries = counters.numEntriesAndTombstones;
-        row.num_live = counters.numEntries;
+        // There are three types of counters, only "status" counters have these
+        // fields. Keep the old values if updated fields are not present.
+        if (counters.numEntriesAndTombstones) {
+          row.num_entries = counters.numEntriesAndTombstones;
+        }
+        if (counters.numEntries) {
+          row.num_live = counters.numEntries;
+        }
       }
     });
     jstProcess(
