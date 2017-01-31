@@ -23,6 +23,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
@@ -182,8 +183,6 @@ public class GeolocationHeader {
     /** The maximum age in milliseconds of a location before we'll request a refresh. */
     private static final int REFRESH_LOCATION_AGE = 5 * 60 * 1000;  // 5 minutes
 
-    private static final String HTTPS_SCHEME = "https";
-
     /** The time of the first location refresh. Contains Long.MAX_VALUE if not set. */
     private static long sFirstLocationTime = Long.MAX_VALUE;
 
@@ -220,7 +219,7 @@ public class GeolocationHeader {
         if (!UrlUtilities.nativeIsGoogleSearchUrl(url)) return UNSUITABLE_URL;
 
         Uri uri = Uri.parse(url);
-        if (!HTTPS_SCHEME.equals(uri.getScheme())) return NOT_HTTPS;
+        if (!UrlConstants.HTTPS_SCHEME.equals(uri.getScheme())) return NOT_HTTPS;
 
         if (!hasGeolocationPermission()) {
             if (recordUma) recordHistogram(UMA_LOCATION_DISABLED_FOR_CHROME_APP);

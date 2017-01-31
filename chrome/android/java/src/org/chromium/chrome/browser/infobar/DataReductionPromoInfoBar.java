@@ -75,7 +75,7 @@ public class DataReductionPromoInfoBar extends ConfirmInfoBar {
         if (DataReductionPromoUtils.getDisplayedInfoBarPromo()) return false;
 
         // Only show the promo on HTTP pages.
-        if (!GURLUtils.getScheme(url).concat("://").equals(UrlConstants.HTTP_SCHEME)) return false;
+        if (!GURLUtils.getScheme(url).equals(UrlConstants.HTTP_SCHEME)) return false;
 
         int currentMilestone = VersionNumberGetter.getMilestoneFromVersionNumber(
                 PrefServiceBridge.getInstance().getAboutVersionStrings().getApplicationVersion());

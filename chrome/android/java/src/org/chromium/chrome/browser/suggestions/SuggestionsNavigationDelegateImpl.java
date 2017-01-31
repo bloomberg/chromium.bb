@@ -36,6 +36,8 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationDelegate {
     private static final String CHROME_CONTENT_SUGGESTIONS_REFERRER =
             "https://www.googleapis.com/auth/chrome-content-suggestions";
+    private static final String NEW_TAB_URL_HELP =
+            "https://support.google.com/chrome/?p=new_tab";
 
     private final Activity mActivity;
     private final Profile mProfile;
@@ -82,10 +84,9 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     @Override
     public void navigateToHelpPage() {
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
-        String url = "https://support.google.com/chrome/?p=new_tab";
         // TODO(mastiz): Change this to LINK?
         openUrl(WindowOpenDisposition.CURRENT_TAB,
-                new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
+                new LoadUrlParams(NEW_TAB_URL_HELP, PageTransition.AUTO_BOOKMARK));
     }
 
     @Override

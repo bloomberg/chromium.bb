@@ -290,8 +290,8 @@ public final class NewTabPageUma {
             // onLoadUrl below covers many exit conditions to stop recording but not all,
             // such as navigating back. We therefore stop recording if a URL change
             // indicates some non-Web page was visited.
-            if (!url.startsWith(UrlConstants.CHROME_SCHEME)
-                    && !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME)) {
+            if (!url.startsWith(UrlConstants.CHROME_URL_PREFIX)
+                    && !url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX)) {
                 assert !NewTabPage.isNTPUrl(url);
                 return;
             }

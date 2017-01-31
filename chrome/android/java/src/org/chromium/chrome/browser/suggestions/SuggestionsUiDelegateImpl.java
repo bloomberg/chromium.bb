@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
@@ -192,6 +193,6 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
     }
 
     private boolean isLocalUrl(String url) {
-        return "file".equals(Uri.parse(url).getScheme());
+        return UrlConstants.FILE_SCHEME.equals(Uri.parse(url).getScheme());
     }
 }

@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
 import org.chromium.content_public.browser.WebContents;
@@ -26,9 +27,6 @@ import java.util.Set;
 public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
     private static final String ACTION_IS_READY_TO_PAY =
             "org.chromium.intent.action.IS_READY_TO_PAY";
-
-    /** Prefix of all method names that can be constructed using this factory. */
-    static final String METHOD_PREFIX = "https://";
 
     /** The action name for the Pay Basic-card Intent. */
     private static final String ACTION_PAY_BASIC_CARD = "org.chromium.intent.action.PAY_BASIC_CARD";
@@ -47,7 +45,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
         Intent payIntent = new Intent();
 
         for (String methodName : methods) {
-            if (methodName.startsWith(METHOD_PREFIX)) {
+            if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
                 payIntent.setAction(AndroidPaymentApp.ACTION_PAY);
                 payIntent.setData(Uri.parse(methodName));
             } else if (methodName.equals(BASIC_CARD_PAYMENT_METHOD)) {

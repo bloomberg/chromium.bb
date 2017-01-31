@@ -24,6 +24,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -148,9 +149,9 @@ public class OfflinePageUtils {
     public static String stripSchemeFromOnlineUrl(String onlineUrl) {
         onlineUrl = onlineUrl.trim();
         // Offline pages are only saved for https:// and http:// schemes.
-        if (onlineUrl.startsWith("https://")) {
+        if (onlineUrl.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
             return onlineUrl.substring(8);
-        } else if (onlineUrl.startsWith("http://")) {
+        } else if (onlineUrl.startsWith(UrlConstants.HTTP_URL_PREFIX)) {
             return onlineUrl.substring(7);
         } else {
             return onlineUrl;

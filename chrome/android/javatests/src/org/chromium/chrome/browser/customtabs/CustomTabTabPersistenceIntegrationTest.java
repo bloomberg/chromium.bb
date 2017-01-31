@@ -24,7 +24,7 @@ public class CustomTabTabPersistenceIntegrationTest extends CustomTabActivityTes
     public void startMainActivity() throws InterruptedException {
         super.startMainActivity();
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(), UrlConstants.ABOUT_BLANK));
+                getInstrumentation().getTargetContext(), UrlConstants.ABOUT_BLANK_DISPLAY_URL));
     }
 
     @MediumTest

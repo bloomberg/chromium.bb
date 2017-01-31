@@ -133,7 +133,7 @@ public class DataReductionProxySettings {
 
     /** Returns true if the snackbar promo is allowed to be shown. */
     public boolean isSnackbarPromoAllowed(String url) {
-        return url.startsWith(UrlConstants.HTTP_SCHEME) && isDataReductionProxyEnabled()
+        return url.startsWith(UrlConstants.HTTP_URL_PREFIX) && isDataReductionProxyEnabled()
                 && isDataReductionProxyPromoAllowed();
     }
 
@@ -279,7 +279,8 @@ public class DataReductionProxySettings {
         }
         String rewritten = extractUrlFromWebliteQueryParams(url);
         if (rewritten == null
-                || !TextUtils.equals(Uri.parse(rewritten).getScheme(), "http")) {
+                || !TextUtils.equals(Uri.parse(rewritten).getScheme(),
+                        UrlConstants.HTTP_SCHEME)) {
             return url;
         }
 

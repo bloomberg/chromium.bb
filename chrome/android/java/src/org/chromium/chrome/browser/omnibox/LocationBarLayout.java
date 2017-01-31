@@ -56,6 +56,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -132,9 +133,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * The following additions have been made: "chrome", "ftp".
      */
     private static final HashSet<String> ACCEPTED_SCHEMES = CollectionUtil.newHashSet(
-            "about", "data", "file", "ftp", "http", "https", "inline", "javascript", "chrome");
+            UrlConstants.ABOUT_SCHEME, UrlConstants.DATA_SCHEME,
+            UrlConstants.FILE_SCHEME, UrlConstants.FTP_SCHEME,
+            UrlConstants.HTTP_SCHEME, UrlConstants.HTTPS_SCHEME,
+            UrlConstants.INLINE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME,
+            UrlConstants.CHROME_SCHEME);
     private static final HashSet<String> UNSUPPORTED_SCHEMES_TO_SPLIT =
-            CollectionUtil.newHashSet("file", "javascript", "data");
+            CollectionUtil.newHashSet(UrlConstants.FILE_SCHEME,
+                    UrlConstants.JAVASCRIPT_SCHEME, UrlConstants.DATA_SCHEME);
 
     protected ImageView mNavigationButton;
     protected TintedImageButton mSecurityButton;

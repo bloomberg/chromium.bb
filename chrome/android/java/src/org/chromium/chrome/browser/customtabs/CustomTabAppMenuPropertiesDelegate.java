@@ -140,8 +140,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             downloadItem.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
 
             String url = currentTab.getUrl();
-            boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
-                    || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+            boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
+                    || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
             if (isChromeScheme) {
                 addToHomeScreenItem.setVisible(false);
             }

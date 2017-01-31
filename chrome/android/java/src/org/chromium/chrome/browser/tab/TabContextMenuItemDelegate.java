@@ -12,6 +12,7 @@ import android.provider.ContactsContract;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -238,7 +239,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     */
     private boolean isSpdyProxyEnabledForUrl(String url) {
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
-                && url != null && !url.toLowerCase(Locale.US).startsWith("https://")
+                && url != null && !url.toLowerCase(Locale.US).startsWith(
+                        UrlConstants.HTTPS_URL_PREFIX)
                 && !isIncognito()) {
             return true;
         }

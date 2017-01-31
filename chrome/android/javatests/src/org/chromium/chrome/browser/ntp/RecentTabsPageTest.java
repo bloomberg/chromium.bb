@@ -99,7 +99,7 @@ public class RecentTabsPageTest extends ChromeTabbedActivityTestBase {
      * Leaves and destroys the {@link RecentTabsPage} by navigating the tab to {@code about:blank}.
      */
     private void leaveRecentTabsPage() throws InterruptedException {
-        loadUrl(UrlConstants.ABOUT_BLANK);
+        loadUrl(UrlConstants.ABOUT_BLANK_DISPLAY_URL);
         CriteriaHelper.pollUiThread(new Criteria("RecentTabsPage is still there") {
             @Override
             public boolean isSatisfied() {

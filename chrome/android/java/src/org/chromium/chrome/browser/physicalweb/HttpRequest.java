@@ -5,6 +5,8 @@ package org.chromium.chrome.browser.physicalweb;
 
 import org.chromium.base.ThreadUtils;
 
+import org.chromium.chrome.browser.UrlConstants;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +44,8 @@ abstract class HttpRequest<T> implements Runnable {
         mUrl = new URL(url);
         mUserAgent = userAgent;
         mAcceptLanguage = acceptLanguage;
-        if (!mUrl.getProtocol().equals("http") && !mUrl.getProtocol().equals("https")) {
+        if (!mUrl.getProtocol().equals(UrlConstants.HTTP_SCHEME)
+                && !mUrl.getProtocol().equals(UrlConstants.HTTPS_SCHEME)) {
             throw new MalformedURLException("This is not a http or https URL: " + url);
         }
         mCallback = callback;

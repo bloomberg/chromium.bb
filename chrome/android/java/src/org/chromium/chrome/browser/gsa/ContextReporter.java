@@ -172,8 +172,8 @@ public class ContextReporter {
         }
 
         String currentUrl = currentTab.getUrl();
-        if (TextUtils.isEmpty(currentUrl) || !(currentUrl.startsWith(UrlConstants.HTTP_SCHEME)
-                || currentUrl.startsWith(UrlConstants.HTTPS_SCHEME))) {
+        if (TextUtils.isEmpty(currentUrl) || !(currentUrl.startsWith(UrlConstants.HTTP_URL_PREFIX)
+                || currentUrl.startsWith(UrlConstants.HTTPS_URL_PREFIX))) {
             reportStatus(STATUS_INVALID_SCHEME);
             Log.d(TAG, "Not reporting, URL scheme is invalid");
             reportUsageEndedIfNecessary();

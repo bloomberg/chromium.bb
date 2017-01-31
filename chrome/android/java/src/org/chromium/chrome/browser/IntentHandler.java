@@ -693,13 +693,14 @@ public class IntentHandler {
                                || intent.hasCategory(Intent.CATEGORY_DEFAULT)
                                || intent.getCategories() == null)) {
                 String lowerCaseScheme = scheme.toLowerCase(Locale.US);
-                if ("chrome".equals(lowerCaseScheme) || "chrome-native".equals(lowerCaseScheme)
-                        || "about".equals(lowerCaseScheme)) {
+                if (UrlConstants.CHROME_SCHEME.equals(lowerCaseScheme)
+                        || UrlConstants.CHROME_NATIVE_SCHEME.equals(lowerCaseScheme)
+                        || UrlConstants.ABOUT_SCHEME.equals(lowerCaseScheme)) {
                     // Allow certain "safe" internal URLs to be launched by external
                     // applications.
                     String lowerCaseUrl = url.toLowerCase(Locale.US);
-                    if ("about:blank".equals(lowerCaseUrl)
-                            || "about://blank".equals(lowerCaseUrl)) {
+                    if (UrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(lowerCaseUrl)
+                            || UrlConstants.ABOUT_BLANK_URL.equals(lowerCaseUrl)) {
                         return false;
                     }
 
@@ -830,8 +831,9 @@ public class IntentHandler {
     }
 
     private boolean isInvalidScheme(String scheme) {
-        return scheme != null && (scheme.toLowerCase(Locale.US).equals("javascript")
-                                         || scheme.toLowerCase(Locale.US).equals("jar"));
+        return scheme != null
+            && (scheme.toLowerCase(Locale.US).equals(UrlConstants.JAVASCRIPT_SCHEME)
+                || scheme.toLowerCase(Locale.US).equals(UrlConstants.JAR_SCHEME));
     }
 
     /**

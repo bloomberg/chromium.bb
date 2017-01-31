@@ -18,6 +18,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -410,7 +411,7 @@ public class PaymentRequestImpl
                 // the payment request UI, thus can't be skipped.
                 && mMethodData.keySet().iterator().next() != null
                 && mMethodData.keySet().iterator().next().startsWith(
-                           AndroidPaymentAppFactory.METHOD_PREFIX);
+                           UrlConstants.HTTPS_URL_PREFIX);
 
         List<AutofillProfile> profiles = null;
         if (requestShipping || requestPayerName || requestPayerPhone || requestPayerEmail) {

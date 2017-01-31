@@ -33,6 +33,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.database.SQLiteCursor;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -293,15 +294,16 @@ public class ChromeBrowserProvider extends ContentProvider {
         boolean matchTitles = false;
         Vector<String> args = new Vector<String>();
         String like = selectionArgs[0] + "%";
-        if (selectionArgs[0].startsWith("http") || selectionArgs[0].startsWith("file")) {
+        if (selectionArgs[0].startsWith(UrlConstants.HTTP_SCHEME)
+                || selectionArgs[0].startsWith(UrlConstants.FILE_SCHEME)) {
             args.add(like);
         } else {
             // Match against common URL prefixes.
-            args.add("http://" + like);
-            args.add("https://" + like);
-            args.add("http://www." + like);
-            args.add("https://www." + like);
-            args.add("file://" + like);
+            args.add(UrlConstants.HTTP_URL_PREFIX + like);
+            args.add(UrlConstants.HTTPS_URL_PREFIX + like);
+            args.add(UrlConstants.HTTP_URL_PREFIX + "www." + like);
+            args.add(UrlConstants.HTTPS_URL_PREFIX + "www." + like);
+            args.add(UrlConstants.FILE_URL_PREFIX + like);
             matchTitles = true;
         }
 

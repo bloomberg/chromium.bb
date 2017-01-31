@@ -257,7 +257,7 @@ public class LayoutManagerDocument extends LayoutManager
         if (layoutTab == null) return;
 
         String url = tab.getUrl();
-        boolean isNativePage = url != null && url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+        boolean isNativePage = url != null && url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
         int themeColor = tab.getThemeColor();
 
         boolean canUseLiveTexture =

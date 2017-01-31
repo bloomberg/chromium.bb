@@ -34,6 +34,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity;
@@ -421,7 +422,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
         // If the url points inside of Chromium's data directory, no permissions are necessary.
         // This is required to prevent permission prompt when uses wants to access offline pages.
-        if (url.startsWith("file://" + PathUtils.getDataDirectory())) {
+        if (url.startsWith(UrlConstants.FILE_URL_PREFIX + PathUtils.getDataDirectory())) {
             return false;
         }
 

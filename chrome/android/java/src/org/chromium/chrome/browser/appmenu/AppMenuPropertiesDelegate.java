@@ -90,10 +90,10 @@ public class AppMenuPropertiesDelegate {
 
         if (isPageMenu && currentTab != null) {
             String url = currentTab.getUrl();
-            boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
-                    || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
-            boolean isFileScheme = url.startsWith(UrlConstants.FILE_SCHEME);
-            boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_SCHEME);
+            boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
+                    || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
+            boolean isFileScheme = url.startsWith(UrlConstants.FILE_URL_PREFIX);
+            boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
             boolean shouldShowIconRow = !mActivity.isTablet()
                     || mActivity.getWindow().getDecorView().getWidth()
                             < DeviceFormFactor.getMinimumTabletWidthPx(mActivity);
@@ -299,8 +299,8 @@ public class AppMenuPropertiesDelegate {
     protected void updateRequestDesktopSiteMenuItem(
             MenuItem requstMenuItem, Tab currentTab) {
         String url = currentTab.getUrl();
-        boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
-                || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+        boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
+                || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
         requstMenuItem.setVisible(!isChromeScheme || currentTab.isNativePage());
         requstMenuItem.setChecked(currentTab.getUseDesktopUserAgent());
         requstMenuItem.setTitleCondensed(requstMenuItem.isChecked()

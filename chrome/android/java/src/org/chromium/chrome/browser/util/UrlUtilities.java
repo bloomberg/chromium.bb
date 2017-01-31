@@ -10,6 +10,8 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
+import org.chromium.chrome.browser.UrlConstants;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,7 +32,9 @@ public class UrlUtilities {
      * URI schemes that are internal to Chrome.
      */
     private static final HashSet<String> INTERNAL_SCHEMES = CollectionUtil.newHashSet(
-            "chrome", "chrome-native", "about");
+            UrlConstants.CHROME_SCHEME,
+            UrlConstants.CHROME_NATIVE_SCHEME,
+            UrlConstants.ABOUT_SCHEME);
 
     // Patterns used in validateIntentUrl.
     private static final Pattern DNS_HOSTNAME_PATTERN =
@@ -42,7 +46,7 @@ public class UrlUtilities {
     private static final Pattern URL_SCHEME_PATTERN =
             Pattern.compile("^[a-zA-Z]+$");
 
-    private static final String TEL_SCHEME = "tel:";
+    private static final String TEL_URL_PREFIX = "tel:";
 
     /**
      * @param uri A URI.
@@ -50,7 +54,7 @@ public class UrlUtilities {
      * @return True if the URI's scheme is phone number scheme.
      */
     public static boolean isTelScheme(String uri) {
-        return uri != null && uri.startsWith(TEL_SCHEME);
+        return uri != null && uri.startsWith(TEL_URL_PREFIX);
     }
 
     /**

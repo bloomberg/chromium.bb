@@ -23,9 +23,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
  * Creates NativePage objects to show chrome-native:// URLs using the native Android view system.
  */
 public class NativePageFactory {
-
-    public static final String CHROME_NATIVE_SCHEME = "chrome-native";
-
     private static NativePageBuilder sNativePageBuilder = new NativePageBuilder();
 
     @VisibleForTesting
@@ -71,7 +68,7 @@ public class NativePageFactory {
         if (url == null) return NativePageType.NONE;
 
         Uri uri = Uri.parse(url);
-        if (!CHROME_NATIVE_SCHEME.equals(uri.getScheme())) {
+        if (!UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())) {
             return NativePageType.NONE;
         }
 

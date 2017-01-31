@@ -43,9 +43,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class ExternalNavigationHandler {
     private static final String TAG = "UrlHandler";
-    private static final String SCHEME_WTAI = "wtai://wp/";
-    private static final String SCHEME_WTAI_MC = "wtai://wp/mc;";
-    private static final String SCHEME_SMS = "sms";
+    private static final String WTAI_URL_PREFIX = "wtai://wp/";
+    private static final String WTAI_MC_URL_PREFIX = "wtai://wp/mc;";
+    private static final String SMS_SCHEME = "sms";
 
     private static final String PLAY_PACKAGE_PARAM = "id";
     private static final String PLAY_REFERRER_PARAM = "referrer";
@@ -211,7 +211,7 @@ public class ExternalNavigationHandler {
         // If accessing a file URL, ensure that the user has granted the necessary file access
         // to Chrome.  This check should happen for reloads, navigations, etc..., which is why
         // it occurs before the subsequent blocks.
-        if (params.getUrl().startsWith("file:")
+        if (params.getUrl().startsWith(UrlConstants.FILE_URL_SHORT_PREFIX)
                 && mDelegate.shouldRequestFileAccess(params.getUrl(), params.getTab())) {
             mDelegate.startFileIntent(
                     intent, params.getReferrerUrl(), params.getTab(),
@@ -274,36 +274,37 @@ public class ExternalNavigationHandler {
         // Don't override navigation from a chrome:* url to http or https. For example,
         // when clicking a link in bookmarks or most visited. When navigating from such a
         // page, there is clear intent to complete the navigation in Chrome.
-        if (params.getReferrerUrl() != null && params.getReferrerUrl().startsWith(
-                UrlConstants.CHROME_SCHEME) && (params.getUrl().startsWith(UrlConstants.HTTP_SCHEME)
-                        || params.getUrl().startsWith(UrlConstants.HTTPS_SCHEME))) {
+        if (params.getReferrerUrl() != null
+                && params.getReferrerUrl().startsWith(UrlConstants.CHROME_URL_PREFIX)
+                && (params.getUrl().startsWith(UrlConstants.HTTP_URL_PREFIX)
+                        || params.getUrl().startsWith(UrlConstants.HTTPS_URL_PREFIX))) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        if (params.getUrl().startsWith(SCHEME_WTAI_MC)) {
+        if (params.getUrl().startsWith(WTAI_MC_URL_PREFIX)) {
             // wtai://wp/mc;number
             // number=string(phone-number)
             mDelegate.startActivity(new Intent(Intent.ACTION_VIEW,
                     Uri.parse(WebView.SCHEME_TEL
-                            + params.getUrl().substring(SCHEME_WTAI_MC.length()))), false);
+                            + params.getUrl().substring(WTAI_MC_URL_PREFIX.length()))), false);
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
 
-        if (params.getUrl().startsWith(SCHEME_WTAI)) {
+        if (params.getUrl().startsWith(WTAI_URL_PREFIX)) {
             // TODO: handle other WTAI schemes.
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
         // The "about:", "chrome:", and "chrome-native:" schemes are internal to the browser;
         // don't want these to be dispatched to other apps.
-        if (params.getUrl().startsWith("about:")
-                || params.getUrl().startsWith("chrome:")
-                || params.getUrl().startsWith("chrome-native:")) {
+        if (params.getUrl().startsWith(UrlConstants.ABOUT_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
         // The "content:" scheme is disabled in Clank. Do not try to start an activity.
-        if (params.getUrl().startsWith("content:")) {
+        if (params.getUrl().startsWith(UrlConstants.CONTENT_URL_SHORT_PREFIX)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
@@ -361,7 +362,7 @@ public class ExternalNavigationHandler {
 
         if (intent.getPackage() == null) {
             final Uri uri = intent.getData();
-            if (uri != null && SCHEME_SMS.equals(uri.getScheme())) {
+            if (uri != null && SMS_SCHEME.equals(uri.getScheme())) {
                 intent.setPackage(getDefaultSmsPackageName(resolvingInfos));
             }
         }
@@ -624,7 +625,7 @@ public class ExternalNavigationHandler {
      * @return Whether the |url| could be handled by an external application on the system.
      */
     public boolean canExternalAppHandleUrl(String url) {
-        if (url.startsWith(SCHEME_WTAI_MC)) return true;
+        if (url.startsWith(WTAI_MC_URL_PREFIX)) return true;
         try {
             Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
             if (intent.getPackage() != null) return true;
