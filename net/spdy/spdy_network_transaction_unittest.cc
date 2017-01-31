@@ -42,6 +42,7 @@
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"

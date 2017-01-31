@@ -58,19 +58,14 @@ const int32_t kSpdyMaximumWindowSize = 0x7FFFFFFF;  // Max signed 32bit int
 // Maximum padding size in octets for one DATA or HEADERS or PUSH_PROMISE frame.
 const int32_t kPaddingSizePerFrame = 256;
 
-// The HTTP/2 connection header prefix, which must be the first bytes
-// sent by the client upon starting an HTTP/2 connection, and which
-// must be followed by a SETTINGS frame.
-//
-// Equivalent to the string "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
-// (without the null terminator).
-const char kHttp2ConnectionHeaderPrefix[] = {
-  0x50, 0x52, 0x49, 0x20, 0x2a, 0x20, 0x48, 0x54,  // PRI * HT
-  0x54, 0x50, 0x2f, 0x32, 0x2e, 0x30, 0x0d, 0x0a,  // TP/2.0..
-  0x0d, 0x0a, 0x53, 0x4d, 0x0d, 0x0a, 0x0d, 0x0a   // ..SM....
-};
-const int kHttp2ConnectionHeaderPrefixSize =
-    arraysize(kHttp2ConnectionHeaderPrefix);
+// The HTTP/2 connection preface, which must be the first bytes sent by the
+// client upon starting an HTTP/2 connection, and which must be followed by a
+// SETTINGS frame.  Note that even though |kHttp2ConnectionHeaderPrefix| is
+// defined as a string literal with a null terminator, the actual connection
+// preface is only the first |kHttp2ConnectionHeaderPrefixSize| bytes, which
+// excludes the null terminator.
+NET_EXPORT_PRIVATE extern const char* const kHttp2ConnectionHeaderPrefix;
+const int kHttp2ConnectionHeaderPrefixSize = 24;
 
 // Types of HTTP2 frames.
 enum SpdyFrameType {

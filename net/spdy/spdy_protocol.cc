@@ -9,6 +9,9 @@
 
 namespace net {
 
+const char* const kHttp2ConnectionHeaderPrefix =
+    "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
+
 SpdyPriority ClampSpdy3Priority(SpdyPriority priority) {
   if (priority < kV3HighestPriority) {
     SPDY_BUG << "Invalid priority: " << static_cast<int>(priority);
