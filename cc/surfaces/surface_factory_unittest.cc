@@ -31,6 +31,10 @@ static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 static constexpr FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
 static const base::UnguessableToken kArbitraryToken =
     base::UnguessableToken::Create();
+static auto kArbitrarySourceId1 =
+    base::UnguessableToken::Deserialize(0xdead, 0xbeef);
+static auto kArbitrarySourceId2 =
+    base::UnguessableToken::Deserialize(0xdead, 0xbee0);
 
 class TestSurfaceFactoryClient : public SurfaceFactoryClient {
  public:
@@ -636,14 +640,12 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
                                     SurfaceFactory::DrawCallback());
     EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id_);
   }
-  void* source1 = &source1;
-  void* source2 = &source2;
 
   bool called1 = false;
   std::unique_ptr<CopyOutputRequest> request;
   request = CopyOutputRequest::CreateRequest(
       base::Bind(&CopyRequestTestCallback, &called1));
-  request->set_source(source1);
+  request->set_source(kArbitrarySourceId1);
 
   factory_->RequestCopyOfSurface(std::move(request));
   EXPECT_FALSE(called1);
@@ -651,7 +653,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
   bool called2 = false;
   request = CopyOutputRequest::CreateRequest(
       base::Bind(&CopyRequestTestCallback, &called2));
-  request->set_source(source2);
+  request->set_source(kArbitrarySourceId2);
 
   factory_->RequestCopyOfSurface(std::move(request));
   // Callbacks have different sources so neither should be called.
@@ -661,7 +663,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
   bool called3 = false;
   request = CopyOutputRequest::CreateRequest(
       base::Bind(&CopyRequestTestCallback, &called3));
-  request->set_source(source1);
+  request->set_source(kArbitrarySourceId1);
 
   factory_->RequestCopyOfSurface(std::move(request));
   // Two callbacks are from source1, so the first should be called.

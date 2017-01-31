@@ -86,14 +86,15 @@ void Surface::RequestCopyOfOutput(
     std::vector<std::unique_ptr<CopyOutputRequest>>& copy_requests =
         current_frame_->render_pass_list.back()->copy_requests;
 
-    if (void* source = copy_request->source()) {
+    if (copy_request->has_source()) {
+      const base::UnguessableToken& source = copy_request->source();
       // Remove existing CopyOutputRequests made on the Surface by the same
       // source.
-      auto to_remove =
-          std::remove_if(copy_requests.begin(), copy_requests.end(),
-                         [source](const std::unique_ptr<CopyOutputRequest>& x) {
-                           return x->source() == source;
-                         });
+      auto to_remove = std::remove_if(
+          copy_requests.begin(), copy_requests.end(),
+          [&source](const std::unique_ptr<CopyOutputRequest>& x) {
+            return x->has_source() && x->source() == source;
+          });
       copy_requests.erase(to_remove, copy_requests.end());
     }
     copy_requests.push_back(std::move(copy_request));

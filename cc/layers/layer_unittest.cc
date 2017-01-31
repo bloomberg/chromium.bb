@@ -85,6 +85,11 @@ namespace cc {
 
 namespace {
 
+static auto kArbitrarySourceId1 =
+    base::UnguessableToken::Deserialize(0xdead, 0xbeef);
+static auto kArbitrarySourceId2 =
+    base::UnguessableToken::Deserialize(0xdead, 0xbee0);
+
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   MockLayerTreeHost(LayerTreeHostSingleThreadClient* single_thread_client,
@@ -1335,19 +1340,19 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   result_count = 0;
 
   // Create identical requests, but this time the source is being set.  Expect
-  // the first request from |this| source aborts immediately when the second
-  // request from |this| source is made.
+  // the first request using |kArbitrarySourceId1| aborts immediately when
+  // the second request using |kArbitrarySourceId1| is made.
   int did_receive_first_result_from_this_source = 0;
   request = CopyOutputRequest::CreateRequest(base::Bind(
       &ReceiveCopyOutputResult, &did_receive_first_result_from_this_source));
-  request->set_source(this);
+  request->set_source(kArbitrarySourceId1);
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_first_result_from_this_source);
   // Make a request from a different source.
   int did_receive_result_from_different_source = 0;
   request = CopyOutputRequest::CreateRequest(base::Bind(
       &ReceiveCopyOutputResult, &did_receive_result_from_different_source));
-  request->set_source(reinterpret_cast<void*>(0xdeadbee0));
+  request->set_source(kArbitrarySourceId2);
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_result_from_different_source);
   // Make a request without specifying the source.
@@ -1356,11 +1361,11 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
       &ReceiveCopyOutputResult, &did_receive_result_from_anonymous_source));
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_result_from_anonymous_source);
-  // Make the second request from |this| source.
+  // Make the second request from |kArbitrarySourceId1|.
   int did_receive_second_result_from_this_source = 0;
   request = CopyOutputRequest::CreateRequest(base::Bind(
       &ReceiveCopyOutputResult, &did_receive_second_result_from_this_source));
-  request->set_source(this);
+  request->set_source(kArbitrarySourceId1);
   layer->RequestCopyOfOutput(
       std::move(request));  // First request to be aborted.
   EXPECT_EQ(1, did_receive_first_result_from_this_source);

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_FRAME_SUBSCRIBER_H_
-#define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_FRAME_SUBSCRIBER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_FRAME_SUBSCRIBER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_FRAME_SUBSCRIBER_H_
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "cc/output/copy_output_request.h"
 
 namespace gfx {
 class Rect;
@@ -44,7 +45,8 @@ class RenderWidgetHostViewFrameSubscriber {
   // captured content resides, with the rest of the VideoFrame blacked out.
   typedef base::Callback<void(base::TimeTicks /* timestamp */,
                               const gfx::Rect& /* region_in_frame */,
-                              bool /* frame_captured */)> DeliverFrameCallback;
+                              bool /* frame_captured */)>
+      DeliverFrameCallback;
 
   // Called when a new frame is going to be presented at time
   // |present_time| with |damage_rect| being the region of the frame that has
@@ -68,8 +70,10 @@ class RenderWidgetHostViewFrameSubscriber {
                                   base::TimeTicks present_time,
                                   scoped_refptr<media::VideoFrame>* storage,
                                   DeliverFrameCallback* callback) = 0;
+
+  virtual const base::UnguessableToken& GetSourceIdForCopyRequest() = 0;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_FRAME_SUBSCRIBER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_FRAME_SUBSCRIBER_H_

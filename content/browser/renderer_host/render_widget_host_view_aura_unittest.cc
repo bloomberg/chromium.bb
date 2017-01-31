@@ -43,6 +43,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
+#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/resize_lock.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
@@ -52,7 +53,6 @@
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -269,7 +269,10 @@ class FakeSurfaceObserver : public cc::SurfaceObserver {
 class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  public:
   FakeFrameSubscriber(gfx::Size size, base::Callback<void(bool)> callback)
-      : size_(size), callback_(callback), should_capture_(true) {}
+      : size_(size),
+        callback_(callback),
+        should_capture_(true),
+        source_id_for_copy_request_(base::UnguessableToken::Create()) {}
 
   bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
                           base::TimeTicks present_time,
@@ -283,6 +286,10 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
                                               base::TimeDelta());
     *callback = base::Bind(&FakeFrameSubscriber::CallbackMethod, callback_);
     return true;
+  }
+
+  const base::UnguessableToken& GetSourceIdForCopyRequest() override {
+    return source_id_for_copy_request_;
   }
 
   base::TimeTicks last_present_time() const { return last_present_time_; }
@@ -303,6 +310,7 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   base::Callback<void(bool)> callback_;
   base::TimeTicks last_present_time_;
   bool should_capture_;
+  base::UnguessableToken source_id_for_copy_request_;
 };
 
 class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {

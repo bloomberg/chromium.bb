@@ -25,8 +25,8 @@
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/resize_lock.h"
-#include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -364,7 +364,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   // DelegatedFrameHost (e.g., a call to CopyFromCompositingSurface() for
   // screenshots) since those copy requests do not specify |frame_subscriber()|
   // as a source.
-  request->set_source(frame_subscriber());
+  request->set_source(frame_subscriber()->GetSourceIdForCopyRequest());
   if (subscriber_texture.get()) {
     request->SetTextureMailbox(cc::TextureMailbox(
         subscriber_texture->mailbox(), subscriber_texture->sync_token(),

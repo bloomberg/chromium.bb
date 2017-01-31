@@ -352,11 +352,12 @@ bool Layer::HasAncestor(const Layer* ancestor) const {
 
 void Layer::RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request) {
   DCHECK(IsPropertyChangeAllowed());
-  if (void* source = request->source()) {
+  if (request->has_source()) {
+    const base::UnguessableToken& source = request->source();
     auto it =
         std::find_if(inputs_.copy_requests.begin(), inputs_.copy_requests.end(),
-                     [source](const std::unique_ptr<CopyOutputRequest>& x) {
-                       return x->source() == source;
+                     [&source](const std::unique_ptr<CopyOutputRequest>& x) {
+                       return x->has_source() && x->source() == source;
                      });
     if (it != inputs_.copy_requests.end())
       inputs_.copy_requests.erase(it);

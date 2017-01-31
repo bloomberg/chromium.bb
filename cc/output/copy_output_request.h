@@ -9,6 +9,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
@@ -43,11 +45,12 @@ class CC_EXPORT CopyOutputRequest {
 
   bool IsEmpty() const { return result_callback_.is_null(); }
 
-  // Optionally specify the source of this copy request.  If set when this copy
+  // Optionally specify the source of this copy request. If set when this copy
   // request is submitted to a layer, a prior uncommitted copy request from the
-  // same |source| will be aborted.
-  void set_source(void* source) { source_ = source; }
-  void* source() const { return source_; }
+  // same source will be aborted.
+  void set_source(const base::UnguessableToken& source) { source_ = source; }
+  bool has_source() const { return source_.has_value(); }
+  const base::UnguessableToken& source() const { return *source_; }
 
   bool force_bitmap_result() const { return force_bitmap_result_; }
 
@@ -82,7 +85,7 @@ class CC_EXPORT CopyOutputRequest {
   CopyOutputRequest(bool force_bitmap_result,
                     const CopyOutputRequestCallback& result_callback);
 
-  void* source_;
+  base::Optional<base::UnguessableToken> source_;
   bool force_bitmap_result_;
   bool has_area_;
   bool has_texture_mailbox_;

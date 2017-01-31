@@ -23,10 +23,10 @@
 #include "content/browser/media/capture/window_activity_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/base/video_frame_metadata.h"
@@ -60,14 +60,8 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
         oracle_proxy_(std::move(oracle)),
         cursor_renderer_(cursor_renderer),
         window_activity_tracker_(tracker),
+        source_id_for_copy_request_(base::UnguessableToken::Create()),
         weak_ptr_factory_(this) {}
-
-  bool ShouldCaptureFrame(
-      const gfx::Rect& damage_rect,
-      base::TimeTicks present_time,
-      scoped_refptr<media::VideoFrame>* storage,
-      RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback*
-          deliver_frame_cb) override;
 
   static void DidCaptureFrame(
       base::WeakPtr<FrameSubscriber> frame_subscriber_,
@@ -80,6 +74,15 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 
   bool IsUserInteractingWithContent();
 
+  // RenderWidgetHostViewFrameSubscriber implementation:
+  bool ShouldCaptureFrame(
+      const gfx::Rect& damage_rect,
+      base::TimeTicks present_time,
+      scoped_refptr<media::VideoFrame>* storage,
+      RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback*
+          deliver_frame_cb) override;
+  const base::UnguessableToken& GetSourceIdForCopyRequest() override;
+
  private:
   const media::VideoCaptureOracle::Event event_type_;
   const scoped_refptr<media::ThreadSafeCaptureOracle> oracle_proxy_;
@@ -89,6 +92,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   // We need a weak pointer since FrameSubscriber is owned externally and
   // may outlive the ui activity tracker.
   const base::WeakPtr<WindowActivityTracker> window_activity_tracker_;
+  base::UnguessableToken source_id_for_copy_request_;
   base::WeakPtrFactory<FrameSubscriber> weak_ptr_factory_;
 };
 
@@ -243,28 +247,6 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   DISALLOW_COPY_AND_ASSIGN(WebContentsCaptureMachine);
 };
 
-bool FrameSubscriber::ShouldCaptureFrame(
-    const gfx::Rect& damage_rect,
-    base::TimeTicks present_time,
-    scoped_refptr<media::VideoFrame>* storage,
-    DeliverFrameCallback* deliver_frame_cb) {
-  TRACE_EVENT1("gpu.capture", "FrameSubscriber::ShouldCaptureFrame", "instance",
-               this);
-
-  media::ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
-  if (!oracle_proxy_->ObserveEventAndDecideCapture(
-          event_type_, damage_rect, present_time, storage, &capture_frame_cb)) {
-    return false;
-  }
-
-  DCHECK(*storage);
-  DCHECK(!capture_frame_cb.is_null());
-  *deliver_frame_cb =
-      base::Bind(&FrameSubscriber::DidCaptureFrame,
-                 weak_ptr_factory_.GetWeakPtr(), capture_frame_cb, *storage);
-  return true;
-}
-
 void FrameSubscriber::DidCaptureFrame(
     base::WeakPtr<FrameSubscriber> frame_subscriber_,
     const media::ThreadSafeCaptureOracle::CaptureFrameCallback&
@@ -308,6 +290,32 @@ bool FrameSubscriber::IsUserInteractingWithContent() {
     }
   }
   return interactive_mode;
+}
+
+bool FrameSubscriber::ShouldCaptureFrame(
+    const gfx::Rect& damage_rect,
+    base::TimeTicks present_time,
+    scoped_refptr<media::VideoFrame>* storage,
+    DeliverFrameCallback* deliver_frame_cb) {
+  TRACE_EVENT1("gpu.capture", "FrameSubscriber::ShouldCaptureFrame", "instance",
+               this);
+
+  media::ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
+  if (!oracle_proxy_->ObserveEventAndDecideCapture(
+          event_type_, damage_rect, present_time, storage, &capture_frame_cb)) {
+    return false;
+  }
+
+  DCHECK(*storage);
+  DCHECK(!capture_frame_cb.is_null());
+  *deliver_frame_cb =
+      base::Bind(&FrameSubscriber::DidCaptureFrame,
+                 weak_ptr_factory_.GetWeakPtr(), capture_frame_cb, *storage);
+  return true;
+}
+
+const base::UnguessableToken& FrameSubscriber::GetSourceIdForCopyRequest() {
+  return source_id_for_copy_request_;
 }
 
 ContentCaptureSubscription::ContentCaptureSubscription(

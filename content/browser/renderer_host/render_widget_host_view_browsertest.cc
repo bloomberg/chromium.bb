@@ -19,9 +19,9 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -250,9 +250,9 @@ class CompositingRenderWidgetHostViewBrowserTest
 class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  public:
   FakeFrameSubscriber(
-    RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback)
-      : callback_(callback) {
-  }
+      RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback)
+      : callback_(callback),
+        source_id_for_copy_request_(base::UnguessableToken::Create()) {}
 
   bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
                           base::TimeTicks present_time,
@@ -271,8 +271,13 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
     return true;
   }
 
+  const base::UnguessableToken& GetSourceIdForCopyRequest() override {
+    return source_id_for_copy_request_;
+  }
+
  private:
   DeliverFrameCallback callback_;
+  base::UnguessableToken source_id_for_copy_request_;
 };
 
 // Disable tests for Android as it has an incomplete implementation.

@@ -200,7 +200,6 @@ source_set("browser_sources") {
     "render_view_host.h",
     "render_widget_host.h",
     "render_widget_host_view.h",
-    "render_widget_host_view_frame_subscriber.h",
     "render_widget_host_view_mac_delegate.h",
     "renderer_unresponsive_type.h",
     "resource_context.h",
