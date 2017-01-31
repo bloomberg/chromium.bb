@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "base/callback_forward.h"
@@ -14,7 +15,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/settings_reset_prompt/mock_settings_reset_prompt_config.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -66,6 +67,8 @@ std::unique_ptr<KeyedService> CreateTemplateURLService(
 class SettingsResetPromptModelTest
     : public extensions::ExtensionServiceTestBase {
  protected:
+  using ModelPointer = std::unique_ptr<SettingsResetPromptModel>;
+
   void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
@@ -104,6 +107,18 @@ class SettingsResetPromptModelTest
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
+  // Returns a model with a mock config that will return negative IDs for every
+  // URL. positive IDs for each URL in |reset_urls_|.
+  ModelPointer CreateModel() {
+    return CreateModelForTesting(profile(), std::unordered_set<std::string>());
+  }
+
+  // Returns a model with a mock config that will return positive IDs for each
+  // URL in |reset_urls|.
+  ModelPointer CreateModel(std::unordered_set<std::string> reset_urls) {
+    return CreateModelForTesting(profile(), reset_urls);
+  }
+
   PrefService* prefs_;
 };
 
@@ -134,13 +149,8 @@ class ResetStatesTest
 
 TEST_F(SettingsResetPromptModelTest, Homepage) {
   SetHomepage(kHomepage);
-  auto snapshot = base::MakeUnique<ResettableSettingsSnapshot>(profile());
-  ASSERT_EQ(snapshot->homepage(), std::string(kHomepage));
-
-  SettingsResetPromptModel model(
-      profile(), base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>(),
-      std::move(snapshot));
-  EXPECT_EQ(model.homepage(), kHomepage);
+  ModelPointer model = CreateModel();
+  EXPECT_EQ(model->homepage(), kHomepage);
 }
 
 TEST_F(SettingsResetPromptModelTest, HomepageResetState) {
@@ -153,15 +163,8 @@ TEST_F(SettingsResetPromptModelTest, HomepageResetState) {
       // Should return |DISABLED_DUE_TO_DOMAIN_NOT_MATCHED| when
       // |UrlToResetDomainId()| returns a negative integer.
       {
-        auto config =
-            base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>();
-        EXPECT_CALL(*config, UrlToResetDomainId(GURL(kHomepage)))
-            .WillRepeatedly(Return(-7));
-
-        SettingsResetPromptModel model(
-            profile(), std::move(config),
-            base::MakeUnique<ResettableSettingsSnapshot>(profile()));
-        EXPECT_EQ(model.homepage_reset_state(),
+        ModelPointer model = CreateModel();
+        EXPECT_EQ(model->homepage_reset_state(),
                   SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
       }
 
@@ -169,16 +172,9 @@ TEST_F(SettingsResetPromptModelTest, HomepageResetState) {
       // integer and the home button is visible and homepage is not set to the
       // New Tab page, and |DISABLED_DUE_TO_DOMAIN_NOT_MATCHED| otherwise.
       {
-        auto config =
-            base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>();
-        EXPECT_CALL(*config, UrlToResetDomainId(GURL(kHomepage)))
-            .WillRepeatedly(Return(5));
-
-        SettingsResetPromptModel model(
-            profile(), std::move(config),
-            base::MakeUnique<ResettableSettingsSnapshot>(profile()));
+        ModelPointer model = CreateModel({kHomepage});
         EXPECT_EQ(
-            model.homepage_reset_state(),
+            model->homepage_reset_state(),
             show_home_button && !homepage_is_ntp
                 ? SettingsResetPromptModel::ENABLED
                 : SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
@@ -189,64 +185,43 @@ TEST_F(SettingsResetPromptModelTest, HomepageResetState) {
 
 TEST_F(SettingsResetPromptModelTest, DefaultSearch) {
   SetDefaultSearch(kDefaultSearch);
-  auto snapshot = base::MakeUnique<ResettableSettingsSnapshot>(profile());
-  ASSERT_EQ(snapshot->dse_url(), std::string(kDefaultSearch));
-
-  SettingsResetPromptModel model(
-      profile(), base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>(),
-      std::move(snapshot));
-  EXPECT_EQ(model.default_search(), kDefaultSearch);
+  ModelPointer model = CreateModel();
+  EXPECT_EQ(model->default_search(), kDefaultSearch);
 }
 
 TEST_F(SettingsResetPromptModelTest, DefaultSearchResetState) {
   SetDefaultSearch(kDefaultSearch);
-  auto snapshot = base::MakeUnique<ResettableSettingsSnapshot>(profile());
-  ASSERT_EQ(snapshot->dse_url(), std::string(kDefaultSearch));
 
   // Should return |DISABLED_DUE_TO_DOMAIN_NOT_MATCHED| when
   // |UrlToResetDomainId()| is negative.
   {
-    auto config = base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>();
-    SettingsResetPromptModel model(
-        profile(), std::move(config),
-        base::MakeUnique<ResettableSettingsSnapshot>(profile()));
-    EXPECT_EQ(model.default_search_reset_state(),
+    ModelPointer model = CreateModel();
+    EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
   }
 
   // Should return |ENABLED| when |UrlToResetDomainId()| is non-negative.
   {
-    auto config = base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>();
-    EXPECT_CALL(*config, UrlToResetDomainId(GURL(kDefaultSearch)))
-        .WillRepeatedly(Return(8));
-    SettingsResetPromptModel model(
-        profile(), std::move(config),
-        base::MakeUnique<ResettableSettingsSnapshot>(profile()));
-    EXPECT_EQ(model.default_search_reset_state(),
+    ModelPointer model = CreateModel({kDefaultSearch});
+    EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::ENABLED);
   }
 }
 
 TEST_P(ResetStatesTest, ShouldPromptForReset) {
-  auto config = base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>();
-  if (homepage_reset_enabled_) {
-    EXPECT_CALL(*config, UrlToResetDomainId(GURL(kHomepage)))
-        .WillRepeatedly(Return(1));
-  }
-  if (default_search_reset_enabled_) {
-    EXPECT_CALL(*config, UrlToResetDomainId(GURL(kDefaultSearch)))
-        .WillRepeatedly(Return(2));
-  }
+  std::unordered_set<std::string> reset_urls;
+  if (homepage_reset_enabled_)
+    reset_urls.insert(kHomepage);
+  if (default_search_reset_enabled_)
+    reset_urls.insert(kDefaultSearch);
 
-  SettingsResetPromptModel model(
-      profile(), std::move(config),
-      base::MakeUnique<ResettableSettingsSnapshot>(profile()));
-  ASSERT_EQ(model.homepage_reset_state() == SettingsResetPromptModel::ENABLED,
+  ModelPointer model = CreateModel(reset_urls);
+  ASSERT_EQ(model->homepage_reset_state() == SettingsResetPromptModel::ENABLED,
             homepage_reset_enabled_);
   ASSERT_EQ(
-      model.default_search_reset_state() == SettingsResetPromptModel::ENABLED,
+      model->default_search_reset_state() == SettingsResetPromptModel::ENABLED,
       default_search_reset_enabled_);
-  EXPECT_EQ(model.ShouldPromptForReset(), should_prompt_);
+  EXPECT_EQ(model->ShouldPromptForReset(), should_prompt_);
 }
 
 INSTANTIATE_TEST_CASE_P(SettingsResetPromptModel,

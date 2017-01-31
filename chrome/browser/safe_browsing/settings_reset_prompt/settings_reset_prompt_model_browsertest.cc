@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/settings_reset_prompt/mock_settings_reset_prompt_config.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/search_test_utils.h"
@@ -89,7 +89,7 @@ const char kManifestToOverrideSearch[] =
 
 class SettingsResetPromptModelBrowserTest : public ExtensionBrowserTest {
  protected:
-  using Model = std::unique_ptr<SettingsResetPromptModel>;
+  using ModelPointer = std::unique_ptr<SettingsResetPromptModel>;
 
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
@@ -148,47 +148,32 @@ class SettingsResetPromptModelBrowserTest : public ExtensionBrowserTest {
     ASSERT_TRUE(*out_extension);
   }
 
+  // Returns a model with a mock config that will return negative IDs for every
+  // URL.
+  ModelPointer CreateModel() {
+    return CreateModelForTesting(profile(), std::unordered_set<std::string>());
+  }
+
   // Returns a model with a mock config that will return positive IDs for each
-  // URL in |reset_urls_|.
-  Model CreateModel() {
-    auto config = base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>();
-
-    int id = 0;
-    for (const std::string& reset_url : reset_urls_) {
-      EXPECT_CALL(*config, UrlToResetDomainId(GURL(reset_url)))
-          .WillRepeatedly(Return(id));
-      ++id;
-    }
-
-    return base::MakeUnique<SettingsResetPromptModel>(
-        profile(), std::move(config),
-        base::MakeUnique<ResettableSettingsSnapshot>(profile()));
+  // URL in |reset_urls|.
+  ModelPointer CreateModel(std::unordered_set<std::string> reset_urls) {
+    return CreateModelForTesting(profile(), reset_urls);
   }
-
-  void AddResetUrl(const std::string& reset_url) {
-    reset_urls_.insert(reset_url);
-  }
-
-  void ClearResetUrls() { reset_urls_.clear(); }
-
-  // URLs for which |MockSettingsResetPromptConfig|s should return positive IDs.
-  std::unordered_set<std::string> reset_urls_;
 };
 
 IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
                        ExtensionsToDisable_Homepage) {
   // Homepage does not require reset to start with.
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel();
     EXPECT_EQ(model->homepage_reset_state(),
               SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
   }
 
   // Let homepage require reset, no extensions need to be disable.
-  AddResetUrl(kDefaultHomepage);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultHomepage});
     EXPECT_EQ(model->homepage_reset_state(), SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
   }
@@ -198,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
   const Extension* safe_extension = nullptr;
   LoadManifest(kManifestNoOverride, &safe_extension);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultHomepage});
     EXPECT_EQ(model->homepage_reset_state(), SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
   }
@@ -215,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
   const Extension* homepage_extension1 = nullptr;
   LoadHomepageExtension(kHomepage1, &homepage_extension1);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultHomepage});
     EXPECT_EQ(model->homepage_reset_state(),
               SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
@@ -223,9 +208,8 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 
   // Let the domain used by the extension require reset. Homepage now needs to
   // be reset, one extension needs to be disabled.
-  AddResetUrl(kHomepage1);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultHomepage, kHomepage1});
     EXPECT_EQ(model->homepage_reset_state(), SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(),
                 ElementsAre(Pair(homepage_extension1->id(), _)));
@@ -236,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
   const Extension* homepage_extension2 = nullptr;
   LoadHomepageExtension(kHomepage2, &homepage_extension2);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultHomepage, kHomepage1});
     EXPECT_EQ(model->homepage_reset_state(),
               SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
@@ -244,9 +228,9 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 
   // Let the domain used by the second extension require reset. Homepage needs
   // to be reset again, and both extensions need to be disabled.
-  AddResetUrl(kHomepage2);
   {
-    Model model = CreateModel();
+    ModelPointer model =
+        CreateModel({kDefaultHomepage, kHomepage1, kHomepage2});
     EXPECT_EQ(model->homepage_reset_state(), SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(),
                 UnorderedElementsAre(Pair(homepage_extension1->id(), _),
@@ -255,10 +239,8 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 
   // Let only the domain for the second extension require reset. Homepage still
   // needs to be reset, and both extensions need to be disabled.
-  ClearResetUrls();
-  AddResetUrl(kHomepage2);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kHomepage2});
     EXPECT_EQ(model->homepage_reset_state(), SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(),
                 UnorderedElementsAre(Pair(homepage_extension1->id(), _),
@@ -271,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
                        ExtensionsToDisable_DefaultSearch) {
   // Search does not need to be reset to start with.
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel();
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
@@ -279,9 +261,8 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 
   // Let the default search domain require reset, no extensions need to be
   // disabled.
-  AddResetUrl(kDefaultSearchUrl);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultSearchUrl});
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
@@ -292,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
   const Extension* safe_extension = nullptr;
   LoadManifest(kManifestNoOverride, &safe_extension);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultSearchUrl});
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
@@ -309,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
   const Extension* search_extension1 = nullptr;
   LoadSearchExtension(kSearchUrl1, &search_extension1);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultSearchUrl});
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
@@ -317,9 +298,8 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 
   // Let the domain used by the extension require reset. Search now needs to be
   // reset, one extension needs to be disabled.
-  AddResetUrl(kSearchUrl1);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultSearchUrl, kSearchUrl1});
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(),
@@ -331,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
   const Extension* search_extension2 = nullptr;
   LoadSearchExtension(kSearchUrl2, &search_extension2);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kDefaultSearchUrl, kSearchUrl1});
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
     EXPECT_THAT(model->extensions_to_disable(), IsEmpty());
@@ -339,9 +319,9 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 
   // Let the domain used by the second extension require reset. Search needs to
   // be reset again, and both extensions need to be disabled.
-  AddResetUrl(kSearchUrl2);
   {
-    Model model = CreateModel();
+    ModelPointer model =
+        CreateModel({kDefaultSearchUrl, kSearchUrl1, kSearchUrl2});
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(),
@@ -351,10 +331,8 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 
   // let only the domain for the second extension require reset. Search still
   // needs to be reset, and both extensions need to be disabled.
-  ClearResetUrls();
-  AddResetUrl(kSearchUrl2);
   {
-    Model model = CreateModel();
+    ModelPointer model = CreateModel({kSearchUrl2});
     EXPECT_EQ(model->default_search_reset_state(),
               SettingsResetPromptModel::ENABLED);
     EXPECT_THAT(model->extensions_to_disable(),

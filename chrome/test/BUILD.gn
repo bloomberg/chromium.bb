@@ -2088,9 +2088,9 @@ test("browser_tests") {
         "../browser/extensions/extension_function_test_utils.h",
         "../browser/extensions/updater/extension_cache_fake.cc",
         "../browser/extensions/updater/extension_cache_fake.h",
-        "../browser/safe_browsing/settings_reset_prompt/mock_settings_reset_prompt_config.cc",
-        "../browser/safe_browsing/settings_reset_prompt/mock_settings_reset_prompt_config.h",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model_browsertest.cc",
+        "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
+        "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
       ]
 
       deps += [
@@ -3989,10 +3989,10 @@ test("unit_tests") {
       "../browser/notifications/extension_welcome_notification_unittest.cc",
       "../browser/notifications/notification_conversion_helper_unittest.cc",
       "../browser/renderer_context_menu/context_menu_content_type_unittest.cc",
-      "../browser/safe_browsing/settings_reset_prompt/mock_settings_reset_prompt_config.cc",
-      "../browser/safe_browsing/settings_reset_prompt/mock_settings_reset_prompt_config.h",
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config_unittest.cc",
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model_unittest.cc",
+      "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
+      "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
       "../browser/safe_search_api/safe_search_url_checker_unittest.cc",
       "../browser/search/hotword_service_unittest.cc",
       "../browser/signin/easy_unlock_app_manager_unittest.cc",
