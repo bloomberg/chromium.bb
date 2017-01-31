@@ -511,6 +511,9 @@ static const aom_prob default_inter_compound_mode_probs
 #if CONFIG_COMPOUND_SEGMENT
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
+#if CONFIG_CB4X4
+      { 255, 255 }, { 255, 255 }, { 255, 255 },
+#endif
       { 208, 200 }, { 208, 200 }, { 208, 200 }, { 208, 200 }, { 208, 200 },
       { 208, 200 }, { 216, 200 }, { 216, 200 }, { 216, 200 }, { 224, 200 },
       { 224, 200 }, { 240, 200 }, { 240, 200 },
