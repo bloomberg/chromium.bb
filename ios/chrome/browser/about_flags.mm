@@ -122,6 +122,15 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableLRUSnapshotCache);
   }
 
+  // Populate command line flag for the AllBookmarks from the
+  // configuration plist.
+  NSString* enableAllBookmarks = [defaults stringForKey:@"AllBookmarks"];
+  if ([enableAllBookmarks isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableAllBookmarksView);
+  } else if ([enableAllBookmarks isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableAllBookmarksView);
+  }
+
   // Populate command line flags from PasswordGenerationEnabled.
   NSString* enablePasswordGenerationValue =
       [defaults stringForKey:@"PasswordGenerationEnabled"];

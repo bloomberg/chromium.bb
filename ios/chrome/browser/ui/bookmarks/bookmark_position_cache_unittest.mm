@@ -8,6 +8,16 @@
 
 namespace {
 
+TEST(BookmarkPositionCacheTest, TestMenuItemAllCoding) {
+  BookmarkPositionCache* cache =
+      [BookmarkPositionCache cacheForMenuItemAllWithPosition:23.2];
+
+  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:cache];
+  BookmarkPositionCache* cache2 =
+      [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  EXPECT_NSEQ(cache, cache2);
+}
+
 TEST(BookmarkPositionCacheTest, TestMenuItemFolderCoding) {
   BookmarkPositionCache* cache =
       [BookmarkPositionCache cacheForMenuItemFolderWithPosition:1010101

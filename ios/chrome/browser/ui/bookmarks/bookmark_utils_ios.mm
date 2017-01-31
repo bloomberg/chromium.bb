@@ -626,6 +626,9 @@ void CachePosition(CGFloat position, BookmarkMenuItem* item) {
           cacheForMenuItemFolderWithPosition:position
                                     folderId:item.folder->id()];
       break;
+    case bookmarks::MenuItemAll:
+      cache = [BookmarkPositionCache cacheForMenuItemAllWithPosition:position];
+      break;
     case bookmarks::MenuItemDivider:
     case bookmarks::MenuItemSectionHeader:
       NOTREACHED();
@@ -656,6 +659,11 @@ BOOL GetPositionCache(bookmarks::BookmarkModel* model,
     return NO;
 
   switch (cache.type) {
+    case bookmarks::MenuItemAll:
+      if (!experimental_flags::IsAllBookmarksEnabled())
+        return NO;
+      *item = [BookmarkMenuItem allMenuItem];
+      break;
     case bookmarks::MenuItemFolder: {
       const BookmarkNode* bookmark = FindFolderById(model, cache.folderId);
       if (!bookmark)

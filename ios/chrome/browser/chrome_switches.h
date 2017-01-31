@@ -9,6 +9,7 @@
 
 namespace switches {
 
+extern const char kDisableAllBookmarksView[];
 extern const char kDisableContextualSearch[];
 extern const char kDisableIOSFastWebScrollViewInsets[];
 extern const char kDisableIOSFeatures[];
@@ -26,6 +27,7 @@ extern const char kDisableIOSPhysicalWeb[];
 extern const char kDisableDownloadImageRenaming[];
 extern const char kDisableSuggestionsUI[];
 
+extern const char kEnableAllBookmarksView[];
 extern const char kEnableContextualSearch[];
 extern const char kEnableIOSFastWebScrollViewInsets[];
 extern const char kEnableIOSFeatures[];

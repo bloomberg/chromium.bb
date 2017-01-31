@@ -43,6 +43,9 @@ WhatsNewPromoStatus GetWhatsNewPromoStatus();
 // Whether background crash report upload should generate a local notification.
 bool IsAlertOnBackgroundUploadEnabled();
 
+// Whether the All Bookmarks view is visible in bookmarks.
+bool IsAllBookmarksEnabled();
+
 // Whether auto-reload is enabled.
 bool IsAutoReloadEnabled();
 

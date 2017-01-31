@@ -85,6 +85,25 @@ bool IsAlertOnBackgroundUploadEnabled() {
       boolForKey:kEnableAlertOnBackgroundUpload];
 }
 
+bool IsAllBookmarksEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableAllBookmarksView)) {
+    return true;
+  } else if (command_line->HasSwitch(switches::kDisableAllBookmarksView)) {
+    return false;
+  }
+
+  // Check if the finch experiment exists.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("RemoveAllBookmarks");
+
+  if (group_name.empty()) {
+    return false;  // If no finch experiment, all bookmarks is disabled.
+  }
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
 bool IsAutoReloadEnabled() {
   std::string group_name = base::FieldTrialList::FindFullName("IOSAutoReload");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

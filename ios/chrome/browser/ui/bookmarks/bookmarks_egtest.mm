@@ -1005,7 +1005,11 @@ id<GREYMatcher> ActionSheet(Action action) {
   [[self class] removeBookmarkWithTitle:@"Folder 1"];
 
   NSString* rootFolderTitle = nil;
-  rootFolderTitle = @"Mobile Bookmarks";
+  if (experimental_flags::IsAllBookmarksEnabled()) {
+    rootFolderTitle = @"Bookmarks";
+  } else {
+    rootFolderTitle = @"Mobile Bookmarks";
+  }
 
   // Folder 2 and 3 are now deleted, UI should have moved to top level folder.
   [[EarlGrey
@@ -1024,6 +1028,10 @@ id<GREYMatcher> ActionSheet(Action action) {
 
     // Test that the root folder is selected in the menu. This is only the case
     // on iPhone.
+    if (experimental_flags::IsAllBookmarksEnabled()) {
+      rootFolderTitle = @"All Bookmarks";
+    }
+
     GREYElementMatcherBlock* selectedMatcher =
         [GREYElementMatcherBlock matcherWithMatchesBlock:^BOOL(id element) {
           UITableViewCell* cell = (UITableViewCell*)element;
@@ -1293,7 +1301,11 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Navigates to the bookmark manager UI, and selects the top level folder.
 + (void)openTopLevelBookmarksFolder {
-  [BookmarksTestCase openMobileBookmarks];
+  if (experimental_flags::IsAllBookmarksEnabled()) {
+    [BookmarksTestCase openBookmarkFolder:@"All Bookmarks"];
+  } else {
+    [BookmarksTestCase openMobileBookmarks];
+  }
 }
 
 // Navigates to the bookmark manager UI, and selects MobileBookmarks.

@@ -18,10 +18,11 @@ using bookmarks::BookmarkNode;
 namespace bookmarks {
 BOOL NumberIsValidMenuItemType(int number) {
   // Invalid and deprecated numbers.
-  if (number < 1 || number > MenuItemLast)
+  if (number < 0 || number > MenuItemLast)
     return NO;
   MenuItemType type = static_cast<MenuItemType>(number);
   switch (type) {
+    case MenuItemAll:
     case MenuItemFolder:
       return YES;
 
@@ -60,6 +61,7 @@ BOOL NumberIsValidMenuItemType(int number) {
 
 - (UIAccessibilityTraits)accessibilityTraits {
   switch (self.type) {
+    case bookmarks::MenuItemAll:
     case bookmarks::MenuItemFolder:
       return super.accessibilityTraits |= UIAccessibilityTraitButton;
     case bookmarks::MenuItemSectionHeader:
@@ -71,6 +73,8 @@ BOOL NumberIsValidMenuItemType(int number) {
 
 - (NSString*)title {
   switch (self.type) {
+    case bookmarks::MenuItemAll:
+      return l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_ALL_BOOKMARKS_LABEL);
     case bookmarks::MenuItemDivider:
       return nil;
     case bookmarks::MenuItemFolder:
@@ -82,6 +86,8 @@ BOOL NumberIsValidMenuItemType(int number) {
 
 - (NSString*)titleForMenu {
   switch (self.type) {
+    case bookmarks::MenuItemAll:
+      return l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_ALL_BOOKMARKS_LABEL);
     case bookmarks::MenuItemDivider:
     case bookmarks::MenuItemFolder:
     case bookmarks::MenuItemSectionHeader:
@@ -91,6 +97,8 @@ BOOL NumberIsValidMenuItemType(int number) {
 
 - (NSString*)titleForNavigationBar {
   switch (self.type) {
+    case bookmarks::MenuItemAll:
+      return l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BOOKMARKS_LABEL);
     case bookmarks::MenuItemDivider:
     case bookmarks::MenuItemFolder:
     case bookmarks::MenuItemSectionHeader:
@@ -100,6 +108,8 @@ BOOL NumberIsValidMenuItemType(int number) {
 
 - (NSString*)accessibilityIdentifier {
   switch (self.type) {
+    case bookmarks::MenuItemAll:
+      return @"MenuItemAll";
     case bookmarks::MenuItemDivider:
       return nil;
     case bookmarks::MenuItemFolder:
@@ -111,6 +121,11 @@ BOOL NumberIsValidMenuItemType(int number) {
 
 - (UIImage*)imagePrimary:(BOOL)primary {
   switch (self.type) {
+    case bookmarks::MenuItemAll:
+      if (primary)
+        return [UIImage imageNamed:@"bookmark_blue_star"];
+      else
+        return [UIImage imageNamed:@"bookmark_gray_star"];
     case bookmarks::MenuItemFolder:
       if (self.folder->type() == BookmarkNode::BOOKMARK_BAR ||
           self.folder->type() == BookmarkNode::MOBILE ||
@@ -137,6 +152,7 @@ BOOL NumberIsValidMenuItemType(int number) {
     case bookmarks::MenuItemDivider:
     case bookmarks::MenuItemSectionHeader:
       return NO;
+    case bookmarks::MenuItemAll:
     case bookmarks::MenuItemFolder:
       return YES;
   }
@@ -144,6 +160,7 @@ BOOL NumberIsValidMenuItemType(int number) {
 
 - (BOOL)supportsEditing {
   switch (self.type) {
+    case bookmarks::MenuItemAll:
     case bookmarks::MenuItemFolder:
       return YES;
     case bookmarks::MenuItemDivider:
@@ -164,6 +181,7 @@ BOOL NumberIsValidMenuItemType(int number) {
 
   switch (self.type) {
     case bookmarks::MenuItemDivider:
+    case bookmarks::MenuItemAll:
       return YES;
     case bookmarks::MenuItemFolder:
       return self.folder == otherMenuItem.folder;
@@ -185,12 +203,19 @@ BOOL NumberIsValidMenuItemType(int number) {
 - (NSUInteger)hash {
   switch (self.type) {
     case bookmarks::MenuItemDivider:
+    case bookmarks::MenuItemAll:
       return self.type;
     case bookmarks::MenuItemFolder:
       return self.type + reinterpret_cast<NSUInteger>(self.folder);
     case bookmarks::MenuItemSectionHeader:
       return self.type + [self.sectionTitle hash];
   }
+}
+
++ (BookmarkMenuItem*)allMenuItem {
+  BookmarkMenuItem* item = [[[BookmarkMenuItem alloc] init] autorelease];
+  item.type = bookmarks::MenuItemAll;
+  return item;
 }
 
 + (BookmarkMenuItem*)dividerMenuItem {
