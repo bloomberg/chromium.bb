@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -35,10 +36,11 @@ using base::TimeDelta;
 using sync_pb::AutofillSpecifics;
 using sync_pb::EntitySpecifics;
 using syncer::DataBatch;
-using syncer::EntityData;
-using syncer::EntityDataPtr;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
+using syncer::EntityData;
+using syncer::EntityDataPtr;
+using syncer::EntityDataMap;
 using syncer::FakeModelTypeChangeProcessor;
 using syncer::KeyAndData;
 using syncer::ModelError;
@@ -194,6 +196,15 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return changes;
   }
 
+  EntityDataMap CreateEntityDataMap(
+      const std::vector<AutofillSpecifics>& specifics_vector) {
+    EntityDataMap map;
+    for (const auto& specifics : specifics_vector) {
+      map[GetStorageKey(specifics)] = SpecificsToEntity(specifics);
+    }
+    return map;
+  }
+
   void VerifyApplyChanges(const std::vector<EntityChange>& changes) {
     const auto error = bridge()->ApplySyncChanges(
         bridge()->CreateMetadataChangeList(), changes);
@@ -202,6 +213,12 @@ class AutocompleteSyncBridgeTest : public testing::Test {
 
   void VerifyApplyAdds(const std::vector<AutofillSpecifics>& specifics) {
     VerifyApplyChanges(EntityAddList(specifics));
+  }
+
+  void VerifyMerge(const std::vector<AutofillSpecifics>& specifics) {
+    const auto error = bridge()->MergeSyncData(
+        bridge()->CreateMetadataChangeList(), CreateEntityDataMap(specifics));
+    EXPECT_FALSE(error);
   }
 
   std::map<std::string, AutofillSpecifics> ExpectedMap(
@@ -519,6 +536,91 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntryDeleted) {
 TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {
   EXPECT_NE(processor()->metadata(), nullptr);
   EXPECT_TRUE(processor()->metadata()->GetModelTypeState().initial_sync_done());
+}
+
+TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataEmpty) {
+  VerifyMerge(std::vector<AutofillSpecifics>());
+
+  VerifyAllData(std::vector<AutofillSpecifics>());
+  EXPECT_EQ(0u, processor()->delete_set().size());
+  EXPECT_EQ(0u, processor()->put_multimap().size());
+}
+
+TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataRemoteOnly) {
+  const AutofillSpecifics specifics1 = CreateSpecifics(1, {2});
+  const AutofillSpecifics specifics2 = CreateSpecifics(2, {3, 4});
+
+  VerifyMerge({specifics1, specifics2});
+
+  VerifyAllData({specifics1, specifics2});
+  EXPECT_EQ(0u, processor()->delete_set().size());
+  EXPECT_EQ(0u, processor()->put_multimap().size());
+}
+
+TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataLocalOnly) {
+  const AutofillSpecifics specifics1 = CreateSpecifics(1, {2});
+  const AutofillSpecifics specifics2 = CreateSpecifics(2, {3, 4});
+  VerifyApplyAdds({specifics1, specifics2});
+  VerifyAllData({specifics1, specifics2});
+
+  VerifyMerge(std::vector<AutofillSpecifics>());
+
+  VerifyAllData({specifics1, specifics2});
+  EXPECT_EQ(2u, processor()->put_multimap().size());
+  VerifyProcessorRecordedPut(specifics1);
+  VerifyProcessorRecordedPut(specifics2);
+  EXPECT_EQ(0u, processor()->delete_set().size());
+}
+
+TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataAllMerged) {
+  const AutofillSpecifics local1 = CreateSpecifics(1, {2});
+  const AutofillSpecifics local2 = CreateSpecifics(2, {3, 4});
+  const AutofillSpecifics local3 = CreateSpecifics(3, {4});
+  const AutofillSpecifics local4 = CreateSpecifics(4, {5, 6});
+  const AutofillSpecifics local5 = CreateSpecifics(5, {6, 9});
+  const AutofillSpecifics local6 = CreateSpecifics(6, {7, 9});
+  const AutofillSpecifics remote1 = local1;
+  const AutofillSpecifics remote2 = local2;
+  const AutofillSpecifics remote3 = CreateSpecifics(3, {5});
+  const AutofillSpecifics remote4 = CreateSpecifics(4, {7, 8});
+  const AutofillSpecifics remote5 = CreateSpecifics(5, {8, 9});
+  const AutofillSpecifics remote6 = CreateSpecifics(6, {8, 10});
+  const AutofillSpecifics merged1 = local1;
+  const AutofillSpecifics merged2 = local2;
+  const AutofillSpecifics merged3 = CreateSpecifics(3, {4, 5});
+  const AutofillSpecifics merged4 = CreateSpecifics(4, {5, 8});
+  const AutofillSpecifics merged5 = local5;
+  const AutofillSpecifics merged6 = CreateSpecifics(6, {7, 10});
+  VerifyApplyAdds({local1, local2, local3, local4, local5, local6});
+
+  VerifyMerge({remote1, remote2, remote3, remote4, remote5, remote6});
+
+  VerifyAllData({merged1, merged2, merged3, merged4, merged5, merged6});
+  EXPECT_EQ(4u, processor()->put_multimap().size());
+  VerifyProcessorRecordedPut(merged3);
+  VerifyProcessorRecordedPut(merged4);
+  VerifyProcessorRecordedPut(merged5);
+  VerifyProcessorRecordedPut(merged6);
+  EXPECT_EQ(0u, processor()->delete_set().size());
+}
+
+TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataMixed) {
+  const AutofillSpecifics local1 = CreateSpecifics(1, {2, 3});
+  const AutofillSpecifics remote2 = CreateSpecifics(2, {2, 3});
+  const AutofillSpecifics specifics3 = CreateSpecifics(3, {2, 3});
+  const AutofillSpecifics local4 = CreateSpecifics(4, {1, 3});
+  const AutofillSpecifics remote4 = CreateSpecifics(4, {2, 4});
+  const AutofillSpecifics merged4 = CreateSpecifics(4, {1, 4});
+
+  VerifyApplyAdds({local1, specifics3, local4});
+
+  VerifyMerge({remote2, specifics3, remote4});
+
+  VerifyAllData({local1, remote2, specifics3, merged4});
+  EXPECT_EQ(2u, processor()->put_multimap().size());
+  VerifyProcessorRecordedPut(local1);
+  VerifyProcessorRecordedPut(merged4);
+  EXPECT_EQ(0u, processor()->delete_set().size());
 }
 
 }  // namespace autofill
