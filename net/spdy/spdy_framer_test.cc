@@ -4191,6 +4191,29 @@ TEST_P(SpdyFramerTest, ReadIncorrectlySizedRstStream) {
              visitor.framer_.spdy_framer_error());
 }
 
+// Regression test for https://crbug.com/548674:
+// RST_STREAM with payload must not be accepted.
+TEST_P(SpdyFramerTest, ReadInvalidRstStreamWithPayload) {
+  const unsigned char kFrameData[] = {
+      0x00, 0x00, 0x07,        //  Length: 7
+      0x03,                    //    Type: RST_STREAM
+      0x00,                    //   Flags: none
+      0x00, 0x00, 0x00, 0x01,  //  Stream: 1
+      0x00, 0x00, 0x00, 0x00,  //   Error: NO_ERROR
+      'f',  'o',  'o'          // Payload: "foo"
+  };
+
+  TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
+  visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
+
+  EXPECT_EQ(SpdyFramer::SPDY_ERROR, visitor.framer_.state());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE,
+            visitor.framer_.spdy_framer_error())
+      << SpdyFramer::SpdyFramerErrorToString(
+             visitor.framer_.spdy_framer_error());
+  EXPECT_TRUE(visitor.fin_opaque_data_.empty());
+}
+
 // Test that SpdyFramer processes, by default, all passed input in one call
 // to ProcessInput (i.e. will not be calling set_process_single_input_frame()).
 TEST_P(SpdyFramerTest, ProcessAllInput) {
