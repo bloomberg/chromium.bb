@@ -78,6 +78,7 @@ source_set("browser") {
     "//device/screen_orientation/public/interfaces",
     "//device/sensors/public/cpp",
     "//device/vibration",
+    "//device/vr",
     "//device/wake_lock",
     "//google_apis",
     "//gpu",
@@ -2005,12 +2006,6 @@ source_set("browser") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-  }
-
-  if (enable_webvr) {
-    deps += [ "//device/vr" ]
-  } else {
-    deps += [ "//device/vr:mojo_only" ]
   }
 
   if (enable_ipc_fuzzer) {
