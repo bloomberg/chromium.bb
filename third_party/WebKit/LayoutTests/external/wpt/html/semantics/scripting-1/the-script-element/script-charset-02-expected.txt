@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Script @type: unknown parameters 
-FAIL Script @type: unknown parameters 1 assert_equals: expected 5 but got 10
-Harness: the test ran to completion.
-
