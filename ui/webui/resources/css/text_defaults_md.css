@@ -23,7 +23,7 @@ html {
 
 body {
   font-family: Roboto, $i18nRaw{fontFamily};
-  font-size: 81.25%
+  font-size: 81.25%;
 }
 
 button {

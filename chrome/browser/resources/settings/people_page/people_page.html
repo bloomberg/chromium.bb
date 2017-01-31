@@ -82,6 +82,11 @@
         width: 40px;
       }
 
+      /* Avoid orphaned english text (as requested by bettes@) */
+      #activity-controls .secondary {
+        max-width: 97%;
+      }
+
       #googleg-logo {
         background-image: url(../../../../../ui/webui/resources/images/200-logo_googleg.png);
         background-size: cover;
@@ -187,7 +192,7 @@
           </div>
         </template>
 
-        <div class="settings-box two-line" id="activity-controls"
+        <div class="settings-box three-line" id="activity-controls"
             on-tap="onActivityControlsTap_" actionable
             hidden="[[!syncStatus.signedIn]]">
           <div class="icon-container">
