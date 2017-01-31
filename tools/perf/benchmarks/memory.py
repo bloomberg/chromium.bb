@@ -78,6 +78,7 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
     return not _IGNORED_STATS_RE.search(value.name)
 
 
+@benchmark.Disabled('win', 'mac', 'linux')  # https://crbug.com/687258
 class MemoryBenchmarkTop10MobileStress(MemoryBenchmarkTop10Mobile):
   """Run top 10 mobile page set without closing/restarting the browser.
 
