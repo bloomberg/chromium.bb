@@ -68,7 +68,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // AVDAStateProvider implementation:
   const gfx::Size& GetSize() const override;
   base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const override;
-  // Notifies the client about the error and sets |state_| to |ERROR|.
+  // Notifies the client about the error and sets |state_| to |ERROR|.  If we're
+  // in the middle of Initialize, we guarantee that Initialize will return
+  // failure.  If deferred init is pending, then we'll fail deferred init.
+  // Otherwise, we'll signal errors normally.
   void NotifyError(Error error) override;
 
   // AVDACodecAllocatorClient implementation:
@@ -101,11 +104,11 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   };
 
   // Initialize of the picture buffer manager.  This is to be called when the
-  // SurfaceView in |surface_id_|, if any, is no longer busy.  It will return
-  // false on failure, and true if initialization was successful.  This includes
-  // synchronous and asynchronous init; the AVDA might not yet have a codec on
-  // success, but async init will at least be in progress.
-  bool InitializePictureBufferManager();
+  // SurfaceView in |surface_id_|, if any, is no longer busy.  On failure, it
+  // will set |state_| to ERROR.  On success, it will proceed to either sync or
+  // async codec config.  Note that we might not actually have a codec when this
+  // returns, however.
+  void InitializePictureBufferManager();
 
   // A part of destruction process that is sometimes postponed after the drain.
   void ActualDestroy();
@@ -118,11 +121,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // |state_| is no longer WAITING_FOR_CODEC.
   void ConfigureMediaCodecAsynchronously();
 
-  // Like ConfigureMediaCodecAsynchronously, but synchronous.  Returns true if
-  // and only if |media_codec_| is non-null.  Since all configuration is done
-  // synchronously, there is no concern with modifying |codec_config_| after
-  // this returns.
-  bool ConfigureMediaCodecSynchronously();
+  // Like ConfigureMediaCodecAsynchronously, but synchronous.  Will NotifyError
+  // on failure.  Since all configuration is done synchronously, there is no
+  // concern with modifying |codec_config_| after this returns.
+  void ConfigureMediaCodecSynchronously();
 
   // Instantiate a media codec using |codec_config|.
   // This may be called on any thread.
@@ -164,8 +166,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Called when a new key is added to the CDM.
   void OnKeyAdded();
 
-  // Notifies the client of the result of deferred initialization.
-  void NotifyInitializationComplete(bool success);
+  // Notifies the client that deferred initialization succeeded.  If it fails,
+  // then call NotifyError instead.
+  void NotifyInitializationSucceeded();
 
   // Notifies the client about the availability of a picture.
   void NotifyPictureReady(const Picture& picture);
@@ -308,6 +311,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Monotonically increasing value that is used to prevent old, delayed errors
   // from being sent after a reset.
   int error_sequence_token_;
+
+  // Are we currently processing a call to Initialize()?  Please don't use this
+  // unless you're NotifyError.
+  bool during_initialize_;
 
   // True if and only if VDA initialization is deferred, and we have not yet
   // called NotifyInitializationComplete.

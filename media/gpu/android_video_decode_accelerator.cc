@@ -234,6 +234,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
       pending_input_buf_index_(-1),
+      during_initialize_(false),
       deferred_initialization_pending_(false),
       codec_needs_reset_(false),
       defer_surface_creation_(false),
@@ -265,6 +266,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   TRACE_EVENT0("media", "AVDA::Initialize");
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoReset<bool> scoper(&during_initialize_, true);
 
   if (make_context_current_cb_.is_null() || get_gles2_decoder_cb_.is_null()) {
     DLOG(ERROR) << "GL callbacks are required for this VDA";
@@ -319,17 +321,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   // surface ID from the codec configuration.
   DCHECK(!pending_surface_id_);
 
-  // If we're low on resources, we may decide to defer creation of the surface
-  // until the codec is actually used.
-  if (ShouldDeferSurfaceCreation(config_.surface_id, codec_config_->codec)) {
-    DCHECK(!deferred_initialization_pending_);
-    // We should never be here if a SurfaceView is required.
-    DCHECK_EQ(config_.surface_id, SurfaceManager::kNoSurfaceID);
-    defer_surface_creation_ = true;
-    NotifyInitializationComplete(true);
-    return true;
-  }
-
   // We signaled that we support deferred initialization, so see if the client
   // does also.
   deferred_initialization_pending_ = config.is_deferred_initialization_allowed;
@@ -338,14 +329,30 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  // If we're low on resources, we may decide to defer creation of the surface
+  // until the codec is actually used.
+  if (ShouldDeferSurfaceCreation(config_.surface_id, codec_config_->codec)) {
+    // We should never be here if a SurfaceView is required.
+    DCHECK_EQ(config_.surface_id, SurfaceManager::kNoSurfaceID);
+    defer_surface_creation_ = true;
+    if (deferred_initialization_pending_)
+      NotifyInitializationSucceeded();
+    return true;
+  }
+
   if (AVDACodecAllocator::Instance()->AllocateSurface(this,
                                                       config_.surface_id)) {
-    // We now own the surface, so finish initialization.
-    return InitializePictureBufferManager();
+    // We now own the surface, so continue initialization.
+    InitializePictureBufferManager();
+    return state_ != ERROR;
   }
 
   // We have to wait for some other AVDA instance to free up the surface.
-  // OnSurfaceAvailable will be called when it's available.
+  // OnSurfaceAvailable will be called when it's available.  Note that if we're
+  // deferring initialization, then this will cause the client to wait for the
+  // result.  If we're not, then the client will assume success even though
+  // we don't technically know if we will get a surface and codec yet.
+  DCHECK_EQ(state_, NO_ERROR);
   return true;
 }
 
@@ -353,37 +360,44 @@ void AndroidVideoDecodeAccelerator::OnSurfaceAvailable(bool success) {
   DCHECK(deferred_initialization_pending_);
   DCHECK(!defer_surface_creation_);
 
-  if (!success || !InitializePictureBufferManager()) {
-    NotifyInitializationComplete(false);
-    deferred_initialization_pending_ = false;
+  if (!success) {
+    NOTIFY_ERROR(PLATFORM_FAILURE, "Surface is not available");
+    return;
   }
+
+  InitializePictureBufferManager();
 }
 
-bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
+void AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
   if (!make_context_current_cb_.Run()) {
-    LOG(ERROR) << "Failed to make this decoder's GL context current.";
-    return false;
+    NOTIFY_ERROR(PLATFORM_FAILURE,
+                 "Failed to make this decoder's GL context current");
+    return;
   }
 
   codec_config_->surface =
       picture_buffer_manager_.Initialize(config_.surface_id);
   codec_config_->surface_texture = picture_buffer_manager_.surface_texture();
-  if (codec_config_->surface.IsEmpty())
-    return false;
+  if (codec_config_->surface.IsEmpty()) {
+    NOTIFY_ERROR(PLATFORM_FAILURE, "Codec surface is empty");
+    return;
+  }
 
-  if (!AVDACodecAllocator::Instance()->StartThread(this))
-    return false;
+  if (!AVDACodecAllocator::Instance()->StartThread(this)) {
+    NOTIFY_ERROR(PLATFORM_FAILURE, "Unable to start thread");
+    return;
+  }
 
   // If we are encrypted, then we aren't able to create the codec yet.
   if (config_.is_encrypted()) {
     InitializeCdm();
-    return true;
+    return;
   }
 
   if (deferred_initialization_pending_ || defer_surface_creation_) {
     defer_surface_creation_ = false;
     ConfigureMediaCodecAsynchronously();
-    return true;
+    return;
   }
 
   // If the client doesn't support deferred initialization (WebRTC), then we
@@ -392,7 +406,7 @@ bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
   // all (::Initialize or the wrapper can do it), but then they have to remember
   // not to start codec config if we have to wait for the cdm.  It's somewhat
   // clearer for us to handle both cases.
-  return ConfigureMediaCodecSynchronously();
+  ConfigureMediaCodecSynchronously();
 }
 
 void AndroidVideoDecodeAccelerator::DoIOTask(bool start_timer) {
@@ -764,10 +778,12 @@ void AndroidVideoDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (defer_surface_creation_ && !InitializePictureBufferManager()) {
-    NOTIFY_ERROR(PLATFORM_FAILURE,
-                 "Failed deferred surface and MediaCodec initialization.");
-    return;
+  if (defer_surface_creation_) {
+    InitializePictureBufferManager();
+    if (state_ == ERROR) {
+      DLOG(ERROR) << "Failed deferred surface and MediaCodec initialization.";
+      return;
+    }
   }
 
   // If we previously deferred a codec restart, take care of it now. This can
@@ -898,7 +914,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
       weak_this_factory_.GetWeakPtr(), codec_config_);
 }
 
-bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
+void AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!media_codec_);
   DCHECK_NE(state_, WAITING_FOR_CODEC);
@@ -909,14 +925,14 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   if (!task_type) {
     // If there is no free thread, then just fail.
     OnCodecConfigured(nullptr);
-    return false;
+    return;
   }
 
   codec_config_->task_type = task_type.value();
   std::unique_ptr<VideoCodecBridge> media_codec =
       AVDACodecAllocator::Instance()->CreateMediaCodecSync(codec_config_);
+  // Note that |media_codec| might be null, which will NotifyError.
   OnCodecConfigured(std::move(media_codec));
-  return !!media_codec_;
 }
 
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(
@@ -925,19 +941,18 @@ void AndroidVideoDecodeAccelerator::OnCodecConfigured(
   DCHECK(state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED);
 
   // If we are supposed to notify that initialization is complete, then do so
-  // now.  Otherwise, this is a reconfiguration.
-  if (deferred_initialization_pending_) {
-    // Losing the output surface is not considered an error state, so notify
-    // success. The client will destroy this soon.
-    NotifyInitializationComplete(state_ == SURFACE_DESTROYED ? true
-                                                             : !!media_codec);
-    deferred_initialization_pending_ = false;
-  }
+  // before returning.  Otherwise, this is a reconfiguration.
 
   // If |state_| changed to SURFACE_DESTROYED while we were configuring a codec,
   // then the codec is already invalid so we return early and drop it.
-  if (state_ == SURFACE_DESTROYED)
+  if (state_ == SURFACE_DESTROYED) {
+    if (deferred_initialization_pending_) {
+      // Losing the output surface is not considered an error state, so notify
+      // success. The client will destroy this soon.
+      NotifyInitializationSucceeded();
+    }
     return;
+  }
 
   DCHECK(!media_codec_);
   media_codec_ = std::move(media_codec);
@@ -946,6 +961,9 @@ void AndroidVideoDecodeAccelerator::OnCodecConfigured(
     NOTIFY_ERROR(PLATFORM_FAILURE, "Failed to create MediaCodec");
     return;
   }
+
+  if (deferred_initialization_pending_)
+    NotifyInitializationSucceeded();
 
   state_ = NO_ERROR;
 
@@ -1220,7 +1238,7 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
 
 #if !defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   NOTIMPLEMENTED();
-  NotifyInitializationComplete(false);
+  NOTIFY_ERROR(PLATFORM_FAILURE, "Cdm support needs mojo in the gpu process");
 #else
   // Store the CDM to hold a reference to it.
   cdm_for_reference_holding_only_ =
@@ -1261,7 +1279,7 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
     LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
     cdm_for_reference_holding_only_ = nullptr;
     media_drm_bridge_cdm_context_ = nullptr;
-    NotifyInitializationComplete(false);
+    NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCrypto is not available");
     return;
   }
 
@@ -1287,9 +1305,12 @@ void AndroidVideoDecodeAccelerator::OnKeyAdded() {
   DoIOTask(true);
 }
 
-void AndroidVideoDecodeAccelerator::NotifyInitializationComplete(bool success) {
+void AndroidVideoDecodeAccelerator::NotifyInitializationSucceeded() {
+  DCHECK(deferred_initialization_pending_);
+
   if (client_)
-    client_->NotifyInitializationComplete(success);
+    client_->NotifyInitializationComplete(true);
+  deferred_initialization_pending_ = false;
 }
 
 void AndroidVideoDecodeAccelerator::NotifyPictureReady(const Picture& picture) {
@@ -1315,6 +1336,20 @@ void AndroidVideoDecodeAccelerator::NotifyResetDone() {
 
 void AndroidVideoDecodeAccelerator::NotifyError(Error error) {
   state_ = ERROR;
+
+  // If we're in the middle of Initialize, then stop.  It will notice |state_|.
+  if (during_initialize_)
+    return;
+
+  // If deferred init is pending, then notify the client that it failed.
+  if (deferred_initialization_pending_) {
+    if (client_)
+      client_->NotifyInitializationComplete(false);
+    deferred_initialization_pending_ = false;
+    return;
+  }
+
+  // We're after all init.  Just signal an error.
   if (client_)
     client_->NotifyError(error);
 }
