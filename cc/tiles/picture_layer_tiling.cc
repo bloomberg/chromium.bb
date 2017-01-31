@@ -722,8 +722,10 @@ bool PictureLayerTiling::IsTileOccluded(const Tile* tile) const {
 bool PictureLayerTiling::IsTileOccludedOnCurrentTree(const Tile* tile) const {
   if (!current_occlusion_in_layer_space_.HasOcclusion())
     return false;
+  gfx::Rect tile_bounds =
+      tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
   gfx::Rect tile_query_rect =
-      gfx::IntersectRects(tile->content_rect(), current_visible_rect_);
+      gfx::IntersectRects(tile_bounds, current_visible_rect_);
   // Explicitly check if the tile is outside the viewport. If so, we need to
   // return false, since occlusion for this tile is unknown.
   if (tile_query_rect.IsEmpty())
@@ -747,8 +749,17 @@ bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
     if (IsTileOccluded(tile))
       return false;
 
-    bool tile_is_visible =
-        tile->content_rect().Intersects(current_visible_rect_);
+    // We may be checking the active tree tile here (since this function is also
+    // called for active trees below, ensure that this is at all a valid tile on
+    // the pending tree.
+    if (tile->tiling_i_index() >= tiling_data_.num_tiles_x() ||
+        tile->tiling_j_index() >= tiling_data_.num_tiles_y()) {
+      return false;
+    }
+
+    gfx::Rect tile_bounds =
+        tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
+    bool tile_is_visible = tile_bounds.Intersects(current_visible_rect_);
     if (!tile_is_visible)
       return false;
 
@@ -793,7 +804,9 @@ bool PictureLayerTiling::IsTileRequiredForDraw(const Tile* tile) const {
   if (resolution_ != HIGH_RESOLUTION)
     return false;
 
-  bool tile_is_visible = current_visible_rect_.Intersects(tile->content_rect());
+  gfx::Rect tile_bounds =
+      tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
+  bool tile_is_visible = current_visible_rect_.Intersects(tile_bounds);
   if (!tile_is_visible)
     return false;
 
@@ -803,7 +816,6 @@ bool PictureLayerTiling::IsTileRequiredForDraw(const Tile* tile) const {
 }
 
 void PictureLayerTiling::UpdateRequiredStatesOnTile(Tile* tile) const {
-  DCHECK(tile);
   tile->set_required_for_activation(IsTileRequiredForActivation(tile));
   tile->set_required_for_draw(IsTileRequiredForDraw(tile));
 }
@@ -815,7 +827,12 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
   DCHECK(raster_source()->CoversRect(tile->enclosing_layer_rect()))
       << "Tile layer rect: " << tile->enclosing_layer_rect().ToString();
 
+  UpdateRequiredStatesOnTile(tile);
   const auto& tile_priority = ComputePriorityForTile(tile, priority_rect_type);
+  DCHECK((!tile->required_for_activation() && !tile->required_for_draw()) ||
+         tile_priority.priority_bin == TilePriority::NOW ||
+         !client_->HasValidTilePriorities());
+
   // Note that TileManager will consider this flag but may rasterize the tile
   // anyway (if tile is required for activation for example). We should process
   // the tile for images only if it's further than half of the skewport extent.
@@ -833,7 +850,6 @@ PictureLayerTiling::UpdateAndGetAllPrioritizedTilesForTesting() const {
   std::map<const Tile*, PrioritizedTile> result;
   for (const auto& key_tile_pair : tiles_) {
     Tile* tile = key_tile_pair.second.get();
-    UpdateRequiredStatesOnTile(tile);
     PrioritizedTile prioritized_tile =
         MakePrioritizedTile(tile, ComputePriorityRectTypeForTile(tile));
     result.insert(std::make_pair(prioritized_tile.tile(), prioritized_tile));

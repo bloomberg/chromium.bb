@@ -105,7 +105,6 @@ TilingSetRasterQueueRequired::TilingIterator::TilingIterator(
   // for occlusion, since the tile's internal state has not yet been updated.
   if (tile && tile->draw_info().NeedsRaster() &&
       !tiling_->IsTileOccluded(tile)) {
-    tiling_->UpdateRequiredStatesOnTile(tile);
     current_tile_ = tiling_->MakePrioritizedTile(
         tile, tiling_->ComputePriorityRectTypeForTile(tile));
     return;
@@ -145,7 +144,6 @@ TilingSetRasterQueueRequired::TilingIterator&
     break;
   }
 
-  tiling_->UpdateRequiredStatesOnTile(tile);
   current_tile_ = tiling_->MakePrioritizedTile(
       tile, tiling_->ComputePriorityRectTypeForTile(tile));
   return *this;

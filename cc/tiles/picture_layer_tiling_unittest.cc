@@ -61,9 +61,13 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
   }
 
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
+  PriorityRectType visible_rect_type() const {
+    return PriorityRectType::VISIBLE_RECT;
+  }
 
   using PictureLayerTiling::RemoveTileAt;
   using PictureLayerTiling::RemoveTilesInRegion;
+  using PictureLayerTiling::ComputePriorityRectTypeForTile;
 
  protected:
   TestablePictureLayerTiling(WhichTree tree,
@@ -953,6 +957,49 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
   active_tiling->Reset();
   EXPECT_FALSE(active_tiling->TileAt(0, 0));
   EXPECT_FALSE(recycle_tiling->TileAt(0, 0));
+}
+
+TEST(PictureLayerTilingTest, EdgeCaseTileNowAndRequired) {
+  FakePictureLayerTilingClient pending_client;
+  pending_client.SetTileSize(gfx::Size(100, 100));
+
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(gfx::Size(500, 500));
+  std::unique_ptr<TestablePictureLayerTiling> pending_tiling =
+      TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, raster_source,
+                                         &pending_client, LayerTreeSettings());
+  pending_tiling->set_resolution(HIGH_RESOLUTION);
+  pending_tiling->set_can_require_tiles_for_activation(true);
+
+  // The tile at (1, 0) should be touching the visible rect, but not
+  // intersecting it.
+  gfx::Rect visible_rect = gfx::Rect(0, 0, 99, 99);
+  gfx::Rect eventually_rect = gfx::Rect(0, 0, 500, 500);
+  pending_tiling->ComputeTilePriorityRects(visible_rect, visible_rect,
+                                           visible_rect, eventually_rect, 1.f,
+                                           Occlusion());
+
+  Tile* tile = pending_tiling->TileAt(1, 0);
+  EXPECT_NE(pending_tiling->visible_rect_type(),
+            pending_tiling->ComputePriorityRectTypeForTile(tile));
+  EXPECT_FALSE(pending_tiling->IsTileRequiredForActivation(tile));
+  EXPECT_TRUE(tile->content_rect().Intersects(visible_rect));
+  EXPECT_FALSE(pending_tiling->tiling_data()
+                   ->TileBounds(tile->tiling_i_index(), tile->tiling_j_index())
+                   .Intersects(visible_rect));
+
+  // Now the tile at (1, 0) should be intersecting the visible rect.
+  visible_rect = gfx::Rect(0, 0, 100, 100);
+  pending_tiling->ComputeTilePriorityRects(visible_rect, visible_rect,
+                                           visible_rect, eventually_rect, 1.f,
+                                           Occlusion());
+  EXPECT_EQ(pending_tiling->visible_rect_type(),
+            pending_tiling->ComputePriorityRectTypeForTile(tile));
+  EXPECT_TRUE(pending_tiling->IsTileRequiredForActivation(tile));
+  EXPECT_TRUE(tile->content_rect().Intersects(visible_rect));
+  EXPECT_TRUE(pending_tiling->tiling_data()
+                  ->TileBounds(tile->tiling_i_index(), tile->tiling_j_index())
+                  .Intersects(visible_rect));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {

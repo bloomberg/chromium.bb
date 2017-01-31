@@ -232,7 +232,6 @@ bool TilingSetEvictionQueue::EvictionRectIterator::GetFirstTileAndCheckIfValid(
     if (tiling->pending_visible_rect().Intersects(tile_rect))
       return false;
   }
-  (*tilings_)[tiling_index_]->UpdateRequiredStatesOnTile(tile);
   prioritized_tile_ = (*tilings_)[tiling_index_]->MakePrioritizedTile(
       tile, priority_rect_type_);
   // In other cases, the tile we got is a viable candidate, return true.

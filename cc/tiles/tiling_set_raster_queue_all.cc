@@ -180,7 +180,6 @@ void TilingSetRasterQueueAll::OnePriorityRectIterator::AdvanceToNextTile(
     }
     Tile* tile = tiling_->TileAt(iterator->index_x(), iterator->index_y());
     if (IsTileValid(tile)) {
-      tiling_->UpdateRequiredStatesOnTile(tile);
       current_tile_ = tiling_->MakePrioritizedTile(tile, priority_rect_type_);
       break;
     }
@@ -195,7 +194,6 @@ bool TilingSetRasterQueueAll::OnePriorityRectIterator::
     current_tile_ = PrioritizedTile();
     return false;
   }
-  tiling_->UpdateRequiredStatesOnTile(tile);
   current_tile_ = tiling_->MakePrioritizedTile(tile, priority_rect_type_);
   return true;
 }
@@ -208,9 +206,9 @@ bool TilingSetRasterQueueAll::OnePriorityRectIterator::IsTileValid(
   // for pending visible rect tiles as tiling iterators do not ignore those
   // tiles.
   if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT) {
-    gfx::Rect tile_rect = tiling_->tiling_data()->TileBounds(
-        tile->tiling_i_index(), tile->tiling_j_index());
-    if (pending_visible_rect_.Intersects(tile_rect))
+    gfx::Rect tile_bounds = tiling_data_->TileBounds(tile->tiling_i_index(),
+                                                     tile->tiling_j_index());
+    if (pending_visible_rect_.Intersects(tile_bounds))
       return false;
   }
   return true;

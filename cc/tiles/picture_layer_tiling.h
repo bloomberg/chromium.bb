@@ -157,8 +157,10 @@ class CC_EXPORT PictureLayerTiling {
   }
 
   void UpdateAllRequiredStateForTesting() {
-    for (const auto& key_tile_pair : tiles_)
-      UpdateRequiredStatesOnTile(key_tile_pair.second.get());
+    for (const auto& key_tile_pair : tiles_) {
+      Tile* tile = key_tile_pair.second.get();
+      UpdateRequiredStatesOnTile(tile);
+    }
   }
   std::map<const Tile*, PrioritizedTile>
   UpdateAndGetAllPrioritizedTilesForTesting() const;
