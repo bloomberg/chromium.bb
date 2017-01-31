@@ -2779,10 +2779,13 @@ GLenum BackTexture::Target() {
 bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
                                                 GLenum format,
                                                 bool zero) {
-  gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888;
+  DCHECK(format == GL_RGB || format == GL_RGBA);
   scoped_refptr<gl::GLImage> image =
       decoder_->GetContextGroup()->image_factory()->CreateAnonymousImage(
-          size, buffer_format, format);
+          size,
+          format == GL_RGB ? gfx::BufferFormat::RGBX_8888
+                           : gfx::BufferFormat::RGBA_8888,
+          format);
   if (!image || !image->BindTexImage(Target()))
     return false;
 
