@@ -44,8 +44,10 @@ class CCSerializationPerfTest : public testing::Test {
     return IPC::ParamTraits<CompositorFrame>::Read(msg, &iter, frame);
   }
 
-  static void RunDeserializationTestParamTraits(const std::string& test_name,
-                                                const CompositorFrame& frame) {
+  static void RunDeserializationTestParamTraits(
+      const std::string& test_name,
+      const CompositorFrame& frame,
+      UseSingleSharedQuadState single_sqs) {
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
     for (int i = 0; i < kNumWarmupRuns; ++i) {
@@ -75,15 +77,23 @@ class CCSerializationPerfTest : public testing::Test {
     }
 
     perf_test::PrintResult(
-        "ParamTraits deserialization: min_frame_deserialization_time", "",
+        "ParamTraits deserialization: min_frame_deserialization_time",
+        single_sqs == UseSingleSharedQuadState::YES
+            ? "_per_render_pass_shared_quad_state"
+            : "_per_quad_shared_quad_state",
         test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
         true);
     perf_test::PrintResult("ParamTraits deserialization: num runs in 2 seconds",
-                           "", test_name, count, "", true);
+                           single_sqs == UseSingleSharedQuadState::YES
+                               ? "_per_render_pass_shared_quad_state"
+                               : "_per_quad_shared_quad_state",
+                           test_name, count, "", true);
   }
 
-  static void RunSerializationTestParamTraits(const std::string& test_name,
-                                              const CompositorFrame& frame) {
+  static void RunSerializationTestParamTraits(
+      const std::string& test_name,
+      const CompositorFrame& frame,
+      UseSingleSharedQuadState single_sqs) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
       IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
@@ -111,15 +121,23 @@ class CCSerializationPerfTest : public testing::Test {
     }
 
     perf_test::PrintResult(
-        "ParamTraits serialization: min_frame_serialization_time", "",
+        "ParamTraits serialization: min_frame_serialization_time",
+        single_sqs == UseSingleSharedQuadState::YES
+            ? "_per_render_pass_shared_quad_state"
+            : "_per_quad_shared_quad_state",
         test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
         true);
     perf_test::PrintResult("ParamTraits serialization: num runs in 2 seconds",
-                           "", test_name, count, "", true);
+                           single_sqs == UseSingleSharedQuadState::YES
+                               ? "_per_render_pass_shared_quad_state"
+                               : "_per_quad_shared_quad_state",
+                           test_name, count, "", true);
   }
 
-  static void RunDeserializationTestStructTraits(const std::string& test_name,
-                                                 const CompositorFrame& frame) {
+  static void RunDeserializationTestStructTraits(
+      const std::string& test_name,
+      const CompositorFrame& frame,
+      UseSingleSharedQuadState single_sqs) {
     auto data = mojom::CompositorFrame::Serialize(&frame);
     DCHECK_GT(data.size(), 0u);
     for (int i = 0; i < kNumWarmupRuns; ++i) {
@@ -149,16 +167,24 @@ class CCSerializationPerfTest : public testing::Test {
     }
 
     perf_test::PrintResult(
-        "StructTraits deserialization min_frame_deserialization_time", "",
+        "StructTraits deserialization min_frame_deserialization_time",
+        single_sqs == UseSingleSharedQuadState::YES
+            ? "_per_render_pass_shared_quad_state"
+            : "_per_quad_shared_quad_state",
         test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
         true);
     perf_test::PrintResult(
-        "StructTraits deserialization: num runs in 2 seconds", "", test_name,
-        count, "", true);
+        "StructTraits deserialization: num runs in 2 seconds",
+        single_sqs == UseSingleSharedQuadState::YES
+            ? "_per_render_pass_shared_quad_state"
+            : "_per_quad_shared_quad_state",
+        test_name, count, "", true);
   }
 
-  static void RunSerializationTestStructTraits(const std::string& test_name,
-                                               const CompositorFrame& frame) {
+  static void RunSerializationTestStructTraits(
+      const std::string& test_name,
+      const CompositorFrame& frame,
+      UseSingleSharedQuadState single_sqs) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       auto data = mojom::CompositorFrame::Serialize(&frame);
       DCHECK_GT(data.size(), 0u);
@@ -186,11 +212,17 @@ class CCSerializationPerfTest : public testing::Test {
     }
 
     perf_test::PrintResult(
-        "StructTraits serialization min_frame_serialization_time", "",
+        "StructTraits serialization min_frame_serialization_time",
+        single_sqs == UseSingleSharedQuadState::YES
+            ? "_per_render_pass_shared_quad_state"
+            : "_per_quad_shared_quad_state",
         test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
         true);
     perf_test::PrintResult("StructTraits serialization: num runs in 2 seconds",
-                           "", test_name, count, "", true);
+                           single_sqs == UseSingleSharedQuadState::YES
+                               ? "_per_render_pass_shared_quad_state"
+                               : "_per_quad_shared_quad_state",
+                           test_name, count, "", true);
   }
 
   static void RunCompositorFrameTest(const std::string& test_name,
@@ -214,49 +246,80 @@ class CCSerializationPerfTest : public testing::Test {
       }
       frame.render_pass_list.push_back(std::move(render_pass));
     }
-    RunTest(test_name, std::move(frame));
+    RunTest(test_name, std::move(frame), single_sqs);
   }
 
-  static void RunTest(const std::string& test_name, CompositorFrame frame) {
-    RunSerializationTestStructTraits(test_name, frame);
-    RunDeserializationTestStructTraits(test_name, frame);
-    RunSerializationTestParamTraits(test_name, frame);
-    RunDeserializationTestParamTraits(test_name, frame);
+  static void RunTest(const std::string& test_name,
+                      CompositorFrame frame,
+                      UseSingleSharedQuadState single_sqs) {
+    RunSerializationTestStructTraits(test_name, frame, single_sqs);
+    RunDeserializationTestStructTraits(test_name, frame, single_sqs);
+    RunSerializationTestParamTraits(test_name, frame, single_sqs);
+    RunDeserializationTestParamTraits(test_name, frame, single_sqs);
   }
 };
 
+// Test for compositor frames with one render pass and 4000 quads.
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_4000) {
+  // Case 1: One shared quad state for all quads in one render pass.
   RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_4000", 4000, 1,
                          UseSingleSharedQuadState::YES);
+  // Case 2: One shared quad state for each quad.
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_4000", 4000, 1,
+                         UseSingleSharedQuadState::NO);
 }
 
+// Test for compositor frames with one render pass and 100000 quads.
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_100000) {
+  // Case 1: One shared quad state for all quads in one render pass.
   RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_100000", 100000, 1,
+                         UseSingleSharedQuadState::YES);
+  // Case 2: One shared quad state for each quad.
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_100000", 100000, 1,
+                         UseSingleSharedQuadState::NO);
+}
+
+// Test for compositor frames with 100 render pass and each with 4000 quads.
+TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_100_4000) {
+  // One shared quad state for all quads in one render pass.
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_100_4000", 4000, 100,
                          UseSingleSharedQuadState::YES);
 }
 
-TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
-  RunCompositorFrameTest("DelegatedFrame_ManyQuads_4000_4000", 4000, 1,
-                         UseSingleSharedQuadState::NO);
+// Test for compositor frames with 10 render pass and each with 100000 quads.
+TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_10_100000) {
+  // One shared quad state for all quads in one render pass.
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_10_100000", 100000, 10,
+                         UseSingleSharedQuadState::YES);
 }
 
-TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
-  RunCompositorFrameTest("DelegatedFrame_ManyQuads_100000_100000", 100000, 1,
-                         UseSingleSharedQuadState::NO);
-}
-
+// Test for compositor frames with 5 render pass and each with 100 quads.
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_5_100) {
+  // Case 1: One shared quad state for all quads in one render pass.
+  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_5_100", 100, 5,
+                         UseSingleSharedQuadState::YES);
+  // Case 2: One shared quad state for each quad.
   RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_5_100", 100, 5,
                          UseSingleSharedQuadState::NO);
 }
 
+// Test for compositor frames with 10 render pass and each with 500 quads.
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_10_500) {
+  // Case 1: One shared quad state for all quads in one render pass.
+  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_10_500", 500, 10,
+                         UseSingleSharedQuadState::YES);
+  // Case 2: One shared quad state for each quad.
   RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_10_500", 500, 10,
                          UseSingleSharedQuadState::NO);
 }
 
+// Test for compositor frames with 1000 render pass and each with 100 quads.
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_1000_100) {
-  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_10000_100", 100, 1000,
+  // Case 1: One shared quad state for all quads in one render pass.
+  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_1000_100", 100, 1000,
+                         UseSingleSharedQuadState::YES);
+  // Case 2: One shared quad state for each quad.
+  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_1000_100", 100, 1000,
                          UseSingleSharedQuadState::NO);
 }
 
