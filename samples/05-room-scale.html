@@ -105,7 +105,6 @@ found in the LICENSE file.
         };
         var useWebgl2 = WGLUUrl.getBool('webgl2', false);
         var contextTypes = useWebgl2 ? ["webgl2"] : ["webgl", "experimental-webgl"];
-        var gl = null;
         for (var i in contextTypes) {
           gl = webglCanvas.getContext(contextTypes[i], glAttribs);
           if (gl)
