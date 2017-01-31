@@ -126,11 +126,13 @@ All third party additions and substantive changes like re-licensing need the
 following sign-offs. Some of these are accessible to Googlers only. Non-Googlers
 can email one of the people in third_party/OWNERS for help.
 
-* Chrome Eng Review. Googlers should see go/chrome-eng-review
+* Chrome Eng Review. Googlers should see go/chrome-eng-review (please include information about the additional checkout size, build times, and binary sizes. Please also make sure that the motivation for your project is clear, e.g., a design doc has been circulated).
 * open-source-third-party-reviews@google.com (ping the list with relevant
   details and a link to the CL).
 * security@chromium.org (ping the list with relevant details and a link to the
   CL).
+
+Please send separate emails to the three lists.
 
 Third party code is a hot spot for security vulnerabilities. When adding a new
 package that could potentially carry security risk, make sure to highlight risk
