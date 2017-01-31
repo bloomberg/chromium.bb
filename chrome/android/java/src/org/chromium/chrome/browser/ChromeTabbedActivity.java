@@ -113,6 +113,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
+import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content.browser.ContentVideoView;
@@ -1364,6 +1365,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         if (exitFullscreenIfShowing()) {
             recordBackPressedUma("Exited fullscreen", BACK_PRESSED_EXITED_FULLSCREEN);
+            return true;
+        }
+
+        // Close the bottom sheet before trying to navigate back.
+        if (getBottomSheet() != null
+                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
+            getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
             return true;
         }
 
