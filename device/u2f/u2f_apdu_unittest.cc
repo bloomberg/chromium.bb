@@ -181,4 +181,75 @@ TEST_F(U2fApduTest, TestSerializeEdgeCases) {
                   U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
                       ->GetEncodedCommand()));
 }
+
+TEST_F(U2fApduTest, TestCreateSign) {
+  std::vector<uint8_t> appid(U2fApduCommand::kAppIdDigestLen, 0x01);
+  std::vector<uint8_t> challenge(U2fApduCommand::kChallengeDigestLen, 0xff);
+  std::vector<uint8_t> key_handle(U2fApduCommand::kMaxKeyHandleLength);
+
+  scoped_refptr<U2fApduCommand> cmd =
+      U2fApduCommand::CreateSign(appid, challenge, key_handle);
+  ASSERT_NE(nullptr, cmd);
+  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
+                  ->GetEncodedCommand(),
+              testing::ContainerEq(cmd->GetEncodedCommand()));
+  // Expect null result with incorrectly sized key handle
+  key_handle.push_back(0x0f);
+  cmd = U2fApduCommand::CreateSign(appid, challenge, key_handle);
+  EXPECT_EQ(nullptr, cmd);
+  key_handle.pop_back();
+  // Expect null result with incorrectly sized appid
+  appid.pop_back();
+  cmd = U2fApduCommand::CreateSign(appid, challenge, key_handle);
+  EXPECT_EQ(nullptr, cmd);
+  appid.push_back(0xff);
+  // Expect null result with incorrectly sized challenge
+  challenge.push_back(0x0);
+  cmd = U2fApduCommand::CreateSign(appid, challenge, key_handle);
+  EXPECT_EQ(nullptr, cmd);
+}
+
+TEST_F(U2fApduTest, TestCreateRegister) {
+  std::vector<uint8_t> appid(U2fApduCommand::kAppIdDigestLen, 0x01);
+  std::vector<uint8_t> challenge(U2fApduCommand::kChallengeDigestLen, 0xff);
+  scoped_refptr<U2fApduCommand> cmd =
+      U2fApduCommand::CreateRegister(appid, challenge);
+  ASSERT_NE(nullptr, cmd);
+  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
+                  ->GetEncodedCommand(),
+              testing::ContainerEq(cmd->GetEncodedCommand()));
+  // Expect null result with incorrectly sized appid
+  appid.push_back(0xff);
+  cmd = U2fApduCommand::CreateRegister(appid, challenge);
+  EXPECT_EQ(nullptr, cmd);
+  appid.pop_back();
+  // Expect null result with incorrectly sized challenge
+  challenge.push_back(0xff);
+  cmd = U2fApduCommand::CreateRegister(appid, challenge);
+  EXPECT_EQ(nullptr, cmd);
+}
+
+TEST_F(U2fApduTest, TestCreateVersion) {
+  scoped_refptr<U2fApduCommand> cmd = U2fApduCommand::CreateVersion();
+  std::vector<uint8_t> expected = {
+      0x0, U2fApduCommand::kInsU2fVersion, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+  EXPECT_THAT(expected, testing::ContainerEq(cmd->GetEncodedCommand()));
+  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
+                  ->GetEncodedCommand(),
+              testing::ContainerEq(cmd->GetEncodedCommand()));
+}
+
+TEST_F(U2fApduTest, TestCreateLegacyVersion) {
+  scoped_refptr<U2fApduCommand> cmd = U2fApduCommand::CreateLegacyVersion();
+  // Legacy version command contains 2 extra null bytes compared to ISO 7816-4
+  // format
+  std::vector<uint8_t> expected = {
+      0x0, U2fApduCommand::kInsU2fVersion, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+  EXPECT_THAT(expected, testing::ContainerEq(cmd->GetEncodedCommand()));
+  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
+                  ->GetEncodedCommand(),
+              testing::ContainerEq(cmd->GetEncodedCommand()));
+}
 }  // namespace device

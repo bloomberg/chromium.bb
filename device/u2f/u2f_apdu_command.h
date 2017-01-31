@@ -37,6 +37,17 @@ class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
   void set_response_length(size_t response_length) {
     response_length_ = response_length;
   }
+  void set_suffix(const std::vector<uint8_t>& suffix) { suffix_ = suffix; }
+  static scoped_refptr<U2fApduCommand> CreateRegister(
+      const std::vector<uint8_t>& appid_digest,
+      const std::vector<uint8_t>& challenge_digest);
+  static scoped_refptr<U2fApduCommand> CreateVersion();
+  // Early U2F drafts defined a non-ISO 7816-4 conforming layout
+  static scoped_refptr<U2fApduCommand> CreateLegacyVersion();
+  static scoped_refptr<U2fApduCommand> CreateSign(
+      const std::vector<uint8_t>& appid_digest,
+      const std::vector<uint8_t>& challenge_digest,
+      const std::vector<uint8_t>& key_handle);
 
  private:
   friend class base::RefCountedThreadSafe<U2fApduCommand>;
@@ -44,6 +55,10 @@ class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeBasic);
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeComplex);
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestSerializeEdgeCases);
+  FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestCreateSign);
+  FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestCreateRegister);
+  FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestCreateVersion);
+  FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestCreateLegacyVersion);
 
   static constexpr size_t kApduMinHeader = 4;
   static constexpr size_t kApduMaxHeader = 7;
@@ -55,6 +70,18 @@ class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
   static constexpr size_t kApduMaxResponseLength = 65536;
   static constexpr size_t kApduMaxLength =
       kApduMaxDataLength + kApduMaxHeader + 2;
+  // APDU instructions
+  static constexpr uint8_t kInsU2fEnroll = 0x01;
+  static constexpr uint8_t kInsU2fSign = 0x02;
+  static constexpr uint8_t kInsU2fVersion = 0x03;
+  // P1 instructions
+  static constexpr uint8_t kP1TupRequired = 0x01;
+  static constexpr uint8_t kP1TupConsumed = 0x02;
+  static constexpr uint8_t kP1TupRequiredConsumed =
+      kP1TupRequired | kP1TupConsumed;
+  static constexpr size_t kMaxKeyHandleLength = 255;
+  static constexpr size_t kChallengeDigestLen = 32;
+  static constexpr size_t kAppIdDigestLen = 32;
 
   U2fApduCommand();
   U2fApduCommand(uint8_t cla,
@@ -62,7 +89,8 @@ class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
                  uint8_t p1,
                  uint8_t p2,
                  size_t response_length,
-                 std::vector<uint8_t> data);
+                 std::vector<uint8_t> data,
+                 std::vector<uint8_t> suffix);
   ~U2fApduCommand();
 
   uint8_t cla_;
@@ -71,6 +99,7 @@ class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
   uint8_t p2_;
   size_t response_length_;
   std::vector<uint8_t> data_;
+  std::vector<uint8_t> suffix_;
 };
 }  // namespace device
 
