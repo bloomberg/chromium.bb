@@ -31,11 +31,12 @@ PassRefPtr<TransformOperation> TranslateTransformOperation::blend(
     return this;
 
   const Length zeroLength(0, Fixed);
-  if (blendToIdentity)
+  if (blendToIdentity) {
     return TranslateTransformOperation::create(
         zeroLength.blend(m_x, progress, ValueRangeAll),
         zeroLength.blend(m_y, progress, ValueRangeAll),
-        blink::blend(0., m_z, progress), m_type);
+        blink::blend(m_z, 0., progress), m_type);
+  }
 
   const TranslateTransformOperation* fromOp =
       static_cast<const TranslateTransformOperation*>(from);
