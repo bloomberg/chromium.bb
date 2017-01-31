@@ -343,10 +343,14 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    *    look for password forms.
    */
   __gCrWeb.getPasswordFormDataList = function(formDataList, win) {
-    var doc = win.document;
+    var doc = null;
 
-    // We may not be allowed to read the 'document' property from a frame
-    // that is in a different domain.
+    try {
+      // Security violations may generate an exception or null to be returned.
+      doc = win.document;
+    } catch(e) {
+    }
+
     if (!doc) {
       return;
     }
