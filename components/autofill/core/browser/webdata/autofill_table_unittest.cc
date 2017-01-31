@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "components/autofill/core/browser/webdata/autofill_table.h"
 
 #include <map>
 #include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -29,7 +27,6 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
-#include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -44,6 +41,10 @@
 using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
+using sync_pb::EntityMetadata;
+using sync_pb::ModelTypeState;
+using syncer::EntityMetadataMap;
+using syncer::MetadataBatch;
 
 namespace autofill {
 
@@ -2021,8 +2022,16 @@ TEST_F(AutofillTableTest, GetFormValuesForElementName_SubstringMatchEnabled) {
   }
 }
 
-TEST_F(AutofillTableTest, GetAllSyncMetadata) {
-  sync_pb::EntityMetadata metadata;
+TEST_F(AutofillTableTest, AutofillNoMetadata) {
+  MetadataBatch metadata_batch;
+  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_EQ(0u, metadata_batch.TakeAllMetadata().size());
+  EXPECT_EQ(ModelTypeState().SerializeAsString(),
+            metadata_batch.GetModelTypeState().SerializeAsString());
+}
+
+TEST_F(AutofillTableTest, AutofillGetAllSyncMetadata) {
+  EntityMetadata metadata;
   std::string storage_key = "storage_key";
   std::string storage_key2 = "storage_key2";
   metadata.set_sequence_number(1);
@@ -2030,7 +2039,7 @@ TEST_F(AutofillTableTest, GetAllSyncMetadata) {
   EXPECT_TRUE(
       table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key, metadata));
 
-  sync_pb::ModelTypeState model_type_state;
+  ModelTypeState model_type_state;
   model_type_state.set_initial_sync_done(true);
 
   EXPECT_TRUE(table_->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
@@ -2039,12 +2048,12 @@ TEST_F(AutofillTableTest, GetAllSyncMetadata) {
   EXPECT_TRUE(
       table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key2, metadata));
 
-  syncer::MetadataBatch metadata_batch;
+  MetadataBatch metadata_batch;
   EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
 
   EXPECT_TRUE(metadata_batch.GetModelTypeState().initial_sync_done());
 
-  syncer::EntityMetadataMap metadata_records = metadata_batch.TakeAllMetadata();
+  EntityMetadataMap metadata_records = metadata_batch.TakeAllMetadata();
 
   EXPECT_EQ(metadata_records.size(), 2u);
   EXPECT_EQ(metadata_records[storage_key].sequence_number(), 1);
@@ -2058,11 +2067,11 @@ TEST_F(AutofillTableTest, GetAllSyncMetadata) {
   EXPECT_FALSE(metadata_batch.GetModelTypeState().initial_sync_done());
 }
 
-TEST_F(AutofillTableTest, WriteThenDeleteSyncMetadata) {
-  sync_pb::EntityMetadata metadata;
-  syncer::MetadataBatch metadata_batch;
+TEST_F(AutofillTableTest, AutofillWriteThenDeleteSyncMetadata) {
+  EntityMetadata metadata;
+  MetadataBatch metadata_batch;
   std::string storage_key = "storage_key";
-  sync_pb::ModelTypeState model_type_state;
+  ModelTypeState model_type_state;
 
   model_type_state.set_initial_sync_done(true);
 
@@ -2077,32 +2086,35 @@ TEST_F(AutofillTableTest, WriteThenDeleteSyncMetadata) {
   // It shouldn't be there any more.
   EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
 
-  syncer::EntityMetadataMap metadata_records = metadata_batch.TakeAllMetadata();
+  EntityMetadataMap metadata_records = metadata_batch.TakeAllMetadata();
   EXPECT_EQ(metadata_records.size(), 0u);
 
   // Now delete the model type state.
   EXPECT_TRUE(table_->ClearModelTypeState(syncer::AUTOFILL));
-  EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_EQ(ModelTypeState().SerializeAsString(),
+            metadata_batch.GetModelTypeState().SerializeAsString());
 }
 
-TEST_F(AutofillTableTest, CorruptSyncMetadata) {
-  syncer::MetadataBatch metadata_batch;
-  sync_pb::ModelTypeState state;
-  std::string storage_key = "storage_key";
-
+TEST_F(AutofillTableTest, AutofillCorruptSyncMetadata) {
+  MetadataBatch metadata_batch;
   sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
       "INSERT OR REPLACE INTO autofill_sync_metadata "
       "(storage_key, value) VALUES(?, ?)"));
-  s.BindString(0, storage_key);
+  s.BindString(0, "storage_key");
   s.BindString(1, "unparseable");
+  EXPECT_TRUE(s.Run());
 
-  sql::Statement s2(db_->GetSQLConnection()->GetUniqueStatement(
+  EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+}
+
+TEST_F(AutofillTableTest, AutofillCorruptModelTypeState) {
+  MetadataBatch metadata_batch;
+  sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
       "INSERT OR REPLACE INTO autofill_model_type_state "
       "(rowid, value) VALUES(1, ?)"));
-  s2.BindString(0, "unparseable");
-
+  s.BindString(0, "unparseable");
   EXPECT_TRUE(s.Run());
-  EXPECT_TRUE(s2.Run());
 
   EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
 }

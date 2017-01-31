@@ -82,6 +82,7 @@ void SharedModelTypeProcessor::ModelReadyToSync(
                      weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
+    DCHECK_EQ(0u, batch->TakeAllMetadata().size());
     // First time syncing; initialize metadata.
     model_type_state_.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type_));

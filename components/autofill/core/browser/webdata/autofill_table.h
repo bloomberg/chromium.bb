@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -21,11 +22,6 @@ class WebDatabase;
 
 namespace base {
 class Time;
-}
-
-namespace sync_pb {
-class EntityMetadata;
-class ModelTypeState;
 }
 
 namespace autofill {

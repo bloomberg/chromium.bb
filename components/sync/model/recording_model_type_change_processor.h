@@ -5,6 +5,11 @@
 #ifndef COMPONENTS_SYNC_MODEL_RECORDING_MODEL_TYPE_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_MODEL_RECORDING_MODEL_TYPE_CHANGE_PROCESSOR_H_
 
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+
 #include "components/sync/model/fake_model_type_change_processor.h"
 
 namespace syncer {
@@ -34,7 +39,7 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
 
   const std::set<std::string>& delete_set() const { return delete_set_; }
 
-  const MetadataBatch* metadata() const { return metadata_.get(); }
+  MetadataBatch* metadata() const { return metadata_.get(); }
 
  private:
   std::multimap<std::string, std::unique_ptr<EntityData>> put_multimap_;

@@ -11,8 +11,7 @@
 #include <limits>
 #include <map>
 #include <set>
-#include <string>
-#include <vector>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/guid.h"
@@ -36,7 +35,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model/metadata_batch.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/webdata/common/web_database.h"
@@ -1686,7 +1684,7 @@ bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
   syncer::EntityMetadataMap metadata_records;
   if (GetAllSyncEntityMetadata(model_type, &metadata_records)) {
     for (const auto& pair : metadata_records) {
-      // todo(pnoland): add batch transfer of metadata map
+      // TODO(pnoland): Add batch transfer of metadata map.
       metadata_batch->AddMetadata(pair.first, pair.second);
     }
   } else {
@@ -1762,7 +1760,7 @@ bool AutofillTable::GetModelTypeState(syncer::ModelType model_type,
       "SELECT value FROM autofill_model_type_state WHERE id=1"));
 
   if (!s.Step()) {
-    return false;
+    return true;
   }
 
   std::string serialized_state = s.ColumnString(0);

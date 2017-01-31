@@ -34,7 +34,9 @@ using base::ScopedTempDir;
 using base::Time;
 using base::TimeDelta;
 using sync_pb::AutofillSpecifics;
+using sync_pb::EntityMetadata;
 using sync_pb::EntitySpecifics;
+using sync_pb::ModelTypeState;
 using syncer::DataBatch;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
@@ -132,19 +134,17 @@ class AutocompleteSyncBridgeTest : public testing::Test {
       db_.AddTable(&table_);
       db_.Init(temp_dir_.GetPath().AppendASCII("SyncTestWebDatabase"));
       backend_.SetWebDatabase(&db_);
-
-      sync_pb::ModelTypeState model_type_state;
-      model_type_state.set_initial_sync_done(true);
-      table_.UpdateModelTypeState(syncer::AUTOFILL, model_type_state);
-
-      bridge_.reset(new AutocompleteSyncBridge(
-          &backend_,
-          base::Bind(
-              &AutocompleteSyncBridgeTest::CreateModelTypeChangeProcessor,
-              base::Unretained(this))));
+      ResetBridge();
     }
   }
   ~AutocompleteSyncBridgeTest() override {}
+
+  void ResetBridge() {
+    bridge_.reset(new AutocompleteSyncBridge(
+        &backend_,
+        base::Bind(&AutocompleteSyncBridgeTest::CreateModelTypeChangeProcessor,
+                   base::Unretained(this))));
+  }
 
   void SaveSpecificsToTable(
       const std::vector<AutofillSpecifics>& specifics_list) {
@@ -582,8 +582,23 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntryDeleted) {
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {
-  EXPECT_NE(processor()->metadata(), nullptr);
+  EXPECT_NE(nullptr, processor()->metadata());
+  EXPECT_FALSE(
+      processor()->metadata()->GetModelTypeState().initial_sync_done());
+  EXPECT_EQ(0u, processor()->metadata()->TakeAllMetadata().size());
+
+  ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+  EXPECT_TRUE(
+      table()->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
+  EXPECT_TRUE(
+      table()->UpdateSyncMetadata(syncer::AUTOFILL, "key", EntityMetadata()));
+
+  ResetBridge();
+
+  EXPECT_NE(nullptr, processor()->metadata());
   EXPECT_TRUE(processor()->metadata()->GetModelTypeState().initial_sync_done());
+  EXPECT_EQ(1u, processor()->metadata()->TakeAllMetadata().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataEmpty) {
