@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -717,6 +720,36 @@ public class SuggestionsSectionTest {
         // Remove the last card. The penultimate one should get the update.
         section.removeSuggestionById(suggestions.get(1).mIdWithinCategory);
         verify(mParent).onItemRangeChanged(section, 1, 1, PartialUpdateId.CARD_BACKGROUND);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
+    public void testGetItemDismissalGroupWithSuggestions() {
+        List<SnippetArticle> suggestions = createDummySuggestions(5, TEST_CATEGORY_ID);
+        SuggestionsSection section = createSectionWithReloadAction(false);
+        section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+
+        assertThat(section.getItemDismissalGroup(1).size(), is(1));
+        assertThat(section.getItemDismissalGroup(1), contains(1));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
+    public void testGetItemDismissalGroupWithActionItem() {
+        SuggestionsSection section = createSectionWithReloadAction(true);
+        assertThat(section.getItemDismissalGroup(1).size(), is(2));
+        assertThat(section.getItemDismissalGroup(1), contains(1, 2));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
+    public void testGetItemDismissalGroupWithoutActionItem() {
+        SuggestionsSection section = createSectionWithReloadAction(false);
+        assertThat(section.getItemDismissalGroup(1).size(), is(1));
+        assertThat(section.getItemDismissalGroup(1), contains(1));
     }
 
     @Test

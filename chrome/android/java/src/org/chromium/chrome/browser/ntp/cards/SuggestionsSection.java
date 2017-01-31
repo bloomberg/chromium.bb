@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,11 +39,7 @@ import java.util.Set;
 public class SuggestionsSection extends InnerNode {
     private static final String TAG = "NtpCards";
 
-    private static final Set<Integer> SECTION_DISMISSAL_GROUP = new HashSet<>(2);
-    {
-        SECTION_DISMISSAL_GROUP.add(1);
-        SECTION_DISMISSAL_GROUP.add(2);
-    }
+    private static final Set<Integer> SECTION_DISMISSAL_GROUP = new HashSet<>(Arrays.asList(1, 2));
 
     private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
@@ -473,6 +470,11 @@ public class SuggestionsSection extends InnerNode {
     private Set<Integer> getSectionDismissalRange() {
         if (hasSuggestions() || !SnippetsConfig.isSectionDismissalEnabled()) {
             return Collections.emptySet();
+        }
+
+        if (!mMoreButton.isVisible()) {
+            assert getStartingOffsetForChild(mStatus) == 1;
+            return Collections.singleton(1);
         }
 
         assert SECTION_DISMISSAL_GROUP.contains(getStartingOffsetForChild(mStatus));
