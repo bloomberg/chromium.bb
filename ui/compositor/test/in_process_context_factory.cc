@@ -52,9 +52,11 @@ class FakeReflector : public Reflector {
 // GL surface.
 class DirectOutputSurface : public cc::OutputSurface {
  public:
-  DirectOutputSurface(scoped_refptr<InProcessContextProvider> context_provider)
-      : cc::OutputSurface(std::move(context_provider)),
-        weak_ptr_factory_(this) {}
+  explicit DirectOutputSurface(
+      scoped_refptr<InProcessContextProvider> context_provider)
+      : cc::OutputSurface(context_provider), weak_ptr_factory_(this) {
+    capabilities_.flipped_output_surface = true;
+  }
 
   ~DirectOutputSurface() override {}
 
@@ -221,6 +223,8 @@ void InProcessContextFactory::CreateCompositorFrameSink(
       shared_worker_context_provider_, &gpu_memory_buffer_manager_,
       &shared_bitmap_manager_);
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+
+  data->display->Resize(compositor->size());
 }
 
 std::unique_ptr<Reflector> InProcessContextFactory::CreateReflector(
