@@ -10,7 +10,6 @@
 #include <map>
 #include <memory>
 
-#include "base/lazy_instance.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
@@ -61,12 +60,6 @@ class IOSurfaceContext
   base::ScopedTypeRef<CGLContextObj> cgl_context_;
 
   bool poisoned_;
-
-  // The global map from window number and window ordering to
-  // context data.
-  typedef std::map<Type, IOSurfaceContext*> TypeMap;
-  static base::LazyInstance<TypeMap> type_map_;
-  static TypeMap* type_map();
 };
 
 }  // namespace ui

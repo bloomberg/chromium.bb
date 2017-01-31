@@ -9,7 +9,6 @@
 #include <map>
 #include <utility>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
@@ -21,7 +20,10 @@ namespace {
 // rather than using a separated map.
 typedef std::map<NSView*, ViewID> ViewIDMap;
 
-static base::LazyInstance<ViewIDMap> g_view_id_map = LAZY_INSTANCE_INITIALIZER;
+ViewIDMap* GetViewIDMap() {
+  static auto view_id_map = new ViewIDMap();
+  return view_id_map;
+}
 
 // Returns the view's nearest descendant (including itself) with a specific
 // ViewID, or nil if no subview has that ViewID.
@@ -46,12 +48,12 @@ void SetID(NSView* view, ViewID viewID) {
   DCHECK(viewID != VIEW_ID_NONE);
   // We handle VIEW_ID_TAB_0 to VIEW_ID_TAB_LAST in GetView() function directly.
   DCHECK(!((viewID >= VIEW_ID_TAB_0) && (viewID <= VIEW_ID_TAB_LAST)));
-  g_view_id_map.Get()[view] = viewID;
+  (*GetViewIDMap())[view] = viewID;
 }
 
 void UnsetID(NSView* view) {
   DCHECK(view);
-  g_view_id_map.Get().erase(view);
+  GetViewIDMap()->erase(view);
 }
 
 NSView* GetView(NSWindow* window, ViewID viewID) {
@@ -81,7 +83,7 @@ NSView* GetView(NSWindow* window, ViewID viewID) {
 @implementation NSView (ViewID)
 
 - (ViewID)viewID {
-  ViewIDMap* map = g_view_id_map.Pointer();
+  const ViewIDMap* map = GetViewIDMap();
   ViewIDMap::const_iterator iter = map->find(self);
   return iter != map->end() ? iter->second : VIEW_ID_NONE;
 }

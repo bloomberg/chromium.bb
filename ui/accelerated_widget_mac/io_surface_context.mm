@@ -16,14 +16,27 @@
 
 namespace ui {
 
+namespace {
+
+// The global map from window number and window ordering to context data.
+using TypeMap = std::map<IOSurfaceContext::Type, IOSurfaceContext*>;
+
+TypeMap* GetTypeMap() {
+  static auto type_map = new TypeMap();
+  return type_map;
+}
+
+}  // namespace
+
 // static
 scoped_refptr<IOSurfaceContext>
 IOSurfaceContext::Get(Type type) {
   TRACE_EVENT0("browser", "IOSurfaceContext::Get");
 
   // Return the context for this type, if it exists.
-  TypeMap::iterator found = type_map()->find(type);
-  if (found != type_map()->end()) {
+  auto type_map = GetTypeMap();
+  TypeMap::iterator found = type_map->find(type);
+  if (found != type_map->end()) {
     DCHECK(!found->second->poisoned_);
     return found->second;
   }
@@ -51,8 +64,8 @@ IOSurfaceContext::Get(Type type) {
   // Create all contexts in the same share group so that the textures don't
   // need to be recreated when transitioning contexts.
   CGLContextObj share_context = NULL;
-  if (!type_map()->empty())
-    share_context = type_map()->begin()->second->cgl_context();
+  if (!type_map->empty())
+    share_context = type_map->begin()->second->cgl_context();
   error = CGLCreateContext(
       pixel_format, share_context, cgl_context.InitializeInto());
   if (error != kCGLNoError) {
@@ -67,19 +80,19 @@ void IOSurfaceContext::PoisonContextAndSharegroup() {
   if (poisoned_)
     return;
 
-  for (TypeMap::iterator it = type_map()->begin();
-       it != type_map()->end();
-       ++it) {
+  auto type_map = GetTypeMap();
+  for (TypeMap::iterator it = type_map->begin(); it != type_map->end(); ++it) {
     it->second->poisoned_ = true;
   }
-  type_map()->clear();
+  type_map->clear();
 }
 
 IOSurfaceContext::IOSurfaceContext(
     Type type, base::ScopedTypeRef<CGLContextObj> cgl_context)
     : type_(type), cgl_context_(cgl_context), poisoned_(false) {
-  DCHECK(type_map()->find(type_) == type_map()->end());
-  type_map()->insert(std::make_pair(type_, this));
+  auto type_map = GetTypeMap();
+  DCHECK(type_map->find(type_) == type_map->end());
+  type_map->insert(std::make_pair(type_, this));
 
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
@@ -87,13 +100,14 @@ IOSurfaceContext::IOSurfaceContext(
 IOSurfaceContext::~IOSurfaceContext() {
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
+  auto type_map = GetTypeMap();
   if (!poisoned_) {
-    DCHECK(type_map()->find(type_) != type_map()->end());
-    DCHECK(type_map()->find(type_)->second == this);
-    type_map()->erase(type_);
+    DCHECK(type_map->find(type_) != type_map->end());
+    DCHECK(type_map->find(type_)->second == this);
+    type_map->erase(type_);
   } else {
-    TypeMap::const_iterator found = type_map()->find(type_);
-    if (found != type_map()->end())
+    TypeMap::const_iterator found = type_map->find(type_);
+    if (found != type_map->end())
       DCHECK(found->second != this);
   }
 }
@@ -104,15 +118,5 @@ void IOSurfaceContext::OnGpuSwitched() {
   // http://crbug.com/361493
   PoisonContextAndSharegroup();
 }
-
-// static
-IOSurfaceContext::TypeMap*
-    IOSurfaceContext::type_map() {
-  return type_map_.Pointer();
-}
-
-// static
-base::LazyInstance<IOSurfaceContext::TypeMap>
-    IOSurfaceContext::type_map_;
 
 }  // namespace ui

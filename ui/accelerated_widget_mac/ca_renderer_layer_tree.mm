@@ -9,8 +9,9 @@
 #include <CoreVideo/CoreVideo.h>
 #include <GLES2/gl2extchromium.h>
 
+#include <utility>
+
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -142,21 +143,20 @@ class CARendererLayerTree::SolidColorContents
   SolidColorContents(SkColor color, IOSurfaceRef io_surface);
   ~SolidColorContents();
 
+  static std::map<SkColor, SolidColorContents*>* GetMap();
+
   SkColor color_ = 0;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  static base::LazyInstance<std::map<SkColor, SolidColorContents*>> map_;
 };
-
-base::LazyInstance<std::map<SkColor, CARendererLayerTree::SolidColorContents*>>
-    CARendererLayerTree::SolidColorContents::map_;
 
 // static
 scoped_refptr<CARendererLayerTree::SolidColorContents>
 CARendererLayerTree::SolidColorContents::Get(SkColor color) {
   const int kSolidColorContentsSize = 16;
 
-  auto found = map_.Get().find(color);
-  if (found != map_.Get().end())
+  auto map = GetMap();
+  auto found = map->find(color);
+  if (found != map->end())
     return found->second;
 
   IOSurfaceRef io_surface = CreateIOSurface(
@@ -188,15 +188,24 @@ CARendererLayerTree::SolidColorContents::SolidColorContents(
     SkColor color,
     IOSurfaceRef io_surface)
     : color_(color), io_surface_(io_surface) {
-  DCHECK(map_.Get().find(color_) == map_.Get().end());
-  map_.Get()[color_] = this;
+  auto map = GetMap();
+  DCHECK(map->find(color_) == map->end());
+  map->insert(std::make_pair(color_, this));
 }
 
 CARendererLayerTree::SolidColorContents::~SolidColorContents() {
-  auto found = map_.Get().find(color_);
-  DCHECK(found != map_.Get().end());
+  auto map = GetMap();
+  auto found = map->find(color_);
+  DCHECK(found != map->end());
   DCHECK(found->second == this);
-  map_.Get().erase(color_);
+  map->erase(color_);
+}
+
+// static
+std::map<SkColor, CARendererLayerTree::SolidColorContents*>*
+CARendererLayerTree::SolidColorContents::GetMap() {
+  static auto map = new std::map<SkColor, SolidColorContents*>();
+  return map;
 }
 
 CARendererLayerTree::CARendererLayerTree(
