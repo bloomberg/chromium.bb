@@ -121,10 +121,15 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
           .ToConstraintSpace();
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
-  NGBlockLayoutAlgorithm minmax_algorithm(
-      layout_box_, Style(), toNGBlockNode(FirstChild()), constraint_space);
-  if (minmax_algorithm.ComputeMinAndMaxContentSizes(&sizes))
-    return sizes;
+  // TODO(kojii): Add other algorithms when they support
+  // ComputeMinAndMaxContentSizes.
+  NGLayoutInputNode* first_child = FirstChild();
+  if (!first_child || first_child->Type() == kLegacyBlock) {
+    NGBlockLayoutAlgorithm minmax_algorithm(
+        layout_box_, Style(), toNGBlockNode(FirstChild()), constraint_space);
+    if (minmax_algorithm.ComputeMinAndMaxContentSizes(&sizes))
+      return sizes;
+  }
 
   // Have to synthesize this value.
   NGPhysicalFragment* physical_fragment = Layout(constraint_space);
