@@ -1032,7 +1032,6 @@ if (!is_android) {
       "data/webui/settings/advanced_page_browsertest.js",
       "data/webui/settings/animation_browsertest.js",
       "data/webui/settings/basic_page_browsertest.js",
-      "data/webui/settings/bluetooth_page_browsertest_chromeos.js",
       "data/webui/settings/cr_settings_browsertest.js",
       "data/webui/settings/easy_unlock_browsertest_chromeos.js",
       "data/webui/settings/help_page_browsertest.js",
@@ -1056,7 +1055,6 @@ if (!is_android) {
     if (!is_chromeos) {
       sources -= [
         "data/webui/certificate_viewer_dialog_test.js",
-        "data/webui/settings/bluetooth_page_browsertest_chromeos.js",
         "data/webui/settings/easy_unlock_browsertest_chromeos.js",
       ]
     } else {

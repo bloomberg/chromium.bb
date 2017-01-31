@@ -723,6 +723,35 @@ TEST_F('CrSettingsDevicePageTest', 'PointersTest', function() {
 TEST_F('CrSettingsDevicePageTest', 'PowerTest', function() {
   mocha.grep(assert(device_page_tests.TestNames.Power)).run();
 });
+
+/**
+ * Test fixture for device-page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsBluetoothPageTest() {}
+
+CrSettingsBluetoothPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/bluetooth_page/bluetooth_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    ROOT_PATH + 'ui/webui/resources/js/load_time_data.js',
+    '../fake_chrome_event.js',
+    'fake_bluetooth.js',
+    'fake_bluetooth_private.js',
+    'bluetooth_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsBluetoothPageTest', 'BluetoothPageTest', function() {
+  mocha.run();
+});
+
 GEN('#endif');
 
 /**

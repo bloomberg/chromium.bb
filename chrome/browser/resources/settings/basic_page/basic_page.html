@@ -81,6 +81,14 @@
             </settings-internet-page>
           </settings-section>
         </template>
+        <template is="dom-if" if="[[showPage(pageVisibility.bluetooth)]]"
+            restamp>
+          <settings-section page-title="$i18n{bluetoothPageTitle}"
+              section="bluetooth">
+            <settings-bluetooth-page prefs="{{prefs}}">
+            </settings-bluetooth-page>
+          </settings-section>
+        </template>
 </if>
         <template is="dom-if" if="[[showPage(pageVisibility.people)]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
@@ -179,16 +187,6 @@
               </settings-privacy-page>
             </settings-section>
           </template>
-<if expr="chromeos">
-          <template is="dom-if" if="[[showPage(pageVisibility.bluetooth)]]"
-              restamp>
-            <settings-section page-title="$i18n{bluetoothPageTitle}"
-                section="bluetooth">
-              <settings-bluetooth-page prefs="{{prefs}}">
-              </settings-bluetooth-page>
-            </settings-section>
-          </template>
-</if>
           <template is="dom-if"
               if="[[showPage(pageVisibility.passwordsAndForms)]]" restamp>
             <settings-section

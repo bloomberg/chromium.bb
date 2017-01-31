@@ -105,6 +105,10 @@
             <iron-icon icon="settings:network-wifi"></iron-icon>
             $i18n{internetPageTitle}
           </div>
+          <div data-path="/bluetooth" on-tap="openPage_">
+            <iron-icon icon="settings:bluetooth"></iron-icon>
+            $i18n{bluetoothPageTitle}
+          </div>
 </if>
           <div id="people" data-path="/people" on-tap="openPage_"
               hidden="[[!pageVisibility.people]]">
@@ -167,12 +171,6 @@
             <iron-icon icon="settings:security"></iron-icon>
             $i18n{privacyPageTitle}
           </div>
-<if expr="chromeos">
-          <div data-path="/bluetooth" on-tap="openPage_">
-            <iron-icon icon="settings:bluetooth"></iron-icon>
-            $i18n{bluetoothPageTitle}
-          </div>
-</if>
           <div data-path="/passwordsAndForms" on-tap="openPage_"
               hidden="[[!pageVisibility.passwordsAndForms]]">
             <iron-icon icon="settings:assignment"></iron-icon>

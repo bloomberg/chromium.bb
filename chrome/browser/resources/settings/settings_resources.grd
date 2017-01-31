@@ -1009,6 +1009,12 @@
         <structure name="IDR_SETTINGS_BLUETOOTH_PAGE_JS"
                    file="bluetooth_page/bluetooth_page.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_BLUETOOTH_SUBPAGE_HTML"
+                   file="bluetooth_page/bluetooth_subpage.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_BLUETOOTH_SUBPAGE_JS"
+                   file="bluetooth_page/bluetooth_subpage.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DATE_TIME_PAGE_HTML"
                    file="date_time_page/date_time_page.html"
                    type="chrome_html" />

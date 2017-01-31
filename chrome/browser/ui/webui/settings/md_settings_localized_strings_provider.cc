@@ -331,6 +331,8 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL},
       {"bluetoothNoDevices", IDS_SETTINGS_BLUETOOTH_NO_DEVICES},
       {"bluetoothNotConnected", IDS_SETTINGS_BLUETOOTH_NOT_CONNECTED},
+      {"bluetoothOff", IDS_SETTINGS_BLUETOOTH_OFF},
+      {"bluetoothOn", IDS_SETTINGS_BLUETOOTH_ON},
       {"bluetoothPageTitle", IDS_SETTINGS_BLUETOOTH},
       {"bluetoothPair", IDS_SETTINGS_BLUETOOTH_PAIR},
       {"bluetoothPairDevice", IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE},

@@ -91,7 +91,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
       if (!cr.isChromeOS)
         sections.push('defaultBrowser');
       else
-        sections = sections.concat(['internet', 'device']);
+        sections = sections.concat(['internet', 'bluetooth', 'device']);
 
       for (var i = 0; i < sections.length; i++) {
         var section = self.getSection(page, sections[i]);

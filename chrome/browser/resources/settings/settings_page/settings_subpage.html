@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_page/settings_subpage_search.html">
@@ -27,6 +28,10 @@
         -webkit-margin-start: -8px;
       }
 
+      paper-spinner {
+        @apply(--cr-icon-height-width);
+      }
+
       h1 {
         color: var(--settings-nav-grey);
         flex: 1;  /* Push other items to the end. */
@@ -47,6 +52,9 @@
         <settings-subpage-search label="[[searchLabel]]"
             on-search-changed="onSearchChanged_">
         </settings-subpage-search>
+      </template>
+      <template is="dom-if" if="[[showSpinner]]">
+        <paper-spinner active></paper-spinner>          
       </template>
       <content select=".subpage-title-extra"></content>
     </div>

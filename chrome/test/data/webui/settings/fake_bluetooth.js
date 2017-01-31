@@ -47,9 +47,7 @@ cr.define('settings', function() {
     // Bluetooth overrides.
     /** @override */
     getAdapterState: function(callback) {
-      setTimeout(function() {
-        callback(this.adapterState);
-      }.bind(this));
+      callback(this.adapterState);
     },
 
     /** @override */
@@ -57,9 +55,7 @@ cr.define('settings', function() {
 
     /** @override */
     getDevices: function(callback) {
-      setTimeout(function() {
-        callback(this.devices);
-      }.bind(this));
+      callback(this.devices);
     },
 
     /** @override */

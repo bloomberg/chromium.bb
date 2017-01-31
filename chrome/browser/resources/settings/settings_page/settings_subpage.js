@@ -29,6 +29,12 @@ Polymer({
       value: '',
     },
 
+    /** If true shows an active spinner at the end of the subpage header. */
+    showSpinner: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Indicates which element triggers this subpage. Used by the searching
      * algorithm to show search bubbles. It is |null| for subpages that are

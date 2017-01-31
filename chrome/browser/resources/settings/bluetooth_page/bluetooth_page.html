@@ -1,109 +1,50 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/icons.html">
+<link rel="import" href="/prefs/prefs.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
+<link rel="import" href="/settings_page/settings_subpage.html">
 <link rel="import" href="/settings_shared_css.html">
-<link rel="import" href="bluetooth_device_dialog.html">
-<link rel="import" href="bluetooth_device_list_item.html">
+<link rel="import" href="bluetooth_subpage.html">
 
 <dom-module id="settings-bluetooth-page">
   <template>
     <style include="settings-shared">
-      cr-expand-button {
-        -webkit-margin-end: 10px;
-      }
-
-      #deviceList {
-        max-height: 300px;
-        overflow-y: auto;
-      }
-
-      .no-devices {
-        min-height: var(--settings-row-min-height);
-      }
-
-      settings-bluetooth-add-device-dialog,
-      settings-bluetooth-pair-device-dialog {
-        height: 400px;
-        padding: 0;
-        width: 500px;
-      }
     </style>
     <settings-animated-pages id="pages" section="bluetooth">
       <neon-animatable route-path="default">
-        <div class="settings-box first" actionable
-            on-tap="toggleDeviceListExpanded_">
-          <iron-icon icon="[[getIcon_(bluetoothEnabled_, deviceConnected_)]]">
-          </iron-icon>
+        <div class="settings-box first" actionable on-tap="onTap_">
+          <iron-icon icon="[[getIcon_(bluetoothEnabled_)]]"></iron-icon>
           <span class="middle">[[getTitle_(bluetoothEnabled_)]]</span>
           <cr-policy-pref-indicator
               pref="[[prefs.cros.device.allow_bluetooth]]"
               hidden="[[prefs.cros.device.allow_bluetooth.value]]">
           </cr-policy-pref-indicator>
-          <cr-expand-button id="expandListButton"
-              alt="$i18n{bluetoothExpandA11yLabel}"
-              hidden$="[[!bluetoothEnabled_]]"
-              expanded="{{deviceListExpanded_}}">
-          </cr-expand-button>
-          <div class="secondary-action">
-            <paper-toggle-button id="enableBluetooth"
-                checked="{{bluetoothEnabled_}}"
-                disabled="[[!adapterState_.available]]"
-                on-change="onBluetoothEnabledChange_" on-tap="stopTap_">
-            </paper-toggle-button>
-          </div>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              on-tap="onSubpageArrowTap_">
+          </button>
         </div>
-        <iron-collapse opened="[[canShowDeviceList_(bluetoothEnabled_,
-                                                    deviceListExpanded_)]]">
-          <div id="deviceList" class="list-frame vertical-list"
-              on-device-event="onDeviceEvent_">
-            <div id="container" class="layout vertical" scrollable>
-              <iron-list items="[[getPairedOrConnecting_(deviceList_.*)]]"
-                  selection-enabled selected-item="{{selectedItem_}}"
-                  scroll-target="container">
-                <template>
-                  <bluetooth-device-list-item device="[[item]]"
-                      tabindex$="[[tabIndex]]">
-                  </bluetooth-device-list-item>
-                </template>
-              </iron-list>
-            </div>
-            <div class="no-devices layout horizontal center"
-                hidden$="[[haveDevices_(deviceList_.*)]]">
-              $i18n{bluetoothNoDevices}
-            </div>
-          </div>
-          <div class="settings-box" hidden$="[[!bluetoothEnabled_]]">
-            <paper-button class="primary-button" on-tap="onAddDeviceTap_">
-              $i18n{bluetoothPairDevice}
-            </paper-button>
-          </div>
-        </iron-collapse>
       </neon-animatable>
+
+      <template is="dom-if" route-path="/bluetoothDevices">
+        <settings-subpage associated-control="[[$$('#bluetoothDevices')]]"
+            page-title="$i18n{bluetoothPageTitle}"
+            show-spinner="[[showSpinner_]]">
+          <settings-bluetooth-subpage 
+              adapter-state="[[adapterState_]]"
+              bluetooth-enabled="{{bluetoothEnabled_}}"
+              bluetooth="[[bluetooth]]"
+              bluetooth-private="[[bluetoothPrivate]]"
+              show-spinner="{{showSpinner_}}">
+          </settings-bluetooth-subpage>
+        </settings-subpage>
+      </template>
+
     </settings-animated-pages>
-
-    <template is="dom-if" if="[[deviceListExpanded_]]">
-      <bluetooth-device-dialog id="deviceDialog"
-          adapter-state="[[adapterState_]]"
-          device-list="[[deviceList_]]"
-          dialog-id="[[dialogId_]]"
-          on-close="onDialogClosed_"
-          error-message="[[errorMessage_]]"
-          on-device-event="onDeviceEvent_"
-          on-response="onResponse_"
-          pairing-device="[[pairingDevice_]]"
-          pairing-event="[[pairingEvent_]]">
-      </bluetooth-device-dialog>
-    </template>
-
   </template>
   <script src="bluetooth_page.js"></script>
 </dom-module>

@@ -66,13 +66,13 @@ SettingsSubPageBrowserTest.prototype = {
    */
   testSubPage: function(page, subPage) {
     Polymer.dom.flush();
-    expectFalse(!!this.getSection(page, subPage));
+    assertFalse(!!this.getSection(page, subPage));
     var startTime = window.performance.now();
     page.set('pageVisibility.' + subPage, true);
     Polymer.dom.flush();
     var dtime = window.performance.now() - startTime;
     console.log('Page: ' + subPage + ' Load time: ' + dtime.toFixed(0) + ' ms');
-    expectTrue(!!this.getSection(page, subPage));
+    assertTrue(!!this.getSection(page, subPage));
     // Hide the page so that it doesn't interfere with other subPages.
     page.set('pageVisibility.' + subPage, false);
     Polymer.dom.flush();
@@ -98,7 +98,7 @@ function SettingsBasicSubPageBrowserTest() {
     'search',
   ];
   if (cr.isChromeOS)
-    this.subPages.push('device', 'internet');
+    this.subPages.push('internet', 'bluetooth', 'device');
   else
     this.subPages.push('defaultBrowser');
 }
@@ -128,7 +128,7 @@ function SettingsAdvancedSubPageBrowserTest() {
     'reset',
   ];
   if (cr.isChromeOS)
-    this.subPages.push('dateTime', 'bluetooth');
+    this.subPages.push('dateTime');
   else
     this.subPages.push('system');
 };

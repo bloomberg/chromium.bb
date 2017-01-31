@@ -104,6 +104,8 @@ cr.define('settings', function() {
   r.INTERNET = r.BASIC.createSection('/internet', 'internet');
   r.NETWORK_DETAIL = r.INTERNET.createChild('/networkDetail');
   r.KNOWN_NETWORKS = r.INTERNET.createChild('/knownNetworks');
+  r.BLUETOOTH = r.BASIC.createSection('/bluetooth', 'bluetooth');
+  r.BLUETOOTH_DEVICES = r.BLUETOOTH.createChild('/bluetoothDevices');
 // </if>
 
   r.APPEARANCE = r.BASIC.createSection('/appearance', 'appearance');
@@ -173,7 +175,6 @@ cr.define('settings', function() {
 
 // <if expr="chromeos">
   r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
-  r.BLUETOOTH = r.ADVANCED.createSection('/bluetooth', 'bluetooth');
 // </if>
 
   r.PASSWORDS =
