@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -73,6 +74,8 @@ public class VrShellDelegate {
     private static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
     private static final String CARDBOARD_CATEGORY = "com.google.intent.category.CARDBOARD";
 
+    private static final String MIN_SDK_VERSION_PARAM_NAME = "min_sdk_version";
+
     private static final String VR_ACTIVITY_ALIAS =
             "org.chromium.chrome.browser.VRChromeTabbedActivity";
 
@@ -126,6 +129,26 @@ public class VrShellDelegate {
             mVrDaydreamApi = mVrClassesWrapper.createVrDaydreamApi();
         }
 
+        // Check cardboard support for non-daydream devices.
+        if (!mVrDaydreamApi.isDaydreamReadyDevice()) {
+            // Native libraries may not be ready in which case skip for now and check later.
+            if (LibraryLoader.isInitialized()) {
+                // Supported Build version is determined by the webvr cardboard support feature.
+                // Default is KITKAT unless specified via server side finch config.
+                if (Build.VERSION.SDK_INT
+                        < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                                ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
+                                MIN_SDK_VERSION_PARAM_NAME,
+                                Build.VERSION_CODES.KITKAT)) {
+                    mVrSupportLevel = VR_NOT_AVAILABLE;
+                    mEnterVRIntent = null;
+                    mTabObserver = null;
+                    mTabModelSelectorObserver = null;
+                    return;
+                }
+            }
+        }
+
         if (mEnterVRIntent == null) {
             mEnterVRIntent =
                     mVrDaydreamApi.createVrIntent(new ComponentName(mActivity, VR_ACTIVITY_ALIAS));
@@ -172,6 +195,8 @@ public class VrShellDelegate {
      * can be initialized.
      */
     public void onNativeLibraryReady() {
+        // Libraries may not have been loaded when we first set the support level, so check again.
+        updateVrSupportLevel();
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
         mNativeVrShellDelegate = nativeInit();
         Choreographer choreographer = Choreographer.getInstance();

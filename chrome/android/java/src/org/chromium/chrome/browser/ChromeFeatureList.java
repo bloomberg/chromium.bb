@@ -48,6 +48,23 @@ public abstract class ChromeFeatureList {
         return sTestEnabledFeatures.contains(featureName);
     }
 
+    /**
+     * Returns a field trial param as an int for the specified feature.
+     *
+     * Note: Features queried through this API must be added to the array
+     * |kFeaturesExposedToJava| in chrome/browser/android/chrome_feature_list.cc
+     *
+     * @param featureName The name of the feature to retrieve a param for.
+     * @param paramName The name of the param for which to get as an integer.
+     * @param defaultValue The integer value to use if the param is not available.
+     * @return The parameter value as an int. Default value if the feature does not exist or the
+     *         specified parameter does not exist.
+     */
+    public static long getFieldTrialParamByFeatureAsInt(
+            String featureName, String paramName, int defaultValue) {
+        return nativeGetFieldTrialParamByFeatureAsInt(featureName, paramName, defaultValue);
+    }
+
     // Alphabetical:
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
     public static final String ANDROID_PAY_INTEGRATION_V2 = "AndroidPayIntegrationV2";
@@ -77,6 +94,9 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
+    public static final String WEBVR_CARDBOARD_SUPPORT = "WebVRCardboardSupport";
 
     private static native boolean nativeIsEnabled(String featureName);
+    private static native int nativeGetFieldTrialParamByFeatureAsInt(
+            String featureName, String paramName, int defaultValue);
 }

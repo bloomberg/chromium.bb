@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/ntp_snippets/features.h"
@@ -60,6 +61,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabReparenting,
     &kWebPaymentsModifiers,
     &kWebPaymentsSingleAppUiSkip,
+    &kWebVRCardboardSupport,
     &ntp_snippets::kIncreasedVisibility,
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kOfflineBadgeFeature,
@@ -144,6 +146,9 @@ const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
 const base::Feature kWebPaymentsSingleAppUiSkip{
     "WebPaymentsSingleAppUiSkip", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kWebVRCardboardSupport{
+    "WebVRCardboardSupport", base::FEATURE_ENABLED_BY_DEFAULT};
+
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
                           const JavaParamRef<jstring>& jfeature_name) {
@@ -155,6 +160,26 @@ static jboolean IsEnabled(JNIEnv* env,
   // Features queried via this API must be present in |kFeaturesExposedToJava|.
   NOTREACHED();
   return false;
+}
+
+static jint GetFieldTrialParamByFeatureAsInt(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jfeature_name,
+    const JavaParamRef<jstring>& jparam_name,
+    const jint jdefault_value) {
+  const std::string feature_name = ConvertJavaStringToUTF8(env, jfeature_name);
+  const std::string param_name = ConvertJavaStringToUTF8(env, jparam_name);
+  int default_value = static_cast<int>(jdefault_value);
+
+  for (size_t i = 0; i < arraysize(kFeaturesExposedToJava); ++i) {
+    if (kFeaturesExposedToJava[i]->name == feature_name)
+      return base::GetFieldTrialParamByFeatureAsInt(
+          *kFeaturesExposedToJava[i], param_name, default_value);
+  }
+  // Features queried via this API must be present in |kFeaturesExposedToJava|.
+  NOTREACHED();
+  return jdefault_value;
 }
 
 bool RegisterChromeFeatureListJni(JNIEnv* env) {
