@@ -58,7 +58,6 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
-#include "components/exo/surface_property.h"
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
@@ -89,8 +88,7 @@
 #include "ui/events/keycodes/scoped_xkb.h"  // nogncheck
 #endif
 
-DECLARE_SURFACE_PROPERTY_TYPE(wl_resource*);
-DECLARE_SURFACE_PROPERTY_TYPE(bool);
+DECLARE_UI_CLASS_PROPERTY_TYPE(wl_resource*);
 
 namespace exo {
 namespace wayland {
@@ -144,19 +142,19 @@ uint32_t NowInMilliseconds() {
 
 // A property key containing the surface resource that is associated with
 // window. If unset, no surface resource is associated with window.
-DEFINE_SURFACE_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
 
 // A property key containing a boolean set to true if a viewport is associated
 // with window.
-DEFINE_SURFACE_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
 
 // A property key containing a boolean set to true if a security object is
 // associated with window.
-DEFINE_SURFACE_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 
 // A property key containing a boolean set to true if a blending object is
 // associated with window.
-DEFINE_SURFACE_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
 
 wl_resource* GetSurfaceResource(Surface* surface) {
   return surface->GetProperty(kSurfaceResourceKey);

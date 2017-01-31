@@ -49,9 +49,6 @@ class SurfaceDelegate;
 class SurfaceObserver;
 class Surface;
 
-template <typename T>
-struct SurfaceProperty;
-
 namespace subtle {
 class PropertyHelper;
 }
@@ -64,6 +61,7 @@ using CursorProvider = Pointer;
 // It has a location, size and pixel contents.
 class Surface : public ui::ContextFactoryObserver,
                 public aura::WindowObserver,
+                public ui::PropertyHandler,
                 public ui::CompositorVSyncManager::Observer {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
@@ -220,22 +218,6 @@ class Surface : public ui::ContextFactoryObserver,
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval) override;
 
-  // Sets the |value| of the given surface |property|. Setting to the default
-  // value (e.g., NULL) removes the property. The caller is responsible for the
-  // lifetime of any object set as a property on the Surface.
-  template <typename T>
-  void SetProperty(const SurfaceProperty<T>* property, T value);
-
-  // Returns the value of the given surface |property|.  Returns the
-  // property-specific default value if the property was not previously set.
-  template <typename T>
-  T GetProperty(const SurfaceProperty<T>* property) const;
-
-  // Sets the |property| to its default value. Useful for avoiding a cast when
-  // setting to NULL.
-  template <typename T>
-  void ClearProperty(const SurfaceProperty<T>* property);
-
   bool HasPendingDamageForTesting(const gfx::Rect& damage) const {
     return pending_damage_.contains(gfx::RectToSkIRect(damage));
   }
@@ -299,13 +281,6 @@ class Surface : public ui::ContextFactoryObserver,
   // Updates the current Surface with a new frame referring to the resource in
   // current_resource_.
   void UpdateSurface(bool full_damage);
-
-  int64_t SetPropertyInternal(const void* key,
-                              const char* name,
-                              PropertyDeallocator deallocator,
-                              int64_t value,
-                              int64_t default_value);
-  int64_t GetPropertyInternal(const void* key, int64_t default_value) const;
 
   // This returns true when the surface has some contents assigned to it.
   bool has_contents() const { return !!current_buffer_.buffer(); }
@@ -401,14 +376,6 @@ class Surface : public ui::ContextFactoryObserver,
   // can set this to handle Commit() and apply any double buffered state it
   // maintains.
   SurfaceDelegate* delegate_ = nullptr;
-
-  struct Value {
-    const char* name;
-    int64_t value;
-    PropertyDeallocator deallocator;
-  };
-
-  std::map<const void*, Value> prop_map_;
 
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true> observers_;

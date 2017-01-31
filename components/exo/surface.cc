@@ -828,30 +828,4 @@ void Surface::UpdateSurface(bool full_damage) {
       ->SubmitCompositorFrame(local_surface_id_, std::move(frame));
 }
 
-int64_t Surface::SetPropertyInternal(const void* key,
-                                     const char* name,
-                                     PropertyDeallocator deallocator,
-                                     int64_t value,
-                                     int64_t default_value) {
-  int64_t old = GetPropertyInternal(key, default_value);
-  if (value == default_value) {
-    prop_map_.erase(key);
-  } else {
-    Value prop_value;
-    prop_value.name = name;
-    prop_value.value = value;
-    prop_value.deallocator = deallocator;
-    prop_map_[key] = prop_value;
-  }
-  return old;
-}
-
-int64_t Surface::GetPropertyInternal(const void* key,
-                                     int64_t default_value) const {
-  std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
-  if (iter == prop_map_.end())
-    return default_value;
-  return iter->second.value;
-}
-
 }  // namespace exo
