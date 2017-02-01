@@ -388,7 +388,8 @@ TEST_F(DownloadShelfControllerTest, CancelAutoCloseOnExit) {
 
 // The view should not be hidden when the shelf is shown.
 // The view should be hidden after the closing animation.
-TEST_F(DownloadShelfControllerTest, ViewVisibility) {
+// Failing flakily on Mac 10.9, see: crbug.com/687447.
+TEST_F(DownloadShelfControllerTest, DISABLED_ViewVisibility) {
   [shelf_ showDownloadShelf:YES isUserAction:NO];
   EXPECT_FALSE([[shelf_ view] isHidden]);
 
