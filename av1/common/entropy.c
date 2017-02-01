@@ -4477,6 +4477,13 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
   const unsigned int(*eob_counts)[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS] =
       (const unsigned int(*)[REF_TYPES][COEF_BANDS]
                             [COEFF_CONTEXTS])cm->counts.eob_branch[tx_size];
+#if CONFIG_EC_MULTISYMBOL
+  const av1_blockz_probs_model *const pre_blockz_probs =
+      pre_fc->blockzero_probs[tx_size];
+  av1_blockz_probs_model *const blockz_probs = cm->fc->blockzero_probs[tx_size];
+  const av1_blockz_count_model *const blockz_counts =
+      (const av1_blockz_count_model *)&cm->counts.blockz_count[tx_size][0];
+#endif
   int i, j, k, l, m;
 #if CONFIG_RECT_TX
   assert(!is_rect_tx(tx_size));
@@ -4498,6 +4505,20 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
                 av1_merge_probs(pre_probs[i][j][k][l][m], branch_ct[m],
                                 count_sat, update_factor);
         }
+
+#if CONFIG_EC_MULTISYMBOL
+  for (i = 0; i < PLANE_TYPES; ++i) {
+    for (j = 0; j < REF_TYPES; ++j) {
+      for (k = 0; k < BLOCKZ_CONTEXTS; ++k) {
+        const int n0 = blockz_counts[i][j][k][0];
+        const int n1 = blockz_counts[i][j][k][1];
+        const unsigned int branch_ct[2] = { n0, n1 };
+        blockz_probs[i][j][k] = av1_merge_probs(
+            pre_blockz_probs[i][j][k], branch_ct, count_sat, update_factor);
+      }
+    }
+  }
+#endif
 }
 
 void av1_adapt_coef_probs(AV1_COMMON *cm) {

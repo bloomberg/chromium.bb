@@ -202,6 +202,8 @@ void av1_model_to_full_probs(const aom_prob *model, aom_prob *full);
 #if CONFIG_EC_MULTISYMBOL
 typedef aom_cdf_prob coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                     [ENTROPY_TOKENS];
+typedef aom_prob av1_blockz_probs_model[REF_TYPES][BLOCKZ_CONTEXTS];
+typedef unsigned int av1_blockz_count_model[REF_TYPES][BLOCKZ_CONTEXTS][2];
 extern const aom_cdf_prob av1_pareto8_token_probs[COEFF_PROB_MODELS]
                                                  [ENTROPY_TOKENS - 2];
 extern const aom_cdf_prob av1_pareto8_tail_cdfs[COEFF_PROB_MODELS]
