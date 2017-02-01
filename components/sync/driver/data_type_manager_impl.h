@@ -57,6 +57,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   void Stop() override;
   ModelTypeSet GetActiveDataTypes() const override;
+  bool IsNigoriEnabled() const override;
   State state() const override;
 
   // |ModelAssociationManagerDelegate| implementation.

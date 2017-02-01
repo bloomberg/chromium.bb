@@ -106,65 +106,17 @@ void SyncBackendHostImpl::StartSyncingWithServer() {
 void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
                                                   bool is_explicit) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!IsNigoriEnabled()) {
-    NOTREACHED() << "SetEncryptionPassphrase must never be called when nigori"
-                    " is disabled.";
-    return;
-  }
-
-  // We should never be called with an empty passphrase.
-  DCHECK(!passphrase.empty());
-
-  // SetEncryptionPassphrase should never be called if we are currently
-  // encrypted with an explicit passphrase.
-  DCHECK(cached_passphrase_type_ == PassphraseType::KEYSTORE_PASSPHRASE ||
-         cached_passphrase_type_ == PassphraseType::IMPLICIT_PASSPHRASE);
-
-  // Post an encryption task on the syncer thread.
   sync_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoSetEncryptionPassphrase,
                             core_, passphrase, is_explicit));
 }
 
-bool SyncBackendHostImpl::SetDecryptionPassphrase(
+void SyncBackendHostImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!IsNigoriEnabled()) {
-    NOTREACHED() << "SetDecryptionPassphrase must never be called when nigori"
-                    " is disabled.";
-    return false;
-  }
-
-  // We should never be called with an empty passphrase.
-  DCHECK(!passphrase.empty());
-
-  // This should only be called when we have cached pending keys.
-  DCHECK(cached_pending_keys_.has_blob());
-
-  // Check the passphrase that was provided against our local cache of the
-  // cryptographer's pending keys. If this was unsuccessful, the UI layer can
-  // immediately call OnPassphraseRequired without showing the user a spinner.
-  if (!CheckPassphraseAgainstCachedPendingKeys(passphrase))
-    return false;
-
-  // Post a decryption task on the syncer thread.
   sync_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoSetDecryptionPassphrase,
                             core_, passphrase));
-
-  // Since we were able to decrypt the cached pending keys with the passphrase
-  // provided, we immediately alert the UI layer that the passphrase was
-  // accepted. This will avoid the situation where a user enters a passphrase,
-  // clicks OK, immediately reopens the advanced settings dialog, and gets an
-  // unnecessary prompt for a passphrase.
-  // Note: It is not guaranteed that the passphrase will be accepted by the
-  // syncer thread, since we could receive a new nigori node while the task is
-  // pending. This scenario is a valid race, and SetDecryptionPassphrase can
-  // trigger a new OnPassphraseRequired if it needs to.
-  NotifyPassphraseAccepted();
-  return true;
 }
 
 void SyncBackendHostImpl::StopSyncingForShutdown() {
@@ -265,18 +217,6 @@ SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
 bool SyncBackendHostImpl::HasUnsyncedItems() const {
   DCHECK(initialized());
   return core_->sync_manager()->HasUnsyncedItems();
-}
-
-bool SyncBackendHostImpl::IsNigoriEnabled() const {
-  return registrar_ && registrar_->IsNigoriEnabled();
-}
-
-PassphraseType SyncBackendHostImpl::GetPassphraseType() const {
-  return cached_passphrase_type_;
-}
-
-base::Time SyncBackendHostImpl::GetExplicitPassphraseTime() const {
-  return cached_explicit_passphrase_time_;
 }
 
 bool SyncBackendHostImpl::IsCryptographerReady(
@@ -406,16 +346,6 @@ void SyncBackendHostImpl::RetryConfigurationOnFrontendLoop(
   retry_callback.Run();
 }
 
-void SyncBackendHostImpl::PersistEncryptionBootstrapToken(
-    const std::string& token,
-    BootstrapTokenType token_type) {
-  CHECK(sync_prefs_.get());
-  if (token_type == PASSPHRASE_BOOTSTRAP_TOKEN)
-    sync_prefs_->SetEncryptionBootstrapToken(token);
-  else
-    sync_prefs_->SetKeystoreEncryptionBootstrapToken(token);
-}
-
 void SyncBackendHostImpl::HandleActionableErrorEventOnFrontendLoop(
     const SyncProtocolError& sync_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -443,63 +373,6 @@ void SyncBackendHostImpl::OnIncomingInvalidation(
 
 std::string SyncBackendHostImpl::GetOwnerName() const {
   return "SyncBackendHostImpl";
-}
-
-bool SyncBackendHostImpl::CheckPassphraseAgainstCachedPendingKeys(
-    const std::string& passphrase) const {
-  DCHECK(cached_pending_keys_.has_blob());
-  DCHECK(!passphrase.empty());
-  Nigori nigori;
-  nigori.InitByDerivation("localhost", "dummy", passphrase);
-  std::string plaintext;
-  bool result = nigori.Decrypt(cached_pending_keys_.blob(), &plaintext);
-  DVLOG_IF(1, result) << "Passphrase failed to decrypt pending keys.";
-  return result;
-}
-
-void SyncBackendHostImpl::NotifyPassphraseRequired(
-    PassphraseRequiredReason reason,
-    sync_pb::EncryptedData pending_keys) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Update our cache of the cryptographer's pending keys.
-  cached_pending_keys_ = pending_keys;
-
-  host_->OnPassphraseRequired(reason, pending_keys);
-}
-
-void SyncBackendHostImpl::NotifyPassphraseAccepted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Clear our cache of the cryptographer's pending keys.
-  cached_pending_keys_.clear_blob();
-  host_->OnPassphraseAccepted();
-}
-
-void SyncBackendHostImpl::NotifyEncryptedTypesChanged(
-    ModelTypeSet encrypted_types,
-    bool encrypt_everything) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_->OnEncryptedTypesChanged(encrypted_types, encrypt_everything);
-}
-
-void SyncBackendHostImpl::NotifyEncryptionComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_->OnEncryptionComplete();
-}
-
-void SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop(
-    PassphraseType type,
-    base::Time explicit_passphrase_time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "Passphrase type changed to " << PassphraseTypeToString(type);
-  cached_passphrase_type_ = type;
-  cached_explicit_passphrase_time_ = explicit_passphrase_time;
-}
-
-void SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_->OnLocalSetPassphraseEncryption(nigori_state);
 }
 
 void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(

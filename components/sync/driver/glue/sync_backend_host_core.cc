@@ -113,7 +113,9 @@ void SyncBackendHostCore::OnInitializationComplete(
   // the initializing downloading control types or initializing the encryption
   // handler in order to receive notifications triggered during encryption
   // startup.
-  sync_manager_->GetEncryptionHandler()->AddObserver(this);
+  DCHECK(encryption_observer_proxy_);
+  sync_manager_->GetEncryptionHandler()->AddObserver(
+      encryption_observer_proxy_.get());
 
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
@@ -172,64 +174,6 @@ void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop,
              status);
-}
-
-void SyncBackendHostCore::OnPassphraseRequired(
-    PassphraseRequiredReason reason,
-    const sync_pb::EncryptedData& pending_keys) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyPassphraseRequired, reason,
-             pending_keys);
-}
-
-void SyncBackendHostCore::OnPassphraseAccepted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyPassphraseAccepted);
-}
-
-void SyncBackendHostCore::OnBootstrapTokenUpdated(
-    const std::string& bootstrap_token,
-    BootstrapTokenType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::PersistEncryptionBootstrapToken,
-             bootstrap_token, type);
-}
-
-void SyncBackendHostCore::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                                                  bool encrypt_everything) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // NOTE: We're in a transaction.
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyEncryptedTypesChanged,
-             encrypted_types, encrypt_everything);
-}
-
-void SyncBackendHostCore::OnEncryptionComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // NOTE: We're in a transaction.
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyEncryptionComplete);
-}
-
-void SyncBackendHostCore::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Do nothing.
-}
-
-void SyncBackendHostCore::OnPassphraseTypeChanged(PassphraseType type,
-                                                  base::Time passphrase_time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop,
-             type, passphrase_time);
-}
-
-void SyncBackendHostCore::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop,
-      nigori_state);
 }
 
 void SyncBackendHostCore::OnCommitCountersUpdated(
@@ -348,8 +292,12 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   last_invalidation_versions_ = params.invalidation_versions;
 
   DCHECK(!registrar_);
+  DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
-  DCHECK(registrar_);
+
+  DCHECK(!encryption_observer_proxy_);
+  DCHECK(params.encryption_observer_proxy);
+  encryption_observer_proxy_ = std::move(params.encryption_observer_proxy);
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);

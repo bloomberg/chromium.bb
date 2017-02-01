@@ -21,7 +21,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -60,10 +59,6 @@
 class Profile;
 class ProfileOAuth2TokenService;
 class SigninManagerWrapper;
-
-namespace sync_pb {
-class EncryptedData;
-}  // namespace sync_pb
 
 namespace sync_sessions {
 class FaviconCache;
@@ -298,9 +293,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
   syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
-  void AddObserver(syncer::SyncServiceObserver* observer) override;
-  void RemoveObserver(syncer::SyncServiceObserver* observer) override;
-  bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
   void RegisterDataTypeController(std::unique_ptr<syncer::DataTypeController>
                                       data_type_controller) override;
   void ReenableDatatype(syncer::ModelType type) override;
@@ -379,18 +371,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
       syncer::ModelType type,
       const syncer::StatusCounters& counters) override;
   void OnConnectionStatusChange(syncer::ConnectionStatus status) override;
-  void OnPassphraseRequired(
-      syncer::PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) override;
-  void OnPassphraseAccepted() override;
-  void OnEncryptedTypesChanged(syncer::ModelTypeSet encrypted_types,
-                               bool encrypt_everything) override;
-  void OnEncryptionComplete() override;
   void OnMigrationNeededForTypes(syncer::ModelTypeSet types) override;
   void OnExperimentsChanged(const syncer::Experiments& experiments) override;
   void OnActionableError(const syncer::SyncProtocolError& error) override;
-  void OnLocalSetPassphraseEncryption(
-      const syncer::SyncEncryptionHandler::NigoriState& nigori_state) override;
 
   // DataTypeManagerObserver implementation.
   void OnConfigureDone(
@@ -427,7 +410,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   virtual void ReconfigureDatatypeManager();
 
   syncer::PassphraseRequiredReason passphrase_required_reason() const {
-    return passphrase_required_reason_;
+    return crypto_->passphrase_required_reason();
   }
 
   // Returns true if sync is requested to be running by the user.
@@ -500,21 +483,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // for a datatype to be Registered.
   virtual syncer::ModelTypeSet GetRegisteredDataTypes() const;
 
-  // Returns the actual passphrase type being used for encryption.
+  // See the SyncServiceCrypto header.
   virtual syncer::PassphraseType GetPassphraseType() const;
-
-  // Note about setting passphrases: There are different scenarios under which
-  // we might want to apply a passphrase. It could be for first-time encryption,
-  // re-encryption, or for decryption by clients that sign in at a later time.
-  // In addition, encryption can either be done using a custom passphrase, or by
-  // reusing the GAIA password. Depending on what is happening in the system,
-  // callers should determine which of the two methods below must be used.
-
-  // Returns true if encrypting all the sync data is allowed. If this method
-  // returns false, EnableEncryptEverything() should not be called.
   virtual bool IsEncryptEverythingAllowed() const;
-
-  // Sets whether encrypting all the sync data is allowed or not.
   virtual void SetEncryptEverythingAllowed(bool allowed);
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
@@ -592,6 +563,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Sometimes we need to wait for tasks on the sync thread in tests.
   base::MessageLoop* GetSyncLoopForTest() const;
 
+  // Some tests rely on injecting calls to the encryption observer.
+  syncer::SyncEncryptionHandler::Observer* GetEncryptionObserverForTest() const;
+
   // Triggers sync cycle with request to update specified |types|.
   void RefreshTypesForTest(syncer::ModelTypeSet types);
 
@@ -601,8 +575,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler() override;
   syncer::SyncEngine::HttpPostProviderFactoryGetter
   MakeHttpPostProviderFactoryGetter() override;
-  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
-  MoveSavedNigoriState() override;
   syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
   GetUnrecoverableErrorHandler() override;
 
@@ -672,12 +644,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Called when configuration is complete.
   void StartSyncingWithServer();
 
-  // During initial signin, ProfileSyncService caches the user's signin
-  // passphrase so it can be used to encrypt/decrypt data after sync starts up.
-  // This routine is invoked once the engine has started up to use the
-  // cached passphrase and clear it out when it is done.
-  void ConsumeCachedPassphraseIfPossible();
-
   // RequestAccessToken initiates RPC to request downscoped access token from
   // refresh token. This happens when a new OAuth2 login token is loaded and
   // when sync server returns AUTH_ERROR which indicates it is time to refresh
@@ -687,7 +653,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
 
-  void NotifyObservers();
   void NotifySyncCycleCompleted();
   void NotifyForeignSessionUpdated();
 
@@ -751,13 +716,13 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   // After user switches to custom passphrase encryption a set of steps needs to
   // be performed:
+  //
   // - Download all latest updates from server (catch up configure).
   // - Clear user data on server.
   // - Clear directory so that data is merged from model types and encrypted.
-  // Following three functions perform these steps.
-
-  // Calls data type manager to start catch up configure.
-  void BeginConfigureCatchUpBeforeClear();
+  //
+  // SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() and the following two
+  // functions perform these steps.
 
   // Calls sync engine to send ClearServerDataMessage to server.
   void ClearAndRestartSyncForPassphraseEncryption();
@@ -778,11 +743,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   // Cache of the last SyncCycleSnapshot received from the sync engine.
   syncer::SyncCycleSnapshot last_snapshot_;
-
-  // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
-  // was required for encryption, decryption with a cached passphrase, or
-  // because a new passphrase is required?
-  syncer::PassphraseRequiredReason passphrase_required_reason_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
@@ -836,7 +796,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Manages the start and stop of the data types.
   std::unique_ptr<syncer::DataTypeManager> data_type_manager_;
 
-  base::ObserverList<syncer::SyncServiceObserver> observers_;
   base::ObserverList<syncer::ProtocolEventObserver> protocol_event_observers_;
   base::ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
 
@@ -848,27 +807,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // DataTypeManager in the event that the server informed us to cease and
   // desist syncing immediately.
   bool expect_sync_configuration_aborted_;
-
-  // Sometimes we need to temporarily hold on to a passphrase because we don't
-  // yet have a engine to send it to.  This happens during initialization as
-  // we don't StartUp until we have a valid token, which happens after valid
-  // credentials were provided.
-  std::string cached_passphrase_;
-
-  // The current set of encrypted types.  Always a superset of
-  // syncer::Cryptographer::SensitiveTypes().
-  syncer::ModelTypeSet encrypted_types_;
-
-  // Whether encrypting everything is allowed.
-  bool encrypt_everything_allowed_;
-
-  // Whether we want to encrypt everything.
-  bool encrypt_everything_;
-
-  // Whether we're waiting for an attempt to encryption all sync data to
-  // complete. We track this at this layer in order to allow the user to cancel
-  // if they e.g. don't remember their explicit passphrase.
-  bool encryption_pending_;
 
   std::unique_ptr<syncer::BackendMigrator> migrator_;
 
@@ -937,12 +875,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Listens for the system being under memory pressure.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  // Nigori state after user switching to custom passphrase, saved until
-  // transition steps complete. It will be injected into new engine after sync
-  // restart.
-  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
-      saved_nigori_state_;
-
   // Whether the major version has changed since the last time Chrome ran,
   // and therefore a passphrase required state should result in prompting
   // the user. This logic is only enabled on platforms that consume the
@@ -952,10 +884,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // An object that lets us check whether sync is currently allowed on this
   // platform.
   PlatformSyncAllowedProvider platform_sync_allowed_provider_;
-
-  // Used to ensure that certain operations are performed on the thread that
-  // this object was created on.
-  base::ThreadChecker thread_checker_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
   base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;

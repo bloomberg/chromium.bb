@@ -34,18 +34,9 @@ class SyncEngineHostStub : public SyncEngineHost {
   void OnDatatypeStatusCounterUpdated(ModelType type,
                                       const StatusCounters& counters) override;
   void OnConnectionStatusChange(ConnectionStatus status) override;
-  void OnPassphraseRequired(
-      PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) override;
-  void OnPassphraseAccepted() override;
-  void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                               bool encrypt_everything) override;
-  void OnEncryptionComplete() override;
   void OnMigrationNeededForTypes(ModelTypeSet types) override;
   void OnExperimentsChanged(const Experiments& experiments) override;
   void OnActionableError(const SyncProtocolError& error) override;
-  void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) override;
 };
 
 }  // namespace syncer

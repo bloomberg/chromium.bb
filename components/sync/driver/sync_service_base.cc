@@ -64,9 +64,32 @@ SyncServiceBase::SyncServiceBase(std::unique_ptr<SyncClient> sync_client,
       sync_data_folder_(
           base_directory_.Append(base::FilePath(kSyncDataFolderName))),
       debug_identifier_(debug_identifier),
-      sync_prefs_(sync_client_->GetPrefService()) {}
+      sync_prefs_(sync_client_->GetPrefService()) {
+  ResetCryptoState();
+}
 
 SyncServiceBase::~SyncServiceBase() = default;
+
+void SyncServiceBase::AddObserver(SyncServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.AddObserver(observer);
+}
+
+void SyncServiceBase::RemoveObserver(SyncServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.RemoveObserver(observer);
+}
+
+bool SyncServiceBase::HasObserver(const SyncServiceObserver* observer) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return observers_.HasObserver(observer);
+}
+
+void SyncServiceBase::NotifyObservers() {
+  for (auto& observer : observers_) {
+    observer.OnStateChanged();
+  }
+}
 
 void SyncServiceBase::InitializeEngine() {
   DCHECK(engine_);
@@ -84,6 +107,7 @@ void SyncServiceBase::InitializeEngine() {
   params.registrar = base::MakeUnique<SyncBackendRegistrar>(
       debug_identifier_, base::Bind(&SyncClient::CreateModelWorkerForGroup,
                                     base::Unretained(sync_client_.get())));
+  params.encryption_observer_proxy = crypto_->GetEncryptionObserverProxy();
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url();
@@ -110,7 +134,7 @@ void SyncServiceBase::InitializeEngine() {
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
   params.report_unrecoverable_error_function =
       base::Bind(ReportUnrecoverableError, channel_);
-  params.saved_nigori_state = MoveSavedNigoriState();
+  params.saved_nigori_state = crypto_->TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
 
   engine_->Initialize(std::move(params));
@@ -143,6 +167,15 @@ bool SyncServiceBase::GetLocalSyncConfig(
       local_sync_backend_folder->Append(kLoopbackServerBackendFilename);
 #endif  // defined(OS_WIN)
   return enable_local_sync_backend;
+}
+
+void SyncServiceBase::ResetCryptoState() {
+  crypto_ = base::MakeUnique<SyncServiceCrypto>(
+      base::BindRepeating(&SyncServiceBase::NotifyObservers,
+                          base::Unretained(this)),
+      base::BindRepeating(&SyncService::GetPreferredDataTypes,
+                          base::Unretained(this)),
+      &sync_prefs_);
 }
 
 }  // namespace syncer

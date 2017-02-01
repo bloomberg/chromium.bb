@@ -35,24 +35,10 @@ void SyncEngineHostStub::OnDatatypeStatusCounterUpdated(
 
 void SyncEngineHostStub::OnConnectionStatusChange(ConnectionStatus status) {}
 
-void SyncEngineHostStub::OnPassphraseRequired(
-    PassphraseRequiredReason reason,
-    const sync_pb::EncryptedData& pending_keys) {}
-
-void SyncEngineHostStub::OnPassphraseAccepted() {}
-
-void SyncEngineHostStub::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                                                 bool encrypt_everything) {}
-
-void SyncEngineHostStub::OnEncryptionComplete() {}
-
 void SyncEngineHostStub::OnMigrationNeededForTypes(ModelTypeSet types) {}
 
 void SyncEngineHostStub::OnExperimentsChanged(const Experiments& experiments) {}
 
 void SyncEngineHostStub::OnActionableError(const SyncProtocolError& error) {}
-
-void SyncEngineHostStub::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {}
 
 }  // namespace syncer

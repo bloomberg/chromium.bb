@@ -13,10 +13,6 @@
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 
-namespace sync_pb {
-class EncryptedData;
-}  // namespace sync_pb
-
 namespace syncer {
 
 class DataTypeDebugInfoListener;
@@ -84,40 +80,6 @@ class SyncEngineHost {
   // The status of the connection to the sync server has changed.
   virtual void OnConnectionStatusChange(ConnectionStatus status) = 0;
 
-  // The syncer requires a passphrase to decrypt sensitive updates. This is
-  // called when the first sensitive data type is setup by the user and anytime
-  // the passphrase is changed by another synced client. |reason| denotes why
-  // the passphrase was required. |pending_keys| is a copy of the
-  // cryptographer's pending keys to be passed on to the host in order to
-  // be cached.
-  virtual void OnPassphraseRequired(
-      PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) = 0;
-
-  // Called when the passphrase provided by the user is
-  // accepted. After this is called, updates to sensitive nodes are
-  // encrypted using the accepted passphrase.
-  virtual void OnPassphraseAccepted() = 0;
-
-  // Called when the set of encrypted types or the encrypt everything
-  // flag has been changed.  Note that encryption isn't complete until
-  // the OnEncryptionComplete() notification has been sent (see
-  // below).
-  //
-  // |encrypted_types| will always be a superset of
-  // Cryptographer::SensitiveTypes().  If |encrypt_everything| is
-  // true, |encrypted_types| will be the set of all known types.
-  //
-  // Until this function is called, observers can assume that the set
-  // of encrypted types is Cryptographer::SensitiveTypes() and that
-  // the encrypt everything flag is false.
-  virtual void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                                       bool encrypt_everything) = 0;
-
-  // Called after we finish encrypting the current set of encrypted
-  // types.
-  virtual void OnEncryptionComplete() = 0;
-
   // Called to perform migration of |types|.
   virtual void OnMigrationNeededForTypes(ModelTypeSet types) = 0;
 
@@ -126,14 +88,6 @@ class SyncEngineHost {
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(const SyncProtocolError& error) = 0;
-
-  // Called when the user of this device enables passphrase encryption.
-  //
-  // |nigori_state| contains the new (post custom passphrase) encryption keys
-  // and can be used to restore SyncEncryptionHandler's state across sync
-  // engine instances. See also SyncEncryptionHandlerImpl::RestoreNigori.
-  virtual void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) = 0;
 };
 
 }  // namespace syncer

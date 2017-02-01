@@ -9,14 +9,18 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_crypto.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager.h"
@@ -39,9 +43,20 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
                   const std::string& debug_identifier);
   ~SyncServiceBase() override;
 
+  // SyncService partial implementation.
+  void AddObserver(SyncServiceObserver* observer) override;
+  void RemoveObserver(SyncServiceObserver* observer) override;
+  bool HasObserver(const SyncServiceObserver* observer) const override;
+
  protected:
+  // Notify all observers that a change has occurred.
+  void NotifyObservers();
+
   // Kicks off asynchronous initialization of the SyncEngine.
   void InitializeEngine();
+
+  // Destroys the |crypto_| object and creates a new one with fresh state.
+  void ResetCryptoState();
 
   // Returns SyncCredentials from the OAuth2TokenService.
   virtual SyncCredentials GetCredentials() = 0;
@@ -52,10 +67,6 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   // Returns a callback that makes an HttpPostProviderFactory.
   virtual SyncEngine::HttpPostProviderFactoryGetter
   MakeHttpPostProviderFactoryGetter() = 0;
-
-  // Takes the previously saved nigori state; null if there isn't any.
-  virtual std::unique_ptr<SyncEncryptionHandler::NigoriState>
-  MoveSavedNigoriState() = 0;
 
   // Returns a weak handle to an UnrecoverableErrorHandler (may be |this|).
   virtual WeakHandle<UnrecoverableErrorHandler>
@@ -88,6 +99,10 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   // preferences.
   SyncPrefs sync_prefs_;
 
+  // A utility object containing logic and state relating to encryption. It is
+  // never null.
+  std::unique_ptr<SyncServiceCrypto> crypto_;
+
   // The thread where all the sync operations happen. This thread is kept alive
   // until browser shutdown and reused if sync is turned off and on again. It is
   // joined during the shutdown process, but there is an abort mechanism in
@@ -97,6 +112,13 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   // Our asynchronous engine to communicate with sync components living on
   // other threads.
   std::unique_ptr<SyncEngine> engine_;
+
+  // The list of observers of the SyncService state.
+  base::ObserverList<SyncServiceObserver> observers_;
+
+  // Used to ensure that certain operations are performed on the thread that
+  // this object was created on.
+  base::ThreadChecker thread_checker_;
 
  private:
   bool GetLocalSyncConfig(base::FilePath* local_sync_backend_folder) const;

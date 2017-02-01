@@ -95,6 +95,9 @@ class DataTypeManager {
   // completes the set will be updated.
   virtual ModelTypeSet GetActiveDataTypes() const = 0;
 
+  // Whether or not we are syncing encryption keys.
+  virtual bool IsNigoriEnabled() const = 0;
+
   // The current state of the data type manager.
   virtual State state() const = 0;
 };

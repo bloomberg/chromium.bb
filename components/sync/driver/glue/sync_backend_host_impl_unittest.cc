@@ -141,6 +141,24 @@ class BackendSyncClient : public FakeSyncClient {
   }
 };
 
+class NullEncryptionObserver : public SyncEncryptionHandler::Observer {
+ public:
+  void OnPassphraseRequired(
+      PassphraseRequiredReason reason,
+      const sync_pb::EncryptedData& pending_keys) override {}
+  void OnPassphraseAccepted() override {}
+  void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
+                               BootstrapTokenType type) override {}
+  void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
+                               bool encrypt_everything) override {}
+  void OnEncryptionComplete() override {}
+  void OnCryptographerStateChanged(Cryptographer* cryptographer) override {}
+  void OnPassphraseTypeChanged(PassphraseType type,
+                               base::Time passphrase_time) override {}
+  void OnLocalSetPassphraseEncryption(
+      const SyncEncryptionHandler::NigoriState& nigori_state) override {}
+};
+
 class SyncEngineTest : public testing::Test {
  protected:
   SyncEngineTest()
@@ -209,6 +227,8 @@ class SyncEngineTest : public testing::Test {
     params.registrar = base::MakeUnique<SyncBackendRegistrar>(
         std::string(), base::Bind(&SyncClient::CreateModelWorkerForGroup,
                                   base::Unretained(&sync_client_)));
+    params.encryption_observer_proxy =
+        base::MakeUnique<NullEncryptionObserver>();
     params.http_factory_getter = http_post_provider_factory_getter;
     params.credentials = credentials_;
     params.sync_manager_factory = std::move(fake_manager_factory_);

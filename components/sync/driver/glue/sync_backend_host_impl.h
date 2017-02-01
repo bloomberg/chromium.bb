@@ -64,8 +64,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void StartSyncingWithServer() override;
   void SetEncryptionPassphrase(const std::string& passphrase,
                                bool is_explicit) override;
-  bool SetDecryptionPassphrase(const std::string& passphrase) override
-      WARN_UNUSED_RESULT;
+  void SetDecryptionPassphrase(const std::string& passphrase) override;
   void StopSyncingForShutdown() override;
   void Shutdown(ShutdownReason reason) override;
   void ConfigureDataTypes(ConfigureParams params) override;
@@ -82,9 +81,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   UserShare* GetUserShare() const override;
   Status GetDetailedStatus() override;
   bool HasUnsyncedItems() const override;
-  bool IsNigoriEnabled() const override;
-  PassphraseType GetPassphraseType() const override;
-  base::Time GetExplicitPassphraseTime() const override;
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
   void FlushDirectory() const override;
@@ -180,13 +176,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   // on successful completion.
   void RetryConfigurationOnFrontendLoop(const base::Closure& retry_callback);
 
-  // Helpers to persist a token that can be used to bootstrap sync encryption
-  // across browser restart to avoid requiring the user to re-enter their
-  // passphrase.  |token| must be valid UTF-8 as we use the PrefService for
-  // storage.
-  void PersistEncryptionBootstrapToken(const std::string& token,
-                                       BootstrapTokenType token_type);
-
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialized_; }
 
@@ -196,45 +185,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
 
   // Handle a migration request.
   void HandleMigrationRequestedOnFrontendLoop(const ModelTypeSet types);
-
-  // Checks if |passphrase| can be used to decrypt the cryptographer's pending
-  // keys that were cached during NotifyPassphraseRequired. Returns true if
-  // decryption was successful. Returns false otherwise. Must be called with a
-  // non-empty pending keys cache.
-  bool CheckPassphraseAgainstCachedPendingKeys(
-      const std::string& passphrase) const;
-
-  // Invoked when a passphrase is required to decrypt a set of Nigori keys,
-  // or for encrypting. |reason| denotes why the passphrase was required.
-  // |pending_keys| is a copy of the cryptographer's pending keys, that are
-  // cached by the frontend. If there are no pending keys, or if the passphrase
-  // required reason is REASON_ENCRYPTION, an empty EncryptedData object is
-  // passed.
-  void NotifyPassphraseRequired(PassphraseRequiredReason reason,
-                                sync_pb::EncryptedData pending_keys);
-
-  // Invoked when the passphrase provided by the user has been accepted.
-  void NotifyPassphraseAccepted();
-
-  // Invoked when the set of encrypted types or the encrypt
-  // everything flag changes.
-  void NotifyEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                                   bool encrypt_everything);
-
-  // Invoked when sync finishes encrypting new datatypes.
-  void NotifyEncryptionComplete();
-
-  // Invoked when the passphrase state has changed. Caches the passphrase state
-  // for later use on the UI thread.
-  // If |type| is FROZEN_IMPLICIT_PASSPHRASE or CUSTOM_PASSPHRASE,
-  // |explicit_passphrase_time| is the time at which that passphrase was set
-  // (if available).
-  void HandlePassphraseTypeChangedOnFrontendLoop(
-      PassphraseType type,
-      base::Time explicit_passphrase_time);
-
-  void HandleLocalSetPassphraseEncryptionOnFrontendLoop(
-      const SyncEncryptionHandler::NigoriState& nigori_state);
 
   // Dispatched to from OnConnectionStatusChange to handle updating
   // frontend UI components.
@@ -270,26 +220,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
 
   // A pointer to the registrar; owned by |core_|.
   SyncBackendRegistrar* registrar_ = nullptr;
-
-  // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
-  // is called. This way, before the UI calls SetDecryptionPassphrase on the
-  // syncer, it can avoid the overhead of an asynchronous decryption call and
-  // give the user immediate feedback about the passphrase entered by first
-  // trying to decrypt the cached pending keys on the UI thread. Note that
-  // SetDecryptionPassphrase can still fail after the cached pending keys are
-  // successfully decrypted if the pending keys have changed since the time they
-  // were cached.
-  sync_pb::EncryptedData cached_pending_keys_;
-
-  // The state of the passphrase required to decrypt the bag of encryption keys
-  // in the nigori node. Updated whenever a new nigori node arrives or the user
-  // manually changes their passphrase state. Cached so we can synchronously
-  // check it from the UI thread.
-  PassphraseType cached_passphrase_type_ = PassphraseType::IMPLICIT_PASSPHRASE;
-
-  // If an explicit passphrase is in use, the time at which the passphrase was
-  // first set (if available).
-  base::Time cached_explicit_passphrase_time_;
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_ = false;

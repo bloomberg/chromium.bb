@@ -73,6 +73,7 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
                          syncer::ConfigureReason reason) override {}
   void Stop() override{};
   ModelTypeSet GetActiveDataTypes() const override { return ModelTypeSet(); }
+  bool IsNigoriEnabled() const override { return true; }
   State state() const override { return syncer::DataTypeManager::CONFIGURED; }
 
  private:
@@ -250,8 +251,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void InitializeForFirstSync() { service_->Initialize(); }
 
   void TriggerPassphraseRequired() {
-    service_->OnPassphraseRequired(syncer::REASON_DECRYPTION,
-                                   sync_pb::EncryptedData());
+    service_->GetEncryptionObserverForTest()->OnPassphraseRequired(
+        syncer::REASON_DECRYPTION, sync_pb::EncryptedData());
   }
 
   void TriggerDataTypeStartRequest() {
@@ -733,7 +734,8 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
   // configure cycle is started (DTM::Configure is called with
   // CONFIGURE_REASON_CATCH_UP).
   const syncer::SyncEncryptionHandler::NigoriState nigori_state;
-  service()->OnLocalSetPassphraseEncryption(nigori_state);
+  service()->GetEncryptionObserverForTest()->OnLocalSetPassphraseEncryption(
+      nigori_state);
   EXPECT_EQ(syncer::CONFIGURE_REASON_CATCH_UP, configure_reason);
   EXPECT_TRUE(captured_callback.is_null());
 
@@ -778,7 +780,8 @@ TEST_F(ProfileSyncServiceTest,
   // Simulate user entering encryption passphrase. Ensure Configure was called
   // but don't let it continue.
   const syncer::SyncEncryptionHandler::NigoriState nigori_state;
-  service()->OnLocalSetPassphraseEncryption(nigori_state);
+  service()->GetEncryptionObserverForTest()->OnLocalSetPassphraseEncryption(
+      nigori_state);
   EXPECT_EQ(syncer::CONFIGURE_REASON_CATCH_UP, configure_reason);
 
   // Simulate browser restart. First configuration is a regular one.
@@ -830,7 +833,8 @@ TEST_F(ProfileSyncServiceTest,
 
   // Simulate user entering encryption passphrase.
   const syncer::SyncEncryptionHandler::NigoriState nigori_state;
-  service()->OnLocalSetPassphraseEncryption(nigori_state);
+  service()->GetEncryptionObserverForTest()->OnLocalSetPassphraseEncryption(
+      nigori_state);
   EXPECT_FALSE(captured_callback.is_null());
   captured_callback.Reset();
 

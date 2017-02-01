@@ -3263,13 +3263,15 @@ TEST_F(SearchProviderTest, CanSendURL) {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_);
   syncer::ModelTypeSet encrypted_types = service->GetEncryptedDataTypes();
   encrypted_types.Put(syncer::SESSIONS);
-  service->OnEncryptedTypesChanged(encrypted_types, false);
+  service->GetEncryptionObserverForTest()->OnEncryptedTypesChanged(
+      encrypted_types, false);
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
   encrypted_types.Remove(syncer::SESSIONS);
-  service->OnEncryptedTypesChanged(encrypted_types, false);
+  service->GetEncryptionObserverForTest()->OnEncryptedTypesChanged(
+      encrypted_types, false);
 
   // Check that there were no side effects from previous tests.
   EXPECT_TRUE(SearchProvider::CanSendURL(

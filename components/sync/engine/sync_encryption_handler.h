@@ -48,6 +48,7 @@ class SyncEncryptionHandler {
   class Observer {
    public:
     Observer();
+    virtual ~Observer();
 
     // Called when user interaction is required to obtain a valid passphrase.
     // - If the passphrase is required for encryption, |reason| will be
@@ -116,9 +117,6 @@ class SyncEncryptionHandler {
     // RestoredNigori method.
     virtual void OnLocalSetPassphraseEncryption(
         const NigoriState& nigori_state) = 0;
-
-   protected:
-    virtual ~Observer();
   };
 
   class NigoriState {

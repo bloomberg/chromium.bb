@@ -844,6 +844,10 @@ ModelTypeSet DataTypeManagerImpl::GetActiveDataTypes() const {
   return GetEnabledTypes();
 }
 
+bool DataTypeManagerImpl::IsNigoriEnabled() const {
+  return downloaded_types_.Has(NIGORI);
+}
+
 DataTypeManager::State DataTypeManagerImpl::state() const {
   return state_;
 }

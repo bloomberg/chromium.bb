@@ -152,6 +152,8 @@ static_library("sync") {
     "driver/sync_service.h",
     "driver/sync_service_base.cc",
     "driver/sync_service_base.h",
+    "driver/sync_service_crypto.cc",
+    "driver/sync_service_crypto.h",
     "driver/sync_service_observer.cc",
     "driver/sync_service_observer.h",
     "driver/sync_service_utils.cc",

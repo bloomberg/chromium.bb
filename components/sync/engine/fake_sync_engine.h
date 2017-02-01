@@ -39,7 +39,7 @@ class FakeSyncEngine : public SyncEngine {
   void SetEncryptionPassphrase(const std::string& passphrase,
                                bool is_explicit) override;
 
-  bool SetDecryptionPassphrase(const std::string& passphrase) override;
+  void SetDecryptionPassphrase(const std::string& passphrase) override;
 
   void StopSyncingForShutdown() override;
 
@@ -67,12 +67,6 @@ class FakeSyncEngine : public SyncEngine {
   Status GetDetailedStatus() override;
 
   bool HasUnsyncedItems() const override;
-
-  bool IsNigoriEnabled() const override;
-
-  PassphraseType GetPassphraseType() const override;
-
-  base::Time GetExplicitPassphraseTime() const override;
 
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
 
