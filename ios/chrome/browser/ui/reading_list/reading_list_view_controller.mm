@@ -578,7 +578,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   NSArray* items =
       [self.collectionViewModel itemsInSectionWithIdentifier:sectionIdentifier];
   if ([items count] != map.size())
-    return NO;
+    return YES;
 
   NSInteger index = 0;
   ItemsMapByDate::const_reverse_iterator iterator = map.rbegin();
