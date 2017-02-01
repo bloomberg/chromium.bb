@@ -8,7 +8,7 @@
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/shelf_view.h"
@@ -26,6 +26,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/test/test_system_tray_item.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -302,16 +303,16 @@ class ShelfLayoutManagerTest : public test::AshTestBase {
 
   // Turn on the lock screen.
   void LockScreen() {
-    WmShell::Get()->GetSessionStateDelegate()->LockScreen();
-    // The test session state delegate does not fire the lock state change.
-    Shell::GetInstance()->OnLockStateChanged(true);
+    mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+    info->state = session_manager::SessionState::LOCKED;
+    ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
   }
 
   // Turn off the lock screen.
   void UnlockScreen() {
-    WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
-    // The test session state delegate does not fire the lock state change.
-    Shell::GetInstance()->OnLockStateChanged(false);
+    mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+    info->state = session_manager::SessionState::ACTIVE;
+    ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
   }
 
  private:
@@ -841,6 +842,18 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
+// Assertions around the login screen.
+TEST_F(ShelfLayoutManagerTest, VisibleWhenLoginScreenShowing) {
+  WmShelf* shelf = GetPrimaryShelf();
+
+  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+  info->state = session_manager::SessionState::LOGIN_PRIMARY;
+  ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
+}
+
 // Assertions around the lock screen showing.
 TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   WmShelf* shelf = GetPrimaryShelf();
@@ -866,9 +879,11 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   LockScreen();
   // Showing a widget in the lock screen should force the shelf to be visibile.
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
 
   UnlockScreen();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
 }
 
 // Assertions around SetAutoHideBehavior.
@@ -1562,7 +1577,22 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
   }
 }
 
+TEST_F(ShelfLayoutManagerTest, BackgroundTypeWhenLockingScreen) {
+  EXPECT_NE(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+
+  Shell::GetInstance()
+      ->lock_state_controller()
+      ->StartLockAnimationAndLockImmediately(false);
+  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+}
+
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
+  // TODO(bruthig|xiyuan): Move SessionState setup into AshTestBase or
+  // AshTestHelper.
+  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+  info->state = session_manager::SessionState::ACTIVE;
+  ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
@@ -1595,6 +1625,12 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
 // Verify that the shelf doesn't have the opaque background if it's auto-hide
 // status.
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
+  // TODO(bruthig|xiyuan): Move SessionState setup into AshTestBase or
+  // AshTestHelper.
+  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+  info->state = session_manager::SessionState::ACTIVE;
+  ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
   GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
