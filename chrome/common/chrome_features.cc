@@ -126,6 +126,11 @@ const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
 // Enabled or disabled the Material Design version of chrome://extensions.
 const base::Feature kMaterialDesignExtensions{
     "MaterialDesignExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Sets whether dismissing the new-tab-page override bubble counts as
+// acknowledgement.
+extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
+    "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables the Material Design version of chrome://history.

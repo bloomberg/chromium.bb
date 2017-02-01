@@ -199,6 +199,10 @@ bool SettingsApiBubbleDelegate::ShouldCloseOnDeactivate() const {
   return type_ != BUBBLE_TYPE_STARTUP_PAGES;
 }
 
+bool SettingsApiBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
+  return false;
+}
+
 bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }

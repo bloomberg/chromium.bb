@@ -120,6 +120,10 @@ bool ProxyOverriddenBubbleDelegate::ShouldCloseOnDeactivate() const {
   return false;
 }
 
+bool ProxyOverriddenBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
+  return false;
+}
+
 bool ProxyOverriddenBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }

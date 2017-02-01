@@ -68,6 +68,10 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
     // Returns true if the bubble should close when the widget deactivates.
     virtual bool ShouldCloseOnDeactivate() const = 0;
 
+    // Returns true if the bubble should be considered acknowledged when the
+    // widget deactivates.
+    virtual bool ShouldAcknowledgeOnDeactivate() const = 0;
+
     // Whether to show a list of extensions in the bubble.
     virtual bool ShouldShowExtensionList() const = 0;
 

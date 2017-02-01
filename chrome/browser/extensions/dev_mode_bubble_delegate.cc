@@ -74,6 +74,10 @@ bool DevModeBubbleDelegate::ShouldCloseOnDeactivate() const {
   return false;
 }
 
+bool DevModeBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
+  return false;
+}
+
 bool DevModeBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }

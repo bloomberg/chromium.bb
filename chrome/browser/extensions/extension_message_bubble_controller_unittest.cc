@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/dev_mode_bubble_delegate.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -359,7 +361,25 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleTest);
 };
 
-TEST_F(ExtensionMessageBubbleTest, BubbleReshowsOnDeactivationDismissal) {
+class ExtensionMessageBubbleTestWithParam
+    : public ExtensionMessageBubbleTest,
+      public ::testing::WithParamInterface<bool> {};
+
+// Test that the bubble correctly treats dismissal due to deactivation.
+// Currently, the NTP bubble is the only one that has flexible behavior (toggled
+// by a feature).
+TEST_P(ExtensionMessageBubbleTestWithParam,
+       BubbleCorrectlyReshowsOnDeactivationDismissal) {
+  const bool kAcknowledgeOnDeactivate = GetParam();
+  base::test::ScopedFeatureList feature_list;
+  if (kAcknowledgeOnDeactivate) {
+    feature_list.InitAndEnableFeature(
+        features::kAcknowledgeNtpOverrideOnDeactivate);
+  } else {
+    feature_list.InitAndDisableFeature(
+        features::kAcknowledgeNtpOverrideOnDeactivate);
+  }
+
   Init();
 
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::INTERNAL));
@@ -392,38 +412,53 @@ TEST_F(ExtensionMessageBubbleTest, BubbleReshowsOnDeactivationDismissal) {
   // No extension should have become disabled.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   EXPECT_TRUE(registry->enabled_extensions().GetByID(kId2));
-  // And since it was dismissed due to deactivation, the extension should not
-  // have been acknowledged.
-  EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
 
-  bubble.set_action_on_show(
-      FakeExtensionMessageBubble::BUBBLE_ACTION_DISMISS_DEACTIVATION);
-  controller.reset(new TestExtensionMessageBubbleController(
-      new NtpOverriddenBubbleDelegate(browser()->profile()), browser()));
-  controller->SetIsActiveBubble();
-  // The bubble shouldn't show again for the same profile (we don't want to
-  // be annoying).
-  EXPECT_FALSE(controller->ShouldShow());
-  controller->ClearProfileListForTesting();
-  EXPECT_TRUE(controller->ShouldShow());
-  // Explicitly click the dismiss button. The extension should be acknowledged.
-  bubble.set_controller(controller.get());
-  bubble.set_action_on_show(
-      FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
-  bubble.Show();
-  EXPECT_TRUE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
+  if (kAcknowledgeOnDeactivate) {
+    EXPECT_TRUE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
+
+    controller.reset(new TestExtensionMessageBubbleController(
+        new ProxyOverriddenBubbleDelegate(browser()->profile()), browser()));
+    controller->ClearProfileListForTesting();
+    controller->SetIsActiveBubble();
+    EXPECT_FALSE(controller->ShouldShow());
+  } else {
+    // Since the bubble was dismissed due to deactivation, the extension should
+    // not have been acknowledged.
+    EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
+
+    bubble.set_action_on_show(
+        FakeExtensionMessageBubble::BUBBLE_ACTION_DISMISS_DEACTIVATION);
+    controller.reset(new TestExtensionMessageBubbleController(
+        new NtpOverriddenBubbleDelegate(browser()->profile()), browser()));
+    controller->SetIsActiveBubble();
+    // The bubble shouldn't show again for the same profile (we don't want to
+    // be annoying).
+    EXPECT_FALSE(controller->ShouldShow());
+    controller->ClearProfileListForTesting();
+    EXPECT_TRUE(controller->ShouldShow());
+    // Explicitly click the dismiss button. The extension should be
+    // acknowledged.
+    bubble.set_controller(controller.get());
+    bubble.set_action_on_show(
+        FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
+    bubble.Show();
+    EXPECT_TRUE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
+  }
 
   // Uninstall the current ntp-controlling extension, allowing the other to
   // take control.
   service_->UninstallExtension(kId2, UNINSTALL_REASON_FOR_TESTING,
                                base::Bind(&base::DoNothing), nullptr);
 
-  // Even though we already showed for the given profile, we should show again,
-  // because it's a different extension.
+  // Even though we already showed for the given profile, we should show
+  // again, because it's a different extension.
   controller.reset(new TestExtensionMessageBubbleController(
       new NtpOverriddenBubbleDelegate(browser()->profile()), browser()));
   EXPECT_TRUE(controller->ShouldShow());
 }
+
+INSTANTIATE_TEST_CASE_P(ExtensionMessageBubbleTest,
+                        ExtensionMessageBubbleTestWithParam, testing::Bool());
 
 // The feature this is meant to test is only enacted on Windows, but it should
 // pass on all platforms.

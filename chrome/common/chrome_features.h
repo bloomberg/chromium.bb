@@ -78,6 +78,7 @@ extern const base::Feature kMaterialDesignBookmarks;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const base::Feature kMaterialDesignExtensions;
+extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate;
 #endif
 
 extern const base::Feature kMaterialDesignHistory;

@@ -104,6 +104,10 @@ bool SuspiciousExtensionBubbleDelegate::ShouldCloseOnDeactivate() const {
   return false;
 }
 
+bool SuspiciousExtensionBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
+  return false;
+}
+
 bool SuspiciousExtensionBubbleDelegate::ShouldShowExtensionList() const {
   return true;
 }
