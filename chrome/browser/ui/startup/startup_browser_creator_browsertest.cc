@@ -108,6 +108,17 @@ bool IsWindows10OrNewer() {
   return false;
 #endif
 }
+
+
+void DisableWelcomePages(const std::vector<Profile*>& profiles) {
+  for (Profile* profile : profiles)
+    profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
+
+#if defined(OS_WIN)
+  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
+                                               true);
+#endif
+}
 #endif
 
 }  // namespace
@@ -233,8 +244,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   Profile* profile = browser()->profile();
 
-  // Do not show Welcome Page this run.
-  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
+  DisableWelcomePages({profile});
 
   // Set the startup preference to open these URLs.
   SessionStartupPref pref(SessionStartupPref::URLS);
@@ -263,8 +273,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
 
   std::vector<GURL> expected_urls(urls);
-  if (IsWindows10OrNewer())
-    expected_urls.insert(expected_urls.begin(), internals::GetWelcomePageURL());
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(static_cast<int>(expected_urls.size()), tab_strip->count());
@@ -277,32 +285,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
       tab_strip->GetWebContentsAt(tab_strip->count() - 2)->GetSiteInstance(),
       tab_strip->GetWebContentsAt(tab_strip->count() - 1)->GetSiteInstance());
 
-  // Test that the welcome page is not shown the second time through if it was
-  // above.
-  if (IsWindows10OrNewer()) {
-    // Close the browser opened above.
-    {
-      content::WindowedNotificationObserver observer(
-          chrome::NOTIFICATION_BROWSER_CLOSED,
-          content::Source<Browser>(new_browser));
-      new_browser->window()->Close();
-      observer.Wait();
-    }
-
-    {
-      StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-      ASSERT_TRUE(launch.Launch(profile, std::vector<GURL>(), false));
-    }
-
-    // Find the new browser and ensure that it has only the specified URLs this
-    // time. Both the original browser created by the fixture and the one
-    // created above have been closed, so the new browser is the only one
-    // remaining.
-    new_browser = chrome::FindTabbedBrowser(profile, true);
-    ASSERT_TRUE(new_browser);
-    ASSERT_EQ(static_cast<int>(urls.size()),
-              new_browser->tab_strip_model()->count());
-  }
 }
 
 // Verify that startup URLs aren't used when the process already exists
@@ -338,13 +320,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   Browser* new_browser = FindOneOtherBrowser(browser());
   ASSERT_TRUE(new_browser);
 
-  if (IsWindows10OrNewer()) {
-    // The new browser should have two tabs (not the startup URLs).
-    ASSERT_EQ(2, new_browser->tab_strip_model()->count());
-  } else {
-    // The new browser should have exactly one tab (not the startup URLs).
-    ASSERT_EQ(1, new_browser->tab_strip_model()->count());
-  }
+  // The new browser should have exactly one tab (not the startup URLs).
+  ASSERT_EQ(1, new_browser->tab_strip_model()->count());
 
   // Test that the welcome page is not shown the second time through if it was
   // above.
@@ -518,9 +495,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   pref2.urls = urls2;
   SessionStartupPref::SetStartupPref(other_profile, pref2);
 
-  // Do not show the Welcome Page for either profile.
-  default_profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-  other_profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
+  DisableWelcomePages({default_profile, other_profile});
 
   // Close the browser.
   CloseBrowserAsynchronously(browser());
@@ -544,17 +519,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   new_browser = FindOneOtherBrowserForProfile(default_profile, browser());
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  if (IsWindows10OrNewer()) {
-    // The new browser should have the welcome tab and the URL for the profile.
-    ASSERT_EQ(2, tab_strip->count());
-    EXPECT_EQ(GURL(internals::GetWelcomePageURL()),
-              tab_strip->GetWebContentsAt(0)->GetURL());
-    EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(1)->GetURL());
-  } else {
-    // The new browser should have only the desired URL for the profile.
-    ASSERT_EQ(1, tab_strip->count());
-    EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(0)->GetURL());
-  }
+
+  // The new browser should have only the desired URL for the profile.
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(0)->GetURL());
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(other_profile));
   new_browser = FindOneOtherBrowserForProfile(other_profile, NULL);
@@ -701,11 +669,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   Profile* profile_urls = profile_manager->GetProfile(dest_path4);
   ASSERT_TRUE(profile_urls);
 
-  // Avoid showing the Welcome page on all four profiles.
-  profile_home1->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-  profile_home2->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-  profile_last->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-  profile_urls->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
+  DisableWelcomePages(
+      {profile_home1, profile_home2, profile_last, profile_urls});
 
   // Set the profiles to open urls, open last visited pages or display the home
   // page.
@@ -763,19 +728,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   new_browser = FindOneOtherBrowserForProfile(profile_home1, NULL);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  if (IsWindows10OrNewer()) {
-    // The new browser should have the welcome tab and the NTP.
-    ASSERT_EQ(2, tab_strip->count());
-    EXPECT_EQ(GURL(internals::GetWelcomePageURL()),
-              tab_strip->GetWebContentsAt(0)->GetURL());
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(1)->GetURL());
-  } else {
-    // The new browser should have only the NTP.
-    ASSERT_EQ(1, tab_strip->count());
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(0)->GetURL());
-  }
+
+  // The new browser should have only the NTP.
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
 
   // profile_urls opened the urls.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls));
@@ -879,19 +836,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   new_browser = FindOneOtherBrowserForProfile(profile_home, NULL);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  if (IsWindows10OrNewer()) {
-    // The new browser should have the welcome tab and the NTP.
-    ASSERT_EQ(2, tab_strip->count());
-    EXPECT_EQ(GURL(internals::GetWelcomePageURL()),
-              tab_strip->GetWebContentsAt(0)->GetURL());
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(1)->GetURL());
-  } else {
-    // The new browser should have only the NTP.
-    ASSERT_EQ(1, tab_strip->count());
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(0)->GetURL());
-  }
+
+  // The new browser should have only the NTP.
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
+
   EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
   // The profile which normally opens last open pages displays the new tab page.
@@ -947,9 +897,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  // There should be only one tab, except on Windows 10. See crbug.com/505029.
-  const int tab_count = IsWindows10OrNewer() ? 2 : 1;
-  EXPECT_EQ(tab_count, tab_strip->count());
+
+  EXPECT_EQ(1, tab_strip->count());
 }
 
 #endif  // !defined(OS_CHROMEOS)
@@ -1032,9 +981,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
 
-  // Avoid showing the Welcome page.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage,
-                                               true);
+  DisableWelcomePages({browser()->profile()});
 
   // Set the following user policies:
   // * RestoreOnStartup = RestoreOnStartupIsURLs

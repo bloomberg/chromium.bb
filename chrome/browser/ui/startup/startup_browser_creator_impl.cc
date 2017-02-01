@@ -288,9 +288,8 @@ void AppendTabs(const StartupTabs& from, StartupTabs* to) {
 // the kUseConsolidatedStartupFlow Feature. Not enabled on Windows 10+.
 bool UseConsolidatedFlow() {
 #if defined(OS_WIN)
-  // TODO(tmartino): Add a Win10+ specific experiment.
   if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-    return false;
+    return base::FeatureList::IsEnabled(features::kEnableWelcomeWin10);
 #endif  // defined(OS_WIN)
   return base::FeatureList::IsEnabled(features::kUseConsolidatedStartupFlow);
 }

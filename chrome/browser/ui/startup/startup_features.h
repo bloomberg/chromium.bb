@@ -12,6 +12,7 @@ namespace features {
 extern const base::Feature kUseConsolidatedStartupFlow;
 
 #if defined(OS_WIN)
+extern const base::Feature kEnableWelcomeWin10;
 extern const base::Feature kWelcomeWin10InlineStyle;
 #endif
 

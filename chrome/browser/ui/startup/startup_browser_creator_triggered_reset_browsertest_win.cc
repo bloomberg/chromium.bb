@@ -114,6 +114,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   // Avoid showing the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 
+#if defined(OS_WIN)
+  // Do not show the Windows 10 promo page.
+  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
+                                               true);
+#endif
+
   // Set the startup preference to open these URLs.
   SessionStartupPref pref(SessionStartupPref::URLS);
   pref.urls = urls;
@@ -141,8 +147,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   ASSERT_TRUE(new_browser);
 
   std::vector<GURL> expected_urls(urls);
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-    expected_urls.insert(expected_urls.begin(), internals::GetWelcomePageURL());
   expected_urls.insert(expected_urls.begin(),
                        internals::GetTriggeredResetSettingsURL());
 
