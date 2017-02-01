@@ -355,6 +355,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
   int file_access_allowed_count = 0;
   int file_access_not_allowed_count = 0;
   int eventless_event_pages_count = 0;
+  int off_store_item_count = 0;
 
   const ExtensionSet& extensions = extension_registry_->enabled_extensions();
   for (ExtensionSet::const_iterator iter = extensions.begin();
@@ -527,6 +528,9 @@ void InstalledLoader::RecordExtensionsMetrics() {
           ++file_access_not_allowed_count;
       }
     }
+
+    if (!ManifestURL::UpdatesFromGallery(extension))
+      ++off_store_item_count;
   }
 
   const ExtensionSet& disabled_extensions =
@@ -615,6 +619,8 @@ void InstalledLoader::RecordExtensionsMetrics() {
                            extension_prefs_->GetCorruptedDisableCount());
   UMA_HISTOGRAM_COUNTS_100("Extensions.EventlessEventPages",
                            eventless_event_pages_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadOffStoreItems",
+                           off_store_item_count);
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
