@@ -1922,6 +1922,8 @@
     },
     {
       name: "column-count",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
       type_name: "unsigned short",

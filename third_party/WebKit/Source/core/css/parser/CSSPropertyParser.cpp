@@ -2094,8 +2094,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeLocale(m_range);
     case CSSPropertyColumnWidth:
       return CSSPropertyColumnUtils::consumeColumnWidth(m_range);
-    case CSSPropertyColumnCount:
-      return CSSPropertyColumnUtils::consumeColumnCount(m_range);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
     case CSSPropertyAnimationDirection:
