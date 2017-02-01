@@ -5,6 +5,7 @@
 #ifndef HTMLImportTreeRoot_h
 #define HTMLImportTreeRoot_h
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/imports/HTMLImport.h"
 #include "platform/Timer.h"
 
@@ -39,7 +40,7 @@ class HTMLImportTreeRoot : public HTMLImport {
   void recalcTimerFired(TimerBase*);
 
   Member<Document> m_document;
-  Timer<HTMLImportTreeRoot> m_recalcTimer;
+  TaskRunnerTimer<HTMLImportTreeRoot> m_recalcTimer;
 
   // List of import which has been loaded or being loaded.
   typedef HeapVector<Member<HTMLImportChild>> ImportList;

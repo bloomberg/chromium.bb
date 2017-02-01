@@ -18,7 +18,10 @@ HTMLImportTreeRoot* HTMLImportTreeRoot::create(Document* document) {
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
     : HTMLImport(HTMLImport::Sync),
       m_document(document),
-      m_recalcTimer(this, &HTMLImportTreeRoot::recalcTimerFired) {
+      m_recalcTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, document->frame()),
+          this,
+          &HTMLImportTreeRoot::recalcTimerFired) {
   scheduleRecalcState();  // This recomputes initial state.
 }
 
