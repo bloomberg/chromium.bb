@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/user_metrics.h"
 #include "url/origin.h"
 
@@ -267,11 +267,13 @@ gfx::NativeWindow PermissionRequestManager::GetBubbleWindow() {
   return nullptr;
 }
 
-void PermissionRequestManager::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (details.is_in_page)
+void PermissionRequestManager::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSamePage()) {
     return;
+  }
 
   CancelPendingQueues();
   FinalizeBubble();
