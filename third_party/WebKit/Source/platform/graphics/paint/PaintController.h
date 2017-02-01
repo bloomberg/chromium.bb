@@ -353,7 +353,7 @@ class PLATFORM_EXPORT PaintController {
   // This is used to check duplicated ids during createAndAppend().
   IndicesByClientMap m_newDisplayItemIndicesByClient;
 
-  Usage m_usage;
+  Usage m_usage = ForNormalUsage;
 #endif
 
   // These are set in useCachedDrawingIfPossible() and
