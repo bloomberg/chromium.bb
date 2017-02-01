@@ -202,7 +202,7 @@ Polymer({
     var field = event.detail.field;
     var value = event.detail.value;
     // Note: |field| includes the 'ipv4.' prefix.
-    this.set('ipConfig.' + field, value);
+    this.set('ipConfig_.' + field, value);
     this.fire('ip-change', {
       field: 'StaticIPConfig',
       value: this.getIPConfigProperties_(this.ipConfig_.ipv4)
