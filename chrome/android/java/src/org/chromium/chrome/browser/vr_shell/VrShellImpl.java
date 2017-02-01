@@ -54,8 +54,8 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private static final float WEBVR_DPR = 1.0f;
     // Fairly arbitrary values that put a good amount of content on the screen without making the
     // text too small to read.
-    private static final float DEFAULT_CONTENT_WIDTH = 1024f;
-    private static final float DEFAULT_CONTENT_HEIGHT = 576f;
+    private static final float DEFAULT_CONTENT_WIDTH = 960f;
+    private static final float DEFAULT_CONTENT_HEIGHT = 640f;
     // Temporary values that will be changed when the UI loads and figures out how what size it
     // needs to be.
     private static final float DEFAULT_UI_WIDTH = 1920f;

@@ -99,6 +99,16 @@ api.domLoaded = function() {
 };
 
 /**
+ * Sets the CSS size for the content window.
+ * @param {number} width
+ * @param {number} height
+ * @param {number} dpr
+ */
+api.setContentCssSize = function(width, height, dpr) {
+  chrome.send('setContentCssSize', [width, height, dpr]);
+};
+
+/**
  * Sets the CSS size for this page.
  * @param {number} width
  * @param {number} height

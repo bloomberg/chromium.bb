@@ -31,6 +31,9 @@ var vrShellUi = (function() {
       /** @const */ this.SCREEN_RATIO = 16 / 9;
       /** @const */ this.BROWSING_SCREEN_DISTANCE = 2.0;
       /** @const */ this.FULLSCREEN_DISTANCE = 3.0;
+      /** @const */ this.CSS_WIDTH_PIXELS = 960.0;
+      /** @const */ this.CSS_HEIGHT_PIXELS = 640.0;
+      /** @const */ this.DPR = 1.2;
 
       let element = new api.UiElement(0, 0, 0, 0);
       element.setIsContentQuad();
@@ -45,6 +48,13 @@ var vrShellUi = (function() {
       let update = new api.UiElementUpdate();
       update.setVisible(enabled);
       ui.updateElement(this.elementId, update);
+      if (enabled) {
+        api.setContentCssSize(
+          this.CSS_WIDTH_PIXELS, this.CSS_HEIGHT_PIXELS, this.DPR);
+      } else {
+        // TODO(mthiesse): Restore the webVR resolution (which matches native
+        // display resolution).
+      }
     }
 
     setOpacity(opacity) {

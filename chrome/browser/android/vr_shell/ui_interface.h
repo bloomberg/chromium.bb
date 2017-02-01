@@ -26,7 +26,7 @@ class UiCommandHandler {
 class UiInterface {
  public:
   enum Mode {
-    STANDARD,
+    STANDARD = 0,
     WEB_VR
   };
 

@@ -34,7 +34,9 @@ class VrShellUIMessageHandler : public content::WebUIMessageHandler,
   void HandleDomLoaded(const base::ListValue* args);
   void HandleUpdateScene(const base::ListValue* args);
   void HandleDoAction(const base::ListValue* args);
+  void HandleSetContentCssSize(const base::ListValue* args);
   void HandleSetUiCssSize(const base::ListValue* args);
+  void SetSize(const base::ListValue* args, bool for_ui);
 
   base::WeakPtr<vr_shell::VrShell> vr_shell_;
 

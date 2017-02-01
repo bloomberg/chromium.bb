@@ -36,6 +36,10 @@ void VrShellUIMessageHandler::RegisterMessages() {
       "doAction", base::Bind(&VrShellUIMessageHandler::HandleDoAction,
                              base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "setContentCssSize",
+      base::Bind(&VrShellUIMessageHandler::HandleSetContentCssSize,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "setUiCssSize", base::Bind(&VrShellUIMessageHandler::HandleSetUiCssSize,
                                  base::Unretained(this)));
 }
@@ -71,14 +75,30 @@ void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {
   }
 }
 
+void VrShellUIMessageHandler::HandleSetContentCssSize(
+    const base::ListValue* args) {
+  if (!vr_shell_)
+    return;
+  SetSize(args, false);
+}
+
 void VrShellUIMessageHandler::HandleSetUiCssSize(const base::ListValue* args) {
+  if (!vr_shell_)
+    return;
+  SetSize(args, true);
+}
+
+void VrShellUIMessageHandler::SetSize(const base::ListValue* args,
+                                      bool for_ui) {
   CHECK(args->GetSize() == 3);
   double width, height, dpr;
   CHECK(args->GetDouble(0, &width));
   CHECK(args->GetDouble(1, &height));
   CHECK(args->GetDouble(2, &dpr));
-  if (vr_shell_) {
+  if (for_ui) {
     vr_shell_->SetUiCssSize(width, height, dpr);
+  } else  {
+    vr_shell_->SetContentCssSize(width, height, dpr);
   }
 }
 
