@@ -24,9 +24,7 @@ import org.chromium.components.location.LocationUtils;
 public class PhysicalWeb {
     public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
     private static final String PREF_PHYSICAL_WEB_NOTIFY_COUNT = "physical_web_notify_count";
-    private static final String PREF_IGNORE_OTHER_CLIENTS = "physical_web_ignore_other_clients";
     private static final String FEATURE_NAME = "PhysicalWeb";
-    private static final String IGNORE_OTHER_CLIENTS_FEATURE_NAME = "PhysicalWebIgnoreOtherClients";
     private static final int MIN_ANDROID_VERSION = 18;
 
     /**
@@ -85,15 +83,6 @@ public class PhysicalWeb {
     }
 
     /**
-     * Returns true if we should fire notifications regardless of the existence of other Physical
-     * Web clients.
-     * This method is for use when the native library is not available.
-     */
-    public static boolean shouldIgnoreOtherClients() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(PREF_IGNORE_OTHER_CLIENTS, false);
-    }
-
-    /**
      * Increments a value tracking how many times we've shown the Physical Web
      * opt-in notification.
      */
@@ -128,11 +117,6 @@ public class PhysicalWeb {
         }
 
         if (isPhysicalWebPreferenceEnabled()) {
-            boolean ignoreOtherClients =
-                    ChromeFeatureList.isEnabled(IGNORE_OTHER_CLIENTS_FEATURE_NAME);
-            ContextUtils.getAppSharedPreferences().edit()
-                    .putBoolean(PREF_IGNORE_OTHER_CLIENTS, ignoreOtherClients)
-                    .apply();
             startPhysicalWeb();
             // The PhysicalWebUma call in this method should be called only when the native library
             // is loaded.  This is always the case on chrome startup.

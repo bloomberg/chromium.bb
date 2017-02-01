@@ -54,7 +54,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPOfflinePagesFeature,
     &kNTPSuggestionsStandaloneUIFeature,
     &kPhysicalWebFeature,
-    &kPhysicalWebIgnoreOtherClientsFeature,
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabsInCBD,
@@ -122,9 +121,6 @@ const base::Feature kNTPSuggestionsStandaloneUIFeature{
 
 const base::Feature kPhysicalWebFeature{"PhysicalWeb",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPhysicalWebIgnoreOtherClientsFeature{
-    "PhysicalWebIgnoreOtherClients", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpecialLocaleFeature{"SpecialLocale",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

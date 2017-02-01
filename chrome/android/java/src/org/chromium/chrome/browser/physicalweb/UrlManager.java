@@ -331,6 +331,8 @@ class UrlManager {
                             .remove("org.chromium.chrome.browser.physicalweb.VERSION")
                             .remove("org.chromium.chrome.browser.physicalweb"
                                     + ".BOTTOM_BAR_DISPLAY_COUNT")
+                            // This clean up code can be deleted in m60
+                            .remove("physical_web_ignore_other_clients")
                             .apply();
                     return null;
                 }
