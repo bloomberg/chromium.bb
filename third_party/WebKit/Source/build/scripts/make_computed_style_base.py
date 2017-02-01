@@ -25,7 +25,7 @@ class Field(object):
 
     Fields also fall into various families, which determine the logic that is
     used to generate them. The available field families are:
-      - 'enum', for fields that store the values of an enum
+      - 'property', for fields that store CSS properties
       - 'inherited_flag', for single-bit flags that store whether a property is
                           inherited by this style or set explicitly
     """
@@ -58,13 +58,12 @@ class Field(object):
             setattr(self, attrib, kwargs.pop(attrib))
 
         # Field family: one of these must be true
-        self.is_enum = field_family == 'enum'
+        self.is_property = field_family == 'property'
         self.is_inherited_flag = field_family == 'inherited_flag'
-        assert (self.is_enum, self.is_inherited_flag).count(True) == 1, \
-            'Field family has to be exactly one of: enum, inherited_flag'
+        assert (self.is_property, self.is_inherited_flag).count(True) == 1, \
+            'Field family has to be exactly one of: property, inherited_flag'
 
-        if self.is_enum:
-            # Enum-only fields
+        if self.is_property:
             self.is_inherited = kwargs.pop('inherited')
             self.is_independent = kwargs.pop('independent')
             assert self.is_inherited or not self.is_independent, 'Only inherited fields can be independent'
@@ -93,9 +92,9 @@ def _create_enums(properties):
     return enums
 
 
-def _create_enum_field(property_):
+def _create_property_field(property_):
     """
-    Create an enum field from a CSS property and return the Field object.
+    Create a property field from a CSS property and return the Field object.
     """
     property_name = property_['name_for_methods']
     property_name_lower = lower_first(property_name)
@@ -126,7 +125,7 @@ def _create_enum_field(property_):
 
     # Add the property itself as a member variable.
     return Field(
-        'enum',
+        'property',
         name=field_name,
         property_name=property_['name'],
         inherited=property_['inherited'],
@@ -182,7 +181,7 @@ def _create_fields(properties):
             if property_['independent']:
                 fields.append(_create_inherited_flag_field(property_))
 
-            fields.append(_create_enum_field(property_))
+            fields.append(_create_property_field(property_))
 
     return fields
 
