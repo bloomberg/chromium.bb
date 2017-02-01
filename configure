@@ -298,6 +298,7 @@ EXPERIMENT_LIST="
     entropy_stats
     masked_tx
     daala_dist
+    tripred
 "
 CONFIG_LIST="
     dependency_tracking
