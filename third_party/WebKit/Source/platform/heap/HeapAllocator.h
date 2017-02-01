@@ -51,9 +51,14 @@ class PLATFORM_EXPORT HeapAllocator {
   using Visitor = blink::Visitor;
   static const bool isGarbageCollected = true;
 
+  template<typename T>
+  static size_t maxElementCountInBackingStore() {
+    return maxHeapObjectSize / sizeof(T);
+  }
+
   template <typename T>
   static size_t quantizedSize(size_t count) {
-    RELEASE_ASSERT(count <= maxHeapObjectSize / sizeof(T));
+    CHECK(count <= maxElementCountInBackingStore<T>());
     return ThreadHeap::allocationSizeFromSize(count * sizeof(T)) -
            sizeof(HeapObjectHeader);
   }

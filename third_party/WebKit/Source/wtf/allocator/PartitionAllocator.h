@@ -27,9 +27,14 @@ class WTF_EXPORT PartitionAllocator {
   typedef PartitionAllocatorDummyVisitor Visitor;
   static const bool isGarbageCollected = false;
 
+  template<typename T>
+  static size_t maxElementCountInBackingStore() {
+    return base::kGenericMaxDirectMapped / sizeof(T);
+  }
+
   template <typename T>
   static size_t quantizedSize(size_t count) {
-    RELEASE_ASSERT(count <= base::kGenericMaxDirectMapped / sizeof(T));
+    CHECK_LE(count, maxElementCountInBackingStore<T>());
     return PartitionAllocActualSize(WTF::Partitions::bufferPartition(),
                                     count * sizeof(T));
   }

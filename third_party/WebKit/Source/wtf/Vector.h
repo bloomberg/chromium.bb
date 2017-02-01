@@ -335,6 +335,8 @@ class VectorBufferBase {
  public:
   void allocateBuffer(size_t newCapacity) {
     DCHECK(newCapacity);
+    DCHECK_LE(newCapacity,
+              Allocator::template maxElementCountInBackingStore<T>());
     size_t sizeToAllocate = allocationSize(newCapacity);
     if (hasInlineCapacity)
       m_buffer =
@@ -996,6 +998,12 @@ class Vector
   }
 
   void reverse();
+
+  // Maximum element count supported; allocating a vector
+  // buffer with a larger count will fail.
+  static size_t maxCapacity() {
+    return Allocator::template maxElementCountInBackingStore<T>();
+  }
 
   template <typename VisitorDispatcher>
   void trace(VisitorDispatcher);

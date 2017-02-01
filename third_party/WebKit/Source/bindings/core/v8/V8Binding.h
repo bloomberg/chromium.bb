@@ -661,7 +661,13 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value,
     return HeapVector<Member<T>>();
   }
 
-  HeapVector<Member<T>> result;
+  using VectorType = HeapVector<Member<T>>;
+  if (length > VectorType::maxCapacity()) {
+    exceptionState.throwRangeError("Array length exceeds supported limit.");
+    return VectorType();
+  }
+
+  VectorType result;
   result.reserveInitialCapacity(length);
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
   v8::TryCatch block(isolate);
@@ -669,7 +675,7 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value,
     v8::Local<v8::Value> element;
     if (!v8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
       exceptionState.rethrowV8Exception(block.Exception());
-      return HeapVector<Member<T>>();
+      return VectorType();
     }
     if (V8TypeOf<T>::Type::hasInstance(element, isolate)) {
       v8::Local<v8::Object> elementObject =
@@ -677,7 +683,7 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value,
       result.uncheckedAppend(V8TypeOf<T>::Type::toImpl(elementObject));
     } else {
       exceptionState.throwTypeError("Invalid Array element type");
-      return HeapVector<Member<T>>();
+      return VectorType();
     }
   }
   return result;
@@ -699,7 +705,13 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value,
     return HeapVector<Member<T>>();
   }
 
-  HeapVector<Member<T>> result;
+  using VectorType = HeapVector<Member<T>>;
+  if (length > VectorType::maxCapacity()) {
+    exceptionState.throwRangeError("Array length exceeds supported limit.");
+    return VectorType();
+  }
+
+  VectorType result;
   result.reserveInitialCapacity(length);
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
   v8::TryCatch block(isolate);
@@ -707,7 +719,7 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value,
     v8::Local<v8::Value> element;
     if (!v8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
       exceptionState.rethrowV8Exception(block.Exception());
-      return HeapVector<Member<T>>();
+      return VectorType();
     }
     if (V8TypeOf<T>::Type::hasInstance(element, isolate)) {
       v8::Local<v8::Object> elementObject =
@@ -715,7 +727,7 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value,
       result.uncheckedAppend(V8TypeOf<T>::Type::toImpl(elementObject));
     } else {
       exceptionState.throwTypeError("Invalid Array element type");
-      return HeapVector<Member<T>>();
+      return VectorType();
     }
   }
   return result;
@@ -741,8 +753,8 @@ VectorType toImplArray(v8::Local<v8::Value> value,
     return VectorType();
   }
 
-  if (length > WTF::kGenericMaxDirectMapped / sizeof(ValueType)) {
-    exceptionState.throwTypeError("Array length exceeds supported limit.");
+  if (length > VectorType::maxCapacity()) {
+    exceptionState.throwRangeError("Array length exceeds supported limit.");
     return VectorType();
   }
 
@@ -768,9 +780,15 @@ template <typename VectorType>
 VectorType toImplArray(const Vector<ScriptValue>& value,
                        v8::Isolate* isolate,
                        ExceptionState& exceptionState) {
+  using ValueType = typename VectorType::ValueType;
+  using TraitsType = NativeValueTraits<ValueType>;
+
+  if (value.size() > VectorType::maxCapacity()) {
+    exceptionState.throwRangeError("Array length exceeds supported limit.");
+    return VectorType();
+  }
+
   VectorType result;
-  typedef typename VectorType::ValueType ValueType;
-  typedef NativeValueTraits<ValueType> TraitsType;
   result.reserveInitialCapacity(value.size());
   for (unsigned i = 0; i < value.size(); ++i) {
     result.uncheckedAppend(
@@ -785,11 +803,16 @@ template <typename VectorType>
 VectorType toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info,
                            int startIndex,
                            ExceptionState& exceptionState) {
-  VectorType result;
-  typedef typename VectorType::ValueType ValueType;
-  typedef NativeValueTraits<ValueType> TraitsType;
+  using ValueType = typename VectorType::ValueType;
+  using TraitsType = NativeValueTraits<ValueType>;
+
   int length = info.Length();
+  VectorType result;
   if (startIndex < length) {
+    if (static_cast<size_t>(length - startIndex) > VectorType::maxCapacity()) {
+      exceptionState.throwRangeError("Array length exceeds supported limit.");
+      return VectorType();
+    }
     result.reserveInitialCapacity(length - startIndex);
     for (int i = startIndex; i < length; ++i) {
       result.uncheckedAppend(
