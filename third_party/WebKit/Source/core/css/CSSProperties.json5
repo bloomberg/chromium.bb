@@ -520,6 +520,7 @@
       api_methods: ["parseSingleValue"],
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialDefaultAlignment",
+      api_class: true,
     },
     {
       name: "alignment-baseline",
@@ -736,6 +737,8 @@
     },
     {
       name: "bottom",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertLengthOrAuto",
       initial: "initialOffset",
       interpolable: true,
@@ -1068,6 +1071,7 @@
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialSelfAlignment",
       runtime_flag: "CSSGridLayout",
+      api_class: true,
     },
     {
       name: "justify-self",
@@ -1079,6 +1083,8 @@
     },
     {
       name: "left",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertLengthOrAuto",
       initial: "initialOffset",
       interpolable: true,
@@ -1138,24 +1144,32 @@
     },
     {
       name: "margin-bottom",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertQuirkyLength",
       initial: "initialMargin",
       interpolable: true,
     },
     {
       name: "margin-left",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertQuirkyLength",
       initial: "initialMargin",
       interpolable: true,
     },
     {
       name: "margin-right",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertQuirkyLength",
       initial: "initialMargin",
       interpolable: true,
     },
     {
       name: "margin-top",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertQuirkyLength",
       initial: "initialMargin",
       interpolable: true,
@@ -1424,6 +1438,8 @@
     },
     {
       name: "right",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertLengthOrAuto",
       initial: "initialOffset",
       interpolable: true,
@@ -1734,6 +1750,8 @@
     },
     {
       name: "top",
+      api_class: "CSSPropertyAPIMargin",
+      api_methods: ["parseSingleValue"],
       converter: "convertLengthOrAuto",
       initial: "initialOffset",
       interpolable: true,
@@ -2320,18 +2338,26 @@
     },
     {
       name: "-webkit-margin-end",
+      api_class: "CSSPropertyAPIWebkitMargin",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
       name: "-webkit-margin-start",
+      api_class: "CSSPropertyAPIWebkitMargin",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
       name: "-webkit-margin-before",
+      api_class: "CSSPropertyAPIWebkitMargin",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
       name: "-webkit-margin-after",
+      api_class: "CSSPropertyAPIWebkitMargin",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
