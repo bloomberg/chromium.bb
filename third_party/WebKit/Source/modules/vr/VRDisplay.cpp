@@ -238,6 +238,17 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     return promise;
   }
 
+  // TODO(mthiesse): Remove fullscreen requirement for presentation. See
+  // crbug.com/687369
+  Document* doc = this->document();
+  if (!doc || !Fullscreen::fullscreenEnabled(*doc)) {
+    DOMException* exception =
+        DOMException::create(InvalidStateError, "Fullscreen is not enabled.");
+    resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::FullscreenNotEnabled);
+    return promise;
+  }
+
   // A valid number of layers must be provided in order to present.
   if (layers.size() == 0 || layers.size() > m_capabilities->maxLayers()) {
     forceExitPresent();

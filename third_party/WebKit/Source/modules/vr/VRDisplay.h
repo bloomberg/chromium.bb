@@ -192,6 +192,7 @@ enum class PresentationResult {
   InvalidLayerBounds = 10,
   ServiceInactive = 11,
   RequestDenied = 12,
+  FullscreenNotEnabled = 13,
   PresentationResultMax,  // Must be last member of enum.
 };
 

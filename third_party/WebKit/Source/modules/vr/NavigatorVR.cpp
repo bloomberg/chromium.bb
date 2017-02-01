@@ -9,6 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/Fullscreen.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -132,7 +133,11 @@ void NavigatorVR::pageVisibilityChanged() {
 
 void NavigatorVR::didAddEventListener(LocalDOMWindow* window,
                                       const AtomicString& eventType) {
-  if (eventType == EventTypeNames::vrdisplayactivate) {
+  // TODO(mthiesse): Remove fullscreen requirement for presentation. See
+  // crbug.com/687369
+  if (eventType == EventTypeNames::vrdisplayactivate &&
+      supplementable()->frame() && supplementable()->frame()->document() &&
+      Fullscreen::fullscreenEnabled(*supplementable()->frame()->document())) {
     controller()->setListeningForActivate(true);
     m_listeningForActivate = true;
   } else if (eventType == EventTypeNames::vrdisplayconnect) {
