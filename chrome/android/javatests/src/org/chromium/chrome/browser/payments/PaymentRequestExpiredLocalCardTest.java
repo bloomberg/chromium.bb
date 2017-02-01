@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -116,8 +117,10 @@ public class PaymentRequestExpiredLocalCardTest extends PaymentRequestTestBase {
     /**
      * Tests the different card unmask error messages for an expired card.
      */
-    @MediumTest
-    @Feature({"Payments"})
+    // @MediumTest
+    // @Feature({"Payments"})
+    // See: crbug.com/687438.
+    @DisabledTest
     public void testPromptErrorMessages()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Click pay to get to the card unmask prompt.
