@@ -68,6 +68,23 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    // Regression test for crbug.com/687600.
+    public void testZeroLengthWriteWithNoResponseBody() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setFixedLengthStreamingMode(0);
+        OutputStream out = connection.getOutputStream();
+        out.write(new byte[] {});
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
     public void testWriteAfterRequestFailed() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();

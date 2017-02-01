@@ -45,8 +45,9 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     private CronetOutputStream mOutputStream;
     private UrlResponseInfo mResponseInfo;
     private CronetException mException;
-    private boolean mOnRedirectCalled = false;
-    private boolean mHasResponse = false;
+    private boolean mOnRedirectCalled;
+    // Whether response headers are received, the request is failed, or the request is canceled.
+    private boolean mHasResponseHeadersOrCompleted;
     private List<Map.Entry<String, String>> mResponseHeadersList;
     private Map<String, List<String>> mResponseHeadersMap;
 
@@ -437,6 +438,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         @Override
         public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
             mResponseInfo = info;
+            mHasResponseHeadersOrCompleted = true;
             // Quits the message loop since we have the headers now.
             mMessageLoop.quit();
         }
@@ -508,7 +510,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             if (mOutputStream != null) {
                 mOutputStream.setRequestCompleted(exception);
             }
-            mHasResponse = true;
+            mHasResponseHeadersOrCompleted = true;
             mMessageLoop.quit();
         }
     }
@@ -525,13 +527,12 @@ public class CronetHttpURLConnection extends HttpURLConnection {
                 mOutputStream.close();
             }
         }
-        if (!mHasResponse) {
+        if (!mHasResponseHeadersOrCompleted) {
             startRequest();
             // Blocks until onResponseStarted or onFailed is called.
             mMessageLoop.loop();
-            mHasResponse = true;
         }
-        checkHasResponse();
+        checkHasResponseHeaders();
     }
 
     /**
@@ -539,8 +540,8 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      * an exception occurred before headers received. This method should only be
      * called after onResponseStarted or onFailed.
      */
-    private void checkHasResponse() throws IOException {
-        if (!mHasResponse) throw new IllegalStateException("No response.");
+    private void checkHasResponseHeaders() throws IOException {
+        if (!mHasResponseHeadersOrCompleted) throw new IllegalStateException("No response.");
         if (mException != null) {
             throw mException;
         } else if (mResponseInfo == null) {
