@@ -117,9 +117,12 @@ Polymer({
    * @private
    */
   onShowDetail_: function(event) {
-    settings.navigateTo(
-        settings.Route.NETWORK_DETAIL,
-        new URLSearchParams('guid=' + event.detail.GUID));
+    var params = new URLSearchParams;
+    params.append('guid', event.detail.GUID);
+    params.append('type', event.detail.Type);
+    if (event.detail.Name)
+      params.append('name', event.detail.Name);
+    settings.navigateTo(settings.Route.NETWORK_DETAIL, params);
   },
 
   /**

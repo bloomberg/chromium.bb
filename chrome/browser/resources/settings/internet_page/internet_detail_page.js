@@ -163,6 +163,17 @@ Polymer({
       console.error('No guid specified for page:' + route);
       this.close_();
     }
+    // Set basic networkProperties until they are loaded.
+    var type = /** @type {!chrome.networkingPrivate.NetworkType} */ (
+                   queryParams.get('type')) ||
+        CrOnc.Type.WI_FI;
+    var name = queryParams.get('name') || type;
+    this.networkProperties = {
+      GUID: this.guid,
+      Type: type,
+      ConnectionState: CrOnc.ConnectionState.NOT_CONNECTED,
+      Name: {Active: name},
+    };
     this.getNetworkDetails_();
   },
 
@@ -344,6 +355,16 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
+  isCellular_: function(networkProperties) {
+    return networkProperties.Type == CrOnc.Type.CELLULAR &&
+        !!networkProperties.Cellular;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
@@ -397,7 +418,7 @@ Polymer({
    * @private
    */
   showActivate_: function(networkProperties) {
-    if (networkProperties.Type != CrOnc.Type.CELLULAR)
+    if (!this.isCellular_(networkProperties))
       return false;
     var activation = networkProperties.Cellular.ActivationState;
     return activation == CrOnc.ActivationState.NOT_ACTIVATED ||
@@ -430,12 +451,9 @@ Polymer({
    * @private
    */
   showViewAccount_: function(networkProperties) {
-    // Show either the 'Activate' or the 'View Account' button.
-    if (this.showActivate_(networkProperties))
-      return false;
-
-    if (networkProperties.Type != CrOnc.Type.CELLULAR ||
-        !networkProperties.Cellular) {
+    // Show either the 'Activate' or the 'View Account' button (Cellular only).
+    if (!this.isCellular_(networkProperties) ||
+        this.showActivate_(networkProperties)) {
       return false;
     }
 
@@ -722,12 +740,12 @@ Polymer({
    */
   getInfoFields_: function() {
     /** @type {!Array<string>} */ var fields = [];
-    if (this.networkProperties.Type == CrOnc.Type.CELLULAR) {
+    var type = this.networkProperties.Type;
+    if (type == CrOnc.Type.CELLULAR && !!this.networkProperties.Cellular) {
       fields.push(
           'Cellular.ActivationState', 'Cellular.RoamingState',
           'RestrictedConnectivity', 'Cellular.ServingOperator.Name');
-    }
-    if (this.networkProperties.Type == CrOnc.Type.VPN) {
+    } else if (type == CrOnc.Type.VPN && !!this.networkProperties.VPN) {
       var vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
       if (vpnType == 'ThirdPartyVPN') {
         fields.push('VPN.ThirdPartyVPN.ProviderName');
@@ -738,10 +756,9 @@ Polymer({
         else if (vpnType == 'L2TP-IPsec')
           fields.push('VPN.L2TP.Username');
       }
-    }
-    if (this.networkProperties.Type == CrOnc.Type.WI_FI)
+    } else if (type == CrOnc.Type.WI_FI) {
       fields.push('RestrictedConnectivity');
-    if (this.networkProperties.Type == CrOnc.Type.WI_MAX) {
+    } else if (type == CrOnc.Type.WI_MAX) {
       fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
     }
     return fields;
@@ -754,18 +771,18 @@ Polymer({
   getAdvancedFields_: function() {
     /** @type {!Array<string>} */ var fields = [];
     fields.push('MacAddress');
-    if (this.networkProperties.Type == CrOnc.Type.CELLULAR) {
+    var type = this.networkProperties.Type;
+    if (type == CrOnc.Type.CELLULAR && !!this.networkProperties.Cellular) {
       fields.push(
           'Cellular.Carrier', 'Cellular.Family', 'Cellular.NetworkTechnology',
           'Cellular.ServingOperator.Code');
-    }
-    if (this.networkProperties.Type == CrOnc.Type.WI_FI) {
+    } else if (type == CrOnc.Type.WI_FI) {
       fields.push(
           'WiFi.SSID', 'WiFi.BSSID', 'WiFi.Security', 'WiFi.SignalStrength',
           'WiFi.Frequency');
-    }
-    if (this.networkProperties.Type == CrOnc.Type.WI_MAX)
+    } else if (type == CrOnc.Type.WI_MAX) {
       fields.push('WiFi.SignalStrength');
+    }
     return fields;
   },
 
