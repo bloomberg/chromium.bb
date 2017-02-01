@@ -132,6 +132,7 @@ Polymer({
     this.$.audio.addEventListener('error', onAudioStatusUpdatedBound);
     this.$.audio.addEventListener('emptied', onAudioStatusUpdatedBound);
     this.$.audio.addEventListener('stalled', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('loadedmetadata', onAudioStatusUpdatedBound);
   },
 
   /**
@@ -253,7 +254,8 @@ Polymer({
    */
   onAudioStatusUpdate_: function() {
     this.time = (this.lastAudioUpdateTime_ = this.$.audio.currentTime * 1000);
-    this.duration = this.$.audio.duration * 1000;
+    if (!Number.isNaN(this.$.audio.duration))
+      this.duration = this.$.audio.duration * 1000;
     this.playing = !this.$.audio.paused;
   },
 
