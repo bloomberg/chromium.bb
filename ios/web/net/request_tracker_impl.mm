@@ -416,6 +416,16 @@ void RequestTrackerImpl::RunAfterRequestsCancel(const base::Closure& callback) {
 // static
 void RequestTrackerImpl::BlockUntilTrackersShutdown() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  // Initialize the globals as part of the shutdown to prevent a crash when
+  // trying to acquire the lock if it was never initialised. It can happen
+  // if the application is terminated when no RequestTracker has been created
+  // (which can happen if no UIWebView has been created). See crbug.com/684611
+  // for information on such a crash.
+  //
+  // As RequestTracker are deprecated and are only used in Sign-In workflow
+  // it is simpler to just do the initialisation here than tracking whether
+  // the method should be called or not by client code.
+  pthread_once(&g_once_control, &InitializeGlobals);
   {
     base::AutoLock scoped_lock(*g_waiting_on_io_thread_lock);
     g_waiting_on_io_thread = true;
