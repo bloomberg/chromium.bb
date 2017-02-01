@@ -98,7 +98,7 @@ TEST_F(PresentationConnectionProxyTest, TestSendArrayBuffer) {
   base::RunLoop run_loop;
   EXPECT_CALL(*receiver_connection_, didReceiveBinaryMessage(_, _))
       .WillOnce(::testing::Invoke(
-          [this, &expected_data](const uint8_t* data, size_t length) {
+          [&expected_data](const uint8_t* data, size_t length) {
             std::vector<uint8_t> message_data(data, data + length);
             EXPECT_EQ(expected_data, message_data);
           }));
