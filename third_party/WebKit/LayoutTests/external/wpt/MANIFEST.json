@@ -17189,6 +17189,12 @@
      {}
     ]
    ],
+   "IndexedDB/delete-request-queue.html": [
+    [
+     "/IndexedDB/delete-request-queue.html",
+     {}
+    ]
+   ],
    "IndexedDB/error-attributes.html": [
     [
      "/IndexedDB/error-attributes.html",
@@ -18760,6 +18766,12 @@
    "IndexedDB/idbobjectstore_put9.htm": [
     [
      "/IndexedDB/idbobjectstore_put9.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbrequest-onupgradeneeded.htm": [
+    [
+     "/IndexedDB/idbrequest-onupgradeneeded.htm",
      {}
     ]
    ],
@@ -34346,6 +34358,10 @@
    "c12f2d91554335699409b338fa266bae845ab7d8",
    "testharness"
   ],
+  "IndexedDB/delete-request-queue.html": [
+   "5853acfff17be4a78da906dfb5065a6e89ea9fba",
+   "testharness"
+  ],
   "IndexedDB/error-attributes.html": [
    "3e69684b6dc5e23508ced8c7a033a389f6e135b6",
    "testharness"
@@ -35384,6 +35400,10 @@
   ],
   "IndexedDB/idbobjectstore_put9.htm": [
    "027649c8e5f43764ff8151ea706f1776c48ffa98",
+   "testharness"
+  ],
+  "IndexedDB/idbrequest-onupgradeneeded.htm": [
+   "b3b93705a62981706d810ebddaf73f4bee6d1612",
    "testharness"
   ],
   "IndexedDB/idbrequest_error.html": [

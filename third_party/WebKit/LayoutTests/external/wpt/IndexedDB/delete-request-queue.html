@@ -1,8 +1,10 @@
-<!DOCTYPE html>
-<title>IndexedDB: ordering of deletes made during open's upgradeneeded and success</title>
-<script src='../../resources/testharness.js'></script>
-<script src='../../resources/testharnessreport.js'></script>
-<script src='resources/testharness-helpers.js'></script>
+<!doctype html>
+<meta charset=utf-8>
+<title>IndexedDB: delete requests are processed as a FIFO queue</title>
+<link rel="help" href="https://w3c.github.io/IndexedDB/#request-connection-queue">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support.js"></script>
 <script>
 
 let saw;
