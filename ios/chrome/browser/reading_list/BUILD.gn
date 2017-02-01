@@ -26,6 +26,7 @@ source_set("reading_list") {
   ]
   deps = [
     "//base",
+    "//components/browser_sync",
     "//components/dom_distiller/ios",
     "//components/favicon/core",
     "//components/favicon/ios",

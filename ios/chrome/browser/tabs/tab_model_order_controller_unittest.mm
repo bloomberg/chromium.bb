@@ -5,11 +5,13 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/sessions/session_window.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_order_controller.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
@@ -21,7 +23,10 @@ namespace {
 class TabModelOrderControllerTest : public PlatformTest {
  protected:
   TabModelOrderControllerTest()
-      : thread_bundle_(web::TestWebThreadBundle::IO_MAINLOOP) {}
+      : thread_bundle_(web::TestWebThreadBundle::IO_MAINLOOP),
+        scoped_browser_state_manager_(
+            base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {
+  }
 
   void SetUp() override {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
@@ -78,6 +83,7 @@ class TabModelOrderControllerTest : public PlatformTest {
   GURL url_;
   web::Referrer referrer_;
   web::TestWebThreadBundle thread_bundle_;
+  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   base::scoped_nsobject<SessionWindowIOS> sessionWindow_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::scoped_nsobject<Tab> dummy_tab_;
