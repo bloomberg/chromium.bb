@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 
+#include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
@@ -85,6 +86,9 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
       }
     }
   }  // else case is capture is remaining in our root, nothing to do.
+
+  for (auto& observer : observers_)
+    observer.OnCaptureChanged(old_capture_window, capture_window_);
 }
 
 void DesktopCaptureClient::ReleaseCapture(aura::Window* window) {
@@ -103,12 +107,12 @@ aura::Window* DesktopCaptureClient::GetGlobalCaptureWindow() {
 
 void DesktopCaptureClient::AddObserver(
     aura::client::CaptureClientObserver* observer) {
-  NOTREACHED();
+  observers_.AddObserver(observer);
 }
 
 void DesktopCaptureClient::RemoveObserver(
     aura::client::CaptureClientObserver* observer) {
-  NOTREACHED();
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace views

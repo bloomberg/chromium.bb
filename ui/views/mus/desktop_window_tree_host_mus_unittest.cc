@@ -9,7 +9,10 @@
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/views/mus/mus_client.h"
@@ -122,6 +125,50 @@ TEST_F(DesktopWindowTreeHostMusTest, Visibility) {
   EXPECT_FALSE(widget->IsVisible());
   EXPECT_FALSE(widget->GetNativeView()->IsVisible());
   EXPECT_FALSE(widget->GetNativeView()->parent()->IsVisible());
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, Capture) {
+  std::unique_ptr<Widget> widget1(CreateWidget());
+  widget1->Show();
+  EXPECT_FALSE(widget1->HasCapture());
+
+  std::unique_ptr<Widget> widget2(CreateWidget());
+  widget2->Show();
+  EXPECT_FALSE(widget2->HasCapture());
+
+  widget1->SetCapture(widget1->GetRootView());
+  EXPECT_TRUE(widget1->HasCapture());
+  EXPECT_FALSE(widget2->HasCapture());
+  EXPECT_EQ(widget1->GetNativeWindow(), MusClient::Get()
+                                            ->window_tree_client()
+                                            ->capture_synchronizer()
+                                            ->capture_window()
+                                            ->GetWindow());
+
+  widget2->SetCapture(widget2->GetRootView());
+  EXPECT_TRUE(widget2->HasCapture());
+  EXPECT_EQ(widget2->GetNativeWindow(), MusClient::Get()
+                                            ->window_tree_client()
+                                            ->capture_synchronizer()
+                                            ->capture_window()
+                                            ->GetWindow());
+
+  widget1->ReleaseCapture();
+  EXPECT_TRUE(widget2->HasCapture());
+  EXPECT_FALSE(widget1->HasCapture());
+  EXPECT_EQ(widget2->GetNativeWindow(), MusClient::Get()
+                                            ->window_tree_client()
+                                            ->capture_synchronizer()
+                                            ->capture_window()
+                                            ->GetWindow());
+
+  widget2->ReleaseCapture();
+  EXPECT_FALSE(widget2->HasCapture());
+  EXPECT_FALSE(widget1->HasCapture());
+  EXPECT_EQ(nullptr, MusClient::Get()
+                         ->window_tree_client()
+                         ->capture_synchronizer()
+                         ->capture_window());
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, Deactivate) {

@@ -108,6 +108,9 @@ class AURA_EXPORT WindowTreeClient
 
   service_manager::Connector* connector() { return connector_; }
   ui::Gpu* gpu() { return gpu_.get(); }
+  CaptureSynchronizer* capture_synchronizer() {
+    return capture_synchronizer_.get();
+  }
 
   bool connected() const { return tree_ != nullptr; }
   ClientSpecificId client_id() const { return client_id_; }

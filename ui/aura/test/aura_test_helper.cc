@@ -11,6 +11,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
+#include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -195,6 +196,8 @@ void AuraTestHelper::InitWindowTreeClient() {
   window_tree_client_setup_->InitForWindowManager(window_tree_delegate_,
                                                   window_manager_delegate_);
   window_tree_client_ = window_tree_client_setup_->window_tree_client();
+  window_tree_client_->capture_synchronizer()->AttachToCaptureClient(
+      capture_client_.get());
 }
 
 }  // namespace test
