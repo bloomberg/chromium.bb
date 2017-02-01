@@ -110,6 +110,9 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     case webrtc::kVideoCodecVP8:
       profile = media::VP8PROFILE_ANY;
       break;
+    case webrtc::kVideoCodecVP9:
+      profile = media::VP9PROFILE_MIN;
+      break;
     case webrtc::kVideoCodecH264:
       profile = media::H264PROFILE_MAIN;
       break;

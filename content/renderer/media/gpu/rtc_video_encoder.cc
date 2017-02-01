@@ -41,6 +41,8 @@ media::VideoCodecProfile WebRTCVideoCodecToVideoCodecProfile(
   switch (type) {
     case webrtc::kVideoCodecVP8:
       return media::VP8PROFILE_ANY;
+    case webrtc::kVideoCodecVP9:
+      return media::VP9PROFILE_MIN;
     case webrtc::kVideoCodecH264:
       // TODO(magjed): WebRTC is only using Baseline profile for now. Update
       // once http://crbug/webrtc/6337 is fixed.
