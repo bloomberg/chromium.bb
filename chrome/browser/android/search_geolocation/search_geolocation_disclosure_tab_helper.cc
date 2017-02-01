@@ -87,11 +87,6 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosure(
   if (!ShouldShowDisclosureForUrl(gurl))
     return;
 
-  // Check that the Chrome app has geolocation permission.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (!Java_GeolocationHeader_hasGeolocationPermission(env))
-    return;
-
   // Don't show the infobar if the user has dismissed it, or they've seen it
   // enough times already.
   PrefService* prefs = GetProfile()->GetPrefs();
@@ -133,6 +128,11 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosure(
   SearchGeolocationService* service =
       SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
   if (!service->GetDSEGeolocationSetting())
+    return;
+
+  // Check that the Chrome app has geolocation permission.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!Java_GeolocationHeader_hasGeolocationPermission(env))
     return;
 
   // All good, let's show the disclosure and increment the shown count.
