@@ -49,14 +49,14 @@ private:
 std::unique_ptr<base::Value> AsValue(bool b) {
   std::unique_ptr<base::FundamentalValue> val(new base::FundamentalValue(b));
 
-  return std::move(val);
+  return val;
 }
 
 std::unique_ptr<base::Value> AsValue(SkScalar scalar) {
   std::unique_ptr<base::FundamentalValue> val(
       new base::FundamentalValue(scalar));
 
-  return std::move(val);
+  return val;
 }
 
 std::unique_ptr<base::Value> AsValue(const SkSize& size) {
