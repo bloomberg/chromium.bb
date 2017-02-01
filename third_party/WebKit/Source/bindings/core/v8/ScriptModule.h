@@ -22,6 +22,7 @@ class CORE_EXPORT ScriptModule final {
                               const String& source,
                               const String& fileName);
 
+  ScriptModule() {}
   ScriptModule(const ScriptModule& module) : m_module(module.m_module) {}
   ~ScriptModule();
 

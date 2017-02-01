@@ -181,6 +181,8 @@ blink_core_sources("dom") {
     "MessagePort.cpp",
     "Modulator.cpp",
     "Modulator.h",
+    "ModuleScript.cpp",
+    "ModuleScript.h",
     "MutationCallback.h",
     "MutationObserver.cpp",
     "MutationObserver.h",
