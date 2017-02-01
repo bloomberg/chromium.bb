@@ -153,7 +153,8 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   out.device.matched_output_device_id =
       audio_manager_->GetAssociatedOutputDeviceID(info.device.id);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (info.device.type == MEDIA_TAB_AUDIO_CAPTURE ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
     // Don't need to query the hardware information if using fake device.
     input_params.sample_rate = 44100;
