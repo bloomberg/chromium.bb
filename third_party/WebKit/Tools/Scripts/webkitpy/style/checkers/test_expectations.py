@@ -47,7 +47,6 @@ class TestExpectationsChecker(object):
 
         # FIXME: host should be a required parameter, not an optional one.
         host = host or Host()
-        host.initialize_scm()
 
         self._port_obj = host.port_factory.get()
 

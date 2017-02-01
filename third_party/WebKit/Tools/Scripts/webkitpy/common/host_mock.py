@@ -42,7 +42,6 @@ class MockHost(MockSystemHost):
 
     def __init__(self,
                  log_executive=False,
-                 initialize_scm_by_default=True,
                  web=None,
                  scm=None,
                  os_name=None,
@@ -56,13 +55,8 @@ class MockHost(MockSystemHost):
 
         add_unit_tests_to_mock_filesystem(self.filesystem)
         self.web = web or MockWeb()
-
         self._scm = scm
-        # TODO(qyearsley): we should never initialize the SCM by default, since
-        # the real object doesn't either. This has caused at least one bug
-        # (see bug 89498).
-        if initialize_scm_by_default:
-            self.initialize_scm()
+
         self.buildbot = MockBuildBot()
 
         # Note: We're using a real PortFactory here.  Tests which don't wish to depend
@@ -71,17 +65,12 @@ class MockHost(MockSystemHost):
 
         self.builders = BuilderList(BUILDERS)
 
-    def initialize_scm(self, patch_directories=None):
+    def scm(self, path=None):
+        if path:
+            return MockGit(cwd=path, filesystem=self.filesystem, executive=self.executive)
         if not self._scm:
             self._scm = MockGit(filesystem=self.filesystem, executive=self.executive)
         # Various pieces of code (wrongly) call filesystem.chdir(checkout_root).
         # Making the checkout_root exist in the mock filesystem makes that chdir not raise.
         self.filesystem.maybe_make_directory(self._scm.checkout_root)
-
-    def scm(self):
-        return self._scm
-
-    def scm_for_path(self, path):
-        # FIXME: consider supporting more than one SCM so that we can do more comprehensive testing.
-        self.initialize_scm()
         return self._scm
