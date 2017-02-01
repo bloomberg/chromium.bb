@@ -34,10 +34,13 @@
 namespace blink {
 
 HTMLParserOptions::HTMLParserOptions(Document* document) {
-  LocalFrame* frame = document ? document->frame() : 0;
-  scriptEnabled =
-      frame && frame->script().canExecuteScripts(NotAboutToExecuteScript);
-  pluginsEnabled =
-      frame && frame->loader().allowPlugins(NotAboutToInstantiatePlugin);
+  if (!document)
+    return;
+
+  if (LocalFrame* frame = document->frame()) {
+    scriptEnabled = document->canExecuteScripts(NotAboutToExecuteScript);
+    pluginsEnabled = frame->loader().allowPlugins(NotAboutToInstantiatePlugin);
+  }
 }
-}
+
+}  // namespace blink

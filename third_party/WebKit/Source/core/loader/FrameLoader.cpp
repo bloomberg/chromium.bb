@@ -1808,7 +1808,8 @@ void FrameLoader::runScriptsAtDocumentElementAvailable() {
 }
 
 void FrameLoader::dispatchDidClearDocumentOfWindowObject() {
-  if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
+  DCHECK(m_frame->document());
+  if (!m_frame->document()->canExecuteScripts(NotAboutToExecuteScript))
     return;
 
   Settings* settings = m_frame->settings();
@@ -1828,7 +1829,8 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject() {
 }
 
 void FrameLoader::dispatchDidClearWindowObjectInMainWorld() {
-  if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
+  DCHECK(m_frame->document());
+  if (!m_frame->document()->canExecuteScripts(NotAboutToExecuteScript))
     return;
 
   if (m_dispatchingDidClearWindowObjectInMainWorld)

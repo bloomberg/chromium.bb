@@ -247,13 +247,6 @@ void ScriptController::updateDocument() {
   m_windowProxyManager->mainWorldProxy()->updateDocument();
 }
 
-bool ScriptController::canExecuteScripts(
-    ReasonForCallingCanExecuteScripts reason) {
-  Document* document = frame()->document();
-  DCHECK(document);
-  return document->canExecuteScripts(reason);
-}
-
 bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,
                                                     Element* element) {
   if (!url.protocolIsJavaScript())
@@ -337,7 +330,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(
     AccessControlStatus accessControlStatus,
     ExecuteScriptPolicy policy) {
   if (policy == DoNotExecuteScriptWhenScriptsDisabled &&
-      !canExecuteScripts(AboutToExecuteScript))
+      !frame()->document()->canExecuteScripts(AboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   ScriptState* scriptState = ScriptState::forMainWorld(frame());

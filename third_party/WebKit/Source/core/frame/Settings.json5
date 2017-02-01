@@ -570,8 +570,8 @@
       initial: false,
     },
 
-    // Clients that execute script should call ScriptController::canExecuteScripts()
-    // instead of this function. ScriptController::canExecuteScripts() checks the
+    // Clients that execute script should call ExecutionContext::canExecuteScripts()
+    // instead of this function. ExecutionContext::canExecuteScripts() checks the
     // HTML sandbox, plugin sandboxing, and other important details.
     {
       name: "scriptEnabled",

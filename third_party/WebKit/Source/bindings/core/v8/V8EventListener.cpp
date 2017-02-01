@@ -103,7 +103,8 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(
   // TODO(jochen): Consider moving this check into canExecuteScripts.
   // http://crbug.com/608641
   if (scriptState->world().isMainWorld() &&
-      !frame->script().canExecuteScripts(AboutToExecuteScript))
+      !scriptState->getExecutionContext()->canExecuteScripts(
+          AboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   v8::Local<v8::Value> parameters[1] = {jsEvent};

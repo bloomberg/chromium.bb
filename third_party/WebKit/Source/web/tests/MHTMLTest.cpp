@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
@@ -284,7 +283,7 @@ TEST_F(MHTMLTest, EnforceSandboxFlags) {
   // MHTML document should be loaded into unique origin.
   EXPECT_TRUE(document->getSecurityOrigin()->isUnique());
   // Script execution should be disabled.
-  EXPECT_FALSE(frame->script().canExecuteScripts(NotAboutToExecuteScript));
+  EXPECT_FALSE(document->canExecuteScripts(NotAboutToExecuteScript));
 }
 
 }  // namespace blink

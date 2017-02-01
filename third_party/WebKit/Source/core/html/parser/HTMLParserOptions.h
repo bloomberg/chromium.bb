@@ -37,10 +37,10 @@ class CORE_EXPORT HTMLParserOptions {
   DISALLOW_NEW();
 
  public:
-  bool scriptEnabled;
-  bool pluginsEnabled;
+  bool scriptEnabled = false;
+  bool pluginsEnabled = false;
 
-  explicit HTMLParserOptions(Document* = 0);
+  explicit HTMLParserOptions(Document* = nullptr);
 };
 
 }  // namespace blink

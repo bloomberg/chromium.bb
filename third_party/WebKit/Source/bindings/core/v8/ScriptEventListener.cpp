@@ -60,16 +60,13 @@ V8LazyEventListener* createAttributeEventListener(
                         OrdinalNumber::first());
   String sourceURL;
 
-  v8::Isolate* isolate;
+  v8::Isolate* isolate = toIsolate(&node->document());
   if (LocalFrame* frame = node->document().frame()) {
-    isolate = toIsolate(frame);
     ScriptController& scriptController = frame->script();
-    if (!scriptController.canExecuteScripts(AboutToExecuteScript))
+    if (!node->document().canExecuteScripts(AboutToExecuteScript))
       return nullptr;
     position = scriptController.eventHandlerPosition();
     sourceURL = node->document().url().getString();
-  } else {
-    isolate = v8::Isolate::GetCurrent();
   }
 
   return V8LazyEventListener::create(name.localName(), eventParameterName,
@@ -87,11 +84,10 @@ V8LazyEventListener* createAttributeEventListener(
   if (value.isNull())
     return nullptr;
 
-  ScriptController& scriptController = frame->script();
-  if (!scriptController.canExecuteScripts(AboutToExecuteScript))
+  if (!frame->document()->canExecuteScripts(AboutToExecuteScript))
     return nullptr;
 
-  TextPosition position = scriptController.eventHandlerPosition();
+  TextPosition position = frame->script().eventHandlerPosition();
   String sourceURL = frame->document()->url().getString();
 
   return V8LazyEventListener::create(name.localName(), eventParameterName,

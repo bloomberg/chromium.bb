@@ -2887,7 +2887,7 @@ void Document::implicitClose() {
   // onLoad event handler, as in Radar 3206524.
   detachParser();
 
-  if (frame() && frame()->script().canExecuteScripts(NotAboutToExecuteScript)) {
+  if (frame() && canExecuteScripts(NotAboutToExecuteScript)) {
     ImageLoader::dispatchPendingLoadEvents();
     ImageLoader::dispatchPendingErrorEvents();
   }
@@ -5586,7 +5586,7 @@ bool Document::allowInlineEventHandler(Node* node,
   LocalFrame* frame = executingFrame();
   if (!frame)
     return false;
-  if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
+  if (!contextDocument()->canExecuteScripts(NotAboutToExecuteScript))
     return false;
   if (node && node->document() != this &&
       !node->document().allowInlineEventHandler(node, listener, contextURL,
@@ -5605,7 +5605,7 @@ bool Document::allowExecutingScripts(Node* node) {
     return false;
   if (!node->document().executingFrame())
     return false;
-  if (!frame->script().canExecuteScripts(AboutToExecuteScript))
+  if (!canExecuteScripts(AboutToExecuteScript))
     return false;
   return true;
 }

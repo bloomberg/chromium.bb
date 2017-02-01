@@ -101,7 +101,8 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(
   if (!frame)
     return v8::Local<v8::Value>();
 
-  if (!frame->script().canExecuteScripts(AboutToExecuteScript))
+  if (!scriptState->getExecutionContext()->canExecuteScripts(
+          AboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   v8::Local<v8::Value> parameters[1] = {jsEvent};

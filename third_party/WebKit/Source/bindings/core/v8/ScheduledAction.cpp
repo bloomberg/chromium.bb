@@ -80,7 +80,7 @@ void ScheduledAction::execute(ExecutionContext* context) {
       DVLOG(1) << "ScheduledAction::execute " << this << ": no frame";
       return;
     }
-    if (!frame->script().canExecuteScripts(AboutToExecuteScript)) {
+    if (!context->canExecuteScripts(AboutToExecuteScript)) {
       DVLOG(1) << "ScheduledAction::execute " << this
                << ": frame can not execute scripts";
       return;

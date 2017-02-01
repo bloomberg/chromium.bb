@@ -177,7 +177,7 @@ void HTMLCanvasElement::parseAttribute(
 LayoutObject* HTMLCanvasElement::createLayoutObject(
     const ComputedStyle& style) {
   LocalFrame* frame = document().frame();
-  if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
+  if (frame && document().canExecuteScripts(NotAboutToExecuteScript))
     return new LayoutHTMLCanvas(this);
   return HTMLElement::createLayoutObject(style);
 }

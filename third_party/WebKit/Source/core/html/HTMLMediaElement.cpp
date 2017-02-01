@@ -2376,7 +2376,7 @@ bool HTMLMediaElement::shouldShowControls(
   }
 
   LocalFrame* frame = document().frame();
-  if (frame && !frame->script().canExecuteScripts(NotAboutToExecuteScript)) {
+  if (frame && !document().canExecuteScripts(NotAboutToExecuteScript)) {
     if (recordMetrics == RecordMetricsBehavior::DoRecord)
       showControlsHistogram().count(MediaControlsShowNoScript);
     return true;

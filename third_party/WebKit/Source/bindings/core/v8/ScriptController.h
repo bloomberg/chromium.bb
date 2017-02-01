@@ -116,8 +116,6 @@ class CORE_EXPORT ScriptController final
   void enableEval();
   void disableEval(const String& errorMessage);
 
-  bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
-
   TextPosition eventHandlerPosition() const;
 
   void clearWindowProxy();

@@ -443,7 +443,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement() {
   if (!frame)
     return v8::Local<v8::Object>();
 
-  if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
+  if (!m_element->document().canExecuteScripts(NotAboutToExecuteScript))
     return v8::Local<v8::Object>();
 
   ScriptState* scriptState = ScriptState::forMainWorld(frame);
