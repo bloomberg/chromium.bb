@@ -46,7 +46,8 @@ ExtensionTask::ExtensionTask(content::WebContents* web_contents,
     : RendererTask(GetExtensionTitle(web_contents, extension, view_type),
                    GetDefaultIcon(),
                    web_contents,
-                   web_contents->GetRenderProcessHost()) {
+                   web_contents->GetRenderProcessHost()),
+      view_type_(view_type) {
   LoadExtensionIcon(extension);
 }
 
@@ -91,6 +92,20 @@ void ExtensionTask::Activate() {
 
 Task::Type ExtensionTask::GetType() const {
   return Task::EXTENSION;
+}
+
+int ExtensionTask::GetKeepaliveCount() const {
+  if (view_type_ != extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
+    return -1;
+
+  const extensions::Extension* extension =
+      extensions::ProcessManager::Get(web_contents()->GetBrowserContext())
+          ->GetExtensionForWebContents(web_contents());
+  if (!extension)
+    return -1;
+
+  return extensions::ProcessManager::Get(web_contents()->GetBrowserContext())
+      ->GetLazyKeepaliveCount(extension);
 }
 
 void ExtensionTask::OnExtensionIconImageChanged(extensions::IconImage* image) {

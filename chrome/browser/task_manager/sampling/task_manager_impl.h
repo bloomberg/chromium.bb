@@ -85,6 +85,7 @@ class TaskManagerImpl :
   bool GetWebCacheStats(
       TaskId task_id,
       blink::WebCache::ResourceTypeStats* stats) const override;
+  int GetKeepaliveCount(TaskId task_id) const override;
   const TaskIdList& GetTaskIdsList() const override;
   TaskIdList GetIdsOfTasksSharingSameProcess(TaskId task_id) const override;
   size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override;

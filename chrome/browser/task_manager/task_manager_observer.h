@@ -23,35 +23,36 @@ using TaskIdList = std::vector<TaskId>;
 // Defines a list of types of resources that an observer needs to be refreshed
 // on every task manager refresh cycle.
 enum RefreshType {
-  REFRESH_TYPE_NONE              = 0,
-  REFRESH_TYPE_CPU               = 1,
-  REFRESH_TYPE_PHYSICAL_MEMORY   = 1 << 1,
-  REFRESH_TYPE_MEMORY_DETAILS    = 1 << 2,
-  REFRESH_TYPE_GPU_MEMORY        = 1 << 3,
-  REFRESH_TYPE_V8_MEMORY         = 1 << 4,
-  REFRESH_TYPE_SQLITE_MEMORY     = 1 << 5,
-  REFRESH_TYPE_WEBCACHE_STATS    = 1 << 6,
-  REFRESH_TYPE_NETWORK_USAGE     = 1 << 7,
-  REFRESH_TYPE_NACL              = 1 << 8,
-  REFRESH_TYPE_IDLE_WAKEUPS      = 1 << 9,
-  REFRESH_TYPE_HANDLES           = 1 << 10,
-  REFRESH_TYPE_START_TIME        = 1 << 11,
-  REFRESH_TYPE_CPU_TIME          = 1 << 12,
+  REFRESH_TYPE_NONE = 0,
+  REFRESH_TYPE_CPU = 1,
+  REFRESH_TYPE_PHYSICAL_MEMORY = 1 << 1,
+  REFRESH_TYPE_MEMORY_DETAILS = 1 << 2,
+  REFRESH_TYPE_GPU_MEMORY = 1 << 3,
+  REFRESH_TYPE_V8_MEMORY = 1 << 4,
+  REFRESH_TYPE_SQLITE_MEMORY = 1 << 5,
+  REFRESH_TYPE_WEBCACHE_STATS = 1 << 6,
+  REFRESH_TYPE_NETWORK_USAGE = 1 << 7,
+  REFRESH_TYPE_NACL = 1 << 8,
+  REFRESH_TYPE_IDLE_WAKEUPS = 1 << 9,
+  REFRESH_TYPE_HANDLES = 1 << 10,
+  REFRESH_TYPE_START_TIME = 1 << 11,
+  REFRESH_TYPE_CPU_TIME = 1 << 12,
 
   // Whether an observer is interested in knowing if a process is foregrounded
   // or backgrounded.
-  REFRESH_TYPE_PRIORITY          = 1 << 13,
+  REFRESH_TYPE_PRIORITY = 1 << 13,
 
 #if defined(OS_LINUX)
   // For observers interested in getting the number of open file descriptors of
   // processes.
-  REFRESH_TYPE_FD_COUNT          = 1 << 14,
+  REFRESH_TYPE_FD_COUNT = 1 << 14,
 #endif  // defined(OS_LINUX)
 
-  REFRESH_TYPE_MEMORY_STATE      = 1 << 15,
+  REFRESH_TYPE_MEMORY_STATE = 1 << 15,
+  REFRESH_TYPE_KEEPALIVE_COUNT = 1 << 16,
 
-  REFRESH_TYPE_MEMORY            = REFRESH_TYPE_PHYSICAL_MEMORY |
-                                   REFRESH_TYPE_MEMORY_DETAILS,
+  REFRESH_TYPE_MEMORY =
+      REFRESH_TYPE_PHYSICAL_MEMORY | REFRESH_TYPE_MEMORY_DETAILS,
 };
 
 // Defines the interface for observers of the task manager.

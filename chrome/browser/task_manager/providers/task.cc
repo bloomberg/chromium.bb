@@ -143,6 +143,10 @@ blink::WebCache::ResourceTypeStats Task::GetWebCacheStats() const {
   return blink::WebCache::ResourceTypeStats();
 }
 
+int Task::GetKeepaliveCount() const {
+  return -1;
+}
+
 bool Task::ReportsNetworkUsage() const {
   return network_usage_ != -1;
 }

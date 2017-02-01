@@ -3412,6 +3412,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           <message name="IDS_TASK_MANAGER_MEMORY_STATE_COLUMN" desc="Task manager memory state column.  Shows the memory coordinator's state of a process">
             Memory state
           </message>
+          <message name="IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN" desc="Task manager keepalive count column.  Specific to Chrome extension processes, and only to those which use 'lazy' event pages, this indicates how many activities are making use of the extension, and therefore causing it to be kept alive.">
+            Keepalive count
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
@@ -3488,6 +3491,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           </message>
           <message name="IDS_TASK_MANAGER_MEMORY_STATE_COLUMN" desc="Task manager memory state column.  Shows the memory coordinator's state of a process">
             Memory State
+          </message>
+          <message name="IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN" desc="Task manager keepalive count column.  Specific to Chrome extension processes, and only to those which use 'lazy' event pages, this indicates how many activities are making use of the extension, and therefore causing it to be kept alive.">
+            Keepalive Count
           </message>
         </if>
         <message name="IDS_TASK_MANAGER_MEM_CELL_TEXT" desc="The value displayed in the memory usage cells.">

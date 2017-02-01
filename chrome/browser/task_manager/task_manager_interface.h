@@ -201,6 +201,9 @@ class TaskManagerInterface {
       TaskId task_id,
       blink::WebCache::ResourceTypeStats* stats) const = 0;
 
+  // Returns the keep-alive counter if the Task is an event page, -1 otherwise.
+  virtual int GetKeepaliveCount(TaskId task_id) const = 0;
+
   // Gets the list of task IDs currently tracked by the task manager. Tasks that
   // share the same process id will always be consecutive. The list will be
   // sorted in a way that reflects the process tree: the browser process will be

@@ -135,6 +135,9 @@ class Task {
   virtual bool ReportsWebCacheStats() const;
   virtual blink::WebCache::ResourceTypeStats GetWebCacheStats() const;
 
+  // Returns the keep-alive counter if the Task is an event page, -1 otherwise.
+  virtual int GetKeepaliveCount() const;
+
   // Checking whether the task reports network usage.
   bool ReportsNetworkUsage() const;
 

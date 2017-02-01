@@ -158,6 +158,10 @@ bool TestTaskManager::GetWebCacheStats(
   return false;
 }
 
+int TestTaskManager::GetKeepaliveCount(TaskId task_id) const {
+  return -1;
+}
+
 const TaskIdList& TestTaskManager::GetTaskIdsList() const {
   return ids_;
 }

@@ -234,6 +234,12 @@ class TaskManagerValuesStringifier {
     return GetMemoryUsageText(stat.size, false);
   }
 
+  base::string16 GetKeepaliveCountText(int keepalive_count) const {
+    if (keepalive_count < 0)
+      return n_a_string();
+    return base::IntToString16(keepalive_count);
+  }
+
   const base::string16& n_a_string() const { return n_a_string_; }
   const base::string16& zero_string() const { return zero_string_; }
   const base::string16& backgrounded_string() const {
@@ -454,6 +460,11 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
     case IDS_TASK_MANAGER_MEMORY_STATE_COLUMN: {
       return stringifier_->GetMemoryStateText(
           observed_task_manager()->GetMemoryState(tasks_[row]));
+    }
+
+    case IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN: {
+      return stringifier_->GetKeepaliveCountText(
+          observed_task_manager()->GetKeepaliveCount(tasks_[row]));
     }
 
     default:
@@ -776,6 +787,10 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
 
     case IDS_TASK_MANAGER_MEMORY_STATE_COLUMN:
       type = REFRESH_TYPE_MEMORY_STATE;
+      break;
+
+    case IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN:
+      type = REFRESH_TYPE_KEEPALIVE_COUNT;
       break;
 
 #if defined(OS_LINUX)

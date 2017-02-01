@@ -270,6 +270,14 @@ bool TaskManagerImpl::GetWebCacheStats(
   return true;
 }
 
+int TaskManagerImpl::GetKeepaliveCount(TaskId task_id) const {
+  const Task* task = GetTaskByTaskId(task_id);
+  if (!task)
+    return -1;
+
+  return task->GetKeepaliveCount();
+}
+
 const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
   DCHECK(is_running_) << "Task manager is not running. You must observe the "
       "task manager for it to start running";

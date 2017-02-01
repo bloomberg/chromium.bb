@@ -28,11 +28,14 @@ class ExtensionTask
                 extensions::ViewType view_type);
   ~ExtensionTask() override;
 
-  // task_manager::RendererTask:
+  // task_manager::RendererTask
   void UpdateTitle() override;
   void UpdateFavicon() override;
   void Activate() override;
   Type GetType() const override;
+
+  // task_manager::Task
+  int GetKeepaliveCount() const override;
 
   // extensions::IconImage::Observer
   void OnExtensionIconImageChanged(extensions::IconImage* image) override;
@@ -51,6 +54,8 @@ class ExtensionTask
 
   // The favicon of the extension represented by this task.
   std::unique_ptr<extensions::IconImage> extension_icon_;
+
+  const extensions::ViewType view_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTask);
 };
