@@ -5,9 +5,13 @@
 module display.mojom;
 
 import "ui/display/mojo/display.mojom";
+import "ui/display/mojo/display_mode.mojom";
 
 interface DisplayStructTraitsTest {
   [Sync]
   EchoDisplay(Display in) => (Display out);
+
+  [Sync]
+  EchoDisplayMode(DisplayMode in) => (DisplayMode out);
 };
 

@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/mojo/display_struct_traits_test.mojom.h"
+#include "ui/display/types/display_mode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -29,6 +30,11 @@ class DisplayStructTraitsTest : public testing::Test,
   void EchoDisplay(const Display& in,
                    const EchoDisplayCallback& callback) override {
     callback.Run(in);
+  }
+
+  void EchoDisplayMode(std::unique_ptr<DisplayMode> in,
+                       const EchoDisplayModeCallback& callback) override {
+    callback.Run(std::move(in));
   }
 
   base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
@@ -77,6 +83,24 @@ TEST_F(DisplayStructTraitsTest, SetAllDisplayValues) {
   proxy->EchoDisplay(input, &output);
 
   CheckDisplaysEqual(input, output);
+}
+
+TEST_F(DisplayStructTraitsTest, DefaultDisplayMode) {
+  // Prepare sample input with random values
+
+  std::unique_ptr<DisplayMode> input =
+      base::MakeUnique<DisplayMode>(gfx::Size(15, 29), true, 61.0);
+
+  mojom::DisplayStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  std::unique_ptr<DisplayMode> output;
+
+  proxy->EchoDisplayMode(input->Clone(), &output);
+
+  // We want to test each component individually to make sure each data member
+  // was correctly serialized and deserialized.
+  EXPECT_EQ(input->size(), output->size());
+  EXPECT_EQ(input->is_interlaced(), output->is_interlaced());
+  EXPECT_EQ(input->refresh_rate(), output->refresh_rate());
 }
 
 }  // namespace display

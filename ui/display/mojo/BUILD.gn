@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "display.mojom",
+    "display_mode.mojom",
   ]
 
   public_deps = [
