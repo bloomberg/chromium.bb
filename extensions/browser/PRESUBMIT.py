@@ -34,10 +34,27 @@ def _RunHistogramValueCheckers(input_api, output_api):
     results += _CreateHistogramValueChecker(input_api, output_api, path).Run()
   return results
 
+def _RunHistogramChecks(input_api, output_api, histogram_name):
+  try:
+    # Setup sys.path so that we can call histrogram code
+    import sys
+    original_sys_path = sys.path
+    sys.path = sys.path + [input_api.os_path.join(
+      input_api.change.RepositoryRoot(),
+      'tools', 'metrics', 'histograms')]
+
+    import presubmit_bad_message_reasons
+    return presubmit_bad_message_reasons.PrecheckBadMessage(input_api,
+      output_api, histogram_name)
+  except:
+    return [output_api.PresubmitError('Could not verify histogram!')]
+  finally:
+    sys.path = original_sys_path
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += _RunHistogramValueCheckers(input_api, output_api)
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
+  results += _RunHistogramChecks(input_api, output_api,
+    "BadMessageReasonExtensions")
   return results
-
