@@ -126,7 +126,7 @@ void av1_k_means(const float *data, float *centroids, uint8_t *indices, int n,
 static int float_comparer(const void *a, const void *b) {
   const float fa = *(const float *)a;
   const float fb = *(const float *)b;
-  return (fa > fb) - (fb < fa);
+  return (fa > fb) - (fa < fb);
 }
 
 int av1_remove_duplicates(float *centroids, int num_centroids) {
