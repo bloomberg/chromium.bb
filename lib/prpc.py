@@ -101,6 +101,7 @@ class PRPCClient(object):
         self.host = self._GetHost()
       except AttributeError:
         raise PRPCInvalidHostException('Unable to determine default host')
+    self.host = self.host.strip()
 
   def GetScheme(self):
     return 'http' if self.insecure else 'https'

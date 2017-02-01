@@ -102,7 +102,7 @@ class SheriffOMaticClient(object):
         auth.GetAccessToken,
         service_account_json=service_account)
     self.insecure = insecure
-    self.host = self._GetHost() if host is None else host
+    self.host = (self._GetHost() if host is None else host).strip()
 
   def _GetHost(self):
     """Get Sheriff-o-matic Server host from topology."""

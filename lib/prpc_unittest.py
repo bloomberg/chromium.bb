@@ -56,6 +56,11 @@ class PRPCClientTest(cros_test_lib.MockTestCase):
     self.assertEqual(self.client.ConstructURL('svc2', 'm2'),
                      'https://foo.com/svc2/m2')
 
+  def testConstructURLSpaces(self):
+    """Test ConstructURL when host has spaces."""
+    client = prpc.PRPCClient(insecure=True, host=' baz.com ')
+    self.assertEqual(client.ConstructURL('svc', 'm'), 'http://baz.com/svc/m')
+
   def testSendRequest(self):
     """Test SendRequest."""
     self.mock_http.request.return_value = (self.success_response,

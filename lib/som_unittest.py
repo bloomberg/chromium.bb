@@ -38,11 +38,22 @@ class SheriffOMaticClientTest(cros_test_lib.MockTestCase):
     self.assertEqual(self.mock_http.request.call_count, 4)
 
   def testSendAlerts(self):
-    """Test SendAlerts with bad HTTP status code."""
+    """Test SendAlerts."""
     self.mock_http.request.return_value = ({'status': 200}, '')
     body = json.dumps({'test': 'stuff'})
     self.assertEqual(self.client.SendAlerts(body), '')
     self.mock_http.request.assert_called_with(
         'https://foo.com/api/v1/alerts/chromeos', som.POST_METHOD,
+        body=body, headers={'Content-Type': 'application/json'})
+    self.assertEqual(self.mock_http.request.call_count, 1)
+
+  def testSendAlertsSpaces(self):
+    """Test SendAlerts with space in hostname."""
+    self.client = som.SheriffOMaticClient(host='bar.com ')
+    self.mock_http.request.return_value = ({'status': 200}, '')
+    body = json.dumps({'test': 'stuff'})
+    self.assertEqual(self.client.SendAlerts(body), '')
+    self.mock_http.request.assert_called_with(
+        'https://bar.com/api/v1/alerts/chromeos', som.POST_METHOD,
         body=body, headers={'Content-Type': 'application/json'})
     self.assertEqual(self.mock_http.request.call_count, 1)
