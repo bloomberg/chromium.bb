@@ -43,8 +43,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // using Layout with special constraint spaces.
   MinAndMaxContentSizes ComputeMinAndMaxContentSizes();
 
-  const ComputedStyle* Style() const;
-  ComputedStyle* MutableStyle();
+  const ComputedStyle& Style() const;
 
   NGLayoutInputNode* FirstChild();
 

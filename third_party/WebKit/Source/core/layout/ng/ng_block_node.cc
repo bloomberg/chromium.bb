@@ -116,8 +116,8 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
 
   NGConstraintSpace* constraint_space =
       NGConstraintSpaceBuilder(
-          FromPlatformWritingMode(Style()->getWritingMode()))
-          .SetTextDirection(Style()->direction())
+          FromPlatformWritingMode(Style().getWritingMode()))
+          .SetTextDirection(Style().direction())
           .ToConstraintSpace();
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
@@ -126,7 +126,7 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
   NGLayoutInputNode* first_child = FirstChild();
   if (!first_child || first_child->Type() == kLegacyBlock) {
     NGBlockLayoutAlgorithm minmax_algorithm(
-        layout_box_, Style(), toNGBlockNode(FirstChild()), constraint_space);
+        layout_box_, &Style(), toNGBlockNode(FirstChild()), constraint_space);
     if (minmax_algorithm.ComputeMinAndMaxContentSizes(&sizes))
       return sizes;
   }
@@ -134,7 +134,7 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
   // Have to synthesize this value.
   NGPhysicalFragment* physical_fragment = Layout(constraint_space);
   NGBoxFragment* fragment = new NGBoxFragment(
-      FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
+      FromPlatformWritingMode(Style().getWritingMode()), Style().direction(),
       toNGPhysicalBoxFragment(physical_fragment));
 
   sizes.min_content = fragment->InlineOverflow();
@@ -142,32 +142,25 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
   // Now, redo with infinite space for max_content
   constraint_space =
       NGConstraintSpaceBuilder(
-          FromPlatformWritingMode(Style()->getWritingMode()))
-          .SetTextDirection(Style()->direction())
+          FromPlatformWritingMode(Style().getWritingMode()))
+          .SetTextDirection(Style().direction())
           .SetAvailableSize({LayoutUnit::max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace();
 
   physical_fragment = Layout(constraint_space);
   fragment = new NGBoxFragment(
-      FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
+      FromPlatformWritingMode(Style().getWritingMode()), Style().direction(),
       toNGPhysicalBoxFragment(physical_fragment));
   sizes.max_content = fragment->InlineOverflow();
   return sizes;
 }
 
-ComputedStyle* NGBlockNode::MutableStyle() {
+const ComputedStyle& NGBlockNode::Style() const {
   if (style_)
-    return style_.get();
+    return *style_.get();
   DCHECK(layout_box_);
-  return layout_box_->mutableStyle();
-}
-
-const ComputedStyle* NGBlockNode::Style() const {
-  if (style_)
-    return style_.get();
-  DCHECK(layout_box_);
-  return layout_box_->style();
+  return layout_box_->styleRef();
 }
 
 NGBlockNode* NGBlockNode::NextSibling() {
@@ -189,7 +182,7 @@ NGLayoutInputNode* NGBlockNode::FirstChild() {
     LayoutObject* child = layout_box_ ? layout_box_->slowFirstChild() : nullptr;
     if (child) {
       if (child->isInline()) {
-        SetFirstChild(new NGInlineNode(child, MutableStyle()));
+        SetFirstChild(new NGInlineNode(child, &Style()));
       } else {
         SetFirstChild(new NGBlockNode(child));
       }
@@ -252,7 +245,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   layout_box_->setWidth(fragment_->Width());
   layout_box_->setHeight(fragment_->Height());
   NGBoxStrut border_and_padding =
-      ComputeBorders(*Style()) + ComputePadding(constraint_space, *Style());
+      ComputeBorders(Style()) + ComputePadding(constraint_space, Style());
   LayoutUnit intrinsic_logical_height =
       layout_box_->style()->isHorizontalWritingMode()
           ? fragment_->HeightOverflow()

@@ -75,7 +75,7 @@ void NGOutOfFlowLayoutPart::Run() {
         out_of_flow_candidate_positions[position_index++];
 
     if (IsContainingBlockForAbsoluteDescendant(container_style_,
-                                               *descendant->Style())) {
+                                               descendant->Style())) {
       NGLogicalOffset offset;
       NGFragment* fragment =
           LayoutDescendant(*descendant, static_position, &offset);
@@ -100,21 +100,21 @@ NGFragment* NGOutOfFlowLayoutPart::LayoutDescendant(
   Optional<MinAndMaxContentSizes> inline_estimate;
   Optional<LayoutUnit> block_estimate;
 
-  if (AbsoluteNeedsChildInlineSize(*descendant.Style())) {
+  if (AbsoluteNeedsChildInlineSize(descendant.Style())) {
     inline_estimate = descendant.ComputeMinAndMaxContentSizes();
   }
 
   NGAbsolutePhysicalPosition node_position =
       ComputePartialAbsoluteWithChildInlineSize(
-          *container_space_, *descendant.Style(), static_position,
+          *container_space_, descendant.Style(), static_position,
           inline_estimate);
 
-  if (AbsoluteNeedsChildBlockSize(*descendant.Style())) {
+  if (AbsoluteNeedsChildBlockSize(descendant.Style())) {
     fragment = GenerateFragment(descendant, block_estimate, node_position);
     block_estimate = fragment->BlockSize();
   }
 
-  ComputeFullAbsoluteWithChildBlockSize(*container_space_, *descendant.Style(),
+  ComputeFullAbsoluteWithChildBlockSize(*container_space_, descendant.Style(),
                                         static_position, block_estimate,
                                         &node_position);
 

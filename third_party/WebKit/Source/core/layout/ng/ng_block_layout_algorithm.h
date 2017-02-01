@@ -108,7 +108,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Read-only Getters.
   const ComputedStyle& CurrentChildStyle() const {
     DCHECK(current_child_);
-    return *current_child_->Style();
+    return current_child_->Style();
   }
 
   const NGConstraintSpace& ConstraintSpace() const {

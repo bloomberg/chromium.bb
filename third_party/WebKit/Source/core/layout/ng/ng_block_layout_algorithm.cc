@@ -282,12 +282,12 @@ bool NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
   // TODO: handle floats & orthogonal children.
   for (NGBlockNode* node = first_child_; node; node = node->NextSibling()) {
     Optional<MinAndMaxContentSizes> child_minmax;
-    if (NeedMinAndMaxContentSizesForContentContribution(*node->Style())) {
+    if (NeedMinAndMaxContentSizesForContentContribution(node->Style())) {
       child_minmax = node->ComputeMinAndMaxContentSizes();
     }
 
     MinAndMaxContentSizes child_sizes =
-        ComputeMinAndMaxContentContribution(*node->Style(), child_minmax);
+        ComputeMinAndMaxContentContribution(node->Style(), child_minmax);
 
     sizes->min_content = std::max(sizes->min_content, child_sizes.min_content);
     sizes->max_content = std::max(sizes->max_content, child_sizes.max_content);
@@ -380,7 +380,7 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
   curr_bfc_offset_.block_offset += content_size_;
 
   while (current_child_) {
-    EPosition position = current_child_->Style()->position();
+    EPosition position = current_child_->Style().position();
     if (position == AbsolutePosition || position == FixedPosition) {
       builder_->AddOutOfFlowChildCandidate(current_child_,
                                            GetChildSpaceOffset());
