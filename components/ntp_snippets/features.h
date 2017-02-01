@@ -43,9 +43,6 @@ extern const base::Feature kContentSuggestionsSource;
 // Feature to allow UI as specified here: https://crbug.com/660837.
 extern const base::Feature kIncreasedVisibility;
 
-// Feature to enable the Fetch More action
-extern const base::Feature kFetchMoreFeature;
-
 // Feature to prefer AMP URLs over regular URLs when available.
 extern const base::Feature kPreferAmpUrlsFeature;
 

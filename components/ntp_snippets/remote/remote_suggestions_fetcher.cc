@@ -213,7 +213,7 @@ CategoryInfo BuildArticleCategoryInfo(
       ContentSuggestionsCardLayout::FULL_CARD,
       // TODO(dgn): merge has_more_action and has_reload_action when we remove
       // the kFetchMoreFeature flag. See https://crbug.com/667752
-      /*has_more_action=*/base::FeatureList::IsEnabled(kFetchMoreFeature),
+      /*has_more_action=*/true,
       /*has_reload_action=*/true,
       /*has_view_all_action=*/false,
       /*show_if_empty=*/true,
@@ -226,8 +226,7 @@ CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
       title, ContentSuggestionsCardLayout::FULL_CARD,
       // TODO(dgn): merge has_more_action and has_reload_action when we remove
       // the kFetchMoreFeature flag. See https://crbug.com/667752
-      /*has_more_action=*/allow_fetching_more_results &&
-          base::FeatureList::IsEnabled(kFetchMoreFeature),
+      /*has_more_action=*/allow_fetching_more_results,
       /*has_reload_action=*/allow_fetching_more_results,
       /*has_view_all_action=*/false,
       /*show_if_empty=*/false,

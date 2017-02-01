@@ -42,9 +42,6 @@ const base::Feature kSectionDismissalFeature{
 const base::Feature kForeignSessionsSuggestionsFeature{
     "NTPForeignSessionsSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kFetchMoreFeature{"NTPSuggestionsFetchMore",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPreferAmpUrlsFeature{"NTPPreferAmpUrls",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
