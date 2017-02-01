@@ -85,6 +85,8 @@ component("aura") {
     "mus/input_method_mus.h",
     "mus/mus_context_factory.cc",
     "mus/mus_context_factory.h",
+    "mus/mus_mouse_location_updater.cc",
+    "mus/mus_mouse_location_updater.h",
     "mus/mus_types.h",
     "mus/mus_util.cc",
     "mus/mus_util.h",

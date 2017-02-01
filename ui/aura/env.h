@@ -32,6 +32,7 @@ class EnvTestHelper;
 
 class EnvObserver;
 class InputStateLookup;
+class MusMouseLocationUpdater;
 class Window;
 class WindowPort;
 class WindowTreeClient;
@@ -74,7 +75,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
 
   // Gets/sets the last mouse location seen in a mouse event in the screen
   // coordinates.
-  const gfx::Point& last_mouse_location() const { return last_mouse_location_; }
+  const gfx::Point& last_mouse_location() const;
   void set_last_mouse_location(const gfx::Point& last_mouse_location) {
     last_mouse_location_ = last_mouse_location;
   }
@@ -112,6 +113,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   class ActiveFocusClientWindowObserver;
 
   friend class test::EnvTestHelper;
+  friend class MusMouseLocationUpdater;
   friend class Window;
   friend class WindowTreeHost;
 
@@ -145,8 +147,12 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
 
   int mouse_button_flags_;
   // Location of last mouse event, in screen coordinates.
-  gfx::Point last_mouse_location_;
+  mutable gfx::Point last_mouse_location_;
   bool is_touch_down_;
+  bool get_last_mouse_location_from_mus_;
+  // This may be set to true in tests to force using |last_mouse_location_|
+  // rather than querying WindowTreeClient.
+  bool always_use_last_mouse_location_ = false;
 
   std::unique_ptr<InputStateLookup> input_state_lookup_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;

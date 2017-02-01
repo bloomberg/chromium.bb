@@ -161,6 +161,18 @@ class AuraTestBaseWithType : public AuraTestBase,
   DISALLOW_COPY_AND_ASSIGN(AuraTestBaseWithType);
 };
 
+class AuraTestBaseMus : public AuraTestBase {
+ public:
+  AuraTestBaseMus();
+  ~AuraTestBaseMus() override;
+
+  // AuraTestBase:
+  void SetUp() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AuraTestBaseMus);
+};
+
 }  // namespace test
 }  // namespace aura
 

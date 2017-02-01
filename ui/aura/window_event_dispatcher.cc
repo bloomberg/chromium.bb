@@ -18,6 +18,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_input_state_controller.h"
+#include "ui/aura/mus/mus_mouse_location_updater.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_targeter.h"
@@ -79,6 +80,8 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
   Env::GetInstance()->AddObserver(this);
+  if (Env::GetInstance()->mode() == Env::Mode::MUS)
+    mus_mouse_location_updater_ = base::MakeUnique<MusMouseLocationUpdater>();
 }
 
 WindowEventDispatcher::~WindowEventDispatcher() {
@@ -423,6 +426,14 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
   // coordinate system to |window()|'s coordinate system.
   if (event->IsLocatedEvent() && !is_dispatched_held_event(*event))
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
+
+  if (mus_mouse_location_updater_)
+    mus_mouse_location_updater_->OnEventProcessingStarted(*event);
+}
+
+void WindowEventDispatcher::OnEventProcessingFinished(ui::Event* event) {
+  if (mus_mouse_location_updater_)
+    mus_mouse_location_updater_->OnEventProcessingFinished();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

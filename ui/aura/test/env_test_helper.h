@@ -38,6 +38,10 @@ class EnvTestHelper {
     env_->window_tree_client_ = window_tree_client;
   }
 
+  void SetAlwaysUseLastMouseLocation(bool value) {
+    env_->always_use_last_mouse_location_ = value;
+  }
+
  private:
   Env* env_;
 

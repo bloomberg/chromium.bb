@@ -109,6 +109,9 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   // above.
   env_helper.SetMode(env_mode);
   env_helper.SetWindowTreeClient(window_tree_client_);
+  // Tests assume they can set the mouse location on Env() and have it reflected
+  // in tests.
+  env_helper.SetAlwaysUseLastMouseLocation(true);
   Env::GetInstance()->SetActiveFocusClient(focus_client_.get(), nullptr);
   Env::GetInstance()->set_context_factory(context_factory);
   Env::GetInstance()->set_context_factory_private(context_factory_private);

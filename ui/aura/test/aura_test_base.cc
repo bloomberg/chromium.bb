@@ -249,5 +249,14 @@ void AuraTestBaseWithType::SetUp() {
   AuraTestBase::SetUp();
 }
 
+AuraTestBaseMus::AuraTestBaseMus() {}
+
+AuraTestBaseMus::~AuraTestBaseMus() {}
+
+void AuraTestBaseMus::SetUp() {
+  ConfigureBackend(test::BackendType::MUS);
+  AuraTestBase::SetUp();
+}
+
 }  // namespace test
 }  // namespace aura

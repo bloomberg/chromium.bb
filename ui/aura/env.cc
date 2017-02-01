@@ -123,6 +123,19 @@ bool Env::IsMouseButtonDown() const {
       mouse_button_flags_ != 0;
 }
 
+const gfx::Point& Env::last_mouse_location() const {
+  if (mode_ == Mode::LOCAL || always_use_last_mouse_location_ ||
+      !get_last_mouse_location_from_mus_) {
+    return last_mouse_location_;
+  }
+
+  // Some tests may not install a WindowTreeClient, and we allow multiple
+  // WindowTreeClients for the case of multiple connections.
+  if (window_tree_client_)
+    last_mouse_location_ = window_tree_client_->GetCursorScreenPoint();
+  return last_mouse_location_;
+}
+
 void Env::SetWindowTreeClient(WindowTreeClient* window_tree_client) {
   // The WindowTreeClient should only be set once. Test code may need to change
   // the value after the fact, to do that use EnvTestHelper.
@@ -155,6 +168,7 @@ Env::Env(Mode mode)
     : mode_(mode),
       mouse_button_flags_(0),
       is_touch_down_(false),
+      get_last_mouse_location_from_mus_(mode_ == Mode::MUS),
       input_state_lookup_(InputStateLookup::Create()),
       context_factory_(nullptr),
       context_factory_private_(nullptr) {
