@@ -7,29 +7,33 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/shell/common/layout_test.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+
+namespace IPC {
+class Message;
+}  // namespace IPC
 
 namespace content {
+struct ShellTestConfiguration;
+class RenderFrame;
+struct ShellTestConfiguration;
 
-class LayoutTestRenderFrameObserver : public RenderFrameObserver,
-                                      public mojom::LayoutTestControl {
+class LayoutTestRenderFrameObserver : public RenderFrameObserver {
  public:
   explicit LayoutTestRenderFrameObserver(RenderFrame* render_frame);
-  ~LayoutTestRenderFrameObserver() override;
+  ~LayoutTestRenderFrameObserver() override {}
+
+  // RenderFrameObserver implementation.
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
-  void LayoutDumpRequest() override;
-  void SetTestConfiguration(mojom::ShellTestConfigurationPtr config) override;
-  void ReplicateTestConfiguration(
-      mojom::ShellTestConfigurationPtr config) override;
-  void SetupSecondaryRenderer() override;
-  void BindRequest(mojom::LayoutTestControlAssociatedRequest request);
+  void OnLayoutDumpRequest();
+  void OnSetTestConfiguration(const ShellTestConfiguration& test_config);
+  void OnReplicateTestConfiguration(const ShellTestConfiguration& test_config);
+  void OnSetupSecondaryRenderer();
 
-  mojo::AssociatedBinding<mojom::LayoutTestControl> binding_;
   DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderFrameObserver);
 };
 

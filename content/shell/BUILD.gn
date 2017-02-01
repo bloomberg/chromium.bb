@@ -164,6 +164,8 @@ static_library("content_shell_lib") {
     "common/shell_origin_trial_policy.h",
     "common/shell_switches.cc",
     "common/shell_switches.h",
+    "common/shell_test_configuration.cc",
+    "common/shell_test_configuration.h",
     "renderer/layout_test/blink_test_helpers.cc",
     "renderer/layout_test/blink_test_helpers.h",
     "renderer/layout_test/blink_test_runner.cc",
@@ -758,12 +760,6 @@ if (is_mac) {
 
 mojom("mojo_bindings") {
   sources = [
-    "common/layout_test.mojom",
     "common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom",
-  ]
-  public_deps = [
-    "//mojo/common:common_custom_types",
-    "//ui/gfx/geometry/mojo",
-    "//url/mojo:url_mojom_gurl",
   ]
 }

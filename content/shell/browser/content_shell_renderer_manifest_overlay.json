@@ -7,13 +7,6 @@
           "content::mojom::TestService"
         ]
       }
-    },
-    "navigation:frame": {
-      "provides": {
-        "browser": [
-          "content::mojom::LayoutTestControl"
-        ]
-      }
     }
   }
 }
