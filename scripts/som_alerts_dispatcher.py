@@ -128,7 +128,7 @@ def GenerateAlertStage(build, stage, exceptions,
   notes = []
 
   # Generate links to the logs of the stage.
-  if annotation_steps and stage['name'] in annotation_steps:
+  if logdog_prefix and annotation_steps and stage['name'] in annotation_steps:
     annotation = annotation_steps[stage['name']]
     AddLogsLink(logdog_client, 'stdout', build['waterfall'],
                 logdog_prefix, annotation.stdout_stream, logs_links)
@@ -232,6 +232,7 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
   except (prpc.PRPCResponseException, logdog.LogdogResponseException) as e:
     logging.warning('Unable to retrieve log annotations: %s', e)
     annotations = None
+    prefix = None
 
   if annotations:
     annotation_steps = {s.step.name: s.step for s in annotations.substep}
