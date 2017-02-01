@@ -900,3 +900,22 @@ if (CONFIG_UNIT_TESTS)
                    $<TARGET_OBJECTS:webm>)
   endif ()
 endif ()
+
+if (XCODE)
+  if (CONFIG_LIBYUV OR CONFIG_WEBM_IO)
+    # The Xcode generator does not obey LINKER_LANGUAGE. Because of the issue
+    # what looks like a C++ file needs to be in any target that Xcode will link
+    # when the target contains a C++ dependency.
+    # Without this Xcode will try to link with the C linker, which always ends
+    # badly when a dependency actually includes C++.
+    # Note: LINKER_LANGUAGE is explicitly set to C++ for all targets touched
+    # here, it really is the Xcode generator's fault, or just a deficiency in
+    # Xcode itself.
+    set(XCODE_DUMMY_CXX_FILE "${AOM_CONFIG_DIR}/dummy.cc")
+    file(WRITE "${XCODE_DUMMY_CXX_FILE}"
+         "// Xcode needs a C++ file to link, ignore this file.")
+    foreach (aom_app ${AOM_APP_TARGETS})
+      target_sources(${aom_app} PUBLIC "${XCODE_DUMMY_CXX_FILE}")
+    endforeach ()
+  endif ()
+endif ()
