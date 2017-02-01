@@ -8,7 +8,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.net.http.SslCertificate;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +29,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 /**
@@ -170,7 +170,7 @@ class CertificateViewer implements OnItemSelectedListener {
                 sslCert.getIssuedBy().getUName());
 
         addSectionTitle(certificateView, nativeGetCertValidityText());
-        java.text.DateFormat dateFormat = DateFormat.getDateFormat(mContext);
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
         addItem(certificateView, nativeGetCertIssuedOnText(),
                 dateFormat.format(sslCert.getValidNotBeforeDate()));
         addItem(certificateView, nativeGetCertExpiresOnText(),
