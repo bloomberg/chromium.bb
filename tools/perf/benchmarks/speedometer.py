@@ -91,6 +91,7 @@ class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
     keychain_metric.KeychainMetric().AddResults(tab, results)
 
 
+@benchmark.Disabled('android')  # crbug.com/687681
 class Speedometer(perf_benchmark.PerfBenchmark):
   test = SpeedometerMeasurement
 
@@ -109,7 +110,8 @@ class Speedometer(perf_benchmark.PerfBenchmark):
     return ps
 
 
-@benchmark.Disabled('reference')  # crbug.com/579546
+# crbug.com/579546 (ref), crbug.com/687681 (android)
+@benchmark.Disabled('reference', 'android')
 class SpeedometerIgnition(Speedometer):
   def SetExtraBrowserOptions(self, options):
     super(SpeedometerIgnition, self).SetExtraBrowserOptions(options)
@@ -120,6 +122,7 @@ class SpeedometerIgnition(Speedometer):
     return 'speedometer-ignition'
 
 
+@benchmark.Disabled('android')  # crbug.com/687681
 class SpeedometerTurbo(Speedometer):
   def SetExtraBrowserOptions(self, options):
     super(SpeedometerTurbo, self).SetExtraBrowserOptions(options)
