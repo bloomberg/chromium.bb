@@ -74,19 +74,6 @@ DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 std::unique_ptr<KeyedService>
 DomDistillerServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(
-          web::WebThread::GetBlockingPool()->GetSequenceToken());
-
-  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry>> db =
-      base::MakeUnique<leveldb_proto::ProtoDatabaseImpl<ArticleEntry>>(
-          background_task_runner);
-
-  base::FilePath database_dir(
-      context->GetStatePath().Append(FILE_PATH_LITERAL("Articles")));
-
-  std::unique_ptr<DomDistillerStore> dom_distiller_store =
-      base::MakeUnique<DomDistillerStore>(std::move(db), database_dir);
 
   std::unique_ptr<DistillerPageFactory> distiller_page_factory =
       base::MakeUnique<DistillerPageFactoryIOS>(context);
@@ -104,8 +91,8 @@ DomDistillerServiceFactory::BuildServiceInstanceFor(
           ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs());
 
   return base::MakeUnique<DomDistillerKeyedService>(
-      std::move(dom_distiller_store), std::move(distiller_factory),
-      std::move(distiller_page_factory), std::move(distilled_page_prefs));
+      nullptr, std::move(distiller_factory), std::move(distiller_page_factory),
+      std::move(distilled_page_prefs));
 }
 
 web::BrowserState* DomDistillerServiceFactory::GetBrowserStateToUse(
