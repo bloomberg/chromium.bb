@@ -21,7 +21,6 @@ DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64)   += x86/synonyms.h
 DSP_SRCS-yes += prob.h
 DSP_SRCS-yes += prob.c
 DSP_SRCS-$(CONFIG_ANS) += ans.h
-DSP_SRCS-$(CONFIG_ANS) += ans.c
 
 ifeq ($(CONFIG_ENCODERS),yes)
 ifeq ($(CONFIG_ANS),yes)

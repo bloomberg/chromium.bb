@@ -39,9 +39,6 @@ typedef uint8_t AnsP8;
 #define IO_BASE 256
 // Range I = { L_BASE, L_BASE + 1, ..., L_BASE * IO_BASE - 1 }
 
-void aom_rans_merge_prob8_pdf(aom_cdf_prob *const out_pdf,
-                              const AnsP8 node_prob,
-                              const aom_cdf_prob *const src_pdf, int in_syms);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
