@@ -12,7 +12,7 @@
 // Fake NativeAppWhitelistManager used for testing purposes.
 @interface FakeNativeAppWhitelistManager : NSObject<NativeAppWhitelistManager>
 
-// The metadata returned by calls to |newNativeAppForURL:|.
+// The metadata returned by calls to |nativeAppForURL:|.
 @property(nonatomic, strong, readwrite) id<NativeAppMetadata> metadata;
 
 // The Apps array returned by calls to |filteredAppsUsingBlock:|.

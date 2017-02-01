@@ -20,8 +20,13 @@
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_types.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #include "ios/web/public/web_state/web_state.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/url_request/url_request_context_getter.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 
@@ -48,10 +53,10 @@ using base::UserMetricsAction;
   // DEPRECATED: Tab hosting the infobar and is also used for accessing Tab
   // states such as navigation manager and whether it is a pre-rendered tab.
   // Use |webState| whenever possible.
-  __unsafe_unretained Tab* _tab;  // weak
-  base::scoped_nsprotocol<id<NativeAppMetadata>> _metadata;
+  __weak Tab* _tab;
+  id<NativeAppMetadata> _metadata;
   // A set of appIds encoded as NSStrings.
-  base::scoped_nsobject<NSMutableSet> _appsPossiblyBeingInstalled;
+  NSMutableSet* _appsPossiblyBeingInstalled;
 }
 
 // Designated initializer. Use this instead of -init.
@@ -68,16 +73,16 @@ using base::UserMetricsAction;
     // same webState.
     DCHECK(!tab || [tab webState] == webState);
     _tab = tab;
-    _appsPossiblyBeingInstalled.reset([[NSMutableSet alloc] init]);
+    _appsPossiblyBeingInstalled = [[NSMutableSet alloc] init];
   }
   return self;
 }
 
 - (void)copyStateFrom:(NativeAppNavigationController*)controller {
   DCHECK(controller);
-  _appsPossiblyBeingInstalled.reset([[NSMutableSet alloc]
-      initWithSet:[controller appsPossiblyBeingInstalled]]);
-  for (NSString* appIdString in _appsPossiblyBeingInstalled.get()) {
+  _appsPossiblyBeingInstalled = [[NSMutableSet alloc]
+      initWithSet:[controller appsPossiblyBeingInstalled]];
+  for (NSString* appIdString in _appsPossiblyBeingInstalled) {
     DCHECK([appIdString isKindOfClass:[NSString class]]);
     NSURL* appURL =
         [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
@@ -92,7 +97,6 @@ using base::UserMetricsAction;
 
 - (void)dealloc {
   [[InstallationNotifier sharedInstance] unregisterForNotifications:self];
-  [super dealloc];
 }
 
 - (NSMutableSet*)appsPossiblyBeingInstalled {
@@ -102,9 +106,8 @@ using base::UserMetricsAction;
 - (void)showInfoBarIfNecessary {
   // Find a potential matching native app.
   GURL pageURL = _webState->GetLastCommittedURL();
-  _metadata.reset(
-      [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
-          newNativeAppForURL:pageURL]);
+  _metadata = [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
+      nativeAppForURL:pageURL];
   if (!_metadata || [_metadata shouldBypassInfoBars])
     return;
 

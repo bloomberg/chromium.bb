@@ -1847,8 +1847,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     return NO;
 
   base::scoped_nsprotocol<id<NativeAppMetadata>> metadata(
-      [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
-          newNativeAppForURL:url]);
+      [[ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
+          nativeAppForURL:url] retain]);
   if (![metadata shouldAutoOpenLinks])
     return NO;
 

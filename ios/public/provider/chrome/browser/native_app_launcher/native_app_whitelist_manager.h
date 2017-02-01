@@ -23,10 +23,9 @@ typedef BOOL (^NativeAppFilter)(const id<NativeAppMetadata> app, BOOL* stop);
            tldList:(NSArray*)tldList
     acceptStoreIDs:(NSArray*)storeIDs;
 
-// Returns a new object with the metadata about the iOS native application that
-// can handle |url|. Returns nil otherwise. Caller owns the returned object
-// and needs to release it when done.
-- (id<NativeAppMetadata>)newNativeAppForURL:(const GURL&)url;
+// Returns an object with the metadata about the iOS native application that
+// can handle |url|. Returns nil otherwise.
+- (id<NativeAppMetadata>)nativeAppForURL:(const GURL&)url;
 
 // Returns an autoreleased NSArray of NativeAppMetadata objects which
 // |condition| block returns YES.

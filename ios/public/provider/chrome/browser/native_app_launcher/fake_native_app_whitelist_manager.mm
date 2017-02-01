@@ -23,7 +23,7 @@
   _appWhitelist = appList;
 }
 
-- (id<NativeAppMetadata>)newNativeAppForURL:(const GURL&)url {
+- (id<NativeAppMetadata>)nativeAppForURL:(const GURL&)url {
   return _metadata;
 }
 

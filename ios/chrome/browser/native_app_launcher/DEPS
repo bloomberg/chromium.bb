@@ -5,4 +5,7 @@ specific_include_rules = {
     "+ios/web/navigation/navigation_manager_impl.h",
     "+ios/web/web_state/web_state_impl.h",
   ],
+  "^native_app_navigation_controller\.mm$": [
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
 }

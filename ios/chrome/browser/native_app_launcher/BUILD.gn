@@ -51,6 +51,7 @@ source_set("unit_tests") {
 }
 
 source_set("native_app_launcher_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "native_app_navigation_controller.h",
     "native_app_navigation_controller.mm",
