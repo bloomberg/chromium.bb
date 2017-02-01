@@ -714,7 +714,7 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
 
 static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 #if CONFIG_LOOP_RESTORATION
-  int i;
+  int i, extra_rstbuf_sz;
 #endif  // CONFIG_LOOP_RESTORATION
   AV1_COMMON *const cm = &cpi->common;
   if (aom_realloc_frame_buffer(&cpi->last_frame_uf, cm->width, cm->height,
@@ -746,11 +746,16 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
                                NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
-  cpi->extra_rstbuf =
-      (uint8_t *)aom_realloc(cpi->extra_rstbuf, RESTORATION_EXTBUF_SIZE);
-  if (!cpi->extra_rstbuf)
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate extra rstbuf for restoration");
+  extra_rstbuf_sz = RESTORATION_EXTBUF_SIZE;
+  if (extra_rstbuf_sz > 0) {
+    cpi->extra_rstbuf =
+        (uint8_t *)aom_realloc(cpi->extra_rstbuf, extra_rstbuf_sz);
+    if (!cpi->extra_rstbuf)
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate extra rstbuf for restoration");
+  } else {
+    cpi->extra_rstbuf = NULL;
+  }
   for (i = 0; i < MAX_MB_PLANE; ++i)
     av1_alloc_restoration_struct(cm, &cpi->rst_search[i], cm->width,
                                  cm->height);

@@ -3324,6 +3324,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       aom_wb_write_bit(wb, 1);
       aom_wb_write_bit(wb, 0);
       break;
+#if USE_DOMAINTXFMRF
     case RESTORE_SGRPROJ:
       aom_wb_write_bit(wb, 1);
       aom_wb_write_bit(wb, 1);
@@ -3334,6 +3335,12 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       aom_wb_write_bit(wb, 1);
       aom_wb_write_bit(wb, 1);
       break;
+#else
+    case RESTORE_SGRPROJ:
+      aom_wb_write_bit(wb, 1);
+      aom_wb_write_bit(wb, 1);
+      break;
+#endif  // USE_DOMAINTXFMRF
     case RESTORE_SWITCHABLE:
       aom_wb_write_bit(wb, 0);
       aom_wb_write_bit(wb, 1);
@@ -3373,10 +3380,12 @@ static void write_sgrproj_filter(SgrprojInfo *sgrproj_info, aom_writer *wb) {
                     SGRPROJ_PRJ_BITS);
 }
 
+#if USE_DOMAINTXFMRF
 static void write_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
                                       aom_writer *wb) {
   aom_write_literal(wb, domaintxfmrf_info->sigma_r, DOMAINTXFMRF_PARAMS_BITS);
 }
+#endif  // USE_DOMAINTXFMRF
 
 static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   int i, p;
@@ -3398,8 +3407,10 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
           write_wiener_filter(&rsi->wiener_info[i], wb);
         } else if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
           write_sgrproj_filter(&rsi->sgrproj_info[i], wb);
+#if USE_DOMAINTXFMRF
         } else if (rsi->restoration_type[i] == RESTORE_DOMAINTXFMRF) {
           write_domaintxfmrf_filter(&rsi->domaintxfmrf_info[i], wb);
+#endif  // USE_DOMAINTXFMRF
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
@@ -3418,6 +3429,7 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
           write_sgrproj_filter(&rsi->sgrproj_info[i], wb);
         }
       }
+#if USE_DOMAINTXFMRF
     } else if (rsi->frame_restoration_type == RESTORE_DOMAINTXFMRF) {
       for (i = 0; i < ntiles; ++i) {
         aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
@@ -3426,6 +3438,7 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
           write_domaintxfmrf_filter(&rsi->domaintxfmrf_info[i], wb);
         }
       }
+#endif  // USE_DOMAINTXFMRF
     }
   }
   for (p = 1; p < MAX_MB_PLANE; ++p) {

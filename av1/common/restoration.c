@@ -21,6 +21,7 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
+#if USE_DOMAINTXFMRF
 static int domaintxfmrf_vtable[DOMAINTXFMRF_ITERS][DOMAINTXFMRF_PARAMS][256];
 
 static const int domaintxfmrf_params[DOMAINTXFMRF_PARAMS] = {
@@ -30,11 +31,19 @@ static const int domaintxfmrf_params[DOMAINTXFMRF_PARAMS] = {
   119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 130, 132, 134,
   136, 138, 140, 142, 146, 150, 154, 158, 162, 166, 170, 174
 };
+#endif  // USE_DOMAINTXFMRF
 
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
-  // r1, eps1, r2, eps2
+// r1, eps1, r2, eps2
+#if SGRPROJ_PARAMS_BITS == 3
   { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 }, { 2, 55, 1, 14 },
   { 2, 65, 1, 15 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
+#elif SGRPROJ_PARAMS_BITS == 4
+  { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
+  { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
+  { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 3, 30, 1, 10 },
+  { 3, 50, 1, 12 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
+#endif  // SGRPROJ_PARAMS_BITS == 3
 };
 
 typedef void (*restore_func_type)(uint8_t *data8, int width, int height,
@@ -61,6 +70,7 @@ int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
       cm, rst_info->sgrproj_info,
       (SgrprojInfo *)aom_realloc(rst_info->sgrproj_info,
                                  sizeof(*rst_info->sgrproj_info) * ntiles));
+#if USE_DOMAINTXFMRF
   rst_info->domaintxfmrf_info = (DomaintxfmrfInfo *)aom_realloc(
       rst_info->domaintxfmrf_info,
       sizeof(*rst_info->domaintxfmrf_info) * ntiles);
@@ -68,6 +78,7 @@ int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
                   (DomaintxfmrfInfo *)aom_realloc(
                       rst_info->domaintxfmrf_info,
                       sizeof(*rst_info->domaintxfmrf_info) * ntiles));
+#endif  // USE_DOMAINTXFMRF
   return ntiles;
 }
 
@@ -78,10 +89,13 @@ void av1_free_restoration_struct(RestorationInfo *rst_info) {
   rst_info->wiener_info = NULL;
   aom_free(rst_info->sgrproj_info);
   rst_info->sgrproj_info = NULL;
+#if USE_DOMAINTXFMRF
   aom_free(rst_info->domaintxfmrf_info);
   rst_info->domaintxfmrf_info = NULL;
+#endif  // USE_DOMAINTXFMRF
 }
 
+#if USE_DOMAINTXFMRF
 static void GenDomainTxfmRFVtable() {
   int i, j;
   const double sigma_s = sqrt(2.0);
@@ -100,8 +114,13 @@ static void GenDomainTxfmRFVtable() {
     }
   }
 }
+#endif  // USE_DOMAINTXFMRF
 
-void av1_loop_restoration_precal() { GenDomainTxfmRFVtable(); }
+void av1_loop_restoration_precal() {
+#if USE_DOMAINTXFMRF
+  GenDomainTxfmRFVtable();
+#endif  // USE_DOMAINTXFMRF
+}
 
 static void loop_restoration_init(RestorationInternal *rst, int kf) {
   rst->keyframe = kf;
@@ -796,6 +815,7 @@ static void loop_sgrproj_filter(uint8_t *data, int width, int height,
   }
 }
 
+#if USE_DOMAINTXFMRF
 static void apply_domaintxfmrf(int iter, int param, uint8_t *diff_right,
                                uint8_t *diff_down, int width, int height,
                                int32_t *dat, int dat_stride) {
@@ -952,6 +972,7 @@ static void loop_domaintxfmrf_filter(uint8_t *data, int width, int height,
                                   dst, dst_stride);
   }
 }
+#endif  // USE_DOMAINTXFMRF
 
 static void loop_switchable_filter(uint8_t *data, int width, int height,
                                    int stride, RestorationInternal *rst,
@@ -968,9 +989,11 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
     } else if (rst->rsi->restoration_type[tile_idx] == RESTORE_SGRPROJ) {
       loop_sgrproj_filter_tile(data, tile_idx, width, height, stride, rst, dst,
                                dst_stride);
+#if USE_DOMAINTXFMRF
     } else if (rst->rsi->restoration_type[tile_idx] == RESTORE_DOMAINTXFMRF) {
       loop_domaintxfmrf_filter_tile(data, tile_idx, width, height, stride, rst,
                                     dst, dst_stride);
+#endif  // USE_DOMAINTXFMRF
     }
   }
 }
@@ -1134,6 +1157,7 @@ static void loop_sgrproj_filter_highbd(uint8_t *data8, int width, int height,
   }
 }
 
+#if USE_DOMAINTXFMRF
 void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
                                          int stride, int param, int bit_depth,
                                          uint16_t *dst, int dst_stride,
@@ -1212,6 +1236,7 @@ static void loop_domaintxfmrf_filter_highbd(uint8_t *data8, int width,
                                          rst, bit_depth, dst, dst_stride);
   }
 }
+#endif  // USE_DOMAINTXFMRF
 
 static void loop_switchable_filter_highbd(uint8_t *data8, int width, int height,
                                           int stride, RestorationInternal *rst,
@@ -1231,10 +1256,12 @@ static void loop_switchable_filter_highbd(uint8_t *data8, int width, int height,
     } else if (rst->rsi->restoration_type[tile_idx] == RESTORE_SGRPROJ) {
       loop_sgrproj_filter_tile_highbd(data, tile_idx, width, height, stride,
                                       rst, bit_depth, dst, dst_stride);
+#if USE_DOMAINTXFMRF
     } else if (rst->rsi->restoration_type[tile_idx] == RESTORE_DOMAINTXFMRF) {
       loop_domaintxfmrf_filter_tile_highbd(data, tile_idx, width, height,
                                            stride, rst, bit_depth, dst,
                                            dst_stride);
+#endif  // USE_DOMAINTXFMRF
     }
   }
 }
@@ -1252,14 +1279,24 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   const int uvstart = ystart >> cm->subsampling_y;
   int yend = end_mi_row << MI_SIZE_LOG2;
   int uvend = yend >> cm->subsampling_y;
-  restore_func_type restore_funcs[RESTORE_TYPES] = { NULL, loop_wiener_filter,
-                                                     loop_sgrproj_filter,
-                                                     loop_domaintxfmrf_filter,
-                                                     loop_switchable_filter };
+  restore_func_type restore_funcs[RESTORE_TYPES] = {
+    NULL,
+    loop_wiener_filter,
+    loop_sgrproj_filter,
+#if USE_DOMAINTXFMRF
+    loop_domaintxfmrf_filter,
+#endif  // USE_DOMAINTXFMRF
+    loop_switchable_filter
+  };
 #if CONFIG_AOM_HIGHBITDEPTH
   restore_func_highbd_type restore_funcs_highbd[RESTORE_TYPES] = {
-    NULL, loop_wiener_filter_highbd, loop_sgrproj_filter_highbd,
-    loop_domaintxfmrf_filter_highbd, loop_switchable_filter_highbd
+    NULL,
+    loop_wiener_filter_highbd,
+    loop_sgrproj_filter_highbd,
+#if USE_DOMAINTXFMRF
+    loop_domaintxfmrf_filter_highbd,
+#endif  // USE_DOMAINTXFMRF
+    loop_switchable_filter_highbd
   };
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   restore_func_type restore_func;

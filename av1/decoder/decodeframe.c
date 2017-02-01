@@ -2525,11 +2525,16 @@ static void decode_restoration_mode(AV1_COMMON *cm,
   int p;
   RestorationInfo *rsi = &cm->rst_info[0];
   if (aom_rb_read_bit(rb)) {
+#if USE_DOMAINTXFMRF
     if (aom_rb_read_bit(rb))
       rsi->frame_restoration_type =
           (aom_rb_read_bit(rb) ? RESTORE_DOMAINTXFMRF : RESTORE_SGRPROJ);
     else
       rsi->frame_restoration_type = RESTORE_WIENER;
+#else
+    rsi->frame_restoration_type =
+        aom_rb_read_bit(rb) ? RESTORE_SGRPROJ : RESTORE_WIENER;
+#endif  // USE_DOMAINTXFMRF
   } else {
     rsi->frame_restoration_type =
         aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
@@ -2578,11 +2583,13 @@ static void read_sgrproj_filter(SgrprojInfo *sgrproj_info, aom_reader *rb) {
       aom_read_literal(rb, SGRPROJ_PRJ_BITS, ACCT_STR) + SGRPROJ_PRJ_MIN1;
 }
 
+#if USE_DOMAINTXFMRF
 static void read_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
                                      aom_reader *rb) {
   domaintxfmrf_info->sigma_r =
       aom_read_literal(rb, DOMAINTXFMRF_PARAMS_BITS, ACCT_STR);
 }
+#endif  // USE_DOMAINTXFMRF
 
 static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
   int i, p;
@@ -2603,8 +2610,10 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
           read_wiener_filter(&rsi->wiener_info[i], rb);
         } else if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
           read_sgrproj_filter(&rsi->sgrproj_info[i], rb);
+#if USE_DOMAINTXFMRF
         } else if (rsi->restoration_type[i] == RESTORE_DOMAINTXFMRF) {
           read_domaintxfmrf_filter(&rsi->domaintxfmrf_info[i], rb);
+#endif  // USE_DOMAINTXFMRF
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
@@ -2625,6 +2634,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
           rsi->restoration_type[i] = RESTORE_NONE;
         }
       }
+#if USE_DOMAINTXFMRF
     } else if (rsi->frame_restoration_type == RESTORE_DOMAINTXFMRF) {
       for (i = 0; i < ntiles; ++i) {
         if (aom_read(rb, RESTORE_NONE_DOMAINTXFMRF_PROB, ACCT_STR)) {
@@ -2634,6 +2644,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
           rsi->restoration_type[i] = RESTORE_NONE;
         }
       }
+#endif  // USE_DOMAINTXFMRF
     }
   }
   for (p = 1; p < MAX_MB_PLANE; ++p) {

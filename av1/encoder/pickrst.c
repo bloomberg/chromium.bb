@@ -37,7 +37,11 @@ typedef double (*search_restore_type)(const YV12_BUFFER_CONFIG *src,
                                       double *best_tile_cost,
                                       YV12_BUFFER_CONFIG *dst_frame);
 
+#if USE_DOMAINTXFMRF
 const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 3, 3, 2 };
+#else
+const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 2, 2 };
+#endif  // USE_DOMAINTXFMRF
 
 static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     const YV12_BUFFER_CONFIG *dst,
@@ -418,6 +422,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   return cost_sgrproj;
 }
 
+#if USE_DOMAINTXFMRF
 static int64_t compute_sse(uint8_t *dgd, int width, int height, int dgd_stride,
                            uint8_t *src, int src_stride) {
   int64_t sse = 0;
@@ -640,6 +645,7 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
   return cost_domaintxfmrf;
 }
+#endif  // USE_DOMAINTXFMRF
 
 static double find_average(uint8_t *src, int h_start, int h_end, int v_start,
                            int v_end, int stride) {
@@ -1318,7 +1324,12 @@ static double search_switchable_restoration(
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                                  LPF_PICK_METHOD method) {
   static search_restore_type search_restore_fun[RESTORE_SWITCHABLE_TYPES] = {
-    search_norestore, search_wiener, search_sgrproj, search_domaintxfmrf,
+    search_norestore,
+    search_wiener,
+    search_sgrproj,
+#if USE_DOMAINTXFMRF
+    search_domaintxfmrf,
+#endif  // USE_DOMAINTXFMRF
   };
   AV1_COMMON *const cm = &cpi->common;
   struct loopfilter *const lf = &cm->lf;
@@ -1417,11 +1428,17 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
          cm->rst_info[2].frame_restoration_type);
          */
   /*
+#if USE_DOMAINTXFMRF
   printf("Frame %d/%d frame_restore_type %d : %f %f %f %f %f\n",
          cm->current_video_frame, cm->show_frame,
          cm->rst_info[0].frame_restoration_type, cost_restore[0],
-  cost_restore[1],
-         cost_restore[2], cost_restore[3], cost_restore[4]);
+         cost_restore[1], cost_restore[2], cost_restore[3], cost_restore[4]);
+#else
+  printf("Frame %d/%d frame_restore_type %d : %f %f %f %f\n",
+         cm->current_video_frame, cm->show_frame,
+         cm->rst_info[0].frame_restoration_type, cost_restore[0],
+         cost_restore[1], cost_restore[2], cost_restore[3]);
+#endif  // USE_DOMAINTXFMRF
          */
 
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) {
