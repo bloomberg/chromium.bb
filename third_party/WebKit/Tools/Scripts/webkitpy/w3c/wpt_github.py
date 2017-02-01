@@ -5,12 +5,7 @@
 import base64
 import json
 import logging
-import os
-import sys
 import urllib2
-
-from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.webkit_finder import WebKitFinder
 
 
 _log = logging.getLogger(__name__)
@@ -20,12 +15,11 @@ EXPORT_LABEL = 'chromium-export'
 
 class WPTGitHub(object):
 
-    def __init__(self, host):
+    def __init__(self, host, user, token):
         self.host = host
-        self.user = self.host.environ.get('GH_USER')
-        self.token = self.host.environ.get('GH_TOKEN')
-
-        assert self.user and self.token, 'must have GH_USER and GH_TOKEN env vars'
+        self.user = user
+        self.token = token
+        assert self.user and self.token
 
     def auth_token(self):
         return base64.encodestring('{}:{}'.format(self.user, self.token)).strip()

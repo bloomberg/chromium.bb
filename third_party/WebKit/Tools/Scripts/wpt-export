@@ -29,10 +29,24 @@ def main():
         '--dry-run', action='store_true',
         help='See what would be done without actually creating or merging '
              'any pull requests.')
+    parser.add_argument(
+        '--user',
+        help='GitHub user name. Can also be provided using the GH_USER '
+             'environment variable.')
+    parser.add_argument(
+        '--token',
+        help='GitHub token or password. Can also be provided using the GH_TOKEN '
+             'environment variable.')
     args = parser.parse_args()
-
     host = Host()
-    wpt_github = WPTGitHub(host)
+    if not args.user:
+        args.user = host.environ.get('GH_USER')
+    if not args.token:
+        args.token = host.environ.get('GH_TOKEN')
+    if not (args.user and args.token):
+        parser.error('Must provide both user and token for GitHub.')
+
+    wpt_github = WPTGitHub(host, args.user, args.token)
     test_exporter = TestExporter(host, wpt_github, dry_run=args.dry_run)
 
     test_exporter.run()
