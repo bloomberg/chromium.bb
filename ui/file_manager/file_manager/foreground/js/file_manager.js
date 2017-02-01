@@ -288,6 +288,12 @@ function FileManager() {
   this.backgroundPage_ = null;
 
   /**
+   * @type {FileBrowserBackgroundImpl}
+   * @private
+   */
+  this.fileBrowserBackground_ = null;
+
+  /**
    * The root DOM element of this app.
    * @type {HTMLBodyElement}
    * @private
@@ -534,7 +540,7 @@ FileManager.prototype = /** @struct */ {
     this.actionsController_ = new ActionsController(
         this.volumeManager_, assert(this.metadataModel_), this.directoryModel_,
         assert(this.folderShortcutsModel_),
-        this.backgroundPage_.background.driveSyncHandler,
+        this.fileBrowserBackground_.driveSyncHandler,
         this.selectionHandler_, assert(this.ui_));
 
     this.quickViewModel_ = new QuickViewModel();
@@ -614,7 +620,7 @@ FileManager.prototype = /** @struct */ {
         assert(this.ui_.listContainer),
         assert(this.ui_.directoryTree),
         this.ui_.multiProfileShareDialog,
-        assert(this.backgroundPage_.background.progressCenter),
+        assert(this.fileBrowserBackground_.progressCenter),
         assert(this.fileOperationManager_),
         assert(this.metadataModel_),
         assert(this.thumbnailModel_),
@@ -768,18 +774,21 @@ FileManager.prototype = /** @struct */ {
             assert(opt_backgroundPage);
             this.backgroundPage_ =
                 /** @type {!BackgroundWindow} */ (opt_backgroundPage);
-            this.backgroundPage_.background.ready(function() {
-              loadTimeData.data = this.backgroundPage_.background.stringData;
+            this.fileBrowserBackground_ =
+                /** @type {!FileBrowserBackgroundImpl} */ (
+                    this.backgroundPage_.background);
+            this.fileBrowserBackground_.ready(function() {
+              loadTimeData.data = this.fileBrowserBackground_.stringData;
               if (util.runningInBrowser())
                 this.backgroundPage_.registerDialog(window);
               this.fileOperationManager_ =
-                  this.backgroundPage_.background.fileOperationManager;
+                  this.fileBrowserBackground_.fileOperationManager;
               this.mediaImportHandler_ =
-                  this.backgroundPage_.background.mediaImportHandler;
+                  this.fileBrowserBackground_.mediaImportHandler;
               this.mediaScanner_ =
-                  this.backgroundPage_.background.mediaScanner;
+                  this.fileBrowserBackground_.mediaScanner;
               this.historyLoader_ =
-                  this.backgroundPage_.background.historyLoader;
+                  this.fileBrowserBackground_.historyLoader;
               metrics.recordInterval('Load.InitBackgroundPage');
               resolve();
             }.bind(this));
@@ -894,7 +903,7 @@ FileManager.prototype = /** @struct */ {
             this.volumeManager_));
 
     // Handle UI events.
-    this.backgroundPage_.background.progressCenter.addPanel(
+    this.fileBrowserBackground_.progressCenter.addPanel(
         this.ui_.progressCenterPanel);
 
     util.addIsFocusedMethod();
@@ -1420,14 +1429,14 @@ FileManager.prototype = /** @struct */ {
            i++) {
         var taskId = this.fileTransferController_.pendingTaskIds[i];
         var item =
-            this.backgroundPage_.background.progressCenter.getItemById(taskId);
+            this.fileBrowserBackground_.progressCenter.getItemById(taskId);
         item.message = '';
         item.state = ProgressItemState.CANCELED;
-        this.backgroundPage_.background.progressCenter.updateItem(item);
+        this.fileBrowserBackground_.progressCenter.updateItem(item);
       }
     }
     if (this.ui_ && this.ui_.progressCenterPanel) {
-      this.backgroundPage_.background.progressCenter.removePanel(
+      this.fileBrowserBackground_.progressCenter.removePanel(
           this.ui_.progressCenterPanel);
     }
   };

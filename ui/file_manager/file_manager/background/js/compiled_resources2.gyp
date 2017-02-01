@@ -3,18 +3,59 @@
 # found in the LICENSE file.
 {
   'targets': [
-#    {
-#      'target_name': 'app_window_wrapper',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'background',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'background_base',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'app_window_wrapper',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:async_util',
+        '../../common/js/compiled_resources2.gyp:util',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'app_windows',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'app_windows',
+      'dependencies': [
+        '<(EXTERNS_GYP):chrome_extensions',
+        '../../../externs/compiled_resources2.gyp:app_window_common'
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'background',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:volume_manager',
+        '../../common/js/compiled_resources2.gyp:metrics',
+        '../../common/js/compiled_resources2.gyp:util',
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'app_windows',
+        'background_base',
+        'device_handler',
+        'drive_sync_handler',
+        'duplicate_finder',
+        'file_operation_handler',
+        'file_operation_manager',
+        'import_history',
+        'launcher',
+        'launcher_search',
+        'media_import_handler',
+        'progress_center',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'background_base',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(EXTERNS_GYP):file_manager_private',
+        'app_windows',
+        'volume_manager_factory',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'device_handler',
       'dependencies': [
@@ -96,10 +137,26 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'launcher_search',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'launcher',
+      'dependencies': [
+        'app_window_wrapper',
+        'app_windows',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'launcher_search',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:launcher_search_provider',
+        '../../common/js/compiled_resources2.gyp:file_type',
+        '../../common/js/compiled_resources2.gyp:util',
+        '<(EXTERNS_GYP):file_manager_private',
+        'launcher',
+        'volume_manager_factory',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'media_import_handler',
       'dependencies': [

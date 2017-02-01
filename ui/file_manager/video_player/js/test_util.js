@@ -7,11 +7,11 @@
  * which is given by a parameter.
  * @param {string} filename Name of video file to be checked. This must be same
  *     as entry.name() of the video file.
- * @param {function(!HTMLElement):boolean} testFunction
+ * @param {function(!Element):boolean} testFunction
  */
 function testElement(filename, testFunction) {
-  for (var appId in window.background.appWindows) {
-    var contentWindow = window.background.appWindows[appId].contentWindow;
+  for (var appId in window.appWindows) {
+    var contentWindow = window.appWindows[appId].contentWindow;
     if (contentWindow &&
         contentWindow.document.title === filename) {
       var element = contentWindow.document.querySelector('video');

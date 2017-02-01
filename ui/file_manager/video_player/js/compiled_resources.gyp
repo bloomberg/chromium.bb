@@ -23,6 +23,7 @@
           '../../file_manager/common/js/metrics.js',
           '../../file_manager/common/js/volume_manager_common.js',
           '../../file_manager/background/js/app_window_wrapper.js',
+          '../../file_manager/background/js/app_windows.js',
           '../../file_manager/background/js/background_base.js',
           '../../file_manager/background/js/entry_location_impl.js',
           '../../file_manager/background/js/volume_info_impl.js',

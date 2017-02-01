@@ -8,3 +8,8 @@
  * @type {string}
  */
 Window.prototype.appID;
+
+/**
+ * @type {string}
+ */
+Window.prototype.appInitialURL;

@@ -19,6 +19,11 @@ BackgroundWindow.prototype.background;
 BackgroundWindow.prototype.registerDialog = function(window) {};
 
 /**
+ * @type {!Object}
+ */
+BackgroundWindow.prototype.launcher = {};
+
+/**
  * @param {Object=} opt_appState App state.
  * @param {number=} opt_id Window id.
  * TODO(oka): We intentionally omit optional launchType and callback parameters
@@ -27,5 +32,5 @@ BackgroundWindow.prototype.registerDialog = function(window) {};
  * scripts set launchType parameter, we can omit them though it's hacky. Let's
  * add them back after v1 is gone.
  */
-BackgroundWindow.prototype.launchFileManager =
+BackgroundWindow.prototype.launcher.launchFileManager =
     function(opt_appState, opt_id) {};

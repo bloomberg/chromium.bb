@@ -186,7 +186,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
     util.urlToEntry(itemId).then(function(entry) {
       if (entry.isDirectory) {
         // If it's directory, open the directory with file manager.
-        launchFileManager(
+        launcher.launchFileManager(
             { currentDirectoryURL: entry.toURL() },
             undefined, /* App ID */
             LaunchType.FOCUS_SAME_OR_CREATE);
@@ -245,7 +245,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
  */
 LauncherSearch.prototype.openFileManagerWithSelectionURL_ = function(
     selectionURL) {
-  launchFileManager(
+  launcher.launchFileManager(
       {selectionURL: selectionURL},
       undefined, /* App ID */
       LaunchType.FOCUS_SAME_OR_CREATE);

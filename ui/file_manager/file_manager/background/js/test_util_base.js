@@ -92,8 +92,8 @@ test.util.TESTING_EXTENSION_IDS = [
  */
 test.util.sync.getWindows = function() {
   var windows = {};
-  for (var id in window.background.appWindows) {
-    var windowWrapper = window.background.appWindows[id];
+  for (var id in window.appWindows) {
+    var windowWrapper = window.appWindows[id];
     windows[id] = {
       outerWidth: windowWrapper.contentWindow.outerWidth,
       outerHeight: windowWrapper.contentWindow.outerHeight
@@ -115,9 +115,9 @@ test.util.sync.getWindows = function() {
  * @return {boolean} Result: True if success, false otherwise.
  */
 test.util.sync.closeWindow = function(appId) {
-  if (appId in window.background.appWindows &&
-      window.background.appWindows[appId].contentWindow) {
-    window.background.appWindows[appId].close();
+  if (appId in window.appWindows &&
+      window.appWindows[appId].contentWindow) {
+    window.appWindows[appId].close();
     return true;
   }
   return false;
@@ -171,8 +171,8 @@ test.util.sync.getElement_ = function(
  */
 test.util.sync.getErrorCount = function() {
   var totalCount = window.JSErrorCount;
-  for (var appId in window.background.appWindows) {
-    var contentWindow = window.background.appWindows[appId].contentWindow;
+  for (var appId in window.appWindows) {
+    var contentWindow = window.appWindows[appId].contentWindow;
     if (contentWindow.JSErrorCount)
       totalCount += contentWindow.JSErrorCount;
   }
@@ -188,7 +188,7 @@ test.util.sync.getErrorCount = function() {
  * @return {boolean} True for success.
  */
 test.util.sync.resizeWindow = function(contentWindow, width, height) {
-  window.background.appWindows[contentWindow.appID].resizeTo(width, height);
+  window.appWindows[contentWindow.appID].resizeTo(width, height);
   return true;
 };
 
@@ -198,7 +198,7 @@ test.util.sync.resizeWindow = function(contentWindow, width, height) {
  * @return {boolean} True for success.
  */
 test.util.sync.maximizeWindow = function(contentWindow) {
-  window.background.appWindows[contentWindow.appID].maximize();
+  window.appWindows[contentWindow.appID].maximize();
   return true;
 };
 
@@ -208,7 +208,7 @@ test.util.sync.maximizeWindow = function(contentWindow) {
  * @return {boolean} True for success.
  */
 test.util.sync.restoreWindow = function(contentWindow) {
-  window.background.appWindows[contentWindow.appID].restore();
+  window.appWindows[contentWindow.appID].restore();
   return true;
 };
 
@@ -218,7 +218,7 @@ test.util.sync.restoreWindow = function(contentWindow) {
  * @return {boolean} True if the window is maximized now.
  */
 test.util.sync.isWindowMaximized = function(contentWindow) {
-  return window.background.appWindows[contentWindow.appID].isMaximized();
+  return window.appWindows[contentWindow.appID].isMaximized();
 };
 
 /**
@@ -611,8 +611,8 @@ test.util.registerRemoteTestUtils = function() {
       throw new Error('Invalid request.');
     var args = request.args.slice();  // shallow copy
     if (request.appId) {
-      if (window.background.appWindows[request.appId]) {
-        args.unshift(window.background.appWindows[request.appId].contentWindow);
+      if (window.appWindows[request.appId]) {
+        args.unshift(window.appWindows[request.appId].contentWindow);
       } else if (window.background.dialogs[request.appId]) {
         args.unshift(window.background.dialogs[request.appId]);
       } else {

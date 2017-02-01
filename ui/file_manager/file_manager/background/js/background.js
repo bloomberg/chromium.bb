@@ -3,32 +3,17 @@
 // found in the LICENSE file.
 
 /**
- * Type of a Files app's instance launch.
- * @enum {number}
- */
-var LaunchType = {
-  ALWAYS_CREATE: 0,
-  FOCUS_ANY_OR_CREATE: 1,
-  FOCUS_SAME_OR_CREATE: 2
-};
-
-/**
  * Root class of the background page.
  * @constructor
+ * @implements {FileBrowserBackground}
  * @extends {BackgroundBase}
  * @struct
  */
-function FileBrowserBackground() {
+function FileBrowserBackgroundImpl() {
   BackgroundBase.call(this);
 
   /** @type {!analytics.Tracker} */
   this.tracker = metrics.getTracker();
-
-  /**
-   * Synchronous queue for asynchronous calls.
-   * @type {!AsyncUtil.Queue}
-   */
-  this.queue = new AsyncUtil.Queue();
 
   /**
    * Progress center of the background page.
@@ -133,12 +118,12 @@ function FileBrowserBackground() {
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
 
-  this.queue.run(function(callback) {
+  launcher.queue.run(function(callback) {
     this.initializationPromise_.then(callback);
   }.bind(this));
 }
 
-FileBrowserBackground.prototype.__proto__ = BackgroundBase.prototype;
+FileBrowserBackgroundImpl.prototype.__proto__ = BackgroundBase.prototype;
 
 /**
  * Register callback to be invoked after initialization.
@@ -146,7 +131,7 @@ FileBrowserBackground.prototype.__proto__ = BackgroundBase.prototype;
  *
  * @param {function()} callback Initialize callback to be registered.
  */
-FileBrowserBackground.prototype.ready = function(callback) {
+FileBrowserBackgroundImpl.prototype.ready = function(callback) {
   this.initializationPromise_.then(callback);
 };
 
@@ -157,7 +142,7 @@ FileBrowserBackground.prototype.ready = function(callback) {
  *     devicePath.
  * @private
  */
-FileBrowserBackground.prototype.handleViewEvent_ =
+FileBrowserBackgroundImpl.prototype.handleViewEvent_ =
     function(event) {
   volumeManagerFactory.getInstance()
       .then(
@@ -190,7 +175,7 @@ FileBrowserBackground.prototype.handleViewEvent_ =
  * @param {!string=} opt_directoryPath Optional path to be opened.
  * @private
  */
-FileBrowserBackground.prototype.navigateToVolumeWhenReady_ =
+FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ =
     function(volumeId, opt_directoryPath) {
   volumeManagerFactory.getInstance()
       .then(
@@ -221,7 +206,7 @@ FileBrowserBackground.prototype.navigateToVolumeWhenReady_ =
  * @param {string=} opt_directoryPath Optional directory path to be opened.
  * @private
  */
-FileBrowserBackground.prototype.navigateToVolume_ =
+FileBrowserBackgroundImpl.prototype.navigateToVolume_ =
     function(volume, opt_directoryPath) {
   volume.resolveDisplayRoot()
       .then(
@@ -246,26 +231,12 @@ FileBrowserBackground.prototype.navigateToVolume_ =
            * @param {DirectoryEntry} directory
            */
           function(directory) {
-            launchFileManager(
+            launcher.launchFileManager(
                 {currentDirectoryURL: directory.toURL()},
                 /* App ID */ undefined,
                 LaunchType.FOCUS_SAME_OR_CREATE);
           });
 };
-
-/**
- * Prefix for the file manager window ID.
- * @type {string}
- * @const
- */
-var FILES_ID_PREFIX = 'files#';
-
-/**
- * Regexp matching a file manager window ID.
- * @type {RegExp}
- * @const
- */
-var FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
 
 /**
  * Prefix for the dialog ID.
@@ -275,152 +246,10 @@ var FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
 var DIALOG_ID_PREFIX = 'dialog#';
 
 /**
- * Value of the next file manager window ID.
- * @type {number}
- */
-var nextFileManagerWindowID = 0;
-
-/**
  * Value of the next file manager dialog ID.
  * @type {number}
  */
 var nextFileManagerDialogID = 0;
-
-/**
- * File manager window create options.
- * @type {Object}
- * @const
- */
-var FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
-  bounds: {
-    left: Math.round(window.screen.availWidth * 0.1),
-    top: Math.round(window.screen.availHeight * 0.1),
-    // We choose 1000px as default window width to fit 4 columns in grid view,
-    // as long as the width doesn't exceed 80% of the screen width.
-    width: Math.min(Math.round(window.screen.availWidth * 0.8), 1000),
-    height: Math.min(Math.round(window.screen.availHeight * 0.8), 600)
-  },
-  frame: {
-    color: '#254fae'
-  },
-  minWidth: 480,
-  minHeight: 300
-};
-
-/**
- * @param {Object=} opt_appState App state.
- * @param {number=} opt_id Window id.
- * @param {LaunchType=} opt_type Launch type. Default: ALWAYS_CREATE.
- * @param {function(string)=} opt_callback Completion callback with the App ID.
- */
-function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
-  var type = opt_type || LaunchType.ALWAYS_CREATE;
-  opt_appState =
-      /**
-       * @type {(undefined|
-       *         {currentDirectoryURL: (string|undefined),
-       *          selectionURL: (string|undefined)})}
-       */
-      (opt_appState);
-
-  // Wait until all windows are created.
-  window.background.queue.run(function(onTaskCompleted) {
-    // Check if there is already a window with the same URL. If so, then
-    // reuse it instead of opening a new one.
-    if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
-        type == LaunchType.FOCUS_ANY_OR_CREATE) {
-      if (opt_appState) {
-        for (var key in window.background.appWindows) {
-          if (!key.match(FILES_ID_PATTERN))
-            continue;
-          var contentWindow = window.background.appWindows[key].contentWindow;
-          if (!contentWindow.appState)
-            continue;
-          // Different current directories.
-          if (opt_appState.currentDirectoryURL !==
-                  contentWindow.appState.currentDirectoryURL) {
-            continue;
-          }
-          // Selection URL specified, and it is different.
-          if (opt_appState.selectionURL &&
-                  opt_appState.selectionURL !==
-                  contentWindow.appState.selectionURL) {
-            continue;
-          }
-          window.background.appWindows[key].focus();
-          if (opt_callback)
-            opt_callback(key);
-          onTaskCompleted();
-          return;
-        }
-      }
-    }
-
-    // Focus any window if none is focused. Try restored first.
-    if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
-      // If there is already a focused window, then finish.
-      for (var key in window.background.appWindows) {
-        if (!key.match(FILES_ID_PATTERN))
-          continue;
-
-        // The isFocused() method should always be available, but in case
-        // the Files app has failed on some error, wrap it with try catch.
-        try {
-          if (window.background.appWindows[key].contentWindow.isFocused()) {
-            if (opt_callback)
-              opt_callback(key);
-            onTaskCompleted();
-            return;
-          }
-        } catch (e) {
-          console.error(e.message);
-        }
-      }
-      // Try to focus the first non-minimized window.
-      for (var key in window.background.appWindows) {
-        if (!key.match(FILES_ID_PATTERN))
-          continue;
-
-        if (!window.background.appWindows[key].isMinimized()) {
-          window.background.appWindows[key].focus();
-          if (opt_callback)
-            opt_callback(key);
-          onTaskCompleted();
-          return;
-        }
-      }
-      // Restore and focus any window.
-      for (var key in window.background.appWindows) {
-        if (!key.match(FILES_ID_PATTERN))
-          continue;
-
-        window.background.appWindows[key].focus();
-        if (opt_callback)
-          opt_callback(key);
-        onTaskCompleted();
-        return;
-      }
-    }
-
-    // Create a new instance in case of ALWAYS_CREATE type, or as a fallback
-    // for other types.
-
-    var id = opt_id || nextFileManagerWindowID;
-    nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
-    var appId = FILES_ID_PREFIX + id;
-
-    var appWindow = new AppWindowWrapper(
-        'main.html',
-        appId,
-        FILE_MANAGER_WINDOW_CREATE_OPTIONS);
-    appWindow.launch(opt_appState || {}, false, function() {
-      appWindow.rawAppWindow.focus();
-      if (opt_callback)
-        opt_callback(appId);
-      onTaskCompleted();
-    });
-  });
-}
 
 /**
  * Registers dialog window to the background page.
@@ -442,7 +271,7 @@ function registerDialog(dialogWindow) {
  * @param {Object} details Details object.
  * @private
  */
-FileBrowserBackground.prototype.onExecute_ = function(action, details) {
+FileBrowserBackgroundImpl.prototype.onExecute_ = function(action, details) {
   var appState = {
     params: {action: action},
     // It is not allowed to call getParent() here, since there may be
@@ -455,7 +284,7 @@ FileBrowserBackground.prototype.onExecute_ = function(action, details) {
   // Every other action opens a Files app window.
   // For mounted devices just focus any Files app window. The mounted
   // volume will appear on the navigation list.
-  launchFileManager(
+  launcher.launchFileManager(
       appState,
       /* App ID */ undefined,
       LaunchType.FOCUS_SAME_OR_CREATE);
@@ -466,7 +295,7 @@ FileBrowserBackground.prototype.onExecute_ = function(action, details) {
  * @private
  * @override
  */
-FileBrowserBackground.prototype.onLaunched_ = function() {
+FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
   metrics.startInterval('Load.BackgroundLaunch');
   this.initializationPromise_.then(function() {
     if (nextFileManagerWindowID == 0) {
@@ -481,7 +310,7 @@ FileBrowserBackground.prototype.onLaunched_ = function() {
         }
       });
     }
-    launchFileManager(
+    launcher.launchFileManager(
         null, undefined, LaunchType.FOCUS_ANY_OR_CREATE,
         function() { metrics.recordInterval('Load.BackgroundLaunch'); });
   });
@@ -496,7 +325,7 @@ var GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
  * @param {*} message
  * @param {MessageSender} sender
  */
-FileBrowserBackground.prototype.onExternalMessageReceived_ =
+FileBrowserBackgroundImpl.prototype.onExternalMessageReceived_ =
     function(message, sender) {
   if ('id' in sender && sender.id === GPLUS_PHOTOS_APP_ID) {
     importer.handlePhotosAppMessage(message);
@@ -508,7 +337,7 @@ FileBrowserBackground.prototype.onExternalMessageReceived_ =
  * @private
  * @override
  */
-FileBrowserBackground.prototype.onRestarted_ = function() {
+FileBrowserBackgroundImpl.prototype.onRestarted_ = function() {
   // Reopen file manager windows.
   chrome.storage.local.get(function(items) {
     for (var key in items) {
@@ -519,7 +348,7 @@ FileBrowserBackground.prototype.onRestarted_ = function() {
           var id = Number(match[1]);
           try {
             var appState = /** @type {Object} */ (JSON.parse(items[key]));
-            launchFileManager(appState, id, undefined, function() {
+            launcher.launchFileManager(appState, id, undefined, function() {
               metrics.recordInterval('Load.BackgroundRestart');
             });
           } catch (e) {
@@ -536,21 +365,21 @@ FileBrowserBackground.prototype.onRestarted_ = function() {
  * @param {!Object} info Event details.
  * @private
  */
-FileBrowserBackground.prototype.onContextMenuClicked_ = function(info) {
+FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
   if (info.menuItemId == 'new-window') {
     // Find the focused window (if any) and use it's current url for the
     // new window. If not found, then launch with the default url.
     this.findFocusedWindow_().then(function(key) {
       if (!key) {
-        launchFileManager(appState);
+        launcher.launchFileManager(appState);
         return;
       }
       var appState = {
         // Do not clone the selection url, only the current directory.
-        currentDirectoryURL: window.background.appWindows[key].
+        currentDirectoryURL: window.appWindows[key].
             contentWindow.appState.currentDirectoryURL
       };
-      launchFileManager(appState);
+      launcher.launchFileManager(appState);
     }).catch(function(error) {
       console.error(error.stack || error);
     });
@@ -563,11 +392,11 @@ FileBrowserBackground.prototype.onContextMenuClicked_ = function(info) {
  * @return {!Promise.<?string>} Promise fulfilled with a key of the focused
  *     window, or null if not found.
  */
-FileBrowserBackground.prototype.findFocusedWindow_ = function() {
+FileBrowserBackgroundImpl.prototype.findFocusedWindow_ = function() {
   return new Promise(function(fulfill, reject) {
-    for (var key in window.background.appWindows) {
+    for (var key in window.appWindows) {
       try {
-        if (window.background.appWindows[key].contentWindow.isFocused()) {
+        if (window.appWindows[key].contentWindow.isFocused()) {
           fulfill(key);
           return;
         }
@@ -586,7 +415,7 @@ FileBrowserBackground.prototype.findFocusedWindow_ = function() {
  * @param {!Object} event Event details.
  * @private
  */
-FileBrowserBackground.prototype.onMountCompleted_ = function(event) {
+FileBrowserBackgroundImpl.prototype.onMountCompleted_ = function(event) {
   // If there is no focused window, then create a new one opened on the
   // mounted FSP volume.
   this.findFocusedWindow_().then(function(key) {
@@ -609,7 +438,7 @@ FileBrowserBackground.prototype.onMountCompleted_ = function(event) {
  * Initializes the context menu. Recreates if already exists.
  * @private
  */
-FileBrowserBackground.prototype.initContextMenu_ = function() {
+FileBrowserBackgroundImpl.prototype.initContextMenu_ = function() {
   try {
     // According to the spec [1], the callback is optional. But no callback
     // causes an error for some reason, so we call it with null-callback to
@@ -634,7 +463,7 @@ FileBrowserBackground.prototype.initContextMenu_ = function() {
 /**
  * Singleton instance of Background.
  * NOTE: This must come after the call to metrics.clearUserId.
- * @type {FileBrowserBackground}
+ * @type {FileBrowserBackgroundImpl}
  */
-window.background = new FileBrowserBackground();
+window.background = new FileBrowserBackgroundImpl();
 metrics.recordInterval('Load.BackgroundScript');

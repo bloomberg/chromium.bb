@@ -14,6 +14,7 @@
 // <include src="file_operation_manager.js">
 // <include src="file_operation_util.js">
 // <include src="import_history.js">
+// <include src="launcher.js">
 // <include src="launcher_search.js">
 // <include src="task_queue.js">
 // <include src="media_import_handler.js">

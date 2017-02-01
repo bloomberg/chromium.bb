@@ -653,7 +653,7 @@ CommandHandler.COMMANDS_['new-window'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    fileManager.backgroundPage.launchFileManager({
+    fileManager.backgroundPage.launcher.launchFileManager({
       currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
           fileManager.getCurrentDirectoryEntry().toURL()
     });

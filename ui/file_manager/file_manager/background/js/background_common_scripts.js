@@ -18,6 +18,7 @@
 // <include src="../../common/js/util.js">
 // <include src="../../common/js/volume_manager_common.js">
 // <include src="app_window_wrapper.js">
+// <include src="app_windows.js">
 // <include src="background_base.js">
 // <include src="entry_location_impl.js">
 // <include src="test_util_base.js">

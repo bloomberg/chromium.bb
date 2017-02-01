@@ -1245,7 +1245,7 @@ importer.RuntimeControllerEnvironment.prototype.addSelectionChangedListener =
  */
 importer.RuntimeControllerEnvironment.prototype.revealDirectory_ =
     function(directory) {
-  this.fileManager_.backgroundPage.launchFileManager(
+  this.fileManager_.backgroundPage.launcher.launchFileManager(
       {currentDirectoryURL: directory.toURL()},
       /* App ID */ undefined);
 };
