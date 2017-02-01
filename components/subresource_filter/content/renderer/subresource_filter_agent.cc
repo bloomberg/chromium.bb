@@ -84,7 +84,7 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
 
   if (activation_state_for_provisional_load_ != ActivationState::DISABLED) {
     UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.DocumentLoad.RulesetIsAvailable",
-                          ruleset_dealer_->IsRulesetAvailable());
+                          ruleset_dealer_->IsRulesetFileAvailable());
   }
 }
 
@@ -163,7 +163,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
       ancestor_document_urls.front().SchemeIsFile()) {
     RecordHistogramsOnLoadCommitted();
     if (activation_state_for_provisional_load_ != ActivationState::DISABLED &&
-        ruleset_dealer_->IsRulesetAvailable()) {
+        ruleset_dealer_->IsRulesetFileAvailable()) {
       base::Closure first_disallowed_load_callback(
           base::Bind(&SubresourceFilterAgent::
                          SignalFirstSubresourceDisallowedForCommittedLoad,

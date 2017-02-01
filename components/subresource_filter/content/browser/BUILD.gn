@@ -10,6 +10,8 @@ static_library("browser") {
     "content_subresource_filter_driver.h",
     "content_subresource_filter_driver_factory.cc",
     "content_subresource_filter_driver_factory.h",
+    "verified_ruleset_dealer.cc",
+    "verified_ruleset_dealer.h",
   ]
   deps = [
     "//base",
@@ -29,6 +31,7 @@ source_set("unit_tests") {
   sources = [
     "content_ruleset_service_delegate_unittest.cc",
     "content_subresource_filter_driver_factory_unittest.cc",
+    "verified_ruleset_dealer_unittest.cc",
   ]
   deps = [
     ":browser",
@@ -37,6 +40,8 @@ source_set("unit_tests") {
     "//components/subresource_filter/content/common",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/browser:test_support",
+    "//components/subresource_filter/core/common",
+    "//components/subresource_filter/core/common:test_support",
     "//content/test:test_support",
     "//ipc",
     "//ipc:test_support",

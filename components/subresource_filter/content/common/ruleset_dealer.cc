@@ -9,20 +9,26 @@
 
 namespace subresource_filter {
 
-RulesetDealer::RulesetDealer() = default;
+RulesetDealer::RulesetDealer() {
+  DetachFromThread();
+}
+
 RulesetDealer::~RulesetDealer() = default;
 
 void RulesetDealer::SetRulesetFile(base::File ruleset_file) {
+  DCHECK(CalledOnValidThread());
   DCHECK(ruleset_file.IsValid());
   ruleset_file_ = std::move(ruleset_file);
   weak_cached_ruleset_.reset();
 }
 
-bool RulesetDealer::IsRulesetAvailable() const {
+bool RulesetDealer::IsRulesetFileAvailable() const {
+  DCHECK(CalledOnValidThread());
   return ruleset_file_.IsValid();
 }
 
 scoped_refptr<const MemoryMappedRuleset> RulesetDealer::GetRuleset() {
+  DCHECK(CalledOnValidThread());
   if (!ruleset_file_.IsValid())
     return nullptr;
 

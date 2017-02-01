@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 
 namespace subresource_filter {
 
@@ -29,28 +30,28 @@ class MemoryMappedRuleset;
 //     they will use the same, cached, MemoryMappedRuleset instance, and will
 //     not call mmap() multiple times.
 //
-class RulesetDealer {
+class RulesetDealer : protected base::NonThreadSafe {
  public:
   RulesetDealer();
   virtual ~RulesetDealer();
 
   // Sets the |ruleset_file| to memory map and distribute from now on.
-  void SetRulesetFile(base::File ruleset_file);
+  virtual void SetRulesetFile(base::File ruleset_file);
 
-  // Returns whether a subsequent call to GetRuleset() would return a non-null
-  // ruleset, but without memory mapping the ruleset.
-  bool IsRulesetAvailable() const;
+  // Returns whether |this| dealer has a ruleset file to read from. Does not
+  // interact with the file system.
+  bool IsRulesetFileAvailable() const;
 
   // Returns the set |ruleset_file|. Normally, the same instance is used by all
   // call sites in a given process. That intance is mapped lazily and umapped
   // eagerly as soon as the last reference to it is dropped.
-  scoped_refptr<const MemoryMappedRuleset> GetRuleset();
+  virtual scoped_refptr<const MemoryMappedRuleset> GetRuleset();
+
+  // For testing only.
+  bool has_cached_ruleset() const { return !!weak_cached_ruleset_.get(); }
 
  private:
   friend class SubresourceFilterRulesetDealerTest;
-
-  // Exposed for testing only.
-  bool has_cached_ruleset() const { return !!weak_cached_ruleset_.get(); }
 
   base::File ruleset_file_;
   base::WeakPtr<MemoryMappedRuleset> weak_cached_ruleset_;

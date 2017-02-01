@@ -30,6 +30,15 @@ struct TestRuleset {
   // Convenience function to open a read-only file handle to |ruleset|.
   static base::File Open(const TestRuleset& ruleset);
 
+  // Corrupts the |ruleset| file by truncating its tail of a certain size.
+  static void CorruptByTruncating(const TestRuleset& ruleset, size_t tail_size);
+
+  // Overrides all bytes in the [from..to) range by |fill_with|.
+  static void CorruptByFilling(const TestRuleset& ruleset,
+                               size_t from,
+                               size_t to,
+                               uint8_t fill_with);
+
   std::vector<uint8_t> contents;
   base::FilePath path;
 };
@@ -61,13 +70,21 @@ class TestRulesetCreator {
       base::StringPiece suffix,
       TestRulesetPair* test_ruleset_pair);
 
-  void CreateRulesetWithRules(const std::vector<proto::UrlRule>& rules,
-                              TestRulesetPair* test_ruleset_pair);
-
   // Same as above, but only creates an unindexed ruleset.
   void CreateUnindexedRulesetToDisallowURLsWithPathSuffix(
       base::StringPiece suffix,
       TestRuleset* test_unindexed_ruleset);
+
+  // Similar to CreateRulesetToDisallowURLsWithPathSuffix, but the resulting
+  // ruleset consists of |num_of_suffixes| rules, each of them disallowing URLs
+  // with suffixes of the form |suffix|_k, 0 <= k < |num_of_suffixes|.
+  void CreateRulesetToDisallowURLsWithManySuffixes(
+      base::StringPiece suffix,
+      int num_of_suffixes,
+      TestRulesetPair* test_ruleset_pair);
+
+  void CreateRulesetWithRules(const std::vector<proto::UrlRule>& rules,
+                              TestRulesetPair* test_ruleset_pair);
 
   // Returns a unique |path| that is valid for the lifetime of this instance.
   // No file at |path| will be automatically created.
