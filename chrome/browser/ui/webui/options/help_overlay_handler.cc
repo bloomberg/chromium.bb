@@ -21,12 +21,13 @@ HelpOverlayHandler::~HelpOverlayHandler() {
 
 void HelpOverlayHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
-  RegisterTitle(localized_strings, "aboutOverlay", IDS_ABOUT_TITLE);
+  if (::switches::SettingsWindowEnabled())
+    RegisterTitle(localized_strings, "aboutOverlay", IDS_ABOUT_TITLE);
   HelpHandler::GetLocalizedValues(localized_strings);
 }
 
 void HelpOverlayHandler::RegisterMessages() {
-  if (::switches::AboutInSettingsEnabled())
+  if (::switches::SettingsWindowEnabled())
     web_ui()->AddMessageHandler(base::MakeUnique<HelpHandler>());
 }
 

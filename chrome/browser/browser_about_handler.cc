@@ -109,7 +109,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUISettingsHost) {
     if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
       return true;  // Prevent further rewriting - this is a valid URL.
-    } else if (::switches::AboutInSettingsEnabled()) {
+    } else if (::switches::SettingsWindowEnabled()) {
       host = chrome::kChromeUISettingsFrameHost;
     } else {
       host = chrome::kChromeUIUberHost;
@@ -119,7 +119,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIHelpHost) {
     if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
       return false;  // Handled in the HandleWebUI handler.
-    } else if (::switches::AboutInSettingsEnabled()) {
+    } else if (::switches::SettingsWindowEnabled()) {
       host = chrome::kChromeUISettingsFrameHost;
       if (url->path().empty() || url->path() == "/")
         path = chrome::kChromeUIHelpHost;

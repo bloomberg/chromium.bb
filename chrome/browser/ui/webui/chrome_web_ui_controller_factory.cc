@@ -444,11 +444,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   // Settings are implemented with native UI elements on Android.
-  // Handle chrome://settings if settings in a window and about in settings
-  // are enabled.
+  // Handle chrome://settings if settings in a window is enabled.
   if (url.host_piece() == chrome::kChromeUISettingsFrameHost ||
       (url.host_piece() == chrome::kChromeUISettingsHost &&
-       ::switches::AboutInSettingsEnabled())) {
+       ::switches::SettingsWindowEnabled())) {
     return &NewWebUI<options::OptionsUI>;
   }
   if (url.host_piece() == chrome::kChromeUISyncFileSystemInternalsHost)

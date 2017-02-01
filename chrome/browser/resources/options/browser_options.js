@@ -197,7 +197,7 @@ cr.define('options', function() {
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
 
-      if (loadTimeData.getBoolean('showAbout')) {
+      if (loadTimeData.valueExists('aboutOverlayTabTitle')) {
         $('about-button').hidden = false;
         $('about-button').addEventListener('click', function() {
           PageManager.showPageByName('help');

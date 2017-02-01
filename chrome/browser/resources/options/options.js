@@ -182,7 +182,7 @@ function load() {
       BrowserOptions.getInstance());
 // </if>
 
-  if (loadTimeData.getBoolean('showAbout')) {
+  if (loadTimeData.valueExists('aboutOverlayTabTitle')) {
     PageManager.registerOverlay(help.HelpPage.getInstance(),
                                 BrowserOptions.getInstance());
     if (help.ChannelChangePage) {

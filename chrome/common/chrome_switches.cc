@@ -163,10 +163,6 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
 
-// When kEnableSettingsWindow is used, About is shown as an overlay in Settings
-// instead of as a separate page, unless this flag is specified.
-const char kDisableAboutInSettings[]        = "disable-about-in-settings";
-
 // Disables the display of a banner allowing the user to add a web
 // app to their shelf (or platform-specific equivalent)
 const char kDisableAddToShelf[] = "disable-add-to-shelf";
@@ -1141,12 +1137,6 @@ const char kEnableWaylandServer[] = "enable-wayland-server";
 extern const char kDisableInputImeAPI[] = "disable-input-ime-api";
 extern const char kEnableInputImeAPI[] = "enable-input-ime-api";
 #endif
-
-bool AboutInSettingsEnabled() {
-  return SettingsWindowEnabled() &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             ::switches::kDisableAboutInSettings);
-}
 
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
   return command_line.HasSwitch(switches::kDisableExtensions) ||

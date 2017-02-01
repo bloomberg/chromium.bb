@@ -153,8 +153,6 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
                                chrome::kSettingsSearchHelpURL);
 
   // About
-  localized_strings->SetBoolean("showAbout",
-                                switches::AboutInSettingsEnabled());
   localized_strings->SetString("aboutButton",
                                l10n_util::GetStringUTF16(IDS_ABOUT_BUTTON));
 
