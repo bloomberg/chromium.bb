@@ -190,7 +190,7 @@ found in the LICENSE file.
             vrDisplay.depthNear = 0.1;
             vrDisplay.depthFar = 1024.0;
 
-            initWebGL(true);
+            initWebGL(vrDisplay.capabilities.hasExternalDisplay);
 
             if (vrDisplay.stageParameters &&
                 vrDisplay.stageParameters.sizeX > 0 &&

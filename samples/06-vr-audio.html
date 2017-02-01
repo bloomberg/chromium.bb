@@ -261,7 +261,7 @@ found in the LICENSE file.
             vrDisplay.depthNear = 0.1;
             vrDisplay.depthFar = 1024.0;
 
-            init(true);
+            init(vrDisplay.capabilities.hasExternalDisplay);
 
             VRSamplesUtil.addButton("Reset Pose", "R", null, function () { vrDisplay.resetPose(); });
 
