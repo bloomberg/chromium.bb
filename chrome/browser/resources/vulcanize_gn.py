@@ -133,30 +133,34 @@ def _update_dep_file(in_folder, args):
             filtered_dependencies))
 
 
-def _vulcanize(in_folder, out_folder, host, html_in_file,
-               html_out_file, js_out_file):
+def _vulcanize(in_folder, args):
   in_path = os.path.normpath(os.path.join(_CWD, in_folder))
-  out_path = os.path.join(_CWD, out_folder)
+  out_path = os.path.join(_CWD, args.out_folder)
 
-  html_out_path = os.path.join(out_path, html_out_file)
-  js_out_path = os.path.join(out_path, js_out_file)
+  html_out_path = os.path.join(out_path, args.html_out_file)
+  js_out_path = os.path.join(out_path, args.js_out_file)
 
   output = _run_node(
       [node_modules.PathToVulcanize()] +
       _VULCANIZE_BASE_ARGS + _VULCANIZE_REDIRECT_ARGS +
       ['--out-request-list', os.path.join(out_path, _REQUEST_LIST_FILE),
        '--redirect', '"/|%s"' % in_path,
-       '--redirect', '"chrome://%s/|%s"' % (host, in_path),
+       '--redirect', '"chrome://%s/|%s"' % (args.host, in_path),
        # TODO(dpapad): Figure out why vulcanize treats the input path
        # differently on Windows VS Linux/Mac.
        os.path.join(
            in_path if platform.system() == 'Windows' else os.sep,
-           html_in_file)])
+           args.html_in_file)])
+
+  # Grit includes are not supported, use HTML imports instead.
+  output = output.replace('<include src="', '<include src-disabled="')
+
+  if args.insert_in_head:
+    assert '<head>' in output
+    output = output.replace('<head>', '<head>' + args.insert_in_head)
 
   with tempfile.NamedTemporaryFile(mode='wt+', delete=False) as tmp:
-    # Grit includes are not supported, use HTML imports instead.
-    tmp.write(output.replace(
-        '<include src="', '<include src-disabled="'))
+    tmp.write(output)
 
   try:
     _run_node([node_modules.PathToCrisper(),
@@ -189,6 +193,7 @@ def main():
   parser.add_argument('--html_out_file')
   parser.add_argument('--input')
   parser.add_argument('--input_type')
+  parser.add_argument('--insert_in_head')
   parser.add_argument('--js_out_file')
   parser.add_argument('--out_folder')
   args = parser.parse_args()
@@ -205,8 +210,7 @@ def main():
     unpack_pak.unpack(args.input, output_folder)
     vulcanize_input_folder = output_folder
 
-  _vulcanize(vulcanize_input_folder, args.out_folder, args.host,
-             args.html_in_file, args.html_out_file, args.js_out_file)
+  _vulcanize(vulcanize_input_folder, args)
   _css_build(args.out_folder, files=[args.html_out_file])
 
   _update_dep_file(vulcanize_input_folder, args)

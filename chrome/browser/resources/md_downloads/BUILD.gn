@@ -4,6 +4,7 @@ vulcanize("vulcanize") {
   host = "downloads"
   html_in_file = "downloads.html"
   html_out_file = "vulcanized.html"
+  insert_in_head = "<base href=chrome://downloads>"
 
   input_type = "FOLDER"
   input = rebase_path(".", root_build_dir)

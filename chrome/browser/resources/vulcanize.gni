@@ -45,6 +45,8 @@ template("vulcanize") {
       invoker.input_type,
       "--input",
       invoker.input,
+      "--insert_in_head",
+      invoker.insert_in_head,
       "--out_folder",
       rebase_path(target_gen_dir, root_build_dir),
       "--depfile",
