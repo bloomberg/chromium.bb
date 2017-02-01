@@ -30,8 +30,8 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -399,11 +399,13 @@ bool ExtensionActionRunner::OnMessageReceived(
   return handled;
 }
 
-void ExtensionActionRunner::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (details.is_in_page)
+void ExtensionActionRunner::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSamePage()) {
     return;
+  }
 
   LogUMA();
   num_page_requests_ = 0;
