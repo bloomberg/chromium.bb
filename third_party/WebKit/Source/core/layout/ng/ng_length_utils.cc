@@ -14,7 +14,7 @@
 
 namespace blink {
 // TODO(layout-ng):
-// - positioned and/or replaced calculations
+// - replaced calculations
 // - Take scrollbars into account
 
 bool NeedMinAndMaxContentSizes(const NGConstraintSpace& constraint_space,
@@ -41,7 +41,6 @@ LayoutUnit ResolveInlineLength(
     const WTF::Optional<MinAndMaxContentSizes>& min_and_max,
     const Length& length,
     LengthResolveType type) {
-  // TODO(layout-ng): Handle min/max/fit-content
   DCHECK(!length.isMaxSizeNone());
   DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
 

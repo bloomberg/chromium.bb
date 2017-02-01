@@ -630,8 +630,6 @@ NGConstraintSpace*
 NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
   // TODO(layout-ng): Orthogonal children should also shrink to fit (in *their*
   // inline axis)
-  // We have to keep this commented out for now until we correctly compute
-  // min/max content sizes in Layout().
   bool shrink_to_fit = CurrentChildStyle().display() == EDisplay::InlineBlock ||
                        CurrentChildStyle().isFloating();
   DCHECK(current_child_);
