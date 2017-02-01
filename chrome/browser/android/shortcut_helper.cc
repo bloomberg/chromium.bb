@@ -31,12 +31,13 @@ using content::Manifest;
 
 namespace {
 
-static int kIdealHomescreenIconSize = -1;
-static int kMinimumHomescreenIconSize = -1;
-static int kIdealSplashImageSize = -1;
-static int kMinimumSplashImageSize = -1;
+int g_ideal_homescreen_icon_size = -1;
+int g_minimum_homescreen_icon_size = -1;
+int g_ideal_splash_image_size = -1;
+int g_minimum_splash_image_size = -1;
+int g_ideal_badge_icon_size = -1;
 
-static int kDefaultRGBIconValue = 145;
+int g_default_rgb_icon_value = 145;
 
 // Retrieves and caches the ideal and minimum sizes of the Home screen icon
 // and the splash screen image.
@@ -49,17 +50,18 @@ void GetHomescreenIconAndSplashImageSizes() {
       env, java_size_array.obj(), &sizes);
 
   // Check that the size returned is what is expected.
-  DCHECK(sizes.size() == 4);
+  DCHECK(sizes.size() == 5);
 
   // This ordering must be kept up to date with the Java ShortcutHelper.
-  kIdealHomescreenIconSize = sizes[0];
-  kMinimumHomescreenIconSize = sizes[1];
-  kIdealSplashImageSize = sizes[2];
-  kMinimumSplashImageSize = sizes[3];
+  g_ideal_homescreen_icon_size = sizes[0];
+  g_minimum_homescreen_icon_size = sizes[1];
+  g_ideal_splash_image_size = sizes[2];
+  g_minimum_splash_image_size = sizes[3];
+  g_ideal_badge_icon_size = sizes[4];
 
   // Try to ensure that the data returned is sane.
-  DCHECK(kMinimumHomescreenIconSize <= kIdealHomescreenIconSize);
-  DCHECK(kMinimumSplashImageSize <= kIdealSplashImageSize);
+  DCHECK(g_minimum_homescreen_icon_size <= g_ideal_homescreen_icon_size);
+  DCHECK(g_minimum_splash_image_size <= g_ideal_splash_image_size);
 }
 
 } // anonymous namespace
@@ -151,27 +153,33 @@ void ShortcutHelper::ShowWebApkInstallInProgressToast() {
 }
 
 int ShortcutHelper::GetIdealHomescreenIconSizeInPx() {
-  if (kIdealHomescreenIconSize == -1)
+  if (g_ideal_homescreen_icon_size == -1)
     GetHomescreenIconAndSplashImageSizes();
-  return kIdealHomescreenIconSize;
+  return g_ideal_homescreen_icon_size;
 }
 
 int ShortcutHelper::GetMinimumHomescreenIconSizeInPx() {
-  if (kMinimumHomescreenIconSize == -1)
+  if (g_minimum_homescreen_icon_size == -1)
     GetHomescreenIconAndSplashImageSizes();
-  return kMinimumHomescreenIconSize;
+  return g_minimum_homescreen_icon_size;
 }
 
 int ShortcutHelper::GetIdealSplashImageSizeInPx() {
-  if (kIdealSplashImageSize == -1)
+  if (g_ideal_splash_image_size == -1)
     GetHomescreenIconAndSplashImageSizes();
-  return kIdealSplashImageSize;
+  return g_ideal_splash_image_size;
 }
 
 int ShortcutHelper::GetMinimumSplashImageSizeInPx() {
-  if (kMinimumSplashImageSize == -1)
+  if (g_minimum_splash_image_size == -1)
     GetHomescreenIconAndSplashImageSizes();
-  return kMinimumSplashImageSize;
+  return g_minimum_splash_image_size;
+}
+
+int ShortcutHelper::GetIdealBadgeIconSizeInPx() {
+  if (g_ideal_badge_icon_size == -1)
+    GetHomescreenIconAndSplashImageSizes();
+  return g_ideal_badge_icon_size;
 }
 
 // static
@@ -230,8 +238,9 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
   if (result.is_null()) {
     ScopedJavaLocalRef<jstring> java_url =
         base::android::ConvertUTF8ToJavaString(env, url.spec());
-    SkColor mean_color = SkColorSetRGB(
-        kDefaultRGBIconValue, kDefaultRGBIconValue, kDefaultRGBIconValue);
+    SkColor mean_color =
+        SkColorSetRGB(g_default_rgb_icon_value, g_default_rgb_icon_value,
+                      g_default_rgb_icon_value);
 
     if (!bitmap.isNull())
       mean_color = color_utils::CalculateKMeanColorOfBitmap(bitmap);

@@ -63,10 +63,10 @@ class ShortcutHelper {
   // when user tries to queue a new install for the same WebAPK.
   static void ShowWebApkInstallInProgressToast();
 
-  // Returns the ideal size for an icon representing a web app.
+  // Returns the ideal size for an icon representing a web app or a WebAPK.
   static int GetIdealHomescreenIconSizeInPx();
 
-  // Returns the minimum size for an icon representing a web app.
+  // Returns the minimum size for an icon representing a web app or a WebAPK.
   static int GetMinimumHomescreenIconSizeInPx();
 
   // Returns the ideal size for an image displayed on a web app's splash
@@ -76,6 +76,9 @@ class ShortcutHelper {
   // Returns the minimum size for an image displayed on a web app's splash
   // screen.
   static int GetMinimumSplashImageSizeInPx();
+
+  // Returns the ideal size for a badge icon of a WebAPK.
+  static int GetIdealBadgeIconSizeInPx();
 
   // Fetches the splash screen image and stores it inside the WebappDataStorage
   // of the webapp. The WebappDataStorage object *must* have been previously

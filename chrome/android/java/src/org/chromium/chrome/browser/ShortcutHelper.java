@@ -515,8 +515,8 @@ public class ShortcutHelper {
     /**
      * Returns the ideal size for an icon representing a web app.  This size is used on app banners,
      * the Android Home screen, and in Android's recent tasks list, among other places.
-     * @param resources Resources to retrieve the dimension from.
-     * @return the dimensions in dp which the icon should have.
+     * @param context Context to pull resources from.
+     * @return the dimensions in pixels which the icon should have.
      */
     public static int getIdealHomescreenIconSizeInPx(Context context) {
         return getSizeFromResourceInPx(context, R.dimen.webapp_home_screen_icon_size);
@@ -525,8 +525,8 @@ public class ShortcutHelper {
     /**
      * Returns the minimum size for an icon representing a web app.  This size is used on app
      * banners, the Android Home screen, and in Android's recent tasks list, among other places.
-     * @param resources Resources to retrieve the dimension from.
-     * @return the lower bound of the size which the icon should have in dp.
+     * @param context Context to pull resources from.
+     * @return the lower bound of the size which the icon should have in pixels.
      */
     public static int getMinimumHomescreenIconSizeInPx(Context context) {
         float sizeInPx = context.getResources().getDimension(R.dimen.webapp_home_screen_icon_size);
@@ -538,8 +538,8 @@ public class ShortcutHelper {
 
     /**
      * Returns the ideal size for an image displayed on a web app's splash screen.
-     * @param resources Resources to retrieve the dimension from.
-     * @return the dimensions in dp which the image should have.
+     * @param context Context to pull resources from.
+     * @return the dimensions in pixels which the image should have.
      */
     public static int getIdealSplashImageSizeInPx(Context context) {
         return getSizeFromResourceInPx(context, R.dimen.webapp_splash_image_size_ideal);
@@ -547,11 +547,20 @@ public class ShortcutHelper {
 
     /**
      * Returns the minimum size for an image displayed on a web app's splash screen.
-     * @param resources Resources to retrieve the dimension from.
-     * @return the lower bound of the size which the image should have in dp.
+     * @param context Context to pull resources from.
+     * @return the lower bound of the size which the image should have in pixels.
      */
     public static int getMinimumSplashImageSizeInPx(Context context) {
         return getSizeFromResourceInPx(context, R.dimen.webapp_splash_image_size_minimum);
+    }
+
+    /**
+     * Returns the ideal size for a badge icon of a WebAPK.
+     * @param context Context to pull resources from.
+     * @return the dimensions in pixels which the badge icon should have.
+     */
+    public static int getIdealBadgeIconSizeInPx(Context context) {
+        return getSizeFromResourceInPx(context, R.dimen.webapk_badge_icon_size);
     }
 
     /**
@@ -611,7 +620,8 @@ public class ShortcutHelper {
             getIdealHomescreenIconSizeInPx(context),
             getMinimumHomescreenIconSizeInPx(context),
             getIdealSplashImageSizeInPx(context),
-            getMinimumSplashImageSizeInPx(context)
+            getMinimumSplashImageSizeInPx(context),
+            getIdealBadgeIconSizeInPx(context)
         };
     }
 

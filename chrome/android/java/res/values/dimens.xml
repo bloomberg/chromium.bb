@@ -223,6 +223,8 @@
     <dimen name="webapp_splash_small_title_margin_top">32dp</dimen>
     <dimen name="webapp_splash_large_title_margin_bottom">16dp</dimen>
 
+    <dimen name="webapk_badge_icon_size">24dp</dimen>
+    
     <!-- Toolbar dimensions -->
     <dimen name="toolbar_tab_count_text_size_1_digit">12dp</dimen>
     <dimen name="toolbar_tab_count_text_size_2_digit">10dp</dimen>
