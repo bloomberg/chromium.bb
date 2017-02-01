@@ -53,11 +53,13 @@ const int kRendererPid = 21718;
 const int kRenderFrameId = 31415;
 const int kSharedMemoryCount = 11;
 const char kSecurityOrigin[] = "http://localhost";
+#if BUILDFLAG(ENABLE_WEBRTC)
 #if defined(OS_WIN)
 const wchar_t kBaseFileName[] = L"some_file_name";
 #else
 const char kBaseFileName[] = "some_file_name";
-#endif
+#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 url::Origin SecurityOrigin() {
   return url::Origin(GURL(kSecurityOrigin));
