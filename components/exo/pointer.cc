@@ -74,6 +74,9 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   if (!focus_)
     return;
 
+  // This is used to avoid unnecessary cursor changes.
+  bool cursor_changed = false;
+
   // If surface is different than the current pointer surface then remove the
   // current surface and add the new surface.
   if (surface != surface_) {
@@ -100,10 +103,18 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
           ->GetContainer(ash::kShellWindowId_MouseCursorContainer)
           ->AddChild(surface_->window());
     }
+    cursor_changed = true;
   }
 
   // Update hotspot.
-  hotspot_ = hotspot;
+  if (hotspot != hotspot_) {
+    hotspot_ = hotspot;
+    cursor_changed = true;
+  }
+
+  // Early out if cursor did not change.
+  if (!cursor_changed)
+    return;
 
   // If |surface_| is set then ascynchrounsly capture a snapshot of cursor,
   // otherwise cancel pending capture and immediately set the cursor to "none".
