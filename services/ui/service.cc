@@ -188,7 +188,6 @@ void Service::OnStart() {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
-  // Gpu must be running before the ScreenManager can be initialized.
   window_server_.reset(new ws::WindowServer(this));
 
   ime_server_.Init(context()->connector(), test_config_);
