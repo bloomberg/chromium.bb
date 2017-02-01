@@ -62,6 +62,7 @@ blink_core_sources("loader") {
     "appcache/ApplicationCache.h",
     "appcache/ApplicationCacheHost.cpp",
     "appcache/ApplicationCacheHost.h",
+    "modulescript/ModuleScriptFetchRequest.h",
     "resource/CSSStyleSheetResource.cpp",
     "resource/CSSStyleSheetResource.h",
     "resource/DocumentResource.cpp",
