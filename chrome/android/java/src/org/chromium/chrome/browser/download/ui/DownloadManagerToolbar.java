@@ -84,6 +84,12 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     @Override
     public void onManagerDestroyed() { }
 
+    @Override
+    public void hideSearchView() {
+        super.hideSearchView();
+        updateTitle();
+    }
+
     private void updateTitle() {
         if (mFilter == DownloadFilter.FILTER_ALL) {
             setTitle(R.string.menu_downloads);
