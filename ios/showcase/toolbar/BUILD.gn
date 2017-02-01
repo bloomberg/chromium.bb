@@ -8,6 +8,7 @@ source_set("toolbar") {
     "sc_toolbar_coordinator.mm",
   ]
   deps = [
+    "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/showcase/common",
   ]

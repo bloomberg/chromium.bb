@@ -4,19 +4,70 @@
 
 #import "ios/showcase/toolbar/sc_toolbar_coordinator.h"
 
+#import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
+#import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Toolbar height.
+CGFloat kToolbarHeight = 50.0f;
+}  // namespace
+
+@interface SCToolbarCoordinator ()
+@property(nonatomic, strong) ProtocolAlerter* alerter;
+@end
+
 @implementation SCToolbarCoordinator
 @synthesize baseViewController = _baseViewController;
+@synthesize alerter = _alerter;
 
 - (void)start {
-  ToolbarViewController* viewController = [[ToolbarViewController alloc] init];
-  viewController.title = @"Toolbar";
-  [self.baseViewController pushViewController:viewController animated:YES];
+  self.alerter = [[ProtocolAlerter alloc]
+      initWithProtocols:@[ @protocol(ToolbarCommands) ]];
+  self.alerter.baseViewController = self.baseViewController;
+
+  UIViewController* containerViewController = [[UIViewController alloc] init];
+  containerViewController.view.backgroundColor = [UIColor whiteColor];
+  containerViewController.title = @"Toolbar";
+
+  UIView* containerView = [[UIView alloc] init];
+  [containerViewController.view addSubview:containerView];
+  containerView.backgroundColor = [UIColor redColor];
+  containerView.translatesAutoresizingMaskIntoConstraints = NO;
+
+  ToolbarViewController* toolbarViewController =
+      [[ToolbarViewController alloc] init];
+  toolbarViewController.toolbarCommandHandler =
+      static_cast<id<ToolbarCommands>>(self.alerter);
+  toolbarViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+  [containerViewController addChildViewController:toolbarViewController];
+  [containerView addSubview:toolbarViewController.view];
+  [toolbarViewController didMoveToParentViewController:containerViewController];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [containerView.heightAnchor constraintEqualToConstant:kToolbarHeight],
+    [containerView.leadingAnchor
+        constraintEqualToAnchor:containerViewController.view.leadingAnchor],
+    [containerView.trailingAnchor
+        constraintEqualToAnchor:containerViewController.view.trailingAnchor],
+    [containerView.centerYAnchor
+        constraintEqualToAnchor:containerViewController.view.centerYAnchor],
+    [toolbarViewController.view.topAnchor
+        constraintEqualToAnchor:containerView.topAnchor],
+    [toolbarViewController.view.bottomAnchor
+        constraintEqualToAnchor:containerView.bottomAnchor],
+    [toolbarViewController.view.leadingAnchor
+        constraintEqualToAnchor:containerView.leadingAnchor],
+    [toolbarViewController.view.trailingAnchor
+        constraintEqualToAnchor:containerView.trailingAnchor],
+  ]];
+
+  [self.baseViewController pushViewController:containerViewController
+                                     animated:YES];
 }
 
 @end
