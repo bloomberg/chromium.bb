@@ -4,6 +4,7 @@
 
 #include "content/utility/in_process_utility_thread.h"
 
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"

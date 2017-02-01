@@ -977,10 +977,6 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
   // Android doesn't use InitChromeLogging, so we close the log file manually.
   logging::CloseLogFile();
 #endif  // !defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-  base::debug::RemoveHandleHooks();
-#endif
 }
 
 #if defined(OS_MACOSX)

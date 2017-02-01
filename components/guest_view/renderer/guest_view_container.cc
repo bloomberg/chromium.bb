@@ -4,6 +4,7 @@
 
 #include "components/guest_view/renderer/guest_view_container.h"
 
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/guest_view/common/guest_view_constants.h"
