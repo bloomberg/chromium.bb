@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DEFERRED_FILE_SYSTEM_OPERATION_RUNNER_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DEFERRED_FILE_SYSTEM_OPERATION_RUNNER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,12 +15,15 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/file_system.mojom.h"
-#include "components/arc/file_system/arc_file_system_operation_runner.h"
 #include "components/arc/instance_holder.h"
 
 namespace arc {
 
-// Implements deferred ARC file system operations.
+// Runs ARC file system operations.
+//
+// This is an abstraction layer on top of mojom::FileSystemInstance. All ARC
+// file system operations should go through this class, rather than invoking
+// mojom::FileSystemInstance directly.
 //
 // When ARC is disabled or ARC has already booted, file system operations are
 // performed immediately. While ARC boot is under progress, file operations are
@@ -38,26 +42,42 @@ namespace arc {
 //   failing immediately.
 //
 // All member functions must be called on the UI thread.
-class ArcDeferredFileSystemOperationRunner
-    : public ArcFileSystemOperationRunner,
+class ArcFileSystemOperationRunner
+    : public ArcService,
       public ArcSessionManager::Observer,
       public InstanceHolder<mojom::FileSystemInstance>::Observer {
  public:
-  explicit ArcDeferredFileSystemOperationRunner(
-      ArcBridgeService* bridge_service);
-  ~ArcDeferredFileSystemOperationRunner() override;
+  using GetFileSizeCallback = mojom::FileSystemInstance::GetFileSizeCallback;
+  using OpenFileToReadCallback =
+      mojom::FileSystemInstance::OpenFileToReadCallback;
+  using GetDocumentCallback = mojom::FileSystemInstance::GetDocumentCallback;
+  using GetChildDocumentsCallback =
+      mojom::FileSystemInstance::GetChildDocumentsCallback;
 
-  // ArcFileSystemOperationRunner overrides:
-  void GetFileSize(const GURL& url,
-                   const GetFileSizeCallback& callback) override;
-  void OpenFileToRead(const GURL& url,
-                      const OpenFileToReadCallback& callback) override;
+  // For supporting ArcServiceManager::GetService<T>().
+  static const char kArcServiceName[];
+
+  // Creates an instance suitable for unit tests.
+  // This instance will run all operations immediately without deferring by
+  // default. Also, deferring can be enabled/disabled by calling
+  // SetShouldDefer() from friend classes.
+  static std::unique_ptr<ArcFileSystemOperationRunner> CreateForTesting(
+      ArcBridgeService* bridge_service);
+
+  // The standard constructor. A production instance should be created by
+  // this constructor.
+  explicit ArcFileSystemOperationRunner(ArcBridgeService* bridge_service);
+  ~ArcFileSystemOperationRunner() override;
+
+  // Runs file system operations. See file_system.mojom for documentation.
+  void GetFileSize(const GURL& url, const GetFileSizeCallback& callback);
+  void OpenFileToRead(const GURL& url, const OpenFileToReadCallback& callback);
   void GetDocument(const std::string& authority,
                    const std::string& document_id,
-                   const GetDocumentCallback& callback) override;
+                   const GetDocumentCallback& callback);
   void GetChildDocuments(const std::string& authority,
                          const std::string& parent_document_id,
-                         const GetChildDocumentsCallback& callback) override;
+                         const GetChildDocumentsCallback& callback);
 
   // ArcSessionManager::Observer overrides:
   void OnArcOptInChanged(bool enabled) override;
@@ -67,16 +87,17 @@ class ArcDeferredFileSystemOperationRunner
   void OnInstanceClosed() override;
 
  private:
-  friend class ArcDeferredFileSystemOperationRunnerTest;
+  friend class ArcFileSystemOperationRunnerTest;
 
-  // Constructor called from unit tests.
-  ArcDeferredFileSystemOperationRunner(ArcBridgeService* bridge_service,
-                                       bool observe_events);
+  ArcFileSystemOperationRunner(ArcBridgeService* bridge_service,
+                               bool observe_events);
 
   // Called whenever ARC states related to |should_defer_| are changed.
   void OnStateChanged();
 
   // Enables/disables deferring.
+  // Friend unit tests can call this function to simulate enabling/disabling
+  // deferring.
   void SetShouldDefer(bool should_defer);
 
   // Indicates if this instance should register observers to receive events.
@@ -84,16 +105,18 @@ class ArcDeferredFileSystemOperationRunner
   bool observe_events_;
 
   // Set to true if operations should be deferred at this moment.
-  bool should_defer_ = true;
+  // The default is set to false so that operations are not deferred in
+  // unit tests.
+  bool should_defer_ = false;
 
   // List of deferred operations.
   std::vector<base::Closure> deferred_operations_;
 
-  base::WeakPtrFactory<ArcDeferredFileSystemOperationRunner> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcFileSystemOperationRunner> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcDeferredFileSystemOperationRunner);
+  DISALLOW_COPY_AND_ASSIGN(ArcFileSystemOperationRunner);
 };
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DEFERRED_FILE_SYSTEM_OPERATION_RUNNER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_H_

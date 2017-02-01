@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 
+#include <utility>
+#include <vector>
+
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/file_system/arc_file_system_operation_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 

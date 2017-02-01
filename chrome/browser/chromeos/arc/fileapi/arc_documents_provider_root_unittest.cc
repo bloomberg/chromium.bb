@@ -13,23 +13,28 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/file_system/test/fake_arc_file_system_operation_runner.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using storage::DirectoryEntry;
+using Document = arc::FakeFileSystemInstance::Document;
 using EntryList = storage::AsyncFileUtil::EntryList;
 
 namespace arc {
 
 namespace {
 
+// Simliar as FakeFileSystemInstance::Document, but all fields are primitives
+// so that values can be constexpr.
 struct DocumentSpec {
   const char* document_id;
+  const char* parent_document_id;
   const char* display_name;
   const char* mime_type;
   int64_t size;
@@ -49,86 +54,42 @@ struct DocumentSpec {
 //     dup.mp4       video/mp4   dup3-id
 //     dup.mp4       video/mp4   dup4-id
 constexpr char kAuthority[] = "org.chromium.test";
-// NOTE: ArcDocumentsProviderRoot::GetFileInfo() returns hard-coded info
-// for root documents.
-constexpr DocumentSpec kRootSpec = {"root-id", nullptr /* not used */,
-                                    kAndroidDirectoryMimeType, -1, 0};
-constexpr DocumentSpec kDirSpec = {"dir-id", "dir", kAndroidDirectoryMimeType,
-                                   -1, 22};
-constexpr DocumentSpec kPhotoSpec = {"photo-id", "photo.jpg", "image/jpeg", 3,
-                                     33};
-constexpr DocumentSpec kMusicSpec = {"music-id", "music.bin", "audio/mp3", 4,
-                                     44};
-constexpr DocumentSpec kDupsSpec = {"dups-id", "dups",
-                                    kAndroidDirectoryMimeType, -1, 55};
-constexpr DocumentSpec kDup1Spec = {"dup1-id", "dup.mp4", "video/mp4", 6, 66};
-constexpr DocumentSpec kDup2Spec = {"dup2-id", "dup.mp4", "video/mp4", 7, 77};
-constexpr DocumentSpec kDup3Spec = {"dup3-id", "dup.mp4", "video/mp4", 8, 88};
-constexpr DocumentSpec kDup4Spec = {"dup4-id", "dup.mp4", "video/mp4", 9, 99};
+constexpr DocumentSpec kRootSpec{"root-id", "", "", kAndroidDirectoryMimeType,
+                                 -1,        0};
+constexpr DocumentSpec kDirSpec{
+    "dir-id", kRootSpec.document_id, "dir", kAndroidDirectoryMimeType, -1, 22};
+constexpr DocumentSpec kPhotoSpec{
+    "photo-id", kDirSpec.document_id, "photo.jpg", "image/jpeg", 3, 33};
+constexpr DocumentSpec kMusicSpec{
+    "music-id", kDirSpec.document_id, "music.bin", "audio/mp3", 4, 44};
+constexpr DocumentSpec kDupsSpec{"dups-id", kRootSpec.document_id,
+                                 "dups",    kAndroidDirectoryMimeType,
+                                 -1,        55};
+constexpr DocumentSpec kDup1Spec{
+    "dup1-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 6, 66};
+constexpr DocumentSpec kDup2Spec{
+    "dup2-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 7, 77};
+constexpr DocumentSpec kDup3Spec{
+    "dup3-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 8, 88};
+constexpr DocumentSpec kDup4Spec{
+    "dup4-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 9, 99};
+
+// The order is intentionally shuffled here so that
+// FileSystemInstance::GetChildDocuments() returns documents in shuffled order.
+// See ResolveToContentUrlDups test below.
 constexpr DocumentSpec kAllSpecs[] = {kRootSpec,  kDirSpec,  kPhotoSpec,
-                                      kMusicSpec, kDupsSpec, kDup1Spec,
-                                      kDup2Spec,  kDup3Spec, kDup4Spec};
+                                      kMusicSpec, kDupsSpec, kDup2Spec,
+                                      kDup1Spec,  kDup4Spec, kDup3Spec};
 
-mojom::DocumentPtr MakeDocument(const DocumentSpec& spec) {
-  mojom::DocumentPtr document = mojom::Document::New();
-  document->document_id = spec.document_id;
-  document->display_name = spec.display_name;
-  document->mime_type = spec.mime_type;
-  document->size = spec.size;
-  document->last_modified = spec.last_modified;
-  return document;
+Document ToDocument(const DocumentSpec& spec) {
+  return Document(kAuthority, spec.document_id, spec.parent_document_id,
+                  spec.display_name, spec.mime_type, spec.size,
+                  spec.last_modified);
 }
-
-// TODO(crbug.com/683049): Use a generic FakeArcFileSystemOperationRunner.
-class ArcFileSystemOperationRunnerForTest
-    : public FakeArcFileSystemOperationRunner {
- public:
-  explicit ArcFileSystemOperationRunnerForTest(ArcBridgeService* bridge_service)
-      : FakeArcFileSystemOperationRunner(bridge_service) {}
-  ~ArcFileSystemOperationRunnerForTest() override = default;
-
-  void GetChildDocuments(const std::string& authority,
-                         const std::string& document_id,
-                         const GetChildDocumentsCallback& callback) override {
-    EXPECT_EQ(kAuthority, authority);
-    base::Optional<std::vector<mojom::DocumentPtr>> result;
-    if (document_id == kRootSpec.document_id) {
-      result.emplace();
-      result.value().emplace_back(MakeDocument(kDirSpec));
-      result.value().emplace_back(MakeDocument(kDupsSpec));
-    } else if (document_id == kDirSpec.document_id) {
-      result.emplace();
-      result.value().emplace_back(MakeDocument(kPhotoSpec));
-      result.value().emplace_back(MakeDocument(kMusicSpec));
-    } else if (document_id == kDupsSpec.document_id) {
-      result.emplace();
-      // The order is intentionally shuffled.
-      result.value().emplace_back(MakeDocument(kDup2Spec));
-      result.value().emplace_back(MakeDocument(kDup1Spec));
-      result.value().emplace_back(MakeDocument(kDup4Spec));
-      result.value().emplace_back(MakeDocument(kDup3Spec));
-    }
-    callback.Run(std::move(result));
-  }
-
-  void GetDocument(const std::string& authority,
-                   const std::string& document_id,
-                   const GetDocumentCallback& callback) override {
-    EXPECT_EQ(kAuthority, authority);
-    mojom::DocumentPtr result;
-    for (const auto& spec : kAllSpecs) {
-      if (document_id == spec.document_id) {
-        result = MakeDocument(spec);
-        break;
-      }
-    }
-    callback.Run(std::move(result));
-  }
-};
 
 void ExpectMatchesSpec(const base::File::Info& info, const DocumentSpec& spec) {
   EXPECT_EQ(spec.size, info.size);
-  if (strcmp(spec.mime_type, kAndroidDirectoryMimeType) == 0) {
+  if (spec.mime_type == kAndroidDirectoryMimeType) {
     EXPECT_TRUE(info.is_directory);
   } else {
     EXPECT_FALSE(info.is_directory);
@@ -144,20 +105,28 @@ void ExpectMatchesSpec(const base::File::Info& info, const DocumentSpec& spec) {
 
 class ArcDocumentsProviderRootTest : public testing::Test {
  public:
-  ArcDocumentsProviderRootTest()
-      : arc_service_manager_(base::MakeUnique<ArcServiceManager>(nullptr)),
-        root_(
-            base::MakeUnique<ArcDocumentsProviderRoot>(kAuthority,
-                                                       kRootSpec.document_id)) {
-    arc_service_manager_->AddService(
-        base::MakeUnique<ArcFileSystemOperationRunnerForTest>(
-            arc_service_manager_->arc_bridge_service()));
-  }
-
+  ArcDocumentsProviderRootTest() = default;
   ~ArcDocumentsProviderRootTest() override = default;
+
+  void SetUp() override {
+    for (auto spec : kAllSpecs) {
+      fake_file_system_.AddDocument(ToDocument(spec));
+    }
+
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_service_manager_->AddService(
+        ArcFileSystemOperationRunner::CreateForTesting(
+            arc_service_manager_->arc_bridge_service()));
+    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
+        &fake_file_system_);
+
+    root_ = base::MakeUnique<ArcDocumentsProviderRoot>(kAuthority,
+                                                       kRootSpec.document_id);
+  }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
+  FakeFileSystemInstance fake_file_system_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcDocumentsProviderRoot> root_;
 
@@ -302,7 +271,7 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryDups) {
              const EntryList& file_list, bool has_more) {
             EXPECT_EQ(base::File::FILE_OK, error);
             ASSERT_EQ(4u, file_list.size());
-            // FiIles are sorted lexicographically.
+            // Files are sorted lexicographically.
             EXPECT_EQ(FILE_PATH_LITERAL("dup (1).mp4"), file_list[0].name);
             EXPECT_FALSE(file_list[0].is_directory);
             EXPECT_EQ(FILE_PATH_LITERAL("dup (2).mp4"), file_list[1].name);

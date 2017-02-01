@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include <memory>
 #include <string>
 
@@ -11,37 +13,24 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_async_file_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/file_system/test/fake_arc_file_system_operation_runner.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using File = arc::FakeFileSystemInstance::File;
 
 namespace arc {
 
 namespace {
 
 constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
-constexpr int64_t kSize = 123456;
-
-// TODO(crbug.com/683049): Use a generic FakeArcFileSystemOperationRunner.
-class ArcFileSystemOperationRunnerForTest
-    : public FakeArcFileSystemOperationRunner {
- public:
-  explicit ArcFileSystemOperationRunnerForTest(ArcBridgeService* bridge_service)
-      : FakeArcFileSystemOperationRunner(bridge_service) {}
-  ~ArcFileSystemOperationRunnerForTest() override = default;
-
-  void GetFileSize(const GURL& url,
-                   const GetFileSizeCallback& callback) override {
-    EXPECT_EQ(kArcUrl, url.spec());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, kSize));
-  }
-};
+constexpr char kData[] = "abcdef";
 
 class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
  public:
@@ -49,10 +38,14 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
   ~ArcContentFileSystemAsyncFileUtilTest() override = default;
 
   void SetUp() override {
+    fake_file_system_.AddFile(File(kArcUrl, kData, File::Seekable::NO));
+
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
     arc_service_manager_->AddService(
-        base::MakeUnique<ArcFileSystemOperationRunnerForTest>(
+        ArcFileSystemOperationRunner::CreateForTesting(
             arc_service_manager_->arc_bridge_service()));
+    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
+        &fake_file_system_);
   }
 
  protected:
@@ -69,6 +62,7 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
+  FakeFileSystemInstance fake_file_system_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   ArcContentFileSystemAsyncFileUtil async_file_util_;
 
@@ -90,7 +84,7 @@ TEST_F(ArcContentFileSystemAsyncFileUtilTest, GetFileInfo) {
           [](base::RunLoop* run_loop, base::File::Error error,
              const base::File::Info& info) {
             EXPECT_EQ(base::File::FILE_OK, error);
-            EXPECT_EQ(kSize, info.size);
+            EXPECT_EQ(static_cast<int64_t>(strlen(kData)), info.size);
             run_loop->Quit();
           },
           &run_loop));

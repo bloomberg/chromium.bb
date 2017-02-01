@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/fileapi/arc_deferred_file_system_operation_runner.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_service.h"
@@ -16,14 +17,28 @@ using content::BrowserThread;
 
 namespace arc {
 
-ArcDeferredFileSystemOperationRunner::ArcDeferredFileSystemOperationRunner(
-    ArcBridgeService* bridge_service)
-    : ArcDeferredFileSystemOperationRunner(bridge_service, true) {}
+// static
+const char ArcFileSystemOperationRunner::kArcServiceName[] =
+    "arc::ArcFileSystemOperationRunner";
 
-ArcDeferredFileSystemOperationRunner::ArcDeferredFileSystemOperationRunner(
+// static
+std::unique_ptr<ArcFileSystemOperationRunner>
+ArcFileSystemOperationRunner::CreateForTesting(
+    ArcBridgeService* bridge_service) {
+  // We can't use base::MakeUnique() here because we are calling a private
+  // constructor.
+  return base::WrapUnique<ArcFileSystemOperationRunner>(
+      new ArcFileSystemOperationRunner(bridge_service, false));
+}
+
+ArcFileSystemOperationRunner::ArcFileSystemOperationRunner(
+    ArcBridgeService* bridge_service)
+    : ArcFileSystemOperationRunner(bridge_service, true) {}
+
+ArcFileSystemOperationRunner::ArcFileSystemOperationRunner(
     ArcBridgeService* bridge_service,
     bool observe_events)
-    : ArcFileSystemOperationRunner(bridge_service),
+    : ArcService(bridge_service),
       observe_events_(observe_events),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -35,7 +50,7 @@ ArcDeferredFileSystemOperationRunner::ArcDeferredFileSystemOperationRunner(
   }
 }
 
-ArcDeferredFileSystemOperationRunner::~ArcDeferredFileSystemOperationRunner() {
+ArcFileSystemOperationRunner::~ArcFileSystemOperationRunner() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (observe_events_) {
@@ -45,13 +60,13 @@ ArcDeferredFileSystemOperationRunner::~ArcDeferredFileSystemOperationRunner() {
   // On destruction, deferred operations are discarded.
 }
 
-void ArcDeferredFileSystemOperationRunner::GetFileSize(
+void ArcFileSystemOperationRunner::GetFileSize(
     const GURL& url,
     const GetFileSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
     deferred_operations_.emplace_back(
-        base::Bind(&ArcDeferredFileSystemOperationRunner::GetFileSize,
+        base::Bind(&ArcFileSystemOperationRunner::GetFileSize,
                    weak_ptr_factory_.GetWeakPtr(), url, callback));
     return;
   }
@@ -65,13 +80,13 @@ void ArcDeferredFileSystemOperationRunner::GetFileSize(
   file_system_instance->GetFileSize(url.spec(), callback);
 }
 
-void ArcDeferredFileSystemOperationRunner::OpenFileToRead(
+void ArcFileSystemOperationRunner::OpenFileToRead(
     const GURL& url,
     const OpenFileToReadCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
     deferred_operations_.emplace_back(
-        base::Bind(&ArcDeferredFileSystemOperationRunner::OpenFileToRead,
+        base::Bind(&ArcFileSystemOperationRunner::OpenFileToRead,
                    weak_ptr_factory_.GetWeakPtr(), url, callback));
     return;
   }
@@ -85,14 +100,14 @@ void ArcDeferredFileSystemOperationRunner::OpenFileToRead(
   file_system_instance->OpenFileToRead(url.spec(), callback);
 }
 
-void ArcDeferredFileSystemOperationRunner::GetDocument(
+void ArcFileSystemOperationRunner::GetDocument(
     const std::string& authority,
     const std::string& document_id,
     const GetDocumentCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
     deferred_operations_.emplace_back(base::Bind(
-        &ArcDeferredFileSystemOperationRunner::GetDocument,
+        &ArcFileSystemOperationRunner::GetDocument,
         weak_ptr_factory_.GetWeakPtr(), authority, document_id, callback));
     return;
   }
@@ -106,14 +121,14 @@ void ArcDeferredFileSystemOperationRunner::GetDocument(
   file_system_instance->GetDocument(authority, document_id, callback);
 }
 
-void ArcDeferredFileSystemOperationRunner::GetChildDocuments(
+void ArcFileSystemOperationRunner::GetChildDocuments(
     const std::string& authority,
     const std::string& parent_document_id,
     const GetChildDocumentsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
     deferred_operations_.emplace_back(
-        base::Bind(&ArcDeferredFileSystemOperationRunner::GetChildDocuments,
+        base::Bind(&ArcFileSystemOperationRunner::GetChildDocuments,
                    weak_ptr_factory_.GetWeakPtr(), authority,
                    parent_document_id, callback));
     return;
@@ -129,28 +144,28 @@ void ArcDeferredFileSystemOperationRunner::GetChildDocuments(
                                           callback);
 }
 
-void ArcDeferredFileSystemOperationRunner::OnArcOptInChanged(bool enabled) {
+void ArcFileSystemOperationRunner::OnArcOptInChanged(bool enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnStateChanged();
 }
 
-void ArcDeferredFileSystemOperationRunner::OnInstanceReady() {
+void ArcFileSystemOperationRunner::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnStateChanged();
 }
 
-void ArcDeferredFileSystemOperationRunner::OnInstanceClosed() {
+void ArcFileSystemOperationRunner::OnInstanceClosed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnStateChanged();
 }
 
-void ArcDeferredFileSystemOperationRunner::OnStateChanged() {
+void ArcFileSystemOperationRunner::OnStateChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SetShouldDefer(ArcSessionManager::Get()->IsArcEnabled() &&
                  !arc_bridge_service()->file_system()->has_instance());
 }
 
-void ArcDeferredFileSystemOperationRunner::SetShouldDefer(bool should_defer) {
+void ArcFileSystemOperationRunner::SetShouldDefer(bool should_defer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   should_defer_ = should_defer;
