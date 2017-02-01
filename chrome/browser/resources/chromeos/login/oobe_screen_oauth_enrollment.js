@@ -20,6 +20,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
   /* TODO(dzhioev): define this step on C++ side.
   /** @const */ var STEP_ATTRIBUTE_PROMPT_ERROR = 'attribute-prompt-error';
+  /** @const */ var STEP_ACTIVE_DIRECTORY_JOIN_ERROR =
+      'active-directory-join-error';
 
   /** @const */ var HELP_TOPIC_ENROLLMENT = 4631259;
 
@@ -67,6 +69,18 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @private
      */
     offlineAdUi_: undefined,
+    /**
+     * Typed machine name on the Active Directory join screen.
+     * @type {string}
+     * @private
+     */
+    activeDirectoryMachine_: null,
+    /**
+     * Typed username on the Active Directory join screen.
+     * @type {string}
+     * @private
+     */
+    activeDirectoryUsername_: null,
 
     /**
      * Value contained in the last received 'backButton' event.
@@ -124,6 +138,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       this.offlineAdUi_.addEventListener('authCompleted', function(e) {
         this.offlineAdUi_.disabled = true;
+        this.activeDirectoryMachine_ = e.detail.machinename;
+        this.activeDirectoryUsername_ = e.detail.username;
         chrome.send('oauthEnrollAdCompleteLogin',
             [e.detail.machinename, e.detail.username, e.detail.password]);
       }.bind(this));
@@ -187,6 +203,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           'buttonclick', doneCallback);
       $('oauth-enroll-abe-success-card').addEventListener(
           'buttonclick', doneCallback);
+      $('oauth-enroll-active-directory-join-error-card').addEventListener(
+          'buttonclick', function() {
+            this.showStep(STEP_AD_JOIN);
+          }.bind(this));
 
       this.navigation_.addEventListener('close', this.cancel.bind(this));
       this.navigation_.addEventListener('refresh', this.cancel.bind(this));
@@ -267,6 +287,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     onBeforeHide: function() {
+      this.activeDirectoryMachine_ = null;
+      this.activeDirectoryUsername_ = null;
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
     },
 
@@ -322,9 +344,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-asset-id').focus();
       } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
         $('oauth-enroll-attribute-prompt-error-card').submitButton.focus();
+      } else if (step == STEP_ACTIVE_DIRECTORY_JOIN_ERROR) {
+        $('oauth-enroll-active-directory-join-error-card').submitButton.focus();
       } else if (step == STEP_AD_JOIN) {
         this.offlineAdUi_.disabled = false;
-        this.offlineAdUi_.setUser();
+        this.offlineAdUi_.setUser(this.activeDirectoryUsername_,
+                                  this.activeDirectoryMachine_);
         this.offlineAdUi_.setInvalid(ACTIVE_DIRECTORY_ERROR_STATE.NONE);
       }
 
@@ -342,6 +367,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       if (this.currentStep_ == STEP_ATTRIBUTE_PROMPT) {
         $('oauth-enroll-attribute-prompt-error-card').textContent = message;
         this.showStep(STEP_ATTRIBUTE_PROMPT_ERROR);
+        return;
+      }
+      if (this.currentStep_ == STEP_AD_JOIN) {
+        $('oauth-enroll-active-directory-join-error-card').textContent =
+            message;
+        this.showStep(STEP_ACTIVE_DIRECTORY_JOIN_ERROR);
         return;
       }
       this.isCancelDisabled_ = false;  // Re-enable if called before Gaia loads.
@@ -408,10 +439,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                                      this.lastBackMessageValue_;
       this.navigation_.refreshVisible = this.isAtTheBeginning() &&
                                         !this.isManualEnrollment_;
-      this.navigation_.closeVisible = (this.currentStep_ == STEP_SIGNIN ||
-                                       this.currentStep_ == STEP_ERROR ||
-                                       this.currentStep_ == STEP_AD_JOIN) &&
-                                      !this.navigation_.refreshVisible;
+      this.navigation_.closeVisible =
+          (this.currentStep_ == STEP_SIGNIN ||
+           this.currentStep_ == STEP_ERROR ||
+           this.currentStep_ == STEP_ACTIVE_DIRECTORY_JOIN_ERROR ||
+           this.currentStep_ == STEP_AD_JOIN) &&
+          !this.navigation_.refreshVisible;
       $('login-header-bar').updateUI_();
     }
   };

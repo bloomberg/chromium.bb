@@ -32,6 +32,8 @@
   margin: 0 auto;
 }
 
+.oauth-enroll-state-active-directory-join-error
+    #oauth-enroll-step-active-directory-join-error,
 .oauth-enroll-state-attribute-prompt-error
     #oauth-enroll-step-attribute-prompt-error,
 .oauth-enroll-state-signin #oauth-enroll-step-signin,
