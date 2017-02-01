@@ -23,6 +23,10 @@ set(AOM_C_FAILED_TESTS)
 set(AOM_CXX_PASSED_TESTS)
 set(AOM_CXX_FAILED_TESTS)
 
+# TODO(tomfinegan): Rename the functions in here to_be_of_this_format to match
+# other custom CMake commands (from CMake built in plugins and other cmake code
+# in AOM).
+
 # Confirms $test_source compiles and stores $test_name in one of
 # $AOM_C_PASSED_TESTS or $AOM_C_FAILED_TESTS depending on out come. When the
 # test passes $result_var is set to 1. When it fails $result_var is unset.
