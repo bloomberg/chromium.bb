@@ -16,10 +16,11 @@ namespace subresource_filter {
 const base::Feature kSafeBrowsingSubresourceFilter{
     "SubresourceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const char kActivationStateParameterName[] = "activation_state";
-const char kActivationStateDryRun[] = "dryrun";
-const char kActivationStateEnabled[] = "enabled";
-const char kActivationStateDisabled[] = "disabled";
+// Legacy name `activation_state` is used in variation parameters.
+const char kActivationLevelParameterName[] = "activation_state";
+const char kActivationLevelDryRun[] = "dryrun";
+const char kActivationLevelEnabled[] = "enabled";
+const char kActivationLevelDisabled[] = "disabled";
 
 const char kActivationScopeParameterName[] = "activation_scope";
 const char kActivationScopeAllSites[] = "all_sites";
@@ -34,14 +35,14 @@ const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
 const char kPerformanceMeasurementRateParameterName[] =
     "performance_measurement_rate";
 
-ActivationState GetMaximumActivationState() {
-  std::string activation_state = variations::GetVariationParamValueByFeature(
-      kSafeBrowsingSubresourceFilter, kActivationStateParameterName);
-  if (base::LowerCaseEqualsASCII(activation_state, kActivationStateEnabled))
-    return ActivationState::ENABLED;
-  else if (base::LowerCaseEqualsASCII(activation_state, kActivationStateDryRun))
-    return ActivationState::DRYRUN;
-  return ActivationState::DISABLED;
+ActivationLevel GetMaximumActivationLevel() {
+  std::string activation_level = variations::GetVariationParamValueByFeature(
+      kSafeBrowsingSubresourceFilter, kActivationLevelParameterName);
+  if (base::LowerCaseEqualsASCII(activation_level, kActivationLevelEnabled))
+    return ActivationLevel::ENABLED;
+  else if (base::LowerCaseEqualsASCII(activation_level, kActivationLevelDryRun))
+    return ActivationLevel::DRYRUN;
+  return ActivationLevel::DISABLED;
 }
 
 ActivationScope GetCurrentActivationScope() {

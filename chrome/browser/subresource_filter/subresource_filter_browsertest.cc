@@ -29,7 +29,7 @@
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,8 +52,8 @@ static constexpr const char kTestFrameSetPath[] =
     "subresource_filter/frame_set.html";
 
 // Names of DocumentLoad histograms.
-constexpr const char kDocumentLoadActivationState[] =
-    "SubresourceFilter.DocumentLoad.ActivationState";
+constexpr const char kDocumentLoadActivationLevel[] =
+    "SubresourceFilter.DocumentLoad.ActivationLevel";
 constexpr const char kSubresourceLoadsTotal[] =
     "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total";
 constexpr const char kSubresourceLoadsEvaluated[] =
@@ -232,7 +232,7 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     scoped_feature_toggle_.reset(new ScopedSubresourceFilterFeatureToggle(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
         kActivationScopeActivationList, kActivationListPhishingInterstitial,
         measure_performance_ ? "1" : "0"));
 
@@ -545,8 +545,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoActivationOnAboutBlank) {
   // The only frames where filtering was (even considered to be) activated
   // should be the main frame, and the child that was navigated to an HTTP URL.
   histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.ActivationState",
-      static_cast<base::Histogram::Sample>(ActivationState::ENABLED), 2);
+      "SubresourceFilter.DocumentLoad.ActivationLevel",
+      static_cast<base::Histogram::Sample>(ActivationLevel::ENABLED), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -640,8 +640,8 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
   tester.ExpectTotalCount(kActivationCPUDuration, 6);
 
   tester.ExpectUniqueSample(
-      kDocumentLoadActivationState,
-      static_cast<base::Histogram::Sample>(ActivationState::ENABLED), 6);
+      kDocumentLoadActivationLevel,
+      static_cast<base::Histogram::Sample>(ActivationLevel::ENABLED), 6);
 
   EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsTotal),
               ::testing::ElementsAre(base::Bucket(0, 3), base::Bucket(2, 3)));
@@ -722,8 +722,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   // Although SubresourceFilterAgents still record the activation decision.
   tester.ExpectUniqueSample(
-      kDocumentLoadActivationState,
-      static_cast<base::Histogram::Sample>(ActivationState::DISABLED), 6);
+      kDocumentLoadActivationLevel,
+      static_cast<base::Histogram::Sample>(ActivationLevel::DISABLED), 6);
 }
 
 }  // namespace subresource_filter

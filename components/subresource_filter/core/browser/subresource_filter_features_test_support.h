@@ -16,13 +16,13 @@ namespace subresource_filter {
 namespace testing {
 
 // Helper to override the state of the |kSafeBrowsingSubresourceFilter| feature,
-// and its variation parameters, e.g., maximum activation state and activation
+// and its variation parameters, e.g., maximum activation level and activation
 // scope. Expects a pre-existing global base::FieldTrialList singleton.
 class ScopedSubresourceFilterFeatureToggle {
  public:
   ScopedSubresourceFilterFeatureToggle(
       base::FeatureList::OverrideState feature_state,
-      const std::string& maximum_activation_state,
+      const std::string& maximum_activation_level,
       const std::string& activation_scope,
       const std::string& activation_lists = std::string(),
       const std::string& performance_measurement_rate = std::string());

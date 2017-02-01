@@ -123,15 +123,15 @@ const ActivationScopeTestData kActivationScopeTestData[] = {
      kActivationScopeActivationList},
 };
 
-struct ActivationStateTestData {
+struct ActivationLevelTestData {
   bool expected_activation;
-  const char* const activation_state;
+  const char* const activation_level;
 };
 
-const ActivationStateTestData kActivationStateTestData[] = {
-    {true /* expected_activation */, kActivationStateDryRun},
-    {true /* expected_activation */, kActivationStateEnabled},
-    {false /* expected_activation */, kActivationStateDisabled},
+const ActivationLevelTestData kActivationLevelTestData[] = {
+    {true /* expected_activation */, kActivationLevelDryRun},
+    {true /* expected_activation */, kActivationLevelEnabled},
+    {false /* expected_activation */, kActivationLevelDisabled},
 };
 
 class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
@@ -143,7 +143,7 @@ class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
   ~MockSubresourceFilterDriver() override = default;
 
   MOCK_METHOD3(ActivateForProvisionalLoad,
-               void(ActivationState, const GURL&, bool));
+               void(ActivationLevel, const GURL&, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
@@ -361,16 +361,16 @@ class ContentSubresourceFilterDriverFactoryActivationScopeTest
       ContentSubresourceFilterDriverFactoryActivationScopeTest);
 };
 
-class ContentSubresourceFilterDriverFactoryActivationStateTest
+class ContentSubresourceFilterDriverFactoryActivationLevelTest
     : public ContentSubresourceFilterDriverFactoryTest,
-      public ::testing::WithParamInterface<ActivationStateTestData> {
+      public ::testing::WithParamInterface<ActivationLevelTestData> {
  public:
-  ContentSubresourceFilterDriverFactoryActivationStateTest() {}
-  ~ContentSubresourceFilterDriverFactoryActivationStateTest() override {}
+  ContentSubresourceFilterDriverFactoryActivationLevelTest() {}
+  ~ContentSubresourceFilterDriverFactoryActivationLevelTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
-      ContentSubresourceFilterDriverFactoryActivationStateTest);
+      ContentSubresourceFilterDriverFactoryActivationLevelTest);
 };
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
@@ -379,7 +379,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   // which is visited was a SB hit.
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeAllSites,
       kActivationListSocialEngineeringAdsInterstitial);
   const GURL url(kExampleUrlWithParams);
@@ -393,7 +393,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
 TEST_F(ContentSubresourceFilterDriverFactoryTest, NoActivationWhenNoMatch) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
@@ -406,7 +406,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   // signal is always sent.
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeAllSites);
   EmulateInPageNavigation({false}, EMPTY, true /* expected_activation */);
 }
@@ -415,7 +415,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
        SpecialCaseNavigationActivationListEnabled) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
   EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
@@ -426,7 +426,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
        SpecialCaseNavigationActivationListEnabledWithPerformanceMeasurement) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial,
       "1" /* performance_measurement_rate */);
@@ -437,7 +437,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
 TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
   struct RedirectRedirectChainMatchPatternTestData {
@@ -504,12 +504,12 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
   }
 }
 
-TEST_P(ContentSubresourceFilterDriverFactoryActivationStateTest,
+TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
        ActivateForFrameState) {
-  const ActivationStateTestData& test_data = GetParam();
+  const ActivationLevelTestData& test_data = GetParam();
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, test_data.activation_state,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, test_data.activation_level,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
 
@@ -529,7 +529,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
   const ActivationListTestData& test_data = GetParam();
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList, test_data.activation_list);
 
   const GURL test_url("https://example.com/nonsoceng?q=engsocnon");
@@ -548,7 +548,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
   const ActivationScopeTestData& test_data = GetParam();
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       test_data.activation_scope,
       kActivationListSocialEngineeringAdsInterstitial);
 
@@ -577,8 +577,8 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(kActivationScopeTestData));
 
 INSTANTIATE_TEST_CASE_P(
-    ActivationStateTest,
-    ContentSubresourceFilterDriverFactoryActivationStateTest,
-    ::testing::ValuesIn(kActivationStateTestData));
+    ActivationLevelTest,
+    ContentSubresourceFilterDriverFactoryActivationLevelTest,
+    ::testing::ValuesIn(kActivationLevelTestData));
 
 }  // namespace subresource_filter

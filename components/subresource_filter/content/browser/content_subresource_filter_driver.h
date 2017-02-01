@@ -6,7 +6,7 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_SUBRESOURCE_FILTER_DRIVER_H_
 
 #include "base/macros.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 
 class GURL;
 
@@ -26,7 +26,7 @@ class ContentSubresourceFilterDriver {
 
   // Instructs the agent on the renderer to set up the subresource filter for
   // the currently ongoing provisional document load in the frame.
-  virtual void ActivateForProvisionalLoad(ActivationState activation_state,
+  virtual void ActivateForProvisionalLoad(ActivationLevel activation_level,
                                           const GURL& url,
                                           bool measure_performance);
 

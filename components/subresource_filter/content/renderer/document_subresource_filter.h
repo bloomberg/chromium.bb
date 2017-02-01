@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/common/document_load_statistics.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
 #include "url/gurl.h"
@@ -32,8 +32,8 @@ class DocumentSubresourceFilter
       public base::SupportsWeakPtr<DocumentSubresourceFilter> {
  public:
   // Constructs a new filter that will:
-  //  -- Operate at the prescribed |activation_state|, which must be either
-  //     ActivationState::DRYRUN or ActivationState::ENABLED. In the former
+  //  -- Operate at the prescribed |activation_level|, which must be either
+  //     ActivationLevel::DRYRUN or ActivationLevel::ENABLED. In the former
   //     case filtering will be performed but no loads will be disallowed.
   //  -- Hold a reference to and use |ruleset| for its entire lifetime.
   //  -- Expect |ancestor_document_urls| to be the URLs of documents loaded into
@@ -42,7 +42,7 @@ class DocumentSubresourceFilter
   //  -- Invoke |first_disallowed_load_callback|, if it is non-null, on the
   //     first disallowed subresource load.
   DocumentSubresourceFilter(
-      ActivationState activation_state,
+      ActivationLevel activation_level,
       bool measure_performance,
       const scoped_refptr<const MemoryMappedRuleset>& ruleset,
       const std::vector<GURL>& ancestor_document_urls,
@@ -56,7 +56,7 @@ class DocumentSubresourceFilter
                  blink::WebURLRequest::RequestContext) override;
 
  private:
-  const ActivationState activation_state_;
+  const ActivationLevel activation_level_;
   const bool measure_performance_;
 
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
@@ -68,7 +68,7 @@ class DocumentSubresourceFilter
   base::Closure first_disallowed_load_callback_;
 
   // Even when subresource filtering is activated at the page level by the
-  // |activation_state| passed into the constructor, the current document or
+  // |activation_level| passed into the constructor, the current document or
   // ancestors thereof may still match special filtering rules that specifically
   // disable the application of other types of rules on these documents. See
   // proto::ActivationType for details.

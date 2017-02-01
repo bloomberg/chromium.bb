@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/content/common/document_load_statistics.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
 
@@ -62,7 +62,7 @@ class SubresourceFilterAgent
       const DocumentLoadStatistics& statistics);
 
  private:
-  void OnActivateForProvisionalLoad(ActivationState activation_state,
+  void OnActivateForProvisionalLoad(ActivationLevel activation_level,
                                     const GURL& url,
                                     bool measure_performance);
   void RecordHistogramsOnLoadCommitted();
@@ -79,7 +79,7 @@ class SubresourceFilterAgent
   // Owned by the ChromeContentRendererClient and outlives us.
   UnverifiedRulesetDealer* ruleset_dealer_;
 
-  ActivationState activation_state_for_provisional_load_;
+  ActivationLevel activation_level_for_provisional_load_;
   GURL url_for_provisional_load_;
   bool measure_performance_ = false;
   base::WeakPtr<DocumentSubresourceFilter> filter_for_last_committed_load_;

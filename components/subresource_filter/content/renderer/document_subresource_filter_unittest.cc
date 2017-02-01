@@ -79,7 +79,7 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
       blink::WebURLRequest::RequestContextImage;
   TestCallbackReceiver first_disallowed_load_callback_receiver;
   DocumentSubresourceFilter filter(
-      ActivationState::DRYRUN, true, ruleset(), std::vector<GURL>(),
+      ActivationLevel::DRYRUN, true, ruleset(), std::vector<GURL>(),
       first_disallowed_load_callback_receiver.closure());
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
@@ -98,7 +98,7 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
   auto test_impl = [this](bool measure_performance) {
     blink::WebURLRequest::RequestContext request_context =
         blink::WebURLRequest::RequestContextImage;
-    DocumentSubresourceFilter filter(ActivationState::ENABLED,
+    DocumentSubresourceFilter filter(ActivationLevel::ENABLED,
                                      measure_performance, ruleset(),
                                      std::vector<GURL>(), base::Closure());
     EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
@@ -129,7 +129,7 @@ TEST_F(DocumentSubresourceFilterTest,
       blink::WebURLRequest::RequestContextImage;
   TestCallbackReceiver first_disallowed_load_callback_receiver;
   DocumentSubresourceFilter filter(
-      ActivationState::ENABLED, true, ruleset(), std::vector<GURL>(),
+      ActivationLevel::ENABLED, true, ruleset(), std::vector<GURL>(),
       first_disallowed_load_callback_receiver.closure());
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
   EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());

@@ -76,12 +76,12 @@ proto::ElementType ToElementType(
 }  // namespace
 
 DocumentSubresourceFilter::DocumentSubresourceFilter(
-    ActivationState activation_state,
+    ActivationLevel activation_level,
     bool measure_performance,
     const scoped_refptr<const MemoryMappedRuleset>& ruleset,
     const std::vector<GURL>& ancestor_document_urls,
     const base::Closure& first_disallowed_load_callback)
-    : activation_state_(activation_state),
+    : activation_level_(activation_level),
       measure_performance_(measure_performance),
       ruleset_(ruleset),
       ruleset_matcher_(ruleset_->data(), ruleset_->length()),
@@ -96,7 +96,7 @@ DocumentSubresourceFilter::DocumentSubresourceFilter(
   SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
 
-  DCHECK_NE(activation_state_, ActivationState::DISABLED);
+  DCHECK_NE(activation_level_, ActivationLevel::DISABLED);
   DCHECK(ruleset);
 
   url::Origin parent_document_origin;
@@ -161,7 +161,7 @@ bool DocumentSubresourceFilter::allowLoad(
           GURL(resourceUrl), *document_origin_, ToElementType(request_context),
           generic_blocking_rules_disabled_)) {
     ++statistics_.num_loads_matching_rules;
-    if (activation_state_ == ActivationState::ENABLED) {
+    if (activation_level_ == ActivationLevel::ENABLED) {
       if (!first_disallowed_load_callback_.is_null()) {
         DCHECK_EQ(statistics_.num_loads_disallowed, 0);
         first_disallowed_load_callback_.Run();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 
 #include <ostream>
 
@@ -10,15 +10,15 @@
 
 namespace subresource_filter {
 
-std::ostream& operator<<(std::ostream& os, const ActivationState& state) {
-  switch (state) {
-    case ActivationState::DISABLED:
+std::ostream& operator<<(std::ostream& os, const ActivationLevel& level) {
+  switch (level) {
+    case ActivationLevel::DISABLED:
       os << "DISABLED";
       break;
-    case ActivationState::DRYRUN:
+    case ActivationLevel::DRYRUN:
       os << "DRYRUN";
       break;
-    case ActivationState::ENABLED:
+    case ActivationLevel::ENABLED:
       os << "ENABLED";
       break;
     default:

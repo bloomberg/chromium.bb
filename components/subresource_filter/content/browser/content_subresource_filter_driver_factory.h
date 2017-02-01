@@ -32,7 +32,7 @@ namespace subresource_filter {
 
 class ContentSubresourceFilterDriver;
 class SubresourceFilterClient;
-enum class ActivationState;
+enum class ActivationLevel;
 enum class ActivationList;
 
 using HostPathSet = std::set<std::string>;
@@ -133,7 +133,7 @@ class ContentSubresourceFilterDriverFactory
 
   HostPathSet whitelisted_hosts_;
 
-  ActivationState activation_state_;
+  ActivationLevel activation_level_;
   bool measure_performance_;
 
   // The URLs in the navigation chain.

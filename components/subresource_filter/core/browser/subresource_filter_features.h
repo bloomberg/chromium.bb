@@ -6,20 +6,20 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_SUBRESOURCE_FILTER_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 
 namespace subresource_filter {
 
 // The master toggle to enable/disable the Safe Browsing Subresource Filter.
 extern const base::Feature kSafeBrowsingSubresourceFilter;
 
-// Name/values of the variation parameter controlling maximum activation state.
-extern const char kActivationStateParameterName[];
-extern const char kActivationStateDryRun[];
-extern const char kActivationStateEnabled[];
-extern const char kActivationStateDisabled[];
+// Name/values of the variation parameter controlling maximum activation level.
+extern const char kActivationLevelParameterName[];
+extern const char kActivationLevelDryRun[];
+extern const char kActivationLevelEnabled[];
+extern const char kActivationLevelDisabled[];
 
 extern const char kActivationScopeParameterName[];
 extern const char kActivationScopeAllSites[];
@@ -33,9 +33,9 @@ extern const char kActivationListPhishingInterstitial[];
 extern const char kPerformanceMeasurementRateParameterName[];
 
 // Returns the maximum degree to which subresource filtering should be activated
-// on any RenderFrame. This will be ActivationState::DISABLED unless the feature
-// is enabled and variation parameters prescribe a higher activation state.
-ActivationState GetMaximumActivationState();
+// on any RenderFrame. This will be ActivationLevel::DISABLED unless the feature
+// is enabled and variation parameters prescribe a higher activation level.
+ActivationLevel GetMaximumActivationLevel();
 
 // Returns the current activation scope, that is, the subset of page loads where
 // subresource filtering should be activated. The function returns

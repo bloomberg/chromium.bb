@@ -113,7 +113,7 @@ class MockSubresourceFilterDriver
   ~MockSubresourceFilterDriver() override = default;
 
   MOCK_METHOD3(ActivateForProvisionalLoad,
-               void(subresource_filter::ActivationState, const GURL&, bool));
+               void(subresource_filter::ActivationLevel, const GURL&, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
@@ -938,7 +938,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(
           base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          subresource_filter::kActivationStateEnabled,
+          subresource_filter::kActivationLevelEnabled,
           subresource_filter::kActivationScopeActivationList,
           subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
   // Tests that when Safe Browsing gets hit which is corresponding to the
@@ -985,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SocEngReportingBlacklistEmpty) {
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(
           base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          subresource_filter::kActivationStateEnabled,
+          subresource_filter::kActivationLevelEnabled,
           subresource_filter::kActivationScopeNoSites,
           subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
 

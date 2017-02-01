@@ -67,7 +67,7 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     std::unique_ptr<SubresourceFilterClient> client)
     : content::WebContentsObserver(web_contents),
       client_(std::move(client)),
-      activation_state_(ActivationState::DISABLED),
+      activation_level_(ActivationLevel::DISABLED),
       measure_performance_(false) {
   content::RenderFrameHost* main_frame_host = web_contents->GetMainFrame();
   if (main_frame_host && main_frame_host->IsRenderFrameLive())
@@ -88,8 +88,8 @@ void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  client_->ToggleNotificationVisibility(activation_state_ ==
-                                        ActivationState::ENABLED);
+  client_->ToggleNotificationVisibility(activation_level_ ==
+                                        ActivationLevel::ENABLED);
 }
 
 void ContentSubresourceFilterDriverFactory::OnDocumentLoadStatistics(
@@ -155,10 +155,10 @@ bool ContentSubresourceFilterDriverFactory::ShouldActivateForMainFrameURL(
 void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
     content::RenderFrameHost* render_frame_host,
     const GURL& url) {
-  if (activation_state_ != ActivationState::DISABLED) {
+  if (activation_level_ != ActivationLevel::DISABLED) {
     auto* driver = DriverFromFrameHost(render_frame_host);
     DCHECK(driver);
-    driver->ActivateForProvisionalLoad(GetMaximumActivationState(), url,
+    driver->ActivateForProvisionalLoad(GetMaximumActivationLevel(), url,
                                        measure_performance_);
   }
 }
@@ -193,7 +193,7 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     navigation_chain_.push_back(navigation_handle->GetURL());
 
     client_->ToggleNotificationVisibility(false);
-    activation_state_ = ActivationState::DISABLED;
+    activation_level_ = ActivationLevel::DISABLED;
     measure_performance_ = false;
     aggregated_document_statistics_ = DocumentLoadStatistics();
   }
@@ -231,7 +231,7 @@ void ContentSubresourceFilterDriverFactory::DidFinishLoad(
   if (render_frame_host->GetParent())
     return;
 
-  if (activation_state_ != ActivationState::DISABLED) {
+  if (activation_level_ != ActivationLevel::DISABLED) {
     UMA_HISTOGRAM_COUNTS_1000(
         "SubresourceFilter.PageLoad.NumSubresourceLoads.Total",
         aggregated_document_statistics_.num_loads_total);
@@ -247,7 +247,7 @@ void ContentSubresourceFilterDriverFactory::DidFinishLoad(
   }
 
   if (measure_performance_) {
-    DCHECK(activation_state_ != ActivationState::DISABLED);
+    DCHECK(activation_level_ != ActivationLevel::DISABLED);
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration",
         aggregated_document_statistics_.evaluation_total_wall_duration,
@@ -286,12 +286,12 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
   if (!render_frame_host->GetParent()) {
     RecordRedirectChainMatchPattern();
     if (ShouldActivateForMainFrameURL(url)) {
-      activation_state_ = GetMaximumActivationState();
-      measure_performance_ = activation_state_ != ActivationState::DISABLED &&
+      activation_level_ = GetMaximumActivationLevel();
+      measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
                              ShouldMeasurePerformanceForPageLoad();
       ActivateForFrameHostIfNeeded(render_frame_host, url);
     } else {
-      activation_state_ = ActivationState::DISABLED;
+      activation_level_ = ActivationLevel::DISABLED;
       measure_performance_ = false;
       aggregated_document_statistics_ = DocumentLoadStatistics();
     }

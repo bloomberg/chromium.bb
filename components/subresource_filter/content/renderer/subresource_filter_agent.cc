@@ -29,7 +29,7 @@ SubresourceFilterAgent::SubresourceFilterAgent(
     UnverifiedRulesetDealer* ruleset_dealer)
     : content::RenderFrameObserver(render_frame),
       ruleset_dealer_(ruleset_dealer),
-      activation_state_for_provisional_load_(ActivationState::DISABLED) {
+      activation_level_for_provisional_load_(ActivationLevel::DISABLED) {
   DCHECK(ruleset_dealer);
 }
 
@@ -68,21 +68,21 @@ void SubresourceFilterAgent::SendDocumentLoadStatistics(
 }
 
 void SubresourceFilterAgent::OnActivateForProvisionalLoad(
-    ActivationState activation_state,
+    ActivationLevel activation_level,
     const GURL& url,
     bool measure_performance) {
-  activation_state_for_provisional_load_ = activation_state;
+  activation_level_for_provisional_load_ = activation_level;
   url_for_provisional_load_ = url;
   measure_performance_ = measure_performance;
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
   UMA_HISTOGRAM_ENUMERATION(
-      "SubresourceFilter.DocumentLoad.ActivationState",
-      static_cast<int>(activation_state_for_provisional_load_),
-      static_cast<int>(ActivationState::LAST) + 1);
+      "SubresourceFilter.DocumentLoad.ActivationLevel",
+      static_cast<int>(activation_level_for_provisional_load_),
+      static_cast<int>(ActivationLevel::LAST) + 1);
 
-  if (activation_state_for_provisional_load_ != ActivationState::DISABLED) {
+  if (activation_level_for_provisional_load_ != ActivationLevel::DISABLED) {
     UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.DocumentLoad.RulesetIsAvailable",
                           ruleset_dealer_->IsRulesetFileAvailable());
   }
@@ -144,7 +144,7 @@ void SubresourceFilterAgent::DidStartProvisionalLoad() {
       (!ds ||
        static_cast<GURL>(ds->getRequest().url()) !=
            url_for_provisional_load_)) {
-    activation_state_for_provisional_load_ = ActivationState::DISABLED;
+    activation_level_for_provisional_load_ = ActivationLevel::DISABLED;
     measure_performance_ = false;
   } else {
     url_for_provisional_load_ = GURL();
@@ -162,7 +162,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   if (ancestor_document_urls.front().SchemeIsHTTPOrHTTPS() ||
       ancestor_document_urls.front().SchemeIsFile()) {
     RecordHistogramsOnLoadCommitted();
-    if (activation_state_for_provisional_load_ != ActivationState::DISABLED &&
+    if (activation_level_for_provisional_load_ != ActivationLevel::DISABLED &&
         ruleset_dealer_->IsRulesetFileAvailable()) {
       base::Closure first_disallowed_load_callback(
           base::Bind(&SubresourceFilterAgent::
@@ -170,14 +170,14 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
                      AsWeakPtr()));
       std::unique_ptr<DocumentSubresourceFilter> filter(
           new DocumentSubresourceFilter(
-              activation_state_for_provisional_load_, measure_performance_,
+              activation_level_for_provisional_load_, measure_performance_,
               ruleset_dealer_->GetRuleset(), ancestor_document_urls,
               first_disallowed_load_callback));
       filter_for_last_committed_load_ = filter->AsWeakPtr();
       SetSubresourceFilterForCommittedLoad(std::move(filter));
     }
   }
-  activation_state_for_provisional_load_ = ActivationState::DISABLED;
+  activation_level_for_provisional_load_ = ActivationLevel::DISABLED;
 }
 
 void SubresourceFilterAgent::DidFinishLoad() {

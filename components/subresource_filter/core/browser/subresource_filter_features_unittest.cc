@@ -12,37 +12,37 @@
 
 namespace subresource_filter {
 
-TEST(SubresourceFilterFeaturesTest, ActivationState) {
+TEST(SubresourceFilterFeaturesTest, ActivationLevel) {
   const struct {
     bool feature_enabled;
-    const char* activation_state_param;
-    ActivationState expected_activation_state;
-  } kTestCases[] = {{false, "", ActivationState::DISABLED},
-                    {false, "disabled", ActivationState::DISABLED},
-                    {false, "dryrun", ActivationState::DISABLED},
-                    {false, "enabled", ActivationState::DISABLED},
-                    {false, "%$ garbage !%", ActivationState::DISABLED},
-                    {true, "", ActivationState::DISABLED},
-                    {true, "disable", ActivationState::DISABLED},
-                    {true, "Disable", ActivationState::DISABLED},
-                    {true, "disabled", ActivationState::DISABLED},
-                    {true, "%$ garbage !%", ActivationState::DISABLED},
-                    {true, kActivationStateDryRun, ActivationState::DRYRUN},
-                    {true, kActivationStateEnabled, ActivationState::ENABLED},
-                    {true, "Enabled", ActivationState::ENABLED}};
+    const char* activation_level_param;
+    ActivationLevel expected_activation_level;
+  } kTestCases[] = {{false, "", ActivationLevel::DISABLED},
+                    {false, "disabled", ActivationLevel::DISABLED},
+                    {false, "dryrun", ActivationLevel::DISABLED},
+                    {false, "enabled", ActivationLevel::DISABLED},
+                    {false, "%$ garbage !%", ActivationLevel::DISABLED},
+                    {true, "", ActivationLevel::DISABLED},
+                    {true, "disable", ActivationLevel::DISABLED},
+                    {true, "Disable", ActivationLevel::DISABLED},
+                    {true, "disabled", ActivationLevel::DISABLED},
+                    {true, "%$ garbage !%", ActivationLevel::DISABLED},
+                    {true, kActivationLevelDryRun, ActivationLevel::DRYRUN},
+                    {true, kActivationLevelEnabled, ActivationLevel::ENABLED},
+                    {true, "Enabled", ActivationLevel::ENABLED}};
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
-    SCOPED_TRACE(::testing::Message("ActivationStateParam = \"")
-                 << test_case.activation_state_param << "\"");
+    SCOPED_TRACE(::testing::Message("ActivationLevelParam = \"")
+                 << test_case.activation_level_param << "\"");
 
     base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
     testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        test_case.activation_state_param, kActivationScopeNoSites);
+        test_case.activation_level_param, kActivationScopeNoSites);
 
-    EXPECT_EQ(test_case.expected_activation_state, GetMaximumActivationState());
+    EXPECT_EQ(test_case.expected_activation_level, GetMaximumActivationLevel());
     EXPECT_EQ(ActivationScope::NO_SITES, GetCurrentActivationScope());
   }
 }
@@ -75,48 +75,48 @@ TEST(SubresourceFilterFeaturesTest, ActivationScope) {
     testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        kActivationStateDisabled, test_case.activation_scope_param);
+        kActivationLevelDisabled, test_case.activation_scope_param);
 
-    EXPECT_EQ(ActivationState::DISABLED, GetMaximumActivationState());
+    EXPECT_EQ(ActivationLevel::DISABLED, GetMaximumActivationLevel());
     EXPECT_EQ(test_case.expected_activation_scope, GetCurrentActivationScope());
   }
 }
 
-TEST(SubresourceFilterFeaturesTest, ActivationStateAndScope) {
+TEST(SubresourceFilterFeaturesTest, ActivationLevelAndScope) {
   const struct {
     bool feature_enabled;
-    const char* activation_state_param;
-    ActivationState expected_activation_state;
+    const char* activation_level_param;
+    ActivationLevel expected_activation_level;
     const char* activation_scope_param;
     ActivationScope expected_activation_scope;
   } kTestCases[] = {
-      {false, kActivationStateDisabled, ActivationState::DISABLED,
+      {false, kActivationLevelDisabled, ActivationLevel::DISABLED,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationStateDisabled, ActivationState::DISABLED,
+      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationStateDisabled, ActivationState::DISABLED,
+      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationStateDisabled, ActivationState::DISABLED,
+      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
        kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
-      {true, kActivationStateDisabled, ActivationState::DISABLED,
+      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
        kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
-      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationStateEnabled, ActivationState::ENABLED,
+      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationStateEnabled, ActivationState::ENABLED,
+      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationStateEnabled, ActivationState::ENABLED,
+      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
        kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
-      {true, kActivationStateEnabled, ActivationState::ENABLED,
+      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {false, kActivationStateEnabled, ActivationState::DISABLED,
+      {false, kActivationLevelEnabled, ActivationLevel::DISABLED,
        kActivationScopeAllSites, ActivationScope::NO_SITES}};
 
   for (const auto& test_case : kTestCases) {
@@ -124,10 +124,10 @@ TEST(SubresourceFilterFeaturesTest, ActivationStateAndScope) {
     testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        test_case.activation_state_param, test_case.activation_scope_param);
+        test_case.activation_level_param, test_case.activation_scope_param);
 
     EXPECT_EQ(test_case.expected_activation_scope, GetCurrentActivationScope());
-    EXPECT_EQ(test_case.expected_activation_state, GetMaximumActivationState());
+    EXPECT_EQ(test_case.expected_activation_level, GetMaximumActivationLevel());
   }
 }
 
@@ -176,7 +176,7 @@ TEST(SubresourceFilterFeaturesTest, ActivationList) {
     testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        kActivationStateDisabled, kActivationScopeNoSites,
+        kActivationLevelDisabled, kActivationScopeNoSites,
         test_case.activation_list_param);
 
     EXPECT_EQ(test_case.expected_activation_list, GetCurrentActivationList());
