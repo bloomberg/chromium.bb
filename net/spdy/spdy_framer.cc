@@ -367,7 +367,8 @@ void SpdyFramer::set_error(SpdyFramerError error) {
   visitor_->OnError(this);
 }
 
-const char* SpdyFramer::SpdyFramerErrorToString(int spdy_framer_error) {
+const char* SpdyFramer::SpdyFramerErrorToString(
+    SpdyFramerError spdy_framer_error) {
   switch (spdy_framer_error) {
     case SPDY_NO_ERROR:
       return "NO_ERROR";
@@ -377,10 +378,6 @@ const char* SpdyFramer::SpdyFramerErrorToString(int spdy_framer_error) {
       return "INVALID_CONTROL_FRAME";
     case SPDY_CONTROL_PAYLOAD_TOO_LARGE:
       return "CONTROL_PAYLOAD_TOO_LARGE";
-    case SPDY_INVALID_CONTROL_FRAME_SIZE:
-      return "INVALID_CONTROL_FRAME_SIZE";
-    case SPDY_OVERSIZED_PAYLOAD:
-      return "OVERSIZED_PAYLOAD";
     case SPDY_ZLIB_INIT_FAILURE:
       return "ZLIB_INIT_FAILURE";
     case SPDY_UNSUPPORTED_VERSION:
@@ -389,16 +386,26 @@ const char* SpdyFramer::SpdyFramerErrorToString(int spdy_framer_error) {
       return "DECOMPRESS_FAILURE";
     case SPDY_COMPRESS_FAILURE:
       return "COMPRESS_FAILURE";
+    case SPDY_GOAWAY_FRAME_CORRUPT:
+      return "GOAWAY_FRAME_CORRUPT";
+    case SPDY_RST_STREAM_FRAME_CORRUPT:
+      return "RST_STREAM_FRAME_CORRUPT";
     case SPDY_INVALID_PADDING:
-      return "SPDY_INVALID_PADDING";
+      return "INVALID_PADDING";
     case SPDY_INVALID_DATA_FRAME_FLAGS:
-      return "SPDY_INVALID_DATA_FRAME_FLAGS";
+      return "INVALID_DATA_FRAME_FLAGS";
     case SPDY_INVALID_CONTROL_FRAME_FLAGS:
-      return "SPDY_INVALID_CONTROL_FRAME_FLAGS";
+      return "INVALID_CONTROL_FRAME_FLAGS";
     case SPDY_UNEXPECTED_FRAME:
       return "UNEXPECTED_FRAME";
     case SPDY_INTERNAL_FRAMER_ERROR:
-      return "SPDY_INTERNAL_FRAMER_ERROR";
+      return "INTERNAL_FRAMER_ERROR";
+    case SPDY_INVALID_CONTROL_FRAME_SIZE:
+      return "INVALID_CONTROL_FRAME_SIZE";
+    case SPDY_OVERSIZED_PAYLOAD:
+      return "OVERSIZED_PAYLOAD";
+    case LAST_ERROR:
+      return "UNKNOWN_ERROR";
   }
   return "UNKNOWN_ERROR";
 }

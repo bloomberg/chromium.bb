@@ -3445,7 +3445,7 @@ TEST_P(SpdyFramerTest, StateToStringTest) {
                                     SpdyFramer::SPDY_ALTSVC_FRAME_PAYLOAD + 1));
 }
 
-TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
+TEST_P(SpdyFramerTest, SpdyFramerErrorToStringTest) {
   EXPECT_STREQ("NO_ERROR",
                SpdyFramer::SpdyFramerErrorToString(SpdyFramer::SPDY_NO_ERROR));
   EXPECT_STREQ("INVALID_STREAM_ID", SpdyFramer::SpdyFramerErrorToString(
@@ -3456,9 +3456,6 @@ TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
   EXPECT_STREQ("CONTROL_PAYLOAD_TOO_LARGE",
                SpdyFramer::SpdyFramerErrorToString(
                    SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE));
-  EXPECT_STREQ("INVALID_CONTROL_FRAME_SIZE",
-               SpdyFramer::SpdyFramerErrorToString(
-                   SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE));
   EXPECT_STREQ("ZLIB_INIT_FAILURE", SpdyFramer::SpdyFramerErrorToString(
                                         SpdyFramer::SPDY_ZLIB_INIT_FAILURE));
   EXPECT_STREQ("UNSUPPORTED_VERSION",
@@ -3468,16 +3465,35 @@ TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
                                          SpdyFramer::SPDY_DECOMPRESS_FAILURE));
   EXPECT_STREQ("COMPRESS_FAILURE", SpdyFramer::SpdyFramerErrorToString(
                                        SpdyFramer::SPDY_COMPRESS_FAILURE));
-  EXPECT_STREQ("SPDY_INVALID_PADDING", SpdyFramer::SpdyFramerErrorToString(
-                                           SpdyFramer::SPDY_INVALID_PADDING));
-  EXPECT_STREQ("SPDY_INVALID_DATA_FRAME_FLAGS",
+  EXPECT_STREQ("GOAWAY_FRAME_CORRUPT",
+               SpdyFramer::SpdyFramerErrorToString(
+                   SpdyFramer::SPDY_GOAWAY_FRAME_CORRUPT));
+  EXPECT_STREQ("RST_STREAM_FRAME_CORRUPT",
+               SpdyFramer::SpdyFramerErrorToString(
+                   SpdyFramer::SPDY_RST_STREAM_FRAME_CORRUPT));
+  EXPECT_STREQ("INVALID_PADDING", SpdyFramer::SpdyFramerErrorToString(
+                                      SpdyFramer::SPDY_INVALID_PADDING));
+  EXPECT_STREQ("INVALID_DATA_FRAME_FLAGS",
                SpdyFramer::SpdyFramerErrorToString(
                    SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS));
-  EXPECT_STREQ("SPDY_INVALID_CONTROL_FRAME_FLAGS",
+  EXPECT_STREQ("INVALID_CONTROL_FRAME_FLAGS",
                SpdyFramer::SpdyFramerErrorToString(
                    SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS));
+  EXPECT_STREQ("UNEXPECTED_FRAME", SpdyFramer::SpdyFramerErrorToString(
+                                       SpdyFramer::SPDY_UNEXPECTED_FRAME));
+  EXPECT_STREQ("INTERNAL_FRAMER_ERROR",
+               SpdyFramer::SpdyFramerErrorToString(
+                   SpdyFramer::SPDY_INTERNAL_FRAMER_ERROR));
+  EXPECT_STREQ("INVALID_CONTROL_FRAME_SIZE",
+               SpdyFramer::SpdyFramerErrorToString(
+                   SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE));
+  EXPECT_STREQ("OVERSIZED_PAYLOAD", SpdyFramer::SpdyFramerErrorToString(
+                                        SpdyFramer::SPDY_OVERSIZED_PAYLOAD));
   EXPECT_STREQ("UNKNOWN_ERROR",
                SpdyFramer::SpdyFramerErrorToString(SpdyFramer::LAST_ERROR));
+  EXPECT_STREQ("UNKNOWN_ERROR", SpdyFramer::SpdyFramerErrorToString(
+                                    static_cast<SpdyFramer::SpdyFramerError>(
+                                        SpdyFramer::LAST_ERROR + 1)));
 }
 
 TEST_P(SpdyFramerTest, StatusCodeToStringTest) {
