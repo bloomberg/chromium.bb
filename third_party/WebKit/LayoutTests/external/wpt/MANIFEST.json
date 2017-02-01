@@ -17086,6 +17086,12 @@
      {}
     ]
    ],
+   "IndexedDB/bindings-inject-key.html": [
+    [
+     "/IndexedDB/bindings-inject-key.html",
+     {}
+    ]
+   ],
    "IndexedDB/close-in-upgradeneeded.html": [
     [
      "/IndexedDB/close-in-upgradeneeded.html",
@@ -18767,6 +18773,18 @@
    "IndexedDB/keyorder.htm": [
     [
      "/IndexedDB/keyorder.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/keypath-exceptions.htm": [
+    [
+     "/IndexedDB/keypath-exceptions.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/keypath-special-identifiers.htm": [
+    [
+     "/IndexedDB/keypath-special-identifiers.htm",
      {}
     ]
    ],
@@ -34225,6 +34243,10 @@
    "efc9c2476e812f1bb378665f397f71c590439006",
    "testharness"
   ],
+  "IndexedDB/bindings-inject-key.html": [
+   "95f44900d9565baf718be23bafd33e48e6f4fc52",
+   "testharness"
+  ],
   "IndexedDB/close-in-upgradeneeded.html": [
    "949f5e8a429a7524c9a68ef0d19baf04dadbd84a",
    "testharness"
@@ -35347,6 +35369,14 @@
   ],
   "IndexedDB/keyorder.htm": [
    "5418ba477143b61dd8e02a691ee90b3c49726e83",
+   "testharness"
+  ],
+  "IndexedDB/keypath-exceptions.htm": [
+   "24d150a9bddd39dd51821e01ddac4f45bdd04e91",
+   "testharness"
+  ],
+  "IndexedDB/keypath-special-identifiers.htm": [
+   "588026e7e95192b98b594e77fafe67495d5cd481",
    "testharness"
   ],
   "IndexedDB/keypath.htm": [
