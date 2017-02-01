@@ -441,7 +441,10 @@ void QuicSpdySession::WriteDataFrame(
     StringPiece data,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  SpdyDataIR spdy_data(id, data);
+  // Note that certain SpdyDataIR constructors perform a deep copy of |data|
+  // which should be avoided here.
+  SpdyDataIR spdy_data(id);
+  spdy_data.SetDataShallow(data);
   spdy_data.set_fin(fin);
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(spdy_data));
   QuicReferenceCountedPointer<ForceHolAckListener> force_hol_ack_listener;

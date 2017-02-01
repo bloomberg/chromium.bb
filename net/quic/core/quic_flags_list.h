@@ -66,7 +66,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_36_v3, true)
 
 // If true, use async codepaths to invoke ProofSource::GetProof.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_enable_async_get_proof, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_enable_async_get_proof, true)
 
 // If true, only open limited number of quic sessions per epoll event. Leave the
 // rest to next event.
@@ -104,15 +104,8 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_buffer_packets_after_chlo,
           false)
 
-// Previously QUIC didn't register a packet as received until it was fully
-// processed, but now that flow control is implemented, it can be received once
-// decrypted.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted,
-          false)
-
 // If true, enable the Lazy FACK style loss detection in QUIC.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_lazy_fack, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_lazy_fack, true)
 
 // If true, do not override a connection in global map if exists. Only create
 // QUIC session if it is successfully inserted to the global map. Toss the
@@ -159,7 +152,7 @@ QUIC_FLAG(bool, FLAGS_quic_allow_chlo_buffering, true)
 
 // If true, fix version manager bug, in which version flag does not really
 // help.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_version_manager, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_version_manager, true)
 
 // Add a new client connection options field to QuicOptions which is only used
 // to configure client side features, such as congestion control.
@@ -168,9 +161,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_client_connection_options, true)
 // If true, fix some casts that were causing off-by-one errors in QUIC's cubic
 // "convex" increases.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_cubic_convex_mode, false)
-
-// Ensure that BBR startup pacing rate does not drop below the initial one.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_faster_startup, true)
 
 // If true, GFE sends SETTINGS_MAX_HEADER_LIST_SIZE to the client at the
 // beginning of a connection.

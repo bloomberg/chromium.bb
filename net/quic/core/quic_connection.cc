@@ -264,9 +264,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id;
   framer_.set_visitor(this);
-  if (!FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
-    last_stop_waiting_frame_.least_unacked = 0;
-  }
   stats_.connection_creation_time = clock_->ApproximateNow();
   // TODO(ianswett): Supply the NetworkChangeVisitor as a constructor argument
   // and make it required non-null, because it's always used.
@@ -632,17 +629,14 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   --stats_.packets_dropped;
   QUIC_DVLOG(1) << ENDPOINT << "Received packet header: " << header;
   last_header_ = header;
-  if (FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
-    // An ack will be sent if a missing retransmittable packet was received;
-    was_last_packet_missing_ =
-        received_packet_manager_.IsMissing(last_header_.packet_number);
+  // An ack will be sent if a missing retransmittable packet was received;
+  was_last_packet_missing_ =
+      received_packet_manager_.IsMissing(last_header_.packet_number);
 
-    // Record received to populate ack info correctly before processing stream
-    // frames, since the processing may result in a response packet with a
-    // bundled ack.
-    received_packet_manager_.RecordPacketReceived(
-        last_header_, time_of_last_received_packet_);
-  }
+  // Record packet receipt to populate ack info before processing stream
+  // frames, since the processing may result in sending a bundled ack.
+  received_packet_manager_.RecordPacketReceived(last_header_,
+                                                time_of_last_received_packet_);
   DCHECK(connected_);
   return true;
 }
@@ -752,11 +746,7 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
     debug_visitor_->OnStopWaitingFrame(frame);
   }
 
-  if (FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
-    ProcessStopWaitingFrame(frame);
-  } else {
-    last_stop_waiting_frame_ = frame;
-  }
+  ProcessStopWaitingFrame(frame);
   return connected_;
 }
 
@@ -935,37 +925,13 @@ void QuicConnection::OnPacketComplete() {
   QUIC_DVLOG(1) << ENDPOINT << "Got packet " << last_header_.packet_number
                 << " for " << last_header_.public_header.connection_id;
 
-  if (FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
-    // An ack will be sent if a missing retransmittable packet was received;
-    const bool was_missing =
-        should_last_packet_instigate_acks_ && was_last_packet_missing_;
+  // An ack will be sent if a missing retransmittable packet was received;
+  const bool was_missing =
+      should_last_packet_instigate_acks_ && was_last_packet_missing_;
 
-    // It's possible the ack frame was sent along with response data, so it
-    // no longer needs to be sent.
-    if (ack_frame_updated()) {
-      MaybeQueueAck(was_missing);
-    }
-  } else {
-    // An ack will be sent if a missing retransmittable packet was received;
-    const bool was_missing =
-        should_last_packet_instigate_acks_ &&
-        received_packet_manager_.IsMissing(last_header_.packet_number);
-
-    // Record received to populate ack info correctly before processing stream
-    // frames, since the processing may result in a response packet with a
-    // bundled ack.
-    received_packet_manager_.RecordPacketReceived(
-        last_header_, time_of_last_received_packet_);
-
-    // Process stop waiting frames here, instead of inline, because the packet
-    // needs to be considered 'received' before the entropy can be updated.
-    if (last_stop_waiting_frame_.least_unacked > 0) {
-      ProcessStopWaitingFrame(last_stop_waiting_frame_);
-      if (!connected_) {
-        return;
-      }
-    }
-
+  // It's possible the ack frame was sent along with response data, so it
+  // no longer needs to be sent.
+  if (ack_frame_updated()) {
     MaybeQueueAck(was_missing);
   }
 
@@ -1038,9 +1004,6 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
 
 void QuicConnection::ClearLastFrames() {
   should_last_packet_instigate_acks_ = false;
-  if (!FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
-    last_stop_waiting_frame_.least_unacked = 0;
-  }
 }
 
 const QuicFrame QuicConnection::GetUpdatedAckFrame() {
