@@ -17,8 +17,8 @@
 
 namespace ui {
 
-X11Window::X11Window(PlatformWindowDelegate* delegate)
-    : X11WindowBase(delegate) {
+X11Window::X11Window(PlatformWindowDelegate* delegate, const gfx::Rect& bounds)
+    : X11WindowBase(delegate, bounds) {
   DCHECK(PlatformEventSource::GetInstance());
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }

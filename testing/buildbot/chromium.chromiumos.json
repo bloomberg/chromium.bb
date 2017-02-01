@@ -52,6 +52,9 @@
         "test": "ash_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=x11"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -501,6 +504,9 @@
         "test": "views_mus_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=x11"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },

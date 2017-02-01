@@ -77,8 +77,7 @@ class OzonePlatformX11 : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     std::unique_ptr<X11WindowOzone> window = base::MakeUnique<X11WindowOzone>(
-        event_source_.get(), window_manager_.get(), delegate);
-    window->SetBounds(bounds);
+        event_source_.get(), window_manager_.get(), delegate, bounds);
     window->Create();
     window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
     return std::move(window);

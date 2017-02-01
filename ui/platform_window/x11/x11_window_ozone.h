@@ -22,7 +22,8 @@ class X11_WINDOW_EXPORT X11WindowOzone : public X11WindowBase,
  public:
   X11WindowOzone(X11EventSourceLibevent* event_source,
                  X11WindowManagerOzone* window_manager,
-                 PlatformWindowDelegate* delegate);
+                 PlatformWindowDelegate* delegate,
+                 const gfx::Rect& bounds);
   ~X11WindowOzone() override;
 
   // PlatformWindow:

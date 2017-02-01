@@ -16,7 +16,7 @@ namespace ui {
 class X11_WINDOW_EXPORT X11Window : public X11WindowBase,
                                     public PlatformEventDispatcher {
  public:
-  explicit X11Window(PlatformWindowDelegate* delegate);
+  X11Window(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
   ~X11Window() override;
 
   // PlatformWindow:

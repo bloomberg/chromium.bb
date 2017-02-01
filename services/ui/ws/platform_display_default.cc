@@ -64,8 +64,7 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
 #if defined(OS_WIN)
   platform_window_ = base::MakeUnique<ui::WinWindow>(this, bounds);
 #elif defined(USE_X11) && !defined(OS_CHROMEOS)
-  platform_window_ = base::MakeUnique<ui::X11Window>(this);
-  platform_window_->SetBounds(bounds);
+  platform_window_ = base::MakeUnique<ui::X11Window>(this, bounds);
 #elif defined(OS_ANDROID)
   platform_window_ = base::MakeUnique<ui::PlatformWindowAndroid>(this);
   platform_window_->SetBounds(bounds);
