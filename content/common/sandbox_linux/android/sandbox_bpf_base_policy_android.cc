@@ -38,6 +38,8 @@ namespace content {
 #define SOCK_NONBLOCK O_NONBLOCK
 #endif
 
+#define CASES SANDBOX_BPF_DSL_CASES
+
 namespace {
 
 #if !defined(__i386__)
@@ -177,16 +179,26 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     // documented to be a valid errno, but we will use it anyways.
     return Error(EPERM);
   }
+
+  // https://crbug.com/682488
+  if (sysno == __NR_getsockopt || sysno == __NR_setsockopt) {
+    // The baseline policy applies other restrictions to these syscalls.
+    const Arg<int> level(1);
+    const Arg<int> option(2);
+    return If(AllOf(level == SOL_SOCKET, option == SO_SNDTIMEO), Allow())
+           .Else(SandboxBPFBasePolicy::EvaluateSyscall(sysno));
+  }
 #elif defined(__i386__)
   if (sysno == __NR_socketcall) {
+    // The baseline policy allows other socketcall sub-calls.
     const Arg<int> socketcall(0);
-    const Arg<int> domain(1);
-    const Arg<int> type(2);
-    const Arg<int> protocol(3);
-    return If(socketcall == SYS_CONNECT, Allow())
-           .ElseIf(socketcall == SYS_SOCKET, Allow())
-           .ElseIf(socketcall == SYS_GETSOCKOPT, Allow())
-           .Else(Error(EPERM));
+    return Switch(socketcall)
+        .CASES((SYS_CONNECT,
+                SYS_SOCKET,
+                SYS_SETSOCKOPT,
+                SYS_GETSOCKOPT),
+               Allow())
+        .Default(SandboxBPFBasePolicy::EvaluateSyscall(sysno));
   }
 #endif
 
