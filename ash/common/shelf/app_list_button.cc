@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -173,6 +174,7 @@ void AppListButton::PaintMd(gfx::Canvas* canvas) {
   // ring draws sharply and is centered at all scale factors.
   const float kRingOuterRadiusDp = 7.f;
   const float kRingThicknessDp = 1.5f;
+  gfx::ScopedCanvas scoped_canvas(canvas);
   const float dsf = canvas->UndoDeviceScaleFactor();
   circle_center.Scale(dsf);
 
