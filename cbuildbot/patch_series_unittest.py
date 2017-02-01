@@ -157,10 +157,28 @@ class TestUploadedLocalPatch(PatchSeriesTestCase):
     self.assertNotEqual(patch3.id, patch4.id)
     series = self.GetPatchSeries()
     series.GetGitRepoForChange = lambda change, **kwargs: git2
-    patches = series.FetchChanges([patch3, patch4])
+    patches, _ = series.FetchChanges([patch3, patch4])
     self.assertEqual(len(patches), 2)
     self.assertEqual(patches[0].id, patch3.id)
     self.assertEqual(patches[1].id, patch4.id)
+
+  def testFetchChangesWithChangeNotInManifest(self):
+    """test FetchChanges with ChangeNotInManifest."""
+    # pylint: disable=unused-argument
+    def raiseException(change, **kwargs):
+      raise cros_patch.ChangeNotInManifest(change)
+
+    patch_1, patch_2 = patches = self.GetPatches(2)
+
+    series = self.GetPatchSeries()
+    series.GetGitRepoForChange = raiseException
+
+    changes, not_in_manifest = series.FetchChanges(patches)
+
+    self.assertEqual(len(changes), 0)
+    self.assertEqual(len(not_in_manifest), 2)
+    self.assertEqual(not_in_manifest[0].patch, patch_1)
+    self.assertEqual(not_in_manifest[1].patch, patch_2)
 
 
 class TestPatchSeries(PatchSeriesTestCase):
@@ -378,6 +396,25 @@ class TestPatchSeries(PatchSeriesTestCase):
 
     self.mox.ReplayAll()
     self.assertResults(series, patches, [patch2, patch1, patch3])
+    self.mox.VerifyAll()
+
+  def testApplyWithNotInManifestException(self):
+    """Test Apply with NotInManifest Exception."""
+    series = self.GetPatchSeries()
+
+    patch1, patch2, patch3 = patches = self.GetPatches(3)
+    self.SetPatchDeps(patch1, [])
+    self.SetPatchDeps(patch2, [])
+    self.SetPatchDeps(patch3, [])
+    self.SetPatchApply(patch1)
+    self.SetPatchApply(patch2)
+
+    not_in_manifest = [cros_patch.ChangeNotInManifest(patch3)]
+    series.FetchChanges = lambda changes: ([patch1, patch2], not_in_manifest)
+
+    self.mox.ReplayAll()
+    self.assertResults(series, patches, applied=[patch1, patch2],
+                       failed_tot=[patch3])
     self.mox.VerifyAll()
 
   def testComplexCyclicalDeps(self, fail=False):

@@ -689,10 +689,12 @@ class PatchSeries(object):
     If we're an external builder, internal changes are filtered out.
 
     Returns:
-      A list of the filtered changes.
+      A list of the filtered changes and a list of
+      cros_patch.ChangeNotInManifest instances for changes not in manifest.
     """
     by_repo = {}
     changes_to_fetch = []
+    not_in_manifest = []
     for change in changes:
       try:
         self._helper_pool.ForChange(change)
@@ -700,7 +702,15 @@ class PatchSeries(object):
         # Internal patches are irrelevant to external builders.
         logging.info("Skipping internal patch: %s", change)
         continue
-      repo = self.GetGitRepoForChange(change, strict=True)
+
+      repo = None
+      try:
+        repo = self.GetGitRepoForChange(change, strict=True)
+      except cros_patch.ChangeNotInManifest as e:
+        logging.info('Skipping patch %s as it\'s not in manifest.', change)
+        not_in_manifest.append(e)
+        continue
+
       by_repo.setdefault(repo, []).append(change)
       changes_to_fetch.append(change)
 
@@ -713,7 +723,7 @@ class PatchSeries(object):
           _FetchChangesForRepo, fetched_changes, by_repo)
       parallel.RunTasksInProcessPool(fetch_repo, [[repo] for repo in by_repo])
 
-      return [fetched_changes[c.id] for c in changes_to_fetch]
+      return [fetched_changes[c.id] for c in changes_to_fetch], not_in_manifest
 
   def ReapplyChanges(self, by_repo):
     """Make sure that all of the local changes still apply.
@@ -820,15 +830,18 @@ class PatchSeries(object):
       against ToT, and Exceptions that failed inflight;  These exceptions
       are cros_patch.PatchException instances.
     """
+    resolved, applied, failed = [], [], []
+
     # Prefetch the changes; we need accurate change_id/id's, which is
     # guaranteed via Fetch.
-    changes = self.FetchChanges(changes)
+    changes, not_in_manifest = self.FetchChanges(changes)
+    failed.extend(not_in_manifest)
     if changes_filter:
       changes = changes_filter(self, changes)
 
     self.InjectLookupCache(changes)
     limit_to = cros_patch.PatchCache(changes) if frozen else None
-    resolved, applied, failed = [], [], []
+
     planned = set()
     for change, plan, ex in self.CreateTransactions(changes, limit_to=limit_to):
       if ex is not None:
