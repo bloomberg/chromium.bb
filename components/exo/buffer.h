@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/transferable_resource.h"
@@ -76,12 +77,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
  private:
   class Texture;
 
-  // Decrements the use count of buffer and notifies the client that buffer
-  // as been released if it reached 0.
+  // This should be called when buffer is released and will notify the
+  // client that buffer has been released.
   void Release();
-
-  // Runs the release callback if the buffer isn't attached or in use.
-  void CheckReleaseCallback();
 
   // This is used by ProduceTextureMailbox() to produce a release callback
   // that releases a texture so it can be destroyed or reused.
@@ -90,7 +88,12 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // This is used by ProduceTextureMailbox() to produce a release callback
   // that releases the buffer contents referenced by a texture before the
   // texture is destroyed or reused.
-  void ReleaseContentsTexture(std::unique_ptr<Texture> texture);
+  void ReleaseContentsTexture(std::unique_ptr<Texture> texture,
+                              const base::Closure& callback);
+
+  // Notifies the client that buffer has been released if no longer attached
+  // to a surface.
+  void ReleaseContents();
 
   // The GPU memory buffer that contains the contents of this buffer.
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
@@ -106,11 +109,6 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
 
   // True if this buffer is an overlay candidate.
   const bool is_overlay_candidate_;
-
-  // This is incremented when a transferable resource is produced and
-  // decremented when a transferable resource is released. It is used to
-  // determine when we should notify the client that buffer has been released.
-  unsigned use_count_ = 0;
 
   // This keeps track of how many Surfaces the buffer is attached to.
   unsigned attach_count_ = 0;
@@ -130,6 +128,10 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // a release callback when the last produced transferable resource is no
   // longer in use.
   scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
+
+  // Cancelable release contents callback. This is set when a release callback
+  // is pending.
+  base::CancelableClosure release_contents_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };

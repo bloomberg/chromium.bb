@@ -406,21 +406,8 @@ bool Buffer::ProduceTransferableResource(
     bool client_usage,
     cc::TransferableResource* resource) {
   DCHECK(attach_count_);
-  DLOG_IF(WARNING, use_count_ && client_usage)
+  DLOG_IF(WARNING, !release_contents_callback_.IsCancelled() && client_usage)
       << "Producing a texture mailbox for a buffer that has not been released";
-
-  // Some clients think that they can reuse a buffer before it's released by
-  // performing a fast blit into the buffer. This behavior is bad as it prevents
-  // the client from knowing when the buffer is actually released (e.g. the
-  // release notification for the previous use of buffer can arrive after the
-  // buffer has been reused). We stop running the release callback when this
-  // type of behavior is detected as having the buffer always be busy will
-  // result in fewer drawing artifacts.
-  if (use_count_ && client_usage)
-    release_callback_.Reset();
-
-  // Increment the use count for this buffer.
-  ++use_count_;
 
   // If textures are lost, destroy them to ensure that we create new ones below.
   if (contents_texture_ && contents_texture_->IsLost())
@@ -435,7 +422,6 @@ bool Buffer::ProduceTransferableResource(
       context_factory->SharedMainThreadContextProvider();
   if (!context_provider) {
     DLOG(WARNING) << "Failed to acquire a context provider";
-    Release();  // Decrements the use count
     resource->id = 0;
     resource->size = gfx::Size();
     return false;
@@ -458,24 +444,29 @@ bool Buffer::ProduceTransferableResource(
         context_factory, context_provider.get(), gpu_memory_buffer_.get(),
         texture_target_, query_type_);
   }
+  Texture* contents_texture = contents_texture_.get();
 
+  // Cancel pending contents release callback.
+  release_contents_callback_.Reset(
+      base::Bind(&Buffer::ReleaseContents, base::Unretained(this)));
+
+  // Zero-copy means using the contents texture directly.
   if (use_zero_copy_) {
-    // Zero-copy means using the contents texture directly.
-    Texture* texture = contents_texture_.get();
-
-    // This binds the latest contents of this buffer to |texture|.
-    gpu::SyncToken sync_token = texture->BindTexImage();
-    resource->mailbox_holder =
-        gpu::MailboxHolder(texture->mailbox(), sync_token, texture_target_);
+    // This binds the latest contents of this buffer to |contents_texture|.
+    gpu::SyncToken sync_token = contents_texture->BindTexImage();
+    resource->mailbox_holder = gpu::MailboxHolder(contents_texture->mailbox(),
+                                                  sync_token, texture_target_);
     resource->is_overlay_candidate = is_overlay_candidate_;
 
     // The contents texture will be released when no longer used by the
     // compositor.
     compositor_frame_sink_holder_->SetResourceReleaseCallback(
         resource_id,
-        base::Bind(&Buffer::Texture::ReleaseTexImage, base::Unretained(texture),
+        base::Bind(&Buffer::Texture::ReleaseTexImage,
+                   base::Unretained(contents_texture),
                    base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
-                              base::Passed(&contents_texture_))));
+                              base::Passed(&contents_texture_),
+                              release_contents_callback_.callback())));
     return true;
   }
 
@@ -484,16 +475,15 @@ bool Buffer::ProduceTransferableResource(
     texture_ =
         base::MakeUnique<Texture>(context_factory, context_provider.get());
   }
-
-  // Copy the contents of |contents_texture| to |texture| and produce a
-  // texture mailbox from the result in |texture|.
-  Texture* contents_texture = contents_texture_.get();
   Texture* texture = texture_.get();
 
-  // The contents texture will be released when copy has completed.
+  // Copy the contents of |contents_texture| to |texture| and produce a
+  // texture mailbox from the result in |texture|. The contents texture will
+  // be released when copy has completed.
   gpu::SyncToken sync_token = contents_texture->CopyTexImage(
       texture, base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
-                          base::Passed(&contents_texture_)));
+                          base::Passed(&contents_texture_),
+                          release_contents_callback_.callback()));
   resource->mailbox_holder =
       gpu::MailboxHolder(texture->mailbox(), sync_token, GL_TEXTURE_2D);
   resource->is_overlay_candidate = false;
@@ -509,15 +499,19 @@ bool Buffer::ProduceTransferableResource(
 }
 
 void Buffer::OnAttach() {
-  DLOG_IF(WARNING, attach_count_ > 0u)
+  DLOG_IF(WARNING, attach_count_)
       << "Reattaching a buffer that is already attached to another surface.";
-  attach_count_++;
+  ++attach_count_;
 }
 
 void Buffer::OnDetach() {
   DCHECK_GT(attach_count_, 0u);
   --attach_count_;
-  CheckReleaseCallback();
+
+  // Release buffer if no longer attached to a surface and content has been
+  // released.
+  if (!attach_count_ && release_contents_callback_.IsCancelled())
+    Release();
 }
 
 gfx::Size Buffer::GetSize() const {
@@ -543,30 +537,30 @@ std::unique_ptr<base::trace_event::TracedValue> Buffer::AsTracedValue() const {
 // Buffer, private:
 
 void Buffer::Release() {
-  DCHECK_GT(use_count_, 0u);
-  --use_count_;
-  CheckReleaseCallback();
-}
-
-void Buffer::CheckReleaseCallback() {
-  if (attach_count_ || use_count_)
-    return;
-
   // Run release callback to notify the client that buffer has been released.
   if (!release_callback_.is_null())
     release_callback_.Run();
-
-  compositor_frame_sink_holder_ = nullptr;
 }
 
 void Buffer::ReleaseTexture(std::unique_ptr<Texture> texture) {
   texture_ = std::move(texture);
 }
 
-void Buffer::ReleaseContentsTexture(std::unique_ptr<Texture> texture) {
-  TRACE_EVENT0("exo", "Buffer::ReleaseContentsTexture");
+void Buffer::ReleaseContentsTexture(std::unique_ptr<Texture> texture,
+                                    const base::Closure& callback) {
   contents_texture_ = std::move(texture);
-  Release();
+  callback.Run();
+}
+
+void Buffer::ReleaseContents() {
+  TRACE_EVENT0("exo", "Buffer::ReleaseContents");
+
+  // Cancel callback to indicate that buffer has been released.
+  release_contents_callback_.Cancel();
+
+  // Release buffer if not attached to surface.
+  if (!attach_count_)
+    Release();
 }
 
 }  // namespace exo
