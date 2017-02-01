@@ -115,8 +115,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_identify_active_gpu2', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu3', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu4', 'chrome:gpu'),
-             ('GpuProcess_software_gpu_process', 'about:blank'),
-             ('GpuProcess_disabling_workarounds_works', 'chrome:gpu'))
+             ('GpuProcess_software_gpu_process', 'about:blank'))
 
     # The earlier has_transparent_visuals_gpu_process and
     # no_transparent_visuals_gpu_process tests became no-ops in
@@ -526,17 +525,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--gpu-testing-gl-version=2.1 Mesa 10.1'])
     self._Navigate(test_path)
     self._VerifyGpuProcessPresent()
-
-  def _GpuProcess_disabling_workarounds_works(self, test_path):
-    self.RestartBrowserIfNecessaryWithArgs([
-      '--gpu-testing-vendor-id=0xbad9',
-      '--gpu-testing-device-id=0xbad9',
-      '--use_gpu_driver_workaround_for_testing=0'])
-    self._Navigate(test_path)
-    workarounds, _ = (
-      self._CompareAndCaptureDriverBugWorkarounds())
-    if 'use_gpu_driver_workaround_for_testing' in workarounds:
-      self.fail('use_gpu_driver_workaround_for_testing erroneously present')
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
