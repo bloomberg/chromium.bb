@@ -146,6 +146,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
 
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    @DisabledTest(message = "crbug.com/673279")
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=US")
     public void testLocalUSNumbers() throws Throwable {
         startActivityWithTestUrl(
