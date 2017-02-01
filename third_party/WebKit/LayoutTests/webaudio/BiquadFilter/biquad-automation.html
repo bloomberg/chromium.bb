@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Biquad Automation Test</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/biquad-filters.js"></script>
@@ -10,9 +11,7 @@
   </head>
   <body>
     <script>
-      description("Test Automation of Biquad Filters");
 
-      window.jsTestIsAsync = true;
 
       // Don't need to run these tests at high sampling rate, so just use a low one to reduce memory
       // usage and complexity.
@@ -363,7 +362,6 @@
 
       // All done!
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
