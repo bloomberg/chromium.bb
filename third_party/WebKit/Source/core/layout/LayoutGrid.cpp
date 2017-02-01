@@ -1104,8 +1104,8 @@ void LayoutGrid::prepareChildForPositionedLayout(LayoutBox& child) {
   child.containingBlock()->insertPositionedObject(&child);
 
   PaintLayer* childLayer = child.layer();
-  childLayer->setStaticInlinePosition(borderAndPaddingStart());
-  childLayer->setStaticBlockPosition(borderAndPaddingBefore());
+  childLayer->setStaticInlinePosition(LayoutUnit(borderStart()));
+  childLayer->setStaticBlockPosition(LayoutUnit(borderBefore()));
 }
 
 void LayoutGrid::layoutPositionedObjects(bool relayoutChildren,
