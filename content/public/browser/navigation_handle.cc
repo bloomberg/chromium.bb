@@ -26,13 +26,14 @@ NavigationHandle::CreateNavigationHandleForTesting(
     const GURL& url,
     RenderFrameHost* render_frame_host,
     bool committed,
-    net::Error error) {
+    net::Error error,
+    bool is_same_page) {
   std::unique_ptr<NavigationHandleImpl> handle_impl =
       NavigationHandleImpl::Create(
           url, static_cast<RenderFrameHostImpl*>(render_frame_host)
                    ->frame_tree_node(),
           true,   // is_renderer_initiated
-          false,  // is_same_page
+          is_same_page,
           base::TimeTicks::Now(), 0,
           false);  // started_from_context_menu
   handle_impl->set_render_frame_host(

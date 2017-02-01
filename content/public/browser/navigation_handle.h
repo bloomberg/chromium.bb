@@ -218,7 +218,8 @@ class CONTENT_EXPORT NavigationHandle {
       const GURL& url,
       RenderFrameHost* render_frame_host,
       bool committed = false,
-      net::Error error = net::OK);
+      net::Error error = net::OK,
+      bool is_same_page = false);
 
   // Registers a NavigationThrottle for tests. The throttle can
   // modify the request, pause the request or cancel the request. This will

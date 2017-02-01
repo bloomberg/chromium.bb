@@ -4,7 +4,7 @@
 
 #include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -15,8 +15,12 @@ namespace dom_distiller {
 
 class WebContentsMainFrameObserverTest
     : public content::RenderViewHostTestHarness {
+ public:
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
+    // This needed to keep the WebContentsObserverSanityChecker checks happy for
+    // when AppendChild is called.
+    NavigateAndCommit(GURL("about:blank"));
     dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
         web_contents());
     main_frame_observer_ =
@@ -24,16 +28,24 @@ class WebContentsMainFrameObserverTest
     ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
   }
 
+  void Navigate(bool main_frame, bool in_page) {
+    content::RenderFrameHost* rfh = main_rfh();
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(rfh);
+    if (!main_frame)
+      rfh = rfh_tester->AppendChild("subframe");
+    std::unique_ptr<content::NavigationHandle> navigation_handle =
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            GURL(), rfh, true, net::OK, in_page);
+    // Destructor calls DidFinishNavigation.
+  }
+
  protected:
   WebContentsMainFrameObserver* main_frame_observer_;  // weak
 };
 
 TEST_F(WebContentsMainFrameObserverTest, ListensForMainFrameNavigation) {
-  content::LoadCommittedDetails details = content::LoadCommittedDetails();
-  details.is_main_frame = true;
-  details.is_in_page = false;
-  content::FrameNavigateParams params = content::FrameNavigateParams();
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(true, false);
   ASSERT_TRUE(main_frame_observer_->is_initialized());
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 
@@ -42,32 +54,20 @@ TEST_F(WebContentsMainFrameObserverTest, ListensForMainFrameNavigation) {
 }
 
 TEST_F(WebContentsMainFrameObserverTest, IgnoresChildFrameNavigation) {
-  content::LoadCommittedDetails details = content::LoadCommittedDetails();
-  details.is_main_frame = false;
-  details.is_in_page = false;
-  content::FrameNavigateParams params = content::FrameNavigateParams();
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(false, false);
   ASSERT_FALSE(main_frame_observer_->is_initialized());
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
 TEST_F(WebContentsMainFrameObserverTest, IgnoresInPageNavigation) {
-  content::LoadCommittedDetails details = content::LoadCommittedDetails();
-  details.is_main_frame = true;
-  details.is_in_page = true;
-  content::FrameNavigateParams params = content::FrameNavigateParams();
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(true, true);
   ASSERT_FALSE(main_frame_observer_->is_initialized());
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
 TEST_F(WebContentsMainFrameObserverTest,
        IgnoresInPageNavigationUnlessMainFrameLoads) {
-  content::LoadCommittedDetails details = content::LoadCommittedDetails();
-  details.is_main_frame = true;
-  details.is_in_page = true;
-  content::FrameNavigateParams params = content::FrameNavigateParams();
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(true, true);
   ASSERT_FALSE(main_frame_observer_->is_initialized());
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 
@@ -78,32 +78,23 @@ TEST_F(WebContentsMainFrameObserverTest,
 }
 
 TEST_F(WebContentsMainFrameObserverTest, ResetOnPageNavigation) {
-  content::LoadCommittedDetails details = content::LoadCommittedDetails();
-  details.is_main_frame = true;
-  details.is_in_page = false;
-  content::FrameNavigateParams params = content::FrameNavigateParams();
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(true, false);
   main_frame_observer_->DocumentLoadedInFrame(main_rfh());
   ASSERT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 
   // Another navigation should result in waiting for a page load.
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(true, false);
   ASSERT_TRUE(main_frame_observer_->is_initialized());
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
 TEST_F(WebContentsMainFrameObserverTest, DoesNotResetOnInPageNavigation) {
-  content::LoadCommittedDetails details = content::LoadCommittedDetails();
-  details.is_main_frame = true;
-  details.is_in_page = false;
-  content::FrameNavigateParams params = content::FrameNavigateParams();
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(true, false);
   main_frame_observer_->DocumentLoadedInFrame(main_rfh());
   ASSERT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 
   // Navigating withing the page should not result in waiting for a page load.
-  details.is_in_page = true;
-  main_frame_observer_->DidNavigateMainFrame(details, params);
+  Navigate(true, true);
   ASSERT_TRUE(main_frame_observer_->is_initialized());
   ASSERT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
