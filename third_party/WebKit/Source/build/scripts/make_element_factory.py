@@ -30,7 +30,7 @@
 import sys
 from collections import defaultdict
 
-import in_generator
+import json5_generator
 import template_expander
 import name_utilities
 
@@ -38,23 +38,23 @@ from make_qualified_names import MakeQualifiedNamesWriter
 
 
 class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
-    defaults = dict(MakeQualifiedNamesWriter.default_parameters, **{
-        'JSInterfaceName': None,
-        'Conditional': None,
-        'constructorNeedsCreatedByParser': None,
-        'interfaceName': None,
-        'noConstructor': None,
-        'noTypeHelpers': None,
-        'runtimeEnabled': None,
-    })
-    default_parameters = dict(MakeQualifiedNamesWriter.default_parameters, **{
+    default_parameters = {
+        'JSInterfaceName': {},
+        'Conditional': {},
+        'constructorNeedsCreatedByParser': {},
+        'interfaceName': {},
+        'noConstructor': {},
+        'noTypeHelpers': {},
+        'runtimeEnabled': {},
+    }
+    default_metadata = dict(MakeQualifiedNamesWriter.default_metadata, **{
         'fallbackInterfaceName': '',
         'fallbackJSInterfaceName': '',
     })
     filters = MakeQualifiedNamesWriter.filters
 
-    def __init__(self, in_file_paths):
-        super(MakeElementFactoryWriter, self).__init__(in_file_paths)
+    def __init__(self, json5_file_paths):
+        super(MakeElementFactoryWriter, self).__init__(json5_file_paths)
 
         # FIXME: When we start using these element factories, we'll want to
         # remove the "new" prefix and also have our base class generate
@@ -64,8 +64,8 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
             (self.namespace + 'ElementFactory.cpp'): self.generate_factory_implementation,
         })
 
-        fallback_interface = self.tags_in_file.parameters['fallbackInterfaceName'].strip('"')
-        fallback_js_interface = self.tags_in_file.parameters['fallbackJSInterfaceName'].strip('"') or fallback_interface
+        fallback_interface = self.tags_json5_file.metadata['fallbackInterfaceName'].strip('"')
+        fallback_js_interface = self.tags_json5_file.metadata['fallbackJSInterfaceName'].strip('"') or fallback_interface
 
         interface_counts = defaultdict(int)
         tags = self._template_context['tags']
@@ -114,4 +114,4 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
 
 
 if __name__ == "__main__":
-    in_generator.Maker(MakeElementFactoryWriter).main(sys.argv)
+    json5_generator.Maker(MakeElementFactoryWriter).main()
