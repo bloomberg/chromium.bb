@@ -133,12 +133,6 @@ bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
   return true;
 }
 
-bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
-    const char* rst_stream_data,
-    size_t len) {
-  return true;
-}
-
 SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory,
                        CompressionOption option)
     : current_frame_buffer_(kControlFrameBufferSize),

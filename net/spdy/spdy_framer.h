@@ -175,16 +175,6 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // occurred while processing the data. Default implementation returns true.
   virtual bool OnGoAwayFrameData(const char* goaway_data, size_t len);
 
-  // Called when rst_stream frame opaque data is available.
-  // |rst_stream_data| A buffer containing the opaque RST_STREAM
-  // data chunk received.
-  // |len| The length of the header data buffer. A length of zero indicates
-  //       that the opaque data has been completely sent.
-  // When this function returns true the visitor indicates that it accepted
-  // all of the data. Returning false indicates that that an error has
-  // occurred while processing the data. Default implementation returns true.
-  virtual bool OnRstStreamFrameData(const char* rst_stream_data, size_t len);
-
   // Called when a BLOCKED frame has been parsed.
   virtual void OnBlocked(SpdyStreamId stream_id) {}
 

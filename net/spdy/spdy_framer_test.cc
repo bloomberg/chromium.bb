@@ -290,7 +290,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         last_push_promise_promised_stream_(0),
         data_bytes_(0),
         fin_frame_count_(0),
-        fin_opaque_data_(),
         fin_flag_count_(0),
         end_of_stream_count_(0),
         control_frame_header_data_count_(0),
@@ -363,13 +362,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                    SpdyRstStreamStatus status) override {
     VLOG(1) << "OnRstStream(" << stream_id << ", " << status << ")";
     ++fin_frame_count_;
-  }
-
-  bool OnRstStreamFrameData(const char* rst_stream_data, size_t len) override {
-    if ((rst_stream_data != NULL) && (len > 0)) {
-      fin_opaque_data_ += string(rst_stream_data, len);
-    }
-    return true;
   }
 
   void OnSetting(SpdySettingsIds id, uint32_t value) override {
@@ -565,7 +557,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyStreamId last_push_promise_promised_stream_;
   int data_bytes_;
   int fin_frame_count_;  // The count of RST_STREAM type frames received.
-  string fin_opaque_data_;
   int fin_flag_count_;       // The count of frames with the FIN flag set.
   int end_of_stream_count_;  // The count of zero-length data frames.
   int control_frame_header_data_count_;  // The count of chunks received.
@@ -1283,12 +1274,10 @@ TEST_P(SpdyFramerTest, Basic) {
   EXPECT_EQ(2, visitor.fin_frame_count_);
 
   EXPECT_EQ(3, visitor.headers_frame_count_);
-  EXPECT_TRUE(visitor.fin_opaque_data_.empty());
 
   EXPECT_EQ(0, visitor.fin_flag_count_);
   EXPECT_EQ(0, visitor.end_of_stream_count_);
   EXPECT_EQ(4, visitor.data_frame_count_);
-  visitor.fin_opaque_data_.clear();
 }
 
 // Test that the FIN flag on a data frame signifies EOF.
@@ -4212,7 +4201,6 @@ TEST_P(SpdyFramerTest, ReadInvalidRstStreamWithPayload) {
             visitor.framer_.spdy_framer_error())
       << SpdyFramer::SpdyFramerErrorToString(
              visitor.framer_.spdy_framer_error());
-  EXPECT_TRUE(visitor.fin_opaque_data_.empty());
 }
 
 // Test that SpdyFramer processes, by default, all passed input in one call

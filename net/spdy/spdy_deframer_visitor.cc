@@ -169,7 +169,6 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
                      SpdyStreamId promised_stream_id,
                      bool end) override;
   void OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) override;
-  bool OnRstStreamFrameData(const char* rst_stream_data, size_t len) override;
   void OnSetting(SpdySettingsIds id, uint32_t value) override;
   void OnSettings(bool clear_persisted) override;
   void OnSettingsAck() override;
@@ -622,17 +621,6 @@ void SpdyTestDeframerImpl::OnRstStream(SpdyStreamId stream_id,
   CHECK_GT(stream_id, 0u);
 
   listener_->OnRstStream(MakeUnique<SpdyRstStreamIR>(stream_id, status));
-}
-
-// The HTTP/2 spec states that there is no data in the frame other that the
-// SpdyRstStreamStatus passed to OnRstStream, so it appears that SpdyFramer's
-// comments w.r.t. this method are obsolete. We still receive a zero length
-// invocation when RST_STREAM frame processing completes.
-bool SpdyTestDeframerImpl::OnRstStreamFrameData(const char* rst_stream_data,
-                                                size_t len) {
-  DVLOG(1) << "OnRstStreamFrameData";
-  CHECK_EQ(0u, len);
-  return true;
 }
 
 // Called for an individual setting. There is no negotiation, the sender is
