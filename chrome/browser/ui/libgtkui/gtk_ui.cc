@@ -433,8 +433,6 @@ void GtkUi::Initialize() {
 
   LoadGtkValues();
 
-  LoadCursorTheme();
-
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   printing::PrintingContextLinux::SetCreatePrintDialogFunction(
       &PrintDialogGtk2::CreatePrintDialog);
@@ -786,12 +784,16 @@ void GtkUi::LoadGtkValues() {
   // regress startup time. Figure out how to do that when we can't access the
   // prefs system from here.
 
-  SkColor label_color = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
+  UpdateDeviceScaleFactor();
+  UpdateCursorTheme();
+
+  BuildFrameColors();
 
 #if GTK_MAJOR_VERSION == 2
   SkColor toolbar_color =
       native_theme_->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+  SkColor label_color = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
 
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] =
       color_utils::DeriveDefaultIconColor(label_color);
@@ -805,6 +807,25 @@ void GtkUi::LoadGtkValues() {
       ui::NativeTheme::kColorId_TextfieldReadOnlyBackground);
   inactive_selection_fg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
+
+  // We pick the text and background colors for the NTP out of the
+  // colors for a GtkEntry. We do this because GtkEntries background
+  // color is never the same as |toolbar_color|, is usually a white,
+  // and when it isn't a white, provides sufficient contrast to
+  // |toolbar_color|. Try this out with Darklooks, HighContrastInverse
+  // or ThinIce.
+  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] =
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+  colors_[ThemeProperties::COLOR_NTP_TEXT] = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  // The NTP header is the color that surrounds the current active
+  // thumbnail on the NTP, and acts as the border of the "Recent
+  // Links" box. It would be awesome if they were separated so we
+  // could use GetBorderColor() for the border around the "Recent
+  // Links" section, but matching the frame color is more important.
+  colors_[ThemeProperties::COLOR_NTP_HEADER] =
+      colors_[ThemeProperties::COLOR_FRAME];
 #else
   SkColor toolbar_color = GetBgColor("GtkToolbar#toolbar");
 
@@ -857,50 +878,22 @@ void GtkUi::LoadGtkValues() {
     colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE] =
         entry_inactive_border;
   }
+
+  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = GetBgColor("");
+  colors_[ThemeProperties::COLOR_NTP_TEXT] = GetFgColor("");
+  colors_[ThemeProperties::COLOR_NTP_HEADER] = GetBorderColor("GtkEntry#entry");
 #endif
 
-  colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = toolbar_color;
   colors_[ThemeProperties::COLOR_TOOLBAR] = toolbar_color;
+  colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = toolbar_color;
 
-  UpdateDeviceScaleFactor();
-
-  // We pick the text and background colors for the NTP out of the colors for a
-  // GtkEntry. We do this because GtkEntries background color is never the same
-  // as |toolbar_color|, is usually a white, and when it isn't a white,
-  // provides sufficient contrast to |toolbar_color|. Try this out with
-  // Darklooks, HighContrastInverse or ThinIce.
-
-  SkColor ntp_background = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-  SkColor ntp_foreground = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-
-  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = ntp_background;
-  colors_[ThemeProperties::COLOR_NTP_TEXT] = ntp_foreground;
-
-  // The NTP header is the color that surrounds the current active thumbnail on
-  // the NTP, and acts as the border of the "Recent Links" box. It would be
-  // awesome if they were separated so we could use GetBorderColor() for the
-  // border around the "Recent Links" section, but matching the frame color is
-  // more important.
-
-  BuildFrameColors();
-  SkColor frame_color = colors_[ThemeProperties::COLOR_FRAME];
-  colors_[ThemeProperties::COLOR_NTP_HEADER] = frame_color;
-  colors_[ThemeProperties::COLOR_NTP_SECTION] = toolbar_color;
-  colors_[ThemeProperties::COLOR_NTP_SECTION_TEXT] = label_color;
-
-  SkColor link_color =
+  colors_[ThemeProperties::COLOR_NTP_LINK] =
       native_theme_->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
-  colors_[ThemeProperties::COLOR_NTP_LINK] = link_color;
-  colors_[ThemeProperties::COLOR_NTP_LINK_UNDERLINE] = link_color;
-  colors_[ThemeProperties::COLOR_NTP_SECTION_LINK] = link_color;
-  colors_[ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE] = link_color;
 
   // Generate the colors that we pass to WebKit.
-  focus_ring_color_ = frame_color;
-
   SetScrollbarColors();
+  focus_ring_color_ = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
 
   // Some GTK themes only define the text selection colors on the GtkEntry
   // class, so we need to use that for getting selection colors.
@@ -917,7 +910,7 @@ void GtkUi::LoadGtkValues() {
           ui::NativeTheme::kColorId_ThrobberWaitingColor);
 }
 
-void GtkUi::LoadCursorTheme() {
+void GtkUi::UpdateCursorTheme() {
   GtkSettings* settings = gtk_settings_get_default();
 
   gchar* theme = nullptr;

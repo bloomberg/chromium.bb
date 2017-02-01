@@ -119,8 +119,8 @@ class GtkUi : public views::LinuxUI {
   // ThemeService interface and the colors we send to webkit.
   void LoadGtkValues();
 
-  // Initialize the Xcursor theme and size with the GTK theme and size.
-  void LoadCursorTheme();
+  // Sets the Xcursor theme and size with the GTK theme and size.
+  void UpdateCursorTheme();
 
   // Reads in explicit theme frame colors from the ChromeGtkFrame style class
   // or generates them per our fallback algorithm.
