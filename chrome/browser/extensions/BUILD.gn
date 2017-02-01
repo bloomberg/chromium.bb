@@ -238,6 +238,8 @@ static_library("extensions") {
     "api/identity/identity_api.h",
     "api/identity/identity_constants.cc",
     "api/identity/identity_constants.h",
+    "api/identity/identity_get_profile_user_info_function.cc",
+    "api/identity/identity_get_profile_user_info_function.h",
     "api/identity/identity_launch_web_auth_flow_function.cc",
     "api/identity/identity_launch_web_auth_flow_function.h",
     "api/identity/identity_mint_queue.cc",

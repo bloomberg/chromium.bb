@@ -880,28 +880,4 @@ std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
   return client_id;
 }
 
-IdentityGetProfileUserInfoFunction::IdentityGetProfileUserInfoFunction() {
-}
-
-IdentityGetProfileUserInfoFunction::~IdentityGetProfileUserInfoFunction() {
-}
-
-ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
-  if (GetProfile()->IsOffTheRecord()) {
-    return RespondNow(Error(identity_constants::kOffTheRecord));
-  }
-
-  AccountInfo account =
-      AccountTrackerServiceFactory::GetForProfile(GetProfile())
-          ->GetAccountInfo(GetPrimaryAccountId(GetProfile()));
-  api::identity::ProfileUserInfo profile_user_info;
-  if (extension()->permissions_data()->HasAPIPermission(
-          APIPermission::kIdentityEmail)) {
-    profile_user_info.email = account.email;
-    profile_user_info.id = account.gaia;
-  }
-
-  return RespondNow(OneArgument(profile_user_info.ToValue()));
-}
-
 }  // namespace extensions

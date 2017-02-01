@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
+#include "chrome/browser/extensions/api/identity/identity_get_profile_user_info_function.h"
 #include "chrome/browser/extensions/api/identity/identity_launch_web_auth_flow_function.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_remove_cached_auth_token_function.h"
@@ -289,21 +290,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   IssueAdviceInfo issue_advice_;
   std::unique_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
   std::unique_ptr<IdentitySigninFlow> signin_flow_;
-};
-
-class IdentityGetProfileUserInfoFunction
-    : public ChromeUIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("identity.getProfileUserInfo",
-                             IDENTITY_GETPROFILEUSERINFO);
-
-  IdentityGetProfileUserInfoFunction();
-
- private:
-  ~IdentityGetProfileUserInfoFunction() override;
-
-  // UIThreadExtensionFunction implementation.
-  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions
