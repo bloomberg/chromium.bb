@@ -43,6 +43,8 @@ LayoutUnit ResolveInlineLength(
     LengthResolveType type) {
   DCHECK(!length.isMaxSizeNone());
   DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
+  DCHECK_GE(constraint_space.PercentageResolutionSize().inline_size,
+            LayoutUnit());
 
   if (type == LengthResolveType::kMinSize && length.isAuto())
     return LayoutUnit();
