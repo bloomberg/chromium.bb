@@ -104,6 +104,13 @@ MEDIA_EXPORT bool ParseHEVCCodecId(const std::string& codec_id,
 
 MEDIA_EXPORT VideoCodec StringToVideoCodec(const std::string& codec_id);
 
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+// Translate legacy avc1 codec ids (like avc1.66.30 or avc1.77.31) into a new
+// style standard avc1 codec ids like avc1.4D002F. If the input codec is not
+// recognized as a legacy codec id, then returns the input string unchanged.
+std::string TranslateLegacyAvc1CodecIds(const std::string& codec_id);
+#endif
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_VIDEO_CODECS_H_
