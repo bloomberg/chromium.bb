@@ -171,6 +171,14 @@ class PLATFORM_EXPORT ResourceFetcher
       FetchRequest::DeferOption = FetchRequest::NoDefer,
       bool forPreload = false);
 
+  enum PrepareRequestResult { Abort, Continue, Block };
+
+  PrepareRequestResult prepareRequest(FetchRequest&,
+                                      const ResourceFactory&,
+                                      const SubstituteData&,
+                                      unsigned long identifier,
+                                      ResourceRequestBlockedReason&);
+
   Resource* resourceForStaticData(const FetchRequest&,
                                   const ResourceFactory&,
                                   const SubstituteData&);

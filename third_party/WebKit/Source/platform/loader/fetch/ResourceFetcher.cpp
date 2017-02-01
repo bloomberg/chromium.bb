@@ -453,16 +453,14 @@ void ResourceFetcher::updateMemoryCacheStats(Resource* resource,
   }
 }
 
-Resource* ResourceFetcher::requestResource(
+ResourceFetcher::PrepareRequestResult ResourceFetcher::prepareRequest(
     FetchRequest& request,
     const ResourceFactory& factory,
-    const SubstituteData& substituteData) {
+    const SubstituteData& substituteData,
+    unsigned long identifier,
+    ResourceRequestBlockedReason& blockedReason) {
   ResourceRequest& resourceRequest = request.mutableResourceRequest();
 
-  unsigned long identifier = createUniqueIdentifier();
-  network_instrumentation::ScopedResourceLoadTracker scopedResourceLoadTracker(
-      identifier, resourceRequest);
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Fetch.RequestResourceTime");
   DCHECK(request.options().synchronousPolicy == RequestAsynchronously ||
          factory.type() == Resource::Raw ||
          factory.type() == Resource::XSLStyleSheet);
@@ -471,12 +469,8 @@ Resource* ResourceFetcher::requestResource(
       factory.type(), request.clientHintsPreferences(),
       request.getResourceWidth(), resourceRequest);
 
-  // TODO(dproy): Remove this. http://crbug.com/659666
-  TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
-               urlForTraceEvent(request.url()));
-
   if (!request.url().isValid())
-    return nullptr;
+    return Abort;
 
   resourceRequest.setPriority(computeLoadPriority(
       factory.type(), request.resourceRequest(), ResourcePriority::NotVisible,
@@ -485,24 +479,52 @@ Resource* ResourceFetcher::requestResource(
   network_instrumentation::resourcePrioritySet(identifier,
                                                resourceRequest.priority());
 
-  ResourceRequestBlockedReason blockedReason = context().canRequest(
+  blockedReason = context().canRequest(
       factory.type(), resourceRequest,
       MemoryCache::removeFragmentIdentifierIfNeeded(request.url()),
       request.options(), request.forPreload(), request.getOriginRestriction());
   if (blockedReason != ResourceRequestBlockedReason::None) {
     DCHECK(!substituteData.forceSynchronousLoad());
-    return resourceForBlockedRequest(request, factory, blockedReason);
+    return Block;
   }
 
   context().willStartLoadingResource(
       identifier, resourceRequest, factory.type(),
       request.options().initiatorInfo.name, request.forPreload());
   if (!request.url().isValid())
+    return Abort;
+
+  resourceRequest.setAllowStoredCredentials(
+      request.options().allowCredentials == AllowStoredCredentials);
+  return Continue;
+}
+
+Resource* ResourceFetcher::requestResource(
+    FetchRequest& request,
+    const ResourceFactory& factory,
+    const SubstituteData& substituteData) {
+  unsigned long identifier = createUniqueIdentifier();
+  ResourceRequest& resourceRequest = request.mutableResourceRequest();
+  network_instrumentation::ScopedResourceLoadTracker scopedResourceLoadTracker(
+      identifier, resourceRequest);
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Fetch.RequestResourceTime");
+  // TODO(dproy): Remove this. http://crbug.com/659666
+  TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
+               urlForTraceEvent(request.url()));
+
+  Resource* resource = nullptr;
+  ResourceRequestBlockedReason blockedReason =
+      ResourceRequestBlockedReason::None;
+
+  PrepareRequestResult result = prepareRequest(request, factory, substituteData,
+                                               identifier, blockedReason);
+  if (result == Abort)
     return nullptr;
+  if (result == Block)
+    return resourceForBlockedRequest(request, factory, blockedReason);
 
   bool isDataUrl = resourceRequest.url().protocolIsData();
   bool isStaticData = isDataUrl || substituteData.isValid() || m_archive;
-  Resource* resource(nullptr);
   if (isStaticData) {
     resource = resourceForStaticData(request, factory, substituteData);
     // Abort the request if the archive doesn't contain the resource, except in
@@ -527,9 +549,6 @@ Resource* ResourceFetcher::requestResource(
                        TRACE_EVENT_SCOPE_THREAD, "revalidationPolicy", policy);
 
   updateMemoryCacheStats(resource, policy, request, factory, isStaticData);
-
-  resourceRequest.setAllowStoredCredentials(
-      request.options().allowCredentials == AllowStoredCredentials);
 
   switch (policy) {
     case Reload:
