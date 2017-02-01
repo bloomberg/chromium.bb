@@ -10,7 +10,7 @@ import json5_generator
 import template_expander
 import make_style_builder
 
-from name_utilities import camel_case
+from name_utilities import camel_case, lower_first
 
 
 class Field(object):
@@ -29,29 +29,39 @@ class Field(object):
       - 'inherited_flag', for single-bit flags that store whether a property is
                           inherited by this style or set explicitly
     """
+
+    # List of required attributes for a field which need to be passed in by
+    # keyword arguments
+    REQUIRED_ATTRIBUTES = set([
+        # Name of field
+        'name',
+        # Name of property field is for
+        'property_name',
+        # Internal field storage type (storage_type_path can be None)
+        'storage_type',
+        'storage_type_path',
+        # Bits needed for storage
+        'size',
+        # Default value for field
+        'default_value',
+        # Method names
+        'getter_method_name',
+        'setter_method_name',
+        'initial_method_name',
+        'resetter_method_name',
+    ])
+
     def __init__(self, field_family, **kwargs):
         # Values common to all fields
-        # Name of field
-        self.name = kwargs.pop('name')
-        # Name of property field is for
-        self.property_name = kwargs.pop('property_name')
-        # Internal field storage type (storage_type_path can be None)
-        self.storage_type = kwargs.pop('storage_type')
-        self.storage_type_path = kwargs.pop('storage_type_path')
-        # Bits needed for storage
-        self.size = kwargs.pop('size')
-        # Default value for field
-        self.default_value = kwargs.pop('default_value')
-        # Method names
-        self.getter_method_name = kwargs.pop('getter_method_name')
-        self.setter_method_name = kwargs.pop('setter_method_name')
-        self.initial_method_name = kwargs.pop('initial_method_name')
-        self.resetter_method_name = kwargs.pop('resetter_method_name')
+        # Set attributes from the keyword arguments
+        for attrib in Field.REQUIRED_ATTRIBUTES:
+            setattr(self, attrib, kwargs.pop(attrib))
 
         # Field family: one of these must be true
         self.is_enum = field_family == 'enum'
         self.is_inherited_flag = field_family == 'inherited_flag'
-        assert not (self.is_enum and self.is_inherited_flag), 'Only one field family can be specified at a time'
+        assert (self.is_enum, self.is_inherited_flag).count(True) == 1, \
+            'Field family has to be exactly one of: enum, inherited_flag'
 
         if self.is_enum:
             # Enum-only fields
@@ -67,6 +77,149 @@ class Field(object):
         assert len(kwargs) == 0, 'Unexpected arguments provided to Field: ' + str(kwargs)
 
 
+def _create_enums(properties):
+    """
+    Returns a dictionary of enums to be generated, enum name -> [list of enum values]
+    """
+    enums = {}
+    for property_ in properties:
+        # Only generate enums for keyword properties that use the default field_storage_type.
+        if property_['keyword_only'] and property_['field_storage_type'] is None:
+            enum_name = property_['type_name']
+            # From the Blink style guide: Enum members should use InterCaps with an initial capital letter. [names-enum-members]
+            enum_values = [('k' + camel_case(k)) for k in property_['keywords']]
+            enums[enum_name] = enum_values
+
+    return enums
+
+
+def _create_enum_field(property_):
+    """
+    Create an enum field from a CSS property and return the Field object.
+    """
+    property_name = property_['name_for_methods']
+    property_name_lower = lower_first(property_name)
+
+    # From the Blink style guide: Other data members should be prefixed by "m_". [names-data-members]
+    field_name = 'm_' + property_name_lower
+    bits_needed = math.log(len(property_['keywords']), 2)
+
+    # Separate the type path from the type name, if specified.
+    if property_['field_storage_type']:
+        type_path = property_['field_storage_type']
+        type_name = type_path.split('/')[-1]
+    else:
+        type_name = property_['type_name']
+        type_path = None
+
+    # For now, the getter name should match the field name. Later, getter names
+    # will start with an uppercase letter, so if they conflict with the type name,
+    # add 'get' to the front.
+    getter_method_name = property_name_lower
+    if type_name == property_name:
+        getter_method_name = 'get' + property_name
+
+    assert property_['initial_keyword'] is not None, \
+        ('MakeComputedStyleBase requires an initial keyword for keyword_only values, none specified '
+         'for property ' + property_['name'])
+    default_value = type_name + '::k' + camel_case(property_['initial_keyword'])
+
+    # Add the property itself as a member variable.
+    return Field(
+        'enum',
+        name=field_name,
+        property_name=property_['name'],
+        inherited=property_['inherited'],
+        independent=property_['independent'],
+        storage_type=type_name,
+        storage_type_path=type_path,
+        size=int(math.ceil(bits_needed)),
+        default_value=default_value,
+        getter_method_name=getter_method_name,
+        setter_method_name='set' + property_name,
+        initial_method_name='initial' + property_name,
+        resetter_method_name='reset' + property_name,
+        is_inherited_method_name=property_name_lower + 'IsInherited',
+    )
+
+
+def _create_inherited_flag_field(property_):
+    """
+    Create the field used for an inheritance fast path from an independent CSS property,
+    and return the Field object.
+    """
+    property_name = property_['name_for_methods']
+    property_name_lower = lower_first(property_name)
+
+    field_name_suffix_upper = property_name + 'IsInherited'
+    field_name_suffix_lower = property_name_lower + 'IsInherited'
+
+    return Field(
+        'inherited_flag',
+        name='m_' + field_name_suffix_lower,
+        property_name=property_['name'],
+        storage_type='bool',
+        storage_type_path=None,
+        size=1,
+        default_value='true',
+        getter_method_name=field_name_suffix_lower,
+        setter_method_name='set' + field_name_suffix_upper,
+        initial_method_name='initial' + field_name_suffix_upper,
+        resetter_method_name='reset' + field_name_suffix_upper,
+    )
+
+
+def _create_fields(properties):
+    """
+    Create ComputedStyle fields from CSS properties and return a list of Field objects.
+    """
+    fields = []
+    for property_ in properties:
+        # Keywords only means we generate an enum field.
+        if property_['keyword_only']:
+            # If the property is independent, add the single-bit sized isInherited flag
+            # to the list of Fields as well.
+            if property_['independent']:
+                fields.append(_create_inherited_flag_field(property_))
+
+            fields.append(_create_enum_field(property_))
+
+    return fields
+
+
+def _pack_fields(fields):
+    """
+    Group a list of fields into buckets to minimise padding.
+    Returns a list of buckets, where each bucket is a list of Field objects.
+    """
+    # Since fields cannot cross word boundaries, in order to minimize
+    # padding, group fields into buckets so that as many buckets as possible
+    # are exactly 32 bits. Although this greedy approach may not always
+    # produce the optimal solution, we add a static_assert to the code to
+    # ensure ComputedStyleBase results in the expected size. If that
+    # static_assert fails, this code is falling into the small number of
+    # cases that are suboptimal, and may need to be rethought.
+    # For more details on packing bitfields to reduce padding, see:
+    # http://www.catb.org/esr/structure-packing/#_bitfields
+    field_buckets = []
+    # Consider fields in descending order of size to reduce fragmentation
+    # when they are selected.
+    for field in sorted(fields, key=lambda f: f.size, reverse=True):
+        added_to_bucket = False
+        # Go through each bucket and add this field if it will not increase
+        # the bucket's size to larger than 32 bits. Otherwise, make a new
+        # bucket containing only this field.
+        for bucket in field_buckets:
+            if sum(f.size for f in bucket) + field.size <= 32:
+                bucket.append(field)
+                added_to_bucket = True
+                break
+        if not added_to_bucket:
+            field_buckets.append([field])
+
+    return field_buckets
+
+
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def __init__(self, json5_file_path):
         super(ComputedStyleBaseWriter, self).__init__(json5_file_path)
@@ -76,107 +229,14 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
         }
 
-        # A map of enum name -> list of enum values
-        self._computed_enums = {}
-        for property in self._properties.values():
-            # Only generate enums for keyword properties that use the default field_storage_type.
-            if property['keyword_only'] and property['field_storage_type'] is None:
-                enum_name = property['type_name']
-                # From the Blink style guide: Enum members should use InterCaps with an initial capital letter. [names-enum-members]
-                enum_values = [('k' + camel_case(k)) for k in property['keywords']]
-                self._computed_enums[enum_name] = enum_values
+        # Create all the enums used by properties
+        self._generated_enums = _create_enums(self._properties.values())
 
-        # A list of all the fields to be generated.
-        all_fields = []
-        for property in self._properties.values():
-            if property['keyword_only']:
-                property_name = property['name_for_methods']
-                property_name_lower = property_name[0].lower() + property_name[1:]
+        # Create all the fields
+        all_fields = _create_fields(self._properties.values())
 
-                # From the Blink style guide: Other data members should be prefixed by "m_". [names-data-members]
-                field_name = 'm_' + property_name_lower
-                bits_needed = math.log(len(property['keywords']), 2)
-
-                # Separate the type path from the type name, if specified.
-                type_name = property['type_name']
-                type_path = None
-                if property['field_storage_type']:
-                    type_path = property['field_storage_type']
-                    type_name = type_path.split('/')[-1]
-
-                # For now, the getter name should match the field name. Later, getter names
-                # will start with an uppercase letter, so if they conflict with the type name,
-                # add 'get' to the front.
-                getter_method_name = property_name_lower
-                if type_name == property_name:
-                    getter_method_name = 'get' + property_name
-
-                assert property['initial_keyword'] is not None, \
-                    ('MakeComputedStyleBase requires an initial keyword for keyword_only values, none specified '
-                     'for property ' + property['name'])
-                default_value = type_name + '::k' + camel_case(property['initial_keyword'])
-
-                # If the property is independent, add the single-bit sized isInherited flag
-                # to the list of Fields as well.
-                if property['independent']:
-                    field_name_suffix_upper = property_name + 'IsInherited'
-                    field_name_suffix_lower = property_name_lower + 'IsInherited'
-                    all_fields.append(Field(
-                        'inherited_flag',
-                        name='m_' + field_name_suffix_lower,
-                        property_name=property['name'],
-                        storage_type='bool',
-                        storage_type_path=None,
-                        size=1,
-                        default_value='true',
-                        getter_method_name=field_name_suffix_lower,
-                        setter_method_name='set' + field_name_suffix_upper,
-                        initial_method_name='initial' + field_name_suffix_upper,
-                        resetter_method_name='reset' + field_name_suffix_upper,
-                    ))
-
-                # Add the property itself as a member variable.
-                all_fields.append(Field(
-                    'enum',
-                    name=field_name,
-                    property_name=property['name'],
-                    inherited=property['inherited'],
-                    independent=property['independent'],
-                    storage_type=type_name,
-                    storage_type_path=type_path,
-                    size=int(math.ceil(bits_needed)),
-                    default_value=default_value,
-                    getter_method_name=getter_method_name,
-                    setter_method_name='set' + property_name,
-                    initial_method_name='initial' + property_name,
-                    resetter_method_name='reset' + property_name,
-                    is_inherited_method_name=property_name_lower + 'IsInherited',
-                ))
-
-        # Since fields cannot cross word boundaries, in order to minimize
-        # padding, group fields into buckets so that as many buckets as possible
-        # that are exactly 32 bits. Although this greedy approach may not always
-        # produce the optimal solution, we add a static_assert to the code to
-        # ensure ComputedStyleBase results in the expected size. If that
-        # static_assert fails, this code is falling into the small number of
-        # cases that are suboptimal, and may need to be rethought.
-        # For more details on packing bitfields to reduce padding, see:
-        # http://www.catb.org/esr/structure-packing/#_bitfields
-        field_buckets = []
-        # Consider fields in descending order of size to reduce fragmentation
-        # when they are selected.
-        for field in sorted(all_fields, key=lambda f: f.size, reverse=True):
-            added_to_bucket = False
-            # Go through each bucket and add this field if it will not increase
-            # the bucket's size to larger than 32 bits. Otherwise, make a new
-            # bucket containing only this field.
-            for bucket in field_buckets:
-                if sum(f.size for f in bucket) + field.size <= 32:
-                    bucket.append(field)
-                    added_to_bucket = True
-                    break
-            if not added_to_bucket:
-                field_buckets.append([field])
+        # Group fields into buckets
+        field_buckets = _pack_fields(all_fields)
 
         # The expected size of ComputedStyleBase is equivalent to as many words
         # as the total number of buckets.
@@ -196,7 +256,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         real_total_field_bytes = optimal_total_field_bytes + extra_padding_bytes
         assert self._expected_total_field_bytes == real_total_field_bytes, \
             ('The field packing algorithm produced %s bytes, optimal is %s bytes' %
-             (len(field_buckets), self._expected_total_field_bytes))
+             (self._expected_total_field_bytes, real_total_field_bytes))
 
         # Order the fields so fields in each bucket are adjacent.
         self._fields = []
@@ -204,11 +264,12 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             for field in bucket:
                 self._fields.append(field)
 
+
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl')
     def generate_base_computed_style_h(self):
         return {
             'properties': self._properties,
-            'enums': self._computed_enums,
+            'enums': self._generated_enums,
             'fields': self._fields,
             'expected_total_field_bytes': self._expected_total_field_bytes,
         }
@@ -217,7 +278,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def generate_base_computed_style_cpp(self):
         return {
             'properties': self._properties,
-            'enums': self._computed_enums,
+            'enums': self._generated_enums,
             'fields': self._fields,
             'expected_total_field_bytes': self._expected_total_field_bytes,
         }
@@ -226,7 +287,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def generate_base_computed_style_constants(self):
         return {
             'properties': self._properties,
-            'enums': self._computed_enums,
+            'enums': self._generated_enums,
             'fields': self._fields,
             'expected_total_field_bytes': self._expected_total_field_bytes,
         }
