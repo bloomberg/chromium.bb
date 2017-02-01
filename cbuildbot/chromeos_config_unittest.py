@@ -48,10 +48,13 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     new_dump = self.site_config.SaveConfigToString()
     old_dump = osutils.ReadFile(constants.CHROMEOS_CONFIG_FILE).rstrip()
 
-    self.assertTrue(
-        new_dump == old_dump, 'config_dump.json does not match the '
-        'configs defined in chromeos_config.py. Run '
-        'bin/cbuildbot_view_config --update_config')
+    if new_dump != old_dump:
+      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
+        osutils.WriteFile(constants.CHROMEOS_CONFIG_FILE, new_dump)
+      else:
+        self.fail('config_dump.json does not match the '
+                  'defined configs. Run '
+                  'cbuildbot/chromeos_config_unittest --update')
 
   def testWaterfallLayout(self):
     """Make sure that watefall_layout_dump.txt is kept current."""
@@ -61,10 +64,13 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     new_dump = output.GetStdout()
     old_dump = osutils.ReadFile(constants.WATERFALL_CONFIG_FILE)
 
-    self.assertTrue(
-        new_dump == old_dump, 'waterfall_layout_dump.txt does not match the '
-        'configs defined in chromeos_config.py. Run '
-        'bin/cros_show_waterfall_layout > cbuildbot/waterfall_layout_dump.txt')
+    if new_dump != old_dump:
+      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
+        osutils.WriteFile(constants.WATERFALL_CONFIG_FILE, new_dump)
+      else:
+        self.fail('waterfall_layout_dump.txt does not match the '
+                  'defined configs. Run '
+                  'cbuildbot/chromeos_config_unittest --update')
 
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""

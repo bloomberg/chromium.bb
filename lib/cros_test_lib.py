@@ -66,6 +66,7 @@ class GlobalTestConfig(object):
 
   # By default, disable all network tests.
   RUN_NETWORK_TESTS = False
+  UPDATE_GENERATED_FILES = False
   NETWORK_TESTS_SKIPPED = 0
 
 
@@ -1721,6 +1722,8 @@ class TestProgram(unittest.TestProgram):
                         dest='wipe',
                         help='Do not wipe the temporary working directory '
                              '(default is to always wipe)')
+    parser.add_argument('-u', '--update', default=False, action='store_true',
+                        help='Update generated test files as needed.')
 
     # Note: The tracer module includes coverage options ...
     group = parser.add_argument_group('Tracing options')
@@ -1760,6 +1763,9 @@ class TestProgram(unittest.TestProgram):
     # Then handle the chromite extensions.
     if opts.network:
       GlobalTestConfig.RUN_NETWORK_TESTS = True
+
+    if opts.update:
+      GlobalTestConfig.UPDATE_GENERATED_FILES = True
 
     # We allow --list because it's nice to be able to throw --list onto an
     # existing command line to quickly get the output.  It's clear to users
