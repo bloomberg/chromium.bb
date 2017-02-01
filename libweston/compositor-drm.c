@@ -60,6 +60,7 @@
 #include "vaapi-recorder.h"
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
+#include "linux-dmabuf-unstable-v1-server-protocol.h"
 
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
@@ -1016,7 +1017,18 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 			.format = dmabuf->attributes.format
 		};
 
-		if (dmabuf->attributes.n_planes != 1 || dmabuf->attributes.offset[0] != 0)
+                /* XXX: TODO:
+                 *
+                 * Currently the buffer is rejected if any dmabuf attribute
+                 * flag is set.  This keeps us from passing an inverted /
+                 * interlaced / bottom-first buffer (or any other type that may
+                 * be added in the future) through to an overlay.  Ultimately,
+                 * these types of buffers should be handled through buffer
+                 * transforms and not as spot-checks requiring specific
+                 * knowledge. */
+		if (dmabuf->attributes.n_planes != 1 ||
+                    dmabuf->attributes.offset[0] != 0 ||
+		    dmabuf->attributes.flags)
 			return NULL;
 
 		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
