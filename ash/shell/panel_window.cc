@@ -5,9 +5,9 @@
 #include "ash/shell/panel_window.h"
 
 #include "ash/common/wm/panels/panel_frame_view.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/window_properties.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"

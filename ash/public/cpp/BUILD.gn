@@ -5,13 +5,21 @@
 # C++ headers and sources that can be used outside ash.
 source_set("cpp") {
   sources = [
+    "mus_property_mirror_ash.cc",
+    "mus_property_mirror_ash.h",
     "session_types.h",
+    "shelf_item_types.cc",
+    "shelf_item_types.h",
     "shelf_types.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",
+    "window_properties.cc",
+    "window_properties.h",
   ]
 
   deps = [
     "//base",
+    "//ui/aura",
+    "//ui/views/mus",
   ]
 }

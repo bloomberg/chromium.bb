@@ -5,7 +5,6 @@
 #include "ash/wm/window_properties.h"
 
 #include "ash/common/wm/window_state.h"
-#include "ui/base/class_property.h"
 
 DECLARE_UI_CLASS_PROPERTY_TYPE(ash::wm::WindowState*);
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType);
@@ -14,8 +13,6 @@ namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLockedToRootKey, false);
 
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPanelAttachedKey, true);
-
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsOverrideKey, NULL);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
@@ -23,8 +20,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
                              ui::SHOW_STATE_DEFAULT);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(ShelfID, kShelfIDKey, kInvalidShelfID);
-
-DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false);
 
