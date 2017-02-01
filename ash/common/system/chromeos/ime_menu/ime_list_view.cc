@@ -94,19 +94,12 @@ class ImeListItemView : public ActionableView {
     SetLayoutManager(new views::FillLayout);
 
     // The id button shows the IME short name.
-    views::Label* id_label = new views::Label(id);
+    views::Label* id_label = TrayPopupUtils::CreateDefaultLabel();
+    id_label->SetText(id);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::FontList& base_font_list =
         rb.GetFontList(ui::ResourceBundle::MediumBoldFont);
     id_label->SetFontList(base_font_list);
-
-    // TODO(bruthig): Fix this so that |label| uses the kBackgroundColor to
-    // perform subpixel rendering instead of disabling subpixel rendering.
-    //
-    // Text rendered on a non-opaque background looks ugly and it is possible
-    // for labels to given a a clear canvas at paint time when an ink drop is
-    // visible. See http://crbug.com/661714.
-    id_label->SetSubpixelRenderingEnabled(false);
 
     // For IMEs whose short name are more than 2 characters (INTL, EXTD, etc.),
     // |kMenuIconSize| is not enough. The label will trigger eliding as "I..."
