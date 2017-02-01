@@ -11,7 +11,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -220,20 +220,21 @@ bool ExtensionOptionsGuest::ShouldCreateWebContents(
   return false;
 }
 
-void ExtensionOptionsGuest::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (attached()) {
-    auto* guest_zoom_controller =
-        zoom::ZoomController::FromWebContents(web_contents());
-    guest_zoom_controller->SetZoomMode(
-        zoom::ZoomController::ZOOM_MODE_ISOLATED);
-    SetGuestZoomLevelToMatchEmbedder();
+void ExtensionOptionsGuest::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() || !attached()) {
+    return;
+  }
 
-    if (!url::IsSameOriginWith(params.url, options_page_)) {
-      bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
-                                      bad_message::EOG_BAD_ORIGIN);
-    }
+  auto* guest_zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents());
+  guest_zoom_controller->SetZoomMode(zoom::ZoomController::ZOOM_MODE_ISOLATED);
+  SetGuestZoomLevelToMatchEmbedder();
+
+  if (!url::IsSameOriginWith(navigation_handle->GetURL(), options_page_)) {
+    bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
+                                    bad_message::EOG_BAD_ORIGIN);
   }
 }
 

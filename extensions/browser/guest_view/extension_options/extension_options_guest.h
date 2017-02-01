@@ -57,8 +57,7 @@ class ExtensionOptionsGuest
       content::SessionStorageNamespace* session_storage_namespace) final;
 
   // content::WebContentsObserver implementation.
-  void DidNavigateMainFrame(const content::LoadCommittedDetails& details,
-                            const content::FrameNavigateParams& params) final;
+  void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
 
   std::unique_ptr<extensions::ExtensionOptionsGuestDelegate>
       extension_options_guest_delegate_;
