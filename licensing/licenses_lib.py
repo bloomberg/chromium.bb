@@ -1116,31 +1116,6 @@ def ListInstalledPackages(board, all_packages=False):
   return packages
 
 
-def _HandleIllegalXMLChars(text):
-  """Handles illegal XML Characters.
-
-  XML 1.0 acceptable character range:
-  Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | \
-           [#x10000-#x10FFFF]
-
-  This function finds all illegal characters in the text and filters
-  out all whitelisted characters (e.g. ^L).
-
-  Args:
-    text: text to examine.
-
-  Returns:
-    Filtered |text| and a list of non-whitelisted illegal characters found.
-  """
-  whitelist_re = re.compile(u'[\x0c]')
-  text = whitelist_re.sub('', text)
-  # illegal_chars_re includes all illegal characters (whitelisted or
-  # not), so we can expand the whitelist without modifying this line.
-  illegal_chars_re = re.compile(
-      u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
-  return (text, illegal_chars_re.findall(text))
-
-
 def ReadUnknownEncodedFile(file_path, logging_text=None):
   """Read a file of unknown encoding (UTF-8 or latin) by trying in sequence.
 
@@ -1167,11 +1142,16 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
       if logging_text:
         logging.info('%s %s (latin1)', logging_text, file_path)
 
-  file_txt, char_list = _HandleIllegalXMLChars(file_txt)
+  # Remove characters that are not XML 1.0 legal.
+  # XML 1.0 acceptable character range:
+  # Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | \
+  #          [#x10000-#x10FFFF]
+  illegal_chars_re = re.compile(
+      u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
 
-  if char_list:
-    raise ValueError('Illegal XML characters %s found in %s.' %
-                     (char_list, file_path))
+  if illegal_chars_re.findall(file_txt):
+    logging.warning('Found illegal XML characters, stripping them out.')
+    file_txt = illegal_chars_re.sub('', file_txt)
 
   return file_txt
 
