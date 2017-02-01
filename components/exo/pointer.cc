@@ -227,6 +227,9 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       NOTREACHED();
       break;
   }
+
+  if (focus_)
+    UpdateCursorScale();
 }
 
 void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
@@ -234,9 +237,8 @@ void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void Pointer::OnCursorSetChanged(ui::CursorSetType cursor_set) {
-  // Capture new cursor in case UI scale changed.
-  if (focus_ && surface_)
-    CaptureCursor();
+  if (focus_)
+    UpdateCursorScale();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,8 +282,7 @@ Surface* Pointer::GetEffectiveTargetForEvent(ui::Event* event) const {
   return delegate_->CanAcceptPointerEventsForSurface(target) ? target : nullptr;
 }
 
-void Pointer::CaptureCursor() {
-  DCHECK(surface_);
+void Pointer::UpdateCursorScale() {
   DCHECK(focus_);
 
   display::Screen* screen = display::Screen::GetScreen();
@@ -289,11 +290,11 @@ void Pointer::CaptureCursor() {
 
   // Update cursor scale if the effective UI scale has changed.
   display::Display display = screen->GetDisplayNearestWindow(focus_->window());
-  float ui_scale = helper->GetDisplayInfo(display.id()).GetEffectiveUIScale();
-  float primary_device_scale_factor =
-      screen->GetPrimaryDisplay().device_scale_factor();
+  float scale = helper->GetDisplayInfo(display.id()).GetEffectiveUIScale();
 
   if (display::Display::HasInternalDisplay()) {
+    float primary_device_scale_factor =
+        screen->GetPrimaryDisplay().device_scale_factor();
     // The size of the cursor surface is the quotient of its physical size and
     // the DSF of the primary display. The physical size is proportional to the
     // DSF of the internal display. For external displays (and the internal
@@ -301,18 +302,31 @@ void Pointer::CaptureCursor() {
     // cursor so its physical size matches with the single display case.
     if (!display.IsInternal() ||
         display.device_scale_factor() != primary_device_scale_factor) {
-      ui_scale *= primary_device_scale_factor /
-                  helper->GetDisplayInfo(display::Display::InternalDisplayId())
-                      .device_scale_factor();
+      scale *= primary_device_scale_factor /
+               helper->GetDisplayInfo(display::Display::InternalDisplayId())
+                   .device_scale_factor();
     }
   }
 
   if (helper->GetCursorSet() == ui::CURSOR_SET_LARGE)
-    ui_scale *= kLargeCursorScale;
+    scale *= kLargeCursorScale;
+
+  if (scale != cursor_scale_) {
+    cursor_scale_ = scale;
+    if (surface_)
+      CaptureCursor();
+  }
+}
+
+void Pointer::CaptureCursor() {
+  DCHECK(surface_);
 
   // Set UI scale before submitting capture request.
   surface_->window()->layer()->SetTransform(
-      gfx::GetScaleTransform(gfx::Point(), ui_scale));
+      gfx::GetScaleTransform(gfx::Point(), cursor_scale_));
+
+  float primary_device_scale_factor =
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
 
   // Cancel pending capture and create a new request.
   cursor_captured_callback_.Reset(
@@ -321,7 +335,7 @@ void Pointer::CaptureCursor() {
                      hotspot_,
                      // |hotspot_| is in surface coordinate space so apply both
                      // device scale and UI scale.
-                     ui_scale * primary_device_scale_factor)));
+                     cursor_scale_ * primary_device_scale_factor)));
   surface_->window()->layer()->RequestCopyOfOutput(
       cc::CopyOutputRequest::CreateBitmapRequest(
           cursor_captured_callback_.callback()));

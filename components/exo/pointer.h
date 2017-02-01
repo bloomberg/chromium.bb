@@ -66,6 +66,12 @@ class Pointer : public ui::EventHandler,
   void OnSurfaceDestroying(Surface* surface) override;
 
  private:
+  // Returns the effective target for |event|.
+  Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
+
+  // Recompute cursor scale and update cursor if scale changed.
+  void UpdateCursorScale();
+
   // Asynchronously update the cursor by capturing a snapshot of |surface_|.
   void CaptureCursor();
 
@@ -75,9 +81,6 @@ class Pointer : public ui::EventHandler,
 
   // Update cursor to reflect the current value of |cursor_|.
   void UpdateCursor();
-
-  // Returns the effective target for |event|.
-  Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
   // The delegate instance that all events are dispatched to.
   PointerDelegate* const delegate_;
@@ -90,6 +93,9 @@ class Pointer : public ui::EventHandler,
 
   // The location of the pointer in the current focus surface.
   gfx::PointF location_;
+
+  // The scale applied to the cursor to compensate for the UI scale.
+  float cursor_scale_ = 1.0f;
 
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;
