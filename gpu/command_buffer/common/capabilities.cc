@@ -24,6 +24,7 @@ Capabilities::Capabilities()
       max_viewport_height(0),
       num_compressed_texture_formats(0),
       num_shader_binary_formats(0),
+      num_stencil_bits(0),
       bind_generates_resource_chromium(0),
       max_3d_texture_size(0),
       max_array_texture_layers(0),

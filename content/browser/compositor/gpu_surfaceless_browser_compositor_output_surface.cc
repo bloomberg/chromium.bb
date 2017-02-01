@@ -31,8 +31,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
-                                        std::move(overlay_candidate_validator),
-                                        true  /* support_stencil */),
+                                        std::move(overlay_candidate_validator)),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;

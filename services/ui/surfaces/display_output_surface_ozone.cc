@@ -33,7 +33,6 @@ DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
                  context_provider->ContextSupport()) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
-  capabilities_.supports_stencil = true;
   // Set |max_frames_pending| to 2 for surfaceless, which aligns scheduling
   // more closely with the previous surfaced behavior.
   // With a surface, swap buffer ack used to return early, before actually

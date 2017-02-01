@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/switches.h"
 #include "cc/output/in_process_context_provider.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/surfaces/display.h"
@@ -141,10 +143,15 @@ std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
   std::unique_ptr<cc::DisplayScheduler> scheduler(
       new cc::DisplayScheduler(task_runner_.get(), max_frames_pending));
 
+  cc::RendererSettings settings;
+  settings.show_overdraw_feedback =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kShowOverdrawFeedback);
+
   return base::MakeUnique<cc::Display>(
-      nullptr /* bitmap_manager */, gpu_memory_buffer_manager_.get(),
-      cc::RendererSettings(), frame_sink_id, begin_frame_source,
-      std::move(display_output_surface), std::move(scheduler),
+      nullptr /* bitmap_manager */, gpu_memory_buffer_manager_.get(), settings,
+      frame_sink_id, begin_frame_source, std::move(display_output_surface),
+      std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
 }
 

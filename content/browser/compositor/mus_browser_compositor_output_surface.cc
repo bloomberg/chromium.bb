@@ -31,8 +31,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
         overlay_candidate_validator)
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
-                                        std::move(overlay_candidate_validator),
-                                        false  /* support_stencil */),
+                                        std::move(overlay_candidate_validator)),
       window_(window),
       begin_frame_source_(nullptr) {
   aura::WindowPortMus* window_port = aura::WindowPortMus::Get(window_);

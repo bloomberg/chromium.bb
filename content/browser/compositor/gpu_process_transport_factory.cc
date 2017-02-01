@@ -533,8 +533,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         if (!use_mus) {
           display_output_surface =
               base::MakeUnique<GpuBrowserCompositorOutputSurface>(
-                  context_provider, vsync_callback, std::move(validator),
-                  support_stencil);
+                  context_provider, vsync_callback, std::move(validator));
         } else {
 #if defined(USE_AURA)
           std::unique_ptr<MusBrowserCompositorOutputSurface> mus_output_surface;

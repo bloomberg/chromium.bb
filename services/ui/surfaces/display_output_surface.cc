@@ -26,6 +26,8 @@ DisplayOutputSurface::DisplayOutputSurface(
       weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
+  capabilities_.supports_stencil =
+      context_provider->ContextCapabilities().num_stencil_bits > 0;
   context_provider->SetSwapBuffersCompletionCallback(
       base::Bind(&DisplayOutputSurface::OnGpuSwapBuffersCompleted,
                  weak_ptr_factory_.GetWeakPtr()));

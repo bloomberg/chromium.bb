@@ -2377,6 +2377,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLsizei viewport_max_width_;
   GLsizei viewport_max_height_;
 
+  // Cached value for the number of stencil bits for the default framebuffer.
+  GLint num_stencil_bits_;
+
   // Command buffer stats.
   base::TimeDelta total_processing_commands_time_;
 
@@ -3049,6 +3052,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
       viewport_max_width_(0),
       viewport_max_height_(0),
+      num_stencil_bits_(0),
       texture_state_(group_->feature_info()->workarounds()),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
@@ -3397,6 +3401,9 @@ bool GLES2DecoderImpl::Initialize(
       back_buffer_has_depth_ = attrib_helper.depth_size != 0 && depth_bits > 0;
       back_buffer_has_stencil_ =
           attrib_helper.stencil_size != 0 && stencil_bits > 0;
+      num_stencil_bits_ = stencil_bits;
+    } else {
+      num_stencil_bits_ = attrib_helper.stencil_size;
     }
 
     state_.viewport_width = surface->GetSize().width();
@@ -3681,6 +3688,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->IsWebGL2OrES3Context()) {
     DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples, 1);
   }
+
+  caps.num_stencil_bits = num_stencil_bits_;
 
   caps.egl_image_external =
       feature_info_->feature_flags().oes_egl_image_external;
