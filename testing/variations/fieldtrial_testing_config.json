@@ -1666,7 +1666,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledCGUV20",
+                    "name": "EnabledCGRUV20",
                     "params": {
                         "config_url": "https://www.gstatic.com/chrome/wifiprefetch/precache_config_g20"
                     }
