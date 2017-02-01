@@ -126,25 +126,25 @@ scoped_refptr<base::TaskRunner> ViewsDelegate::GetBlockingPoolTaskRunner() {
   return nullptr;
 }
 
-gfx::Insets ViewsDelegate::GetDialogButtonInsets() {
+gfx::Insets ViewsDelegate::GetDialogButtonInsets() const {
   return gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
                      kButtonHEdgeMarginNew);
 }
 
-int ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() {
+int ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() const {
   return kRelatedButtonHSpacing;
 }
 
-int ViewsDelegate::GetDialogRelatedControlVerticalSpacing() {
+int ViewsDelegate::GetDialogRelatedControlVerticalSpacing() const {
   return kRelatedControlVerticalSpacing;
 }
 
-gfx::Insets ViewsDelegate::GetDialogFrameViewInsets() {
+gfx::Insets ViewsDelegate::GetDialogFrameViewInsets() const {
   return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew, 0,
                      kButtonHEdgeMarginNew);
 }
 
-gfx::Insets ViewsDelegate::GetBubbleDialogMargins() {
+gfx::Insets ViewsDelegate::GetBubbleDialogMargins() const {
   return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
 }
 

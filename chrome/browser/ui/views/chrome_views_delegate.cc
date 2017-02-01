@@ -541,37 +541,34 @@ ChromeViewsDelegate::GetBlockingPoolTaskRunner() {
   return content::BrowserThread::GetBlockingPool();
 }
 
-gfx::Insets ChromeViewsDelegate::GetDialogButtonInsets() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return gfx::Insets(HarmonyLayoutDelegate::kHarmonyLayoutUnit);
-  return ViewsDelegate::GetDialogButtonInsets();
+gfx::Insets ChromeViewsDelegate::GetDialogButtonInsets() const {
+  return gfx::Insets(LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN));
 }
 
-int ChromeViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return HarmonyLayoutDelegate::kHarmonyLayoutUnit / 2;
-  return ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing();
+int ChromeViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() const {
+  return LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING);
 }
 
-int ChromeViewsDelegate::GetDialogRelatedControlVerticalSpacing() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return HarmonyLayoutDelegate::kHarmonyLayoutUnit / 2;
-  return ViewsDelegate::GetDialogRelatedControlVerticalSpacing();
+int ChromeViewsDelegate::GetDialogRelatedControlVerticalSpacing() const {
+  return LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
 }
 
-gfx::Insets ChromeViewsDelegate::GetDialogFrameViewInsets() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    // Titles are inset at the top and sides, but not at the bottom.
-    return gfx::Insets(HarmonyLayoutDelegate::kHarmonyLayoutUnit,
-                       HarmonyLayoutDelegate::kHarmonyLayoutUnit, 0,
-                       HarmonyLayoutDelegate::kHarmonyLayoutUnit);
-  return ViewsDelegate::GetDialogFrameViewInsets();
+gfx::Insets ChromeViewsDelegate::GetDialogFrameViewInsets() const {
+  const LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int top = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
+  const int side = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
+  // Titles are inset at the top and sides, but not at the bottom.
+  return gfx::Insets(top, side, 0, side);
 }
 
-gfx::Insets ChromeViewsDelegate::GetBubbleDialogMargins() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return gfx::Insets(HarmonyLayoutDelegate::kHarmonyLayoutUnit);
-  return ViewsDelegate::GetBubbleDialogMargins();
+gfx::Insets ChromeViewsDelegate::GetBubbleDialogMargins() const {
+  return gfx::Insets(LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
 }
 
 #if !defined(USE_ASH)
