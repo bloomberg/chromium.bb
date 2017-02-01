@@ -214,7 +214,8 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   // Save the splash screen URL for the later download.
   splash_screen_url_ = ManifestIconSelector::FindBestMatchingIcon(
       data.manifest.icons, ideal_splash_image_size_in_px_,
-      minimum_splash_image_size_in_px_);
+      minimum_splash_image_size_in_px_,
+      content::Manifest::Icon::IconPurpose::ANY);
 
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 

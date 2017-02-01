@@ -4,8 +4,6 @@
 
 #include "chrome/browser/installable/installable_manager.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -439,16 +437,9 @@ void InstallableManager::CheckAndFetchBestIcon(const IconParams& params) {
   IconProperty& icon = icons_[params];
   icon.fetched = true;
 
-  // Filter by icon purpose.
-  std::vector<content::Manifest::Icon> filtered_icons;
-  std::copy_if(manifest().icons.begin(), manifest().icons.end(),
-               std::back_inserter(filtered_icons),
-               [icon_purpose](const content::Manifest::Icon& icon) {
-                 return base::ContainsValue(icon.purpose, icon_purpose);
-               });
-
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
-      filtered_icons, ideal_icon_size_in_px, minimum_icon_size_in_px);
+      manifest().icons, ideal_icon_size_in_px, minimum_icon_size_in_px,
+      icon_purpose);
 
   if (icon_url.is_empty()) {
     icon.error = NO_ACCEPTABLE_ICON;

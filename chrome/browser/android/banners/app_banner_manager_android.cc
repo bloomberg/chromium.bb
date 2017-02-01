@@ -77,7 +77,8 @@ base::Closure AppBannerManagerAndroid::FetchWebappSplashScreenImageCallback(
       ShortcutHelper::GetMinimumSplashImageSizeInPx();
   GURL image_url = ManifestIconSelector::FindBestMatchingIcon(
       manifest_.icons, ideal_splash_image_size_in_px,
-      minimum_splash_image_size_in_px);
+      minimum_splash_image_size_in_px,
+      content::Manifest::Icon::IconPurpose::ANY);
 
   return base::Bind(&ShortcutHelper::FetchSplashScreenImage, contents,
                     image_url, ideal_splash_image_size_in_px,
