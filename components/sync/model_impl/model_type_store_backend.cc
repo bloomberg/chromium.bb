@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
@@ -31,6 +32,55 @@ const char ModelTypeStoreBackend::kDBSchemaDescriptorRecordId[] =
 // static
 base::LazyInstance<ModelTypeStoreBackend::BackendMap>
     ModelTypeStoreBackend::backend_map_ = LAZY_INSTANCE_INITIALIZER;
+
+namespace {
+
+// Different reasons for ModelTypeStoreBackend initialization failure are mapped
+// to these values. The enum is used for recording UMA histogram. Don't reorder,
+// change or delete values.
+enum StoreInitResultForHistogram {
+  STORE_INIT_RESULT_SUCCESS = 0,
+
+  // Following values reflect leveldb initialization errors.
+  STORE_INIT_RESULT_NOT_FOUND,
+  STORE_INIT_RESULT_CORRUPTION,
+  STORE_INIT_RESULT_NOT_SUPPORTED,
+  STORE_INIT_RESULT_INVALID_ARGUMENT,
+  STORE_INIT_RESULT_IO_ERROR,
+
+  // Issues encountered when reading or parsing schema descriptor.
+  STORE_INIT_RESULT_SCHEMA_DESCRIPTOR_ISSUE,
+
+  // Database schema migration failed.
+  STORE_INIT_RESULT_MIGRATION,
+
+  STORE_INIT_RESULT_UNKNOWN,
+  STORE_INIT_RESULT_COUNT
+};
+
+void RecordStoreInitResultHistogram(StoreInitResultForHistogram result) {
+  UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeStoreInitResult", result,
+                            STORE_INIT_RESULT_COUNT);
+}
+
+StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
+    const leveldb::Status& status) {
+  if (status.ok())
+    return STORE_INIT_RESULT_SUCCESS;
+  if (status.IsNotFound())
+    return STORE_INIT_RESULT_NOT_FOUND;
+  if (status.IsCorruption())
+    return STORE_INIT_RESULT_CORRUPTION;
+  if (status.IsNotSupportedError())
+    return STORE_INIT_RESULT_NOT_SUPPORTED;
+  if (status.IsInvalidArgument())
+    return STORE_INIT_RESULT_INVALID_ARGUMENT;
+  if (status.IsIOError())
+    return STORE_INIT_RESULT_IO_ERROR;
+  return STORE_INIT_RESULT_UNKNOWN;
+}
+
+}  // namespace
 
 ModelTypeStoreBackend::ModelTypeStoreBackend(const std::string& path)
     : path_(path) {}
@@ -85,12 +135,14 @@ ModelTypeStore::Result ModelTypeStoreBackend::Init(
   leveldb::Status status = leveldb::DB::Open(options, path, &db_raw);
   if (!status.ok()) {
     DCHECK(db_raw == nullptr);
+    RecordStoreInitResultHistogram(LevelDbStatusToStoreInitResult(status));
     return ModelTypeStore::Result::UNSPECIFIED_ERROR;
   }
   db_.reset(db_raw);
 
   int64_t current_version = GetStoreVersion();
   if (current_version == kInvalidSchemaVersion) {
+    RecordStoreInitResultHistogram(STORE_INIT_RESULT_SCHEMA_DESCRIPTOR_ISSUE);
     return ModelTypeStore::Result::UNSPECIFIED_ERROR;
   }
 
@@ -98,9 +150,11 @@ ModelTypeStore::Result ModelTypeStoreBackend::Init(
     ModelTypeStore::Result result =
         Migrate(current_version, kLatestSchemaVersion);
     if (result != ModelTypeStore::Result::SUCCESS) {
+      RecordStoreInitResultHistogram(STORE_INIT_RESULT_MIGRATION);
       return result;
     }
   }
+  RecordStoreInitResultHistogram(STORE_INIT_RESULT_SUCCESS);
   return ModelTypeStore::Result::SUCCESS;
 }
 
