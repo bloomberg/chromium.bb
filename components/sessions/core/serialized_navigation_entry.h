@@ -128,6 +128,8 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
     return extended_info_map_;
   }
 
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class ContentSerializedNavigationBuilder;
   friend class ContentSerializedNavigationDriver;
@@ -139,6 +141,8 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   int index_;
 
   // Member variables corresponding to NavigationEntry fields.
+  // If you add a new field that can allocate memory, please also add
+  // it to the EstimatedMemoryUsage() implementation.
   int unique_id_;
   GURL referrer_url_;
   int referrer_policy_;

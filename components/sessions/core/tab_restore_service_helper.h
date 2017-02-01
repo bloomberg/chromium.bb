@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
@@ -27,7 +28,8 @@ class TimeFactory;
 // Helper class used to implement InMemoryTabRestoreService and
 // PersistentTabRestoreService. See tab_restore_service.h for method-level
 // comments.
-class SESSIONS_EXPORT TabRestoreServiceHelper {
+class SESSIONS_EXPORT TabRestoreServiceHelper
+    : public base::trace_event::MemoryDumpProvider {
  public:
   typedef TabRestoreService::Entries Entries;
   typedef TabRestoreService::Entry Entry;
@@ -67,7 +69,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
                           TabRestoreServiceClient* client,
                           TimeFactory* time_factory);
 
-  ~TabRestoreServiceHelper();
+  ~TabRestoreServiceHelper() override;
 
   // Helper methods used to implement TabRestoreService.
   void AddObserver(TabRestoreServiceObserver* observer);
@@ -105,6 +107,10 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   // identifies a tab, then the iterator position of the Window in which the Tab
   // resides is returned.
   Entries::iterator GetEntryIteratorById(SessionID::id_type id);
+
+  // From base::trace_event::MemoryDumpProvider
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Calls either ValidateTab or ValidateWindow as appropriate.
   static bool ValidateEntry(const Entry& entry);

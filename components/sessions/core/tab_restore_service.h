@@ -69,6 +69,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     // closed during this session.
     bool from_last_session = false;
 
+    // Estimates memory usage. By default returns 0.
+    virtual size_t EstimateMemoryUsage() const;
+
    protected:
     explicit Entry(Type type);
 
@@ -77,9 +80,14 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   };
 
   // Represents a previously open tab.
+  // If you add a new field that can allocate memory, please also add
+  // it to the EstimatedMemoryUsage() implementation.
   struct SESSIONS_EXPORT Tab : public Entry {
     Tab();
     ~Tab() override;
+
+    // Entry:
+    size_t EstimateMemoryUsage() const override;
 
     // The navigations.
     std::vector<SerializedNavigationEntry> navigations;
@@ -108,9 +116,14 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   };
 
   // Represents a previously open window.
+  // If you add a new field that can allocate memory, please also add
+  // it to the EstimatedMemoryUsage() implementation.
   struct SESSIONS_EXPORT Window : public Entry {
     Window();
     ~Window() override;
+
+    // Entry:
+    size_t EstimateMemoryUsage() const override;
 
     // The tabs that comprised the window, in order.
     std::vector<std::unique_ptr<Tab>> tabs;

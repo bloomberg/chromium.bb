@@ -4,6 +4,7 @@
 
 #include "components/sessions/core/tab_restore_service_helper.h"
 
+#include <inttypes.h>
 #include <stddef.h>
 
 #include <algorithm>
@@ -13,6 +14,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "components/sessions/core/live_tab.h"
 #include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -48,11 +54,17 @@ TabRestoreServiceHelper::TabRestoreServiceHelper(
       restoring_(false),
       time_factory_(time_factory) {
   DCHECK(tab_restore_service_);
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this,
+      "TabRestoreServiceHelper",
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 TabRestoreServiceHelper::~TabRestoreServiceHelper() {
   for (auto& observer : observer_list_)
     observer.TabRestoreServiceDestroyed(tab_restore_service_);
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void TabRestoreServiceHelper::AddObserver(
@@ -325,6 +337,57 @@ TabRestoreServiceHelper::GetEntryIteratorById(SessionID::id_type id) {
     }
   }
   return entries_.end();
+}
+
+bool TabRestoreServiceHelper::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+
+  std::string entries_dump_name = base::StringPrintf(
+      "tab_restore/service_helper_0x%" PRIXPTR "/entries",
+      reinterpret_cast<uintptr_t>(this));
+  pmd->CreateAllocatorDump(entries_dump_name)
+      ->AddScalar(MemoryAllocatorDump::kNameObjectCount,
+                  MemoryAllocatorDump::kUnitsObjects,
+                  entries_.size());
+
+  for (const auto& entry : entries_) {
+    const char* type_string = "";
+    switch (entry->type) {
+      case TabRestoreService::WINDOW:
+        type_string = "window";
+        break;
+      case TabRestoreService::TAB:
+        type_string = "tab";
+        break;
+    }
+
+    std::string entry_dump_name = base::StringPrintf(
+        "%s/%s_0x%" PRIXPTR,
+        entries_dump_name.c_str(),
+        type_string,
+        reinterpret_cast<uintptr_t>(entry.get()));
+    auto* entry_dump = pmd->CreateAllocatorDump(entry_dump_name);
+
+    entry_dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                          MemoryAllocatorDump::kUnitsBytes,
+                          entry->EstimateMemoryUsage());
+
+    auto age = base::Time::Now() - entry->timestamp;
+    entry_dump->AddScalar("age",
+                          MemoryAllocatorDump::kUnitsObjects,
+                          age.InSeconds());
+
+    if (system_allocator_name)
+      pmd->AddSuballocation(entry_dump->guid(), system_allocator_name);
+  }
+
+  return true;
 }
 
 // static

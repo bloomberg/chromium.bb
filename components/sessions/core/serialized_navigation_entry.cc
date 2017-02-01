@@ -8,6 +8,7 @@
 
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sessions/core/serialized_navigation_driver.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/session_specifics.pb.h"
@@ -498,6 +499,21 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   sync_data.set_is_restored(is_restored_);
 
   return sync_data;
+}
+
+size_t SerializedNavigationEntry::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  return
+      EstimateMemoryUsage(referrer_url_) +
+      EstimateMemoryUsage(virtual_url_) +
+      EstimateMemoryUsage(title_) +
+      EstimateMemoryUsage(encoded_page_state_) +
+      EstimateMemoryUsage(original_request_url_) +
+      EstimateMemoryUsage(search_terms_) +
+      EstimateMemoryUsage(favicon_url_) +
+      EstimateMemoryUsage(redirect_chain_) +
+      EstimateMemoryUsage(content_pack_categories_) +
+      EstimateMemoryUsage(extended_info_map_);
 }
 
 }  // namespace sessions
