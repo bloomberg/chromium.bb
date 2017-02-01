@@ -17,10 +17,6 @@
 extern "C" {
 #endif
 
-#if CONFIG_DUAL_FILTER
-#define CONVOLVE_POST_ROUNDING 1
-#endif
-
 typedef enum CONVOLVE_OPT {
   // indicate the results in dst buf is rounded by FILTER_BITS or not
   CONVOLVE_OPT_ROUND,
@@ -41,7 +37,7 @@ static INLINE ConvolveParams get_conv_params(int ref) {
   return conv_params;
 }
 
-#if CONVOLVE_POST_ROUNDING
+#if CONFIG_CONVOLVE_ROUND
 static INLINE ConvolveParams get_conv_params_no_round(int ref, int32_t *dst,
                                                       int dst_stride) {
   ConvolveParams conv_params;
@@ -54,7 +50,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int32_t *dst,
 
 void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
                            int dst_stride, int w, int h);
-#endif  // CONVOLVE_POST_ROUNDING
+#endif  // CONFIG_CONVOLVE_ROUND
 
 void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
                   int dst_stride, int w, int h,

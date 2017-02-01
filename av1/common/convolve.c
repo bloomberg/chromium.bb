@@ -197,7 +197,7 @@ void av1_convolve_vert_facade(const uint8_t *src, int src_stride, uint8_t *dst,
   }
 }
 
-#if CONVOLVE_POST_ROUNDING
+#if CONFIG_CONVOLVE_ROUND
 void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
                            int dst_stride, int w, int h) {
   int r, c;
@@ -208,7 +208,7 @@ void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
     }
   }
 }
-#endif  // CONVOLVE_POST_ROUNDING
+#endif  // CONFIG_CONVOLVE_ROUND
 
 void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
                   int dst_stride, int w, int h,

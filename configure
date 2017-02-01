@@ -254,6 +254,7 @@ EXPERIMENT_LIST="
     rect_tx
     ref_mv
     dual_filter
+    convolve_round
     ext_tx
     tx64x64
     sub8x8_mc
