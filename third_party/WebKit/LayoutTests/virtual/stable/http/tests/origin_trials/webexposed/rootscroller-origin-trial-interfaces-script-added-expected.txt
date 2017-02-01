@@ -1,0 +1,11 @@
+CONSOLE MESSAGE: line 16: Interfaces before adding trial token
+interface Document
+CONSOLE MESSAGE: line 25: Interfaces after adding trial token
+interface Document
+    getter rootScroller
+    setter rootScroller
+This is a testharness.js-based test.
+PASS RootScroller related interfaces before adding trial token via script. 
+PASS RootScroller related interfaces after adding trial token via script. 
+Harness: the test ran to completion.
+

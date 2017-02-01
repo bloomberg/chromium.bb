@@ -87,6 +87,15 @@ class CORE_EXPORT V8PerContextData final {
 
   v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
+  // Gets the constructor and prototype for a type, if they have already been
+  // created. Returns true if they exist, and sets the existing values in
+  // |prototypeObject| and |interfaceObject|. Otherwise, returns false, and the
+  // values are set to empty objects (non-null).
+  bool getExistingConstructorAndPrototypeForType(
+      const WrapperTypeInfo*,
+      v8::Local<v8::Object>* prototypeObject,
+      v8::Local<v8::Function>* interfaceObject);
+
   void addCustomElementBinding(std::unique_ptr<V0CustomElementBinding>);
 
   V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }

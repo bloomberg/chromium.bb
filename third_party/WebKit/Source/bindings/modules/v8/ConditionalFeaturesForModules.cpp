@@ -29,6 +29,8 @@ namespace blink {
 namespace {
 InstallConditionalFeaturesFunction
     s_originalInstallConditionalFeaturesFunction = nullptr;
+InstallPendingConditionalFeatureFunction
+    s_originalInstallPendingConditionalFeatureFunction = nullptr;
 }
 
 void installConditionalFeaturesForModules(
@@ -140,10 +142,118 @@ void installConditionalFeaturesForModules(
   }
 }
 
+void installPendingConditionalFeatureForModules(
+    const String& feature,
+    const ScriptState* scriptState) {
+  // TODO(iclelland): Generate all of this logic at compile-time, based on the
+  // configuration of origin trial enabled attributes and interfaces in IDL
+  // files. (crbug.com/615060)
+  (*s_originalInstallPendingConditionalFeatureFunction)(feature, scriptState);
+  v8::Local<v8::Object> globalInstanceObject;
+  v8::Local<v8::Object> prototypeObject;
+  v8::Local<v8::Function> interfaceObject;
+  v8::Isolate* isolate = scriptState->isolate();
+  const DOMWrapperWorld& world = scriptState->world();
+  V8PerContextData* contextData = scriptState->perContextData();
+  if (feature == "ForeignFetch") {
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8InstallEvent::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8InstallEvent::installForeignFetch(isolate, world,
+                                          v8::Local<v8::Object>(),
+                                          prototypeObject, interfaceObject);
+    }
+    return;
+  }
+  if (feature == "ImageCapture") {
+    globalInstanceObject = scriptState->context()->Global();
+    V8WindowPartial::installImageCapture(isolate, world, globalInstanceObject,
+                                         v8::Local<v8::Object>(),
+                                         v8::Local<v8::Function>());
+    return;
+  }
+  if (feature == "ServiceWorkerNavigationPreload") {
+    globalInstanceObject = scriptState->context()->Global();
+    V8WindowPartial::installServiceWorkerNavigationPreload(
+        isolate, world, globalInstanceObject, v8::Local<v8::Object>(),
+        v8::Local<v8::Function>());
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8FetchEvent::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8FetchEvent::installServiceWorkerNavigationPreload(
+          isolate, world, v8::Local<v8::Object>(), prototypeObject,
+          interfaceObject);
+    }
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8ServiceWorkerRegistration::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8ServiceWorkerRegistration::installServiceWorkerNavigationPreload(
+          isolate, world, v8::Local<v8::Object>(), prototypeObject,
+          interfaceObject);
+    }
+    return;
+  }
+  if (feature == "WebShare") {
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8NavigatorPartial::installWebShare(isolate, world,
+                                          v8::Local<v8::Object>(),
+                                          prototypeObject, interfaceObject);
+    }
+    return;
+  }
+  if (feature == "WebUSB2") {
+    globalInstanceObject = scriptState->context()->Global();
+    V8WindowPartial::installWebUSB(isolate, world, globalInstanceObject,
+                                   v8::Local<v8::Object>(),
+                                   v8::Local<v8::Function>());
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
+                                        prototypeObject, interfaceObject);
+    }
+    return;
+  }
+  if (feature == "WebVR") {
+    globalInstanceObject = scriptState->context()->Global();
+    V8WindowPartial::installGamepadExtensions(
+        isolate, world, globalInstanceObject, v8::Local<v8::Object>(),
+        v8::Local<v8::Function>());
+    V8WindowPartial::installWebVR(isolate, world, globalInstanceObject,
+                                  v8::Local<v8::Object>(),
+                                  v8::Local<v8::Function>());
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8Gamepad::wrapperTypeInfo, &prototypeObject, &interfaceObject)) {
+      V8Gamepad::installGamepadExtensions(isolate, world,
+                                          v8::Local<v8::Object>(),
+                                          prototypeObject, interfaceObject);
+    }
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8GamepadButton::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8GamepadButton::installGamepadExtensions(
+          isolate, world, v8::Local<v8::Object>(), prototypeObject,
+          interfaceObject);
+    }
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8NavigatorPartial::installWebVR(isolate, world, v8::Local<v8::Object>(),
+                                       prototypeObject, interfaceObject);
+    }
+    return;
+  }
+}
+
 void registerInstallConditionalFeaturesForModules() {
   s_originalInstallConditionalFeaturesFunction =
       setInstallConditionalFeaturesFunction(
           &installConditionalFeaturesForModules);
+  s_originalInstallPendingConditionalFeatureFunction =
+      setInstallPendingConditionalFeatureFunction(
+          &installPendingConditionalFeatureForModules);
 }
 
 }  // namespace blink

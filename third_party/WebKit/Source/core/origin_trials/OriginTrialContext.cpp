@@ -20,6 +20,7 @@
 #include "public/platform/WebOriginTrialTokenStatus.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebTrialTokenValidator.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
 #include <v8.h>
@@ -154,24 +155,37 @@ std::unique_ptr<Vector<String>> OriginTrialContext::getTokens(
 }
 
 void OriginTrialContext::addToken(const String& token) {
-  if (!token.isEmpty()) {
-    m_tokens.push_back(token);
-    validateToken(token);
+  if (token.isEmpty())
+    return;
+  m_tokens.push_back(token);
+  if (enableTrialFromToken(token)) {
+    // Only install pending features if the provided token is valid. Otherwise,
+    // there was no change to the list of enabled features.
+    initializePendingFeatures();
   }
-  initializePendingFeatures();
 }
 
 void OriginTrialContext::addTokens(const Vector<String>& tokens) {
+  if (tokens.isEmpty())
+    return;
+  bool foundValid = false;
   for (const String& token : tokens) {
     if (!token.isEmpty()) {
       m_tokens.push_back(token);
-      validateToken(token);
+      if (enableTrialFromToken(token))
+        foundValid = true;
     }
   }
-  initializePendingFeatures();
+  if (foundValid) {
+    // Only install pending features if at least one of the provided tokens are
+    // valid. Otherwise, there was no change to the list of enabled features.
+    initializePendingFeatures();
+  }
 }
 
 void OriginTrialContext::initializePendingFeatures() {
+  if (!m_enabledTrials.size())
+    return;
   if (!supplementable()->isDocument())
     return;
   LocalFrame* frame = toDocument(supplementable())->frame();
@@ -183,7 +197,12 @@ void OriginTrialContext::initializePendingFeatures() {
   if (!scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(scriptState);
-  installPendingConditionalFeaturesOnWindow(scriptState);
+  for (auto enabledTrial : m_enabledTrials) {
+    if (m_installedTrials.contains(enabledTrial))
+      continue;
+    installPendingConditionalFeature(enabledTrial, scriptState);
+    m_installedTrials.add(enabledTrial);
+  }
 }
 
 bool OriginTrialContext::isTrialEnabled(const String& trialName) {
@@ -193,30 +212,34 @@ bool OriginTrialContext::isTrialEnabled(const String& trialName) {
   return m_enabledTrials.contains(trialName);
 }
 
-void OriginTrialContext::validateToken(const String& token) {
+bool OriginTrialContext::enableTrialFromToken(const String& token) {
   DCHECK(!token.isEmpty());
 
   // Origin trials are only enabled for secure origins
   if (!supplementable()->isSecureContext()) {
     tokenValidationResultHistogram().count(
         static_cast<int>(WebOriginTrialTokenStatus::Insecure));
-    return;
+    return false;
   }
 
   if (!m_trialTokenValidator) {
     tokenValidationResultHistogram().count(
         static_cast<int>(WebOriginTrialTokenStatus::NotSupported));
-    return;
+    return false;
   }
 
   WebSecurityOrigin origin(supplementable()->getSecurityOrigin());
   WebString trialName;
+  bool valid = false;
   WebOriginTrialTokenStatus tokenResult =
       m_trialTokenValidator->validateToken(token, origin, &trialName);
-  if (tokenResult == WebOriginTrialTokenStatus::Success)
+  if (tokenResult == WebOriginTrialTokenStatus::Success) {
+    valid = true;
     m_enabledTrials.insert(trialName);
+  }
 
   tokenValidationResultHistogram().count(static_cast<int>(tokenResult));
+  return valid;
 }
 
 DEFINE_TRACE(OriginTrialContext) {

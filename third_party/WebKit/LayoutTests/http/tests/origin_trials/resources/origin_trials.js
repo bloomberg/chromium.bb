@@ -4,7 +4,7 @@
 // applied to individual IDL members.
 
 // These tests verify that any gated parts of the API are not available.
-expect_failure = (t) => {
+expect_failure = (skip_worker) => {
   tests = [{
     desc: 'Accessing attribute should throw error',
     code: () => {
@@ -83,13 +83,12 @@ expect_failure = (t) => {
       }
   }];
 
-  fetch_tests_from_worker(new Worker('resources/disabled-worker.js'));
+  if (!skip_worker) {
+    fetch_tests_from_worker(new Worker('resources/disabled-worker.js'));
+  }
 
   for (var i = 0; i < tests.length; ++i) {
-    if (t)
-      t.step(tests[i].code);
-    else
-      test(tests[i].code, tests[i].desc);
+    test(tests[i].code, tests[i].desc);
   }
 };
 

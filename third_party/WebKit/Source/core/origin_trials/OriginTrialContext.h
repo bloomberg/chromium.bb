@@ -71,21 +71,28 @@ class CORE_EXPORT OriginTrialContext final
   // controls) should be considered enabled for the current execution context.
   bool isTrialEnabled(const String& trialName);
 
-  // Installs JavaScript bindings on the Window object for any features which
+  // Installs JavaScript bindings on the relevant objects for any features which
   // should be enabled by the current set of trial tokens. This method is called
-  // every time a token is added to the document, so that global interfaces will
-  // be properly visible, even if the V8 context is being reused (i.e., after
-  // navigation). If the V8 context is not initialized, this method will return
-  // without doing anything.
+  // every time a token is added to the document (including when tokens are
+  // added via script). JavaScript-exposed members will be properly visible, for
+  // existing objects in the V8 context. If the V8 context is not initialized,
+  // or there are no enabled features, or all enabled features are already
+  // initialized, this method returns without doing anything. That is, it is
+  // safe to call this method multiple times, even if no trials are newly
+  // enabled.
   void initializePendingFeatures();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void validateToken(const String& token);
+  // Validate the trial token. If valid, the trial named in the token is
+  // added to the list of enabled trials. Returns true or false to indicate if
+  // the token is valid.
+  bool enableTrialFromToken(const String& token);
 
   Vector<String> m_tokens;
   HashSet<String> m_enabledTrials;
+  HashSet<String> m_installedTrials;
   WebTrialTokenValidator* m_trialTokenValidator;
 };
 

@@ -1,0 +1,8 @@
+CONSOLE MESSAGE: line 15: Interfaces in document
+interface PerformanceLongTaskTiming
+    getter attribution
+    method constructor
+This is a testharness.js-based test.
+PASS LongTaskObserver related interfaces in Origin-Trial enabled document. 
+Harness: the test ran to completion.
+

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- Generate token with the command:
+generate_token.py  http://127.0.0.1:8000 ForeignFetch --expire-timestamp=2000000000
+-->
+<meta http-equiv="origin-trial" content="AinuK1QNcHGJANXfN0Pzkvpxm8rocd4kcqQqhp7rBN8PEX/1JicCoDXX3fIhk7iwBOCCOQYR0cvZ8XHTLJJfVw0AAABUeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiRm9yZWlnbkZldGNoIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9" />
+<title>ForeignFetch - interfaces exposed by origin trial</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/origin-trials-helper.js"></script>
+<script src="../../serviceworker/resources/test-helpers.js"></script>
+<script>
+promise_test(t => {
+    var script =
+        './resources/foreignfetch-origin-trial-interfaces-worker.php';
+    var scope =
+        './resources/foreignfetch-origin-trial-interfaces-scope-disabled';
+    return OriginTrialsHelper.check_interfaces_in_sw(t, script, scope)
+      .then(message => {
+        console.log('Interfaces in Service Worker - no origin trial\n' + message);
+      });
+  }, "ForeignFetch related interfaces in SW - no origin trial.");
+
+promise_test(t => {
+    var script =
+        './resources/foreignfetch-origin-trial-interfaces-worker.php?' +
+        'origintrial=true';
+    var scope =
+        './resources/foreignfetch-origin-trial-interfaces-scope-enabled';
+    return OriginTrialsHelper.check_interfaces_in_sw(t, script, scope)
+      .then(message => {
+        console.log('Interfaces in Service Worker - origin trial enabled.\n' +
+                    message);
+      });
+  }, "ForeignFetch related interfaces in SW - origin trial enabled.");
+
+</script>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- Generate token with the command:
+generate_token.py  http://127.0.0.1:8000 ImageCapture --expire-timestamp=2000000000
+-->
+<meta http-equiv="origin-trial" content="AgnhzY0dhvMKsSPYNWHltCxTsLpVFzM/H0rZdpY4DeVo7ry4xm8VLRJU5aVLy+wSgnUa34pTTR017JFu4qnUAQwAAABUeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiSW1hZ2VDYXB0dXJlIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9" />
+<title>ImageCapture - interfaces exposed by origin trial</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/origin-trials-helper.js"></script>
+<script>
+test(t => {
+  var interfaces =
+      OriginTrialsHelper.get_interface_names(this, ['ImageCapture',
+                                                    'MediaSettingsRange',
+                                                    'PhotoCapabilities']);
+  console.log('Interfaces in document\n' + interfaces);
+}, "ImageCapture related interfaces in Origin-Trial enabled document.");
+</script>

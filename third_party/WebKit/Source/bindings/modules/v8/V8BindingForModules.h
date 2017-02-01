@@ -61,8 +61,6 @@ struct NativeValueTraits<IDBKeyRange*> {
                                   ExceptionState&);
 };
 
-void registerInstallOriginTrialsForModules();
-
 }  // namespace blink
 
 #endif  // V8BindingForModules_h

@@ -123,7 +123,7 @@ void LocalWindowProxy::initialize() {
   // If conditional features for window have been queued before the V8 context
   // was ready, then inject them into the context now
   if (m_world->isMainWorld()) {
-    installPendingConditionalFeaturesOnWindow(m_scriptState.get());
+    installConditionalFeaturesOnWindow(m_scriptState.get());
   }
 
   if (m_world->isMainWorld())

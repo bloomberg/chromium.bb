@@ -1,0 +1,38 @@
+CONSOLE MESSAGE: line 17: Interfaces before adding trial token
+
+CONSOLE MESSAGE: line 27: Interfaces after adding trial token
+interface ImageCapture
+    getter videoStreamTrack
+    method constructor
+    method getPhotoCapabilities
+    method grabFrame
+    method setOptions
+    method takePhoto
+interface MediaSettingsRange
+    getter current
+    getter max
+    getter min
+    getter step
+    method constructor
+interface PhotoCapabilities
+    getter brightness
+    getter colorTemperature
+    getter contrast
+    getter exposureCompensation
+    getter exposureMode
+    getter fillLightMode
+    getter focusMode
+    getter imageHeight
+    getter imageWidth
+    getter iso
+    getter redEyeReduction
+    getter saturation
+    getter sharpness
+    getter whiteBalanceMode
+    getter zoom
+    method constructor
+This is a testharness.js-based test.
+PASS ImageCapture related interfaces before adding trial token via script. 
+PASS ImageCapture related interfaces after adding trial token via script. 
+Harness: the test ran to completion.
+

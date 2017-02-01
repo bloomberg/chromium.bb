@@ -1,0 +1,27 @@
+CONSOLE MESSAGE: line 20: Interfaces in Service Worker - no origin trial
+interface ForeignFetchEvent
+    getter origin
+    getter request
+    method constructor
+    method respondWith
+interface InstallEvent
+    method registerForeignFetch
+global object
+    getter onforeignfetch
+    setter onforeignfetch
+CONSOLE MESSAGE: line 32: Interfaces in Service Worker - origin trial enabled.
+interface ForeignFetchEvent
+    getter origin
+    getter request
+    method constructor
+    method respondWith
+interface InstallEvent
+    method registerForeignFetch
+global object
+    getter onforeignfetch
+    setter onforeignfetch
+This is a testharness.js-based test.
+PASS ForeignFetch related interfaces in SW - no origin trial. 
+PASS ForeignFetch related interfaces in SW - origin trial enabled. 
+Harness: the test ran to completion.
+

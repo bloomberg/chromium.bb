@@ -1,0 +1,13 @@
+CONSOLE MESSAGE: line 15: Interfaces before adding trial token
+interface PerformanceLongTaskTiming
+    getter attribution
+    method constructor
+CONSOLE MESSAGE: line 23: Interfaces after adding trial token
+interface PerformanceLongTaskTiming
+    getter attribution
+    method constructor
+This is a testharness.js-based test.
+PASS LongTaskObserver related interfaces before adding trial token via script. 
+PASS LongTaskObserver related interfaces after adding trial token via script. 
+Harness: the test ran to completion.
+

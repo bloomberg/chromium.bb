@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>ImageCapture - origin trial is enabled by script-added meta tag</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/origin-trials-helper.js"></script>
+<script>
+// Generate token with the command:
+// generate_token.py  http://127.0.0.1:8000 ImageCapture --expire-timestamp=2000000000
+var token = "AgnhzY0dhvMKsSPYNWHltCxTsLpVFzM/H0rZdpY4DeVo7ry4xm8VLRJU5aVLy+wSgnUa34pTTR017JFu4qnUAQwAAABUeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiSW1hZ2VDYXB0dXJlIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9";
+
+test(t => {
+  var interfaces =
+      OriginTrialsHelper.get_interface_names(this, ['ImageCapture',
+                                                    'MediaSettingsRange',
+                                                    'PhotoCapabilities']);
+  console.log('Interfaces before adding trial token\n' + interfaces);
+}, "ImageCapture related interfaces before adding trial token via script.");
+
+OriginTrialsHelper.add_token(token);
+
+test(t => {
+  var interfaces =
+      OriginTrialsHelper.get_interface_names(this, ['ImageCapture',
+                                                    'MediaSettingsRange',
+                                                    'PhotoCapabilities']);
+  console.log('Interfaces after adding trial token\n' + interfaces);
+}, "ImageCapture related interfaces after adding trial token via script.");
+</script>

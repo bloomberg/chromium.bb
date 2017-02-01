@@ -170,6 +170,20 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(
   return prototypeValue.As<v8::Object>();
 }
 
+bool V8PerContextData::getExistingConstructorAndPrototypeForType(
+    const WrapperTypeInfo* type,
+    v8::Local<v8::Object>* prototypeObject,
+    v8::Local<v8::Function>* interfaceObject) {
+  *interfaceObject = m_constructorMap.Get(type);
+  if (interfaceObject->IsEmpty()) {
+    *prototypeObject = v8::Local<v8::Object>();
+    return false;
+  }
+  *prototypeObject = prototypeForType(type);
+  DCHECK(!prototypeObject->IsEmpty());
+  return true;
+}
+
 void V8PerContextData::addCustomElementBinding(
     std::unique_ptr<V0CustomElementBinding> binding) {
   m_customElementBindings.push_back(std::move(binding));

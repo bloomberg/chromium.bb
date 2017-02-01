@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- Generate token with the command:
+generate_token.py  http://127.0.0.1:8000 LongTaskObserver --expire-timestamp=2000000000
+-->
+<meta http-equiv="origin-trial" content="AjpM/J+Oaon2wm/Ige8C0M00AhbG4U3Q1nAAmsNxmDTB/FTgFHfMYk2aVJozhE7m0dlJhozhaPh7C+GM6KD+QgYAAABYeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiTG9uZ1Rhc2tPYnNlcnZlciIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==" />
+<title>LongTaskObserver - interfaces exposed by origin trial</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/origin-trials-helper.js"></script>
+<script>
+test(t => {
+  var interfaces =
+      OriginTrialsHelper.get_interface_names(window, ['PerformanceLongTaskTiming']);
+  console.log('Interfaces in document\n' + interfaces);
+}, "LongTaskObserver related interfaces in Origin-Trial enabled document.");
+</script>

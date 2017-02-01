@@ -104,6 +104,17 @@
     "args": ["--stable-release-mode"]
   },
   {
+    "prefix": "stable",
+    "base": "http/tests/origin_trials/webexposed",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "origin-trials-features-disabled",
+    "base": "http/tests/origin_trials/webexposed",
+    "args": ["--disable-blink-features=ForeignFetch,ImageCapture,LinkServiceWorker,LongTaskObserver,ServiceWorkerNavigationPreload,SetRootScroller,WebUSB,WebVR,WebShare",
+             "--disable-features=ForeignFetch,ImageCapture,LinkServiceWorker,LongTaskObserver,ServiceWorkerNavigationPreload,SetRootScroller,WebUSB,WebVR,WebShare"]
+  },
+  {
     "prefix": "android",
     "base": "fullscreen",
     "args": ["--enable-threaded-compositing",

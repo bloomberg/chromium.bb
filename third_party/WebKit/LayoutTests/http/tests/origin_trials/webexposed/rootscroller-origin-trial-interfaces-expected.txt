@@ -1,0 +1,8 @@
+CONSOLE MESSAGE: line 16: Interfaces in document
+interface Document
+    getter rootScroller
+    setter rootScroller
+This is a testharness.js-based test.
+PASS RootScroller related interfaces in Origin-Trial enabled document. 
+Harness: the test ran to completion.
+

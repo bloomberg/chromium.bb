@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- Generate token with the command:
+generate_token.py  http://127.0.0.1:8000 RootScroller --expire-timestamp=2000000000
+-->
+<meta http-equiv="origin-trial" content="AuKypT9HyT7fv0cU54WMd1bUmdBYTFED3hKRFWfvxauV8saEM1CoOFLXDd3ApWwJCvimlrGVcqj+0Z9rJL8uFgIAAABUeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiUm9vdFNjcm9sbGVyIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9" />
+<title>RootScroller - interfaces exposed by origin trial</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/origin-trials-helper.js"></script>
+<script>
+test(t => {
+  var interfaces =
+      OriginTrialsHelper.get_interface_names(this, ['Document'],
+                                             {'Document':'rootScroller'});
+  console.log('Interfaces in document\n' + interfaces);
+}, "RootScroller related interfaces in Origin-Trial enabled document.");
+</script>

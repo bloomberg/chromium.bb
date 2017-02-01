@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- Generate token with the command:
+generate_token.py  http://127.0.0.1:8000 WebUSB --expire-timestamp=2000000000
+-->
+<meta http-equiv="origin-trial" content="Ak+Acw9/y+acA5hzmO0vOifI2G0n6g1+CiHBlyMOjjspFsPlTfvvI0nQBLCUlDkXkMQzSXzB97JmRaNNjpSyVQ0AAABOeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViVVNCIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9" />
+<!-- Generate token with the command:
+generate_token.py  http://127.0.0.1:8000 WebUSB2 --expire-timestamp=2000000000
+-->
+<meta http-equiv="origin-trial" content="AmgWWAL+v07ElzPwp9oXvY1ldvKTbMlEUFopboMutESil7WUfQNVdYFUzfai6GRq5MndTa+ln+w1gLlRw8VshwAAAABPeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViVVNCMiIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==" />
+<title>WebUSB - interfaces exposed by origin trial</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/origin-trials-helper.js"></script>
+<script>
+test(t => {
+  var interfaces =
+      OriginTrialsHelper.get_interface_names(this,
+        ['Navigator',
+         'USBAlternateInterface',
+         'USBConfiguration',
+         'USBConnectionEvent',
+         'USBDevice',
+         'USBEndpoint',
+         'USBInTransferResult',
+         'USBInterface',
+         'USBIsochronousInTransferPacket',
+         'USBIsochronousInTransferResult',
+         'USBIsochronousOutTransferPacket',
+         'USBIsochronousOutTransferResult',
+         'USBOutTransferResult'],
+        {'Navigator': ['usb']});
+  console.log('Interfaces in document\n' + interfaces);
+}, "WebUSB related interfaces in Origin-Trial enabled document.");
+</script>
