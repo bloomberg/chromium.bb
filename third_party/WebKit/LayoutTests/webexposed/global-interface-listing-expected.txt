@@ -1149,6 +1149,7 @@ interface DOMPointReadOnly
     method matrixTransform
     method toJSON
 interface DOMQuad
+    static method fromQuad
     static method fromRect
     attribute @@toStringTag
     getter p1

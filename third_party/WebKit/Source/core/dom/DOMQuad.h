@@ -13,6 +13,7 @@ namespace blink {
 
 class DOMPoint;
 class DOMPointInit;
+class DOMQuadInit;
 class DOMRectInit;
 
 class CORE_EXPORT DOMQuad : public GarbageCollected<DOMQuad>,
@@ -25,6 +26,7 @@ class CORE_EXPORT DOMQuad : public GarbageCollected<DOMQuad>,
                          const DOMPointInit& p3,
                          const DOMPointInit& p4);
   static DOMQuad* fromRect(const DOMRectInit&);
+  static DOMQuad* fromQuad(const DOMQuadInit&);
 
   DOMPoint* p1() const { return m_p1; }
   DOMPoint* p2() const { return m_p2; }

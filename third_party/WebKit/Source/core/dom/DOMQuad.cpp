@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/DOMPoint.h"
+#include "core/dom/DOMQuadInit.h"
 #include "core/dom/DOMRectInit.h"
 
 namespace blink {
@@ -19,6 +20,13 @@ DOMQuad* DOMQuad::create(const DOMPointInit& p1,
 
 DOMQuad* DOMQuad::fromRect(const DOMRectInit& other) {
   return new DOMQuad(other.x(), other.y(), other.width(), other.height());
+}
+
+DOMQuad* DOMQuad::fromQuad(const DOMQuadInit& other) {
+  return new DOMQuad(other.hasP1() ? other.p1() : DOMPointInit(),
+                     other.hasP2() ? other.p2() : DOMPointInit(),
+                     other.hasP3() ? other.p3() : DOMPointInit(),
+                     other.hasP3() ? other.p4() : DOMPointInit());
 }
 
 DOMQuad::DOMQuad(const DOMPointInit& p1,
