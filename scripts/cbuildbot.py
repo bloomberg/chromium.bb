@@ -500,6 +500,8 @@ def _CreateParser():
   group.add_option('--test-tryjob', action='store_true', default=False,
                    help='Submit a tryjob to the test repository.  Will not '
                         'show up on the production trybot waterfall.')
+  group.add_option('--committer-email', type='string',
+                   help='Override default git committer email.')
 
   parser.add_option_group(group)
 

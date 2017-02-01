@@ -94,7 +94,10 @@ class RemoteTryJob(object):
     self.user = getpass.getuser()
     self.repo_cache = cache.DiskCache(self.options.cache_dir)
     cwd = os.path.dirname(os.path.realpath(__file__))
-    self.user_email = git.GetProjectUserEmail(cwd)
+    if options.committer_email is not None:
+        self.user_email = options.committer_email
+    else:
+        self.user_email = git.GetProjectUserEmail(cwd)
     logging.info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
     patch_list = options.gerrit_patches + options.local_patches
