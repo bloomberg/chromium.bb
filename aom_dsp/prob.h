@@ -38,8 +38,6 @@ typedef int8_t aom_tree_index;
 
 #define TREE_SIZE(leaf_count) (-2 + 2 * (leaf_count))
 
-#define aom_complement(x) (255 - x)
-
 #define MODE_MV_COUNT_SAT 20
 
 /* We build coding trees compactly in arrays.
