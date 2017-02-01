@@ -155,7 +155,7 @@ gfx::NativeView ExtensionActionViewController::GetPopupNativeView() {
 }
 
 ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
-  if (!ExtensionIsValid() || !extension()->ShowConfigureContextMenus())
+  if (!ExtensionIsValid())
     return nullptr;
 
   extensions::ExtensionContextMenuModel::ButtonVisibility visibility =

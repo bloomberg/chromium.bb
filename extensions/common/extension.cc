@@ -306,18 +306,6 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
               url::kStandardSchemeSeparator + extension_id + "/");
 }
 
-bool Extension::ShowConfigureContextMenus() const {
-  // Normally we don't show a context menu for component actions, but when
-  // re-design is enabled we show them in the toolbar (if they have an action),
-  // and it is weird to have a random button that has no context menu when the
-  // rest do.
-  if (location() == Manifest::COMPONENT ||
-      location() == Manifest::EXTERNAL_COMPONENT)
-    return FeatureSwitch::extension_action_redesign()->IsEnabled();
-
-  return true;
-}
-
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   if (url() == origin)
     return true;
