@@ -13,7 +13,6 @@
 #include "components/exo/wm_helper.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_type.h"
@@ -38,6 +37,7 @@ class ArcBridgeService;
 class ArcImeService : public ArcService,
                       public ArcImeBridge::Delegate,
                       public aura::EnvObserver,
+                      public aura::WindowObserver,
                       public exo::WMHelper::FocusObserver,
                       public keyboard::KeyboardControllerObserver,
                       public ui::TextInputClient {
@@ -65,6 +65,11 @@ class ArcImeService : public ArcService,
 
   // Overridden from aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
+
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override;
 
   // Overridden from exo::WMHelper::FocusObserver:
   void OnWindowFocused(aura::Window* gained_focus,
@@ -124,7 +129,7 @@ class ArcImeService : public ArcService,
   gfx::Rect cursor_rect_;
   bool has_composition_text_;
 
-  aura::WindowTracker focused_arc_window_;
+  aura::Window* focused_arc_window_ = nullptr;
 
   keyboard::KeyboardController* keyboard_controller_;
 

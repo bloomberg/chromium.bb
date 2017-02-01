@@ -103,12 +103,14 @@ void ArcImeService::SetArcWindowDelegateForTesting(
 }
 
 ui::InputMethod* ArcImeService::GetInputMethod() {
-  if (focused_arc_window_.windows().empty())
+  if (!focused_arc_window_)
     return nullptr;
 
   if (test_input_method_)
     return test_input_method_;
-  return focused_arc_window_.windows().front()->GetHost()->GetInputMethod();
+
+  DCHECK(focused_arc_window_->GetHost());
+  return focused_arc_window_->GetHost()->GetInputMethod();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,6 +133,23 @@ void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Overridden from aura::WindowObserver:
+
+void ArcImeService::OnWindowDestroying(aura::Window* window) {
+  // This shouldn't be reached on production, since the window lost the focus
+  // and called OnWindowFocused() before destroying.
+  // But we handle this case for testing.
+  DCHECK_EQ(window, focused_arc_window_);
+  OnWindowFocused(nullptr, focused_arc_window_);
+}
+
+void ArcImeService::OnWindowRemovingFromRootWindow(aura::Window* window,
+                                                   aura::Window* new_root) {
+  DCHECK_EQ(window, focused_arc_window_);
+  OnWindowFocused(nullptr, focused_arc_window_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Overridden from exo::WMHelper::FocusChangeObserver:
 
 void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
@@ -138,7 +157,7 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
   if (lost_focus == gained_focus)
     return;
 
-  const bool detach = (lost_focus && focused_arc_window_.Contains(lost_focus));
+  const bool detach = (lost_focus && focused_arc_window_ == lost_focus);
   const bool attach =
       (gained_focus && arc_window_delegate_->IsArcWindow(gained_focus));
 
@@ -151,10 +170,15 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
   // must call the method before updating the forcused ARC window.
   ui::InputMethod* const detaching_ime = detach ? GetInputMethod() : nullptr;
 
-  if (detach)
-    focused_arc_window_.Remove(lost_focus);
-  if (attach)
-    focused_arc_window_.Add(gained_focus);
+  if (detach) {
+    focused_arc_window_->RemoveObserver(this);
+    focused_arc_window_ = nullptr;
+  }
+  if (attach) {
+    DCHECK_EQ(nullptr, focused_arc_window_);
+    focused_arc_window_ = gained_focus;
+    focused_arc_window_->AddObserver(this);
+  }
 
   ui::InputMethod* const attaching_ime = attach ? GetInputMethod() : nullptr;
 
@@ -208,9 +232,9 @@ void ArcImeService::ShowImeIfNeeded() {
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from keyboard::KeyboardControllerObserver
 void ArcImeService::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
-  if (focused_arc_window_.windows().empty())
+  if (!focused_arc_window_)
     return;
-  aura::Window* window = focused_arc_window_.windows().front();
+  aura::Window* window = focused_arc_window_;
   // Multiply by the scale factor. To convert from DPI to physical pixels.
   gfx::Rect bounds_in_px = gfx::ScaleToEnclosingRect(
       new_bounds, window->layer()->device_scale_factor());
@@ -289,9 +313,9 @@ ui::TextInputType ArcImeService::GetTextInputType() const {
 }
 
 gfx::Rect ArcImeService::GetCaretBounds() const {
-  if (focused_arc_window_.windows().empty())
+  if (!focused_arc_window_)
     return gfx::Rect();
-  aura::Window* window = focused_arc_window_.windows().front();
+  aura::Window* window = focused_arc_window_;
 
   // |cursor_rect_| holds the rectangle reported from ARC apps, in the "screen
   // coordinates" in ARC, counted by physical pixels.
