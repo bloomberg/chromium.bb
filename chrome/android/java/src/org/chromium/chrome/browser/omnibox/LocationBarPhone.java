@@ -214,7 +214,9 @@ public class LocationBarPhone extends LocationBarLayout {
             //     by a command line intent)
             // 3.) Simultaneously moving one of the selection handles left and right.  This will
             //     occasionally throw an AssertionError on the bounds of the selection.
-            Selection.setSelection(mUrlBar.getText(), 0);
+            if (!mUrlBar.scrollToTLD()) {
+                Selection.setSelection(mUrlBar.getText(), 0);
+            }
 
             // The animation rendering may not yet be 100% complete and hiding the keyboard makes
             // the animation quite choppy.

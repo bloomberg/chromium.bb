@@ -845,21 +845,18 @@ public class UrlBar extends VerticallyFixedEditText {
         mAccessibilityTextOverride = accessibilityOverride;
     }
 
-    private void scrollToTLD() {
+    /**
+     * Scroll to ensure the TLD is visible.
+     * @return Whether the TLD was discovered and successfully scrolled to.
+     */
+    public boolean scrollToTLD() {
         Editable url = getText();
-        if (url == null || url.length() < 1) return;
+        if (url == null || url.length() < 1) return false;
         String urlString = url.toString();
-        URL javaUrl;
-        try {
-            javaUrl = new URL(urlString);
-        } catch (MalformedURLException mue) {
-            return;
-        }
-        String host = javaUrl.getHost();
-        if (host == null || host.isEmpty()) return;
-        int hostStart = urlString.indexOf(host);
-        int hostEnd = hostStart + host.length();
-        setSelection(hostEnd);
+        String prePath = LocationBarLayout.splitPathFromUrlDisplayText(urlString).first;
+        if (prePath == null || prePath.isEmpty()) return false;
+        setSelection(prePath.length());
+        return true;
     }
 
     @Override
