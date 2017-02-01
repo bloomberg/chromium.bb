@@ -65,7 +65,11 @@ int GetDisplayTreeDepth(
   const int kMaxDepth = 100;  // Avoid layouts with cycles.
   while (current_id != primary_id && depth < kMaxDepth) {
     ++depth;
-    current_id = display_to_parent_ids_map.at(current_id);
+    auto iter = display_to_parent_ids_map.find(current_id);
+    if (iter == display_to_parent_ids_map.end())
+      return kMaxDepth;  // Let detached diplays go to the end.
+
+    current_id = iter->second;
   }
 
   return depth;
@@ -93,9 +97,15 @@ bool AreDisplaysTouching(const Display& child_display,
 
 // After the layout has been applied to the |display_list| and any possible
 // overlaps have been fixed, this function is called to update the offsets in
-// the |placement_list|.
-void UpdateOffsets(Displays* display_list,
-                   std::vector<DisplayPlacement>* placement_list) {
+// the |placement_list|, and make sure the placement list is sorted by display
+// IDs.
+void UpdatePlacementList(Displays* display_list,
+                         std::vector<DisplayPlacement>* placement_list) {
+  std::sort(placement_list->begin(), placement_list->end(),
+            [](const DisplayPlacement& p1, const DisplayPlacement& p2) {
+              return p1.display_id < p2.display_id;
+            });
+
   for (DisplayPlacement& placement : *placement_list) {
     const Display* child_display =
         FindDisplayById(display_list, placement.display_id);
@@ -118,7 +128,9 @@ void UpdateOffsets(Displays* display_list,
 }
 
 // Reparents |target_display| to |last_intersecting_source_display| if it's not
-// touching with its current parent.
+// touching with its current parent. It also handles the case if
+// |target_display| is detached, it then reparents it to the last intersecting
+// display.
 void MaybeReparentTargetDisplay(
     int last_offset_x,
     int last_offset_y,
@@ -130,44 +142,55 @@ void MaybeReparentTargetDisplay(
   // A de-intersection was performed.
   // The offset target display may have moved such that it no longer touches
   // its parent. Reparent if necessary.
-  const int64_t parent_display_id =
-      display_to_parent_ids_map->at(target_display->id());
-  if (parent_display_id == last_intersecting_source_display->id()) {
-    // It was just de-intersected with the source display in such a way that
-    // they're touching, and the source display is its parent. So no need to
-    // do any reparenting.
-    return;
+  DisplayPlacement* target_display_placement = nullptr;
+  auto iter = display_to_parent_ids_map->find(target_display->id());
+  if (iter != display_to_parent_ids_map->end()) {
+    const int64_t parent_display_id = iter->second;
+    if (parent_display_id == last_intersecting_source_display->id()) {
+      // It was just de-intersected with the source display in such a way that
+      // they're touching, and the source display is its parent. So no need to
+      // do any reparenting.
+      return;
+    }
+
+    Display* parent_display = FindDisplayById(display_list, parent_display_id);
+    DCHECK(parent_display);
+
+    auto target_display_placement_itr =
+        std::find_if(placement_list->begin(), placement_list->end(),
+                     [&target_display](const DisplayPlacement& p) {
+                       return p.display_id == target_display->id();
+                     });
+    DCHECK(target_display_placement_itr != placement_list->end());
+    target_display_placement = &(*target_display_placement_itr);
+    if (AreDisplaysTouching(*target_display, *parent_display,
+                            target_display_placement->position)) {
+      return;
+    }
+  } else {
+    // It's a detached display with no parent. Add a new placement for it.
+    DisplayPlacement new_placement;
+    new_placement.display_id = target_display->id();
+    placement_list->emplace_back(new_placement);
+    target_display_placement = &placement_list->back();
   }
 
-  Display* parent_display = FindDisplayById(display_list, parent_display_id);
-  DCHECK(parent_display);
-
-  auto target_display_placement_itr =
-      std::find_if(placement_list->begin(), placement_list->end(),
-                   [&target_display](const DisplayPlacement& p) {
-                     return p.display_id == target_display->id();
-                   });
-  DCHECK(target_display_placement_itr != placement_list->end());
-  DisplayPlacement& target_display_placement = *target_display_placement_itr;
-  if (AreDisplaysTouching(*target_display, *parent_display,
-                          target_display_placement.position)) {
-    return;
-  }
+  DCHECK(target_display_placement);
 
   // Reparent the target to source and update the position. No need to
   // update the offset here as it will be done later when UpdateOffsets()
   // is called.
-  target_display_placement.parent_display_id =
+  target_display_placement->parent_display_id =
       last_intersecting_source_display->id();
   // Update the map.
   (*display_to_parent_ids_map)[target_display->id()] =
       last_intersecting_source_display->id();
 
   if (last_offset_x) {
-    target_display_placement.position =
+    target_display_placement->position =
         last_offset_x > 0 ? DisplayPlacement::RIGHT : DisplayPlacement::LEFT;
   } else {
-    target_display_placement.position =
+    target_display_placement->position =
         last_offset_y > 0 ? DisplayPlacement::BOTTOM : DisplayPlacement::TOP;
   }
 }
@@ -235,18 +258,23 @@ void DeIntersectDisplays(int64_t primary_id,
     if (d1_depth != d2_depth)
       return d1_depth < d2_depth;
 
-    return d1->bounds().OffsetFromOrigin().LengthSquared() <
-           d2->bounds().OffsetFromOrigin().LengthSquared();
+    const int64_t d1_distance = d1->bounds().OffsetFromOrigin().LengthSquared();
+    const int64_t d2_distance = d2->bounds().OffsetFromOrigin().LengthSquared();
+
+    if (d1_distance != d2_distance)
+      return d1_distance < d2_distance;
+
+    return d1->id() < d2->id();
   });
   // This must result in the primary display being at the front of the list.
   DCHECK_EQ(sorted_displays.front()->id(), primary_id);
 
-  for (int i = 1; i < static_cast<int>(sorted_displays.size()); ++i) {
+  for (size_t i = 1; i < sorted_displays.size(); ++i) {
     Display* target_display = sorted_displays[i];
     const Display* last_intersecting_source_display = nullptr;
     int last_offset_x = 0;
     int last_offset_y = 0;
-    for (int j = i - 1; j >= 0; --j) {
+    for (size_t j = 0; j < i; ++j) {
       const Display* source_display = sorted_displays[j];
       const gfx::Rect source_bounds = source_display->bounds();
       const gfx::Rect target_bounds = target_display->bounds();
@@ -294,8 +322,9 @@ void DeIntersectDisplays(int64_t primary_id,
                                placement_list);
   }
 
-  // The offsets might have changed and we must update them.
-  UpdateOffsets(display_list, placement_list);
+  // New placements might have been added and offsets might have changed and we
+  // must update them.
+  UpdatePlacementList(display_list, placement_list);
 }
 
 }  // namespace

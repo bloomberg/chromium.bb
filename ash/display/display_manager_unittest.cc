@@ -526,22 +526,22 @@ TEST_P(DisplayManagerTest, NoOverlappedDisplays) {
 
     EXPECT_EQ(8U, display_manager()->GetNumDisplays());
 
-    EXPECT_EQ("0,0 480x400",
-              display_manager()->GetDisplayAt(0).bounds().ToString());
-    EXPECT_EQ("50,400 480x400",
-              display_manager()->GetDisplayAt(1).bounds().ToString());
-    EXPECT_EQ("480,0 480x400",
-              display_manager()->GetDisplayAt(2).bounds().ToString());
-    EXPECT_EQ("960,30 480x400",
-              display_manager()->GetDisplayAt(3).bounds().ToString());
-    EXPECT_EQ("730,430 480x400",
-              display_manager()->GetDisplayAt(4).bounds().ToString());
-    EXPECT_EQ("-730,-300 480x400",
-              display_manager()->GetDisplayAt(5).bounds().ToString());
-    EXPECT_EQ("-250,-400 480x400",
-              display_manager()->GetDisplayAt(6).bounds().ToString());
-    EXPECT_EQ("-780,-450 530x150",
-              display_manager()->GetDisplayAt(7).bounds().ToString());
+    EXPECT_EQ(gfx::Rect(0, 0, 480, 400),
+              display_manager()->GetDisplayAt(0).bounds());
+    EXPECT_EQ(gfx::Rect(50, 400, 480, 400),
+              display_manager()->GetDisplayAt(1).bounds());
+    EXPECT_EQ(gfx::Rect(480, 0, 480, 400),
+              display_manager()->GetDisplayAt(2).bounds());
+    EXPECT_EQ(gfx::Rect(960, 30, 480, 400),
+              display_manager()->GetDisplayAt(3).bounds());
+    EXPECT_EQ(gfx::Rect(730, 430, 480, 400),
+              display_manager()->GetDisplayAt(4).bounds());
+    EXPECT_EQ(gfx::Rect(-730, -300, 480, 400),
+              display_manager()->GetDisplayAt(5).bounds());
+    EXPECT_EQ(gfx::Rect(-250, -400, 480, 400),
+              display_manager()->GetDisplayAt(6).bounds());
+    EXPECT_EQ(gfx::Rect(-780, -450, 530, 150),
+              display_manager()->GetDisplayAt(7).bounds());
 
     // Expect that the displays have been reparented correctly, such that a
     // child is always touching its parent.
@@ -618,14 +618,14 @@ TEST_P(DisplayManagerTest, NoOverlappedDisplays) {
     //
 
     EXPECT_EQ(4U, display_manager()->GetNumDisplays());
-    EXPECT_EQ("0,0 696x800",
-              display_manager()->GetDisplayAt(0).bounds().ToString());
-    EXPECT_EQ("0,800 696x800",
-              display_manager()->GetDisplayAt(1).bounds().ToString());
-    EXPECT_EQ("696,800 300x800",
-              display_manager()->GetDisplayAt(2).bounds().ToString());
-    EXPECT_EQ("996,100 696x800",
-              display_manager()->GetDisplayAt(3).bounds().ToString());
+    EXPECT_EQ(gfx::Rect(0, 0, 696, 800),
+              display_manager()->GetDisplayAt(0).bounds());
+    EXPECT_EQ(gfx::Rect(0, 800, 696, 800),
+              display_manager()->GetDisplayAt(1).bounds());
+    EXPECT_EQ(gfx::Rect(696, 800, 300, 800),
+              display_manager()->GetDisplayAt(2).bounds());
+    EXPECT_EQ(gfx::Rect(996, 100, 696, 800),
+              display_manager()->GetDisplayAt(3).bounds());
 
     // This case if not handled correctly might lead to a cyclic dependency.
     // Make sure this doesn't happen.
@@ -683,12 +683,12 @@ TEST_P(DisplayManagerTest, NoOverlappedDisplays) {
     // +---------+
 
     EXPECT_EQ(3U, display_manager()->GetNumDisplays());
-    EXPECT_EQ("0,0 696x500",
-              display_manager()->GetDisplayAt(0).bounds().ToString());
-    EXPECT_EQ("-696,0 696x500",
-              display_manager()->GetDisplayAt(1).bounds().ToString());
-    EXPECT_EQ("-696,500 696x500",
-              display_manager()->GetDisplayAt(2).bounds().ToString());
+    EXPECT_EQ(gfx::Rect(0, 0, 696, 500),
+              display_manager()->GetDisplayAt(0).bounds());
+    EXPECT_EQ(gfx::Rect(-696, 0, 696, 500),
+              display_manager()->GetDisplayAt(1).bounds());
+    EXPECT_EQ(gfx::Rect(-696, 500, 696, 500),
+              display_manager()->GetDisplayAt(2).bounds());
   }
 
   {
@@ -735,12 +735,12 @@ TEST_P(DisplayManagerTest, NoOverlappedDisplays) {
     //
 
     EXPECT_EQ(3U, display_manager()->GetNumDisplays());
-    EXPECT_EQ("0,0 696x500",
-              display_manager()->GetDisplayAt(0).bounds().ToString());
-    EXPECT_EQ("0,-500 696x500",
-              display_manager()->GetDisplayAt(1).bounds().ToString());
-    EXPECT_EQ("-696,-500 696x500",
-              display_manager()->GetDisplayAt(2).bounds().ToString());
+    EXPECT_EQ(gfx::Rect(0, 0, 696, 500),
+              display_manager()->GetDisplayAt(0).bounds());
+    EXPECT_EQ(gfx::Rect(0, -500, 696, 500),
+              display_manager()->GetDisplayAt(1).bounds());
+    EXPECT_EQ(gfx::Rect(-696, -500, 696, 500),
+              display_manager()->GetDisplayAt(2).bounds());
   }
 }
 
@@ -788,14 +788,14 @@ TEST_P(DisplayManagerTest, NoOverlappedDisplaysNotFitBetweenTwo) {
   //
 
   EXPECT_EQ(4U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0,0 1200x500",
-            display_manager()->GetDisplayAt(0).bounds().ToString());
-  EXPECT_EQ("-110,-500 600x500",
-            display_manager()->GetDisplayAt(1).bounds().ToString());
-  EXPECT_EQ("490,-500 600x500",
-            display_manager()->GetDisplayAt(2).bounds().ToString());
-  EXPECT_EQ("1090,-500 600x500",
-            display_manager()->GetDisplayAt(3).bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 1200, 500),
+            display_manager()->GetDisplayAt(0).bounds());
+  EXPECT_EQ(gfx::Rect(-110, -500, 600, 500),
+            display_manager()->GetDisplayAt(1).bounds());
+  EXPECT_EQ(gfx::Rect(490, -500, 600, 500),
+            display_manager()->GetDisplayAt(2).bounds());
+  EXPECT_EQ(gfx::Rect(1090, -500, 600, 500),
+            display_manager()->GetDisplayAt(3).bounds());
 }
 
 TEST_P(DisplayManagerTest, NoOverlappedDisplaysAfterResolutionChange) {
@@ -839,16 +839,16 @@ TEST_P(DisplayManagerTest, NoOverlappedDisplaysAfterResolutionChange) {
 
   // There should be no overlap at all.
   EXPECT_EQ(5U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0,0 1000x500",
-            display_manager()->GetDisplayAt(0).bounds().ToString());
-  EXPECT_EQ("-250,-500 500x500",
-            display_manager()->GetDisplayAt(1).bounds().ToString());
-  EXPECT_EQ("250,-500 500x500",
-            display_manager()->GetDisplayAt(2).bounds().ToString());
-  EXPECT_EQ("750,-500 500x500",
-            display_manager()->GetDisplayAt(3).bounds().ToString());
-  EXPECT_EQ("0,-1000 1000x500",
-            display_manager()->GetDisplayAt(4).bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 1000, 500),
+            display_manager()->GetDisplayAt(0).bounds());
+  EXPECT_EQ(gfx::Rect(-250, -500, 500, 500),
+            display_manager()->GetDisplayAt(1).bounds());
+  EXPECT_EQ(gfx::Rect(250, -500, 500, 500),
+            display_manager()->GetDisplayAt(2).bounds());
+  EXPECT_EQ(gfx::Rect(750, -500, 500, 500),
+            display_manager()->GetDisplayAt(3).bounds());
+  EXPECT_EQ(gfx::Rect(0, -1000, 1000, 500),
+            display_manager()->GetDisplayAt(4).bounds());
 
   // Change the resolution of display (2) and expect the following layout.
   //
@@ -875,16 +875,103 @@ TEST_P(DisplayManagerTest, NoOverlappedDisplaysAfterResolutionChange) {
   UpdateDisplay("1000x500,500x500,600x600,500x500,1000x500");
 
   EXPECT_EQ(5U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0,0 1000x500",
-            display_manager()->GetDisplayAt(0).bounds().ToString());
-  EXPECT_EQ("-250,-500 500x500",
-            display_manager()->GetDisplayAt(1).bounds().ToString());
-  EXPECT_EQ("250,-600 600x600",
-            display_manager()->GetDisplayAt(2).bounds().ToString());
-  EXPECT_EQ("850,-500 500x500",
-            display_manager()->GetDisplayAt(3).bounds().ToString());
-  EXPECT_EQ("0,-1100 1000x500",
-            display_manager()->GetDisplayAt(4).bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 1000, 500),
+            display_manager()->GetDisplayAt(0).bounds());
+  EXPECT_EQ(gfx::Rect(-250, -500, 500, 500),
+            display_manager()->GetDisplayAt(1).bounds());
+  EXPECT_EQ(gfx::Rect(250, -600, 600, 600),
+            display_manager()->GetDisplayAt(2).bounds());
+  EXPECT_EQ(gfx::Rect(850, -500, 500, 500),
+            display_manager()->GetDisplayAt(3).bounds());
+  EXPECT_EQ(gfx::Rect(0, -1100, 1000, 500),
+            display_manager()->GetDisplayAt(4).bounds());
+}
+
+TEST_P(DisplayManagerTest, NoOverlappedDisplaysWithDetachedDisplays) {
+  // Detached displays that intersect other non-detached displays.
+  //
+  //    +---------+---------+---------+
+  //    |    1    |    2    |    3    |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    +----+----+-----+---+----+----+
+  //         |  4, 5    | P      |
+  //         | detached |        |
+  //         |          |        |
+  //         +----------+        |
+  //         +-------------------+
+  //
+
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayIdList list = display::test::CreateDisplayIdListN(
+      6, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
+      primary_id + 4, primary_id + 5);
+  display::DisplayLayoutBuilder builder(primary_id);
+  builder.AddDisplayPlacement(list[1], primary_id,
+                              display::DisplayPlacement::TOP, -250);
+  builder.AddDisplayPlacement(list[2], primary_id,
+                              display::DisplayPlacement::TOP, 250);
+  builder.AddDisplayPlacement(list[3], primary_id,
+                              display::DisplayPlacement::TOP, 750);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
+  UpdateDisplay("1000x500,500x500,500x500,500x500,500x400,500x400");
+
+  // Detached displays will be de-intersected and reparented appropriately.
+  //
+  //    +---------+---------+---------+
+  //    |    1    |    2    |    3    |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    +----+----+---------+----+----+
+  //         |         P         |
+  //         |                   |
+  //         |                   |
+  //         |                   |
+  //         +----------+--------+
+  //         |     4    |
+  //         |          |
+  //         |          |
+  //         +----------+
+  //         |     5    |
+  //         |          |
+  //         |          |
+  //         +----------+
+  //
+
+  EXPECT_EQ(6U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(gfx::Rect(0, 0, 1000, 500),
+            display_manager()->GetDisplayAt(0).bounds());
+  EXPECT_EQ(gfx::Rect(-250, -500, 500, 500),
+            display_manager()->GetDisplayAt(1).bounds());
+  EXPECT_EQ(gfx::Rect(250, -500, 500, 500),
+            display_manager()->GetDisplayAt(2).bounds());
+  EXPECT_EQ(gfx::Rect(750, -500, 500, 500),
+            display_manager()->GetDisplayAt(3).bounds());
+  EXPECT_EQ(gfx::Rect(0, 500, 500, 400),
+            display_manager()->GetDisplayAt(4).bounds());
+  EXPECT_EQ(gfx::Rect(0, 900, 500, 400),
+            display_manager()->GetDisplayAt(5).bounds());
+
+  // This case if not handled correctly might lead to a cyclic dependency.
+  // Make sure this doesn't happen.
+  display::DisplayLayoutBuilder expected_layout_builder(primary_id);
+  expected_layout_builder.AddDisplayPlacement(
+      list[1], primary_id, display::DisplayPlacement::TOP, -250);
+  expected_layout_builder.AddDisplayPlacement(
+      list[2], primary_id, display::DisplayPlacement::TOP, 250);
+  expected_layout_builder.AddDisplayPlacement(
+      list[3], primary_id, display::DisplayPlacement::TOP, 750);
+  expected_layout_builder.AddDisplayPlacement(
+      list[4], primary_id, display::DisplayPlacement::BOTTOM, 0);
+  expected_layout_builder.AddDisplayPlacement(
+      list[5], list[4], display::DisplayPlacement::BOTTOM, 0);
+
+  const display::DisplayLayout& layout =
+      display_manager()->GetCurrentResolvedDisplayLayout();
+  EXPECT_TRUE(layout.HasSamePlacementList(*(expected_layout_builder.Build())));
 }
 
 TEST_P(DisplayManagerTest, NoMirrorInThreeDisplays) {
