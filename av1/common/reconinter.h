@@ -177,13 +177,30 @@ typedef struct {
 
 extern const wedge_params_type wedge_params_lookup[BLOCK_SIZES];
 
-static INLINE int get_wedge_bits_lookup(BLOCK_SIZE sb_type) {
-  return wedge_params_lookup[sb_type].bits;
+static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
+                                              BLOCK_SIZE sb_type) {
+  switch (type) {
+    case COMPOUND_AVERAGE: (void)sb_type; return 1;
+    case COMPOUND_WEDGE: return wedge_params_lookup[sb_type].bits > 0;
+#if CONFIG_COMPOUND_SEGMENT
+    case COMPOUND_SEG: return sb_type >= BLOCK_8X8;
+#endif  // CONFIG_COMPOUND_SEGMENT
+    default: assert(0); return 0;
+  }
 }
 
-static INLINE int is_interinter_wedge_used(BLOCK_SIZE sb_type) {
-  (void)sb_type;
-  return wedge_params_lookup[sb_type].bits > 0;
+static INLINE int is_any_masked_compound_used(BLOCK_SIZE sb_type) {
+  COMPOUND_TYPE comp_type;
+  for (comp_type = 0; comp_type < COMPOUND_TYPES; comp_type++) {
+    if (is_masked_compound_type(comp_type) &&
+        is_interinter_compound_used(comp_type, sb_type))
+      return 1;
+  }
+  return 0;
+}
+
+static INLINE int get_wedge_bits_lookup(BLOCK_SIZE sb_type) {
+  return wedge_params_lookup[sb_type].bits;
 }
 
 static INLINE int get_interinter_wedge_bits(BLOCK_SIZE sb_type) {

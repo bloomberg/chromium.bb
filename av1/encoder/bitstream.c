@@ -1714,7 +1714,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if CONFIG_MOTION_VAR
         && mbmi->motion_mode == SIMPLE_TRANSLATION
 #endif  // CONFIG_MOTION_VAR
-        ) {
+        && is_any_masked_compound_used(bsize)) {
       av1_write_token(
           w, av1_compound_type_tree, cm->fc->compound_type_prob[bsize],
           &compound_type_encodings[mbmi->interinter_compound_data.type]);
