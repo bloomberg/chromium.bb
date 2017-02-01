@@ -37,8 +37,10 @@ Note that while it may be possible to build a discrete physical package (DSO)
 for each service, products consuming these services may package them
 differently, e.g. by combining them into a single package.
 
-### High-level Design Doc
-https://docs.google.com/document/d/15I7sQyQo6zsqXVNAlVd520tdGaS8FCicZHrN0yRu-oU/edit#heading=h.p37l9e7o0io5
+### Documentation
+
+[High-level Design Doc](https://docs.google.com/document/d/15I7sQyQo6zsqXVNAlVd520tdGaS8FCicZHrN0yRu-oU)
+[Homepage](https://sites.google.com/a/chromium.org/dev/servicification)
 
 ### Relationship to other top-level directories in //
 
@@ -51,3 +53,8 @@ Not everything in //components is automatically a service in its own right.
 Think of //components as sort of like a //lib. Individual //components can
 define, implement and use mojom interfaces, but only //services have unique
 identities with the Service Manager.
+
+### Adding a new service
+
+Please start a thread on [services-dev](https://groups.google.com/a/chromium.org/forum/#!forum/services-dev)
+
