@@ -5481,6 +5481,11 @@
      {}
     ]
    ],
+   "html/browsers/browsing-the-web/history-traversal/browsing_context_name-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin-expected.txt": [
     [
      {}
@@ -12356,6 +12361,11 @@
      {}
     ]
    ],
+   "html/semantics/forms/resetting-a-form/reset-form-event-realm-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/forms/resetting-a-form/reset-form-event-realm-support.html": [
     [
      {}
@@ -12751,6 +12761,36 @@
      {}
     ]
    ],
+   "html/semantics/scripting-1/the-script-element/nomodule-reflect-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-async-classic-script-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-classic-scripts-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/scripting-1/the-script-element/resources/cocoa-module.js": [
     [
      {}
@@ -13027,6 +13067,11 @@
     ]
    ],
    "html/semantics/tabular-data/processing-model-1/contains.json": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/tabular-data/the-table-element/caption-methods-expected.txt": [
     [
      {}
     ]
@@ -15631,12 +15676,32 @@
      {}
     ]
    ],
+   "streams/writable-streams/aborting-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/aborting.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/aborting.js": [
     [
      {}
     ]
    ],
    "streams/writable-streams/aborting.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/aborting.sharedworker-expected.txt": [
     [
      {}
     ]
@@ -15731,12 +15796,32 @@
      {}
     ]
    ],
+   "streams/writable-streams/write-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/write.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/write.js": [
     [
      {}
     ]
    ],
    "streams/writable-streams/write.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/write.serviceworker.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/write.sharedworker-expected.txt": [
     [
      {}
     ]
@@ -37022,7 +37107,7 @@
    "testharness"
   ],
   "dom/nodes/NodeList-Iterable.html": [
-   "400fd40433167da7c467d505a75bcd6a51208ffc",
+   "0f809f6016bd766de6cfc5a36588c0e3ef76ffa4",
    "testharness"
   ],
   "dom/nodes/ParentNode-append.html": [
@@ -38783,6 +38868,10 @@
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name-4.html": [
    "49574225da2bf97149ccb0c486c85f1e88cb8848",
+   "support"
+  ],
+  "html/browsers/browsing-the-web/history-traversal/browsing_context_name-expected.txt": [
+   "0c19b464438b309f5d793493d134beb4b9a90a69",
    "support"
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name.html": [
@@ -46362,7 +46451,7 @@
    "testharness"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/dynamic-append-expected.txt": [
-   "dbf17ca8e33bca9bc2c67390a704c824cd4ff04a",
+   "3019cb4298d56821c32afc59e26d14db0a664004",
    "support"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/dynamic-append.html": [
@@ -47445,6 +47534,10 @@
    "2b9329c270fb73a2ab60f5e9549afdfa91a13522",
    "testharness"
   ],
+  "html/semantics/forms/resetting-a-form/reset-form-event-realm-expected.txt": [
+   "728bc460329a1570ada84e2802bc0ccb8a618cc1",
+   "support"
+  ],
   "html/semantics/forms/resetting-a-form/reset-form-event-realm-support.html": [
    "2530f8b46c8ec015b165deec1c99e0a495325073",
    "support"
@@ -48401,25 +48494,49 @@
    "12842b6e600ac2fc737718d8a9ba3385ed8b678b",
    "support"
   ],
+  "html/semantics/scripting-1/the-script-element/nomodule-reflect-expected.txt": [
+   "4b3d01ab4fad799660d3bb3c4b0637ee58a9dd29",
+   "support"
+  ],
   "html/semantics/scripting-1/the-script-element/nomodule-reflect.html": [
    "ac2b3c16e9e9263cd4c14de205b63709c14ec2e3",
    "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-async-classic-script-expected.txt": [
+   "59cc2ed73a7042c5bc4af507141c3c98853227ed",
+   "support"
   ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-async-classic-script.html": [
    "5b4a532b21caa6235bed10a28878c65523a816aa",
    "testharness"
   ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script-expected.txt": [
+   "a13d8342a5609d4337515425ce2b0995738a7382",
+   "support"
+  ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script.html": [
    "f43755d9dffe2983a377f2c00b855f106776b617",
    "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-classic-scripts-expected.txt": [
+   "978ff3c903965984600e3cf06f68dd6877db7480",
+   "support"
   ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-classic-scripts.html": [
    "2b6654342c5a2e2d85df2bc8ec805b5fa7ed1550",
    "testharness"
   ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script-expected.txt": [
+   "780ea239d63f5467ed16c5d49413c8391b81b70c",
+   "support"
+  ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script.html": [
    "071d6550f88d5f04de77fd28a314dbc7121b758f",
    "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts-expected.txt": [
+   "277836f9b4f884c319a831e99ef12e093d2b4609",
+   "support"
   ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts.html": [
    "a5600b1fcb40e3dbdf223fbeee40c0a3f096eed1",
@@ -48876,6 +48993,10 @@
   "html/semantics/tabular-data/the-caption-element/caption_001.html": [
    "6d453a0e49fd4def6c17d3ab3fa7b663ca323ae3",
    "testharness"
+  ],
+  "html/semantics/tabular-data/the-table-element/caption-methods-expected.txt": [
+   "013faa4f75b482c177a16a219b72bf198447ddda",
+   "support"
   ],
   "html/semantics/tabular-data/the-table-element/caption-methods.html": [
    "86605a4059ee7f25c555de2ad7f721beb566b2df",
@@ -51722,7 +51843,7 @@
    "testharness"
   ],
   "service-workers/service-worker/extendable-event-async-waituntil.https-expected.txt": [
-   "a0677f6f88950b9f4ea2618033c238db0f571fbe",
+   "82afec2df99c748dce987bfd033305a1ea1656cf",
    "support"
   ],
   "service-workers/service-worker/extendable-event-async-waituntil.https.html": [
@@ -51770,7 +51891,7 @@
    "testharness"
   ],
   "service-workers/service-worker/fetch-event.https-expected.txt": [
-   "0fb061d22b69015959ffd6be0c57f4bed778e9a2",
+   "c365630410e75df3d804e25764b0b1f7d1ebed73",
    "support"
   ],
   "service-workers/service-worker/fetch-event.https.html": [
@@ -53929,6 +54050,14 @@
    "099c7bce47262455ad4c51e59a2c92f5f6a9eb9c",
    "support"
   ],
+  "streams/writable-streams/aborting-expected.txt": [
+   "79d55e510d5da8a2440c93a7b1c9d3a0e75114ae",
+   "support"
+  ],
+  "streams/writable-streams/aborting.dedicatedworker-expected.txt": [
+   "79d55e510d5da8a2440c93a7b1c9d3a0e75114ae",
+   "support"
+  ],
   "streams/writable-streams/aborting.dedicatedworker.html": [
    "89cfc3ba5cfbb426b6ac60c32aa5cfe9dd0ad8b4",
    "testharness"
@@ -53945,9 +54074,17 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
+  "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
+   "4e6d368665753be3203254eb6d468c56ef4e0349",
+   "support"
+  ],
   "streams/writable-streams/aborting.serviceworker.https.html": [
    "b69530ebf51ccaf781ff78172be2f4607ee22c86",
    "testharness"
+  ],
+  "streams/writable-streams/aborting.sharedworker-expected.txt": [
+   "79d55e510d5da8a2440c93a7b1c9d3a0e75114ae",
+   "support"
   ],
   "streams/writable-streams/aborting.sharedworker.html": [
    "9e792fad19cd10a96440478cb7e0486f41b70bf4",
@@ -54169,6 +54306,14 @@
    "1117ab179967063a1cdfba17cfc1c47b013bf39d",
    "testharness"
   ],
+  "streams/writable-streams/write-expected.txt": [
+   "f862eebce0dcdc544dc888eb48cfe8a070294a0f",
+   "support"
+  ],
+  "streams/writable-streams/write.dedicatedworker-expected.txt": [
+   "f862eebce0dcdc544dc888eb48cfe8a070294a0f",
+   "support"
+  ],
   "streams/writable-streams/write.dedicatedworker.html": [
    "acf001a2d0b9803a5269ca637f135ff175c7488a",
    "testharness"
@@ -54185,9 +54330,17 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
+  "streams/writable-streams/write.serviceworker.https-expected.txt": [
+   "949d27cacfc718f728c9ead81c09b648971c931b",
+   "support"
+  ],
   "streams/writable-streams/write.serviceworker.https.html": [
    "e9714118595843498ed1a54228dc7006fffbc793",
    "testharness"
+  ],
+  "streams/writable-streams/write.sharedworker-expected.txt": [
+   "f862eebce0dcdc544dc888eb48cfe8a070294a0f",
+   "support"
   ],
   "streams/writable-streams/write.sharedworker.html": [
    "f56e65526d831e3bbc3ed1f6d7faee0096781580",
