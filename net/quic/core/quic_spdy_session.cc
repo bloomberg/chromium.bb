@@ -4,7 +4,6 @@
 
 #include "net/quic/core/quic_spdy_session.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <utility>
