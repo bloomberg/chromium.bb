@@ -20,8 +20,6 @@ namespace {
 const char kLoadMediaRouterComponentExtensionFlag[] =
     "load-media-router-component-extension";
 
-const char kExtensionActionRedesignExperiment[] = "ExtensionActionRedesign";
-
 class CommonSwitches {
  public:
   CommonSwitches()
@@ -42,9 +40,7 @@ class CommonSwitches {
         error_console(switches::kErrorConsole, FeatureSwitch::DEFAULT_DISABLED),
         enable_override_bookmarks_ui(switches::kEnableOverrideBookmarksUI,
                                      FeatureSwitch::DEFAULT_DISABLED),
-        extension_action_redesign(switches::kExtensionActionRedesign,
-                                  kExtensionActionRedesignExperiment,
-                                  FeatureSwitch::DEFAULT_ENABLED),
+        extension_action_redesign(nullptr, FeatureSwitch::DEFAULT_ENABLED),
         scripts_require_action(switches::kScriptsRequireAction,
                                FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,

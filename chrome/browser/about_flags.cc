@@ -1433,12 +1433,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"drop-sync-credential", IDS_FLAGS_DROP_SYNC_CREDENTIAL_NAME,
      IDS_FLAGS_DROP_SYNC_CREDENTIAL_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kDropSyncCredential)},
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"enable-extension-action-redesign",
-     IDS_FLAGS_EXTENSION_ACTION_REDESIGN_NAME,
-     IDS_FLAGS_EXTENSION_ACTION_REDESIGN_DESCRIPTION, kOsDesktop,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableExtensionActionRedesign)},
-#endif  // ENABLE_EXTENSIONS
 #if !defined(OS_ANDROID)
     {"enable-message-center-always-scroll-up-upon-notification-removal",
      IDS_FLAGS_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_NAME,

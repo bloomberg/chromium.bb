@@ -734,21 +734,6 @@
             ]
         }
     ],
-    "ExtensionActionRedesign": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "ExtensionContentVerification": [
         {
             "platforms": [
