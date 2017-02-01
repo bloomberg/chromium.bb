@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -32,8 +33,10 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -65,6 +68,10 @@ const std::string kUTF8MidlineEllipsis =
     "\xE2\x80\xA2\xE2\x80\x86"
     "\xE2\x80\xA2\xE2\x80\x86"
     "\xE2\x80\xA2\xE2\x80\x86";
+
+const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
+const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
+const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
 
 ACTION(QuitMainMessageLoop) {
   base::MessageLoop::current()->QuitWhenIdle();
@@ -263,13 +270,14 @@ class PersonalDataManagerTest : public testing::Test {
                             "347666888555" /* American Express */, "04",
                             "2999");
     credit_card0.set_use_count(3);
-    credit_card0.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+    credit_card0.set_use_date(AutofillClock::Now() -
+                              base::TimeDelta::FromDays(1));
     personal_data_->AddCreditCard(credit_card0);
 
     CreditCard credit_card1("1141084B-72D7-4B73-90CF-3D6AC154673B",
                             "https://www.example.com");
     credit_card1.set_use_count(300);
-    credit_card1.set_use_date(base::Time::Now() -
+    credit_card1.set_use_date(AutofillClock::Now() -
                               base::TimeDelta::FromDays(10));
     test::SetCreditCardInfo(&credit_card1, "John Dillinger",
                             "423456789012" /* Visa */, "01", "2999");
@@ -278,7 +286,8 @@ class PersonalDataManagerTest : public testing::Test {
     CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
                             "https://www.example.com");
     credit_card2.set_use_count(1);
-    credit_card2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+    credit_card2.set_use_date(AutofillClock::Now() -
+                              base::TimeDelta::FromDays(1));
     test::SetCreditCardInfo(&credit_card2, "Bonnie Parker",
                             "518765432109" /* Mastercard */, "12", "2999");
     personal_data_->AddCreditCard(credit_card2);
@@ -417,6 +426,10 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
 
 // Test that a new profile has its basic information set.
 TEST_F(PersonalDataManagerTest, AddProfile_BasicInformation) {
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+
   // Add a profile to the database.
   AutofillProfile profile(test::GetFullProfile());
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("j@s.com"));
@@ -432,8 +445,8 @@ TEST_F(PersonalDataManagerTest, AddProfile_BasicInformation) {
 
   // Make sure the use count and use date were set.
   EXPECT_EQ(1U, results[0]->use_count());
-  EXPECT_NE(base::Time(), results[0]->use_date());
-  EXPECT_NE(base::Time(), results[0]->modification_date());
+  EXPECT_EQ(kArbitraryTime, results[0]->use_date());
+  EXPECT_EQ(kArbitraryTime, results[0]->modification_date());
 }
 
 TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
@@ -462,6 +475,11 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
                        "500 Oak View", "Apt 8", "Houston", "TX", "77401", "US",
                        "");
   EXPECT_TRUE(scraped_profile.IsSubsetOf(server_profiles.back(), "en-US"));
+
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+
   std::string saved_guid = personal_data_->SaveImportedProfile(scraped_profile);
   EXPECT_NE(scraped_profile.guid(), saved_guid);
 
@@ -474,10 +492,10 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
   EXPECT_EQ(0U, personal_data_->web_profiles().size());
   ASSERT_EQ(1U, personal_data_->GetProfiles().size());
 
-  // Verify that the server profile's use date was updated.
+  // Verify that the server profile's use date was updated with the specified
+  // value.
   const AutofillProfile* server_profile = personal_data_->GetProfiles()[0];
-  EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-            base::Time::Now() - server_profile->use_date());
+  EXPECT_EQ(kArbitraryTime, server_profile->use_date());
 }
 
 // Tests that SaveImportedProfile sets the modification date on new profiles.
@@ -489,7 +507,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
   EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-            base::Time::Now() - profiles[0]->modification_date());
+            AutofillClock::Now() - profiles[0]->modification_date());
 }
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
@@ -607,6 +625,10 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
 
 // Test that a new credit card has its basic information set.
 TEST_F(PersonalDataManagerTest, AddCreditCard_BasicInformation) {
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+
   // Add a credit to the database.
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
@@ -623,8 +645,8 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_BasicInformation) {
 
   // Make sure the use count and use date were set.
   EXPECT_EQ(1U, results[0]->use_count());
-  EXPECT_NE(base::Time(), results[0]->use_date());
-  EXPECT_NE(base::Time(), results[0]->modification_date());
+  EXPECT_EQ(kArbitraryTime, results[0]->use_date());
+  EXPECT_EQ(kArbitraryTime, results[0]->modification_date());
 }
 
 TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
@@ -3416,7 +3438,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
-  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile3.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
   profile3.set_use_count(5);
   personal_data_->AddProfile(profile3);
 
@@ -3425,7 +3447,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
-  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
   profile1.set_use_count(10);
   personal_data_->AddProfile(profile1);
 
@@ -3434,7 +3456,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
-  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(15));
   profile2.set_use_count(300);
   personal_data_->AddProfile(profile2);
 
@@ -3583,7 +3605,7 @@ TEST_F(PersonalDataManagerTest,
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
                           "2999");
   server_cards.back().set_use_count(2);
-  server_cards.back().set_use_date(base::Time::Now() -
+  server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(1));
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
@@ -3591,7 +3613,7 @@ TEST_F(PersonalDataManagerTest,
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
                           "2999");
   server_cards.back().set_use_count(6);
-  server_cards.back().set_use_date(base::Time::Now() -
+  server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(1));
 
   test::SetServerCreditCards(autofill_table_, server_cards);
@@ -3632,14 +3654,16 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ExpiredCards) {
   test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "1999");
   credit_card1.set_use_count(300);
-  credit_card1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
+  credit_card1.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(10));
   personal_data_->AddCreditCard(credit_card1);
 
   // Add an expired card with a lower frecency score.
   CreditCard credit_card2("1141084B-72D7-4B73-90CF-3D6AC154673B",
                           "https://www.example.com");
   credit_card2.set_use_count(3);
-  credit_card2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  credit_card2.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(1));
   test::SetCreditCardInfo(&credit_card2, "John Dillinger",
                           "423456789012" /* Visa */, "01", "1998");
   personal_data_->AddCreditCard(credit_card2);
@@ -3675,13 +3699,15 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
   test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2999");
   credit_card0.set_use_count(3);
-  credit_card0.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  credit_card0.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(1));
   personal_data_->AddCreditCard(credit_card0);
 
   CreditCard credit_card1("1141084B-72D7-4B73-90CF-3D6AC154673B",
                           "https://www.example.com");
   credit_card1.set_use_count(300);
-  credit_card1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
+  credit_card1.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(10));
   test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2999");
   personal_data_->AddCreditCard(credit_card1);
 
@@ -3718,7 +3744,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "9012" /* Visa */, "01", "2999");
   server_cards.back().set_use_count(2);
-  server_cards.back().set_use_date(base::Time::Now() -
+  server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(15));
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
@@ -3728,7 +3754,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker", "2109", "12",
                           "2999");
   server_cards.back().set_use_count(3);
-  server_cards.back().set_use_date(base::Time::Now() -
+  server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(15));
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
@@ -3739,7 +3765,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2999");
   server_cards.back().set_use_count(1);
-  server_cards.back().set_use_date(base::Time::Now() -
+  server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(15));
 
   test::SetServerCreditCards(autofill_table_, server_cards);
@@ -3826,7 +3852,7 @@ TEST_F(PersonalDataManagerTest,
   test::SetCreditCardInfo(&local_card, "Homer Simpson",
                           "423456789012" /* Visa */, "01", "2999");
   local_card.set_use_count(3);
-  local_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  local_card.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
   credit_cards.push_back(&local_card);
 
   // Create a full server card that is a duplicate of one of the local cards.
@@ -3834,7 +3860,7 @@ TEST_F(PersonalDataManagerTest,
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
                           "423456789012" /* Visa */, "01", "2999");
   full_server_card.set_use_count(1);
-  full_server_card.set_use_date(base::Time::Now() -
+  full_server_card.set_use_date(AutofillClock::Now() -
                                 base::TimeDelta::FromDays(15));
   credit_cards.push_back(&full_server_card);
 
@@ -3853,7 +3879,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
   CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
                         "https://www.example.com");
   local_card.set_use_count(300);
-  local_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
+  local_card.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(10));
   test::SetCreditCardInfo(&local_card, "Homer Simpson",
                           "423456789012" /* Visa */, "01", "2999");
   credit_cards.push_back(&local_card);
@@ -3863,7 +3889,8 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
   test::SetCreditCardInfo(&masked_card, "Homer Simpson", "9012" /* Visa */,
                           "01", "2999");
   masked_card.set_use_count(2);
-  masked_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  masked_card.set_use_date(AutofillClock::Now() -
+                           base::TimeDelta::FromDays(15));
   masked_card.SetTypeForMaskedCard(kVisaCard);
   credit_cards.push_back(&masked_card);
 
@@ -3883,7 +3910,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
                           "423456789012" /* Visa */, "01", "2999");
   full_server_card.set_use_count(1);
-  full_server_card.set_use_date(base::Time::Now() -
+  full_server_card.set_use_date(AutofillClock::Now() -
                                 base::TimeDelta::FromDays(15));
   credit_cards.push_back(&full_server_card);
 
@@ -3892,7 +3919,8 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   test::SetCreditCardInfo(&masked_card, "Homer Simpson", "9012" /* Visa */,
                           "01", "2999");
   masked_card.set_use_count(2);
-  masked_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  masked_card.set_use_date(AutofillClock::Now() -
+                           base::TimeDelta::FromDays(15));
   masked_card.SetTypeForMaskedCard(kVisaCard);
   credit_cards.push_back(&masked_card);
 
@@ -3908,7 +3936,8 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
                           "https://www.example.com");
   credit_card2.set_use_count(1);
-  credit_card2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  credit_card2.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(1));
   test::SetCreditCardInfo(&credit_card2, "Homer Simpson",
                           "518765432109" /* Mastercard */, "", "");
   credit_cards.push_back(&credit_card2);
@@ -3917,7 +3946,8 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   CreditCard credit_card4(CreditCard::MASKED_SERVER_CARD, "b456");
   test::SetCreditCardInfo(&credit_card4, "Homer Simpson", "2109", "12", "2999");
   credit_card4.set_use_count(3);
-  credit_card4.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  credit_card4.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(15));
   credit_card4.SetTypeForMaskedCard(kVisaCard);
   credit_cards.push_back(&credit_card4);
 
@@ -3927,7 +3957,8 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   test::SetCreditCardInfo(&credit_card5, "Homer Simpson",
                           "347666888555" /* American Express */, "04", "2999");
   credit_card5.set_use_count(1);
-  credit_card5.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  credit_card5.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(15));
   credit_cards.push_back(&credit_card5);
 
   PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
@@ -3935,29 +3966,30 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
 }
 
 TEST_F(PersonalDataManagerTest, RecordUseOf) {
-  base::Time creation_time = base::Time::FromTimeT(12345);
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
 
   AutofillProfile profile(test::GetFullProfile());
-  profile.set_use_date(creation_time);
-  profile.set_modification_date(creation_time);
   EXPECT_EQ(1U, profile.use_count());
-  EXPECT_EQ(creation_time, profile.use_date());
-  EXPECT_EQ(creation_time, profile.modification_date());
+  EXPECT_EQ(kArbitraryTime, profile.use_date());
+  EXPECT_EQ(kArbitraryTime, profile.modification_date());
   personal_data_->AddProfile(profile);
 
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
                           "423456789012" /* Visa */, "01", "2999");
-  credit_card.set_use_date(creation_time);
-  credit_card.set_modification_date(creation_time);
   EXPECT_EQ(1U, credit_card.use_count());
-  EXPECT_EQ(creation_time, credit_card.use_date());
-  EXPECT_EQ(creation_time, credit_card.modification_date());
+  EXPECT_EQ(kArbitraryTime, credit_card.use_date());
+  EXPECT_EQ(kArbitraryTime, credit_card.modification_date());
   personal_data_->AddCreditCard(credit_card);
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::RunLoop().Run();
+
+  // Set the current time to another value.
+  test_clock.SetNow(kSomeLaterTime);
 
   // Notify the PDM that the profile and credit card were used.
   AutofillProfile* added_profile =
@@ -3965,8 +3997,8 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   ASSERT_TRUE(added_profile);
   EXPECT_EQ(*added_profile, profile);
   EXPECT_EQ(1U, added_profile->use_count());
-  EXPECT_EQ(creation_time, added_profile->use_date());
-  EXPECT_NE(creation_time, added_profile->modification_date());
+  EXPECT_EQ(kArbitraryTime, added_profile->use_date());
+  EXPECT_EQ(kArbitraryTime, added_profile->modification_date());
   personal_data_->RecordUseOf(profile);
 
   CreditCard* added_card =
@@ -3974,8 +4006,8 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   ASSERT_TRUE(added_card);
   EXPECT_EQ(*added_card, credit_card);
   EXPECT_EQ(1U, added_card->use_count());
-  EXPECT_EQ(creation_time, added_card->use_date());
-  EXPECT_NE(creation_time, added_card->modification_date());
+  EXPECT_EQ(kArbitraryTime, added_card->use_date());
+  EXPECT_EQ(kArbitraryTime, added_card->modification_date());
   personal_data_->RecordUseOf(credit_card);
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -3986,14 +4018,14 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   added_profile = personal_data_->GetProfileByGUID(profile.guid());
   ASSERT_TRUE(added_profile);
   EXPECT_EQ(2U, added_profile->use_count());
-  EXPECT_NE(creation_time, added_profile->use_date());
-  EXPECT_NE(creation_time, added_profile->modification_date());
+  EXPECT_EQ(kSomeLaterTime, added_profile->use_date());
+  EXPECT_EQ(kArbitraryTime, added_profile->modification_date());
 
   added_card = personal_data_->GetCreditCardByGUID(credit_card.guid());
   ASSERT_TRUE(added_card);
   EXPECT_EQ(2U, added_card->use_count());
-  EXPECT_NE(creation_time, added_card->use_date());
-  EXPECT_NE(creation_time, added_card->modification_date());
+  EXPECT_EQ(kSomeLaterTime, added_card->use_date());
+  EXPECT_EQ(kArbitraryTime, added_card->modification_date());
 }
 
 TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
@@ -4013,6 +4045,10 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2999");
+
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -4052,17 +4088,21 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
     EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
 
   // For an unmasked card, usage data starts out as 2 because of the unmasking
-  // which is considered a use.
+  // which is considered a use. The use date should now be the specified Now()
+  // time kArbitraryTime.
   EXPECT_EQ(2U, personal_data_->GetCreditCards()[0]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[0]->use_date());
+  EXPECT_EQ(kArbitraryTime, personal_data_->GetCreditCards()[0]->use_date());
 
   EXPECT_EQ(1U, personal_data_->GetCreditCards()[1]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+  EXPECT_NE(kArbitraryTime, personal_data_->GetCreditCards()[1]->use_date());
 
-  // Having unmasked this card, usage stats should be 2 and Now().
+  // Having unmasked this card, usage stats should be 2 and
+  // kArbitraryTime.
   EXPECT_EQ(2U, personal_data_->GetCreditCards()[2]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
-  base::Time initial_use_date = personal_data_->GetCreditCards()[2]->use_date();
+  EXPECT_EQ(kArbitraryTime, personal_data_->GetCreditCards()[2]->use_date());
+
+  // Change the Now() value for a second time.
+  test_clock.SetNow(kSomeLaterTime);
 
   server_cards.back().set_guid(personal_data_->GetCreditCards()[2]->guid());
   personal_data_->RecordUseOf(server_cards.back());
@@ -4072,15 +4112,15 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
 
   EXPECT_EQ(2U, personal_data_->GetCreditCards()[0]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[0]->use_date());
+  EXPECT_EQ(kArbitraryTime, personal_data_->GetCreditCards()[0]->use_date());
 
   EXPECT_EQ(1U, personal_data_->GetCreditCards()[1]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+  EXPECT_NE(kArbitraryTime, personal_data_->GetCreditCards()[1]->use_date());
 
+  // The RecordUseOf call should have incremented the use_count to 3 and set the
+  // use_date to kSomeLaterTime.
   EXPECT_EQ(3U, personal_data_->GetCreditCards()[2]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
-  // Time may or may not have elapsed between unmasking and RecordUseOf.
-  EXPECT_LE(initial_use_date, personal_data_->GetCreditCards()[2]->use_date());
+  EXPECT_EQ(kSomeLaterTime, personal_data_->GetCreditCards()[2]->use_date());
 
   // Can record usage stats on masked cards.
   server_cards[1].set_guid(personal_data_->GetCreditCards()[1]->guid());
@@ -4090,7 +4130,10 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   base::RunLoop().Run();
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetCreditCards()[1]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+  EXPECT_EQ(kSomeLaterTime, personal_data_->GetCreditCards()[1]->use_date());
+
+  // Change Now()'s return value for a third time.
+  test_clock.SetNow(kMuchLaterTime);
 
   // Upgrading to unmasked retains the usage stats (and increments them).
   CreditCard* unmasked_card2 = &server_cards[1];
@@ -4105,7 +4148,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   base::RunLoop().Run();
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   EXPECT_EQ(3U, personal_data_->GetCreditCards()[1]->use_count());
-  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+  EXPECT_EQ(kMuchLaterTime, personal_data_->GetCreditCards()[1]->use_date());
 }
 
 TEST_F(PersonalDataManagerTest, ClearAllServerData) {
@@ -4523,10 +4566,10 @@ TEST_F(PersonalDataManagerTest, MAYBE_SaveImportedProfile) {
       // date were properly updated.
       EXPECT_EQ(1U, saved_profiles.front()->use_count());
       EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-                base::Time::Now() - saved_profiles.front()->use_date());
+                AutofillClock::Now() - saved_profiles.front()->use_date());
       EXPECT_GT(
           base::TimeDelta::FromMilliseconds(500),
-          base::Time::Now() - saved_profiles.front()->modification_date());
+          AutofillClock::Now() - saved_profiles.front()->modification_date());
     }
 
     // Erase the profiles for the next test.
@@ -4581,8 +4624,11 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
 #else
 #define MAYBE_MergeProfile_UsageStats MergeProfile_UsageStats
 #endif
-
 TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+
   // Create an initial profile with a use count of 10, an old use date and an
   // old modification date of 4 days ago.
   AutofillProfile* profile =
@@ -4591,13 +4637,15 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
   profile->set_use_count(4U);
-  profile->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(4));
-  profile->set_modification_date(base::Time::Now() -
-                                 base::TimeDelta::FromDays(4));
+  EXPECT_EQ(kArbitraryTime, profile->use_date());
+  EXPECT_EQ(kArbitraryTime, profile->modification_date());
 
   // Create the |existing_profiles| vector.
   std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
   existing_profiles.push_back(base::WrapUnique(profile));
+
+  // Change the current date.
+  test_clock.SetNow(kSomeLaterTime);
 
   // Create a new imported profile that will get merged with the existing one.
   AutofillProfile imported_profile(base::GenerateGUID(),
@@ -4605,6 +4653,9 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
   test::SetProfileInfo(&imported_profile, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "US", "12345678910");
+
+  // Change the current date.
+  test_clock.SetNow(kMuchLaterTime);
 
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
@@ -4615,12 +4666,12 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
   EXPECT_EQ(profile->guid(), guid);
   // The use count should have be max(4, 1) => 4.
   EXPECT_EQ(4U, profile->use_count());
-  // The use date and modification dates should have been set to less than 500
-  // milliseconds ago.
-  EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-            base::Time::Now() - profile->use_date());
-  EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-            base::Time::Now() - profile->modification_date());
+  // The use date should be the one of the most recent profile, which is
+  // kSecondArbitraryTime.
+  EXPECT_EQ(kSomeLaterTime, profile->use_date());
+  // Since the merge is considered a modification, the modification_date should
+  // be set to kMuchLaterTime.
+  EXPECT_EQ(kMuchLaterTime, profile->modification_date());
 }
 
 // Tests that DedupeProfiles sets the correct profile guids to
@@ -4854,7 +4905,7 @@ TEST_F(PersonalDataManagerTest,
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
   profile1.set_use_count(12);
-  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
 
   // Create a profile with a medium frecency score.
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
@@ -4862,7 +4913,7 @@ TEST_F(PersonalDataManagerTest,
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   profile2.set_use_count(5);
-  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(3));
 
   // Create a profile with a lower frecency score.
   AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
@@ -4870,7 +4921,7 @@ TEST_F(PersonalDataManagerTest,
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   profile3.set_use_count(3);
-  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+  profile3.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(5));
 
   // Create a set of two profiles to be merged together.
   // Create a profile with a higher frecency score.
@@ -4879,7 +4930,7 @@ TEST_F(PersonalDataManagerTest,
                        "marge.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
   profile4.set_use_count(11);
-  profile4.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile4.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
 
   // Create a profile with a lower frecency score.
   AutofillProfile profile5(base::GenerateGUID(), "https://www.example.com");
@@ -4887,7 +4938,7 @@ TEST_F(PersonalDataManagerTest,
                        "marge.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   profile5.set_use_count(5);
-  profile5.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile5.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(3));
 
   // Create a unique profile.
   AutofillProfile profile6(base::GenerateGUID(), "https://www.example.com");
@@ -4895,7 +4946,7 @@ TEST_F(PersonalDataManagerTest,
                        "bart.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   profile6.set_use_count(10);
-  profile6.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile6.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
 
   // Add three credit cards. Give them a frecency score so that they are
   // suggested in order (1, 2, 3). This will ensure a deterministic order for
@@ -4986,7 +5037,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MergedProfileValues) {
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
   profile1.set_use_count(10);
-  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
 
   // Create a profile with a medium frecency score.
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
@@ -4994,7 +5045,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MergedProfileValues) {
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   profile2.set_use_count(5);
-  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(3));
 
   // Create a profile with a lower frecency score.
   AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
@@ -5002,7 +5053,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MergedProfileValues) {
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   profile3.set_use_count(3);
-  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+  profile3.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(5));
 
   personal_data_->AddProfile(profile1);
   personal_data_->AddProfile(profile2);
@@ -5078,7 +5129,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileFirst) {
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   profile1.set_use_count(7);
-  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile1.set_use_date(kMuchLaterTime);
 
   // Create a similar non verified profile with a medium frecency score.
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
@@ -5086,7 +5137,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileFirst) {
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
   profile2.set_use_count(5);
-  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile2.set_use_date(kSomeLaterTime);
 
   // Create a similar non verified profile with a lower frecency score.
   AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
@@ -5094,7 +5145,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileFirst) {
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   profile3.set_use_count(3);
-  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+  profile3.set_use_date(kArbitraryTime);
 
   personal_data_->AddProfile(profile1);
   personal_data_->AddProfile(profile2);
@@ -5134,10 +5185,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileFirst) {
   EXPECT_EQ(profile1.guid(), profiles[0]->guid());
   EXPECT_TRUE(profile1 == *profiles[0]);
   EXPECT_EQ(profile1.use_count(), profiles[0]->use_count());
-  EXPECT_LT(profile1.use_date() - TimeDelta::FromSeconds(2),
-            profiles[0]->use_date());
-  EXPECT_GT(profile1.use_date() + TimeDelta::FromSeconds(2),
-            profiles[0]->use_date());
+  EXPECT_EQ(profile1.use_date(), profiles[0]->use_date());
 }
 
 // Tests that ApplyDedupingRoutine only keeps the verified profile with its
@@ -5150,7 +5198,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileLast) {
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
   profile1.set_use_count(5);
-  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile1.set_use_date(kMuchLaterTime);
 
   // Create a similar non verified profile with a medium frecency score.
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
@@ -5158,7 +5206,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileLast) {
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   profile2.set_use_count(5);
-  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile2.set_use_date(kSomeLaterTime);
 
   // Create a similar verified profile with a lower frecency score.
   AutofillProfile profile3(base::GenerateGUID(), kSettingsOrigin);
@@ -5166,7 +5214,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileLast) {
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   profile3.set_use_count(3);
-  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+  profile3.set_use_date(kArbitraryTime);
 
   personal_data_->AddProfile(profile1);
   personal_data_->AddProfile(profile2);
@@ -5202,14 +5250,11 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileLast) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.NumberOfProfilesRemovedDuringDedupe", 2, 1);
 
-  // Only the verified |profile2| with it's original data should have been kept.
+  // Only the verified |profile3| with it's original data should have been kept.
   EXPECT_EQ(profile3.guid(), profiles[0]->guid());
   EXPECT_TRUE(profile3 == *profiles[0]);
   EXPECT_EQ(profile3.use_count(), profiles[0]->use_count());
-  EXPECT_LT(profile3.use_date() - TimeDelta::FromSeconds(2),
-            profiles[0]->use_date());
-  EXPECT_GT(profile3.use_date() + TimeDelta::FromSeconds(2),
-            profiles[0]->use_date());
+  EXPECT_EQ(profile3.use_date(), profiles[0]->use_date());
 }
 
 // Tests that ApplyDedupingRoutine does not merge unverified data into
@@ -5221,7 +5266,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleVerifiedProfiles) {
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
   profile1.set_use_count(5);
-  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile1.set_use_date(kMuchLaterTime);
 
   // Create a similar verified profile with a medium frecency score.
   AutofillProfile profile2(base::GenerateGUID(), kSettingsOrigin);
@@ -5229,7 +5274,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleVerifiedProfiles) {
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   profile2.set_use_count(5);
-  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  profile2.set_use_date(kSomeLaterTime);
 
   // Create a similar verified profile with a lower frecency score.
   AutofillProfile profile3(base::GenerateGUID(), kSettingsOrigin);
@@ -5237,7 +5282,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleVerifiedProfiles) {
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   profile3.set_use_count(3);
-  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+  profile3.set_use_date(kArbitraryTime);
 
   personal_data_->AddProfile(profile1);
   personal_data_->AddProfile(profile2);
@@ -5284,14 +5329,8 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleVerifiedProfiles) {
   EXPECT_TRUE(profile3 == *profiles[1]);
   EXPECT_EQ(profile2.use_count(), profiles[0]->use_count());
   EXPECT_EQ(profile3.use_count(), profiles[1]->use_count());
-  EXPECT_LT(profile2.use_date() - TimeDelta::FromSeconds(2),
-            profiles[0]->use_date());
-  EXPECT_GT(profile2.use_date() + TimeDelta::FromSeconds(2),
-            profiles[0]->use_date());
-  EXPECT_LT(profile3.use_date() - TimeDelta::FromSeconds(2),
-            profiles[1]->use_date());
-  EXPECT_GT(profile3.use_date() + TimeDelta::FromSeconds(2),
-            profiles[1]->use_date());
+  EXPECT_EQ(profile2.use_date(), profiles[0]->use_date());
+  EXPECT_EQ(profile3.use_date(), profiles[1]->use_date());
 }
 
 // Tests that ApplyProfileUseDatesFix sets the use date of profiles from an
@@ -5308,6 +5347,7 @@ TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix) {
   test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile1.set_use_date(kArbitraryTime);
 
   // Create another profile and set its use date to the default value.
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
@@ -5330,13 +5370,16 @@ TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix) {
   ASSERT_EQ(2U, saved_profiles.size());
 
   // The use dates should not have been modified.
-  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(1),
-            saved_profiles[0]->use_date());
-  EXPECT_EQ(base::Time(), saved_profiles[1]->use_date());
+  EXPECT_EQ(profile1.use_date(), saved_profiles[0]->use_date());
+  EXPECT_EQ(profile2.use_date(), saved_profiles[1]->use_date());
 
   // Set the pref to false to indicate the fix has never been run.
   personal_data_->pref_service_->SetBoolean(
       prefs::kAutofillProfileUseDatesFixed, false);
+
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kSomeLaterTime);
 
   personal_data_->ApplyProfileUseDatesFix();
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -5349,12 +5392,9 @@ TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix) {
   ASSERT_EQ(2U, saved_profiles.size());
 
   // |profile1|'s use date should not have been modified.
-  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(1),
-            saved_profiles[0]->use_date());
+  EXPECT_LE(profile1.use_date(), saved_profiles[0]->use_date());
   // |profile2|'s use date should have been set to two weeks before now.
-  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(15),
-            saved_profiles[1]->use_date());
-  EXPECT_GE(base::Time::Now() - base::TimeDelta::FromDays(13),
+  EXPECT_EQ(kSomeLaterTime - base::TimeDelta::FromDays(14),
             saved_profiles[1]->use_date());
 }
 
@@ -5371,6 +5411,7 @@ TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix_NotAppliedTwice) {
   test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile1.set_use_date(kArbitraryTime);
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile2, "Marge", "", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
@@ -5391,8 +5432,7 @@ TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix_NotAppliedTwice) {
 
   ASSERT_EQ(2U, saved_profiles.size());
   // The use dates should not have been modified.
-  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(1),
-            saved_profiles[0]->use_date());
+  EXPECT_EQ(profile1.use_date(), saved_profiles[0]->use_date());
   EXPECT_EQ(base::Time(), saved_profiles[1]->use_date());
 }
 
@@ -5408,7 +5448,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
   Homer1.set_use_count(10);
-  Homer1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  Homer1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
 
   // Create a Homer home profile with a medium frecency score compared to other
   // Homer profiles.
@@ -5417,7 +5457,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   Homer2.set_use_count(5);
-  Homer2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  Homer2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(3));
 
   // Create a Homer home profile with a lower frecency score than other Homer
   // profiles.
@@ -5426,7 +5466,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "", "");
   Homer3.set_use_count(3);
-  Homer3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+  Homer3.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(5));
 
   // Create a Homer work profile (different address).
   AutofillProfile Homer4(base::GenerateGUID(), "https://www.example.com");
@@ -5434,7 +5474,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "homer.simpson@abc.com", "Fox", "12 Nuclear Plant.", "",
                        "Springfield", "IL", "91601", "US", "9876543");
   Homer4.set_use_count(3);
-  Homer4.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+  Homer4.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(5));
 
   // Create a Marge profile with a lower frecency score that other Marge
   // profiles.
@@ -5443,7 +5483,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "marge.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   Marge1.set_use_count(4);
-  Marge1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  Marge1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(3));
 
   // Create a verified Marge home profile with a lower frecency score that the
   // other Marge profile.
@@ -5452,7 +5492,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "marge.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "", "12345678910");
   Marge2.set_use_count(2);
-  Marge2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+  Marge2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(3));
 
   // Create a Barney profile (guest user).
   AutofillProfile Barney(base::GenerateGUID(), "https://www.example.com");
@@ -5460,7 +5500,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "ABC", "123 Other Street", "", "Springfield", "IL",
                        "91601", "", "");
   Barney.set_use_count(1);
-  Barney.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(180));
+  Barney.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(180));
 
   personal_data_->AddProfile(Homer1);
   personal_data_->AddProfile(Homer2);

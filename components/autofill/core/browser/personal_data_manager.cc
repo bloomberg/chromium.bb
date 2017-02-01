@@ -34,6 +34,7 @@
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -784,7 +785,7 @@ const std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
   std::vector<AutofillProfile*> profiles = GetProfiles(true);
 
   // Rank the suggestions by frecency (see AutofillDataModel for details).
-  base::Time comparison_time = base::Time::Now();
+  base::Time comparison_time = AutofillClock::Now();
   std::sort(profiles.begin(), profiles.end(),
             [comparison_time](const AutofillDataModel* a,
                               const AutofillDataModel* b) {
@@ -908,7 +909,7 @@ const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest()
 
   // Rank the cards by frecency (see AutofillDataModel for details). All expired
   // cards should be suggested last, also by frecency.
-  base::Time comparison_time = base::Time::Now();
+  base::Time comparison_time = AutofillClock::Now();
   std::stable_sort(cards_to_suggest.begin(), cards_to_suggest.end(),
                    [comparison_time](const CreditCard* a, const CreditCard* b) {
                      bool a_is_expired = a->IsExpired(comparison_time);
@@ -991,7 +992,7 @@ std::string PersonalDataManager::MergeProfile(
   // verified profiles get deduped among themselves before reaching the verified
   // profiles.
   // TODO(crbug.com/620521): Remove the check for verified from the sort.
-  base::Time comparison_time = base::Time::Now();
+  base::Time comparison_time = AutofillClock::Now();
   std::sort(existing_profiles->begin(), existing_profiles->end(),
             [comparison_time](const std::unique_ptr<AutofillProfile>& a,
                               const std::unique_ptr<AutofillProfile>& b) {
@@ -1024,7 +1025,7 @@ std::string PersonalDataManager::MergeProfile(
       // recently. After writing to the database and refreshing the local copies
       // the profile will have a very slightly newer time reflecting what's
       // actually stored in the database.
-      existing_profile->set_modification_date(base::Time::Now());
+      existing_profile->set_modification_date(AutofillClock::Now());
     }
     merged_profiles->push_back(*existing_profile);
   }
@@ -1034,7 +1035,7 @@ std::string PersonalDataManager::MergeProfile(
     merged_profiles->push_back(new_profile);
     // Similar to updating merged profiles above, set the modification date on
     // new profiles.
-    merged_profiles->back().set_modification_date(base::Time::Now());
+    merged_profiles->back().set_modification_date(AutofillClock::Now());
     AutofillMetrics::LogProfileActionOnFormSubmitted(
         AutofillMetrics::NEW_PROFILE_CREATED);
   }
@@ -1661,7 +1662,8 @@ void PersonalDataManager::ApplyProfileUseDatesFix() {
   bool has_changed_data = false;
   for (AutofillProfile* profile : web_profiles()) {
     if (profile->use_date() == base::Time()) {
-      profile->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(14));
+      profile->set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(14));
       has_changed_data = true;
     }
     profiles.push_back(*profile);
@@ -1742,7 +1744,7 @@ void PersonalDataManager::DedupeProfiles(
   // profiles, so the loop can be stopped when we reach those. However they need
   // to be in the vector because an unverified profile trying to merge into a
   // similar verified profile will be discarded.
-  base::Time comparison_time = base::Time::Now();
+  base::Time comparison_time = AutofillClock::Now();
   std::sort(existing_profiles->begin(), existing_profiles->end(),
             [comparison_time](const std::unique_ptr<AutofillProfile>& a,
                               const std::unique_ptr<AutofillProfile>& b) {

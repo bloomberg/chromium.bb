@@ -225,6 +225,8 @@ static_library("test_support") {
     "suggestion_test_helpers.h",
     "test_autofill_client.cc",
     "test_autofill_client.h",
+    "test_autofill_clock.cc",
+    "test_autofill_clock.h",
     "test_autofill_driver.cc",
     "test_autofill_driver.h",
     "test_autofill_external_delegate.cc",

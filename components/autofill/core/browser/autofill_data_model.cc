@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -16,8 +17,8 @@ AutofillDataModel::AutofillDataModel(const std::string& guid,
     : guid_(guid),
       origin_(origin),
       use_count_(1),
-      use_date_(base::Time::Now()),
-      modification_date_(base::Time::Now()) {}
+      use_date_(AutofillClock::Now()),
+      modification_date_(AutofillClock::Now()) {}
 AutofillDataModel::~AutofillDataModel() {}
 
 bool AutofillDataModel::IsVerified() const {
@@ -27,7 +28,7 @@ bool AutofillDataModel::IsVerified() const {
 // TODO(crbug.com/629507): Add support for injected mock clock for testing.
 void AutofillDataModel::RecordUse() {
   ++use_count_;
-  use_date_ = base::Time::Now();
+  use_date_ = AutofillClock::Now();
 }
 
 bool AutofillDataModel::CompareFrecency(const AutofillDataModel* other,

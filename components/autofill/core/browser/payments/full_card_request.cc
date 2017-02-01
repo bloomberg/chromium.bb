@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_clock.h"
 
 namespace autofill {
 namespace payments {
@@ -50,7 +51,7 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
   request_->card = card;
   should_unmask_card_ = card.record_type() == CreditCard::MASKED_SERVER_CARD ||
                         (card.record_type() == CreditCard::FULL_SERVER_CARD &&
-                         card.ShouldUpdateExpiration(base::Time::Now()));
+                         card.ShouldUpdateExpiration(AutofillClock::Now()));
   if (should_unmask_card_)
     payments_client_->Prepare();
 
@@ -91,7 +92,7 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
 
   request_->user_response = response;
   if (!request_->risk_data.empty()) {
-    real_pan_request_timestamp_ = base::Time::Now();
+    real_pan_request_timestamp_ = AutofillClock::Now();
     payments_client_->UnmaskCard(*request_);
   }
 }
@@ -106,7 +107,7 @@ void FullCardRequest::OnUnmaskPromptClosed() {
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
   request_->risk_data = risk_data;
   if (!request_->user_response.cvc.empty()) {
-    real_pan_request_timestamp_ = base::Time::Now();
+    real_pan_request_timestamp_ = AutofillClock::Now();
     payments_client_->UnmaskCard(*request_);
   }
 }
@@ -114,7 +115,7 @@ void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
 void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                                       const std::string& real_pan) {
   AutofillMetrics::LogRealPanDuration(
-      base::Time::Now() - real_pan_request_timestamp_, result);
+      AutofillClock::Now() - real_pan_request_timestamp_, result);
 
   switch (result) {
     // Wait for user retry.

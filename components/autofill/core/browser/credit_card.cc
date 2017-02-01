@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -473,7 +474,7 @@ void CreditCard::SetExpirationYear(int expiration_year) {
   // Will normalize 2-digit years to the 4-digit version.
   if (expiration_year > 0 && expiration_year < 100) {
     base::Time::Exploded now_exploded;
-    base::Time::Now().LocalExplode(&now_exploded);
+    AutofillClock::Now().LocalExplode(&now_exploded);
     expiration_year += (now_exploded.year / 100) * 100;
   }
 
@@ -550,8 +551,8 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
   if (this->IsVerified() && !imported_card.IsVerified()) {
     // If the original card is expired and the imported card is not, and the
     // name on the cards are identical, update the expiration date.
-    if (this->IsExpired(base::Time::Now()) &&
-        !imported_card.IsExpired(base::Time::Now()) &&
+    if (this->IsExpired(AutofillClock::Now()) &&
+        !imported_card.IsExpired(AutofillClock::Now()) &&
         (name_on_card_ == imported_card.name_on_card_)) {
       DCHECK(imported_card.expiration_month_ && imported_card.expiration_year_);
       expiration_month_ = imported_card.expiration_month_;
@@ -659,8 +660,8 @@ bool CreditCard::IsEmpty(const std::string& app_locale) const {
 
 bool CreditCard::IsValid() const {
   return IsValidCreditCardNumber(number_) &&
-         IsValidCreditCardExpirationDate(
-             expiration_year_, expiration_month_, base::Time::Now());
+         IsValidCreditCardExpirationDate(expiration_year_, expiration_month_,
+                                         AutofillClock::Now());
 }
 
 void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
@@ -785,7 +786,7 @@ void CreditCard::SetNumber(const base::string16& number) {
 
 void CreditCard::RecordAndLogUse() {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.CreditCard",
-                            (base::Time::Now() - use_date()).InDays());
+                            (AutofillClock::Now() - use_date()).InDays());
   RecordUse();
 }
 

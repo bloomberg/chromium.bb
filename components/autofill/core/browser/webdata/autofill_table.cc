@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -479,12 +480,12 @@ bool AutofillTable::MigrateToVersion(int version,
 bool AutofillTable::AddFormFieldValues(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes) {
-  return AddFormFieldValuesTime(elements, changes, Time::Now());
+  return AddFormFieldValuesTime(elements, changes, AutofillClock::Now());
 }
 
 bool AutofillTable::AddFormFieldValue(const FormFieldData& element,
                                       std::vector<AutofillChange>* changes) {
-  return AddFormFieldValueTime(element, changes, Time::Now());
+  return AddFormFieldValueTime(element, changes, AutofillClock::Now());
 }
 
 bool AutofillTable::GetFormValuesForElementName(
@@ -672,7 +673,7 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
 bool AutofillTable::RemoveExpiredFormElements(
     std::vector<AutofillChange>* changes) {
   Time expiration_time =
-      Time::Now() - TimeDelta::FromDays(kExpirationPeriodInDays);
+      AutofillClock::Now() - TimeDelta::FromDays(kExpirationPeriodInDays);
 
   // Query for the name and value of all form elements that were last used
   // before the |expiration_time|.
@@ -884,7 +885,7 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
       " zipcode, sorting_code, country_code, use_count, use_date, "
       " date_modified, origin, language_code)"
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  BindAutofillProfileToStatement(profile, Time::Now(), &s);
+  BindAutofillProfileToStatement(profile, AutofillClock::Now(), &s);
 
   if (!s.Run())
     return false;
@@ -974,7 +975,7 @@ bool AutofillTable::GetServerProfiles(
     profile->set_use_count(s.ColumnInt64(index++));
     profile->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
     // Modification date is not tracked for server profiles. Explicitly set it
-    // here to override the default value of Time::Now().
+    // here to override the default value of AutofillClock::Now().
     profile->set_modification_date(Time());
 
     base::string16 recipient_name = s.ColumnString16(index++);
@@ -1085,10 +1086,11 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
       "    city=?, state=?, zipcode=?, sorting_code=?, country_code=?, "
       "    use_count=?, use_date=?, date_modified=?, origin=?, language_code=? "
       "WHERE guid=?"));
-  BindAutofillProfileToStatement(
-      profile,
-      update_modification_date ? Time::Now() : old_profile->modification_date(),
-      &s);
+  BindAutofillProfileToStatement(profile,
+                                 update_modification_date
+                                     ? AutofillClock::Now()
+                                     : old_profile->modification_date(),
+                                 &s);
   s.BindString(14, profile.guid());
 
   bool result = s.Run();
@@ -1158,7 +1160,7 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
       " card_number_encrypted, use_count, use_date, date_modified, origin,"
       " billing_address_id)"
       "VALUES (?,?,?,?,?,?,?,?,?,?)"));
-  BindCreditCardToStatement(credit_card, Time::Now(), &s);
+  BindCreditCardToStatement(credit_card, AutofillClock::Now(), &s);
 
   if (!s.Run())
     return false;
@@ -1246,7 +1248,7 @@ bool AutofillTable::GetServerCreditCards(
     card->set_use_count(s.ColumnInt64(index++));
     card->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
     // Modification date is not tracked for server cards. Explicitly set it here
-    // to override the default value of Time::Now().
+    // to override the default value of AutofillClock::Now().
     card->set_modification_date(Time());
 
     std::string card_type = s.ColumnString(index++);
@@ -1340,7 +1342,7 @@ bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
   OSCrypt::EncryptString16(full_number, &encrypted_data);
   s.BindBlob(1, encrypted_data.data(),
              static_cast<int>(encrypted_data.length()));
-  s.BindInt64(2, Time::Now().ToInternalValue());  // unmask_date
+  s.BindInt64(2, AutofillClock::Now().ToInternalValue());  // unmask_date
 
   s.Run();
 
@@ -1467,11 +1469,11 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
           "expiration_year=?, card_number_encrypted=?, use_count=?, use_date=?,"
           "date_modified=?, origin=?, billing_address_id=?"
       "WHERE guid=?1"));
-  BindCreditCardToStatement(
-      credit_card,
-      update_modification_date ? Time::Now() :
-                                 old_credit_card->modification_date(),
-      &s);
+  BindCreditCardToStatement(credit_card,
+                            update_modification_date
+                                ? AutofillClock::Now()
+                                : old_credit_card->modification_date(),
+                            &s);
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);

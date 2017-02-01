@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -285,7 +286,7 @@ bool CreditCardField::LikelyCardYearSelectField(AutofillScanner* scanner) {
   if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
     return false;
 
-  const base::Time time_now = base::Time::Now();
+  const base::Time time_now = AutofillClock::Now();
   base::Time::Exploded time_exploded;
   time_now.UTCExplode(&time_exploded);
 

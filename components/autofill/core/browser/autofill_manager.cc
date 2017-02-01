@@ -51,6 +51,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -1229,7 +1230,7 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
         address_upload_decision_metric,
     std::string* rappor_metric_name) const {
   std::vector<AutofillProfile> candidate_profiles;
-  const base::Time now = base::Time::Now();
+  const base::Time now = AutofillClock::Now();
   const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
 
   // First, collect all of the addresses used recently.
@@ -1597,7 +1598,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     } else if (is_credit_card && IsCreditCardExpirationType(
                                      cached_field->Type().GetStorableType()) &&
                static_cast<const CreditCard*>(&data_model)
-                   ->IsExpired(base::Time::Now())) {
+                   ->IsExpired(AutofillClock::Now())) {
       // Don't fill expired cards expiration date.
       value = base::string16();
     }
@@ -1895,7 +1896,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
         personal_data_->GetCreditCardsToSuggest();
     // Expired cards are last in the sorted order, so if the first one is
     // expired, they all are.
-    if (!cards.empty() && !cards.front()->IsExpired(base::Time::Now()))
+    if (!cards.empty() && !cards.front()->IsExpired(AutofillClock::Now()))
       autofill_assistant_.ShowAssistForCreditCard(*cards.front());
   }
 #endif

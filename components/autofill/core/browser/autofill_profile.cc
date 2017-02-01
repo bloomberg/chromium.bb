@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_strings.h"
@@ -702,7 +703,7 @@ void AutofillProfile::GenerateServerProfileIdentifier() {
 
 void AutofillProfile::RecordAndLogUse() {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
-                            (base::Time::Now() - use_date()).InDays());
+                            (AutofillClock::Now() - use_date()).InDays());
   RecordUse();
 }
 
