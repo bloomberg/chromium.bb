@@ -49,6 +49,8 @@ const base::Feature kCaptivePortalInterstitial{
 const base::Feature kSSLCommonNameMismatchHandling{
     "SSLCommonNameMismatchHandling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const char kHistogram[] = "interstitial.ssl_error_handler";
+
 // Default delay in milliseconds before displaying the SSL interstitial.
 // This can be changed in tests.
 // - If there is a name mismatch and a suggested URL available result arrives
@@ -57,20 +59,6 @@ const base::Feature kSSLCommonNameMismatchHandling{
 //   a captive portal interstitial is displayed.
 // - Otherwise, an SSL interstitial is displayed.
 const int64_t kInterstitialDelayInMilliseconds = 3000;
-
-// Events for UMA.
-enum SSLErrorHandlerEvent {
-  HANDLE_ALL,
-  SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE,
-  SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE,
-  SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE,
-  SHOW_SSL_INTERSTITIAL_OVERRIDABLE,
-  WWW_MISMATCH_FOUND,
-  WWW_MISMATCH_URL_AVAILABLE,
-  WWW_MISMATCH_URL_NOT_AVAILABLE,
-  SHOW_BAD_CLOCK,
-  SSL_ERROR_HANDLER_EVENT_COUNT
-};
 
 // Adds a message to console after navigation commits and then, deletes itself.
 // Also deletes itself if the navigation is stopped.
@@ -129,9 +117,9 @@ class CommonNameMismatchRedirectObserver
   DISALLOW_COPY_AND_ASSIGN(CommonNameMismatchRedirectObserver);
 };
 
-void RecordUMA(SSLErrorHandlerEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_handler", event,
-                            SSL_ERROR_HANDLER_EVENT_COUNT);
+void RecordUMA(SSLErrorHandler::UMAEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(kHistogram, event,
+                            SSLErrorHandler::SSL_ERROR_HANDLER_EVENT_COUNT);
 }
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -219,13 +207,138 @@ void ConfigSingleton::SetNetworkTimeTrackerForTesting(
   network_time_tracker_ = tracker;
 }
 
-static base::LazyInstance<ConfigSingleton>::Leaky g_config =
-    LAZY_INSTANCE_INITIALIZER;
+class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
+ public:
+  SSLErrorHandlerDelegateImpl(
+      content::WebContents* web_contents,
+      const net::SSLInfo& ssl_info,
+      Profile* const profile,
+      int cert_error,
+      int options_mask,
+      const GURL& request_url,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback)
+      : web_contents_(web_contents),
+        ssl_info_(ssl_info),
+        profile_(profile),
+        cert_error_(cert_error),
+        options_mask_(options_mask),
+        request_url_(request_url),
+        ssl_cert_reporter_(std::move(ssl_cert_reporter)),
+        callback_(callback) {}
+  ~SSLErrorHandlerDelegateImpl() override;
+
+  // SSLErrorHandler::Delegate methods:
+  void CheckForCaptivePortal() override;
+  bool GetSuggestedUrl(const std::vector<std::string>& dns_names,
+                       GURL* suggested_url) const override;
+  void CheckSuggestedUrl(
+      const GURL& suggested_url,
+      const CommonNameMismatchHandler::CheckUrlCallback& callback) override;
+  void NavigateToSuggestedURL(const GURL& suggested_url) override;
+  bool IsErrorOverridable() const override;
+  void ShowCaptivePortalInterstitial(const GURL& landing_url) override;
+  void ShowSSLInterstitial() override;
+  void ShowBadClockInterstitial(const base::Time& now,
+                                ssl_errors::ClockState clock_state) override;
+
+ private:
+  content::WebContents* web_contents_;
+  const net::SSLInfo& ssl_info_;
+  Profile* const profile_;
+  const int cert_error_;
+  const int options_mask_;
+  const GURL request_url_;
+  std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
+  std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
+  const base::Callback<void(content::CertificateRequestResultType)> callback_;
+};
+
+SSLErrorHandlerDelegateImpl::~SSLErrorHandlerDelegateImpl() {
+  if (common_name_mismatch_handler_) {
+    common_name_mismatch_handler_->Cancel();
+    common_name_mismatch_handler_.reset();
+  }
+}
+
+void SSLErrorHandlerDelegateImpl::CheckForCaptivePortal() {
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  CaptivePortalService* captive_portal_service =
+      CaptivePortalServiceFactory::GetForProfile(profile_);
+  captive_portal_service->DetectCaptivePortal();
+#else
+  NOTREACHED();
+#endif
+}
+
+bool SSLErrorHandlerDelegateImpl::GetSuggestedUrl(
+    const std::vector<std::string>& dns_names,
+    GURL* suggested_url) const {
+  return CommonNameMismatchHandler::GetSuggestedUrl(request_url_, dns_names,
+                                                    suggested_url);
+}
+
+void SSLErrorHandlerDelegateImpl::CheckSuggestedUrl(
+    const GURL& suggested_url,
+    const CommonNameMismatchHandler::CheckUrlCallback& callback) {
+  scoped_refptr<net::URLRequestContextGetter> request_context(
+      profile_->GetRequestContext());
+  common_name_mismatch_handler_.reset(
+      new CommonNameMismatchHandler(request_url_, request_context));
+
+  common_name_mismatch_handler_->CheckSuggestedUrl(suggested_url, callback);
+}
+
+void SSLErrorHandlerDelegateImpl::NavigateToSuggestedURL(
+    const GURL& suggested_url) {
+  content::NavigationController::LoadURLParams load_params(suggested_url);
+  load_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  web_contents_->GetController().LoadURLWithParams(load_params);
+}
+
+bool SSLErrorHandlerDelegateImpl::IsErrorOverridable() const {
+  return SSLBlockingPage::IsOverridable(options_mask_, profile_);
+}
+
+void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
+    const GURL& landing_url) {
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // Show captive portal blocking page. The interstitial owns the blocking page.
+  (new CaptivePortalBlockingPage(web_contents_, request_url_, landing_url,
+                                 std::move(ssl_cert_reporter_), ssl_info_,
+                                 callback_))
+      ->Show();
+#else
+  NOTREACHED();
+#endif
+}
+
+void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial() {
+  // Show SSL blocking page. The interstitial owns the blocking page.
+  (SSLBlockingPage::Create(web_contents_, cert_error_, ssl_info_, request_url_,
+                           options_mask_, base::Time::NowFromSystemTime(),
+                           std::move(ssl_cert_reporter_), callback_))
+      ->Show();
+}
+
+void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
+    const base::Time& now,
+    ssl_errors::ClockState clock_state) {
+  // Show bad clock page. The interstitial owns the blocking page.
+  (new BadClockBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
+                            now, clock_state, std::move(ssl_cert_reporter_),
+                            callback_))
+      ->Show();
+}
 
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SSLErrorHandler);
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(CommonNameMismatchRedirectObserver);
+
+static base::LazyInstance<ConfigSingleton>::Leaky g_config =
+    LAZY_INSTANCE_INITIALIZER;
 
 void SSLErrorHandler::HandleSSLError(
     content::WebContents* web_contents,
@@ -237,9 +350,16 @@ void SSLErrorHandler::HandleSSLError(
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
   DCHECK(!FromWebContents(web_contents));
-  SSLErrorHandler* error_handler =
-      new SSLErrorHandler(web_contents, cert_error, ssl_info, request_url,
-                          options_mask, std::move(ssl_cert_reporter), callback);
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  SSLErrorHandler* error_handler = new SSLErrorHandler(
+      std::unique_ptr<SSLErrorHandler::Delegate>(
+          new SSLErrorHandlerDelegateImpl(
+              web_contents, ssl_info, profile, cert_error, options_mask,
+              request_url, std::move(ssl_cert_reporter), callback)),
+      web_contents, profile, cert_error, ssl_info, request_url, callback);
   web_contents->SetUserData(UserDataKey(), error_handler);
   error_handler->StartHandlingError();
 }
@@ -267,23 +387,31 @@ void SSLErrorHandler::SetNetworkTimeTrackerForTesting(
   g_config.Pointer()->SetNetworkTimeTrackerForTesting(tracker);
 }
 
+// static
+std::string SSLErrorHandler::GetHistogramNameForTesting() {
+  return kHistogram;
+}
+
+bool SSLErrorHandler::IsTimerRunningForTesting() const {
+  return timer_.IsRunning();
+}
+
 SSLErrorHandler::SSLErrorHandler(
+    std::unique_ptr<Delegate> delegate,
     content::WebContents* web_contents,
+    Profile* profile,
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    int options_mask,
-    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : content::WebContentsObserver(web_contents),
+      delegate_(std::move(delegate)),
       web_contents_(web_contents),
+      profile_(profile),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
-      options_mask_(options_mask),
       callback_(callback),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      ssl_cert_reporter_(std::move(ssl_cert_reporter)),
       weak_ptr_factory_(this) {}
 
 SSLErrorHandler::~SSLErrorHandler() {
@@ -304,7 +432,8 @@ void SSLErrorHandler::StartHandlingError() {
   GURL suggested_url;
   if (IsSSLCommonNameMismatchHandlingEnabled() &&
       cert_error_ == net::ERR_CERT_COMMON_NAME_INVALID &&
-      IsErrorOverridable() && GetSuggestedUrl(dns_names, &suggested_url)) {
+      delegate_->IsErrorOverridable() &&
+      delegate_->GetSuggestedUrl(dns_names, &suggested_url)) {
     RecordUMA(WWW_MISMATCH_FOUND);
     net::CertStatus extra_cert_errors =
         ssl_info_.cert_status ^ net::CERT_STATUS_COMMON_NAME_INVALID;
@@ -317,7 +446,10 @@ void SSLErrorHandler::StartHandlingError() {
       ShowSSLInterstitial();
       return;
     }
-    CheckSuggestedUrl(suggested_url);
+    delegate_->CheckSuggestedUrl(
+        suggested_url,
+        base::Bind(&SSLErrorHandler::CommonNameMismatchHandlerCallback,
+                   weak_ptr_factory_.GetWeakPtr()));
     timer_.Start(FROM_HERE, g_config.Pointer()->interstitial_delay(), this,
                  &SSLErrorHandler::ShowSSLInterstitial);
 
@@ -330,6 +462,12 @@ void SSLErrorHandler::StartHandlingError() {
     return;
   }
 
+  // Always listen to captive portal notifications, otherwise build fails
+  // because profile_ isn't used. This is a no-op on platforms where
+  // captive portal detection is disabled.
+  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
+                 content::Source<Profile>(profile_));
+
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper* captive_portal_tab_helper =
       CaptivePortalTabHelper::FromWebContents(web_contents_);
@@ -337,11 +475,8 @@ void SSLErrorHandler::StartHandlingError() {
     captive_portal_tab_helper->OnSSLCertError(ssl_info_);
   }
 
-  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<Profile>(profile_));
-
   if (IsCaptivePortalInterstitialEnabled()) {
-    CheckForCaptivePortal();
+    delegate_->CheckForCaptivePortal();
     timer_.Start(FROM_HERE, g_config.Pointer()->interstitial_delay(), this,
                  &SSLErrorHandler::ShowSSLInterstitial);
     if (g_config.Pointer()->timer_started_callback())
@@ -353,54 +488,13 @@ void SSLErrorHandler::StartHandlingError() {
   ShowSSLInterstitial();
 }
 
-void SSLErrorHandler::CheckForCaptivePortal() {
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalService* captive_portal_service =
-      CaptivePortalServiceFactory::GetForProfile(profile_);
-  captive_portal_service->DetectCaptivePortal();
-#else
-  NOTREACHED();
-#endif
-}
-
-bool SSLErrorHandler::GetSuggestedUrl(const std::vector<std::string>& dns_names,
-                                      GURL* suggested_url) const {
-  return CommonNameMismatchHandler::GetSuggestedUrl(request_url_, dns_names,
-                                                    suggested_url);
-}
-
-void SSLErrorHandler::CheckSuggestedUrl(const GURL& suggested_url) {
-  scoped_refptr<net::URLRequestContextGetter> request_context(
-      profile_->GetRequestContext());
-  common_name_mismatch_handler_.reset(
-      new CommonNameMismatchHandler(request_url_, request_context));
-
-  common_name_mismatch_handler_->CheckSuggestedUrl(
-      suggested_url,
-      base::Bind(&SSLErrorHandler::CommonNameMismatchHandlerCallback,
-                 base::Unretained(this)));
-}
-
-void SSLErrorHandler::NavigateToSuggestedURL(const GURL& suggested_url) {
-  content::NavigationController::LoadURLParams load_params(suggested_url);
-  load_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  web_contents()->GetController().LoadURLWithParams(load_params);
-}
-
-bool SSLErrorHandler::IsErrorOverridable() const {
-  return SSLBlockingPage::IsOverridable(options_mask_, profile_);
-}
-
 void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // Show captive portal blocking page. The interstitial owns the blocking page.
-  RecordUMA(IsErrorOverridable()
+  RecordUMA(delegate_->IsErrorOverridable()
                 ? SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE
                 : SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE);
-  (new CaptivePortalBlockingPage(web_contents_, request_url_, landing_url,
-                                 std::move(ssl_cert_reporter_), ssl_info_,
-                                 callback_))
-      ->Show();
+  delegate_->ShowCaptivePortalInterstitial(landing_url);
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this". It also destroys the timer.
   web_contents_->RemoveUserData(UserDataKey());
@@ -411,13 +505,10 @@ void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 
 void SSLErrorHandler::ShowSSLInterstitial() {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  RecordUMA(IsErrorOverridable() ? SHOW_SSL_INTERSTITIAL_OVERRIDABLE
-                                 : SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
-
-  (SSLBlockingPage::Create(web_contents_, cert_error_, ssl_info_, request_url_,
-                           options_mask_, base::Time::NowFromSystemTime(),
-                           std::move(ssl_cert_reporter_), callback_))
-      ->Show();
+  RecordUMA(delegate_->IsErrorOverridable()
+                ? SHOW_SSL_INTERSTITIAL_OVERRIDABLE
+                : SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
+  delegate_->ShowSSLInterstitial();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
   web_contents_->RemoveUserData(UserDataKey());
@@ -427,17 +518,14 @@ void SSLErrorHandler::ShowBadClockInterstitial(
     const base::Time& now,
     ssl_errors::ClockState clock_state) {
   RecordUMA(SHOW_BAD_CLOCK);
-  (new BadClockBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
-                            now, clock_state, std::move(ssl_cert_reporter_),
-                            callback_))
-      ->Show();
+  delegate_->ShowBadClockInterstitial(now, clock_state);
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
   web_contents_->RemoveUserData(UserDataKey());
 }
 
 void SSLErrorHandler::CommonNameMismatchHandlerCallback(
-    const CommonNameMismatchHandler::SuggestedUrlCheckResult& result,
+    CommonNameMismatchHandler::SuggestedUrlCheckResult result,
     const GURL& suggested_url) {
   timer_.Stop();
   if (result == CommonNameMismatchHandler::SuggestedUrlCheckResult::
@@ -445,7 +533,7 @@ void SSLErrorHandler::CommonNameMismatchHandlerCallback(
     RecordUMA(WWW_MISMATCH_URL_AVAILABLE);
     CommonNameMismatchRedirectObserver::AddToConsoleAfterNavigation(
         web_contents(), request_url_.host(), suggested_url.host());
-    NavigateToSuggestedURL(suggested_url);
+    delegate_->NavigateToSuggestedURL(suggested_url);
   } else {
     RecordUMA(WWW_MISMATCH_URL_NOT_AVAILABLE);
     ShowSSLInterstitial();
@@ -466,6 +554,8 @@ void SSLErrorHandler::Observe(
     ShowCaptivePortalInterstitial(results->landing_url);
   else
     ShowSSLInterstitial();
+#else
+  NOTREACHED();
 #endif
 }
 
@@ -492,10 +582,7 @@ void SSLErrorHandler::DeleteSSLErrorHandler() {
     base::ResetAndReturn(&callback_)
         .Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
   }
-  if (common_name_mismatch_handler_) {
-    common_name_mismatch_handler_->Cancel();
-    common_name_mismatch_handler_.reset();
-  }
+  delegate_.reset();
   // Deletes |this| and also destroys the timer.
   web_contents_->RemoveUserData(UserDataKey());
 }

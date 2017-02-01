@@ -41,8 +41,9 @@ class CommonNameMismatchHandler : public net::URLFetcherDelegate,
     IGNORE_REQUESTS_FOR_TESTING
   };
 
-  typedef base::Callback<void(const SuggestedUrlCheckResult& result,
-                              const GURL& suggested_url)> CheckUrlCallback;
+  typedef base::Callback<void(SuggestedUrlCheckResult result,
+                              const GURL& suggested_url)>
+      CheckUrlCallback;
 
   CommonNameMismatchHandler(
       const GURL& request_url,
