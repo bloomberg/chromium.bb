@@ -2949,6 +2949,42 @@
      {}
     ]
    ],
+   "html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-001.html": [
+    [
+     "/html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-001.html",
+     [
+      [
+       "/html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-001-ref.html",
+       "=="
+      ]
+     ],
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-002.html": [
+    [
+     "/html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-002.html",
+     [
+      [
+       "/html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-001-ref.html",
+       "=="
+      ]
+     ],
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-003.html": [
+    [
+     "/html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-003.html",
+     [
+      [
+       "/html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-001-ref.html",
+       "=="
+      ]
+     ],
+     {}
+    ]
+   ],
    "html/semantics/text-level-semantics/the-bdi-element/bdi-auto-dir-default.html": [
     [
      "/html/semantics/text-level-semantics/the-bdi-element/bdi-auto-dir-default.html",
@@ -3745,11 +3781,6 @@
      {}
     ]
    ],
-   "./MANIFEST.json": [
-    [
-     {}
-    ]
-   ],
    "./README.md": [
     [
      {}
@@ -3776,6 +3807,11 @@
     ]
    ],
    "./diff-manifest.py": [
+    [
+     {}
+    ]
+   ],
+   "./test_keys_wdspec.html": [
     [
      {}
     ]
@@ -5416,6 +5452,11 @@
     ]
    ],
    "html/browsers/browsing-the-web/history-traversal/MANIFEST": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/browsing-the-web/history-traversal/browsing_context_name-0.html": [
     [
      {}
     ]
@@ -11690,22 +11731,7 @@
      {}
     ]
    ],
-   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/img_border_percent-expected.xhtml": [
-    [
-     {}
-    ]
-   ],
    "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/object_border-ref.xhtml": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/object_border_perc-expected.xhtml": [
-    [
-     {}
-    ]
-   ],
-   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/object_border_pixel-expected.xhtml": [
     [
      {}
     ]
@@ -12060,16 +12086,6 @@
      {}
     ]
    ],
-   "html/semantics/embedded-content/the-audio-element/audio_001-expected.htm": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/embedded-content/the-audio-element/audio_002-expected.htm": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/embedded-content/the-audio-element/audio_content-ref.htm": [
     [
      {}
@@ -12280,16 +12296,6 @@
      {}
     ]
    ],
-   "html/semantics/embedded-content/the-video-element/video_content_image-expected.htm": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/embedded-content/the-video-element/video_content_text-expected.htm": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/embedded-content/the-video-element/video_dynamic_poster-ref.htm": [
     [
      {}
@@ -12346,6 +12352,11 @@
     ]
    ],
    "html/semantics/forms/introduction-1/contains.json": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/forms/resetting-a-form/reset-form-event-realm-support.html": [
     [
      {}
     ]
@@ -12705,11 +12716,6 @@
      {}
     ]
    ],
-   "html/semantics/scripting-1/the-script-element/external-script-windows1250.js": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/scripting-1/the-script-element/fetch-src/alpha/test.js": [
     [
      {}
@@ -12745,22 +12751,22 @@
      {}
     ]
    ],
+   "html/semantics/scripting-1/the-script-element/resources/cocoa-module.js": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/scripting-1/the-script-element/resources/cross-origin.py": [
     [
      {}
     ]
    ],
-   "html/semantics/scripting-1/the-script-element/script-charset-01-expected.txt": [
+   "html/semantics/scripting-1/the-script-element/resources/exports-cocoa.js": [
     [
      {}
     ]
    ],
-   "html/semantics/scripting-1/the-script-element/script-charset-02-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/scripting-1/the-script-element/script-charset-03-expected.txt": [
+   "html/semantics/scripting-1/the-script-element/resources/set-script-executed.js": [
     [
      {}
     ]
@@ -15105,6 +15111,16 @@
      {}
     ]
    ],
+   "service-workers/service-worker/resources/update-max-aged-worker-imported-script.py": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/update-max-aged-worker.py": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/resources/update-nocookie-worker.py": [
     [
      {}
@@ -15721,6 +15737,11 @@
     ]
    ],
    "streams/writable-streams/write.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "svg-aam/README.md": [
     [
      {}
     ]
@@ -17148,6 +17169,12 @@
    "IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm": [
     [
      "/IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idbcursor-continuePrimaryKey.htm": [
+    [
+     "/IndexedDB/idbcursor-continuePrimaryKey.htm",
      {}
     ]
    ],
@@ -19506,12 +19533,6 @@
    "dom/events/EventTarget-removeEventListener.html": [
     [
      "/dom/events/EventTarget-removeEventListener.html",
-     {}
-    ]
-   ],
-   "dom/events/ProgressEvent.html": [
-    [
-     "/dom/events/ProgressEvent.html",
      {}
     ]
    ],
@@ -24577,6 +24598,18 @@
      {}
     ]
    ],
+   "html/rendering/non-replaced-elements/tables/table-vspace-hspace-s.html": [
+    [
+     "/html/rendering/non-replaced-elements/tables/table-vspace-hspace-s.html",
+     {}
+    ]
+   ],
+   "html/rendering/non-replaced-elements/tables/table-vspace-hspace.html": [
+    [
+     "/html/rendering/non-replaced-elements/tables/table-vspace-hspace.html",
+     {}
+    ]
+   ],
    "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-auto.html": [
     [
      "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-auto.html",
@@ -25667,6 +25700,12 @@
      {}
     ]
    ],
+   "html/semantics/forms/resetting-a-form/reset-form-event-realm.html": [
+    [
+     "/html/semantics/forms/resetting-a-form/reset-form-event-realm.html",
+     {}
+    ]
+   ],
    "html/semantics/forms/resetting-a-form/reset-form.html": [
     [
      "/html/semantics/forms/resetting-a-form/reset-form.html",
@@ -26437,21 +26476,39 @@
      {}
     ]
    ],
-   "html/semantics/scripting-1/the-script-element/script-charset-01.html": [
+   "html/semantics/scripting-1/the-script-element/nomodule-reflect.html": [
     [
-     "/html/semantics/scripting-1/the-script-element/script-charset-01.html",
+     "/html/semantics/scripting-1/the-script-element/nomodule-reflect.html",
      {}
     ]
    ],
-   "html/semantics/scripting-1/the-script-element/script-charset-02.html": [
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-async-classic-script.html": [
     [
-     "/html/semantics/scripting-1/the-script-element/script-charset-02.html",
+     "/html/semantics/scripting-1/the-script-element/nomodule-set-on-async-classic-script.html",
      {}
     ]
    ],
-   "html/semantics/scripting-1/the-script-element/script-charset-03.html": [
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script.html": [
     [
-     "/html/semantics/scripting-1/the-script-element/script-charset-03.html",
+     "/html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script.html",
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-classic-scripts.html": [
+    [
+     "/html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-classic-scripts.html",
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script.html": [
+    [
+     "/html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script.html",
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts.html": [
+    [
+     "/html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts.html",
      {}
     ]
    ],
@@ -28431,6 +28488,12 @@
      {}
     ]
    ],
+   "html/webappapis/scripting/events/eventhandler-cancellation.html": [
+    [
+     "/html/webappapis/scripting/events/eventhandler-cancellation.html",
+     {}
+    ]
+   ],
    "html/webappapis/scripting/events/inline-event-handler-ordering.html": [
     [
      "/html/webappapis/scripting/events/inline-event-handler-ordering.html",
@@ -29994,6 +30057,12 @@
    "service-workers/service-worker/registration-service-worker-attributes.https.html": [
     [
      "/service-workers/service-worker/registration-service-worker-attributes.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/registration-useCache.https.html": [
+    [
+     "/service-workers/service-worker/registration-useCache.https.html",
      {}
     ]
    ],
@@ -33932,16 +34001,12 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
-  "./MANIFEST.json": [
-   "3e36194cb38e3f18efda9d53f7a0a880cf69b95d",
-   "support"
-  ],
   "./README.md": [
-   "e9590560efb0d37ab870037edaafc1c47dc7a785",
+   "47d52ff4a87b49dec2fb5ceb98211fb1b9af34fb",
    "support"
   ],
   "./check_stability.py": [
-   "9396b01f28c0e6a19a68f515eb19b4f340c0e98f",
+   "81b2d6b1f7aa7d8c237fb715e7b91c235276befd",
    "support"
   ],
   "./ci_built_diff.sh": [
@@ -33953,11 +34018,15 @@
    "support"
   ],
   "./ci_stability.sh": [
-   "1c7177b11b9adc0e9798f40f0f0c5e7463312ae4",
+   "4980fd066b8beb14b0bd55fd62375ee628c30e26",
    "support"
   ],
   "./diff-manifest.py": [
    "94689a9853ab8d0ddcd85b2a8db4b6f2c9045b4a",
+   "support"
+  ],
+  "./test_keys_wdspec.html": [
+   "13e6f15dcfe080bff5f3b3cbaf9b9f679915aca3",
    "support"
   ],
   "./testharness_runner.html": [
@@ -34210,6 +34279,10 @@
   ],
   "IndexedDB/idbcursor-continuePrimaryKey-exceptions.htm": [
    "7c2ddb95ce4b7c588ddb2907367a365902eba349",
+   "testharness"
+  ],
+  "IndexedDB/idbcursor-continuePrimaryKey.htm": [
+   "e1c89f1ce01d8ec027337aef844dad4c2990b6c2",
    "testharness"
   ],
   "IndexedDB/idbcursor-delete-exception-order.htm": [
@@ -36016,10 +36089,6 @@
    "8d195a4490df833fdd71388d9e8cc6e38d50cbd8",
    "testharness"
   ],
-  "dom/events/ProgressEvent.html": [
-   "30fc510ed8f122c4b03492bfcabf3ed5886e18d2",
-   "testharness"
-  ],
   "dom/historical-expected.txt": [
    "9d6e420616003f2a24043b4a1a3e21149f52f9a5",
    "support"
@@ -36841,7 +36910,7 @@
    "testharness"
   ],
   "dom/nodes/Node-isSameNode.html": [
-   "d6e50aaee5d996fd4ba651724ae24ea1df817f57",
+   "4d2530ef5f322041d04b8d6ca91d873d24b768ef",
    "testharness"
   ],
   "dom/nodes/Node-lookupNamespaceURI-expected.txt": [
@@ -38656,6 +38725,10 @@
    "2a7ed0827fc61af7b3bdd238577887aff1902ea7",
    "testharness"
   ],
+  "html/browsers/browsing-the-web/history-traversal/browsing_context_name-0.html": [
+   "059f6738127f25477f8c17dc3e79f2dc7ea64465",
+   "support"
+  ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name-1.html": [
    "2eda3fa32e3918ee4d75989fc2e6f03582ce6e75",
    "support"
@@ -38673,7 +38746,7 @@
    "support"
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name.html": [
-   "81bbf80abda0f3445c4d87e0e1c11e3219d2edce",
+   "87d7d141b05200ad3db0660d9d8d8bdf7876ee4b",
    "testharness"
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin-expected.txt": [
@@ -40097,7 +40170,7 @@
    "support"
   ],
   "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html": [
-   "1b20d98e7bb5138ba4db9d74f3458f6fe9d090d2",
+   "9f9f6d11d0444daf297a75ce1301e7300aef94f0",
    "testharness"
   ],
   "html/browsers/origin/cross-origin-objects/cross-origin-objects-expected.txt": [
@@ -45920,6 +45993,14 @@
    "ec05c435cfd09291184360db7e8b0c5af9c7ba31",
    "reftest"
   ],
+  "html/rendering/non-replaced-elements/tables/table-vspace-hspace-s.html": [
+   "a93cbe26a0c5b9a7aeda1faf9db618f79aae8715",
+   "testharness"
+  ],
+  "html/rendering/non-replaced-elements/tables/table-vspace-hspace.html": [
+   "76be2c71dea58327c4d4b1ba424993ff73c5f847",
+   "testharness"
+  ],
   "html/rendering/non-replaced-elements/tables/table-width-150percent-ref.html": [
    "a25b7aad09676bed5d05714aeae6b5a6b4dbb4b5",
    "support"
@@ -46000,10 +46081,6 @@
    "ac9dfeaa1741dd19b4ef8f4d80bf611384d6bef3",
    "support"
   ],
-  "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/img_border_percent-expected.xhtml": [
-   "ac9dfeaa1741dd19b4ef8f4d80bf611384d6bef3",
-   "support"
-  ],
   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/img_border_percent.xhtml": [
    "c1cff7b05cc400195328292521ecf76840d60540",
    "reftest"
@@ -46012,17 +46089,9 @@
    "48efda6cb8f06cc70c71c436cecf6f3e4fea6aec",
    "support"
   ],
-  "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/object_border_perc-expected.xhtml": [
-   "48efda6cb8f06cc70c71c436cecf6f3e4fea6aec",
-   "support"
-  ],
   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/object_border_perc.xhtml": [
    "4e888bdc4247bac6d5f9506e6271f4bbe7612cdd",
    "reftest"
-  ],
-  "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/object_border_pixel-expected.xhtml": [
-   "48efda6cb8f06cc70c71c436cecf6f3e4fea6aec",
-   "support"
   ],
   "html/rendering/replaced-elements/attributes-for-embedded-content-and-images/object_border_pixel.xhtml": [
    "c1a52d71881ec5326761f415cc319a467587be17",
@@ -46820,17 +46889,9 @@
    "d6128e676d8584222248b03ae2e868136377d799",
    "support"
   ],
-  "html/semantics/embedded-content/the-audio-element/audio_001-expected.htm": [
-   "a74faddb16266717024b3a4efa21be7f4d00a85e",
-   "support"
-  ],
   "html/semantics/embedded-content/the-audio-element/audio_001.htm": [
    "608d30e852106678bacc806e9164e20661988e7b",
    "reftest"
-  ],
-  "html/semantics/embedded-content/the-audio-element/audio_002-expected.htm": [
-   "a74faddb16266717024b3a4efa21be7f4d00a85e",
-   "support"
   ],
   "html/semantics/embedded-content/the-audio-element/audio_002.htm": [
    "39c8512ae68bde322b290151f57376b96bf220be",
@@ -47160,17 +47221,9 @@
    "f5a95965f0948f5f023cf1d0ecb7af66cdc1c8cd",
    "support"
   ],
-  "html/semantics/embedded-content/the-video-element/video_content_image-expected.htm": [
-   "f5a95965f0948f5f023cf1d0ecb7af66cdc1c8cd",
-   "support"
-  ],
   "html/semantics/embedded-content/the-video-element/video_content_image.htm": [
    "f8b4611c5e5b66af9054fc4dbb6297aec2bb37f0",
    "reftest"
-  ],
-  "html/semantics/embedded-content/the-video-element/video_content_text-expected.htm": [
-   "f5a95965f0948f5f023cf1d0ecb7af66cdc1c8cd",
-   "support"
   ],
   "html/semantics/embedded-content/the-video-element/video_content_text.htm": [
    "599f3a1eb975db5648309470be18b7f30f147d62",
@@ -47352,6 +47405,14 @@
    "2b9329c270fb73a2ab60f5e9549afdfa91a13522",
    "testharness"
   ],
+  "html/semantics/forms/resetting-a-form/reset-form-event-realm-support.html": [
+   "2530f8b46c8ec015b165deec1c99e0a495325073",
+   "support"
+  ],
+  "html/semantics/forms/resetting-a-form/reset-form-event-realm.html": [
+   "4c3d5d366e123fcf8f2ddcfc2211f0e45902fbe5",
+   "testharness"
+  ],
   "html/semantics/forms/resetting-a-form/reset-form.html": [
    "73e4daacde901f0dc1babb9136f4bcebd98b0250",
    "testharness"
@@ -47369,7 +47430,7 @@
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/selection-not-application-textarea.html": [
-   "33eb11907327723f41325499c1a4ea38d075f469",
+   "629f3682421060ea18e9046a637402212be1b1fd",
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/selection-not-application.html": [
@@ -47657,7 +47718,7 @@
    "support"
   ],
   "html/semantics/forms/the-input-element/time.html": [
-   "71ec9a48d420683524432c5fb1086b67cd858d9a",
+   "59e06cf5e9a4ccc837c0bc1e7b37c2a1db1a154b",
    "testharness"
   ],
   "html/semantics/forms/the-input-element/type-change-state-expected.txt": [
@@ -48248,10 +48309,6 @@
    "2d1c2cf696010feb64b17f00a072f3bbe6b1d713",
    "support"
   ],
-  "html/semantics/scripting-1/the-script-element/external-script-windows1250.js": [
-   "3ae0d51ae4444e95a21cbe8d9d10822615903859",
-   "support"
-  ],
   "html/semantics/scripting-1/the-script-element/fetch-src/alpha/base.html": [
    "13d313f817d5597dd0cecbc23f0162f95f9634cc",
    "testharness"
@@ -48304,33 +48361,45 @@
    "12842b6e600ac2fc737718d8a9ba3385ed8b678b",
    "support"
   ],
+  "html/semantics/scripting-1/the-script-element/nomodule-reflect.html": [
+   "ac2b3c16e9e9263cd4c14de205b63709c14ec2e3",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-async-classic-script.html": [
+   "5b4a532b21caa6235bed10a28878c65523a816aa",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script.html": [
+   "f43755d9dffe2983a377f2c00b855f106776b617",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-classic-scripts.html": [
+   "2b6654342c5a2e2d85df2bc8ec805b5fa7ed1550",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script.html": [
+   "071d6550f88d5f04de77fd28a314dbc7121b758f",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts.html": [
+   "a5600b1fcb40e3dbdf223fbeee40c0a3f096eed1",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/resources/cocoa-module.js": [
+   "43291b3e6eff8267c88100990aae5d4b2a09f3bd",
+   "support"
+  ],
   "html/semantics/scripting-1/the-script-element/resources/cross-origin.py": [
    "33c88a19aa061be518067c54019190ec979d4c82",
    "support"
   ],
-  "html/semantics/scripting-1/the-script-element/script-charset-01-expected.txt": [
-   "a8ae591ec0e456203b9f7dda9edce12b44c038b5",
+  "html/semantics/scripting-1/the-script-element/resources/exports-cocoa.js": [
+   "5797045ac8591d2662a6714367ae5fb257881793",
    "support"
   ],
-  "html/semantics/scripting-1/the-script-element/script-charset-01.html": [
-   "4d8f27447b5c76174a2e353f160066fbe156a005",
-   "testharness"
-  ],
-  "html/semantics/scripting-1/the-script-element/script-charset-02-expected.txt": [
-   "4a85d08d344151889a33fea7bc6a170f244db03d",
+  "html/semantics/scripting-1/the-script-element/resources/set-script-executed.js": [
+   "87f80eee703965c88f2bf7015bfa76233d459d06",
    "support"
-  ],
-  "html/semantics/scripting-1/the-script-element/script-charset-02.html": [
-   "fd855537451d81818fda97de8a6eff2f8ebd7a5e",
-   "testharness"
-  ],
-  "html/semantics/scripting-1/the-script-element/script-charset-03-expected.txt": [
-   "a77ed7620d50ecf98ba93f936ceb320717715347",
-   "support"
-  ],
-  "html/semantics/scripting-1/the-script-element/script-charset-03.html": [
-   "c1daf890ff2c71f63d1c668de9002d493dbcb417",
-   "testharness"
   ],
   "html/semantics/scripting-1/the-script-element/script-crossorigin-network.html": [
    "ca03ec45f3b8d117d0488b67f082868bac847af6",
@@ -48467,6 +48536,18 @@
   "html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-001-ref.html": [
    "2ab63995dc287024cc49483dc2d8f4270000d668",
    "support"
+  ],
+  "html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-001.html": [
+   "62d5180ca4749806a81b41929d989681fa17a75c",
+   "reftest"
+  ],
+  "html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-002.html": [
+   "38e9c81ee4c5683573ae45c37226efe5465c9245",
+   "reftest"
+  ],
+  "html/semantics/scripting-1/the-template-element/additions-to-the-css-user-agent-style-sheet/css-user-agent-style-sheet-test-003.html": [
+   "f049497d3d3c4e264b9a5c13bd3b0752622a97c4",
+   "reftest"
   ],
   "html/semantics/scripting-1/the-template-element/additions-to-the-steps-to-clone-a-node/template-clone-children.html": [
    "5a73307301969f09528ce46c832d69a9f5ba2b75",
@@ -48757,7 +48838,7 @@
    "testharness"
   ],
   "html/semantics/tabular-data/the-table-element/caption-methods.html": [
-   "b075186509ce87285445cb3fffeb57176aa2a1ac",
+   "86605a4059ee7f25c555de2ad7f721beb566b2df",
    "testharness"
   ],
   "html/semantics/tabular-data/the-table-element/contains.json": [
@@ -49705,7 +49786,7 @@
    "testharness"
   ],
   "html/webappapis/idle-callbacks/callback-timeout.html": [
-   "65cd8599001086b880e8ad412074f874008a3523",
+   "ba76964575cdf9b433f26c8a5d7a8183ab5c16e9",
    "testharness"
   ],
   "html/webappapis/idle-callbacks/cancel-invoked.html": [
@@ -49778,6 +49859,10 @@
   ],
   "html/webappapis/scripting/events/event-handler-spec-example.html": [
    "8d4d0bfdf447591695ac134cd243277ea2326c84",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/eventhandler-cancellation.html": [
+   "491fd73a4ec8812cb8dc1ee01e34a7ff2a07ffb3",
    "testharness"
   ],
   "html/webappapis/scripting/events/inline-event-handler-ordering-expected.txt": [
@@ -51601,7 +51686,7 @@
    "support"
   ],
   "service-workers/service-worker/extendable-event-async-waituntil.https.html": [
-   "aebf55dd963ad3cc1b3bb724183f331e03a30d0a",
+   "fe5c4595f528af34d83a64bae1fe94a14483cde5",
    "testharness"
   ],
   "service-workers/service-worker/extendable-event-waituntil.https.html": [
@@ -51649,11 +51734,11 @@
    "support"
   ],
   "service-workers/service-worker/fetch-event.https.html": [
-   "9197ebb50014905e02645c5dc71d467be0e7604c",
+   "09024c86ce36bb31e96077acaa3609d16d424785",
    "testharness"
   ],
   "service-workers/service-worker/fetch-frame-resource.https.html": [
-   "2646f17a101d0f4a4e57e6029240dd0e999bb1aa",
+   "e5996d90c4c383eda2947cc2bc39e734448b3bde",
    "testharness"
   ],
   "service-workers/service-worker/fetch-header-visibility.https.html": [
@@ -51848,6 +51933,10 @@
    "7c49ce1c6170733033add6253a3f4a7e0483452e",
    "testharness"
   ],
+  "service-workers/service-worker/registration-useCache.https.html": [
+   "73d662eafa93ca3dee4a4e5d34623cf069c2b8f8",
+   "testharness"
+  ],
   "service-workers/service-worker/registration.https.html": [
    "9e21fc312a4aae93fcaf6013d20bd38c2cefc9cf",
    "testharness"
@@ -51973,7 +52062,7 @@
    "support"
   ],
   "service-workers/service-worker/resources/extendable-event-async-waituntil.js": [
-   "d9087e4ef37fb2e7361bc332fe941126480a0b43",
+   "0383a4bcd4a4d0e4abd129262dc5b5fe329a3f26",
    "support"
   ],
   "service-workers/service-worker/resources/extendable-event-waituntil.js": [
@@ -52366,6 +52455,14 @@
   ],
   "service-workers/service-worker/resources/unregister-controller-page.html": [
    "feae7f538da58d45e38f6f26da5ce6af0c91857f",
+   "support"
+  ],
+  "service-workers/service-worker/resources/update-max-aged-worker-imported-script.py": [
+   "23fa131d0d35e0e5394100b4bfaa5ebf1a349b4b",
+   "support"
+  ],
+  "service-workers/service-worker/resources/update-max-aged-worker.py": [
+   "384ab2835ccb57316d59a911af57ba8638b26ad0",
    "support"
   ],
   "service-workers/service-worker/resources/update-nocookie-worker.py": [
@@ -53325,7 +53422,7 @@
    "testharness"
   ],
   "streams/piping/general.js": [
-   "dc53c5a5d9757095ffafd01eec4248af1a79b785",
+   "cb4f7956b3973e318f6227122ab0df3c017414d5",
    "support"
   ],
   "streams/piping/general.serviceworker-expected.txt": [
@@ -53477,7 +53574,7 @@
    "testharness"
   ],
   "streams/readable-byte-streams/general.js": [
-   "dd559f461e21ba39f5d66a6a8f84d501f12cdb07",
+   "6c213279d772e7087f35f8a19157f092bd77f90c",
    "support"
   ],
   "streams/readable-byte-streams/general.serviceworker-expected.txt": [
@@ -53533,7 +53630,7 @@
    "testharness"
   ],
   "streams/readable-streams/bad-underlying-sources.js": [
-   "514eba2a237991d057014da7defc613714d5273e",
+   "f980e8d1a99149a2292835eafb5484f8ee8da966",
    "support"
   ],
   "streams/readable-streams/bad-underlying-sources.serviceworker-expected.txt": [
@@ -53801,7 +53898,7 @@
    "testharness"
   ],
   "streams/writable-streams/aborting.js": [
-   "8b386bb36284d1cd342f29f6b90816584b8a3a60",
+   "744d55d9887783d92cdf81685358dab5a2016f84",
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker-expected.txt": [
@@ -53921,7 +54018,7 @@
    "testharness"
   ],
   "streams/writable-streams/close.js": [
-   "36c84563a396556bc3c8515cd7666ef6cc243822",
+   "ac7f1df6753c0d171d61a274a8ae7c6f5107857c",
    "support"
   ],
   "streams/writable-streams/close.serviceworker-expected.txt": [
@@ -54041,7 +54138,7 @@
    "testharness"
   ],
   "streams/writable-streams/write.js": [
-   "6fd8ce8a637f54bfbd6ebbf5f318e613dee6cb13",
+   "f956e42aa67abce9b3e11179c800a6f9c625d111",
    "support"
   ],
   "streams/writable-streams/write.serviceworker-expected.txt": [
@@ -54055,6 +54152,10 @@
   "streams/writable-streams/write.sharedworker.html": [
    "f56e65526d831e3bbc3ed1f6d7faee0096781580",
    "testharness"
+  ],
+  "svg-aam/README.md": [
+   "e500c4f877bd2d7b482600d7c6b60823c4d49179",
+   "support"
   ],
   "svg/README.md": [
    "ce9e3471676d5a50b91f6b274d648b481e509223",
@@ -54549,7 +54650,7 @@
    "testharness"
   ],
   "user-timing/resources/webperftestharness.js": [
-   "483d2bb1e7edbba09b4db77f5e28ee8f8da50682",
+   "d0c87eea4d573ae58ddb9fc3140ae36b726ca278",
    "support"
   ],
   "user-timing/resources/webperftestharnessextension.js": [
@@ -54557,11 +54658,11 @@
    "support"
   ],
   "user-timing/test_user_timing_clear_marks.html": [
-   "f818ae04b62c3e1824f6497973e5bcaa2d370383",
+   "bc908c06f34655e7d71d46ab2c5587855eb5ea30",
    "testharness"
   ],
   "user-timing/test_user_timing_clear_measures.html": [
-   "2bf43f0a82d3d868bad282446ba0ef8c3b6ef442",
+   "8e547c2537f411cb9f67347f2dc5d0ac2e68b442",
    "testharness"
   ],
   "user-timing/test_user_timing_entry_type.html": [
@@ -54573,7 +54674,7 @@
    "testharness"
   ],
   "user-timing/test_user_timing_mark.html": [
-   "8b234ec5956d7eab7cc5bf18d7c668f1a7cc622b",
+   "756da1c68bf824a788796b8bbb6a397cf1a7d484",
    "testharness"
   ],
   "user-timing/test_user_timing_mark_and_measure_exception_when_invoke_with_timing_attributes.html": [
@@ -54589,7 +54690,7 @@
    "testharness"
   ],
   "user-timing/test_user_timing_mark_exceptions.html": [
-   "6d21c976fc796cc5f9294f3b0ee1796ed3f1b8c1",
+   "e0d0d6cac8730b795009bddfc2aa021a7998ef83",
    "testharness"
   ],
   "user-timing/test_user_timing_mark_with_name_of_navigation_timing_optional_attribute.html": [
@@ -54597,15 +54698,15 @@
    "testharness"
   ],
   "user-timing/test_user_timing_measure.html": [
-   "5159e12bd79fa0330b71387cc385c77c95d11f0f",
+   "8967a9720d1774bff08a127265a2df3cedde8144",
    "testharness"
   ],
   "user-timing/test_user_timing_measure_exceptions.html": [
-   "c1d7953a89202af8b246f0ef4ad7487ffe223a16",
+   "cb47c8eb0053184b7cffec7e33dd6fad606faa5f",
    "testharness"
   ],
   "user-timing/test_user_timing_measure_navigation_timing.html": [
-   "d985098b8e5163756342f609dffa3ccf26d273b1",
+   "2d9655381b5537c6969115eda5045e3e9c0c57fd",
    "testharness"
   ],
   "web-animations/README.md": [
@@ -54625,7 +54726,7 @@
    "testharness"
   ],
   "web-animations/animation-model/animation-types/property-list.js": [
-   "d25c1e99f64a7dc2a883b7d1334bb2d37e657a0e",
+   "09135b91237467c4fbeeda3fd7b4d459a82ff4fb",
    "support"
   ],
   "web-animations/animation-model/animation-types/property-types.js": [

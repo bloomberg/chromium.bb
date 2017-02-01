@@ -1,0 +1,36 @@
+This is a testharness.js-based test.
+PASS Aborting a WritableStream before it starts should cause the writer's unsettled ready promise to reject 
+PASS Aborting a WritableStream should cause the writer's fulfilled ready promise to reset to a rejected one 
+PASS abort() on a released writer rejects 
+PASS Aborting a WritableStream immediately prevents future writes 
+PASS Aborting a WritableStream prevents further writes after any that are in progress 
+PASS Fulfillment value of ws.abort() call must be undefined even if the underlying sink returns a non-undefined value 
+PASS WritableStream if sink's abort throws, the promise returned by writer.abort() rejects 
+PASS WritableStream if sink's abort throws, the promise returned by ws.abort() rejects 
+PASS WritableStream if sink's abort throws, for an abort performed during a write, the promise returned by ws.abort() rejects 
+PASS Aborting a WritableStream passes through the given reason 
+PASS Aborting a WritableStream puts it in an errored state, with a TypeError as the stored error 
+PASS Aborting a WritableStream causes any outstanding write() promises to be rejected with a TypeError 
+PASS Closing but then immediately aborting a WritableStream causes the stream to error 
+PASS Closing a WritableStream and aborting it while it closes causes the stream to error 
+PASS Aborting a WritableStream after it is closed is a no-op 
+PASS WritableStream should NOT call underlying sink's close if no abort is supplied (historical) 
+PASS returning a thenable from abort() should work 
+PASS .closed should not resolve before fulfilled write() 
+PASS .closed should not resolve before rejected write(); write() error should overwrite abort() error 
+PASS writes should be satisfied in order when aborting 
+PASS writes should be satisfied in order after rejected write when aborting 
+PASS close() should use error from underlying write() on abort 
+PASS underlying abort() should not be called until underlying write() completes 
+PASS underlying abort() should not be called if underlying close() has started 
+PASS if underlying close() has started and then rejects, the abort() and close() promises should reject with the underlying close rejection reason 
+PASS underlying abort() should be called while closing if underlying close() has not started yet 
+PASS writer close() promise should resolve before abort() promise 
+PASS writer.ready should reject on controller error without waiting for underlying write 
+FAIL writer.abort() while there is a pending write, and then finish the write with rejection assert_array_equals: writePromise, abortPromise and writer.closed must reject property 1, expected "abortPromise" but got "closed"
+FAIL writer.abort(), controller.error() while there is a pending write, and then finish the write promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
+PASS controller.error(), writer.abort() while there is a pending write, and then finish the write 
+PASS releaseLock() while aborting should reject the original closed promise 
+PASS releaseLock() during delayed async abort() should create a new rejected closed promise 
+Harness: the test ran to completion.
+

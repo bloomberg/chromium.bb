@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS An inline classic script without nomodule content attribute must run 
+FAIL An inline classic script with nomodule content attribute must not run assert_false: expected false got true
+PASS An inline classic script element dynamically inserted after noModule was set to false must run. 
+FAIL An inline classic script element dynamically inserted after noModule was set to true must not run. assert_false: expected false got true
+Harness: the test ran to completion.
+

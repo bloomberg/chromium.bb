@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught SyntaxError: Unexpected token import
+FAIL An external module script with nomodule content attribute must run assert_equals: expected "object" but got "undefined"
+Harness: the test ran to completion.
+

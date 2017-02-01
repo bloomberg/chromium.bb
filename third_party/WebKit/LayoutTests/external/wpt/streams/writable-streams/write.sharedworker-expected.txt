@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+PASS WritableStream should complete asynchronous writes before close resolves 
+PASS WritableStream should complete synchronous writes before close resolves 
+PASS fulfillment value of ws.write() call should be undefined even if the underlying sink returns a non-undefined value 
+PASS WritableStream should transition to waiting until write is acknowledged 
+PASS when write returns a rejected promise, queued writes and close should be cleared 
+PASS when sink's write throws an error, the stream should become errored and the promise should reject 
+FAIL writer.write(), ready and closed reject with the error passed to controller.error() made before sink.write rejection assert_throws: writer.closed must reject with the error passed to the controller function "function () { throw e }" threw object "error2: error2" ("error2") expected object "error1: error1" ("error1")
+PASS a large queue of writes should be processed completely 
+PASS WritableStreamDefaultWriter should work when manually constructed 
+PASS returning a thenable from write() should work 
+Harness: the test ran to completion.
+
