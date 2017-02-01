@@ -275,17 +275,30 @@ struct zcr_remote_shell_v1_interface {
 					 const char *notification_id);
 };
 
-#define ZCR_REMOTE_SHELL_V1_ACTIVATED	0
-#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED	1
+#define ZCR_REMOTE_SHELL_V1_ACTIVATED 0
+#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED 1
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_ACTIVATED_SINCE_VERSION	1
+#define ZCR_REMOTE_SHELL_V1_ACTIVATED_SINCE_VERSION 1
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED_SINCE_VERSION	1
+#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED_SINCE_VERSION 1
+
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_DESTROY_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_GET_REMOTE_SURFACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_GET_NOTIFICATION_SURFACE_SINCE_VERSION 1
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -539,6 +552,36 @@ struct zcr_remote_surface_v1_interface {
 	void (*unset_system_modal)(struct wl_client *client,
 				   struct wl_resource *resource);
 	/**
+	 * ack a configure event
+	 *
+	 * When a configure event is received, if a client commits the
+	 * surface in response to the configure event, then the client must
+	 * make an ack_configure request sometime before the commit
+	 * request, passing along the serial of the configure event.
+	 *
+	 * For instance, the compositor might use this information during
+	 * display configuration to change its coordinate space for
+	 * set_window_geometry requests only when the client has switched
+	 * to the new coordinate space.
+	 *
+	 * If the client receives multiple configure events before it can
+	 * respond to one, it only has to ack the last configure event.
+	 *
+	 * A client is not required to commit immediately after sending an
+	 * ack_configure request - it may even ack_configure several times
+	 * before its next surface commit.
+	 *
+	 * A client may send multiple ack_configure requests before
+	 * committing, but only the last request sent before a commit
+	 * indicates which configure event the client really is responding
+	 * to.
+	 * @param serial the serial from the configure event
+	 * @since 2
+	 */
+	void (*ack_configure)(struct wl_client *client,
+			      struct wl_resource *resource,
+			      uint32_t serial);
+	/**
 	 * interactive move started
 	 *
 	 * Notifies the compositor when an interactive, user-driven move
@@ -561,17 +604,107 @@ struct zcr_remote_surface_v1_interface {
 			     struct wl_resource *resource);
 };
 
-#define ZCR_REMOTE_SURFACE_V1_CLOSE	0
-#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED	1
+#define ZCR_REMOTE_SURFACE_V1_CLOSE 0
+#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED 1
+#define ZCR_REMOTE_SURFACE_V1_CONFIGURE 2
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_CLOSE_SINCE_VERSION	1
+#define ZCR_REMOTE_SURFACE_V1_CLOSE_SINCE_VERSION 1
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED_SINCE_VERSION	1
+#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_CONFIGURE_SINCE_VERSION 2
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_DESTROY_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_APP_ID_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_WINDOW_GEOMETRY_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_SCALE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_TITLE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_TOP_INSET_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_ACTIVATE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_MAXIMIZE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_MINIMIZE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_RESTORE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_FULLSCREEN_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_UNFULLSCREEN_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_PIN_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_UNPIN_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_ACK_CONFIGURE_SINCE_VERSION 2
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_MOVING_SINCE_VERSION 2
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_UNSET_MOVING_SINCE_VERSION 2
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -596,6 +729,17 @@ zcr_remote_surface_v1_send_state_type_changed(struct wl_resource *resource_, uin
 }
 
 /**
+ * @ingroup iface_zcr_remote_surface_v1
+ * Sends an configure event to the client owning the resource.
+ * @param resource_ The client's resource
+ */
+static inline void
+zcr_remote_surface_v1_send_configure(struct wl_resource *resource_, int32_t origin_x, int32_t origin_y, uint32_t serial)
+{
+	wl_resource_post_event(resource_, ZCR_REMOTE_SURFACE_V1_CONFIGURE, origin_x, origin_y, serial);
+}
+
+/**
  * @ingroup iface_zcr_notification_surface_v1
  * @struct zcr_notification_surface_v1_interface
  */
@@ -609,6 +753,11 @@ struct zcr_notification_surface_v1_interface {
 			struct wl_resource *resource);
 };
 
+
+/**
+ * @ingroup iface_zcr_notification_surface_v1
+ */
+#define ZCR_NOTIFICATION_SURFACE_V1_DESTROY_SINCE_VERSION 1
 
 #ifdef  __cplusplus
 }

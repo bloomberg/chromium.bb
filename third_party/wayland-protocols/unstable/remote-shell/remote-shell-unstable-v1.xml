@@ -382,6 +382,52 @@
 
     <!-- Version 2 additions -->
 
+    <event name="configure" since="2">
+      <description summary="suggest a surface change">
+	The configure event asks the client to change surface state.
+
+	The origin arguments specify the position, in the compositor coordinate
+	space, of the virtual display used by the client to simulate multiple
+	displays. The client must offset window positions in set_window_geometry
+	requests by this origin in order to convert between coordinate spaces.
+
+	Clients should arrange their surface for the new state, and then send an
+	ack_configure request with the serial sent in this configure event at
+	some point before committing the new surface.
+
+	If the client receives multiple configure events before it can respond
+	to one, it is free to discard all but the last event it received.
+      </description>
+      <arg name="origin_x" type="int"/>
+      <arg name="origin_y" type="int"/>
+      <arg name="serial" type="uint"/>
+    </event>
+
+    <request name="ack_configure" since="2">
+      <description summary="ack a configure event">
+	When a configure event is received, if a client commits the
+	surface in response to the configure event, then the client
+	must make an ack_configure request sometime before the commit
+	request, passing along the serial of the configure event.
+
+	For instance, the compositor might use this information during display
+	configuration to change its coordinate space for set_window_geometry
+	requests only when the client has switched to the new coordinate space.
+
+	If the client receives multiple configure events before it
+	can respond to one, it only has to ack the last configure event.
+
+	A client is not required to commit immediately after sending
+	an ack_configure request - it may even ack_configure several times
+	before its next surface commit.
+
+	A client may send multiple ack_configure requests before committing, but
+	only the last request sent before a commit indicates which configure
+	event the client really is responding to.
+      </description>
+      <arg name="serial" type="uint" summary="the serial from the configure event"/>
+    </request>
+
     <request name="set_moving" since="2">
       <description summary="interactive move started">
 	Notifies the compositor when an interactive, user-driven move of the
