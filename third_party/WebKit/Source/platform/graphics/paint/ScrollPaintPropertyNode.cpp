@@ -27,7 +27,7 @@ String ScrollPaintPropertyNode::toString() const {
   text.append(" userScrollable=");
   if (m_userScrollableHorizontal && m_userScrollableVertical)
     text.append("both");
-  else if (!m_userScrollableHorizontal && !m_userScrollableHorizontal)
+  else if (!m_userScrollableHorizontal && !m_userScrollableVertical)
     text.append("none");
   else
     text.append(m_userScrollableHorizontal ? "horizontal" : "vertical");
