@@ -285,7 +285,14 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
   if (FAILED(hr) || !parameters.IsValid()) {
     LOG(WARNING) << "Unable to get preferred audio params for " << device_id
                  << " 0x" << std::hex << hr;
-    return parameters;
+    // TODO(tommi): We appear to have callers to GetInputStreamParameters that
+    // rely on getting valid audio parameters returned for an invalid or
+    // unavailable device. We should track down those code paths (it is likely
+    // that they actually don't need a real device but depend on the audio
+    // code path somehow for a configuration - e.g. tab capture).
+    parameters =
+        AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
+                        CHANNEL_LAYOUT_STEREO, 48000, 16, kFallbackBufferSize);
   }
 
   int user_buffer_size = GetUserBufferSize();
