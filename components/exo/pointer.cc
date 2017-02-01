@@ -225,7 +225,7 @@ void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
 void Pointer::OnCursorSetChanged(ui::CursorSetType cursor_set) {
   // Capture new cursor in case UI scale changed.
   if (focus_ && surface_)
-    UpdateCursor();
+    CaptureCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
