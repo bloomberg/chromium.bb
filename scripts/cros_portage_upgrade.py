@@ -803,6 +803,10 @@ class Upgrader(object):
     upstream_manifest = os.path.join(upstream_pkgdir, 'Manifest')
     current_manifest = os.path.join(pkgdir, 'Manifest')
 
+    # Don't bother to proceed if the package doesn't have external code.
+    if not os.path.exists(upstream_manifest):
+      return
+
     if os.path.exists(current_manifest):
       # Determine which files have DIST entries in current_manifest.
       dists = set()
