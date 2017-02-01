@@ -202,7 +202,13 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
 
 // Tests that on receiving CLIENT_DATA_OBSOLETE sync engine gets restarted and
 // initialized with different cache_guld.
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
+// Flaky on Windows and Linux. See crbug.com/683216
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_ClientDataObsoleteTest DISABLED_ClientDataObsoleteTest
+#else
+#define MAYBE_ClientDataObsoleteTest ClientDataObsoleteTest
+#endif
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ClientDataObsoleteTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
