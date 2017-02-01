@@ -1059,4 +1059,8 @@
 #define __NR_getrandom 278
 #endif
 
+#if !defined(__NR_memfd_create)
+#define __NR_memfd_create 279
+#endif
+
 #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ARM64_LINUX_SYSCALLS_H_

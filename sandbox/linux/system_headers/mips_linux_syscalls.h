@@ -1429,4 +1429,8 @@
 #define __NR_getrandom (__NR_Linux + 353)
 #endif
 
+#if !defined(__NR_memfd_create)
+#define __NR_memfd_create (__NR_Linux + 354)
+#endif
+
 #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_SYSCALLS_H_

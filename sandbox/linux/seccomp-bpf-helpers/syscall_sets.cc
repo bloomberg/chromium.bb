@@ -120,9 +120,7 @@ bool SyscallSets::IsFileSystem(int sysno) {
 #if defined(__i386__) || defined(__arm__) || defined(__mips__)
     case __NR_lstat64:
 #endif
-#if defined(__i386__) || defined(__arm__) || defined(__x86_64__)
     case __NR_memfd_create:
-#endif
     case __NR_mkdirat:
     case __NR_mknodat:
 #if defined(__i386__)
